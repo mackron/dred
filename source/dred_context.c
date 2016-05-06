@@ -6,18 +6,7 @@ static void dred_window_cb__on_main_window_close(dred_window* pWindow)
 
 static void dred_window_cb__on_main_window_paint_TEMP(drgui_element* pElement, drgui_rect rect, void* pPaintData)
 {
-    //drgui_draw_rect_with_outline(pElement, drgui_get_local_rect(pElement), drgui_rgb(255, 255, 255), 4, drgui_rgb(0, 0, 0), pPaintData);
-    //drgui_draw_rect(pElement, drgui_get_local_rect(pElement), drgui_rgb(180, 255, 255), pPaintData);
-    
-    drgui_draw_rect(pElement, drgui_get_local_rect(pElement), drgui_rgb(180, 255, 255), pPaintData);
-    drgui_draw_rect_outline(pElement, drgui_get_local_rect(pElement), drgui_rgb(255, 128, 128), 4, pPaintData);
-}
-static void dred_window_cb__on_main_window_size_TEMP(drgui_element* pElement, float newWidth, float newHeight)
-{
-    (void)newWidth;
-    (void)newHeight;
-    //drgui_dirty(pElement, drgui_get_local_rect(pElement));
-    //printf("SIZING %d %d ", (int)pElement->width, (int)pElement->height);
+    drgui_draw_rect_with_outline(pElement, drgui_get_local_rect(pElement), drgui_rgb(255, 255, 255), 4, drgui_rgb(0, 0, 0), pPaintData);
 }
 
 
@@ -61,11 +50,10 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         return false;
     }
 
-    dred_window_set_size(pDred->pMainWindow, 200, 200);
+    dred_window_set_size(pDred->pMainWindow, 1280, 720);
 
     pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
     drgui_set_on_paint(pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_paint_TEMP);
-    drgui_set_on_size(pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_size_TEMP);
 
     // Show the window as soon as possible to give it the illusion of loading quickly.
     dred_window_show(pDred->pMainWindow);

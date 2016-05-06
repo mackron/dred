@@ -524,7 +524,7 @@ dred_window* dred_window_create__win32(dred_context* pDred)
 {
     DWORD dwStyleEx = 0;
     DWORD dwStyle = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW;
-    HWND hWnd = CreateWindowExA(dwStyleEx, g_WindowClass, "dred", dwStyle, 0, 0, 1280, 720, NULL, NULL, NULL, NULL);
+    HWND hWnd = CreateWindowExA(dwStyleEx, g_WindowClass, "dred", dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720, NULL, NULL, NULL, NULL);
     if (hWnd == NULL) {
         return NULL;
     }
