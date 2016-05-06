@@ -310,6 +310,131 @@ void dred_window_hide__win32(dred_window* pWindow)
 {
     ShowWindow(pWindow->hWnd, SW_HIDE);
 }
+
+
+void dred_window_set_cursor__win32(dred_window* pWindow, dred_cursor_type cursor)
+{
+    switch (cursor)
+    {
+        case dred_cursor_type_text:
+        {
+            pWindow->hCursor = LoadCursor(NULL, IDC_IBEAM);
+        } break;
+
+        case dred_cursor_type_cross:
+        {
+            pWindow->hCursor = LoadCursor(NULL, IDC_CROSS);
+        } break;
+
+        case dred_cursor_type_size_ns:
+        {
+            pWindow->hCursor = LoadCursor(NULL, IDC_SIZENS);
+        } break;
+
+        case dred_cursor_type_size_we:
+        {
+            pWindow->hCursor = LoadCursor(NULL, IDC_SIZEWE);
+        } break;
+
+        case dred_cursor_type_size_nesw:
+        {
+            pWindow->hCursor = LoadCursor(NULL, IDC_SIZENESW);
+        } break;
+
+        case dred_cursor_type_size_nwse:
+        {
+            pWindow->hCursor = LoadCursor(NULL, IDC_SIZENWSE);
+        } break;
+
+
+
+        case dred_cursor_type_none:
+        {
+            pWindow->hCursor = NULL;
+        } break;
+
+        //case cursor_type_arrow:
+        case dred_cursor_type_default:
+        default:
+        {
+            pWindow->hCursor = LoadCursor(NULL, IDC_ARROW);
+        } break;
+    }
+
+    // If the cursor is currently inside the window it needs to be changed right now.
+    if (dred_window_is_cursor_over(pWindow)) {
+        SetCursor(pWindow->hCursor);
+    }
+}
+
+bool dred_window_is_cursor_over__win32(dred_window* pWindow)
+{
+    return pWindow->isCursorOver;
+}
+
+
+
+static void dred_platform__on_global_capture_mouse__win32(drgui_element* pElement)
+{
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow != NULL) {
+        SetCapture(pWindow->hWnd);
+    }
+}
+
+static void dred_platform__on_global_release_mouse__win32(drgui_element* pElement)
+{
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow != NULL) {
+        ReleaseCapture();
+    }
+}
+
+static void dred_platform__on_global_capture_keyboard__win32(drgui_element* pElement, drgui_element* pPrevCapturedElement)
+{
+    (void)pPrevCapturedElement;
+
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow != NULL) {
+        pWindow->pElementWithKeyboardCapture = pElement;
+        SetFocus(pWindow->hWnd);
+    }
+}
+
+static void dred_platform__on_global_release_keyboard__win32(drgui_element* pElement, drgui_element* pNewCapturedElement)
+{
+    (void)pNewCapturedElement;
+
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow != NULL) {
+        SetFocus(NULL);
+    }
+}
+
+static void dred_platform__on_global_dirty__win32(drgui_element* pElement, drgui_rect relativeRect)
+{
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow != NULL)
+    {
+        drgui_rect absoluteRect = relativeRect;
+        drgui_make_rect_absolute(pElement, &absoluteRect);
+
+
+        RECT rect;
+        rect.left   = (LONG)absoluteRect.left;
+        rect.top    = (LONG)absoluteRect.top;
+        rect.right  = (LONG)absoluteRect.right;
+        rect.bottom = (LONG)absoluteRect.bottom;
+
+#if 0
+        // Scheduled redraw.
+        InvalidateRect(pWindow->hWnd, &rect, FALSE);
+#else
+        // Immediate redraw.
+        RedrawWindow(pWindow->hWnd, &rect, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+#endif
+    }
+}
 #endif
 
 
@@ -323,6 +448,8 @@ void dred_window_hide__win32(dred_window* pWindow)
 
 #ifdef DRED_GTK
 int g_GTKMainLoopResultCode = 0;
+GdkCursor* g_GTKCursor_Default = NULL;
+GdkCursor* g_GTKCursor_IBeam = NULL;
 
 bool dred_platform_init__gtk()
 {
@@ -499,9 +626,154 @@ void dred_window_hide__gtk(dred_window* pWindow)
 {
     gtk_widget_hide(GTK_WIDGET(pWindow->pGTKWindow));
 }
+
+
+void dred_window_set_cursor__gtk(dred_window* pWindow, dred_cursor_type cursor)
+{
+    switch (cursor)
+    {
+        case dred_cursor_type_text:
+        {
+            pWindow->pGTKCursor = g_GTKCursor_IBeam;
+        } break;
+
+#if 0
+        case dred_cursor_type_cross:
+        {
+        } break;
+
+        case dred_cursor_type_size_ns:
+        {
+        } break;
+
+        case dred_cursor_type_size_we:
+        {
+        } break;
+
+        case dred_cursor_type_size_nesw:
+        {
+        } break;
+
+        case dred_cursor_type_size_nwse:
+        {
+        } break;
 #endif
 
 
+        case dred_cursor_type_none:
+        {
+            pWindow->pGTKCursor = NULL;
+        } break;
+
+        //case cursor_type_arrow:
+        case dred_cursor_type_default:
+        default:
+        {
+            pWindow->pGTKCursor = g_GTKCursor_Default;
+        } break;
+    }
+
+    // If the cursor is currently inside the window it needs to be changed right now.
+    if (dred_window_is_cursor_over(pWindow)) {
+        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(pWindow->pGTKWindow)), pWindow->pGTKCursor);
+    }
+}
+
+bool dred_window_is_cursor_over__gtk(dred_window* pWindow)
+{
+    return pWindow->isCursorOver;
+}
+
+
+
+static void dred_platform__on_global_capture_mouse__gtk(drgui_element* pElement)
+{
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow != NULL) {
+        //gdk_device_grab(gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())),
+        //    gtk_widget_get_window(pWindow->pGTKWindow), GDK_OWNERSHIP_APPLICATION, false, GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_SCROLL_MASK, NULL, GDK_CURRENT_TIME);
+        gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
+            gtk_widget_get_window(pWindow->pGTKWindow), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
+    }
+}
+
+static void dred_platform__on_global_release_mouse__gtk(drgui_element* pElement)
+{
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow != NULL) {
+        //gdk_device_ungrab(gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())), GDK_CURRENT_TIME);
+        gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
+    }
+}
+
+static void dred_platform__on_global_capture_keyboard__gtk(drgui_element* pElement, drgui_element* pPrevCapturedElement)
+{
+    (void)pPrevCapturedElement;
+
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow != NULL) {
+        pWindow->pElementWithKeyboardCapture = pElement;
+        gtk_widget_grab_focus(GTK_WIDGET(pWindow->pGTKWindow));
+    }
+}
+
+static void dred_platform__on_global_release_keyboard__gtk(drgui_element* pElement, drgui_element* pNewCapturedElement)
+{
+    (void)pNewCapturedElement;
+
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow != NULL) {
+        gtk_widget_grab_focus(NULL);
+    }
+}
+
+static void dred_platform__on_global_dirty__gtk(drgui_element* pElement, drgui_rect relativeRect)
+{
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow != NULL && pWindow->pGTKWindow != NULL)
+    {
+        drgui_rect absoluteRect = relativeRect;
+        drgui_make_rect_absolute(pElement, &absoluteRect);
+
+        gtk_widget_queue_draw_area(pWindow->pGTKWindow,
+            (gint)absoluteRect.left, (gint)absoluteRect.top, (gint)(absoluteRect.right - absoluteRect.left), (gint)(absoluteRect.bottom - absoluteRect.top));
+    }
+}
+#endif
+
+
+
+
+//////////////////////////////////////////////////////////////////
+//
+// Cross Platform
+//
+//////////////////////////////////////////////////////////////////
+
+static void dred_platform__on_global_change_cursor(drgui_element* pElement, drgui_cursor_type cursor)
+{
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow == NULL) {
+        return;
+    }
+
+    switch (cursor)
+    {
+    case drgui_cursor_none:      dred_window_set_cursor(pWindow, dred_cursor_type_none);       break;
+    case drgui_cursor_text:      dred_window_set_cursor(pWindow, dred_cursor_type_text);       break;
+    case drgui_cursor_cross:     dred_window_set_cursor(pWindow, dred_cursor_type_cross);      break;
+    case drgui_cursor_size_ns:   dred_window_set_cursor(pWindow, dred_cursor_type_size_ns);    break;
+    case drgui_cursor_size_we:   dred_window_set_cursor(pWindow, dred_cursor_type_size_we);    break;
+    case drgui_cursor_size_nesw: dred_window_set_cursor(pWindow, dred_cursor_type_size_nesw);  break;
+    case drgui_cursor_size_nwse: dred_window_set_cursor(pWindow, dred_cursor_type_size_nwse);  break;
+
+    case drgui_cursor_default:
+    default:
+        {
+            dred_window_set_cursor(pWindow, dred_cursor_type_default);
+        } break;
+    }
+}
 
 
 bool dred_platform_init()
@@ -546,6 +818,27 @@ void dred_platform_post_quit_message(int resultCode)
 #ifdef DRED_GTK
     dred_platform_post_quit_message__gtk(resultCode);
 #endif
+}
+
+void dred_platform_bind_gui_event_handlers(drgui_context* pGUI)
+{
+#ifdef DRED_WIN32
+    drgui_set_global_on_capture_mouse(pGUI, dred_platform__on_global_capture_mouse__win32);
+    drgui_set_global_on_release_mouse(pGUI, dred_platform__on_global_release_mouse__win32);
+    drgui_set_global_on_capture_keyboard(pGUI, dred_platform__on_global_capture_keyboard__win32);
+    drgui_set_global_on_release_keyboard(pGUI, dred_platform__on_global_release_keyboard__win32);
+    drgui_set_global_on_dirty(pGUI, dred_platform__on_global_dirty__win32);
+#endif
+
+#ifdef DRED_GTK
+    drgui_set_global_on_capture_mouse(pGUI, dred_platform__on_global_capture_mouse__gtk);
+    drgui_set_global_on_release_mouse(pGUI, dred_platform__on_global_release_mouse__gtk);
+    drgui_set_global_on_capture_keyboard(pGUI, dred_platform__on_global_capture_keyboard__gtk);
+    drgui_set_global_on_release_keyboard(pGUI, dred_platform__on_global_release_keyboard__gtk);
+    drgui_set_global_on_dirty(pGUI, dred_platform__on_global_dirty__gtk);
+#endif
+
+    drgui_set_global_on_change_cursor(pGUI, dred_platform__on_global_change_cursor);
 }
 
 
@@ -636,4 +929,43 @@ void dred_window_hide(dred_window* pWindow, unsigned int flags)
 #ifdef DRED_GTK
     dred_window_hide__gtk(pWindow);
 #endif
+}
+
+
+void dred_window_set_cursor(dred_window* pWindow, dred_cursor_type cursor)
+{
+#ifdef DRED_WIN32
+    dred_window_set_cursor__win32(pWindow, cursor);
+#endif
+
+#ifdef DRED_GTK
+    dred_window_set_cursor__gtk(pWindow, cursor);
+#endif
+}
+
+bool dred_window_is_cursor_over(dred_window* pWindow)
+{
+#ifdef DRED_WIN32
+    return dred_window_is_cursor_over__win32(pWindow);
+#endif
+
+#ifdef DRED_GTK
+    return dred_window_is_cursor_over__gtk(pWindow);
+#endif
+}
+
+
+
+dred_window* dred_get_element_window(drgui_element* pElement)
+{
+    if (pElement == NULL) {
+        return NULL;
+    }
+
+    dred_window** ppWindow = drgui_get_extra_data(drgui_find_top_level_element(pElement));
+    if (ppWindow == NULL) {
+        return NULL;
+    }
+
+    return *ppWindow;
 }

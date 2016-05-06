@@ -30,11 +30,28 @@ int dred_platform_run();
 // Posts a quit message to main application loop to force it to break.
 void dred_platform_post_quit_message(int resultCode);
 
+// Binds the platform-specific global GUI event handlers.
+void dred_platform_bind_gui_event_handlers(drgui_context* pGUI);
+
 
 //// Windows ////
 typedef void (* dred_window_on_close_proc)             (dred_window* pWindow);
 typedef bool (* dred_window_on_hide_proc)              (dred_window* pWindow, unsigned int flags);
 typedef bool (* dred_window_on_show_proc)              (dred_window* pWindow);
+
+typedef enum
+{
+    dred_cursor_type_none,
+    dred_cursor_type_default,
+
+    dred_cursor_type_arrow = dred_cursor_type_default,
+    dred_cursor_type_text,
+    dred_cursor_type_cross,
+    dred_cursor_type_size_ns,           // North/South resize arrows.
+    dred_cursor_type_size_we,           // West/East resize arrows.
+    dred_cursor_type_size_nesw,         // North/East, South/West resize arrows.
+    dred_cursor_type_size_nwse          // North/West, South/East resize arrows.
+} dred_cursor_type;
 
 struct dred_window
 {
@@ -43,6 +60,9 @@ struct dred_window
     dred_window_on_hide_proc onHide;
     dred_window_on_show_proc onShow;
 
+    // A pointer to the GUI element that belongs to this window that should be given the keyboard capture when this window
+    // receives focus.
+    drgui_element* pElementWithKeyboardCapture;
 
     // The flags to pass to the onHide event handler.
     unsigned int onHideFlags;
@@ -52,11 +72,27 @@ struct dred_window
 #ifdef _WIN32
     // The Win32 window handle.
     HWND hWnd;
+
+    // The current cursor of the window.
+    HCURSOR hCursor;
+
+    // Keeps track of whether or not the cursor is over this window.
+    bool isCursorOver;
+
+    // The high-surrogate from a WM_CHAR message. This is used in order to build a surrogate pair from a couple of WM_CHAR messages. When
+    // a WM_CHAR message is received when code point is not a high surrogate, this is set to 0.
+    unsigned short utf16HighSurrogate;
 #endif
 
 #ifdef __linux__
     // The GTK window.
     GtkWidget* pGTKWindow;
+
+    // The cursor to use with this window.
+    GdkCursor* pGTKCursor;
+
+    // Keeps track of whether or not the cursor is over this window.
+    bool isCursorOver;
 #endif
 };
 
@@ -66,14 +102,19 @@ dred_window* dred_window_create();
 // Deletes a window.
 void dred_window_delete(dred_window* pWindow);
 
-
 // Sets the size of the window.
 void dred_window_set_size(dred_window* pWindow, unsigned int newWidth, unsigned int newHeight);
 void dred_window_get_size(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut);
-
 
 // Show/hide the window.
 void dred_window_show(dred_window* pWindow);
 void dred_window_show_maximized(dred_window* pWindow);
 void dred_window_show_sized(dred_window* pWindow, unsigned int width, unsigned int height);
 void dred_window_hide(dred_window* pWindow, unsigned int flags);
+
+// Sets the cursor to use with the window.
+void dred_window_set_cursor(dred_window* pWindow, dred_cursor_type cursor);
+bool dred_window_is_cursor_over(dred_window* pWindow);
+
+// Helper function for retrieving the window that owns the given GUI element.
+dred_window* dred_get_element_window(drgui_element* pElement);
