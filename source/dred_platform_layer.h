@@ -31,13 +31,27 @@ int dred_platform_run();
 void dred_platform_post_quit_message(int resultCode);
 
 // Binds the platform-specific global GUI event handlers.
-void dred_platform_bind_gui_event_handlers(drgui_context* pGUI);
+void dred_platform_bind_gui(drgui_context* pGUI);
 
 
 //// Windows ////
 typedef void (* dred_window_on_close_proc)             (dred_window* pWindow);
 typedef bool (* dred_window_on_hide_proc)              (dred_window* pWindow, unsigned int flags);
 typedef bool (* dred_window_on_show_proc)              (dred_window* pWindow);
+typedef void (* dred_window_on_activate_proc)          (dred_window* pWindow);
+typedef void (* dred_window_on_deactivate_proc)        (dred_window* pWindow);
+typedef void (* dred_window_on_size_proc)              (dred_window* pWindow, unsigned int newWidth, unsigned int newHeight);
+typedef void (* dred_window_on_move_proc)              (dred_window* pWindow, int newPosX, int newPosY);
+typedef void (* dred_window_on_mouse_enter_proc)       (dred_window* pWindow);
+typedef void (* dred_window_on_mouse_leave_proc)       (dred_window* pWindow);
+typedef void (* dred_window_on_mouse_move_proc)        (dred_window* pWindow, int mousePosX, int mousePosY, unsigned int stateFlags);
+typedef void (* dred_window_on_mouse_button_proc)      (dred_window* pWindow, int mouseButton, int relativeMousePosX, int relativeMousePosY, unsigned int stateFlags);
+typedef void (* dred_window_on_mouse_wheel_proc)       (dred_window* pWindow, int delta, int relativeMousePosX, int relativeMousePosY, unsigned int stateFlags);
+typedef void (* dred_window_on_key_down_proc)          (dred_window* pWindow, drgui_key key, unsigned int stateFlags);
+typedef void (* dred_window_on_key_up_proc)            (dred_window* pWindow, drgui_key key, unsigned int stateFlags);
+typedef void (* dred_window_on_printable_key_down_proc)(dred_window* pWindow, unsigned int character, unsigned int stateFlags);
+typedef void (* dred_window_on_focus_proc)             (dred_window* pWindow);
+typedef void (* dred_window_on_unfocus_proc)           (dred_window* pWindow);
 
 typedef enum
 {
@@ -47,18 +61,42 @@ typedef enum
     dred_cursor_type_arrow = dred_cursor_type_default,
     dred_cursor_type_text,
     dred_cursor_type_cross,
-    dred_cursor_type_size_ns,           // North/South resize arrows.
-    dred_cursor_type_size_we,           // West/East resize arrows.
-    dred_cursor_type_size_nesw,         // North/East, South/West resize arrows.
-    dred_cursor_type_size_nwse          // North/West, South/East resize arrows.
+    dred_cursor_type_double_arrow_h,
+    dred_cursor_type_double_arrow_v,
 } dred_cursor_type;
 
 struct dred_window
 {
+    // The main context that owns the window.
+    dred_context* pDred;
+
+    // The window's top level GUI element.
+    drgui_element* pRootGUIElement;
+
+    // The surface we'll be drawing to when drawing the GUI.
+    dr2d_surface* pDrawingSurface;
+
+
     // Event handlers.
     dred_window_on_close_proc onClose;
     dred_window_on_hide_proc onHide;
     dred_window_on_show_proc onShow;
+    dred_window_on_activate_proc onActivate;
+    dred_window_on_deactivate_proc onDeactivate;
+    dred_window_on_size_proc onSize;
+    dred_window_on_move_proc onMove;
+    dred_window_on_mouse_enter_proc onMouseEnter;
+    dred_window_on_mouse_leave_proc onMouseLeave;
+    dred_window_on_mouse_move_proc onMouseMove;
+    dred_window_on_mouse_button_proc onMouseButtonDown;
+    dred_window_on_mouse_button_proc onMouseButtonUp;
+    dred_window_on_mouse_button_proc onMouseButtonDblClick;
+    dred_window_on_mouse_wheel_proc onMouseWheel;
+    dred_window_on_key_down_proc onKeyDown;
+    dred_window_on_key_up_proc onKeyUp;
+    dred_window_on_printable_key_down_proc onPrintableKeyDown;
+    dred_window_on_focus_proc onFocus;
+    dred_window_on_unfocus_proc onUnfocus;
 
     // A pointer to the GUI element that belongs to this window that should be given the keyboard capture when this window
     // receives focus.
@@ -93,11 +131,15 @@ struct dred_window
 
     // Keeps track of whether or not the cursor is over this window.
     bool isCursorOver;
+
+    // The position of the inner section of the window. This is set in the configure event handler.
+    int absoluteClientPosX;
+    int absoluteClientPosY;
 #endif
 };
 
 // Creates a top-level window.
-dred_window* dred_window_create();
+dred_window* dred_window_create(dred_context* pDred);
 
 // Deletes a window.
 void dred_window_delete(dred_window* pWindow);
@@ -115,6 +157,29 @@ void dred_window_hide(dred_window* pWindow, unsigned int flags);
 // Sets the cursor to use with the window.
 void dred_window_set_cursor(dred_window* pWindow, dred_cursor_type cursor);
 bool dred_window_is_cursor_over(dred_window* pWindow);
+
+
+// Event posting.
+void dred_window_on_close(dred_window* pWindow);
+bool dred_window_on_hide(dred_window* pWindow, unsigned int flags);
+bool dred_window_on_show(dred_window* pWindow);
+void dred_window_on_activate(dred_window* pWindow);
+void dred_window_on_deactivate(dred_window* pWindow);
+void dred_window_on_size(dred_window* pWindow, unsigned int newWidth, unsigned int newHeight);
+void dred_window_on_move(dred_window* pWindow, int newPosX, int newPosY);
+void dred_window_on_mouse_enter(dred_window* pWindow);
+void dred_window_on_mouse_leave(dred_window* pWindow);
+void dred_window_on_mouse_move(dred_window* pWindow, int mousePosX, int mousePosY, unsigned int stateFlags);
+void dred_window_on_mouse_button_down(dred_window* pWindow, int mouseButton, int mousePosX, int mousePosY, unsigned int stateFlags);
+void dred_window_on_mouse_button_up(dred_window* pWindow, int mouseButton, int mousePosX, int mousePosY, unsigned int stateFlags);
+void dred_window_on_mouse_button_dblclick(dred_window* pWindow, int mouseButton, int mousePosX, int mousePosY, unsigned int stateFlags);
+void dred_window_on_mouse_wheel(dred_window* pWindow, int delta, int mousePosX, int mousePosY, unsigned int stateFlags);
+void dred_window_on_key_down(dred_window* pWindow, drgui_key key, unsigned int stateFlags);
+void dred_window_on_key_up(dred_window* pWindow, drgui_key key, unsigned int stateFlags);
+void dred_window_on_printable_key_down(dred_window* pWindow, unsigned int character, unsigned int stateFlags);
+void dred_window_on_focus(dred_window* pWindow);
+void dred_window_on_unfocus(dred_window* pWindow);
+
 
 // Helper function for retrieving the window that owns the given GUI element.
 dred_window* dred_get_element_window(drgui_element* pElement);
