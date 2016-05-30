@@ -49,13 +49,17 @@
 #include "gb_string.h"
 
 
-// dred source files.
+// dred header files.
 #include "dred_build_config.h"
 #include "dred_types.h"
+#include "dred_fs.h"
+#include "dred_config.h"
 #include "dred_context.h"
 #include "dred_platform_layer.h"
 
-// dred header files.
+// dred source files.
+#include "dred_fs.c"
+#include "dred_config.c"
 #include "dred_context.c"
 #include "dred_platform_layer.c"
 
