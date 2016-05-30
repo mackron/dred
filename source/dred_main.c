@@ -35,7 +35,7 @@
 
 // dr_libs
 #define DR_UTIL_IMPLEMENTATION
-#include "../../dr_libs/dr_util.h"
+#include "../../dr_libs/dr.h"
 
 #define DR_PATH_IMPLEMENTATION
 #include "../../dr_libs/dr_path.h"
