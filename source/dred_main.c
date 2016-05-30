@@ -33,7 +33,7 @@
 #endif
 
 
-// dr_libs
+// External libraries.
 #define DR_UTIL_IMPLEMENTATION
 #include "../../dr_libs/dr.h"
 
@@ -44,6 +44,9 @@
 #define DR_GUI_INCLUDE_WIP
 #define DR_2D_IMPLEMENTATION
 #include "../../dr_libs/dr_gui.h"
+
+#define GB_STRING_IMPLEMENTATION
+#include "gb_string.h"
 
 
 // dred source files.
