@@ -971,7 +971,9 @@ static void dred_gtk_cb__on_configure(GtkWidget* pGTKWindow, GdkEventConfigure* 
         // reason the internal clip used by GTK does not expand (it does shrink, though). The only way I've found to fix this is to
         // forcefully request an explicit resize which seems to cause GTK to correct it's clip. This is a bad hack and at some point
         // we should look at addressing this properly.
-        gtk_window_resize(GTK_WINDOW(pWindow->pGTKWindow), pEvent->width, pEvent->height);
+        //
+        // UPDATE: It appears having everything contained within a child widget within a GtkBox container addresses this issue.
+        //gtk_window_resize(GTK_WINDOW(pWindow->pGTKWindow), pEvent->width, pEvent->height);
 
 
         // dr_2d does not support dynamic resizing of surfaces. Thus, we need to delete and recreate it.
@@ -1165,13 +1167,16 @@ static gboolean dred_gtk_cb__on_lose_focus(GtkWidget* pGTKWindow, GdkEventFocus*
 
 dred_window* dred_window_create__gtk(dred_context* pDred)
 {
-    GtkWidget* pGTKWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    GtkWidget* pGTKWindow = NULL;
+    GtkWidget* pGTKBox = NULL;
+    GtkWidget* pGTKClientArea = NULL;
+
+    pGTKWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     if (pGTKWindow == NULL) {
         return NULL;
     }
 
     gtk_window_set_resizable(GTK_WINDOW(pGTKWindow),TRUE);
-    gtk_container_set_border_width(GTK_CONTAINER(pGTKWindow), 10);
 
 
     dred_window* pWindow = (dred_window*)calloc(1, sizeof(*pWindow));
@@ -1208,18 +1213,78 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
     g_signal_connect(pGTKWindow, "delete-event",         G_CALLBACK(dred_gtk_cb__on_close),             pWindow);     // Close.
     g_signal_connect(pGTKWindow, "hide",                 G_CALLBACK(dred_gtk_cb__on_hide),              pWindow);     // Hide.
     g_signal_connect(pGTKWindow, "show",                 G_CALLBACK(dred_gtk_cb__on_show),              pWindow);     // Show.
-    g_signal_connect(pGTKWindow, "draw",                 G_CALLBACK(dred_gtk_cb__on_paint),             pWindow);     // Paint
-    g_signal_connect(pGTKWindow, "configure-event",      G_CALLBACK(dred_gtk_cb__on_configure),         pWindow);     // Reposition and resize.
-    g_signal_connect(pGTKWindow, "enter-notify-event",   G_CALLBACK(dred_gtk_cb__on_mouse_enter),       pWindow);     // Mouse enter.
-    g_signal_connect(pGTKWindow, "leave-notify-event",   G_CALLBACK(dred_gtk_cb__on_mouse_leave),       pWindow);     // Mouse leave.
-    g_signal_connect(pGTKWindow, "motion-notify-event",  G_CALLBACK(dred_gtk_cb__on_mouse_move),        pWindow);     // Mouse move.
-    g_signal_connect(pGTKWindow, "button-press-event",   G_CALLBACK(dred_gtk_cb__on_mouse_button_down), pWindow);     // Mouse button down.
-    g_signal_connect(pGTKWindow, "button-release-event", G_CALLBACK(dred_gtk_cb__on_mouse_button_up),   pWindow);     // Mouse button up.
-    g_signal_connect(pGTKWindow, "scroll-event",         G_CALLBACK(dred_gtk_cb__on_mouse_wheel),       pWindow);     // Mouse wheel.
     g_signal_connect(pGTKWindow, "key-press-event",      G_CALLBACK(dred_gtk_cb__on_key_down),          pWindow);     // Key down.
     g_signal_connect(pGTKWindow, "key-release-event",    G_CALLBACK(dred_gtk_cb__on_key_up),            pWindow);     // Key up.
     g_signal_connect(pGTKWindow, "focus-in-event",       G_CALLBACK(dred_gtk_cb__on_receive_focus),     pWindow);     // Receive focus.
     g_signal_connect(pGTKWindow, "focus-out-event",      G_CALLBACK(dred_gtk_cb__on_lose_focus),        pWindow);     // Lose focus.
+
+
+    pGTKBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    if (pGTKBox == NULL) {
+        goto on_error;
+    }
+
+    gtk_container_add(GTK_CONTAINER(pGTKWindow), pGTKBox);
+    
+
+
+    ////////////////////////////////////////////////////////////////////////
+    // Menu testing.
+    ////////////////////////////////////////////////////////////////////////
+    {
+        GtkWidget* pGTKMenuBar = gtk_menu_bar_new();
+
+        GtkWidget* pGTKMenuItem_File = gtk_menu_item_new_with_label("File");
+        gtk_widget_show(pGTKMenuItem_File);
+
+        
+        gtk_menu_shell_append(GTK_MENU_SHELL(pGTKMenuBar), pGTKMenuItem_File);
+
+        // Attach and show the menu bar.
+        gtk_box_pack_start(GTK_BOX(pGTKBox), pGTKMenuBar, FALSE, FALSE, 0);
+        gtk_widget_show(pGTKMenuBar);
+    }
+    ////////////////////////////////////////////////////////////////////////
+    // End Menu Testing.
+    ////////////////////////////////////////////////////////////////////////
+
+
+
+    // Client area. This is the main content of the window.
+    pGTKClientArea = gtk_drawing_area_new();
+    if (pGTKClientArea == NULL) {
+        goto on_error;
+    }
+
+    gtk_box_pack_start(GTK_BOX(pGTKBox), pGTKClientArea, TRUE, TRUE, 0);
+    gtk_widget_show(pGTKClientArea);
+
+    gtk_widget_add_events(pGTKClientArea,
+        GDK_ENTER_NOTIFY_MASK   |
+        GDK_LEAVE_NOTIFY_MASK   |
+        GDK_POINTER_MOTION_MASK |
+        GDK_BUTTON_PRESS_MASK   |
+        GDK_BUTTON_RELEASE_MASK |
+        GDK_SCROLL_MASK         |
+        GDK_KEY_PRESS_MASK      |
+        GDK_KEY_RELEASE_MASK    |
+        GDK_FOCUS_CHANGE_MASK);
+
+    g_signal_connect(pGTKClientArea, "draw",                 G_CALLBACK(dred_gtk_cb__on_paint),             pWindow);     // Paint
+    g_signal_connect(pGTKClientArea, "configure-event",      G_CALLBACK(dred_gtk_cb__on_configure),         pWindow);     // Reposition and resize.
+    g_signal_connect(pGTKClientArea, "enter-notify-event",   G_CALLBACK(dred_gtk_cb__on_mouse_enter),       pWindow);     // Mouse enter.
+    g_signal_connect(pGTKClientArea, "leave-notify-event",   G_CALLBACK(dred_gtk_cb__on_mouse_leave),       pWindow);     // Mouse leave.
+    g_signal_connect(pGTKClientArea, "motion-notify-event",  G_CALLBACK(dred_gtk_cb__on_mouse_move),        pWindow);     // Mouse move.
+    g_signal_connect(pGTKClientArea, "button-press-event",   G_CALLBACK(dred_gtk_cb__on_mouse_button_down), pWindow);     // Mouse button down.
+    g_signal_connect(pGTKClientArea, "button-release-event", G_CALLBACK(dred_gtk_cb__on_mouse_button_up),   pWindow);     // Mouse button up.
+    g_signal_connect(pGTKClientArea, "scroll-event",         G_CALLBACK(dred_gtk_cb__on_mouse_wheel),       pWindow);     // Mouse wheel.
+
+
+    // Show the box only after everything has been created.
+    gtk_widget_show(pGTKBox);
+
+
+    pWindow->pGTKBox = pGTKBox;
 
     return pWindow;
 
@@ -1236,6 +1301,7 @@ on_error:
         free(pWindow);
     }
     
+    gtk_widget_destroy(GTK_WIDGET(pGTKBox));
     gtk_widget_destroy(pGTKWindow);
     return NULL;
 }

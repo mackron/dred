@@ -125,6 +125,8 @@ struct dred_window
 #ifdef __linux__
     // The GTK window.
     GtkWidget* pGTKWindow;
+    GtkWidget* pGTKBox;
+    GtkWidget* pGTKClientArea;
 
     // The cursor to use with this window.
     GdkCursor* pGTKCursor;
