@@ -85,23 +85,6 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     
 
-
-
-    // The main window.
-    pDred->pMainWindow = dred_window_create(pDred);
-    if (pDred->pMainWindow == NULL) {
-        printf("Failed to create main window.");
-        return false;
-    }
-
-    dred_window_set_size(pDred->pMainWindow, 1280, 720);
-
-    pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
-    drgui_set_on_paint(pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_paint_TEMP);
-
-    // Show the window as soon as possible to give it the illusion of loading quickly.
-    dred_window_show(pDred->pMainWindow);
-
     return true;
 }
 
@@ -121,6 +104,26 @@ int dred_run(dred_context* pDred)
     }
 
     return dred_platform_run(pDred);
+}
+
+bool dred_on_run(dred_context* pDred)
+{
+    // The main window.
+    pDred->pMainWindow = dred_window_create(pDred);
+    if (pDred->pMainWindow == NULL) {
+        printf("Failed to create main window.");
+        return false;
+    }
+
+    dred_window_set_size(pDred->pMainWindow, 1280, 720);
+
+    pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
+    drgui_set_on_paint(pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_paint_TEMP);
+
+    // Show the window as soon as possible to give it the illusion of loading quickly.
+    dred_window_show(pDred->pMainWindow);
+
+    return true;
 }
 
 

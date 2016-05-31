@@ -23,6 +23,7 @@
 #ifdef __linux__
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #endif
 
 // Platform libraries, for simplifying MSVC builds.

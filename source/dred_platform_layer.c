@@ -495,8 +495,12 @@ void dred_platform_uninit__win32()
     UnregisterClassA(g_WindowClass, NULL);
 }
 
-int dred_platform_run__win32()
+int dred_platform_run__win32(dred_context* pDred)
 {
+    if (!dred_on_run(pDred)) {
+        return -1;
+    }
+
     MSG msg;
     BOOL bRet;
     while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0) {
@@ -761,6 +765,7 @@ static void dred_platform__on_global_dirty__win32(drgui_element* pElement, drgui
 //////////////////////////////////////////////////////////////////
 
 #ifdef DRED_GTK
+GtkApplication* g_GTKApp = NULL;
 int g_GTKMainLoopResultCode = 0;
 GdkCursor* g_GTKCursor_Default = NULL;
 GdkCursor* g_GTKCursor_IBeam = NULL;
@@ -838,7 +843,24 @@ static int dred_from_gtk_mouse_button(guint buttonGTK)
 
 bool dred_platform_init__gtk()
 {
-    gtk_init(NULL, NULL);
+    g_GTKApp = gtk_application_new("dr.dred", G_APPLICATION_FLAGS_NONE);
+    if (g_GTKApp == NULL) {
+        return false;
+    }
+
+    return true;
+}
+
+void dred_platform_uninit__gtk()
+{
+    g_object_unref(g_GTKApp);
+}
+
+
+static void dred_gtk_cb__activate_app(GtkApplication* pGTKApp, gpointer pUserData)
+{
+    dred_context* pDred = (dred_context*)pUserData;
+    assert(pDred != NULL);
 
     g_GTKCursor_Default      = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_LEFT_PTR);
     g_GTKCursor_IBeam        = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_XTERM);
@@ -846,23 +868,23 @@ bool dred_platform_init__gtk()
     g_GTKCursor_DoubleArrowH = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_H_DOUBLE_ARROW);
     g_GTKCursor_DoubleArrowV = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_V_DOUBLE_ARROW);
 
-    return true;
+    if (!dred_on_run(pDred)) {
+        dred_platform_post_quit_message(-1);
+    }
 }
 
-void dred_platform_uninit__gtk()
+int dred_platform_run__gtk(dred_context* pDred)
 {
-}
-
-int dred_platform_run__gtk()
-{
-    gtk_main();
+    g_signal_connect(g_GTKApp, "activate", G_CALLBACK(dred_gtk_cb__activate_app), pDred);
+    
+    g_application_run(G_APPLICATION(g_GTKApp), 0, NULL);
     return g_GTKMainLoopResultCode;
 }
 
 void dred_platform_post_quit_message__gtk(int resultCode)
 {
     g_GTKMainLoopResultCode = resultCode;
-    gtk_main_quit();
+    g_application_quit(G_APPLICATION(g_GTKApp));
 }
 
 
@@ -1119,7 +1141,7 @@ static gboolean dred_gtk_cb__on_key_down(GtkWidget* pGTKWindow, GdkEventKey* pEv
         }
     }
 
-    return true;
+    return false;
 }
 
 static gboolean dred_gtk_cb__on_key_up(GtkWidget* pGTKWindow, GdkEventKey* pEvent, gpointer pUserData)
@@ -1132,7 +1154,7 @@ static gboolean dred_gtk_cb__on_key_up(GtkWidget* pGTKWindow, GdkEventKey* pEven
     }
 
     dred_window_on_key_up(pWindow, dred_gtk_to_drgui_key(pEvent->keyval), dred_gtk_get_modifier_state_flags(pEvent->state));
-    return true;
+    return false;
 }
 
 static gboolean dred_gtk_cb__on_receive_focus(GtkWidget* pGTKWindow, GdkEventFocus* pEvent, gpointer pUserData)
@@ -1146,7 +1168,7 @@ static gboolean dred_gtk_cb__on_receive_focus(GtkWidget* pGTKWindow, GdkEventFoc
     }
 
     dred_window_on_focus(pWindow);
-    return true;
+    return false;
 }
 
 static gboolean dred_gtk_cb__on_lose_focus(GtkWidget* pGTKWindow, GdkEventFocus* pEvent, gpointer pUserData)
@@ -1160,7 +1182,7 @@ static gboolean dred_gtk_cb__on_lose_focus(GtkWidget* pGTKWindow, GdkEventFocus*
     }
 
     dred_window_on_unfocus(pWindow);
-    return true;
+    return false;
 }
 
 
@@ -1171,7 +1193,7 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
     GtkWidget* pGTKBox = NULL;
     GtkWidget* pGTKClientArea = NULL;
 
-    pGTKWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    pGTKWindow = gtk_application_window_new(g_GTKApp);
     if (pGTKWindow == NULL) {
         return NULL;
     }
@@ -1218,6 +1240,9 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
     g_signal_connect(pGTKWindow, "focus-in-event",       G_CALLBACK(dred_gtk_cb__on_receive_focus),     pWindow);     // Receive focus.
     g_signal_connect(pGTKWindow, "focus-out-event",      G_CALLBACK(dred_gtk_cb__on_lose_focus),        pWindow);     // Lose focus.
 
+    GtkAccelGroup *accel_group = gtk_accel_group_new();
+    gtk_window_add_accel_group(GTK_WINDOW(pGTKWindow), accel_group);
+
 
     pGTKBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     if (pGTKBox == NULL) {
@@ -1234,11 +1259,27 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
     {
         GtkWidget* pGTKMenuBar = gtk_menu_bar_new();
 
-        GtkWidget* pGTKMenuItem_File = gtk_menu_item_new_with_label("File");
+        GtkWidget* pGTKMenu_File = gtk_menu_new();
+
+        GtkWidget* pGTKMenuItem_FileNew = gtk_menu_item_new_with_mnemonic("_New File");
+        gtk_widget_add_accelerator(pGTKMenuItem_FileNew, "activate", accel_group, GDK_KEY_n, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+        gtk_menu_shell_append(GTK_MENU_SHELL(pGTKMenu_File), pGTKMenuItem_FileNew);
+        gtk_widget_show(pGTKMenuItem_FileNew);
+
+
+        GtkWidget* pGTKMenuItem_File = gtk_menu_item_new_with_mnemonic("_File");
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(pGTKMenuItem_File), pGTKMenu_File);
         gtk_widget_show(pGTKMenuItem_File);
+
+
+        GtkWidget* pGTKMenuItem_Edit = gtk_menu_item_new_with_label("_Edit");
+        gtk_menu_item_set_use_underline(GTK_MENU_ITEM(pGTKMenuItem_Edit), TRUE);
+        gtk_widget_show(pGTKMenuItem_Edit);
 
         
         gtk_menu_shell_append(GTK_MENU_SHELL(pGTKMenuBar), pGTKMenuItem_File);
+        gtk_menu_shell_append(GTK_MENU_SHELL(pGTKMenuBar), pGTKMenuItem_Edit);
+        //gtk_menu_shell_set_take_focus(GTK_MENU_SHELL(pGTKMenuBar), TRUE);
 
         // Attach and show the menu bar.
         gtk_box_pack_start(GTK_BOX(pGTKBox), pGTKMenuBar, FALSE, FALSE, 0);
@@ -1513,14 +1554,14 @@ void dred_platform_uninit()
 #endif
 }
 
-int dred_platform_run()
+int dred_platform_run(dred_context* pDred)
 {
 #ifdef DRED_WIN32
-    return dred_platform_run__win32();
+    return dred_platform_run__win32(pDred);
 #endif
 
 #ifdef DRED_GTK
-    return dred_platform_run__gtk();
+    return dred_platform_run__gtk(pDred);
 #endif
 }
 

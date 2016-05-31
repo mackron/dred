@@ -25,7 +25,7 @@ bool dred_platform_init();
 void dred_platform_uninit();
 
 // Runs the main application loop.
-int dred_platform_run();
+int dred_platform_run(dred_context* pDred);
 
 // Posts a quit message to main application loop to force it to break.
 void dred_platform_post_quit_message(int resultCode);
