@@ -495,12 +495,8 @@ void dred_platform_uninit__win32()
     UnregisterClassA(g_WindowClass, NULL);
 }
 
-int dred_platform_run__win32(dred_context* pDred)
+int dred_platform_run__win32()
 {
-    if (!dred_on_run(pDred)) {
-        return -1;
-    }
-
     MSG msg;
     BOOL bRet;
     while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0) {
@@ -765,7 +761,6 @@ static void dred_platform__on_global_dirty__win32(drgui_element* pElement, drgui
 //////////////////////////////////////////////////////////////////
 
 #ifdef DRED_GTK
-GtkApplication* g_GTKApp = NULL;
 int g_GTKMainLoopResultCode = 0;
 GdkCursor* g_GTKCursor_Default = NULL;
 GdkCursor* g_GTKCursor_IBeam = NULL;
@@ -843,24 +838,7 @@ static int dred_from_gtk_mouse_button(guint buttonGTK)
 
 bool dred_platform_init__gtk()
 {
-    g_GTKApp = gtk_application_new("dr.dred", G_APPLICATION_FLAGS_NONE);
-    if (g_GTKApp == NULL) {
-        return false;
-    }
-
-    return true;
-}
-
-void dred_platform_uninit__gtk()
-{
-    g_object_unref(g_GTKApp);
-}
-
-
-static void dred_gtk_cb__activate_app(GtkApplication* pGTKApp, gpointer pUserData)
-{
-    dred_context* pDred = (dred_context*)pUserData;
-    assert(pDred != NULL);
+    gtk_init(NULL, NULL);
 
     g_GTKCursor_Default      = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_LEFT_PTR);
     g_GTKCursor_IBeam        = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_XTERM);
@@ -868,23 +846,24 @@ static void dred_gtk_cb__activate_app(GtkApplication* pGTKApp, gpointer pUserDat
     g_GTKCursor_DoubleArrowH = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_H_DOUBLE_ARROW);
     g_GTKCursor_DoubleArrowV = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_V_DOUBLE_ARROW);
 
-    if (!dred_on_run(pDred)) {
-        dred_platform_post_quit_message(-1);
-    }
+    return true;
 }
 
-int dred_platform_run__gtk(dred_context* pDred)
+void dred_platform_uninit__gtk()
 {
-    g_signal_connect(g_GTKApp, "activate", G_CALLBACK(dred_gtk_cb__activate_app), pDred);
-    
-    g_application_run(G_APPLICATION(g_GTKApp), 0, NULL);
+}
+
+
+int dred_platform_run__gtk()
+{
+    gtk_main();
     return g_GTKMainLoopResultCode;
 }
 
 void dred_platform_post_quit_message__gtk(int resultCode)
 {
     g_GTKMainLoopResultCode = resultCode;
-    g_application_quit(G_APPLICATION(g_GTKApp));
+    gtk_main_quit();
 }
 
 
@@ -1193,10 +1172,11 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
     GtkWidget* pGTKBox = NULL;
     GtkWidget* pGTKClientArea = NULL;
 
-    pGTKWindow = gtk_application_window_new(g_GTKApp);
+    pGTKWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     if (pGTKWindow == NULL) {
         return NULL;
     }
+
 
     gtk_window_set_resizable(GTK_WINDOW(pGTKWindow),TRUE);
 
@@ -1218,7 +1198,7 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
     // procedure. To do this we use gtk_widget_set_app_paintable(pWindow, TRUE) which will disable GTK's default
     // painting on the main window. We then connect to the "draw" signal which is where we'll do all of our custom
     // painting.
-    gtk_widget_set_app_paintable(pGTKWindow, TRUE);
+    //gtk_widget_set_app_paintable(pGTKWindow, TRUE);
 
     // These are the types of events we care about.
     gtk_widget_add_events(pGTKWindow,
@@ -1278,7 +1258,7 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
 
         
         gtk_menu_shell_append(GTK_MENU_SHELL(pGTKMenuBar), pGTKMenuItem_File);
-        gtk_menu_shell_append(GTK_MENU_SHELL(pGTKMenuBar), pGTKMenuItem_Edit);
+        //gtk_menu_shell_append(GTK_MENU_SHELL(pGTKMenuBar), pGTKMenuItem_Edit);
         //gtk_menu_shell_set_take_focus(GTK_MENU_SHELL(pGTKMenuBar), TRUE);
 
         // Attach and show the menu bar.
@@ -1288,7 +1268,6 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
     ////////////////////////////////////////////////////////////////////////
     // End Menu Testing.
     ////////////////////////////////////////////////////////////////////////
-
 
 
     // Client area. This is the main content of the window.
@@ -1322,7 +1301,7 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
 
 
     // Show the box only after everything has been created.
-    gtk_widget_show(pGTKBox);
+    gtk_widget_show_all(pGTKBox);
 
 
     pWindow->pGTKBox = pGTKBox;
@@ -1554,14 +1533,14 @@ void dred_platform_uninit()
 #endif
 }
 
-int dred_platform_run(dred_context* pDred)
+int dred_platform_run()
 {
 #ifdef DRED_WIN32
-    return dred_platform_run__win32(pDred);
+    return dred_platform_run__win32();
 #endif
 
 #ifdef DRED_GTK
-    return dred_platform_run__gtk(pDred);
+    return dred_platform_run__gtk();
 #endif
 }
 
