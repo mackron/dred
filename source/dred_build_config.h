@@ -6,3 +6,5 @@
 #ifdef __linux__
 #define DRED_GTK
 #endif
+
+#define DRED_MAX_PATH   4096

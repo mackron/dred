@@ -10,13 +10,38 @@ static void dred_window_cb__on_main_window_paint_TEMP(drgui_element* pElement, d
 }
 
 
+static dred_file dred__open_log_file()
+{
+    char logFilePath[DRED_MAX_PATH];
+    if (!dred_get_log_path(logFilePath, sizeof(logFilePath))) {
+        return NULL;
+    }
+
+    return dred_file_open(logFilePath, DRED_FILE_OPEN_MODE_WRITE);
+}
+
+static void dred_config__on_error(dred_config* pConfig, const char* configPath, const char* message, unsigned int line, void* pUserData)
+{
+    dred_context* pDred = (dred_context*)pUserData;
+    assert(pDred != NULL);
+
+    dred_warningf(pDred, "%s[%d] : %s", configPath, line, message);
+}
+
+
 bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 {
     if (pDred == NULL) {
         return false;
     }
 
+    memset(pDred, 0, sizeof(*pDred));
+
+
     pDred->cmdline = cmdline;
+
+    // Open the log file first to ensure we're able to log as soon as possible.
+    pDred->logFile = dred__open_log_file();
 
 
     // The drawing context.
@@ -40,6 +65,25 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     // The GUI needs to be linked to the window system.
     dred_platform_bind_gui(pDred->pGUI);
+
+
+
+    // Config
+    //
+    // The config is loaded in 3 stages. The first initializes it to it's default values, the second loads the .dred file from the main
+    // user directory and the 3rd loads the .dred file sitting in the working directory.
+    dred_config_init_default(&pDred->config);
+
+    char configPath[DRED_MAX_PATH];
+    if (dred_get_config_path(configPath, sizeof(configPath))) {
+        dred_config_load_file(&pDred->config, configPath, dred_config__on_error, pDred);
+    } else {
+        dred_warning(pDred, "Failed to load .dred config file from user directory. The most likely cause of this is that the path is too long.");
+    }
+
+    dred_config_load_file(&pDred->config, ".dred", dred_config__on_error, pDred);
+
+    
 
 
 
@@ -77,4 +121,91 @@ int dred_run(dred_context* pDred)
     }
 
     return dred_platform_run(pDred);
+}
+
+
+void dred_log(dred_context* pDred, const char* message)
+{
+    if (pDred == NULL || message == NULL) {
+        return;
+    }
+
+    // Log file.
+    if (pDred->logFile != NULL) {
+        char dateTime[64];
+        dr_datetime_short(dr_now(), dateTime, sizeof(dateTime));
+
+        dred_file_write_string(pDred->logFile, "[");
+        dred_file_write_string(pDred->logFile, dateTime);
+        dred_file_write_string(pDred->logFile, "]");
+        dred_file_write_line  (pDred->logFile, message);
+        dred_file_flush(pDred->logFile);
+    }
+
+
+    // Terminal.
+    if (!pDred->isTerminalOutputDisabled) {
+        printf("%s\n", message);
+    }
+}
+
+void dred_logf(dred_context* pDred, const char* format, ...)
+{
+    if (pDred == NULL || format == NULL) {
+        return;
+    }
+
+    va_list args;
+    va_start(args, format);
+    {
+        char msg[4096];
+        vsnprintf(msg, sizeof(msg), format, args);
+
+        dred_log(pDred, msg);
+    }
+    va_end(args);
+}
+
+void dred_warning(dred_context* pDred, const char* message)
+{
+    dred_logf(pDred, "[WARNING] %s", message);
+}
+
+void dred_warningf(dred_context* pDred, const char* format, ...)
+{
+    if (pDred == NULL || format == NULL) {
+        return;
+    }
+
+    va_list args;
+    va_start(args, format);
+    {
+        char msg[4096];
+        vsnprintf(msg, sizeof(msg), format, args);
+
+        dred_warning(pDred, msg);
+    }
+    va_end(args);
+}
+
+void dred_error(dred_context* pDred, const char* message)
+{
+    dred_logf(pDred, "[ERROR] %s", message);
+}
+
+void dred_errorf(dred_context* pDred, const char* format, ...)
+{
+    if (pDred == NULL || format == NULL) {
+        return;
+    }
+
+    va_list args;
+    va_start(args, format);
+    {
+        char msg[4096];
+        vsnprintf(msg, sizeof(msg), format, args);
+
+        dred_error(pDred, msg);
+    }
+    va_end(args);
 }

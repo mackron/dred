@@ -17,6 +17,24 @@ bool dred_get_config_path(char* pathOut, size_t pathOutSize)
     return drpath_append(pathOut, pathOutSize, ".dred");
 }
 
+bool dred_get_log_folder_path(char* pathOut, size_t pathOutSize)
+{
+    if (!dr_get_log_folder_path(pathOut, pathOutSize)) {
+        return false;
+    }
+
+    return drpath_append(pathOut, pathOutSize, "dred");
+}
+
+bool dred_get_log_path(char* pathOut, size_t pathOutSize)
+{
+    if (!dred_get_log_folder_path(pathOut, pathOutSize)) {
+        return false;
+    }
+
+    return drpath_append(pathOut, pathOutSize, "dred.log");
+}
+
 
 
 dred_file dred_file_open(const char* filePath, unsigned int openMode)
@@ -70,7 +88,7 @@ void dred_file_close(dred_file file)
 bool dred_file_read(dred_file file, void* pDataOut, size_t bytesToRead, size_t* pBytesRead)
 {
     size_t bytesRead = fread(pDataOut, 1, bytesToRead, (FILE*)file);
-    if (*pBytesRead) *pBytesRead = bytesRead;
+    if (pBytesRead) *pBytesRead = bytesRead;
 
     if (bytesRead == 0 && bytesToRead != 0) {
         return false;
@@ -82,7 +100,7 @@ bool dred_file_read(dred_file file, void* pDataOut, size_t bytesToRead, size_t* 
 bool dred_file_write(dred_file file, const void* pData, size_t bytesToWrite, size_t* pBytesWritten)
 {
     size_t bytesWritten = fwrite(pData, 1, bytesToWrite, (FILE*)file);
-    if (*pBytesWritten) *pBytesWritten = bytesWritten;
+    if (pBytesWritten) *pBytesWritten = bytesWritten;
 
     if (bytesWritten == 0 && bytesToWrite != 0) {
         return false;
@@ -132,4 +150,18 @@ uint64_t dred_file_tell(dred_file file)
 void dred_file_flush(dred_file file)
 {
     fflush((FILE*)file);
+}
+
+
+
+//// High Level Helpers ////
+
+bool dred_file_write_string(dred_file file, const char* str)
+{
+    return dred_file_write(file, str, (unsigned int)strlen(str), NULL);
+}
+
+bool dred_file_write_line(dred_file file, const char* str)
+{
+    return dred_file_write_string(file, str) && dred_file_write_string(file, "\n");
 }

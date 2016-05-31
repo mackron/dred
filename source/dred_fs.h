@@ -5,6 +5,12 @@ bool dred_get_config_folder_path(char* pathOut, size_t pathOutSize);
 // dred_get_config_path()
 bool dred_get_config_path(char* pathOut, size_t pathOutSize);
 
+// dred_get_log_folder_path()
+bool dred_get_log_folder_path(char* pathOut, size_t pathOutSize);
+
+// dred_get_log_path()
+bool dred_get_log_path(char* pathOut, size_t pathOutSize);
+
 
 //// Basic File IO Wrapper ////
 typedef void* dred_file;
@@ -39,3 +45,13 @@ uint64_t dred_file_tell(dred_file file);
 
 // dred_file_flush()
 void dred_file_flush(dred_file file);
+
+
+
+//// High Level Helpers ////
+
+// dred_file_write_string()
+bool dred_file_write_string(dred_file file, const char* str);
+
+// dred_file_write_line()
+bool dred_file_write_line(dred_file file, const char* str);
