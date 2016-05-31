@@ -35,10 +35,6 @@ void dred_uninit(dred_context* pDred);
 // dred_run
 int dred_run(dred_context* pDred);
 
-// Call from dred_run() by the platform layer just before entering the main loop. This is where the platform-specific stuff like
-// windows are created.
-bool dred_on_run(dred_context* pDred);
-
 
 // Posts a log message.
 void dred_log(dred_context* pDred, const char* message);
@@ -57,3 +53,7 @@ void dred_error(dred_context* pDred, const char* message);
 
 // Posts a formatted error log message.
 void dred_errorf(dred_context* pDred, const char* format, ...);
+
+
+// Executes a command.
+void dred_exec(dred_context* pDred, const char* cmd);

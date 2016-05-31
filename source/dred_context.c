@@ -101,6 +101,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_window_show(pDred->pMainWindow);
 
 
+
     return true;
 }
 
@@ -208,4 +209,18 @@ void dred_errorf(dred_context* pDred, const char* format, ...)
         dred_error(pDred, msg);
     }
     va_end(args);
+}
+
+
+void dred_exec(dred_context* pDred, const char* cmd)
+{
+    if (pDred == NULL || cmd == NULL) {
+        return;
+    }
+
+    const char* value;
+    dred_command command;
+    if (dred_find_command(cmd, &command, &value)) {
+        command.proc(pDred, value);
+    }
 }
