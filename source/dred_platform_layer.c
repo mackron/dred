@@ -69,6 +69,29 @@ drgui_key dred_win32_to_drgui_key(WPARAM wParam)
     return (drgui_key)wParam;
 }
 
+WORD dred_drgui_key_to_win32(drgui_key key)
+{
+    switch (key)
+    {
+    case DRGUI_BACKSPACE:   return VK_BACK;
+    case DRGUI_SHIFT:       return VK_SHIFT;
+    case DRGUI_ESCAPE:      return VK_ESCAPE;
+    case DRGUI_PAGE_UP:     return VK_PRIOR;
+    case DRGUI_PAGE_DOWN:   return VK_NEXT;
+    case DRGUI_END:         return VK_END;
+    case DRGUI_HOME:        return VK_HOME;
+    case DRGUI_ARROW_LEFT:  return VK_LEFT;
+    case DRGUI_ARROW_UP:    return VK_UP;
+    case DRGUI_ARROW_RIGHT: return VK_RIGHT;
+    case DRGUI_ARROW_DOWN:  return VK_DOWN;
+    case DRGUI_DELETE:      return VK_DELETE;
+
+    default: break;
+    }
+
+    return (WORD)key;
+}
+
 int dred_win32_get_modifier_key_state_flags()
 {
     int stateFlags = 0;
@@ -133,6 +156,28 @@ int dred_win32_get_mouse_event_state_flags(WPARAM wParam)
 
     return stateFlags;
 }
+
+
+ACCEL dred_win32_to_ACCEL(dred_key key, uint32_t modifiers, WORD cmd)
+{
+    ACCEL a;
+    a.key = key;
+    a.cmd = cmd;
+
+    a.fVirt = FVIRTKEY;
+    if (modifiers & DRED_KEY_STATE_SHIFT_DOWN) {
+        a.fVirt |= FSHIFT;
+    }
+    if (modifiers & DRED_KEY_STATE_CTRL_DOWN) {
+        a.fVirt |= FCONTROL;
+    }
+    if (modifiers & DRED_KEY_STATE_ALT_DOWN) {
+        a.fVirt |= FALT;
+    }
+
+    return a;
+}
+
 
 LRESULT CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -444,6 +489,14 @@ LRESULT CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
         } break;
 
 
+        case WM_COMMAND:
+        {
+            if (HIWORD(wParam) == 1) {
+                WORD acceleratorIndex = LOWORD(wParam);
+                dred_on_accelerator(pWindow->pDred, pWindow, acceleratorIndex);
+            }
+        } break;
+
 
         case WM_SETCURSOR:
         {
@@ -502,6 +555,16 @@ int dred_platform_run__win32()
     while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0) {
         if (bRet == -1) {
             return -42; // Unknown error.
+        }
+
+        WNDPROC wndproc = (WNDPROC)GetWindowLongPtrA(msg.hwnd, GWLP_WNDPROC);
+        if (wndproc == GenericWindowProc) {
+            dred_window* pWindow = (dred_window*)GetWindowLongPtrA(msg.hwnd, 0);
+            if (pWindow != NULL) {
+                if (TranslateAcceleratorA(pWindow->hWnd, pWindow->hAccel, &msg)) {
+                    continue;
+                }
+            }
         }
 
         TranslateMessage(&msg);
@@ -582,6 +645,10 @@ void dred_window_delete__win32(dred_window* pWindow)
 {
     if (pWindow == NULL) {
         return;
+    }
+
+    if (pWindow->hAccel != NULL) {
+        DestroyAcceleratorTable(pWindow->hAccel);
     }
 
     DestroyWindow(pWindow->hWnd);
@@ -686,6 +753,38 @@ bool dred_window_is_cursor_over__win32(dred_window* pWindow)
     return pWindow->isCursorOver;
 }
 
+
+void dred_window_bind_accelerators__win32(dred_window* pWindow, dred_accelerator_table* pAcceleratorTable)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+    // The table needs to be deleted and recreated right from the start.
+    if (pWindow->hAccel != NULL) {
+        DestroyAcceleratorTable(pWindow->hAccel);
+        pWindow->hAccel = NULL;
+    }
+
+    // pAcceleratorTable is allowed to be null, in which case this function is equivalent to simply unbinding the accelerators.
+    if (pAcceleratorTable != NULL) {
+        if (pAcceleratorTable->count < 1 || pAcceleratorTable->count > 32767) {
+            return;
+        }
+
+        ACCEL* pAccels = (ACCEL*)malloc(pAcceleratorTable->count * sizeof(*pAccels));
+        if (pAccels == NULL) {
+            return;
+        }
+
+        for (size_t i = 0; i < pAcceleratorTable->count; ++i) {
+            pAccels[i] = dred_win32_to_ACCEL(pAcceleratorTable->pAccelerators[i].key, pAcceleratorTable->pAccelerators[i].modifiers, (WORD)i);
+        }
+
+        pWindow->hAccel = CreateAcceleratorTableA(pAccels, (WORD)pAcceleratorTable->count);
+        free(pAccels);
+    }
+}
 
 
 static void dred_platform__on_global_capture_mouse__win32(drgui_element* pElement)
@@ -792,6 +891,30 @@ static drgui_key dred_gtk_to_drgui_key(guint keyval)
     return (drgui_key)keyval;
 }
 
+guint dred_drgui_key_to_gtk(drgui_key key)
+{
+    switch (key)
+    {
+    case DRGUI_BACKSPACE:   return GDK_KEY_BackSpace;
+    case DRGUI_SHIFT:       return GDK_KEY_Shift_L;
+    //case DRGUI_SHIFT:       return GDK_KEY_Shift_R;
+    case DRGUI_ESCAPE:      return GDK_KEY_Escape;
+    case DRGUI_PAGE_UP:     return GDK_KEY_Page_Up;
+    case DRGUI_PAGE_DOWN:   return GDK_KEY_Page_Down;
+    case DRGUI_END:         return GDK_KEY_End;
+    case DRGUI_HOME:        return GDK_KEY_Begin;
+    case DRGUI_ARROW_LEFT:  return GDK_KEY_Left;
+    case DRGUI_ARROW_UP:    return GDK_KEY_Up;
+    case DRGUI_ARROW_RIGHT: return GDK_KEY_Right;
+    case DRGUI_ARROW_DOWN:  return GDK_KEY_Down;
+    case DRGUI_DELETE:      return GDK_KEY_Delete;
+
+    default: break;
+    }
+
+    return (guint)key;
+}
+
 static int dred_gtk_get_modifier_state_flags(guint stateFromGTK)
 {
     int result = 0;
@@ -820,6 +943,22 @@ static int dred_gtk_get_modifier_state_flags(guint stateFromGTK)
     }
     if ((stateFromGTK & GDK_BUTTON5_MASK) != 0) {
         result |= DRED_MOUSE_BUTTON_5_DOWN;
+    }
+
+    return result;
+}
+
+guint dred_accelerator_modifiers_to_gtk(uint32_t modifiers)
+{
+    guint result = 0;
+    if (modifiers & DRED_KEY_STATE_SHIFT_DOWN) {
+        result |= GDK_SHIFT_MASK;
+    }
+    if (modifiers & DRED_KEY_STATE_CTRL_DOWN) {
+        result |= GDK_CONTROL_MASK;
+    }
+    if (modifiers & DRED_KEY_STATE_ALT_DOWN) {
+        result |= GDK_MOD1_MASK;
     }
 
     return result;
@@ -1165,6 +1304,22 @@ static gboolean dred_gtk_cb__on_lose_focus(GtkWidget* pGTKWindow, GdkEventFocus*
 }
 
 
+static void dred_gtk_cb__on_menu_activate(GtkWidget *pGTKMenuItem, gpointer pUserData)
+{
+    (void)pGTKMenuItem;
+    printf("Menu Pressed: %s\n", (const char*)pUserData);
+}
+
+
+void dred_gtk__delete_accels(dred_gtk_accelerator* pAccels, size_t accelCount)
+{
+    for (size_t i = 0; i < accelCount; ++i) {
+        g_closure_unref(pAccels->pClosure);
+    }
+
+    free(pAccels);
+}
+
 
 dred_window* dred_window_create__gtk(dred_context* pDred)
 {
@@ -1241,8 +1396,9 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
 
         GtkWidget* pGTKMenu_File = gtk_menu_new();
 
-        GtkWidget* pGTKMenuItem_FileNew = gtk_menu_item_new_with_mnemonic("_New File");
-        gtk_widget_add_accelerator(pGTKMenuItem_FileNew, "activate", accel_group, GDK_KEY_n, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+        GtkWidget* pGTKMenuItem_FileNew = gtk_menu_item_new_with_mnemonic("_Save");
+        gtk_widget_add_accelerator(pGTKMenuItem_FileNew, "activate", accel_group, GDK_KEY_s, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+        g_signal_connect(pGTKMenuItem_FileNew, "activate", G_CALLBACK(dred_gtk_cb__on_menu_activate), "!executing");
         gtk_menu_shell_append(GTK_MENU_SHELL(pGTKMenu_File), pGTKMenuItem_FileNew);
         gtk_widget_show(pGTKMenuItem_FileNew);
 
@@ -1332,6 +1488,14 @@ void dred_window_delete__gtk(dred_window* pWindow)
         return;
     }
 
+    if (pWindow->pGTKAccelGroup) {
+        g_object_unref(G_OBJECT(pWindow->pGTKAccelGroup));
+    }
+
+    if (pWindow->pAccels != NULL) {
+        dred_gtk__delete_accels(pWindow->pAccels, pWindow->accelCount);
+    }
+
     drgui_delete_element(pWindow->pRootGUIElement);
     dr2d_delete_surface(pWindow->pDrawingSurface);
     gtk_widget_destroy(pWindow->pGTKWindow);
@@ -1419,6 +1583,55 @@ void dred_window_set_cursor__gtk(dred_window* pWindow, dred_cursor_type cursor)
 bool dred_window_is_cursor_over__gtk(dred_window* pWindow)
 {
     return pWindow->isCursorOver;
+}
+
+
+gboolean dred_gtk_cb__on_accelerator(GtkAccelGroup *pAccelGroup, GObject *acceleratable, guint keyval, GdkModifierType modifier, gpointer pUserData)
+{
+    dred_gtk_accelerator* pAccel = (dred_gtk_accelerator*)pUserData;
+    assert(pAccel != NULL);
+
+    dred_on_accelerator(pAccel->pWindow->pDred, pAccel->pWindow, pAccel->index);
+    return true;    // Returning true here is important because it ensures the accelerator is handled only once.
+}
+
+void dred_window_bind_accelerators__gtk(dred_window* pWindow, dred_accelerator_table* pAcceleratorTable)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+    if (pWindow->pGTKAccelGroup != NULL) {
+        g_object_unref(G_OBJECT(pWindow->pGTKAccelGroup));
+        pWindow->pGTKAccelGroup = NULL;
+
+        dred_gtk__delete_accels(pWindow->pAccels, pWindow->accelCount);
+    }
+
+    // pAcceleratorTable is allowed to be null, in which case it is equivalent to simply unbinding the table.
+    if (pAcceleratorTable != NULL) {
+        pWindow->pGTKAccelGroup = gtk_accel_group_new();
+        if (pWindow->pGTKAccelGroup == NULL) {
+            return;
+        }
+
+        pWindow->pAccels = (dred_gtk_accelerator*)malloc(pAcceleratorTable->count * sizeof(*pWindow->pAccels));
+        if (pWindow->pAccels == NULL) {
+            g_object_unref(G_OBJECT(pWindow->pGTKAccelGroup));
+            pWindow->pGTKAccelGroup = NULL;
+            return;
+        }
+
+        for (size_t i = 0; i < pAcceleratorTable->count; ++i) {
+            dred_gtk_accelerator* pAccel = &pWindow->pAccels[i];
+            pAccel->index = i;
+            pAccel->pClosure = g_cclosure_new(G_CALLBACK(dred_gtk_cb__on_accelerator), pAccel, NULL);
+            pAccel->pWindow = pWindow;
+            gtk_accel_group_connect(pWindow->pGTKAccelGroup, dred_drgui_key_to_gtk(pAcceleratorTable->pAccelerators[i].key), dred_accelerator_modifiers_to_gtk(pAcceleratorTable->pAccelerators[i].modifiers), 0, pAccel->pClosure);
+        }
+
+        gtk_window_add_accel_group(GTK_WINDOW(pWindow->pGTKWindow), pWindow->pGTKAccelGroup);
+    }
 }
 
 
@@ -1686,6 +1899,18 @@ bool dred_window_is_cursor_over(dred_window* pWindow)
 
 #ifdef DRED_GTK
     return dred_window_is_cursor_over__gtk(pWindow);
+#endif
+}
+
+
+void dred_window_bind_accelerators(dred_window* pWindow, dred_accelerator_table* pAcceleratorTable)
+{
+#ifdef DRED_WIN32
+    dred_window_bind_accelerators__win32(pWindow, pAcceleratorTable);
+#endif
+
+#ifdef DRED_GTK
+    dred_window_bind_accelerators__gtk(pWindow, pAcceleratorTable);
 #endif
 }
 

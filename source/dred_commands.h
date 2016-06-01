@@ -3,7 +3,7 @@
 
 // BEGIN COMMAND LIST : <command name> <proc> <flags>
 //
-// !            dred_command__platform_command  DRED_CMDBAR_RELEASE_KEYBOARD
+// !            dred_command__system_command    DRED_CMDBAR_RELEASE_KEYBOARD
 // find         dred_command__find              DRED_CMDBAR_RELEASE_KEYBOARD
 // find-next    dred_command__find_next         DRED_CMDBAR_NO_CLEAR
 //
@@ -24,7 +24,7 @@ typedef struct
 //// General ////
 
 // Handles the "!" command.
-void dred_command__platform_command(dred_context* pDred, const char* value);
+void dred_command__system_command(dred_context* pDred, const char* value);
 
 
 //// Text Editor ////

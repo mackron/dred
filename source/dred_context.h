@@ -14,6 +14,10 @@ struct dred_context
     drgui_context* pGUI;
 
 
+    // The accelerator table.
+    dred_accelerator_table acceleratorTable;
+
+
     // The main config.
     dred_config config;
 
@@ -57,3 +61,7 @@ void dred_errorf(dred_context* pDred, const char* format, ...);
 
 // Executes a command.
 void dred_exec(dred_context* pDred, const char* cmd);
+
+
+// Called when an accelerator is triggered.
+void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t acceleratorIndex);

@@ -68,6 +68,16 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
 
+    // Accelerator table needs to be initialized before the config, because the config can specify bindings.
+    if (!dred_accelerator_table_init(&pDred->acceleratorTable)) {
+        return false;
+    }
+
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'A', DRED_KEY_STATE_CTRL_DOWN, "select-all");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'S', DRED_KEY_STATE_CTRL_DOWN, "save");
+
+
+
     // Config
     //
     // The config is loaded in 3 stages. The first initializes it to it's default values, the second loads the .dred file from the main
@@ -100,6 +110,8 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     // Show the window as soon as possible to give it the illusion of loading quickly.
     dred_window_show(pDred->pMainWindow);
 
+
+    dred_window_bind_accelerators(pDred->pMainWindow, &pDred->acceleratorTable);
 
 
     return true;
@@ -223,4 +235,10 @@ void dred_exec(dred_context* pDred, const char* cmd)
     if (dred_find_command(cmd, &command, &value)) {
         command.proc(pDred, value);
     }
+}
+
+
+void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t acceleratorIndex)
+{
+    printf("Accelerator: %d\n", (int)acceleratorIndex);
 }

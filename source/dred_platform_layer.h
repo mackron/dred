@@ -17,6 +17,8 @@
 #define DRED_KEY_STATE_AUTO_REPEATED  (1 << 31)       // Whether or not the key press is generated due to auto-repeating. Only used with key down events.
 
 
+typedef uint32_t dred_key;
+
 
 // Initializes the platform layer. Should be the first function to be called.
 bool dred_platform_init();
@@ -65,6 +67,15 @@ typedef enum
     dred_cursor_type_double_arrow_v,
 } dred_cursor_type;
 
+#ifdef DRED_GTK
+typedef struct
+{
+    size_t index;
+    GClosure* pClosure;
+    dred_window* pWindow;
+} dred_gtk_accelerator;
+#endif
+
 struct dred_window
 {
     // The main context that owns the window.
@@ -111,6 +122,9 @@ struct dred_window
     // The Win32 window handle.
     HWND hWnd;
 
+    // The Win32 accelerator table handle. This is deleted and re-created whenever a new accelerator table is bound.
+    HACCEL hAccel;
+
     // The current cursor of the window.
     HCURSOR hCursor;
 
@@ -127,6 +141,11 @@ struct dred_window
     GtkWidget* pGTKWindow;
     GtkWidget* pGTKBox;
     GtkWidget* pGTKClientArea;
+
+    // The GTK accelerator group tied to this window.
+    GtkAccelGroup* pGTKAccelGroup;
+    dred_gtk_accelerator* pAccels;
+    size_t accelCount;
 
     // The cursor to use with this window.
     GdkCursor* pGTKCursor;
@@ -159,6 +178,9 @@ void dred_window_hide(dred_window* pWindow, unsigned int flags);
 // Sets the cursor to use with the window.
 void dred_window_set_cursor(dred_window* pWindow, dred_cursor_type cursor);
 bool dred_window_is_cursor_over(dred_window* pWindow);
+
+// Binds the given accelerator table to the given window.
+void dred_window_bind_accelerators(dred_window* pWindow, dred_accelerator_table* pAcceleratorTable);
 
 
 // Event posting.

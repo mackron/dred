@@ -12,7 +12,7 @@ const char* g_CommandNames[] = {
 };
 
 dred_command g_Commands[] = {
-    {dred_command__platform_command, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__system_command, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__find, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__find_next, DRED_CMDBAR_NO_CLEAR},
 };

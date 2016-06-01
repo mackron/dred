@@ -1,5 +1,5 @@
 
-void dred_command__platform_command(dred_context* pDred, const char* value)
+void dred_command__system_command(dred_context* pDred, const char* value)
 {
     printf("exec: ! %s\n", value);
 }
