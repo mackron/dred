@@ -1,16 +1,40 @@
 
-static void dred_window_cb__on_main_window_close(dred_window* pWindow)
+void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float parentWidth, float parentHeight)
+{
+    assert(pCmdBar != NULL);
+
+    dred_control_set_size(pCmdBar, parentWidth, pDred->config.cmdbarHeight);
+    dred_control_set_relative_position(pCmdBar, 0, parentHeight - pDred->config.cmdbarHeight);
+}
+
+
+void dred_window_cb__on_main_window_close(dred_window* pWindow)
 {
     dred_platform_post_quit_message(0);
 }
 
-static void dred_window_cb__on_main_window_paint_TEMP(drgui_element* pElement, drgui_rect rect, void* pPaintData)
+void dred_window_cb__on_main_window_size(drgui_element* pElement, float width, float height)
+{
+    (void)height;
+
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow == NULL) {
+        return;
+    }
+
+    dred_context* pDred = pWindow->pDred;
+    assert(pDred != NULL);
+
+    dred__update_cmdbar_layout(pDred, pDred->pCmdBar, width, height);
+}
+
+void dred_window_cb__on_main_window_paint_TEMP(drgui_element* pElement, drgui_rect rect, void* pPaintData)
 {
     drgui_draw_rect_with_outline(pElement, drgui_get_local_rect(pElement), drgui_rgb(255, 255, 255), 4, drgui_rgb(0, 0, 0), pPaintData);
 }
 
 
-static dred_file dred__open_log_file()
+dred_file dred__open_log_file()
 {
     char logFilePath[DRED_MAX_PATH];
     if (!dred_get_log_path(logFilePath, sizeof(logFilePath))) {
@@ -20,7 +44,7 @@ static dred_file dred__open_log_file()
     return dred_file_open(logFilePath, DRED_FILE_OPEN_MODE_WRITE);
 }
 
-static void dred_config__on_error(dred_config* pConfig, const char* configPath, const char* message, unsigned int line, void* pUserData)
+void dred_config__on_error(dred_config* pConfig, const char* configPath, const char* message, unsigned int line, void* pUserData)
 {
     dred_context* pDred = (dred_context*)pUserData;
     assert(pDred != NULL);
@@ -106,12 +130,25 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
     drgui_set_on_paint(pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_paint_TEMP);
+    drgui_set_on_size( pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_size);
 
     // Show the window as soon as possible to give it the illusion of loading quickly.
     dred_window_show(pDred->pMainWindow);
 
-
+    // Ensure the accelerators are bound. This needs to be done after loading the initial configs.
     dred_window_bind_accelerators(pDred->pMainWindow, &pDred->acceleratorTable);
+
+
+
+    // The command bar. Ensure this is given a valid initial size.
+    pDred->pCmdBar = dred_cmdbar_create(pDred, pDred->pMainWindow->pRootGUIElement);
+    if (pDred->pCmdBar == NULL) {
+        printf("Failed to create command bar.");
+        return false;
+    }
+
+    dred__update_cmdbar_layout(pDred, pDred->pCmdBar, 1280, 720);
+    drgui_capture_keyboard(pDred->pCmdBar);
 
 
     return true;
@@ -235,6 +272,30 @@ void dred_exec(dred_context* pDred, const char* cmd)
     if (dred_find_command(cmd, &command, &value)) {
         command.proc(pDred, value);
     }
+}
+
+
+void dred_capture_keyboard(dred_context* pDred, dred_control* pControl)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    if (pControl == NULL) {
+        dred_release_keyboard(pDred);
+        return;
+    }
+
+    drgui_capture_keyboard(pControl);
+}
+
+void dred_release_keyboard(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    drgui_release_keyboard(pDred->pGUI);
 }
 
 

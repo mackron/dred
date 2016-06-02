@@ -58,6 +58,11 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
         pData->pConfig->uiScaleY = (float)atof(value);
         return;
     }
+
+    if (strcmp(key, "cmdbar-height") == 0) {
+        pData->pConfig->cmdbarHeight = (float)atof(value);
+        return;
+    }
 }
 
 void dred_config_load_file__on_error(void* pUserData, const char* message, unsigned int line)

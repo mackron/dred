@@ -25,6 +25,9 @@ struct dred_context
     // The main window.
     dred_window* pMainWindow;
 
+    // The command bar. This is is the control that runs along the bottom of the main window.
+    dred_cmdbar* pCmdBar;
+
 
     // Whether or not the application is running in silent mode.
     bool isTerminalOutputDisabled;
@@ -61,6 +64,13 @@ void dred_errorf(dred_context* pDred, const char* format, ...);
 
 // Executes a command.
 void dred_exec(dred_context* pDred, const char* cmd);
+
+
+// Gives the given control the keyboard capture.
+void dred_capture_keyboard(dred_context* pDred, dred_control* pControl);
+
+// Releases the keyboard capture.
+void dred_release_keyboard(dred_context* pDred);
 
 
 // Called when an accelerator is triggered.

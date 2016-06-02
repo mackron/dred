@@ -1,8 +1,9 @@
 
 typedef struct
 {
-    float uiScaleX;   // scale-x
-    float uiScaleY;   // scale-y
+    float uiScaleX;     // scale-x
+    float uiScaleY;     // scale-y
+    float cmdbarHeight; // cmdbar-height
 } dred_config;
 
 typedef void (* dred_config_on_error_proc)(dred_config* pConfig, const char* configPath, const char* message, unsigned int line, void* pUserData);
