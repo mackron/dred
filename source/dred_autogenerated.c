@@ -2,19 +2,46 @@
 
 const char g_CommandNamePool[] = 
     "!\0"
+    "new\0"
+    "open\0"
+    "save\0"
+    "save-all\0"
+    "close\0"
+    "close-all\0"
+    "goto\0"
     "find\0"
-    "find-next\0";
+    "find-next\0"
+    "replace\0"
+    "replace-next\0";
 
 const char* g_CommandNames[] = {
     g_CommandNamePool + 0,
     g_CommandNamePool + 2,
-    g_CommandNamePool + 7,
+    g_CommandNamePool + 6,
+    g_CommandNamePool + 11,
+    g_CommandNamePool + 16,
+    g_CommandNamePool + 25,
+    g_CommandNamePool + 31,
+    g_CommandNamePool + 41,
+    g_CommandNamePool + 46,
+    g_CommandNamePool + 51,
+    g_CommandNamePool + 61,
+    g_CommandNamePool + 69,
 };
 
 dred_command g_Commands[] = {
     {dred_command__system_command, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__new, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__open, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__save, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__save_all, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__close, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__close_all, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__goto, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__find, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__find_next, DRED_CMDBAR_NO_CLEAR},
+    {dred_command__replace, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__replace_next, DRED_CMDBAR_NO_CLEAR},
 };
 
-#define DRED_COMMAND_COUNT 3
+#define DRED_COMMAND_COUNT 12

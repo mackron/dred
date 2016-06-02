@@ -44,10 +44,12 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
     dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
-    if (utf32 == '\r' || utf32 == '\n') {
+    if (utf32 == '\r' || utf32 == '\n')
+    {
         size_t cmdLen = dred_textbox_get_text(pTextBox, NULL, 0);
         char* cmd = malloc(cmdLen + 1);
-        if (dred_textbox_get_text(pTextBox, cmd, cmdLen + 1) == cmdLen) {
+        if (dred_textbox_get_text(pTextBox, cmd, cmdLen + 1) == cmdLen)
+        {
             const char* value;
             dred_command command;
             if (dred_find_command(cmd, &command, &value)) {
@@ -64,7 +66,9 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
         }
 
         free(cmd);
-    } else {
+    }
+    else
+    {
         dred_textbox_on_printable_key_down(pTextBox, utf32, stateFlags);
     }
 }

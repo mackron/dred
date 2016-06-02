@@ -5,6 +5,41 @@ void dred_command__system_command(dred_context* pDred, const char* value)
 }
 
 
+void dred_command__new(dred_context* pDred, const char* value)
+{
+    printf("exec: new %s\n", value);
+}
+
+void dred_command__open(dred_context* pDred, const char* value)
+{
+    printf("exec: open %s\n", value);
+}
+
+void dred_command__save(dred_context* pDred, const char* value)
+{
+    printf("exec: save %s\n", value);
+}
+
+void dred_command__save_all(dred_context* pDred, const char* value)
+{
+    printf("exec: save-all %s\n", value);
+}
+
+void dred_command__close(dred_context* pDred, const char* value)
+{
+    printf("exec: close %s\n", value);
+}
+
+void dred_command__close_all(dred_context* pDred, const char* value)
+{
+    printf("exec: close-all %s\n", value);
+}
+
+
+void dred_command__goto(dred_context* pDred, const char* value)
+{
+    printf("exec: goto %s\n", value);
+}
 
 void dred_command__find(dred_context* pDred, const char* value)
 {
@@ -15,6 +50,17 @@ void dred_command__find_next(dred_context* pDred, const char* value)
 {
     printf("exec: find-next %s\n", value);
 }
+
+void dred_command__replace(dred_context* pDred, const char* value)
+{
+    printf("exec: replace %s\n", value);
+}
+
+void dred_command__replace_next(dred_context* pDred, const char* value)
+{
+    printf("exec: replace-next %s\n", value);
+}
+
 
 
 

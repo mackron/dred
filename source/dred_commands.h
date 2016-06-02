@@ -4,8 +4,17 @@
 // BEGIN COMMAND LIST : <command name> <proc> <flags>
 //
 // !            dred_command__system_command    DRED_CMDBAR_RELEASE_KEYBOARD
+// new          dred_command__new               DRED_CMDBAR_RELEASE_KEYBOARD
+// open         dred_command__open              DRED_CMDBAR_RELEASE_KEYBOARD
+// save         dred_command__save              DRED_CMDBAR_RELEASE_KEYBOARD
+// save-all     dred_command__save_all          DRED_CMDBAR_RELEASE_KEYBOARD
+// close        dred_command__close             DRED_CMDBAR_RELEASE_KEYBOARD
+// close-all    dred_command__close_all         DRED_CMDBAR_RELEASE_KEYBOARD
+// goto         dred_command__goto              DRED_CMDBAR_RELEASE_KEYBOARD
 // find         dred_command__find              DRED_CMDBAR_RELEASE_KEYBOARD
 // find-next    dred_command__find_next         DRED_CMDBAR_NO_CLEAR
+// replace      dred_command__replace           DRED_CMDBAR_RELEASE_KEYBOARD
+// replace-next dred_command__replace_next      DRED_CMDBAR_NO_CLEAR
 //
 // END COMMAND LIST
 
@@ -26,14 +35,41 @@ typedef struct
 // Handles the "!" command.
 void dred_command__system_command(dred_context* pDred, const char* value);
 
+// new
+void dred_command__new(dred_context* pDred, const char* value);
+
+// open
+void dred_command__open(dred_context* pDred, const char* value);
+
+// save
+void dred_command__save(dred_context* pDred, const char* value);
+
+// save-all
+void dred_command__save_all(dred_context* pDred, const char* value);
+
+// close
+void dred_command__close(dred_context* pDred, const char* value);
+
+// close-all
+void dred_command__close_all(dred_context* pDred, const char* value);
+
 
 //// Text Editor ////
+
+// goto
+void dred_command__goto(dred_context* pDred, const char* value);
 
 // find
 void dred_command__find(dred_context* pDred, const char* value);
 
 // find-next
 void dred_command__find_next(dred_context* pDred, const char* value);
+
+// replace
+void dred_command__replace(dred_context* pDred, const char* value);
+
+// replace-next
+void dred_command__replace_next(dred_context* pDred, const char* value);
 
 
 
