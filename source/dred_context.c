@@ -102,10 +102,17 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_platform_bind_gui(pDred->pGUI);
 
 
+    // The font library. This needs to be initialized before loading any fonts and configs.
+    if (!dred_font_library_init(&pDred->fontLibrary, pDred)) {
+        return false;
+    }
+
     // The default GUI font. This is based on the platform.
     // TODO: Put this in the platform layer.
+    pDred->pGUIFont = dred_font_library_create_font(&pDred->fontLibrary, "Segoe UI", 12, drgui_font_weight_normal, drgui_font_slant_none, 0, 0);
+
     // TODO: Improve fonts in general to make scaling easier.
-    pDred->pGUIFont = drgui_create_font(pDred->pGUI, "Segoe UI", 12, drgui_font_weight_normal, drgui_font_slant_none, 0, 0);
+    //pDred->pGUIFont = drgui_create_font(pDred->pGUI, "Segoe UI", 12, drgui_font_weight_normal, drgui_font_slant_none, 0, 0);
 
 
 
@@ -146,7 +153,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_window_set_size(pDred->pMainWindow, 1280, 720);
 
     pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
-    drgui_set_on_size( pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_size);
+    drgui_set_on_size(pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_size);
 
     // Show the window as soon as possible to give it the illusion of loading quickly.
     dred_window_show(pDred->pMainWindow);

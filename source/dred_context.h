@@ -13,8 +13,12 @@ struct dred_context
     // The main GUI context.
     drgui_context* pGUI;
 
+
+    // The font library. This just manages fonts to make it easier to avoid loading duplicate fonts.
+    dred_font_library fontLibrary;
+
     // The default GUI font.
-    drgui_font* pGUIFont;
+    dred_font* pGUIFont;
 
 
     // The accelerator table.

@@ -131,7 +131,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drgui_textbox_set_active_line_background_color(data->pInternalTB, drgui_rgb(64, 64, 64));
     drgui_textbox_set_text_color(data->pInternalTB, drgui_rgb(224, 224, 224));
     drgui_textbox_set_cursor_color(data->pInternalTB, drgui_rgb(224, 224, 224));
-    drgui_textbox_set_font(data->pInternalTB, pDred->pGUIFont);
+    drgui_textbox_set_font(data->pInternalTB, dred_font_acquire_subfont(pDred->pGUIFont, 2));
     drgui_textbox_set_border_width(data->pInternalTB, 0);
 
     // Events.

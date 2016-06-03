@@ -132,7 +132,7 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
 
     //drgui_tabbar_show_close_buttons(data->pTabBar);
     drgui_tabbar_enable_close_on_middle_click(data->pTabBar);
-    drgui_tabbar_set_font(data->pTabBar, pDred->pGUIFont);
+    drgui_tabbar_set_font(data->pTabBar, dred_font_acquire_subfont(pDred->pGUIFont, 1.1f));
     drgui_tabbar_set_on_tab_activated(data->pTabBar, dred_tabbar__on_tab_activated);
     drgui_tabbar_set_on_tab_deactivated(data->pTabBar, dred_tabbar__on_tab_deactivated);
     drgui_tabbar_set_on_tab_closed(data->pTabBar, dred_tabbar__on_tab_close);

@@ -1,0 +1,35 @@
+
+typedef struct
+{
+    char family[64];
+    unsigned int size;
+    drgui_font_weight weight;
+    drgui_font_slant slant;
+    float rotation;
+    unsigned int flags;
+} dred_font_desc;
+
+typedef struct
+{
+    unsigned int referenceCount;
+    unsigned int scaledSize;
+    drgui_font* pGUIFont;
+} dred_subfont;
+
+struct dred_font
+{
+    dred_context* pDred;
+    dred_font_desc desc;
+    size_t subfontBufferSize;
+    size_t subfontCount;
+    dred_subfont* pSubFonts;
+
+    dred_font_library* pLibrary;    // Can be null, in which case the font is not managed by a library.
+    unsigned int referenceCount;    // Used by the font library that owns the font.
+};
+
+dred_font* dred_font_create(dred_context* pDred, dred_font_desc* pDesc);
+void dred_font_delete(dred_font* pFont);
+
+drgui_font* dred_font_acquire_subfont(dred_font* pFont, float scale);
+void dred_font_release_subfont(dred_font* pFont, drgui_font* pSubfont);
