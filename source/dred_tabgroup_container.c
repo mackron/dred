@@ -6,7 +6,7 @@ typedef struct
 
 void dred_tabgroup_container__on_size(dred_tabgroup_container* pContainer, float newWidth, float newHeight)
 {
-    dred_tabgroup_container_data* data = (dred_tabgroup_container_data*)dred_control_get_data(pContainer);
+    dred_tabgroup_container_data* data = (dred_tabgroup_container_data*)dred_control_get_extra_data(pContainer);
     assert(data != NULL);
 
     if (data->splitAxis == dred_tabgroup_split_axis_none) {
@@ -23,7 +23,7 @@ dred_tabgroup_container* dred_tabgroup_container_create(dred_context* pDred, dre
         return NULL;
     }
 
-    dred_tabgroup_container_data* data = (dred_tabgroup_container_data*)dred_control_get_data(pContainer);
+    dred_tabgroup_container_data* data = (dred_tabgroup_container_data*)dred_control_get_extra_data(pContainer);
     assert(data != NULL);
 
     data->splitAxis = dred_tabgroup_split_axis_none;
@@ -41,7 +41,7 @@ void dred_tabgroup_container_delete(dred_tabgroup_container* pContainer)
         return;
     }
 
-    dred_tabgroup_container_data* data = (dred_tabgroup_container_data*)dred_control_get_data(pContainer);
+    dred_tabgroup_container_data* data = (dred_tabgroup_container_data*)dred_control_get_extra_data(pContainer);
     if (data != NULL) {
         // TODO: Delete children.
     }

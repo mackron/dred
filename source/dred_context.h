@@ -40,6 +40,14 @@ struct dred_context
 
     // Whether or not the application is running in silent mode.
     bool isTerminalOutputDisabled;
+
+
+
+    // TEMP
+    dred_text_editor* pEditor0;
+    dred_tab* pEditor0Tab;
+    dred_text_editor* pEditor1;
+    dred_tab* pEditor1Tab;
 };
 
 // dred_init

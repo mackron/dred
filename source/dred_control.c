@@ -45,12 +45,12 @@ dred_control* dred_control_get_parent(dred_control* pControl)
 }
 
 
-void* dred_control_get_data(dred_control* pControl)
+void* dred_control_get_extra_data(dred_control* pControl)
 {
     return (void*)((uint8_t*)drgui_get_extra_data(pControl) + sizeof(dred_control_data));
 }
 
-size_t dred_control_get_data_size(dred_control* pControl)
+size_t dred_control_get_extra_data_size(dred_control* pControl)
 {
     return drgui_get_extra_data_size(pControl) - sizeof(dred_control_data);
 }
@@ -300,4 +300,13 @@ void dred_control_set_on_capture_keyboard(dred_control* pControl, drgui_on_captu
 void dred_control_set_on_release_keyboard(dred_control* pControl, drgui_on_release_keyboard_proc callback)
 {
     drgui_set_on_release_keyboard(pControl, callback);
+}
+
+
+
+//// Misc stuff relating to controls ////
+
+bool dred_is_control_type_of_type(const char* type, const char* base)
+{
+    return strncmp(type, base, strlen(base)) == 0;
 }

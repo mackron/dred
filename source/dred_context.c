@@ -41,11 +41,6 @@ void dred_window_cb__on_main_window_size(drgui_element* pElement, float width, f
     dred__update_main_window_layout(pWindow, width, height);
 }
 
-//void dred_window_cb__on_main_window_paint_TEMP(drgui_element* pElement, drgui_rect rect, void* pPaintData)
-//{
-//    drgui_draw_rect_with_outline(pElement, drgui_get_local_rect(pElement), drgui_rgb(255, 255, 255), 4, drgui_rgb(0, 0, 0), pPaintData);
-//}
-
 
 dred_file dred__open_log_file()
 {
@@ -151,7 +146,6 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_window_set_size(pDred->pMainWindow, 1280, 720);
 
     pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
-    //drgui_set_on_paint(pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_paint_TEMP);
     drgui_set_on_size( pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_size);
 
     // Show the window as soon as possible to give it the illusion of loading quickly.
@@ -186,9 +180,17 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     drgui_capture_keyboard(pDred->pCmdBar);
 
 
+
+    // TESTING
+    pDred->pEditor0 = dred_text_editor_create(pDred, NULL);
+    pDred->pEditor0Tab = dred_tabgroup_append_tab(pDred->pMainTabGroup, "Test Editor 0", pDred->pEditor0);
+
+    pDred->pEditor1 = dred_text_editor_create(pDred, NULL);
+    pDred->pEditor1Tab = dred_tabgroup_append_tab(pDred->pMainTabGroup, "Test Editor 1", pDred->pEditor1);
+
+
     // Update the layout of the main window to ensure it's in the correct initial state.
     dred__update_main_window_layout(pDred->pMainWindow, 1280, 720);
-
 
     return true;
 }

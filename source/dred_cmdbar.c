@@ -7,7 +7,7 @@ typedef struct
 
 void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
 {
-    dred_cmdbar_data* data = dred_control_get_data(pCmdBar);
+    dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
     assert(data != NULL);
 
     dred_control_set_size(data->pTextBox, newWidth, newHeight);
@@ -15,7 +15,7 @@ void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
 
 void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, drgui_element* pPrevCapturedElement)
 {
-    dred_cmdbar_data* data = dred_control_get_data(pCmdBar);
+    dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
     assert(data != NULL);
 
     drgui_capture_keyboard(data->pTextBox);
@@ -80,7 +80,7 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
         return NULL;
     }
 
-    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_data(pCmdBar);
+    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
     assert(data != NULL);
 
     data->pDred = pDred;
@@ -90,6 +90,9 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
         dred_control_delete(data->pTextBox);
         return NULL;
     }
+
+    //drgui_textbox_disable_horizontal_scrollbar(data->pInternalTB);
+    //drgui_textbox_disable_vertical_scrollbar(data->pInternalTB);
 
 
     // Events.
@@ -110,7 +113,7 @@ void dred_cmdbar_delete(dred_cmdbar* pCmdBar)
         return;
     }
 
-    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_data(pCmdBar);
+    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
     if (data != NULL) {
         dred_textbox_delete(data->pTextBox);
     }

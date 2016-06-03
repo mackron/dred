@@ -10,7 +10,7 @@ void dred_textbox__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pP
     (void*)pPrevCapturedElement;
 
     // The internal text box needs to be given the keyboard focus whenever a dred_textbox receives it.
-    dred_textbox_data* data = dred_control_get_data(pTextBox);
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
     if (data == NULL) {
         return;
     }
@@ -69,7 +69,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
         return NULL;
     }
 
-    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_data(pTextBox);
+    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(data != NULL);
 
     data->pInternalTB = drgui_create_textbox(pDred->pGUI, pTextBox, 0, NULL);
@@ -84,8 +84,6 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drgui_textbox_set_cursor_color(data->pInternalTB, drgui_rgb(224, 224, 224));
     drgui_textbox_set_font(data->pInternalTB, drgui_create_font(pDred->pGUI, "Courier New", 13, drgui_font_weight_default, drgui_font_slant_none, 0, 0));
     drgui_textbox_set_border_width(data->pInternalTB, 0);
-    drgui_textbox_disable_horizontal_scrollbar(data->pInternalTB);
-    drgui_textbox_disable_vertical_scrollbar(data->pInternalTB);
 
     // Events.
     dred_control_set_on_size(pTextBox, drgui_on_size_fit_children_to_parent);
@@ -105,7 +103,7 @@ void dred_textbox_delete(dred_textbox* pTextBox)
         return;
     }
 
-    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_data(pTextBox);
+    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (data != NULL) {
         drgui_delete_textbox(data->pInternalTB);
     }
@@ -116,7 +114,7 @@ void dred_textbox_delete(dred_textbox* pTextBox)
 
 void dred_textbox_set_text(dred_textbox* pTextBox, const char* text)
 {
-    dred_textbox_data* data = dred_control_get_data(pTextBox);
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
     if (data == NULL) {
         return;
     }
@@ -126,7 +124,7 @@ void dred_textbox_set_text(dred_textbox* pTextBox, const char* text)
 
 size_t dred_textbox_get_text(dred_textbox* pTextBox, char* textOut, size_t textOutSize)
 {
-    dred_textbox_data* data = dred_control_get_data(pTextBox);
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
     if (data == NULL) {
         return 0;
     }
@@ -137,7 +135,7 @@ size_t dred_textbox_get_text(dred_textbox* pTextBox, char* textOut, size_t textO
 
 void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)
 {
-    dred_textbox_data* data = dred_control_get_data(pTextBox);
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
     if (data == NULL) {
         return;
     }
@@ -147,7 +145,7 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
 
 void dred_textbox_on_key_up(dred_textbox* pTextBox, drgui_key key, int stateFlags)
 {
-    dred_textbox_data* data = dred_control_get_data(pTextBox);
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
     if (data == NULL) {
         return;
     }
@@ -157,7 +155,7 @@ void dred_textbox_on_key_up(dred_textbox* pTextBox, drgui_key key, int stateFlag
 
 void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, uint32_t utf32, int stateFlags)
 {
-    dred_textbox_data* data = dred_control_get_data(pTextBox);
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
     if (data == NULL) {
         return;
     }

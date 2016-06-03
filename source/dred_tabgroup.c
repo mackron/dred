@@ -2,11 +2,12 @@
 typedef struct
 {
     drgui_element* pTabBar;
+    dred_tab* pActiveTab;
 } dred_tabgroup_data;
 
 drgui_element* dred_tabgroup__get_tabbar(dred_tabgroup* pTabGroup)
 {
-    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_data(pTabGroup);
+    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
     if (data == NULL) {
         return NULL;
     }
@@ -14,22 +15,58 @@ drgui_element* dred_tabgroup__get_tabbar(dred_tabgroup* pTabGroup)
     return data->pTabBar;
 }
 
+dred_tab* dred_tabgroup__get_active_tab(dred_tabgroup* pTabGroup)
+{
+    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
+    if (data == NULL) {
+        return NULL;
+    }
+
+    return data->pActiveTab;
+}
+
+void dred_tabgroup__set_active_tab(dred_tabgroup* pTabGroup, dred_tab* pTab)
+{
+    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
+    if (data == NULL) {
+        return;
+    }
+
+    data->pActiveTab = pTab;
+}
+
+void dred_tabgroup__resize_and_reposition_control(dred_control *pControl, float parentWidth, float parentHeight, float tabbarHeight)
+{
+    float controlPosX   = 0;
+    float controlPosY   = tabbarHeight;
+    float controlWidth  = parentWidth;
+    float controlHeight = parentHeight - controlPosY;
+
+    dred_control_set_relative_position(pControl, controlPosX, controlPosY);
+    dred_control_set_size(pControl, controlWidth, controlHeight);
+}
+
+void dred_tabgroup__refresh_control_layout(dred_tabgroup* pTabGroup, dred_control* pControl)
+{
+    float parentWidth;
+    float parentHeight;
+    drgui_get_size(pTabGroup, &parentWidth, &parentHeight);
+
+    dred_tabgroup__resize_and_reposition_control(pControl, parentWidth, parentHeight, dred_control_get_height(dred_tabgroup__get_tabbar(pTabGroup)));
+}
+
 void dred_tabgroup__on_size(dred_tabgroup* pTabGroup, float newWidth, float newHeight)
 {
-    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_data(pTabGroup);
+    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
     assert(data != NULL);
 
     drgui_set_size(data->pTabBar, newWidth, 24);
 
-    float controlPosX   = 0;
-    float controlPosY   = dred_control_get_height(dred_tabgroup__get_tabbar(pTabGroup));
-    float controlWidth  = newWidth;
-    float controlHeight = newHeight - controlPosY;
+    float tabbarHeight = dred_control_get_height(dred_tabgroup__get_tabbar(pTabGroup));
     for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
         dred_control* pControl = dred_tab_get_control(pTab);
-        if (pControl == NULL) {
-            dred_control_set_relative_position(pControl, controlPosX, controlPosY);
-            dred_control_set_size(pControl, controlWidth, controlHeight);
+        if (pControl != NULL) {
+            dred_tabgroup__resize_and_reposition_control(pControl, newWidth, newHeight, tabbarHeight);
         }
     }
 }
@@ -42,9 +79,40 @@ void dred_tabgroup__on_paint(dred_tabgroup* pTabGroup, drgui_rect rect, void* pP
         drgui_rect bodyRect = drgui_get_local_rect(pTabGroup);
         bodyRect.top += dred_control_get_height(dred_tabgroup__get_tabbar(pTabGroup));
 
-        drgui_draw_rect_with_outline(pTabGroup, bodyRect, drgui_rgb(48, 48, 48), 2, drgui_rgb(0, 0, 0), pPaintData);
+        drgui_draw_rect(pTabGroup, bodyRect, drgui_rgb(48, 48, 48), pPaintData);
     }
 }
+
+
+void dred_tabbar__on_tab_activated(drgui_element* pTabBar, drgui_tab* pTab)
+{
+    // The tab group is the parent of the tab bar.
+    dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
+    if (pTabGroup == NULL) {
+        return;
+    }
+
+    dred_tab* pOldTab = dred_tabgroup__get_active_tab(pTabGroup);
+    dred_tab* pNewTab = pTab;
+
+    dred_control_hide(dred_tab_get_control(pOldTab));
+    dred_control_show(dred_tab_get_control(pNewTab));
+
+    dred_tabgroup__set_active_tab(pTabGroup, pNewTab);
+}
+
+void dred_tabbar__on_tab_deactivated(drgui_element* pTabBar, drgui_tab* pTab)
+{
+    (void)pTabBar;
+    (void)pTab;
+}
+
+void dred_tabbar__on_tab_close(drgui_element* pTabBar, drgui_tab* pTab)
+{
+    (void)pTabBar;
+    (void)pTab;
+}
+
 
 dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
 {
@@ -53,7 +121,7 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
         return NULL;
     }
 
-    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_data(pTabGroup);
+    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
     assert(data != NULL);
 
     data->pTabBar = drgui_create_tab_bar(pDred->pGUI, pTabGroup, drgui_tabbar_orientation_top, 0, NULL);
@@ -65,15 +133,17 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
     //drgui_tabbar_show_close_buttons(data->pTabBar);
     drgui_tabbar_enable_close_on_middle_click(data->pTabBar);
     drgui_tabbar_set_font(data->pTabBar, pDred->pGUIFont);
+    drgui_tabbar_set_on_tab_activated(data->pTabBar, dred_tabbar__on_tab_activated);
+    drgui_tabbar_set_on_tab_deactivated(data->pTabBar, dred_tabbar__on_tab_deactivated);
+    drgui_tabbar_set_on_tab_closed(data->pTabBar, dred_tabbar__on_tab_close);
+
+    data->pActiveTab = NULL;
 
 
     // Events.
     dred_control_set_on_size(pTabGroup, dred_tabgroup__on_size);
     dred_control_set_on_paint(pTabGroup, dred_tabgroup__on_paint);
 
-
-    //dred_tabgroup_append_tab(pTabGroup, "Testing 1", NULL);
-    //dred_tabgroup_append_tab(pTabGroup, "Testing 2", NULL);
 
     return pTabGroup;
 }
@@ -84,7 +154,7 @@ void dred_tabgroup_delete(dred_tabgroup* pTabGroup)
         return;
     }
 
-    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_data(pTabGroup);
+    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
     if (data != NULL) {
         drgui_delete_tab_bar(data->pTabBar);
     }
@@ -127,13 +197,15 @@ dred_tab* dred_tabgroup_prev_tab(dred_tabgroup* pTabGroup, dred_tab* pTab)
 
 void dred_tabgroup__init_tab(dred_tabgroup* pTabGroup, dred_tab* pTab, dred_control* pControl)
 {
-    (void)pTabGroup;
     dred_tab_set_control(pTab, pControl);
 
     // The control needs to be re-parented the tab group. Also, the tab will not be active at this point, so make sure the
     // control is hidden.
     dred_control_hide(pControl);
     dred_control_append(pControl, pTabGroup);
+
+    // Make sure the control is given the correct initial layout.
+    dred_tabgroup__refresh_control_layout(pTabGroup, pControl);
 }
 
 dred_tab* dred_tabgroup_append_tab(dred_tabgroup* pTabGroup, const char* text, dred_control* pControl)

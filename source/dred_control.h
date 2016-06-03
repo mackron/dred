@@ -1,12 +1,13 @@
 // Controls are the base GUI element used in dred. Whenever a GUI element is required, it'll be based
 // off this object.
 //
-// A dred_control is a dred_control_element with dred-specific functionality.
+// A dred_control is a drgui_element with dred-specific functionality.
 
 typedef drgui_element dred_control;
 
+
 // dred_control_create()
-dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, const char* typeName, size_t extraDataSize);
+dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, const char* type, size_t extraDataSize);
 
 // dred_control_delete()
 void dred_control_delete(dred_control* pControl);
@@ -19,11 +20,11 @@ dred_context* dred_control_get_context(dred_control* pControl);
 dred_control* dred_control_get_parent(dred_control* pControl);
 
 
-// dred_control_get_data()
-void* dred_control_get_data(dred_control* pControl);
+// dred_control_get_extra_data()
+void* dred_control_get_extra_data(dred_control* pControl);
 
-// dred_control_get_data_size()
-size_t dred_control_get_data_size(dred_control* pControl);
+// dred_control_get_extra_data_size()
+size_t dred_control_get_extra_data_size(dred_control* pControl);
 
 
 
@@ -110,3 +111,11 @@ void dred_control_set_on_capture_mouse(dred_control* pControl, drgui_on_capture_
 void dred_control_set_on_release_mouse(dred_control* pControl, drgui_on_release_mouse_proc callback);
 void dred_control_set_on_capture_keyboard(dred_control* pControl, drgui_on_capture_keyboard_proc callback);
 void dred_control_set_on_release_keyboard(dred_control* pControl, drgui_on_release_keyboard_proc callback);
+
+
+
+
+//// Misc stuff relating to controls ////
+
+// Checks if the given type string is of the other type.
+bool dred_is_control_type_of_type(const char* type, const char* base);
