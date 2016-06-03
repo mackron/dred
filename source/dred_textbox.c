@@ -4,6 +4,16 @@ typedef struct
     drgui_element* pInternalTB;
 } dred_textbox_data;
 
+drgui_element* dred_textbox__get_internal_tb(dred_textbox* pTextBox)
+{
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
+    if (data == NULL) {
+        return NULL;
+    }
+
+    return data->pInternalTB;
+}
+
 
 void dred_textbox__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement)
 {
@@ -82,7 +92,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drgui_textbox_set_active_line_background_color(data->pInternalTB, drgui_rgb(64, 64, 64));
     drgui_textbox_set_text_color(data->pInternalTB, drgui_rgb(224, 224, 224));
     drgui_textbox_set_cursor_color(data->pInternalTB, drgui_rgb(224, 224, 224));
-    drgui_textbox_set_font(data->pInternalTB, drgui_create_font(pDred->pGUI, "Courier New", 13, drgui_font_weight_default, drgui_font_slant_none, 0, 0));
+    drgui_textbox_set_font(data->pInternalTB, pDred->pGUIFont);
     drgui_textbox_set_border_width(data->pInternalTB, 0);
 
     // Events.
@@ -131,6 +141,193 @@ size_t dred_textbox_get_text(dred_textbox* pTextBox, char* textOut, size_t textO
 
     return drgui_textbox_get_text(data->pInternalTB, textOut, textOutSize);
 }
+
+
+
+void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont)
+{
+    drgui_textbox_set_font(dred_textbox__get_internal_tb(pTextBox), pFont);
+}
+
+void dred_textbox_set_text_color(dred_textbox* pTextBox, drgui_color color)
+{
+    drgui_textbox_set_text_color(dred_textbox__get_internal_tb(pTextBox), color);
+}
+
+void dred_textbox_set_background_color(dred_textbox* pTextBox, drgui_color color)
+{
+    drgui_textbox_set_background_color(dred_textbox__get_internal_tb(pTextBox), color);
+}
+
+void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, drgui_color color)
+{
+    drgui_textbox_set_active_line_background_color(dred_textbox__get_internal_tb(pTextBox), color);
+}
+
+void dred_textbox_set_cursor_color(dred_textbox* pTextBox, drgui_color color)
+{
+    drgui_textbox_set_cursor_color(dred_textbox__get_internal_tb(pTextBox), color);
+}
+
+void dred_textbox_set_border_color(dred_textbox* pTextBox, drgui_color color)
+{
+    drgui_textbox_set_border_color(dred_textbox__get_internal_tb(pTextBox), color);
+}
+
+void dred_textbox_set_border_width(dred_textbox* pTextBox, float borderWidth)
+{
+    drgui_textbox_set_border_width(dred_textbox__get_internal_tb(pTextBox), borderWidth);
+}
+
+void dred_textbox_set_padding(dred_textbox* pTextBox, float padding)
+{
+    drgui_textbox_set_padding(dred_textbox__get_internal_tb(pTextBox), padding);
+}
+
+void dred_textbox_set_vertical_align(dred_textbox* pTextBox, drgui_text_engine_alignment align)
+{
+    drgui_textbox_set_vertical_align(dred_textbox__get_internal_tb(pTextBox), align);
+}
+
+void dred_textbox_set_horizontal_align(dred_textbox* pTextBox, drgui_text_engine_alignment align)
+{
+    drgui_textbox_set_horizontal_align(dred_textbox__get_internal_tb(pTextBox), align);
+}
+
+
+void dred_textbox_set_cursor_blink_rate(dred_textbox* pTextBox, unsigned int blinkRateInMilliseconds)
+{
+    drgui_textbox_set_cursor_blink_rate(dred_textbox__get_internal_tb(pTextBox), blinkRateInMilliseconds);
+}
+
+void dred_textbox_move_cursor_to_end_of_text(dred_textbox* pTextBox)
+{
+    drgui_textbox_move_cursor_to_end_of_text(dred_textbox__get_internal_tb(pTextBox));
+}
+
+void dred_textbox_move_cursor_to_start_of_line_by_index(dred_textbox* pTextBox, size_t iLine)
+{
+    drgui_textbox_move_cursor_to_start_of_line_by_index(dred_textbox__get_internal_tb(pTextBox), iLine);
+}
+
+bool dred_textbox_is_anything_selected(dred_textbox* pTextBox)
+{
+    return drgui_textbox_is_anything_selected(dred_textbox__get_internal_tb(pTextBox));
+}
+
+void dred_textbox_select_all(dred_textbox* pTextBox)
+{
+    drgui_textbox_select_all(dred_textbox__get_internal_tb(pTextBox));
+}
+
+void dred_textbox_deselect_all(dred_textbox* pTextBox)
+{
+    drgui_textbox_deselect_all(dred_textbox__get_internal_tb(pTextBox));
+}
+
+size_t dred_textbox_get_selected_text(dred_textbox* pTextBox, char* textOut, size_t textOutLength)
+{
+    return drgui_textbox_get_selected_text(dred_textbox__get_internal_tb(pTextBox), textOut, textOutLength);
+}
+
+bool dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox)
+{
+    return drgui_textbox_delete_character_to_right_of_cursor(dred_textbox__get_internal_tb(pTextBox));
+}
+
+bool dred_textbox_delete_selected_text(dred_textbox* pTextBox)
+{
+    return drgui_textbox_delete_selected_text(dred_textbox__get_internal_tb(pTextBox));
+}
+
+bool dred_textbox_insert_text_at_cursor(dred_textbox* pTextBox, const char* text)
+{
+    return drgui_textbox_insert_text_at_cursor(dred_textbox__get_internal_tb(pTextBox), text);
+}
+
+bool dred_textbox_undo(dred_textbox* pTextBox)
+{
+    return drgui_textbox_undo(dred_textbox__get_internal_tb(pTextBox));
+}
+
+bool dred_textbox_redo(dred_textbox* pTextBox)
+{
+    return drgui_textbox_redo(dred_textbox__get_internal_tb(pTextBox));
+}
+
+unsigned int dred_textbox_get_undo_points_remaining_count(dred_textbox* pTextBox)
+{
+    return drgui_textbox_get_undo_points_remaining_count(dred_textbox__get_internal_tb(pTextBox));
+}
+
+unsigned int dred_textbox_get_redo_points_remaining_count(dred_textbox* pTextBox)
+{
+    return drgui_textbox_get_redo_points_remaining_count(dred_textbox__get_internal_tb(pTextBox));
+}
+
+size_t dred_textbox_get_cursor_line(dred_textbox* pTextBox)
+{
+    return drgui_textbox_get_cursor_line(dred_textbox__get_internal_tb(pTextBox));
+}
+
+size_t dred_textbox_get_cursor_column(dred_textbox* pTextBox)
+{
+    return drgui_textbox_get_cursor_column(dred_textbox__get_internal_tb(pTextBox));
+}
+
+size_t dred_textbox_get_line_count(dred_textbox* pTextBox)
+{
+    return drgui_textbox_get_line_count(dred_textbox__get_internal_tb(pTextBox));
+}
+
+
+bool dred_textbox_find_and_select_next(dred_textbox* pTextBox, const char* text)
+{
+    return drgui_textbox_find_and_select_next(dred_textbox__get_internal_tb(pTextBox), text);
+}
+
+bool dred_textbox_find_and_replace_next(dred_textbox* pTextBox, const char* text, const char* replacement)
+{
+    return drgui_textbox_find_and_replace_next(dred_textbox__get_internal_tb(pTextBox), text, replacement);
+}
+
+bool dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text, const char* replacement)
+{
+    return drgui_textbox_find_and_replace_all(dred_textbox__get_internal_tb(pTextBox), text, replacement);
+}
+
+
+void dred_textbox_show_line_numbers(dred_textbox* pTextBox)
+{
+    drgui_textbox_show_line_numbers(dred_textbox__get_internal_tb(pTextBox));
+}
+
+void dred_textbox_hide_line_numbers(dred_textbox* pTextBox)
+{
+    drgui_textbox_hide_line_numbers(dred_textbox__get_internal_tb(pTextBox));
+}
+
+
+void dred_textbox_disable_vertical_scrollbar(dred_textbox* pTextBox)
+{
+    drgui_textbox_disable_vertical_scrollbar(dred_textbox__get_internal_tb(pTextBox));
+}
+
+void dred_textbox_enable_vertical_scrollbar(dred_textbox* pTextBox)
+{
+    drgui_textbox_enable_vertical_scrollbar(dred_textbox__get_internal_tb(pTextBox));
+}
+
+void dred_textbox_disable_horizontal_scrollbar(dred_textbox* pTextBox)
+{
+    drgui_textbox_disable_horizontal_scrollbar(dred_textbox__get_internal_tb(pTextBox));
+}
+
+void dred_textbox_enable_horizontal_scrollbar(dred_textbox* pTextBox)
+{
+    drgui_textbox_enable_horizontal_scrollbar(dred_textbox__get_internal_tb(pTextBox));
+}
+
 
 
 void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)
