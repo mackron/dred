@@ -1,7 +1,7 @@
 // Controls are the base GUI element used in dred. Whenever a GUI element is required, it'll be based
 // off this object.
 //
-// A dred_control is a drgui_element with dred-specific functionality.
+// A dred_control is a dred_control_element with dred-specific functionality.
 
 typedef drgui_element dred_control;
 
@@ -25,6 +25,44 @@ void* dred_control_get_data(dred_control* pControl);
 // dred_control_get_data_size()
 size_t dred_control_get_data_size(dred_control* pControl);
 
+
+
+// Hides the given element.
+void dred_control_hide(dred_control* pControl);
+
+// Shows the given element.
+void dred_control_show(dred_control* pControl);
+
+// Determines whether or not the element is marked as visible.
+//
+// This is a direct accessor for the internal visible flag of the element and is not recursive. Thus, if this element is
+// marked as visible, but it's parent is invisible, it will still return true. Use drgui_is_visible_recursive() to do
+// a recursive visibility check.
+bool dred_control_is_visible(const dred_control* pControl);
+
+// Recursively determines whether or not the element is marked as visible.
+bool dred_control_is_visible_recursive(const dred_control* pControl);
+
+
+
+//// Hierarchy ////
+
+void dred_control_detach(dred_control* pChildElement);
+void dred_control_append(dred_control* pChildElement, dred_control* pParentElement);
+void dred_control_prepend(dred_control* pChildElement, dred_control* pParentElement);
+void dred_control_append_sibling(dred_control* pElementToAppend, dred_control* pElementToAppendTo);
+void dred_control_prepend_sibling(dred_control* pElementToPrepend, dred_control* pElementToPrependTo);
+dred_control* dred_control_find_top_level_element(dred_control* pElement);
+bool dred_control_is_parent(dred_control* pParentElement, dred_control* pChildElement);
+bool dred_control_is_child(dred_control* pChildElement, dred_control* pParentElement);
+bool dred_control_is_ancestor(dred_control* pAncestorElement, dred_control* pChildElement);
+bool dred_control_is_descendant(dred_control* pChildElement, dred_control* pAncestorElement);
+bool dred_control_is_self_or_ancestor(dred_control* pAncestorElement, dred_control* pChildElement);
+bool dred_control_is_self_or_descendant(dred_control* pChildElement, dred_control* pAncestorElement);
+
+
+
+//// Layout ////
 
 // dred_control_set_absolute_position()
 void dred_control_set_absolute_position(dred_control* pControl, float positionX, float positionY);

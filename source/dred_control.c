@@ -57,6 +57,92 @@ size_t dred_control_get_data_size(dred_control* pControl)
 
 
 
+void dred_control_hide(dred_control* pControl)
+{
+    drgui_hide(pControl);
+}
+
+void dred_control_show(dred_control* pControl)
+{
+    drgui_show(pControl);
+}
+
+bool dred_control_is_visible(const dred_control* pControl)
+{
+    return drgui_is_visible(pControl);
+}
+
+bool dred_control_is_visible_recursive(const dred_control* pControl)
+{
+    return drgui_is_visible_recursive(pControl);
+}
+
+
+
+
+void dred_control_detach(dred_control* pChildControl)
+{
+    drgui_detach(pChildControl);
+}
+
+void dred_control_append(dred_control* pChildControl, dred_control* pParentControl)
+{
+    drgui_append(pChildControl, pParentControl);
+}
+
+void dred_control_prepend(dred_control* pChildControl, dred_control* pParentControl)
+{
+    drgui_prepend(pChildControl, pParentControl);
+}
+
+void dred_control_append_sibling(dred_control* pControlToAppend, dred_control* pControlToAppendTo)
+{
+    drgui_append_sibling(pControlToAppend, pControlToAppendTo);
+}
+
+void dred_control_prepend_sibling(dred_control* pControlToPrepend, dred_control* pControlToPrependTo)
+{
+    drgui_prepend_sibling(pControlToPrepend, pControlToPrependTo);
+}
+
+dred_control* dred_control_find_top_level_element(dred_control* pControl)
+{
+    return drgui_find_top_level_element(pControl);
+}
+
+bool dred_control_is_parent(dred_control* pParentControl, dred_control* pChildControl)
+{
+    return drgui_is_parent(pParentControl, pChildControl);
+}
+
+bool dred_control_is_child(dred_control* pChildControl, dred_control* pParentControl)
+{
+    return drgui_is_child(pChildControl, pParentControl);
+}
+
+bool dred_control_is_ancestor(dred_control* pAncestorControl, dred_control* pChildControl)
+{
+    return drgui_is_ancestor(pAncestorControl, pChildControl);
+}
+
+bool dred_control_is_descendant(dred_control* pChildControl, dred_control* pAncestorControl)
+{
+    return drgui_is_descendant(pChildControl, pAncestorControl);
+}
+
+bool dred_control_is_self_or_ancestor(dred_control* pAncestorControl, dred_control* pChildControl)
+{
+    return drgui_is_self_or_ancestor(pAncestorControl, pChildControl);
+}
+
+bool dred_control_is_self_or_descendant(dred_control* pChildControl, dred_control* pAncestorControl)
+{
+    return drgui_is_self_or_descendant(pChildControl, pAncestorControl);
+}
+
+
+
+
 void dred_control_set_absolute_position(dred_control* pControl, float positionX, float positionY)
 {
     drgui_set_absolute_position(pControl, positionX, positionY);
