@@ -27,6 +27,9 @@ drgui_element* dred_platform__create_root_gui_element(drgui_context* pGUI, dred_
 
 #ifdef DRED_WIN32
 static const char* g_WindowClass = "dred_WindowClass";
+static const char* g_WindowClassTimer = "dred_WindowClass_Timer";
+
+HWND g_hTimerWnd = NULL;
 
 #define GET_X_LPARAM(lp)    ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp)    ((int)(short)HIWORD(lp))
@@ -158,7 +161,7 @@ int dred_win32_get_mouse_event_state_flags(WPARAM wParam)
 }
 
 
-ACCEL dred_win32_to_ACCEL(dred_key key, uint32_t modifiers, WORD cmd)
+ACCEL dred_win32_to_ACCEL(drgui_key key, uint32_t modifiers, WORD cmd)
 {
     ACCEL a;
     a.key = key;
@@ -521,6 +524,12 @@ LRESULT CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
+static LRESULT TimerWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+
 bool dred_platform_init__win32()
 {
     // We'll be handling DPI ourselves. This should be done at the top.
@@ -537,6 +546,25 @@ bool dred_platform_init__win32()
     wc.hIcon         = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(101));
     wc.style         = CS_DBLCLKS;
     if (!RegisterClassExA(&wc)) {
+        UnregisterClassA(g_WindowClass, NULL);
+        return false;
+    }
+
+    WNDCLASSEXA timerWC;
+    ZeroMemory(&timerWC, sizeof(timerWC));
+    timerWC.cbSize        = sizeof(timerWC);
+    timerWC.lpfnWndProc   = (WNDPROC)TimerWindowProcWin32;
+    timerWC.lpszClassName = g_WindowClassTimer;
+    timerWC.style         = CS_OWNDC;
+    if (!RegisterClassExA(&timerWC)) {
+        UnregisterClassA(g_WindowClass, NULL);
+        return false;
+    }
+
+    g_hTimerWnd = CreateWindowExA(0, g_WindowClassTimer, "", 0, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
+    if (g_hTimerWnd == NULL) {
+        UnregisterClassA(g_WindowClass, NULL);
+        UnregisterClassA(g_WindowClassTimer, NULL);
         return false;
     }
 
@@ -545,7 +573,11 @@ bool dred_platform_init__win32()
 
 void dred_platform_uninit__win32()
 {
+    DestroyWindow(g_hTimerWnd);
+    g_hTimerWnd = NULL;
+
     UnregisterClassA(g_WindowClass, NULL);
+    UnregisterClassA(g_WindowClassTimer, NULL);
 }
 
 int dred_platform_run__win32()
@@ -786,6 +818,59 @@ void dred_window_bind_accelerators__win32(dred_window* pWindow, dred_accelerator
     }
 }
 
+
+//// TIMERS ////
+
+static VOID CALLBACK dred_timer_proc_win32(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+{
+    (void)hWnd;
+    (void)uMsg;
+    (void)dwTime;
+
+    dred_timer* pTimer = (dred_timer*)idEvent;
+    if (pTimer == NULL) {
+        assert(false);
+    }
+
+    if (pTimer->callback != NULL) {
+        pTimer->callback(pTimer, pTimer->pUserData);
+    }
+}
+
+dred_timer* dred_timer_create__win32(unsigned int timeoutInMilliseconds, dred_timer_proc callback, void* pUserData)
+{
+    dred_timer* pTimer = malloc(sizeof(*pTimer));
+    if (pTimer == NULL) {
+        return NULL;
+    }
+
+    // On Win32 we need to associate the timer with a window.
+    pTimer->tagWin32 = SetTimer(g_hTimerWnd, (UINT_PTR)pTimer, timeoutInMilliseconds, dred_timer_proc_win32);
+    if (pTimer->tagWin32 == 0) {
+        free(pTimer);
+        return NULL;
+    }
+
+    pTimer->timeoutInMilliseconds = timeoutInMilliseconds;
+    pTimer->callback              = callback;
+    pTimer->pUserData             = pUserData;
+
+    return pTimer;
+}
+
+void dred_timer_delete__win32(dred_timer* pTimer)
+{
+    if (pTimer == NULL) {
+        return;
+    }
+
+    KillTimer(g_hTimerWnd, pTimer->tagWin32);
+    free(pTimer);
+}
+
+
+
+//// WIN32 <-> GUI BINDING ////
 
 static void dred_platform__on_global_capture_mouse__win32(drgui_element* pElement)
 {
@@ -1635,6 +1720,51 @@ void dred_window_bind_accelerators__gtk(dred_window* pWindow, dred_accelerator_t
 }
 
 
+//// TIMERS ////
+
+static gboolean dred_timer_proc_gtk(gpointer data)
+{
+    dred_timer* pTimer = (dred_timer*)data;
+    if (pTimer == NULL) {
+        assert(false);
+        return 0;
+    }
+
+    if (pTimer->callback != NULL) {
+        pTimer->callback(pTimer, pTimer->pUserData);
+    }
+
+    return true;
+}
+
+dred_timer* dred_timer_create__gtk(unsigned int timeoutInMilliseconds, dred_timer_proc callback, void* pUserData)
+{
+    dred_timer* pTimer = (dred_timer*)malloc(sizeof(*pTimer));
+    if (pTimer == NULL) {
+        return NULL;
+    }
+
+    pTimer->timerID               = g_timeout_add(timeoutInMilliseconds, dred_timer_proc_gtk, pTimer);
+    pTimer->timeoutInMilliseconds = timeoutInMilliseconds;
+    pTimer->callback              = callback;
+    pTimer->pUserData             = pUserData;
+
+    return pTimer;
+}
+
+void dred_timer_delete__gtk(dred_timer* pTimer)
+{
+    if (pTimer == NULL) {
+        return;
+    }
+
+    g_source_remove(pTimer->timerID);
+    free(pTimer);
+}
+
+
+
+//// GTK <-> GUI BINDING ////
 
 static void dred_platform__on_global_capture_mouse__gtk(drgui_element* pElement)
 {
@@ -2092,4 +2222,31 @@ dred_window* dred_get_element_window(drgui_element* pElement)
     }
 
     return *ppWindow;
+}
+
+
+
+
+//// TIMERS ////
+
+dred_timer* dred_timer_create(unsigned int timeoutInMilliseconds, dred_timer_proc callback, void* pUserData)
+{
+#ifdef DRED_WIN32
+    return dred_timer_create__win32(timeoutInMilliseconds, callback, pUserData);
+#endif
+
+#ifdef DRED_GTK
+    return dred_timer_create__gtk(timeoutInMilliseconds, callback, pUserData);
+#endif
+}
+
+void dred_timer_delete(dred_timer* pTimer)
+{
+#ifdef DRED_WIN32
+    dred_timer_delete__win32(pTimer);
+#endif
+
+#ifdef DRED_GTK
+    dred_timer_delete__gtk(pTimer);
+#endif
 }

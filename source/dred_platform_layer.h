@@ -17,9 +17,6 @@
 #define DRED_KEY_STATE_AUTO_REPEATED  (1 << 31)       // Whether or not the key press is generated due to auto-repeating. Only used with key down events.
 
 
-typedef uint32_t dred_key;
-
-
 // Initializes the platform layer. Should be the first function to be called.
 bool dred_platform_init();
 
@@ -207,3 +204,37 @@ void dred_window_on_unfocus(dred_window* pWindow);
 
 // Helper function for retrieving the window that owns the given GUI element.
 dred_window* dred_get_element_window(drgui_element* pElement);
+
+
+
+//// TIMERS ////
+
+typedef void (* dred_timer_proc)(dred_timer* pTimer, void* pUserData);
+
+struct dred_timer
+{
+#ifdef DRED_WIN32
+    // The value returned by SetTimer().
+    UINT_PTR tagWin32;
+#endif
+
+#ifdef DRED_GTK
+    // The GTK timer ID.
+    guint timerID;
+#endif
+
+    // The timeout in milliseconds.
+    unsigned int timeoutInMilliseconds;
+
+    // The callback function.
+    dred_timer_proc callback;
+
+    // The user data passed to ak_create_timer().
+    void* pUserData;
+};
+
+// Creates a callback based timer.
+dred_timer* dred_timer_create(unsigned int timeoutInMilliseconds, dred_timer_proc callback, void* pUserData);
+
+// Deletes the given timer.
+void dred_timer_delete(dred_timer* pTimer);

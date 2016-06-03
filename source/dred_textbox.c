@@ -2,6 +2,7 @@
 typedef struct
 {
     drgui_element* pInternalTB;
+    dred_timer* pTimer;
 } dred_textbox_data;
 
 drgui_element* dred_textbox__get_internal_tb(dred_textbox* pTextBox)
@@ -15,12 +16,23 @@ drgui_element* dred_textbox__get_internal_tb(dred_textbox* pTextBox)
 }
 
 
+void dred_textbox__on_timer(dred_timer* pTimer, void* pUserData)
+{
+    dred_textbox* pTextBox = (dred_textbox*)pUserData;
+    assert(pTextBox != NULL);
+
+    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(data != NULL);
+
+    drgui_textbox_step(data->pInternalTB, 100);
+}
+
 void dred_textbox__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement)
 {
     (void*)pPrevCapturedElement;
 
     // The internal text box needs to be given the keyboard focus whenever a dred_textbox receives it.
-    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
+    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (data == NULL) {
         return;
     }
@@ -71,6 +83,31 @@ void dred_textbox_innertb__on_printable_key_down(drgui_element* pInternalTB, uin
     }
 }
 
+void dred_textbox_innertb__on_capture_keyboard(drgui_element* pInternalTB, drgui_element* pPrevCapturedElement)
+{
+    (void)pPrevCapturedElement;
+
+    dred_textbox* pTextBox = dred_control_get_parent(pInternalTB);
+    assert(pTextBox != NULL);
+
+    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(data != NULL);
+
+    if (data->pTimer == NULL) {
+        data->pTimer = dred_timer_create(100, dred_textbox__on_timer, pTextBox);
+    }
+
+    drgui_textbox_on_capture_keyboard(pInternalTB, pPrevCapturedElement);
+}
+
+void dred_textbox_innertb__on_release_keyboard(drgui_element* pInternalTB, drgui_element* pNewCapturedElement)
+{
+    dred_textbox* pTextBox = dred_control_get_parent(pInternalTB);
+    assert(pTextBox != NULL);
+
+    drgui_textbox_on_release_keyboard(pInternalTB, pNewCapturedElement);
+}
+
 
 dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
 {
@@ -88,6 +125,8 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
         return NULL;
     }
 
+    data->pTimer = NULL;
+
     drgui_textbox_set_background_color(data->pInternalTB, drgui_rgb(64, 64, 64));
     drgui_textbox_set_active_line_background_color(data->pInternalTB, drgui_rgb(64, 64, 64));
     drgui_textbox_set_text_color(data->pInternalTB, drgui_rgb(224, 224, 224));
@@ -103,6 +142,8 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drgui_set_on_key_down(data->pInternalTB, dred_textbox_innertb__on_key_down);
     drgui_set_on_key_up(data->pInternalTB, dred_textbox_innertb__on_key_up);
     drgui_set_on_printable_key_down(data->pInternalTB, dred_textbox_innertb__on_printable_key_down);
+    drgui_set_on_capture_keyboard(data->pInternalTB, dred_textbox_innertb__on_capture_keyboard);
+    drgui_set_on_release_keyboard(data->pInternalTB, dred_textbox_innertb__on_release_keyboard);
 
     return pTextBox;
 }
