@@ -36,6 +36,12 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     assert(data != NULL);
 
     data->pTextBox = dred_textbox_create(pDred, pTextEditor);
+    if (data->pTextBox == NULL) {
+        dred_editor_delete(pTextEditor);
+        return NULL;
+    }
+
+    dred_textbox_set_vertical_align(data->pTextBox, drgui_text_engine_alignment_top);
 
 
     // Events.
