@@ -110,5 +110,10 @@ void dred_cmdbar_delete(dred_cmdbar* pCmdBar)
         return;
     }
 
+    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_data(pCmdBar);
+    if (data != NULL) {
+        dred_textbox_delete(data->pTextBox);
+    }
+
     dred_control_delete(pCmdBar);
 }

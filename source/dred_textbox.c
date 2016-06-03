@@ -84,6 +84,8 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drgui_textbox_set_cursor_color(data->pInternalTB, drgui_rgb(224, 224, 224));
     drgui_textbox_set_font(data->pInternalTB, drgui_create_font(pDred->pGUI, "Courier New", 13, drgui_font_weight_default, drgui_font_slant_none, 0, 0));
     drgui_textbox_set_border_width(data->pInternalTB, 0);
+    drgui_textbox_disable_horizontal_scrollbar(data->pInternalTB);
+    drgui_textbox_disable_vertical_scrollbar(data->pInternalTB);
 
     // Events.
     dred_control_set_on_size(pTextBox, drgui_on_size_fit_children_to_parent);
@@ -99,6 +101,15 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
 
 void dred_textbox_delete(dred_textbox* pTextBox)
 {
+    if (pTextBox == NULL) {
+        return;
+    }
+
+    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_data(pTextBox);
+    if (data != NULL) {
+        drgui_delete_textbox(data->pInternalTB);
+    }
+
     dred_control_delete(pTextBox);
 }
 

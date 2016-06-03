@@ -13,6 +13,9 @@ struct dred_context
     // The main GUI context.
     drgui_context* pGUI;
 
+    // The default GUI font.
+    drgui_font* pGUIFont;
+
 
     // The accelerator table.
     dred_accelerator_table acceleratorTable;
@@ -24,6 +27,12 @@ struct dred_context
 
     // The main window.
     dred_window* pMainWindow;
+
+    // The main tab group container. This is the root container where all other sub-containers will be placed.
+    dred_tabgroup_container* pMainTabgroupContainer;
+
+    // The main tab group. This is actually temporary until support for multiple tab groups (splitting) is implemented.
+    dred_tabgroup* pMainTabGroup;
 
     // The command bar. This is is the control that runs along the bottom of the main window.
     dred_cmdbar* pCmdBar;
@@ -71,6 +80,12 @@ void dred_capture_keyboard(dred_context* pDred, dred_control* pControl);
 
 // Releases the keyboard capture.
 void dred_release_keyboard(dred_context* pDred);
+
+
+// Retrieves the focused tab group.
+//
+// The focused tab group is where newly opened files will be placed by default.
+dred_tabgroup* dred_get_focused_tabgroup(dred_context* pDred);
 
 
 // Called when an accelerator is triggered.

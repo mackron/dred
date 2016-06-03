@@ -1,10 +1,26 @@
 
+void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabgroup_container* pContainer, float parentWidth, float parentHeight)
+{
+    assert(pContainer != NULL);
+
+    dred_control_set_size(pContainer, parentWidth, parentHeight - pDred->config.cmdbarHeight);
+}
+
 void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float parentWidth, float parentHeight)
 {
     assert(pCmdBar != NULL);
 
     dred_control_set_size(pCmdBar, parentWidth, pDred->config.cmdbarHeight);
     dred_control_set_relative_position(pCmdBar, 0, parentHeight - pDred->config.cmdbarHeight);
+}
+
+void dred__update_main_window_layout(dred_window* pWindow, float windowWidth, float windowHeight)
+{
+    dred_context* pDred = pWindow->pDred;
+    assert(pDred != NULL);
+
+    dred__update_main_tab_group_container_layout(pDred, pDred->pMainTabgroupContainer, windowWidth, windowHeight);
+    dred__update_cmdbar_layout(pDred, pDred->pCmdBar, windowWidth, windowHeight);
 }
 
 
@@ -22,10 +38,7 @@ void dred_window_cb__on_main_window_size(drgui_element* pElement, float width, f
         return;
     }
 
-    dred_context* pDred = pWindow->pDred;
-    assert(pDred != NULL);
-
-    dred__update_cmdbar_layout(pDred, pDred->pCmdBar, width, height);
+    dred__update_main_window_layout(pWindow, width, height);
 }
 
 void dred_window_cb__on_main_window_paint_TEMP(drgui_element* pElement, drgui_rect rect, void* pPaintData)
@@ -55,6 +68,9 @@ void dred_config__on_error(dred_config* pConfig, const char* configPath, const c
 
 bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 {
+    // TODO: DO PROPER CLEANUP ON ERROR. IMPLEMENT on_error GOTO.
+    // TODO: USE dred_error() AND FAMILY FOR PRINTING CRITICAL ERRORS INSTEAD OF printf()
+
     if (pDred == NULL) {
         return false;
     }
@@ -89,6 +105,12 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     // The GUI needs to be linked to the window system.
     dred_platform_bind_gui(pDred->pGUI);
+
+
+    // The default GUI font. This is based on the platform.
+    // TODO: Put this in the platform layer.
+    // TODO: Improve fonts in general to make scaling easier.
+    pDred->pGUIFont = drgui_create_font(pDred->pGUI, "Segoe UI", 12, drgui_font_weight_normal, drgui_font_slant_none, 0, 0);
 
 
 
@@ -140,15 +162,32 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
 
-    // The command bar. Ensure this is given a valid initial size.
-    pDred->pCmdBar = dred_cmdbar_create(pDred, pDred->pMainWindow->pRootGUIElement);
-    if (pDred->pCmdBar == NULL) {
-        printf("Failed to create command bar.");
+    // The main tab group container.
+    pDred->pMainTabgroupContainer = dred_tabgroup_container_create(pDred, pDred->pMainWindow->pRootGUIElement);
+    if (pDred->pMainTabgroupContainer == NULL) {
+        printf("Failed to create main tab group container.\n");
         return false;
     }
 
-    dred__update_cmdbar_layout(pDred, pDred->pCmdBar, 1280, 720);
+    pDred->pMainTabGroup = dred_tabgroup_create(pDred, pDred->pMainTabgroupContainer);
+    if (pDred->pMainTabGroup == NULL) {
+        printf("Failed to create main tab group.\n");
+        return false;
+    }
+
+
+    // The command bar. Ensure this is given a valid initial size.
+    pDred->pCmdBar = dred_cmdbar_create(pDred, pDred->pMainWindow->pRootGUIElement);
+    if (pDred->pCmdBar == NULL) {
+        printf("Failed to create command bar.\n");
+        return false;
+    }
+
     drgui_capture_keyboard(pDred->pCmdBar);
+
+
+    // Update the layout of the main window to ensure it's in the correct initial state.
+    dred__update_main_window_layout(pDred->pMainWindow, 1280, 720);
 
 
     return true;
@@ -296,6 +335,16 @@ void dred_release_keyboard(dred_context* pDred)
     }
 
     drgui_release_keyboard(pDred->pGUI);
+}
+
+
+dred_tabgroup* dred_get_focused_tabgroup(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return NULL;
+    }
+
+    return pDred->pMainTabGroup;
 }
 
 
