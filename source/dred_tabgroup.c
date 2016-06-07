@@ -60,7 +60,7 @@ void dred_tabgroup__on_size(dred_tabgroup* pTabGroup, float newWidth, float newH
     dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
     assert(data != NULL);
 
-    drgui_set_size(data->pTabBar, newWidth, 24);
+    drgui_set_size(data->pTabBar, newWidth, drgui_get_height(data->pTabBar));
 
     float tabbarHeight = dred_control_get_height(dred_tabgroup__get_tabbar(pTabGroup));
     for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
@@ -132,7 +132,8 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
 
     //drgui_tabbar_show_close_buttons(data->pTabBar);
     drgui_tabbar_enable_close_on_middle_click(data->pTabBar);
-    drgui_tabbar_set_font(data->pTabBar, dred_font_acquire_subfont(pDred->pGUIFont, 1.1f));
+    drgui_tabbar_enable_auto_size(data->pTabBar);
+    drgui_tabbar_set_font(data->pTabBar, dred_font_acquire_subfont(pDred->pGUIFont, 1));
     drgui_tabbar_set_on_tab_activated(data->pTabBar, dred_tabbar__on_tab_activated);
     drgui_tabbar_set_on_tab_deactivated(data->pTabBar, dred_tabbar__on_tab_deactivated);
     drgui_tabbar_set_on_tab_closed(data->pTabBar, dred_tabbar__on_tab_close);
