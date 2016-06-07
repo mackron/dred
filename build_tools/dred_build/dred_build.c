@@ -1,5 +1,5 @@
 
-#define DR_UTIL_IMPLEMENTATION
+#define DR_IMPLEMENTATION
 #include "../../../dr_libs/dr.h"
 
 #define DR_PATH_IMPLEMENTATION
