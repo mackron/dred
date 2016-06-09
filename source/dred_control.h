@@ -117,5 +117,8 @@ void dred_control_set_on_release_keyboard(dred_control* pControl, drgui_on_relea
 
 //// Misc stuff relating to controls ////
 
+// Determines whether or not the given control is of the given type.
+bool dred_control_is_of_type(dred_control* pControl, const char* type);
+
 // Checks if the given type string is of the other type.
 bool dred_is_control_type_of_type(const char* type, const char* base);

@@ -55,3 +55,7 @@ bool dred_file_write_string(dred_file file, const char* str);
 
 // dred_file_write_line()
 bool dred_file_write_line(dred_file file, const char* str);
+
+
+// Converts a relative path to absolute.
+bool dred_to_absolute_path(const char* relativePath, char* absolutePathOut, size_t absolutePathOutSize);

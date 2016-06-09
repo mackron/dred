@@ -99,6 +99,35 @@ void dred_release_keyboard(dred_context* pDred);
 // The focused tab group is where newly opened files will be placed by default.
 dred_tabgroup* dred_get_focused_tabgroup(dred_context* pDred);
 
+// Retrieves the focused tab.
+//
+// The focused tab is just the active tab of the focused tab group.
+dred_tab* dred_get_focused_tab(dred_context* pDred);
+
+
+// Retrieves the control type of the editor to use for a file with the extension of the given file path.
+const char* dred_get_editor_type_by_path(const char* filePath);
+
+
+// Opens the file at the given path.
+bool dred_open_file(dred_context* pDred, const char* filePath);
+
+// Opens the file at the given path as the given type.
+bool dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType);
+
+// Closes the focused file.
+void dred_close_focused_file(dred_context* pDred);
+
+// Closes the given editor.
+void dred_close_tab(dred_context* pDred, dred_tab* pTab);
+
+
+// Creates an editor by it's type.
+dred_editor* dred_create_editor_by_type(dred_context* pDred, const char* editorType);
+
+// Deletes the given editor based on it's type.
+void dred_delete_editor_by_type(dred_editor* pEditor);
+
 
 // Called when an accelerator is triggered.
 void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t acceleratorIndex);

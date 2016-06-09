@@ -306,7 +306,16 @@ void dred_control_set_on_release_keyboard(dred_control* pControl, drgui_on_relea
 
 //// Misc stuff relating to controls ////
 
+bool dred_control_is_of_type(dred_control* pControl, const char* type)
+{
+    return drgui_is_of_type(pControl, type);
+}
+
 bool dred_is_control_type_of_type(const char* type, const char* base)
 {
+    if (type == NULL || base == NULL) {
+        return false;
+    }
+
     return strncmp(type, base, strlen(base)) == 0;
 }

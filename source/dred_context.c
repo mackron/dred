@@ -111,10 +111,6 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     // TODO: Put this in the platform layer.
     pDred->pGUIFont = dred_font_library_create_font(&pDred->fontLibrary, "Segoe UI", 12, drgui_font_weight_normal, drgui_font_slant_none, 0, 0);
 
-    // TODO: Improve fonts in general to make scaling easier.
-    //pDred->pGUIFont = drgui_create_font(pDred->pGUI, "Segoe UI", 12, drgui_font_weight_normal, drgui_font_slant_none, 0, 0);
-
-
 
     // Accelerator table needs to be initialized before the config, because the config can specify bindings.
     if (!dred_accelerator_table_init(&pDred->acceleratorTable)) {
@@ -189,11 +185,13 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
     // TESTING
-    pDred->pEditor0 = dred_text_editor_create(pDred, NULL);
-    pDred->pEditor0Tab = dred_tabgroup_append_tab(pDred->pMainTabGroup, "Test Editor 0", pDred->pEditor0);
+    //pDred->pEditor0 = dred_text_editor_create(pDred, NULL);
+    //pDred->pEditor0Tab = dred_tabgroup_append_tab(pDred->pMainTabGroup, "Test Editor 0", pDred->pEditor0);
+    //pDred->pEditor1 = dred_text_editor_create(pDred, NULL);
+    //pDred->pEditor1Tab = dred_tabgroup_append_tab(pDred->pMainTabGroup, "Test Editor 1", pDred->pEditor1);
 
-    pDred->pEditor1 = dred_text_editor_create(pDred, NULL);
-    pDred->pEditor1Tab = dred_tabgroup_append_tab(pDred->pMainTabGroup, "Test Editor 1", pDred->pEditor1);
+    dred_open_file(pDred, ".dred");
+    dred_open_file(pDred, ".desktop");
 
 
     // Update the layout of the main window to ensure it's in the correct initial state.
@@ -354,6 +352,110 @@ dred_tabgroup* dred_get_focused_tabgroup(dred_context* pDred)
     }
 
     return pDred->pMainTabGroup;
+}
+
+dred_tab* dred_get_focused_tab(dred_context* pDred)
+{
+    dred_tabgroup* pFocusedTabGroup = dred_get_focused_tabgroup(pDred);
+    if (pFocusedTabGroup == NULL) {
+        return NULL;
+    }
+
+    return dred_tabgroup_get_active_tab(pFocusedTabGroup);
+}
+
+
+
+const char* dred_get_editor_type_by_path(const char* filePath)
+{
+    if (drpath_extension_equal(filePath, "txt")) {
+        return DRED_CONTROL_TYPE_TEXT_EDITOR;
+    }
+
+    return NULL;
+}
+
+bool dred_open_file(dred_context* pDred, const char* filePath)
+{
+    return dred_open_file_by_type(pDred, filePath, dred_get_editor_type_by_path(filePath));
+}
+
+bool dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType)
+{
+    char filePathAbsolute[DRED_MAX_PATH];
+    if (!dred_to_absolute_path(filePath, filePathAbsolute, sizeof(filePathAbsolute))) {
+        dred_errorf(pDred, "File path is too long %s\n", filePath);
+        return false;
+    }
+
+    dred_editor* pEditor = dred_create_editor_by_type(pDred, editorType);
+    if (pEditor == NULL) {
+        return false;
+    }
+
+
+    // We have the editor, so now we need to create a tab an associate the new editor with it.
+    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
+    if (pTabGroup == NULL) {
+        return false;   // TODO: This means there is no tab group so one need to be created.
+    }
+
+    dred_tab* pTab = dred_tabgroup_prepend_tab(pTabGroup, drpath_file_name(filePath), pEditor);
+    if (pTab == NULL) {
+        dred_delete_editor_by_type(pEditor);
+        return false;
+    }
+
+    dred_tabgroup_activate_tab(pTabGroup, pTab);
+
+    return true;
+}
+
+void dred_close_focused_file(dred_context* pDred)
+{
+    dred_close_tab(pDred, dred_get_focused_tab(pDred));
+}
+
+void dred_close_tab(dred_context* pDred, dred_tab* pTab)
+{
+    if (pDred == NULL || pTab == NULL) {
+        return;
+    }
+
+    // TODO: Implement me.
+    // Delete the editor.
+    // Delete the tab.
+}
+
+
+dred_editor* dred_create_editor_by_type(dred_context* pDred, const char* editorType)
+{
+    if (pDred == NULL) {
+        return NULL;
+    }
+
+    dred_editor* pEditor = NULL;
+    if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+        pEditor = dred_text_editor_create(pDred, NULL);
+    }
+    //if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_IMAGE_EDITOR)) {
+    //    pEditor = dred_image_editor_create(pDred, NULL)
+    //}
+
+    // Fall back to a text editor if it's an unknown extension.
+    if (pEditor == NULL) {
+        pEditor = dred_text_editor_create(pDred, NULL);
+    }
+
+    return pEditor;
+}
+
+void dred_delete_editor_by_type(dred_editor* pEditor)
+{
+    if (dred_control_is_of_type(pEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+        dred_text_editor_delete(pEditor);
+        return;
+    }
 }
 
 
