@@ -189,7 +189,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     //pDred->pEditor1 = dred_text_editor_create(pDred, NULL);
     //pDred->pEditor1Tab = dred_tabgroup_append_tab(pDred->pMainTabGroup, "Test Editor 1", pDred->pEditor1);
 
-    //dred_open_file(pDred, ".dred");
+    dred_open_file(pDred, ".dred");
     //dred_open_file(pDred, ".desktop");
 
 
@@ -208,6 +208,10 @@ void dred_uninit(dred_context* pDred)
     if (pDred == NULL) {
         return;
     }
+
+    // Make sure any lingering tabs are forcefully closed. This should be done at a higher level so that the user
+    // can be prompted to save any unsaved work or whatnot, but I'm keeping this here for sanity.
+    dred_close_all_tabs(pDred);
 
 
     if (pDred->pCmdBar) {
@@ -509,7 +513,7 @@ void dred_close_all_tabs(dred_context* pDred)
     }
 
     while (dred_tabgroup_first_tab(pTabGroup) != NULL) {
-        dred_tabgroup_delete_tab(pTabGroup, dred_tabgroup_first_tab(pTabGroup));
+        dred_close_tab(pDred, dred_tabgroup_first_tab(pTabGroup));
     }
 }
 
