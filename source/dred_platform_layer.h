@@ -16,6 +16,10 @@
 #define DRED_KEY_STATE_ALT_DOWN       (1 << 7)        // Whether or not an alt key is down at the time the input event is handled.
 #define DRED_KEY_STATE_AUTO_REPEATED  (1 << 31)       // Whether or not the key press is generated due to auto-repeating. Only used with key down events.
 
+#define DRED_MESSAGE_BOX_YES     1
+#define DRED_MESSAGE_BOX_NO      2
+#define DRED_MESSAGE_BOX_CANCEL  3
+
 
 // Initializes the platform layer. Should be the first function to be called.
 bool dred_platform_init();

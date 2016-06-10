@@ -25,9 +25,9 @@ void dred_text_editor__on_size(dred_text_editor* pTextEditor, float newWidth, fl
     dred_control_set_size(pTextBox, newWidth, newHeight);
 }
 
-dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pParent)
+dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pParent, const char* filePathAbsolute)
 {
-    dred_text_editor* pTextEditor = dred_editor_create(pDred, pParent, DRED_CONTROL_TYPE_TEXT_EDITOR, sizeof(dred_text_editor_data));
+    dred_text_editor* pTextEditor = dred_editor_create(pDred, pParent, DRED_CONTROL_TYPE_TEXT_EDITOR, filePathAbsolute, sizeof(dred_text_editor_data));
     if (pTextEditor == NULL) {
         return NULL;
     }
@@ -52,10 +52,14 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 
 void dred_text_editor_delete(dred_text_editor* pTextEditor)
 {
-    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
-    if (data == NULL) {
+    if (pTextEditor == NULL) {
         return;
     }
 
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data != NULL) {
+        dred_textbox_delete(data->pTextBox);
+    }
+    
     dred_editor_delete(pTextEditor);
 }

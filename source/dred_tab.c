@@ -70,3 +70,15 @@ dred_control* dred_tab_get_control(dred_tab* pTab)
 
     return data->pControl;
 }
+
+
+dred_control* dred_tab_get_tabgroup(dred_tab* pTab)
+{
+    dred_tab_data* data = (dred_tab_data*)drgui_tab_get_extra_data(pTab);
+    if (data == NULL) {
+        return NULL;
+    }
+
+    // The tab group is the parent of the tab bar.
+    return dred_control_get_parent(pTab->pTBElement);
+}

@@ -190,7 +190,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     //pDred->pEditor1 = dred_text_editor_create(pDred, NULL);
     //pDred->pEditor1Tab = dred_tabgroup_append_tab(pDred->pMainTabGroup, "Test Editor 1", pDred->pEditor1);
 
-    dred_open_file(pDred, ".dred");
+    //dred_open_file(pDred, ".dred");
     dred_open_file(pDred, ".desktop");
 
 
@@ -375,6 +375,28 @@ const char* dred_get_editor_type_by_path(const char* filePath)
     return NULL;
 }
 
+dred_tab* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char* filePathAbsolute)
+{
+    // TODO: Iterate over every tab group.
+
+    // For now there is only a single tab group...
+    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
+    if (pTabGroup == NULL) {
+        return NULL;
+    }
+
+    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+        dred_control* pControl = dred_tab_get_control(pTab);
+        if (pControl != NULL && dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
+            if (drpath_equal(dred_editor_get_file_path(pControl), filePathAbsolute)) {
+                return pTab;
+            }
+        }
+    }
+
+    return NULL;
+}
+
 bool dred_open_file(dred_context* pDred, const char* filePath)
 {
     return dred_open_file_by_type(pDred, filePath, dred_get_editor_type_by_path(filePath));
@@ -388,7 +410,15 @@ bool dred_open_file_by_type(dred_context* pDred, const char* filePath, const cha
         return false;
     }
 
-    dred_editor* pEditor = dred_create_editor_by_type(pDred, editorType);
+    // If the file is already open, activate it's tab.
+    dred_tab* pExistingTab = dred_find_editor_tab_by_absolute_path(pDred, filePathAbsolute);
+    if (pExistingTab != NULL) {
+        dred_tabgroup_activate_tab(dred_tab_get_tabgroup(pExistingTab), pExistingTab);
+        return false;
+    }
+
+
+    dred_editor* pEditor = dred_create_editor_by_type(pDred, editorType, filePathAbsolute);
     if (pEditor == NULL) {
         return false;
     }
@@ -422,13 +452,17 @@ void dred_close_tab(dred_context* pDred, dred_tab* pTab)
         return;
     }
 
-    // TODO: Implement me.
-    // Delete the editor.
+    dred_editor* pEditor = dred_tab_get_control(pTab);
+
     // Delete the tab.
+    dred_tabgroup_delete_tab(dred_tab_get_tabgroup(pTab), pTab);
+
+    // Delete the editor.
+    dred_delete_editor_by_type(pEditor);
 }
 
 
-dred_editor* dred_create_editor_by_type(dred_context* pDred, const char* editorType)
+dred_editor* dred_create_editor_by_type(dred_context* pDred, const char* editorType, const char* filePathAbsolute)
 {
     if (pDred == NULL) {
         return NULL;
@@ -436,15 +470,15 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, const char* editorT
 
     dred_editor* pEditor = NULL;
     if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-        pEditor = dred_text_editor_create(pDred, NULL);
+        pEditor = dred_text_editor_create(pDred, NULL, filePathAbsolute);
     }
     //if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_IMAGE_EDITOR)) {
-    //    pEditor = dred_image_editor_create(pDred, NULL)
+    //    pEditor = dred_image_editor_create(pDred, NULL, filePathAbsolute)
     //}
 
     // Fall back to a text editor if it's an unknown extension.
     if (pEditor == NULL) {
-        pEditor = dred_text_editor_create(pDred, NULL);
+        pEditor = dred_text_editor_create(pDred, NULL, filePathAbsolute);
     }
 
     return pEditor;
@@ -456,6 +490,103 @@ void dred_delete_editor_by_type(dred_editor* pEditor)
         dred_text_editor_delete(pEditor);
         return;
     }
+}
+
+
+void dred_show_open_file_dialog(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+#ifdef _WIN32
+    char filePaths[4096];
+    filePaths[0] = '\0';
+
+    OPENFILENAMEA ofn;
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = pDred->pMainWindow->hWnd;
+    ofn.lpstrFile = filePaths;
+    ofn.nMaxFile = sizeof(filePaths);
+    ofn.lpstrFilter = "All\0*.*\0Text Files\0*.txt\0";
+    ofn.nFilterIndex = 1;
+    ofn.Flags = OFN_EXPLORER | OFN_ALLOWMULTISELECT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+    if (!GetOpenFileNameA(&ofn)) {
+        return;
+    }
+
+    // We need to determine whether or not mutliple files were selected. GetOpenFileName doesn't seem to provide a good way to
+    // determine this so we need to figure this out ourselves. They way we do it is to check if the first entry is a directory
+    // or a file. If it's a directory it means multiple files were selected.
+    const char* directoryPath = filePaths;
+    if (dr_directory_exists(directoryPath))
+    {
+        // Multiple files were selected.
+        const char* nextFilePath = directoryPath + strlen(directoryPath) + 1;
+        while (nextFilePath[0] != '\0') {
+            char absolutePath[DRED_MAX_PATH];
+            if (drpath_copy_and_append(absolutePath, sizeof(absolutePath), directoryPath, nextFilePath)) {
+                dred_open_file(pDred, absolutePath);
+            }
+
+            nextFilePath += strlen(nextFilePath) + 1;
+        }
+    }
+    else
+    {
+        // Only a single file was selected.
+        dred_open_file(pDred, filePaths);
+    }
+#endif
+}
+
+const char* dred_show_save_file_dialog(dred_context* pDred, char* absolutePathOut, size_t absolutePathOutSize)
+{
+    if (pDred == NULL || absolutePathOut == NULL || absolutePathOutSize == 0) {
+        return NULL;
+    }
+
+#ifdef _WIN32
+    absolutePathOut[0] = '\0';
+
+    OPENFILENAMEA ofn;
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = pDred->pMainWindow->hWnd;
+    ofn.lpstrFile = absolutePathOut;
+    ofn.nMaxFile = absolutePathOutSize;
+    //ofn.lpstrFilter = "All\0*.*\0";
+    //ofn.nFilterIndex = 1;
+    ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+    if (!GetSaveFileNameA(&ofn)) {
+        return NULL;
+    }
+
+    return absolutePathOut;
+#endif
+}
+
+unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* message, const char* title)
+{
+    if (pDred == NULL) {
+        return 0;
+    }
+
+    // TODO: Move this to the platform layer.
+#ifdef _WIN32
+    int result = MessageBoxA(pDred->pMainWindow->hWnd, message, title, MB_YESNOCANCEL);
+    switch (result)
+    {
+        case IDCANCEL: return DRED_MESSAGE_BOX_CANCEL;
+        case IDYES:    return DRED_MESSAGE_BOX_YES; 
+        case IDNO:     return DRED_MESSAGE_BOX_NO;
+
+        default: break;
+    }
+
+    return 0;
+#endif
 }
 
 

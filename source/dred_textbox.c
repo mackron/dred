@@ -105,6 +105,14 @@ void dred_textbox_innertb__on_release_keyboard(drgui_element* pInternalTB, drgui
     dred_textbox* pTextBox = dred_control_get_parent(pInternalTB);
     assert(pTextBox != NULL);
 
+    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(data != NULL);
+
+    if (data->pTimer != NULL) {
+        dred_timer_delete(data->pTimer);
+        data->pTimer = NULL;
+    }
+
     drgui_textbox_on_release_keyboard(pInternalTB, pNewCapturedElement);
 }
 

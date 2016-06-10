@@ -38,4 +38,8 @@ dred_tab* dred_tabgroup_append_tab(dred_tabgroup* pTabGroup, const char* text, d
 // pControl [in] A pointer to the control that will be associated with the tab.
 //
 // pControl will be re-parented upon being added to the group.
-dred_tab* dred_tabgroup_append_tab(dred_tabgroup* pTabGroup, const char* text, dred_control* pControl);
+dred_tab* dred_tabgroup_prepend_tab(dred_tabgroup* pTabGroup, const char* text, dred_control* pControl);
+
+
+// Deletes the given tab from the tab group.
+void dred_tabgroup_delete_tab(dred_tabgroup* pTabGroup, dred_tab* pTab);

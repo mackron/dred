@@ -169,6 +169,11 @@ bool dred_file_write_line(dred_file file, const char* str)
 
 bool dred_to_absolute_path(const char* relativePath, char* absolutePathOut, size_t absolutePathOutSize)
 {
+    if (drpath_is_absolute(relativePath)) {
+        return strcpy_s(absolutePathOut, absolutePathOutSize, relativePath) == 0;
+    }
+
+
     if (dr_get_current_directory(absolutePathOut, absolutePathOutSize) == NULL) {
         return false;
     }

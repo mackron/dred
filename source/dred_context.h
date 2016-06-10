@@ -108,6 +108,9 @@ dred_tab* dred_get_focused_tab(dred_context* pDred);
 // Retrieves the control type of the editor to use for a file with the extension of the given file path.
 const char* dred_get_editor_type_by_path(const char* filePath);
 
+// Finds the tab of the editor tied to the given absolute path.
+dred_tab* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char* filePathAbsolute);
+
 
 // Opens the file at the given path.
 bool dred_open_file(dred_context* pDred, const char* filePath);
@@ -123,10 +126,20 @@ void dred_close_tab(dred_context* pDred, dred_tab* pTab);
 
 
 // Creates an editor by it's type.
-dred_editor* dred_create_editor_by_type(dred_context* pDred, const char* editorType);
+dred_editor* dred_create_editor_by_type(dred_context* pDred, const char* editorType, const char* filePathAbsolute);
 
 // Deletes the given editor based on it's type.
 void dred_delete_editor_by_type(dred_editor* pEditor);
+
+
+// Show the Open File dialog.
+void dred_show_open_file_dialog(dred_context* pDred);
+
+// Shows the Save File dialog.
+const char* dred_show_save_file_dialog(dred_context* pDred, char* absolutePathOut, size_t absolutePathOutSize);
+
+// Shows a yes/no/cancel dialog and returns the result as DRED_MESSAGE_BOX_YES, DRED_MESSAGE_BOX_NO or DRED_MESSAGE_BOX_CANCEL.
+unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* message, const char* title);
 
 
 // Called when an accelerator is triggered.

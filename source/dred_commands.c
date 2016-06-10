@@ -13,6 +13,13 @@ void dred_command__new(dred_context* pDred, const char* value)
 void dred_command__open(dred_context* pDred, const char* value)
 {
     printf("exec: open %s\n", value);
+
+    char fileName[DRED_MAX_PATH];
+    if (dr_next_token(value, fileName, sizeof(fileName)) == NULL) {
+        dred_show_open_file_dialog(pDred);
+    } else {
+        dred_open_file(pDred, fileName);
+    }
 }
 
 void dred_command__save(dred_context* pDred, const char* value)
