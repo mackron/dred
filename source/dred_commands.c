@@ -35,6 +35,8 @@ void dred_command__save_all(dred_context* pDred, const char* value)
 void dred_command__close(dred_context* pDred, const char* value)
 {
     printf("exec: close %s\n", value);
+
+    dred_close_focused_file(pDred);
 }
 
 void dred_command__close_all(dred_context* pDred, const char* value)
