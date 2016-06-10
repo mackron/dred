@@ -624,7 +624,7 @@ dred_window* dred_window_create__win32(dred_context* pDred)
         return NULL;
     }
 
-    dred_window* pWindow = calloc(1, sizeof(*pWindow));
+    dred_window* pWindow = (dred_window*)calloc(1, sizeof(*pWindow));
     if (pWindow == NULL) {
         goto on_error;
     }
@@ -657,19 +657,7 @@ dred_window* dred_window_create__win32(dred_context* pDred)
 
 
 on_error:
-    if (pWindow) {
-        if (pWindow->pRootGUIElement) {
-            drgui_delete_element(pWindow->pRootGUIElement);
-        }
-
-        if (pWindow->pDrawingSurface) {
-            dr2d_delete_surface(pWindow->pDrawingSurface);
-        }
-
-        free(pWindow);
-    }
-
-    DestroyWindow(hWnd);
+    dred_window_delete(pWindow);
     return NULL;
 }
 
@@ -679,7 +667,17 @@ void dred_window_delete__win32(dred_window* pWindow)
         return;
     }
 
-    if (pWindow->hAccel != NULL) {
+    if (pWindow->pRootGUIElement) {
+        drgui_delete_element(pWindow->pRootGUIElement);
+        pWindow->pRootGUIElement = NULL;
+    }
+
+    if (pWindow->pDrawingSurface) {
+        dr2d_delete_surface(pWindow->pDrawingSurface);
+        pWindow->pDrawingSurface = NULL;
+    }
+
+    if (pWindow->hAccel) {
         DestroyAcceleratorTable(pWindow->hAccel);
     }
 

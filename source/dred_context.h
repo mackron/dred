@@ -124,6 +124,9 @@ void dred_close_focused_file(dred_context* pDred);
 // Closes the given editor.
 void dred_close_tab(dred_context* pDred, dred_tab* pTab);
 
+// Closes every tab.
+void dred_close_all_tabs(dred_context* pDred);
+
 
 // Creates an editor by it's type.
 dred_editor* dred_create_editor_by_type(dred_context* pDred, const char* editorType, const char* filePathAbsolute);

@@ -53,6 +53,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
             const char* value;
             dred_command command;
             if (dred_find_command(cmd, &command, &value)) {
+                printf("exec: %s\n", cmd);
                 command.proc(dred_control_get_context(pCmdBar), value);
             }
 
@@ -91,7 +92,7 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
         return NULL;
     }
 
-    dred_textbox_set_font(data->pTextBox, drgui_create_font(pDred->pGUI, "Courier New", 13, drgui_font_weight_default, drgui_font_slant_none, 0, 0));
+    //dred_textbox_set_font(data->pTextBox, drgui_create_font(pDred->pGUI, "Courier New", 13, drgui_font_weight_default, drgui_font_slant_none, 0, 0));
     dred_textbox_disable_horizontal_scrollbar(data->pTextBox);
     dred_textbox_disable_vertical_scrollbar(data->pTextBox);
 

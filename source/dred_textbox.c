@@ -164,6 +164,11 @@ void dred_textbox_delete(dred_textbox* pTextBox)
 
     dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (data != NULL) {
+        // Keyboard focus needs to be released first. If we don't do this we'll not free delete the internal timer.
+        if (drgui_has_keyboard_capture(data->pInternalTB)) {
+            drgui_release_keyboard(data->pInternalTB->pContext);
+        }
+
         drgui_delete_textbox(data->pInternalTB);
     }
 

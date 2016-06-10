@@ -87,15 +87,14 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     pDred->pDrawingContext = dr2d_create_context_cairo();
 #endif
     if (pDred->pDrawingContext == NULL) {
-        return false;
+        goto on_error;
     }
 
 
     // The GUI.
     pDred->pGUI = drgui_create_context_dr_2d(pDred->pDrawingContext);
     if (pDred->pGUI == NULL) {
-        dr2d_delete_context(pDred->pDrawingContext);
-        return false;
+        goto on_error;
     }
 
     // The GUI needs to be linked to the window system.
@@ -104,7 +103,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     // The font library. This needs to be initialized before loading any fonts and configs.
     if (!dred_font_library_init(&pDred->fontLibrary, pDred)) {
-        return false;
+        goto on_error;
     }
 
     // The default GUI font. This is based on the platform.
@@ -114,7 +113,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     // Accelerator table needs to be initialized before the config, because the config can specify bindings.
     if (!dred_accelerator_table_init(&pDred->acceleratorTable)) {
-        return false;
+        goto on_error;
     }
 
     dred_accelerator_table_bind(&pDred->acceleratorTable, 'A', DRED_KEY_STATE_CTRL_DOWN, "select-all");
@@ -143,7 +142,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     pDred->pMainWindow = dred_window_create(pDred);
     if (pDred->pMainWindow == NULL) {
         printf("Failed to create main window.");
-        return false;
+        goto on_error;
     }
 
     dred_window_set_size(pDred->pMainWindow, 1280, 720);
@@ -163,13 +162,13 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     pDred->pMainTabgroupContainer = dred_tabgroup_container_create(pDred, pDred->pMainWindow->pRootGUIElement);
     if (pDred->pMainTabgroupContainer == NULL) {
         printf("Failed to create main tab group container.\n");
-        return false;
+        goto on_error;
     }
 
     pDred->pMainTabGroup = dred_tabgroup_create(pDred, pDred->pMainTabgroupContainer);
     if (pDred->pMainTabGroup == NULL) {
         printf("Failed to create main tab group.\n");
-        return false;
+        goto on_error;
     }
 
 
@@ -177,7 +176,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     pDred->pCmdBar = dred_cmdbar_create(pDred, pDred->pMainWindow->pRootGUIElement);
     if (pDred->pCmdBar == NULL) {
         printf("Failed to create command bar.\n");
-        return false;
+        goto on_error;
     }
 
     drgui_capture_keyboard(pDred->pCmdBar);
@@ -191,13 +190,17 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     //pDred->pEditor1Tab = dred_tabgroup_append_tab(pDred->pMainTabGroup, "Test Editor 1", pDred->pEditor1);
 
     //dred_open_file(pDred, ".dred");
-    dred_open_file(pDred, ".desktop");
+    //dred_open_file(pDred, ".desktop");
 
 
     // Update the layout of the main window to ensure it's in the correct initial state.
     dred__update_main_window_layout(pDred->pMainWindow, 1280, 720);
 
     return true;
+
+on_error:
+    dred_uninit(pDred);
+    return false;
 }
 
 void dred_uninit(dred_context* pDred)
@@ -206,7 +209,38 @@ void dred_uninit(dred_context* pDred)
         return;
     }
 
-    dred_window_delete(pDred->pMainWindow);
+
+    if (pDred->pCmdBar) {
+        dred_cmdbar_delete(pDred->pCmdBar);
+    }
+
+    if (pDred->pMainTabGroup) {
+        dred_tabgroup_delete(pDred->pMainTabGroup);
+    }
+
+    if (pDred->pMainTabgroupContainer) {
+        dred_tabgroup_container_delete(pDred->pMainTabgroupContainer);
+    }
+
+    if (pDred->pMainWindow) {
+        dred_window_delete(pDred->pMainWindow);
+    }
+
+    dred_config_uninit(&pDred->config);
+    dred_accelerator_table_uninit(&pDred->acceleratorTable);
+    dred_font_library_uninit(&pDred->fontLibrary);
+
+    if (pDred->pGUI) {
+        drgui_delete_context(pDred->pGUI);
+    }
+
+    if (pDred->pDrawingContext) {
+        dr2d_delete_context(pDred->pDrawingContext);
+    }
+
+    if (pDred->logFile) {
+        dred_file_close(pDred->logFile);
+    }
 }
 
 int dred_run(dred_context* pDred)
@@ -459,6 +493,24 @@ void dred_close_tab(dred_context* pDred, dred_tab* pTab)
 
     // Delete the editor.
     dred_delete_editor_by_type(pEditor);
+}
+
+void dred_close_all_tabs(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    // TODO: Do this for every tab group.
+
+    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
+    if (pTabGroup == NULL) {
+        return;
+    }
+
+    while (dred_tabgroup_first_tab(pTabGroup) != NULL) {
+        dred_tabgroup_delete_tab(pTabGroup, dred_tabgroup_first_tab(pTabGroup));
+    }
 }
 
 
