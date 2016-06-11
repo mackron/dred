@@ -34,7 +34,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 
     dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
     assert(data != NULL);
-
+    
     data->pTextBox = dred_textbox_create(pDred, pTextEditor);
     if (data->pTextBox == NULL) {
         dred_editor_delete(pTextEditor);
@@ -42,7 +42,6 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     }
 
     dred_textbox_set_vertical_align(data->pTextBox, drgui_text_engine_alignment_top);
-
 
     char* pFileData = dr_open_and_read_text_file(filePathAbsolute, NULL);
     if (pFileData == NULL) {
@@ -54,10 +53,8 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_textbox_set_text(data->pTextBox, pFileData);
     dr_free_file_data(pFileData);
 
-
     // Events.
     dred_control_set_on_size(pTextEditor, dred_text_editor__on_size);
-
     
     return pTextEditor;
 }
