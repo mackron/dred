@@ -1,8 +1,61 @@
 
+static bool dred__preprocess_system_command(dred_context* pDred, const char* cmd, char* cmdOut, size_t cmdOutSize)
+{
+    // Currently, the only symbols we're expanding is the enescaped "%" character, which is expanded to the relative
+    // path of the currently focused file.
+    dred_editor* pEditor = dred_get_focused_editor(pDred);
+    if (pEditor == NULL) {
+        return false;
+    }
+
+    const char* absolutePath = dred_editor_get_file_path(pEditor);
+    if (absolutePath == NULL) {
+        return false;
+    }
+
+    char currentDir[DRED_MAX_PATH];
+
+    char relativePath[DRED_MAX_PATH];
+    if (!drpath_to_relative(absolutePath, dr_get_current_directory(currentDir, sizeof(currentDir)), relativePath, sizeof(relativePath))) {
+        return false;
+    }
+
+    size_t relativePathLength = strlen(relativePath);
+
+
+    char prevC = '\0';
+    while (cmdOutSize > 0 && *cmd != '\0') {
+        if (*cmd == '%' && prevC != '\\') {
+            if (strncpy_s(cmdOut, cmdOutSize, relativePath, relativePathLength) != 0) {
+                return false;
+            }
+
+            cmdOut += relativePathLength;
+            cmdOutSize -= relativePathLength;
+        } else {
+            *cmdOut = *cmd;
+            cmdOut += 1;
+            cmdOutSize -= 1;
+        }
+
+        prevC = *cmd;
+        cmd += 1;
+    }
+
+    *cmdOut = '\0';
+    return true;
+}
+
 void dred_command__system_command(dred_context* pDred, const char* value)
 {
     (void)pDred;
-    (void)value;
+
+    char valueExpanded[4096];
+    if (dred__preprocess_system_command(pDred, value, valueExpanded, sizeof(valueExpanded))) {
+        system(valueExpanded);
+    } else {
+        system(value);
+    }
 }
 
 
