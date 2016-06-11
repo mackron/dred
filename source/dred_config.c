@@ -139,14 +139,17 @@ dred_font* dred_config__parse_and_load_font(dred_context* pDred, const char* val
     return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
 }
 
-bool dred_config_init_default(dred_config* pConfig, dred_context* pDred)
+bool dred_config_init(dred_config* pConfig, dred_context* pDred)
 {
     if (pConfig == NULL || pDred == NULL) {
         return false;
     }
 
+    pConfig->pDred = pDred;
+
     pConfig->uiScaleX = 1;
     pConfig->uiScaleY = 1;
+
     pConfig->cmdbarHeight = 24;     // <-- TODO: Have the command bar auto-sized based on the size of it's content. This property will be made redundant after this.
 
     pConfig->pTextEditorFont = dred_config__load_system_font_mono(pDred);
@@ -154,21 +157,20 @@ bool dred_config_init_default(dred_config* pConfig, dred_context* pDred)
     return true;
 }
 
-void dred_config_uninit(dred_config* pConfig, dred_context* pDred)
+void dred_config_uninit(dred_config* pConfig)
 {
-    if (pConfig == NULL || pDred == NULL) {
+    if (pConfig == NULL) {
         return;
     }
 
     // Free any dynamically allocated data.
-    dred_font_library_delete_font(&pDred->fontLibrary, pConfig->pTextEditorFont);
+    dred_font_library_delete_font(&pConfig->pDred->fontLibrary, pConfig->pTextEditorFont);
 }
 
 
 typedef struct
 {
     dred_config* pConfig;
-    dred_context* pDred;
     const char* filePath;
     dred_config_on_error_proc onError;
     void* pUserData;
@@ -210,7 +212,7 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
 
 
     if (strcmp(key, "texteditor-font") == 0) {
-        pData->pConfig->pTextEditorFont = dred_config__parse_and_load_font(pData->pDred, value);
+        pData->pConfig->pTextEditorFont = dred_config__parse_and_load_font(pData->pConfig->pDred, value);
         return;
     }
 }
@@ -225,9 +227,9 @@ void dred_config_load_file__on_error(void* pUserData, const char* message, unsig
     }
 }
 
-bool dred_config_load_file(dred_config* pConfig, dred_context* pDred, const char* filePath, dred_config_on_error_proc onError, void* pUserData)
+bool dred_config_load_file(dred_config* pConfig, const char* filePath, dred_config_on_error_proc onError, void* pUserData)
 {
-    if (pConfig == NULL || pDred == NULL) {
+    if (pConfig == NULL) {
         return false;
     }
 
@@ -238,7 +240,6 @@ bool dred_config_load_file(dred_config* pConfig, dred_context* pDred, const char
 
     dred_config_load_file__data data;
     data.pConfig = pConfig;
-    data.pDred = pDred;
     data.filePath = filePath;
     data.onError = onError;
     data.pUserData = pUserData;
