@@ -44,6 +44,69 @@ drgui_font_slant dred_parse_font_slant(const char* slant)
     return drgui_font_slant_none;
 }
 
+drgui_color dred_parse_color(const char* color)
+{
+    if (color != NULL) {
+        color = dr_first_non_whitespace(color);
+        if (color[0] == '0' && (color[1] == 'x' || color[1] == 'X')) {
+            // HTML style. Support both #RRGGBB and #RGB format.
+            color += 2;
+
+            unsigned int hexvals[6];
+
+            int len = 0;
+            for (int i = 0; i < 6; ++i) {
+                if (!dr_hex_char_to_uint(color[i], &hexvals[i])) {
+                    break;
+                }
+                len += 1;
+            }
+
+            drgui_byte r = 0;
+            drgui_byte g = 0;
+            drgui_byte b = 0;
+
+            if (len == 3) {
+                // #RGB -> #RRGGBB
+                hexvals[5] = hexvals[2]; hexvals[4] = hexvals[2];
+                hexvals[3] = hexvals[1]; hexvals[2] = hexvals[1];
+                hexvals[1] = hexvals[0]; hexvals[0] = hexvals[0];
+            }
+
+            r = (hexvals[0] << 4) | hexvals[1];
+            g = (hexvals[2] << 4) | hexvals[3];
+            b = (hexvals[4] << 4) | hexvals[5];
+
+            return drgui_rgb(r, g, b);
+        } else {
+            // R G B style (0 .. 255 per component)
+            drgui_byte r = 0;
+            drgui_byte g = 0;
+            drgui_byte b = 0;
+
+            char c[4];
+            color = dr_next_token(color, c, sizeof(c));
+            if (color != NULL) {
+                r = (drgui_byte)atoi(c);
+            }
+
+            color = dr_next_token(color, c, sizeof(c));
+            if (color != NULL) {
+                g = (drgui_byte)atoi(c);
+            }
+
+            color = dr_next_token(color, c, sizeof(c));
+            if (color != NULL) {
+                b = (drgui_byte)atoi(c);
+            }
+
+            return drgui_rgb(r, g, b);
+        }
+    }
+    
+    return drgui_rgb(0, 0, 0);
+}
+
 dred_font* dred_config__load_system_font_ui(dred_context* pDred)
 {
     dred_font_desc fontDesc;
@@ -147,9 +210,12 @@ bool dred_config_init(dred_config* pConfig, dred_context* pDred)
 
     pConfig->pDred = pDred;
 
+    pConfig->pUIFont = dred_config__load_system_font_ui(pDred);
     pConfig->uiScaleX = 1;
     pConfig->uiScaleY = 1;
 
+    pConfig->pCmdbarTBFont = dred_config__load_system_font_mono(pDred);
+    pConfig->cmdbarBGColor = drgui_rgb(64, 64, 64);
     pConfig->cmdbarHeight = 24;     // <-- TODO: Have the command bar auto-sized based on the size of it's content. This property will be made redundant after this.
 
     pConfig->pTextEditorFont = dred_config__load_system_font_mono(pDred);
@@ -165,6 +231,8 @@ void dred_config_uninit(dred_config* pConfig)
 
     // Free any dynamically allocated data.
     dred_font_library_delete_font(&pConfig->pDred->fontLibrary, pConfig->pTextEditorFont);
+    dred_font_library_delete_font(&pConfig->pDred->fontLibrary, pConfig->pCmdbarTBFont);
+    dred_font_library_delete_font(&pConfig->pDred->fontLibrary, pConfig->pUIFont);
 }
 
 
@@ -204,7 +272,20 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
         pData->pConfig->uiScaleY = (float)atof(value);
         return;
     }
+    if (strcmp(key, "ui-font") == 0) {
+        pData->pConfig->pUIFont = dred_config__parse_and_load_font(pData->pConfig->pDred, value);
+        return;
+    }
 
+
+    if (strcmp(key, "cmdbar-tb-font") == 0) {
+        pData->pConfig->pCmdbarTBFont = dred_config__parse_and_load_font(pData->pConfig->pDred, value);
+        return;
+    }
+    if (strcmp(key, "cmdbar-bg-color") == 0) {
+        pData->pConfig->cmdbarBGColor = dred_parse_color(value);
+        return;
+    }
     if (strcmp(key, "cmdbar-height") == 0) {
         pData->pConfig->cmdbarHeight = (float)atof(value);
         return;

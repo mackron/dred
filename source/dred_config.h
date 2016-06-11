@@ -6,6 +6,10 @@ typedef struct
 
     float uiScaleX;     // scale-x
     float uiScaleY;     // scale-y
+    dred_font* pUIFont;
+
+    drgui_color cmdbarBGColor;
+    dred_font* pCmdbarTBFont;
     float cmdbarHeight; // cmdbar-height
 
     dred_font* pTextEditorFont;
