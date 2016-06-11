@@ -1,30 +1,174 @@
 
-
-bool dred_config_init_default(dred_config* pConfig)
+drgui_font_weight dred_parse_font_weight(const char* weight)
 {
-    if (pConfig == NULL) {
+    if (strcmp(weight, "medium") == 0 || strcmp(weight, "normal") == 0 || strcmp(weight, "default") == 0) {
+        return drgui_font_weight_normal;
+    }
+    if (strcmp(weight, "thin") == 0) {
+        return drgui_font_weight_thin;
+    }
+    if (strcmp(weight, "extra-light") == 0) {
+        return drgui_font_weight_extra_light;
+    }
+    if (strcmp(weight, "light") == 0) {
+        return drgui_font_weight_light;
+    }
+    if (strcmp(weight, "semi-bold") == 0) {
+        return drgui_font_weight_semi_bold;
+    }
+    if (strcmp(weight, "bold") == 0) {
+        return drgui_font_weight_bold;
+    }
+    if (strcmp(weight, "extra-bold") == 0) {
+        return drgui_font_weight_extra_bold;
+    }
+    if (strcmp(weight, "heavy") == 0) {
+        return drgui_font_weight_heavy;
+    }
+
+    return drgui_font_weight_normal;
+}
+
+drgui_font_slant dred_parse_font_slant(const char* slant)
+{
+    if (strcmp(slant, "none") == 0 || strcmp(slant, "default") == 0) {
+        return drgui_font_slant_none;
+    }
+    if (strcmp(slant, "italic") == 0) {
+        return drgui_font_slant_italic;
+    }
+    if (strcmp(slant, "oblique") == 0) {
+        return drgui_font_slant_oblique;
+    }
+
+    return drgui_font_slant_none;
+}
+
+dred_font* dred_config__load_system_font_ui(dred_context* pDred)
+{
+    dred_font_desc fontDesc;
+    fontDesc.flags = 0;
+    fontDesc.rotation = 0;
+
+#ifdef _WIN32
+    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Segoe UI");
+    fontDesc.size = 12;
+    fontDesc.weight = drgui_font_weight_normal;
+    fontDesc.slant = drgui_font_slant_none;
+#endif
+
+#ifdef __linux__
+#error "Implement me. Try using fontconfig for this to avoid dependency on GTK."
+#endif
+
+    return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
+}
+
+dred_font* dred_config__load_system_font_mono(dred_context* pDred)
+{
+    dred_font_desc fontDesc;
+    fontDesc.flags = 0;
+    fontDesc.rotation = 0;
+
+#ifdef _WIN32
+    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Consolas");
+    fontDesc.size = 13;
+    fontDesc.weight = drgui_font_weight_normal;
+    fontDesc.slant = drgui_font_slant_none;
+#endif
+
+#ifdef __linux__
+#error "Implement me. Can use fontconfig for this."
+#endif
+
+    return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
+}
+
+dred_font* dred_config__parse_and_load_font(dred_context* pDred, const char* value)
+{
+    // Check for pre-defined fonts first.
+    if (strcmp(value, "system-font-ui") == 0) {
+        return dred_config__load_system_font_ui(pDred);
+    }
+    if (strcmp(value, "system-font-mono") == 0) {
+        return dred_config__load_system_font_mono(pDred);
+    }
+
+
+    // The format of the font string is <family> <size> <weight> <slant>. The weight and slant are optional and default to normal weight and
+    // no slant.
+    dred_font_desc fontDesc;
+    fontDesc.flags = 0;
+    fontDesc.rotation = 0;
+    fontDesc.weight = drgui_font_weight_normal;
+    fontDesc.slant = drgui_font_slant_none;
+
+    // Family.
+    value = dr_next_token(value, fontDesc.family, sizeof(fontDesc.family));
+    if (value == NULL) {
+        return NULL;
+    }
+
+    // Size.
+    char token[256];
+    value = dr_next_token(value, token, sizeof(token));
+    if (value == NULL) {
+        return NULL;
+    }
+
+    int size = atoi(token);
+    if (size < 0) {
+        size = -size;
+    }
+
+    fontDesc.size = size;
+
+    // Weight.
+    value = dr_next_token(value, token, sizeof(token));
+    if (value != NULL) {
+        fontDesc.weight = dred_parse_font_weight(token);
+
+        // Slant.
+        value = dr_next_token(value, token, sizeof(token));
+        if (value != NULL) {
+            fontDesc.slant = dred_parse_font_slant(token);
+        }
+    }
+
+    
+    return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
+}
+
+bool dred_config_init_default(dred_config* pConfig, dred_context* pDred)
+{
+    if (pConfig == NULL || pDred == NULL) {
         return false;
     }
 
     pConfig->uiScaleX = 1;
     pConfig->uiScaleY = 1;
+    pConfig->cmdbarHeight = 24;     // <-- TODO: Have the command bar auto-sized based on the size of it's content. This property will be made redundant after this.
+
+    pConfig->pTextEditorFont = dred_config__load_system_font_mono(pDred);
 
     return true;
 }
 
-void dred_config_uninit(dred_config* pConfig)
+void dred_config_uninit(dred_config* pConfig, dred_context* pDred)
 {
-    if (pConfig == NULL) {
+    if (pConfig == NULL || pDred == NULL) {
         return;
     }
 
     // Free any dynamically allocated data.
+    dred_font_library_delete_font(&pDred->fontLibrary, pConfig->pTextEditorFont);
 }
 
 
 typedef struct
 {
     dred_config* pConfig;
+    dred_context* pDred;
     const char* filePath;
     dred_config_on_error_proc onError;
     void* pUserData;
@@ -63,6 +207,12 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
         pData->pConfig->cmdbarHeight = (float)atof(value);
         return;
     }
+
+
+    if (strcmp(key, "texteditor-font") == 0) {
+        pData->pConfig->pTextEditorFont = dred_config__parse_and_load_font(pData->pDred, value);
+        return;
+    }
 }
 
 void dred_config_load_file__on_error(void* pUserData, const char* message, unsigned int line)
@@ -75,8 +225,12 @@ void dred_config_load_file__on_error(void* pUserData, const char* message, unsig
     }
 }
 
-bool dred_config_load_file(dred_config* pConfig, const char* filePath, dred_config_on_error_proc onError, void* pUserData)
+bool dred_config_load_file(dred_config* pConfig, dred_context* pDred, const char* filePath, dred_config_on_error_proc onError, void* pUserData)
 {
+    if (pConfig == NULL || pDred == NULL) {
+        return false;
+    }
+
     dred_file file = dred_file_open(filePath, DRED_FILE_OPEN_MODE_READ);
     if (file == NULL) {
         return false;
@@ -84,6 +238,7 @@ bool dred_config_load_file(dred_config* pConfig, const char* filePath, dred_conf
 
     dred_config_load_file__data data;
     data.pConfig = pConfig;
+    data.pDred = pDred;
     data.filePath = filePath;
     data.onError = onError;
     data.pUserData = pUserData;

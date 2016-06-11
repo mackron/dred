@@ -125,16 +125,16 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     //
     // The config is loaded in 3 stages. The first initializes it to it's default values, the second loads the .dred file from the main
     // user directory and the 3rd loads the .dred file sitting in the working directory.
-    dred_config_init_default(&pDred->config);
+    dred_config_init_default(&pDred->config, pDred);
 
     char configPath[DRED_MAX_PATH];
     if (dred_get_config_path(configPath, sizeof(configPath))) {
-        dred_config_load_file(&pDred->config, configPath, dred_config__on_error, pDred);
+        dred_config_load_file(&pDred->config, pDred, configPath, dred_config__on_error, pDred);
     } else {
         dred_warning(pDred, "Failed to load .dred config file from user directory. The most likely cause of this is that the path is too long.");
     }
 
-    dred_config_load_file(&pDred->config, ".dred", dred_config__on_error, pDred);
+    dred_config_load_file(&pDred->config, pDred, ".dred", dred_config__on_error, pDred);
 
     
 
@@ -230,7 +230,7 @@ void dred_uninit(dred_context* pDred)
         dred_window_delete(pDred->pMainWindow);
     }
 
-    dred_config_uninit(&pDred->config);
+    dred_config_uninit(&pDred->config, pDred);
     dred_accelerator_table_uninit(&pDred->acceleratorTable);
     dred_font_library_uninit(&pDred->fontLibrary);
 
@@ -400,6 +400,25 @@ dred_tab* dred_get_focused_tab(dred_context* pDred)
     }
 
     return dred_tabgroup_get_active_tab(pFocusedTabGroup);
+}
+
+dred_editor* dred_get_focused_editor(dred_context* pDred)
+{
+    dred_tab* pFocusedTab = dred_get_focused_tab(pDred);
+    if (pFocusedTab == NULL) {
+        return NULL;
+    }
+
+    dred_control* pControl = dred_tab_get_control(pFocusedTab);
+    if (pControl == NULL) {
+        return NULL;
+    }
+
+    if (!dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
+        return NULL;
+    }
+
+    return pControl;
 }
 
 

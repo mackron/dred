@@ -104,6 +104,11 @@ dred_tabgroup* dred_get_focused_tabgroup(dred_context* pDred);
 // The focused tab is just the active tab of the focused tab group.
 dred_tab* dred_get_focused_tab(dred_context* pDred);
 
+// Retrieves the focused editor.
+//
+// The focused editor is the control of the focused tab. If the control is not of type DRED_CONTROL_TYPE_EDITOR, NULL will be returned.
+dred_editor* dred_get_focused_editor(dred_context* pDred);
+
 
 // Retrieves the control type of the editor to use for a file with the extension of the given file path.
 const char* dred_get_editor_type_by_path(const char* filePath);
