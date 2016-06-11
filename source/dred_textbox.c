@@ -203,6 +203,11 @@ void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont)
     drgui_textbox_set_font(dred_textbox__get_internal_tb(pTextBox), pFont);
 }
 
+drgui_font* dred_textbox_get_font(dred_textbox* pTextBox)
+{
+    return drgui_textbox_get_font(dred_textbox__get_internal_tb(pTextBox));
+}
+
 void dred_textbox_set_text_color(dred_textbox* pTextBox, drgui_color color)
 {
     drgui_textbox_set_text_color(dred_textbox__get_internal_tb(pTextBox), color);
@@ -236,6 +241,16 @@ void dred_textbox_set_border_width(dred_textbox* pTextBox, float borderWidth)
 void dred_textbox_set_padding(dred_textbox* pTextBox, float padding)
 {
     drgui_textbox_set_padding(dred_textbox__get_internal_tb(pTextBox), padding);
+}
+
+float dred_textbox_get_padding_vert(dred_textbox* pTextBox)
+{
+    return drgui_textbox_get_padding_vert(dred_textbox__get_internal_tb(pTextBox));
+}
+
+float dred_textbox_get_padding_horz(dred_textbox* pTextBox)
+{
+    return drgui_textbox_get_padding_horz(dred_textbox__get_internal_tb(pTextBox));
 }
 
 void dred_textbox_set_vertical_align(dred_textbox* pTextBox, drgui_text_engine_alignment align)

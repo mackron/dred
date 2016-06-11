@@ -10,7 +10,6 @@ typedef struct
 
     drgui_color cmdbarBGColor;
     dred_font* pCmdbarTBFont;
-    float cmdbarHeight; // cmdbar-height
 
     dred_font* pTextEditorFont;
 } dred_config;

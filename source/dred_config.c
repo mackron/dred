@@ -216,7 +216,6 @@ bool dred_config_init(dred_config* pConfig, dred_context* pDred)
 
     pConfig->pCmdbarTBFont = dred_config__load_system_font_mono(pDred);
     pConfig->cmdbarBGColor = drgui_rgb(64, 64, 64);
-    pConfig->cmdbarHeight = 24;     // <-- TODO: Have the command bar auto-sized based on the size of it's content. This property will be made redundant after this.
 
     pConfig->pTextEditorFont = dred_config__load_system_font_mono(pDred);
 
@@ -284,10 +283,6 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
     }
     if (strcmp(key, "cmdbar-bg-color") == 0) {
         pData->pConfig->cmdbarBGColor = dred_parse_color(value);
-        return;
-    }
-    if (strcmp(key, "cmdbar-height") == 0) {
-        pData->pConfig->cmdbarHeight = (float)atof(value);
         return;
     }
 

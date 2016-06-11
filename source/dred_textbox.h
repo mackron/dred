@@ -21,6 +21,9 @@ size_t dred_textbox_get_text(dred_textbox* pTextBox, char* textOut, size_t textO
 // Sets the font to use with the given text box.
 void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont);
 
+// Retrieves the font of the given text box.
+drgui_font* dred_textbox_get_font(dred_textbox* pTextBox);
+
 // Sets the color of the text in teh given text box.
 void dred_textbox_set_text_color(dred_textbox* pTextBox, drgui_color color);
 
@@ -41,6 +44,12 @@ void dred_textbox_set_border_width(dred_textbox* pTextBox, float borderWidth);
 
 // Sets the amount of padding to apply to given text box.
 void dred_textbox_set_padding(dred_textbox* pTextBox, float padding);
+
+// Retrieves the amound of vertical padding to apply to the given text box.
+float dred_textbox_get_padding_vert(dred_textbox* pTextBox);
+
+// Retrieves the amound of horizontal padding to apply to the given text box.
+float dred_textbox_get_padding_horz(dred_textbox* pTextBox);
 
 // Sets the vertical alignment of the given text box.
 void dred_textbox_set_vertical_align(dred_textbox* pTextBox, drgui_text_engine_alignment align);

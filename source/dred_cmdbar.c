@@ -107,6 +107,20 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
     dred_control_set_on_key_down(data->pTextBox, dred_cmdbar_tb__on_key_down);
     dred_control_set_on_printable_key_down(data->pTextBox, dred_cmdbar_tb__on_printable_key_down);
 
+
+    // Set the initial size.
+    drgui_font_metrics fontMetricsTB;
+    drgui_get_font_metrics(dred_textbox_get_font(data->pTextBox), 1, 1, &fontMetricsTB);
+
+    float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(data->pTextBox)*2;
+
+    float cmdbarHeight = textboxHeight; // <-- Make this the max of the textbox height and the message box height.
+    float cmdbarWidth = 0;
+    if (pParent != NULL) {
+        cmdbarWidth = dred_control_get_width(pParent);
+    }
+    dred_control_set_size(pCmdBar, cmdbarWidth, cmdbarHeight);
+
     return pCmdBar;
 }
 

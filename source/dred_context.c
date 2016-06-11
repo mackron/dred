@@ -3,15 +3,15 @@ void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabg
 {
     assert(pContainer != NULL);
 
-    dred_control_set_size(pContainer, parentWidth, parentHeight - pDred->config.cmdbarHeight);
+    dred_control_set_size(pContainer, parentWidth, parentHeight - dred_control_get_height(pDred->pCmdBar));
 }
 
 void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float parentWidth, float parentHeight)
 {
     assert(pCmdBar != NULL);
 
-    dred_control_set_size(pCmdBar, parentWidth, pDred->config.cmdbarHeight);
-    dred_control_set_relative_position(pCmdBar, 0, parentHeight - pDred->config.cmdbarHeight);
+    dred_control_set_size(pCmdBar, parentWidth, dred_control_get_height(pCmdBar));
+    dred_control_set_relative_position(pCmdBar, 0, parentHeight - dred_control_get_height(pCmdBar));
 }
 
 void dred__update_main_window_layout(dred_window* pWindow, float windowWidth, float windowHeight)
@@ -63,7 +63,6 @@ void dred_config__on_error(dred_config* pConfig, const char* configPath, const c
 
 bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 {
-    // TODO: DO PROPER CLEANUP ON ERROR. IMPLEMENT on_error GOTO.
     // TODO: USE dred_error() AND FAMILY FOR PRINTING CRITICAL ERRORS INSTEAD OF printf()
 
     if (pDred == NULL) {
