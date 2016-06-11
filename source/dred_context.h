@@ -129,7 +129,7 @@ void dred_close_all_tabs(dred_context* pDred);
 
 
 // Creates an editor by it's type.
-dred_editor* dred_create_editor_by_type(dred_context* pDred, const char* editorType, const char* filePathAbsolute);
+dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTabGroup, const char* editorType, const char* filePathAbsolute);
 
 // Deletes the given editor based on it's type.
 void dred_delete_editor_by_type(dred_editor* pEditor);

@@ -189,7 +189,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     //pDred->pEditor1 = dred_text_editor_create(pDred, NULL);
     //pDred->pEditor1Tab = dred_tabgroup_append_tab(pDred->pMainTabGroup, "Test Editor 1", pDred->pEditor1);
 
-    dred_open_file(pDred, ".dred");
+    //dred_open_file(pDred, ".dred");
     //dred_open_file(pDred, ".desktop");
 
 
@@ -456,18 +456,18 @@ bool dred_open_file_by_type(dred_context* pDred, const char* filePath, const cha
     }
 
 
-    dred_editor* pEditor = dred_create_editor_by_type(pDred, editorType, filePathAbsolute);
-    if (pEditor == NULL) {
-        return false;
-    }
-
-
-    // We have the editor, so now we need to create a tab an associate the new editor with it.
+    // Before creating the editor we'll want to identify the tab group to attach it to.
     dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
     if (pTabGroup == NULL) {
         return false;   // TODO: This means there is no tab group so one need to be created.
     }
 
+    dred_editor* pEditor = dred_create_editor_by_type(pDred, pTabGroup, editorType, filePathAbsolute);
+    if (pEditor == NULL) {
+        return false;
+    }
+
+    // We have the editor, so now we need to create a tab an associate the new editor with it.
     dred_tab* pTab = dred_tabgroup_prepend_tab(pTabGroup, drpath_file_name(filePath), pEditor);
     if (pTab == NULL) {
         dred_delete_editor_by_type(pEditor);
@@ -518,23 +518,27 @@ void dred_close_all_tabs(dred_context* pDred)
 }
 
 
-dred_editor* dred_create_editor_by_type(dred_context* pDred, const char* editorType, const char* filePathAbsolute)
+dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTabGroup, const char* editorType, const char* filePathAbsolute)
 {
     if (pDred == NULL) {
         return NULL;
     }
 
+    // Note that the parent is always set to the tab group. This should be set at creation time to ensure it is
+    // initialized properly. In particular, if we don't do this, the cursor will not be set to the correct value
+    // because the sub-editor won't be attached to a window at creation time.
+
     dred_editor* pEditor = NULL;
     if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-        pEditor = dred_text_editor_create(pDred, NULL, filePathAbsolute);
+        pEditor = dred_text_editor_create(pDred, pTabGroup, filePathAbsolute);
     }
     //if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_IMAGE_EDITOR)) {
-    //    pEditor = dred_image_editor_create(pDred, NULL, filePathAbsolute)
+    //    pEditor = dred_image_editor_create(pDred, pTabGroup, filePathAbsolute)
     //}
 
     // Fall back to a text editor if it's an unknown extension.
     if (pEditor == NULL) {
-        pEditor = dred_text_editor_create(pDred, NULL, filePathAbsolute);
+        pEditor = dred_text_editor_create(pDred, pTabGroup, filePathAbsolute);
     }
 
     return pEditor;
