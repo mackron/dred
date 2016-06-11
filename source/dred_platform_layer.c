@@ -2214,7 +2214,16 @@ dred_window* dred_get_element_window(drgui_element* pElement)
         return NULL;
     }
 
-    dred_window** ppWindow = drgui_get_extra_data(drgui_find_top_level_element(pElement));
+    drgui_element* pRootGUIElement = drgui_find_top_level_element(pElement);
+    if (pRootGUIElement == NULL) {
+        return NULL;
+    }
+
+    if (!drgui_is_of_type(pRootGUIElement, "RootGUIElement")) {
+        return NULL;
+    }
+
+    dred_window** ppWindow = drgui_get_extra_data(pRootGUIElement);
     if (ppWindow == NULL) {
         return NULL;
     }
