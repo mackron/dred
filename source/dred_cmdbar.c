@@ -63,9 +63,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
             }
 
             if ((command.flags & DRED_CMDBAR_RELEASE_KEYBOARD) != 0) {
-                if (dred_textbox_has_keyboard_capture(pTextBox)) {
-                    dred_release_keyboard(dred_control_get_context(pCmdBar));
-                }
+                dred_unfocus_command_bar(dred_control_get_context(pCmdBar));
             }
         }
 
@@ -140,4 +138,15 @@ void dred_cmdbar_delete(dred_cmdbar* pCmdBar)
     }
 
     dred_control_delete(pCmdBar);
+}
+
+
+bool dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
+{
+    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    if (data == NULL) {
+        return false;
+    }
+
+    return dred_textbox_has_keyboard_capture(data->pTextBox);
 }

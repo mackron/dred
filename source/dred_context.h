@@ -166,6 +166,9 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 // Places keyboard focus on the command bar.
 void dred_focus_command_bar(dred_context* pDred);
 
+// Releases keyboard focus from the command bar.
+void dred_unfocus_command_bar(dred_context* pDred);
+
 
 // Called when an accelerator is triggered.
 void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t acceleratorIndex);

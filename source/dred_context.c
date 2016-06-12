@@ -802,6 +802,22 @@ void dred_focus_command_bar(dred_context* pDred)
     dred_capture_keyboard(pDred, pDred->pCmdBar);
 }
 
+void dred_unfocus_command_bar(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    if (dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
+        dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
+        if (pFocusedEditor == NULL) {
+            return;
+        }
+
+        dred_capture_keyboard(pDred, pFocusedEditor);
+    }
+}
+
 
 void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t acceleratorIndex)
 {
