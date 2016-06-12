@@ -4,6 +4,10 @@
 
 typedef dred_control dred_textbox;
 
+typedef void (* dred_textbox_on_cursor_move_proc)(dred_textbox* pTextBox);
+typedef void (* dred_textbox_on_undo_point_changed_proc)(dred_textbox* pTextBox, unsigned int iUndoPoint);
+
+
 // dred_textbox_create()
 dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent);
 
@@ -94,7 +98,7 @@ bool dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox);
 // @return True if the text within the text engine has changed.
 bool dred_textbox_delete_selected_text(dred_textbox* pTextBox);
 
-// Inserts a character at the position of the cursor.
+// Inserts a string of text at the position of the cursor.
 //
 // @return True if the text within the text engine has changed.
 bool dred_textbox_insert_text_at_cursor(dred_textbox* pTextBox, const char* text);
@@ -150,6 +154,12 @@ void dred_textbox_disable_horizontal_scrollbar(dred_textbox* pTextBox);
 // Enables the horizontal scrollbar.
 void dred_textbox_enable_horizontal_scrollbar(dred_textbox* pTextBox);
 
+
+// Sets the function to call when the cursor moves.
+void dred_textbox_set_on_cursor_move(dred_textbox* pTextBox, dred_textbox_on_cursor_move_proc proc);
+
+// Sets the function to call when the undo point changes.
+void dred_textbox_set_on_undo_point_changed(dred_textbox* pTextBox, dred_textbox_on_undo_point_changed_proc proc);
 
 
 // Function for explicitly handling the on_key_down event.

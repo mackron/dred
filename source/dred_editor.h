@@ -4,8 +4,8 @@
 typedef dred_control dred_editor;
 
 typedef bool (* dred_editor_on_save_proc)(dred_editor* pEditor, dred_file* pFile);
-typedef bool (* dred_editor_on_modified_proc)(dred_editor* pEditor);
-typedef bool (* dred_editor_on_unmodified_proc)(dred_editor* pEditor);
+typedef void (* dred_editor_on_modified_proc)(dred_editor* pEditor);
+typedef void (* dred_editor_on_unmodified_proc)(dred_editor* pEditor);
 
 
 // dred_editor_create()
@@ -45,6 +45,10 @@ void dred_editor_unmark_as_modified(dred_editor* pEditor);
 
 // Determines whether or not the editor is marked as modified.
 bool dred_editor_is_modified(dred_editor* pEditor);
+
+
+// Determines if the editor is read-only.
+bool dred_editor_is_read_only(dred_editor* pEditor);
 
 
 // Events

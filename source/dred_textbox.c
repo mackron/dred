@@ -3,6 +3,8 @@ typedef struct
 {
     drgui_element* pInternalTB;
     dred_timer* pTimer;
+    dred_textbox_on_cursor_move_proc onCursorMove;
+    dred_textbox_on_undo_point_changed_proc onUndoPointChanged;
 } dred_textbox_data;
 
 drgui_element* dred_textbox__get_internal_tb(dred_textbox* pTextBox)
@@ -116,6 +118,32 @@ void dred_textbox_innertb__on_release_keyboard(drgui_element* pInternalTB, drgui
     drgui_textbox_on_release_keyboard(pInternalTB, pNewCapturedElement);
 }
 
+void dred_textbox_innertb__on_cursor_move(drgui_element* pInternalTB)
+{
+    dred_textbox* pTextBox = dred_control_get_parent(pInternalTB);
+    assert(pTextBox != NULL);
+
+    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(data != NULL);
+
+    if (data->onCursorMove) {
+        data->onCursorMove(pTextBox);
+    }
+}
+
+void dred_textbox_innertb__on_undo_point_changed(drgui_element* pInternalTB, unsigned int iUndoPoint)
+{
+    dred_textbox* pTextBox = dred_control_get_parent(pInternalTB);
+    assert(pTextBox != NULL);
+
+    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(data != NULL);
+
+    if (data->onUndoPointChanged) {
+        data->onUndoPointChanged(pTextBox, iUndoPoint);
+    }
+}
+
 
 dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
 {
@@ -134,9 +162,11 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     }
 
     data->pTimer = NULL;
+    data->onCursorMove = NULL;
+    data->onUndoPointChanged = NULL;
 
     drgui_textbox_set_background_color(data->pInternalTB, drgui_rgb(64, 64, 64));
-    drgui_textbox_set_active_line_background_color(data->pInternalTB, drgui_rgb(64, 64, 64));
+    drgui_textbox_set_active_line_background_color(data->pInternalTB, drgui_rgb(48, 48, 48));
     drgui_textbox_set_text_color(data->pInternalTB, drgui_rgb(224, 224, 224));
     drgui_textbox_set_cursor_color(data->pInternalTB, drgui_rgb(224, 224, 224));
     drgui_textbox_set_font(data->pInternalTB, dred_font_acquire_subfont(pDred->pGUIFont, 1));
@@ -152,6 +182,8 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drgui_set_on_printable_key_down(data->pInternalTB, dred_textbox_innertb__on_printable_key_down);
     drgui_set_on_capture_keyboard(data->pInternalTB, dred_textbox_innertb__on_capture_keyboard);
     drgui_set_on_release_keyboard(data->pInternalTB, dred_textbox_innertb__on_release_keyboard);
+    drgui_textbox_set_on_cursor_move(data->pInternalTB, dred_textbox_innertb__on_cursor_move);
+    drgui_textbox_set_on_undo_point_changed(data->pInternalTB, dred_textbox_innertb__on_undo_point_changed);
 
     return pTextBox;
 }
@@ -397,6 +429,26 @@ void dred_textbox_enable_horizontal_scrollbar(dred_textbox* pTextBox)
     drgui_textbox_enable_horizontal_scrollbar(dred_textbox__get_internal_tb(pTextBox));
 }
 
+
+void dred_textbox_set_on_cursor_move(dred_textbox* pTextBox, dred_textbox_on_cursor_move_proc proc)
+{
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
+    if (data == NULL) {
+        return;
+    }
+
+    data->onCursorMove = proc;
+}
+
+void dred_textbox_set_on_undo_point_changed(dred_textbox* pTextBox, dred_textbox_on_undo_point_changed_proc proc)
+{
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
+    if (data == NULL) {
+        return;
+    }
+
+    data->onUndoPointChanged = proc;
+}
 
 
 void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)

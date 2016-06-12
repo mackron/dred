@@ -2,6 +2,7 @@
 typedef struct
 {
     dred_textbox* pTextBox;
+    unsigned int iBaseUndoPoint;    // Used to determine whether or no the file has been modified.
 } dred_text_editor_data;
 
 dred_textbox* dred_text_editor__get_textbox(dred_text_editor* pTextEditor)
@@ -40,9 +41,32 @@ bool dred_text_editor__on_save(dred_text_editor* pTextEditor, dred_file file)
     dred_textbox_get_text(pTextBox, text, textLength+1);
 
     bool result = dred_file_write_string(file, text);
-
     free(text);
+
+    // After saving we need to update the base undo point and unmark the file as modified.
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    assert(data != NULL);
+    data->iBaseUndoPoint = dred_textbox_get_undo_points_remaining_count(pTextBox);
+    dred_editor_unmark_as_modified(pTextEditor);
+
     return result;
+}
+
+void dred_text_editor_textbox__on_undo_point_changed(dred_textbox* pTextBox, unsigned int iUndoPoint)
+{
+    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
+    if (pTextEditor == NULL) {
+        return;
+    }
+
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    assert(data != NULL);
+
+    if (iUndoPoint == data->iBaseUndoPoint) {
+        dred_editor_unmark_as_modified(pTextEditor);
+    } else {
+        dred_editor_mark_as_modified(pTextEditor);
+    }
 }
 
 dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pParent, const char* filePathAbsolute)
@@ -77,6 +101,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     // Events.
     dred_control_set_on_size(pTextEditor, dred_text_editor__on_size);
     dred_editor_set_on_save(pTextEditor, dred_text_editor__on_save);
+    dred_textbox_set_on_undo_point_changed(data->pTextBox, dred_text_editor_textbox__on_undo_point_changed);
     
     return pTextEditor;
 }

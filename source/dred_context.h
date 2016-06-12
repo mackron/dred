@@ -133,6 +133,10 @@ void dred_close_tab(dred_context* pDred, dred_tab* pTab);
 void dred_close_all_tabs(dred_context* pDred);
 
 
+// Finds the tab associated with the given control, usually an editor.
+dred_tab* dred_find_control_tab(dred_control* pControl);
+
+
 // Saves the currently focused file.
 //
 // The new file name can be null in which case the file is just saved over the top of the current file.

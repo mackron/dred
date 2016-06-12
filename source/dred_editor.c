@@ -7,6 +7,7 @@ typedef struct
     dred_editor_on_modified_proc onModified;
     dred_editor_on_unmodified_proc onUnmodified;
     bool isModified;
+    bool isReadOnly;
 } dred_editor_data;
 
 dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, const char* type, const char* filePathAbsolute, size_t extraDataSize)
@@ -31,6 +32,8 @@ dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, cons
         dred_errorf(pDred, "File path is too long: %s\n", filePathAbsolute);
         return NULL;
     }
+
+    data->isReadOnly = dr_is_file_read_only(filePathAbsolute);
 
     return pEditor;
 }
@@ -94,6 +97,11 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
     }
 
     if (data->onSave == NULL) {
+        return false;
+    }
+
+    if (data->isReadOnly) {
+        dred_errorf(dred_control_get_context(pEditor), "File is read only.");
         return false;
     }
 
@@ -182,6 +190,15 @@ bool dred_editor_is_modified(dred_editor* pEditor)
 }
 
 
+bool dred_editor_is_read_only(dred_editor* pEditor)
+{
+    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    if (data == NULL) {
+        return false;
+    }
+
+    return data->isReadOnly;
+}
 
 
 

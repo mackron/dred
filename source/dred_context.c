@@ -24,6 +24,56 @@ void dred__update_main_window_layout(dred_window* pWindow, float windowWidth, fl
 }
 
 
+void dred__refresh_editor_tab_text(dred_editor* pEditor, dred_tab* pTab)
+{
+    assert(pEditor != NULL);
+    assert(pTab != NULL);
+
+    char tabText[256];
+    const char* filename = drpath_file_name(dred_editor_get_file_path(pEditor));
+    const char* modified = "";
+    const char* readonly = "";
+
+    if (dred_editor_is_modified(pEditor)) {
+        modified = "*";
+    }
+    if (dred_editor_is_read_only(pEditor)) {
+        readonly = " [Read Only]";
+    }
+
+    snprintf(tabText, sizeof(tabText), "%s%s%s", filename, modified, readonly);
+    dred_tab_set_text(pTab, tabText);
+}
+
+void dred__on_editor_modified(dred_editor* pEditor)
+{
+    dred_context* pDred = dred_control_get_context(pEditor);
+    assert(pDred != NULL);
+
+    dred_tab* pTab = dred_find_control_tab(pEditor);
+    if (pTab == NULL) {
+        return;
+    }
+
+    // We need to show a "*" at the end of the tab's text to indicate that it's modified.
+    dred__refresh_editor_tab_text(pEditor, pTab);
+}
+
+void dred__on_editor_unmodified(dred_editor* pEditor)
+{
+    dred_context* pDred = dred_control_get_context(pEditor);
+    assert(pDred != NULL);
+
+    dred_tab* pTab = dred_find_control_tab(pEditor);
+    if (pTab == NULL) {
+        return;
+    }
+
+    // We need to hide the "*" at the end of the tab's text to indicate that it's unmodified.
+    dred__refresh_editor_tab_text(pEditor, pTab);
+}
+
+
 void dred_window_cb__on_main_window_close(dred_window* pWindow)
 {
     dred_platform_post_quit_message(0);
@@ -485,6 +535,9 @@ bool dred_open_file_by_type(dred_context* pDred, const char* filePath, const cha
         return false;
     }
 
+    dred_editor_set_on_modified(pEditor, dred__on_editor_modified);
+    dred_editor_set_on_unmodified(pEditor, dred__on_editor_unmodified);
+
     // We have the editor, so now we need to create a tab an associate the new editor with it.
     dred_tab* pTab = dred_tabgroup_prepend_tab(pTabGroup, drpath_file_name(filePath), pEditor);
     if (pTab == NULL) {
@@ -536,6 +589,30 @@ void dred_close_all_tabs(dred_context* pDred)
 }
 
 
+dred_tab* dred_find_control_tab(dred_control* pControl)
+{
+    dred_context* pDred = dred_control_get_context(pControl);
+    if (pDred == NULL) {
+        return NULL;
+    }
+
+    // TODO: Search every tab group.
+
+    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
+    if (pTabGroup == NULL) {
+        return NULL;
+    }
+
+    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+        if (dred_tab_get_control(pTab) == pControl) {
+            return pTab;
+        }
+    }
+
+    return NULL;
+}
+
+
 bool dred_save_focused_file(dred_context* pDred, const char* newFilePath)
 {
     if (pDred == NULL) {
@@ -558,7 +635,7 @@ bool dred_save_focused_file(dred_context* pDred, const char* newFilePath)
             return false;
         }
 
-        dred_tab_set_text(pFocusedTab, drpath_file_name(dred_editor_get_file_path(pFocusedControl)));
+        dred__refresh_editor_tab_text(pFocusedControl, pFocusedTab);
         return true;
     }
 
