@@ -154,8 +154,8 @@ void dred_save_all_open_files(dred_context* pDred);
 // The newFilePath argument can be null, in which case it simply creates an empty text file.
 bool dred_create_and_open_file(dred_context* pDred, const char* newFilePath);
 
-// Creates an empty text file.
-bool dred_create_new_text_file(dred_context* pDred);
+// Opens an empty text file.
+bool dred_open_new_text_file(dred_context* pDred);
 
 
 // Creates an editor by it's type.

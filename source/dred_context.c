@@ -24,6 +24,20 @@ void dred__update_main_window_layout(dred_window* pWindow, float windowWidth, fl
 }
 
 
+bool dred_parse_cmdline__startup_files(const char* key, const char* value, void* pUserData)
+{
+    dred_context* pDred = (dred_context*)pUserData;
+    assert(pDred != NULL);
+
+    if (key == NULL) {
+        dred_open_file(pDred, value);
+        return true;
+    }
+
+    return true;
+}
+
+
 void dred__refresh_editor_tab_text(dred_editor* pEditor, dred_tab* pTab)
 {
     assert(pEditor != NULL);
@@ -259,6 +273,17 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     // Update the layout of the main window to ensure it's in the correct initial state.
     dred__update_main_window_layout(pDred->pMainWindow, 1280, 720);
+
+
+    // Load initial files from the command line.
+    dr_parse_cmdline(&pDred->cmdline, dred_parse_cmdline__startup_files, pDred);
+
+    // If there were no files passed on the command line, start with an empty text file. We can know this by simply finding the
+    // focused editor. If it's null, nothing is open.
+    if (dred_get_focused_editor(pDred) == NULL) {
+        dred_open_new_text_file(pDred);
+    }
+
 
     return true;
 
@@ -715,7 +740,7 @@ bool dred_create_and_open_file(dred_context* pDred, const char* newFilePath)
     }
 
     if (newFilePath == NULL || newFilePath[0] == '\0') {
-        return dred_create_new_text_file(pDred);
+        return dred_open_new_text_file(pDred);
     } else {
         if (dr_file_exists(newFilePath)) {
             dred_errorf(pDred, "File already exists: %s", newFilePath);
@@ -731,7 +756,7 @@ bool dred_create_and_open_file(dred_context* pDred, const char* newFilePath)
     }
 }
 
-bool dred_create_new_text_file(dred_context* pDred)
+bool dred_open_new_text_file(dred_context* pDred)
 {
     return dred_open_file_by_type(pDred, NULL, DRED_CONTROL_TYPE_TEXT_EDITOR);
 }
