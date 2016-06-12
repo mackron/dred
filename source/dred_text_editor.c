@@ -147,3 +147,36 @@ void dred_text_editor_delete(dred_text_editor* pTextEditor)
     
     dred_editor_delete(pTextEditor);
 }
+
+
+void dred_text_editor_goto_ratio(dred_text_editor* pTextEditor, unsigned int ratio)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    if (ratio > 100) {
+        ratio = 100;
+    }
+
+    dred_text_editor_goto_line(pTextEditor, (size_t)(roundf(dred_textbox_get_line_count(data->pTextBox) * (ratio/100.0f))));
+}
+
+void dred_text_editor_goto_line(dred_text_editor* pTextEditor, unsigned int lineNumber)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    if (lineNumber == 0) {
+        lineNumber = 1;
+    }
+    if (lineNumber > dred_textbox_get_line_count(data->pTextBox)) {
+        lineNumber = dred_textbox_get_line_count(data->pTextBox);
+    }
+
+    dred_textbox_deselect_all(data->pTextBox);
+    dred_textbox_move_cursor_to_start_of_line_by_index(data->pTextBox, lineNumber - 1);
+}
