@@ -100,9 +100,6 @@ void dred_command__close_all(dred_context* pDred, const char* value)
 
 void dred_command__goto(dred_context* pDred, const char* value)
 {
-    (void)pDred;
-    (void)value;
-
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
         return;
@@ -124,26 +121,73 @@ void dred_command__goto(dred_context* pDred, const char* value)
 
 void dred_command__find(dred_context* pDred, const char* value)
 {
-    (void)pDred;
-    (void)value;
+    dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
+    if (pFocusedEditor == NULL) {
+        return;
+    }
+
+    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+        char query[1024];
+        if (dr_next_token(value, query, sizeof(query)) != NULL) {
+            if (!dred_text_editor_find_and_select_next(pFocusedEditor, query)) {
+                // TODO: Display a message.
+            }
+        }
+    }
 }
 
 void dred_command__find_next(dred_context* pDred, const char* value)
 {
-    (void)pDred;
-    (void)value;
+    dred_command__find(pDred, value);
 }
 
 void dred_command__replace(dred_context* pDred, const char* value)
 {
-    (void)pDred;
-    (void)value;
+    dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
+    if (pFocusedEditor == NULL) {
+        return;
+    }
+
+    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+        char query[1024];
+        value = dr_next_token(value, query, sizeof(query));
+        if (value != NULL) {
+            char replacement[1024];
+            value = dr_next_token(value, replacement, sizeof(replacement));
+            if (value != NULL) {
+                if (!dred_text_editor_find_and_replace_next(pFocusedEditor, query, replacement)) {
+                    // TODO: Display a message.
+                }
+            }
+        }
+    }
 }
 
 void dred_command__replace_next(dred_context* pDred, const char* value)
 {
-    (void)pDred;
-    (void)value;
+    dred_command__replace(pDred, value);
+}
+
+void dred_command__replace_all(dred_context* pDred, const char* value)
+{
+    dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
+    if (pFocusedEditor == NULL) {
+        return;
+    }
+
+    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+        char query[1024];
+        value = dr_next_token(value, query, sizeof(query));
+        if (value != NULL) {
+            char replacement[1024];
+            value = dr_next_token(value, replacement, sizeof(replacement));
+            if (value != NULL) {
+                if (!dred_text_editor_find_and_replace_all(pFocusedEditor, query, replacement)) {
+                    // TODO: Display a message.
+                }
+            }
+        }
+    }
 }
 
 

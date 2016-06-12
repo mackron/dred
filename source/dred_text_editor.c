@@ -180,3 +180,34 @@ void dred_text_editor_goto_line(dred_text_editor* pTextEditor, unsigned int line
     dred_textbox_deselect_all(data->pTextBox);
     dred_textbox_move_cursor_to_start_of_line_by_index(data->pTextBox, lineNumber - 1);
 }
+
+
+bool dred_text_editor_find_and_select_next(dred_text_editor* pTextEditor, const char* text)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return false;
+    }
+
+    return dred_textbox_find_and_select_next(data->pTextBox, text);
+}
+
+bool dred_text_editor_find_and_replace_next(dred_text_editor* pTextEditor, const char* text, const char* replacement)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return false;
+    }
+
+    return dred_textbox_find_and_replace_next(data->pTextBox, text, replacement);
+}
+
+bool dred_text_editor_find_and_replace_all(dred_text_editor* pTextEditor, const char* text, const char* replacement)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return false;
+    }
+
+    return dred_textbox_find_and_replace_all(data->pTextBox, text, replacement);
+}

@@ -15,6 +15,7 @@
 // find-next    dred_command__find_next         DRED_CMDBAR_NO_CLEAR
 // replace      dred_command__replace           DRED_CMDBAR_RELEASE_KEYBOARD
 // replace-next dred_command__replace_next      DRED_CMDBAR_NO_CLEAR
+// replace-all  dred_command__replace_all       DRED_CMDBAR_RELEASE_KEYBOARD
 //
 // END COMMAND LIST
 
@@ -70,6 +71,9 @@ void dred_command__replace(dred_context* pDred, const char* value);
 
 // replace-next
 void dred_command__replace_next(dred_context* pDred, const char* value);
+
+// replace-all
+void dred_command__replace_all(dred_context* pDred, const char* value);
 
 
 

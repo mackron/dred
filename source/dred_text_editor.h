@@ -16,3 +16,13 @@ void dred_text_editor_goto_ratio(dred_text_editor* pTextEditor, unsigned int rat
 
 // dred_text_editor_goto_line()
 void dred_text_editor_goto_line(dred_text_editor* pTextEditor, unsigned int lineNumber);
+
+
+// Finds and selects the next occurance of the given string, starting from the cursor and looping back to the start.
+bool dred_text_editor_find_and_select_next(dred_text_editor* pTextEditor, const char* text);
+
+// Finds the next occurance of the given string and replaces it with another.
+bool dred_text_editor_find_and_replace_next(dred_text_editor* pTextEditor, const char* text, const char* replacement);
+
+// Finds every occurance of the given string and replaces it with another.
+bool dred_text_editor_find_and_replace_all(dred_text_editor* pTextEditor, const char* text, const char* replacement);
