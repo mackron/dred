@@ -539,12 +539,12 @@ bool dred_open_file_by_type(dred_context* pDred, const char* filePath, const cha
     dred_editor_set_on_unmodified(pEditor, dred__on_editor_unmodified);
 
     // We have the editor, so now we need to create a tab an associate the new editor with it.
-    dred_tab* pTab = dred_tabgroup_prepend_tab(pTabGroup, drpath_file_name(filePath), pEditor);
+    dred_tab* pTab = dred_tabgroup_prepend_tab(pTabGroup, NULL, pEditor);
     if (pTab == NULL) {
         dred_delete_editor_by_type(pEditor);
         return false;
     }
-
+    dred__refresh_editor_tab_text(pEditor, pTab);
     dred_tabgroup_activate_tab(pTabGroup, pTab);
 
     return true;
