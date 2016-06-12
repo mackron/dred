@@ -867,6 +867,118 @@ void dred_timer_delete__win32(dred_timer* pTimer)
 }
 
 
+//// Clipboard ////
+
+bool dred_clipboard_set_text__win32(const char* text, size_t textLength)
+{
+    if (textLength == (size_t)-1) {
+        textLength = strlen(text);
+    }
+
+    // We must ensure line endlings are normalized to \r\n. If we don't do this pasting won't work
+    // correctly in things like Notepad.
+    //
+    // We allocate a buffer x2 the size of the original string to guarantee there will be enough room
+    // for the extra \r character's we'll be adding.
+    HGLOBAL hTextMem = GlobalAlloc(GMEM_SHARE | GMEM_MOVEABLE, ((textLength*2 + 1) * sizeof(char)));
+    if (hTextMem == NULL) {
+        return false;
+    }
+
+    char* textRN = GlobalLock(hTextMem);
+    if (textRN == NULL) {
+        GlobalFree(hTextMem);
+        return false;
+    }
+
+    if (!OpenClipboard(NULL)) {
+        GlobalFree(hTextMem);
+        return false;
+    }
+
+    if (!EmptyClipboard()) {
+        GlobalFree(hTextMem);
+        CloseClipboard();
+        return false;
+    }
+
+    while (*text != '\0' && textLength > 0)
+    {
+        if (text[0] == '\r' && textLength > 1 && text[1] == '\n')
+        {
+            *textRN++ = '\r';
+            *textRN++ = '\n';
+
+            text += 2;
+            textLength -= 2;
+        }
+        else
+        {
+            if (*text == '\n') {
+                *textRN++ = '\r';
+            }
+
+            *textRN++ = *text++;
+
+            textLength -= 1;
+        }
+    }
+
+    *textRN = '\0';
+
+
+    GlobalUnlock(hTextMem);
+
+
+    if (SetClipboardData(CF_TEXT, hTextMem) == NULL) {
+        GlobalFree(hTextMem);
+        CloseClipboard();
+        return false;
+    }
+
+    CloseClipboard();
+
+    return true;
+}
+
+char* dred_clipboard_get_text__win32()
+{
+    if (!IsClipboardFormatAvailable(CF_TEXT)) {
+        return 0;
+    }
+
+    if (!OpenClipboard(NULL)) {
+        return 0;
+    }
+
+    HGLOBAL hTextMem = GetClipboardData(CF_TEXT);
+    if (hTextMem == NULL) {
+        CloseClipboard();
+        return 0;
+    }
+
+    char* textRN = GlobalLock(hTextMem);
+    if (textRN == NULL) {
+        CloseClipboard();
+        return false;
+    }
+
+    size_t textRNLength = strlen(textRN);
+    char* result = malloc(textRNLength + 1);
+    strcpy_s(result, textRNLength + 1, textRN);
+
+    GlobalUnlock(hTextMem);
+    CloseClipboard();
+
+    return result;
+}
+
+void dred_clipboard_free_text__win32(char* text)
+{
+    free(text);
+}
+
+
 
 //// WIN32 <-> GUI BINDING ////
 
@@ -1762,6 +1874,30 @@ void dred_timer_delete__gtk(dred_timer* pTimer)
 
 
 
+//// Clipboard ////
+
+bool dred_clipboard_set_text__gtk(const char* text, size_t textLength)
+{
+    if (textLength == (size_t)-1) {
+        textLength = strlen(text);
+    }
+
+    gtk_clipboard_set_text(gtk_clipboard_get_default(gdk_display_get_default()), text, textLength);
+    return true;
+}
+
+char* dred_clipboard_get_text__gtk()
+{
+    return gtk_clipboard_wait_for_text(gtk_clipboard_get_default(gdk_display_get_default()));
+}
+
+void dred_clipboard_free_text__gtk(char* text)
+{
+    g_free(text);
+}
+
+
+
 //// GTK <-> GUI BINDING ////
 
 static void dred_platform__on_global_capture_mouse__gtk(drgui_element* pElement)
@@ -2255,5 +2391,43 @@ void dred_timer_delete(dred_timer* pTimer)
 
 #ifdef DRED_GTK
     dred_timer_delete__gtk(pTimer);
+#endif
+}
+
+
+
+
+//// Clipboard ////
+
+bool dred_clipboard_set_text(const char* text, size_t textLength)
+{
+#ifdef DRED_WIN32
+    return dred_clipboard_set_text__win32(text, textLength);
+#endif
+
+#ifdef DRED_GTK
+    return dred_clipboard_set_text__gtk(text, textLength);
+#endif
+}
+
+char* dred_clipboard_get_text()
+{
+#ifdef DRED_WIN32
+    return dred_clipboard_get_text__win32();
+#endif
+
+#ifdef DRED_GTK
+    return dred_clipboard_get_text__gtk();
+#endif
+}
+
+void dred_clipboard_free_text(char* text)
+{
+#ifdef DRED_WIN32
+    dred_clipboard_free_text__win32(text);
+#endif
+
+#ifdef DRED_GTK
+    dred_clipboard_free_text__gtk(text);
 #endif
 }
