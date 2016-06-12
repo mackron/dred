@@ -536,6 +536,54 @@ void dred_close_all_tabs(dred_context* pDred)
 }
 
 
+bool dred_save_focused_file(dred_context* pDred, const char* newFilePath)
+{
+    if (pDred == NULL) {
+        return false;
+    }
+
+    dred_tab* pFocusedTab = dred_get_focused_tab(pDred);
+    if (pFocusedTab == NULL) {
+        return false;
+    }
+
+    dred_control* pFocusedControl = dred_tab_get_control(pFocusedTab);
+    if (pFocusedControl == NULL) {
+        return false;
+    }
+
+    // Editor.
+    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_EDITOR)) {
+        if (!dred_editor_save(pFocusedControl, newFilePath)) {
+            return false;
+        }
+
+        dred_tab_set_text(pFocusedTab, drpath_file_name(dred_editor_get_file_path(pFocusedControl)));
+        return true;
+    }
+
+    // Output.
+    //
+    // TODO: Add support for saving the output window.
+
+    return false;
+}
+
+bool dred_save_focused_file_as(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return false;
+    }
+
+    char newFilePath[DRED_MAX_PATH];
+    if (!dred_show_save_file_dialog(pDred, newFilePath, sizeof(newFilePath))) {
+        return false;
+    }
+
+    return dred_save_focused_file(pDred, newFilePath);
+}
+
+
 dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTabGroup, const char* editorType, const char* filePathAbsolute)
 {
     if (pDred == NULL) {
@@ -619,10 +667,10 @@ void dred_show_open_file_dialog(dred_context* pDred)
 #endif
 }
 
-const char* dred_show_save_file_dialog(dred_context* pDred, char* absolutePathOut, size_t absolutePathOutSize)
+bool dred_show_save_file_dialog(dred_context* pDred, char* absolutePathOut, size_t absolutePathOutSize)
 {
     if (pDred == NULL || absolutePathOut == NULL || absolutePathOutSize == 0) {
-        return NULL;
+        return false;
     }
 
 #ifdef _WIN32
@@ -638,7 +686,7 @@ const char* dred_show_save_file_dialog(dred_context* pDred, char* absolutePathOu
     //ofn.nFilterIndex = 1;
     ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
     if (!GetSaveFileNameA(&ofn)) {
-        return NULL;
+        return false;
     }
 
     return absolutePathOut;

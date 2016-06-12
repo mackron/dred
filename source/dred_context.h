@@ -133,6 +133,15 @@ void dred_close_tab(dred_context* pDred, dred_tab* pTab);
 void dred_close_all_tabs(dred_context* pDred);
 
 
+// Saves the currently focused file.
+//
+// The new file name can be null in which case the file is just saved over the top of the current file.
+bool dred_save_focused_file(dred_context* pDred, const char* newFilePath);
+
+// Opens save dialog box and gives the user the opportunity to save the focused file as a different name.
+bool dred_save_focused_file_as(dred_context* pDred);
+
+
 // Creates an editor by it's type.
 dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTabGroup, const char* editorType, const char* filePathAbsolute);
 
@@ -144,7 +153,7 @@ void dred_delete_editor_by_type(dred_editor* pEditor);
 void dred_show_open_file_dialog(dred_context* pDred);
 
 // Shows the Save File dialog.
-const char* dred_show_save_file_dialog(dred_context* pDred, char* absolutePathOut, size_t absolutePathOutSize);
+bool dred_show_save_file_dialog(dred_context* pDred, char* absolutePathOut, size_t absolutePathOutSize);
 
 // Shows a yes/no/cancel dialog and returns the result as DRED_MESSAGE_BOX_YES, DRED_MESSAGE_BOX_NO or DRED_MESSAGE_BOX_CANCEL.
 unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* message, const char* title);

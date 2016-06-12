@@ -3,6 +3,8 @@
 
 typedef dred_control dred_editor;
 
+typedef bool (* dred_editor_on_save_proc)(dred_editor* pEditor, dred_file* pFile);
+
 
 // dred_editor_create()
 dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, const char* type, const char* filePathAbsolute, size_t extraDataSize);
@@ -22,3 +24,16 @@ size_t dred_editor_get_extra_data_size(dred_editor* pEditor);
 //
 // Returns an empty string if the editor is not tied to a file.
 const char* dred_editor_get_file_path(dred_editor* pEditor);
+
+// Sets the file path of the given editor.
+bool dred_editor_set_file_path(dred_editor* pEditor, const char* newFilePath);
+
+
+// Saves the given editor to the given file.
+//
+// This will change the file association to the new file.
+bool dred_editor_save(dred_editor* pEditor, const char* newFilePath);
+
+
+// Events
+void dred_editor_set_on_save(dred_editor* pEditor, dred_editor_on_save_proc proc);

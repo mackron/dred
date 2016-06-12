@@ -77,8 +77,9 @@ void dred_command__open(dred_context* pDred, const char* value)
 
 void dred_command__save(dred_context* pDred, const char* value)
 {
-    (void)pDred;
-    (void)value;
+    if (!dred_save_focused_file(pDred, value)) {
+        dred_save_focused_file_as(pDred);
+    }
 }
 
 void dred_command__save_all(dred_context* pDred, const char* value)
