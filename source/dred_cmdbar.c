@@ -29,8 +29,10 @@ void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, drgui_key key, int stat
     dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
+    dred_context* pDred = dred_control_get_context(pCmdBar);
+
     if (key == DRGUI_ESCAPE) {
-        dred_release_keyboard(dred_control_get_context(pCmdBar));
+        dred_capture_keyboard(pDred, dred_get_focused_editor(pDred));
     } else {
         dred_textbox_on_key_down(pTextBox, key, stateFlags);
     }
