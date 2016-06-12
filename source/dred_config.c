@@ -331,5 +331,7 @@ bool dred_config_load_file(dred_config* pConfig, const char* filePath, dred_conf
     data.pUserData = pUserData;
     data.file = file;
     dr_parse_key_value_pairs(dred_config_load_file__on_read, dred_config_load_file__on_pair, dred_config_load_file__on_error, &data);
+
+    dred_file_close(file);
     return true;
 }
