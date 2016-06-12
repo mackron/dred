@@ -112,15 +112,17 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_textbox_set_background_color(data->pTextBox, pDred->config.textEditorBGColor);
     dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.textEditorActiveLineColor);
 
-    char* pFileData = dr_open_and_read_text_file(filePathAbsolute, NULL);
-    if (pFileData == NULL) {
-        dred_textbox_delete(data->pTextBox);
-        dred_editor_delete(pTextEditor);
-        return NULL;
-    }
+    if (filePathAbsolute != NULL && filePathAbsolute[0] != '\0') {
+        char* pFileData = dr_open_and_read_text_file(filePathAbsolute, NULL);
+        if (pFileData == NULL) {
+            dred_textbox_delete(data->pTextBox);
+            dred_editor_delete(pTextEditor);
+            return NULL;
+        }
 
-    dred_textbox_set_text(data->pTextBox, pFileData);
-    dr_free_file_data(pFileData);
+        dred_textbox_set_text(data->pTextBox, pFileData);
+        dr_free_file_data(pFileData);
+    }
 
     // Events.
     dred_control_set_on_size(pTextEditor, dred_text_editor__on_size);

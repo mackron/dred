@@ -48,8 +48,6 @@ static bool dred__preprocess_system_command(dred_context* pDred, const char* cmd
 
 void dred_command__system_command(dred_context* pDred, const char* value)
 {
-    (void)pDred;
-
     char valueExpanded[4096];
     if (dred__preprocess_system_command(pDred, value, valueExpanded, sizeof(valueExpanded))) {
         system(valueExpanded);
@@ -61,8 +59,7 @@ void dred_command__system_command(dred_context* pDred, const char* value)
 
 void dred_command__new(dred_context* pDred, const char* value)
 {
-    (void)pDred;
-    (void)value;
+    dred_create_and_open_file(pDred, value);
 }
 
 void dred_command__open(dred_context* pDred, const char* value)
@@ -91,14 +88,12 @@ void dred_command__save_all(dred_context* pDred, const char* value)
 void dred_command__close(dred_context* pDred, const char* value)
 {
     (void)value;
-
     dred_close_focused_file(pDred);
 }
 
 void dred_command__close_all(dred_context* pDred, const char* value)
 {
     (void)value;
-
     dred_close_all_tabs(pDred);
 }
 

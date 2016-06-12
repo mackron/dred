@@ -146,6 +146,15 @@ bool dred_save_focused_file(dred_context* pDred, const char* newFilePath);
 bool dred_save_focused_file_as(dred_context* pDred);
 
 
+// Creates and opens a new file.
+//
+// The newFilePath argument can be null, in which case it simply creates an empty text file.
+bool dred_create_and_open_file(dred_context* pDred, const char* newFilePath);
+
+// Creates an empty text file.
+bool dred_create_new_text_file(dred_context* pDred);
+
+
 // Creates an editor by it's type.
 dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTabGroup, const char* editorType, const char* filePathAbsolute);
 

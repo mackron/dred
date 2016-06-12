@@ -27,10 +27,12 @@ dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, cons
 
     memset(data, 0, dred_control_get_extra_data_size(pEditor));
 
-    if (strcpy_s(data->filePathAbsolute, sizeof(data->filePathAbsolute), filePathAbsolute) != 0) {
-        dred_control_delete(pEditor);
-        dred_errorf(pDred, "File path is too long: %s\n", filePathAbsolute);
-        return NULL;
+    if (filePathAbsolute != NULL) {
+        if (strcpy_s(data->filePathAbsolute, sizeof(data->filePathAbsolute), filePathAbsolute) != 0) {
+            dred_control_delete(pEditor);
+            dred_errorf(pDred, "File path is too long: %s\n", filePathAbsolute);
+            return NULL;
+        }
     }
 
     data->isReadOnly = dr_is_file_read_only(filePathAbsolute);

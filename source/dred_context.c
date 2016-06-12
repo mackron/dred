@@ -34,6 +34,9 @@ void dred__refresh_editor_tab_text(dred_editor* pEditor, dred_tab* pTab)
     const char* modified = "";
     const char* readonly = "";
 
+    if (filename == NULL || filename[0] == '\0') {
+        filename = "[New File]";
+    }
     if (dred_editor_is_modified(pEditor)) {
         modified = "*";
     }
@@ -511,16 +514,22 @@ bool dred_open_file(dred_context* pDred, const char* filePath)
 bool dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType)
 {
     char filePathAbsolute[DRED_MAX_PATH];
-    if (!dred_to_absolute_path(filePath, filePathAbsolute, sizeof(filePathAbsolute))) {
-        dred_errorf(pDred, "File path is too long %s\n", filePath);
-        return false;
+    if (filePath != NULL && filePath[0] != '\0') {
+        if (!dred_to_absolute_path(filePath, filePathAbsolute, sizeof(filePathAbsolute))) {
+            dred_errorf(pDred, "File path is too long %s\n", filePath);
+            return false;
+        }
+    } else {
+        filePathAbsolute[0] = '\0';
     }
 
     // If the file is already open, activate it's tab.
-    dred_tab* pExistingTab = dred_find_editor_tab_by_absolute_path(pDred, filePathAbsolute);
-    if (pExistingTab != NULL) {
-        dred_tabgroup_activate_tab(dred_tab_get_tabgroup(pExistingTab), pExistingTab);
-        return false;
+    if (filePath != NULL) {
+        dred_tab* pExistingTab = dred_find_editor_tab_by_absolute_path(pDred, filePathAbsolute);
+        if (pExistingTab != NULL) {
+            dred_tabgroup_activate_tab(dred_tab_get_tabgroup(pExistingTab), pExistingTab);
+            return true;
+        }
     }
 
 
@@ -658,6 +667,35 @@ bool dred_save_focused_file_as(dred_context* pDred)
     }
 
     return dred_save_focused_file(pDred, newFilePath);
+}
+
+
+bool dred_create_and_open_file(dred_context* pDred, const char* newFilePath)
+{
+    if (pDred == NULL) {
+        return false;
+    }
+
+    if (newFilePath == NULL || newFilePath[0] == '\0') {
+        return dred_create_new_text_file(pDred);
+    } else {
+        if (dr_file_exists(newFilePath)) {
+            dred_errorf(pDred, "File already exists: %s", newFilePath);
+            return false;
+        }
+
+        if (!dr_create_empty_file(newFilePath, true)) {
+            dred_errorf(pDred, "Failed to create file: %s", newFilePath);
+            return false;
+        }
+
+        return dred_open_file(pDred, newFilePath);
+    }
+}
+
+bool dred_create_new_text_file(dred_context* pDred)
+{
+    return dred_open_file_by_type(pDred, NULL, DRED_CONTROL_TYPE_TEXT_EDITOR);
 }
 
 
