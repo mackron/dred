@@ -8,6 +8,7 @@ struct dred_accelerator
 struct dred_accelerator_table
 {
     dred_accelerator* pAccelerators;
+    char** ppCmdStrings;
     size_t count;
     size_t bufferSize;
 };
@@ -19,3 +20,5 @@ bool dred_accelerator_table_bind(dred_accelerator_table* pTable, drgui_key key, 
 
 bool dred_accelerator_table_find(dred_accelerator_table* pTable, drgui_key key, uint32_t modifiers, size_t* pIndexOut);
 void dred_accelerator_table_replace(dred_accelerator_table* pTable, size_t acceleratorIndex, const char* cmdStr);
+
+const char* dred_accelerator_table_get_command_string_by_index(dred_accelerator_table* pTable, size_t acceleratorIndex);
