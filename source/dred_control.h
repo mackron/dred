@@ -45,6 +45,13 @@ bool dred_control_is_visible(const dred_control* pControl);
 bool dred_control_is_visible_recursive(const dred_control* pControl);
 
 
+// Determines whether or not the given element has the mouse capture.
+bool dred_control_has_mouse_capture(dred_control* pControl);
+
+// Determines whether or not the given element has the keyboard capture.
+bool dred_control_has_keyboard_capture(dred_control* pControl);
+
+
 
 //// Hierarchy ////
 

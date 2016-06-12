@@ -208,6 +208,12 @@ void dred_textbox_delete(dred_textbox* pTextBox)
 }
 
 
+bool dred_textbox_has_keyboard_capture(dred_textbox* pTextBox)
+{
+    return drgui_has_keyboard_capture(dred_textbox__get_internal_tb(pTextBox));
+}
+
+
 void dred_textbox_set_text(dred_textbox* pTextBox, const char* text)
 {
     dred_textbox_data* data = dred_control_get_extra_data(pTextBox);

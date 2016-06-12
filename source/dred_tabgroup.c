@@ -71,7 +71,13 @@ void dred_tabbar__on_tab_activated(drgui_element* pTabBar, drgui_tab* pTab)
         return;
     }
 
-    dred_control_show(dred_tab_get_control(pTab));
+    dred_control* pControl = dred_tab_get_control(pTab);
+    if (pControl == NULL) {
+        return;
+    }
+
+    dred_control_show(pControl);
+    dred_capture_keyboard(dred_control_get_context(pControl), pControl);
 }
 
 void dred_tabbar__on_tab_deactivated(drgui_element* pTabBar, drgui_tab* pTab)
@@ -82,7 +88,15 @@ void dred_tabbar__on_tab_deactivated(drgui_element* pTabBar, drgui_tab* pTab)
         return;
     }
 
-    dred_control_hide(dred_tab_get_control(pTab));
+    dred_control* pControl = dred_tab_get_control(pTab);
+    if (pControl == NULL) {
+        return;
+    }
+
+    dred_control_hide(pControl);
+    if (dred_control_has_keyboard_capture(pControl)) {
+        dred_release_keyboard(dred_control_get_context(pControl));
+    }
 }
 
 void dred_tabbar__on_tab_close(drgui_element* pTabBar, drgui_tab* pTab)

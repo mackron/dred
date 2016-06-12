@@ -228,7 +228,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
-    drgui_capture_keyboard(pDred->pCmdBar);
+    dred_focus_command_bar(pDred);
 
 
 
@@ -790,6 +790,16 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 
     return 0;
 #endif
+}
+
+
+void dred_focus_command_bar(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    dred_capture_keyboard(pDred, pDred->pCmdBar);
 }
 
 

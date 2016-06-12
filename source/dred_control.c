@@ -78,6 +78,15 @@ bool dred_control_is_visible_recursive(const dred_control* pControl)
 }
 
 
+bool dred_control_has_mouse_capture(dred_control* pControl)
+{
+    return drgui_has_mouse_capture(pControl);
+}
+
+bool dred_control_has_keyboard_capture(dred_control* pControl)
+{
+    return drgui_has_keyboard_capture(pControl);
+}
 
 
 void dred_control_detach(dred_control* pChildControl)

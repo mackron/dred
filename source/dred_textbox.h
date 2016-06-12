@@ -15,6 +15,12 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent);
 void dred_textbox_delete(dred_textbox* pTextBox);
 
 
+// Determines whether or not this textbox has the keyboard capture.
+//
+// This will return true if the inner text box has the capture, which is what makes this different to dred_control_has_keyboard_capture().
+bool dred_textbox_has_keyboard_capture(dred_textbox* pTextBox);
+
+
 // Sets the text of the text box.
 void dred_textbox_set_text(dred_textbox* pTextBox, const char* text);
 

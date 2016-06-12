@@ -9,7 +9,7 @@ void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
 {
     dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
     assert(data != NULL);
-
+    
     dred_control_set_size(data->pTextBox, newWidth, newHeight);
 }
 
@@ -63,7 +63,9 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
             }
 
             if ((command.flags & DRED_CMDBAR_RELEASE_KEYBOARD) != 0) {
-                dred_release_keyboard(dred_control_get_context(pCmdBar));
+                if (dred_textbox_has_keyboard_capture(pTextBox)) {
+                    dred_release_keyboard(dred_control_get_context(pCmdBar));
+                }
             }
         }
 

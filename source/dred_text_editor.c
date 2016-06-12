@@ -65,6 +65,15 @@ bool dred_text_editor__on_save(dred_text_editor* pTextEditor, dred_file file)
     return result;
 }
 
+void dred_text_editor_textbox__on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)
+{
+    if (key == DRGUI_ESCAPE) {
+        dred_focus_command_bar(dred_control_get_context(pTextBox));
+    } else {
+        dred_textbox_on_key_down(pTextBox, key, stateFlags);
+    }
+}
+
 void dred_text_editor_textbox__on_undo_point_changed(dred_textbox* pTextBox, unsigned int iUndoPoint)
 {
     dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
@@ -115,6 +124,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_control_set_on_size(pTextEditor, dred_text_editor__on_size);
     dred_control_set_on_capture_keyboard(pTextEditor, dred_text_editor__on_capture_keyboard);
     dred_editor_set_on_save(pTextEditor, dred_text_editor__on_save);
+    dred_control_set_on_key_down(data->pTextBox, dred_text_editor_textbox__on_key_down);
     dred_textbox_set_on_undo_point_changed(data->pTextBox, dred_text_editor_textbox__on_undo_point_changed);
     
     return pTextEditor;
