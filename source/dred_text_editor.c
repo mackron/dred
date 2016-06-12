@@ -121,6 +121,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
         }
 
         dred_textbox_set_text(data->pTextBox, pFileData);
+        dred_textbox_clear_undo_stack(data->pTextBox);
         dr_free_file_data(pFileData);
     }
 

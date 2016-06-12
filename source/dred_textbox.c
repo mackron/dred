@@ -1,3 +1,4 @@
+#include "dred_textbox.h"
 
 typedef struct
 {
@@ -370,6 +371,11 @@ unsigned int dred_textbox_get_undo_points_remaining_count(dred_textbox* pTextBox
 unsigned int dred_textbox_get_redo_points_remaining_count(dred_textbox* pTextBox)
 {
     return drgui_textbox_get_redo_points_remaining_count(dred_textbox__get_internal_tb(pTextBox));
+}
+
+void dred_textbox_clear_undo_stack(dred_textbox* pTextBox)
+{
+    drgui_textbox_clear_undo_stack(dred_textbox__get_internal_tb(pTextBox));
 }
 
 size_t dred_textbox_get_cursor_line(dred_textbox* pTextBox)

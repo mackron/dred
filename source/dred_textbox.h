@@ -121,6 +121,9 @@ unsigned int dred_textbox_get_undo_points_remaining_count(dred_textbox* pTextBox
 // Retrieves the number of redo points remaining.
 unsigned int dred_textbox_get_redo_points_remaining_count(dred_textbox* pTextBox);
 
+// Clears the undo/redo stack.
+void dred_textbox_clear_undo_stack(dred_textbox* pTextBox);
+
 // Retrieves the index of the line the cursor is current sitting on.
 size_t dred_textbox_get_cursor_line(dred_textbox* pTextBox);
 
