@@ -100,7 +100,7 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
         return false;
     }
 
-    if (data->isReadOnly) {
+    if (data->isReadOnly && (newFilePath == NULL || newFilePath[0] == '\0')) {
         dred_errorf(dred_control_get_context(pEditor), "File is read only.");
         return false;
     }
@@ -133,9 +133,11 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
 
     // At this point the temporary file has been saved, so now we just need to overwrite the old one.
     if (!dr_move_file(tempFilePath, actualFilePath)) {
+        dr_delete_file(tempFilePath);
         return false;
     }
 
+    data->isReadOnly = dr_is_file_read_only(actualFilePath);
 
     if (newFilePath != NULL && newFilePath[0] != '\0') {
         return dred_editor_set_file_path(pEditor, newFilePath);
