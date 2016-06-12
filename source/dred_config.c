@@ -218,6 +218,7 @@ bool dred_config_init(dred_config* pConfig, dred_context* pDred)
     pConfig->cmdbarBGColor = drgui_rgb(64, 64, 64);
 
     pConfig->pTextEditorFont = dred_config__load_system_font_mono(pDred);
+    pConfig->textEditorBGColor = drgui_rgb(48, 48, 48);
 
     return true;
 }
@@ -289,6 +290,10 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
 
     if (strcmp(key, "texteditor-font") == 0) {
         pData->pConfig->pTextEditorFont = dred_config__parse_and_load_font(pData->pConfig->pDred, value);
+        return;
+    }
+    if (strcmp(key, "texteditor-bg-color") == 0) {
+        pData->pConfig->textEditorBGColor = dred_parse_color(value);
         return;
     }
 }
