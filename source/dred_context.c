@@ -622,6 +622,16 @@ dred_tab* dred_find_control_tab(dred_control* pControl)
 }
 
 
+bool dred__save_editor(dred_editor* pEditor, const char* newFilePath, dred_tab* pTab)
+{
+    if (!dred_editor_save(pEditor, newFilePath)) {
+        return false;
+    }
+
+    dred__refresh_editor_tab_text(pEditor, pTab);
+    return true;
+}
+
 bool dred_save_focused_file(dred_context* pDred, const char* newFilePath)
 {
     if (pDred == NULL) {
@@ -640,12 +650,7 @@ bool dred_save_focused_file(dred_context* pDred, const char* newFilePath)
 
     // Editor.
     if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_EDITOR)) {
-        if (!dred_editor_save(pFocusedControl, newFilePath)) {
-            return false;
-        }
-
-        dred__refresh_editor_tab_text(pFocusedControl, pFocusedTab);
-        return true;
+        return dred__save_editor(pFocusedControl, newFilePath, pFocusedTab);
     }
 
     // Output.
@@ -667,6 +672,27 @@ bool dred_save_focused_file_as(dred_context* pDred)
     }
 
     return dred_save_focused_file(pDred, newFilePath);
+}
+
+void dred_save_all_open_files(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    // TODO: Iterate over every tab group.
+
+    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
+    if (pTabGroup == NULL) {
+        return;
+    }
+
+    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+        dred_control* pControl = dred_tab_get_control(pTab);
+        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
+            dred__save_editor(pControl, NULL, pTab);
+        }
+    }
 }
 
 

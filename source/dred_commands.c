@@ -81,8 +81,8 @@ void dred_command__save(dred_context* pDred, const char* value)
 
 void dred_command__save_all(dred_context* pDred, const char* value)
 {
-    (void)pDred;
     (void)value;
+    dred_save_all_open_files(pDred);
 }
 
 void dred_command__close(dred_context* pDred, const char* value)

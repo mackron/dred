@@ -145,6 +145,9 @@ bool dred_save_focused_file(dred_context* pDred, const char* newFilePath);
 // Opens save dialog box and gives the user the opportunity to save the focused file as a different name.
 bool dred_save_focused_file_as(dred_context* pDred);
 
+// Saves every open file, skipping those that would otherwise require a save-as dialog.
+void dred_save_all_open_files(dred_context* pDred);
+
 
 // Creates and opens a new file.
 //
