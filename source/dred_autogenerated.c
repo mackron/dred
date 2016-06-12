@@ -8,6 +8,8 @@ const char g_CommandNamePool[] =
     "save-all\0"
     "close\0"
     "close-all\0"
+    "undo\0"
+    "redo\0"
     "goto\0"
     "find\0"
     "find-next\0"
@@ -26,9 +28,11 @@ const char* g_CommandNames[] = {
     g_CommandNamePool + 41,
     g_CommandNamePool + 46,
     g_CommandNamePool + 51,
+    g_CommandNamePool + 56,
     g_CommandNamePool + 61,
-    g_CommandNamePool + 69,
-    g_CommandNamePool + 82,
+    g_CommandNamePool + 71,
+    g_CommandNamePool + 79,
+    g_CommandNamePool + 92,
 };
 
 dred_command g_Commands[] = {
@@ -39,6 +43,8 @@ dred_command g_Commands[] = {
     {dred_command__save_all, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__close, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__close_all, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__undo, DRED_CMDBAR_NO_CLEAR},
+    {dred_command__redo, DRED_CMDBAR_NO_CLEAR},
     {dred_command__goto, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__find, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__find_next, DRED_CMDBAR_NO_CLEAR},
@@ -47,4 +53,4 @@ dred_command g_Commands[] = {
     {dred_command__replace_all, DRED_CMDBAR_RELEASE_KEYBOARD},
 };
 
-#define DRED_COMMAND_COUNT 13
+#define DRED_COMMAND_COUNT 15

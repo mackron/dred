@@ -10,6 +10,8 @@
 // save-all     dred_command__save_all          DRED_CMDBAR_RELEASE_KEYBOARD
 // close        dred_command__close             DRED_CMDBAR_RELEASE_KEYBOARD
 // close-all    dred_command__close_all         DRED_CMDBAR_RELEASE_KEYBOARD
+// undo         dred_command__undo              DRED_CMDBAR_NO_CLEAR
+// redo         dred_command__redo              DRED_CMDBAR_NO_CLEAR
 // goto         dred_command__goto              DRED_CMDBAR_RELEASE_KEYBOARD
 // find         dred_command__find              DRED_CMDBAR_RELEASE_KEYBOARD
 // find-next    dred_command__find_next         DRED_CMDBAR_NO_CLEAR
@@ -53,6 +55,17 @@ void dred_command__close(dred_context* pDred, const char* value);
 
 // close-all
 void dred_command__close_all(dred_context* pDred, const char* value);
+
+
+
+//// General Editing ////
+
+// undo
+void dred_command__undo(dred_context* pDred, const char* value);
+
+// redo
+void dred_command__redo(dred_context* pDred, const char* value);
+
 
 
 //// Text Editor ////

@@ -98,6 +98,35 @@ void dred_command__close_all(dred_context* pDred, const char* value)
 }
 
 
+void dred_command__undo(dred_context* pDred, const char* value)
+{
+    drgui_element* pFocusedElement = drgui_get_element_with_keyboard_capture(pDred->pGUI);
+    if (pFocusedElement == NULL) {
+        return;
+    }
+
+    // If the parent of the element is a DRED_CONTROL_TYPE_TEXTBOX then it means a dred textbox is focused and we can do an undo.
+    drgui_element* pTextBox = drgui_get_parent(pFocusedElement);
+    if (pTextBox != NULL && drgui_is_of_type(pTextBox, DRED_CONTROL_TYPE_TEXTBOX)) {
+        dred_textbox_undo(pTextBox);
+    }
+}
+
+void dred_command__redo(dred_context* pDred, const char* value)
+{
+    drgui_element* pFocusedElement = drgui_get_element_with_keyboard_capture(pDred->pGUI);
+    if (pFocusedElement == NULL) {
+        return;
+    }
+
+    // If the parent of the element is a DRED_CONTROL_TYPE_TEXTBOX then it means a dred textbox is focused and we can do an undo.
+    drgui_element* pTextBox = drgui_get_parent(pFocusedElement);
+    if (pTextBox != NULL && drgui_is_of_type(pTextBox, DRED_CONTROL_TYPE_TEXTBOX)) {
+        dred_textbox_redo(pTextBox);
+    }
+}
+
+
 void dred_command__goto(dred_context* pDred, const char* value)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
