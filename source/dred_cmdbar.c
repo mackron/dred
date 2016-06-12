@@ -15,6 +15,8 @@ void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
 
 void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, drgui_element* pPrevCapturedElement)
 {
+    (void)pPrevCapturedElement;
+
     dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
     assert(data != NULL);
 

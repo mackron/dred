@@ -8,6 +8,7 @@ void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabg
 
 void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float parentWidth, float parentHeight)
 {
+    (void)pDred;
     assert(pCmdBar != NULL);
 
     dred_control_set_size(pCmdBar, parentWidth, dred_control_get_height(pCmdBar));
@@ -93,6 +94,7 @@ void dred__on_editor_unmodified(dred_editor* pEditor)
 
 void dred_window_cb__on_main_window_close(dred_window* pWindow)
 {
+    (void)pWindow;
     dred_platform_post_quit_message(0);
 }
 
@@ -121,6 +123,8 @@ dred_file dred__open_log_file()
 
 void dred_config__on_error(dred_config* pConfig, const char* configPath, const char* message, unsigned int line, void* pUserData)
 {
+    (void)pConfig;
+
     dred_context* pDred = (dred_context*)pUserData;
     assert(pDred != NULL);
 
@@ -937,6 +941,8 @@ void dred_unfocus_command_bar(dred_context* pDred)
 
 void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t acceleratorIndex)
 {
+    (void)pWindow;
+
     const char* cmd = dred_accelerator_table_get_command_string_by_index(&pDred->acceleratorTable, acceleratorIndex);
     if (cmd == NULL) {
         return;

@@ -52,6 +52,8 @@ void dred_tabgroup__on_size(dred_tabgroup* pTabGroup, float newWidth, float newH
 
 void dred_tabgroup__on_paint(dred_tabgroup* pTabGroup, drgui_rect rect, void* pPaintData)
 {
+    (void)rect;
+
     if (dred_tabgroup_get_active_tab(pTabGroup) == NULL)
     {
         // There is no active tab. Draw a blank background.

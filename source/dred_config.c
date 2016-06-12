@@ -73,9 +73,9 @@ drgui_color dred_parse_color(const char* color)
                 hexvals[1] = hexvals[0]; hexvals[0] = hexvals[0];
             }
 
-            r = (hexvals[0] << 4) | hexvals[1];
-            g = (hexvals[2] << 4) | hexvals[3];
-            b = (hexvals[4] << 4) | hexvals[5];
+            r = (drgui_byte)((hexvals[0] << 4) | hexvals[1]);
+            g = (drgui_byte)((hexvals[2] << 4) | hexvals[3]);
+            b = (drgui_byte)((hexvals[4] << 4) | hexvals[5]);
 
             return drgui_rgb(r, g, b);
         } else {

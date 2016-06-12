@@ -164,7 +164,7 @@ int dred_win32_get_mouse_event_state_flags(WPARAM wParam)
 ACCEL dred_win32_to_ACCEL(drgui_key key, uint32_t modifiers, WORD cmd)
 {
     ACCEL a;
-    a.key = key;
+    a.key = dred_drgui_key_to_win32(key);
     a.cmd = cmd;
 
     a.fVirt = FVIRTKEY;
@@ -644,8 +644,8 @@ dred_window* dred_window_create__win32(dred_context* pDred)
     }
 
     // The GUI panel needs to have it's initial size set.
-    int windowWidth;
-    int windowHeight;
+    unsigned int windowWidth;
+    unsigned int windowHeight;
     dred_window_get_size(pWindow, &windowWidth, &windowHeight);
     drgui_set_size(pWindow->pRootGUIElement, (float)windowWidth, (float)windowHeight);
 

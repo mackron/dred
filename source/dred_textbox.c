@@ -21,6 +21,8 @@ drgui_element* dred_textbox__get_internal_tb(dred_textbox* pTextBox)
 
 void dred_textbox__on_timer(dred_timer* pTimer, void* pUserData)
 {
+    (void)pTimer;
+
     dred_textbox* pTextBox = (dred_textbox*)pUserData;
     assert(pTextBox != NULL);
 
