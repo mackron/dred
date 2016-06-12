@@ -193,7 +193,7 @@ size_t dred_text_editor_get_cursor_column(dred_text_editor* pTextEditor)
 }
 
 
-void dred_text_editor_goto_ratio(dred_text_editor* pTextEditor, unsigned int ratio)
+void dred_text_editor_goto_ratio(dred_text_editor* pTextEditor, size_t ratio)
 {
     dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
     if (data == NULL) {
@@ -207,7 +207,7 @@ void dred_text_editor_goto_ratio(dred_text_editor* pTextEditor, unsigned int rat
     dred_text_editor_goto_line(pTextEditor, (size_t)(roundf(dred_textbox_get_line_count(data->pTextBox) * (ratio/100.0f))));
 }
 
-void dred_text_editor_goto_line(dred_text_editor* pTextEditor, unsigned int lineNumber)
+void dred_text_editor_goto_line(dred_text_editor* pTextEditor, size_t lineNumber)
 {
     dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
     if (data == NULL) {

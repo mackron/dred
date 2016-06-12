@@ -859,7 +859,7 @@ bool dred_show_save_file_dialog(dred_context* pDred, char* absolutePathOut, size
     ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = pDred->pMainWindow->hWnd;
     ofn.lpstrFile = absolutePathOut;
-    ofn.nMaxFile = absolutePathOutSize;
+    ofn.nMaxFile = (DWORD)absolutePathOutSize;
     //ofn.lpstrFilter = "All\0*.*\0";
     //ofn.nFilterIndex = 1;
     ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;

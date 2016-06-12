@@ -45,7 +45,7 @@ void generate_commands_list(FILE* pFileOut)
     char* CommandNames    = gb_make_string("const char* g_CommandNames[] = {\n");
     char* Commands        = gb_make_string("dred_command g_Commands[] = {\n");
 
-    int runningNameLength = 0;
+    size_t runningNameLength = 0;
     int commandCount = 0;
 
     while (nextLine != NULL) {
@@ -86,7 +86,7 @@ void generate_commands_list(FILE* pFileOut)
         snprintf(line, sizeof(line), "\n    \"%s\\0\"", name);
         CommandNamePool = gb_append_cstring(CommandNamePool, line);
 
-        snprintf(line, sizeof(line), "    g_CommandNamePool + %d,\n", runningNameLength);
+        snprintf(line, sizeof(line), "    g_CommandNamePool + %d,\n", (int)runningNameLength);
         CommandNames = gb_append_cstring(CommandNames, line);
 
         snprintf(line, sizeof(line), "    {%s, %s},\n", proc, flags);

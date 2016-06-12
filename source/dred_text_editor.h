@@ -26,10 +26,10 @@ size_t dred_text_editor_get_cursor_column(dred_text_editor* pTextEditor);
 
 
 // dred_text_editor_goto_ratio()
-void dred_text_editor_goto_ratio(dred_text_editor* pTextEditor, unsigned int ratio);
+void dred_text_editor_goto_ratio(dred_text_editor* pTextEditor, size_t ratio);
 
 // dred_text_editor_goto_line()
-void dred_text_editor_goto_line(dred_text_editor* pTextEditor, unsigned int lineNumber);
+void dred_text_editor_goto_line(dred_text_editor* pTextEditor, size_t lineNumber);
 
 
 // Finds and selects the next occurance of the given string, starting from the cursor and looping back to the start.
