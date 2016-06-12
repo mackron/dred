@@ -64,7 +64,7 @@ void dred_font__delete_subfont_by_index(dred_font* pFont, size_t index)
 
 dred_font* dred_font_create(dred_context* pDred, dred_font_desc* pDesc)
 {
-    if (pDred == NULL) {
+    if (pDred == NULL || pDesc == NULL) {
         return NULL;
     }
 
@@ -142,6 +142,10 @@ drgui_font* dred_font_acquire_subfont(dred_font* pFont, float scale)
 
 void dred_font_release_subfont(dred_font* pFont, drgui_font* pSubFont)
 {
+    if (pFont == NULL || pSubFont == NULL) {
+        return;
+    }
+
     for (size_t i = 0; i < pFont->subfontCount; ++i) {
         if (pFont->pSubFonts[i].pGUIFont == pSubFont) {
             assert(pFont->pSubFonts[i].referenceCount > 0);
