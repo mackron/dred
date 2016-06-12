@@ -175,8 +175,14 @@ bool dred_show_save_file_dialog(dred_context* pDred, char* absolutePathOut, size
 unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* message, const char* title);
 
 
+// Sets the text of the command bar.
+void dred_set_command_bar_text(dred_context* pDred, const char* text);
+
 // Places keyboard focus on the command bar.
 void dred_focus_command_bar(dred_context* pDred);
+
+// Places keyboard focus on the command bar and sets it's text.
+void dred_focus_command_bar_and_set_text(dred_context* pDred, const char* text);
 
 // Releases keyboard focus from the command bar.
 void dred_unfocus_command_bar(dred_context* pDred);

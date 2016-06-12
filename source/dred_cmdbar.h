@@ -10,5 +10,10 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent);
 // dred_cmdbar_delete()
 void dred_cmdbar_delete(dred_cmdbar* pCmdBar);
 
+// Sets the text in the text box of the given command bar.
+//
+// This will move the caret to the end of the text.
+void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text);
+
 // Determines whether or not the given command bar has the keyboard focus.
 bool dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar);

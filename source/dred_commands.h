@@ -4,6 +4,7 @@
 // BEGIN COMMAND LIST : <command name> <proc> <flags>
 //
 // !            dred_command__system_command    DRED_CMDBAR_RELEASE_KEYBOARD
+// cmdbar       dred_command__cmdbar            DRED_CMDBAR_NO_CLEAR
 // new          dred_command__new               DRED_CMDBAR_RELEASE_KEYBOARD
 // open         dred_command__open              DRED_CMDBAR_RELEASE_KEYBOARD
 // save         dred_command__save              DRED_CMDBAR_RELEASE_KEYBOARD
@@ -12,6 +13,11 @@
 // close-all    dred_command__close_all         DRED_CMDBAR_RELEASE_KEYBOARD
 // undo         dred_command__undo              DRED_CMDBAR_NO_CLEAR
 // redo         dred_command__redo              DRED_CMDBAR_NO_CLEAR
+// cut          dred_command__cut               DRED_CMDBAR_NO_CLEAR
+// copy         dred_command__copy              DRED_CMDBAR_NO_CLEAR
+// paste        dred_command__paste             DRED_CMDBAR_NO_CLEAR
+// delete       dred_command__delete            DRED_CMDBAR_NO_CLEAR
+// select-all   dred_command__select_all        DRED_CMDBAR_NO_CLEAR
 // goto         dred_command__goto              DRED_CMDBAR_RELEASE_KEYBOARD
 // find         dred_command__find              DRED_CMDBAR_RELEASE_KEYBOARD
 // find-next    dred_command__find_next         DRED_CMDBAR_NO_CLEAR
@@ -37,6 +43,11 @@ typedef struct
 
 // Handles the "!" command.
 void dred_command__system_command(dred_context* pDred, const char* value);
+
+// cmdbar
+//
+// This command puts keyboard focus onto the command bar and sets the text in the text box to the value.
+void dred_command__cmdbar(dred_context* pDred, const char* value);
 
 // new
 void dred_command__new(dred_context* pDred, const char* value);
@@ -65,6 +76,21 @@ void dred_command__undo(dred_context* pDred, const char* value);
 
 // redo
 void dred_command__redo(dred_context* pDred, const char* value);
+
+// cut
+void dred_command__cut(dred_context* pDred, const char* value);
+
+// copy
+void dred_command__copy(dred_context* pDred, const char* value);
+
+// paste
+void dred_command__paste(dred_context* pDred, const char* value);
+
+// delete
+void dred_command__delete(dred_context* pDred, const char* value);
+
+// select-all
+void dred_command__select_all(dred_context* pDred, const char* value);
 
 
 

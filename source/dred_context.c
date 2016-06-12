@@ -168,9 +168,21 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'A', DRED_KEY_STATE_CTRL_DOWN, "select-all");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'N', DRED_KEY_STATE_CTRL_DOWN, "new");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'O', DRED_KEY_STATE_CTRL_DOWN, "open");
     dred_accelerator_table_bind(&pDred->acceleratorTable, 'S', DRED_KEY_STATE_CTRL_DOWN, "save");
-
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'S', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN, "save-all");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'W', DRED_KEY_STATE_CTRL_DOWN, "close");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN, "close-all");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'Z', DRED_KEY_STATE_CTRL_DOWN, "undo");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'Y', DRED_KEY_STATE_CTRL_DOWN, "redo");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'X', DRED_KEY_STATE_CTRL_DOWN, "cut");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'C', DRED_KEY_STATE_CTRL_DOWN, "copy");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'V', DRED_KEY_STATE_CTRL_DOWN, "paste");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'A', DRED_KEY_STATE_CTRL_DOWN, "select-all");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'G', DRED_KEY_STATE_CTRL_DOWN, "cmdbar goto ");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'F', DRED_KEY_STATE_CTRL_DOWN, "cmdbar find-next ");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN, "cmdbar replace-all ");
 
 
     // Config
@@ -857,6 +869,15 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 }
 
 
+void dred_set_command_bar_text(dred_context* pDred, const char* text)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    dred_cmdbar_set_text(pDred->pCmdBar, text);
+}
+
 void dred_focus_command_bar(dred_context* pDred)
 {
     if (pDred == NULL) {
@@ -864,6 +885,12 @@ void dred_focus_command_bar(dred_context* pDred)
     }
 
     dred_capture_keyboard(pDred, pDred->pCmdBar);
+}
+
+void dred_focus_command_bar_and_set_text(dred_context* pDred, const char* text)
+{
+    dred_set_command_bar_text(pDred, text);
+    dred_focus_command_bar(pDred);
 }
 
 void dred_unfocus_command_bar(dred_context* pDred)
@@ -885,5 +912,11 @@ void dred_unfocus_command_bar(dred_context* pDred)
 
 void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t acceleratorIndex)
 {
-    printf("Accelerator: %d\n", (int)acceleratorIndex);
+    const char* cmd = dred_accelerator_table_get_command_string_by_index(&pDred->acceleratorTable, acceleratorIndex);
+    if (cmd == NULL) {
+        return;
+    }
+
+    //printf("Accelerator[%d] : %s\n", (int)acceleratorIndex, cmd);
+    dred_exec(pDred, cmd);
 }

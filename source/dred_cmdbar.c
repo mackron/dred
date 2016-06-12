@@ -32,7 +32,7 @@ void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, drgui_key key, int stat
     dred_context* pDred = dred_control_get_context(pCmdBar);
 
     if (key == DRGUI_ESCAPE) {
-        dred_capture_keyboard(pDred, dred_get_focused_editor(pDred));
+        dred_unfocus_command_bar(pDred);
     } else {
         dred_textbox_on_key_down(pTextBox, key, stateFlags);
     }
@@ -138,6 +138,22 @@ void dred_cmdbar_delete(dred_cmdbar* pCmdBar)
     }
 
     dred_control_delete(pCmdBar);
+}
+
+
+void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text)
+{
+    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    if (data == NULL) {
+        return;
+    }
+
+    if (text == NULL) {
+        text = "";
+    }
+
+    dred_textbox_set_text(data->pTextBox, text);
+    dred_textbox_move_cursor_to_end_of_text(data->pTextBox);
 }
 
 
