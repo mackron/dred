@@ -26,6 +26,19 @@ void dred_text_editor__on_size(dred_text_editor* pTextEditor, float newWidth, fl
     dred_control_set_size(pTextBox, newWidth, newHeight);
 }
 
+void dred_text_editor__on_capture_keyboard(dred_text_editor* pTextEditor, drgui_element* pPrevCapturedElement)
+{
+    (void)pPrevCapturedElement;
+    
+    // When a text editor receives keyboard focus it should be routed down to the text box control.
+    dred_textbox* pTextBox = dred_text_editor__get_textbox(pTextEditor);
+    if (pTextBox == NULL) {
+        return;
+    }
+
+    dred_capture_keyboard(dred_control_get_context(pTextBox), pTextBox);
+}
+
 bool dred_text_editor__on_save(dred_text_editor* pTextEditor, dred_file file)
 {
     dred_textbox* pTextBox = dred_text_editor__get_textbox(pTextEditor);
@@ -100,6 +113,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 
     // Events.
     dred_control_set_on_size(pTextEditor, dred_text_editor__on_size);
+    dred_control_set_on_capture_keyboard(pTextEditor, dred_text_editor__on_capture_keyboard);
     dred_editor_set_on_save(pTextEditor, dred_text_editor__on_save);
     dred_textbox_set_on_undo_point_changed(data->pTextBox, dred_text_editor_textbox__on_undo_point_changed);
     
