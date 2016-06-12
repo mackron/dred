@@ -149,6 +149,48 @@ void dred_text_editor_delete(dred_text_editor* pTextEditor)
 }
 
 
+void dred_editor_text_subeditor_show_line_numbers(dred_text_editor* pTextEditor)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    dred_textbox_show_line_numbers(data->pTextBox);
+}
+
+void dred_editor_text_subeditor_hide_line_numbers(dred_text_editor* pTextEditor)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    dred_textbox_hide_line_numbers(data->pTextBox);
+}
+
+
+size_t dred_text_editor_get_cursor_line(dred_text_editor* pTextEditor)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return 0;
+    }
+
+    return dred_textbox_get_cursor_line(data->pTextBox);
+}
+
+size_t dred_text_editor_get_cursor_column(dred_text_editor* pTextEditor)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return 0;
+    }
+
+    return dred_textbox_get_cursor_column(data->pTextBox);
+}
+
+
 void dred_text_editor_goto_ratio(dred_text_editor* pTextEditor, unsigned int ratio)
 {
     dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);

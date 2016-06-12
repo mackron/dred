@@ -11,6 +11,20 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 void dred_text_editor_delete(dred_text_editor* pTextEditor);
 
 
+// Shows the line numbers.
+void dred_editor_text_subeditor_show_line_numbers(dred_text_editor* pTextEditor);
+
+// Hides the line numbers.
+void dred_editor_text_subeditor_hide_line_numbers(dred_text_editor* pTextEditor);
+
+
+// Retrieves the index of the line the caret is currently sitting on.
+size_t dred_text_editor_get_cursor_line(dred_text_editor* pTextEditor);
+
+// Retrieves the index of the column the caret is currently sitting on.
+size_t dred_text_editor_get_cursor_column(dred_text_editor* pTextEditor);
+
+
 // dred_text_editor_goto_ratio()
 void dred_text_editor_goto_ratio(dred_text_editor* pTextEditor, unsigned int ratio);
 
