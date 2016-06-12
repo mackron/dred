@@ -112,6 +112,10 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
         actualFilePath = dred_editor_get_file_path(pEditor);
     }
 
+    if (actualFilePath == NULL || actualFilePath[0] == '\0') {
+        return false;
+    }
+
     // Saving a file happens in two steps. The first step writes to a temporary file. The second step replaces the old
     // file with the new file. The reason for this process is to prevent data loss in the event that an error occurs
     // while in the middle of saving.
