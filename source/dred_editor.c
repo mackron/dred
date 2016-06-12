@@ -1,8 +1,12 @@
+#include "dred_editor.h"
 
 typedef struct
 {
     char filePathAbsolute[DRED_MAX_PATH];
     dred_editor_on_save_proc onSave;
+    dred_editor_on_modified_proc onModified;
+    dred_editor_on_unmodified_proc onUnmodified;
+    bool isModified;
 } dred_editor_data;
 
 dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, const char* type, const char* filePathAbsolute, size_t extraDataSize)
@@ -98,7 +102,15 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
         actualFilePath = dred_editor_get_file_path(pEditor);
     }
 
-    dred_file* pFile = dred_file_open(actualFilePath, DRED_FILE_OPEN_MODE_WRITE);
+    // Saving a file happens in two steps. The first step writes to a temporary file. The second step replaces the old
+    // file with the new file. The reason for this process is to prevent data loss in the event that an error occurs
+    // while in the middle of saving.
+    char tempFilePath[DRED_MAX_PATH];
+    if (!drpath_copy_and_append_extension(tempFilePath, sizeof(tempFilePath), actualFilePath, "dredtmp")) {
+        return false;
+    }
+
+    dred_file* pFile = dred_file_open(tempFilePath, DRED_FILE_OPEN_MODE_WRITE);
     if (pFile == NULL) {
         return false;
     }
@@ -111,12 +123,66 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
     dred_file_close(pFile);
 
 
+    // At this point the temporary file has been saved, so now we just need to overwrite the old one.
+    if (!dr_move_file(tempFilePath, actualFilePath)) {
+        return false;
+    }
+
+
     if (newFilePath != NULL && newFilePath[0] != '\0') {
         return dred_editor_set_file_path(pEditor, newFilePath);
     } else {
         return true;
     }
 }
+
+
+void dred_editor_mark_as_modified(dred_editor* pEditor)
+{
+    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    if (data->isModified) {
+        return;
+    }
+
+    data->isModified = true;
+    if (data->onModified) {
+        data->onModified(pEditor);
+    }
+}
+
+void dred_editor_unmark_as_modified(dred_editor* pEditor)
+{
+    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    if (!data->isModified) {
+        return;
+    }
+
+    data->isModified = false;
+    if (data->onUnmodified) {
+        data->onUnmodified(pEditor);
+    }
+}
+
+bool dred_editor_is_modified(dred_editor* pEditor)
+{
+    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    if (data == NULL) {
+        return false;
+    }
+
+    return data->isModified;
+}
+
+
+
 
 
 void dred_editor_set_on_save(dred_editor* pEditor, dred_editor_on_save_proc proc)
@@ -127,4 +193,24 @@ void dred_editor_set_on_save(dred_editor* pEditor, dred_editor_on_save_proc proc
     }
 
     data->onSave = proc;
+}
+
+void dred_editor_set_on_modified(dred_editor* pEditor, dred_editor_on_modified_proc proc)
+{
+    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    data->onModified = proc;
+}
+
+void dred_editor_set_on_unmodified(dred_editor* pEditor, dred_editor_on_unmodified_proc proc)
+{
+    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    data->onUnmodified = proc;
 }

@@ -4,6 +4,8 @@
 typedef dred_control dred_editor;
 
 typedef bool (* dred_editor_on_save_proc)(dred_editor* pEditor, dred_file* pFile);
+typedef bool (* dred_editor_on_modified_proc)(dred_editor* pEditor);
+typedef bool (* dred_editor_on_unmodified_proc)(dred_editor* pEditor);
 
 
 // dred_editor_create()
@@ -35,5 +37,17 @@ bool dred_editor_set_file_path(dred_editor* pEditor, const char* newFilePath);
 bool dred_editor_save(dred_editor* pEditor, const char* newFilePath);
 
 
+// Marks the editor as modified.
+void dred_editor_mark_as_modified(dred_editor* pEditor);
+
+// Unmarks the editor as modified.
+void dred_editor_unmark_as_modified(dred_editor* pEditor);
+
+// Determines whether or not the editor is marked as modified.
+bool dred_editor_is_modified(dred_editor* pEditor);
+
+
 // Events
 void dred_editor_set_on_save(dred_editor* pEditor, dred_editor_on_save_proc proc);
+void dred_editor_set_on_modified(dred_editor* pEditor, dred_editor_on_modified_proc proc);
+void dred_editor_set_on_unmodified(dred_editor* pEditor, dred_editor_on_unmodified_proc proc);
