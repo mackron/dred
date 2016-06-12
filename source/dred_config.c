@@ -219,6 +219,7 @@ bool dred_config_init(dred_config* pConfig, dred_context* pDred)
 
     pConfig->pTextEditorFont = dred_config__load_system_font_mono(pDred);
     pConfig->textEditorBGColor = drgui_rgb(48, 48, 48);
+    pConfig->textEditorActiveLineColor = drgui_rgb(32, 32, 32);
 
     return true;
 }
@@ -294,6 +295,10 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
     }
     if (strcmp(key, "texteditor-bg-color") == 0) {
         pData->pConfig->textEditorBGColor = dred_parse_color(value);
+        return;
+    }
+    if (strcmp(key, "texteditor-active-line-color") == 0) {
+        pData->pConfig->textEditorActiveLineColor = dred_parse_color(value);
         return;
     }
 }

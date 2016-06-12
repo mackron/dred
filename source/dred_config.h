@@ -13,6 +13,7 @@ typedef struct
 
     dred_font* pTextEditorFont;
     drgui_color textEditorBGColor;
+    drgui_color textEditorActiveLineColor;
 } dred_config;
 
 typedef void (* dred_config_on_error_proc)(dred_config* pConfig, const char* configPath, const char* message, unsigned int line, void* pUserData);

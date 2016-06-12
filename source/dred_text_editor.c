@@ -110,6 +110,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_textbox_set_vertical_align(data->pTextBox, drgui_text_engine_alignment_top);
     dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, 1));
     dred_textbox_set_background_color(data->pTextBox, pDred->config.textEditorBGColor);
+    dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.textEditorActiveLineColor);
 
     char* pFileData = dr_open_and_read_text_file(filePathAbsolute, NULL);
     if (pFileData == NULL) {
