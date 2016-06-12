@@ -139,6 +139,7 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
         return false;
     }
 
+    dred_editor_unmark_as_modified(pEditor);
     data->isReadOnly = dr_is_file_read_only(actualFilePath);
 
     if (newFilePath != NULL && newFilePath[0] != '\0') {

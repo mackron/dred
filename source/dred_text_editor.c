@@ -57,10 +57,11 @@ bool dred_text_editor__on_save(dred_text_editor* pTextEditor, dred_file file)
     free(text);
 
     // After saving we need to update the base undo point and unmark the file as modified.
-    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
-    assert(data != NULL);
-    data->iBaseUndoPoint = dred_textbox_get_undo_points_remaining_count(pTextBox);
-    dred_editor_unmark_as_modified(pTextEditor);
+    if (result) {
+        dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+        assert(data != NULL);
+        data->iBaseUndoPoint = dred_textbox_get_undo_points_remaining_count(pTextBox);
+    }
 
     return result;
 }
