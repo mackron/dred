@@ -1015,7 +1015,10 @@ static void dred_platform__on_global_release_keyboard__win32(drgui_element* pEle
 
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow != NULL) {
-        SetFocus(NULL);
+        dred_window* pNewWindow = dred_get_element_window(pNewCapturedElement);
+        if (pWindow != pNewWindow) {
+            SetFocus(NULL);
+        }
     }
 }
 
@@ -1987,6 +1990,18 @@ static void dred_platform__on_global_change_cursor(drgui_element* pElement, drgu
     }
 }
 
+void dred_platform__on_delete_gui_element(drgui_element* pElement)
+{
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow == NULL) {
+        return;
+    }
+
+    if (pWindow->pElementWithKeyboardCapture == pElement) {
+        pWindow->pElementWithKeyboardCapture = NULL;
+    }
+}
+
 
 bool dred_platform_init()
 {
@@ -2051,6 +2066,7 @@ void dred_platform_bind_gui(drgui_context* pGUI)
 #endif
 
     drgui_set_global_on_change_cursor(pGUI, dred_platform__on_global_change_cursor);
+    drgui_set_on_delete_element(pGUI, dred_platform__on_delete_gui_element);
 }
 
 
