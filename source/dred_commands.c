@@ -93,7 +93,7 @@ void dred_command__save_all(dred_context* pDred, const char* value)
 void dred_command__close(dred_context* pDred, const char* value)
 {
     (void)value;
-    dred_close_focused_file(pDred);
+    dred_close_focused_file_with_confirmation(pDred);
 }
 
 void dred_command__close_all(dred_context* pDred, const char* value)

@@ -615,6 +615,11 @@ void dred_close_focused_file(dred_context* pDred)
     dred_close_tab(pDred, dred_get_focused_tab(pDred));
 }
 
+void dred_close_focused_file_with_confirmation(dred_context* pDred)
+{
+    dred_close_tab_with_confirmation(pDred, dred_get_focused_tab(pDred));
+}
+
 void dred_close_tab(dred_context* pDred, dred_tab* pTab)
 {
     if (pDred == NULL || pTab == NULL) {
