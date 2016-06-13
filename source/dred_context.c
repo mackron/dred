@@ -58,7 +58,7 @@ void dred__refresh_editor_tab_text(dred_editor* pEditor, dred_tab* pTab)
     if (dred_editor_is_read_only(pEditor)) {
         readonly = " [Read Only]";
     }
-
+    
     snprintf(tabText, sizeof(tabText), "%s%s%s", filename, modified, readonly);
     dred_tab_set_text(pTab, tabText);
 }
@@ -510,6 +510,15 @@ dred_editor* dred_get_focused_editor(dred_context* pDred)
 }
 
 
+bool dred__save_editor(dred_editor* pEditor, const char* newFilePath, dred_tab* pTab)
+{
+    if (!dred_editor_save(pEditor, newFilePath)) {
+        return false;
+    }
+
+    dred__refresh_editor_tab_text(pEditor, pTab);
+    return true;
+}
 
 const char* dred_get_editor_type_by_path(const char* filePath)
 {
@@ -611,8 +620,45 @@ void dred_close_tab(dred_context* pDred, dred_tab* pTab)
     // Delete the tab.
     dred_tabgroup_delete_tab(dred_tab_get_tabgroup(pTab), pTab);
 
-    // Delete the editor.
-    dred_delete_editor_by_type(pEditor);
+    // Delete the control.
+    if (dred_control_is_of_type(pEditor, DRED_CONTROL_TYPE_EDITOR)) {
+        dred_delete_editor_by_type(pEditor);
+    }
+}
+
+void dred_close_tab_with_confirmation(dred_context* pDred, dred_tab* pTab)
+{
+    dred_editor* pEditor = dred_tab_get_control(pTab);
+    if (pEditor == NULL) {
+        dred_close_tab(pDred, pTab);
+        return;
+    }
+
+    if (!dred_control_is_of_type(pEditor, DRED_CONTROL_TYPE_EDITOR)) {
+        dred_close_tab(pDred, pTab);
+        return;
+    }
+
+    if (dred_editor_is_modified(pEditor)) {
+        char msg[4096];
+        snprintf(msg, sizeof(msg), "%s has been modified. Do you want to save it before closing?", dred_editor_get_file_path(pEditor));
+
+        unsigned int result = dred_show_yesnocancel_dialog(pDred, msg, "Save changes?");
+        if (result == DRED_MESSAGE_BOX_YES) {
+            if (!dred__save_editor(pEditor, NULL, pTab)) {
+                char newFilePath[DRED_MAX_PATH];
+                if (!dred_show_save_file_dialog(pDred, newFilePath, sizeof(newFilePath))) {
+                    return;
+                }
+                dred_editor_save(pEditor, newFilePath);
+            }
+            dred_close_tab(pDred, pTab);
+        } else if (result == DRED_MESSAGE_BOX_NO) {
+            dred_close_tab(pDred, pTab);
+        }
+    } else {
+        dred_close_tab(pDred, pTab);
+    }
 }
 
 void dred_close_all_tabs(dred_context* pDred)
@@ -657,16 +703,6 @@ dred_tab* dred_find_control_tab(dred_control* pControl)
     return NULL;
 }
 
-
-bool dred__save_editor(dred_editor* pEditor, const char* newFilePath, dred_tab* pTab)
-{
-    if (!dred_editor_save(pEditor, newFilePath)) {
-        return false;
-    }
-
-    dred__refresh_editor_tab_text(pEditor, pTab);
-    return true;
-}
 
 bool dred_save_focused_file(dred_context* pDred, const char* newFilePath)
 {

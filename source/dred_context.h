@@ -126,8 +126,11 @@ bool dred_open_file_by_type(dred_context* pDred, const char* filePath, const cha
 // Closes the focused file.
 void dred_close_focused_file(dred_context* pDred);
 
-// Closes the given editor.
+// Closes the given tab.
 void dred_close_tab(dred_context* pDred, dred_tab* pTab);
+
+// Closes the given tab, but shows a confirmation dialog if it's not currently saved.
+void dred_close_tab_with_confirmation(dred_context* pDred, dred_tab* pTab);
 
 // Closes every tab.
 void dred_close_all_tabs(dred_context* pDred);

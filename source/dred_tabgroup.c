@@ -108,7 +108,7 @@ void dred_tabbar__on_tab_close(drgui_element* pTabBar, drgui_tab* pTab)
         return;
     }
 
-    dred_close_tab(dred_control_get_context(pTabGroup), (dred_tab*)pTab);
+    dred_close_tab_with_confirmation(dred_control_get_context(pTabGroup), (dred_tab*)pTab);
 }
 
 
