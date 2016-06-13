@@ -2334,12 +2334,22 @@ void dred_window_on_focus(dred_window* pWindow)
     if (pWindow->onFocus) {
         pWindow->onFocus(pWindow);
     }
+
+    // Make sure the GUI element is given the keyboard capture if it hasn't already got it.
+    if (!drgui_has_keyboard_capture(pWindow->pElementWithKeyboardCapture)) {
+        drgui_capture_keyboard(pWindow->pElementWithKeyboardCapture);
+    }
 }
 
 void dred_window_on_unfocus(dred_window* pWindow)
 {
     if (pWindow->onUnfocus) {
         pWindow->onUnfocus(pWindow);
+    }
+
+    // Make sure the GUI element is released of the keyboard capture, but don't clear the variable.
+    if (drgui_has_keyboard_capture(pWindow->pElementWithKeyboardCapture)) {
+        drgui_release_keyboard(pWindow->pDred->pGUI);
     }
 }
 
