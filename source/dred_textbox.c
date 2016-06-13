@@ -34,7 +34,7 @@ void dred_textbox__on_timer(dred_timer* pTimer, void* pUserData)
 
 void dred_textbox__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement)
 {
-    (void*)pPrevCapturedElement;
+    (void)pPrevCapturedElement;
 
     // The internal text box needs to be given the keyboard focus whenever a dred_textbox receives it.
     dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
