@@ -88,7 +88,23 @@ void dred__on_editor_unmodified(dred_editor* pEditor)
 
 void dred_window_cb__on_main_window_close(dred_window* pWindow)
 {
-    (void)pWindow;
+    assert(pWindow != NULL);
+    
+    dred_context* pDred = pWindow->pDred;
+    assert(pDred != NULL);
+
+    // If there's any modified files we need to show a dialog box.
+    if (dred_are_any_open_files_modified(pDred)) {
+        unsigned int result = dred_show_yesnocancel_dialog(pDred, "You have unsaved changes. Save changes?", "Save changes?");
+        if (result == DRED_MESSAGE_BOX_YES) {
+            if (!dred_save_all_open_files_with_saveas(pDred)) {
+                return;
+            }
+        } else if (result == DRED_MESSAGE_BOX_CANCEL) {
+            return; // Cancel. Don't quit, just return.
+        }
+    }
+
     dred_platform_post_quit_message(0);
 }
 
@@ -763,6 +779,38 @@ void dred_save_all_open_files(dred_context* pDred)
     }
 }
 
+bool dred_save_all_open_files_with_saveas(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return false;
+    }
+
+    // TODO: Iterate over every tab group.
+
+    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
+    if (pTabGroup == NULL) {
+        return true;    // Nothing is open. This is a valid case.
+    }
+
+    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+        dred_control* pControl = dred_tab_get_control(pTab);
+        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
+            if (!dred__save_editor(pControl, NULL, pTab)) {
+                char newFileName[DRED_MAX_PATH];
+                if (!dred_show_save_file_dialog(pDred, newFileName, sizeof(newFileName))) {
+                    return false;
+                }
+
+                if (!dred_editor_save(pControl, newFileName)) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
 
 bool dred_create_and_open_file(dred_context* pDred, const char* newFilePath)
 {
@@ -825,6 +873,31 @@ void dred_delete_editor_by_type(dred_editor* pEditor)
         dred_text_editor_delete(pEditor);
         return;
     }
+}
+
+
+bool dred_are_any_open_files_modified(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return false;
+    }
+
+    // TODO: Check every tab group.
+    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
+    if (pTabGroup == NULL) {
+        return false;
+    }
+
+    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+        dred_control* pControl = dred_tab_get_control(pTab);
+        if (pControl != NULL) {
+            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR) && dred_editor_is_modified(pControl)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 

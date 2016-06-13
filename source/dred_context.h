@@ -151,6 +151,10 @@ bool dred_save_focused_file_as(dred_context* pDred);
 // Saves every open file, skipping those that would otherwise require a save-as dialog.
 void dred_save_all_open_files(dred_context* pDred);
 
+// Saves every open file and opens are save-as dialog for any applicable files. This will return false if any
+// files could not be saved.
+bool dred_save_all_open_files_with_saveas(dred_context* pDred);
+
 
 // Creates and opens a new file.
 //
@@ -166,6 +170,10 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTab
 
 // Deletes the given editor based on it's type.
 void dred_delete_editor_by_type(dred_editor* pEditor);
+
+
+// Determines whether or not any open files are modified.
+bool dred_are_any_open_files_modified(dred_context* pDred);
 
 
 // Show the Open File dialog.
