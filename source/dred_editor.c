@@ -124,17 +124,17 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
         return false;
     }
 
-    dred_file* pFile = dred_file_open(tempFilePath, DRED_FILE_OPEN_MODE_WRITE);
-    if (pFile == NULL) {
+    dred_file file = dred_file_open(tempFilePath, DRED_FILE_OPEN_MODE_WRITE);
+    if (file == NULL) {
         return false;
     }
 
-    if (!data->onSave(pEditor, pFile)) {
-        dred_file_close(pFile);
+    if (!data->onSave(pEditor, file)) {
+        dred_file_close(file);
         return false;
     }
 
-    dred_file_close(pFile);
+    dred_file_close(file);
 
 
     // At this point the temporary file has been saved, so now we just need to overwrite the old one.

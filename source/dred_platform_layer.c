@@ -201,7 +201,7 @@ LRESULT CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
         {
         } break;
 
-        
+
         case WM_CLOSE:
         {
             dred_window_on_close(pWindow);
@@ -269,7 +269,7 @@ LRESULT CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
             ScreenToClient(hWnd, &p);
 
             dred_window_on_mouse_button_up(pWindow, DRGUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam));
-            
+
         } break;
         case WM_NCLBUTTONDBLCLK:
         {
@@ -280,7 +280,7 @@ LRESULT CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
 
             dred_window_on_mouse_button_down(pWindow, DRGUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
             dred_window_on_mouse_button_dblclick(pWindow, DRGUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
-           
+
         } break;
 
         case WM_LBUTTONDOWN:
@@ -1583,7 +1583,7 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
     }
 
     gtk_container_add(GTK_CONTAINER(pGTKWindow), pGTKBox);
-    
+
 
 
     ////////////////////////////////////////////////////////////////////////
@@ -1610,7 +1610,7 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
         gtk_menu_item_set_use_underline(GTK_MENU_ITEM(pGTKMenuItem_Edit), TRUE);
         gtk_widget_show(pGTKMenuItem_Edit);
 
-        
+
         gtk_menu_shell_append(GTK_MENU_SHELL(pGTKMenuBar), pGTKMenuItem_File);
         //gtk_menu_shell_append(GTK_MENU_SHELL(pGTKMenuBar), pGTKMenuItem_Edit);
         //gtk_menu_shell_set_take_focus(GTK_MENU_SHELL(pGTKMenuBar), TRUE);
@@ -1674,7 +1674,7 @@ on_error:
 
         free(pWindow);
     }
-    
+
     gtk_widget_destroy(GTK_WIDGET(pGTKBox));
     gtk_widget_destroy(pGTKWindow);
     return NULL;
@@ -1786,6 +1786,11 @@ bool dred_window_is_cursor_over__gtk(dred_window* pWindow)
 
 gboolean dred_gtk_cb__on_accelerator(GtkAccelGroup *pAccelGroup, GObject *acceleratable, guint keyval, GdkModifierType modifier, gpointer pUserData)
 {
+    (void)pAccelGroup;
+    (void)acceleratable;
+    (void)keyval;
+    (void)modifier;
+
     dred_gtk_accelerator* pAccel = (dred_gtk_accelerator*)pUserData;
     assert(pAccel != NULL);
 

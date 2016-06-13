@@ -58,7 +58,7 @@ void dred__refresh_editor_tab_text(dred_editor* pEditor, dred_tab* pTab)
     if (dred_editor_is_read_only(pEditor)) {
         readonly = " [Read Only]";
     }
-    
+
     snprintf(tabText, sizeof(tabText), "%s%s%s", filename, modified, readonly);
     dred_tab_set_text(pTab, tabText);
 }
@@ -89,7 +89,7 @@ void dred__on_editor_unmodified(dred_editor* pEditor)
 void dred_window_cb__on_main_window_close(dred_window* pWindow)
 {
     assert(pWindow != NULL);
-    
+
     dred_context* pDred = pWindow->pDred;
     assert(pDred != NULL);
 
@@ -229,7 +229,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     dred_config_load_file(&pDred->config, ".dred", dred_config__on_error, pDred);
 
-    
+
 
     // The main window.
     pDred->pMainWindow = dred_window_create(pDred);
@@ -977,6 +977,8 @@ bool dred_show_save_file_dialog(dred_context* pDred, char* absolutePathOut, size
     }
 
     return absolutePathOut;
+#else
+    return false;
 #endif
 }
 
@@ -992,12 +994,16 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
     switch (result)
     {
         case IDCANCEL: return DRED_MESSAGE_BOX_CANCEL;
-        case IDYES:    return DRED_MESSAGE_BOX_YES; 
+        case IDYES:    return DRED_MESSAGE_BOX_YES;
         case IDNO:     return DRED_MESSAGE_BOX_NO;
 
         default: break;
     }
 
+    return 0;
+#else
+    (void)message;
+    (void)title;
     return 0;
 #endif
 }

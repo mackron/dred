@@ -121,7 +121,11 @@ dred_font* dred_config__load_system_font_ui(dred_context* pDred)
 #endif
 
 #ifdef __linux__
-#error "Implement me. Try using fontconfig for this to avoid dependency on GTK."
+//#error "Implement me. Try using fontconfig for this to avoid dependency on GTK."
+    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Application");
+    fontDesc.size = 12;
+    fontDesc.weight = drgui_font_weight_normal;
+    fontDesc.slant = drgui_font_slant_none;
 #endif
 
     return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
@@ -141,7 +145,11 @@ dred_font* dred_config__load_system_font_mono(dred_context* pDred)
 #endif
 
 #ifdef __linux__
-#error "Implement me. Can use fontconfig for this."
+//#error "Implement me. Can use fontconfig for this."
+    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "monospace");
+    fontDesc.size = 13;
+    fontDesc.weight = drgui_font_weight_normal;
+    fontDesc.slant = drgui_font_slant_none;
 #endif
 
     return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
