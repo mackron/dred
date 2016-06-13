@@ -13,7 +13,7 @@ void dred_image__delete_subimage_by_index(dred_image* pImage, size_t index)
     pImage->subimageCount -= 1;
 }
 
-dred_image* dred_image_create(dred_context* pDred, unsigned int id, dred_image_desc* pDesc, size_t descCount)
+dred_image* dred_image_create(dred_context* pDred, unsigned int id, const dred_image_desc* pDesc, size_t descCount)
 {
     if (pDred == NULL || pDesc == NULL || descCount == 0) {
         return NULL;
