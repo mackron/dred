@@ -1,9 +1,8 @@
 
 
-bool dred_image_library_init__stock_images(dred_image_library* pLibrary, dred_context* pDred)
+bool dred_image_library_init__stock_images(dred_image_library* pLibrary)
 {
     assert(pLibrary != NULL);
-    assert(pDred != NULL);
 
     for (unsigned int i = 0; i < DRED_STOCK_IMAGE_COUNT; ++i) {
         dred_image_library_create_image(pLibrary, i, g_StockImages[i], DRED_STOCK_IMAGE_SCALE_COUNT);
@@ -90,7 +89,7 @@ bool dred_image_library_init(dred_image_library* pLibrary, dred_context* pDred)
     pLibrary->imageCount = 0;
     pLibrary->ppImages = NULL;
 
-    return dred_image_library_init__stock_images(pLibrary, pDred);
+    return dred_image_library_init__stock_images(pLibrary);
 }
 
 void dred_image_library_uninit(dred_image_library* pLibrary)

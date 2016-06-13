@@ -65,9 +65,6 @@ void dred__refresh_editor_tab_text(dred_editor* pEditor, dred_tab* pTab)
 
 void dred__on_editor_modified(dred_editor* pEditor)
 {
-    dred_context* pDred = dred_control_get_context(pEditor);
-    assert(pDred != NULL);
-
     dred_tab* pTab = dred_find_control_tab(pEditor);
     if (pTab == NULL) {
         return;
@@ -79,9 +76,6 @@ void dred__on_editor_modified(dred_editor* pEditor)
 
 void dred__on_editor_unmodified(dred_editor* pEditor)
 {
-    dred_context* pDred = dred_control_get_context(pEditor);
-    assert(pDred != NULL);
-
     dred_tab* pTab = dred_find_control_tab(pEditor);
     if (pTab == NULL) {
         return;
