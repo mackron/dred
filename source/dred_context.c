@@ -260,16 +260,6 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
 
-    // TESTING
-    //pDred->pEditor0 = dred_text_editor_create(pDred, NULL);
-    //pDred->pEditor0Tab = dred_tabgroup_append_tab(pDred->pMainTabGroup, "Test Editor 0", pDred->pEditor0);
-    //pDred->pEditor1 = dred_text_editor_create(pDred, NULL);
-    //pDred->pEditor1Tab = dred_tabgroup_append_tab(pDred->pMainTabGroup, "Test Editor 1", pDred->pEditor1);
-
-    //dred_open_file(pDred, ".dred");
-    //dred_open_file(pDred, ".desktop");
-
-
     // Update the layout of the main window to ensure it's in the correct initial state.
     dred__update_main_window_layout(pDred->pMainWindow, 1280, 720);
 
@@ -641,7 +631,13 @@ void dred_close_tab_with_confirmation(dred_context* pDred, dred_tab* pTab)
 
     if (dred_editor_is_modified(pEditor)) {
         char msg[4096];
-        snprintf(msg, sizeof(msg), "%s has been modified. Do you want to save it before closing?", dred_editor_get_file_path(pEditor));
+
+        const char* filePath = dred_editor_get_file_path(pEditor);
+        if (filePath == NULL || filePath[0] == '\0') {
+            snprintf(msg, sizeof(msg), "Do you want to save this file before closing?");
+        } else {
+            snprintf(msg, sizeof(msg), "%s has been modified. Do you want to save it before closing?", filePath);
+        }
 
         unsigned int result = dred_show_yesnocancel_dialog(pDred, msg, "Save changes?");
         if (result == DRED_MESSAGE_BOX_YES) {
