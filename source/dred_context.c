@@ -176,9 +176,10 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
-    // The default GUI font. This is based on the platform.
-    // TODO: Put this in the platform layer.
-    pDred->pGUIFont = dred_font_library_create_font(&pDred->fontLibrary, "Segoe UI", 12, drgui_font_weight_normal, drgui_font_slant_none, 0, 0);
+    // The image library. This needs to be initialized before loading any images and configs.
+    if (!dred_image_library_init(&pDred->imageLibrary, pDred)) {
+        goto on_error;
+    }
 
 
     // Accelerator table needs to be initialized before the config, because the config can specify bindings.

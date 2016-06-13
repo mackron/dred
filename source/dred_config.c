@@ -221,6 +221,9 @@ bool dred_config_init(dred_config* pConfig, dred_context* pDred)
     pConfig->textEditorBGColor = drgui_rgb(48, 48, 48);
     pConfig->textEditorActiveLineColor = drgui_rgb(32, 32, 32);
 
+
+    pConfig->pImageCross = dred_image_library_get_image_by_id(&pDred->imageLibrary, DRED_IMAGE_ID_CROSS);
+
     return true;
 }
 

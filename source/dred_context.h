@@ -17,8 +17,8 @@ struct dred_context
     // The font library. This just manages fonts to make it easier to avoid loading duplicate fonts.
     dred_font_library fontLibrary;
 
-    // The default GUI font.
-    dred_font* pGUIFont;
+    // The image library.
+    dred_image_library imageLibrary;
 
 
     // The accelerator table.
