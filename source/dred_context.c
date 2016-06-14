@@ -995,14 +995,18 @@ bool dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath
     absolutePathOut[0] = '\0';  // For safety, and also required for Win32.
 
 #ifdef _WIN32
+    if (currentFilePath != NULL) {
+        strcpy_s(absolutePathOut, absolutePathOutSize, drpath_file_name(currentFilePath));
+    }
+
     OPENFILENAMEA ofn;
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = pDred->pMainWindow->hWnd;
     ofn.lpstrFile = absolutePathOut;
     ofn.nMaxFile = (DWORD)absolutePathOutSize;
-    //ofn.lpstrFilter = "All\0*.*\0";
-    //ofn.nFilterIndex = 1;
+    ofn.lpstrFilter = "All\0*.*\0";
+    ofn.nFilterIndex = 1;
     ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
     if (!GetSaveFileNameA(&ofn)) {
         return false;
