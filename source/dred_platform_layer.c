@@ -1780,47 +1780,6 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
     gtk_container_add(GTK_CONTAINER(pGTKWindow), pGTKBox);
 
 
-
-    ////////////////////////////////////////////////////////////////////////
-    // Menu testing.
-    ////////////////////////////////////////////////////////////////////////
-#if 0
-    {
-        GtkWidget* pGTKMenuBar = gtk_menu_bar_new();
-
-        GtkWidget* pGTKMenu_File = gtk_menu_new();
-
-        GtkWidget* pGTKMenuItem_FileNew = gtk_menu_item_new_with_mnemonic("_Save");
-        gtk_widget_add_accelerator(pGTKMenuItem_FileNew, "activate", accel_group, GDK_KEY_s, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-        g_signal_connect(pGTKMenuItem_FileNew, "activate", G_CALLBACK(dred_gtk_cb__on_menu_activate), "!executing");
-        gtk_menu_shell_append(GTK_MENU_SHELL(pGTKMenu_File), pGTKMenuItem_FileNew);
-        gtk_widget_show(pGTKMenuItem_FileNew);
-
-
-        GtkWidget* pGTKMenuItem_File = gtk_menu_item_new_with_mnemonic("_File");
-        gtk_menu_item_set_submenu(GTK_MENU_ITEM(pGTKMenuItem_File), pGTKMenu_File);
-        gtk_widget_show(pGTKMenuItem_File);
-
-
-        GtkWidget* pGTKMenuItem_Edit = gtk_menu_item_new_with_label("_Edit");
-        gtk_menu_item_set_use_underline(GTK_MENU_ITEM(pGTKMenuItem_Edit), TRUE);
-        gtk_widget_show(pGTKMenuItem_Edit);
-
-
-        gtk_menu_shell_append(GTK_MENU_SHELL(pGTKMenuBar), pGTKMenuItem_File);
-        //gtk_menu_shell_append(GTK_MENU_SHELL(pGTKMenuBar), pGTKMenuItem_Edit);
-        //gtk_menu_shell_set_take_focus(GTK_MENU_SHELL(pGTKMenuBar), TRUE);
-
-        // Attach and show the menu bar.
-        gtk_box_pack_start(GTK_BOX(pGTKBox), pGTKMenuBar, FALSE, FALSE, 0);
-        gtk_widget_show(pGTKMenuBar);
-    }
-#endif
-    ////////////////////////////////////////////////////////////////////////
-    // End Menu Testing.
-    ////////////////////////////////////////////////////////////////////////
-
-
     // Client area. This is the main content of the window.
     pGTKClientArea = gtk_drawing_area_new();
     if (pGTKClientArea == NULL) {
@@ -2013,14 +1972,13 @@ void dred_window_set_menu__gtk(dred_window* pWindow, dred_menu* pMenu)
     }
 
     // Add the new menu to the top.
-    gtk_box_pack_end(GTK_BOX(pWindow->pGTKBox), pMenu->pGTKMenu, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(pWindow->pGTKBox), pMenu->pGTKMenu, FALSE, FALSE, 0);
+    gtk_box_reorder_child(GTK_BOX(pWindow->pGTKBox), pMenu->pGTKMenu, 0);
     gtk_widget_show(pMenu->pGTKMenu);
 }
 
 
 //// MENUS ////
-
-//gdk_window_set_cursor(gtk_widget_get_parent_window(GTK_WIDGET(pGTKMenu)), g_GTKCursor_Default);
 
 static gboolean dred_gtk_cb__on_mouse_enter__menu(GtkWidget* pGTKMenu, GdkEventCrossing* pEvent, gpointer pUserData)
 {
