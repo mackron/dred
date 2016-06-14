@@ -1076,7 +1076,7 @@ static drgui_key dred_gtk_to_drgui_key(guint keyval)
     case GDK_KEY_Page_Up:   return DRGUI_PAGE_UP;
     case GDK_KEY_Page_Down: return DRGUI_PAGE_DOWN;
     case GDK_KEY_End:       return DRGUI_END;
-    case GDK_KEY_Begin:     return DRGUI_HOME;
+    case GDK_KEY_Home:      return DRGUI_HOME;
     case GDK_KEY_Left:      return DRGUI_ARROW_LEFT;
     case GDK_KEY_Up:        return DRGUI_ARROW_UP;
     case GDK_KEY_Right:     return DRGUI_ARROW_RIGHT;
