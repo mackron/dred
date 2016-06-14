@@ -1239,6 +1239,18 @@ static drgui_key dred_gtk_to_drgui_key(guint keyval)
     case GDK_KEY_Right:     return DRGUI_ARROW_RIGHT;
     case GDK_KEY_Down:      return DRGUI_ARROW_DOWN;
     case GDK_KEY_Delete:    return DRGUI_DELETE;
+    case GDK_KEY_F1:        return DRGUI_F1;
+    case GDK_KEY_F2:        return DRGUI_F2;
+    case GDK_KEY_F3:        return DRGUI_F3;
+    case GDK_KEY_F4:        return DRGUI_F4;
+    case GDK_KEY_F5:        return DRGUI_F5;
+    case GDK_KEY_F6:        return DRGUI_F6;
+    case GDK_KEY_F7:        return DRGUI_F7;
+    case GDK_KEY_F8:        return DRGUI_F8;
+    case GDK_KEY_F9:        return DRGUI_F9;
+    case GDK_KEY_F10:       return DRGUI_F10;
+    case GDK_KEY_F11:       return DRGUI_F11;
+    case GDK_KEY_F12:       return DRGUI_F12;
 
     default: break;
     }
@@ -1263,6 +1275,18 @@ guint dred_drgui_key_to_gtk(drgui_key key)
     case DRGUI_ARROW_RIGHT: return GDK_KEY_Right;
     case DRGUI_ARROW_DOWN:  return GDK_KEY_Down;
     case DRGUI_DELETE:      return GDK_KEY_Delete;
+    case DRGUI_F1:          return GDK_KEY_F1;
+    case DRGUI_F2:          return GDK_KEY_F2;
+    case DRGUI_F3:          return GDK_KEY_F3;
+    case DRGUI_F4:          return GDK_KEY_F4;
+    case DRGUI_F5:          return GDK_KEY_F5;
+    case DRGUI_F6:          return GDK_KEY_F6;
+    case DRGUI_F7:          return GDK_KEY_F7;
+    case DRGUI_F8:          return GDK_KEY_F8;
+    case DRGUI_F9:          return GDK_KEY_F9;
+    case DRGUI_F10:         return GDK_KEY_F10;
+    case DRGUI_F11:         return GDK_KEY_F11;
+    case DRGUI_F12:         return GDK_KEY_F12;
 
     default: break;
     }
@@ -1712,7 +1736,12 @@ GtkAccelGroup* dred_gtk__create_accels(dred_accelerator_table* pAcceleratorTable
         pAccel->pClosure = g_cclosure_new(G_CALLBACK(dred_gtk_cb__on_accelerator), pAccel, NULL);
         pAccel->pWindow = pWindow;
         pAccel->pMenu = pMenu;
-        gtk_accel_group_connect(pGTKAccelGroup, dred_drgui_key_to_gtk(pAcceleratorTable->pAccelerators[i].key), dred_accelerator_modifiers_to_gtk(pAcceleratorTable->pAccelerators[i].modifiers), 0, pAccel->pClosure);
+
+        guint keyGTK = dred_drgui_key_to_gtk(pAcceleratorTable->pAccelerators[i].key);
+        GdkModifierType modifiersGTK = dred_accelerator_modifiers_to_gtk(pAcceleratorTable->pAccelerators[i].modifiers);
+        if (keyGTK > 0) {
+            gtk_accel_group_connect(pGTKAccelGroup, keyGTK, modifiersGTK, 0, pAccel->pClosure);
+        }
     }
 
     *ppAccelsOut = pAccels;
@@ -2263,8 +2292,10 @@ static void dred_platform__on_global_dirty__gtk(drgui_element* pElement, drgui_r
         drgui_rect absoluteRect = relativeRect;
         drgui_make_rect_absolute(pElement, &absoluteRect);
 
-        gtk_widget_queue_draw_area(pWindow->pGTKClientArea,
-            (gint)absoluteRect.left, (gint)absoluteRect.top, (gint)(absoluteRect.right - absoluteRect.left), (gint)(absoluteRect.bottom - absoluteRect.top));
+        if (drgui_rect_has_volume(absoluteRect)) {
+            gtk_widget_queue_draw_area(pWindow->pGTKClientArea,
+                (gint)absoluteRect.left, (gint)absoluteRect.top, (gint)(absoluteRect.right - absoluteRect.left), (gint)(absoluteRect.bottom - absoluteRect.top));
+        }
     }
 }
 #endif

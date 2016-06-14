@@ -29,7 +29,7 @@ void dred_tabgroup__refresh_control_layout(dred_tabgroup* pTabGroup, dred_contro
 {
     float parentWidth;
     float parentHeight;
-    drgui_get_size(pTabGroup, &parentWidth, &parentHeight);
+    dred_control_get_size(pTabGroup, &parentWidth, &parentHeight);
 
     dred_tabgroup__resize_and_reposition_control(pControl, parentWidth, parentHeight, dred_control_get_height(dred_tabgroup__get_tabbar(pTabGroup)));
 }
