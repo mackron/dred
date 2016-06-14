@@ -121,7 +121,7 @@ dred_font* dred_config__load_system_font_ui(dred_context* pDred)
 #endif
 
 #ifdef __linux__
-//#error "Implement me. Try using fontconfig for this to avoid dependency on GTK."
+    // TODO: Use the FontConfig + GTK API for this.
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Application");
     fontDesc.size = 12;
     fontDesc.weight = drgui_font_weight_normal;
@@ -138,6 +138,7 @@ dred_font* dred_config__load_system_font_mono(dred_context* pDred)
     fontDesc.rotation = 0;
 
 #ifdef _WIN32
+    // TODO: Use Courier New in Windows XP.
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Consolas");
     fontDesc.size = 13;
     fontDesc.weight = drgui_font_weight_normal;
@@ -145,7 +146,7 @@ dred_font* dred_config__load_system_font_mono(dred_context* pDred)
 #endif
 
 #ifdef __linux__
-//#error "Implement me. Can use fontconfig for this."
+    // TODO: Use FontConfig API for this.
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "monospace");
     fontDesc.size = 13;
     fontDesc.weight = drgui_font_weight_normal;
