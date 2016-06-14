@@ -20,6 +20,12 @@
 #define DRED_MESSAGE_BOX_NO      2
 #define DRED_MESSAGE_BOX_CANCEL  3
 
+typedef enum
+{
+    dred_menu_type_popup,
+    dred_menu_type_menubar
+} dred_menu_type;
+
 
 // Initializes the platform layer. Should be the first function to be called.
 bool dred_platform_init();
@@ -81,6 +87,9 @@ struct dred_window
 {
     // The main context that owns the window.
     dred_context* pDred;
+
+    // The current menu bar of the window.
+    dred_menu* pMenu;
 
     // The window's top level GUI element.
     drgui_element* pRootGUIElement;
@@ -183,6 +192,12 @@ bool dred_window_is_cursor_over(dred_window* pWindow);
 // Binds the given accelerator table to the given window.
 void dred_window_bind_accelerators(dred_window* pWindow, dred_accelerator_table* pAcceleratorTable);
 
+// Sets the menu for the given window. Can be null, in which case the menu is removed.
+void dred_window_set_menu(dred_window* pWindow, dred_menu* pMenu);
+
+// Finds the menu item with the given id. The search is recursive.
+dred_menu_item* dred_window_find_menu_item_by_id(dred_window* pWindow, uint16_t id);
+
 
 // Event posting.
 void dred_window_on_close(dred_window* pWindow);
@@ -208,6 +223,73 @@ void dred_window_on_unfocus(dred_window* pWindow);
 
 // Helper function for retrieving the window that owns the given GUI element.
 dred_window* dred_get_element_window(drgui_element* pElement);
+
+
+
+//// MENUS ////
+
+struct dred_menu_item
+{
+    // The ID of the menu item. Due to the way Win32 notifies the application of the menu being pressed this is restricted to 16 bits.
+    uint16_t id;
+
+    // The command associated with the menu item, it any.
+    char* command;
+
+    // The sub-menu, if any.
+    dred_menu* pSubMenu;
+
+#ifdef DRED_GTK
+    // The GtkMenuItem object.
+    GtkWidget* pGTKMenuItem;
+#endif
+};
+
+struct dred_menu
+{
+    // The main context that owns the menu.
+    dred_context* pDred;
+
+    // The menu type.
+    //   dred_menu_type_popup (Use this for any kind of menu that's not a menu bar.)
+    //   dred_menu_type_menubar
+    dred_menu_type type;
+
+    // The number of menu items attached to the menu.
+    size_t menuItemCount;
+
+    // The list of menu items in the menu bar.
+    dred_menu_item** ppMenuItems;
+
+#ifdef DRED_WIN32
+    // A handle to the menu.
+    HMENU hMenu;
+#endif
+
+#ifdef DRED_GTK
+    // The GtkMenuBar or GtkMenu object, depending on the menu type.
+    GtkWidget* pGTKMenu;
+#endif
+};
+
+// Creates a menu of the given type.
+dred_menu* dred_menu_create(dred_context* pDred, dred_menu_type type);
+
+// Deletes the given menu.
+void dred_menu_delete(dred_menu* pMenu);
+
+// Recursively searches for the first menu item with the given ID.
+dred_menu_item* dred_menu_find_menu_item_by_id(dred_menu* pMenu, uint16_t id);
+
+
+// Creates a menu item.
+dred_menu_item* dred_menu_item_create_and_append(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_accelerator shortcut, dred_menu* pSubMenu);
+
+// Creates an appends a separator.
+dred_menu_item* dred_menu_item_create_and_append_separator(dred_menu* pMenu);
+
+// Deletes the given menu item.
+void dred_menu_item_delete(dred_menu_item* pItem);
 
 
 

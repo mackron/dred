@@ -108,6 +108,12 @@ void dred_command__close_all(dred_context* pDred, const char* value)
     dred_close_all_tabs(pDred);
 }
 
+void dred_command__exit(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_close(pDred);
+}
+
 
 void dred_command__undo(dred_context* pDred, const char* value)
 {

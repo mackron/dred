@@ -497,6 +497,12 @@ LRESULT CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
             if (HIWORD(wParam) == 1) {
                 WORD acceleratorIndex = LOWORD(wParam);
                 dred_on_accelerator(pWindow->pDred, pWindow, acceleratorIndex);
+            } else if (HIWORD(wParam) == 0) {
+                WORD menuItemID = LOWORD(wParam);
+                dred_menu_item* pMenuItem = dred_window_find_menu_item_by_id(pWindow, menuItemID);
+                if (pMenuItem != NULL) {
+                    dred_exec(pWindow->pDred, pMenuItem->command);
+                }
             }
         } break;
 
@@ -815,6 +821,157 @@ void dred_window_bind_accelerators__win32(dred_window* pWindow, dred_accelerator
         free(pAccels);
     }
 }
+
+void dred_window_set_menu__win32(dred_window* pWindow, dred_menu* pMenu)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+    // This validation check isn't actually needed for Win32, but I'm keeping it here for consistency with Linux/GTK.
+    if (pMenu && pMenu->type != dred_menu_type_menubar) {
+        return;
+    }
+
+    if (pMenu != NULL) {
+        SetMenu(pWindow->hWnd, pMenu->hMenu);
+    } else {
+        SetMenu(pWindow->hWnd, NULL);
+    }
+
+    pWindow->pMenu = pMenu;
+}
+
+
+//// MENUS ////
+
+dred_menu* dred_menu_create__win32(dred_context* pDred, dred_menu_type type)
+{
+    if (pDred == NULL) {
+        return NULL;
+    }
+
+    // Menu bars and popup menus are the same thing in Win32.
+    (void)type;
+
+    HMENU hMenu = CreateMenu();
+    if (hMenu == NULL) {
+        return NULL;
+    }
+
+    dred_menu* pMenu = (dred_menu*)calloc(1, sizeof(*pMenu));
+    if (pMenu == NULL) {
+        DestroyMenu(hMenu);
+        return NULL;
+    }
+
+    pMenu->pDred = pDred;
+    pMenu->type  = type;
+    pMenu->hMenu = hMenu;
+    
+    return pMenu;
+}
+
+void dred_menu_delete__win32(dred_menu* pMenu)
+{
+    if (pMenu == NULL) {
+        return;
+    }
+
+    if (pMenu->hMenu) {
+        DestroyMenu(pMenu->hMenu);
+    }
+
+    free(pMenu);
+}
+
+
+dred_menu_item* dred_menu_item_create_and_append__win32__internal(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_accelerator shortcut, dred_menu* pSubMenu, bool separator)
+{
+    if (pMenu == NULL) {
+        return NULL;
+    }
+
+
+    if (separator)
+    {
+        AppendMenuA(pMenu->hMenu, MF_SEPARATOR, 0, NULL);
+    }
+    else
+    {
+        if (text == NULL) {
+            text = "";
+        }
+
+        // The text needs to be transformed to show the shortcut string.
+        char shortcutStr[256];
+        dred_accelerator_to_string(shortcut, shortcutStr, sizeof(shortcutStr));
+
+        char transformedText[256];
+        if (shortcutStr[0] == '\0') {
+            strncpy_s(transformedText, sizeof(transformedText), text, _TRUNCATE);
+        } else {
+            snprintf(transformedText, sizeof(transformedText), "%s\t%s", text, shortcutStr);
+        }
+
+        if (pSubMenu == NULL) {
+            if (!AppendMenuA(pMenu->hMenu, MF_STRING, id, transformedText)) {
+                return NULL;
+            }
+        } else {
+            if (!AppendMenuA(pMenu->hMenu, MF_POPUP, (UINT_PTR)pSubMenu->hMenu, text)) {
+                return NULL;
+            }
+        }
+    }
+
+
+    dred_menu_item* pItem = (dred_menu_item*)calloc(1, sizeof(*pItem));
+    if (pItem == NULL) {
+        return NULL;
+    }
+
+    pItem->id = id;
+    pItem->command = gb_make_string(command);
+    pItem->pSubMenu = pSubMenu;
+
+
+    // Add the item to the list.
+    dred_menu_item** ppNewMenuItems = (dred_menu_item**)realloc(pMenu->ppMenuItems, (pMenu->menuItemCount + 1) * sizeof(*ppNewMenuItems));
+    if (ppNewMenuItems == NULL) {
+        free(pItem);
+        return NULL;
+    }
+
+    pMenu->ppMenuItems = ppNewMenuItems;
+    pMenu->ppMenuItems[pMenu->menuItemCount++] = pItem;
+
+    return pItem;
+}
+
+dred_menu_item* dred_menu_item_create_and_append__win32(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_accelerator shortcut, dred_menu* pSubMenu)
+{
+    return dred_menu_item_create_and_append__win32__internal(pMenu, text, id, command, shortcut, pSubMenu, false);
+}
+
+dred_menu_item* dred_menu_item_create_and_append_separator__win32(dred_menu* pMenu)
+{
+    return dred_menu_item_create_and_append__win32__internal(pMenu, NULL, 0, NULL, dred_accelerator_none(), NULL, true);
+}
+
+void dred_menu_item_delete__win32(dred_menu_item* pItem)
+{
+    if (pItem == NULL) {
+        return;
+    }
+
+    if (pItem->command) {
+        gb_free_string(pItem->command);
+    }
+
+    free(pItem);
+}
+
 
 
 //// TIMERS ////
@@ -1824,6 +1981,50 @@ void dred_window_bind_accelerators__gtk(dred_window* pWindow, dred_accelerator_t
     }
 }
 
+void dred_window_set_menu__gtk(dred_window* pWindow, dred_menu* pMenu)
+{
+#error Implement me.
+}
+
+
+//// MENUS ////
+
+dred_menu* dred_menu_create__gtk(dred_context* pDred, dred_menu_type type)
+{
+    if (pDred == NULL) {
+        return NULL;
+    }
+
+#error Implement me.
+    return NULL;
+}
+
+void dred_menu_delete__gtk(dred_menu* pMenu)
+{
+    if (pMenu == NULL) {
+        return;
+    }
+
+    #error Implement me.
+}
+
+
+dred_menu_item* dred_menu_item_create_and_append__gtk(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_accelerator shortcut, dred_menu* pSubMenu)
+{
+#error Implement me.
+}
+
+dred_menu_item* dred_menu_item_create_and_append_separator__gtk(dred_menu* pMenu)
+{
+#error Implement me.
+}
+
+void dred_menu_item_delete__gtk(dred_menu_item* pItem)
+{
+#error Implement me.
+}
+
+
 
 //// TIMERS ////
 
@@ -2190,6 +2391,26 @@ void dred_window_bind_accelerators(dred_window* pWindow, dred_accelerator_table*
 #endif
 }
 
+void dred_window_set_menu(dred_window* pWindow, dred_menu* pMenu)
+{
+#ifdef DRED_WIN32
+    dred_window_set_menu__win32(pWindow, pMenu);
+#endif
+
+#ifdef DRED_GTK
+    dred_window_set_menu__gtk(pWindow, pMenu);
+#endif
+}
+
+dred_menu_item* dred_window_find_menu_item_by_id(dred_window* pWindow, uint16_t id)
+{
+    if (pWindow == NULL || pWindow->pMenu == NULL) {
+        return NULL;
+    }
+
+    return dred_menu_find_menu_item_by_id(pWindow->pMenu, id);
+}
+
 
 void dred_window_on_close(dred_window* pWindow)
 {
@@ -2387,6 +2608,87 @@ dred_window* dred_get_element_window(drgui_element* pElement)
     }
 
     return *ppWindow;
+}
+
+
+//// MENUS ////
+
+dred_menu* dred_menu_create(dred_context* pDred, dred_menu_type type)
+{
+#ifdef DRED_WIN32
+    return dred_menu_create__win32(pDred, type);
+#endif
+
+#ifdef DRED_GTK
+    return dred_menu_create__gtk(pDred, type);
+#endif
+}
+
+void dred_menu_delete(dred_menu* pMenu)
+{
+#ifdef DRED_WIN32
+    dred_menu_delete__win32(pMenu);
+#endif
+
+#ifdef DRED_GTK
+    dred_menu_delete__gtk(pMenu);
+#endif
+}
+
+dred_menu_item* dred_menu_find_menu_item_by_id(dred_menu* pMenu, uint16_t id)
+{
+    if (pMenu == NULL) {
+        return NULL;
+    }
+
+    for (size_t i = 0; i < pMenu->menuItemCount; ++i) {
+        if (pMenu->ppMenuItems[i]->id == id) {
+            return pMenu->ppMenuItems[i];
+        }
+
+        if (pMenu->ppMenuItems[i]->pSubMenu != NULL) {
+            dred_menu_item* pItem = dred_menu_find_menu_item_by_id(pMenu->ppMenuItems[i]->pSubMenu, id);
+            if (pItem != NULL) {
+                return pItem;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+
+dred_menu_item* dred_menu_item_create_and_append(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_accelerator shortcut, dred_menu* pSubMenu)
+{
+#ifdef DRED_WIN32
+    return dred_menu_item_create_and_append__win32(pMenu, text, id, command, shortcut, pSubMenu);
+#endif
+
+#ifdef DRED_GTK
+    return dred_menu_item_create_and_append__gtk(pMenu, text, id, command, shortcut, pSubMenu);
+#endif
+}
+
+dred_menu_item* dred_menu_item_create_and_append_separator(dred_menu* pMenu)
+{
+#ifdef DRED_WIN32
+    return dred_menu_item_create_and_append_separator__win32(pMenu);
+#endif
+
+#ifdef DRED_GTK
+    return dred_menu_item_create_and_append_separator__gtk(pMenu);
+#endif
+}
+
+void dred_menu_item_delete(dred_menu_item* pItem)
+{
+#ifdef DRED_WIN32
+    dred_menu_item_delete__win32(pItem);
+#endif
+
+#ifdef DRED_GTK
+    dred_menu_item_delete__gtk(pItem);
+#endif
 }
 
 

@@ -1,4 +1,15 @@
 
+#define DRED_MENU_ITEM_ID_NONE              0
+#define DRED_MENU_ITEM_ID_FILE_NEW          1
+#define DRED_MENU_ITEM_ID_FILE_OPEN         2
+#define DRED_MENU_ITEM_ID_FILE_SAVE         3
+#define DRED_MENU_ITEM_ID_FILE_SAVE_AS      4
+#define DRED_MENU_ITEM_ID_FILE_SAVE_ALL     5
+#define DRED_MENU_ITEM_ID_FILE_CLOSE        6
+#define DRED_MENU_ITEM_ID_FILE_CLOSE_ALL    7
+#define DRED_MENU_ITEM_ID_FILE_EXIT         8
+
+
 void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabgroup_container* pContainer, float parentWidth, float parentHeight)
 {
     if (pContainer == NULL) {
@@ -94,23 +105,7 @@ void dred__on_editor_unmodified(dred_editor* pEditor)
 void dred_window_cb__on_main_window_close(dred_window* pWindow)
 {
     assert(pWindow != NULL);
-
-    dred_context* pDred = pWindow->pDred;
-    assert(pDred != NULL);
-
-    // If there's any modified files we need to show a dialog box.
-    if (dred_are_any_open_files_modified(pDred)) {
-        unsigned int result = dred_show_yesnocancel_dialog(pDred, "You have unsaved changes. Save changes?", "Save changes?");
-        if (result == DRED_MESSAGE_BOX_YES) {
-            if (!dred_save_all_open_files_with_saveas(pDred)) {
-                return;
-            }
-        } else if (result == DRED_MESSAGE_BOX_CANCEL) {
-            return; // Cancel. Don't quit, just return.
-        }
-    }
-
-    dred_platform_post_quit_message(0);
+    dred_close(pWindow->pDred);
 }
 
 void dred_window_cb__on_main_window_size(drgui_element* pElement, float width, float height)
@@ -273,6 +268,32 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     }
 
 
+    dred_menu* pMenuBar = dred_menu_create(pDred, dred_menu_type_menubar);
+    if (pMenuBar == NULL) {
+        dred_warning(pDred, "Failed to create main menu bar.");
+    }
+
+    dred_menu* pFileMenu = dred_menu_create(pDred, dred_menu_type_popup);
+    dred_menu_item_create_and_append(pFileMenu, "&New", DRED_MENU_ITEM_ID_FILE_NEW, "new", dred_accelerator_create('N', DRED_KEY_STATE_CTRL_DOWN), NULL);
+    dred_menu_item_create_and_append(pFileMenu, "&Open...", DRED_MENU_ITEM_ID_FILE_OPEN, "open", dred_accelerator_create('O', DRED_KEY_STATE_CTRL_DOWN), NULL);
+    dred_menu_item_create_and_append_separator(pFileMenu);
+    dred_menu_item_create_and_append(pFileMenu, "&Save", DRED_MENU_ITEM_ID_FILE_SAVE,  "save",  dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN), NULL);
+    dred_menu_item_create_and_append(pFileMenu, "Save &As", DRED_MENU_ITEM_ID_FILE_SAVE_AS,  "save-as",  dred_accelerator_none(), NULL);
+    dred_menu_item_create_and_append(pFileMenu, "Save A&ll", DRED_MENU_ITEM_ID_FILE_SAVE_ALL,  "save-all",  dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN), NULL);
+    dred_menu_item_create_and_append_separator(pFileMenu);
+    dred_menu_item_create_and_append(pFileMenu, "&Close", DRED_MENU_ITEM_ID_FILE_CLOSE, "close", dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN), NULL);
+    dred_menu_item_create_and_append(pFileMenu, "Clos&e All", DRED_MENU_ITEM_ID_FILE_CLOSE_ALL, "close-all", dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN), NULL);
+    dred_menu_item_create_and_append_separator(pFileMenu);
+    dred_menu_item_create_and_append(pFileMenu, "E&xit...", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_accelerator_none(), NULL);
+
+    dred_menu* pEditMenu = dred_menu_create(pDred, dred_menu_type_popup);
+
+    dred_menu_item_create_and_append(pMenuBar, "&File", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pFileMenu);
+    dred_menu_item_create_and_append(pMenuBar, "&Edit", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pEditMenu);
+
+    dred_window_set_menu(pDred->pMainWindow, pMenuBar);
+
+
     // Show the window last to ensure child GUI elements have been initialized and in a valid state. This should be done before
     // opening the files passed on the command line, however, because the window needs to be shown in order for it to receive
     // keyboard focus.
@@ -348,6 +369,27 @@ int dred_run(dred_context* pDred)
     }
 
     return dred_platform_run();
+}
+
+void dred_close(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    // If there's any modified files we need to show a dialog box.
+    if (dred_are_any_open_files_modified(pDred)) {
+        unsigned int result = dred_show_yesnocancel_dialog(pDred, "You have unsaved changes. Save changes?", "Save changes?");
+        if (result == DRED_MESSAGE_BOX_YES) {
+            if (!dred_save_all_open_files_with_saveas(pDred)) {
+                return;
+            }
+        } else if (result == DRED_MESSAGE_BOX_CANCEL) {
+            return; // Cancel. Don't quit, just return.
+        }
+    }
+
+    dred_platform_post_quit_message(0);
 }
 
 

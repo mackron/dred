@@ -113,3 +113,77 @@ const char* dred_accelerator_table_get_command_string_by_index(dred_accelerator_
 
     return pTable->ppCmdStrings[acceleratorIndex];
 }
+
+
+size_t dred_accelerator_to_string(dred_accelerator accelerator, char* strOut, size_t strOutSize)
+{
+    if (strOut == NULL || strOutSize == 0) {
+        return 0;
+    }
+
+    strOut[0] = '\0';
+
+    size_t characterLength = 0;
+    char characterStr[16];
+    if (accelerator.modifiers != 0) {
+        characterStr[characterLength++] = '+';
+    }
+    // TODO: dr_utf32_to_utf8_ch()
+    characterStr[characterLength++] = (char)accelerator.key;
+    characterStr[characterLength] = '\0';
+
+
+    size_t modifiersLength = 0;
+    char modifiersStr[256] = {'\0'};
+    if (accelerator.modifiers & DRED_KEY_STATE_CTRL_DOWN) {
+        if (modifiersStr[0] != '\0') {
+            modifiersStr[modifiersLength++] = '+';
+        }
+        if (strcpy_s(modifiersStr + modifiersLength, sizeof(modifiersStr) - modifiersLength - 1, "Ctrl") != 0) {
+            return 0;
+        }
+        modifiersLength += strlen("Ctrl");
+    }
+
+    if (accelerator.modifiers & DRED_KEY_STATE_SHIFT_DOWN) {
+        if (modifiersStr[0] != '\0') {
+            modifiersStr[modifiersLength++] = '+';
+        }
+        if (strcpy_s(modifiersStr + modifiersLength, sizeof(modifiersStr) - modifiersLength - 1, "Shift") != 0) {
+            return 0;
+        }
+        modifiersLength += strlen("Shift");
+    }
+
+    if (accelerator.modifiers & DRED_KEY_STATE_ALT_DOWN) {
+        if (modifiersStr[0] != '\0') {
+            modifiersStr[modifiersLength++] = '+';
+        }
+        if (strcpy_s(modifiersStr + modifiersLength, sizeof(modifiersStr) - modifiersLength - 1, "Alt") != 0) {
+            return 0;
+        }
+        modifiersLength += strlen("Alt");
+    }
+
+    
+    snprintf(strOut, strOutSize, "%s%s", modifiersStr, characterStr);
+    return modifiersLength + characterLength;
+}
+
+dred_accelerator dred_accelerator_none()
+{
+    dred_accelerator result;
+    result.key = 0;
+    result.modifiers = 0;
+
+    return result;
+}
+
+dred_accelerator dred_accelerator_create(drgui_key key, uint32_t modifiers)
+{
+    dred_accelerator result;
+    result.key = key;
+    result.modifiers = modifiers;
+
+    return result;
+}

@@ -63,6 +63,9 @@ void dred_uninit(dred_context* pDred);
 // dred_run
 int dred_run(dred_context* pDred);
 
+// Closes the application as if the user has clicked the close button on the main window.
+void dred_close(dred_context* pDred);
+
 
 // Posts a log message.
 void dred_log(dred_context* pDred, const char* message);
