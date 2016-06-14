@@ -243,13 +243,8 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
-    dred_window_set_size(pDred->pMainWindow, 1280, 720);
-
     pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
     drgui_set_on_size(pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_size);
-
-    // Show the window as soon as possible to give it the illusion of loading quickly.
-    dred_window_show(pDred->pMainWindow);
 
     // Ensure the accelerators are bound. This needs to be done after loading the initial configs.
     dred_window_bind_accelerators(pDred->pMainWindow, &pDred->acceleratorTable);
@@ -277,15 +272,12 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
-    //dred_focus_command_bar(pDred);
 
-
-
-    // Update the layout of the main window to ensure it's in the correct initial state.
-    unsigned int windowWidth;
-    unsigned int windowHeight;
-    dred_window_get_size(pDred->pMainWindow, &windowWidth, &windowHeight);
-    dred__update_main_window_layout(pDred->pMainWindow, (float)windowWidth, (float)windowHeight);
+    // Show the window last to ensure child GUI elements have been initialized and in a valid state. This should be done before
+    // opening the files passed on the command line, however, because the window needs to be shown in order for it to receive
+    // keyboard focus.
+    dred_window_set_size(pDred->pMainWindow, 1280, 720);
+    dred_window_show(pDred->pMainWindow);
 
 
     // Load initial files from the command line.

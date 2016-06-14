@@ -1547,6 +1547,7 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
         goto on_error;
     }
 
+
     // These are the types of events we care about.
     gtk_widget_add_events(pGTKWindow,
         GDK_KEY_PRESS_MASK      |
@@ -1947,7 +1948,7 @@ static void dred_platform__on_global_dirty__gtk(drgui_element* pElement, drgui_r
         drgui_rect absoluteRect = relativeRect;
         drgui_make_rect_absolute(pElement, &absoluteRect);
 
-        gtk_widget_queue_draw_area(pWindow->pGTKWindow,
+        gtk_widget_queue_draw_area(pWindow->pGTKClientArea,
             (gint)absoluteRect.left, (gint)absoluteRect.top, (gint)(absoluteRect.right - absoluteRect.left), (gint)(absoluteRect.bottom - absoluteRect.top));
     }
 }
