@@ -956,6 +956,33 @@ void dred_show_open_file_dialog(dred_context* pDred)
         // Only a single file was selected.
         dred_open_file(pDred, filePaths);
     }
+#else
+    GtkWidget* dialog = gtk_file_chooser_dialog_new("Open", GTK_WINDOW(pDred->pMainWindow->pGTKWindow), GTK_FILE_CHOOSER_ACTION_OPEN,
+        "_Open",   GTK_RESPONSE_ACCEPT,
+        "_Cancel", GTK_RESPONSE_CANCEL, NULL);
+    if (dialog == NULL) {
+        return;
+    }
+
+    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (response == GTK_RESPONSE_ACCEPT) {
+        GSList* list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
+        if (list != NULL) {
+            while(list != NULL) {
+                char* filename = (char*)list->data;
+                if (filename != NULL && filename[0] != '\0') {
+                    dred_open_file(pDred, filename);
+                }
+
+                g_free(filename);
+                list = list->next;
+            }
+
+            g_slist_free(list);
+        }
+    }
+
+    gtk_widget_destroy(dialog);
 #endif
 }
 
