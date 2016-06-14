@@ -278,7 +278,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_menu_item_create_and_append(pFileMenu, "&Open...", DRED_MENU_ITEM_ID_FILE_OPEN, "open", dred_accelerator_create('O', DRED_KEY_STATE_CTRL_DOWN), NULL);
     dred_menu_item_create_and_append_separator(pFileMenu);
     dred_menu_item_create_and_append(pFileMenu, "&Save", DRED_MENU_ITEM_ID_FILE_SAVE,  "save",  dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN), NULL);
-    dred_menu_item_create_and_append(pFileMenu, "Save &As", DRED_MENU_ITEM_ID_FILE_SAVE_AS,  "save-as",  dred_accelerator_none(), NULL);
+    dred_menu_item_create_and_append(pFileMenu, "Save &As...", DRED_MENU_ITEM_ID_FILE_SAVE_AS,  "save-as",  dred_accelerator_none(), NULL);
     dred_menu_item_create_and_append(pFileMenu, "Save A&ll", DRED_MENU_ITEM_ID_FILE_SAVE_ALL,  "save-all",  dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN), NULL);
     dred_menu_item_create_and_append_separator(pFileMenu);
     dred_menu_item_create_and_append(pFileMenu, "&Close", DRED_MENU_ITEM_ID_FILE_CLOSE, "close", dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN), NULL);
