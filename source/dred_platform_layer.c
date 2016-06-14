@@ -845,14 +845,14 @@ void dred_window_set_menu__win32(dred_window* pWindow, dred_menu* pMenu)
 
 //// MENUS ////
 
-dred_menu* dred_menu_create__win32(dred_context* pDred, dred_menu_type type)
+dred_menu* dred_menu_create__win32(dred_context* pDred, dred_menu_type type, dred_accelerator_table* pAcceleratorTable)
 {
     if (pDred == NULL) {
         return NULL;
     }
 
-    // Menu bars and popup menus are the same thing in Win32.
-    (void)type;
+    (void)type;                 // Menu bars and popup menus are the same thing in Win32.
+    (void)pAcceleratorTable;    // Accelerator table is not needed in Win32.
 
     HMENU hMenu = CreateMenu();
     if (hMenu == NULL) {
@@ -1503,7 +1503,7 @@ static gboolean dred_gtk_cb__on_mouse_enter(GtkWidget* pGTKWindow, GdkEventCross
     gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(pWindow->pGTKWindow)), pWindow->pGTKCursor);
 
     dred_window_on_mouse_enter(pWindow);
-    return true;
+    return false;
 }
 
 static gboolean dred_gtk_cb__on_mouse_leave(GtkWidget* pGTKWindow, GdkEventCrossing* pEvent, gpointer pUserData)
@@ -2020,6 +2020,19 @@ void dred_window_set_menu__gtk(dred_window* pWindow, dred_menu* pMenu)
 
 //// MENUS ////
 
+//gdk_window_set_cursor(gtk_widget_get_parent_window(GTK_WIDGET(pGTKMenu)), g_GTKCursor_Default);
+
+static gboolean dred_gtk_cb__on_mouse_enter__menu(GtkWidget* pGTKMenu, GdkEventCrossing* pEvent, gpointer pUserData)
+{
+    (void)pGTKMenu;
+    (void)pEvent;
+    (void)pUserData;
+
+    gdk_window_set_cursor(gtk_widget_get_window(pGTKMenu), g_GTKCursor_Default);
+    return false;
+}
+
+
 dred_menu* dred_menu_create__gtk(dred_context* pDred, dred_menu_type type, dred_accelerator_table* pAcceleratorTable)
 {
     if (pDred == NULL) {
@@ -2052,6 +2065,8 @@ dred_menu* dred_menu_create__gtk(dred_context* pDred, dred_menu_type type, dred_
         pMenu->pGTKAccelGroup = dred_gtk__create_accels(pAcceleratorTable, &pMenu->pAccels, NULL, pMenu);
         pMenu->accelCount = pAcceleratorTable->count;
     }
+
+    g_signal_connect(pGTKMenu, "enter-notify-event", G_CALLBACK(dred_gtk_cb__on_mouse_enter__menu), NULL);
 
     return pMenu;
 }
