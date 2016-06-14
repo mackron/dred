@@ -9,6 +9,7 @@
 // open         dred_command__open              DRED_CMDBAR_RELEASE_KEYBOARD
 // save         dred_command__save              DRED_CMDBAR_RELEASE_KEYBOARD
 // save-all     dred_command__save_all          DRED_CMDBAR_RELEASE_KEYBOARD
+// save-as      dred_command__save_as           DRED_CMDBAR_RELEASE_KEYBOARD
 // close        dred_command__close             DRED_CMDBAR_RELEASE_KEYBOARD
 // close-all    dred_command__close_all         DRED_CMDBAR_RELEASE_KEYBOARD
 // undo         dred_command__undo              DRED_CMDBAR_NO_CLEAR
@@ -60,6 +61,9 @@ void dred_command__save(dred_context* pDred, const char* value);
 
 // save-all
 void dred_command__save_all(dred_context* pDred, const char* value);
+
+// save-as
+void dred_command__save_as(dred_context* pDred, const char* value);
 
 // close
 void dred_command__close(dred_context* pDred, const char* value);

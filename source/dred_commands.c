@@ -90,6 +90,12 @@ void dred_command__save_all(dred_context* pDred, const char* value)
     dred_save_all_open_files(pDred);
 }
 
+void dred_command__save_as(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_save_focused_file_as(pDred);
+}
+
 void dred_command__close(dred_context* pDred, const char* value)
 {
     (void)value;
