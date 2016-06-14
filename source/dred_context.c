@@ -1,7 +1,9 @@
 
 void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabgroup_container* pContainer, float parentWidth, float parentHeight)
 {
-    assert(pContainer != NULL);
+    if (pContainer == NULL) {
+        return;
+    }
 
     dred_control_set_size(pContainer, parentWidth, parentHeight - dred_control_get_height(pDred->pCmdBar));
 }
@@ -9,7 +11,10 @@ void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabg
 void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float parentWidth, float parentHeight)
 {
     (void)pDred;
-    assert(pCmdBar != NULL);
+
+    if (pCmdBar == NULL) {
+        return;
+    }
 
     dred_control_set_size(pCmdBar, parentWidth, dred_control_get_height(pCmdBar));
     dred_control_set_relative_position(pCmdBar, 0, parentHeight - dred_control_get_height(pCmdBar));
@@ -272,12 +277,15 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
-    dred_focus_command_bar(pDred);
+    //dred_focus_command_bar(pDred);
 
 
 
     // Update the layout of the main window to ensure it's in the correct initial state.
-    dred__update_main_window_layout(pDred->pMainWindow, 1280, 720);
+    unsigned int windowWidth;
+    unsigned int windowHeight;
+    dred_window_get_size(pDred->pMainWindow, &windowWidth, &windowHeight);
+    dred__update_main_window_layout(pDred->pMainWindow, (float)windowWidth, (float)windowHeight);
 
 
     // Load initial files from the command line.

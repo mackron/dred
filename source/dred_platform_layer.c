@@ -8,7 +8,7 @@
 // Helper for creating the root GUI element of a window.
 drgui_element* dred_platform__create_root_gui_element(drgui_context* pGUI, dred_window* pWindow)
 {
-    drgui_element* pRootGUIElement = drgui_create_element(pGUI, NULL, sizeof(&pWindow), &pWindow);
+    drgui_element* pRootGUIElement = drgui_create_element(pGUI, NULL, sizeof(pWindow), &pWindow);
     if (pRootGUIElement == NULL) {
         return NULL;
     }
@@ -1547,20 +1547,8 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
         goto on_error;
     }
 
-    // Because we are drawing the GUI ourselves rather than through GTK, we want to disable GTK's default painting
-    // procedure. To do this we use gtk_widget_set_app_paintable(pWindow, TRUE) which will disable GTK's default
-    // painting on the main window. We then connect to the "draw" signal which is where we'll do all of our custom
-    // painting.
-    //gtk_widget_set_app_paintable(pGTKWindow, TRUE);
-
     // These are the types of events we care about.
     gtk_widget_add_events(pGTKWindow,
-        GDK_ENTER_NOTIFY_MASK   |
-        GDK_LEAVE_NOTIFY_MASK   |
-        GDK_POINTER_MOTION_MASK |
-        GDK_BUTTON_PRESS_MASK   |
-        GDK_BUTTON_RELEASE_MASK |
-        GDK_SCROLL_MASK         |
         GDK_KEY_PRESS_MASK      |
         GDK_KEY_RELEASE_MASK    |
         GDK_FOCUS_CHANGE_MASK);
@@ -1639,10 +1627,7 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
         GDK_POINTER_MOTION_MASK |
         GDK_BUTTON_PRESS_MASK   |
         GDK_BUTTON_RELEASE_MASK |
-        GDK_SCROLL_MASK         |
-        GDK_KEY_PRESS_MASK      |
-        GDK_KEY_RELEASE_MASK    |
-        GDK_FOCUS_CHANGE_MASK);
+        GDK_SCROLL_MASK);
 
     g_signal_connect(pGTKClientArea, "draw",                 G_CALLBACK(dred_gtk_cb__on_paint),             pWindow);     // Paint
     g_signal_connect(pGTKClientArea, "configure-event",      G_CALLBACK(dred_gtk_cb__on_configure),         pWindow);     // Reposition and resize.
@@ -1659,6 +1644,7 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
 
 
     pWindow->pGTKBox = pGTKBox;
+    pWindow->pGTKClientArea = pGTKClientArea;
 
     return pWindow;
 
@@ -1845,7 +1831,7 @@ static gboolean dred_timer_proc_gtk(gpointer data)
     dred_timer* pTimer = (dred_timer*)data;
     if (pTimer == NULL) {
         assert(false);
-        return 0;
+        return false;
     }
 
     if (pTimer->callback != NULL) {
@@ -1914,8 +1900,9 @@ static void dred_platform__on_global_capture_mouse__gtk(drgui_element* pElement)
     if (pWindow != NULL) {
         //gdk_device_grab(gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())),
         //    gtk_widget_get_window(pWindow->pGTKWindow), GDK_OWNERSHIP_APPLICATION, false, GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_SCROLL_MASK, NULL, GDK_CURRENT_TIME);
+
         gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
-            gtk_widget_get_window(pWindow->pGTKWindow), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
+            gtk_widget_get_window(pWindow->pGTKClientArea), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
     }
 }
 
@@ -1945,7 +1932,10 @@ static void dred_platform__on_global_release_keyboard__gtk(drgui_element* pEleme
 
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow != NULL) {
-        gtk_widget_grab_focus(NULL);
+        dred_window* pNewWindow = dred_get_element_window(pNewCapturedElement);
+        if (pWindow != pNewWindow) {
+            //gtk_widget_grab_focus(NULL);
+        }
     }
 }
 
