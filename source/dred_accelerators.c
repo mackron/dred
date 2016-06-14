@@ -124,17 +124,15 @@ size_t dred_accelerator_to_string(dred_accelerator accelerator, char* strOut, si
     strOut[0] = '\0';
 
     size_t characterLength = 0;
-    char characterStr[16];
+    char characterStr[16] = {0};
     if (accelerator.modifiers != 0) {
         characterStr[characterLength++] = '+';
     }
-    // TODO: dr_utf32_to_utf8_ch()
-    characterStr[characterLength++] = (char)accelerator.key;
-    characterStr[characterLength] = '\0';
+    characterLength += drgui_key_to_string(accelerator.key, characterStr + characterLength, sizeof(characterStr) - characterLength);
 
 
     size_t modifiersLength = 0;
-    char modifiersStr[256] = {'\0'};
+    char modifiersStr[256] = {0};
     if (accelerator.modifiers & DRED_KEY_STATE_CTRL_DOWN) {
         if (modifiersStr[0] != '\0') {
             modifiersStr[modifiersLength++] = '+';

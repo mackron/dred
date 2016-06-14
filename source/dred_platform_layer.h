@@ -80,6 +80,7 @@ typedef struct
     size_t index;
     GClosure* pClosure;
     dred_window* pWindow;
+    dred_menu* pMenu;
 } dred_gtk_accelerator;
 #endif
 
@@ -242,6 +243,9 @@ struct dred_menu_item
 #ifdef DRED_GTK
     // The GtkMenuItem object.
     GtkWidget* pGTKMenuItem;
+
+    // Menu items in GTK need access to the main context in order to handle the command.
+    dred_context* pDred;
 #endif
 };
 
@@ -269,11 +273,16 @@ struct dred_menu
 #ifdef DRED_GTK
     // The GtkMenuBar or GtkMenu object, depending on the menu type.
     GtkWidget* pGTKMenu;
+
+    // The GTK accelerator group tied to this window.
+    GtkAccelGroup* pGTKAccelGroup;
+    dred_gtk_accelerator* pAccels;
+    size_t accelCount;
 #endif
 };
 
 // Creates a menu of the given type.
-dred_menu* dred_menu_create(dred_context* pDred, dred_menu_type type);
+dred_menu* dred_menu_create(dred_context* pDred, dred_menu_type type, dred_accelerator_table* pAcceleratorTable);
 
 // Deletes the given menu.
 void dred_menu_delete(dred_menu* pMenu);

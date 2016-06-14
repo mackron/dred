@@ -868,7 +868,7 @@ dred_menu* dred_menu_create__win32(dred_context* pDred, dred_menu_type type)
     pMenu->pDred = pDred;
     pMenu->type  = type;
     pMenu->hMenu = hMenu;
-    
+
     return pMenu;
 }
 
@@ -1659,12 +1659,65 @@ static gboolean dred_gtk_cb__on_lose_focus(GtkWidget* pGTKWindow, GdkEventFocus*
 }
 
 
-static void dred_gtk_cb__on_menu_activate(GtkWidget *pGTKMenuItem, gpointer pUserData)
+static void dred_gtk_cb__on_menu_item_activate(GtkWidget *pGTKMenuItem, gpointer pUserData)
 {
     (void)pGTKMenuItem;
-    printf("Menu Pressed: %s\n", (const char*)pUserData);
+    //printf("Menu Pressed: %s\n", (const char*)pUserData);
+
+    dred_menu_item* pItem = (dred_menu_item*)pUserData;
+    if (pItem == NULL) {
+        return;
+    }
+
+    if (pItem->command) {
+        dred_exec(pItem->pDred, pItem->command);
+    }
 }
 
+gboolean dred_gtk_cb__on_accelerator(GtkAccelGroup *pAccelGroup, GObject *acceleratable, guint keyval, GdkModifierType modifier, gpointer pUserData)
+{
+    (void)pAccelGroup;
+    (void)acceleratable;
+    (void)keyval;
+    (void)modifier;
+
+    dred_gtk_accelerator* pAccel = (dred_gtk_accelerator*)pUserData;
+    assert(pAccel != NULL);
+
+    dred_on_accelerator(pAccel->pWindow->pDred, pAccel->pWindow, pAccel->index);
+    return true;    // Returning true here is important because it ensures the accelerator is handled only once.
+}
+
+GtkAccelGroup* dred_gtk__create_accels(dred_accelerator_table* pAcceleratorTable, dred_gtk_accelerator** ppAccelsOut, dred_window* pWindow, dred_menu* pMenu)
+{
+    if (pAcceleratorTable == NULL || ppAccelsOut == NULL) {
+        return NULL;
+    }
+
+    GtkAccelGroup* pGTKAccelGroup = gtk_accel_group_new();
+    if (pGTKAccelGroup == NULL) {
+        return NULL;
+    }
+
+    dred_gtk_accelerator* pAccels = (dred_gtk_accelerator*)malloc(pAcceleratorTable->count * sizeof(*pAccels));
+    if (pAccels == NULL) {
+        g_object_unref(G_OBJECT(pGTKAccelGroup));
+        pGTKAccelGroup = NULL;
+        return NULL;
+    }
+
+    for (size_t i = 0; i < pAcceleratorTable->count; ++i) {
+        dred_gtk_accelerator* pAccel = &pAccels[i];
+        pAccel->index = i;
+        pAccel->pClosure = g_cclosure_new(G_CALLBACK(dred_gtk_cb__on_accelerator), pAccel, NULL);
+        pAccel->pWindow = pWindow;
+        pAccel->pMenu = pMenu;
+        gtk_accel_group_connect(pGTKAccelGroup, dred_drgui_key_to_gtk(pAcceleratorTable->pAccelerators[i].key), dred_accelerator_modifiers_to_gtk(pAcceleratorTable->pAccelerators[i].modifiers), 0, pAccel->pClosure);
+    }
+
+    *ppAccelsOut = pAccels;
+    return pGTKAccelGroup;
+}
 
 void dred_gtk__delete_accels(dred_gtk_accelerator* pAccels, size_t accelCount)
 {
@@ -1719,10 +1772,6 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
     g_signal_connect(pGTKWindow, "focus-in-event",       G_CALLBACK(dred_gtk_cb__on_receive_focus),     pWindow);     // Receive focus.
     g_signal_connect(pGTKWindow, "focus-out-event",      G_CALLBACK(dred_gtk_cb__on_lose_focus),        pWindow);     // Lose focus.
 
-    GtkAccelGroup *accel_group = gtk_accel_group_new();
-    gtk_window_add_accel_group(GTK_WINDOW(pGTKWindow), accel_group);
-
-
     pGTKBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     if (pGTKBox == NULL) {
         goto on_error;
@@ -1735,6 +1784,7 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
     ////////////////////////////////////////////////////////////////////////
     // Menu testing.
     ////////////////////////////////////////////////////////////////////////
+#if 0
     {
         GtkWidget* pGTKMenuBar = gtk_menu_bar_new();
 
@@ -1765,6 +1815,7 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
         gtk_box_pack_start(GTK_BOX(pGTKBox), pGTKMenuBar, FALSE, FALSE, 0);
         gtk_widget_show(pGTKMenuBar);
     }
+#endif
     ////////////////////////////////////////////////////////////////////////
     // End Menu Testing.
     ////////////////////////////////////////////////////////////////////////
@@ -1807,20 +1858,7 @@ dred_window* dred_window_create__gtk(dred_context* pDred)
     return pWindow;
 
 on_error:
-    if (pWindow != NULL) {
-        if (pWindow->pRootGUIElement) {
-            drgui_delete_element(pWindow->pRootGUIElement);
-        }
-
-        if (pWindow->pDrawingSurface) {
-            dr2d_delete_surface(pWindow->pDrawingSurface);
-        }
-
-        free(pWindow);
-    }
-
-    gtk_widget_destroy(GTK_WIDGET(pGTKBox));
-    gtk_widget_destroy(pGTKWindow);
+    dred_window_delete(pWindow);
     return NULL;
 }
 
@@ -1840,6 +1878,9 @@ void dred_window_delete__gtk(dred_window* pWindow)
 
     drgui_delete_element(pWindow->pRootGUIElement);
     dr2d_delete_surface(pWindow->pDrawingSurface);
+
+    gtk_widget_destroy(pWindow->pGTKBox);
+    gtk_widget_destroy(pWindow->pGTKClientArea);
     gtk_widget_destroy(pWindow->pGTKWindow);
     free(pWindow);
 }
@@ -1928,19 +1969,6 @@ bool dred_window_is_cursor_over__gtk(dred_window* pWindow)
 }
 
 
-gboolean dred_gtk_cb__on_accelerator(GtkAccelGroup *pAccelGroup, GObject *acceleratable, guint keyval, GdkModifierType modifier, gpointer pUserData)
-{
-    (void)pAccelGroup;
-    (void)acceleratable;
-    (void)keyval;
-    (void)modifier;
-
-    dred_gtk_accelerator* pAccel = (dred_gtk_accelerator*)pUserData;
-    assert(pAccel != NULL);
-
-    dred_on_accelerator(pAccel->pWindow->pDred, pAccel->pWindow, pAccel->index);
-    return true;    // Returning true here is important because it ensures the accelerator is handled only once.
-}
 
 void dred_window_bind_accelerators__gtk(dred_window* pWindow, dred_accelerator_table* pAcceleratorTable)
 {
@@ -1953,50 +1981,79 @@ void dred_window_bind_accelerators__gtk(dred_window* pWindow, dred_accelerator_t
         pWindow->pGTKAccelGroup = NULL;
 
         dred_gtk__delete_accels(pWindow->pAccels, pWindow->accelCount);
+        pWindow->accelCount = 0;
     }
 
     // pAcceleratorTable is allowed to be null, in which case it is equivalent to simply unbinding the table.
     if (pAcceleratorTable != NULL) {
-        pWindow->pGTKAccelGroup = gtk_accel_group_new();
-        if (pWindow->pGTKAccelGroup == NULL) {
-            return;
+        pWindow->pGTKAccelGroup = dred_gtk__create_accels(pAcceleratorTable, &pWindow->pAccels, pWindow, NULL);
+        if (pWindow->pGTKAccelGroup != NULL) {
+            gtk_window_add_accel_group(GTK_WINDOW(pWindow->pGTKWindow), pWindow->pGTKAccelGroup);
         }
 
-        pWindow->pAccels = (dred_gtk_accelerator*)malloc(pAcceleratorTable->count * sizeof(*pWindow->pAccels));
-        if (pWindow->pAccels == NULL) {
-            g_object_unref(G_OBJECT(pWindow->pGTKAccelGroup));
-            pWindow->pGTKAccelGroup = NULL;
-            return;
-        }
-
-        for (size_t i = 0; i < pAcceleratorTable->count; ++i) {
-            dred_gtk_accelerator* pAccel = &pWindow->pAccels[i];
-            pAccel->index = i;
-            pAccel->pClosure = g_cclosure_new(G_CALLBACK(dred_gtk_cb__on_accelerator), pAccel, NULL);
-            pAccel->pWindow = pWindow;
-            gtk_accel_group_connect(pWindow->pGTKAccelGroup, dred_drgui_key_to_gtk(pAcceleratorTable->pAccelerators[i].key), dred_accelerator_modifiers_to_gtk(pAcceleratorTable->pAccelerators[i].modifiers), 0, pAccel->pClosure);
-        }
-
-        gtk_window_add_accel_group(GTK_WINDOW(pWindow->pGTKWindow), pWindow->pGTKAccelGroup);
+        pWindow->accelCount = pAcceleratorTable->count;
     }
 }
 
 void dred_window_set_menu__gtk(dred_window* pWindow, dred_menu* pMenu)
 {
-#error Implement me.
+    if (pWindow == NULL) {
+        return;
+    }
+
+    // Only menu bars are allowed to be set on a window.
+    if (pMenu != NULL && pMenu->type != dred_menu_type_menubar) {
+        return;
+    }
+
+
+    // The old menu bar needs to be removed.
+    if (pWindow->pMenu != NULL) {
+        gtk_container_remove(GTK_CONTAINER(pWindow->pGTKBox), pWindow->pMenu->pGTKMenu);
+    }
+
+    // Add the new menu to the top.
+    gtk_box_pack_end(GTK_BOX(pWindow->pGTKBox), pMenu->pGTKMenu, FALSE, FALSE, 0);
+    gtk_widget_show(pMenu->pGTKMenu);
 }
 
 
 //// MENUS ////
 
-dred_menu* dred_menu_create__gtk(dred_context* pDred, dred_menu_type type)
+dred_menu* dred_menu_create__gtk(dred_context* pDred, dred_menu_type type, dred_accelerator_table* pAcceleratorTable)
 {
     if (pDred == NULL) {
         return NULL;
     }
 
-#error Implement me.
-    return NULL;
+    GtkWidget* pGTKMenu = NULL;
+    if (type == dred_menu_type_popup) {
+        pGTKMenu = gtk_menu_new();
+    } else {
+        pGTKMenu = gtk_menu_bar_new();
+    }
+
+    if (pGTKMenu == NULL) {
+        return NULL;
+    }
+
+
+    dred_menu* pMenu = (dred_menu*)calloc(1, sizeof(*pMenu));
+    if (pMenu == NULL) {
+        gtk_widget_destroy(pGTKMenu);
+        return NULL;
+    }
+
+    pMenu->pDred    = pDred;
+    pMenu->type     = type;
+    pMenu->pGTKMenu = pGTKMenu;
+
+    if (pAcceleratorTable != NULL) {
+        pMenu->pGTKAccelGroup = dred_gtk__create_accels(pAcceleratorTable, &pMenu->pAccels, NULL, pMenu);
+        pMenu->accelCount = pAcceleratorTable->count;
+    }
+
+    return pMenu;
 }
 
 void dred_menu_delete__gtk(dred_menu* pMenu)
@@ -2005,23 +2062,107 @@ void dred_menu_delete__gtk(dred_menu* pMenu)
         return;
     }
 
-    #error Implement me.
+    gtk_widget_destroy(pMenu->pGTKMenu);
+    free(pMenu);
 }
 
 
+dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_accelerator shortcut, dred_menu* pSubMenu, bool separator)
+{
+    if (pMenu == NULL) {
+        return NULL;
+    }
+
+    GtkWidget* pGTKMenuItem = NULL;
+
+    if (separator) {
+        pGTKMenuItem = gtk_separator_menu_item_new();
+        if (pGTKMenuItem == NULL) {
+            return NULL;
+        }
+    } else {
+        if (text == NULL) {
+            text = "";
+        }
+
+        // The input string will have "&" characters for the mnemonic symbol, but GTK expects "_".
+        char transformedText[256];
+        strncpy_s(transformedText, sizeof(transformedText), text, _TRUNCATE);
+
+        for (char* c = transformedText; c[0] != '\0'; c += 1) {
+            if (c[0] == '&') {
+                c[0] = '_';
+                break;
+            }
+        }
+
+        pGTKMenuItem = gtk_menu_item_new_with_mnemonic(transformedText);
+        if (pGTKMenuItem == NULL) {
+            return NULL;
+        }
+
+        if (pMenu->pGTKAccelGroup) {
+            gtk_widget_add_accelerator(pGTKMenuItem, "activate", pMenu->pGTKAccelGroup, dred_drgui_key_to_gtk(shortcut.key), dred_accelerator_modifiers_to_gtk(shortcut.modifiers), GTK_ACCEL_VISIBLE);
+        }
+    }
+
+
+    dred_menu_item* pItem = (dred_menu_item*)calloc(1, sizeof(*pItem));
+    if (pItem == NULL) {
+        gtk_widget_destroy(pGTKMenuItem);
+        return NULL;
+    }
+
+    pItem->id = id;
+    pItem->command = gb_make_string(command);
+    pItem->pSubMenu = pSubMenu;
+    pItem->pGTKMenuItem = pGTKMenuItem;
+    pItem->pDred = pMenu->pDred;
+
+
+    // Add the item to the list.
+    dred_menu_item** ppNewMenuItems = (dred_menu_item**)realloc(pMenu->ppMenuItems, (pMenu->menuItemCount + 1) * sizeof(*ppNewMenuItems));
+    if (ppNewMenuItems == NULL) {
+        free(pItem);
+        return NULL;
+    }
+
+    pMenu->ppMenuItems = ppNewMenuItems;
+    pMenu->ppMenuItems[pMenu->menuItemCount++] = pItem;
+
+
+    g_signal_connect(pGTKMenuItem, "activate", G_CALLBACK(dred_gtk_cb__on_menu_item_activate), pItem);
+    gtk_menu_shell_append(GTK_MENU_SHELL(pMenu->pGTKMenu), pGTKMenuItem);
+    gtk_widget_show(pGTKMenuItem);
+
+    if (pSubMenu != NULL) {
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(pGTKMenuItem), pSubMenu->pGTKMenu);
+    }
+
+    return pItem;
+}
+
 dred_menu_item* dred_menu_item_create_and_append__gtk(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_accelerator shortcut, dred_menu* pSubMenu)
 {
-#error Implement me.
+    return dred_menu_item_create_and_append__gtk__internal(pMenu, text, id, command, shortcut, pSubMenu, false);
 }
 
 dred_menu_item* dred_menu_item_create_and_append_separator__gtk(dred_menu* pMenu)
 {
-#error Implement me.
+    return dred_menu_item_create_and_append__gtk__internal(pMenu, NULL, 0, NULL, dred_accelerator_none(), NULL, true);
 }
 
 void dred_menu_item_delete__gtk(dred_menu_item* pItem)
 {
-#error Implement me.
+    if (pItem == NULL) {
+        return;
+    }
+
+    if (pItem->pGTKMenuItem) {
+        gtk_widget_destroy(pItem->pGTKMenuItem);
+    }
+
+    free(pItem);
 }
 
 
@@ -2613,14 +2754,14 @@ dred_window* dred_get_element_window(drgui_element* pElement)
 
 //// MENUS ////
 
-dred_menu* dred_menu_create(dred_context* pDred, dred_menu_type type)
+dred_menu* dred_menu_create(dred_context* pDred, dred_menu_type type, dred_accelerator_table* pAcceleratorTable)
 {
 #ifdef DRED_WIN32
-    return dred_menu_create__win32(pDred, type);
+    return dred_menu_create__win32(pDred, type, pAcceleratorTable);
 #endif
 
 #ifdef DRED_GTK
-    return dred_menu_create__gtk(pDred, type);
+    return dred_menu_create__gtk(pDred, type, pAcceleratorTable);
 #endif
 }
 

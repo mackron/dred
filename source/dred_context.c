@@ -268,12 +268,12 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     }
 
 
-    dred_menu* pMenuBar = dred_menu_create(pDred, dred_menu_type_menubar);
+    dred_menu* pMenuBar = dred_menu_create(pDred, dred_menu_type_menubar, NULL);
     if (pMenuBar == NULL) {
         dred_warning(pDred, "Failed to create main menu bar.");
     }
 
-    dred_menu* pFileMenu = dred_menu_create(pDred, dred_menu_type_popup);
+    dred_menu* pFileMenu = dred_menu_create(pDred, dred_menu_type_popup, &pDred->acceleratorTable);
     dred_menu_item_create_and_append(pFileMenu, "&New", DRED_MENU_ITEM_ID_FILE_NEW, "new", dred_accelerator_create('N', DRED_KEY_STATE_CTRL_DOWN), NULL);
     dred_menu_item_create_and_append(pFileMenu, "&Open...", DRED_MENU_ITEM_ID_FILE_OPEN, "open", dred_accelerator_create('O', DRED_KEY_STATE_CTRL_DOWN), NULL);
     dred_menu_item_create_and_append_separator(pFileMenu);
@@ -284,9 +284,9 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_menu_item_create_and_append(pFileMenu, "&Close", DRED_MENU_ITEM_ID_FILE_CLOSE, "close", dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN), NULL);
     dred_menu_item_create_and_append(pFileMenu, "Clos&e All", DRED_MENU_ITEM_ID_FILE_CLOSE_ALL, "close-all", dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN), NULL);
     dred_menu_item_create_and_append_separator(pFileMenu);
-    dred_menu_item_create_and_append(pFileMenu, "E&xit...", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_accelerator_none(), NULL);
+    dred_menu_item_create_and_append(pFileMenu, "E&xit...", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_accelerator_create(DRGUI_F4, DRED_KEY_STATE_ALT_DOWN), NULL);
 
-    dred_menu* pEditMenu = dred_menu_create(pDred, dred_menu_type_popup);
+    dred_menu* pEditMenu = dred_menu_create(pDred, dred_menu_type_popup, NULL);
 
     dred_menu_item_create_and_append(pMenuBar, "&File", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pFileMenu);
     dred_menu_item_create_and_append(pMenuBar, "&Edit", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pEditMenu);
