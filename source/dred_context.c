@@ -1002,9 +1002,32 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 
     return 0;
 #else
-    (void)message;
-    (void)title;
-    return 0;
+    GtkWidget* dialog = gtk_message_dialog_new(GTK_WINDOW(pDred->pMainWindow->pGTKWindow), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, message);
+    if (dialog == NULL) {
+        return 0;
+    }
+
+    gtk_window_set_title(GTK_WINDOW(dialog), title);
+
+    GtkWidget* pYes = gtk_dialog_add_button(GTK_DIALOG(dialog), "Yes", DRED_MESSAGE_BOX_YES);
+    if (pYes != NULL) {
+    }
+
+    GtkWidget* pNo = gtk_dialog_add_button(GTK_DIALOG(dialog), "No", DRED_MESSAGE_BOX_NO);
+    if (pNo != NULL) {
+        gtk_widget_set_margin_start(pNo, 8);
+    }
+
+    GtkWidget* pCancel = gtk_dialog_add_button(GTK_DIALOG(dialog), "Cancel", DRED_MESSAGE_BOX_CANCEL);
+    if (pCancel != NULL) {
+        gtk_widget_set_margin_start(pCancel, 8);
+
+    }
+
+    guint result = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+
+    return result;
 #endif
 }
 
