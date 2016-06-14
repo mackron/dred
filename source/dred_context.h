@@ -183,7 +183,7 @@ bool dred_are_any_open_files_modified(dred_context* pDred);
 void dred_show_open_file_dialog(dred_context* pDred);
 
 // Shows the Save File dialog.
-bool dred_show_save_file_dialog(dred_context* pDred, char* absolutePathOut, size_t absolutePathOutSize);
+bool dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath, char* absolutePathOut, size_t absolutePathOutSize);
 
 // Shows a yes/no/cancel dialog and returns the result as DRED_MESSAGE_BOX_YES, DRED_MESSAGE_BOX_NO or DRED_MESSAGE_BOX_CANCEL.
 unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* message, const char* title);

@@ -664,7 +664,7 @@ void dred_close_tab_with_confirmation(dred_context* pDred, dred_tab* pTab)
         if (result == DRED_MESSAGE_BOX_YES) {
             if (!dred__save_editor(pEditor, NULL, pTab)) {
                 char newFilePath[DRED_MAX_PATH];
-                if (!dred_show_save_file_dialog(pDred, newFilePath, sizeof(newFilePath))) {
+                if (!dred_show_save_file_dialog(pDred, filePath, newFilePath, sizeof(newFilePath))) {
                     return;
                 }
                 dred_editor_save(pEditor, newFilePath);
@@ -755,8 +755,13 @@ bool dred_save_focused_file_as(dred_context* pDred)
         return false;
     }
 
+    dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
+    if (pFocusedEditor == NULL) {
+        return false;
+    }
+
     char newFilePath[DRED_MAX_PATH];
-    if (!dred_show_save_file_dialog(pDred, newFilePath, sizeof(newFilePath))) {
+    if (!dred_show_save_file_dialog(pDred, dred_editor_get_file_path(pFocusedEditor), newFilePath, sizeof(newFilePath))) {
         return false;
     }
 
@@ -802,7 +807,7 @@ bool dred_save_all_open_files_with_saveas(dred_context* pDred)
         if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
             if (!dred__save_editor(pControl, NULL, pTab)) {
                 char newFileName[DRED_MAX_PATH];
-                if (!dred_show_save_file_dialog(pDred, newFileName, sizeof(newFileName))) {
+                if (!dred_show_save_file_dialog(pDred, dred_editor_get_file_path(pControl), newFileName, sizeof(newFileName))) {
                     return false;
                 }
 
@@ -954,15 +959,15 @@ void dred_show_open_file_dialog(dred_context* pDred)
 #endif
 }
 
-bool dred_show_save_file_dialog(dred_context* pDred, char* absolutePathOut, size_t absolutePathOutSize)
+bool dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath, char* absolutePathOut, size_t absolutePathOutSize)
 {
     if (pDred == NULL || absolutePathOut == NULL || absolutePathOutSize == 0) {
         return false;
     }
 
-#ifdef _WIN32
-    absolutePathOut[0] = '\0';
+    absolutePathOut[0] = '\0';  // For safety, and also required for Win32.
 
+#ifdef _WIN32
     OPENFILENAMEA ofn;
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
@@ -976,9 +981,33 @@ bool dred_show_save_file_dialog(dred_context* pDred, char* absolutePathOut, size
         return false;
     }
 
-    return absolutePathOut;
+    return true;
 #else
-    return false;
+    GtkWidget* dialog = gtk_file_chooser_dialog_new("Save As", GTK_WINDOW(pDred->pMainWindow->pGTKWindow), GTK_FILE_CHOOSER_ACTION_SAVE,
+        "_Save",   GTK_RESPONSE_ACCEPT,
+        "_Cancel", GTK_RESPONSE_CANCEL, NULL);
+    if (dialog == NULL) {
+        return false;
+    }
+
+    gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+
+    if (currentFilePath != NULL && currentFilePath[0] != '\0') {
+        gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog), currentFilePath);
+    }
+
+
+    bool result = false;
+    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (response == GTK_RESPONSE_ACCEPT) {
+        char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+        result = strcpy_s(absolutePathOut, absolutePathOutSize, filename) == 0;
+
+        g_free(filename);
+    }
+
+    gtk_widget_destroy(dialog);
+    return result;
 #endif
 }
 
@@ -1024,7 +1053,7 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 
     }
 
-    guint result = gtk_dialog_run(GTK_DIALOG(dialog));
+    gint result = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
 
     return result;
