@@ -10,6 +10,19 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent);
 void dred_tabgroup_delete(dred_tabgroup* pTabGroup);
 
 
+// Sets the next tab group. This is just a simple setter.
+void dred_tabgroup_set_next_tabgroup(dred_tabgroup* pTabGroup, dred_tabgroup* pNextTabGroup);
+
+// Sets the previous tab group. This is just a simple setter.
+void dred_tabgroup_set_prev_tabgroup(dred_tabgroup* pTabGroup, dred_tabgroup* pPrevTabGroup);
+
+// dred_tabgroup_next_tabgroup()
+dred_tabgroup* dred_tabgroup_next_tabgroup(dred_tabgroup* pTabGroup);
+
+// dred_tabgroup_prev_tabgroup()
+dred_tabgroup* dred_tabgroup_prev_tabgroup(dred_tabgroup* pTabGroup);
+
+
 // dred_tabgroup_activate_tab()
 void dred_tabgroup_activate_tab(dred_tabgroup* pTabGroup, dred_tab* pTab);
 

@@ -2,6 +2,8 @@
 typedef struct
 {
     drgui_element* pTabBar;
+    dred_tabgroup* pNextTabGroup;
+    dred_tabgroup* pPrevTabGroup;
 } dred_tabgroup_data;
 
 drgui_element* dred_tabgroup__get_tabbar(dred_tabgroup* pTabGroup)
@@ -132,6 +134,9 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
         return NULL;
     }
 
+    data->pNextTabGroup = NULL;
+    data->pPrevTabGroup = NULL;
+
     drgui_tabbar_set_close_button_image(data->pTabBar, dred_image_acquire_subimage(pDred->config.pImageCross, 1));
     drgui_tabbar_show_close_buttons(data->pTabBar);
     drgui_tabbar_enable_close_on_middle_click(data->pTabBar);
@@ -162,6 +167,47 @@ void dred_tabgroup_delete(dred_tabgroup* pTabGroup)
     }
 
     dred_control_delete(pTabGroup);
+}
+
+
+void dred_tabgroup_set_next_tabgroup(dred_tabgroup* pTabGroup, dred_tabgroup* pNextTabGroup)
+{
+    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
+    if (data == NULL) {
+        return;
+    }
+
+    data->pNextTabGroup = pNextTabGroup;
+}
+
+void dred_tabgroup_set_prev_tabgroup(dred_tabgroup* pTabGroup, dred_tabgroup* pPrevTabGroup)
+{
+    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
+    if (data == NULL) {
+        return;
+    }
+
+    data->pPrevTabGroup = pPrevTabGroup;
+}
+
+dred_tabgroup* dred_tabgroup_next_tabgroup(dred_tabgroup* pTabGroup)
+{
+    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
+    if (data == NULL) {
+        return NULL;
+    }
+
+    return data->pNextTabGroup;
+}
+
+dred_tabgroup* dred_tabgroup_prev_tabgroup(dred_tabgroup* pTabGroup)
+{
+    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
+    if (data == NULL) {
+        return NULL;
+    }
+
+    return data->pPrevTabGroup;
 }
 
 

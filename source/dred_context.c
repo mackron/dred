@@ -528,6 +528,25 @@ void dred_release_keyboard(dred_context* pDred)
 }
 
 
+dred_tabgroup* dred_first_tabgroup(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return NULL;
+    }
+
+    return pDred->pMainTabGroup;
+}
+
+dred_tabgroup* dred_next_tabgroup(dred_context* pDred, dred_tabgroup* pTabGroup)
+{
+    if (pDred == NULL || pTabGroup == NULL) {
+        return NULL;
+    }
+
+    return dred_tabgroup_next_tabgroup(pTabGroup);
+}
+
+
 dred_tabgroup* dred_get_focused_tabgroup(dred_context* pDred)
 {
     if (pDred == NULL) {
@@ -588,19 +607,13 @@ const char* dred_get_editor_type_by_path(const char* filePath)
 
 dred_tab* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char* filePathAbsolute)
 {
-    // TODO: Iterate over every tab group.
-
-    // For now there is only a single tab group...
-    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
-    if (pTabGroup == NULL) {
-        return NULL;
-    }
-
-    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-        dred_control* pControl = dred_tab_get_control(pTab);
-        if (pControl != NULL && dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
-            if (drpath_equal(dred_editor_get_file_path(pControl), filePathAbsolute)) {
-                return pTab;
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
+        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+            dred_control* pControl = dred_tab_get_control(pTab);
+            if (pControl != NULL && dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
+                if (drpath_equal(dred_editor_get_file_path(pControl), filePathAbsolute)) {
+                    return pTab;
+                }
             }
         }
     }
@@ -735,15 +748,11 @@ void dred_close_all_tabs(dred_context* pDred)
         return;
     }
 
-    // TODO: Do this for every tab group.
-
-    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
-    if (pTabGroup == NULL) {
-        return;
-    }
-
-    while (dred_tabgroup_first_tab(pTabGroup) != NULL) {
-        dred_close_tab(pDred, dred_tabgroup_first_tab(pTabGroup));
+    // NOTE: This for loop is erroneous if closing the last tab in a group automatically deletes the group.
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
+        while (dred_tabgroup_first_tab(pTabGroup) != NULL) {
+            dred_close_tab(pDred, dred_tabgroup_first_tab(pTabGroup));
+        }
     }
 }
 
@@ -755,16 +764,11 @@ dred_tab* dred_find_control_tab(dred_control* pControl)
         return NULL;
     }
 
-    // TODO: Search every tab group.
-
-    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
-    if (pTabGroup == NULL) {
-        return NULL;
-    }
-
-    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-        if (dred_tab_get_control(pTab) == pControl) {
-            return pTab;
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
+        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+            if (dred_tab_get_control(pTab) == pControl) {
+                return pTab;
+            }
         }
     }
 
@@ -825,17 +829,12 @@ void dred_save_all_open_files(dred_context* pDred)
         return;
     }
 
-    // TODO: Iterate over every tab group.
-
-    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
-    if (pTabGroup == NULL) {
-        return;
-    }
-
-    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-        dred_control* pControl = dred_tab_get_control(pTab);
-        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
-            dred__save_editor(pControl, NULL, pTab);
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
+        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+            dred_control* pControl = dred_tab_get_control(pTab);
+            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
+                dred__save_editor(pControl, NULL, pTab);
+            }
         }
     }
 }
@@ -846,24 +845,19 @@ bool dred_save_all_open_files_with_saveas(dred_context* pDred)
         return false;
     }
 
-    // TODO: Iterate over every tab group.
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
+        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+            dred_control* pControl = dred_tab_get_control(pTab);
+            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
+                if (!dred__save_editor(pControl, NULL, pTab)) {
+                    char newFileName[DRED_MAX_PATH];
+                    if (!dred_show_save_file_dialog(pDred, dred_editor_get_file_path(pControl), newFileName, sizeof(newFileName))) {
+                        return false;
+                    }
 
-    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
-    if (pTabGroup == NULL) {
-        return true;    // Nothing is open. This is a valid case.
-    }
-
-    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-        dred_control* pControl = dred_tab_get_control(pTab);
-        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
-            if (!dred__save_editor(pControl, NULL, pTab)) {
-                char newFileName[DRED_MAX_PATH];
-                if (!dred_show_save_file_dialog(pDred, dred_editor_get_file_path(pControl), newFileName, sizeof(newFileName))) {
-                    return false;
-                }
-
-                if (!dred_editor_save(pControl, newFileName)) {
-                    return false;
+                    if (!dred_editor_save(pControl, newFileName)) {
+                        return false;
+                    }
                 }
             }
         }
@@ -943,17 +937,13 @@ bool dred_are_any_open_files_modified(dred_context* pDred)
         return false;
     }
 
-    // TODO: Check every tab group.
-    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
-    if (pTabGroup == NULL) {
-        return false;
-    }
-
-    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-        dred_control* pControl = dred_tab_get_control(pTab);
-        if (pControl != NULL) {
-            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR) && dred_editor_is_modified(pControl)) {
-                return true;
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
+        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+            dred_control* pControl = dred_tab_get_control(pTab);
+            if (pControl != NULL) {
+                if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR) && dred_editor_is_modified(pControl)) {
+                    return true;
+                }
             }
         }
     }
@@ -1194,17 +1184,12 @@ void dred_show_line_numbers(dred_context* pDred)
 
     pDred->isShowingLineNumbers = true;
 
-    // TODO: Iterate over every tab group.
-
-    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
-    if (pTabGroup == NULL) {
-        return;
-    }
-
-    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-        dred_control* pControl = dred_tab_get_control(pTab);
-        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-            dred_text_editor_show_line_numbers(pControl);
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
+        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+            dred_control* pControl = dred_tab_get_control(pTab);
+            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+                dred_text_editor_show_line_numbers(pControl);
+            }
         }
     }
 }
@@ -1217,17 +1202,12 @@ void dred_hide_line_numbers(dred_context* pDred)
 
     pDred->isShowingLineNumbers = false;
 
-    // TODO: Iterate over every tab group.
-
-    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
-    if (pTabGroup == NULL) {
-        return;
-    }
-
-    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-        dred_control* pControl = dred_tab_get_control(pTab);
-        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-            dred_text_editor_hide_line_numbers(pControl);
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
+        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+            dred_control* pControl = dred_tab_get_control(pTab);
+            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+                dred_text_editor_hide_line_numbers(pControl);
+            }
         }
     }
 }

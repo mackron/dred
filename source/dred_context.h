@@ -102,6 +102,13 @@ void dred_capture_keyboard(dred_context* pDred, dred_control* pControl);
 void dred_release_keyboard(dred_context* pDred);
 
 
+// Retrieves a pointer to the first tab group.
+dred_tabgroup* dred_first_tabgroup(dred_context* pDred);
+
+// Retrieves a pointer to the next tab group.
+dred_tabgroup* dred_next_tabgroup(dred_context* pDred, dred_tabgroup* pTabGroup);
+
+
 // Retrieves the focused tab group.
 //
 // The focused tab group is where newly opened files will be placed by default.
