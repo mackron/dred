@@ -12,10 +12,10 @@ void dred_text_editor_delete(dred_text_editor* pTextEditor);
 
 
 // Shows the line numbers.
-void dred_editor_text_subeditor_show_line_numbers(dred_text_editor* pTextEditor);
+void dred_text_editor_show_line_numbers(dred_text_editor* pTextEditor);
 
 // Hides the line numbers.
-void dred_editor_text_subeditor_hide_line_numbers(dred_text_editor* pTextEditor);
+void dred_text_editor_hide_line_numbers(dred_text_editor* pTextEditor);
 
 
 // Retrieves the index of the line the caret is currently sitting on.

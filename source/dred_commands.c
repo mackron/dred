@@ -330,6 +330,12 @@ void dred_command__replace_all(dred_context* pDred, const char* value)
     }
 }
 
+void dred_command__toggle_line_numbers(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_toggle_line_numbers(pDred);
+}
+
 
 
 

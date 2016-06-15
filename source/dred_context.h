@@ -48,6 +48,8 @@ struct dred_context
     // Whether or not the application is running in silent mode.
     bool isTerminalOutputDisabled;
 
+    // Whether or not line numbers are being shown on text editors.
+    bool isShowingLineNumbers;
 
 
     // TEMP
@@ -206,6 +208,16 @@ void dred_focus_command_bar_and_set_text(dred_context* pDred, const char* text);
 
 // Releases keyboard focus from the command bar.
 void dred_unfocus_command_bar(dred_context* pDred);
+
+
+// Shows line numbers on text editors.
+void dred_show_line_numbers(dred_context* pDred);
+
+// Hides line numbers on text editors.
+void dred_hide_line_numbers(dred_context* pDred);
+
+// Toggles line numbers on text editors.
+void dred_toggle_line_numbers(dred_context* pDred);
 
 
 // Called when a tab is activated. This is where contextual GUI elements are shown or hidden.

@@ -132,6 +132,10 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_editor_set_on_save(pTextEditor, dred_text_editor__on_save);
     dred_control_set_on_key_down(data->pTextBox, dred_text_editor_textbox__on_key_down);
     dred_textbox_set_on_undo_point_changed(data->pTextBox, dred_text_editor_textbox__on_undo_point_changed);
+
+    if (pDred->isShowingLineNumbers) {
+        dred_text_editor_show_line_numbers(pTextEditor);
+    }
     
     return pTextEditor;
 }
@@ -151,7 +155,7 @@ void dred_text_editor_delete(dred_text_editor* pTextEditor)
 }
 
 
-void dred_editor_text_subeditor_show_line_numbers(dred_text_editor* pTextEditor)
+void dred_text_editor_show_line_numbers(dred_text_editor* pTextEditor)
 {
     dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
     if (data == NULL) {
@@ -161,7 +165,7 @@ void dred_editor_text_subeditor_show_line_numbers(dred_text_editor* pTextEditor)
     dred_textbox_show_line_numbers(data->pTextBox);
 }
 
-void dred_editor_text_subeditor_hide_line_numbers(dred_text_editor* pTextEditor)
+void dred_text_editor_hide_line_numbers(dred_text_editor* pTextEditor)
 {
     dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
     if (data == NULL) {

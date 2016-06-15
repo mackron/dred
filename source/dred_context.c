@@ -1186,6 +1186,66 @@ void dred_unfocus_command_bar(dred_context* pDred)
 }
 
 
+void dred_show_line_numbers(dred_context* pDred)
+{
+    if (pDred == NULL || pDred->isShowingLineNumbers) {
+        return;
+    }
+
+    pDred->isShowingLineNumbers = true;
+
+    // TODO: Iterate over every tab group.
+
+    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
+    if (pTabGroup == NULL) {
+        return;
+    }
+
+    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+        dred_control* pControl = dred_tab_get_control(pTab);
+        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+            dred_text_editor_show_line_numbers(pControl);
+        }
+    }
+}
+
+void dred_hide_line_numbers(dred_context* pDred)
+{
+    if (pDred == NULL || !pDred->isShowingLineNumbers) {
+        return;
+    }
+
+    pDred->isShowingLineNumbers = false;
+
+    // TODO: Iterate over every tab group.
+
+    dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
+    if (pTabGroup == NULL) {
+        return;
+    }
+
+    for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+        dred_control* pControl = dred_tab_get_control(pTab);
+        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+            dred_text_editor_hide_line_numbers(pControl);
+        }
+    }
+}
+
+void dred_toggle_line_numbers(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    if (pDred->isShowingLineNumbers) {
+        dred_hide_line_numbers(pDred);
+    } else {
+        dred_show_line_numbers(pDred);
+    }
+}
+
+
 void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab)
 {
     if (pDred == NULL) {

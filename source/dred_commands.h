@@ -3,29 +3,30 @@
 
 // BEGIN COMMAND LIST : <command name> <proc> <flags>
 //
-// !            dred_command__system_command    DRED_CMDBAR_RELEASE_KEYBOARD
-// cmdbar       dred_command__cmdbar            DRED_CMDBAR_NO_CLEAR
-// new          dred_command__new               DRED_CMDBAR_RELEASE_KEYBOARD
-// open         dred_command__open              DRED_CMDBAR_RELEASE_KEYBOARD
-// save         dred_command__save              DRED_CMDBAR_RELEASE_KEYBOARD
-// save-all     dred_command__save_all          DRED_CMDBAR_RELEASE_KEYBOARD
-// save-as      dred_command__save_as           DRED_CMDBAR_RELEASE_KEYBOARD
-// close        dred_command__close             DRED_CMDBAR_RELEASE_KEYBOARD
-// close-all    dred_command__close_all         DRED_CMDBAR_RELEASE_KEYBOARD
-// exit         dred_command__exit              DRED_CMDBAR_NO_CLEAR
-// undo         dred_command__undo              DRED_CMDBAR_NO_CLEAR
-// redo         dred_command__redo              DRED_CMDBAR_NO_CLEAR
-// cut          dred_command__cut               DRED_CMDBAR_NO_CLEAR
-// copy         dred_command__copy              DRED_CMDBAR_NO_CLEAR
-// paste        dred_command__paste             DRED_CMDBAR_NO_CLEAR
-// delete       dred_command__delete            DRED_CMDBAR_NO_CLEAR
-// select-all   dred_command__select_all        DRED_CMDBAR_NO_CLEAR
-// goto         dred_command__goto              DRED_CMDBAR_RELEASE_KEYBOARD
-// find         dred_command__find              DRED_CMDBAR_RELEASE_KEYBOARD
-// find-next    dred_command__find_next         DRED_CMDBAR_NO_CLEAR
-// replace      dred_command__replace           DRED_CMDBAR_RELEASE_KEYBOARD
-// replace-next dred_command__replace_next      DRED_CMDBAR_NO_CLEAR
-// replace-all  dred_command__replace_all       DRED_CMDBAR_RELEASE_KEYBOARD
+// !                    dred_command__system_command        DRED_CMDBAR_RELEASE_KEYBOARD
+// cmdbar               dred_command__cmdbar                DRED_CMDBAR_NO_CLEAR
+// new                  dred_command__new                   DRED_CMDBAR_RELEASE_KEYBOARD
+// open                 dred_command__open                  DRED_CMDBAR_RELEASE_KEYBOARD
+// save                 dred_command__save                  DRED_CMDBAR_RELEASE_KEYBOARD
+// save-all             dred_command__save_all              DRED_CMDBAR_RELEASE_KEYBOARD
+// save-as              dred_command__save_as               DRED_CMDBAR_RELEASE_KEYBOARD
+// close                dred_command__close                 DRED_CMDBAR_RELEASE_KEYBOARD
+// close-all            dred_command__close_all             DRED_CMDBAR_RELEASE_KEYBOARD
+// exit                 dred_command__exit                  DRED_CMDBAR_NO_CLEAR
+// undo                 dred_command__undo                  DRED_CMDBAR_NO_CLEAR
+// redo                 dred_command__redo                  DRED_CMDBAR_NO_CLEAR
+// cut                  dred_command__cut                   DRED_CMDBAR_NO_CLEAR
+// copy                 dred_command__copy                  DRED_CMDBAR_NO_CLEAR
+// paste                dred_command__paste                 DRED_CMDBAR_NO_CLEAR
+// delete               dred_command__delete                DRED_CMDBAR_NO_CLEAR
+// select-all           dred_command__select_all            DRED_CMDBAR_NO_CLEAR
+// goto                 dred_command__goto                  DRED_CMDBAR_RELEASE_KEYBOARD
+// find                 dred_command__find                  DRED_CMDBAR_RELEASE_KEYBOARD
+// find-next            dred_command__find_next             DRED_CMDBAR_NO_CLEAR
+// replace              dred_command__replace               DRED_CMDBAR_RELEASE_KEYBOARD
+// replace-next         dred_command__replace_next          DRED_CMDBAR_NO_CLEAR
+// replace-all          dred_command__replace_all           DRED_CMDBAR_RELEASE_KEYBOARD
+// toggle-line-numbers  dred_command__toggle_line_numbers   DRED_CMDBAR_RELEASE_KEYBOARD
 //
 // END COMMAND LIST
 
@@ -121,6 +122,9 @@ void dred_command__replace_next(dred_context* pDred, const char* value);
 
 // replace-all
 void dred_command__replace_all(dred_context* pDred, const char* value);
+
+// toggle-line-numbers
+void dred_command__toggle_line_numbers(dred_context* pDred, const char* value);
 
 
 

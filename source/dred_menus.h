@@ -38,9 +38,11 @@
 #define DRED_MENU_ITEM_ID_EDIT_DELETE       14
 #define DRED_MENU_ITEM_ID_EDIT_SELECT_ALL   15
 
-#define DRED_MENU_ITEM_ID_FIND_FIND         16
-#define DRED_MENU_ITEM_ID_FIND_REPLACE      17
-#define DRED_MENU_ITEM_ID_FIND_GOTO         18
+#define DRED_MENU_ITEM_ID_VIEW_LINE_NUMBERS 16
+
+#define DRED_MENU_ITEM_ID_FIND_FIND         17
+#define DRED_MENU_ITEM_ID_FIND_REPLACE      18
+#define DRED_MENU_ITEM_ID_FIND_GOTO         19
 
 struct dred_menu_library
 {

@@ -61,6 +61,9 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append_separator(pEditMenu);
     dred_menu_item_create_and_append(pEditMenu, "Select &All", DRED_MENU_ITEM_ID_EDIT_SELECT_ALL, "select-all", dred_accelerator_create('A', DRED_KEY_STATE_CTRL_DOWN), NULL);
 
+    dred_menu* pViewMenu = dred_menu_create(pDred, dred_menu_type_popup);
+    dred_menu_item_create_and_append(pViewMenu, "Show &Line Numbers", DRED_MENU_ITEM_ID_VIEW_LINE_NUMBERS, "toggle-line-numbers", dred_accelerator_none(), NULL);
+
     dred_menu* pFindMenu = dred_menu_create(pDred, dred_menu_type_popup);
     dred_menu_item_create_and_append(pFindMenu, "&Find...", DRED_MENU_ITEM_ID_FIND_FIND, "cmdbar find-next ", dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN), NULL);
     dred_menu_item_create_and_append(pFindMenu, "Find and &Replace...", DRED_MENU_ITEM_ID_FIND_REPLACE, "cmdbar replace-all ", dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN), NULL);
@@ -69,6 +72,7 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
 
     dred_menu_item_create_and_append(pLibrary->pMenu_TextEditor, "&File", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pFileMenu);
     dred_menu_item_create_and_append(pLibrary->pMenu_TextEditor, "&Edit", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pEditMenu);
+    dred_menu_item_create_and_append(pLibrary->pMenu_TextEditor, "&View", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pViewMenu);
     dred_menu_item_create_and_append(pLibrary->pMenu_TextEditor, "F&ind", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pFindMenu);
 
 
