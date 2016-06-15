@@ -65,6 +65,18 @@ drgui_key dred_win32_to_drgui_key(WPARAM wParam)
     case VK_RIGHT:  return DRGUI_ARROW_RIGHT;
     case VK_DOWN:   return DRGUI_ARROW_DOWN;
     case VK_DELETE: return DRGUI_DELETE;
+    case VK_F1:     return DRGUI_F1;
+    case VK_F2:     return DRGUI_F2;
+    case VK_F3:     return DRGUI_F3;
+    case VK_F4:     return DRGUI_F4;
+    case VK_F5:     return DRGUI_F5;
+    case VK_F6:     return DRGUI_F6;
+    case VK_F7:     return DRGUI_F7;
+    case VK_F8:     return DRGUI_F8;
+    case VK_F9:     return DRGUI_F9;
+    case VK_F10:    return DRGUI_F10;
+    case VK_F11:    return DRGUI_F11;
+    case VK_F12:    return DRGUI_F12;
 
     default: break;
     }
@@ -88,6 +100,18 @@ WORD dred_drgui_key_to_win32(drgui_key key)
     case DRGUI_ARROW_RIGHT: return VK_RIGHT;
     case DRGUI_ARROW_DOWN:  return VK_DOWN;
     case DRGUI_DELETE:      return VK_DELETE;
+    case DRGUI_F1:          return VK_F1;
+    case DRGUI_F2:          return VK_F2;
+    case DRGUI_F3:          return VK_F3;
+    case DRGUI_F4:          return VK_F4;
+    case DRGUI_F5:          return VK_F5;
+    case DRGUI_F6:          return VK_F6;
+    case DRGUI_F7:          return VK_F7;
+    case DRGUI_F8:          return VK_F8;
+    case DRGUI_F9:          return VK_F9;
+    case DRGUI_F10:         return VK_F10;
+    case DRGUI_F11:         return VK_F11;
+    case DRGUI_F12:         return VK_F12;
 
     default: break;
     }
@@ -527,7 +551,7 @@ LRESULT CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
         default: break;
     }
 
-    return DefWindowProc(hWnd, msg, wParam, lParam);
+    return DefWindowProcA(hWnd, msg, wParam, lParam);
 }
 
 static LRESULT TimerWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -548,8 +572,8 @@ bool dred_platform_init__win32()
     wc.cbWndExtra    = sizeof(dred_window*);
     wc.lpfnWndProc   = (WNDPROC)GenericWindowProc;
     wc.lpszClassName = g_WindowClass;
-    wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wc.hIcon         = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(101));
+    wc.hCursor       = LoadCursorA(NULL, MAKEINTRESOURCEA(32512));
+    wc.hIcon         = LoadIconA(GetModuleHandleA(NULL), MAKEINTRESOURCEA(101));
     wc.style         = CS_DBLCLKS;
     if (!RegisterClassExA(&wc)) {
         UnregisterClassA(g_WindowClass, NULL);
@@ -567,7 +591,7 @@ bool dred_platform_init__win32()
         return false;
     }
 
-    g_hTimerWnd = CreateWindowExA(0, g_WindowClassTimer, "", 0, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
+    g_hTimerWnd = CreateWindowExA(0, g_WindowClassTimer, "", 0, 0, 0, 0, 0, NULL, NULL, GetModuleHandleA(NULL), NULL);
     if (g_hTimerWnd == NULL) {
         UnregisterClassA(g_WindowClass, NULL);
         UnregisterClassA(g_WindowClassTimer, NULL);
@@ -590,7 +614,7 @@ int dred_platform_run__win32()
 {
     MSG msg;
     BOOL bRet;
-    while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0) {
+    while ((bRet = GetMessageA(&msg, NULL, 0, 0)) != 0) {
         if (bRet == -1) {
             return -42; // Unknown error.
         }
@@ -691,9 +715,26 @@ void dred_window_delete__win32(dred_window* pWindow)
     free(pWindow);
 }
 
+void dred_window_set_title__win32(dred_window* pWindow, const char* title)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+    if (title == NULL) {
+        title = "dred";
+    }
+
+    SetWindowTextA(pWindow->hWnd, title);
+}
+
 
 void dred_window_set_size__win32(dred_window* pWindow, unsigned int newWidth, unsigned int newHeight)
 {
+    if (pWindow == NULL) {
+        return;
+    }
+
     RECT windowRect;
     RECT clientRect;
     GetWindowRect(pWindow->hWnd, &windowRect);
@@ -712,6 +753,11 @@ void dred_window_set_size__win32(dred_window* pWindow, unsigned int newWidth, un
 
 void dred_window_get_size__win32(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut)
 {
+    if (pWindow == NULL) {
+        if (pWidthOut) *pWidthOut = 0;
+        if (pHeightOut) *pHeightOut = 0;
+    }
+
     RECT rect;
     GetClientRect(pWindow->hWnd, &rect);
 
@@ -726,22 +772,38 @@ void dred_window_get_size__win32(dred_window* pWindow, unsigned int* pWidthOut, 
 
 void dred_window_show__win32(dred_window* pWindow)
 {
+    if (pWindow == NULL) {
+        return;
+    }
+
     ShowWindow(pWindow->hWnd, SW_SHOWNORMAL);
 }
 
 void dred_window_show_maximized__win32(dred_window* pWindow)
 {
+    if (pWindow == NULL) {
+        return;
+    }
+
     ShowWindow(pWindow->hWnd, SW_SHOWMAXIMIZED);
 }
 
 void dred_window_hide__win32(dred_window* pWindow)
 {
+    if (pWindow == NULL) {
+        return;
+    }
+
     ShowWindow(pWindow->hWnd, SW_HIDE);
 }
 
 
 void dred_window_set_cursor__win32(dred_window* pWindow, dred_cursor_type cursor)
 {
+    if (pWindow == NULL) {
+        return;
+    }
+
     switch (cursor)
     {
         case dred_cursor_type_text:
@@ -786,6 +848,10 @@ void dred_window_set_cursor__win32(dred_window* pWindow, dred_cursor_type cursor
 
 bool dred_window_is_cursor_over__win32(dred_window* pWindow)
 {
+    if (pWindow == NULL) {
+        return false;
+    }
+
     return pWindow->isCursorOver;
 }
 
@@ -1874,6 +1940,20 @@ void dred_window_delete__gtk(dred_window* pWindow)
 }
 
 
+void dred_window_set_title__gtk(dred_window* pWindow, const char* title)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+    if (title == NULL) {
+        title = "dred";
+    }
+
+    gtk_window_set_title(GTK_WINDOW(pWindow->pGTKWindow), title);
+}
+
+
 void dred_window_set_size__gtk(dred_window* pWindow, unsigned int newWidth, unsigned int newHeight)
 {
     gtk_window_resize(GTK_WINDOW(pWindow->pGTKWindow), (int)newWidth, (int)newHeight);
@@ -2441,6 +2521,18 @@ void dred_window_delete(dred_window* pWindow)
 }
 
 
+void dred_window_set_title(dred_window* pWindow, const char* title)
+{
+#ifdef DRED_WIN32
+    dred_window_set_title__win32(pWindow, title);
+#endif
+
+#ifdef DRED_GTK
+    dred_window_set_title__gtk(pWindow, title);
+#endif
+}
+
+
 void dred_window_set_size(dred_window* pWindow, unsigned int newWidth, unsigned int newHeight)
 {
 #ifdef DRED_WIN32
@@ -2542,6 +2634,14 @@ void dred_window_bind_accelerators(dred_window* pWindow, dred_accelerator_table*
 
 void dred_window_set_menu(dred_window* pWindow, dred_menu* pMenu)
 {
+    if (pWindow == NULL) {
+        return;
+    }
+
+    if (pWindow->pMenu == pMenu) {
+        return; // It's the same menu.
+    }
+
 #ifdef DRED_WIN32
     dred_window_set_menu__win32(pWindow, pMenu);
 #endif

@@ -176,6 +176,9 @@ dred_window* dred_window_create(dred_context* pDred);
 // Deletes a window.
 void dred_window_delete(dred_window* pWindow);
 
+// Sets the title of the given window.
+void dred_window_set_title(dred_window* pWindow, const char* title);
+
 // Sets the size of the window.
 void dred_window_set_size(dred_window* pWindow, unsigned int newWidth, unsigned int newHeight);
 void dred_window_get_size(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut);

@@ -44,6 +44,36 @@ bool dred_parse_cmdline__startup_files(const char* key, const char* value, void*
 }
 
 
+void dred__update_window_title(dred_context* pDred)
+{
+    assert(pDred != NULL);
+
+    const char* title = NULL;
+
+    // The window title depends on the currently focused tab.
+    dred_tab* pFocusedTab = dred_get_focused_tab(pDred);
+    if (pFocusedTab != NULL) {
+        dred_control* pFocusedControl = dred_tab_get_control(pFocusedTab);
+        if (pFocusedControl != NULL) {
+            if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_EDITOR)) {
+                const char* filePath = dred_editor_get_file_path(pFocusedControl);
+                if (filePath != NULL && filePath[0] != '\0') {
+                    title = drpath_file_name(filePath);
+                } else {
+                    title = "Untitled";
+                }
+            }
+        }
+    }
+
+    char formattedTitle[256];
+    if (title == NULL || snprintf(formattedTitle, sizeof(formattedTitle), "%s - dred", title) < 0) {
+        strcpy_s(formattedTitle, sizeof(formattedTitle), "dred");
+    }
+
+    dred_window_set_title(pDred->pMainWindow, formattedTitle);
+}
+
 void dred__refresh_editor_tab_text(dred_editor* pEditor, dred_tab* pTab)
 {
     assert(pEditor != NULL);
@@ -66,6 +96,13 @@ void dred__refresh_editor_tab_text(dred_editor* pEditor, dred_tab* pTab)
 
     snprintf(tabText, sizeof(tabText), "%s%s%s", filename, modified, readonly);
     dred_tab_set_text(pTab, tabText);
+
+    dred_context* pDred = dred_control_get_context(pEditor);
+    assert(pDred != NULL);
+
+    if (dred_get_focused_tab(pDred) == pTab) {
+        dred__update_window_title(pDred);
+    }
 }
 
 void dred__on_editor_modified(dred_editor* pEditor)
@@ -261,12 +298,13 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
-    
+
 
 
     // Show the window last to ensure child GUI elements have been initialized and in a valid state. This should be done before
     // opening the files passed on the command line, however, because the window needs to be shown in order for it to receive
     // keyboard focus.
+    dred_window_set_title(pDred->pMainWindow, "dred");
     dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_Default);
     dred_window_set_size(pDred->pMainWindow, 1280, 720);
     dred_window_show(pDred->pMainWindow);
@@ -977,6 +1015,8 @@ void dred_show_open_file_dialog(dred_context* pDred)
         return;
     }
 
+    gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), TRUE);
+
     gint response = gtk_dialog_run(GTK_DIALOG(dialog));
     if (response == GTK_RESPONSE_ACCEPT) {
         GSList* list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
@@ -1158,8 +1198,12 @@ void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab)
             return;
         }
 
-        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-            dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_TextEditor);
+        dred__update_window_title(pDred);
+
+        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
+            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+                dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_TextEditor);
+            }
         }
     }
 }
@@ -1172,6 +1216,7 @@ void dred_on_tab_deactivated(dred_context* pDred, dred_tab* pTab)
 
     if (dred_tab_get_tabgroup(pTab) == dred_get_focused_tabgroup(pDred)) {
         dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_Default);
+        dred_window_set_title(pDred->pMainWindow, "dred");
     }
 }
 
