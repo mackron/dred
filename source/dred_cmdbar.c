@@ -56,6 +56,8 @@ void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, drgui_key key, int stat
 
     dred_context* pDred = dred_control_get_context(pCmdBar);
 
+    dred_cmdbar_clear_message(pCmdBar);
+
     if (key == DRGUI_ESCAPE) {
         dred_unfocus_command_bar(pDred);
     } else {
@@ -213,9 +215,17 @@ void dred_cmdbar_set_message(dred_cmdbar* pCmdBar, const char* text)
     }
 
     strncpy_s(data->message, sizeof(data->message), text, _TRUNCATE);
+    drgui_dirty(pCmdBar, drgui_get_local_rect(pCmdBar));    // <-- Can optimize this to only draw the message region.
 }
 
 void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar)
 {
-    dred_cmdbar_set_message(pCmdBar, "");
+    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    if (data == NULL) {
+        return;
+    }
+
+    if (data->message[0] != '\0') {
+        dred_cmdbar_set_message(pCmdBar, "");
+    }
 }

@@ -80,7 +80,9 @@ void dred_command__open(dred_context* pDred, const char* value)
     if (dr_next_token(value, fileName, sizeof(fileName)) == NULL) {
         dred_show_open_file_dialog(pDred);
     } else {
-        dred_open_file(pDred, fileName);
+        if (!dred_open_file(pDred, fileName)) {
+            dred_cmdbar_set_message(pDred->pCmdBar, "Failed to open file.");
+        }
     }
 }
 
@@ -268,7 +270,7 @@ void dred_command__find(dred_context* pDred, const char* value)
         char query[1024];
         if (dr_next_token(value, query, sizeof(query)) != NULL) {
             if (!dred_text_editor_find_and_select_next(pFocusedEditor, query)) {
-                // TODO: Display a message.
+                dred_cmdbar_set_message(pDred->pCmdBar, "No results found.");
             }
         }
     }
@@ -294,7 +296,7 @@ void dred_command__replace(dred_context* pDred, const char* value)
             value = dr_next_token(value, replacement, sizeof(replacement));
             if (value != NULL) {
                 if (!dred_text_editor_find_and_replace_next(pFocusedEditor, query, replacement)) {
-                    // TODO: Display a message.
+                    dred_cmdbar_set_message(pDred->pCmdBar, "No results found.");
                 }
             }
         }
@@ -321,7 +323,7 @@ void dred_command__replace_all(dred_context* pDred, const char* value)
             value = dr_next_token(value, replacement, sizeof(replacement));
             if (value != NULL) {
                 if (!dred_text_editor_find_and_replace_all(pFocusedEditor, query, replacement)) {
-                    // TODO: Display a message.
+                    dred_cmdbar_set_message(pDred->pCmdBar, "No results found.");
                 }
             }
         }

@@ -180,6 +180,11 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
+    // The menu library.
+    if (!dred_menu_library_init(&pDred->menuLibrary, pDred)) {
+        goto on_error;
+    }
+
 
     // Accelerator table needs to be initialized before the config, because the config can specify bindings.
     if (!dred_accelerator_table_init(&pDred->acceleratorTable)) {
@@ -256,36 +261,13 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
-
-    dred_menu* pMenuBar = dred_menu_create(pDred, dred_menu_type_menubar);
-    if (pMenuBar == NULL) {
-        dred_warning(pDred, "Failed to create main menu bar.");
-    }
-
-    dred_menu* pFileMenu = dred_menu_create(pDred, dred_menu_type_popup);
-    dred_menu_item_create_and_append(pFileMenu, "&New", DRED_MENU_ITEM_ID_FILE_NEW, "new", dred_accelerator_create('N', DRED_KEY_STATE_CTRL_DOWN), NULL);
-    dred_menu_item_create_and_append(pFileMenu, "&Open...", DRED_MENU_ITEM_ID_FILE_OPEN, "open", dred_accelerator_create('O', DRED_KEY_STATE_CTRL_DOWN), NULL);
-    dred_menu_item_create_and_append_separator(pFileMenu);
-    dred_menu_item_create_and_append(pFileMenu, "&Save", DRED_MENU_ITEM_ID_FILE_SAVE,  "save",  dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN), NULL);
-    dred_menu_item_create_and_append(pFileMenu, "Save &As...", DRED_MENU_ITEM_ID_FILE_SAVE_AS,  "save-as",  dred_accelerator_none(), NULL);
-    dred_menu_item_create_and_append(pFileMenu, "Save A&ll", DRED_MENU_ITEM_ID_FILE_SAVE_ALL,  "save-all",  dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN), NULL);
-    dred_menu_item_create_and_append_separator(pFileMenu);
-    dred_menu_item_create_and_append(pFileMenu, "&Close", DRED_MENU_ITEM_ID_FILE_CLOSE, "close", dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN), NULL);
-    dred_menu_item_create_and_append(pFileMenu, "Clos&e All", DRED_MENU_ITEM_ID_FILE_CLOSE_ALL, "close-all", dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN), NULL);
-    dred_menu_item_create_and_append_separator(pFileMenu);
-    dred_menu_item_create_and_append(pFileMenu, "E&xit...", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_accelerator_create(DRGUI_F4, DRED_KEY_STATE_ALT_DOWN), NULL);
-
-    dred_menu* pEditMenu = dred_menu_create(pDred, dred_menu_type_popup);
-
-    dred_menu_item_create_and_append(pMenuBar, "&File", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pFileMenu);
-    dred_menu_item_create_and_append(pMenuBar, "&Edit", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pEditMenu);
-
-    dred_window_set_menu(pDred->pMainWindow, pMenuBar);
+    
 
 
     // Show the window last to ensure child GUI elements have been initialized and in a valid state. This should be done before
     // opening the files passed on the command line, however, because the window needs to be shown in order for it to receive
     // keyboard focus.
+    dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_Default);
     dred_window_set_size(pDred->pMainWindow, 1280, 720);
     dred_window_show(pDred->pMainWindow);
 
@@ -1163,6 +1145,35 @@ void dred_unfocus_command_bar(dred_context* pDred)
     }
 }
 
+
+void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    if (dred_tab_get_tabgroup(pTab) == dred_get_focused_tabgroup(pDred)) {
+        dred_control* pControl = dred_tab_get_control(pTab);
+        if (pControl == NULL) {
+            return;
+        }
+
+        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+            dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_TextEditor);
+        }
+    }
+}
+
+void dred_on_tab_deactivated(dred_context* pDred, dred_tab* pTab)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    if (dred_tab_get_tabgroup(pTab) == dred_get_focused_tabgroup(pDred)) {
+        dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_Default);
+    }
+}
 
 void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t acceleratorIndex)
 {

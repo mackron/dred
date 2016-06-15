@@ -20,6 +20,9 @@ struct dred_context
     // The image library.
     dred_image_library imageLibrary;
 
+    // The menu library. This is where the different context menus can be retrieved.
+    dred_menu_library menuLibrary;
+
 
     // The accelerator table.
     dred_accelerator_table acceleratorTable;
@@ -204,6 +207,12 @@ void dred_focus_command_bar_and_set_text(dred_context* pDred, const char* text);
 // Releases keyboard focus from the command bar.
 void dred_unfocus_command_bar(dred_context* pDred);
 
+
+// Called when a tab is activated. This is where contextual GUI elements are shown or hidden.
+void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab);
+
+// Called when a tab is deactivated. This is where contextual GUI elements are shown or hidden.
+void dred_on_tab_deactivated(dred_context* pDred, dred_tab* pTab);
 
 // Called when an accelerator is triggered.
 void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t acceleratorIndex);

@@ -30,6 +30,18 @@
 #define DRED_MENU_ITEM_ID_FILE_CLOSE_ALL    7
 #define DRED_MENU_ITEM_ID_FILE_EXIT         8
 
+#define DRED_MENU_ITEM_ID_EDIT_UNDO         9
+#define DRED_MENU_ITEM_ID_EDIT_REDO         10
+#define DRED_MENU_ITEM_ID_EDIT_CUT          11
+#define DRED_MENU_ITEM_ID_EDIT_COPY         12
+#define DRED_MENU_ITEM_ID_EDIT_PASTE        13
+#define DRED_MENU_ITEM_ID_EDIT_DELETE       14
+#define DRED_MENU_ITEM_ID_EDIT_SELECT_ALL   15
+
+#define DRED_MENU_ITEM_ID_FIND_FIND         16
+#define DRED_MENU_ITEM_ID_FIND_REPLACE      17
+#define DRED_MENU_ITEM_ID_FIND_GOTO         18
+
 struct dred_menu_library
 {
     // The main context that initialized the library.
