@@ -2004,6 +2004,8 @@ void dred_window_set_menu__gtk(dred_window* pWindow, dred_menu* pMenu)
     gtk_box_pack_start(GTK_BOX(pWindow->pGTKBox), pMenu->pGTKMenu, FALSE, FALSE, 0);
     gtk_box_reorder_child(GTK_BOX(pWindow->pGTKBox), pMenu->pGTKMenu, 0);
     gtk_widget_show(pMenu->pGTKMenu);
+
+    pWindow->pMenu = pMenu;
 }
 
 
@@ -2052,6 +2054,10 @@ dred_menu* dred_menu_create__gtk(dred_context* pDred, dred_menu_type type)
     pMenu->accelCount = pDred->acceleratorTable.count;
 
     g_signal_connect(pGTKMenu, "enter-notify-event", G_CALLBACK(dred_gtk_cb__on_mouse_enter__menu), NULL);
+
+    // When switching out menus we use the gtk_container_remove() function which decrements the reference counter
+    // and may delete the widget. We don't want this behaviour so we just grab a reference to it from here.
+    g_object_ref(pMenu->pGTKMenu);
 
     return pMenu;
 }
