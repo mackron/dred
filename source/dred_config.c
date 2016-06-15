@@ -181,29 +181,31 @@ dred_font* dred_config__load_system_font_ui(dred_context* pDred)
 
     #if 1
     GSettings* settings = g_settings_new("org.mate.interface");
-    char* fontName = g_settings_get_string(settings, "font-name");
-    if (fontName != NULL) {
-        PangoFontDescription* pPangoDesc = pango_font_description_from_string(fontName);
-        if (pPangoDesc != NULL) {
-            strcpy_s(fontDesc.family, sizeof(fontDesc.family), pango_font_description_get_family(pPangoDesc));
+    if (settings != NULL) {
+        char* fontName = g_settings_get_string(settings, "font-name");
+        if (fontName != NULL) {
+            PangoFontDescription* pPangoDesc = pango_font_description_from_string(fontName);
+            if (pPangoDesc != NULL) {
+                strcpy_s(fontDesc.family, sizeof(fontDesc.family), pango_font_description_get_family(pPangoDesc));
 
-            gint size = pango_font_description_get_size(pPangoDesc);
-            if (size > 0) {
-                if (pango_font_description_get_size_is_absolute(pPangoDesc)) {
-                    fontDesc.size = size;
-                } else {
-                    fontDesc.size = (unsigned int)(size/PANGO_SCALE * (96.0/72.0));
+                gint size = pango_font_description_get_size(pPangoDesc);
+                if (size > 0) {
+                    if (pango_font_description_get_size_is_absolute(pPangoDesc)) {
+                        fontDesc.size = size;
+                    } else {
+                        fontDesc.size = (unsigned int)(size/PANGO_SCALE * (96.0/72.0));
+                    }
                 }
+
+                fontDesc.slant = dred_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
+                fontDesc.weight = dred_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
+
+                pango_font_description_free(pPangoDesc);
             }
-
-            fontDesc.slant = dred_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
-            fontDesc.weight = dred_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
-
-            pango_font_description_free(pPangoDesc);
         }
-    }
 
-    g_object_unref(settings);
+        g_object_unref(settings);
+    }
     #endif
 #endif
 
@@ -253,29 +255,31 @@ dred_font* dred_config__load_system_font_mono(dred_context* pDred)
 
     #if 1
     GSettings* settings = g_settings_new("org.mate.interface");
-    char* fontName = g_settings_get_string(settings, "monospace-font-name");
-    if (fontName != NULL) {
-        PangoFontDescription* pPangoDesc = pango_font_description_from_string(fontName);
-        if (pPangoDesc != NULL) {
-            strcpy_s(fontDesc.family, sizeof(fontDesc.family), pango_font_description_get_family(pPangoDesc));
+    if (settings != NULL) {
+        char* fontName = g_settings_get_string(settings, "monospace-font-name");
+        if (fontName != NULL) {
+            PangoFontDescription* pPangoDesc = pango_font_description_from_string(fontName);
+            if (pPangoDesc != NULL) {
+                strcpy_s(fontDesc.family, sizeof(fontDesc.family), pango_font_description_get_family(pPangoDesc));
 
-            gint size = pango_font_description_get_size(pPangoDesc);
-            if (size > 0) {
-                if (pango_font_description_get_size_is_absolute(pPangoDesc)) {
-                    fontDesc.size = size;
-                } else {
-                    fontDesc.size = (unsigned int)(size/PANGO_SCALE * (96.0/72.0));
+                gint size = pango_font_description_get_size(pPangoDesc);
+                if (size > 0) {
+                    if (pango_font_description_get_size_is_absolute(pPangoDesc)) {
+                        fontDesc.size = size;
+                    } else {
+                        fontDesc.size = (unsigned int)(size/PANGO_SCALE * (96.0/72.0));
+                    }
                 }
+
+                fontDesc.slant = dred_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
+                fontDesc.weight = dred_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
+
+                pango_font_description_free(pPangoDesc);
             }
-
-            fontDesc.slant = dred_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
-            fontDesc.weight = dred_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
-
-            pango_font_description_free(pPangoDesc);
         }
-    }
 
-    g_object_unref(settings);
+        g_object_unref(settings);
+    }
     #endif
 #endif
 
