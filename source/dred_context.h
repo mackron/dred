@@ -35,6 +35,10 @@ struct dred_context
     // The main window.
     dred_window* pMainWindow;
 
+    // The about window.
+    dred_window* pAboutWindow;
+
+
     // The main tab group container. This is the root container where all other sub-containers will be placed.
     dred_tabgroup_container* pMainTabgroupContainer;
 
@@ -195,6 +199,9 @@ bool dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath
 
 // Shows a yes/no/cancel dialog and returns the result as DRED_MESSAGE_BOX_YES, DRED_MESSAGE_BOX_NO or DRED_MESSAGE_BOX_CANCEL.
 unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* message, const char* title);
+
+// Shows the "About" dialog box.
+void dred_show_about_dialog(dred_context* pDred);
 
 
 // Sets the text of the command bar.

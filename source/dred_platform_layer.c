@@ -643,17 +643,8 @@ void dred_platform_post_quit_message__win32(int resultCode)
 
 
 
-
-
-dred_window* dred_window_create__win32(dred_context* pDred)
+dred_window* dred_window_create__win32__internal(dred_context* pDred, HWND hWnd)
 {
-    DWORD dwStyleEx = 0;
-    DWORD dwStyle = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW;
-    HWND hWnd = CreateWindowExA(dwStyleEx, g_WindowClass, "dred", dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720, NULL, NULL, NULL, NULL);
-    if (hWnd == NULL) {
-        return NULL;
-    }
-
     dred_window* pWindow = (dred_window*)calloc(1, sizeof(*pWindow));
     if (pWindow == NULL) {
         goto on_error;
@@ -685,10 +676,37 @@ dred_window* dred_window_create__win32(dred_context* pDred)
 
     return pWindow;
 
-
 on_error:
     dred_window_delete(pWindow);
     return NULL;
+}
+
+dred_window* dred_window_create__win32(dred_context* pDred)
+{
+    DWORD dwStyleEx = 0;
+    DWORD dwStyle = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW;
+    HWND hWnd = CreateWindowExA(dwStyleEx, g_WindowClass, "dred", dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720, NULL, NULL, NULL, NULL);
+    if (hWnd == NULL) {
+        return NULL;
+    }
+
+    return dred_window_create__win32__internal(pDred, hWnd);
+}
+
+dred_window* dred_window_create_dialog__win32(dred_window* pParentWindow, const char* title, unsigned int width, unsigned int height)
+{
+    if (pParentWindow == NULL) {
+        return NULL;
+    }
+
+    DWORD dwExStyle = WS_EX_DLGMODALFRAME;
+    DWORD dwStyle   = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+    HWND hWnd = CreateWindowExA(dwExStyle, g_WindowClass, title, dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, width, height, pParentWindow->hWnd, NULL, NULL, NULL);
+    if (hWnd == NULL) {
+        return NULL;
+    }
+
+    return dred_window_create__win32__internal(pParentWindow->pDred, hWnd);
 }
 
 void dred_window_delete__win32(dred_window* pWindow)
@@ -767,6 +785,60 @@ void dred_window_get_size__win32(dred_window* pWindow, unsigned int* pWidthOut, 
     if (pHeightOut != NULL) {
         *pHeightOut = rect.bottom - rect.top;
     }
+}
+
+
+void dred_window_move_to_center__win32(dred_window* pWindow)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+    int parentPosX = 0;
+    int parentPosY = 0;
+    int parentWidth  = 0;
+    int parentHeight = 0;
+
+    int windowWidth;
+    int windowHeight;
+
+    RECT rect;
+    GetClientRect(pWindow->hWnd, &rect);
+    windowWidth = rect.right - rect.left;
+    windowHeight = rect.bottom - rect.top;
+
+    HWND hParentWnd = GetParent(pWindow->hWnd);
+    if (hParentWnd == NULL) {
+        hParentWnd = GetWindow(pWindow->hWnd, GW_OWNER);
+    }
+
+    if (hParentWnd != NULL)
+    {
+        // Center on the parent.
+        GetClientRect(hParentWnd, &rect);
+        parentWidth = rect.right - rect.left;
+        parentHeight = rect.bottom - rect.top;
+
+        GetWindowRect(hParentWnd, &rect);
+        parentPosX = rect.left;
+        parentPosY = rect.top;
+    }
+    else
+    {
+        // Center on the monitor.
+        MONITORINFO mi;
+        ZeroMemory(&mi, sizeof(mi));
+        mi.cbSize = sizeof(MONITORINFO);
+        if (GetMonitorInfoA(MonitorFromWindow(pWindow->hWnd, 0), &mi))
+        {
+            parentWidth  = mi.rcMonitor.right - mi.rcMonitor.left;
+            parentHeight = mi.rcMonitor.bottom - mi.rcMonitor.top;
+        }
+    }
+
+    int windowPosX = ((parentWidth  - windowWidth)  / 2) + parentPosX;
+    int windowPosY = ((parentHeight - windowHeight) / 2) + parentPosY;
+    SetWindowPos(pWindow->hWnd, NULL, windowPosX, windowPosY, windowWidth, windowHeight, SWP_NOZORDER | SWP_NOSIZE);
 }
 
 
@@ -1824,20 +1896,10 @@ void dred_gtk__delete_accels(dred_gtk_accelerator* pAccels, size_t accelCount)
 }
 
 
-dred_window* dred_window_create__gtk(dred_context* pDred)
+dred_window* dred_window_create__gtk__internal(dred_context* pDred, GtkWidget* pGTKWindow)
 {
-    GtkWidget* pGTKWindow = NULL;
     GtkWidget* pGTKBox = NULL;
     GtkWidget* pGTKClientArea = NULL;
-
-    pGTKWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    if (pGTKWindow == NULL) {
-        return NULL;
-    }
-
-
-    gtk_window_set_resizable(GTK_WINDOW(pGTKWindow),TRUE);
-
 
     dred_window* pWindow = (dred_window*)calloc(1, sizeof(*pWindow));
     if (pWindow == NULL) {
@@ -1916,6 +1978,39 @@ on_error:
     return NULL;
 }
 
+dred_window* dred_window_create__gtk(dred_context* pDred)
+{
+    GtkWidget* pGTKWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    if (pGTKWindow == NULL) {
+        return NULL;
+    }
+
+    gtk_window_set_resizable(GTK_WINDOW(pGTKWindow),TRUE);
+
+
+    return dred_window_create__gtk__internal(pDred, pGTKWindow);
+}
+
+dred_window* dred_window_create_dialog__gtk(dred_window* pParentWindow, const char* title, unsigned int width, unsigned int height)
+{
+    if (pParentWindow == NULL) {
+        return NULL;
+    }
+
+    GtkWidget* pGTKWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    if (pGTKWindow == NULL) {
+        return NULL;
+    }
+
+    gtk_window_set_type_hint(GTK_WINDOW(pGTKWindow), GDK_WINDOW_TYPE_HINT_DIALOG);
+    gtk_window_set_title(GTK_WINDOW(pGTKWindow), title);
+    gtk_window_resize(GTK_WINDOW(pGTKWindow), (gint)width, (gint)height);
+    gtk_widget_set_size_request(pGTKWindow, (gint)width, (gint)height);
+    gtk_window_set_resizable(GTK_WINDOW(pGTKWindow),FALSE);
+
+    return dred_window_create__gtk__internal(pParentWindow->pDred, pGTKWindow);
+}
+
 void dred_window_delete__gtk(dred_window* pWindow)
 {
     if (pWindow == NULL) {
@@ -1967,6 +2062,12 @@ void dred_window_get_size__gtk(dred_window* pWindow, unsigned int* pWidthOut, un
 
     if (*pWidthOut) *pWidthOut = width;
     if (*pHeightOut) *pHeightOut = height;
+}
+
+
+void dred_window_move_to_center__gtk(dred_window* pWindow)
+{
+    gtk_window_set_position(GTK_WINDOW(pWindow->pGTKWindow), GTK_WIN_POS_CENTER);
 }
 
 
@@ -2512,6 +2613,17 @@ dred_window* dred_window_create(dred_context* pDred)
 #endif
 }
 
+dred_window* dred_window_create_dialog(dred_window* pParentWindow, const char* title, unsigned int width, unsigned int height)
+{
+#ifdef DRED_WIN32
+    return dred_window_create_dialog__win32(pParentWindow, title, width, height);
+#endif
+
+#ifdef DRED_GTK
+    return dred_window_create_dialog__gtk(pParentWindow, title, width, height);
+#endif
+}
+
 void dred_window_delete(dred_window* pWindow)
 {
 #ifdef DRED_WIN32
@@ -2555,6 +2667,18 @@ void dred_window_get_size(dred_window* pWindow, unsigned int* pWidthOut, unsigne
 
 #ifdef DRED_GTK
     dred_window_get_size__gtk(pWindow, pWidthOut, pHeightOut);
+#endif
+}
+
+
+void dred_window_move_to_center(dred_window* pWindow)
+{
+#ifdef DRED_WIN32
+    dred_window_move_to_center__win32(pWindow);
+#endif
+
+#ifdef DRED_GTK
+    dred_window_move_to_center__gtk(pWindow);
 #endif
 }
 
@@ -2836,6 +2960,13 @@ void dred_window_on_unfocus(dred_window* pWindow)
     if (drgui_has_keyboard_capture(pWindow->pElementWithKeyboardCapture)) {
         drgui_release_keyboard(pWindow->pDred->pGUI);
     }
+}
+
+
+void dred_window__stock_event__hide_on_close(dred_window* pWindow)
+{
+    assert(pWindow != NULL);
+    dred_window_hide(pWindow, 0);
 }
 
 

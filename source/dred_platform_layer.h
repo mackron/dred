@@ -173,6 +173,9 @@ struct dred_window
 // Creates a top-level window.
 dred_window* dred_window_create(dred_context* pDred);
 
+// Creates a dialog window.
+dred_window* dred_window_create_dialog(dred_window* pParentWindow, const char* title, unsigned int width, unsigned int height);
+
 // Deletes a window.
 void dred_window_delete(dred_window* pWindow);
 
@@ -182,6 +185,9 @@ void dred_window_set_title(dred_window* pWindow, const char* title);
 // Sets the size of the window.
 void dred_window_set_size(dred_window* pWindow, unsigned int newWidth, unsigned int newHeight);
 void dred_window_get_size(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut);
+
+// Center's the given window. If the window has a parent it'll be centered on the parent, otherwise it'll be centered on the monitor.
+void dred_window_move_to_center(dred_window* pWindow);
 
 // Show/hide the window.
 void dred_window_show(dred_window* pWindow);
@@ -224,9 +230,16 @@ void dred_window_on_printable_key_down(dred_window* pWindow, unsigned int charac
 void dred_window_on_focus(dred_window* pWindow);
 void dred_window_on_unfocus(dred_window* pWindow);
 
+// Stock window events.
+
+// Hides the window when the close button is pressed.
+void dred_window__stock_event__hide_on_close(dred_window* pWindow);
+
 
 // Helper function for retrieving the window that owns the given GUI element.
 dred_window* dred_get_element_window(drgui_element* pElement);
+
+
 
 
 

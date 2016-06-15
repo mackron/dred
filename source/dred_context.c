@@ -1134,6 +1134,27 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 #endif
 }
 
+void dred_show_about_dialog(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    if (pDred->pAboutWindow == NULL) {
+        pDred->pAboutWindow = dred_window_create_dialog(pDred->pMainWindow, "About dred", 640, 480);
+        if (pDred->pAboutWindow == NULL) {
+            return;
+        }
+
+        pDred->pAboutWindow->onClose = dred_window__stock_event__hide_on_close;
+    }
+
+    assert(pDred->pAboutWindow != NULL);
+
+    dred_window_move_to_center(pDred->pAboutWindow);
+    dred_window_show(pDred->pAboutWindow);
+}
+
 
 void dred_set_command_bar_text(dred_context* pDred, const char* text)
 {

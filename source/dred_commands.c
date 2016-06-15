@@ -123,6 +123,19 @@ void dred_command__exit(dred_context* pDred, const char* value)
     dred_close(pDred);
 }
 
+void dred_command__help(dred_context* pDred, const char* value)
+{
+    (void)value;
+    (void)pDred;
+    // TODO: Implement me.
+}
+
+void dred_command__about(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_show_about_dialog(pDred);
+}
+
 
 void dred_command__undo(dred_context* pDred, const char* value)
 {

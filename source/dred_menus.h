@@ -44,6 +44,9 @@
 #define DRED_MENU_ITEM_ID_FIND_REPLACE      18
 #define DRED_MENU_ITEM_ID_FIND_GOTO         19
 
+#define DRED_MENU_ITEM_ID_HELP_HELP         20
+#define DRED_MENU_ITEM_ID_HELP_ABOUT        21
+
 struct dred_menu_library
 {
     // The main context that initialized the library.
