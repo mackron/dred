@@ -2379,6 +2379,9 @@ static void dred_platform__on_global_dirty__gtk(drgui_element* pElement, drgui_r
         if (drgui_rect_has_volume(absoluteRect)) {
             gtk_widget_queue_draw_area(pWindow->pGTKClientArea,
                 (gint)absoluteRect.left, (gint)absoluteRect.top, (gint)(absoluteRect.right - absoluteRect.left), (gint)(absoluteRect.bottom - absoluteRect.top));
+
+            // Redraw immediately.
+            gdk_window_process_updates(gtk_widget_get_window(pWindow->pGTKClientArea), TRUE);
         }
     }
 }
