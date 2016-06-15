@@ -53,6 +53,50 @@ drgui_font_slant dred_parse_font_slant(const char* slant)
     return drgui_font_slant_none;
 }
 
+#ifdef DRED_GTK
+drgui_font_weight dred_font_weight_from_pango(PangoWeight weight)
+{
+    if (weight == PANGO_WEIGHT_THIN) {
+        return drgui_font_weight_thin;
+    } else if (weight == PANGO_WEIGHT_ULTRALIGHT) {
+        return drgui_font_weight_extra_light;
+    } else if (weight == PANGO_WEIGHT_LIGHT) {
+        return drgui_font_weight_light;
+    } else if (weight == PANGO_WEIGHT_SEMILIGHT) {
+        return drgui_font_weight_semi_light;
+    } else if (weight == PANGO_WEIGHT_BOOK) {
+        return drgui_font_weight_book;
+    } else if (weight == PANGO_WEIGHT_NORMAL) {
+        return drgui_font_weight_normal;
+    } else if (weight == PANGO_WEIGHT_MEDIUM) {
+        return drgui_font_weight_medium;
+    } else if (weight == PANGO_WEIGHT_SEMIBOLD) {
+        return drgui_font_weight_semi_bold;
+    } else if (weight == PANGO_WEIGHT_BOLD) {
+        return drgui_font_weight_bold;
+    } else if (weight == PANGO_WEIGHT_ULTRABOLD) {
+        return drgui_font_weight_extra_bold;
+    } else if (weight == PANGO_WEIGHT_HEAVY) {
+        return drgui_font_weight_heavy;
+    } else if (weight == PANGO_WEIGHT_ULTRAHEAVY) {
+        return drgui_font_weight_extra_heavy;
+    } else {
+        return drgui_font_weight_normal;
+    }
+}
+
+drgui_font_slant dred_font_slant_from_pango(PangoStyle slant)
+{
+    if (slant == PANGO_STYLE_OBLIQUE) {
+        return drgui_font_slant_oblique;
+    } else if (slant == PANGO_STYLE_ITALIC) {
+        return drgui_font_slant_italic;
+    } else {
+        return drgui_font_slant_none;
+    }
+}
+#endif // DRED_GTK
+
 drgui_color dred_parse_color(const char* color)
 {
     if (color != NULL) {
@@ -130,11 +174,37 @@ dred_font* dred_config__load_system_font_ui(dred_context* pDred)
 #endif
 
 #ifdef __linux__
-    // TODO: Use the FontConfig + GTK API for this.
-    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Application");
-    fontDesc.size = 12;
+    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "sans");
+    fontDesc.size = 13;
     fontDesc.weight = drgui_font_weight_normal;
     fontDesc.slant = drgui_font_slant_none;
+
+    #if 1
+    GSettings* settings = g_settings_new("org.mate.interface");
+    char* fontName = g_settings_get_string(settings, "font-name");
+    if (fontName != NULL) {
+        PangoFontDescription* pPangoDesc = pango_font_description_from_string(fontName);
+        if (pPangoDesc != NULL) {
+            strcpy_s(fontDesc.family, sizeof(fontDesc.family), pango_font_description_get_family(pPangoDesc));
+
+            gint size = pango_font_description_get_size(pPangoDesc);
+            if (size > 0) {
+                if (pango_font_description_get_size_is_absolute(pPangoDesc)) {
+                    fontDesc.size = size;
+                } else {
+                    fontDesc.size = (unsigned int)(size/PANGO_SCALE * (96.0/72.0));
+                }
+            }
+
+            fontDesc.slant = dred_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
+            fontDesc.weight = dred_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
+
+            pango_font_description_free(pPangoDesc);
+        }
+    }
+
+    g_object_unref(settings);
+    #endif
 #endif
 
     return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
@@ -155,7 +225,7 @@ dred_font* dred_config__load_system_font_mono(dred_context* pDred)
 #endif
 
 #ifdef DRED_GTK
-    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Liberation Mono");
+    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "monospace");
     fontDesc.size = 13;
     fontDesc.weight = drgui_font_weight_normal;
     fontDesc.slant = drgui_font_slant_none;
@@ -198,41 +268,8 @@ dred_font* dred_config__load_system_font_mono(dred_context* pDred)
                 }
             }
 
-            PangoStyle slant = pango_font_description_get_style(pPangoDesc);
-            if (slant == PANGO_STYLE_OBLIQUE) {
-                fontDesc.slant = drgui_font_slant_oblique;
-            } else if (slant == PANGO_STYLE_ITALIC) {
-                fontDesc.slant = drgui_font_slant_italic;
-            }
-
-            PangoWeight weight = pango_font_description_get_weight(pPangoDesc);
-            if (weight == PANGO_WEIGHT_THIN) {
-                fontDesc.weight = drgui_font_weight_thin;
-            } else if (weight == PANGO_WEIGHT_ULTRALIGHT) {
-                fontDesc.weight = drgui_font_weight_extra_light;
-            } else if (weight == PANGO_WEIGHT_LIGHT) {
-                fontDesc.weight = drgui_font_weight_light;
-            } else if (weight == PANGO_WEIGHT_SEMILIGHT) {
-                fontDesc.weight = drgui_font_weight_semi_light;
-            } else if (weight == PANGO_WEIGHT_BOOK) {
-                fontDesc.weight = drgui_font_weight_book;
-            } else if (weight == PANGO_WEIGHT_NORMAL) {
-                fontDesc.weight = drgui_font_weight_normal;
-            } else if (weight == PANGO_WEIGHT_MEDIUM) {
-                fontDesc.weight = drgui_font_weight_medium;
-            } else if (weight == PANGO_WEIGHT_SEMIBOLD) {
-                fontDesc.weight = drgui_font_weight_semi_bold;
-            } else if (weight == PANGO_WEIGHT_BOLD) {
-                fontDesc.weight = drgui_font_weight_bold;
-            } else if (weight == PANGO_WEIGHT_ULTRABOLD) {
-                fontDesc.weight = drgui_font_weight_extra_bold;
-            } else if (weight == PANGO_WEIGHT_HEAVY) {
-                fontDesc.weight = drgui_font_weight_heavy;
-            } else if (weight == PANGO_WEIGHT_ULTRAHEAVY) {
-                fontDesc.weight = drgui_font_weight_extra_heavy;
-            } else {
-                fontDesc.weight = drgui_font_weight_normal;
-            }
+            fontDesc.slant = dred_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
+            fontDesc.weight = dred_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
 
             pango_font_description_free(pPangoDesc);
         }
