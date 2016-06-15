@@ -14,10 +14,17 @@ static bool dred__preprocess_system_command(dred_context* pDred, const char* cmd
     }
 
     char currentDir[DRED_MAX_PATH];
+    dr_get_current_directory(currentDir, sizeof(currentDir));
 
     char relativePath[DRED_MAX_PATH];
-    if (!drpath_to_relative(absolutePath, dr_get_current_directory(currentDir, sizeof(currentDir)), relativePath, sizeof(relativePath))) {
-        return false;
+    if (drpath_is_absolute(absolutePath)) {
+        if (!drpath_to_relative(absolutePath, dr_get_current_directory(currentDir, sizeof(currentDir)), relativePath, sizeof(relativePath))) {
+            return false;
+        }
+    } else {
+        if (strcpy_s(relativePath, sizeof(relativePath), absolutePath) != 0) {
+            return false;
+        }
     }
 
     size_t relativePathLength = strlen(relativePath);
