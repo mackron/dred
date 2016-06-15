@@ -2428,9 +2428,6 @@ static void dred_platform__on_global_capture_mouse__gtk(drgui_element* pElement)
 {
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow != NULL) {
-        //gdk_device_grab(gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())),
-        //    gtk_widget_get_window(pWindow->pGTKWindow), GDK_OWNERSHIP_APPLICATION, false, GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_SCROLL_MASK, NULL, GDK_CURRENT_TIME);
-
         gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
             gtk_widget_get_window(pWindow->pGTKClientArea), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
     }
@@ -2440,7 +2437,6 @@ static void dred_platform__on_global_release_mouse__gtk(drgui_element* pElement)
 {
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow != NULL) {
-        //gdk_device_ungrab(gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default())), GDK_CURRENT_TIME);
         gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
     }
 }
