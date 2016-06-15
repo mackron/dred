@@ -24,7 +24,7 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append(pFileMenu_Default, "&Close", DRED_MENU_ITEM_ID_FILE_CLOSE, "close", dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN), NULL);
     dred_menu_item_create_and_append(pFileMenu_Default, "Clos&e All", DRED_MENU_ITEM_ID_FILE_CLOSE_ALL, "close-all", dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN), NULL);
     dred_menu_item_create_and_append_separator(pFileMenu_Default);
-    dred_menu_item_create_and_append(pFileMenu_Default, "E&xit...", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_accelerator_create(DRGUI_F4, DRED_KEY_STATE_ALT_DOWN), NULL);
+    dred_menu_item_create_and_append(pFileMenu_Default, "E&xit", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_accelerator_create(DRGUI_F4, DRED_KEY_STATE_ALT_DOWN), NULL);
 
     dred_menu_item_create_and_append(pLibrary->pMenu_Default, "&File", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pFileMenu_Default);
 
@@ -48,7 +48,7 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append(pFileMenu, "&Close", DRED_MENU_ITEM_ID_FILE_CLOSE, "close", dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN), NULL);
     dred_menu_item_create_and_append(pFileMenu, "Clos&e All", DRED_MENU_ITEM_ID_FILE_CLOSE_ALL, "close-all", dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN), NULL);
     dred_menu_item_create_and_append_separator(pFileMenu);
-    dred_menu_item_create_and_append(pFileMenu, "E&xit...", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_accelerator_create(DRGUI_F4, DRED_KEY_STATE_ALT_DOWN), NULL);
+    dred_menu_item_create_and_append(pFileMenu, "E&xit", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_accelerator_create(DRGUI_F4, DRED_KEY_STATE_ALT_DOWN), NULL);
 
     dred_menu* pEditMenu = dred_menu_create(pDred, dred_menu_type_popup);
     dred_menu_item_create_and_append(pEditMenu, "&Undo", DRED_MENU_ITEM_ID_EDIT_UNDO, "undo", dred_accelerator_create('Z', DRED_KEY_STATE_CTRL_DOWN), NULL);
