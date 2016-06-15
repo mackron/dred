@@ -56,7 +56,7 @@ void dred_image_library__delete_image_for_real(dred_image_library* pLibrary, dre
     for (size_t i = 0; i < pLibrary->imageCount; ++i) {
         if (pLibrary->ppImages[i] == pImage) {
             if (i+1 < pLibrary->imageCount) {
-                memmove(pLibrary->ppImages + i, pLibrary->ppImages + (i+1), pLibrary->imageCount - (i+1));
+                memmove(pLibrary->ppImages + i, pLibrary->ppImages + (i+1), (pLibrary->imageCount - (i+1)) * sizeof(*pLibrary->ppImages));
             }
             break;
         }

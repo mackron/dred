@@ -55,7 +55,7 @@ void dred_font__delete_subfont_by_index(dred_font* pFont, size_t index)
     drgui_delete_font(pFont->pSubFonts[index].pGUIFont);
 
     if (index+1 < pFont->subfontCount) {
-        memmove(pFont->pSubFonts + index, pFont->pSubFonts + (index+1), pFont->subfontCount - (index+1));
+        memmove(pFont->pSubFonts + index, pFont->pSubFonts + (index+1), (pFont->subfontCount - (index+1)) * sizeof(*pFont->pSubFonts));
     }
     
     pFont->subfontCount -= 1;

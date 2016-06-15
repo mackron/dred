@@ -42,7 +42,7 @@ void dred_font_library__delete_font_for_real(dred_font_library* pLibrary, dred_f
     for (size_t i = 0; i < pLibrary->fontCount; ++i) {
         if (pLibrary->ppFonts[i] == pFont) {
             if (i+1 < pLibrary->fontCount) {
-                memmove(pLibrary->ppFonts + i, pLibrary->ppFonts + (i+1), pLibrary->fontCount - (i+1));
+                memmove(pLibrary->ppFonts + i, pLibrary->ppFonts + (i+1), (pLibrary->fontCount - (i+1)) * sizeof(*pLibrary->ppFonts));
             }
             break;
         }
