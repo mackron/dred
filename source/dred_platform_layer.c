@@ -845,14 +845,14 @@ void dred_window_set_menu__win32(dred_window* pWindow, dred_menu* pMenu)
 
 //// MENUS ////
 
-dred_menu* dred_menu_create__win32(dred_context* pDred, dred_menu_type type, dred_accelerator_table* pAcceleratorTable)
+dred_menu* dred_menu_create__win32(dred_context* pDred, dred_menu_type type)
 {
     if (pDred == NULL) {
         return NULL;
     }
 
-    (void)type;                 // Menu bars and popup menus are the same thing in Win32.
-    (void)pAcceleratorTable;    // Accelerator table is not needed in Win32.
+    // Menu bars and popup menus are the same thing in Win32.
+    (void)type;
 
     HMENU hMenu = CreateMenu();
     if (hMenu == NULL) {
@@ -2020,7 +2020,7 @@ static gboolean dred_gtk_cb__on_mouse_enter__menu(GtkWidget* pGTKMenu, GdkEventC
 }
 
 
-dred_menu* dred_menu_create__gtk(dred_context* pDred, dred_menu_type type, dred_accelerator_table* pAcceleratorTable)
+dred_menu* dred_menu_create__gtk(dred_context* pDred, dred_menu_type type)
 {
     if (pDred == NULL) {
         return NULL;
@@ -2048,10 +2048,8 @@ dred_menu* dred_menu_create__gtk(dred_context* pDred, dred_menu_type type, dred_
     pMenu->type     = type;
     pMenu->pGTKMenu = pGTKMenu;
 
-    if (pAcceleratorTable != NULL) {
-        pMenu->pGTKAccelGroup = dred_gtk__create_accels(pAcceleratorTable, &pMenu->pAccels, NULL, pMenu);
-        pMenu->accelCount = pAcceleratorTable->count;
-    }
+    pMenu->pGTKAccelGroup = dred_gtk__create_accels(&pDred->acceleratorTable, &pMenu->pAccels, NULL, pMenu);
+    pMenu->accelCount = pDred->acceleratorTable.count;
 
     g_signal_connect(pGTKMenu, "enter-notify-event", G_CALLBACK(dred_gtk_cb__on_mouse_enter__menu), NULL);
 
@@ -2758,14 +2756,14 @@ dred_window* dred_get_element_window(drgui_element* pElement)
 
 //// MENUS ////
 
-dred_menu* dred_menu_create(dred_context* pDred, dred_menu_type type, dred_accelerator_table* pAcceleratorTable)
+dred_menu* dred_menu_create(dred_context* pDred, dred_menu_type type)
 {
 #ifdef DRED_WIN32
-    return dred_menu_create__win32(pDred, type, pAcceleratorTable);
+    return dred_menu_create__win32(pDred, type);
 #endif
 
 #ifdef DRED_GTK
-    return dred_menu_create__gtk(pDred, type, pAcceleratorTable);
+    return dred_menu_create__gtk(pDred, type);
 #endif
 }
 

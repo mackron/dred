@@ -282,7 +282,7 @@ struct dred_menu
 };
 
 // Creates a menu of the given type.
-dred_menu* dred_menu_create(dred_context* pDred, dred_menu_type type, dred_accelerator_table* pAcceleratorTable);
+dred_menu* dred_menu_create(dred_context* pDred, dred_menu_type type);
 
 // Deletes the given menu.
 void dred_menu_delete(dred_menu* pMenu);

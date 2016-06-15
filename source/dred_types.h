@@ -10,3 +10,4 @@ typedef struct dred_font dred_font;
 typedef struct dred_font_library dred_font_library;
 typedef struct dred_image dred_image;
 typedef struct dred_image_library dred_image_library;
+typedef struct dred_menu_library dred_menu_library;

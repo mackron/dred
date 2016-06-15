@@ -1,4 +1,20 @@
 
+// BEGIN STOCK ACCELERATORS
+//
+// ACCELERATOR DRED_ACCELERATOR_ID_NEW      'N'     CTRL        "new"
+// ACCELERATOR DRED_ACCELERATOR_ID_OPEN     'O'     CTRL        "open"
+// ACCELERATOR DRED_ACCELERATOR_ID_SAVE     'S'     CTRL        "save"
+// ACCELERATOR DRED_ACCELERATOR_ID_SAVE_AS  NONE    NONE        "save-as"
+// ACCELERATOR DRED_ACCELERATOR_ID_SAVE_ALL 'S'     CTRL|SHIFT  "save-all"
+//
+// END STOCK ACCELERATORS
+
+#define DRED_ACCELERATOR_ID_NONE        0
+#define DRED_ACCELERATOR_ID_NEW         1
+#define DRED_ACCELERATOR_ID_OPEN        2
+#define DRED_ACCELERATOR_ID_SAVE        3
+#define DRED_ACCELERATOR_ID_SAVE_AS     4
+
 struct dred_accelerator
 {
     drgui_key key;
