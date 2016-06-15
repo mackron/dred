@@ -50,13 +50,6 @@ struct dred_context
 
     // Whether or not line numbers are being shown on text editors.
     bool isShowingLineNumbers;
-
-
-    // TEMP
-    dred_text_editor* pEditor0;
-    dred_tab* pEditor0Tab;
-    dred_text_editor* pEditor1;
-    dred_tab* pEditor1Tab;
 };
 
 // dred_init
