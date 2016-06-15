@@ -3,6 +3,8 @@ typedef struct
 {
     dred_context* pDred;
     dred_textbox* pTextBox;
+    char message[256];
+    drgui_font* pMessageFont;
 } dred_cmdbar_data;
 
 void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
@@ -10,7 +12,7 @@ void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
     dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
     assert(data != NULL);
     
-    dred_control_set_size(data->pTextBox, newWidth, newHeight);
+    dred_control_set_size(data->pTextBox, newWidth/3, newHeight);
 }
 
 void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, drgui_element* pPrevCapturedElement)
@@ -21,6 +23,27 @@ void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, drgui_element* pPrev
     assert(data != NULL);
 
     drgui_capture_keyboard(data->pTextBox);
+}
+
+void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, drgui_rect rect, void* pPaintData)
+{
+    (void)rect;
+
+    dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
+    assert(data != NULL);
+
+    drgui_rect bgrect = drgui_get_local_rect(pCmdBar);
+    bgrect.left = dred_control_get_width(data->pTextBox);
+
+    drgui_draw_rect(pCmdBar, bgrect, data->pDred->config.cmdbarBGColor, pPaintData);
+
+    drgui_font_metrics messageFontMetrics;
+    drgui_get_font_metrics(data->pMessageFont, 1, 1, &messageFontMetrics);
+
+    float messageLeft = bgrect.left;
+    float messageTop  = ((bgrect.bottom - bgrect.top) - messageFontMetrics.lineHeight) / 2;
+
+    drgui_draw_text(pCmdBar, data->pMessageFont, data->message, strlen(data->message), messageLeft, messageTop, drgui_rgb(200, 200, 200), data->pDred->config.cmdbarBGColor, pPaintData);
 }
 
 void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)
@@ -101,24 +124,31 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
     dred_textbox_disable_horizontal_scrollbar(data->pTextBox);
     dred_textbox_disable_vertical_scrollbar(data->pTextBox);
 
-
     // Events.
     dred_control_set_on_size(pCmdBar, dred_cmdbar__on_size);
     dred_control_set_on_capture_keyboard(pCmdBar, dred_cmdbar__on_capture_keyboard);
-
+    dred_control_set_on_paint(pCmdBar, dred_cmdbar__on_paint);
 
     // Text box event overrides.
     dred_control_set_on_key_down(data->pTextBox, dred_cmdbar_tb__on_key_down);
     dred_control_set_on_printable_key_down(data->pTextBox, dred_cmdbar_tb__on_printable_key_down);
 
 
+    data->pMessageFont = dred_font_acquire_subfont(pDred->config.pCmdbarMessageFont, 1);
+    strcpy_s(data->message, sizeof(data->message), "");
+
+
     // Set the initial size.
     drgui_font_metrics fontMetricsTB;
     drgui_get_font_metrics(dred_textbox_get_font(data->pTextBox), 1, 1, &fontMetricsTB);
 
-    float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(data->pTextBox)*2;
+    drgui_font_metrics fontMetricsMsg;
+    drgui_get_font_metrics(data->pMessageFont, 1, 1, &fontMetricsMsg);
 
-    float cmdbarHeight = textboxHeight; // <-- Make this the max of the textbox height and the message box height.
+    float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(data->pTextBox)*2;
+    float messageHeight = (float)fontMetricsMsg.lineHeight;
+
+    float cmdbarHeight = dr_max(textboxHeight, messageHeight);
     float cmdbarWidth = 0;
     if (pParent != NULL) {
         cmdbarWidth = dred_control_get_width(pParent);
@@ -137,6 +167,7 @@ void dred_cmdbar_delete(dred_cmdbar* pCmdBar)
     dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
     if (data != NULL) {
         dred_textbox_delete(data->pTextBox);
+        dred_font_release_subfont(data->pDred->config.pCmdbarMessageFont, data->pMessageFont);
     }
 
     dred_control_delete(pCmdBar);
@@ -167,4 +198,24 @@ bool dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
     }
 
     return dred_textbox_has_keyboard_capture(data->pTextBox);
+}
+
+
+void dred_cmdbar_set_message(dred_cmdbar* pCmdBar, const char* text)
+{
+    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    if (data == NULL) {
+        return;
+    }
+
+    if (text == NULL) {
+        text = "";
+    }
+
+    strncpy_s(data->message, sizeof(data->message), text, _TRUNCATE);
+}
+
+void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar)
+{
+    dred_cmdbar_set_message(pCmdBar, "");
 }

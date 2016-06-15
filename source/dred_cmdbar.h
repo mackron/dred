@@ -17,3 +17,9 @@ void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text);
 
 // Determines whether or not the given command bar has the keyboard focus.
 bool dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar);
+
+// Sets the message on the command bar.
+void dred_cmdbar_set_message(dred_cmdbar* pCmdBar, const char* text);
+
+// Clears the message on the command bar.
+void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar);

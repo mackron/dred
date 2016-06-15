@@ -10,12 +10,11 @@ typedef struct
 
     drgui_color cmdbarBGColor;
     dred_font* pCmdbarTBFont;
+    dred_font* pCmdbarMessageFont;
 
     dred_font* pTextEditorFont;
     drgui_color textEditorBGColor;
     drgui_color textEditorActiveLineColor;
-
-
 
     dred_image* pImageCross;
 } dred_config;

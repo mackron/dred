@@ -223,8 +223,10 @@ bool dred_config_init(dred_config* pConfig, dred_context* pDred)
     pConfig->uiScaleX = 1;
     pConfig->uiScaleY = 1;
 
-    pConfig->pCmdbarTBFont = dred_config__load_system_font_mono(pDred);
     pConfig->cmdbarBGColor = drgui_rgb(64, 64, 64);
+    pConfig->pCmdbarTBFont = dred_config__load_system_font_mono(pDred);
+    pConfig->pCmdbarMessageFont = dred_config__load_system_font_ui(pDred);
+
 
     pConfig->pTextEditorFont = dred_config__load_system_font_mono(pDred);
     pConfig->textEditorBGColor = drgui_rgb(48, 48, 48);
@@ -291,14 +293,19 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
     }
 
 
-    if (strcmp(key, "cmdbar-tb-font") == 0) {
-        pData->pConfig->pCmdbarTBFont = dred_config__parse_and_load_font(pData->pConfig->pDred, value);
-        return;
-    }
     if (strcmp(key, "cmdbar-bg-color") == 0) {
         pData->pConfig->cmdbarBGColor = dred_parse_color(value);
         return;
     }
+    if (strcmp(key, "cmdbar-tb-font") == 0) {
+        pData->pConfig->pCmdbarTBFont = dred_config__parse_and_load_font(pData->pConfig->pDred, value);
+        return;
+    }
+    if (strcmp(key, "cmdbar-msg-font") == 0) {
+        pData->pConfig->pCmdbarMessageFont = dred_config__parse_and_load_font(pData->pConfig->pDred, value);
+        return;
+    }
+    
 
 
     if (strcmp(key, "texteditor-font") == 0) {
