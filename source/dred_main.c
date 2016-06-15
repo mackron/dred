@@ -24,6 +24,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include <fontconfig/fontconfig.h>
 #endif
 
 // Platform libraries, for simplifying MSVC builds.

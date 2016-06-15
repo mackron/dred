@@ -13,6 +13,12 @@ drgui_font_weight dred_parse_font_weight(const char* weight)
     if (strcmp(weight, "light") == 0) {
         return drgui_font_weight_light;
     }
+    if (strcmp(weight, "semi-light") == 0) {
+        return drgui_font_weight_semi_light;
+    }
+    if (strcmp(weight, "book") == 0) {
+        return drgui_font_weight_book;
+    }
     if (strcmp(weight, "semi-bold") == 0) {
         return drgui_font_weight_semi_bold;
     }
@@ -24,6 +30,9 @@ drgui_font_weight dred_parse_font_weight(const char* weight)
     }
     if (strcmp(weight, "heavy") == 0) {
         return drgui_font_weight_heavy;
+    }
+    if (strcmp(weight, "extra-heavy") == 0) {
+        return drgui_font_weight_extra_heavy;
     }
 
     return drgui_font_weight_normal;
@@ -103,7 +112,7 @@ drgui_color dred_parse_color(const char* color)
             return drgui_rgb(r, g, b);
         }
     }
-    
+
     return drgui_rgb(0, 0, 0);
 }
 
@@ -145,12 +154,92 @@ dred_font* dred_config__load_system_font_mono(dred_context* pDred)
     fontDesc.slant = drgui_font_slant_none;
 #endif
 
-#ifdef __linux__
-    // TODO: Use FontConfig API for this.
-    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "monospace");
+#ifdef DRED_GTK
+    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Liberation Mono");
     fontDesc.size = 13;
     fontDesc.weight = drgui_font_weight_normal;
     fontDesc.slant = drgui_font_slant_none;
+
+    #if 0
+    FcPattern* basepat = FcNameParse((const FcChar8*)"monospace");
+    if (basepat != NULL) {
+        FcConfigSubstitute(NULL, basepat, FcMatchPattern);
+        FcDefaultSubstitute(basepat);
+
+        FcResult result = FcResultNoMatch;
+        FcPattern* fontpat = FcFontMatch(NULL, basepat, &result);
+        if (fontpat != NULL && result == FcResultMatch) {
+            FcPatternPrint(fontpat);
+
+            FcChar8* family;
+            FcPatternGetString(fontpat, FC_FAMILY, 0, &family);
+            strcpy_s(fontDesc.family, sizeof(fontDesc.family), (const char*)family);
+        }
+
+        FcPatternDestroy(fontpat);
+        FcPatternDestroy(basepat);
+    }
+    #endif
+
+    #if 1
+    GSettings* settings = g_settings_new("org.mate.interface");
+    char* fontName = g_settings_get_string(settings, "monospace-font-name");
+    if (fontName != NULL) {
+        PangoFontDescription* pPangoDesc = pango_font_description_from_string(fontName);
+        if (pPangoDesc != NULL) {
+            strcpy_s(fontDesc.family, sizeof(fontDesc.family), pango_font_description_get_family(pPangoDesc));
+
+            gint size = pango_font_description_get_size(pPangoDesc);
+            if (size > 0) {
+                if (pango_font_description_get_size_is_absolute(pPangoDesc)) {
+                    fontDesc.size = size;
+                } else {
+                    fontDesc.size = (unsigned int)(size/PANGO_SCALE * (96.0/72.0));
+                }
+            }
+
+            PangoStyle slant = pango_font_description_get_style(pPangoDesc);
+            if (slant == PANGO_STYLE_OBLIQUE) {
+                fontDesc.slant = drgui_font_slant_oblique;
+            } else if (slant == PANGO_STYLE_ITALIC) {
+                fontDesc.slant = drgui_font_slant_italic;
+            }
+
+            PangoWeight weight = pango_font_description_get_weight(pPangoDesc);
+            if (weight == PANGO_WEIGHT_THIN) {
+                fontDesc.weight = drgui_font_weight_thin;
+            } else if (weight == PANGO_WEIGHT_ULTRALIGHT) {
+                fontDesc.weight = drgui_font_weight_extra_light;
+            } else if (weight == PANGO_WEIGHT_LIGHT) {
+                fontDesc.weight = drgui_font_weight_light;
+            } else if (weight == PANGO_WEIGHT_SEMILIGHT) {
+                fontDesc.weight = drgui_font_weight_semi_light;
+            } else if (weight == PANGO_WEIGHT_BOOK) {
+                fontDesc.weight = drgui_font_weight_book;
+            } else if (weight == PANGO_WEIGHT_NORMAL) {
+                fontDesc.weight = drgui_font_weight_normal;
+            } else if (weight == PANGO_WEIGHT_MEDIUM) {
+                fontDesc.weight = drgui_font_weight_medium;
+            } else if (weight == PANGO_WEIGHT_SEMIBOLD) {
+                fontDesc.weight = drgui_font_weight_semi_bold;
+            } else if (weight == PANGO_WEIGHT_BOLD) {
+                fontDesc.weight = drgui_font_weight_bold;
+            } else if (weight == PANGO_WEIGHT_ULTRABOLD) {
+                fontDesc.weight = drgui_font_weight_extra_bold;
+            } else if (weight == PANGO_WEIGHT_HEAVY) {
+                fontDesc.weight = drgui_font_weight_heavy;
+            } else if (weight == PANGO_WEIGHT_ULTRAHEAVY) {
+                fontDesc.weight = drgui_font_weight_extra_heavy;
+            } else {
+                fontDesc.weight = drgui_font_weight_normal;
+            }
+
+            pango_font_description_free(pPangoDesc);
+        }
+    }
+
+    g_object_unref(settings);
+    #endif
 #endif
 
     return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
@@ -207,7 +296,7 @@ dred_font* dred_config__parse_and_load_font(dred_context* pDred, const char* val
         }
     }
 
-    
+
     return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
 }
 
@@ -246,6 +335,7 @@ void dred_config_uninit(dred_config* pConfig)
 
     // Free any dynamically allocated data.
     dred_font_library_delete_font(&pConfig->pDred->fontLibrary, pConfig->pTextEditorFont);
+    dred_font_library_delete_font(&pConfig->pDred->fontLibrary, pConfig->pCmdbarMessageFont);
     dred_font_library_delete_font(&pConfig->pDred->fontLibrary, pConfig->pCmdbarTBFont);
     dred_font_library_delete_font(&pConfig->pDred->fontLibrary, pConfig->pUIFont);
 }
@@ -305,7 +395,7 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
         pData->pConfig->pCmdbarMessageFont = dred_config__parse_and_load_font(pData->pConfig->pDred, value);
         return;
     }
-    
+
 
 
     if (strcmp(key, "texteditor-font") == 0) {
