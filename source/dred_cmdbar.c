@@ -40,10 +40,12 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, drgui_rect rect, void* pPaintDa
     drgui_font_metrics messageFontMetrics;
     drgui_get_font_metrics(data->pMessageFont, 1, 1, &messageFontMetrics);
 
-    float messageLeft = bgrect.left;
+    float messageLeft = bgrect.left + 4;
     float messageTop  = ((bgrect.bottom - bgrect.top) - messageFontMetrics.lineHeight) / 2;
-
     drgui_draw_text(pCmdBar, data->pMessageFont, data->message, strlen(data->message), messageLeft, messageTop, drgui_rgb(200, 200, 200), data->pDred->config.cmdbarBGColor, pPaintData);
+
+
+    drgui_draw_rect(pCmdBar, drgui_make_rect(bgrect.left, bgrect.top, bgrect.left + 1, bgrect.bottom), data->pDred->config.textEditorBGColor, pPaintData);
 }
 
 void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)
