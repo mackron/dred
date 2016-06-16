@@ -1141,7 +1141,7 @@ void dred_show_about_dialog(dred_context* pDred)
     }
 
     if (pDred->pAboutWindow == NULL) {
-        pDred->pAboutWindow = dred_window_create_dialog(pDred->pMainWindow, "About dred", 640, 480);
+        pDred->pAboutWindow = dred_window_create_dialog(pDred->pMainWindow, "About", 640, 480);
         if (pDred->pAboutWindow == NULL) {
             return;
         }
