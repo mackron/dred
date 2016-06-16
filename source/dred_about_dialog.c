@@ -1999,6 +1999,7 @@ void dred_about_dialog__on_window_close(dred_window* pWindow)
 {
     dred_about_dialog* pDialog = (dred_about_dialog*)pWindow->pUserData;
     assert(pDialog != NULL);
+    (void)pDialog;
 
     dred_context* pDred = pWindow->pDred;
     assert(pDred != NULL);
