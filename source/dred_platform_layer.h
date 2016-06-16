@@ -211,6 +211,9 @@ void dred_window_set_menu(dred_window* pWindow, dred_menu* pMenu);
 // Finds the menu item with the given id. The search is recursive.
 dred_menu_item* dred_window_find_menu_item_by_id(dred_window* pWindow, uint16_t id);
 
+// Shows a popup menu on the given window.
+void dred_window_show_popup_menu(dred_window* pWindow, dred_menu* pMenu, int posX, int posY);
+
 
 // Event posting.
 void dred_window_on_close(dred_window* pWindow);

@@ -90,6 +90,23 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append(pLibrary->pMenu_TextEditor, "&Help", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pHelpMenu);
 
 
+    // The text editor right-click popup menu.
+    pLibrary->pPopupMenu_TextEditor = dred_menu_create(pDred, dred_menu_type_popup);
+    if (pLibrary->pPopupMenu_TextEditor == NULL) {
+        return false;
+    }
+
+    dred_menu_item_create_and_append(pLibrary->pPopupMenu_TextEditor, "&Undo", DRED_MENU_ITEM_ID_EDIT_UNDO, "undo", dred_accelerator_create('Z', DRED_KEY_STATE_CTRL_DOWN), NULL);
+    dred_menu_item_create_and_append(pLibrary->pPopupMenu_TextEditor, "&Redo", DRED_MENU_ITEM_ID_EDIT_REDO, "redo", dred_accelerator_create('Y', DRED_KEY_STATE_CTRL_DOWN), NULL);
+    dred_menu_item_create_and_append_separator(pLibrary->pPopupMenu_TextEditor);
+    dred_menu_item_create_and_append(pLibrary->pPopupMenu_TextEditor, "Cu&t", DRED_MENU_ITEM_ID_EDIT_CUT, "cut", dred_accelerator_create('X', DRED_KEY_STATE_CTRL_DOWN), NULL);
+    dred_menu_item_create_and_append(pLibrary->pPopupMenu_TextEditor, "&Copy", DRED_MENU_ITEM_ID_EDIT_COPY, "copy", dred_accelerator_create('C', DRED_KEY_STATE_CTRL_DOWN), NULL);
+    dred_menu_item_create_and_append(pLibrary->pPopupMenu_TextEditor, "&Paste", DRED_MENU_ITEM_ID_EDIT_PASTE, "paste", dred_accelerator_create('V', DRED_KEY_STATE_CTRL_DOWN), NULL);
+    dred_menu_item_create_and_append(pLibrary->pPopupMenu_TextEditor, "&Delete", DRED_MENU_ITEM_ID_EDIT_DELETE, "delete", dred_accelerator_create(DRGUI_DELETE, 0), NULL);
+    dred_menu_item_create_and_append_separator(pLibrary->pPopupMenu_TextEditor);
+    dred_menu_item_create_and_append(pLibrary->pPopupMenu_TextEditor, "Select &All", DRED_MENU_ITEM_ID_EDIT_SELECT_ALL, "select-all", dred_accelerator_create('A', DRED_KEY_STATE_CTRL_DOWN), NULL);
+
+
     return true;
 }
 

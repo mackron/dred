@@ -141,7 +141,7 @@ void dred_command__undo(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    drgui_element* pFocusedElement = drgui_get_element_with_keyboard_capture(pDred->pGUI);
+    drgui_element* pFocusedElement = dred_get_element_with_keyboard_capture(pDred);
     if (pFocusedElement == NULL) {
         return;
     }
@@ -157,7 +157,7 @@ void dred_command__redo(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    drgui_element* pFocusedElement = drgui_get_element_with_keyboard_capture(pDred->pGUI);
+    drgui_element* pFocusedElement = dred_get_element_with_keyboard_capture(pDred);
     if (pFocusedElement == NULL) {
         return;
     }
@@ -178,7 +178,7 @@ void dred_command__copy(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    drgui_element* pFocusedElement = drgui_get_element_with_keyboard_capture(pDred->pGUI);
+    drgui_element* pFocusedElement = dred_get_element_with_keyboard_capture(pDred);
     if (pFocusedElement == NULL) {
         return;
     }
@@ -200,7 +200,7 @@ void dred_command__paste(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    drgui_element* pFocusedElement = drgui_get_element_with_keyboard_capture(pDred->pGUI);
+    drgui_element* pFocusedElement = dred_get_element_with_keyboard_capture(pDred);
     if (pFocusedElement == NULL) {
         return;
     }
@@ -223,7 +223,7 @@ void dred_command__delete(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    drgui_element* pFocusedElement = drgui_get_element_with_keyboard_capture(pDred->pGUI);
+    drgui_element* pFocusedElement = dred_get_element_with_keyboard_capture(pDred);
     if (pFocusedElement == NULL) {
         return;
     }
@@ -238,7 +238,7 @@ void dred_command__select_all(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    drgui_element* pFocusedElement = drgui_get_element_with_keyboard_capture(pDred->pGUI);
+    drgui_element* pFocusedElement = dred_get_element_with_keyboard_capture(pDred);
     if (pFocusedElement == NULL) {
         return;
     }

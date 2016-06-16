@@ -183,6 +183,9 @@ void dred_textbox_set_on_cursor_move(dred_textbox* pTextBox, dred_textbox_on_cur
 void dred_textbox_set_on_undo_point_changed(dred_textbox* pTextBox, dred_textbox_on_undo_point_changed_proc proc);
 
 
+// Function for explicitly handling the on_mouse_button_up event.
+void dred_textbox_on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+
 // Function for explicitly handling the on_mouse_wheel event.
 void dred_textbox_on_mouse_wheel(dred_textbox* pTextBox, int delta, int mousePosX, int mousePosY, int stateFlags);
 

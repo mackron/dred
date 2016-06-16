@@ -58,6 +58,10 @@ struct dred_menu_library
 
     // The menu to use for text editors.
     dred_menu* pMenu_TextEditor;
+
+    
+    // The right-click popup menu for text editors.
+    dred_menu* pPopupMenu_TextEditor;
 };
 
 bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred);

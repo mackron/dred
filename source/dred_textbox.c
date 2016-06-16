@@ -46,6 +46,18 @@ void dred_textbox__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pP
 }
 
 
+void dred_textbox_innertb__on_mouse_button_up(drgui_element* pInternalTB, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+{
+    dred_textbox* pTextBox = dred_control_get_parent(pInternalTB);
+    assert(pTextBox != NULL);
+
+    if (pTextBox->onMouseButtonUp) {
+        pTextBox->onMouseButtonUp(pTextBox, mouseButton, mousePosX, mousePosY, stateFlags);
+    } else {
+        drgui_textbox_on_mouse_button_up(pInternalTB, mouseButton, mousePosX, mousePosY, stateFlags);
+    }
+}
+
 void dred_textbox_innertb__on_mouse_wheel(drgui_element* pInternalTB, int delta, int mousePosX, int mousePosY, int stateFlags)
 {
     dred_textbox* pTextBox = dred_control_get_parent(pInternalTB);
@@ -195,6 +207,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     dred_control_set_on_capture_keyboard(pTextBox, dred_textbox__on_capture_keyboard);
 
     // Internal text box overrides.
+    drgui_set_on_mouse_button_up(data->pInternalTB, dred_textbox_innertb__on_mouse_button_up);
     drgui_set_on_mouse_wheel(data->pInternalTB, dred_textbox_innertb__on_mouse_wheel);
     drgui_set_on_key_down(data->pInternalTB, dred_textbox_innertb__on_key_down);
     drgui_set_on_key_up(data->pInternalTB, dred_textbox_innertb__on_key_up);
@@ -500,6 +513,16 @@ void dred_textbox_set_on_undo_point_changed(dred_textbox* pTextBox, dred_textbox
     data->onUndoPointChanged = proc;
 }
 
+
+void dred_textbox_on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+{
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
+    if (data == NULL) {
+        return;
+    }
+
+    drgui_textbox_on_mouse_button_up(data->pInternalTB, mouseButton, mousePosX, mousePosY, stateFlags);
+}
 
 void dred_textbox_on_mouse_wheel(dred_textbox* pTextBox, int delta, int mousePosX, int mousePosY, int stateFlags)
 {

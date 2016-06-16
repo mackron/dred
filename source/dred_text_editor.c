@@ -111,6 +111,28 @@ void dred_text_editor_textbox__on_mouse_wheel(dred_textbox* pTextBox, int delta,
     }
 }
 
+void dred_text_editor_textbox__on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+{
+    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
+    if (pTextEditor == NULL) {
+        return;
+    }
+
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    assert(data != NULL);
+
+    dred_context* pDred = dred_control_get_context(pTextEditor);
+    assert(pDred != NULL);
+
+    if (mouseButton == DRGUI_MOUSE_BUTTON_RIGHT) {
+        int mousePosXWindow = mousePosX + (int)drgui_get_absolute_position_x(pTextBox);
+        int mousePosYWindow = mousePosY + (int)drgui_get_absolute_position_y(pTextBox);
+        dred_window_show_popup_menu(pDred->pMainWindow, pDred->menuLibrary.pPopupMenu_TextEditor, mousePosXWindow, mousePosYWindow);
+    } else {
+        dred_textbox_on_mouse_button_up(pTextBox, mouseButton, mousePosX, mousePosY, stateFlags);
+    }
+}
+
 void dred_text_editor_textbox__on_undo_point_changed(dred_textbox* pTextBox, unsigned int iUndoPoint)
 {
     dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
@@ -168,6 +190,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_control_set_on_size(pTextEditor, dred_text_editor__on_size);
     dred_control_set_on_capture_keyboard(pTextEditor, dred_text_editor__on_capture_keyboard);
     dred_editor_set_on_save(pTextEditor, dred_text_editor__on_save);
+    dred_control_set_on_mouse_button_up(data->pTextBox, dred_text_editor_textbox__on_mouse_button_up);
     dred_control_set_on_mouse_wheel(data->pTextBox, dred_text_editor_textbox__on_mouse_wheel);
     dred_control_set_on_key_down(data->pTextBox, dred_text_editor_textbox__on_key_down);
     dred_textbox_set_on_undo_point_changed(data->pTextBox, dred_text_editor_textbox__on_undo_point_changed);

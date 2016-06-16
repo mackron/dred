@@ -986,6 +986,26 @@ void dred_window_set_menu__win32(dred_window* pWindow, dred_menu* pMenu)
     pWindow->pMenu = pMenu;
 }
 
+void dred_window_show_popup_menu__win32(dred_window* pWindow, dred_menu* pMenu, int posX, int posY)
+{
+    if (pWindow == NULL || pMenu == NULL) {
+        return;
+    }
+
+    POINT screenCoords;
+    screenCoords.x = posX;
+    screenCoords.y = posY;
+    ClientToScreen(pWindow->hWnd, &screenCoords);
+
+    UINT flags = TPM_RIGHTBUTTON | TPM_HORIZONTAL | TPM_VERTICAL;
+    int alignment = GetSystemMetrics(SM_MENUDROPALIGNMENT);
+    if (alignment == 0) {
+        flags |= TPM_RIGHTALIGN;
+    }
+
+    TrackPopupMenuEx(pMenu->hMenu, flags, screenCoords.x, screenCoords.y, pWindow->hWnd, NULL);
+}
+
 
 //// MENUS ////
 
@@ -995,10 +1015,13 @@ dred_menu* dred_menu_create__win32(dred_context* pDred, dred_menu_type type)
         return NULL;
     }
 
-    // Menu bars and popup menus are the same thing in Win32.
-    (void)type;
+    HMENU hMenu = NULL;
+    if (type == dred_menu_type_popup) {
+        hMenu = CreatePopupMenu();
+    } else {
+        hMenu = CreateMenu();
+    }
 
-    HMENU hMenu = CreateMenu();
     if (hMenu == NULL) {
         return NULL;
     }
@@ -2197,6 +2220,38 @@ void dred_window_set_menu__gtk(dred_window* pWindow, dred_menu* pMenu)
 }
 
 
+static int popupPosX = 0;
+static int popupPosY = 0;
+
+void dred_gtk_cb__on_menu_position(GtkMenu* pGTKMenu, gint* x, gint* y, gboolean* push_in, gpointer pUserData)
+{
+    (void)pGTKMenu;
+
+    dred_window* pWindow = (dred_window*)pUserData;
+    assert(pWindow != NULL);
+
+    gint windowPosX;
+    gint windowPosY;
+    gtk_window_get_position(GTK_WINDOW(pWindow->pGTKWindow), &windowPosX, &windowPosY);
+
+    gint clientPosX;
+    gint clientPosY;
+    gtk_widget_translate_coordinates(pWindow->pGTKClientArea, gtk_widget_get_toplevel(pWindow->pGTKClientArea), 0, 0, &clientPosX, &clientPosY);
+
+
+    *x = windowPosX + clientPosX + popupPosX;
+    *y = windowPosY + clientPosY + popupPosY;
+    *push_in = TRUE;
+}
+
+void dred_window_show_popup_menu__gtk(dred_window* pWindow, dred_menu* pMenu, int posX, int posY)
+{
+    popupPosX = posX;
+    popupPosY = posY;
+    gtk_menu_popup(GTK_MENU(pMenu->pGTKMenu), NULL, NULL, dred_gtk_cb__on_menu_position, pWindow, 0, 0);
+}
+
+
 //// MENUS ////
 
 static gboolean dred_gtk_cb__on_mouse_enter__menu(GtkWidget* pGTKMenu, GdkEventCrossing* pEvent, gpointer pUserData)
@@ -2805,6 +2860,17 @@ dred_menu_item* dred_window_find_menu_item_by_id(dred_window* pWindow, uint16_t 
     }
 
     return dred_menu_find_menu_item_by_id(pWindow->pMenu, id);
+}
+
+void dred_window_show_popup_menu(dred_window* pWindow, dred_menu* pMenu, int posX, int posY)
+{
+#ifdef DRED_WIN32
+    dred_window_show_popup_menu__win32(pWindow, pMenu, posX, posY);
+#endif
+
+#ifdef DRED_GTK
+    dred_window_show_popup_menu__gtk(pWindow, pMenu, posX, posY);
+#endif
 }
 
 

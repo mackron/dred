@@ -604,6 +604,20 @@ dred_editor* dred_get_focused_editor(dred_context* pDred)
     return pControl;
 }
 
+drgui_element* dred_get_element_with_keyboard_capture(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return NULL;
+    }
+
+    drgui_element* pElement = drgui_get_element_with_keyboard_capture(pDred->pGUI);
+    if (pElement == NULL) {
+        pElement = pDred->pMainWindow->pElementWithKeyboardCapture;
+    }
+
+    return pElement;
+}
+
 
 bool dred__save_editor(dred_editor* pEditor, const char* newFilePath, dred_tab* pTab)
 {
