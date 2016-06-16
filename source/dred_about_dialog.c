@@ -1988,7 +1988,7 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
     const char* copyrightStr = "Copyright \xC2\xA9 2016 David Reid";
     drgui_font* pFont = dred_font_acquire_subfont(pWindow->pDred->config.pUIFont, uiScale);
     drgui_font_metrics fontMetrics;
-    drgui_get_font_metrics(pFont, 1, 1, &fontMetrics);
+    drgui_get_font_metrics(pFont, &fontMetrics);
     dred_font_release_subfont(pWindow->pDred->config.pUIFont, pFont);
 
     drgui_draw_text(pElement, pFont, versionStr, strlen(versionStr), (8*uiScale), bannerRect.bottom + (9*uiScale), drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);

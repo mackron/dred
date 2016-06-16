@@ -40,7 +40,7 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, drgui_rect rect, void* pPaintDa
     drgui_draw_rect(pCmdBar, bgrect, data->pDred->config.cmdbarBGColor, pPaintData);
 
     drgui_font_metrics messageFontMetrics;
-    drgui_get_font_metrics(data->pMessageFont, 1, 1, &messageFontMetrics);
+    drgui_get_font_metrics(data->pMessageFont, &messageFontMetrics);
 
     float messageLeft = bgrect.left + (4*uiScale);
     float messageTop  = ((bgrect.bottom - bgrect.top) - messageFontMetrics.lineHeight) / 2;
@@ -146,10 +146,10 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
 
     // Set the initial size.
     drgui_font_metrics fontMetricsTB;
-    drgui_get_font_metrics(dred_textbox_get_font(data->pTextBox), 1, 1, &fontMetricsTB);
+    drgui_get_font_metrics(dred_textbox_get_font(data->pTextBox), &fontMetricsTB);
 
     drgui_font_metrics fontMetricsMsg;
-    drgui_get_font_metrics(data->pMessageFont, 1, 1, &fontMetricsMsg);
+    drgui_get_font_metrics(data->pMessageFont, &fontMetricsMsg);
 
     float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(data->pTextBox)*2;
     float messageHeight = (float)fontMetricsMsg.lineHeight;
