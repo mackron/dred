@@ -31,11 +31,15 @@
 #ifdef _WIN32
 #if defined(_MSC_VER) || defined(__clang__)
 #pragma comment(lib, "msimg32.lib")
+#pragma comment(lib, "comctl32.lib")
 #endif
 #endif
 
 
 // External libraries.
+#define DR_TEXT_ENGINE_IMPLEMENTATION
+#include "dr_libs_private/dr_text_engine.h"
+
 #define DR_IMPLEMENTATION
 #include "../../dr_libs/dr.h"
 

@@ -565,6 +565,12 @@ bool dred_platform_init__win32()
     // We'll be handling DPI ourselves. This should be done at the top.
     dr_win32_make_dpi_aware();
 
+    // Need to call this to enable visual styles.
+    INITCOMMONCONTROLSEX ctls;
+    ctls.dwSize = sizeof(ctls);
+    ctls.dwICC = ICC_STANDARD_CLASSES;
+    InitCommonControlsEx(&ctls);
+
     // Window classes.
     WNDCLASSEXA wc;
     ZeroMemory(&wc, sizeof(wc));
