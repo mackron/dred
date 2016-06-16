@@ -29,6 +29,7 @@
 // replace-next         dred_command__replace_next          DRED_CMDBAR_NO_CLEAR
 // replace-all          dred_command__replace_all           DRED_CMDBAR_RELEASE_KEYBOARD
 // toggle-line-numbers  dred_command__toggle_line_numbers   DRED_CMDBAR_RELEASE_KEYBOARD
+// zoom                 dred_command__zoom                  DRED_CMDBAR_RELEASE_KEYBOARD
 //
 // END COMMAND LIST
 
@@ -133,6 +134,9 @@ void dred_command__replace_all(dred_context* pDred, const char* value);
 
 // toggle-line-numbers
 void dred_command__toggle_line_numbers(dred_context* pDred, const char* value);
+
+// zoom
+void dred_command__zoom(dred_context* pDred, const char* value);
 
 
 

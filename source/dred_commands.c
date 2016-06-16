@@ -349,6 +349,18 @@ void dred_command__toggle_line_numbers(dred_context* pDred, const char* value)
     dred_toggle_line_numbers(pDred);
 }
 
+void dred_command__zoom(dred_context* pDred, const char* value)
+{
+    dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
+    if (pFocusedEditor == NULL) {
+        return;
+    }
+
+    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+        dred_set_text_editor_scale(pDred, atof(value));
+    }
+}
+
 
 
 
