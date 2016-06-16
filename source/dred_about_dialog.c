@@ -1992,6 +1992,19 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
     drgui_draw_text(pElement, pFont, copyrightStr, strlen(copyrightStr), 8, bannerRect.bottom + 9 + fontMetrics.lineHeight, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
 }
 
+void dred_about_dialog__on_window_close(dred_window* pWindow)
+{
+    dred_about_dialog* pDialog = (dred_about_dialog*)pWindow->pUserData;
+    assert(pDialog != NULL);
+
+    dred_context* pDred = pWindow->pDred;
+    assert(pDred != NULL);
+
+    assert(pDred->pAboutDialog == pDialog);
+    dred_about_dialog_delete(pDred->pAboutDialog);
+    pDred->pAboutDialog = NULL;
+}
+
 dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
 {
     if (pDred == NULL) {
@@ -2010,7 +2023,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     }
     
     pDialog->pWindow->pUserData = pDialog;
-    pDialog->pWindow->onClose = dred_window__stock_event__hide_on_close;
+    pDialog->pWindow->onClose = dred_about_dialog__on_window_close;
     drgui_set_on_paint(pDialog->pWindow->pRootGUIElement, dred_about_dialog__on_paint);
 
 
