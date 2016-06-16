@@ -27,8 +27,8 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append(pFileMenu_Default, "E&xit", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_accelerator_create(DRGUI_F4, DRED_KEY_STATE_ALT_DOWN), NULL);
 
     dred_menu* pHelpMenu_Default = dred_menu_create(pDred, dred_menu_type_popup);
-    dred_menu_item_create_and_append(pHelpMenu_Default, "View &Help (Opens Web Browser)...", DRED_MENU_ITEM_ID_HELP_HELP, "help", dred_accelerator_create(DRGUI_F1, DRED_KEY_STATE_CTRL_DOWN), NULL);
-    dred_menu_item_create_and_append_separator(pHelpMenu_Default);
+    //dred_menu_item_create_and_append(pHelpMenu_Default, "View &Help (Opens Web Browser)...", DRED_MENU_ITEM_ID_HELP_HELP, "help", dred_accelerator_create(DRGUI_F1, DRED_KEY_STATE_CTRL_DOWN), NULL);
+    //dred_menu_item_create_and_append_separator(pHelpMenu_Default);
     dred_menu_item_create_and_append(pHelpMenu_Default, "&About...", DRED_MENU_ITEM_ID_HELP_ABOUT, "about", dred_accelerator_none(), NULL);
 
     dred_menu_item_create_and_append(pLibrary->pMenu_Default, "&File", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pFileMenu_Default);
@@ -77,8 +77,8 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append(pFindMenu, "&Go To...", DRED_MENU_ITEM_ID_FIND_GOTO, "cmdbar goto ", dred_accelerator_create('G', DRED_KEY_STATE_CTRL_DOWN), NULL);
 
     dred_menu* pHelpMenu = dred_menu_create(pDred, dred_menu_type_popup);
-    dred_menu_item_create_and_append(pHelpMenu, "View &Help (Opens Web Browser)...", DRED_MENU_ITEM_ID_HELP_HELP, "help", dred_accelerator_create(DRGUI_F1, DRED_KEY_STATE_CTRL_DOWN), NULL);
-    dred_menu_item_create_and_append_separator(pHelpMenu);
+    //dred_menu_item_create_and_append(pHelpMenu, "View &Help (Opens Web Browser)...", DRED_MENU_ITEM_ID_HELP_HELP, "help", dred_accelerator_create(DRGUI_F1, DRED_KEY_STATE_CTRL_DOWN), NULL);
+    //dred_menu_item_create_and_append_separator(pHelpMenu);
     dred_menu_item_create_and_append(pHelpMenu, "&About...", DRED_MENU_ITEM_ID_HELP_ABOUT, "about", dred_accelerator_none(), NULL);
 
     dred_menu_item_create_and_append(pLibrary->pMenu_TextEditor, "&File", DRED_MENU_ITEM_ID_NONE, NULL, dred_accelerator_none(), pFileMenu);
