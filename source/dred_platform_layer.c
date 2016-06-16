@@ -2355,6 +2355,23 @@ void dred_menu_item_delete__gtk(dred_menu_item* pItem)
 
 
 
+//// DPI SCALING ////
+
+void dred_get_base_dpi__gtk(int* pDPIXOut, int* pDPIYOut)
+{
+    if (pDPIXOut) *pDPIXOut = 96;
+    if (pDPIYOut) *pDPIYOut = 96;
+}
+
+void dred_get_system_dpi__gtk(int* pDPIXOut, int* pDPIYOut)
+{
+    // TODO: Read this from a setting... no idea which one, though...
+    if (pDPIXOut) *pDPIXOut = 96;
+    if (pDPIYOut) *pDPIYOut = 96;
+}
+
+
+
 //// TIMERS ////
 
 static gboolean dred_timer_proc_gtk(gpointer data)
@@ -3068,6 +3085,32 @@ void dred_menu_item_delete(dred_menu_item* pItem)
 
 #ifdef DRED_GTK
     dred_menu_item_delete__gtk(pItem);
+#endif
+}
+
+
+
+//// DPI SCALING ////
+
+void dred_get_base_dpi(int* pDPIXOut, int* pDPIYOut)
+{
+#ifdef DRED_WIN32
+    dr_win32_get_base_dpi(pDPIXOut, pDPIYOut);
+#endif
+
+#ifdef DRED_GTK
+    dred_get_base_dpi__gtk(pDPIXOut, pDPIYOut);
+#endif
+}
+
+void dred_get_system_dpi(int* pDPIXOut, int* pDPIYOut)
+{
+#ifdef DRED_WIN32
+    dr_win32_get_system_dpi(pDPIXOut, pDPIYOut);
+#endif
+
+#ifdef DRED_GTK
+    dred_get_system_dpi__gtk(pDPIXOut, pDPIYOut);
 #endif
 }
 

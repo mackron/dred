@@ -185,6 +185,16 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     pDred->logFile = dred__open_log_file();
 
 
+    // Grab the system DPI scaling early so it can be used to correctly size GUI elements at initialization time.
+    int baseDPI;
+    int systemDPI;
+    dred_get_base_dpi(&baseDPI, NULL);
+    dred_get_system_dpi(&systemDPI, NULL);
+
+    pDred->dpiScale = (float)systemDPI / (float)baseDPI;
+    pDred->uiScale = pDred->dpiScale;
+
+
     // The drawing context.
 #ifdef DRED_WIN32
     pDred->pDrawingContext = dr2d_create_context_gdi();
@@ -259,6 +269,9 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     }
 
     dred_config_load_file(&pDred->config, ".dred", dred_config__on_error, pDred);
+
+    // The UI scale will be known only after loading the configs.
+    pDred->uiScale = pDred->dpiScale * pDred->config.uiScale;
 
 
 

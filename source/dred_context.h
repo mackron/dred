@@ -49,6 +49,13 @@ struct dred_context
     dred_cmdbar* pCmdBar;
 
 
+    // The scale to apply for normal system DPI scaling. Usually this will be the same as UI scale, but not always.
+    float dpiScale;
+
+    // The UI scale. All UI elements need to be scaled by this amount.
+    float uiScale;
+
+
     // Whether or not the application is running in silent mode.
     bool isTerminalOutputDisabled;
 

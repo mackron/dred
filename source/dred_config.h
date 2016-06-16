@@ -4,8 +4,7 @@ typedef struct
     // The main context that owns this config. This is set to the context that initialized the config object.
     dred_context* pDred;
 
-    float uiScaleX;     // scale-x
-    float uiScaleY;     // scale-y
+    float uiScale;
     dred_font* pUIFont;
 
     drgui_color cmdbarBGColor;

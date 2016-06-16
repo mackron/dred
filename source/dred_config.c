@@ -350,8 +350,7 @@ bool dred_config_init(dred_config* pConfig, dred_context* pDred)
     pConfig->pDred = pDred;
 
     pConfig->pUIFont = dred_config__load_system_font_ui(pDred);
-    pConfig->uiScaleX = 1;
-    pConfig->uiScaleY = 1;
+    pConfig->uiScale = 1;
 
     pConfig->cmdbarBGColor = drgui_rgb(64, 64, 64);
     pConfig->pCmdbarTBFont = dred_config__load_system_font_mono(pDred);
@@ -410,12 +409,8 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
     dred_config_load_file__data* pData = (dred_config_load_file__data*)pUserData;
     assert(pData != NULL);
 
-    if (strcmp(key, "ui-scale-x") == 0) {
-        pData->pConfig->uiScaleX = (float)atof(value);
-        return;
-    }
-    if (strcmp(key, "ui-scale-y") == 0) {
-        pData->pConfig->uiScaleY = (float)atof(value);
+    if (strcmp(key, "ui-scale") == 0) {
+        pData->pConfig->uiScale = (float)atof(value);
         return;
     }
     if (strcmp(key, "ui-font") == 0) {
@@ -451,6 +446,10 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
         pData->pConfig->textEditorActiveLineColor = dred_parse_color(value);
         return;
     }
+
+
+    // If we get here it means the variable is unknown.
+    dred_warningf(pData->pConfig->pDred, "Unknown config variable: %s\n", key);
 }
 
 void dred_config_load_file__on_error(void* pUserData, const char* message, unsigned int line)
