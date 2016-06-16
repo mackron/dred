@@ -184,10 +184,10 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drgui_textbox_set_active_line_background_color(data->pInternalTB, drgui_rgb(48, 48, 48));
     drgui_textbox_set_text_color(data->pInternalTB, drgui_rgb(224, 224, 224));
     drgui_textbox_set_cursor_color(data->pInternalTB, drgui_rgb(224, 224, 224));
-    drgui_textbox_set_cursor_width(data->pInternalTB, 1 * pDred->uiScale);
-    drgui_textbox_set_font(data->pInternalTB, dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale)); // TODO: <-- This font needs to be unacquired.
+    drgui_textbox_set_cursor_width(data->pInternalTB, 1 * (float)pDred->uiScale);
+    drgui_textbox_set_font(data->pInternalTB, dred_font_acquire_subfont(pDred->config.pUIFont, (float)pDred->uiScale)); // TODO: <-- This font needs to be unacquired.
     drgui_textbox_set_border_width(data->pInternalTB, 0);
-    drgui_textbox_set_scrollbar_size(data->pInternalTB, 16 * pDred->uiScale);
+    drgui_textbox_set_scrollbar_size(data->pInternalTB, 16 * (float)pDred->uiScale);
 
 
     // Events.

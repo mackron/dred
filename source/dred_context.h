@@ -50,10 +50,13 @@ struct dred_context
 
 
     // The scale to apply for normal system DPI scaling. Usually this will be the same as UI scale, but not always.
-    float dpiScale;
+    double dpiScale;
 
     // The UI scale. All UI elements need to be scaled by this amount.
-    float uiScale;
+    double uiScale;
+
+    // The scale to use for text editors.
+    double textEditorScale;
 
 
     // Whether or not the application is running in silent mode.
@@ -232,6 +235,13 @@ void dred_hide_line_numbers(dred_context* pDred);
 
 // Toggles line numbers on text editors.
 void dred_toggle_line_numbers(dred_context* pDred);
+
+
+// Sets the scale of text editors.
+void dred_set_text_editor_scale(dred_context* pDred, double scale);
+
+// Retrieves the scale of text editors.
+double dred_get_text_editor_scale(dred_context* pDred);
 
 
 // Called when a tab is activated. This is where contextual GUI elements are shown or hidden.

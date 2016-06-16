@@ -86,15 +86,19 @@ void dred_text_editor_textbox__on_mouse_wheel(dred_textbox* pTextBox, int delta,
     dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
     assert(data != NULL);
 
+    dred_context* pDred = dred_control_get_context(pTextEditor);
+    assert(pDred != NULL);
+
     if (stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) {
-        double newTextScale = data->textScale;
+        // When setting the scale, we actually do it application-wide, not just local to the current text editor.
+        double newTextScale = dred_get_text_editor_scale(pDred);
         if (delta > 0) {
             newTextScale = data->textScale * (1.0 + ( delta * 0.1));
         } else {
             newTextScale = data->textScale / (1.0 + (-delta * 0.1));
         }
 
-        dred_text_editor_set_text_scale(pTextEditor, newTextScale);
+        dred_set_text_editor_scale(pDred, newTextScale);
 
         //printf("Mouse Wheel: %f", newTextScale);
     } else {
@@ -138,7 +142,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     data->textScale = 1;
 
     dred_textbox_set_vertical_align(data->pTextBox, drgui_text_engine_alignment_top);
-    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
+    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, (float)pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
     dred_textbox_set_background_color(data->pTextBox, pDred->config.textEditorBGColor);
     dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.textEditorActiveLineColor);
 
@@ -166,6 +170,8 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     if (pDred->isShowingLineNumbers) {
         dred_text_editor_show_line_numbers(pTextEditor);
     }
+
+    dred_text_editor_set_text_scale(pTextEditor, pDred->textEditorScale);
     
     return pTextEditor;
 }
@@ -302,6 +308,6 @@ void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, double textS
     assert(pDred != NULL);
 
     data->textScale = dr_clamp(textScale, 0.1, 4.0);
-    dred_textbox_set_line_numbers_width(data->pTextBox, 64 * pDred->uiScale * (float)data->textScale);
-    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale * (float)data->textScale));    // TODO: <-- This font needs to be unacquired.
+    dred_textbox_set_line_numbers_width(data->pTextBox, (float)(64 * pDred->uiScale * data->textScale));
+    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, (float)(pDred->uiScale * data->textScale)));    // TODO: <-- This font needs to be unacquired.
 }

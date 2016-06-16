@@ -32,7 +32,7 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, drgui_rect rect, void* pPaintDa
     dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
     assert(data != NULL);
 
-    float uiScale = data->pDred->uiScale;
+    float uiScale = (float)data->pDred->uiScale;
 
     drgui_rect bgrect = drgui_get_local_rect(pCmdBar);
     bgrect.left = dred_control_get_width(data->pTextBox);
@@ -124,7 +124,7 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
         return NULL;
     }
 
-    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pCmdbarTBFont, pDred->uiScale));
+    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pCmdbarTBFont, (float)pDred->uiScale));
     dred_textbox_set_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
     dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
     dred_textbox_disable_horizontal_scrollbar(data->pTextBox);
@@ -140,7 +140,7 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
     dred_control_set_on_printable_key_down(data->pTextBox, dred_cmdbar_tb__on_printable_key_down);
 
 
-    data->pMessageFont = dred_font_acquire_subfont(pDred->config.pCmdbarMessageFont, pDred->uiScale);
+    data->pMessageFont = dred_font_acquire_subfont(pDred->config.pCmdbarMessageFont, (float)pDred->uiScale);
     strcpy_s(data->message, sizeof(data->message), "");
 
 

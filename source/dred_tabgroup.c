@@ -137,13 +137,13 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
     data->pNextTabGroup = NULL;
     data->pPrevTabGroup = NULL;
 
-    drgui_tabbar_set_tab_padding(data->pTabBar, 4 * pDred->uiScale);
-    drgui_tabbar_set_close_button_left_padding(data->pTabBar, 6 * pDred->uiScale);
-    drgui_tabbar_set_close_button_image(data->pTabBar, dred_image_acquire_subimage(pDred->config.pImageCross, pDred->uiScale));
+    drgui_tabbar_set_tab_padding(data->pTabBar, 4 * (float)pDred->uiScale);
+    drgui_tabbar_set_close_button_left_padding(data->pTabBar, 6 * (float)pDred->uiScale);
+    drgui_tabbar_set_close_button_image(data->pTabBar, dred_image_acquire_subimage(pDred->config.pImageCross, (float)pDred->uiScale));
     drgui_tabbar_show_close_buttons(data->pTabBar);
     drgui_tabbar_enable_close_on_middle_click(data->pTabBar);
     drgui_tabbar_enable_auto_size(data->pTabBar);
-    drgui_tabbar_set_font(data->pTabBar, dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale));
+    drgui_tabbar_set_font(data->pTabBar, dred_font_acquire_subfont(pDred->config.pUIFont, (float)pDred->uiScale));
     drgui_tabbar_set_on_tab_activated(data->pTabBar, dred_tabbar__on_tab_activated);
     drgui_tabbar_set_on_tab_deactivated(data->pTabBar, dred_tabbar__on_tab_deactivated);
     drgui_tabbar_set_on_tab_closed(data->pTabBar, dred_tabbar__on_tab_close);

@@ -1952,7 +1952,7 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
     dred_about_dialog* pDialog = (dred_about_dialog*)pWindow->pUserData;
     assert(pDialog != NULL);
 
-    float uiScale = pWindow->pDred->uiScale;
+    float uiScale = (float)pWindow->pDred->uiScale;
 
     drgui_rect dialogRect = drgui_get_local_rect(pElement);
 
