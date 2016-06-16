@@ -91,16 +91,21 @@ void dred_text_editor_textbox__on_mouse_wheel(dred_textbox* pTextBox, int delta,
 
     if (stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) {
         // When setting the scale, we actually do it application-wide, not just local to the current text editor.
-        double newTextScale = dred_get_text_editor_scale(pDred);
+        double oldTextScale = dred_get_text_editor_scale(pDred);
+        double newTextScale;
         if (delta > 0) {
-            newTextScale = data->textScale * (1.0 + ( delta * 0.1));
+            newTextScale = oldTextScale * (1.0 + ( delta * 0.1));
         } else {
-            newTextScale = data->textScale / (1.0 + (-delta * 0.1));
+            newTextScale = oldTextScale / (1.0 + (-delta * 0.1));
         }
 
-        dred_set_text_editor_scale(pDred, newTextScale);
+        // Always make sure the 100% scale is selectable.
+        if ((newTextScale < 1 && oldTextScale > 1) || (newTextScale > 1 && oldTextScale < 1)) {
+            newTextScale = 1;
+        }
 
-        //printf("Mouse Wheel: %f", newTextScale);
+
+        dred_set_text_editor_scale(pDred, newTextScale);
     } else {
         dred_textbox_on_mouse_wheel(pTextBox, delta, mousePosX, mousePosY, stateFlags);
     }
