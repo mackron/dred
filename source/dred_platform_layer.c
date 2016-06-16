@@ -2003,6 +2003,7 @@ dred_window* dred_window_create_dialog__gtk(dred_window* pParentWindow, const ch
     }
 
     gtk_window_set_type_hint(GTK_WINDOW(pGTKWindow), GDK_WINDOW_TYPE_HINT_DIALOG);
+    gtk_window_set_skip_taskbar_hint(GTK_WINDOW(pGTKWindow), TRUE);
     gtk_window_set_title(GTK_WINDOW(pGTKWindow), title);
     gtk_window_resize(GTK_WINDOW(pGTKWindow), (gint)width, (gint)height);
     gtk_widget_set_size_request(pGTKWindow, (gint)width, (gint)height);
