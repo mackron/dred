@@ -36,7 +36,7 @@ struct dred_context
     dred_window* pMainWindow;
 
     // The about window.
-    dred_window* pAboutWindow;
+    dred_about_dialog* pAboutDialog;
 
 
     // The main tab group container. This is the root container where all other sub-containers will be placed.

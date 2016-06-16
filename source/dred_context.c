@@ -338,6 +338,11 @@ void dred_uninit(dred_context* pDred)
     dred_close_all_tabs(pDred);
 
 
+    if (pDred->pAboutDialog) {
+        dred_about_dialog_delete(pDred->pAboutDialog);
+    }
+
+
     if (pDred->pCmdBar) {
         dred_cmdbar_delete(pDred->pCmdBar);
     }
@@ -1140,19 +1145,15 @@ void dred_show_about_dialog(dred_context* pDred)
         return;
     }
 
-    if (pDred->pAboutWindow == NULL) {
-        pDred->pAboutWindow = dred_window_create_dialog(pDred->pMainWindow, "About", 640, 480);
-        if (pDred->pAboutWindow == NULL) {
+    if (pDred->pAboutDialog == NULL) {
+        pDred->pAboutDialog = dred_about_dialog_create(pDred);
+        if (pDred->pAboutDialog == NULL) {
             return;
         }
-
-        pDred->pAboutWindow->onClose = dred_window__stock_event__hide_on_close;
     }
 
-    assert(pDred->pAboutWindow != NULL);
-
-    dred_window_move_to_center(pDred->pAboutWindow);
-    dred_window_show(pDred->pAboutWindow);
+    assert(pDred->pAboutDialog != NULL);
+    dred_about_dialog_show(pDred->pAboutDialog);
 }
 
 

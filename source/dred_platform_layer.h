@@ -127,6 +127,9 @@ struct dred_window
     // The flags to pass to the onHide event handler.
     unsigned int onHideFlags;
 
+    // External user data.
+    void* pUserData;
+
 
     // Platform specific.
 #ifdef _WIN32
