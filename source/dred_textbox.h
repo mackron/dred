@@ -43,6 +43,12 @@ void dred_textbox_set_background_color(dred_textbox* pTextBox, drgui_color color
 // Sets the background color for the line the caret is currently sitting on.
 void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, drgui_color color);
 
+// Sets the width of the text cursor.
+void dred_textbox_set_cursor_width(dred_textbox* pTextBox, float cursorWidth);
+
+// Retrieves the width of the text cursor.
+float dred_textbox_get_cursor_width(dred_textbox* pTextBox);
+
 // Sets the color of the cursor of the given text box.
 void dred_textbox_set_cursor_color(dred_textbox* pTextBox, drgui_color color);
 
@@ -66,6 +72,12 @@ void dred_textbox_set_vertical_align(dred_textbox* pTextBox, drgui_text_engine_a
 
 // Sets the horizontal alignment of the given text box.
 void dred_textbox_set_horizontal_align(dred_textbox* pTextBox, drgui_text_engine_alignment align);
+
+// Sets the width of the line numbers.
+void dred_textbox_set_line_numbers_width(dred_textbox* pTextBox, float lineNumbersWidth);
+
+// Retrieves the width of the line numbers.
+float dred_textbox_get_line_numbers_width(dred_textbox* pTextBox);
 
 
 // Sets the blink rate of the cursor in milliseconds.
@@ -170,6 +182,9 @@ void dred_textbox_set_on_cursor_move(dred_textbox* pTextBox, dred_textbox_on_cur
 // Sets the function to call when the undo point changes.
 void dred_textbox_set_on_undo_point_changed(dred_textbox* pTextBox, dred_textbox_on_undo_point_changed_proc proc);
 
+
+// Function for explicitly handling the on_mouse_wheel event.
+void dred_textbox_on_mouse_wheel(dred_textbox* pTextBox, int delta, int mousePosX, int mousePosY, int stateFlags);
 
 // Function for explicitly handling the on_key_down event.
 void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags);

@@ -3,6 +3,7 @@ typedef struct
 {
     dred_textbox* pTextBox;
     unsigned int iBaseUndoPoint;    // Used to determine whether or no the file has been modified.
+    double textScale;
 } dred_text_editor_data;
 
 dred_textbox* dred_text_editor__get_textbox(dred_text_editor* pTextEditor)
@@ -75,6 +76,32 @@ void dred_text_editor_textbox__on_key_down(dred_textbox* pTextBox, drgui_key key
     }
 }
 
+void dred_text_editor_textbox__on_mouse_wheel(dred_textbox* pTextBox, int delta, int mousePosX, int mousePosY, int stateFlags)
+{
+    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
+    if (pTextEditor == NULL) {
+        return;
+    }
+
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    assert(data != NULL);
+
+    if (stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) {
+        double newTextScale = data->textScale;
+        if (delta > 0) {
+            newTextScale = data->textScale * (1.0 + ( delta * 0.1));
+        } else {
+            newTextScale = data->textScale / (1.0 + (-delta * 0.1));
+        }
+
+        dred_text_editor_set_text_scale(pTextEditor, newTextScale);
+
+        //printf("Mouse Wheel: %f", newTextScale);
+    } else {
+        dred_textbox_on_mouse_wheel(pTextBox, delta, mousePosX, mousePosY, stateFlags);
+    }
+}
+
 void dred_text_editor_textbox__on_undo_point_changed(dred_textbox* pTextBox, unsigned int iUndoPoint)
 {
     dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
@@ -108,8 +135,10 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
         return NULL;
     }
 
+    data->textScale = 1;
+
     dred_textbox_set_vertical_align(data->pTextBox, drgui_text_engine_alignment_top);
-    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, 1));
+    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
     dred_textbox_set_background_color(data->pTextBox, pDred->config.textEditorBGColor);
     dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.textEditorActiveLineColor);
 
@@ -130,6 +159,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_control_set_on_size(pTextEditor, dred_text_editor__on_size);
     dred_control_set_on_capture_keyboard(pTextEditor, dred_text_editor__on_capture_keyboard);
     dred_editor_set_on_save(pTextEditor, dred_text_editor__on_save);
+    dred_control_set_on_mouse_wheel(data->pTextBox, dred_text_editor_textbox__on_mouse_wheel);
     dred_control_set_on_key_down(data->pTextBox, dred_text_editor_textbox__on_key_down);
     dred_textbox_set_on_undo_point_changed(data->pTextBox, dred_text_editor_textbox__on_undo_point_changed);
 
@@ -258,4 +288,20 @@ bool dred_text_editor_find_and_replace_all(dred_text_editor* pTextEditor, const 
     }
 
     return dred_textbox_find_and_replace_all(data->pTextBox, text, replacement);
+}
+
+
+void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, double textScale)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    dred_context* pDred = dred_control_get_context(pTextEditor);
+    assert(pDred != NULL);
+
+    data->textScale = dr_clamp(textScale, 0.1, 4.0);
+    dred_textbox_set_line_numbers_width(data->pTextBox, 64 * pDred->uiScale * (float)data->textScale);
+    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale * (float)data->textScale));    // TODO: <-- This font needs to be unacquired.
 }

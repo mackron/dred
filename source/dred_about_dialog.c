@@ -1952,6 +1952,8 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
     dred_about_dialog* pDialog = (dred_about_dialog*)pWindow->pUserData;
     assert(pDialog != NULL);
 
+    float uiScale = pWindow->pDred->uiScale;
+
     drgui_rect dialogRect = drgui_get_local_rect(pElement);
 
     drgui_draw_rect(pElement, dialogRect, drgui_rgb(255, 255, 255), pPaintData);
@@ -1961,14 +1963,14 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
     drgui_get_image_size(pDialog->pLogo, &logoWidth, &logoHeight);
 
     drgui_rect bannerRect = dialogRect;
-    bannerRect.bottom = logoHeight + 64.0f;
+    bannerRect.bottom = (logoHeight + 64.0f) * uiScale;
 
     drgui_draw_image_args args;
     memset(&args, 0, sizeof(args));
     args.srcWidth = (float)logoWidth;
     args.srcHeight = (float)logoHeight;
-    args.dstWidth = args.srcWidth;
-    args.dstHeight = args.srcHeight;
+    args.dstWidth = args.srcWidth * uiScale;
+    args.dstHeight = args.srcHeight * uiScale;
     args.dstX = 32;
     args.dstY = 32;
     args.dstBoundsX = bannerRect.left;
@@ -1980,16 +1982,17 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
     args.backgroundColor = drgui_rgb(255, 255, 255);
     drgui_draw_image(pElement, pDialog->pLogo, &args, pPaintData);
 
-    drgui_draw_rect(pElement, drgui_make_rect(0, bannerRect.bottom, dialogRect.right, bannerRect.bottom + 1), drgui_rgb(200, 200, 200), pPaintData);
+    drgui_draw_rect(pElement, drgui_make_rect(0, bannerRect.bottom, dialogRect.right, bannerRect.bottom + (1 * uiScale)), drgui_rgb(200, 200, 200), pPaintData);
 
     const char* versionStr = "dred version 1.0";
     const char* copyrightStr = "Copyright \xC2\xA9 2016 David Reid";
-    drgui_font* pFont = dred_font_acquire_subfont(pWindow->pDred->config.pUIFont, 1);
+    drgui_font* pFont = dred_font_acquire_subfont(pWindow->pDred->config.pUIFont, uiScale);
     drgui_font_metrics fontMetrics;
     drgui_get_font_metrics(pFont, 1, 1, &fontMetrics);
+    dred_font_release_subfont(pWindow->pDred->config.pUIFont, pFont);
 
-    drgui_draw_text(pElement, pFont, versionStr, strlen(versionStr), 8, bannerRect.bottom + 9, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
-    drgui_draw_text(pElement, pFont, copyrightStr, strlen(copyrightStr), 8, bannerRect.bottom + 9 + fontMetrics.lineHeight, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    drgui_draw_text(pElement, pFont, versionStr, strlen(versionStr), (8*uiScale), bannerRect.bottom + (9*uiScale), drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    drgui_draw_text(pElement, pFont, copyrightStr, strlen(copyrightStr), (8*uiScale), bannerRect.bottom + (9*uiScale) + fontMetrics.lineHeight, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
 }
 
 void dred_about_dialog__on_window_close(dred_window* pWindow)
@@ -2016,7 +2019,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
         return NULL;
     }
 
-    pDialog->pWindow = dred_window_create_dialog(pDred->pMainWindow, "About", 640, 480);
+    pDialog->pWindow = dred_window_create_dialog(pDred->pMainWindow, "About", (unsigned int)(480*pDred->dpiScale), (unsigned int)(360*pDred->dpiScale));
     if (pDialog->pWindow == NULL) {
         free(pDialog);
         return NULL;

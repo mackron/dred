@@ -701,7 +701,7 @@ dred_window* dred_window_create_dialog__win32(dred_window* pParentWindow, const 
 
     DWORD dwExStyle = WS_EX_DLGMODALFRAME;
     DWORD dwStyle   = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
-    HWND hWnd = CreateWindowExA(dwExStyle, g_WindowClass, title, dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, width, height, pParentWindow->hWnd, NULL, NULL, NULL);
+    HWND hWnd = CreateWindowExA(dwExStyle, g_WindowClass, title, dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, (int)width, (int)height, pParentWindow->hWnd, NULL, NULL, NULL);
     if (hWnd == NULL) {
         return NULL;
     }
@@ -836,8 +836,8 @@ void dred_window_move_to_center__win32(dred_window* pWindow)
         }
     }
 
-    int windowPosX = ((parentWidth  - windowWidth)  / 2) + parentPosX;
-    int windowPosY = ((parentHeight - windowHeight) / 2) + parentPosY;
+    int windowPosX = dr_max(((parentWidth  - windowWidth)  / 2) + parentPosX, 0);
+    int windowPosY = dr_max(((parentHeight - windowHeight) / 2) + parentPosY, 0);
     SetWindowPos(pWindow->hWnd, NULL, windowPosX, windowPosY, windowWidth, windowHeight, SWP_NOZORDER | SWP_NOSIZE);
 }
 

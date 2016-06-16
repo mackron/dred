@@ -46,6 +46,18 @@ void dred_textbox__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pP
 }
 
 
+void dred_textbox_innertb__on_mouse_wheel(drgui_element* pInternalTB, int delta, int mousePosX, int mousePosY, int stateFlags)
+{
+    dred_textbox* pTextBox = dred_control_get_parent(pInternalTB);
+    assert(pTextBox != NULL);
+
+    if (pTextBox->onMouseWheel) {
+        pTextBox->onMouseWheel(pTextBox, delta, mousePosX, mousePosY, stateFlags);
+    } else {
+        drgui_textbox_on_mouse_wheel(pInternalTB, delta, mousePosX, mousePosY, stateFlags);
+    }
+}
+
 void dred_textbox_innertb__on_key_down(drgui_element* pInternalTB, drgui_key key, int stateFlags)
 {
     (void)stateFlags;
@@ -172,14 +184,18 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drgui_textbox_set_active_line_background_color(data->pInternalTB, drgui_rgb(48, 48, 48));
     drgui_textbox_set_text_color(data->pInternalTB, drgui_rgb(224, 224, 224));
     drgui_textbox_set_cursor_color(data->pInternalTB, drgui_rgb(224, 224, 224));
-    drgui_textbox_set_font(data->pInternalTB, dred_font_acquire_subfont(pDred->config.pUIFont, 1));
+    drgui_textbox_set_cursor_width(data->pInternalTB, 1 * pDred->uiScale);
+    drgui_textbox_set_font(data->pInternalTB, dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale)); // TODO: <-- This font needs to be unacquired.
     drgui_textbox_set_border_width(data->pInternalTB, 0);
+    drgui_textbox_set_scrollbar_size(data->pInternalTB, 16 * pDred->uiScale);
+
 
     // Events.
     dred_control_set_on_size(pTextBox, drgui_on_size_fit_children_to_parent);
     dred_control_set_on_capture_keyboard(pTextBox, dred_textbox__on_capture_keyboard);
 
     // Internal text box overrides.
+    drgui_set_on_mouse_wheel(data->pInternalTB, dred_textbox_innertb__on_mouse_wheel);
     drgui_set_on_key_down(data->pInternalTB, dred_textbox_innertb__on_key_down);
     drgui_set_on_key_up(data->pInternalTB, dred_textbox_innertb__on_key_up);
     drgui_set_on_printable_key_down(data->pInternalTB, dred_textbox_innertb__on_printable_key_down);
@@ -264,6 +280,16 @@ void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, drgui
     drgui_textbox_set_active_line_background_color(dred_textbox__get_internal_tb(pTextBox), color);
 }
 
+void dred_textbox_set_cursor_width(dred_textbox* pTextBox, float cursorWidth)
+{
+    drgui_textbox_set_cursor_width(dred_textbox__get_internal_tb(pTextBox), cursorWidth);
+}
+
+float dred_textbox_get_cursor_width(dred_textbox* pTextBox)
+{
+    return drgui_textbox_get_cursor_width(dred_textbox__get_internal_tb(pTextBox));
+}
+
 void dred_textbox_set_cursor_color(dred_textbox* pTextBox, drgui_color color)
 {
     drgui_textbox_set_cursor_color(dred_textbox__get_internal_tb(pTextBox), color);
@@ -302,6 +328,16 @@ void dred_textbox_set_vertical_align(dred_textbox* pTextBox, drgui_text_engine_a
 void dred_textbox_set_horizontal_align(dred_textbox* pTextBox, drgui_text_engine_alignment align)
 {
     drgui_textbox_set_horizontal_align(dred_textbox__get_internal_tb(pTextBox), align);
+}
+
+void dred_textbox_set_line_numbers_width(dred_textbox* pTextBox, float lineNumbersWidth)
+{
+    drgui_textbox_set_line_numbers_width(dred_textbox__get_internal_tb(pTextBox), lineNumbersWidth);
+}
+
+float dred_textbox_get_line_numbers_width(dred_textbox* pTextBox)
+{
+    return drgui_textbox_get_line_numbers_width(dred_textbox__get_internal_tb(pTextBox));
 }
 
 
@@ -464,6 +500,16 @@ void dred_textbox_set_on_undo_point_changed(dred_textbox* pTextBox, dred_textbox
     data->onUndoPointChanged = proc;
 }
 
+
+void dred_textbox_on_mouse_wheel(dred_textbox* pTextBox, int delta, int mousePosX, int mousePosY, int stateFlags)
+{
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
+    if (data == NULL) {
+        return;
+    }
+
+    drgui_textbox_on_mouse_wheel(data->pInternalTB, delta, mousePosX, mousePosY, stateFlags);
+}
 
 void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)
 {

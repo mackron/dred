@@ -40,3 +40,7 @@ bool dred_text_editor_find_and_replace_next(dred_text_editor* pTextEditor, const
 
 // Finds every occurance of the given string and replaces it with another.
 bool dred_text_editor_find_and_replace_all(dred_text_editor* pTextEditor, const char* text, const char* replacement);
+
+
+// Sets the scale of the internal text.
+void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, double textScale);
