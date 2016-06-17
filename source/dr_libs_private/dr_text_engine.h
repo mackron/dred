@@ -35,6 +35,10 @@
 //   - All editing should be done like this.
 //   - Will enable multi-line editing.
 
+// PAST ISSUES
+// - Selection mode became as issue where it would often get "stuck" due to incorrectly enabling/disabling selection mode. Might want
+//   to look into a more robust solution that avoids this problem at a fundamental level. That state flags in mouse events helps a lot.
+
 #ifndef dr_text_engine_h
 #define dr_text_engine_h
 
