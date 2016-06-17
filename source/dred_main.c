@@ -46,6 +46,9 @@
 #define DR_PATH_IMPLEMENTATION
 #include "../../dr_libs/dr_path.h"
 
+#define DR_PCX_IMPLEMENTATION
+#include "../../dr_libs/dr_pcx.h"
+
 #define DR_GUI_IMPLEMENTATION
 #define DR_GUI_INCLUDE_WIP
 #define DR_2D_IMPLEMENTATION
@@ -72,6 +75,7 @@
 #include "dred_tabgroup_container.h"
 #include "dred_editor.h"
 #include "dred_text_editor.h"
+#include "dred_image_editor.h"
 #include "dred_font.h"
 #include "dred_font_library.h"
 #include "dred_image.h"
@@ -97,6 +101,7 @@
 #include "dred_tabgroup_container.c"
 #include "dred_editor.c"
 #include "dred_text_editor.c"
+#include "dred_image_editor.c"
 #include "dred_font.c"
 #include "dred_font_library.c"
 #include "dred_image.c"

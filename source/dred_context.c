@@ -654,6 +654,10 @@ const char* dred_get_editor_type_by_path(const char* filePath)
         return DRED_CONTROL_TYPE_TEXT_EDITOR;
     }
 
+    if (drpath_extension_equal(filePath, "pcx")) {
+        return DRED_CONTROL_TYPE_IMAGE_EDITOR;
+    }
+
     return NULL;
 }
 
@@ -962,9 +966,9 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTab
     if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         pEditor = dred_text_editor_create(pDred, pTabGroup, filePathAbsolute);
     }
-    //if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_IMAGE_EDITOR)) {
-    //    pEditor = dred_image_editor_create(pDred, pTabGroup, filePathAbsolute)
-    //}
+    if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_IMAGE_EDITOR)) {
+        pEditor = dred_image_editor_create(pDred, pTabGroup, filePathAbsolute);
+    }
 
     // Fall back to a text editor if it's an unknown extension.
     if (pEditor == NULL) {
@@ -978,6 +982,10 @@ void dred_delete_editor_by_type(dred_editor* pEditor)
 {
     if (dred_control_is_of_type(pEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         dred_text_editor_delete(pEditor);
+        return;
+    }
+    if (dred_control_is_of_type(pEditor, DRED_CONTROL_TYPE_IMAGE_EDITOR)) {
+        dred_image_editor_delete(pEditor);
         return;
     }
 }
