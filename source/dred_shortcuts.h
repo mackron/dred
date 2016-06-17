@@ -10,12 +10,16 @@ struct dred_shortcut_table
     char** ppCmdStrings;
     size_t count;
     size_t bufferSize;
+
+    // The table of accelerators used by every shortcut.
+    dred_accelerator_table acceleratorTable;
 };
 
 bool dred_shortcut_table_init(dred_shortcut_table* pTable);
 void dred_shortcut_table_uninit(dred_shortcut_table* pTable);
 
 bool dred_shortcut_table_bind(dred_shortcut_table* pTable, dred_shortcut shortcut, const char* cmdStr);
+bool dred_shortcut_table_unbind(dred_shortcut_table* pTable, dred_shortcut shortcut);
 
 bool dred_shortcut_table_find(dred_shortcut_table* pTable, dred_shortcut shortcut, size_t* pIndexOut);
 void dred_shortcut_table_replace(dred_shortcut_table* pTable, size_t shortcutIndex, const char* cmdStr);

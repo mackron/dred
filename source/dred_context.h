@@ -24,9 +24,6 @@ struct dred_context
     dred_menu_library menuLibrary;
 
 
-    // The accelerator table.
-    dred_accelerator_table acceleratorTable;
-
     // The shortcut table.
     dred_shortcut_table shortcutTable;
 

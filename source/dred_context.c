@@ -234,11 +234,6 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     }
 
 
-    // Accelerator table needs to be initialized before the config, because the config can specify bindings.
-    if (!dred_accelerator_table_init(&pDred->acceleratorTable)) {
-        goto on_error;
-    }
-
     // Short table.
     if (!dred_shortcut_table_init(&pDred->shortcutTable)) {
         goto on_error;
@@ -259,22 +254,6 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('G', DRED_KEY_STATE_CTRL_DOWN)), "cmdbar goto ");
     dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN)), "cmdbar find-next ");
     dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "cmdbar replace-all ");
-
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'N', DRED_KEY_STATE_CTRL_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'O', DRED_KEY_STATE_CTRL_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'S', DRED_KEY_STATE_CTRL_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'S', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'W', DRED_KEY_STATE_CTRL_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'Z', DRED_KEY_STATE_CTRL_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'Y', DRED_KEY_STATE_CTRL_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'X', DRED_KEY_STATE_CTRL_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'C', DRED_KEY_STATE_CTRL_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'V', DRED_KEY_STATE_CTRL_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'A', DRED_KEY_STATE_CTRL_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'G', DRED_KEY_STATE_CTRL_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'F', DRED_KEY_STATE_CTRL_DOWN, "");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN, "");
 
 
     // Config
@@ -308,7 +287,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     drgui_set_on_size(pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_size);
 
     // Ensure the accelerators are bound. This needs to be done after loading the initial configs.
-    dred_window_bind_accelerators(pDred->pMainWindow, &pDred->acceleratorTable);
+    dred_window_bind_accelerators(pDred->pMainWindow, &pDred->shortcutTable.acceleratorTable);
 
 
 
@@ -395,7 +374,7 @@ void dred_uninit(dred_context* pDred)
     }
 
     dred_config_uninit(&pDred->config);
-    dred_accelerator_table_uninit(&pDred->acceleratorTable);
+    dred_shortcut_table_uninit(&pDred->shortcutTable);
     dred_font_library_uninit(&pDred->fontLibrary);
 
     if (pDred->pGUI) {
@@ -1366,7 +1345,7 @@ void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t accel
 
     // The accelerator should be tied to a shortcut. We need to find that shortcut and execute it's command.
     size_t shortcutIndex;
-    if (!dred_shortcut_table_find(&pDred->shortcutTable, dred_shortcut_create_single(pDred->acceleratorTable.pAccelerators[acceleratorIndex]), &shortcutIndex)) {
+    if (!dred_shortcut_table_find(&pDred->shortcutTable, dred_shortcut_create_single(pDred->shortcutTable.acceleratorTable.pAccelerators[acceleratorIndex]), &shortcutIndex)) {
         return;
     }
 

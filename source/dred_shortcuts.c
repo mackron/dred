@@ -10,6 +10,10 @@ bool dred_shortcut_table_init(dred_shortcut_table* pTable)
     pTable->count = 0;
     pTable->bufferSize = 0;
 
+    if (!dred_accelerator_table_init(&pTable->acceleratorTable)) {
+        return false;
+    }
+
     return true;
 }
 
@@ -27,6 +31,8 @@ void dred_shortcut_table_uninit(dred_shortcut_table* pTable)
     free(pTable->pShortcuts);
     pTable->count = 0;
     pTable->bufferSize = 0;
+
+    dred_accelerator_table_uninit(&pTable->acceleratorTable);
 }
 
 bool dred_shortcut_table_bind(dred_shortcut_table* pTable, dred_shortcut shortcut, const char* cmdStr)
@@ -62,12 +68,61 @@ bool dred_shortcut_table_bind(dred_shortcut_table* pTable, dred_shortcut shortcu
 
     assert(pTable->count < pTable->bufferSize);
 
+    // The accelerators of the shortcut need to be added to the table. If we don't do this, the platform layer will not be aware of it.
+    if (shortcut.accelerators[0].key != 0 && !dred_accelerator_table_add(&pTable->acceleratorTable, shortcut.accelerators[0])) {
+        return false;
+    }
+    if (shortcut.accelerators[1].key != 0 && !dred_accelerator_table_add(&pTable->acceleratorTable, shortcut.accelerators[1])) {
+        return false;
+    }
+
+
     pTable->pShortcuts[pTable->count] = shortcut;
     pTable->ppCmdStrings[pTable->count] = gb_make_string(cmdStr);
     pTable->count += 1;
 
     return true;
 }
+
+bool dred_shortcut_table_unbind(dred_shortcut_table* pTable, dred_shortcut shortcut)
+{
+    size_t index;
+    if (!dred_shortcut_table_find(pTable, shortcut, &index)) {
+        return false;
+    }
+
+    if (index+1 < pTable->count) {
+        memmove(pTable->pShortcuts + index, pTable->pShortcuts + (index+1), sizeof(*pTable->pShortcuts) * (pTable->count - (index+1)));
+
+        gb_free_string(pTable->ppCmdStrings[index]);
+        memmove(pTable->ppCmdStrings + index, pTable->ppCmdStrings + (index+1), sizeof(*pTable->ppCmdStrings) * (pTable->count - (index+1)));
+
+        // TODO: Delete name.
+    }
+
+    pTable->count -= 1;
+
+
+    // At this point the shortcut will be removed, but there may be a leftover accelerator in the accelerator table. We need
+    // to check if those accelerators are now unused, and if so, remove them.
+    for (int i = 0; i < 2; ++i) {
+        int refcount = 0;
+        for (size_t j = 0; j < pTable->acceleratorTable.count; ++j) {
+            if (dred_accelerator_equal(shortcut.accelerators[i], pTable->acceleratorTable.pAccelerators[j])) {
+                refcount += 1;
+                continue;
+            }
+        }
+
+        assert(refcount == 0);
+
+        // The accelerator is unused. Remove it from the table.
+        dred_accelerator_table_remove(&pTable->acceleratorTable, shortcut.accelerators[i]);
+    }
+
+    return true;
+}
+
 
 bool dred_shortcut_table_find(dred_shortcut_table* pTable, dred_shortcut shortcut, size_t* pIndexOut)
 {
