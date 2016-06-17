@@ -1245,6 +1245,16 @@ void dred_unfocus_command_bar(dred_context* pDred)
 }
 
 
+void dred_update_info_bar(dred_context* pDred, dred_control* pControl)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    dred_cmdbar_update_info_bar(pDred->pCmdBar, pControl);
+}
+
+
 void dred_show_line_numbers(dred_context* pDred)
 {
     if (pDred == NULL || pDred->isShowingLineNumbers) {
@@ -1324,8 +1334,10 @@ double dred_get_text_editor_scale(dred_context* pDred)
 }
 
 
-void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab)
+void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab, dred_tab* pOldActiveTab)
 {
+    (void)pOldActiveTab;
+
     if (pDred == NULL) {
         return;
     }
@@ -1343,18 +1355,21 @@ void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab)
                 dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_TextEditor);
             }
         }
+
+        dred_update_info_bar(pDred, pControl);
     }
 }
 
-void dred_on_tab_deactivated(dred_context* pDred, dred_tab* pTab)
+void dred_on_tab_deactivated(dred_context* pDred, dred_tab* pTab, dred_tab* pNewActiveTab)
 {
     if (pDred == NULL) {
         return;
     }
 
-    if (dred_tab_get_tabgroup(pTab) == dred_get_focused_tabgroup(pDred)) {
+    if (pNewActiveTab == NULL && dred_tab_get_tabgroup(pTab) == dred_get_focused_tabgroup(pDred)) {
         dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_Default);
         dred_window_set_title(pDred->pMainWindow, "dred");
+        dred_update_info_bar(pDred, NULL);
     }
 }
 

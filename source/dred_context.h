@@ -233,6 +233,10 @@ void dred_focus_command_bar_and_set_text(dred_context* pDred, const char* text);
 void dred_unfocus_command_bar(dred_context* pDred);
 
 
+// Updates the info bar based on the given control.
+void dred_update_info_bar(dred_context* pDred, dred_control* pControl);
+
+
 // Shows line numbers on text editors.
 void dred_show_line_numbers(dred_context* pDred);
 
@@ -251,10 +255,10 @@ double dred_get_text_editor_scale(dred_context* pDred);
 
 
 // Called when a tab is activated. This is where contextual GUI elements are shown or hidden.
-void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab);
+void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab, dred_tab* pOldActiveTab);
 
 // Called when a tab is deactivated. This is where contextual GUI elements are shown or hidden.
-void dred_on_tab_deactivated(dred_context* pDred, dred_tab* pTab);
+void dred_on_tab_deactivated(dred_context* pDred, dred_tab* pTab, dred_tab* pNewActiveTab);
 
 // Called when an accelerator is triggered.
 void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t acceleratorIndex);

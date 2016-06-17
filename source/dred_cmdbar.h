@@ -23,3 +23,6 @@ void dred_cmdbar_set_message(dred_cmdbar* pCmdBar, const char* text);
 
 // Clears the message on the command bar.
 void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar);
+
+// Updates the info bar based on the given control.
+void dred_cmdbar_update_info_bar(dred_cmdbar* pCmdBar, dred_control* pControl);

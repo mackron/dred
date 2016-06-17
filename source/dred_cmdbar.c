@@ -5,6 +5,8 @@ typedef struct
     dred_textbox* pTextBox;
     char message[256];
     drgui_font* pMessageFont;
+
+    dred_info_bar* pInfoBar;
 } dred_cmdbar_data;
 
 void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
@@ -13,6 +15,10 @@ void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
     assert(data != NULL);
     
     dred_control_set_size(data->pTextBox, newWidth/3, newHeight);
+
+    float infobarWidth = newWidth/3;
+    dred_control_set_size(data->pInfoBar, newWidth/3, newHeight);
+    dred_control_set_relative_position(data->pInfoBar, newWidth - infobarWidth, 0);
 }
 
 void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, drgui_element* pPrevCapturedElement)
@@ -36,6 +42,7 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, drgui_rect rect, void* pPaintDa
 
     drgui_rect bgrect = drgui_get_local_rect(pCmdBar);
     bgrect.left = dred_control_get_width(data->pTextBox);
+    bgrect.right -= dred_control_get_width(data->pInfoBar);
 
     drgui_draw_rect(pCmdBar, bgrect, data->pDred->config.cmdbarBGColor, pPaintData);
 
@@ -48,6 +55,7 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, drgui_rect rect, void* pPaintDa
 
 
     drgui_draw_rect(pCmdBar, drgui_make_rect(bgrect.left, bgrect.top, bgrect.left + (1*uiScale), bgrect.bottom), data->pDred->config.textEditorBGColor, pPaintData);
+    drgui_draw_rect(pCmdBar, drgui_make_rect(bgrect.right - (1*uiScale), bgrect.top, bgrect.right, bgrect.bottom), data->pDred->config.textEditorBGColor, pPaintData);
 }
 
 void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)
@@ -144,6 +152,11 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
     strcpy_s(data->message, sizeof(data->message), "");
 
 
+    // The info bar.
+    data->pInfoBar = dred_info_bar_create(pDred, pCmdBar);
+
+
+
     // Set the initial size.
     drgui_font_metrics fontMetricsTB;
     drgui_get_font_metrics(dred_textbox_get_font(data->pTextBox), &fontMetricsTB);
@@ -232,4 +245,14 @@ void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar)
     if (data->message[0] != '\0') {
         dred_cmdbar_set_message(pCmdBar, "");
     }
+}
+
+void dred_cmdbar_update_info_bar(dred_cmdbar* pCmdBar, dred_control* pControl)
+{
+    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    if (data == NULL) {
+        return;
+    }
+
+    dred_info_bar_update(data->pInfoBar, pControl);
 }

@@ -67,7 +67,7 @@ void dred_tabgroup__on_paint(dred_tabgroup* pTabGroup, drgui_rect rect, void* pP
 }
 
 
-void dred_tabbar__on_tab_activated(drgui_element* pTabBar, drgui_tab* pTab)
+void dred_tabbar__on_tab_activated(drgui_element* pTabBar, drgui_tab* pTab, drgui_tab* pOldActiveTab)
 {
     // The tab group is the parent of the tab bar.
     dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
@@ -83,10 +83,10 @@ void dred_tabbar__on_tab_activated(drgui_element* pTabBar, drgui_tab* pTab)
     dred_control_show(pControl);
     dred_capture_keyboard(dred_control_get_context(pControl), pControl);
 
-    dred_on_tab_activated(dred_control_get_context(pTabGroup), pTab);
+    dred_on_tab_activated(dred_control_get_context(pTabGroup), pTab, pOldActiveTab);
 }
 
-void dred_tabbar__on_tab_deactivated(drgui_element* pTabBar, drgui_tab* pTab)
+void dred_tabbar__on_tab_deactivated(drgui_element* pTabBar, drgui_tab* pTab, drgui_tab* pNewActiveTab)
 {
     // The tab group is the parent of the tab bar.
     dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
@@ -104,7 +104,7 @@ void dred_tabbar__on_tab_deactivated(drgui_element* pTabBar, drgui_tab* pTab)
         dred_release_keyboard(dred_control_get_context(pControl));
     }
 
-    dred_on_tab_deactivated(dred_control_get_context(pTabGroup), pTab);
+    dred_on_tab_deactivated(dred_control_get_context(pTabGroup), pTab, pNewActiveTab);
 }
 
 void dred_tabbar__on_tab_close(drgui_element* pTabBar, drgui_tab* pTab)
