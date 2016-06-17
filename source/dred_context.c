@@ -650,11 +650,22 @@ bool dred__save_editor(dred_editor* pEditor, const char* newFilePath, dred_tab* 
 
 const char* dred_get_editor_type_by_path(const char* filePath)
 {
+    // Check for known extensions first as a performance optimization. If that fails we'll want to open the file and inspect it.
     if (drpath_extension_equal(filePath, "txt")) {
         return DRED_CONTROL_TYPE_TEXT_EDITOR;
     }
 
-    if (drpath_extension_equal(filePath, "pcx")) {
+    // Images.
+    if (drpath_extension_equal(filePath, "pcx") ||
+        drpath_extension_equal(filePath, "png") ||
+        drpath_extension_equal(filePath, "jpg") || drpath_extension_equal(filePath, "jpeg") ||
+        drpath_extension_equal(filePath, "bmp") ||
+        drpath_extension_equal(filePath, "gif") ||
+        drpath_extension_equal(filePath, "tga") ||
+        drpath_extension_equal(filePath, "hdr") ||
+        drpath_extension_equal(filePath, "pic") ||
+        drpath_extension_equal(filePath, "psd") ||
+        drpath_extension_equal(filePath, "ppm") || drpath_extension_equal(filePath, "pgm")) {
         return DRED_CONTROL_TYPE_IMAGE_EDITOR;
     }
 

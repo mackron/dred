@@ -49,6 +49,17 @@
 #define DR_PCX_IMPLEMENTATION
 #include "../../dr_libs/dr_pcx.h"
 
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wmisleading-indentation"
+    #pragma GCC diagnostic ignored "-Wshift-negative-value"
+#endif
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+
 #define DR_GUI_IMPLEMENTATION
 #define DR_GUI_INCLUDE_WIP
 #define DR_2D_IMPLEMENTATION
@@ -111,7 +122,6 @@
 #include "dred_context.c"
 #include "dred_platform_layer.c"
 #include "dred_commands.c"
-
 
 int dred_main(dr_cmdline cmdline)
 {

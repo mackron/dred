@@ -8,9 +8,10 @@ typedef struct
     int mouseDownPosX;
     int mouseDownPosY;
     bool isMouseDown;
+    bool isTransparent;
 } dred_image_editor_data;
 
-drgui_image* dred_image_editor__load_image_from_file(dred_context* pDred, const char* filePathAbsolute)
+drgui_image* dred_image_editor__load_image_from_file(dred_context* pDred, const char* filePathAbsolute, int* pOriginalComponents)
 {
     size_t fileSize;
     void* pFileData = dr_open_and_read_file(filePathAbsolute, &fileSize);
@@ -24,8 +25,11 @@ drgui_image* dred_image_editor__load_image_from_file(dred_context* pDred, const 
     int components = 0;
     void* pImageData = NULL;
 
-
-    // TODO: stb_image.
+    // stb_image.
+    pImageData = stbi_load_from_memory(pFileData, (int)fileSize, &sizeX, &sizeY, &components, 4);
+    if (pImageData != NULL) {
+        goto create_image;
+    }
 
     // TODO: dr_dds
 
@@ -77,6 +81,8 @@ create_image:
     if (pImage == NULL) {   
         return NULL;
     }
+
+    if (pOriginalComponents) *pOriginalComponents = components;
 
     return pImage;
 }
@@ -192,6 +198,11 @@ void dred_image_editor__on_paint(dred_image_editor* pImageEditor, drgui_rect rec
         args.backgroundColor = drgui_rgb(48, 48, 48);
         args.boundsColor     = drgui_rgb(48, 48, 48);
         args.options         = DRGUI_IMAGE_DRAW_BOUNDS;
+        if (data->isTransparent) {
+            args.options |= DRGUI_IMAGE_DRAW_BACKGROUND;
+        } else {
+            args.options |= DRGUI_IMAGE_HINT_NO_ALPHA;
+        }
         drgui_draw_image(pImageEditor, data->pImage, &args, pPaintData);
     } else {
         drgui_draw_rect(pImageEditor, drgui_get_local_rect(pImageEditor), drgui_rgb(48, 48, 48), pPaintData);
@@ -208,7 +219,8 @@ dred_image_editor* dred_image_editor_create(dred_context* pDred, dred_control* p
     dred_image_editor_data* data = (dred_image_editor_data*)dred_editor_get_extra_data(pImageEditor);
     assert(data != NULL);
 
-    data->pImage = dred_image_editor__load_image_from_file(pDred, filePathAbsolute);
+    int originalComponents;
+    data->pImage = dred_image_editor__load_image_from_file(pDred, filePathAbsolute, &originalComponents);
     if (data->pImage == NULL) {
         dred_editor_delete(pImageEditor);
         return NULL;
@@ -216,6 +228,7 @@ dred_image_editor* dred_image_editor_create(dred_context* pDred, dred_control* p
 
     data->imageScale = 1;
     data->isMouseDown = false;
+    data->isTransparent = originalComponents == 4;
 
     // Events.
     dred_control_set_on_paint(pImageEditor, dred_image_editor__on_paint);
@@ -255,9 +268,7 @@ void dred_image_editor_set_image_scale(dred_image_editor* pImageEditor, float sc
     unsigned int baseImageSizeX;
     drgui_get_image_size(data->pImage, &baseImageSizeX, NULL);
 
-    float scaleFactor = 1024.0f / baseImageSizeX;
-
-    scale = dr_clamp(scale, 0.1f * scaleFactor, 8.0f * scaleFactor);
+    scale = dr_clamp(scale, 0.1f, 8.0f);
     if (data->imageScale != scale) {
         data->imageScale = scale;
         drgui_dirty(pImageEditor, drgui_get_local_rect(pImageEditor));
