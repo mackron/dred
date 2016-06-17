@@ -7,6 +7,7 @@ bool dred_shortcut_table_init(dred_shortcut_table* pTable)
 
     pTable->pShortcuts = NULL;
     pTable->ppCmdStrings = NULL;
+    pTable->ppNameStrings = NULL;
     pTable->count = 0;
     pTable->bufferSize = 0;
 
@@ -25,8 +26,10 @@ void dred_shortcut_table_uninit(dred_shortcut_table* pTable)
 
     for (size_t i = 0; i < pTable->count; ++i) {
         gb_free_string(pTable->ppCmdStrings[i]);
+        gb_free_string(pTable->ppNameStrings[i]);
     }
     free(pTable->ppCmdStrings);
+    free(pTable->ppNameStrings);
 
     free(pTable->pShortcuts);
     pTable->count = 0;
@@ -35,11 +38,16 @@ void dred_shortcut_table_uninit(dred_shortcut_table* pTable)
     dred_accelerator_table_uninit(&pTable->acceleratorTable);
 }
 
-bool dred_shortcut_table_bind(dred_shortcut_table* pTable, dred_shortcut shortcut, const char* cmdStr)
+bool dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name, dred_shortcut shortcut, const char* cmdStr)
 {
     if (pTable == NULL) {
         return false;
     }
+
+    if (name == NULL) {
+        name = "";
+    }
+
 
     // If an accelerator with the same key combination already exists, just replace the command.
     size_t existingIndex;
@@ -61,8 +69,14 @@ bool dred_shortcut_table_bind(dred_shortcut_table* pTable, dred_shortcut shortcu
             return false;
         }
 
+        char** ppNewNameStrings = (char**)realloc(pTable->ppNameStrings, newBufferSize * sizeof(*ppNewNameStrings));
+        if (ppNewNameStrings == NULL) {
+            return false;
+        }
+
         pTable->pShortcuts = pNewShortcuts;
         pTable->ppCmdStrings = ppNewCmdStrings;
+        pTable->ppNameStrings = ppNewNameStrings;
         pTable->bufferSize = newBufferSize;
     }
 
@@ -79,6 +93,7 @@ bool dred_shortcut_table_bind(dred_shortcut_table* pTable, dred_shortcut shortcu
 
     pTable->pShortcuts[pTable->count] = shortcut;
     pTable->ppCmdStrings[pTable->count] = gb_make_string(cmdStr);
+    pTable->ppNameStrings[pTable->count] = gb_make_string(name);
     pTable->count += 1;
 
     return true;
@@ -141,6 +156,23 @@ bool dred_shortcut_table_find(dred_shortcut_table* pTable, dred_shortcut shortcu
     return false;
 }
 
+bool dred_shortcut_table_find_by_name(dred_shortcut_table* pTable, const char* name, size_t* pIndexOut)
+{
+    if (pIndexOut) *pIndexOut = 0;  // Safety.
+    if (pTable == NULL) {
+        return false;
+    }
+
+    for (size_t i = 0; i < pTable->count; ++i) {
+        if (strcmp(name, pTable->ppNameStrings[i]) == 0) {
+            if (pIndexOut) *pIndexOut = i;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void dred_shortcut_table_replace(dred_shortcut_table* pTable, size_t shortcutIndex, const char* cmdStr)
 {
     if (pTable == NULL || shortcutIndex >= pTable->count) {
@@ -154,6 +186,17 @@ void dred_shortcut_table_replace(dred_shortcut_table* pTable, size_t shortcutInd
 
     gb_free_string(pTable->ppCmdStrings[shortcutIndex]);
     pTable->ppCmdStrings[shortcutIndex] = pNewCmdStr;
+}
+
+
+bool dred_shortcut_table_get_shortcut_by_index(dred_shortcut_table* pTable, size_t shortcutIndex, dred_shortcut* pShortcutOut)
+{
+    if (pTable == NULL || shortcutIndex > pTable->count) {
+        return false;
+    }
+
+    if (pShortcutOut) *pShortcutOut = pTable->pShortcuts[shortcutIndex];
+    return true;
 }
 
 const char* dred_shortcut_table_get_command_string_by_index(dred_shortcut_table* pTable, size_t shortcutIndex)

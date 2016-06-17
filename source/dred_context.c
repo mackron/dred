@@ -239,21 +239,21 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('N', DRED_KEY_STATE_CTRL_DOWN)), "new");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('O', DRED_KEY_STATE_CTRL_DOWN)), "open");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN)), "save");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "save-all");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN)), "close");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "close-all");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('Z', DRED_KEY_STATE_CTRL_DOWN)), "undo");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('Y', DRED_KEY_STATE_CTRL_DOWN)), "redo");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('X', DRED_KEY_STATE_CTRL_DOWN)), "cut");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('C', DRED_KEY_STATE_CTRL_DOWN)), "copy");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('V', DRED_KEY_STATE_CTRL_DOWN)), "paste");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('A', DRED_KEY_STATE_CTRL_DOWN)), "select-all");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('G', DRED_KEY_STATE_CTRL_DOWN)), "cmdbar goto ");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN)), "cmdbar find-next ");
-    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "cmdbar replace-all ");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_NEW,        dred_shortcut_create_single(dred_accelerator_create('N', DRED_KEY_STATE_CTRL_DOWN)), "new");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_OPEN,       dred_shortcut_create_single(dred_accelerator_create('O', DRED_KEY_STATE_CTRL_DOWN)), "open");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_SAVE,       dred_shortcut_create_single(dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN)), "save");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_SAVE_ALL,   dred_shortcut_create_single(dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "save-all");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_CLOSE,      dred_shortcut_create_single(dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN)), "close");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_CLOSE_ALL,  dred_shortcut_create_single(dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "close-all");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_UNDO,       dred_shortcut_create_single(dred_accelerator_create('Z', DRED_KEY_STATE_CTRL_DOWN)), "undo");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_REDO,       dred_shortcut_create_single(dred_accelerator_create('Y', DRED_KEY_STATE_CTRL_DOWN)), "redo");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_CUT,        dred_shortcut_create_single(dred_accelerator_create('X', DRED_KEY_STATE_CTRL_DOWN)), "cut");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_COPY,       dred_shortcut_create_single(dred_accelerator_create('C', DRED_KEY_STATE_CTRL_DOWN)), "copy");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_PASTE,      dred_shortcut_create_single(dred_accelerator_create('V', DRED_KEY_STATE_CTRL_DOWN)), "paste");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_SELECT_ALL, dred_shortcut_create_single(dred_accelerator_create('A', DRED_KEY_STATE_CTRL_DOWN)), "select-all");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_GOTO,       dred_shortcut_create_single(dred_accelerator_create('G', DRED_KEY_STATE_CTRL_DOWN)), "cmdbar goto ");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_FIND,       dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN)), "cmdbar find-next ");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_REPLACE,    dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "cmdbar replace-all ");
 
 
     // Config
@@ -520,6 +520,15 @@ void dred_exec(dred_context* pDred, const char* cmd)
     if (dred_find_command(cmd, &command, &value)) {
         command.proc(pDred, value);
     }
+}
+
+bool dred_bind_shortcut(dred_context* pDred, const char* shortcutName, dred_shortcut shortcut, const char* commandStr)
+{
+    if (pDred == NULL) {
+        return false;
+    }
+
+    return dred_shortcut_table_bind(&pDred->shortcutTable, shortcutName, shortcut, commandStr);
 }
 
 

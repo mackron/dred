@@ -101,6 +101,9 @@ void dred_errorf(dred_context* pDred, const char* format, ...);
 // Executes a command.
 void dred_exec(dred_context* pDred, const char* cmd);
 
+// Binds a shortcut.
+bool dred_bind_shortcut(dred_context* pDred, const char* shortcutName, dred_shortcut shortcut, const char* commandStr);
+
 
 // Gives the given control the keyboard capture.
 void dred_capture_keyboard(dred_context* pDred, dred_control* pControl);
