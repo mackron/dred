@@ -314,7 +314,7 @@ dred_menu_item* dred_menu_find_menu_item_by_id(dred_menu* pMenu, uint16_t id);
 
 
 // Creates a menu item.
-dred_menu_item* dred_menu_item_create_and_append(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_accelerator shortcut, dred_menu* pSubMenu);
+dred_menu_item* dred_menu_item_create_and_append(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, dred_menu* pSubMenu);
 
 // Creates an appends a separator.
 dred_menu_item* dred_menu_item_create_and_append_separator(dred_menu* pMenu);

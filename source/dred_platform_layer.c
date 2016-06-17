@@ -1053,7 +1053,7 @@ void dred_menu_delete__win32(dred_menu* pMenu)
 }
 
 
-dred_menu_item* dred_menu_item_create_and_append__win32__internal(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_accelerator shortcut, dred_menu* pSubMenu, bool separator)
+dred_menu_item* dred_menu_item_create_and_append__win32__internal(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, dred_menu* pSubMenu, bool separator)
 {
     if (pMenu == NULL) {
         return NULL;
@@ -1072,7 +1072,7 @@ dred_menu_item* dred_menu_item_create_and_append__win32__internal(dred_menu* pMe
 
         // The text needs to be transformed to show the shortcut string.
         char shortcutStr[256];
-        dred_accelerator_to_string(shortcut, shortcutStr, sizeof(shortcutStr));
+        dred_shortcut_to_string(shortcut, shortcutStr, sizeof(shortcutStr));
 
         char transformedText[256];
         if (shortcutStr[0] == '\0') {
@@ -1116,14 +1116,14 @@ dred_menu_item* dred_menu_item_create_and_append__win32__internal(dred_menu* pMe
     return pItem;
 }
 
-dred_menu_item* dred_menu_item_create_and_append__win32(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_accelerator shortcut, dred_menu* pSubMenu)
+dred_menu_item* dred_menu_item_create_and_append__win32(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, dred_menu* pSubMenu)
 {
     return dred_menu_item_create_and_append__win32__internal(pMenu, text, id, command, shortcut, pSubMenu, false);
 }
 
 dred_menu_item* dred_menu_item_create_and_append_separator__win32(dred_menu* pMenu)
 {
-    return dred_menu_item_create_and_append__win32__internal(pMenu, NULL, 0, NULL, dred_accelerator_none(), NULL, true);
+    return dred_menu_item_create_and_append__win32__internal(pMenu, NULL, 0, NULL, dred_shortcut_none(), NULL, true);
 }
 
 void dred_menu_item_delete__win32(dred_menu_item* pItem)
@@ -2293,8 +2293,8 @@ dred_menu* dred_menu_create__gtk(dred_context* pDred, dred_menu_type type)
     pMenu->type     = type;
     pMenu->pGTKMenu = pGTKMenu;
 
-    pMenu->pGTKAccelGroup = dred_gtk__create_accels(&pDred->acceleratorTable, &pMenu->pAccels, NULL, pMenu);
-    pMenu->accelCount = pDred->acceleratorTable.count;
+    pMenu->pGTKAccelGroup = dred_gtk__create_accels(&pDred->shortcutTable.acceleratorTable, &pMenu->pAccels, NULL, pMenu);
+    pMenu->accelCount = pDred->shortcutTable.acceleratorTable.count;
 
     g_signal_connect(pGTKMenu, "enter-notify-event", G_CALLBACK(dred_gtk_cb__on_mouse_enter__menu), NULL);
 
@@ -2316,7 +2316,7 @@ void dred_menu_delete__gtk(dred_menu* pMenu)
 }
 
 
-dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_accelerator shortcut, dred_menu* pSubMenu, bool separator)
+dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, dred_menu* pSubMenu, bool separator)
 {
     if (pMenu == NULL) {
         return NULL;
@@ -2351,7 +2351,17 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
         }
 
         if (pMenu->pGTKAccelGroup) {
-            gtk_widget_add_accelerator(pGTKMenuItem, "activate", pMenu->pGTKAccelGroup, dred_drgui_key_to_gtk(shortcut.key), dred_accelerator_modifiers_to_gtk(shortcut.modifiers), GTK_ACCEL_VISIBLE);
+            dred_accelerator accel0 = shortcut.accelerators[0];
+            dred_accelerator accel1 = shortcut.accelerators[1];
+            //gtk_widget_add_accelerator(pGTKMenuItem, "activate", pMenu->pGTKAccelGroup, dred_drgui_key_to_gtk(accel0.key), dred_accelerator_modifiers_to_gtk(accel0.modifiers), GTK_ACCEL_VISIBLE);
+
+            if (accel0.key != 0) {
+                // TODO: Think about how we'll present multi-key shortcuts. For now we are just not presenting them at all which is not ideal.
+                if (accel1.key == 0) {
+                    GtkWidget* pGTKAccelLabel = gtk_bin_get_child(GTK_BIN(pGTKMenuItem));
+                    gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), dred_drgui_key_to_gtk(accel0.key), dred_accelerator_modifiers_to_gtk(accel0.modifiers));
+                }
+            }
         }
     }
 
@@ -2391,14 +2401,14 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
     return pItem;
 }
 
-dred_menu_item* dred_menu_item_create_and_append__gtk(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_accelerator shortcut, dred_menu* pSubMenu)
+dred_menu_item* dred_menu_item_create_and_append__gtk(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, dred_menu* pSubMenu)
 {
     return dred_menu_item_create_and_append__gtk__internal(pMenu, text, id, command, shortcut, pSubMenu, false);
 }
 
 dred_menu_item* dred_menu_item_create_and_append_separator__gtk(dred_menu* pMenu)
 {
-    return dred_menu_item_create_and_append__gtk__internal(pMenu, NULL, 0, NULL, dred_accelerator_none(), NULL, true);
+    return dred_menu_item_create_and_append__gtk__internal(pMenu, NULL, 0, NULL, dred_shortcut_none(), NULL, true);
 }
 
 void dred_menu_item_delete__gtk(dred_menu_item* pItem)
@@ -2557,7 +2567,10 @@ static void dred_platform__on_global_dirty__gtk(drgui_element* pElement, drgui_r
                 (gint)absoluteRect.left, (gint)absoluteRect.top, (gint)(absoluteRect.right - absoluteRect.left), (gint)(absoluteRect.bottom - absoluteRect.top));
 
             // Redraw immediately.
-            gdk_window_process_updates(gtk_widget_get_window(pWindow->pGTKClientArea), TRUE);
+            GdkWindow* pGDKWindow = gtk_widget_get_window(pWindow->pGTKClientArea);
+            if (pGDKWindow != NULL) {
+                gdk_window_process_updates(pGDKWindow, TRUE);
+            }
         }
     }
 }
@@ -3127,7 +3140,7 @@ dred_menu_item* dred_menu_find_menu_item_by_id(dred_menu* pMenu, uint16_t id)
 }
 
 
-dred_menu_item* dred_menu_item_create_and_append(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_accelerator shortcut, dred_menu* pSubMenu)
+dred_menu_item* dred_menu_item_create_and_append(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, dred_menu* pSubMenu)
 {
 #ifdef DRED_WIN32
     return dred_menu_item_create_and_append__win32(pMenu, text, id, command, shortcut, pSubMenu);
