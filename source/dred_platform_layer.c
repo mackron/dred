@@ -1918,7 +1918,7 @@ GtkAccelGroup* dred_gtk__create_accels(dred_accelerator_table* pAcceleratorTable
 void dred_gtk__delete_accels(dred_gtk_accelerator* pAccels, size_t accelCount)
 {
     for (size_t i = 0; i < accelCount; ++i) {
-        g_closure_unref(pAccels->pClosure);
+        g_closure_unref(pAccels[i].pClosure);
     }
 
     free(pAccels);
@@ -3149,6 +3149,31 @@ dred_menu_item* dred_menu_item_create_and_append(dred_menu* pMenu, const char* t
 #ifdef DRED_GTK
     return dred_menu_item_create_and_append__gtk(pMenu, text, id, command, shortcut, pSubMenu);
 #endif
+}
+
+dred_menu_item* dred_menu_item_create_and_append_with_shortcut(dred_menu* pMenu, const char* text, uint16_t id, const char* shortcutName)
+{
+    size_t shortcutIndex;
+    if (!dred_shortcut_table_find_by_name(&pMenu->pDred->shortcutTable, shortcutName, &shortcutIndex)) {
+        goto on_error;
+    }
+
+    dred_shortcut shortcut;
+    if (!dred_shortcut_table_get_shortcut_by_index(&pMenu->pDred->shortcutTable, shortcutIndex, &shortcut)) {
+        goto on_error;
+    }
+
+    const char* commandStr = dred_shortcut_table_get_command_string_by_index(&pMenu->pDred->shortcutTable, shortcutIndex);
+    if (commandStr == NULL) {
+        goto on_error;
+    }
+
+    return dred_menu_item_create_and_append(pMenu, text, id, commandStr, shortcut, NULL);
+
+
+on_error:
+    dred_warningf(pMenu->pDred, "Failed to create menu item (%s) with shortcut (%s). Menu item will be present, but not functional.", text, shortcutName);
+    return dred_menu_item_create_and_append(pMenu, text, id, "", dred_shortcut_none(), NULL);
 }
 
 dred_menu_item* dred_menu_item_create_and_append_separator(dred_menu* pMenu)

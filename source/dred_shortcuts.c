@@ -112,7 +112,8 @@ bool dred_shortcut_table_unbind(dred_shortcut_table* pTable, dred_shortcut short
         gb_free_string(pTable->ppCmdStrings[index]);
         memmove(pTable->ppCmdStrings + index, pTable->ppCmdStrings + (index+1), sizeof(*pTable->ppCmdStrings) * (pTable->count - (index+1)));
 
-        // TODO: Delete name.
+        gb_free_string(pTable->ppNameStrings[index]);
+        memmove(pTable->ppNameStrings + index, pTable->ppNameStrings + (index+1), sizeof(*pTable->ppNameStrings) * (pTable->count - (index+1)));
     }
 
     pTable->count -= 1;
@@ -231,6 +232,45 @@ dred_shortcut dred_shortcut_create_single(dred_accelerator accel)
 dred_shortcut dred_shortcut_none()
 {
     return dred_shortcut_create(dred_accelerator_none(), dred_accelerator_none());
+}
+
+dred_shortcut dred_shortcut_parse(const char* shortcutStr)
+{
+    if (shortcutStr == NULL) {
+        return dred_shortcut_none();
+    }
+
+
+    dred_shortcut shortcut = dred_shortcut_none();
+    int iNextAccel = 0;
+
+    // A shortcut string is just 1 or 2 accelerator strings separated by a comma.
+    const char* nextBeg = shortcutStr;
+    const char* nextEnd = nextBeg;
+    for (;;)
+    {
+        if (nextEnd[0] == ',' || nextEnd[0] == '\0') {
+            char nextAccelStr[256];
+            if (strncpy_s(nextAccelStr, sizeof(nextAccelStr), nextBeg, (nextEnd - nextBeg)) != 0) {
+                break;
+            }
+
+            shortcut.accelerators[iNextAccel++] = dred_accelerator_parse(nextAccelStr);
+
+
+            if (nextEnd[0] == '\0' || iNextAccel == 1) {
+                break;
+            } else {
+                nextBeg = nextEnd + 1;
+                nextEnd = nextBeg;
+                continue;
+            }
+        }
+
+        nextEnd += 1;
+    }
+
+    return shortcut;
 }
 
 bool dred_shortcut_equal(dred_shortcut a, dred_shortcut b)

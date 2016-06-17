@@ -52,5 +52,6 @@ const char* dred_shortcut_table_get_command_string_by_index(dred_shortcut_table*
 dred_shortcut dred_shortcut_create(dred_accelerator accel0, dred_accelerator accel1);
 dred_shortcut dred_shortcut_create_single(dred_accelerator accel1);
 dred_shortcut dred_shortcut_none();
+dred_shortcut dred_shortcut_parse(const char* shortcutStr);
 bool dred_shortcut_equal(dred_shortcut a, dred_shortcut b);
 size_t dred_shortcut_to_string(dred_shortcut shortcut, char* strOut, size_t strOutSize);

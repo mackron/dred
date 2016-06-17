@@ -5,6 +5,7 @@
 //
 // !                    dred_command__system_command        DRED_CMDBAR_RELEASE_KEYBOARD
 // cmdbar               dred_command__cmdbar                DRED_CMDBAR_NO_CLEAR
+// bind                 dred_command__bind                  DRED_CMDBAR_RELEASE_KEYBOARD
 // new                  dred_command__new                   DRED_CMDBAR_RELEASE_KEYBOARD
 // open                 dred_command__open                  DRED_CMDBAR_RELEASE_KEYBOARD
 // save                 dred_command__save                  DRED_CMDBAR_RELEASE_KEYBOARD
@@ -54,6 +55,13 @@ void dred_command__system_command(dred_context* pDred, const char* value);
 //
 // This command puts keyboard focus onto the command bar and sets the text in the text box to the value.
 void dred_command__cmdbar(dred_context* pDred, const char* value);
+
+// bind
+//
+// Syntax:  bind <name> <shortcut> <command>
+// Example: bind "SelectAll" "CTRL+A" select-all
+void dred_command__bind(dred_context* pDred, const char* value);
+
 
 // new
 void dred_command__new(dred_context* pDred, const char* value);

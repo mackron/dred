@@ -68,6 +68,19 @@ void dred_command__cmdbar(dred_context* pDred, const char* value)
     dred_focus_command_bar_and_set_text(pDred, value);
 }
 
+void dred_command__bind(dred_context* pDred, const char* value)
+{
+    char shortcutName[256];
+    value = dr_next_token(value, shortcutName, sizeof(shortcutName));
+    if (value != NULL) {
+        char shortcutStr[256];
+        value = dr_next_token(value, shortcutStr, sizeof(shortcutStr));
+        if (value != NULL) {
+            dred_bind_shortcut(pDred, shortcutName, dred_shortcut_parse(shortcutStr), dr_first_non_whitespace(value));
+        }
+    }
+}
+
 
 void dred_command__new(dred_context* pDred, const char* value)
 {
@@ -370,6 +383,9 @@ bool dred_find_command(const char* cmdStr, dred_command* pCommandOut, const char
     if (cmdStr == NULL || pCommandOut == NULL || pValueOut == NULL) {
         return false;
     }
+
+    // Trim whitespace.
+    cmdStr = dr_first_non_whitespace(cmdStr);
 
     // Special case for "!".
     if (cmdStr[0] == '!') {

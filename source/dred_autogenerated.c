@@ -2,11 +2,12 @@
 
 
 // Commands
-#define DRED_COMMAND_COUNT 27
+#define DRED_COMMAND_COUNT 28
 
 const char g_CommandNamePool[] = 
     "!\0"
     "cmdbar\0"
+    "bind\0"
     "new\0"
     "open\0"
     "save\0"
@@ -37,35 +38,37 @@ const char* g_CommandNames[] = {
     g_CommandNamePool + 0,
     g_CommandNamePool + 2,
     g_CommandNamePool + 9,
-    g_CommandNamePool + 13,
+    g_CommandNamePool + 14,
     g_CommandNamePool + 18,
     g_CommandNamePool + 23,
-    g_CommandNamePool + 32,
-    g_CommandNamePool + 40,
-    g_CommandNamePool + 46,
-    g_CommandNamePool + 56,
+    g_CommandNamePool + 28,
+    g_CommandNamePool + 37,
+    g_CommandNamePool + 45,
+    g_CommandNamePool + 51,
     g_CommandNamePool + 61,
     g_CommandNamePool + 66,
-    g_CommandNamePool + 72,
+    g_CommandNamePool + 71,
     g_CommandNamePool + 77,
     g_CommandNamePool + 82,
-    g_CommandNamePool + 86,
+    g_CommandNamePool + 87,
     g_CommandNamePool + 91,
-    g_CommandNamePool + 97,
-    g_CommandNamePool + 104,
-    g_CommandNamePool + 115,
+    g_CommandNamePool + 96,
+    g_CommandNamePool + 102,
+    g_CommandNamePool + 109,
     g_CommandNamePool + 120,
     g_CommandNamePool + 125,
-    g_CommandNamePool + 135,
-    g_CommandNamePool + 143,
-    g_CommandNamePool + 156,
-    g_CommandNamePool + 168,
-    g_CommandNamePool + 188,
+    g_CommandNamePool + 130,
+    g_CommandNamePool + 140,
+    g_CommandNamePool + 148,
+    g_CommandNamePool + 161,
+    g_CommandNamePool + 173,
+    g_CommandNamePool + 193,
 };
 
 dred_command g_Commands[] = {
     {dred_command__system_command, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__cmdbar, DRED_CMDBAR_NO_CLEAR},
+    {dred_command__bind, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__new, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__open, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__save, DRED_CMDBAR_RELEASE_KEYBOARD},

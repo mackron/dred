@@ -228,13 +228,8 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
-    // The menu library.
-    if (!dred_menu_library_init(&pDred->menuLibrary, pDred)) {
-        goto on_error;
-    }
 
-
-    // Short table.
+    // Shortcut table.
     if (!dred_shortcut_table_init(&pDred->shortcutTable)) {
         goto on_error;
     }
@@ -273,6 +268,13 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     // The UI scale will be known only after loading the configs.
     pDred->uiScale = pDred->dpiScale * pDred->config.uiScale;
+
+
+
+    // The menu library. This must be initialized after the shortcut table and configs because it will need access to the initial shortcut bindings.
+    if (!dred_menu_library_init(&pDred->menuLibrary, pDred)) {
+        goto on_error;
+    }
 
 
 
@@ -332,7 +334,6 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     if (dred_get_focused_editor(pDred) == NULL) {
         dred_open_new_text_file(pDred);
     }
-
 
     return true;
 
@@ -528,7 +529,16 @@ bool dred_bind_shortcut(dred_context* pDred, const char* shortcutName, dred_shor
         return false;
     }
 
-    return dred_shortcut_table_bind(&pDred->shortcutTable, shortcutName, shortcut, commandStr);
+    if (!dred_shortcut_table_bind(&pDred->shortcutTable, shortcutName, shortcut, commandStr)) {
+        return false;
+    }
+
+    // If we have a window we'll need to re-bind the accelerators.
+    if (pDred->pMainWindow != NULL) {
+        dred_window_bind_accelerators(pDred->pMainWindow, &pDred->shortcutTable.acceleratorTable);
+    }
+
+    return true;
 }
 
 
