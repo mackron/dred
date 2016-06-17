@@ -26,10 +26,12 @@ drgui_image* dred_image_editor__load_image_from_file(dred_context* pDred, const 
     void* pImageData = NULL;
 
     // stb_image.
+#ifdef STBI_INCLUDE_STB_IMAGE_H
     pImageData = stbi_load_from_memory(pFileData, (int)fileSize, &sizeX, &sizeY, &components, 4);
     if (pImageData != NULL) {
         goto create_image;
     }
+#endif
 
     // TODO: dr_dds
 
