@@ -246,7 +246,7 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
     snprintf(line, sizeof(line), "#define DRED_STOCK_IMAGE_COUNT %d\n", imageCount);
     fwrite_string(pFileOut, line);
 
-    snprintf(line, sizeof(line), "#define DRED_STOCK_IMAGE_SCALE_COUNT %d\n\n", STOCK_IMAGE_SCALE_COUNT);
+    snprintf(line, sizeof(line), "#define DRED_STOCK_IMAGE_SCALE_COUNT %d\n\n", (int)STOCK_IMAGE_SCALE_COUNT);
     fwrite_string(pFileOut, line);
 
     char* StockImageData = gb_make_string("const uint8_t g_StockImageData[] = {");

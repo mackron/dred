@@ -51,7 +51,7 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, drgui_rect rect, void* pPaintDa
 
     float messageLeft = bgrect.left + (4*uiScale);
     float messageTop  = ((bgrect.bottom - bgrect.top) - messageFontMetrics.lineHeight) / 2;
-    drgui_draw_text(pCmdBar, data->pMessageFont, data->message, strlen(data->message), messageLeft, messageTop, drgui_rgb(200, 200, 200), data->pDred->config.cmdbarBGColor, pPaintData);
+    drgui_draw_text(pCmdBar, data->pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, drgui_rgb(200, 200, 200), data->pDred->config.cmdbarBGColor, pPaintData);
 
 
     drgui_draw_rect(pCmdBar, drgui_make_rect(bgrect.left, bgrect.top, bgrect.left + (1*uiScale), bgrect.bottom), data->pDred->config.textEditorBGColor, pPaintData);

@@ -1991,8 +1991,8 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
     drgui_get_font_metrics(pFont, &fontMetrics);
     dred_font_release_subfont(pWindow->pDred->config.pUIFont, pFont);
 
-    drgui_draw_text(pElement, pFont, versionStr, strlen(versionStr), (8*uiScale), bannerRect.bottom + (9*uiScale), drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
-    drgui_draw_text(pElement, pFont, copyrightStr, strlen(copyrightStr), (8*uiScale), bannerRect.bottom + (9*uiScale) + fontMetrics.lineHeight, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    drgui_draw_text(pElement, pFont, versionStr, (int)strlen(versionStr), (8*uiScale), bannerRect.bottom + (9*uiScale), drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    drgui_draw_text(pElement, pFont, copyrightStr, (int)strlen(copyrightStr), (8*uiScale), bannerRect.bottom + (9*uiScale) + fontMetrics.lineHeight, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
 }
 
 void dred_about_dialog__on_window_close(dred_window* pWindow)

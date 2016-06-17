@@ -50,10 +50,10 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar
         
         float textPosX = dred_control_get_width(pInfoBar) - totalWidth;
         float textPosY = (dred_control_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
-        drgui_draw_text(pInfoBar, pFont, data->lineStr, strlen(data->lineStr), textPosX, textPosY, drgui_rgb(224, 224, 224), drgui_rgb(64, 64, 64), pPaintData);
+        drgui_draw_text(pInfoBar, pFont, data->lineStr, (int)strlen(data->lineStr), textPosX, textPosY, drgui_rgb(224, 224, 224), drgui_rgb(64, 64, 64), pPaintData);
 
         textPosX += lineStrWidth + padding;
-        drgui_draw_text(pInfoBar, pFont, data->colStr, strlen(data->colStr), textPosX, textPosY, drgui_rgb(224, 224, 224), drgui_rgb(64, 64, 64), pPaintData);
+        drgui_draw_text(pInfoBar, pFont, data->colStr, (int)strlen(data->colStr), textPosX, textPosY, drgui_rgb(224, 224, 224), drgui_rgb(64, 64, 64), pPaintData);
     }
 }
 
@@ -76,14 +76,14 @@ void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_ba
 
         // The text info will be right-aligned so we need to measure first.
         float zoomStrWidth;
-        drgui_measure_string(pFont, data->zoomStr, strlen(data->zoomStr), &zoomStrWidth, NULL);
+        drgui_measure_string(pFont, data->zoomStr, (int)strlen(data->zoomStr), &zoomStrWidth, NULL);
 
         float totalWidth = zoomStrWidth + padding;
 
         
         float textPosX = dred_control_get_width(pInfoBar) - totalWidth;
         float textPosY = (dred_control_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
-        drgui_draw_text(pInfoBar, pFont, data->zoomStr, strlen(data->zoomStr), textPosX, textPosY, drgui_rgb(224, 224, 224), drgui_rgb(64, 64, 64), pPaintData);
+        drgui_draw_text(pInfoBar, pFont, data->zoomStr, (int)strlen(data->zoomStr), textPosX, textPosY, drgui_rgb(224, 224, 224), drgui_rgb(64, 64, 64), pPaintData);
     }
 }
 
