@@ -308,14 +308,14 @@ dred_font* dred_config__parse_and_load_font(dred_context* pDred, const char* val
     // Family.
     value = dr_next_token(value, fontDesc.family, sizeof(fontDesc.family));
     if (value == NULL) {
-        return NULL;
+        return pDred->config.pUIFont;
     }
 
     // Size.
     char token[256];
     value = dr_next_token(value, token, sizeof(token));
     if (value == NULL) {
-        return NULL;
+        return pDred->config.pUIFont;
     }
 
     int size = atoi(token);
