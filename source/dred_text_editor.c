@@ -88,12 +88,12 @@ void dred_text_editor_textbox__on_mouse_wheel(dred_textbox* pTextBox, int delta,
 
     if (stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) {
         // When setting the scale, we actually do it application-wide, not just local to the current text editor.
-        double oldTextScale = dred_get_text_editor_scale(pDred);
-        double newTextScale;
+        float oldTextScale = dred_get_text_editor_scale(pDred);
+        float newTextScale;
         if (delta > 0) {
-            newTextScale = oldTextScale * (1.0 + ( delta * 0.1));
+            newTextScale = oldTextScale * (1.0f + ( delta * 0.1f));
         } else {
-            newTextScale = oldTextScale / (1.0 + (-delta * 0.1));
+            newTextScale = oldTextScale / (1.0f + (-delta * 0.1f));
         }
 
         // Always make sure the 100% scale is selectable.
@@ -119,12 +119,20 @@ void dred_text_editor_textbox__on_mouse_button_up(dred_textbox* pTextBox, int mo
     assert(pDred != NULL);
 
     if (mouseButton == DRGUI_MOUSE_BUTTON_RIGHT) {
-        int mousePosXWindow = mousePosX + (int)drgui_get_absolute_position_x(pTextBox);
-        int mousePosYWindow = mousePosY + (int)drgui_get_absolute_position_y(pTextBox);
-        dred_window_show_popup_menu(pDred->pMainWindow, pDred->menuLibrary.pPopupMenu_TextEditor, mousePosXWindow, mousePosYWindow);
+        dred_control_show_popup_menu(pTextBox, pDred->menuLibrary.pPopupMenu_TextEditor, mousePosX, mousePosY);
     } else {
         dred_textbox_on_mouse_button_up(pTextBox, mouseButton, mousePosX, mousePosY, stateFlags);
     }
+}
+
+void dred_text_editor_textbox__on_cursor_move(dred_textbox* pTextBox)
+{
+    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
+    if (pTextEditor == NULL) {
+        return;
+    }
+
+    dred_update_info_bar(dred_control_get_context(pTextEditor), pTextEditor);
 }
 
 void dred_text_editor_textbox__on_undo_point_changed(dred_textbox* pTextBox, unsigned int iUndoPoint)
@@ -187,6 +195,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_control_set_on_mouse_button_up(data->pTextBox, dred_text_editor_textbox__on_mouse_button_up);
     dred_control_set_on_mouse_wheel(data->pTextBox, dred_text_editor_textbox__on_mouse_wheel);
     dred_control_set_on_key_down(data->pTextBox, dred_text_editor_textbox__on_key_down);
+    dred_textbox_set_on_cursor_move(data->pTextBox, dred_text_editor_textbox__on_cursor_move);
     dred_textbox_set_on_undo_point_changed(data->pTextBox, dred_text_editor_textbox__on_undo_point_changed);
 
     if (pDred->isShowingLineNumbers) {

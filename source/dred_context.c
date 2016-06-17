@@ -1305,13 +1305,13 @@ void dred_toggle_line_numbers(dred_context* pDred)
 }
 
 
-void dred_set_text_editor_scale(dred_context* pDred, double scale)
+void dred_set_text_editor_scale(dred_context* pDred, float scale)
 {
     if (pDred == NULL) {
         return;
     }
 
-    pDred->textEditorScale = dr_clamp(scale, 0.1, 4.0);
+    pDred->textEditorScale = dr_clamp(scale, 0.1f, 4.0f);
 
     // Every open text editors needs to be updated.
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
@@ -1324,7 +1324,7 @@ void dred_set_text_editor_scale(dred_context* pDred, double scale)
     }
 }
 
-double dred_get_text_editor_scale(dred_context* pDred)
+float dred_get_text_editor_scale(dred_context* pDred)
 {
     if (pDred == NULL) {
         return 0;

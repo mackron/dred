@@ -370,7 +370,7 @@ void dred_command__zoom(dred_context* pDred, const char* value)
     }
 
     if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-        dred_set_text_editor_scale(pDred, atof(value));
+        dred_set_text_editor_scale(pDred, (float)atof(value));
     }
 }
 

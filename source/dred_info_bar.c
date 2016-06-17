@@ -24,8 +24,36 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar
 {
     (void)data;
 
-    // PROTOTYPING.
-    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), drgui_rgb(128, 64, 64), pPaintData);
+    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), drgui_rgb(64, 64, 64), pPaintData);
+
+    dred_context* pDred = dred_control_get_context(pInfoBar);
+    assert(pDred != NULL);
+
+    float padding = 32*pDred->uiScale;
+
+    drgui_font* pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
+    if (pFont != NULL)
+    {
+        drgui_font_metrics fontMetrics;
+        drgui_get_font_metrics(pFont, &fontMetrics);
+
+        // The text info will be right-aligned so we need to measure first.
+        float lineStrWidth;
+        drgui_measure_string(pFont, data->lineStr, strlen(data->lineStr), &lineStrWidth, NULL);
+
+        float colStrWidth;
+        drgui_measure_string(pFont, data->colStr, strlen(data->colStr), &colStrWidth, NULL);
+
+        float totalWidth = lineStrWidth + padding + colStrWidth + padding;
+
+        
+        float textPosX = dred_control_get_width(pInfoBar) - totalWidth;
+        float textPosY = (dred_control_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
+        drgui_draw_text(pInfoBar, pFont, data->lineStr, strlen(data->lineStr), textPosX, textPosY, drgui_rgb(224, 224, 224), drgui_rgb(64, 64, 64), pPaintData);
+
+        textPosX += lineStrWidth + padding;
+        drgui_draw_text(pInfoBar, pFont, data->colStr, strlen(data->colStr), textPosX, textPosY, drgui_rgb(224, 224, 224), drgui_rgb(64, 64, 64), pPaintData);
+    }
 }
 
 
@@ -36,10 +64,6 @@ void dred_info_bar__on_paint(dred_info_bar* pInfoBar, drgui_rect rect, void* pPa
     dred_info_bar_data* data = (dred_info_bar_data*)dred_control_get_extra_data(pInfoBar);
     assert(data != NULL);
 
-    
-    //drgui_draw_rect_with_outline(pInfoBar, drgui_get_local_rect(pInfoBar), drgui_rgb(255, 128, 128), 2, drgui_rgb(0, 0, 0), pPaintData);
-
-    
     if (data->type == DRED_INFO_BAR_TYPE_NONE) {
         dred_info_bar__on_paint__none(pInfoBar, data, pPaintData);
     } else if (data->type == DRED_INFO_BAR_TYPE_TEXT_EDITOR) {
@@ -82,11 +106,11 @@ void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
     data->type = DRED_INFO_BAR_TYPE_NONE;
 
     if (pControl != NULL) {
-        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR) || dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXTBOX)) {
             data->type = DRED_INFO_BAR_TYPE_TEXT_EDITOR;
 
-            _itoa_s(dred_text_editor_get_cursor_line(pControl), data->lineStr, sizeof(data->lineStr), 10);
-            _itoa_s(dred_text_editor_get_cursor_line(pControl), data->colStr,  sizeof(data->colStr),  10);
+            snprintf(data->lineStr, sizeof(data->lineStr), "Ln %d", (int)dred_text_editor_get_cursor_line(pControl) + 1);
+            snprintf(data->colStr,  sizeof(data->colStr),  "Col %d", (int)dred_text_editor_get_cursor_column(pControl) + 1);
         }
     }
 
