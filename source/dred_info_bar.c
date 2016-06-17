@@ -12,6 +12,7 @@ typedef struct
 
     char lineStr[32];
     char colStr[32];
+    char zoomStr[32];
 } dred_info_bar_data;
 
 void dred_info_bar__on_paint__none(dred_info_bar* pInfoBar, dred_info_bar_data* data, void* pPaintData)
@@ -31,7 +32,7 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar
 
     float padding = 32*pDred->uiScale;
 
-    drgui_font* pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
+    drgui_font* pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);      // TODO: This needs to be released.
     if (pFont != NULL)
     {
         drgui_font_metrics fontMetrics;
@@ -56,6 +57,36 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar
     }
 }
 
+void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_bar_data* data, void* pPaintData)
+{
+    (void)data;
+
+    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), drgui_rgb(64, 64, 64), pPaintData);
+
+    dred_context* pDred = dred_control_get_context(pInfoBar);
+    assert(pDred != NULL);
+
+    float padding = 32*pDred->uiScale;
+
+    drgui_font* pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);   // TODO: This needs to be released.
+    if (pFont != NULL)
+    {
+        drgui_font_metrics fontMetrics;
+        drgui_get_font_metrics(pFont, &fontMetrics);
+
+        // The text info will be right-aligned so we need to measure first.
+        float zoomStrWidth;
+        drgui_measure_string(pFont, data->zoomStr, strlen(data->zoomStr), &zoomStrWidth, NULL);
+
+        float totalWidth = zoomStrWidth + padding;
+
+        
+        float textPosX = dred_control_get_width(pInfoBar) - totalWidth;
+        float textPosY = (dred_control_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
+        drgui_draw_text(pInfoBar, pFont, data->zoomStr, strlen(data->zoomStr), textPosX, textPosY, drgui_rgb(224, 224, 224), drgui_rgb(64, 64, 64), pPaintData);
+    }
+}
+
 
 void dred_info_bar__on_paint(dred_info_bar* pInfoBar, drgui_rect rect, void* pPaintData)
 {
@@ -68,6 +99,8 @@ void dred_info_bar__on_paint(dred_info_bar* pInfoBar, drgui_rect rect, void* pPa
         dred_info_bar__on_paint__none(pInfoBar, data, pPaintData);
     } else if (data->type == DRED_INFO_BAR_TYPE_TEXT_EDITOR) {
         dred_info_bar__on_paint__text_editor(pInfoBar, data, pPaintData);
+    } else if (data->type == DRED_INFO_BAR_TYPE_IMAGE_EDITOR) {
+        dred_info_bar__on_paint__image_editor(pInfoBar, data, pPaintData);
     }
 }
 
@@ -111,6 +144,9 @@ void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
 
             snprintf(data->lineStr, sizeof(data->lineStr), "Ln %d", (int)dred_text_editor_get_cursor_line(pControl) + 1);
             snprintf(data->colStr,  sizeof(data->colStr),  "Col %d", (int)dred_text_editor_get_cursor_column(pControl) + 1);
+        } else if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_IMAGE_EDITOR)) {
+            data->type = DRED_INFO_BAR_TYPE_IMAGE_EDITOR;
+            snprintf(data->zoomStr, sizeof(data->zoomStr), "%d%%", (int)(dred_image_editor_get_image_scale(pControl) * 100));
         }
     }
 

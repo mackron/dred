@@ -271,7 +271,9 @@ void dred_image_editor_set_image_scale(dred_image_editor* pImageEditor, float sc
     scale = dr_clamp(scale, 0.1f, 8.0f);
     if (data->imageScale != scale) {
         data->imageScale = scale;
+
         drgui_dirty(pImageEditor, drgui_get_local_rect(pImageEditor));
+        dred_update_info_bar(dred_control_get_context(pImageEditor), pImageEditor);
     }
 }
 
