@@ -206,7 +206,7 @@ ACCEL dred_win32_to_ACCEL(drgui_key key, uint32_t modifiers, WORD cmd)
 }
 
 
-LRESULT CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     dred_window* pWindow = (dred_window*)GetWindowLongPtrA(hWnd, 0);
     if (pWindow == NULL) {
@@ -554,9 +554,9 @@ LRESULT CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     return DefWindowProcA(hWnd, msg, wParam, lParam);
 }
 
-static LRESULT TimerWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK TimerWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    return DefWindowProc(hWnd, msg, wParam, lParam);
+    return DefWindowProcA(hWnd, msg, wParam, lParam);
 }
 
 
@@ -597,7 +597,7 @@ bool dred_platform_init__win32()
         return false;
     }
 
-    g_hTimerWnd = CreateWindowExA(0, g_WindowClassTimer, "", 0, 0, 0, 0, 0, NULL, NULL, GetModuleHandleA(NULL), NULL);
+    g_hTimerWnd = CreateWindowExA(0, g_WindowClassTimer, "", 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
     if (g_hTimerWnd == NULL) {
         UnregisterClassA(g_WindowClass, NULL);
         UnregisterClassA(g_WindowClassTimer, NULL);
