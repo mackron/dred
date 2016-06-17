@@ -115,6 +115,30 @@ const char* dred_accelerator_table_get_command_string_by_index(dred_accelerator_
 }
 
 
+
+dred_accelerator dred_accelerator_none()
+{
+    dred_accelerator result;
+    result.key = 0;
+    result.modifiers = 0;
+
+    return result;
+}
+
+dred_accelerator dred_accelerator_create(drgui_key key, uint32_t modifiers)
+{
+    dred_accelerator result;
+    result.key = key;
+    result.modifiers = modifiers;
+
+    return result;
+}
+
+bool dred_accelerator_equal(dred_accelerator a, dred_accelerator b)
+{
+    return a.key == b.key && a.modifiers == b.modifiers;
+}
+
 size_t dred_accelerator_to_string(dred_accelerator accelerator, char* strOut, size_t strOutSize)
 {
     if (strOut == NULL || strOutSize == 0) {
@@ -166,22 +190,4 @@ size_t dred_accelerator_to_string(dred_accelerator accelerator, char* strOut, si
     
     snprintf(strOut, strOutSize, "%s%s", modifiersStr, characterStr);
     return modifiersLength + characterLength;
-}
-
-dred_accelerator dred_accelerator_none()
-{
-    dred_accelerator result;
-    result.key = 0;
-    result.modifiers = 0;
-
-    return result;
-}
-
-dred_accelerator dred_accelerator_create(drgui_key key, uint32_t modifiers)
-{
-    dred_accelerator result;
-    result.key = key;
-    result.modifiers = modifiers;
-
-    return result;
 }

@@ -239,21 +239,42 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'N', DRED_KEY_STATE_CTRL_DOWN, "new");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'O', DRED_KEY_STATE_CTRL_DOWN, "open");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'S', DRED_KEY_STATE_CTRL_DOWN, "save");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'S', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN, "save-all");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'W', DRED_KEY_STATE_CTRL_DOWN, "close");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN, "close-all");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'Z', DRED_KEY_STATE_CTRL_DOWN, "undo");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'Y', DRED_KEY_STATE_CTRL_DOWN, "redo");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'X', DRED_KEY_STATE_CTRL_DOWN, "cut");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'C', DRED_KEY_STATE_CTRL_DOWN, "copy");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'V', DRED_KEY_STATE_CTRL_DOWN, "paste");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'A', DRED_KEY_STATE_CTRL_DOWN, "select-all");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'G', DRED_KEY_STATE_CTRL_DOWN, "cmdbar goto ");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'F', DRED_KEY_STATE_CTRL_DOWN, "cmdbar find-next ");
-    dred_accelerator_table_bind(&pDred->acceleratorTable, 'F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN, "cmdbar replace-all ");
+    // Short table.
+    if (!dred_shortcut_table_init(&pDred->shortcutTable)) {
+        goto on_error;
+    }
+
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('N', DRED_KEY_STATE_CTRL_DOWN)), "new");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('O', DRED_KEY_STATE_CTRL_DOWN)), "open");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN)), "save");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "save-all");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN)), "close");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "close-all");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('Z', DRED_KEY_STATE_CTRL_DOWN)), "undo");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('Y', DRED_KEY_STATE_CTRL_DOWN)), "redo");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('X', DRED_KEY_STATE_CTRL_DOWN)), "cut");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('C', DRED_KEY_STATE_CTRL_DOWN)), "copy");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('V', DRED_KEY_STATE_CTRL_DOWN)), "paste");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('A', DRED_KEY_STATE_CTRL_DOWN)), "select-all");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('G', DRED_KEY_STATE_CTRL_DOWN)), "cmdbar goto ");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN)), "cmdbar find-next ");
+    dred_shortcut_table_bind(&pDred->shortcutTable, dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "cmdbar replace-all ");
+
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'N', DRED_KEY_STATE_CTRL_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'O', DRED_KEY_STATE_CTRL_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'S', DRED_KEY_STATE_CTRL_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'S', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'W', DRED_KEY_STATE_CTRL_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'Z', DRED_KEY_STATE_CTRL_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'Y', DRED_KEY_STATE_CTRL_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'X', DRED_KEY_STATE_CTRL_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'C', DRED_KEY_STATE_CTRL_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'V', DRED_KEY_STATE_CTRL_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'A', DRED_KEY_STATE_CTRL_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'G', DRED_KEY_STATE_CTRL_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'F', DRED_KEY_STATE_CTRL_DOWN, "");
+    dred_accelerator_table_bind(&pDred->acceleratorTable, 'F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN, "");
 
 
     // Config
@@ -1343,11 +1364,16 @@ void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t accel
 {
     (void)pWindow;
 
-    const char* cmd = dred_accelerator_table_get_command_string_by_index(&pDred->acceleratorTable, acceleratorIndex);
+    // The accelerator should be tied to a shortcut. We need to find that shortcut and execute it's command.
+    size_t shortcutIndex;
+    if (!dred_shortcut_table_find(&pDred->shortcutTable, dred_shortcut_create_single(pDred->acceleratorTable.pAccelerators[acceleratorIndex]), &shortcutIndex)) {
+        return;
+    }
+
+    const char* cmd = dred_shortcut_table_get_command_string_by_index(&pDred->shortcutTable, shortcutIndex);
     if (cmd == NULL) {
         return;
     }
 
-    //printf("Accelerator[%d] : %s\n", (int)acceleratorIndex, cmd);
     dred_exec(pDred, cmd);
 }

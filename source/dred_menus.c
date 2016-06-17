@@ -43,6 +43,8 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
         return false;
     }
 
+    //dred_menu_item_create_and_append_with_shortcut(pFileMenu, "&New", DRED_MENU_ITEM_ID_FILE_NEW, DRED_SHORTCUT_ID_NEW);
+
     dred_menu* pFileMenu = dred_menu_create(pDred, dred_menu_type_popup);
     dred_menu_item_create_and_append(pFileMenu, "&New", DRED_MENU_ITEM_ID_FILE_NEW, "new", dred_accelerator_create('N', DRED_KEY_STATE_CTRL_DOWN), NULL);
     dred_menu_item_create_and_append(pFileMenu, "&Open...", DRED_MENU_ITEM_ID_FILE_OPEN, "open", dred_accelerator_create('O', DRED_KEY_STATE_CTRL_DOWN), NULL);

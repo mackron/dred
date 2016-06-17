@@ -27,6 +27,9 @@ struct dred_context
     // The accelerator table.
     dred_accelerator_table acceleratorTable;
 
+    // The shortcut table.
+    dred_shortcut_table shortcutTable;
+
 
     // The main config.
     dred_config config;
