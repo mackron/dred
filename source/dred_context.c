@@ -1369,10 +1369,12 @@ void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab, dred_tab* pOldAc
 
         dred__update_window_title(pDred);
 
-        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
-            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_TextEditor);
-            }
+        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+            dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_TextEditor);
+        } else if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_IMAGE_EDITOR)) {
+            dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_Default);
+        } else {
+            dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_Default);
         }
 
         dred_update_info_bar(pDred, pControl);
