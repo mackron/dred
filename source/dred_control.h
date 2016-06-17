@@ -27,7 +27,6 @@ void* dred_control_get_extra_data(dred_control* pControl);
 size_t dred_control_get_extra_data_size(dred_control* pControl);
 
 
-
 // Hides the given element.
 void dred_control_hide(dred_control* pControl);
 
@@ -129,3 +128,6 @@ bool dred_control_is_of_type(dred_control* pControl, const char* type);
 
 // Checks if the given type string is of the other type.
 bool dred_is_control_type_of_type(const char* type, const char* base);
+
+// Helper function for showing a popup menu relative to the given control.
+void dred_control_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int relativePosX, int relativePosY);

@@ -328,3 +328,19 @@ bool dred_is_control_type_of_type(const char* type, const char* base)
 
     return strncmp(type, base, strlen(base)) == 0;
 }
+
+void dred_control_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int relativePosX, int relativePosY)
+{
+    if (pControl == NULL || pMenu == NULL) {
+        return;
+    }
+
+    dred_window* pWindow = dred_get_element_window(pControl);
+    if (pWindow == NULL) {
+        return;
+    }
+
+    int mousePosXWindow = relativePosX + (int)drgui_get_absolute_position_x(pControl);
+    int mousePosYWindow = relativePosY + (int)drgui_get_absolute_position_y(pControl);
+    dred_window_show_popup_menu(pWindow, pMenu, mousePosXWindow, mousePosYWindow);
+}

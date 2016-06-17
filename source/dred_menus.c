@@ -107,6 +107,18 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append(pLibrary->pPopupMenu_TextEditor, "Select &All", DRED_MENU_ITEM_ID_EDIT_SELECT_ALL, "select-all", dred_accelerator_create('A', DRED_KEY_STATE_CTRL_DOWN), NULL);
 
 
+    pLibrary->pPopupMenu_Tab = dred_menu_create(pDred, dred_menu_type_popup);
+    if (pLibrary->pPopupMenu_Tab == NULL) {
+        return false;
+    }
+
+    dred_menu_item_create_and_append(pLibrary->pPopupMenu_Tab, "&Save", DRED_MENU_ITEM_ID_FILE_SAVE,  "save",  dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN), NULL);
+    dred_menu_item_create_and_append(pLibrary->pPopupMenu_Tab, "Save &As...", DRED_MENU_ITEM_ID_FILE_SAVE_AS,  "save-as",  dred_accelerator_none(), NULL);
+    dred_menu_item_create_and_append(pLibrary->pPopupMenu_Tab, "Save A&ll", DRED_MENU_ITEM_ID_FILE_SAVE_ALL,  "save-all",  dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN), NULL);
+    dred_menu_item_create_and_append_separator(pLibrary->pPopupMenu_Tab);
+    dred_menu_item_create_and_append(pLibrary->pPopupMenu_Tab, "&Close", DRED_MENU_ITEM_ID_FILE_CLOSE, "close", dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN), NULL);
+    dred_menu_item_create_and_append(pLibrary->pPopupMenu_Tab, "Clos&e All", DRED_MENU_ITEM_ID_FILE_CLOSE_ALL, "close-all", dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN), NULL);
+
     return true;
 }
 

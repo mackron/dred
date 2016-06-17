@@ -117,6 +117,26 @@ void dred_tabbar__on_tab_close(drgui_element* pTabBar, drgui_tab* pTab)
     dred_close_tab_with_confirmation(dred_control_get_context(pTabGroup), (dred_tab*)pTab);
 }
 
+void dred_tabbar__on_tab_mouse_button_up(drgui_element* pTabBar, drgui_tab* pTab, int mouseButton, int mouseRelativePosX, int mouseRelativePosY, int stateFlags)
+{
+    (void)pTab;
+    (void)stateFlags;
+
+    dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
+    if (pTabGroup == NULL) {
+        return;
+    }
+
+    dred_context* pDred = dred_control_get_context(pTabGroup);
+    if (pDred == NULL) {
+        return;
+    }
+
+    if (mouseButton == DRGUI_MOUSE_BUTTON_RIGHT) {
+        dred_control_show_popup_menu(pTabGroup, pDred->menuLibrary.pPopupMenu_Tab, mouseRelativePosX, mouseRelativePosY);
+    }
+}
+
 
 dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
 {
@@ -147,6 +167,7 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
     drgui_tabbar_set_on_tab_activated(data->pTabBar, dred_tabbar__on_tab_activated);
     drgui_tabbar_set_on_tab_deactivated(data->pTabBar, dred_tabbar__on_tab_deactivated);
     drgui_tabbar_set_on_tab_closed(data->pTabBar, dred_tabbar__on_tab_close);
+    drgui_tabbar_set_on_tab_mouse_button_up(data->pTabBar, dred_tabbar__on_tab_mouse_button_up);
 
 
     // Events.

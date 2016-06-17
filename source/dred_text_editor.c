@@ -83,9 +83,6 @@ void dred_text_editor_textbox__on_mouse_wheel(dred_textbox* pTextBox, int delta,
         return;
     }
 
-    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
-    assert(data != NULL);
-
     dred_context* pDred = dred_control_get_context(pTextEditor);
     assert(pDred != NULL);
 
@@ -117,9 +114,6 @@ void dred_text_editor_textbox__on_mouse_button_up(dred_textbox* pTextBox, int mo
     if (pTextEditor == NULL) {
         return;
     }
-
-    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
-    assert(data != NULL);
 
     dred_context* pDred = dred_control_get_context(pTextEditor);
     assert(pDred != NULL);
