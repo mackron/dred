@@ -79,6 +79,12 @@ void dred_textbox_set_line_numbers_width(dred_textbox* pTextBox, float lineNumbe
 // Retrieves the width of the line numbers.
 float dred_textbox_get_line_numbers_width(dred_textbox* pTextBox);
 
+// Sets the padding to apply between the line numbers and the text.
+void dred_textbox_set_line_numbers_padding(dred_textbox* pTextBox, float lineNumbersPadding);
+
+// Retrieves the padding to apply between the line numbers and the text.
+float dred_textbox_get_line_numbers_padding(dred_textbox* pTextBox);
+
 
 // Sets the blink rate of the cursor in milliseconds.
 void dred_textbox_set_cursor_blink_rate(dred_textbox* pTextBox, unsigned int blinkRateInMilliseconds);

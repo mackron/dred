@@ -3,7 +3,7 @@ typedef struct
 {
     dred_textbox* pTextBox;
     unsigned int iBaseUndoPoint;    // Used to determine whether or no the file has been modified.
-    double textScale;
+    float textScale;
 } dred_text_editor_data;
 
 dred_textbox* dred_text_editor__get_textbox(dred_text_editor* pTextEditor)
@@ -328,7 +328,7 @@ bool dred_text_editor_find_and_replace_all(dred_text_editor* pTextEditor, const 
 }
 
 
-void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, double textScale)
+void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, float textScale)
 {
     dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
     if (data == NULL) {
@@ -338,7 +338,8 @@ void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, double textS
     dred_context* pDred = dred_control_get_context(pTextEditor);
     assert(pDred != NULL);
 
-    data->textScale = dr_clamp(textScale, 0.1, 4.0);
-    dred_textbox_set_line_numbers_width(data->pTextBox, (float)(64 * pDred->uiScale * data->textScale));
+    data->textScale = dr_clamp(textScale, 0.1f, 4.0f);
+    dred_textbox_set_line_numbers_width(data->pTextBox, 64 * pDred->uiScale * data->textScale);
+    dred_textbox_set_line_numbers_padding(data->pTextBox, 16 * pDred->uiScale * data->textScale);
     dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, (float)(pDred->uiScale * data->textScale)));    // TODO: <-- This font needs to be unacquired.
 }
