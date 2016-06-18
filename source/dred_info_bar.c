@@ -8,8 +8,8 @@
 
 typedef struct
 {
+    drgui_font* pFont;
     int type;
-
     char lineStr[32];
     char colStr[32];
     char zoomStr[32];
@@ -18,21 +18,27 @@ typedef struct
 void dred_info_bar__on_paint__none(dred_info_bar* pInfoBar, dred_info_bar_data* data, void* pPaintData)
 {
     (void)data;
-    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), drgui_rgb(64, 64, 64), pPaintData);
+
+    dred_context* pDred = dred_control_get_context(pInfoBar);
+    assert(pDred != NULL);
+
+    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), pDred->config.cmdbarBGColor, pPaintData);
 }
 
 void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar_data* data, void* pPaintData)
 {
     (void)data;
 
-    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), drgui_rgb(64, 64, 64), pPaintData);
-
     dred_context* pDred = dred_control_get_context(pInfoBar);
     assert(pDred != NULL);
 
-    float padding = 32*pDred->uiScale;
+    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), pDred->config.cmdbarBGColor, pPaintData);
 
-    drgui_font* pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);      // TODO: This needs to be released.
+
+    float padding = 32*pDred->uiScale;
+    float paddingRight = pDred->config.cmdbarPaddingX*pDred->uiScale;
+
+    drgui_font* pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
     if (pFont != NULL)
     {
         drgui_font_metrics fontMetrics;
@@ -45,15 +51,17 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar
         float colStrWidth;
         drgui_measure_string(pFont, data->colStr, strlen(data->colStr), &colStrWidth, NULL);
 
-        float totalWidth = lineStrWidth + padding + colStrWidth + padding;
+        float totalWidth = lineStrWidth + padding + colStrWidth + paddingRight;
 
         
         float textPosX = dred_control_get_width(pInfoBar) - totalWidth;
         float textPosY = (dred_control_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
-        drgui_draw_text(pInfoBar, pFont, data->lineStr, (int)strlen(data->lineStr), textPosX, textPosY, drgui_rgb(224, 224, 224), drgui_rgb(64, 64, 64), pPaintData);
+        drgui_draw_text(pInfoBar, pFont, data->lineStr, (int)strlen(data->lineStr), textPosX, textPosY, drgui_rgb(224, 224, 224), pDred->config.cmdbarBGColor, pPaintData);
 
         textPosX += lineStrWidth + padding;
-        drgui_draw_text(pInfoBar, pFont, data->colStr, (int)strlen(data->colStr), textPosX, textPosY, drgui_rgb(224, 224, 224), drgui_rgb(64, 64, 64), pPaintData);
+        drgui_draw_text(pInfoBar, pFont, data->colStr, (int)strlen(data->colStr), textPosX, textPosY, drgui_rgb(224, 224, 224), pDred->config.cmdbarBGColor, pPaintData);
+
+        dred_font_release_subfont(pDred->config.pUIFont, pFont);
     }
 }
 
@@ -61,14 +69,16 @@ void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_ba
 {
     (void)data;
 
-    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), drgui_rgb(64, 64, 64), pPaintData);
-
     dred_context* pDred = dred_control_get_context(pInfoBar);
     assert(pDred != NULL);
 
-    float padding = 32*pDred->uiScale;
+    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), pDred->config.cmdbarBGColor, pPaintData);
 
-    drgui_font* pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);   // TODO: This needs to be released.
+
+    //float padding = 32*pDred->uiScale;
+    float paddingRight = pDred->config.cmdbarPaddingX*pDred->uiScale;
+
+    drgui_font* pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
     if (pFont != NULL)
     {
         drgui_font_metrics fontMetrics;
@@ -78,12 +88,14 @@ void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_ba
         float zoomStrWidth;
         drgui_measure_string(pFont, data->zoomStr, (int)strlen(data->zoomStr), &zoomStrWidth, NULL);
 
-        float totalWidth = zoomStrWidth + padding;
+        float totalWidth = zoomStrWidth + paddingRight;
 
         
         float textPosX = dred_control_get_width(pInfoBar) - totalWidth;
         float textPosY = (dred_control_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
-        drgui_draw_text(pInfoBar, pFont, data->zoomStr, (int)strlen(data->zoomStr), textPosX, textPosY, drgui_rgb(224, 224, 224), drgui_rgb(64, 64, 64), pPaintData);
+        drgui_draw_text(pInfoBar, pFont, data->zoomStr, (int)strlen(data->zoomStr), textPosX, textPosY, drgui_rgb(224, 224, 224), pDred->config.cmdbarBGColor, pPaintData);
+
+        dred_font_release_subfont(pDred->config.pUIFont, pFont);
     }
 }
 
@@ -114,9 +126,23 @@ dred_info_bar* dred_info_bar_create(dred_context* pDred, dred_control* pParent)
     dred_info_bar_data* data = (dred_info_bar_data*)dred_control_get_extra_data(pInfoBar);
     assert(data != NULL);
 
+    data->pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
+    if (data->pFont == NULL) {
+        dred_control_delete(pInfoBar);
+        return NULL;
+    }
+
     data->type = DRED_INFO_BAR_TYPE_NONE;
     data->lineStr[0] = '\0';
     data->colStr[0] = '\0';
+    data->zoomStr[0] = '\0';
+
+
+    // The height of the command bar is based on the size of the font.
+    drgui_font_metrics fontMetrics;
+    drgui_get_font_metrics(data->pFont, &fontMetrics);
+    drgui_set_size(pInfoBar, 0, (float)fontMetrics.lineHeight);
+
 
     // Events.
     pInfoBar->onPaint = dred_info_bar__on_paint;
@@ -141,7 +167,6 @@ void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
     if (pControl != NULL) {
         if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR) || dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXTBOX)) {
             data->type = DRED_INFO_BAR_TYPE_TEXT_EDITOR;
-
             snprintf(data->lineStr, sizeof(data->lineStr), "Ln %d", (int)dred_text_editor_get_cursor_line(pControl) + 1);
             snprintf(data->colStr,  sizeof(data->colStr),  "Col %d", (int)dred_text_editor_get_cursor_column(pControl) + 1);
         } else if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_IMAGE_EDITOR)) {

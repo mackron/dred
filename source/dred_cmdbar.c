@@ -9,16 +9,62 @@ typedef struct
     dred_info_bar* pInfoBar;
 } dred_cmdbar_data;
 
+drgui_rect dred_cmdbar__get_inner_rect(dred_cmdbar* pCmdBar)
+{
+    dred_context* pDred = dred_control_get_context(pCmdBar);
+    assert(pDred != NULL);
+
+    float cmdbarWidth;
+    float cmdbarHeight;
+    dred_control_get_size(pCmdBar, &cmdbarWidth, &cmdbarHeight);
+
+    float scaledPaddingX = pDred->config.cmdbarPaddingX*pDred->uiScale;
+    float scaledPaddingY = pDred->config.cmdbarPaddingY*pDred->uiScale;
+    return drgui_make_rect(scaledPaddingX, scaledPaddingY, cmdbarWidth - scaledPaddingX, cmdbarHeight - scaledPaddingY);
+}
+
+void dred_cmdbar__get_inner_size(dred_cmdbar* pCmdBar, float* pWidthOut, float* pHeightOut)
+{
+    drgui_rect innerRect = dred_cmdbar__get_inner_rect(pCmdBar);
+
+    if (pWidthOut) *pWidthOut = innerRect.right - innerRect.left;
+    if (pHeightOut) *pHeightOut = innerRect.bottom - innerRect.top;
+}
+
+void dred_cmdbar__get_segment_rects(dred_cmdbar* pCmdBar, drgui_rect* pLRect, drgui_rect* pMRect, drgui_rect* pRRect)
+{
+    drgui_rect innerRect = dred_cmdbar__get_inner_rect(pCmdBar);
+
+    float segWidth = (innerRect.right - innerRect.left) / 3;
+    drgui_rect lrect = drgui_make_rect(innerRect.left, innerRect.top, innerRect.left + segWidth, innerRect.bottom);
+    drgui_rect mrect = drgui_make_rect(lrect.right, innerRect.top, lrect.right + segWidth, innerRect.bottom);
+    drgui_rect rrect = drgui_make_rect(mrect.right, innerRect.top, innerRect.right, innerRect.bottom);
+
+    if (pLRect) *pLRect = lrect;
+    if (pMRect) *pMRect = mrect;
+    if (pRRect) *pRRect = rrect;
+}
+
+
 void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
 {
+    (void)newWidth;
+    (void)newHeight;
+
     dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
     assert(data != NULL);
-    
-    dred_control_set_size(data->pTextBox, newWidth/3, newHeight);
 
-    float infobarWidth = newWidth/3;
-    dred_control_set_size(data->pInfoBar, newWidth/3, newHeight);
-    dred_control_set_relative_position(data->pInfoBar, newWidth - infobarWidth, 0);
+    // Controls need to be resized based on their rectangles.
+    drgui_rect lrect;
+    drgui_rect mrect;
+    drgui_rect rrect;
+    dred_cmdbar__get_segment_rects(pCmdBar, &lrect, &mrect, &rrect);
+
+    dred_control_set_relative_position(data->pTextBox, lrect.left, lrect.top);
+    dred_control_set_size(data->pTextBox, lrect.right - lrect.left, lrect.bottom - lrect.top);
+    
+    dred_control_set_relative_position(data->pInfoBar, rrect.left, rrect.top);
+    dred_control_set_size(data->pInfoBar, rrect.right - rrect.left, rrect.bottom - rrect.top);
 }
 
 void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, drgui_element* pPrevCapturedElement)
@@ -38,24 +84,32 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, drgui_rect rect, void* pPaintDa
     dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
     assert(data != NULL);
 
-    float uiScale = (float)data->pDred->uiScale;
+    dred_context* pDred = dred_control_get_context(pCmdBar);
+    assert(pDred != NULL);
 
-    drgui_rect bgrect = drgui_get_local_rect(pCmdBar);
-    bgrect.left = dred_control_get_width(data->pTextBox);
-    bgrect.right -= dred_control_get_width(data->pInfoBar);
+    drgui_rect localRect = drgui_get_local_rect(pCmdBar);
 
-    drgui_draw_rect(pCmdBar, bgrect, data->pDred->config.cmdbarBGColor, pPaintData);
+    float scaledPaddingX = pDred->config.cmdbarPaddingX*pDred->uiScale;
+    float scaledPaddingY = pDred->config.cmdbarPaddingY*pDred->uiScale;
+    drgui_draw_rect(pCmdBar, drgui_make_rect(0,                                0,                                 scaledPaddingX,                   localRect.bottom), pDred->config.cmdbarBGColor, pPaintData); // Left
+    drgui_draw_rect(pCmdBar, drgui_make_rect(localRect.right - scaledPaddingX, 0,                                 localRect.right,                  localRect.bottom), pDred->config.cmdbarBGColor, pPaintData); // Right
+    drgui_draw_rect(pCmdBar, drgui_make_rect(scaledPaddingX,                   0,                                 localRect.right - scaledPaddingX, scaledPaddingY),   pDred->config.cmdbarBGColor, pPaintData); // Top
+    drgui_draw_rect(pCmdBar, drgui_make_rect(scaledPaddingX,                   localRect.bottom - scaledPaddingY, localRect.right - scaledPaddingX, localRect.bottom), pDred->config.cmdbarBGColor, pPaintData); // Bottom
+
+
+    // Message.
+    drgui_rect lrect;
+    drgui_rect mrect;
+    drgui_rect rrect;
+    dred_cmdbar__get_segment_rects(pCmdBar, &lrect, &mrect, &rrect);
+    drgui_draw_rect(pCmdBar, mrect, pDred->config.cmdbarBGColor, pPaintData);
 
     drgui_font_metrics messageFontMetrics;
     drgui_get_font_metrics(data->pMessageFont, &messageFontMetrics);
 
-    float messageLeft = bgrect.left + (4*uiScale);
-    float messageTop  = ((bgrect.bottom - bgrect.top) - messageFontMetrics.lineHeight) / 2;
-    drgui_draw_text(pCmdBar, data->pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, drgui_rgb(200, 200, 200), data->pDred->config.cmdbarBGColor, pPaintData);
-
-
-    drgui_draw_rect(pCmdBar, drgui_make_rect(bgrect.left, bgrect.top, bgrect.left + (1*uiScale), bgrect.bottom), data->pDred->config.textEditorBGColor, pPaintData);
-    drgui_draw_rect(pCmdBar, drgui_make_rect(bgrect.right - (1*uiScale), bgrect.top, bgrect.right, bgrect.bottom), data->pDred->config.textEditorBGColor, pPaintData);
+    float messageLeft = mrect.left + (4*pDred->uiScale);
+    float messageTop  = (((mrect.bottom - mrect.top) - messageFontMetrics.lineHeight) / 2) + scaledPaddingY;
+    drgui_draw_text(pCmdBar, data->pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, drgui_rgb(224, 224, 224), data->pDred->config.cmdbarBGColor, pPaintData);
 }
 
 void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)
@@ -166,8 +220,9 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
 
     float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(data->pTextBox)*2;
     float messageHeight = (float)fontMetricsMsg.lineHeight;
+    float infobarHeight = (float)drgui_get_height(data->pInfoBar);
 
-    float cmdbarHeight = dr_max(textboxHeight, messageHeight);
+    float cmdbarHeight = dr_max(textboxHeight, dr_max(messageHeight, infobarHeight)) + (pDred->config.cmdbarPaddingY*pDred->uiScale*2);
     float cmdbarWidth = 0;
     if (pParent != NULL) {
         cmdbarWidth = dred_control_get_width(pParent);
