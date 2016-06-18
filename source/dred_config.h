@@ -5,11 +5,15 @@ typedef struct
     dred_context* pDred;
 
     float uiScale;
+
+    // THEME VARIABLES
     dred_font* pUIFont;
 
     drgui_color cmdbarBGColor;
     dred_font* pCmdbarTBFont;
     dred_font* pCmdbarMessageFont;
+
+    drgui_color tabgroupBGColor;
 
     dred_font* pTextEditorFont;
     drgui_color textEditorBGColor;

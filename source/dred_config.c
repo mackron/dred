@@ -356,6 +356,7 @@ bool dred_config_init(dred_config* pConfig, dred_context* pDred)
     pConfig->pCmdbarTBFont = dred_config__load_system_font_mono(pDred);
     pConfig->pCmdbarMessageFont = dred_config__load_system_font_ui(pDred);
 
+    pConfig->tabgroupBGColor = drgui_rgb(48, 48, 48);
 
     pConfig->pTextEditorFont = dred_config__load_system_font_mono(pDred);
     pConfig->textEditorBGColor = drgui_rgb(48, 48, 48);
@@ -443,6 +444,12 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
     }
     if (strcmp(key, "ui-font") == 0) {
         pData->pConfig->pUIFont = dred_config__parse_and_load_font(pData->pConfig->pDred, value);
+        return;
+    }
+
+
+    if (strcmp(key, "tabgroup-bg-color") == 0) {
+        pData->pConfig->tabgroupBGColor = dred_parse_color(value);
         return;
     }
 

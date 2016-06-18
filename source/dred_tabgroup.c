@@ -56,13 +56,16 @@ void dred_tabgroup__on_paint(dred_tabgroup* pTabGroup, drgui_rect rect, void* pP
 {
     (void)rect;
 
+    dred_context* pDred = dred_control_get_context(pTabGroup);
+    assert(pDred != NULL);
+
     if (dred_tabgroup_get_active_tab(pTabGroup) == NULL)
     {
         // There is no active tab. Draw a blank background.
         drgui_rect bodyRect = drgui_get_local_rect(pTabGroup);
         bodyRect.top += dred_control_get_height(dred_tabgroup__get_tabbar(pTabGroup));
 
-        drgui_draw_rect(pTabGroup, bodyRect, drgui_rgb(48, 48, 48), pPaintData);
+        drgui_draw_rect(pTabGroup, bodyRect, pDred->config.tabgroupBGColor, pPaintData);
     }
 }
 
