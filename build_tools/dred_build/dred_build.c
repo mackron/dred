@@ -132,6 +132,8 @@ void parse_config_var_value(unsigned int type, const char* valueIn, char* valueO
 {
     valueIn = dr_first_non_whitespace(valueIn);
 
+    char* str = dr_string_replace(valueIn, "\"", "\\\"");
+
     if (type == CONFIG_VAR_TYPE_INTEGER) {
         strcpy_s(valueOut, valueOutSize, valueIn);
         return;
@@ -145,11 +147,11 @@ void parse_config_var_value(unsigned int type, const char* valueIn, char* valueO
         return;
     }
     if (type == CONFIG_VAR_TYPE_STRING) {
-        snprintf(valueOut, valueOutSize, "gb_make_string(%s)", valueIn);
+        snprintf(valueOut, valueOutSize, "gb_make_string(\"%s\")", str);
         return;
     }
     if (type == CONFIG_VAR_TYPE_FONT) {
-        snprintf(valueOut, valueOutSize, "dred_parse_and_load_font(pConfig->pDred, \"%s\")", valueIn);
+        snprintf(valueOut, valueOutSize, "dred_parse_and_load_font(pConfig->pDred, \"%s\")", str);
         return;
     }
     if (type == CONFIG_VAR_TYPE_IMAGE) {
@@ -157,9 +159,24 @@ void parse_config_var_value(unsigned int type, const char* valueIn, char* valueO
         return;
     }
     if (type == CONFIG_VAR_TYPE_COLOR) {
-        strcpy_s(valueOut, valueOutSize, "drgui_rgb(0, 0, 0)");
+        // Format: <r> <g> <b>
+        char r[4];
+        char g[4];
+        char b[4];
+        char a[4];
+
+        valueIn = dr_next_token(valueIn, r, sizeof(r));
+        valueIn = dr_next_token(valueIn, g, sizeof(g));
+        valueIn = dr_next_token(valueIn, b, sizeof(b));
+        if (dr_next_token(valueIn, a, sizeof(a)) == NULL) {
+            a[0] = '2'; a[1] = '5'; a[2] = '5'; a[3] = '\0';
+        }
+
+        snprintf(valueOut, valueOutSize, "drgui_rgba(%s, %s, %s, %s)", r, g, b, a);
         return;
     }
+
+    free(str);
 }
 
 char* write_image_data_rgba8(char* output, unsigned int* pCurrentByteColumn, const uint8_t* pImageData, unsigned int width, unsigned int height, unsigned int stride)

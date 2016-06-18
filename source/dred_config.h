@@ -4,17 +4,41 @@
 
 // BEGIN CONFIG VARS
 //
+// ui-scale uiScale float 1
+//   The scale of the UI. The total scale of UI elements is equal to the DPI scaling multiplied by this value.
+//
+// ui-font pUIFont font system-font-ui
+//   The default font to use for general UI elements. This will act as the default font in the event that a font fails to load.
+//
+//
+// cmdbar-bg-color cmdbarBGColor color 64 64 64 
+//   The background color of the command bar.
+//
+// cmdbar-tb-font pCmdbarTBFont font system-font-mono
+//   The font to use in the text box of the command bar.
+//
+// cmdbar-msg-font pCmdbarMessageFont font system-font-ui
+//   The font to use for the message box of the command bar.
+//
 // cmdbar-padding-horz cmdbarPaddingX float 2
 //   The amount of padding to apply to the command bar on the left and right sides.
 //
 // cmdbar-padding-vert cmdbarPaddingY float 2
 //   The amount of padding to apply to the command bar on the top and bottom sides.
 //
-// test-var1 testVar1 bool true
-// test-var2 testVar2 string "my test string"
-// test-var3 testVar3 font system-font-ui
-// test-var4 testVar4 image NULL
-// test-var5 testVar5 color 0 128 255
+//
+// tabgroup-bg-color tabgroupBGColor color 48 48 48
+//   The background color of tab groups. This will be shown when there are no tabs open in the group.
+//
+//
+// texteditor-font pTextEditorFont font system-font-mono
+//   The font to use in text editors.
+//
+// texteditor-bg-color textEditorBGColor color 48 48 48
+//   The background color to use in text editors.
+//
+// texteditor-active-line-color textEditorActiveLineColor color 40 40 40
+//   The background color of the line that the caret is currently sitting on in a text editor.
 //
 // END CONFIG VARS
 
@@ -23,21 +47,7 @@ typedef struct
     // The main context that owns this config. This is set to the context that initialized the config object.
     dred_context* pDred;
 
-    float uiScale;
-
-    // THEME VARIABLES
-    dred_font* pUIFont;
-
-    drgui_color cmdbarBGColor;
-    dred_font* pCmdbarTBFont;
-    dred_font* pCmdbarMessageFont;
-
-    drgui_color tabgroupBGColor;
-
-    dred_font* pTextEditorFont;
-    drgui_color textEditorBGColor;
-    drgui_color textEditorActiveLineColor;
-
+    // The cross image.
     dred_image* pImageCross;
 
 

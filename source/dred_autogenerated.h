@@ -6,10 +6,14 @@
 
 
 #define DRED_CONFIG_VARIABLE_DECLARATIONS \
+float uiScale; \
+dred_font* pUIFont; \
+drgui_color cmdbarBGColor; \
+dred_font* pCmdbarTBFont; \
+dred_font* pCmdbarMessageFont; \
 float cmdbarPaddingX; \
 float cmdbarPaddingY; \
-bool testVar1; \
-char* testVar2; \
-dred_font* testVar3; \
-dred_image* testVar4; \
-drgui_color testVar5;
+drgui_color tabgroupBGColor; \
+dred_font* pTextEditorFont; \
+drgui_color textEditorBGColor; \
+drgui_color textEditorActiveLineColor;
