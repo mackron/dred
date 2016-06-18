@@ -432,6 +432,11 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
         return;
     }
 
+    if (strcmp(key, "exec") == 0) {
+        dred_exec(pData->pConfig->pDred, dr_first_non_whitespace(value));
+        return;
+    }
+
     if (strcmp(key, "ui-scale") == 0) {
         pData->pConfig->uiScale = (float)atof(value);
         return;
