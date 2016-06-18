@@ -259,12 +259,12 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     char configPath[DRED_MAX_PATH];
     if (dred_get_config_path(configPath, sizeof(configPath))) {
-        dred_config_load_file(&pDred->config, configPath, dred_config__on_error, pDred);
+        dred_load_config(pDred, configPath);
     } else {
         dred_warning(pDred, "Failed to load .dred config file from user directory. The most likely cause of this is that the path is too long.");
     }
 
-    dred_config_load_file(&pDred->config, ".dred", dred_config__on_error, pDred);
+    dred_load_config(pDred, ".dred");
 
     // The UI scale will be known only after loading the configs.
     pDred->uiScale = pDred->dpiScale * pDred->config.uiScale;
@@ -507,6 +507,16 @@ void dred_errorf(dred_context* pDred, const char* format, ...)
         dred_error(pDred, msg);
     }
     va_end(args);
+}
+
+
+bool dred_load_config(dred_context* pDred, const char* configFilePath)
+{
+    if (pDred == NULL || configFilePath == NULL) {
+        return false;
+    }
+
+    return dred_config_load_file(&pDred->config, configFilePath, dred_config__on_error, pDred);
 }
 
 

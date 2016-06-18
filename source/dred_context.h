@@ -98,6 +98,10 @@ void dred_error(dred_context* pDred, const char* message);
 void dred_errorf(dred_context* pDred, const char* format, ...);
 
 
+// Loads a config file.
+bool dred_load_config(dred_context* pDred, const char* configFilePath);
+
+
 // Executes a command.
 void dred_exec(dred_context* pDred, const char* cmd);
 

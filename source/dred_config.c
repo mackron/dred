@@ -409,6 +409,29 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
     dred_config_load_file__data* pData = (dred_config_load_file__data*)pUserData;
     assert(pData != NULL);
 
+    if (strcmp(key, "include") == 0) {
+        char fileAbsolutePath[DRED_MAX_PATH];
+        if (!dred_to_absolute_path(pData->filePath, fileAbsolutePath, sizeof(fileAbsolutePath))) {
+            return;
+        }
+        if (!drpath_remove_file_name(fileAbsolutePath)) {
+            return;
+        }
+
+        char includeRelativePath[DRED_MAX_PATH];
+        if (dr_next_token(value, includeRelativePath, sizeof(includeRelativePath)) == NULL) {
+            return;
+        }
+
+        char includeAbsolutePath[DRED_MAX_PATH];
+        if (drpath_append_and_clean(includeAbsolutePath, sizeof(includeAbsolutePath), fileAbsolutePath, includeRelativePath) == 0) {
+            return;
+        }
+
+        dred_load_config(pData->pConfig->pDred, includeAbsolutePath);
+        return;
+    }
+
     if (strcmp(key, "ui-scale") == 0) {
         pData->pConfig->uiScale = (float)atof(value);
         return;
