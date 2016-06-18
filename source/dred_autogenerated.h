@@ -3,3 +3,13 @@
 #define DRED_STOCK_IMAGE_ID_CROSS 0
 #define DRED_STOCK_IMAGE_ID_ARROW_RIGHT 1
 #define DRED_STOCK_IMAGE_ID_ARROW_RIGHT_DOWN 2
+
+
+#define DRED_CONFIG_VARIABLE_DECLARATIONS \
+float cmdbarPaddingX; \
+float cmdbarPaddingY; \
+bool testVar1; \
+char* testVar2; \
+dred_font* testVar3; \
+dred_image* testVar4; \
+drgui_color testVar5;

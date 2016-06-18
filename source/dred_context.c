@@ -1367,6 +1367,188 @@ float dred_get_text_editor_scale(dred_context* pDred)
 }
 
 
+dred_font* dred__load_system_font_ui(dred_context* pDred)
+{
+    dred_font_desc fontDesc;
+    fontDesc.flags = 0;
+    fontDesc.rotation = 0;
+
+#ifdef _WIN32
+    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Segoe UI");
+    fontDesc.size = 12;
+    fontDesc.weight = drgui_font_weight_normal;
+    fontDesc.slant = drgui_font_slant_none;
+#endif
+
+#ifdef __linux__
+    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "sans");
+    fontDesc.size = 13;
+    fontDesc.weight = drgui_font_weight_normal;
+    fontDesc.slant = drgui_font_slant_none;
+
+    #if 1
+    GSettings* settings = g_settings_new("org.mate.interface");
+    if (settings != NULL) {
+        char* fontName = g_settings_get_string(settings, "font-name");
+        if (fontName != NULL) {
+            PangoFontDescription* pPangoDesc = pango_font_description_from_string(fontName);
+            if (pPangoDesc != NULL) {
+                strcpy_s(fontDesc.family, sizeof(fontDesc.family), pango_font_description_get_family(pPangoDesc));
+
+                gint size = pango_font_description_get_size(pPangoDesc);
+                if (size > 0) {
+                    if (pango_font_description_get_size_is_absolute(pPangoDesc)) {
+                        fontDesc.size = size;
+                    } else {
+                        fontDesc.size = (unsigned int)(size/PANGO_SCALE * (96.0/72.0));
+                    }
+                }
+
+                fontDesc.slant = dred_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
+                fontDesc.weight = dred_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
+
+                pango_font_description_free(pPangoDesc);
+            }
+        }
+
+        g_object_unref(settings);
+    }
+    #endif
+#endif
+
+    return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
+}
+
+dred_font* dred__load_system_font_mono(dred_context* pDred)
+{
+    dred_font_desc fontDesc;
+    fontDesc.flags = 0;
+    fontDesc.rotation = 0;
+
+#ifdef _WIN32
+    // TODO: Use Courier New in Windows XP.
+    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Consolas");
+    fontDesc.size = 13;
+    fontDesc.weight = drgui_font_weight_normal;
+    fontDesc.slant = drgui_font_slant_none;
+#endif
+
+#ifdef DRED_GTK
+    strcpy_s(fontDesc.family, sizeof(fontDesc.family), "monospace");
+    fontDesc.size = 13;
+    fontDesc.weight = drgui_font_weight_normal;
+    fontDesc.slant = drgui_font_slant_none;
+
+    #if 0
+    FcPattern* basepat = FcNameParse((const FcChar8*)"monospace");
+    if (basepat != NULL) {
+        FcConfigSubstitute(NULL, basepat, FcMatchPattern);
+        FcDefaultSubstitute(basepat);
+
+        FcResult result = FcResultNoMatch;
+        FcPattern* fontpat = FcFontMatch(NULL, basepat, &result);
+        if (fontpat != NULL && result == FcResultMatch) {
+            FcPatternPrint(fontpat);
+
+            FcChar8* family;
+            FcPatternGetString(fontpat, FC_FAMILY, 0, &family);
+            strcpy_s(fontDesc.family, sizeof(fontDesc.family), (const char*)family);
+        }
+
+        FcPatternDestroy(fontpat);
+        FcPatternDestroy(basepat);
+    }
+    #endif
+
+    #if 1
+    GSettings* settings = g_settings_new("org.mate.interface");
+    if (settings != NULL) {
+        char* fontName = g_settings_get_string(settings, "monospace-font-name");
+        if (fontName != NULL) {
+            PangoFontDescription* pPangoDesc = pango_font_description_from_string(fontName);
+            if (pPangoDesc != NULL) {
+                strcpy_s(fontDesc.family, sizeof(fontDesc.family), pango_font_description_get_family(pPangoDesc));
+
+                gint size = pango_font_description_get_size(pPangoDesc);
+                if (size > 0) {
+                    if (pango_font_description_get_size_is_absolute(pPangoDesc)) {
+                        fontDesc.size = size;
+                    } else {
+                        fontDesc.size = (unsigned int)(size/PANGO_SCALE * (96.0/72.0));
+                    }
+                }
+
+                fontDesc.slant = dred_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
+                fontDesc.weight = dred_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
+
+                pango_font_description_free(pPangoDesc);
+            }
+        }
+
+        g_object_unref(settings);
+    }
+    #endif
+#endif
+
+    return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
+}
+
+dred_font* dred_parse_and_load_font(dred_context* pDred, const char* value)
+{
+    // Check for pre-defined fonts first.
+    if (strcmp(value, "system-font-ui") == 0) {
+        return dred__load_system_font_ui(pDred);
+    }
+    if (strcmp(value, "system-font-mono") == 0) {
+        return dred__load_system_font_mono(pDred);
+    }
+
+
+    // The format of the font string is <family> <size> <weight> <slant>. The weight and slant are optional and default to normal weight and
+    // no slant.
+    dred_font_desc fontDesc;
+    fontDesc.flags = 0;
+    fontDesc.rotation = 0;
+    fontDesc.weight = drgui_font_weight_normal;
+    fontDesc.slant = drgui_font_slant_none;
+
+    // Family.
+    value = dr_next_token(value, fontDesc.family, sizeof(fontDesc.family));
+    if (value == NULL) {
+        return pDred->config.pUIFont;
+    }
+
+    // Size.
+    char token[256];
+    value = dr_next_token(value, token, sizeof(token));
+    if (value == NULL) {
+        return pDred->config.pUIFont;
+    }
+
+    int size = atoi(token);
+    if (size < 0) {
+        size = -size;
+    }
+
+    fontDesc.size = size;
+
+    // Weight.
+    value = dr_next_token(value, token, sizeof(token));
+    if (value != NULL) {
+        fontDesc.weight = dred_parse_font_weight(token);
+
+        // Slant.
+        value = dr_next_token(value, token, sizeof(token));
+        if (value != NULL) {
+            fontDesc.slant = dred_parse_font_slant(token);
+        }
+    }
+
+
+    return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
+}
+
+
 void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab, dred_tab* pOldActiveTab)
 {
     (void)pOldActiveTab;

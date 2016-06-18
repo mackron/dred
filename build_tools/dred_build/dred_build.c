@@ -22,6 +22,14 @@ double g_StockImageScales[] = {1.0, 1.5, 2.0};
 
 #define BYTES_PER_ROW   16
 
+#define CONFIG_VAR_TYPE_INTEGER     1
+#define CONFIG_VAR_TYPE_FLOAT       2
+#define CONFIG_VAR_TYPE_BOOL        3
+#define CONFIG_VAR_TYPE_STRING      4
+#define CONFIG_VAR_TYPE_FONT        5
+#define CONFIG_VAR_TYPE_IMAGE       6
+#define CONFIG_VAR_TYPE_COLOR       7
+
 typedef struct
 {
     char filename[256];
@@ -29,6 +37,130 @@ typedef struct
     unsigned int baseWidth;
     unsigned int baseHeight;
 } stock_image;
+
+typedef struct
+{
+    char name[256];
+    char varname[256];
+    unsigned int type;
+    char defaultValue[1024];
+    char* documentation;
+} config_var;
+
+const char* config_var_type_to_string(unsigned int type)
+{
+    if (type == CONFIG_VAR_TYPE_INTEGER) {
+        return "int";
+    }
+    if (type == CONFIG_VAR_TYPE_FLOAT) {
+        return "float";
+    }
+    if (type == CONFIG_VAR_TYPE_BOOL) {
+        return "bool";
+    }
+    if (type == CONFIG_VAR_TYPE_STRING) {
+        return "char*";
+    }
+    if (type == CONFIG_VAR_TYPE_FONT) {
+        return "dred_font*";
+    }
+    if (type == CONFIG_VAR_TYPE_IMAGE) {
+        return "dred_image*";
+    }
+    if (type == CONFIG_VAR_TYPE_COLOR) {
+        return "drgui_color";
+    }
+
+    return "UNKOWN TYPE";
+}
+
+unsigned int parse_config_var_type(const char* type)
+{
+    if (strcmp(type, "int") == 0) {
+        return CONFIG_VAR_TYPE_INTEGER;
+    } else if (strcmp(type, "float") == 0) {
+        return CONFIG_VAR_TYPE_FLOAT;
+    } else if (strcmp(type, "bool") == 0) {
+        return CONFIG_VAR_TYPE_BOOL;
+    } else if (strcmp(type, "string") == 0) {
+        return CONFIG_VAR_TYPE_STRING;
+    } else if (strcmp(type, "font") == 0) {
+        return CONFIG_VAR_TYPE_FONT;
+    } else if (strcmp(type, "image") == 0) {
+        return CONFIG_VAR_TYPE_IMAGE;
+    } else if (strcmp(type, "color") == 0) {
+        return CONFIG_VAR_TYPE_COLOR;
+    }
+
+    printf("WARNING: Unknown config variable type: %s\n", type);
+    return 0;   // Unknown type.
+}
+
+void get_config_var_default_value(unsigned int type, char* valueOut, size_t valueOutSize)
+{
+    if (type == CONFIG_VAR_TYPE_INTEGER) {
+        strcpy_s(valueOut, valueOutSize, "0");
+        return;
+    }
+    if (type == CONFIG_VAR_TYPE_FLOAT) {
+        strcpy_s(valueOut, valueOutSize, "0.0f");
+        return;
+    }
+    if (type == CONFIG_VAR_TYPE_BOOL) {
+        strcpy_s(valueOut, valueOutSize, "false");
+        return;
+    }
+    if (type == CONFIG_VAR_TYPE_STRING) {
+        strcpy_s(valueOut, valueOutSize, "gb_make_string(\"\")");
+        return;
+    }
+    if (type == CONFIG_VAR_TYPE_FONT) {
+        strcpy_s(valueOut, valueOutSize, "dred_parse_and_load_font(pConfig->pDred, \"system-font-ui\")");
+        return;
+    }
+    if (type == CONFIG_VAR_TYPE_IMAGE) {
+        strcpy_s(valueOut, valueOutSize, "NULL");
+        return;
+    }
+    if (type == CONFIG_VAR_TYPE_COLOR) {
+        strcpy_s(valueOut, valueOutSize, "drgui_rgb(0, 0, 0)");
+        return;
+    }
+}
+
+void parse_config_var_value(unsigned int type, const char* valueIn, char* valueOut, size_t valueOutSize)
+{
+    valueIn = dr_first_non_whitespace(valueIn);
+
+    if (type == CONFIG_VAR_TYPE_INTEGER) {
+        strcpy_s(valueOut, valueOutSize, valueIn);
+        return;
+    }
+    if (type == CONFIG_VAR_TYPE_FLOAT) {
+        strcpy_s(valueOut, valueOutSize, valueIn);
+        return;
+    }
+    if (type == CONFIG_VAR_TYPE_BOOL) {
+        strcpy_s(valueOut, valueOutSize, valueIn);
+        return;
+    }
+    if (type == CONFIG_VAR_TYPE_STRING) {
+        snprintf(valueOut, valueOutSize, "gb_make_string(%s)", valueIn);
+        return;
+    }
+    if (type == CONFIG_VAR_TYPE_FONT) {
+        snprintf(valueOut, valueOutSize, "dred_parse_and_load_font(pConfig->pDred, \"%s\")", valueIn);
+        return;
+    }
+    if (type == CONFIG_VAR_TYPE_IMAGE) {
+        strcpy_s(valueOut, valueOutSize, "NULL");
+        return;
+    }
+    if (type == CONFIG_VAR_TYPE_COLOR) {
+        strcpy_s(valueOut, valueOutSize, "drgui_rgb(0, 0, 0)");
+        return;
+    }
+}
 
 char* write_image_data_rgba8(char* output, unsigned int* pCurrentByteColumn, const uint8_t* pImageData, unsigned int width, unsigned int height, unsigned int stride)
 {
@@ -337,6 +469,281 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
     fwrite_string(pFileOut, StockImages);
 }
 
+void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
+{
+    assert(pFileOut != NULL);
+    assert(pFileOutH != NULL);
+
+    size_t sourceFileDataSize;
+    char* sourceFileData = dr_open_and_read_text_file("../source/dred_config.h", &sourceFileDataSize);
+    if (sourceFileData == NULL) {
+        return;
+    }
+
+    // Look for the line beginning with "// BEGIN CONFIG VARS"
+    char line[4096];
+    const char* nextLine = sourceFileData;
+    while (nextLine != NULL) {
+        if (dr_copy_line(nextLine, line, sizeof(line)) == (size_t)-1) {
+            return;
+        }
+        if (strstr(line, "// BEGIN CONFIG VARS") != NULL) {
+            nextLine = dr_next_line(nextLine);
+            break;
+        }
+        nextLine = dr_next_line(nextLine);
+    }
+
+    unsigned int varCount = 0;
+    config_var* pConfigVars = NULL;
+
+    config_var var;
+    memset(&var, 0, sizeof(var));
+
+    while (nextLine != NULL) {
+        size_t lineLength = dr_copy_line(nextLine, line, sizeof(line));
+        if (lineLength <= 2) {
+            nextLine = dr_next_line(nextLine);
+            continue;
+        }
+
+        if (strstr(line, "// END CONFIG VARS") != NULL) {
+            break;
+        }
+
+        
+        // First, just skip past the "//" to keep the rest simple.
+        char* lineBeg = line + 2;
+
+        // How we treat this line depends on whether or not we are starting a new declaration or adding to the documentation of the 
+        // previous variable. Documentation is designated with 3 spaces.
+        if (lineBeg[0] == ' ' && lineBeg[1] == ' ' && lineBeg[2] == ' ') {
+            if (var.documentation == NULL) {
+                var.documentation = gb_make_string(lineBeg + 3);
+            } else {
+                var.documentation = gb_append_cstring(var.documentation, " ");
+                var.documentation = gb_append_cstring(var.documentation, lineBeg + 3);
+            }
+        } else if (lineBeg[0] == '\n') {
+            if (var.documentation) {
+                var.documentation = gb_append_cstring(var.documentation, "\n");
+            }
+        } else if (lineBeg[0] >= 32 && lineBeg[0] < 126) {
+            // It's a new variable. If we were parsing a variable earlier the old one will need to be added.
+            if (var.name[0] != '\0') {
+                pConfigVars = realloc(pConfigVars, (varCount+1) * sizeof(*pConfigVars));
+                pConfigVars[varCount++] = var;
+            }
+
+            memset(&var, 0, sizeof(var));   // <-- Just make sure the variable is reset to make things easier.
+
+            // The format of this line should be <config name> <C variable name> <type>
+            const char* next = dr_next_token(line + 2, var.name, sizeof(var.name));     // Skip past "//"
+            if (next == NULL) {
+                nextLine = dr_next_line(nextLine);
+                continue;
+            }
+
+            next = dr_next_token(next, var.varname, sizeof(var.varname));
+            if (next == NULL) {
+                nextLine = dr_next_line(nextLine);
+                continue;
+            }
+
+            char type[32];
+            next = dr_next_token(next, type, sizeof(type));
+            if (next == NULL) {
+                nextLine = dr_next_line(nextLine);
+                continue;
+            }
+            var.type = parse_config_var_type(type);
+
+
+            // At this point "next" will be pointing to the default value. Just in case it is not present we fill out a default value first.
+            get_config_var_default_value(var.type, var.defaultValue, sizeof(var.defaultValue));
+
+            const char* defaultValue = next;
+
+            char unused[1024];
+            if (dr_next_token(next, unused, sizeof(unused))) {
+                parse_config_var_value(var.type, defaultValue, var.defaultValue, sizeof(var.defaultValue));
+            }
+        }
+
+        nextLine = dr_next_line(nextLine + lineLength);
+    }
+
+    // There may be a leftover config variable to add to the main list.
+    if (var.name[0] != '\0') {
+        pConfigVars = realloc(pConfigVars, (varCount+1) * sizeof(*pConfigVars));
+        pConfigVars[varCount++] = var;
+    }
+    
+
+    char* declarationsOutput = gb_make_string("\n\n#define DRED_CONFIG_VARIABLE_DECLARATIONS");
+    for (unsigned int iVar = 0; iVar < varCount; ++iVar) {
+        config_var* pVar = &pConfigVars[iVar];
+        declarationsOutput = gb_append_cstring(declarationsOutput, " \\\n");
+        declarationsOutput = gb_append_cstring(declarationsOutput, config_var_type_to_string(pVar->type));
+        declarationsOutput = gb_append_cstring(declarationsOutput, " ");
+        declarationsOutput = gb_append_cstring(declarationsOutput, pVar->varname);
+        declarationsOutput = gb_append_cstring(declarationsOutput, ";");
+    }
+    fwrite_string(pFileOutH, declarationsOutput);
+
+
+    char* funcOutput = gb_make_string("\n\nvoid dred_config_init_variables__autogenerated(dred_config* pConfig)\n{\n");
+    for (unsigned int iVar = 0; iVar < varCount; ++iVar) {
+        config_var* pVar = &pConfigVars[iVar];
+
+#if 0
+        switch (pVar->type)
+        {
+            case CONFIG_VAR_TYPE_INTEGER:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = ");
+            } break;
+
+            case CONFIG_VAR_TYPE_FLOAT:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = ");
+            } break;
+
+            case CONFIG_VAR_TYPE_BOOL:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = ");
+            } break;
+
+            case CONFIG_VAR_TYPE_STRING:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = ");
+            } break;
+
+            case CONFIG_VAR_TYPE_FONT:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = ");
+            } break;
+
+            case CONFIG_VAR_TYPE_IMAGE:
+            {
+                // TODO: Implement this properly once a proper imaging system is ready.
+                funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = ");
+            } break;
+
+            case CONFIG_VAR_TYPE_COLOR:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = ");
+            } break;
+
+            default: break;
+        }
+#endif
+
+        funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = ");
+        funcOutput = gb_append_cstring(funcOutput, pVar->defaultValue);
+        funcOutput = gb_append_cstring(funcOutput, ";\n");
+    }
+    funcOutput = gb_append_cstring(funcOutput, "}");
+    fwrite_string(pFileOut, funcOutput);
+    gb_free_string(funcOutput);
+
+
+    funcOutput = gb_make_string("\n\nvoid dred_config_uninit_variables__autogenerated(dred_config* pConfig)\n{\n");
+    for (unsigned int iVar = 0; iVar < varCount; ++iVar) {
+        config_var* pVar = &pConfigVars[iVar];
+        switch (pVar->type)
+        {
+            case CONFIG_VAR_TYPE_STRING:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "    gb_free_string(pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ");\n");
+                funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = NULL;\n");
+            } break;
+
+            case CONFIG_VAR_TYPE_FONT:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "    dred_font_library_delete_font(&pConfig->pDred->fontLibrary, pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ");\n");
+                funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = NULL;\n");
+            } break;
+
+            case CONFIG_VAR_TYPE_IMAGE:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "    dred_image_library_delete_image(&pConfig->pDred->imageLibrary, pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ");\n");
+                funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = NULL;\n");
+            } break;
+
+            default: break;
+        }
+    }
+    funcOutput = gb_append_cstring(funcOutput, "}");
+    fwrite_string(pFileOut, funcOutput);
+    gb_free_string(funcOutput);
+
+
+    funcOutput = gb_make_string("\n\nvoid dred_config_parse_variable__autogenerated(dred_config* pConfig, const char* key, const char* value)\n{\n");
+    for (unsigned int iVar = 0; iVar < varCount; ++iVar) {
+        config_var* pVar = &pConfigVars[iVar];
+
+        funcOutput = gb_append_cstring(funcOutput, "    if (strcmp(key, \"");
+        funcOutput = gb_append_cstring(funcOutput, pVar->name);
+        funcOutput = gb_append_cstring(funcOutput, "\") == 0) {\n");
+
+        switch (pVar->type)
+        {
+            case CONFIG_VAR_TYPE_INTEGER:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
+                funcOutput = gb_append_cstring(funcOutput, " = atoi(value);\n");
+            } break;
+
+            case CONFIG_VAR_TYPE_FLOAT:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
+                funcOutput = gb_append_cstring(funcOutput, " = (float)atof(value);\n");
+            } break;
+
+            case CONFIG_VAR_TYPE_BOOL:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
+                funcOutput = gb_append_cstring(funcOutput, " = dred_parse_bool(value);\n");
+            } break;
+
+            case CONFIG_VAR_TYPE_STRING:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "        gb_free_string(pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
+                funcOutput = gb_append_cstring(funcOutput, ");\n");
+                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
+                funcOutput = gb_append_cstring(funcOutput, " = gb_make_string(value);\n");
+            } break;
+
+            case CONFIG_VAR_TYPE_FONT:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
+                funcOutput = gb_append_cstring(funcOutput, " = dred_parse_and_load_font(pConfig->pDred, value);\n");
+            } break;
+
+            case CONFIG_VAR_TYPE_IMAGE:
+            {
+                // TODO: Implement this properly once a proper imaging system is ready.
+                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
+                funcOutput = gb_append_cstring(funcOutput, " = NULL;\n");
+            } break;
+
+            case CONFIG_VAR_TYPE_COLOR:
+            {
+                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
+                funcOutput = gb_append_cstring(funcOutput, " = dred_parse_color(value);\n");
+            } break;
+
+        default: break;
+        }
+
+        funcOutput = gb_append_cstring(funcOutput, "        return;\n    }\n");
+    }
+    funcOutput = gb_append_cstring(funcOutput, "\n    dred_warningf(pConfig->pDred, \"Unknown config variable: %s\\n\", key);\n");
+    funcOutput = gb_append_cstring(funcOutput, "}\n\n");
+    fwrite_string(pFileOut, funcOutput);
+}
+
 int main(int argc, char** argv)
 {
     (void)argc;
@@ -366,6 +773,9 @@ int main(int argc, char** argv)
 
     // Stock images.
     generate_stock_images(pFileOut, pFileOutH);
+
+    // Config vars.
+    generate_config_vars(pFileOut, pFileOutH);
 
 
     fclose(pFileOut);
