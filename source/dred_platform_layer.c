@@ -2163,6 +2163,14 @@ void dred_window_set_title__gtk(dred_window* pWindow, const char* title)
 
 void dred_window_set_size__gtk(dred_window* pWindow, unsigned int newWidth, unsigned int newHeight)
 {
+    // We need to adjust the height of the window based on the menu.
+    if (pWindow->pMenu != NULL) {
+        GtkAllocation alloc;
+        gtk_widget_get_allocation(pWindow->pMenu->pGTKMenu, &alloc);
+
+        newHeight += alloc.height;
+    }
+
     gtk_window_resize(GTK_WINDOW(pWindow->pGTKWindow), (int)newWidth, (int)newHeight);
 }
 

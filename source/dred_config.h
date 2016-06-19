@@ -14,6 +14,16 @@
 //   Whether or not to show the command bar at all times. If this is set to false it will be shown only when it has keyboard focus.
 //
 //
+// window-width windowWidth int 640
+//   The width of the window
+//
+// window-height windowHeight int 480
+//   The height of the window.
+//
+// window-maximized windowMaximized bool false
+//   Whether or not the window is maximized.
+//
+//
 // ui-scale uiScale float 1
 //   The scale of the UI. The total scale of UI elements is equal to the DPI scaling multiplied by this value.
 //

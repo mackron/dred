@@ -342,8 +342,12 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     // keyboard focus.
     dred_window_set_title(pDred->pMainWindow, "dred");
     dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_Default);
-    dred_window_set_size(pDred->pMainWindow, (unsigned int)(1280*pDred->dpiScale), (unsigned int)(720*pDred->dpiScale));
-    dred_window_show(pDred->pMainWindow);
+    dred_window_set_size(pDred->pMainWindow, (unsigned int)(pDred->config.windowWidth*pDred->dpiScale), (unsigned int)(pDred->config.windowHeight*pDred->dpiScale));
+    if (pDred->config.windowMaximized) {
+        dred_window_show_maximized(pDred->pMainWindow);
+    } else {
+        dred_window_show(pDred->pMainWindow);
+    }
     if (!pDred->config.showMenuBar) {
         dred_window_hide_menu(pDred->pMainWindow);
     }

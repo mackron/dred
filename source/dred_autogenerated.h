@@ -9,6 +9,9 @@
 bool showTabBar; \
 bool showMenuBar; \
 bool autoHideCmdBar; \
+int windowWidth; \
+int windowHeight; \
+bool windowMaximized; \
 float uiScale; \
 dred_font* pUIFont; \
 drgui_color cmdbarBGColor; \
