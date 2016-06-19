@@ -1413,8 +1413,6 @@ void dred_enable_auto_hide_command_bar(dred_context* pDred)
         return;
     }
 
-    pDred->config.autoHideCmdBar = true;
-
     if (!pDred->config.autoHideCmdBar) {
         pDred->config.autoHideCmdBar = true;
 

@@ -19,12 +19,17 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append_separator(pFileMenu_Default);
     dred_menu_item_create_and_append(pFileMenu_Default, "E&xit", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_shortcut_create_single(dred_accelerator_create(DRGUI_F4, DRED_KEY_STATE_ALT_DOWN)), NULL);
 
+    dred_menu* pViewMenu_Default = dred_menu_create(pDred, dred_menu_type_popup);
+    dred_menu_item_create_and_append(pViewMenu_Default, "Toggle Tab Bars", DRED_MENU_ITEM_ID_VIEW_TAB_BARS, "toggle-tabbars", dred_shortcut_none(), NULL);
+    dred_menu_item_create_and_append(pViewMenu_Default, "Toggle Command Bar Auto-Hide", DRED_MENU_ITEM_ID_VIEW_CMD_BAR, "toggle-auto-hide-cmdbar", dred_shortcut_none(), NULL);
+
     dred_menu* pHelpMenu_Default = dred_menu_create(pDred, dred_menu_type_popup);
     //dred_menu_item_create_and_append(pHelpMenu_Default, "View &Help (Opens Web Browser)...", DRED_MENU_ITEM_ID_HELP_HELP, "help", dred_shortcut_create_single(dred_accelerator_create(DRGUI_F1, DRED_KEY_STATE_CTRL_DOWN), NULL);
     //dred_menu_item_create_and_append_separator(pHelpMenu_Default);
     dred_menu_item_create_and_append(pHelpMenu_Default, "&About...", DRED_MENU_ITEM_ID_HELP_ABOUT, "about", dred_shortcut_none(), NULL);
 
     dred_menu_item_create_and_append(pLibrary->pMenu_Default, "&File", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), pFileMenu_Default);
+    dred_menu_item_create_and_append(pLibrary->pMenu_Default, "&View", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), pViewMenu_Default);
     dred_menu_item_create_and_append(pLibrary->pMenu_Default, "&Help", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), pHelpMenu_Default);
 
 
@@ -62,6 +67,7 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
 
     dred_menu* pViewMenu = dred_menu_create(pDred, dred_menu_type_popup);
     dred_menu_item_create_and_append(pViewMenu, "Toggle Tab Bars", DRED_MENU_ITEM_ID_VIEW_TAB_BARS, "toggle-tabbars", dred_shortcut_none(), NULL);
+    dred_menu_item_create_and_append(pViewMenu, "Toggle Command Bar Auto-Hide", DRED_MENU_ITEM_ID_VIEW_CMD_BAR, "toggle-auto-hide-cmdbar", dred_shortcut_none(), NULL);
     dred_menu_item_create_and_append_separator(pViewMenu);
     dred_menu_item_create_and_append(pViewMenu, "Toggle &Line Numbers", DRED_MENU_ITEM_ID_VIEW_LINE_NUMBERS, "toggle-line-numbers", dred_shortcut_none(), NULL);
     dred_menu_item_create_and_append(pViewMenu, "Reset &Zoom", DRED_MENU_ITEM_ID_VIEW_RESET_ZOOM, "zoom 1", dred_shortcut_none(), NULL);
