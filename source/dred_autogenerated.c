@@ -2,7 +2,7 @@
 
 
 // Commands
-#define DRED_COMMAND_COUNT 38
+#define DRED_COMMAND_COUNT 40
 
 const char g_CommandNamePool[] = 
     "!\0"
@@ -41,6 +41,8 @@ const char g_CommandNamePool[] =
     "replace\0"
     "replace-next\0"
     "replace-all\0"
+    "show-line-numbers\0"
+    "hide-line-numbers\0"
     "toggle-line-numbers\0"
     "zoom\0";
 
@@ -82,7 +84,9 @@ const char* g_CommandNames[] = {
     g_CommandNamePool + 311,
     g_CommandNamePool + 324,
     g_CommandNamePool + 336,
-    g_CommandNamePool + 356,
+    g_CommandNamePool + 354,
+    g_CommandNamePool + 372,
+    g_CommandNamePool + 392,
 };
 
 dred_command g_Commands[] = {
@@ -122,6 +126,8 @@ dred_command g_Commands[] = {
     {dred_command__replace, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__replace_next, DRED_CMDBAR_NO_CLEAR},
     {dred_command__replace_all, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__show_line_numbers, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__hide_line_numbers, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__toggle_line_numbers, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__zoom, DRED_CMDBAR_RELEASE_KEYBOARD},
 };

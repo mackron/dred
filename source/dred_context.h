@@ -170,6 +170,14 @@ void dred_close_tab_with_confirmation(dred_context* pDred, dred_tab* pTab);
 // Closes every tab.
 void dred_close_all_tabs(dred_context* pDred);
 
+// Closes every tab with a confirmation dialog if there is at least one that's modified.
+//
+// This will show a single dialog which represents every modified file. Hitting cancel on this dialog will
+// result in _none_ of the files being closed.
+//
+// True will be returned if every tab was closed. False will be returned if the tabs were not closed.
+bool dred_close_all_tabs_with_confirmation(dred_context* pDred);
+
 
 // Finds the tab associated with the given control, usually an editor.
 dred_tab* dred_find_control_tab(dred_control* pControl);

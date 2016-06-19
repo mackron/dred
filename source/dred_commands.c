@@ -200,7 +200,7 @@ void dred_command__close(dred_context* pDred, const char* value)
 void dred_command__close_all(dred_context* pDred, const char* value)
 {
     (void)value;
-    dred_close_all_tabs(pDred);
+    dred_close_all_tabs_with_confirmation(pDred);
 }
 
 void dred_command__exit(dred_context* pDred, const char* value)
@@ -427,6 +427,18 @@ void dred_command__replace_all(dred_context* pDred, const char* value)
             }
         }
     }
+}
+
+void dred_command__show_line_numbers(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_show_line_numbers(pDred);
+}
+
+void dred_command__hide_line_numbers(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_hide_line_numbers(pDred);
 }
 
 void dred_command__toggle_line_numbers(dred_context* pDred, const char* value)

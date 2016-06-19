@@ -201,6 +201,10 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
     dred_control_set_on_paint(pTabGroup, dred_tabgroup__on_paint);
 
 
+    if (!pDred->config.showTabBar) {
+        dred_tabgroup_hide_tabbar(pTabGroup);
+    }
+
     return pTabGroup;
 }
 

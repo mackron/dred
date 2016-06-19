@@ -421,16 +421,9 @@ void dred_close(dred_context* pDred)
         return;
     }
 
-    // If there's any modified files we need to show a dialog box.
-    if (dred_are_any_open_files_modified(pDred)) {
-        unsigned int result = dred_show_yesnocancel_dialog(pDred, "You have unsaved changes. Save changes?", "Save changes?");
-        if (result == DRED_MESSAGE_BOX_YES) {
-            if (!dred_save_all_open_files_with_saveas(pDred)) {
-                return;
-            }
-        } else if (result == DRED_MESSAGE_BOX_CANCEL) {
-            return; // Cancel. Don't quit, just return.
-        }
+    // This will return false if the user hits the cancel button.
+    if (!dred_close_all_tabs_with_confirmation(pDred)) {
+        return;
     }
 
     dred_platform_post_quit_message(0);
@@ -791,6 +784,11 @@ void dred_close_tab(dred_context* pDred, dred_tab* pTab)
     if (dred_control_is_of_type(pEditor, DRED_CONTROL_TYPE_EDITOR)) {
         dred_delete_editor_by_type(pEditor);
     }
+
+    // If after closing the tab there are no other active tabs, activate the command bar.
+    if (dred_get_focused_tab(pDred) == NULL) {
+        dred_focus_command_bar(pDred);
+    }
 }
 
 void dred_close_tab_with_confirmation(dred_context* pDred, dred_tab* pTab)
@@ -808,6 +806,9 @@ void dred_close_tab_with_confirmation(dred_context* pDred, dred_tab* pTab)
 
     if (dred_editor_is_modified(pEditor)) {
         char msg[4096];
+
+        // Activate the tab before showing the message box to given them some visual feedback as to which file it's referring to.
+        dred_tabgroup_activate_tab(dred_tab_get_tabgroup(pTab), pTab);
 
         const char* filePath = dred_editor_get_file_path(pEditor);
         if (filePath == NULL || filePath[0] == '\0') {
@@ -846,6 +847,28 @@ void dred_close_all_tabs(dred_context* pDred)
             dred_close_tab(pDred, dred_tabgroup_first_tab(pTabGroup));
         }
     }
+}
+
+bool dred_close_all_tabs_with_confirmation(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return false;
+    }
+
+    // If there's any modified files we need to show a dialog box.
+    if (dred_are_any_open_files_modified(pDred)) {
+        unsigned int result = dred_show_yesnocancel_dialog(pDred, "You have unsaved changes. Save changes?", "Save changes?");
+        if (result == DRED_MESSAGE_BOX_YES) {
+            if (!dred_save_all_open_files_with_saveas(pDred)) {
+                return true;
+            }
+        } else if (result == DRED_MESSAGE_BOX_CANCEL) {
+            return false;
+        }
+    }
+
+    dred_close_all_tabs(pDred);
+    return true;
 }
 
 

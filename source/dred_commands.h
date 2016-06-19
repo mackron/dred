@@ -39,6 +39,8 @@
 // replace                  dred_command__replace                   DRED_CMDBAR_RELEASE_KEYBOARD
 // replace-next             dred_command__replace_next              DRED_CMDBAR_NO_CLEAR
 // replace-all              dred_command__replace_all               DRED_CMDBAR_RELEASE_KEYBOARD
+// show-line-numbers        dred_command__show_line_numbers         DRED_CMDBAR_RELEASE_KEYBOARD
+// hide-line-numbers        dred_command__hide_line_numbers         DRED_CMDBAR_RELEASE_KEYBOARD
 // toggle-line-numbers      dred_command__toggle_line_numbers       DRED_CMDBAR_RELEASE_KEYBOARD
 // zoom                     dred_command__zoom                      DRED_CMDBAR_RELEASE_KEYBOARD
 //
@@ -183,6 +185,12 @@ void dred_command__replace_next(dred_context* pDred, const char* value);
 
 // replace-all
 void dred_command__replace_all(dred_context* pDred, const char* value);
+
+// show-line-numbers
+void dred_command__show_line_numbers(dred_context* pDred, const char* value);
+
+// hide-line-numbers
+void dred_command__hide_line_numbers(dred_context* pDred, const char* value);
 
 // toggle-line-numbers
 void dred_command__toggle_line_numbers(dred_context* pDred, const char* value);
