@@ -85,6 +85,19 @@ void dred_textbox_set_line_numbers_padding(dred_textbox* pTextBox, float lineNum
 // Retrieves the padding to apply between the line numbers and the text.
 float dred_textbox_get_line_numbers_padding(dred_textbox* pTextBox);
 
+// Sets the color of the text of the line numbers.
+void dred_textbox_set_line_numbers_color(dred_textbox* pTextBox, drgui_color color);
+
+// Retrieves the color of the text of the line numbers.
+drgui_color dred_textbox_get_line_numbers_color(dred_textbox* pTextBox);
+
+// Sets the color of the background of the line numbers.
+void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, drgui_color color);
+
+// Retrieves the color of the background of the line numbers.
+drgui_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBox);
+
+
 
 // Sets the blink rate of the cursor in milliseconds.
 void dred_textbox_set_cursor_blink_rate(dred_textbox* pTextBox, unsigned int blinkRateInMilliseconds);

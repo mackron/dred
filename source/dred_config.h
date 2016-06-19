@@ -17,6 +17,9 @@
 // cmdbar-tb-font pCmdbarTBFont font system-font-mono
 //   The font to use in the text box of the command bar.
 //
+// cmdbar-tb-text-color cmdbarTBTextColor color 224 224 224
+//   The color of the text in the text box of the command bar.
+//
 // cmdbar-msg-font pCmdbarMessageFont font system-font-ui
 //   The font to use for the message box of the command bar.
 //
@@ -69,6 +72,15 @@
 //
 // texteditor-active-line-color textEditorActiveLineColor color 40 40 40
 //   The background color of the line that the caret is currently sitting on in a text editor.
+//
+// texteditor-line-numbers-color textEditorLineNumbersColor color 80 160 192
+//   The color of the line numbers text.
+//
+// texteditor-line-numbers-bg-color textEditorLineNumbersBGColor color 48 48 48
+//   The color of the background of the line numbers.
+//
+// texteditor-line-numbers-padding textEditorLineNumbersPadding float 16
+//   The padding between the line numbers and the text in the text editor.
 //
 // END CONFIG VARS
 

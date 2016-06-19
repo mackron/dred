@@ -187,6 +187,8 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
     }
 
     dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pCmdbarTBFont, (float)pDred->uiScale));
+    dred_textbox_set_text_color(data->pTextBox, pDred->config.cmdbarTBTextColor);
+    dred_textbox_set_cursor_color(data->pTextBox, pDred->config.cmdbarTBTextColor);
     dred_textbox_set_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
     dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
     dred_textbox_disable_horizontal_scrollbar(data->pTextBox);

@@ -363,6 +363,26 @@ float dred_textbox_get_line_numbers_padding(dred_textbox* pTextBox)
     return drgui_textbox_get_line_numbers_padding(dred_textbox__get_internal_tb(pTextBox));
 }
 
+void dred_textbox_set_line_numbers_color(dred_textbox* pTextBox, drgui_color color)
+{
+    drgui_textbox_set_line_numbers_color(dred_textbox__get_internal_tb(pTextBox), color);
+}
+
+drgui_color dred_textbox_get_line_numbers_color(dred_textbox* pTextBox)
+{
+    return drgui_textbox_get_line_numbers_color(dred_textbox__get_internal_tb(pTextBox));
+}
+
+void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, drgui_color color)
+{
+    drgui_textbox_set_line_numbers_background_color(dred_textbox__get_internal_tb(pTextBox), color);
+}
+
+drgui_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBox)
+{
+    return drgui_textbox_get_line_numbers_background_color(dred_textbox__get_internal_tb(pTextBox));
+}
+
 
 void dred_textbox_set_cursor_blink_rate(dred_textbox* pTextBox, unsigned int blinkRateInMilliseconds)
 {

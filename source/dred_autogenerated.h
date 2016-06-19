@@ -10,6 +10,7 @@ float uiScale; \
 dred_font* pUIFont; \
 drgui_color cmdbarBGColor; \
 dred_font* pCmdbarTBFont; \
+drgui_color cmdbarTBTextColor; \
 dred_font* pCmdbarMessageFont; \
 float cmdbarPaddingX; \
 float cmdbarPaddingY; \
@@ -26,4 +27,7 @@ drgui_color textEditorTextColor; \
 drgui_color textEditorBGColor; \
 drgui_color textEditorCursorColor; \
 float textEditorCursorWidth; \
-drgui_color textEditorActiveLineColor;
+drgui_color textEditorActiveLineColor; \
+drgui_color textEditorLineNumbersColor; \
+drgui_color textEditorLineNumbersBGColor; \
+float textEditorLineNumbersPadding;
