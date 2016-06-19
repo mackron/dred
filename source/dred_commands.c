@@ -154,6 +154,19 @@ void dred_command__toggle_auto_hide_cmdbar(dred_context* pDred, const char* valu
 }
 
 
+void dred_command__next_tab(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_tabgroup_activate_next_tab(dred_get_focused_tabgroup(pDred));
+}
+
+void dred_command__prev_tab(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_tabgroup_activate_prev_tab(dred_get_focused_tabgroup(pDred));
+}
+
+
 
 void dred_command__new(dred_context* pDred, const char* value)
 {

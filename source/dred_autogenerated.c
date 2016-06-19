@@ -2,7 +2,7 @@
 
 
 // Commands
-#define DRED_COMMAND_COUNT 40
+#define DRED_COMMAND_COUNT 42
 
 const char g_CommandNamePool[] = 
     "!\0"
@@ -17,6 +17,8 @@ const char g_CommandNamePool[] =
     "enable-auto-hide-cmdbar\0"
     "disable-auto-hide-cmdbar\0"
     "toggle-auto-hide-cmdbar\0"
+    "next-tab\0"
+    "prev-tab\0"
     "new\0"
     "open\0"
     "save\0"
@@ -60,33 +62,35 @@ const char* g_CommandNames[] = {
     g_CommandNamePool + 123,
     g_CommandNamePool + 148,
     g_CommandNamePool + 172,
-    g_CommandNamePool + 176,
     g_CommandNamePool + 181,
-    g_CommandNamePool + 186,
-    g_CommandNamePool + 195,
-    g_CommandNamePool + 203,
-    g_CommandNamePool + 209,
-    g_CommandNamePool + 219,
-    g_CommandNamePool + 224,
-    g_CommandNamePool + 229,
-    g_CommandNamePool + 234,
-    g_CommandNamePool + 240,
-    g_CommandNamePool + 245,
-    g_CommandNamePool + 250,
-    g_CommandNamePool + 254,
-    g_CommandNamePool + 259,
-    g_CommandNamePool + 265,
+    g_CommandNamePool + 190,
+    g_CommandNamePool + 194,
+    g_CommandNamePool + 199,
+    g_CommandNamePool + 204,
+    g_CommandNamePool + 213,
+    g_CommandNamePool + 221,
+    g_CommandNamePool + 227,
+    g_CommandNamePool + 237,
+    g_CommandNamePool + 242,
+    g_CommandNamePool + 247,
+    g_CommandNamePool + 252,
+    g_CommandNamePool + 258,
+    g_CommandNamePool + 263,
+    g_CommandNamePool + 268,
     g_CommandNamePool + 272,
+    g_CommandNamePool + 277,
     g_CommandNamePool + 283,
-    g_CommandNamePool + 288,
-    g_CommandNamePool + 293,
-    g_CommandNamePool + 303,
+    g_CommandNamePool + 290,
+    g_CommandNamePool + 301,
+    g_CommandNamePool + 306,
     g_CommandNamePool + 311,
-    g_CommandNamePool + 324,
-    g_CommandNamePool + 336,
+    g_CommandNamePool + 321,
+    g_CommandNamePool + 329,
+    g_CommandNamePool + 342,
     g_CommandNamePool + 354,
     g_CommandNamePool + 372,
-    g_CommandNamePool + 392,
+    g_CommandNamePool + 390,
+    g_CommandNamePool + 410,
 };
 
 dred_command g_Commands[] = {
@@ -102,6 +106,8 @@ dred_command g_Commands[] = {
     {dred_command__enable_auto_hide_cmdbar, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__disable_auto_hide_cmdbar, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__toggle_auto_hide_cmdbar, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__next_tab, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__prev_tab, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__new, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__open, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__save, DRED_CMDBAR_RELEASE_KEYBOARD},

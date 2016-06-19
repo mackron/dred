@@ -269,6 +269,16 @@ void dred_tabgroup_activate_tab(dred_tabgroup* pTabGroup, dred_tab* pTab)
     drgui_tabbar_activate_tab(dred_tabgroup__get_tabbar(pTabGroup), pTab);
 }
 
+void dred_tabgroup_activate_next_tab(dred_tabgroup* pTabGroup)
+{
+    drgui_tabbar_activate_next_tab(dred_tabgroup__get_tabbar(pTabGroup));
+}
+
+void dred_tabgroup_activate_prev_tab(dred_tabgroup* pTabGroup)
+{
+    drgui_tabbar_activate_prev_tab(dred_tabgroup__get_tabbar(pTabGroup));
+}
+
 dred_tab* dred_tabgroup_get_active_tab(dred_tabgroup* pTabGroup)
 {
     return drgui_tabbar_get_active_tab(dred_tabgroup__get_tabbar(pTabGroup));

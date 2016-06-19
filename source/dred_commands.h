@@ -15,6 +15,8 @@
 // enable-auto-hide-cmdbar  dred_command__enable_auto_hide_cmdbar   DRED_CMDBAR_RELEASE_KEYBOARD
 // disable-auto-hide-cmdbar dred_command__disable_auto_hide_cmdbar  DRED_CMDBAR_RELEASE_KEYBOARD
 // toggle-auto-hide-cmdbar  dred_command__toggle_auto_hide_cmdbar   DRED_CMDBAR_RELEASE_KEYBOARD
+// next-tab                 dred_command__next_tab                  DRED_CMDBAR_RELEASE_KEYBOARD
+// prev-tab                 dred_command__prev_tab                  DRED_CMDBAR_RELEASE_KEYBOARD
 // new                      dred_command__new                       DRED_CMDBAR_RELEASE_KEYBOARD
 // open                     dred_command__open                      DRED_CMDBAR_RELEASE_KEYBOARD
 // save                     dred_command__save                      DRED_CMDBAR_RELEASE_KEYBOARD
@@ -107,6 +109,14 @@ void dred_command__disable_auto_hide_cmdbar(dred_context* pDred, const char* val
 
 // toggle-auto-hide-cmdbar
 void dred_command__toggle_auto_hide_cmdbar(dred_context* pDred, const char* value);
+
+
+// next-tab
+void dred_command__next_tab(dred_context* pDred, const char* value);
+
+// prev-tab
+void dred_command__prev_tab(dred_context* pDred, const char* value);
+
 
 
 // new

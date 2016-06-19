@@ -15,6 +15,8 @@
 #define DRED_SHORTCUT_NAME_GOTO         "GoTo"
 #define DRED_SHORTCUT_NAME_FIND         "Find"
 #define DRED_SHORTCUT_NAME_REPLACE      "FindAndReplace"
+#define DRED_SHORTCUT_NAME_NEXT_TAB     "NextTab"
+#define DRED_SHORTCUT_NAME_PREV_TAB     "PrevTab"
 
 struct dred_shortcut
 {

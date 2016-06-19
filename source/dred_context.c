@@ -258,6 +258,9 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_GOTO,       dred_shortcut_create_single(dred_accelerator_create('G', DRED_KEY_STATE_CTRL_DOWN)), "cmdbar goto ");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_FIND,       dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN)), "cmdbar find-next ");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_REPLACE,    dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "cmdbar replace-all ");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_NEXT_TAB,   dred_shortcut_create_single(dred_accelerator_create('\t', DRED_KEY_STATE_CTRL_DOWN)), "next-tab");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_PREV_TAB,   dred_shortcut_create_single(dred_accelerator_create('\t', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "prev-tab");
+
 
 
     // Config

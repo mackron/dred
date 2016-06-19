@@ -26,6 +26,12 @@ dred_tabgroup* dred_tabgroup_prev_tabgroup(dred_tabgroup* pTabGroup);
 // dred_tabgroup_activate_tab()
 void dred_tabgroup_activate_tab(dred_tabgroup* pTabGroup, dred_tab* pTab);
 
+// Activates the tab to the right of the currently active tab, looping back to the start if necessary.
+void dred_tabgroup_activate_next_tab(dred_tabgroup* pTabGroup);
+
+// Activates the tab to the left of the currently active tab, looping back to the end if necessary.
+void dred_tabgroup_activate_prev_tab(dred_tabgroup* pTabGroup);
+
 // dred_tabgroup_get_active_tab()
 dred_tab* dred_tabgroup_get_active_tab(dred_tabgroup* pTabGroup);
 
