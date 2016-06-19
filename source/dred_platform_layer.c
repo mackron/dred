@@ -2129,12 +2129,11 @@ void dred_window_set_size__gtk(dred_window* pWindow, unsigned int newWidth, unsi
 
 void dred_window_get_size__gtk(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut)
 {
-    int width;
-    int height;
-    gtk_window_get_size(GTK_WINDOW(pWindow->pGTKWindow), &width, &height);
+    GtkAllocation alloc;
+    gtk_widget_get_allocation(pWindow->pGTKClientArea, &alloc);
 
-    if (*pWidthOut) *pWidthOut = width;
-    if (*pHeightOut) *pHeightOut = height;
+    if (pWidthOut) *pWidthOut = alloc.width;
+    if (pHeightOut) *pHeightOut = alloc.height;
 }
 
 
@@ -2491,9 +2490,6 @@ void dred_menu_item_delete__gtk(dred_menu_item* pItem)
     if (pItem == NULL) {
         return;
     }
-
-    gtk_widget_destroy(pItem->pGTKMenuItem);
-
 
 
     // Remove the item from the list.
