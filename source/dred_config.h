@@ -39,6 +39,18 @@
 // tab-bg-color-hovered tabBGColorHovered color 32 128 192
 //   The background color of tabs while hovered.
 //
+// tab-font tabFont font system-font-ui
+//   The font to use on tabs.
+//
+// tab-text-color tabTextColor color 224 224 224
+//   The color of the text on tabs.
+//
+// tab-padding tabPadding float 4
+//   The amount of padding to apply to all sides of a tab.
+//
+// tab-show-close-button tabShowCloseButton bool false
+//   Whether or not to show the close button on tabs.
+//
 //
 // texteditor-font pTextEditorFont font system-font-mono
 //   The font to use in text editors.

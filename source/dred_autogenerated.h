@@ -17,6 +17,10 @@ drgui_color tabgroupBGColor; \
 drgui_color tabBGColorInvactive; \
 drgui_color tabBGColorActive; \
 drgui_color tabBGColorHovered; \
+dred_font* tabFont; \
+drgui_color tabTextColor; \
+float tabPadding; \
+bool tabShowCloseButton; \
 dred_font* pTextEditorFont; \
 drgui_color textEditorBGColor; \
 drgui_color textEditorActiveLineColor;
