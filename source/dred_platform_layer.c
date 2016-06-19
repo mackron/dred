@@ -1128,8 +1128,10 @@ dred_menu_item* dred_menu_item_create_and_append__win32__internal(dred_menu* pMe
     }
 
     pItem->id = id;
+    pItem->index = pMenu->menuItemCount;
     pItem->command = gb_make_string(command);
     pItem->pSubMenu = pSubMenu;
+    pItem->pOwnerMenu = pMenu;
 
 
     // Add the item to the list.
@@ -1160,6 +1162,17 @@ void dred_menu_item_delete__win32(dred_menu_item* pItem)
     if (pItem == NULL) {
         return;
     }
+
+    RemoveMenu(pItem->pOwnerMenu->hMenu, pItem->index, MF_BYPOSITION);
+
+    // Remove the item from the list.
+    assert(pItem->pOwnerMenu->menuItemCount > 0);
+    for (size_t i = pItem->index; i < pItem->pOwnerMenu->menuItemCount-1; ++i) {
+        pItem->pOwnerMenu->ppMenuItems[i] = pItem->pOwnerMenu->ppMenuItems[i+1];
+        pItem->pOwnerMenu->ppMenuItems[i]->index -= 1;
+    }
+    pItem->pOwnerMenu->menuItemCount -= 1;
+
 
     if (pItem->command) {
         gb_free_string(pItem->command);
@@ -2433,8 +2446,10 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
     }
 
     pItem->id = id;
+    pItem->index = pMenu->menuItemCount;
     pItem->command = gb_make_string(command);
     pItem->pSubMenu = pSubMenu;
+    pItem->pOwnerMenu = pMenu;
     pItem->pGTKMenuItem = pGTKMenuItem;
     pItem->pDred = pMenu->pDred;
 
@@ -2476,6 +2491,19 @@ void dred_menu_item_delete__gtk(dred_menu_item* pItem)
     if (pItem == NULL) {
         return;
     }
+
+    gtk_widget_destroy(pItem->pGTKMenuItem);
+
+
+
+    // Remove the item from the list.
+    assert(pItem->pOwnerMenu->menuItemCount > 0);
+    for (size_t i = pItem->index; i < pItem->pOwnerMenu->menuItemCount-1; ++i) {
+        pItem->pOwnerMenu->ppMenuItems[i] = pItem->pOwnerMenu->ppMenuItems[i+1];
+        pItem->pOwnerMenu->ppMenuItems[i]->index -= 1;
+    }
+    pItem->pOwnerMenu->menuItemCount -= 1;
+
 
     if (pItem->pGTKMenuItem) {
         gtk_widget_destroy(pItem->pGTKMenuItem);
@@ -3295,6 +3323,17 @@ void dred_menu_item_delete(dred_menu_item* pItem)
 #ifdef DRED_GTK
     dred_menu_item_delete__gtk(pItem);
 #endif
+}
+
+void dred_menu_delete_all_items(dred_menu* pMenu)
+{
+    if (pMenu == NULL) {
+        return;
+    }
+
+    while (pMenu->menuItemCount > 0) {
+        dred_menu_item_delete(pMenu->ppMenuItems[0]);
+    }
 }
 
 

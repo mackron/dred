@@ -105,6 +105,10 @@ typedef struct
     // The main context that owns this config. This is set to the context that initialized the config object.
     dred_context* pDred;
 
+    // Recent files.
+    char* recentFiles[DRED_MAX_RECENT_FILES];
+    size_t recentFileCount;
+
     // The cross image.
     dred_image* pImageCross;
 
@@ -121,4 +125,7 @@ void dred_config_uninit(dred_config* pConfig);
 
 // The pUserData argument of onError will be set to pConfig.
 bool dred_config_load_file(dred_config* pConfig, const char* filePath, dred_config_on_error_proc onError, void* pUserData);
+
+// Pushes a new recent file to the end of the list.
+void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolutePath);
 

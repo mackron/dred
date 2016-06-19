@@ -51,12 +51,18 @@
 #define DRED_MENU_ITEM_ID_HELP_HELP         24
 #define DRED_MENU_ITEM_ID_HELP_ABOUT        25
 
-#define DRED_MENU_ITEM_ID_RECENT0           32768
+#define DRED_MENU_ITEM_ID_RECENT_FILE_0     32768
 
 struct dred_menu_library
 {
     // The main context that initialized the library.
     dred_context* pDred;
+
+
+    // The recent files menu.
+    dred_menu* pMenu_RecentFiles;
+    size_t recentFileCount;
+
 
     // The menu to use when nothing is opened.
     dred_menu* pMenu_Default;
@@ -64,7 +70,7 @@ struct dred_menu_library
     // The menu to use for text editors.
     dred_menu* pMenu_TextEditor;
 
-    
+
     // The right-click popup menu for text editors.
     dred_menu* pPopupMenu_TextEditor;
 
@@ -74,3 +80,5 @@ struct dred_menu_library
 
 bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred);
 void dred_menu_library_uninit(dred_menu_library* pLibrary);
+
+void dred_menu_library_update_recent_files_menu(dred_menu_library* pLibrary);

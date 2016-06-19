@@ -268,11 +268,17 @@ struct dred_menu_item
     // The ID of the menu item. Due to the way Win32 notifies the application of the menu being pressed this is restricted to 16 bits.
     uint16_t id;
 
+    // The index of the menu item.
+    size_t index;
+
     // The command associated with the menu item, it any.
     char* command;
 
     // The sub-menu, if any.
     dred_menu* pSubMenu;
+
+    // The menu that owns the this item.
+    dred_menu* pOwnerMenu;
 
 #ifdef DRED_GTK
     // The GtkMenuItem object.
@@ -296,7 +302,7 @@ struct dred_menu
     // The number of menu items attached to the menu.
     size_t menuItemCount;
 
-    // The list of menu items in the menu bar.
+    // The list of menu items in the menu.
     dred_menu_item** ppMenuItems;
 
 #ifdef DRED_WIN32
@@ -337,6 +343,9 @@ dred_menu_item* dred_menu_item_create_and_append_separator(dred_menu* pMenu);
 // Deletes the given menu item.
 void dred_menu_item_delete(dred_menu_item* pItem);
 
+
+// Deletes ever menu item in the given menu.
+void dred_menu_delete_all_items(dred_menu* pMenu);
 
 
 //// DPI SCALING ////

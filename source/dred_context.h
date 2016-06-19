@@ -109,6 +109,10 @@ void dred_exec(dred_context* pDred, const char* cmd);
 bool dred_bind_shortcut(dred_context* pDred, const char* shortcutName, dred_shortcut shortcut, const char* commandStr);
 
 
+// Saves the .dredprivate file.
+void dred_save_dredprivate(dred_context* pDred);
+
+
 // Gives the given control the keyboard capture.
 void dred_capture_keyboard(dred_context* pDred, dred_control* pControl);
 
