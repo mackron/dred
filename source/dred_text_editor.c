@@ -171,7 +171,8 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     data->textScale = 1;
 
     dred_textbox_set_vertical_align(data->pTextBox, drgui_text_engine_alignment_top);
-    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, (float)pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
+    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
+    dred_textbox_set_text_color(data->pTextBox, pDred->config.textEditorTextColor);
     dred_textbox_set_background_color(data->pTextBox, pDred->config.textEditorBGColor);
     dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.textEditorActiveLineColor);
     dred_textbox_set_padding(data->pTextBox, 0);

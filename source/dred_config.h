@@ -48,12 +48,15 @@
 // tab-padding tabPadding float 4
 //   The amount of padding to apply to all sides of a tab.
 //
-// tab-show-close-button tabShowCloseButton bool false
+// tab-show-close-button tabShowCloseButton bool true
 //   Whether or not to show the close button on tabs.
 //
 //
 // texteditor-font pTextEditorFont font system-font-mono
 //   The font to use in text editors.
+//
+// texteditor-text-color textEditorTextColor color 224 224 224
+//   The base color of the text in a text editor. Note that syntax highlighting is independant of this variable.
 //
 // texteditor-bg-color textEditorBGColor color 48 48 48
 //   The background color to use in text editors.

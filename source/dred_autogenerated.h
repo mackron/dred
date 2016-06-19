@@ -22,5 +22,6 @@ drgui_color tabTextColor; \
 float tabPadding; \
 bool tabShowCloseButton; \
 dred_font* pTextEditorFont; \
+drgui_color textEditorTextColor; \
 drgui_color textEditorBGColor; \
 drgui_color textEditorActiveLineColor;
