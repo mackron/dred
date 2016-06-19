@@ -40,6 +40,13 @@ void dred_textbox_set_text_color(dred_textbox* pTextBox, drgui_color color);
 // Sets the background color of the given text box.
 void dred_textbox_set_background_color(dred_textbox* pTextBox, drgui_color color);
 
+// Sets the background color of selected text.
+void dred_textbox_set_selection_background_color(dred_textbox* pTextBox, drgui_color color);
+
+// Retrieves the background color of selected text.
+drgui_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox);
+
+
 // Sets the background color for the line the caret is currently sitting on.
 void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, drgui_color color);
 

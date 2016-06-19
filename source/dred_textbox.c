@@ -288,6 +288,16 @@ void dred_textbox_set_background_color(dred_textbox* pTextBox, drgui_color color
     drgui_textbox_set_background_color(dred_textbox__get_internal_tb(pTextBox), color);
 }
 
+void dred_textbox_set_selection_background_color(dred_textbox* pTextBox, drgui_color color)
+{
+    drgui_textbox_set_selection_background_color(dred_textbox__get_internal_tb(pTextBox), color);
+}
+
+drgui_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox)
+{
+    return drgui_textbox_get_selection_background_color(pTextBox);
+}
+
 void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, drgui_color color)
 {
     drgui_textbox_set_active_line_background_color(dred_textbox__get_internal_tb(pTextBox), color);

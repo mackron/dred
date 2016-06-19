@@ -70,6 +70,9 @@
 // texteditor-cursor-width textEditorCursorWidth float 1
 //   The thickness of the caret/cursor in text editors.
 //
+// texteditor-selection-bg-color textEditorSelectionBGColor color 64 128 192
+//   The background color to use for selected text.
+//
 // texteditor-active-line-color textEditorActiveLineColor color 40 40 40
 //   The background color of the line that the caret is currently sitting on in a text editor.
 //

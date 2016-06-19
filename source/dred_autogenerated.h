@@ -27,6 +27,7 @@ drgui_color textEditorTextColor; \
 drgui_color textEditorBGColor; \
 drgui_color textEditorCursorColor; \
 float textEditorCursorWidth; \
+drgui_color textEditorSelectionBGColor; \
 drgui_color textEditorActiveLineColor; \
 drgui_color textEditorLineNumbersColor; \
 drgui_color textEditorLineNumbersBGColor; \

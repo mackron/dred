@@ -175,6 +175,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_textbox_set_text_color(data->pTextBox, pDred->config.textEditorTextColor);
     dred_textbox_set_cursor_color(data->pTextBox, pDred->config.textEditorCursorColor);
     dred_textbox_set_background_color(data->pTextBox, pDred->config.textEditorBGColor);
+    dred_textbox_set_selection_background_color(data->pTextBox, pDred->config.textEditorSelectionBGColor);
     dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.textEditorActiveLineColor);
     dred_textbox_set_padding(data->pTextBox, 0);
     dred_textbox_set_line_numbers_color(data->pTextBox, pDred->config.textEditorLineNumbersColor);
