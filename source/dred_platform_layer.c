@@ -2101,8 +2101,8 @@ void dred_window_delete__gtk(dred_window* pWindow)
     drgui_delete_element(pWindow->pRootGUIElement);
     dr2d_delete_surface(pWindow->pDrawingSurface);
 
-    gtk_widget_destroy(pWindow->pGTKBox);
     gtk_widget_destroy(pWindow->pGTKClientArea);
+    gtk_widget_destroy(pWindow->pGTKBox);
     gtk_widget_destroy(pWindow->pGTKWindow);
     free(pWindow);
 }
