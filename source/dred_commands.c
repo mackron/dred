@@ -93,7 +93,7 @@ void dred_command__hide_menu_bar(dred_context* pDred, const char* value)
 
 void dred_command__toggle_menu_bar(dred_context* pDred, const char* value)
 {
-    (value);
+    (void)value;
 
     if (dred_window_is_showing_menu(pDred->pMainWindow)) {
         dred_window_hide_menu(pDred->pMainWindow);
@@ -133,6 +133,26 @@ void dred_command__toggle_tabbars(dred_context* pDred, const char* value)
         }
     }
 }
+
+
+void dred_command__enable_auto_hide_cmdbar(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_enable_auto_hide_command_bar(pDred);
+}
+
+void dred_command__disable_auto_hide_cmdbar(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_disable_auto_hide_command_bar(pDred);
+}
+
+void dred_command__toggle_auto_hide_cmdbar(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_toggle_auto_hide_command_bar(pDred);
+}
+
 
 
 void dred_command__new(dred_context* pDred, const char* value)

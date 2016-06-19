@@ -257,6 +257,16 @@ void dred_show_command_bar(dred_context* pDred);
 // Hides the command bar.
 void dred_hide_command_bar(dred_context* pDred);
 
+// Enable's auto-hiding of the command bar.
+void dred_enable_auto_hide_command_bar(dred_context* pDred);
+
+// Disable's auto-hiding of the command bar.
+void dred_disable_auto_hide_command_bar(dred_context* pDred);
+
+// Toggle's auto-hiding of the command bar.
+void dred_toggle_auto_hide_command_bar(dred_context* pDred);
+
+
 
 // Sets the scale of text editors.
 void dred_set_text_editor_scale(dred_context* pDred, float scale);

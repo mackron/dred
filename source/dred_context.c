@@ -1381,6 +1381,48 @@ void dred_hide_command_bar(dred_context* pDred)
     dred__update_main_window_layout(pDred->pMainWindow, (float)windowWidth, (float)windowHeight);
 }
 
+void dred_enable_auto_hide_command_bar(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    pDred->config.autoHideCmdBar = true;
+
+    if (!pDred->config.autoHideCmdBar) {
+        pDred->config.autoHideCmdBar = true;
+
+        if (!dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
+            dred_hide_command_bar(pDred);
+        }
+    }
+}
+
+void dred_disable_auto_hide_command_bar(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    if (pDred->config.autoHideCmdBar) {
+        pDred->config.autoHideCmdBar = false;
+        dred_show_command_bar(pDred);
+    }
+}
+
+void dred_toggle_auto_hide_command_bar(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    if (pDred->config.autoHideCmdBar) {
+        dred_disable_auto_hide_command_bar(pDred);
+    } else {
+        dred_enable_auto_hide_command_bar(pDred);
+    }
+}
+
 
 void dred_set_text_editor_scale(dred_context* pDred, float scale)
 {
