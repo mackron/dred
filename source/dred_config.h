@@ -61,6 +61,12 @@
 // texteditor-bg-color textEditorBGColor color 48 48 48
 //   The background color to use in text editors.
 //
+// texteditor-cursor-color textEditorCursorColor color 224 224 224
+//   The color of the caret/cursor in text editors.
+//
+// texteditor-cursor-width textEditorCursorWidth float 1
+//   The thickness of the caret/cursor in text editors.
+//
 // texteditor-active-line-color textEditorActiveLineColor color 40 40 40
 //   The background color of the line that the caret is currently sitting on in a text editor.
 //

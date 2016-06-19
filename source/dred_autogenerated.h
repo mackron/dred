@@ -24,4 +24,6 @@ bool tabShowCloseButton; \
 dred_font* pTextEditorFont; \
 drgui_color textEditorTextColor; \
 drgui_color textEditorBGColor; \
+drgui_color textEditorCursorColor; \
+float textEditorCursorWidth; \
 drgui_color textEditorActiveLineColor;

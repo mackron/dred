@@ -173,6 +173,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_textbox_set_vertical_align(data->pTextBox, drgui_text_engine_alignment_top);
     dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
     dred_textbox_set_text_color(data->pTextBox, pDred->config.textEditorTextColor);
+    dred_textbox_set_cursor_color(data->pTextBox, pDred->config.textEditorCursorColor);
     dred_textbox_set_background_color(data->pTextBox, pDred->config.textEditorBGColor);
     dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.textEditorActiveLineColor);
     dred_textbox_set_padding(data->pTextBox, 0);
@@ -343,5 +344,6 @@ void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, float textSc
     data->textScale = dr_clamp(textScale, 0.1f, 4.0f);
     dred_textbox_set_line_numbers_width(data->pTextBox, 64 * pDred->uiScale * data->textScale);
     dred_textbox_set_line_numbers_padding(data->pTextBox, 16 * pDred->uiScale * data->textScale);
-    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, (float)(pDred->uiScale * data->textScale)));    // TODO: <-- This font needs to be unacquired.
+    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale * data->textScale));    // TODO: <-- This font needs to be unacquired.
+    dred_textbox_set_cursor_width(data->pTextBox, pDred->config.textEditorCursorWidth * pDred->uiScale * data->textScale);
 }
