@@ -2,12 +2,14 @@
 
 
 // Commands
-#define DRED_COMMAND_COUNT 31
+#define DRED_COMMAND_COUNT 33
 
 const char g_CommandNamePool[] = 
     "!\0"
     "cmdbar\0"
     "bind\0"
+    "show-menu-bar\0"
+    "hide-menu-bar\0"
     "toggle-menu-bar\0"
     "toggle-tabbars\0"
     "new\0"
@@ -42,39 +44,43 @@ const char* g_CommandNames[] = {
     g_CommandNamePool + 2,
     g_CommandNamePool + 9,
     g_CommandNamePool + 14,
-    g_CommandNamePool + 30,
-    g_CommandNamePool + 45,
-    g_CommandNamePool + 49,
-    g_CommandNamePool + 54,
-    g_CommandNamePool + 59,
-    g_CommandNamePool + 68,
-    g_CommandNamePool + 76,
+    g_CommandNamePool + 28,
+    g_CommandNamePool + 42,
+    g_CommandNamePool + 58,
+    g_CommandNamePool + 73,
+    g_CommandNamePool + 77,
     g_CommandNamePool + 82,
-    g_CommandNamePool + 92,
-    g_CommandNamePool + 97,
-    g_CommandNamePool + 102,
-    g_CommandNamePool + 107,
-    g_CommandNamePool + 113,
-    g_CommandNamePool + 118,
-    g_CommandNamePool + 123,
-    g_CommandNamePool + 127,
-    g_CommandNamePool + 132,
-    g_CommandNamePool + 138,
-    g_CommandNamePool + 145,
-    g_CommandNamePool + 156,
-    g_CommandNamePool + 161,
+    g_CommandNamePool + 87,
+    g_CommandNamePool + 96,
+    g_CommandNamePool + 104,
+    g_CommandNamePool + 110,
+    g_CommandNamePool + 120,
+    g_CommandNamePool + 125,
+    g_CommandNamePool + 130,
+    g_CommandNamePool + 135,
+    g_CommandNamePool + 141,
+    g_CommandNamePool + 146,
+    g_CommandNamePool + 151,
+    g_CommandNamePool + 155,
+    g_CommandNamePool + 160,
     g_CommandNamePool + 166,
-    g_CommandNamePool + 176,
+    g_CommandNamePool + 173,
     g_CommandNamePool + 184,
-    g_CommandNamePool + 197,
-    g_CommandNamePool + 209,
-    g_CommandNamePool + 229,
+    g_CommandNamePool + 189,
+    g_CommandNamePool + 194,
+    g_CommandNamePool + 204,
+    g_CommandNamePool + 212,
+    g_CommandNamePool + 225,
+    g_CommandNamePool + 237,
+    g_CommandNamePool + 257,
 };
 
 dred_command g_Commands[] = {
     {dred_command__system_command, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__cmdbar, DRED_CMDBAR_NO_CLEAR},
     {dred_command__bind, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__show_menu_bar, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__hide_menu_bar, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__toggle_menu_bar, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__toggle_tabbars, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__new, DRED_CMDBAR_RELEASE_KEYBOARD},

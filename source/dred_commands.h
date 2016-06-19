@@ -6,6 +6,8 @@
 // !                    dred_command__system_command        DRED_CMDBAR_RELEASE_KEYBOARD
 // cmdbar               dred_command__cmdbar                DRED_CMDBAR_NO_CLEAR
 // bind                 dred_command__bind                  DRED_CMDBAR_RELEASE_KEYBOARD
+// show-menu-bar        dred_command__show_menu_bar         DRED_CMDBAR_RELEASE_KEYBOARD
+// hide-menu-bar        dred_command__hide_menu_bar         DRED_CMDBAR_RELEASE_KEYBOARD
 // toggle-menu-bar      dred_command__toggle_menu_bar       DRED_CMDBAR_RELEASE_KEYBOARD
 // toggle-tabbars       dred_command__toggle_tabbars        DRED_CMDBAR_RELEASE_KEYBOARD
 // new                  dred_command__new                   DRED_CMDBAR_RELEASE_KEYBOARD
@@ -65,6 +67,12 @@ void dred_command__cmdbar(dred_context* pDred, const char* value);
 // Example: bind "SelectAll" "CTRL+A" select-all
 void dred_command__bind(dred_context* pDred, const char* value);
 
+
+// show-menu-bar
+void dred_command__show_menu_bar(dred_context* pDred, const char* value);
+
+// hide-menu-bar
+void dred_command__hide_menu_bar(dred_context* pDred, const char* value);
 
 // toggle-menu-bar
 //
