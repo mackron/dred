@@ -131,6 +131,9 @@ struct dred_window
     // Whether or not the menu is being shown.
     bool isShowingMenu;
 
+    // Whether or not the window is maximized.
+    bool isMaximized;
+
     // External user data.
     void* pUserData;
 
@@ -193,6 +196,9 @@ void dred_window_set_title(dred_window* pWindow, const char* title);
 void dred_window_set_size(dred_window* pWindow, unsigned int newWidth, unsigned int newHeight);
 void dred_window_get_size(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut);
 
+// Retrieves the size of the client area of the given window. This does not include the size of the menu.
+void dred_window_get_client_size(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut);
+
 // Center's the given window. If the window has a parent it'll be centered on the parent, otherwise it'll be centered on the monitor.
 void dred_window_move_to_center(dred_window* pWindow);
 
@@ -201,6 +207,9 @@ void dred_window_show(dred_window* pWindow);
 void dred_window_show_maximized(dred_window* pWindow);
 void dred_window_show_sized(dred_window* pWindow, unsigned int width, unsigned int height);
 void dred_window_hide(dred_window* pWindow, unsigned int flags);
+
+// Determines whether or not the window is maximized.
+bool dred_window_is_maximized(dred_window* pWindow);
 
 // Sets the cursor to use with the window.
 void dred_window_set_cursor(dred_window* pWindow, dred_cursor_type cursor);

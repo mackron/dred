@@ -501,6 +501,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
 
         case WM_SIZE:
         {
+            pWindow->isMaximized = (wParam & SIZE_MAXIMIZED) != 0;
             dred_window_on_size(pWindow, LOWORD(lParam), HIWORD(lParam));
         } break;
 
@@ -674,7 +675,7 @@ dred_window* dred_window_create__win32__internal(dred_context* pDred, HWND hWnd)
     // The GUI panel needs to have it's initial size set.
     unsigned int windowWidth;
     unsigned int windowHeight;
-    dred_window_get_size(pWindow, &windowWidth, &windowHeight);
+    dred_window_get_client_size(pWindow, &windowWidth, &windowHeight);
     drgui_set_size(pWindow->pRootGUIElement, (float)windowWidth, (float)windowHeight);
 
 
@@ -794,6 +795,24 @@ void dred_window_get_size__win32(dred_window* pWindow, unsigned int* pWidthOut, 
     }
 }
 
+void dred_window_get_client_size__win32(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut)
+{
+    if (pWindow == NULL) {
+        if (pWidthOut) *pWidthOut = 0;
+        if (pHeightOut) *pHeightOut = 0;
+    }
+
+    RECT rect;
+    GetClientRect(pWindow->hWnd, &rect);
+
+    if (pWidthOut != NULL) {
+        *pWidthOut = rect.right - rect.left;
+    }
+    if (pHeightOut != NULL) {
+        *pHeightOut = rect.bottom - rect.top;
+    }
+}
+
 
 void dred_window_move_to_center__win32(dred_window* pWindow)
 {
@@ -874,6 +893,15 @@ void dred_window_hide__win32(dred_window* pWindow)
     }
 
     ShowWindow(pWindow->hWnd, SW_HIDE);
+}
+
+bool dred_window_is_maximized__win32(dred_window* pWindow)
+{
+    if (pWindow == NULL) {
+        return false;
+    }
+
+    return pWindow->isMaximized;
 }
 
 
@@ -2176,6 +2204,16 @@ void dred_window_set_size__gtk(dred_window* pWindow, unsigned int newWidth, unsi
 
 void dred_window_get_size__gtk(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut)
 {
+    int width;
+    int height;
+    gtk_window_get_size(GTK_WINDOW(pWindow->pGTKWindow), &width, &height);
+
+    if (pWidthOut) *pWidthOut = width;
+    if (pHeightOut) *pHeightOut = height;
+}
+
+void dred_window_get_client_size__gtk(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut)
+{
     GtkAllocation alloc;
     gtk_widget_get_allocation(pWindow->pGTKClientArea, &alloc);
 
@@ -2204,6 +2242,15 @@ void dred_window_show_maximized__gtk(dred_window* pWindow)
 void dred_window_hide__gtk(dred_window* pWindow)
 {
     gtk_widget_hide(GTK_WIDGET(pWindow->pGTKWindow));
+}
+
+bool dred_window_is_maximized__gtk(dred_window* pWindow)
+{
+    if (pWindow == NULL) {
+        return false;
+    }
+
+    return gtk_window_is_maximized(GTK_WINDOW(pWindow->pGTKWindow));
 }
 
 
@@ -2907,6 +2954,17 @@ void dred_window_get_size(dred_window* pWindow, unsigned int* pWidthOut, unsigne
 #endif
 }
 
+void dred_window_get_client_size(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut)
+{
+#ifdef DRED_WIN32
+    dred_window_get_client_size__win32(pWindow, pWidthOut, pHeightOut);
+#endif
+
+#ifdef DRED_GTK
+    dred_window_get_client_size__gtk(pWindow, pWidthOut, pHeightOut);
+#endif
+}
+
 
 void dred_window_move_to_center(dred_window* pWindow)
 {
@@ -2950,6 +3008,10 @@ void dred_window_show_sized(dred_window* pWindow, unsigned int width, unsigned i
 
 void dred_window_hide(dred_window* pWindow, unsigned int flags)
 {
+    if (pWindow == NULL) {
+        return;
+    }
+
     pWindow->onHideFlags = flags;
 
 #ifdef DRED_WIN32
@@ -2958,6 +3020,21 @@ void dred_window_hide(dred_window* pWindow, unsigned int flags)
 
 #ifdef DRED_GTK
     dred_window_hide__gtk(pWindow);
+#endif
+}
+
+bool dred_window_is_maximized(dred_window* pWindow)
+{
+    if (pWindow == NULL) {
+        return false;
+    }
+
+#ifdef DRED_WIN32
+    return dred_window_is_maximized__win32(pWindow);
+#endif
+
+#ifdef DRED_GTK
+    return dred_window_is_maximized__gtk(pWindow);
 #endif
 }
 
