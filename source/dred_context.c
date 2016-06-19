@@ -1,11 +1,20 @@
 
+float dred__get_cmd_bar_height(dred_context* pDred)
+{
+    if (pDred == NULL || !drgui_is_visible(pDred->pCmdBar)) {
+        return 0;
+    }
+
+    return dred_control_get_height(pDred->pCmdBar);
+}
+
 void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabgroup_container* pContainer, float parentWidth, float parentHeight)
 {
     if (pContainer == NULL) {
         return;
     }
 
-    dred_control_set_size(pContainer, parentWidth, parentHeight - dred_control_get_height(pDred->pCmdBar));
+    dred_control_set_size(pContainer, parentWidth, parentHeight - dred__get_cmd_bar_height(pDred));
 }
 
 void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float parentWidth, float parentHeight)
@@ -17,7 +26,7 @@ void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float
     }
 
     dred_control_set_size(pCmdBar, parentWidth, dred_control_get_height(pCmdBar));
-    dred_control_set_relative_position(pCmdBar, 0, parentHeight - dred_control_get_height(pCmdBar));
+    dred_control_set_relative_position(pCmdBar, 0, parentHeight - dred__get_cmd_bar_height(pDred));
 }
 
 void dred__update_main_window_layout(dred_window* pWindow, float windowWidth, float windowHeight)
@@ -314,6 +323,9 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
+    if (pDred->config.autoHideCmdBar) {
+        dred_control_hide(pDred->pCmdBar);
+    }
 
 
 
@@ -1338,6 +1350,35 @@ void dred_toggle_line_numbers(dred_context* pDred)
     } else {
         dred_show_line_numbers(pDred);
     }
+}
+
+
+void dred_show_command_bar(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    dred_control_show(pDred->pCmdBar);
+
+    unsigned int windowWidth;
+    unsigned int windowHeight;
+    dred_window_get_size(pDred->pMainWindow, &windowWidth, &windowHeight);
+    dred__update_main_window_layout(pDred->pMainWindow, (float)windowWidth, (float)windowHeight);
+}
+
+void dred_hide_command_bar(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    dred_control_hide(pDred->pCmdBar);
+
+    unsigned int windowWidth;
+    unsigned int windowHeight;
+    dred_window_get_size(pDred->pMainWindow, &windowWidth, &windowHeight);
+    dred__update_main_window_layout(pDred->pMainWindow, (float)windowWidth, (float)windowHeight);
 }
 
 

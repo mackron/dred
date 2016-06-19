@@ -10,6 +10,9 @@
 // show-menu-bar showMenuBar bool true
 //   Whether or not to show the menu bar.
 //
+// auto-hide-cmd-bar autoHideCmdBar bool false
+//   Whether or not to show the command bar at all times. If this is set to false it will be shown only when it has keyboard focus.
+//
 //
 // ui-scale uiScale float 1
 //   The scale of the UI. The total scale of UI elements is equal to the DPI scaling multiplied by this value.

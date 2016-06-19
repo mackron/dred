@@ -209,6 +209,12 @@ void dred_textbox_set_on_cursor_move(dred_textbox* pTextBox, dred_textbox_on_cur
 void dred_textbox_set_on_undo_point_changed(dred_textbox* pTextBox, dred_textbox_on_undo_point_changed_proc proc);
 
 
+// Function for explicitly handling the on_capture_keyboard event.
+void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement);
+
+// Function for explicitly handling the on_release_keyboard event.
+void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, drgui_element* pNextCapturedElement);
+
 // Function for explicitly handling the on_mouse_button_up event.
 void dred_textbox_on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
 

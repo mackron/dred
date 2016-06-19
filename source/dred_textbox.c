@@ -34,17 +34,8 @@ void dred_textbox__on_timer(dred_timer* pTimer, void* pUserData)
 
 void dred_textbox__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement)
 {
-    (void)pPrevCapturedElement;
-
-    // The internal text box needs to be given the keyboard focus whenever a dred_textbox receives it.
-    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (data == NULL) {
-        return;
-    }
-
-    drgui_capture_keyboard(data->pInternalTB);
+    dred_textbox_on_capture_keyboard(pTextBox, pPrevCapturedElement);
 }
-
 
 void dred_textbox_innertb__on_mouse_button_up(drgui_element* pInternalTB, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
@@ -119,22 +110,26 @@ void dred_textbox_innertb__on_capture_keyboard(drgui_element* pInternalTB, drgui
     dred_textbox* pTextBox = dred_control_get_parent(pInternalTB);
     assert(pTextBox != NULL);
 
-    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
     assert(data != NULL);
 
     if (data->pTimer == NULL) {
         data->pTimer = dred_timer_create(100, dred_textbox__on_timer, pTextBox);
     }
 
-    drgui_textbox_on_capture_keyboard(pInternalTB, pPrevCapturedElement);
+    if (pTextBox->onCaptureKeyboard) {
+        pTextBox->onCaptureKeyboard(pTextBox, pPrevCapturedElement);
+    } else {
+        drgui_textbox_on_capture_keyboard(data->pInternalTB, pPrevCapturedElement);
+    }
 }
 
-void dred_textbox_innertb__on_release_keyboard(drgui_element* pInternalTB, drgui_element* pNewCapturedElement)
+void dred_textbox_innertb__on_release_keyboard(drgui_element* pInternalTB, drgui_element* pNextCapturedElement)
 {
     dred_textbox* pTextBox = dred_control_get_parent(pInternalTB);
     assert(pTextBox != NULL);
 
-    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
     assert(data != NULL);
 
     if (data->pTimer != NULL) {
@@ -142,7 +137,11 @@ void dred_textbox_innertb__on_release_keyboard(drgui_element* pInternalTB, drgui
         data->pTimer = NULL;
     }
 
-    drgui_textbox_on_release_keyboard(pInternalTB, pNewCapturedElement);
+    if (pTextBox->onReleaseKeyboard) {
+        pTextBox->onReleaseKeyboard(pTextBox, pNextCapturedElement);
+    } else {
+        drgui_textbox_on_release_keyboard(data->pInternalTB, pNextCapturedElement);
+    }
 }
 
 void dred_textbox_innertb__on_cursor_move(drgui_element* pInternalTB)
@@ -553,6 +552,30 @@ void dred_textbox_set_on_undo_point_changed(dred_textbox* pTextBox, dred_textbox
     data->onUndoPointChanged = proc;
 }
 
+
+void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement)
+{
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
+    if (data == NULL) {
+        return;
+    }
+
+    if (drgui_get_element_with_keyboard_capture(pTextBox->pContext) != data->pInternalTB) {
+        drgui_capture_keyboard(data->pInternalTB);
+    } else {
+        drgui_textbox_on_capture_keyboard(data->pInternalTB, pPrevCapturedElement);
+    }
+}
+
+void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, drgui_element* pNextCapturedElement)
+{
+    dred_textbox_data* data = dred_control_get_extra_data(pTextBox);
+    if (data == NULL) {
+        return;
+    }
+
+    drgui_textbox_on_release_keyboard(data->pInternalTB, pNextCapturedElement);
+}
 
 void dred_textbox_on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {

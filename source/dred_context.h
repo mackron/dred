@@ -251,6 +251,13 @@ void dred_hide_line_numbers(dred_context* pDred);
 void dred_toggle_line_numbers(dred_context* pDred);
 
 
+// Shows the command bar.
+void dred_show_command_bar(dred_context* pDred);
+
+// Hides the command bar.
+void dred_hide_command_bar(dred_context* pDred);
+
+
 // Sets the scale of text editors.
 void dred_set_text_editor_scale(dred_context* pDred, float scale);
 

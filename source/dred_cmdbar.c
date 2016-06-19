@@ -9,6 +9,14 @@ typedef struct
     dred_info_bar* pInfoBar;
 } dred_cmdbar_data;
 
+dred_textbox* dred_cmdbar__get_textbox(dred_cmdbar* pCmdBar)
+{
+    dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
+    assert(data != NULL);
+
+    return data->pTextBox;
+}
+
 drgui_rect dred_cmdbar__get_inner_rect(dred_cmdbar* pCmdBar)
 {
     dred_context* pDred = dred_control_get_context(pCmdBar);
@@ -112,6 +120,55 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, drgui_rect rect, void* pPaintDa
     drgui_draw_text(pCmdBar, data->pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, drgui_rgb(224, 224, 224), data->pDred->config.cmdbarBGColor, pPaintData);
 }
 
+void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement)
+{
+    (void)pPrevCapturedElement;
+
+    dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
+    assert(pCmdBar != NULL);
+
+    dred_context* pDred = dred_control_get_context(pCmdBar);
+    assert(pDred != NULL);
+
+    // TODO: Show focused styles.
+
+    // If auto-hiding is enabled we need to show the command bar.
+    if (pDred->config.autoHideCmdBar) {
+        dred_show_command_bar(pDred);
+    }
+
+
+    // Fall through to the default handler.
+    dred_textbox_on_capture_keyboard(pTextBox, pPrevCapturedElement);
+}
+
+void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, drgui_element* pNextCapturedElement)
+{
+    (void)pNextCapturedElement;
+
+    dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
+    assert(pCmdBar != NULL);
+
+    dred_context* pDred = dred_control_get_context(pCmdBar);
+    assert(pDred != NULL);
+
+    // If the element being captured is the inner text box, just ignore it and pretend that we're not actually losing focus.
+    if (dred_control_is_descendant(pNextCapturedElement, dred_cmdbar__get_textbox(pCmdBar))) {
+        return;
+    }
+
+    // TODO: Show unfocused styles.
+
+    // If auto-hiding is enabled we need to hide the command bar.
+    if (pDred->config.autoHideCmdBar) {
+        dred_hide_command_bar(pDred);
+    }
+
+
+    // Fall through to the default handler.
+    dred_textbox_on_release_keyboard(pTextBox, pNextCapturedElement);
+}
+
 void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)
 {
     (void)stateFlags;
@@ -200,6 +257,8 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
     dred_control_set_on_paint(pCmdBar, dred_cmdbar__on_paint);
 
     // Text box event overrides.
+    dred_control_set_on_capture_keyboard(data->pTextBox, dred_cmdbar_tb__on_capture_keyboard);
+    dred_control_set_on_release_keyboard(data->pTextBox, dred_cmdbar_tb__on_release_keyboard);
     dred_control_set_on_key_down(data->pTextBox, dred_cmdbar_tb__on_key_down);
     dred_control_set_on_printable_key_down(data->pTextBox, dred_cmdbar_tb__on_printable_key_down);
 
