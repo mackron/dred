@@ -79,6 +79,17 @@ void dred_command__bind(dred_context* pDred, const char* value)
 }
 
 
+void dred_command__toggle_menu_bar(dred_context* pDred, const char* value)
+{
+    (value);
+
+    if (dred_window_is_showing_menu(pDred->pMainWindow)) {
+        dred_window_hide_menu(pDred->pMainWindow);
+    } else {
+        dred_window_show_menu(pDred->pMainWindow);
+    }
+}
+
 void dred_command__toggle_tabbars(dred_context* pDred, const char* value)
 {
     (void)value;
