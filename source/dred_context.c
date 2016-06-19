@@ -759,6 +759,19 @@ bool dred_open_file_by_type(dred_context* pDred, const char* filePath, const cha
     dred__refresh_editor_tab_text(pEditor, pTab);
     dred_tabgroup_activate_tab(pTabGroup, pTab);
 
+
+    // If there is only one other tab, and it's an new, unmodified file, close it.
+    if (pTab->pNextTab != NULL && pTab->pNextTab->pNextTab == NULL) {
+        dred_editor* pOtherEditor = dred_tab_get_control(pTab->pNextTab);
+        if (dred_control_is_of_type(pOtherEditor, DRED_CONTROL_TYPE_EDITOR) && !dred_editor_is_modified(pOtherEditor)) {
+            const char* pOtherEditorFile = dred_editor_get_file_path(pOtherEditor);
+            if (pOtherEditorFile == NULL || pOtherEditorFile[0] == '\0') {
+                // It's a new unmodified file. Close it.
+                dred_close_tab(pDred, pTab->pNextTab);
+            }
+        }
+    }
+
     return true;
 }
 
