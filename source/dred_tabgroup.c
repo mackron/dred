@@ -161,6 +161,9 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
     data->pPrevTabGroup = NULL;
 
     drgui_tabbar_set_tab_padding(data->pTabBar, 4 * (float)pDred->uiScale);
+    drgui_tabbar_set_tab_background_color(data->pTabBar, pDred->config.tabBGColorInvactive);
+    drgui_tabbar_set_tab_background_color_actived(data->pTabBar, pDred->config.tabBGColorActive);
+    drgui_tabbar_set_tab_background_color_hovered(data->pTabBar, pDred->config.tabBGColorHovered);
     drgui_tabbar_set_close_button_left_padding(data->pTabBar, 6 * (float)pDred->uiScale);
     drgui_tabbar_set_close_button_image(data->pTabBar, dred_image_acquire_subimage(pDred->config.pImageCross, (float)pDred->uiScale));
     drgui_tabbar_show_close_buttons(data->pTabBar);

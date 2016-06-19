@@ -30,6 +30,15 @@
 // tabgroup-bg-color tabgroupBGColor color 48 48 48
 //   The background color of tab groups. This will be shown when there are no tabs open in the group.
 //
+// tab-bg-color-inactive tabBGColorInvactive color 58 58 58
+//   The background color of tabs while inactive.
+//
+// tab-bg-color-active tabBGColorActive color 16 92 160
+//   The background color of tabs while active.
+//
+// tab-bg-color-hovered tabBGColorHovered color 32 128 192
+//   The background color of tabs while hovered.
+//
 //
 // texteditor-font pTextEditorFont font system-font-mono
 //   The font to use in text editors.
