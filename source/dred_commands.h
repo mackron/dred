@@ -6,6 +6,7 @@
 // !                    dred_command__system_command        DRED_CMDBAR_RELEASE_KEYBOARD
 // cmdbar               dred_command__cmdbar                DRED_CMDBAR_NO_CLEAR
 // bind                 dred_command__bind                  DRED_CMDBAR_RELEASE_KEYBOARD
+// toggle-tabbars       dred_command__toggle_tabbars        DRED_CMDBAR_RELEASE_KEYBOARD
 // new                  dred_command__new                   DRED_CMDBAR_RELEASE_KEYBOARD
 // open                 dred_command__open                  DRED_CMDBAR_RELEASE_KEYBOARD
 // save                 dred_command__save                  DRED_CMDBAR_RELEASE_KEYBOARD
@@ -61,6 +62,12 @@ void dred_command__cmdbar(dred_context* pDred, const char* value);
 // Syntax:  bind <name> <shortcut> <command>
 // Example: bind "SelectAll" "CTRL+A" select-all
 void dred_command__bind(dred_context* pDred, const char* value);
+
+
+// toggle-tabbars
+//
+// Toggles the visibility of the tab bars on each tab group.
+void dred_command__toggle_tabbars(dred_context* pDred, const char* value);
 
 
 // new

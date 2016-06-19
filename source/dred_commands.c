@@ -82,6 +82,20 @@ void dred_command__bind(dred_context* pDred, const char* value)
 }
 
 
+void dred_command__toggle_tabbars(dred_context* pDred, const char* value)
+{
+    (void)value;
+
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        if (dred_tabgroup_is_showing_tabbar(pTabGroup)) {
+            dred_tabgroup_hide_tabbar(pTabGroup);
+        } else {
+            dred_tabgroup_show_tabbar(pTabGroup);
+        }
+    }
+}
+
+
 void dred_command__new(dred_context* pDred, const char* value)
 {
     dred_create_and_open_file(pDred, value);

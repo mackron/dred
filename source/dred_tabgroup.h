@@ -56,3 +56,13 @@ dred_tab* dred_tabgroup_prepend_tab(dred_tabgroup* pTabGroup, const char* text, 
 
 // Deletes the given tab from the tab group.
 void dred_tabgroup_delete_tab(dred_tabgroup* pTabGroup, dred_tab* pTab);
+
+
+// Hides the tab bar. The tab bar will still exist, only it'll be hidden from view.
+void dred_tabgroup_hide_tabbar(dred_tabgroup* pTabGroup);
+
+// Shows the tab bar.
+void dred_tabgroup_show_tabbar(dred_tabgroup* pTabGroup);
+
+// Determines whether or not the tab bar is being show.
+bool dred_tabgroup_is_showing_tabbar(dred_tabgroup* pTabGroup);
