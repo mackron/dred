@@ -161,3 +161,7 @@ bool dred_find_command(const char* cmdStr, dred_command* pCommandOut, const char
 
 // Finds the index of the given command function. Returns -1 if the command could not be found.
 size_t dred_find_command_index(const char* cmdFunc);
+
+
+// Helper function for parsing the "bind" command.
+bool dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSize, dred_shortcut* pShortcutOut, const char** pCmdOut);

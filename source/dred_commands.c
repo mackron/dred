@@ -71,13 +71,10 @@ void dred_command__cmdbar(dred_context* pDred, const char* value)
 void dred_command__bind(dred_context* pDred, const char* value)
 {
     char shortcutName[256];
-    value = dr_next_token(value, shortcutName, sizeof(shortcutName));
-    if (value != NULL) {
-        char shortcutStr[256];
-        value = dr_next_token(value, shortcutStr, sizeof(shortcutStr));
-        if (value != NULL) {
-            dred_bind_shortcut(pDred, shortcutName, dred_shortcut_parse(shortcutStr), dr_first_non_whitespace(value));
-        }
+    dred_shortcut shortcut;
+    const char* commandStr;
+    if (dred_parse_bind_command(value, shortcutName, sizeof(shortcutName), &shortcut, &commandStr)) {
+        dred_bind_shortcut(pDred, shortcutName, shortcut, commandStr);
     }
 }
 
@@ -440,4 +437,24 @@ size_t dred_find_command_index(const char* cmdFunc)
     }
 
     return (size_t)-1;
+}
+
+bool dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSize, dred_shortcut* pShortcutOut, const char** pCmdOut)
+{
+    if (value == NULL) {
+        return false;
+    }
+
+    value = dr_next_token(value, nameOut, nameOutSize);
+    if (value != NULL) {
+        char shortcutStr[256];
+        value = dr_next_token(value, shortcutStr, sizeof(shortcutStr));
+        if (value != NULL) {
+            if (pShortcutOut) *pShortcutOut = dred_shortcut_parse(shortcutStr);
+            if (pCmdOut) *pCmdOut = dr_first_non_whitespace(value);
+            return true;
+        }
+    }
+
+    return false;
 }

@@ -80,13 +80,10 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
 
     if (strcmp(key, "bind") == 0) {
         char shortcutName[256];
-        value = dr_next_token(value, shortcutName, sizeof(shortcutName));
-        if (value != NULL) {
-            char shortcutStr[256];
-            value = dr_next_token(value, shortcutStr, sizeof(shortcutStr));
-            if (value != NULL) {
-                dred_bind_shortcut(pData->pConfig->pDred, shortcutName, dred_shortcut_parse(shortcutStr), dr_first_non_whitespace(value));
-            }
+        dred_shortcut shortcut;
+        const char* commandStr;
+        if (dred_parse_bind_command(value, shortcutName, sizeof(shortcutName), &shortcut, &commandStr)) {
+            dred_bind_shortcut(pData->pConfig->pDred, shortcutName, shortcut, commandStr);
         }
 
         return;
