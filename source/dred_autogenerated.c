@@ -2,7 +2,7 @@
 
 
 // Commands
-#define DRED_COMMAND_COUNT 29
+#define DRED_COMMAND_COUNT 30
 
 const char g_CommandNamePool[] = 
     "!\0"
@@ -17,6 +17,7 @@ const char g_CommandNamePool[] =
     "close\0"
     "close-all\0"
     "exit\0"
+    "quit\0"
     "help\0"
     "about\0"
     "undo\0"
@@ -50,21 +51,22 @@ const char* g_CommandNames[] = {
     g_CommandNamePool + 76,
     g_CommandNamePool + 81,
     g_CommandNamePool + 86,
-    g_CommandNamePool + 92,
+    g_CommandNamePool + 91,
     g_CommandNamePool + 97,
     g_CommandNamePool + 102,
-    g_CommandNamePool + 106,
+    g_CommandNamePool + 107,
     g_CommandNamePool + 111,
-    g_CommandNamePool + 117,
-    g_CommandNamePool + 124,
-    g_CommandNamePool + 135,
+    g_CommandNamePool + 116,
+    g_CommandNamePool + 122,
+    g_CommandNamePool + 129,
     g_CommandNamePool + 140,
     g_CommandNamePool + 145,
-    g_CommandNamePool + 155,
-    g_CommandNamePool + 163,
-    g_CommandNamePool + 176,
-    g_CommandNamePool + 188,
-    g_CommandNamePool + 208,
+    g_CommandNamePool + 150,
+    g_CommandNamePool + 160,
+    g_CommandNamePool + 168,
+    g_CommandNamePool + 181,
+    g_CommandNamePool + 193,
+    g_CommandNamePool + 213,
 };
 
 dred_command g_Commands[] = {
@@ -79,6 +81,7 @@ dred_command g_Commands[] = {
     {dred_command__save_as, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__close, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__close_all, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__exit, DRED_CMDBAR_NO_CLEAR},
     {dred_command__exit, DRED_CMDBAR_NO_CLEAR},
     {dred_command__help, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__about, DRED_CMDBAR_RELEASE_KEYBOARD},

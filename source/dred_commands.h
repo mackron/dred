@@ -15,6 +15,7 @@
 // close                dred_command__close                 DRED_CMDBAR_RELEASE_KEYBOARD
 // close-all            dred_command__close_all             DRED_CMDBAR_RELEASE_KEYBOARD
 // exit                 dred_command__exit                  DRED_CMDBAR_NO_CLEAR
+// quit                 dred_command__exit                  DRED_CMDBAR_NO_CLEAR
 // help                 dred_command__help                  DRED_CMDBAR_RELEASE_KEYBOARD
 // about                dred_command__about                 DRED_CMDBAR_RELEASE_KEYBOARD
 // undo                 dred_command__undo                  DRED_CMDBAR_NO_CLEAR
