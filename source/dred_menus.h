@@ -76,6 +76,11 @@ struct dred_menu_library
 
     // The right-click popup menu for tabs.
     dred_menu* pPopupMenu_Tab;
+
+
+    // The Open Recent menu items. We need to keep track of these so we can dynamically enable and disable them.
+    dred_menu_item* pOpenRecentItem_Default;
+    dred_menu_item* pOpenRecentItem_TextEditor;
 };
 
 bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred);

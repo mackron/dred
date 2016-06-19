@@ -1181,6 +1181,24 @@ void dred_menu_item_delete__win32(dred_menu_item* pItem)
     free(pItem);
 }
 
+void dred_menu_item_enable__win32(dred_menu_item* pItem)
+{
+    if (pItem == NULL) {
+        return;
+    }
+
+    EnableMenuItem(pItem->pOwnerMenu->hMenu, pItem->index, MF_BYPOSITION | MF_ENABLED);
+}
+
+void dred_menu_item_disable__win32(dred_menu_item* pItem)
+{
+    if (pItem == NULL) {
+        return;
+    }
+
+    EnableMenuItem(pItem->pOwnerMenu->hMenu, pItem->index, MF_BYPOSITION | MF_GRAYED);
+}
+
 
 
 //// TIMERS ////
@@ -1464,6 +1482,10 @@ static drgui_key dred_gtk_to_drgui_key(guint keyval)
     default: break;
     }
 
+    if (keyval == GDK_KEY_Tab) {
+        return '\t';
+    }
+
     return (drgui_key)keyval;
 }
 
@@ -1498,6 +1520,10 @@ guint dred_drgui_key_to_gtk(drgui_key key)
     case DRGUI_F12:         return GDK_KEY_F12;
 
     default: break;
+    }
+
+    if (key == '\t') {
+        return GDK_KEY_Tab;
     }
 
     return (guint)key;
@@ -1832,6 +1858,18 @@ static gboolean dred_gtk_cb__on_key_down(GtkWidget* pGTKWindow, GdkEventKey* pEv
     int stateFlags = dred_gtk_get_modifier_state_flags(pEvent->state);
     // TODO: Check here if key is auto-repeated.
 
+    // If the key is a tab key and there are modifiers we will need to simulate an accelerator because GTK does let
+    // us bind the tab key to an accelerator... sigh...
+    if ((pEvent->keyval == GDK_KEY_Tab || pEvent->keyval == GDK_KEY_ISO_Left_Tab) && stateFlags != 0) {
+        for (size_t i = 0; i < pWindow->accelCount; ++i) {
+            dred_gtk_accelerator* pAccel = &pWindow->pAccels[i];
+            if (pAccel->accelerator.key == '\t' && (int)pAccel->accelerator.modifiers == stateFlags) {
+                dred_on_accelerator(pAccel->pWindow->pDred, pAccel->pWindow, pAccel->index);
+                return false;
+            }
+        }
+    }
+
     dred_window_on_key_down(pWindow, dred_gtk_to_drgui_key(pEvent->keyval), stateFlags);
 
     guint32 utf32 = gdk_keyval_to_unicode(pEvent->keyval);
@@ -1942,6 +1980,7 @@ GtkAccelGroup* dred_gtk__create_accels(dred_accelerator_table* pAcceleratorTable
     for (size_t i = 0; i < pAcceleratorTable->count; ++i) {
         dred_gtk_accelerator* pAccel = &pAccels[i];
         pAccel->index = i;
+        pAccel->accelerator = pAcceleratorTable->pAccelerators[i];
         pAccel->pClosure = g_cclosure_new(G_CALLBACK(dred_gtk_cb__on_accelerator), pAccel, NULL);
         pAccel->pWindow = pWindow;
         pAccel->pMenu = pMenu;
@@ -2506,6 +2545,24 @@ void dred_menu_item_delete__gtk(dred_menu_item* pItem)
     }
 
     free(pItem);
+}
+
+void dred_menu_item_enable__gtk(dred_menu_item* pItem)
+{
+    if (pItem == NULL) {
+        return;
+    }
+
+    gtk_widget_set_sensitive(pItem->pGTKMenuItem, TRUE);
+}
+
+void dred_menu_item_disable__gtk(dred_menu_item* pItem)
+{
+    if (pItem == NULL) {
+        return;
+    }
+
+    gtk_widget_set_sensitive(pItem->pGTKMenuItem, FALSE);
 }
 
 
@@ -3330,6 +3387,37 @@ void dred_menu_delete_all_items(dred_menu* pMenu)
     while (pMenu->menuItemCount > 0) {
         dred_menu_item_delete(pMenu->ppMenuItems[0]);
     }
+}
+
+
+void dred_menu_item_enable(dred_menu_item* pItem)
+{
+    if (pItem == NULL) {
+        return;
+    }
+
+#ifdef DRED_WIN32
+    dred_menu_item_enable__win32(pItem);
+#endif
+
+#ifdef DRED_GTK
+    dred_menu_item_enable__gtk(pItem);
+#endif
+}
+
+void dred_menu_item_disable(dred_menu_item* pItem)
+{
+    if (pItem == NULL) {
+        return;
+    }
+
+#ifdef DRED_WIN32
+    dred_menu_item_disable__win32(pItem);
+#endif
+
+#ifdef DRED_GTK
+    dred_menu_item_disable__gtk(pItem);
+#endif
 }
 
 

@@ -78,6 +78,7 @@ typedef enum
 typedef struct
 {
     size_t index;
+    dred_accelerator accelerator;
     GClosure* pClosure;
     dred_window* pWindow;
     dred_menu* pMenu;
@@ -343,9 +344,15 @@ dred_menu_item* dred_menu_item_create_and_append_separator(dred_menu* pMenu);
 // Deletes the given menu item.
 void dred_menu_item_delete(dred_menu_item* pItem);
 
-
 // Deletes ever menu item in the given menu.
 void dred_menu_delete_all_items(dred_menu* pMenu);
+
+
+// Enables the given menu item.
+void dred_menu_item_enable(dred_menu_item* pItem);
+
+// Disables the given menu item.
+void dred_menu_item_disable(dred_menu_item* pItem);
 
 
 //// DPI SCALING ////

@@ -151,8 +151,8 @@ void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolute
     for (size_t i = 0; i < pConfig->recentFileCount; ++i) {
         if (drpath_equal(fileAbsolutePath, pConfig->recentFiles[i])) {
             char* existingPath = pConfig->recentFiles[i];
-            for (size_t j = 0; j < i; ++j) {
-                pConfig->recentFiles[j+1] = pConfig->recentFiles[j];
+            for (size_t j = i; j > 0; --j) {
+                pConfig->recentFiles[j] = pConfig->recentFiles[j-1];
             }
 
             pConfig->recentFiles[0] = existingPath;
