@@ -62,10 +62,8 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
 
     dred_menu* pViewMenu = dred_menu_create(pDred, dred_menu_type_popup);
     dred_menu_item_create_and_append(pViewMenu, "Toggle Tab Bars", DRED_MENU_ITEM_ID_VIEW_TAB_BARS, "toggle-tabbars", dred_shortcut_none(), NULL);
-    dred_menu_item_create_and_append(pViewMenu, "Toggle Menu Bar (show with show-menu-bar)", DRED_MENU_ITEM_ID_VIEW_MENU_BAR, "toggle-menu-bar", dred_shortcut_none(), NULL);
     dred_menu_item_create_and_append_separator(pViewMenu);
     dred_menu_item_create_and_append(pViewMenu, "Toggle &Line Numbers", DRED_MENU_ITEM_ID_VIEW_LINE_NUMBERS, "toggle-line-numbers", dred_shortcut_none(), NULL);
-    dred_menu_item_create_and_append_separator(pViewMenu);
     dred_menu_item_create_and_append(pViewMenu, "Reset &Zoom", DRED_MENU_ITEM_ID_VIEW_RESET_ZOOM, "zoom 1", dred_shortcut_none(), NULL);
 
     dred_menu* pFindMenu = dred_menu_create(pDred, dred_menu_type_popup);
