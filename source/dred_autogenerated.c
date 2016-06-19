@@ -2,7 +2,7 @@
 
 
 // Commands
-#define DRED_COMMAND_COUNT 33
+#define DRED_COMMAND_COUNT 35
 
 const char g_CommandNamePool[] = 
     "!\0"
@@ -11,6 +11,8 @@ const char g_CommandNamePool[] =
     "show-menu-bar\0"
     "hide-menu-bar\0"
     "toggle-menu-bar\0"
+    "show-tabbars\0"
+    "hide-tabbars\0"
     "toggle-tabbars\0"
     "new\0"
     "open\0"
@@ -47,32 +49,34 @@ const char* g_CommandNames[] = {
     g_CommandNamePool + 28,
     g_CommandNamePool + 42,
     g_CommandNamePool + 58,
-    g_CommandNamePool + 73,
-    g_CommandNamePool + 77,
-    g_CommandNamePool + 82,
-    g_CommandNamePool + 87,
-    g_CommandNamePool + 96,
-    g_CommandNamePool + 104,
-    g_CommandNamePool + 110,
-    g_CommandNamePool + 120,
-    g_CommandNamePool + 125,
+    g_CommandNamePool + 71,
+    g_CommandNamePool + 84,
+    g_CommandNamePool + 99,
+    g_CommandNamePool + 103,
+    g_CommandNamePool + 108,
+    g_CommandNamePool + 113,
+    g_CommandNamePool + 122,
     g_CommandNamePool + 130,
-    g_CommandNamePool + 135,
-    g_CommandNamePool + 141,
+    g_CommandNamePool + 136,
     g_CommandNamePool + 146,
     g_CommandNamePool + 151,
-    g_CommandNamePool + 155,
-    g_CommandNamePool + 160,
-    g_CommandNamePool + 166,
-    g_CommandNamePool + 173,
-    g_CommandNamePool + 184,
-    g_CommandNamePool + 189,
-    g_CommandNamePool + 194,
-    g_CommandNamePool + 204,
-    g_CommandNamePool + 212,
-    g_CommandNamePool + 225,
-    g_CommandNamePool + 237,
-    g_CommandNamePool + 257,
+    g_CommandNamePool + 156,
+    g_CommandNamePool + 161,
+    g_CommandNamePool + 167,
+    g_CommandNamePool + 172,
+    g_CommandNamePool + 177,
+    g_CommandNamePool + 181,
+    g_CommandNamePool + 186,
+    g_CommandNamePool + 192,
+    g_CommandNamePool + 199,
+    g_CommandNamePool + 210,
+    g_CommandNamePool + 215,
+    g_CommandNamePool + 220,
+    g_CommandNamePool + 230,
+    g_CommandNamePool + 238,
+    g_CommandNamePool + 251,
+    g_CommandNamePool + 263,
+    g_CommandNamePool + 283,
 };
 
 dred_command g_Commands[] = {
@@ -82,6 +86,8 @@ dred_command g_Commands[] = {
     {dred_command__show_menu_bar, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__hide_menu_bar, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__toggle_menu_bar, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__show_tabbars, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__hide_tabbars, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__toggle_tabbars, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__new, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__open, DRED_CMDBAR_RELEASE_KEYBOARD},
