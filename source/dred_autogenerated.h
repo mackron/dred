@@ -6,6 +6,8 @@
 
 
 #define DRED_CONFIG_VARIABLE_DECLARATIONS \
+bool showTabBar; \
+bool showMenuBar; \
 float uiScale; \
 dred_font* pUIFont; \
 drgui_color cmdbarBGColor; \

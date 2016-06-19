@@ -324,6 +324,9 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_Default);
     dred_window_set_size(pDred->pMainWindow, (unsigned int)(1280*pDred->dpiScale), (unsigned int)(720*pDred->dpiScale));
     dred_window_show(pDred->pMainWindow);
+    if (!pDred->config.showMenuBar) {
+        dred_window_hide_menu(pDred->pMainWindow);
+    }
 
 
     // Load initial files from the command line.

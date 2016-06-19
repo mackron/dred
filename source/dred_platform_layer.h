@@ -127,6 +127,9 @@ struct dred_window
     // The flags to pass to the onHide event handler.
     unsigned int onHideFlags;
 
+    // Whether or not the menu is being shown.
+    bool isShowingMenu;
+
     // External user data.
     void* pUserData;
 
@@ -207,6 +210,15 @@ void dred_window_bind_accelerators(dred_window* pWindow, dred_accelerator_table*
 
 // Sets the menu for the given window. Can be null, in which case the menu is removed.
 void dred_window_set_menu(dred_window* pWindow, dred_menu* pMenu);
+
+// Hides the menu for the given window.
+void dred_window_hide_menu(dred_window* pWindow);
+
+// Shows the menu for the given window.
+void dred_window_show_menu(dred_window* pWindow);
+
+// Determines whether or not the menu is being shown for the given window.
+bool dred_window_is_showing_menu(dred_window* pWindow);
 
 // Finds the menu item with the given id. The search is recursive.
 dred_menu_item* dred_window_find_menu_item_by_id(dred_window* pWindow, uint16_t id);

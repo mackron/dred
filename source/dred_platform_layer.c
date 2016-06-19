@@ -659,6 +659,7 @@ dred_window* dred_window_create__win32__internal(dred_context* pDred, HWND hWnd)
     pWindow->pDred = pDred;
     pWindow->hWnd = hWnd;
     pWindow->hCursor = LoadCursor(NULL, IDC_ARROW);
+    pWindow->isShowingMenu = true;
 
     pWindow->pDrawingSurface = dr2d_create_surface_gdi_HWND(pDred->pDrawingContext, hWnd);
     if (pWindow->pDrawingSurface == NULL) {
@@ -978,12 +979,40 @@ void dred_window_set_menu__win32(dred_window* pWindow, dred_menu* pMenu)
     }
 
     if (pMenu != NULL) {
-        SetMenu(pWindow->hWnd, pMenu->hMenu);
+        if (pWindow->isShowingMenu) {
+            SetMenu(pWindow->hWnd, pMenu->hMenu);
+        }
     } else {
         SetMenu(pWindow->hWnd, NULL);
     }
 
     pWindow->pMenu = pMenu;
+}
+
+void dred_window_hide_menu__win32(dred_window* pWindow)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+    if (pWindow->pMenu != NULL) {
+        SetMenu(pWindow->hWnd, NULL);
+    }
+
+    pWindow->isShowingMenu = false;
+}
+
+void dred_window_show_menu__win32(dred_window* pWindow)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+    if (pWindow->pMenu != NULL) {
+        SetMenu(pWindow->hWnd, pWindow->pMenu->hMenu);
+    }
+
+    pWindow->isShowingMenu = true;
 }
 
 void dred_window_show_popup_menu__win32(dred_window* pWindow, dred_menu* pMenu, int posX, int posY)
@@ -1937,6 +1966,7 @@ dred_window* dred_window_create__gtk__internal(dred_context* pDred, GtkWidget* p
 
     pWindow->pDred = pDred;
     pWindow->pGTKWindow = pGTKWindow;
+    pWindow->isShowingMenu = true;
 
     pWindow->pRootGUIElement = dred_platform__create_root_gui_element(pDred->pGUI, pWindow);
     if (pWindow->pRootGUIElement == NULL) {
@@ -2212,11 +2242,41 @@ void dred_window_set_menu__gtk(dred_window* pWindow, dred_menu* pMenu)
     }
 
     // Add the new menu to the top.
-    gtk_box_pack_start(GTK_BOX(pWindow->pGTKBox), pMenu->pGTKMenu, FALSE, FALSE, 0);
-    gtk_box_reorder_child(GTK_BOX(pWindow->pGTKBox), pMenu->pGTKMenu, 0);
-    gtk_widget_show(pMenu->pGTKMenu);
+    if (pWindow->isShowingMenu) {
+        gtk_box_pack_start(GTK_BOX(pWindow->pGTKBox), pMenu->pGTKMenu, FALSE, FALSE, 0);
+        gtk_box_reorder_child(GTK_BOX(pWindow->pGTKBox), pMenu->pGTKMenu, 0);
+        gtk_widget_show(pMenu->pGTKMenu);
+    }
 
     pWindow->pMenu = pMenu;
+}
+
+void dred_window_hide_menu__gtk(dred_window* pWindow)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+    if (pWindow->pMenu != NULL) {
+        gtk_container_remove(GTK_CONTAINER(pWindow->pGTKBox), pWindow->pMenu->pGTKMenu);
+    }
+
+    pWindow->isShowingMenu = false;
+}
+
+void dred_window_show_menu__gtk(dred_window* pWindow)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+    if (pWindow->pMenu != NULL) {
+        gtk_box_pack_start(GTK_BOX(pWindow->pGTKBox), pWindow->pMenu->pGTKMenu, FALSE, FALSE, 0);
+        gtk_box_reorder_child(GTK_BOX(pWindow->pGTKBox), pWindow->pMenu->pGTKMenu, 0);
+        gtk_widget_show(pWindow->pMenu->pGTKMenu);
+    }
+
+    pWindow->isShowingMenu = true;
 }
 
 
@@ -2864,6 +2924,45 @@ void dred_window_set_menu(dred_window* pWindow, dred_menu* pMenu)
 #ifdef DRED_GTK
     dred_window_set_menu__gtk(pWindow, pMenu);
 #endif
+}
+
+void dred_window_hide_menu(dred_window* pWindow)
+{
+    if (!dred_window_is_showing_menu(pWindow)) {
+        return;
+    }
+
+#ifdef DRED_WIN32
+    dred_window_hide_menu__win32(pWindow);
+#endif
+
+#ifdef DRED_GTK
+    dred_window_hide_menu__gtk(pWindow);
+#endif
+}
+
+void dred_window_show_menu(dred_window* pWindow)
+{
+    if (dred_window_is_showing_menu(pWindow)) {
+        return;
+    }
+
+#ifdef DRED_WIN32
+    dred_window_show_menu__win32(pWindow);
+#endif
+
+#ifdef DRED_GTK
+    dred_window_show_menu__gtk(pWindow);
+#endif
+}
+
+bool dred_window_is_showing_menu(dred_window* pWindow)
+{
+    if (pWindow == NULL) {
+        return false;
+    }
+
+    return pWindow->isShowingMenu;
 }
 
 dred_menu_item* dred_window_find_menu_item_by_id(dred_window* pWindow, uint16_t id)
