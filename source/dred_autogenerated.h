@@ -12,6 +12,7 @@ bool autoHideCmdBar; \
 float uiScale; \
 dred_font* pUIFont; \
 drgui_color cmdbarBGColor; \
+drgui_color cmdbarBGColorActive; \
 dred_font* pCmdbarTBFont; \
 drgui_color cmdbarTBTextColor; \
 dred_font* pCmdbarMessageFont; \

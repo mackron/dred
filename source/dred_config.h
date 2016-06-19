@@ -24,6 +24,9 @@
 // cmdbar-bg-color cmdbarBGColor color 64 64 64 
 //   The background color of the command bar.
 //
+// cmdbar-bg-color-active cmdbarBGColorActive color 128 51 0
+//   The background color of the command bar while it's got the keyboard focus.
+//
 // cmdbar-tb-font pCmdbarTBFont font system-font-mono
 //   The font to use in the text box of the command bar.
 //

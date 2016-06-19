@@ -97,12 +97,17 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, drgui_rect rect, void* pPaintDa
 
     drgui_rect localRect = drgui_get_local_rect(pCmdBar);
 
+    drgui_color bgcolor = pDred->config.cmdbarBGColor;
+    if (dred_cmdbar_has_keyboard_focus(pCmdBar)) {
+        bgcolor = pDred->config.cmdbarBGColorActive;
+    }
+
     float scaledPaddingX = pDred->config.cmdbarPaddingX*pDred->uiScale;
     float scaledPaddingY = pDred->config.cmdbarPaddingY*pDred->uiScale;
-    drgui_draw_rect(pCmdBar, drgui_make_rect(0,                                0,                                 scaledPaddingX,                   localRect.bottom), pDred->config.cmdbarBGColor, pPaintData); // Left
-    drgui_draw_rect(pCmdBar, drgui_make_rect(localRect.right - scaledPaddingX, 0,                                 localRect.right,                  localRect.bottom), pDred->config.cmdbarBGColor, pPaintData); // Right
-    drgui_draw_rect(pCmdBar, drgui_make_rect(scaledPaddingX,                   0,                                 localRect.right - scaledPaddingX, scaledPaddingY),   pDred->config.cmdbarBGColor, pPaintData); // Top
-    drgui_draw_rect(pCmdBar, drgui_make_rect(scaledPaddingX,                   localRect.bottom - scaledPaddingY, localRect.right - scaledPaddingX, localRect.bottom), pDred->config.cmdbarBGColor, pPaintData); // Bottom
+    drgui_draw_rect(pCmdBar, drgui_make_rect(0,                                0,                                 scaledPaddingX,                   localRect.bottom), bgcolor, pPaintData); // Left
+    drgui_draw_rect(pCmdBar, drgui_make_rect(localRect.right - scaledPaddingX, 0,                                 localRect.right,                  localRect.bottom), bgcolor, pPaintData); // Right
+    drgui_draw_rect(pCmdBar, drgui_make_rect(scaledPaddingX,                   0,                                 localRect.right - scaledPaddingX, scaledPaddingY),   bgcolor, pPaintData); // Top
+    drgui_draw_rect(pCmdBar, drgui_make_rect(scaledPaddingX,                   localRect.bottom - scaledPaddingY, localRect.right - scaledPaddingX, localRect.bottom), bgcolor, pPaintData); // Bottom
 
 
     // Message.
@@ -110,14 +115,14 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, drgui_rect rect, void* pPaintDa
     drgui_rect mrect;
     drgui_rect rrect;
     dred_cmdbar__get_segment_rects(pCmdBar, &lrect, &mrect, &rrect);
-    drgui_draw_rect(pCmdBar, mrect, pDred->config.cmdbarBGColor, pPaintData);
+    drgui_draw_rect(pCmdBar, mrect, bgcolor, pPaintData);
 
     drgui_font_metrics messageFontMetrics;
     drgui_get_font_metrics(data->pMessageFont, &messageFontMetrics);
 
     float messageLeft = mrect.left + (4*pDred->uiScale);
     float messageTop  = (((mrect.bottom - mrect.top) - messageFontMetrics.lineHeight) / 2) + scaledPaddingY;
-    drgui_draw_text(pCmdBar, data->pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, drgui_rgb(224, 224, 224), data->pDred->config.cmdbarBGColor, pPaintData);
+    drgui_draw_text(pCmdBar, data->pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, drgui_rgb(224, 224, 224), bgcolor, pPaintData);
 }
 
 void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement)
@@ -127,15 +132,22 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* 
     dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
+    dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
+    assert(data != NULL);
+
     dred_context* pDred = dred_control_get_context(pCmdBar);
     assert(pDred != NULL);
 
-    // TODO: Show focused styles.
+    // Activate the focused styles.
+    dred_textbox_set_background_color(data->pTextBox, pDred->config.cmdbarBGColorActive);
+    dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.cmdbarBGColorActive);
 
     // If auto-hiding is enabled we need to show the command bar.
     if (pDred->config.autoHideCmdBar) {
         dred_show_command_bar(pDred);
     }
+
+    drgui_dirty(pCmdBar, drgui_get_local_rect(pCmdBar));
 
 
     // Fall through to the default handler.
@@ -149,6 +161,9 @@ void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, drgui_element* 
     dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
+    dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
+    assert(data != NULL);
+
     dred_context* pDred = dred_control_get_context(pCmdBar);
     assert(pDred != NULL);
 
@@ -157,12 +172,17 @@ void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, drgui_element* 
         return;
     }
 
-    // TODO: Show unfocused styles.
+    // Deactivate unfocused styles.
+    dred_textbox_set_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
+    dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
+    
 
     // If auto-hiding is enabled we need to hide the command bar.
     if (pDred->config.autoHideCmdBar) {
         dred_hide_command_bar(pDred);
     }
+
+    drgui_dirty(pCmdBar, drgui_get_local_rect(pCmdBar));
 
 
     // Fall through to the default handler.

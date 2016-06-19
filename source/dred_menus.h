@@ -48,6 +48,8 @@
 #define DRED_MENU_ITEM_ID_HELP_HELP         21
 #define DRED_MENU_ITEM_ID_HELP_ABOUT        22
 
+#define DRED_MENU_ITEM_ID_RECENT0           32768
+
 struct dred_menu_library
 {
     // The main context that initialized the library.

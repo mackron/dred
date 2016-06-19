@@ -17,13 +17,6 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append_with_shortcut(pFileMenu_Default, "&New", DRED_MENU_ITEM_ID_FILE_NEW, DRED_SHORTCUT_NAME_NEW);
     dred_menu_item_create_and_append_with_shortcut(pFileMenu_Default, "&Open...", DRED_MENU_ITEM_ID_FILE_OPEN, DRED_SHORTCUT_NAME_OPEN);
     dred_menu_item_create_and_append_separator(pFileMenu_Default);
-    dred_menu_item_create_and_append_with_shortcut(pFileMenu_Default, "&Save", DRED_MENU_ITEM_ID_FILE_SAVE, DRED_SHORTCUT_NAME_SAVE);
-    dred_menu_item_create_and_append(pFileMenu_Default, "Save &As...", DRED_MENU_ITEM_ID_FILE_SAVE_AS,  "save-as",  dred_shortcut_none(), NULL);
-    dred_menu_item_create_and_append_with_shortcut(pFileMenu_Default, "Save A&ll", DRED_MENU_ITEM_ID_FILE_SAVE_ALL,  DRED_SHORTCUT_NAME_SAVE_ALL);
-    dred_menu_item_create_and_append_separator(pFileMenu_Default);
-    dred_menu_item_create_and_append_with_shortcut(pFileMenu_Default, "&Close", DRED_MENU_ITEM_ID_FILE_CLOSE, DRED_SHORTCUT_NAME_CLOSE);
-    dred_menu_item_create_and_append_with_shortcut(pFileMenu_Default, "Clos&e All", DRED_MENU_ITEM_ID_FILE_CLOSE_ALL, DRED_SHORTCUT_NAME_CLOSE_ALL);
-    dred_menu_item_create_and_append_separator(pFileMenu_Default);
     dred_menu_item_create_and_append(pFileMenu_Default, "E&xit", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_shortcut_create_single(dred_accelerator_create(DRGUI_F4, DRED_KEY_STATE_ALT_DOWN)), NULL);
 
     dred_menu* pHelpMenu_Default = dred_menu_create(pDred, dred_menu_type_popup);
