@@ -36,10 +36,8 @@
 // delete                   dred_command__delete                    DRED_CMDBAR_NO_CLEAR
 // select-all               dred_command__select_all                DRED_CMDBAR_NO_CLEAR
 // goto                     dred_command__goto                      DRED_CMDBAR_RELEASE_KEYBOARD
-// find                     dred_command__find                      DRED_CMDBAR_RELEASE_KEYBOARD
-// find-next                dred_command__find_next                 DRED_CMDBAR_NO_CLEAR
-// replace                  dred_command__replace                   DRED_CMDBAR_RELEASE_KEYBOARD
-// replace-next             dred_command__replace_next              DRED_CMDBAR_NO_CLEAR
+// find                     dred_command__find                      DRED_CMDBAR_NO_CLEAR
+// replace                  dred_command__replace                   DRED_CMDBAR_NO_CLEAR
 // replace-all              dred_command__replace_all               DRED_CMDBAR_RELEASE_KEYBOARD
 // show-line-numbers        dred_command__show_line_numbers         DRED_CMDBAR_RELEASE_KEYBOARD
 // hide-line-numbers        dred_command__hide_line_numbers         DRED_CMDBAR_RELEASE_KEYBOARD
@@ -184,14 +182,8 @@ void dred_command__goto(dred_context* pDred, const char* value);
 // find
 void dred_command__find(dred_context* pDred, const char* value);
 
-// find-next
-void dred_command__find_next(dred_context* pDred, const char* value);
-
 // replace
 void dred_command__replace(dred_context* pDred, const char* value);
-
-// replace-next
-void dred_command__replace_next(dred_context* pDred, const char* value);
 
 // replace-all
 void dred_command__replace_all(dred_context* pDred, const char* value);

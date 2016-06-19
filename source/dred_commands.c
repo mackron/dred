@@ -388,11 +388,6 @@ void dred_command__find(dred_context* pDred, const char* value)
     }
 }
 
-void dred_command__find_next(dred_context* pDred, const char* value)
-{
-    dred_command__find(pDred, value);
-}
-
 void dred_command__replace(dred_context* pDred, const char* value)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
@@ -413,11 +408,6 @@ void dred_command__replace(dred_context* pDred, const char* value)
             }
         }
     }
-}
-
-void dred_command__replace_next(dred_context* pDred, const char* value)
-{
-    dred_command__replace(pDred, value);
 }
 
 void dred_command__replace_all(dred_context* pDred, const char* value)
