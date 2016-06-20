@@ -2,7 +2,7 @@
 // All config variables are defined in the section below. The pre-build tool will look at these variables and construct the main
 // config struct based on their names and types.
 
-// BEGIN CONFIG VARS
+// BEGIN CONFIG VARS: <name> <C variable name> <type> <on_set callback> <default value>
 //
 // show-tab-bar showTabBar bool true
 //   Whether or not to show the tab bar.
@@ -152,6 +152,16 @@ void dred_config_uninit(dred_config* pConfig);
 // The pUserData argument of onError will be set to pConfig.
 bool dred_config_load_file(dred_config* pConfig, const char* filePath, dred_config_on_error_proc onError, void* pUserData);
 
+// Sets a variable from a name/value string pair.
+void dred_config_set(dred_config* pConfig, const char* name, const char* value);
+
 // Pushes a new recent file to the end of the list.
 void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolutePath);
+
+
+
+// Set handlers.
+
+// texteditor-font
+void dred_config_on_set__texteditor_font(dred_context* pDred);
 

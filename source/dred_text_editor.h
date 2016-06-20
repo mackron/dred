@@ -11,6 +11,10 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 void dred_text_editor_delete(dred_text_editor* pTextEditor);
 
 
+// Sets the base font to use with this text editor.
+void dred_text_editor_set_font(dred_text_editor* pTextEditor, dred_font* pFont);
+
+
 // Shows the line numbers.
 void dred_text_editor_show_line_numbers(dred_text_editor* pTextEditor);
 

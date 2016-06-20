@@ -143,6 +143,18 @@ bool dred_config_load_file(dred_config* pConfig, const char* filePath, dred_conf
     return true;
 }
 
+void dred_config_set(dred_config* pConfig, const char* name, const char* value)
+{
+    if (pConfig == NULL) {
+        return;
+    }
+
+    if (strcmp(name, "texteditor-font") == 0) {
+        pConfig->pTextEditorFont = dred_parse_and_load_font(pConfig->pDred, value);
+        dred_config_on_set__texteditor_font(pConfig->pDred);
+    }
+}
+
 void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolutePath)
 {
     if (pConfig == NULL) {
@@ -182,4 +194,20 @@ void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolute
 
     pConfig->recentFiles[0] = gb_make_string(filePathClean);
     pConfig->recentFileCount += 1;
+}
+
+
+
+// Set handlers.
+void dred_config_on_set__texteditor_font(dred_context* pDred)
+{
+    // The font's of every text editor need to be updated.
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
+        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+            dred_control* pControl = dred_tab_get_control(pTab);
+            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+                dred_text_editor_set_font(pControl, pDred->config.pTextEditorFont);
+            }
+        }
+    }
 }

@@ -233,6 +233,17 @@ void dred_text_editor_delete(dred_text_editor* pTextEditor)
 }
 
 
+void dred_text_editor_set_font(dred_text_editor* pTextEditor, dred_font* pFont)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pFont, pFont->pDred->uiScale));
+}
+
+
 void dred_text_editor_show_line_numbers(dred_text_editor* pTextEditor)
 {
     dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
