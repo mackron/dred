@@ -150,7 +150,7 @@ void dred_textbox__on_hscroll(drgui_element* pSBElement, int scrollPos)
 
 
 
-dred_textbox* dred_textbox_create(dred_context* pDred, drgui_element* pParent)
+dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
 {
     dred_textbox* pTextBox = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_TEXTBOX, sizeof(dred_textbox_data));
     if (pTextBox == NULL) {
@@ -232,6 +232,11 @@ void dred_textbox_delete(dred_textbox* pTextBox)
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
         return;
+    }
+
+    // Keyboard focus needs to be released first. If we don't do this we'll not free delete the internal timer.
+    if (drgui_has_keyboard_capture(pTextBox)) {
+        drgui_release_keyboard(pTextBox->pContext);
     }
 
     if (pTB->pTL) {
