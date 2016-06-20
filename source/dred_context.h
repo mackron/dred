@@ -61,9 +61,6 @@ struct dred_context
 
     // Whether or not the application is running in silent mode.
     bool isTerminalOutputDisabled;
-
-    // Whether or not line numbers are being shown on text editors.
-    bool isShowingLineNumbers;
 };
 
 // dred_init

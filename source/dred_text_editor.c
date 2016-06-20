@@ -209,7 +209,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_textbox_set_on_cursor_move(data->pTextBox, dred_text_editor_textbox__on_cursor_move);
     dred_textbox_set_on_undo_point_changed(data->pTextBox, dred_text_editor_textbox__on_undo_point_changed);
 
-    if (pDred->isShowingLineNumbers) {
+    if (pDred->config.textEditorShowLineNumbers) {
         dred_text_editor_show_line_numbers(pTextEditor);
     }
 

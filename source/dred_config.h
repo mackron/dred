@@ -99,6 +99,9 @@
 // texteditor-active-line-color textEditorActiveLineColor color 40 40 40
 //   The background color of the line that the caret is currently sitting on in a text editor.
 //
+// texteditor-show-line-numbers textEditorShowLineNumbers bool false
+//   Whether or not to show line numbers.
+//
 // texteditor-line-numbers-color textEditorLineNumbersColor color 80 160 192
 //   The color of the line numbers text.
 //

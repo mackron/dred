@@ -36,6 +36,7 @@ drgui_color textEditorCursorColor; \
 float textEditorCursorWidth; \
 drgui_color textEditorSelectionBGColor; \
 drgui_color textEditorActiveLineColor; \
+bool textEditorShowLineNumbers; \
 drgui_color textEditorLineNumbersColor; \
 drgui_color textEditorLineNumbersBGColor; \
 float textEditorLineNumbersPadding; \

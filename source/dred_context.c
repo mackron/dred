@@ -1445,11 +1445,11 @@ void dred_update_info_bar(dred_context* pDred, dred_control* pControl)
 
 void dred_show_line_numbers(dred_context* pDred)
 {
-    if (pDred == NULL || pDred->isShowingLineNumbers) {
+    if (pDred == NULL || pDred->config.textEditorShowLineNumbers) {
         return;
     }
 
-    pDred->isShowingLineNumbers = true;
+    pDred->config.textEditorShowLineNumbers = true;
 
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
@@ -1463,11 +1463,11 @@ void dred_show_line_numbers(dred_context* pDred)
 
 void dred_hide_line_numbers(dred_context* pDred)
 {
-    if (pDred == NULL || !pDred->isShowingLineNumbers) {
+    if (pDred == NULL || !pDred->config.textEditorShowLineNumbers) {
         return;
     }
 
-    pDred->isShowingLineNumbers = false;
+    pDred->config.textEditorShowLineNumbers = false;
 
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
@@ -1485,7 +1485,7 @@ void dred_toggle_line_numbers(dred_context* pDred)
         return;
     }
 
-    if (pDred->isShowingLineNumbers) {
+    if (pDred->config.textEditorShowLineNumbers) {
         dred_hide_line_numbers(pDred);
     } else {
         dred_show_line_numbers(pDred);
