@@ -247,6 +247,16 @@ void dred_unfocus_command_bar(dred_context* pDred);
 void dred_update_info_bar(dred_context* pDred, dred_control* pControl);
 
 
+// Hides the tab bars on tab groups.
+void dred_hide_tabbars(dred_context* pDred);
+
+// Shows the tab bars on tab groups.
+void dred_show_tabbars(dred_context* pDred);
+
+// Toggles the tab bars on tab groups.
+void dred_toggle_tabbars(dred_context* pDred);
+
+
 // Shows line numbers on text editors.
 void dred_show_line_numbers(dred_context* pDred);
 

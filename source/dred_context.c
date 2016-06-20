@@ -1442,6 +1442,46 @@ void dred_update_info_bar(dred_context* pDred, dred_control* pControl)
 }
 
 
+void dred_hide_tabbars(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        dred_tabgroup_hide_tabbar(pTabGroup);
+    }
+
+    pDred->config.showTabBar = false;
+}
+
+void dred_show_tabbars(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        dred_tabgroup_show_tabbar(pTabGroup);
+    }
+
+    pDred->config.showTabBar = true;
+}
+
+void dred_toggle_tabbars(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    if (pDred->config.showTabBar) {
+        dred_hide_tabbars(pDred);
+    } else {
+        dred_show_tabbars(pDred);
+    }
+}
+
+
 void dred_show_line_numbers(dred_context* pDred)
 {
     if (pDred == NULL || pDred->config.textEditorShowLineNumbers) {
