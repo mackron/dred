@@ -563,6 +563,15 @@ void drte_engine_move_cursor_to_end_of_selection(drte_engine* pEngine);
 /// Moves the cursor to the given character index.
 void drte_engine_move_cursor_to_character(drte_engine* pEngine, size_t characterIndex);
 
+// Moves the cursor to the end of the current word.
+size_t drte_engine_move_cursor_to_end_of_word(drte_engine* pEngine);
+
+// Moves the cursor to the start of the next word.
+size_t drte_engine_move_cursor_to_start_of_next_word(drte_engine* pEngine);
+
+// Moves the cursor to the start of the current word.
+size_t drte_engine_move_cursor_to_start_of_word(drte_engine* pEngine);
+
 /// Retrieves the number of characters between the cursor and the next tab column.
 size_t drte_engine_get_spaces_to_next_colum_from_cursor(drte_engine* pEngine);
 
@@ -779,6 +788,11 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 //
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DR_TEXT_ENGINE_IMPLEMENTATION
+
+bool drte_is_symbol_or_whitespace(uint32_t utf32)
+{
+    return (utf32 >= 0 && utf32 < '0') || (utf32 >= ':' && utf32 < 'A') || (utf32 >= '[' && utf32 < 'a') || (utf32 > '{'); 
+}
 
 
 /// Performs a complete refresh of the given text engine.
@@ -1977,6 +1991,91 @@ void drte_engine_move_cursor_to_character(drte_engine* pEngine, size_t character
             drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
         }
     }
+}
+
+size_t drte_engine_move_cursor_to_end_of_word(drte_engine* pEngine)
+{
+    if (pEngine == NULL) {
+        return 0;
+    }
+
+    size_t iChar = drte_engine_get_cursor_character(pEngine);
+    if (!drte_is_symbol_or_whitespace(pEngine->text[iChar])) {
+        while (pEngine->text[iChar] != '\0') {
+            uint32_t c = pEngine->text[iChar];
+            if (drte_is_symbol_or_whitespace(c)) {
+                break;
+            }
+
+            iChar += 1;
+        }
+    } else {
+        iChar += 1;
+    }
+
+    
+
+    drte_engine_move_cursor_to_character(pEngine, iChar);
+    return iChar;
+}
+
+size_t drte_engine_move_cursor_to_start_of_next_word(drte_engine* pEngine)
+{
+    if (pEngine == NULL) {
+        return 0;
+    }
+
+    size_t iChar = drte_engine_move_cursor_to_end_of_word(pEngine);
+    while (pEngine->text[iChar] != '\0') {
+        uint32_t c = pEngine->text[iChar];
+        if (!dr_is_whitespace(c)) {
+            break;
+        }
+
+        iChar += 1;
+    }
+
+    drte_engine_move_cursor_to_character(pEngine, iChar);
+    return iChar;
+}
+
+size_t drte_engine_move_cursor_to_start_of_word(drte_engine* pEngine)
+{
+    if (pEngine == NULL) {
+        return 0;
+    }
+
+    size_t iChar = drte_engine_get_cursor_character(pEngine);
+    if (iChar == 0) {
+        return 0;
+    }
+
+    iChar -= 1;
+
+    // Skip whitespace.
+    if (dr_is_whitespace(pEngine->text[iChar])) {
+        while (iChar > 0) {
+            if (!dr_is_whitespace(pEngine->text[iChar])) {
+                break;
+            }
+
+            iChar -= 1;
+        }
+    }
+
+    if (!drte_is_symbol_or_whitespace(pEngine->text[iChar])) {
+        while (iChar > 0) {
+            uint32_t c = pEngine->text[iChar-1];
+            if (drte_is_symbol_or_whitespace(c)) {
+                break;
+            }
+
+            iChar -= 1;
+        }
+    }
+
+    drte_engine_move_cursor_to_character(pEngine, iChar);
+    return iChar;
 }
 
 size_t drte_engine_get_spaces_to_next_colum_from_cursor(drte_engine* pEngine)
