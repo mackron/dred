@@ -1,4 +1,3 @@
-// A dred_textbox is a dred_control that has a child drgui_textbox object.
 
 #define DRED_CONTROL_TYPE_TEXTBOX  "dred.textbox"
 
@@ -8,30 +7,17 @@ typedef void (* dred_textbox_on_cursor_move_proc)(dred_textbox* pTextBox);
 typedef void (* dred_textbox_on_undo_point_changed_proc)(dred_textbox* pTextBox, unsigned int iUndoPoint);
 
 
-// dred_textbox_create()
+// Creates a new text box control.
 dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent);
 
-// dred_textbox_delete()
+// Deletes the given text box control.
 void dred_textbox_delete(dred_textbox* pTextBox);
-
-
-// Determines whether or not this textbox has the keyboard capture.
-//
-// This will return true if the inner text box has the capture, which is what makes this different to dred_control_has_keyboard_capture().
-bool dred_textbox_has_keyboard_capture(dred_textbox* pTextBox);
-
-
-// Sets the text of the text box.
-void dred_textbox_set_text(dred_textbox* pTextBox, const char* text);
-
-// Retrieves the text of the text box.
-size_t dred_textbox_get_text(dred_textbox* pTextBox, char* textOut, size_t textOutSize);
 
 
 // Sets the font to use with the given text box.
 void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont);
 
-// Retrieves the font of the given text box.
+// Retrieves the font being used with the given text box.
 drgui_font* dred_textbox_get_font(dred_textbox* pTextBox);
 
 // Sets the color of the text in teh given text box.
@@ -45,7 +31,6 @@ void dred_textbox_set_selection_background_color(dred_textbox* pTextBox, drgui_c
 
 // Retrieves the background color of selected text.
 drgui_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox);
-
 
 // Sets the background color for the line the caret is currently sitting on.
 void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, drgui_color color);
@@ -105,6 +90,14 @@ void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, drgu
 drgui_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBox);
 
 
+// Sets the text of the given text box.
+void dred_textbox_set_text(dred_textbox* pTextBox, const char* text);
+
+// Retrieves the text of the given text box.
+size_t dred_textbox_get_text(dred_textbox* pTextBox, char* pTextOut, size_t textOutSize);
+
+// Steps the text box to allow it to blink the cursor.
+void dred_textbox_step(dred_textbox* pTextBox, unsigned int milliseconds);
 
 // Sets the blink rate of the cursor in milliseconds.
 void dred_textbox_set_cursor_blink_rate(dred_textbox* pTextBox, unsigned int blinkRateInMilliseconds);
@@ -126,10 +119,11 @@ void dred_textbox_deselect_all(dred_textbox* pTextBox);
 
 // Retrieves a copy of the selected text.
 //
-// This returns the length of the selected text. Call this once with <textOut> set to NULL to calculate the required size of the
-// buffer.
-//
-// If the output buffer is not larger enough, the string will be truncated.
+// @remarks
+//     This returns the length of the selected text. Call this once with <textOut> set to NULL to calculate the required size of the
+//     buffer.
+//     @par
+//     If the output buffer is not larger enough, the string will be truncated.
 size_t dred_textbox_get_selected_text(dred_textbox* pTextBox, char* textOut, size_t textOutLength);
 
 // Deletes the character to the right of the cursor.
@@ -142,7 +136,7 @@ bool dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox);
 // @return True if the text within the text engine has changed.
 bool dred_textbox_delete_selected_text(dred_textbox* pTextBox);
 
-// Inserts a string of text at the position of the cursor.
+// Inserts a character at the position of the cursor.
 //
 // @return True if the text within the text engine has changed.
 bool dred_textbox_insert_text_at_cursor(dred_textbox* pTextBox, const char* text);
@@ -201,6 +195,15 @@ void dred_textbox_disable_horizontal_scrollbar(dred_textbox* pTextBox);
 // Enables the horizontal scrollbar.
 void dred_textbox_enable_horizontal_scrollbar(dred_textbox* pTextBox);
 
+// Retrieves the vertical scrollbar.
+drgui_element* dred_textbox_get_vertical_scrollbar(dred_textbox* pTextBox);
+
+// Retrieves the horizontal scrollbar.
+drgui_element* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox);
+
+// Sets the size of both the vertical and horizontal scrollbars.
+void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, float size);
+
 
 // Sets the function to call when the cursor moves.
 void dred_textbox_set_on_cursor_move(dred_textbox* pTextBox, dred_textbox_on_cursor_move_proc proc);
@@ -209,23 +212,45 @@ void dred_textbox_set_on_cursor_move(dred_textbox* pTextBox, dred_textbox_on_cur
 void dred_textbox_set_on_undo_point_changed(dred_textbox* pTextBox, dred_textbox_on_undo_point_changed_proc proc);
 
 
-// Function for explicitly handling the on_capture_keyboard event.
-void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement);
 
-// Function for explicitly handling the on_release_keyboard event.
-void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, drgui_element* pNextCapturedElement);
+// on_size.
+void dred_textbox_on_size(dred_textbox* pTextBox, float newWidth, float newHeight);
 
-// Function for explicitly handling the on_mouse_button_up event.
-void dred_textbox_on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+// on_mouse_move.
+void dred_textbox_on_mouse_move(dred_textbox* pTextBox, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
-// Function for explicitly handling the on_mouse_wheel event.
-void dred_textbox_on_mouse_wheel(dred_textbox* pTextBox, int delta, int mousePosX, int mousePosY, int stateFlags);
+// on_mouse_button_down.
+void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
-// Function for explicitly handling the on_key_down event.
+// on_mouse_button_up.
+void dred_textbox_on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+
+// on_mouse_button_dblclick.
+void dred_textbox_on_mouse_button_dblclick(dred_textbox* pTextBox, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+
+// on_mouse_wheel
+void dred_textbox_on_mouse_wheel(dred_textbox* pTextBox, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+
+// on_key_down.
 void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags);
 
-// Function for explicitly handling the on_key_up event.
+// on_key_up.
 void dred_textbox_on_key_up(dred_textbox* pTextBox, drgui_key key, int stateFlags);
 
-// Function for explicitly handling the on_printable_key_down event.
-void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, uint32_t utf32, int stateFlags);
+// on_printable_key_down.
+void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf32, int stateFlags);
+
+// on_paint.
+void dred_textbox_on_paint(dred_textbox* pTextBox, drgui_rect relativeRect, void* pPaintData);
+
+// on_capture_keyboard
+void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement);
+
+// on_release_keyboard
+void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, drgui_element* pNewCapturedElement);
+
+// on_capture_mouse
+void dred_textbox_on_capture_mouse(dred_textbox* pTextBox);
+
+// on_release_mouse
+void dred_textbox_on_release_mouse(dred_textbox* pTextBox);

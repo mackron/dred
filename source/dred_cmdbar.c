@@ -352,7 +352,7 @@ bool dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
         return false;
     }
 
-    return dred_textbox_has_keyboard_capture(data->pTextBox);
+    return dred_control_has_keyboard_capture(data->pTextBox);
 }
 
 
