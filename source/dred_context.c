@@ -253,8 +253,6 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     }
 
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_NEW,        dred_shortcut_create_single(dred_accelerator_create('N', DRED_KEY_STATE_CTRL_DOWN)), "new");
-    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_NEW,        dred_shortcut_create_single(dred_accelerator_create('N', DRED_KEY_STATE_CTRL_DOWN)), "new");
-
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_OPEN,       dred_shortcut_create_single(dred_accelerator_create('O', DRED_KEY_STATE_CTRL_DOWN)), "open");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_SAVE,       dred_shortcut_create_single(dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN)), "save");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_SAVE_ALL,   dred_shortcut_create_single(dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "save-all");
@@ -378,6 +376,8 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         dred_open_new_text_file(pDred);
     }
 
+
+    pDred->isInitialized = true;
     return true;
 
 on_error:
@@ -433,6 +433,7 @@ void dred_uninit(dred_context* pDred)
         dred_file_close(pDred->logFile);
     }
 }
+
 
 int dred_run(dred_context* pDred)
 {

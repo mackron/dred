@@ -4,120 +4,120 @@
 
 // BEGIN CONFIG VARS: <name> <C variable name> <type> <on_set callback> <default value>
 //
-// show-tab-bar showTabBar bool true
+// show-tab-bar showTabBar bool none true
 //   Whether or not to show the tab bar.
 //
-// show-menu-bar showMenuBar bool true
+// show-menu-bar showMenuBar bool none true
 //   Whether or not to show the menu bar.
 //
-// auto-hide-cmd-bar autoHideCmdBar bool false
+// auto-hide-cmd-bar autoHideCmdBar bool none false
 //   Whether or not to show the command bar at all times. If this is set to false it will be shown only when it has keyboard focus.
 //
 //
-// window-width windowWidth int 640
+// window-width windowWidth int none 640
 //   The width of the window
 //
-// window-height windowHeight int 480
+// window-height windowHeight int none 480
 //   The height of the window.
 //
-// window-maximized windowMaximized bool false
+// window-maximized windowMaximized bool none false
 //   Whether or not the window is maximized.
 //
 //
-// ui-scale uiScale float 1
+// ui-scale uiScale float none 1
 //   The scale of the UI. The total scale of UI elements is equal to the DPI scaling multiplied by this value.
 //
-// ui-font pUIFont font system-font-ui
+// ui-font pUIFont font none system-font-ui
 //   The default font to use for general UI elements. This will act as the default font in the event that a font fails to load.
 //
 //
-// cmdbar-bg-color cmdbarBGColor color 64 64 64 
+// cmdbar-bg-color cmdbarBGColor color none 64 64 64 
 //   The background color of the command bar.
 //
-// cmdbar-bg-color-active cmdbarBGColorActive color 128 51 0
+// cmdbar-bg-color-active cmdbarBGColorActive color none 128 51 0
 //   The background color of the command bar while it's got the keyboard focus.
 //
-// cmdbar-tb-font pCmdbarTBFont font system-font-mono
+// cmdbar-tb-font pCmdbarTBFont font none system-font-mono
 //   The font to use in the text box of the command bar.
 //
-// cmdbar-tb-text-color cmdbarTBTextColor color 224 224 224
+// cmdbar-tb-text-color cmdbarTBTextColor color none 224 224 224
 //   The color of the text in the text box of the command bar.
 //
-// cmdbar-msg-font pCmdbarMessageFont font system-font-ui
+// cmdbar-msg-font pCmdbarMessageFont font none system-font-ui
 //   The font to use for the message box of the command bar.
 //
-// cmdbar-padding-horz cmdbarPaddingX float 2
+// cmdbar-padding-horz cmdbarPaddingX float none 2
 //   The amount of padding to apply to the command bar on the left and right sides.
 //
-// cmdbar-padding-vert cmdbarPaddingY float 2
+// cmdbar-padding-vert cmdbarPaddingY float none 2
 //   The amount of padding to apply to the command bar on the top and bottom sides.
 //
 //
-// tabgroup-bg-color tabgroupBGColor color 48 48 48
+// tabgroup-bg-color tabgroupBGColor color none 48 48 48
 //   The background color of tab groups. This will be shown when there are no tabs open in the group.
 //
-// tab-bg-color-inactive tabBGColorInvactive color 58 58 58
+// tab-bg-color-inactive tabBGColorInvactive color none 58 58 58
 //   The background color of tabs while inactive.
 //
-// tab-bg-color-active tabBGColorActive color 16 92 160
+// tab-bg-color-active tabBGColorActive color none 16 92 160
 //   The background color of tabs while active.
 //
-// tab-bg-color-hovered tabBGColorHovered color 32 128 192
+// tab-bg-color-hovered tabBGColorHovered color none 32 128 192
 //   The background color of tabs while hovered.
 //
-// tab-font tabFont font system-font-ui
+// tab-font tabFont font none system-font-ui
 //   The font to use on tabs.
 //
-// tab-text-color tabTextColor color 224 224 224
+// tab-text-color tabTextColor color none 224 224 224
 //   The color of the text on tabs.
 //
-// tab-padding tabPadding float 4
+// tab-padding tabPadding float none 4
 //   The amount of padding to apply to all sides of a tab.
 //
-// tab-show-close-button tabShowCloseButton bool true
+// tab-show-close-button tabShowCloseButton bool none true
 //   Whether or not to show the close button on tabs.
 //
 //
-// texteditor-font pTextEditorFont font system-font-mono
+// texteditor-font pTextEditorFont font dred_config_on_set__texteditor_font system-font-mono
 //   The font to use in text editors.
 //
-// texteditor-text-color textEditorTextColor color 224 224 224
+// texteditor-text-color textEditorTextColor color none 224 224 224
 //   The base color of the text in a text editor. Note that syntax highlighting is independant of this variable.
 //
-// texteditor-bg-color textEditorBGColor color 48 48 48
+// texteditor-bg-color textEditorBGColor color none 48 48 48
 //   The background color to use in text editors.
 //
-// texteditor-cursor-color textEditorCursorColor color 224 224 224
+// texteditor-cursor-color textEditorCursorColor color none 224 224 224
 //   The color of the caret/cursor in text editors.
 //
-// texteditor-cursor-width textEditorCursorWidth float 1
+// texteditor-cursor-width textEditorCursorWidth float none 1
 //   The thickness of the caret/cursor in text editors.
 //
-// texteditor-selection-bg-color textEditorSelectionBGColor color 64 128 192
+// texteditor-selection-bg-color textEditorSelectionBGColor color none 64 128 192
 //   The background color to use for selected text.
 //
-// texteditor-active-line-color textEditorActiveLineColor color 40 40 40
+// texteditor-active-line-color textEditorActiveLineColor color none 40 40 40
 //   The background color of the line that the caret is currently sitting on in a text editor.
 //
-// texteditor-show-line-numbers textEditorShowLineNumbers bool false
+// texteditor-show-line-numbers textEditorShowLineNumbers bool none false
 //   Whether or not to show line numbers.
 //
-// texteditor-line-numbers-color textEditorLineNumbersColor color 80 160 192
+// texteditor-line-numbers-color textEditorLineNumbersColor color none 80 160 192
 //   The color of the line numbers text.
 //
-// texteditor-line-numbers-bg-color textEditorLineNumbersBGColor color 48 48 48
+// texteditor-line-numbers-bg-color textEditorLineNumbersBGColor color none 48 48 48
 //   The color of the background of the line numbers.
 //
-// texteditor-line-numbers-padding textEditorLineNumbersPadding float 16
+// texteditor-line-numbers-padding textEditorLineNumbersPadding float none 16
 //   The padding between the line numbers and the text in the text editor.
 //
-// texteditor-enable-tabs-to-spaces textEditorTabsToSpacesEnabled bool false
+// texteditor-enable-tabs-to-spaces textEditorTabsToSpacesEnabled bool none false
 //   Whether or not tabs are converted to spaces.
 //
-// texteditor-tab-size-in-spaces textEditorTabSizeInSpaces int 4
+// texteditor-tab-size-in-spaces textEditorTabSizeInSpaces int none 4
 //   The size of tabs in spaces.
 //
-// texteditor-scale textEditorScale float 1
+// texteditor-scale textEditorScale float none 1
 //   The scale/zoom to use in text editors.
 //
 // END CONFIG VARS

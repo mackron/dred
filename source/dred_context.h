@@ -56,6 +56,9 @@ struct dred_context
     float uiScale;
 
 
+    // Whether or not the context is initialized.
+    bool isInitialized;
+
     // Whether or not the application is running in silent mode.
     bool isTerminalOutputDisabled;
 };
@@ -65,6 +68,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline);
 
 // dred_uninit
 void dred_uninit(dred_context* pDred);
+
 
 // dred_run
 int dred_run(dred_context* pDred);
