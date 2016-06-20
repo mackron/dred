@@ -340,6 +340,7 @@ void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text)
         text = "";
     }
 
+    dred_textbox_deselect_all(data->pTextBox);
     dred_textbox_set_text(data->pTextBox, text);
     dred_textbox_move_cursor_to_end_of_text(data->pTextBox);
 }
