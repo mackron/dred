@@ -213,7 +213,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
         dred_text_editor_show_line_numbers(pTextEditor);
     }
 
-    dred_text_editor_set_text_scale(pTextEditor, pDred->textEditorScale);
+    dred_text_editor_set_text_scale(pTextEditor, pDred->config.textEditorScale);
     
     return pTextEditor;
 }

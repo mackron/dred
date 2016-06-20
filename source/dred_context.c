@@ -209,7 +209,6 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     pDred->dpiScale = (float)systemDPI / (float)baseDPI;
     pDred->uiScale = pDred->dpiScale;
-    pDred->textEditorScale = 1;
 
 
     // The drawing context.
@@ -1568,14 +1567,14 @@ void dred_set_text_editor_scale(dred_context* pDred, float scale)
         return;
     }
 
-    pDred->textEditorScale = dr_clamp(scale, 0.1f, 4.0f);
+    pDred->config.textEditorScale = dr_clamp(scale, 0.1f, 4.0f);
 
     // Every open text editors needs to be updated.
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
             dred_control* pControl = dred_tab_get_control(pTab);
             if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                dred_text_editor_set_text_scale(pControl, pDred->textEditorScale);
+                dred_text_editor_set_text_scale(pControl, pDred->config.textEditorScale);
             }
         }
     }
@@ -1587,7 +1586,7 @@ float dred_get_text_editor_scale(dred_context* pDred)
         return 0;
     }
 
-    return pDred->textEditorScale;
+    return pDred->config.textEditorScale;
 }
 
 

@@ -55,9 +55,6 @@ struct dred_context
     // The UI scale. All UI elements need to be scaled by this amount.
     float uiScale;
 
-    // The scale to use for text editors.
-    float textEditorScale;
-
 
     // Whether or not the application is running in silent mode.
     bool isTerminalOutputDisabled;

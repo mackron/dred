@@ -117,6 +117,9 @@
 // texteditor-tab-size-in-spaces textEditorTabSizeInSpaces int 4
 //   The size of tabs in spaces.
 //
+// texteditor-scale textEditorScale float 1
+//   The scale/zoom to use in text editors.
+//
 // END CONFIG VARS
 
 typedef struct
