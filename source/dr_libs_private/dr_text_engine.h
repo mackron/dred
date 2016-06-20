@@ -431,12 +431,14 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pUserData)
         return;
     }
 
+#if 0
     // Make sure the rectangle is clamped to the bounds.
     rect = drte_rect_clamp(rect, drte_engine_get_bounds_rect(pEngine));
 
     for (drte_run* pRun = drte_engine_first_visible_run(pEngine, rect); pRun != NULL; pRun = drte_engine_next_visible_run(pEngine, rect, pRun)) {
         drte_engine_paint_run(pEngine, pRun);
     }
+#endif
 
     // TEMP: Paint a rectangle over the entire bounds.
     (void)rect;
