@@ -1168,6 +1168,19 @@ void dred_textbox_on_mouse_button_dblclick(dred_textbox* pTextBox, int mouseButt
     if (pTB == NULL) {
         return;
     }
+
+    if (mouseButton == DRGUI_MOUSE_BUTTON_LEFT) {
+        if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) == 0) {
+            drte_engine_leave_selection_mode(pTB->pTL);
+            drte_engine_deselect_all(pTB->pTL);
+
+            drte_engine_move_cursor_to_start_of_word(pTB->pTL);
+
+            drte_engine_enter_selection_mode(pTB->pTL);
+            drte_engine_move_cursor_to_end_of_word(pTB->pTL);
+            drte_engine_leave_selection_mode(pTB->pTL);
+        }
+    }
 }
 
 void dred_textbox_on_mouse_wheel(dred_textbox* pTextBox, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags)
