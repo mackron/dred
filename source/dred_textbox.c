@@ -2,7 +2,7 @@
 typedef struct
 {
     /// The text engine.
-    drgui_text_engine* pTL;
+    drte_engine* pTL;
 
     /// The vertical scrollbar.
     drgui_element* pVertScrollbar;
@@ -105,22 +105,22 @@ void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox);
 
 
 /// on_paint_rect()
-void dred_textbox__on_text_engine_paint_rect(drgui_text_engine* pLayout, drgui_rect rect, drgui_color color, dred_textbox* pTextBox, void* pPaintData);
+void dred_textbox__on_text_engine_paint_rect(drte_engine* pLayout, drgui_rect rect, drgui_color color, dred_textbox* pTextBox, void* pPaintData);
 
 /// on_paint_text()
-void dred_textbox__on_text_engine_paint_text(drgui_text_engine* pTL, drgui_text_run* pRun, dred_textbox* pTextBox, void* pPaintData);
+void dred_textbox__on_text_engine_paint_text(drte_engine* pTL, drte_text_run* pRun, dred_textbox* pTextBox, void* pPaintData);
 
 /// on_dirty()
-void dred_textbox__on_text_engine_dirty(drgui_text_engine* pTL, drgui_rect rect);
+void dred_textbox__on_text_engine_dirty(drte_engine* pTL, drgui_rect rect);
 
 /// on_cursor_move()
-void dred_textbox__on_text_engine_cursor_move(drgui_text_engine* pTL);
+void dred_textbox__on_text_engine_cursor_move(drte_engine* pTL);
 
 /// on_text_changed()
-void dred_textbox__on_text_engine_text_changed(drgui_text_engine* pTL);
+void dred_textbox__on_text_engine_text_changed(drte_engine* pTL);
 
 /// on_undo_point_changed()
-void dred_textbox__on_text_engine_undo_point_changed(drgui_text_engine* pTL, unsigned int iUndoPoint);
+void dred_textbox__on_text_engine_undo_point_changed(drte_engine* pTL, unsigned int iUndoPoint);
 
 
 void dred_textbox__on_vscroll(drgui_element* pSBElement, int scrollPos)
@@ -131,7 +131,7 @@ void dred_textbox__on_vscroll(drgui_element* pSBElement, int scrollPos)
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
-    drgui_text_engine_set_inner_offset_y(pTB->pTL, -drgui_text_engine_get_line_pos_y(pTB->pTL, scrollPos));
+    drte_engine_set_inner_offset_y(pTB->pTL, -drte_engine_get_line_pos_y(pTB->pTL, scrollPos));
 
     // The line numbers need to be redrawn.
     drgui_dirty(pTB->pLineNumbers, drgui_get_local_rect(pTB->pLineNumbers));
@@ -145,7 +145,7 @@ void dred_textbox__on_hscroll(drgui_element* pSBElement, int scrollPos)
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
-    drgui_text_engine_set_inner_offset_x(pTB->pTL, (float)-scrollPos);
+    drte_engine_set_inner_offset_x(pTB->pTL, (float)-scrollPos);
 }
 
 
@@ -189,25 +189,25 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drgui_set_on_mouse_button_up(pTB->pLineNumbers, dred_textbox__on_mouse_button_up_line_numbers);
     drgui_set_on_paint(pTB->pLineNumbers, dred_textbox__on_paint_line_numbers);
 
-    pTB->pTL = drgui_create_text_engine(pDred->pGUI, sizeof(pTextBox), &pTextBox);
+    pTB->pTL = drte_engine_create(pDred->pGUI, sizeof(pTextBox), &pTextBox);
     if (pTB->pTL == NULL) {
         drgui_delete_element(pTextBox);
         return NULL;
     }
 
-    drgui_text_engine_set_on_paint_rect(pTB->pTL, dred_textbox__on_text_engine_paint_rect);
-    drgui_text_engine_set_on_paint_text(pTB->pTL, dred_textbox__on_text_engine_paint_text);
-    drgui_text_engine_set_on_dirty(pTB->pTL, dred_textbox__on_text_engine_dirty);
-    drgui_text_engine_set_on_cursor_move(pTB->pTL, dred_textbox__on_text_engine_cursor_move);
-    drgui_text_engine_set_on_text_changed(pTB->pTL, dred_textbox__on_text_engine_text_changed);
-    drgui_text_engine_set_on_undo_point_changed(pTB->pTL, dred_textbox__on_text_engine_undo_point_changed);
-    drgui_text_engine_set_default_text_color(pTB->pTL, drgui_rgb(0, 0, 0));
-    drgui_text_engine_set_cursor_color(pTB->pTL, drgui_rgb(0, 0, 0));
-    drgui_text_engine_show_cursor(pTB->pTL);
-    drgui_text_engine_set_default_bg_color(pTB->pTL, drgui_rgb(64, 64, 64));
-    drgui_text_engine_set_active_line_bg_color(pTB->pTL, drgui_rgb(64, 64, 64));
-    drgui_text_engine_set_vertical_align(pTB->pTL, drgui_text_engine_alignment_center);
-    drgui_text_engine_set_default_font(pTB->pTL, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));
+    drte_engine_set_on_paint_rect(pTB->pTL, dred_textbox__on_text_engine_paint_rect);
+    drte_engine_set_on_paint_text(pTB->pTL, dred_textbox__on_text_engine_paint_text);
+    drte_engine_set_on_dirty(pTB->pTL, dred_textbox__on_text_engine_dirty);
+    drte_engine_set_on_cursor_move(pTB->pTL, dred_textbox__on_text_engine_cursor_move);
+    drte_engine_set_on_text_changed(pTB->pTL, dred_textbox__on_text_engine_text_changed);
+    drte_engine_set_on_undo_point_changed(pTB->pTL, dred_textbox__on_text_engine_undo_point_changed);
+    drte_engine_set_default_text_color(pTB->pTL, drgui_rgb(0, 0, 0));
+    drte_engine_set_cursor_color(pTB->pTL, drgui_rgb(0, 0, 0));
+    drte_engine_show_cursor(pTB->pTL);
+    drte_engine_set_default_bg_color(pTB->pTL, drgui_rgb(64, 64, 64));
+    drte_engine_set_active_line_bg_color(pTB->pTL, drgui_rgb(64, 64, 64));
+    drte_engine_set_vertical_align(pTB->pTL, drte_alignment_center);
+    drte_engine_set_default_font(pTB->pTL, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));
 
     pTB->borderColor = drgui_rgb(0, 0, 0);
     pTB->borderWidth = 0;
@@ -215,7 +215,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     pTB->lineNumbersWidth = 64;
     pTB->lineNumbersPaddingRight = 16;
     pTB->lineNumbersColor = drgui_rgb(80, 160, 192);
-    pTB->lineNumbersBackgroundColor = drgui_text_engine_get_default_bg_color(pTB->pTL);
+    pTB->lineNumbersBackgroundColor = drte_engine_get_default_bg_color(pTB->pTL);
     pTB->vertScrollbarSize = 16;
     pTB->horzScrollbarSize = 16;
     pTB->isVertScrollbarEnabled = true;
@@ -240,7 +240,7 @@ void dred_textbox_delete(dred_textbox* pTextBox)
     }
 
     if (pTB->pTL) {
-        drgui_delete_text_engine(pTB->pTL);
+        drte_engine_delete(pTB->pTL);
         pTB->pTL = NULL;
     }
 
@@ -272,7 +272,7 @@ void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont)
 
     drgui_begin_dirty(pTextBox);
     {
-        drgui_text_engine_set_default_font(pTB->pTL, pFont);
+        drte_engine_set_default_font(pTB->pTL, pFont);
 
         // The font used for line numbers are tied to the main font at the moment.
         dred_textbox__refresh_line_numbers(pTextBox);
@@ -282,8 +282,8 @@ void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont)
         dred_textbox__refresh_scrollbars(pTextBox);
 
         // The caret position needs to be refreshes. We'll cheat here a little bit and just do a full refresh of the text engine.
-        //drgui_text_engine__refresh(pTB->pTL);
-        drgui_text_engine_refresh_markers(pTB->pTL);
+        //drte_engine__refresh(pTB->pTL);
+        drte_engine_refresh_markers(pTB->pTL);
     }
     drgui_end_dirty(pTextBox);
 }
@@ -295,7 +295,7 @@ drgui_font* dred_textbox_get_font(dred_textbox* pTextBox)
         return NULL;
     }
 
-    return drgui_text_engine_get_default_font(pTB->pTL);
+    return drte_engine_get_default_font(pTB->pTL);
 }
 
 void dred_textbox_set_text_color(dred_textbox* pTextBox, drgui_color color)
@@ -305,7 +305,7 @@ void dred_textbox_set_text_color(dred_textbox* pTextBox, drgui_color color)
         return;
     }
 
-    drgui_text_engine_set_default_text_color(pTB->pTL, color);
+    drte_engine_set_default_text_color(pTB->pTL, color);
 }
 
 void dred_textbox_set_background_color(dred_textbox* pTextBox, drgui_color color)
@@ -315,7 +315,7 @@ void dred_textbox_set_background_color(dred_textbox* pTextBox, drgui_color color
         return;
     }
 
-    drgui_text_engine_set_default_bg_color(pTB->pTL, color);
+    drte_engine_set_default_bg_color(pTB->pTL, color);
 }
 
 void dred_textbox_set_selection_background_color(dred_textbox* pTextBox, drgui_color color)
@@ -325,7 +325,7 @@ void dred_textbox_set_selection_background_color(dred_textbox* pTextBox, drgui_c
         return;
     }
 
-    drgui_text_engine_set_selection_bg_color(pTB->pTL, color);
+    drte_engine_set_selection_bg_color(pTB->pTL, color);
 }
 
 drgui_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox)
@@ -335,7 +335,7 @@ drgui_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox)
         return drgui_rgb(0, 0, 0);
     }
 
-    return drgui_text_engine_get_selection_bg_color(pTB->pTL);
+    return drte_engine_get_selection_bg_color(pTB->pTL);
 }
 
 void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, drgui_color color)
@@ -345,7 +345,7 @@ void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, drgui
         return;
     }
 
-    drgui_text_engine_set_active_line_bg_color(pTB->pTL, color);
+    drte_engine_set_active_line_bg_color(pTB->pTL, color);
 }
 
 void dred_textbox_set_cursor_width(dred_textbox* pTextBox, float cursorWidth)
@@ -355,7 +355,7 @@ void dred_textbox_set_cursor_width(dred_textbox* pTextBox, float cursorWidth)
         return;
     }
 
-    drgui_text_engine_set_cursor_width(pTB->pTL, cursorWidth);
+    drte_engine_set_cursor_width(pTB->pTL, cursorWidth);
 }
 
 float dred_textbox_get_cursor_width(dred_textbox* pTextBox)
@@ -365,7 +365,7 @@ float dred_textbox_get_cursor_width(dred_textbox* pTextBox)
         return 0;
     }
 
-    return drgui_text_engine_get_cursor_width(pTB->pTL);
+    return drte_engine_get_cursor_width(pTB->pTL);
 }
 
 void dred_textbox_set_cursor_color(dred_textbox* pTextBox, drgui_color color)
@@ -375,7 +375,7 @@ void dred_textbox_set_cursor_color(dred_textbox* pTextBox, drgui_color color)
         return;
     }
 
-    drgui_text_engine_set_cursor_color(pTB->pTL, color);
+    drte_engine_set_cursor_color(pTB->pTL, color);
 }
 
 void dred_textbox_set_border_color(dred_textbox* pTextBox, drgui_color color)
@@ -428,24 +428,24 @@ float dred_textbox_get_padding_horz(dred_textbox* pTextBox)
     return pTB->padding;
 }
 
-void dred_textbox_set_vertical_align(dred_textbox* pTextBox, drgui_text_engine_alignment align)
+void dred_textbox_set_vertical_align(dred_textbox* pTextBox, drte_alignment align)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
         return;
     }
 
-    drgui_text_engine_set_vertical_align(pTB->pTL, align);
+    drte_engine_set_vertical_align(pTB->pTL, align);
 }
 
-void dred_textbox_set_horizontal_align(dred_textbox* pTextBox, drgui_text_engine_alignment align)
+void dred_textbox_set_horizontal_align(dred_textbox* pTextBox, drte_alignment align)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
         return;
     }
 
-    drgui_text_engine_set_horizontal_align(pTB->pTL, align);
+    drte_engine_set_horizontal_align(pTB->pTL, align);
 }
 
 void dred_textbox_set_line_numbers_width(dred_textbox* pTextBox, float lineNumbersWidth)
@@ -539,11 +539,11 @@ void dred_textbox_set_text(dred_textbox* pTextBox, const char* text)
         return;
     }
 
-    drgui_text_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTB->pTL);
     {
-        drgui_text_engine_set_text(pTB->pTL, text);
+        drte_engine_set_text(pTB->pTL, text);
     }
-    drgui_text_engine_commit_undo_point(pTB->pTL);
+    drte_engine_commit_undo_point(pTB->pTL);
 }
 
 size_t dred_textbox_get_text(dred_textbox* pTextBox, char* pTextOut, size_t textOutSize)
@@ -553,7 +553,7 @@ size_t dred_textbox_get_text(dred_textbox* pTextBox, char* pTextOut, size_t text
         return 0;
     }
 
-    return drgui_text_engine_get_text(pTB->pTL, pTextOut, textOutSize);
+    return drte_engine_get_text(pTB->pTL, pTextOut, textOutSize);
 }
 
 void dred_textbox_step(dred_textbox* pTextBox, unsigned int milliseconds)
@@ -563,7 +563,7 @@ void dred_textbox_step(dred_textbox* pTextBox, unsigned int milliseconds)
         return;
     }
 
-    drgui_text_engine_step(pTB->pTL, milliseconds);
+    drte_engine_step(pTB->pTL, milliseconds);
 }
 
 void dred_textbox_set_cursor_blink_rate(dred_textbox* pTextBox, unsigned int blinkRateInMilliseconds)
@@ -573,7 +573,7 @@ void dred_textbox_set_cursor_blink_rate(dred_textbox* pTextBox, unsigned int bli
         return;
     }
 
-    drgui_text_engine_set_cursor_blink_rate(pTB->pTL, blinkRateInMilliseconds);
+    drte_engine_set_cursor_blink_rate(pTB->pTL, blinkRateInMilliseconds);
 }
 
 void dred_textbox_move_cursor_to_end_of_text(dred_textbox* pTextBox)
@@ -583,7 +583,7 @@ void dred_textbox_move_cursor_to_end_of_text(dred_textbox* pTextBox)
         return;
     }
 
-    drgui_text_engine_move_cursor_to_end_of_text(pTB->pTL);
+    drte_engine_move_cursor_to_end_of_text(pTB->pTL);
 }
 
 void dred_textbox_move_cursor_to_start_of_line_by_index(dred_textbox* pTextBox, size_t iLine)
@@ -593,7 +593,7 @@ void dred_textbox_move_cursor_to_start_of_line_by_index(dred_textbox* pTextBox, 
         return;
     }
 
-    drgui_text_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, iLine);
+    drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, iLine);
 }
 
 
@@ -604,7 +604,7 @@ bool dred_textbox_is_anything_selected(dred_textbox* pTextBox)
         return false;
     }
 
-    return drgui_text_engine_is_anything_selected(pTB->pTL);
+    return drte_engine_is_anything_selected(pTB->pTL);
 }
 
 void dred_textbox_select_all(dred_textbox* pTextBox)
@@ -614,7 +614,7 @@ void dred_textbox_select_all(dred_textbox* pTextBox)
         return;
     }
 
-    drgui_text_engine_select_all(pTB->pTL);
+    drte_engine_select_all(pTB->pTL);
 }
 
 void dred_textbox_deselect_all(dred_textbox* pTextBox)
@@ -624,7 +624,7 @@ void dred_textbox_deselect_all(dred_textbox* pTextBox)
         return;
     }
 
-    drgui_text_engine_deselect_all(pTB->pTL);
+    drte_engine_deselect_all(pTB->pTL);
 }
 
 size_t dred_textbox_get_selected_text(dred_textbox* pTextBox, char* textOut, size_t textOutLength)
@@ -634,7 +634,7 @@ size_t dred_textbox_get_selected_text(dred_textbox* pTextBox, char* textOut, siz
         return 0;
     }
 
-    return drgui_text_engine_get_selected_text(pTB->pTL, textOut, textOutLength);
+    return drte_engine_get_selected_text(pTB->pTL, textOut, textOutLength);
 }
 
 bool dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox)
@@ -645,11 +645,11 @@ bool dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox)
     }
 
     bool wasTextChanged = false;
-    drgui_text_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTB->pTL);
     {
-        wasTextChanged = drgui_text_engine_delete_character_to_right_of_cursor(pTB->pTL);
+        wasTextChanged = drte_engine_delete_character_to_right_of_cursor(pTB->pTL);
     }
-    if (wasTextChanged) { drgui_text_engine_commit_undo_point(pTB->pTL); }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
 
     return wasTextChanged;
 }
@@ -662,11 +662,11 @@ bool dred_textbox_delete_selected_text(dred_textbox* pTextBox)
     }
 
     bool wasTextChanged = false;
-    drgui_text_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTB->pTL);
     {
-        wasTextChanged = drgui_text_engine_delete_selected_text(pTB->pTL);
+        wasTextChanged = drte_engine_delete_selected_text(pTB->pTL);
     }
-    if (wasTextChanged) { drgui_text_engine_commit_undo_point(pTB->pTL); }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
 
     return wasTextChanged;
 }
@@ -679,11 +679,11 @@ bool dred_textbox_insert_text_at_cursor(dred_textbox* pTextBox, const char* text
     }
 
     bool wasTextChanged = false;
-    drgui_text_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTB->pTL);
     {
-        wasTextChanged = drgui_text_engine_insert_text_at_cursor(pTB->pTL, text);
+        wasTextChanged = drte_engine_insert_text_at_cursor(pTB->pTL, text);
     }
-    if (wasTextChanged) { drgui_text_engine_commit_undo_point(pTB->pTL); }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
 
     return wasTextChanged;
 }
@@ -695,7 +695,7 @@ bool dred_textbox_undo(dred_textbox* pTextBox)
         return false;
     }
 
-    return drgui_text_engine_undo(pTB->pTL);
+    return drte_engine_undo(pTB->pTL);
 }
 
 bool dred_textbox_redo(dred_textbox* pTextBox)
@@ -705,7 +705,7 @@ bool dred_textbox_redo(dred_textbox* pTextBox)
         return false;
     }
 
-    return drgui_text_engine_redo(pTB->pTL);
+    return drte_engine_redo(pTB->pTL);
 }
 
 unsigned int dred_textbox_get_undo_points_remaining_count(dred_textbox* pTextBox)
@@ -715,7 +715,7 @@ unsigned int dred_textbox_get_undo_points_remaining_count(dred_textbox* pTextBox
         return false;
     }
 
-    return drgui_text_engine_get_undo_points_remaining_count(pTB->pTL);
+    return drte_engine_get_undo_points_remaining_count(pTB->pTL);
 }
 
 unsigned int dred_textbox_get_redo_points_remaining_count(dred_textbox* pTextBox)
@@ -725,7 +725,7 @@ unsigned int dred_textbox_get_redo_points_remaining_count(dred_textbox* pTextBox
         return false;
     }
 
-    return drgui_text_engine_get_redo_points_remaining_count(pTB->pTL);
+    return drte_engine_get_redo_points_remaining_count(pTB->pTL);
 }
 
 void dred_textbox_clear_undo_stack(dred_textbox* pTextBox)
@@ -735,7 +735,7 @@ void dred_textbox_clear_undo_stack(dred_textbox* pTextBox)
         return;
     }
 
-    drgui_text_engine_clear_undo_stack(pTB->pTL);
+    drte_engine_clear_undo_stack(pTB->pTL);
 }
 
 
@@ -746,7 +746,7 @@ size_t dred_textbox_get_cursor_line(dred_textbox* pTextBox)
         return 0;
     }
 
-    return drgui_text_engine_get_cursor_line(pTB->pTL);
+    return drte_engine_get_cursor_line(pTB->pTL);
 }
 
 size_t dred_textbox_get_cursor_column(dred_textbox* pTextBox)
@@ -756,7 +756,7 @@ size_t dred_textbox_get_cursor_column(dred_textbox* pTextBox)
         return 0;
     }
 
-    return drgui_text_engine_get_cursor_column(pTB->pTL);
+    return drte_engine_get_cursor_column(pTB->pTL);
 }
 
 size_t dred_textbox_get_line_count(dred_textbox* pTextBox)
@@ -766,7 +766,7 @@ size_t dred_textbox_get_line_count(dred_textbox* pTextBox)
         return 0;
     }
 
-    return drgui_text_engine_get_line_count(pTB->pTL);
+    return drte_engine_get_line_count(pTB->pTL);
 }
 
 
@@ -779,10 +779,10 @@ bool dred_textbox_find_and_select_next(dred_textbox* pTextBox, const char* text)
 
     size_t selectionStart;
     size_t selectionEnd;
-    if (drgui_text_engine_find_next(pTB->pTL, text, &selectionStart, &selectionEnd))
+    if (drte_engine_find_next(pTB->pTL, text, &selectionStart, &selectionEnd))
     {
-        drgui_text_engine_select(pTB->pTL, selectionStart, selectionEnd);
-        drgui_text_engine_move_cursor_to_end_of_selection(pTB->pTL);
+        drte_engine_select(pTB->pTL, selectionStart, selectionEnd);
+        drte_engine_move_cursor_to_end_of_selection(pTB->pTL);
 
         return true;
     }
@@ -798,20 +798,20 @@ bool dred_textbox_find_and_replace_next(dred_textbox* pTextBox, const char* text
     }
 
     bool wasTextChanged = false;
-    drgui_text_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTB->pTL);
     {
         size_t selectionStart;
         size_t selectionEnd;
-        if (drgui_text_engine_find_next(pTB->pTL, text, &selectionStart, &selectionEnd))
+        if (drte_engine_find_next(pTB->pTL, text, &selectionStart, &selectionEnd))
         {
-            drgui_text_engine_select(pTB->pTL, selectionStart, selectionEnd);
-            drgui_text_engine_move_cursor_to_end_of_selection(pTB->pTL);
+            drte_engine_select(pTB->pTL, selectionStart, selectionEnd);
+            drte_engine_move_cursor_to_end_of_selection(pTB->pTL);
 
-            wasTextChanged = drgui_text_engine_delete_selected_text(pTB->pTL) || wasTextChanged;
-            wasTextChanged = drgui_text_engine_insert_text_at_cursor(pTB->pTL, replacement) || wasTextChanged;
+            wasTextChanged = drte_engine_delete_selected_text(pTB->pTL) || wasTextChanged;
+            wasTextChanged = drte_engine_insert_text_at_cursor(pTB->pTL, replacement) || wasTextChanged;
         }
     }
-    if (wasTextChanged) { drgui_text_engine_commit_undo_point(pTB->pTL); }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
 
     return wasTextChanged;
 }
@@ -823,41 +823,41 @@ bool dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text,
         return 0;
     }
 
-    size_t originalCursorLine = drgui_text_engine_get_cursor_line(pTB->pTL);
-    size_t originalCursorPos = drgui_text_engine_get_cursor_character(pTB->pTL) - drgui_text_engine_get_line_first_character(pTB->pTL, originalCursorLine);
+    size_t originalCursorLine = drte_engine_get_cursor_line(pTB->pTL);
+    size_t originalCursorPos = drte_engine_get_cursor_character(pTB->pTL) - drte_engine_get_line_first_character(pTB->pTL, originalCursorLine);
     int originalScrollPosX = drgui_sb_get_scroll_position(pTB->pHorzScrollbar);
     int originalScrollPosY = drgui_sb_get_scroll_position(pTB->pVertScrollbar);
 
     bool wasTextChanged = false;
-    drgui_text_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTB->pTL);
     {
         // It's important that we don't replace the replacement text. To handle this, we just move the cursor to the top of the text and find
         // and replace every occurance without looping.
-        drgui_text_engine_move_cursor_to_start_of_text(pTB->pTL);
+        drte_engine_move_cursor_to_start_of_text(pTB->pTL);
 
         size_t selectionStart;
         size_t selectionEnd;
-        while (drgui_text_engine_find_next_no_loop(pTB->pTL, text, &selectionStart, &selectionEnd))
+        while (drte_engine_find_next_no_loop(pTB->pTL, text, &selectionStart, &selectionEnd))
         {
-            drgui_text_engine_select(pTB->pTL, selectionStart, selectionEnd);
-            drgui_text_engine_move_cursor_to_end_of_selection(pTB->pTL);
+            drte_engine_select(pTB->pTL, selectionStart, selectionEnd);
+            drte_engine_move_cursor_to_end_of_selection(pTB->pTL);
 
-            wasTextChanged = drgui_text_engine_delete_selected_text(pTB->pTL) || wasTextChanged;
-            wasTextChanged = drgui_text_engine_insert_text_at_cursor(pTB->pTL, replacement) || wasTextChanged;
+            wasTextChanged = drte_engine_delete_selected_text(pTB->pTL) || wasTextChanged;
+            wasTextChanged = drte_engine_insert_text_at_cursor(pTB->pTL, replacement) || wasTextChanged;
         }
 
         // The cursor may have moved so we'll need to restore it.
         size_t lineCharStart;
         size_t lineCharEnd;
-        drgui_text_engine_get_line_character_range(pTB->pTL, originalCursorLine, &lineCharStart, &lineCharEnd);
+        drte_engine_get_line_character_range(pTB->pTL, originalCursorLine, &lineCharStart, &lineCharEnd);
 
         size_t newCursorPos = lineCharStart + originalCursorPos;
         if (newCursorPos > lineCharEnd) {
             newCursorPos = lineCharEnd;
         }
-        drgui_text_engine_move_cursor_to_character(pTB->pTL, newCursorPos);
+        drte_engine_move_cursor_to_character(pTB->pTL, newCursorPos);
     }
-    if (wasTextChanged) { drgui_text_engine_commit_undo_point(pTB->pTL); }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
 
 
     // The scroll positions may have moved so we'll need to restore them.
@@ -1012,7 +1012,7 @@ void dred_textbox_on_size(dred_textbox* pTextBox, float newWidth, float newHeigh
     float containerWidth;
     float containerHeight;
     dred_textbox__calculate_text_engine_container_size(pTextBox, &containerWidth, &containerHeight);
-    drgui_text_engine_set_container_size(pTB->pTL, containerWidth, containerHeight);
+    drte_engine_set_container_size(pTB->pTL, containerWidth, containerHeight);
 
     // Scrollbars need to be refreshed first.
     dred_textbox__refresh_scrollbars(pTextBox);
@@ -1036,7 +1036,7 @@ void dred_textbox_on_mouse_move(dred_textbox* pTextBox, int relativeMousePosX, i
         float offsetY;
         dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
-        drgui_text_engine_move_cursor_to_point(pTB->pTL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
+        drte_engine_move_cursor_to_point(pTB->pTL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
     }
 }
 
@@ -1054,29 +1054,29 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
     {
         // If we are not in selection mode, make sure everything is deselected.
         if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) == 0) {
-            drgui_text_engine_deselect_all(pTB->pTL);
-            drgui_text_engine_leave_selection_mode(pTB->pTL);
+            drte_engine_deselect_all(pTB->pTL);
+            drte_engine_leave_selection_mode(pTB->pTL);
         } else {
-            drgui_text_engine_enter_selection_mode(pTB->pTL);
+            drte_engine_enter_selection_mode(pTB->pTL);
         }
 
         float offsetX;
         float offsetY;
         dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
-        drgui_text_engine_move_cursor_to_point(pTB->pTL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
+        drte_engine_move_cursor_to_point(pTB->pTL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
 
         // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
         drgui_capture_mouse(pTextBox);
 
         // If we didn't previously enter selection mode we'll need to do that now so we can drag select.
         if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) == 0) {
-            drgui_text_engine_enter_selection_mode(pTB->pTL);
+            drte_engine_enter_selection_mode(pTB->pTL);
         }
     }
 
     if (mouseButton == DRGUI_MOUSE_BUTTON_RIGHT)
     {
-        drgui_text_engine_leave_selection_mode(pTB->pTL);
+        drte_engine_leave_selection_mode(pTB->pTL);
     }
 }
 
@@ -1140,99 +1140,99 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
         case DRGUI_BACKSPACE:
         {
             bool wasTextChanged = false;
-            drgui_text_engine_prepare_undo_point(pTB->pTL);
+            drte_engine_prepare_undo_point(pTB->pTL);
             {
-                if (drgui_text_engine_is_anything_selected(pTB->pTL)) {
-                    wasTextChanged = drgui_text_engine_delete_selected_text(pTB->pTL);
+                if (drte_engine_is_anything_selected(pTB->pTL)) {
+                    wasTextChanged = drte_engine_delete_selected_text(pTB->pTL);
                 } else {
-                    wasTextChanged = drgui_text_engine_delete_character_to_left_of_cursor(pTB->pTL);
+                    wasTextChanged = drte_engine_delete_character_to_left_of_cursor(pTB->pTL);
                 }
             }
-            if (wasTextChanged) { drgui_text_engine_commit_undo_point(pTB->pTL); }
+            if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
         } break;
 
         case DRGUI_DELETE:
         {
             bool wasTextChanged = false;
-            drgui_text_engine_prepare_undo_point(pTB->pTL);
+            drte_engine_prepare_undo_point(pTB->pTL);
             {
-                if (drgui_text_engine_is_anything_selected(pTB->pTL)) {
-                    wasTextChanged = drgui_text_engine_delete_selected_text(pTB->pTL);
+                if (drte_engine_is_anything_selected(pTB->pTL)) {
+                    wasTextChanged = drte_engine_delete_selected_text(pTB->pTL);
                 } else {
-                    wasTextChanged = drgui_text_engine_delete_character_to_right_of_cursor(pTB->pTL);
+                    wasTextChanged = drte_engine_delete_character_to_right_of_cursor(pTB->pTL);
                 }
             }
-            if (wasTextChanged) { drgui_text_engine_commit_undo_point(pTB->pTL); }
+            if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
         } break;
 
 
         case DRGUI_ARROW_LEFT:
         {
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_enter_selection_mode(pTB->pTL);
+                drte_engine_enter_selection_mode(pTB->pTL);
             }
 
-            if (drgui_text_engine_is_anything_selected(pTB->pTL) && !drgui_text_engine_is_in_selection_mode(pTB->pTL)) {
-                drgui_text_engine_move_cursor_to_start_of_selection(pTB->pTL);
-                drgui_text_engine_deselect_all(pTB->pTL);
+            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+                drte_engine_move_cursor_to_start_of_selection(pTB->pTL);
+                drte_engine_deselect_all(pTB->pTL);
             } else {
-                drgui_text_engine_move_cursor_left(pTB->pTL);
+                drte_engine_move_cursor_left(pTB->pTL);
             }
 
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_leave_selection_mode(pTB->pTL);
+                drte_engine_leave_selection_mode(pTB->pTL);
             }
         } break;
 
         case DRGUI_ARROW_RIGHT:
         {
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_enter_selection_mode(pTB->pTL);
+                drte_engine_enter_selection_mode(pTB->pTL);
             }
 
-            if (drgui_text_engine_is_anything_selected(pTB->pTL) && !drgui_text_engine_is_in_selection_mode(pTB->pTL)) {
-                drgui_text_engine_move_cursor_to_end_of_selection(pTB->pTL);
-                drgui_text_engine_deselect_all(pTB->pTL);
+            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+                drte_engine_move_cursor_to_end_of_selection(pTB->pTL);
+                drte_engine_deselect_all(pTB->pTL);
             } else {
-                drgui_text_engine_move_cursor_right(pTB->pTL);
+                drte_engine_move_cursor_right(pTB->pTL);
             }
 
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_leave_selection_mode(pTB->pTL);
+                drte_engine_leave_selection_mode(pTB->pTL);
             }
         } break;
 
         case DRGUI_ARROW_UP:
         {
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_enter_selection_mode(pTB->pTL);
+                drte_engine_enter_selection_mode(pTB->pTL);
             }
 
-            if (drgui_text_engine_is_anything_selected(pTB->pTL) && !drgui_text_engine_is_in_selection_mode(pTB->pTL)) {
-                drgui_text_engine_deselect_all(pTB->pTL);
+            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+                drte_engine_deselect_all(pTB->pTL);
             }
 
-            drgui_text_engine_move_cursor_up(pTB->pTL);
+            drte_engine_move_cursor_up(pTB->pTL);
 
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_leave_selection_mode(pTB->pTL);
+                drte_engine_leave_selection_mode(pTB->pTL);
             }
         } break;
 
         case DRGUI_ARROW_DOWN:
         {
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_enter_selection_mode(pTB->pTL);
+                drte_engine_enter_selection_mode(pTB->pTL);
             }
 
-            if (drgui_text_engine_is_anything_selected(pTB->pTL) && !drgui_text_engine_is_in_selection_mode(pTB->pTL)) {
-                drgui_text_engine_deselect_all(pTB->pTL);
+            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+                drte_engine_deselect_all(pTB->pTL);
             }
 
-            drgui_text_engine_move_cursor_down(pTB->pTL);
+            drte_engine_move_cursor_down(pTB->pTL);
 
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_leave_selection_mode(pTB->pTL);
+                drte_engine_leave_selection_mode(pTB->pTL);
             }
         } break;
 
@@ -1240,53 +1240,53 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
         case DRGUI_END:
         {
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_enter_selection_mode(pTB->pTL);
+                drte_engine_enter_selection_mode(pTB->pTL);
             }
 
-            if (drgui_text_engine_is_anything_selected(pTB->pTL) && !drgui_text_engine_is_in_selection_mode(pTB->pTL)) {
-                drgui_text_engine_deselect_all(pTB->pTL);
+            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+                drte_engine_deselect_all(pTB->pTL);
             }
 
             if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) != 0) {
-                drgui_text_engine_move_cursor_to_end_of_text(pTB->pTL);
+                drte_engine_move_cursor_to_end_of_text(pTB->pTL);
             } else {
-                drgui_text_engine_move_cursor_to_end_of_line(pTB->pTL);
+                drte_engine_move_cursor_to_end_of_line(pTB->pTL);
             }
 
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_leave_selection_mode(pTB->pTL);
+                drte_engine_leave_selection_mode(pTB->pTL);
             }
         } break;
 
         case DRGUI_HOME:
         {
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_enter_selection_mode(pTB->pTL);
+                drte_engine_enter_selection_mode(pTB->pTL);
             }
 
-            if (drgui_text_engine_is_anything_selected(pTB->pTL) && !drgui_text_engine_is_in_selection_mode(pTB->pTL)) {
-                drgui_text_engine_deselect_all(pTB->pTL);
+            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+                drte_engine_deselect_all(pTB->pTL);
             }
 
             if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) != 0) {
-                drgui_text_engine_move_cursor_to_start_of_text(pTB->pTL);
+                drte_engine_move_cursor_to_start_of_text(pTB->pTL);
             } else {
-                drgui_text_engine_move_cursor_to_start_of_line(pTB->pTL);
+                drte_engine_move_cursor_to_start_of_line(pTB->pTL);
             }
 
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_leave_selection_mode(pTB->pTL);
+                drte_engine_leave_selection_mode(pTB->pTL);
             }
         } break;
 
         case DRGUI_PAGE_UP:
         {
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_enter_selection_mode(pTB->pTL);
+                drte_engine_enter_selection_mode(pTB->pTL);
             }
 
-            if (drgui_text_engine_is_anything_selected(pTB->pTL) && !drgui_text_engine_is_in_selection_mode(pTB->pTL)) {
-                drgui_text_engine_deselect_all(pTB->pTL);
+            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+                drte_engine_deselect_all(pTB->pTL);
             }
 
             int scrollOffset = drgui_sb_get_page_size(pTB->pVertScrollbar);
@@ -1294,25 +1294,25 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
                 drgui_sb_scroll(pTB->pVertScrollbar, -scrollOffset);
             }
 
-            drgui_text_engine_move_cursor_y(pTB->pTL, -drgui_sb_get_page_size(pTB->pVertScrollbar));
+            drte_engine_move_cursor_y(pTB->pTL, -drgui_sb_get_page_size(pTB->pVertScrollbar));
 
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_leave_selection_mode(pTB->pTL);
+                drte_engine_leave_selection_mode(pTB->pTL);
             }
         } break;
 
         case DRGUI_PAGE_DOWN:
         {
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_enter_selection_mode(pTB->pTL);
+                drte_engine_enter_selection_mode(pTB->pTL);
             }
 
-            if (drgui_text_engine_is_anything_selected(pTB->pTL) && !drgui_text_engine_is_in_selection_mode(pTB->pTL)) {
-                drgui_text_engine_deselect_all(pTB->pTL);
+            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+                drte_engine_deselect_all(pTB->pTL);
             }
 
             int scrollOffset = drgui_sb_get_page_size(pTB->pVertScrollbar);
-            if (scrollOffset > (int)(drgui_text_engine_get_line_count(pTB->pTL) - drgui_text_engine_get_cursor_line(pTB->pTL))) {
+            if (scrollOffset > (int)(drte_engine_get_line_count(pTB->pTL) - drte_engine_get_cursor_line(pTB->pTL))) {
                 scrollOffset = 0;
             }
 
@@ -1320,10 +1320,10 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
                 drgui_sb_scroll(pTB->pVertScrollbar, scrollOffset);
             }
 
-            drgui_text_engine_move_cursor_y(pTB->pTL, drgui_sb_get_page_size(pTB->pVertScrollbar));
+            drte_engine_move_cursor_y(pTB->pTL, drgui_sb_get_page_size(pTB->pVertScrollbar));
 
             if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drgui_text_engine_leave_selection_mode(pTB->pTL);
+                drte_engine_leave_selection_mode(pTB->pTL);
             }
         } break;
 
@@ -1347,19 +1347,19 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
         return;
     }
 
-    drgui_text_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTB->pTL);
     {
-        if (drgui_text_engine_is_anything_selected(pTB->pTL)) {
-            drgui_text_engine_delete_selected_text(pTB->pTL);
+        if (drte_engine_is_anything_selected(pTB->pTL)) {
+            drte_engine_delete_selected_text(pTB->pTL);
         }
 
-        drgui_text_engine_insert_character_at_cursor(pTB->pTL, utf32);
+        drte_engine_insert_character_at_cursor(pTB->pTL, utf32);
     }
-    drgui_text_engine_commit_undo_point(pTB->pTL);
+    drte_engine_commit_undo_point(pTB->pTL);
 }
 
 
-void dred_textbox__on_text_engine_paint_rect(drgui_text_engine* pTL, drgui_rect rect, drgui_color color, dred_textbox* pTextBox, void* pPaintData)
+void dred_textbox__on_text_engine_paint_rect(drte_engine* pTL, drgui_rect rect, drgui_color color, dred_textbox* pTextBox, void* pPaintData)
 {
     (void)pTL;
 
@@ -1370,7 +1370,7 @@ void dred_textbox__on_text_engine_paint_rect(drgui_text_engine* pTL, drgui_rect 
     drgui_draw_rect(pTextBox, drgui_offset_rect(rect, offsetX, offsetY), color, pPaintData);
 }
 
-void dred_textbox__on_text_engine_paint_text(drgui_text_engine* pTL, drgui_text_run* pRun, dred_textbox* pTextBox, void* pPaintData)
+void dred_textbox__on_text_engine_paint_text(drte_engine* pTL, drte_text_run* pRun, dred_textbox* pTextBox, void* pPaintData)
 {
     (void)pTL;
 
@@ -1381,9 +1381,9 @@ void dred_textbox__on_text_engine_paint_text(drgui_text_engine* pTL, drgui_text_
     drgui_draw_text(pTextBox, pRun->pFont, pRun->text, (int)pRun->textLength, (float)pRun->posX + offsetX, (float)pRun->posY + offsetY, pRun->textColor, pRun->backgroundColor, pPaintData);
 }
 
-void dred_textbox__on_text_engine_dirty(drgui_text_engine* pTL, drgui_rect rect)
+void dred_textbox__on_text_engine_dirty(drte_engine* pTL, drgui_rect rect)
 {
-    dred_textbox* pTextBox = *(drgui_element**)drgui_text_engine_get_extra_data(pTL);
+    dred_textbox* pTextBox = *(drgui_element**)drte_engine_get_extra_data(pTL);
     if (pTextBox == NULL) {
         return;
     }
@@ -1400,10 +1400,10 @@ void dred_textbox__on_text_engine_dirty(drgui_text_engine* pTL, drgui_rect rect)
     drgui_dirty(pTextBox, drgui_offset_rect(rect, offsetX, offsetY));
 }
 
-void dred_textbox__on_text_engine_cursor_move(drgui_text_engine* pTL)
+void dred_textbox__on_text_engine_cursor_move(drte_engine* pTL)
 {
     // If the cursor is off the edge of the container we want to scroll it into position.
-    dred_textbox* pTextBox = *(drgui_element**)drgui_text_engine_get_extra_data(pTL);
+    dred_textbox* pTextBox = *(drgui_element**)drte_engine_get_extra_data(pTL);
     if (pTextBox == NULL) {
         return;
     }
@@ -1414,7 +1414,7 @@ void dred_textbox__on_text_engine_cursor_move(drgui_text_engine* pTL)
     }
 
     // If the cursor is above or below the container, we need to scroll vertically.
-    int iLine = (int)drgui_text_engine_get_cursor_line(pTB->pTL);
+    int iLine = (int)drte_engine_get_cursor_line(pTB->pTL);
     if (iLine < drgui_sb_get_scroll_position(pTB->pVertScrollbar)) {
         drgui_sb_scroll_to(pTB->pVertScrollbar, iLine);
     }
@@ -1428,13 +1428,13 @@ void dred_textbox__on_text_engine_cursor_move(drgui_text_engine* pTL)
     // If the cursor is to the left or right of the container we need to scroll horizontally.
     float cursorPosX;
     float cursorPosY;
-    drgui_text_engine_get_cursor_position(pTB->pTL, &cursorPosX, &cursorPosY);
+    drte_engine_get_cursor_position(pTB->pTL, &cursorPosX, &cursorPosY);
 
     if (cursorPosX < 0) {
-        drgui_sb_scroll_to(pTB->pHorzScrollbar, (int)(cursorPosX - drgui_text_engine_get_inner_offset_x(pTB->pTL)) - 100);
+        drgui_sb_scroll_to(pTB->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTB->pTL)) - 100);
     }
-    if (cursorPosX >= drgui_text_engine_get_container_width(pTB->pTL)) {
-        drgui_sb_scroll_to(pTB->pHorzScrollbar, (int)(cursorPosX - drgui_text_engine_get_inner_offset_x(pTB->pTL) - drgui_text_engine_get_container_width(pTB->pTL)) + 100);
+    if (cursorPosX >= drte_engine_get_container_width(pTB->pTL)) {
+        drgui_sb_scroll_to(pTB->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTB->pTL) - drte_engine_get_container_width(pTB->pTL)) + 100);
     }
 
 
@@ -1443,9 +1443,9 @@ void dred_textbox__on_text_engine_cursor_move(drgui_text_engine* pTL)
     }
 }
 
-void dred_textbox__on_text_engine_text_changed(drgui_text_engine* pTL)
+void dred_textbox__on_text_engine_text_changed(drte_engine* pTL)
 {
-    dred_textbox* pTextBox = *(drgui_element**)drgui_text_engine_get_extra_data(pTL);
+    dred_textbox* pTextBox = *(drgui_element**)drte_engine_get_extra_data(pTL);
     if (pTextBox == NULL) {
         return;
     }
@@ -1463,9 +1463,9 @@ void dred_textbox__on_text_engine_text_changed(drgui_text_engine* pTL)
     drgui_dirty(pTB->pLineNumbers, drgui_get_local_rect(pTB->pLineNumbers));
 }
 
-void dred_textbox__on_text_engine_undo_point_changed(drgui_text_engine* pTL, unsigned int iUndoPoint)
+void dred_textbox__on_text_engine_undo_point_changed(drte_engine* pTL, unsigned int iUndoPoint)
 {
-    dred_textbox* pTextBox = *(drgui_element**)drgui_text_engine_get_extra_data(pTL);
+    dred_textbox* pTextBox = *(drgui_element**)drte_engine_get_extra_data(pTL);
     if (pTextBox == NULL) {
         return;
     }
@@ -1491,7 +1491,7 @@ void dred_textbox_on_paint(dred_textbox* pTextBox, drgui_rect relativeRect, void
     drgui_rect textRect = dred_textbox__get_text_rect(pTextBox);
 
     // The dead space between the scrollbars should always be drawn with the default background color.
-    drgui_draw_rect(pTextBox, dred_textbox__get_scrollbar_dead_space_rect(pTextBox), drgui_text_engine_get_default_bg_color(pTB->pTL), pPaintData);
+    drgui_draw_rect(pTextBox, dred_textbox__get_scrollbar_dead_space_rect(pTextBox), drte_engine_get_default_bg_color(pTB->pTL), pPaintData);
 
     // Border.
     drgui_rect borderRect = drgui_get_local_rect(pTextBox);
@@ -1499,11 +1499,11 @@ void dred_textbox_on_paint(dred_textbox* pTextBox, drgui_rect relativeRect, void
 
     // Padding.
     drgui_rect paddingRect = drgui_grow_rect(textRect, pTB->padding);
-    drgui_draw_rect_outline(pTextBox, paddingRect, drgui_text_engine_get_default_bg_color(pTB->pTL), pTB->padding, pPaintData);
+    drgui_draw_rect_outline(pTextBox, paddingRect, drte_engine_get_default_bg_color(pTB->pTL), pTB->padding, pPaintData);
 
     // Text.
     drgui_set_clip(pTextBox, drgui_clamp_rect(textRect, relativeRect), pPaintData);
-    drgui_text_engine_paint(pTB->pTL, drgui_offset_rect(drgui_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top), pTextBox, pPaintData);
+    drte_engine_paint(pTB->pTL, drgui_offset_rect(drgui_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top), pTextBox, pPaintData);
 }
 
 void dred_textbox__on_timer(dred_timer* pTimer, void* pUserData)
@@ -1528,7 +1528,7 @@ void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPr
         return;
     }
 
-    drgui_text_engine_show_cursor(pTB->pTL);
+    drte_engine_show_cursor(pTB->pTL);
 
     if (pTB->pTimer == NULL) {
         pTB->pTimer = dred_timer_create(100, dred_textbox__on_timer, pTextBox);
@@ -1544,7 +1544,7 @@ void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, drgui_element* pNe
         return;
     }
 
-    drgui_text_engine_hide_cursor(pTB->pTL);
+    drte_engine_hide_cursor(pTB->pTL);
 
     if (pTB->pTimer != NULL) {
         dred_timer_delete(pTB->pTimer);
@@ -1568,7 +1568,7 @@ void dred_textbox_on_release_mouse(dred_textbox* pTextBox)
         return;
     }
 
-    drgui_text_engine_leave_selection_mode(pTB->pTL);
+    drte_engine_leave_selection_mode(pTB->pTL);
 }
 
 
@@ -1670,8 +1670,8 @@ void dred_textbox__refresh_scrollbar_ranges(dred_textbox* pTextBox)
     assert(pTB != NULL);
 
     // The vertical scrollbar is based on the line count.
-    size_t lineCount = drgui_text_engine_get_line_count(pTB->pTL);
-    size_t pageSize  = drgui_text_engine_get_visible_line_count_starting_at(pTB->pTL, drgui_sb_get_scroll_position(pTB->pVertScrollbar));
+    size_t lineCount = drte_engine_get_line_count(pTB->pTL);
+    size_t pageSize  = drte_engine_get_visible_line_count_starting_at(pTB->pTL, drgui_sb_get_scroll_position(pTB->pVertScrollbar));
     drgui_sb_set_range_and_page_size(pTB->pVertScrollbar, 0, (int)(lineCount + pageSize - 1 - 1), (int)pageSize);     // -1 to make the range 0 based. -1 to ensure at least one line is visible.
 
     if (drgui_sb_is_thumb_visible(pTB->pVertScrollbar)) {
@@ -1686,9 +1686,9 @@ void dred_textbox__refresh_scrollbar_ranges(dred_textbox* pTextBox)
 
 
     // The horizontal scrollbar is a per-pixel scrollbar, and is based on the width of the text versus the width of the container.
-    drgui_rect textRect = drgui_text_engine_get_text_rect_relative_to_bounds(pTB->pTL);
+    drgui_rect textRect = drte_engine_get_text_rect_relative_to_bounds(pTB->pTL);
     float containerWidth;
-    drgui_text_engine_get_container_size(pTB->pTL, &containerWidth, NULL);
+    drte_engine_get_container_size(pTB->pTL, &containerWidth, NULL);
     drgui_sb_set_range_and_page_size(pTB->pHorzScrollbar, 0, (int)(textRect.right - textRect.left + (containerWidth/2)), (int)containerWidth);
 
     if (drgui_sb_is_thumb_visible(pTB->pHorzScrollbar)) {
@@ -1764,16 +1764,16 @@ void dred_textbox__on_mouse_move_line_numbers(drgui_element* pLineNumbers, int r
         if (drgui_get_element_with_mouse_capture(pLineNumbers->pContext) == pLineNumbers)
         {
             // We just move the cursor around based on the line number we've moved over.
-            drgui_text_engine_enter_selection_mode(pTB->pTL);
+            drte_engine_enter_selection_mode(pTB->pTL);
             {
                 //float offsetX = pTextEditorData->padding;
                 float offsetY = pTB->padding;
-                size_t iLine = drgui_text_engine_get_line_at_pos_y(pTB->pTL, relativeMousePosY - offsetY);
+                size_t iLine = drte_engine_get_line_at_pos_y(pTB->pTL, relativeMousePosY - offsetY);
                 size_t iAnchorLine = pTB->iLineSelectAnchor;
-                size_t lineCount = drgui_text_engine_get_line_count(pTB->pTL);
+                size_t lineCount = drte_engine_get_line_count(pTB->pTL);
 
-                size_t iSelectionFirstLine = drgui_text_engine_get_selection_first_line(pTB->pTL);
-                size_t iSelectionLastLine = drgui_text_engine_get_selection_last_line(pTB->pTL);
+                size_t iSelectionFirstLine = drte_engine_get_selection_first_line(pTB->pTL);
+                size_t iSelectionLastLine = drte_engine_get_selection_last_line(pTB->pTL);
                 if (iSelectionLastLine != iSelectionFirstLine) {
                     iSelectionLastLine -= 1;
                 }
@@ -1789,28 +1789,28 @@ void dred_textbox__on_mouse_move_line_numbers(drgui_element* pLineNumbers, int r
                 // of the first line.
                 if (movingUp) {
                     if (iAnchorLine + 1 < lineCount) {
-                        drgui_text_engine_move_selection_anchor_to_start_of_line(pTB->pTL, iAnchorLine + 1);
+                        drte_engine_move_selection_anchor_to_start_of_line(pTB->pTL, iAnchorLine + 1);
                     } else {
-                        drgui_text_engine_move_selection_anchor_to_end_of_line(pTB->pTL, iAnchorLine);
+                        drte_engine_move_selection_anchor_to_end_of_line(pTB->pTL, iAnchorLine);
                     }
                 } else {
-                    drgui_text_engine_move_selection_anchor_to_start_of_line(pTB->pTL, iAnchorLine);
+                    drte_engine_move_selection_anchor_to_start_of_line(pTB->pTL, iAnchorLine);
                 }
 
 
                 // If we're moving up we want the cursor to be placed at the start of the selection range. Otherwise we want to place the cursor
                 // at the end of the selection range.
                 if (movingUp) {
-                    drgui_text_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, iLine);
+                    drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, iLine);
                 } else {
                     if (iLine + 1 < lineCount) {
-                        drgui_text_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, iLine + 1);
+                        drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, iLine + 1);
                     } else {
-                        drgui_text_engine_move_cursor_to_end_of_line_by_index(pTB->pTL, iLine);
+                        drte_engine_move_cursor_to_end_of_line_by_index(pTB->pTL, iLine);
                     }
                 }
             }
-            drgui_text_engine_leave_selection_mode(pTB->pTL);
+            drte_engine_leave_selection_mode(pTB->pTL);
         }
     }
 }
@@ -1830,21 +1830,21 @@ void dred_textbox__on_mouse_button_down_line_numbers(drgui_element* pLineNumbers
     {
         //float offsetX = pTextEditorData->padding;
         float offsetY = pTB->padding;
-        pTB->iLineSelectAnchor = drgui_text_engine_get_line_at_pos_y(pTB->pTL, relativeMousePosY - offsetY);
+        pTB->iLineSelectAnchor = drte_engine_get_line_at_pos_y(pTB->pTL, relativeMousePosY - offsetY);
 
-        drgui_text_engine_deselect_all(pTB->pTL);
+        drte_engine_deselect_all(pTB->pTL);
 
-        drgui_text_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, pTB->iLineSelectAnchor);
+        drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, pTB->iLineSelectAnchor);
 
-        drgui_text_engine_enter_selection_mode(pTB->pTL);
+        drte_engine_enter_selection_mode(pTB->pTL);
         {
-            if (pTB->iLineSelectAnchor + 1 < drgui_text_engine_get_line_count(pTB->pTL)) {
-                drgui_text_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, pTB->iLineSelectAnchor + 1);
+            if (pTB->iLineSelectAnchor + 1 < drte_engine_get_line_count(pTB->pTL)) {
+                drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, pTB->iLineSelectAnchor + 1);
             } else {
-                drgui_text_engine_move_cursor_to_end_of_line(pTB->pTL);
+                drte_engine_move_cursor_to_end_of_line(pTB->pTL);
             }
         }
-        drgui_text_engine_leave_selection_mode(pTB->pTL);
+        drte_engine_leave_selection_mode(pTB->pTL);
 
         drgui_capture_mouse(pLineNumbers);
     }
@@ -1863,7 +1863,7 @@ void dred_textbox__on_mouse_button_up_line_numbers(drgui_element* pLineNumbers, 
     }
 }
 
-void dred_textbox__on_paint_rect_line_numbers(drgui_text_engine* pLayout, drgui_rect rect, drgui_color color, dred_textbox* pTextBox, void* pPaintData)
+void dred_textbox__on_paint_rect_line_numbers(drte_engine* pLayout, drgui_rect rect, drgui_color color, dred_textbox* pTextBox, void* pPaintData)
 {
     (void)pLayout;
 
@@ -1876,7 +1876,7 @@ void dred_textbox__on_paint_rect_line_numbers(drgui_text_engine* pLayout, drgui_
     drgui_draw_rect(pTB->pLineNumbers, drgui_offset_rect(rect, offsetX, offsetY), color, pPaintData);
 }
 
-void dred_textbox__on_paint_text_line_numbers(drgui_text_engine* pLayout, drgui_text_run* pRun, dred_textbox* pTextBox, void* pPaintData)
+void dred_textbox__on_paint_text_line_numbers(drte_engine* pLayout, drte_text_run* pRun, dred_textbox* pTextBox, void* pPaintData)
 {
     (void)pLayout;
 
@@ -1901,7 +1901,7 @@ void dred_textbox__on_paint_line_numbers(drgui_element* pLineNumbers, drgui_rect
     float lineNumbersWidth  = drgui_get_width(pLineNumbers) - (pTB->padding*2) - pTB->lineNumbersPaddingRight;
     float lineNumbersHeight = drgui_get_height(pLineNumbers) - (pTB->padding*2);
 
-    drgui_text_engine_paint_line_numbers(pTB->pTL, lineNumbersWidth, lineNumbersHeight, pTB->lineNumbersColor, pTB->lineNumbersBackgroundColor, dred_textbox__on_paint_text_line_numbers, dred_textbox__on_paint_rect_line_numbers, pTextBox, pPaintData);
+    drte_engine_paint_line_numbers(pTB->pTL, lineNumbersWidth, lineNumbersHeight, pTB->lineNumbersColor, pTB->lineNumbersBackgroundColor, dred_textbox__on_paint_text_line_numbers, dred_textbox__on_paint_rect_line_numbers, pTextBox, pPaintData);
 
     drgui_draw_rect_outline(pLineNumbers, drgui_get_local_rect(pLineNumbers), pTB->lineNumbersBackgroundColor, pTB->padding, pPaintData);
 
@@ -1930,7 +1930,7 @@ void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox)
     float textEditorWidth;
     float textEditorHeight;
     dred_textbox__calculate_text_engine_container_size(pTextBox, &textEditorWidth, &textEditorHeight);
-    drgui_text_engine_set_container_size(pTB->pTL, textEditorWidth, textEditorHeight);
+    drte_engine_set_container_size(pTB->pTL, textEditorWidth, textEditorHeight);
 
 
     // Force a redraw just to be sure everything is in a valid state.
