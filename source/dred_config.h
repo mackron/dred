@@ -121,6 +121,10 @@ typedef struct
     // The main context that owns this config. This is set to the context that initialized the config object.
     dred_context* pDred;
 
+    // System fonts.
+    dred_font* pSystemFontUI;
+    dred_font* pSystemFontMono;
+
     // Recent files.
     char* recentFiles[DRED_MAX_RECENT_FILES];
     size_t recentFileCount;

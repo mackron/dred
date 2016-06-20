@@ -47,6 +47,46 @@ drgui_font_weight dred_parse_font_weight(const char* weight)
     return drgui_font_weight_normal;
 }
 
+bool dred_font_weight_to_string(drgui_font_weight weight, char* strOut, size_t strOutSize)
+{
+    if (weight == drgui_font_weight_normal/* || weight == drgui_font_weight_medium || weight == drgui_font_weight_default*/) {
+        return strcpy_s(strOut, strOutSize, "default") == 0;
+    }
+    if (weight == drgui_font_weight_thin) {
+        return strcpy_s(strOut, strOutSize, "thin") == 0;
+    }
+    if (weight == drgui_font_weight_extra_light) {
+        return strcpy_s(strOut, strOutSize, "extra-light") == 0;
+    }
+    if (weight == drgui_font_weight_light) {
+        return strcpy_s(strOut, strOutSize, "light") == 0;
+    }
+    if (weight == drgui_font_weight_semi_light) {
+        return strcpy_s(strOut, strOutSize, "semi-light") == 0;
+    }
+    if (weight == drgui_font_weight_book) {
+        return strcpy_s(strOut, strOutSize, "book") == 0;
+    }
+    if (weight == drgui_font_weight_semi_bold) {
+        return strcpy_s(strOut, strOutSize, "semi-bold") == 0;
+    }
+    if (weight == drgui_font_weight_bold) {
+        return strcpy_s(strOut, strOutSize, "bold") == 0;
+    }
+    if (weight == drgui_font_weight_extra_bold) {
+        return strcpy_s(strOut, strOutSize, "extra-bold") == 0;
+    }
+    if (weight == drgui_font_weight_heavy) {
+        return strcpy_s(strOut, strOutSize, "heavy") == 0;
+    }
+    if (weight == drgui_font_weight_extra_heavy) {
+        return strcpy_s(strOut, strOutSize, "extra-heavy") == 0;
+    }
+
+    return false;
+}
+
+
 drgui_font_slant dred_parse_font_slant(const char* slant)
 {
     if (strcmp(slant, "none") == 0 || strcmp(slant, "default") == 0) {
@@ -61,6 +101,22 @@ drgui_font_slant dred_parse_font_slant(const char* slant)
 
     return drgui_font_slant_none;
 }
+
+bool dred_font_slant_to_string(drgui_font_slant slant, char* strOut, size_t strOutSize)
+{
+    if (slant == drgui_font_slant_none) {
+        return strcpy_s(strOut, strOutSize, "none") == 0;
+    }
+    if (slant == drgui_font_slant_italic) {
+        return strcpy_s(strOut, strOutSize, "italic") == 0;
+    }
+    if (slant == drgui_font_slant_oblique) {
+        return strcpy_s(strOut, strOutSize, "oblique") == 0;
+    }
+
+    return false;
+}
+
 
 #ifdef DRED_GTK
 drgui_font_weight dred_font_weight_from_pango(PangoWeight weight)
