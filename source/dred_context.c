@@ -154,12 +154,15 @@ void dred_window_cb__on_main_window_size(drgui_element* pElement, float width, f
 
     dred__update_main_window_layout(pWindow, width, height);
 
+
+    // The config needs to be updated so that it's settings are serialized.
     unsigned int windowWidth;
     unsigned int windowHeight;
     dred_window_get_size(pWindow, &windowWidth, &windowHeight);
 
     pWindow->pDred->config.windowWidth = windowWidth;
     pWindow->pDred->config.windowHeight = windowHeight;
+    pWindow->pDred->config.windowMaximized = dred_window_is_maximized(pWindow);
 }
 
 
@@ -302,6 +305,10 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
     // The main window.
+    unsigned int windowWidth =  (unsigned int)(pDred->config.windowWidth*pDred->dpiScale);
+    unsigned int windowHeight = (unsigned int)(pDred->config.windowHeight*pDred->dpiScale);
+    bool showWindowMaximized = pDred->config.windowMaximized;
+
     pDred->pMainWindow = dred_window_create(pDred);
     if (pDred->pMainWindow == NULL) {
         printf("Failed to create main window.");
@@ -348,8 +355,8 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     // keyboard focus.
     dred_window_set_title(pDred->pMainWindow, "dred");
     dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_Default);
-    dred_window_set_size(pDred->pMainWindow, (unsigned int)(pDred->config.windowWidth*pDred->dpiScale), (unsigned int)(pDred->config.windowHeight*pDred->dpiScale));
-    if (pDred->config.windowMaximized) {
+    dred_window_set_size(pDred->pMainWindow, windowWidth, windowHeight);
+    if (showWindowMaximized) {
         dred_window_show_maximized(pDred->pMainWindow);
     } else {
         dred_window_show(pDred->pMainWindow);
@@ -357,6 +364,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     if (!pDred->config.showMenuBar) {
         dred_window_hide_menu(pDred->pMainWindow);
     }
+
 
 
     // Load initial files from the command line.
