@@ -78,6 +78,17 @@ void dred_command__bind(dred_context* pDred, const char* value)
     }
 }
 
+void dred_command__set(dred_context* pDred, const char* value)
+{
+    char name[256];
+    value = dr_next_token(value, name, sizeof(name));
+    if (value == NULL) {
+        return;
+    }
+
+    dred_config_set(&pDred->config, name, dr_ltrim(value));
+}
+
 
 void dred_command__show_menu_bar(dred_context* pDred, const char* value)
 {
