@@ -762,11 +762,6 @@ const char* dred_get_editor_type_by_path(const char* filePath)
         return DRED_CONTROL_TYPE_IMAGE_EDITOR;
     }
 
-    // Settings
-    if (drpath_extension_equal(filePath, "dred")) {
-        return DRED_CONTROL_TYPE_SETTINGS_EDITOR;
-    }
-
     return NULL;
 }
 
