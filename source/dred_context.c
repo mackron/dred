@@ -1442,18 +1442,39 @@ void dred_update_info_bar(dred_context* pDred, dred_control* pControl)
 }
 
 
-void dred_hide_tabbars(dred_context* pDred)
+void dred_show_menu_bar(dred_context* pDred)
 {
     if (pDred == NULL) {
         return;
     }
 
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-        dred_tabgroup_hide_tabbar(pTabGroup);
+    dred_window_show_menu(pDred->pMainWindow);
+    pDred->config.showMenuBar = true;
+}
+
+void dred_hide_menu_bar(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
     }
 
-    pDred->config.showTabBar = false;
+    dred_window_hide_menu(pDred->pMainWindow);
+    pDred->config.showMenuBar = false;
 }
+
+void dred_toggle_menu_bar(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    if (pDred->config.showMenuBar) {
+        dred_hide_menu_bar(pDred);
+    } else {
+        dred_show_menu_bar(pDred);
+    }
+}
+
 
 void dred_show_tabbars(dred_context* pDred)
 {
@@ -1466,6 +1487,19 @@ void dred_show_tabbars(dred_context* pDred)
     }
 
     pDred->config.showTabBar = true;
+}
+
+void dred_hide_tabbars(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        dred_tabgroup_hide_tabbar(pTabGroup);
+    }
+
+    pDred->config.showTabBar = false;
 }
 
 void dred_toggle_tabbars(dred_context* pDred)

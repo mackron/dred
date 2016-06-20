@@ -9,9 +9,9 @@
 // show-menu-bar            dred_command__show_menu_bar             DRED_CMDBAR_RELEASE_KEYBOARD
 // hide-menu-bar            dred_command__hide_menu_bar             DRED_CMDBAR_RELEASE_KEYBOARD
 // toggle-menu-bar          dred_command__toggle_menu_bar           DRED_CMDBAR_RELEASE_KEYBOARD
-// show-tabbars             dred_command__show_tabbars              DRED_CMDBAR_RELEASE_KEYBOARD
-// hide-tabbars             dred_command__hide_tabbars              DRED_CMDBAR_RELEASE_KEYBOARD
-// toggle-tabbars           dred_command__toggle_tabbars            DRED_CMDBAR_RELEASE_KEYBOARD
+// show-tab-bar             dred_command__show_tab_bar              DRED_CMDBAR_RELEASE_KEYBOARD
+// hide-tab-bar             dred_command__hide_tab_bar              DRED_CMDBAR_RELEASE_KEYBOARD
+// toggle-tab-bar           dred_command__toggle_tab_bar            DRED_CMDBAR_RELEASE_KEYBOARD
 // enable-auto-hide-cmdbar  dred_command__enable_auto_hide_cmdbar   DRED_CMDBAR_RELEASE_KEYBOARD
 // disable-auto-hide-cmdbar dred_command__disable_auto_hide_cmdbar  DRED_CMDBAR_RELEASE_KEYBOARD
 // toggle-auto-hide-cmdbar  dred_command__toggle_auto_hide_cmdbar   DRED_CMDBAR_RELEASE_KEYBOARD
@@ -88,15 +88,15 @@ void dred_command__toggle_menu_bar(dred_context* pDred, const char* value);
 
 
 // show-tabbars
-void dred_command__show_tabbars(dred_context* pDred, const char* value);
+void dred_command__show_tab_bar(dred_context* pDred, const char* value);
 
 // hide-tabbars
-void dred_command__hide_tabbars(dred_context* pDred, const char* value);
+void dred_command__hide_tab_bar(dred_context* pDred, const char* value);
 
 // toggle-tabbars
 //
 // Toggles the visibility of the tab bars on each tab group.
-void dred_command__toggle_tabbars(dred_context* pDred, const char* value);
+void dred_command__toggle_tab_bar(dred_context* pDred, const char* value);
 
 
 // enable-auto-hide-cmdbar

@@ -1173,11 +1173,7 @@ void dred_textbox_on_mouse_button_dblclick(dred_textbox* pTextBox, int mouseButt
             drte_engine_leave_selection_mode(pTB->pTL);
             drte_engine_deselect_all(pTB->pTL);
 
-            drte_engine_move_cursor_to_start_of_word(pTB->pTL);
-
-            drte_engine_enter_selection_mode(pTB->pTL);
-            drte_engine_move_cursor_to_end_of_word(pTB->pTL);
-            drte_engine_leave_selection_mode(pTB->pTL);
+            drte_engine_select_word_under_cursor(pTB->pTL);
         }
     }
 }

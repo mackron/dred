@@ -247,11 +247,21 @@ void dred_unfocus_command_bar(dred_context* pDred);
 void dred_update_info_bar(dred_context* pDred, dred_control* pControl);
 
 
-// Hides the tab bars on tab groups.
-void dred_hide_tabbars(dred_context* pDred);
+// Shows the menu bar.
+void dred_show_menu_bar(dred_context* pDred);
+
+// Hides the menu bar.
+void dred_hide_menu_bar(dred_context* pDred);
+
+// Toggles the menu bar.
+void dred_toggle_menu_bar(dred_context* pDred);
+
 
 // Shows the tab bars on tab groups.
 void dred_show_tabbars(dred_context* pDred);
+
+// Hides the tab bars on tab groups.
+void dred_hide_tabbars(dred_context* pDred);
 
 // Toggles the tab bars on tab groups.
 void dred_toggle_tabbars(dred_context* pDred);

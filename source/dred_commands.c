@@ -82,40 +82,35 @@ void dred_command__bind(dred_context* pDred, const char* value)
 void dred_command__show_menu_bar(dred_context* pDred, const char* value)
 {
     (void)value;
-    dred_window_show_menu(pDred->pMainWindow);
+    dred_show_menu_bar(pDred);
 }
 
 void dred_command__hide_menu_bar(dred_context* pDred, const char* value)
 {
     (void)value;
-    dred_window_hide_menu(pDred->pMainWindow);
+    dred_hide_menu_bar(pDred);
 }
 
 void dred_command__toggle_menu_bar(dred_context* pDred, const char* value)
 {
     (void)value;
-
-    if (dred_window_is_showing_menu(pDred->pMainWindow)) {
-        dred_window_hide_menu(pDred->pMainWindow);
-    } else {
-        dred_window_show_menu(pDred->pMainWindow);
-    }
+    dred_toggle_menu_bar(pDred);
 }
 
 
-void dred_command__show_tabbars(dred_context* pDred, const char* value)
+void dred_command__show_tab_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_show_tabbars(pDred);
 }
 
-void dred_command__hide_tabbars(dred_context* pDred, const char* value)
+void dred_command__hide_tab_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_hide_tabbars(pDred);
 }
 
-void dred_command__toggle_tabbars(dred_context* pDred, const char* value)
+void dred_command__toggle_tab_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_toggle_tabbars(pDred);

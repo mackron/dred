@@ -11,9 +11,9 @@ const char g_CommandNamePool[] =
     "show-menu-bar\0"
     "hide-menu-bar\0"
     "toggle-menu-bar\0"
-    "show-tabbars\0"
-    "hide-tabbars\0"
-    "toggle-tabbars\0"
+    "show-tab-bar\0"
+    "hide-tab-bar\0"
+    "toggle-tab-bar\0"
     "enable-auto-hide-cmdbar\0"
     "disable-auto-hide-cmdbar\0"
     "toggle-auto-hide-cmdbar\0"
@@ -96,9 +96,9 @@ dred_command g_Commands[] = {
     {dred_command__show_menu_bar, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__hide_menu_bar, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__toggle_menu_bar, DRED_CMDBAR_RELEASE_KEYBOARD},
-    {dred_command__show_tabbars, DRED_CMDBAR_RELEASE_KEYBOARD},
-    {dred_command__hide_tabbars, DRED_CMDBAR_RELEASE_KEYBOARD},
-    {dred_command__toggle_tabbars, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__show_tab_bar, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__hide_tab_bar, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__toggle_tab_bar, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__enable_auto_hide_cmdbar, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__disable_auto_hide_cmdbar, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__toggle_auto_hide_cmdbar, DRED_CMDBAR_RELEASE_KEYBOARD},
