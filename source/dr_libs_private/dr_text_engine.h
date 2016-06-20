@@ -138,19 +138,233 @@ typedef void (* drte_engine_on_dirty_proc)             (drte_engine* pEngine, dr
 typedef void (* drte_engine_on_text_changed_proc)      (drte_engine* pEngine);
 typedef void (* drte_engine_on_undo_point_changed_proc)(drte_engine* pEngine, unsigned int iUndoPoint);
 
+typedef struct
+{
+    /// The index of the run within the line the marker is positioned on.
+    size_t iRun;
+
+    /// The index of the character within the run the marker is positioned to the left of.
+    size_t iChar;
+
+    /// The position on the x axis, relative to the x position of the run.
+    float relativePosX;
+
+    /// The absolute position on the x axis to place the marker when moving up and down lines. Note that this is not relative
+    /// to the run, but rather the line. This will be updated when the marker is moved left and right.
+    float absoluteSickyPosX;
+
+} drte_marker;
+
+/// Keeps track of the current state of the text engine. Used for calculating the difference between two states for undo/redo.
+typedef struct
+{
+    /// The text. Can be null in some cases where it isn't used.
+    char* text;
+
+    /// The index of the character the cursor is positioned at.
+    size_t cursorPos;
+
+    /// The index of the character the selection anchor is positioned at.
+    size_t selectionAnchorPos;
+
+    /// Whether or not anything is selected.
+    bool isAnythingSelected;
+
+} drte_engine_state;
+
+typedef struct
+{
+    /// The position in the main string where the change is located. The length of the relevant string is used to determines how
+    /// large of a chunk of text needs to be replaced.
+    size_t diffPos;
+
+    /// The string that was replaced. On undo, this will be inserted into the text engine. Can be empty, in which case this state
+    /// object was created in response to an insert operation.
+    char* oldText;
+
+    /// The string that replaces the old text. On redo, this will be inserted into the text engine. This can be empty, in which case
+    /// this state object was created in response to a delete operation.
+    char* newText;
+
+    /// The state of the text engine at the time the undo point was prepared, not including the text. The <text> attribute
+    /// of this object is always null.
+    drte_engine_state oldState;
+
+    /// The state of the text engine at the time the undo point was committed, not including the text. The <text> attribute
+    /// of this object is always null.
+    drte_engine_state newState;
+
+} drte_engine_undo_state;
+
+struct drte_engine
+{
+    /// The main text of the layout.
+    char* text;
+
+    /// The length of the text.
+    size_t textLength;
+
+
+    /// The function to call when the text engine needs to be redrawn.
+    drte_engine_on_dirty_proc onDirty;
+
+    /// The function to call when the content of the text engine changes.
+    drte_engine_on_text_changed_proc onTextChanged;
+
+    /// The function to call when the current undo point has changed.
+    drte_engine_on_undo_point_changed_proc onUndoPointChanged;
+
+
+    /// The width of the container.
+    float containerWidth;
+
+    /// The height of the container.
+    float containerHeight;
+
+    /// The inner offset of the container.
+    float innerOffsetX;
+
+    /// The inner offset of the container.
+    float innerOffsetY;
+
+
+    /// The default font.
+    drgui_font* pDefaultFont;
+
+    /// The default text color.
+    drgui_color defaultTextColor;
+
+    /// The default background color.
+    drgui_color defaultBackgroundColor;
+
+    /// The background color to use for selected text.
+    drgui_color selectionBackgroundColor;
+
+    /// The background color to use for the line the cursor is currently sitting on.
+    drgui_color lineBackgroundColor;
+
+    /// The size of a tab in spaces.
+    unsigned int tabSizeInSpaces;
+
+    /// The horizontal alignment.
+    drte_alignment horzAlign;
+
+    /// The vertical alignment.
+    drte_alignment vertAlign;
+
+    /// The width of the text cursor.
+    float cursorWidth;
+
+    /// The color of the text cursor.
+    drgui_color cursorColor;
+
+    /// The blink rate in milliseconds of the cursor.
+    unsigned int cursorBlinkRate;
+
+    /// The amount of time in milliseconds to toggle the cursor's blink state.
+    unsigned int timeToNextCursorBlink;
+
+    /// Whether or not the cursor is showing based on it's blinking state.
+    bool isCursorBlinkOn;
+
+    /// Whether or not the cursor is being shown. False by default.
+    bool isShowingCursor;
+
+
+    /// The total width of the text.
+    float textBoundsWidth;
+
+    /// The total height of the text.
+    float textBoundsHeight;
+
+
+    /// The cursor.
+    drte_marker cursor;
+
+    /// The selection anchor.
+    drte_marker selectionAnchor;
+
+
+    /// The selection mode counter. When this is greater than 0 we are in selection mode, otherwise we are not. This
+    /// is incremented by enter_selection_mode() and decremented by leave_selection_mode().
+    unsigned int selectionModeCounter;
+
+    /// Whether or not anything is selected.
+    bool isAnythingSelected;
+
+
+    /// The function to call when a text run needs to be painted.
+    drte_engine_on_paint_text_proc onPaintText;
+
+    /// The function to call when a rectangle needs to be painted.
+    drte_engine_on_paint_rect_proc onPaintRect;
+
+    /// The function to call when the cursor moves.
+    drte_engine_on_cursor_move_proc onCursorMove;
+
+
+    /// The prepared undo/redo state. This will be filled with some state by PrepareUndoRedoPoint() and again with CreateUndoRedoPoint().
+    drte_engine_state preparedState;
+
+    /// The undo/redo stack.
+    drte_engine_undo_state* pUndoStack;
+
+    /// The number of items in the undo/redo stack.
+    unsigned int undoStackCount;
+
+    /// The index of the undo/redo state item we are currently sitting on.
+    unsigned int iUndoState;
+
+
+    /// The counter used to determine when an onDirty event needs to be posted.
+    unsigned int dirtyCounter;
+
+    /// The accumulated dirty rectangle. When dirtyCounter hits 0, this is the rectangle that's posted to the onDirty callback.
+    drgui_rect accumulatedDirtyRect;
+
+
+    /// A pointer to the buffer containing details about every run in the layout.
+    drte_text_run* pRuns;
+
+    /// The number of runs in <pRuns>.
+    size_t runCount;
+
+    /// The size of the <pRuns> buffer in drte_text_run's. This is used to determine whether or not the buffer
+    /// needs to be reallocated upon adding a new run.
+    size_t runBufferSize;
+
+
+    // Application-defined data.
+    void* pUserData;
+};
+
+/// Structure containing information about a line. This is used by first_line() and next_line().
+typedef struct
+{
+    /// The index of the line.
+    size_t index;
+
+    /// The position of the line on the y axis.
+    float posY;
+
+    /// The height of the line.
+    float height;
+
+    /// The index of the first run on the line.
+    size_t iFirstRun;
+
+    /// The index of the last run on the line.
+    size_t iLastRun;
+
+} drte_engine_line;
+
+
 
 /// Creates a new text engine object.
-drte_engine* drte_engine_create(drgui_context* pContext, size_t extraDataSize, void* pExtraData);
+drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData);
 
 /// Deletes the given text engine.
 void drte_engine_delete(drte_engine* pEngine);
-
-
-/// Retrieves the size of the extra data associated with the given text engine.
-size_t drte_engine_get_extra_data_size(drte_engine* pEngine);
-
-/// Retrieves a pointer to the extra data associated with the given text engine.
-void* drte_engine_get_extra_data(drte_engine* pEngine);
 
 
 /// Sets the given text engine's text.
@@ -348,6 +562,9 @@ void drte_engine_move_cursor_to_end_of_selection(drte_engine* pEngine);
 
 /// Moves the cursor to the given character index.
 void drte_engine_move_cursor_to_character(drte_engine* pEngine, size_t characterIndex);
+
+/// Retrieves the number of characters between the cursor and the next tab column.
+size_t drte_engine_get_spaces_to_next_colum_from_cursor(drte_engine* pEngine);
 
 /// Determines whether or not the cursor is sitting at the start of the selection.
 bool drte_engine_is_cursor_at_start_of_selection(drte_engine* pEngine);
@@ -562,228 +779,6 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 //
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DR_TEXT_ENGINE_IMPLEMENTATION
-typedef struct
-{
-    /// The index of the run within the line the marker is positioned on.
-    size_t iRun;
-
-    /// The index of the character within the run the marker is positioned to the left of.
-    size_t iChar;
-
-    /// The position on the x axis, relative to the x position of the run.
-    float relativePosX;
-
-    /// The absolute position on the x axis to place the marker when moving up and down lines. Note that this is not relative
-    /// to the run, but rather the line. This will be updated when the marker is moved left and right.
-    float absoluteSickyPosX;
-
-} drte_marker;
-
-/// Keeps track of the current state of the text engine. Used for calculating the difference between two states for undo/redo.
-typedef struct
-{
-    /// The text. Can be null in some cases where it isn't used.
-    char* text;
-
-    /// The index of the character the cursor is positioned at.
-    size_t cursorPos;
-
-    /// The index of the character the selection anchor is positioned at.
-    size_t selectionAnchorPos;
-
-    /// Whether or not anything is selected.
-    bool isAnythingSelected;
-
-} drte_engine_state;
-
-typedef struct
-{
-    /// The position in the main string where the change is located. The length of the relevant string is used to determines how
-    /// large of a chunk of text needs to be replaced.
-    size_t diffPos;
-
-    /// The string that was replaced. On undo, this will be inserted into the text engine. Can be empty, in which case this state
-    /// object was created in response to an insert operation.
-    char* oldText;
-
-    /// The string that replaces the old text. On redo, this will be inserted into the text engine. This can be empty, in which case
-    /// this state object was created in response to a delete operation.
-    char* newText;
-
-    /// The state of the text engine at the time the undo point was prepared, not including the text. The <text> attribute
-    /// of this object is always null.
-    drte_engine_state oldState;
-
-    /// The state of the text engine at the time the undo point was committed, not including the text. The <text> attribute
-    /// of this object is always null.
-    drte_engine_state newState;
-
-} drte_engine_undo_state;
-
-struct drte_engine
-{
-    /// The main text of the layout.
-    char* text;
-
-    /// The length of the text.
-    size_t textLength;
-
-
-    /// The function to call when the text engine needs to be redrawn.
-    drte_engine_on_dirty_proc onDirty;
-
-    /// The function to call when the content of the text engine changes.
-    drte_engine_on_text_changed_proc onTextChanged;
-
-    /// The function to call when the current undo point has changed.
-    drte_engine_on_undo_point_changed_proc onUndoPointChanged;
-
-
-    /// The width of the container.
-    float containerWidth;
-
-    /// The height of the container.
-    float containerHeight;
-
-    /// The inner offset of the container.
-    float innerOffsetX;
-
-    /// The inner offset of the container.
-    float innerOffsetY;
-
-
-    /// The default font.
-    drgui_font* pDefaultFont;
-
-    /// The default text color.
-    drgui_color defaultTextColor;
-
-    /// The default background color.
-    drgui_color defaultBackgroundColor;
-
-    /// The background color to use for selected text.
-    drgui_color selectionBackgroundColor;
-
-    /// The background color to use for the line the cursor is currently sitting on.
-    drgui_color lineBackgroundColor;
-
-    /// The size of a tab in spaces.
-    unsigned int tabSizeInSpaces;
-
-    /// The horizontal alignment.
-    drte_alignment horzAlign;
-
-    /// The vertical alignment.
-    drte_alignment vertAlign;
-
-    /// The width of the text cursor.
-    float cursorWidth;
-
-    /// The color of the text cursor.
-    drgui_color cursorColor;
-
-    /// The blink rate in milliseconds of the cursor.
-    unsigned int cursorBlinkRate;
-
-    /// The amount of time in milliseconds to toggle the cursor's blink state.
-    unsigned int timeToNextCursorBlink;
-
-    /// Whether or not the cursor is showing based on it's blinking state.
-    bool isCursorBlinkOn;
-
-    /// Whether or not the cursor is being shown. False by default.
-    bool isShowingCursor;
-
-
-    /// The total width of the text.
-    float textBoundsWidth;
-
-    /// The total height of the text.
-    float textBoundsHeight;
-
-
-    /// The cursor.
-    drte_marker cursor;
-
-    /// The selection anchor.
-    drte_marker selectionAnchor;
-
-
-    /// The selection mode counter. When this is greater than 0 we are in selection mode, otherwise we are not. This
-    /// is incremented by enter_selection_mode() and decremented by leave_selection_mode().
-    unsigned int selectionModeCounter;
-
-    /// Whether or not anything is selected.
-    bool isAnythingSelected;
-
-
-    /// The function to call when a text run needs to be painted.
-    drte_engine_on_paint_text_proc onPaintText;
-
-    /// The function to call when a rectangle needs to be painted.
-    drte_engine_on_paint_rect_proc onPaintRect;
-
-    /// The function to call when the cursor moves.
-    drte_engine_on_cursor_move_proc onCursorMove;
-
-
-    /// The prepared undo/redo state. This will be filled with some state by PrepareUndoRedoPoint() and again with CreateUndoRedoPoint().
-    drte_engine_state preparedState;
-
-    /// The undo/redo stack.
-    drte_engine_undo_state* pUndoStack;
-
-    /// The number of items in the undo/redo stack.
-    unsigned int undoStackCount;
-
-    /// The index of the undo/redo state item we are currently sitting on.
-    unsigned int iUndoState;
-
-
-    /// The counter used to determine when an onDirty event needs to be posted.
-    unsigned int dirtyCounter;
-
-    /// The accumulated dirty rectangle. When dirtyCounter hits 0, this is the rectangle that's posted to the onDirty callback.
-    drgui_rect accumulatedDirtyRect;
-
-
-    /// A pointer to the buffer containing details about every run in the layout.
-    drte_text_run* pRuns;
-
-    /// The number of runs in <pRuns>.
-    size_t runCount;
-
-    /// The size of the <pRuns> buffer in drte_text_run's. This is used to determine whether or not the buffer
-    /// needs to be reallocated upon adding a new run.
-    size_t runBufferSize;
-
-
-    /// The size of the extra data.
-    size_t extraDataSize;
-
-    /// A pointer to the extra data.
-    char pExtraData[1];
-};
-
-/// Structure containing information about a line. This is used by first_line() and next_line().
-typedef struct
-{
-    /// The index of the line.
-    size_t index;
-
-    /// The position of the line on the y axis.
-    float posY;
-
-    /// The height of the line.
-    float height;
-
-    /// The index of the first run on the line.
-    size_t iFirstRun;
-
-    /// The index of the last run on the line.
-    size_t iLastRun;
-
-} drte_engine_line;
 
 
 /// Performs a complete refresh of the given text engine.
@@ -964,63 +959,34 @@ void drte_engine__end_dirty(drte_engine* pEngine);
 
 
 
-drte_engine* drte_engine_create(drgui_context* pContext, size_t extraDataSize, void* pExtraData)
+drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
 {
     if (pContext == NULL) {
         return NULL;
     }
 
-    drte_engine* pEngine = (drte_engine*)malloc(sizeof(drte_engine) + extraDataSize);
+    drte_engine* pEngine = (drte_engine*)calloc(1, sizeof(*pEngine));
     if (pEngine == NULL) {
         return NULL;
     }
 
-    pEngine->text                       = NULL;
-    pEngine->textLength                 = 0;
-    pEngine->onDirty                    = NULL;
-    pEngine->onTextChanged              = NULL;
-    pEngine->onUndoPointChanged         = NULL;
-    pEngine->containerWidth             = 0;
-    pEngine->containerHeight            = 0;
-    pEngine->innerOffsetX               = 0;
-    pEngine->innerOffsetY               = 0;
-    pEngine->pDefaultFont               = NULL;
-    pEngine->defaultTextColor           = drgui_rgb(224, 224, 224);
-    pEngine->defaultBackgroundColor     = drgui_rgb(48, 48, 48);
-    pEngine->selectionBackgroundColor   = drgui_rgb(64, 128, 192);
-    pEngine->lineBackgroundColor        = drgui_rgb(40, 40, 40);
-    pEngine->tabSizeInSpaces            = 4;
-    pEngine->horzAlign                  = drte_alignment_left;
-    pEngine->vertAlign                  = drte_alignment_top;
-    pEngine->cursorWidth                = 1;
-    pEngine->cursorColor                = drgui_rgb(224, 224, 224);
-    pEngine->cursorBlinkRate            = 500;
-    pEngine->timeToNextCursorBlink      = pEngine->cursorBlinkRate;
-    pEngine->isCursorBlinkOn            = true;
-    pEngine->isShowingCursor            = false;
-    pEngine->textBoundsWidth            = 0;
-    pEngine->textBoundsHeight           = 0;
-    pEngine->cursor                     = drte_engine__new_marker();
-    pEngine->selectionAnchor            = drte_engine__new_marker();
-    pEngine->selectionModeCounter       = 0;
-    pEngine->isAnythingSelected         = false;
-    pEngine->onPaintText                = NULL;
-    pEngine->onPaintRect                = NULL;
-    pEngine->onCursorMove               = NULL;
-    pEngine->preparedState.text         = NULL;
-    pEngine->pUndoStack                 = NULL;
-    pEngine->undoStackCount             = 0;
-    pEngine->iUndoState                 = 0;
-    pEngine->dirtyCounter               = 0;
-    pEngine->accumulatedDirtyRect       = drgui_make_inside_out_rect();
-    pEngine->pRuns                      = NULL;
-    pEngine->runCount                   = 0;
-    pEngine->runBufferSize              = 0;
-
-    pEngine->extraDataSize = extraDataSize;
-    if (pExtraData != NULL) {
-        memcpy(pEngine->pExtraData, pExtraData, extraDataSize);
-    }
+    pEngine->defaultTextColor         = drgui_rgb(224, 224, 224);
+    pEngine->defaultBackgroundColor   = drgui_rgb(48, 48, 48);
+    pEngine->selectionBackgroundColor = drgui_rgb(64, 128, 192);
+    pEngine->lineBackgroundColor      = drgui_rgb(40, 40, 40);
+    pEngine->tabSizeInSpaces          = 4;
+    pEngine->horzAlign                = drte_alignment_left;
+    pEngine->vertAlign                = drte_alignment_top;
+    pEngine->cursorWidth              = 1;
+    pEngine->cursorColor              = drgui_rgb(224, 224, 224);
+    pEngine->cursorBlinkRate          = 500;
+    pEngine->timeToNextCursorBlink    = pEngine->cursorBlinkRate;
+    pEngine->isCursorBlinkOn          = true;
+    pEngine->isShowingCursor          = false;
+    pEngine->cursor                   = drte_engine__new_marker();
+    pEngine->selectionAnchor          = drte_engine__new_marker();
+    pEngine->accumulatedDirtyRect     = drgui_make_inside_out_rect();
+    pEngine->pUserData                = pUserData;
 
     return pEngine;
 }
@@ -1039,24 +1005,6 @@ void drte_engine_delete(drte_engine* pEngine)
     free(pEngine);
 }
 
-
-size_t drte_engine_get_extra_data_size(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return 0;
-    }
-
-    return pEngine->extraDataSize;
-}
-
-void* drte_engine_get_extra_data(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return NULL;
-    }
-
-    return pEngine->pExtraData;
-}
 
 
 void drte_engine_set_text(drte_engine* pEngine, const char* text)
@@ -2029,6 +1977,26 @@ void drte_engine_move_cursor_to_character(drte_engine* pEngine, size_t character
             drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
         }
     }
+}
+
+size_t drte_engine_get_spaces_to_next_colum_from_cursor(drte_engine* pEngine)
+{
+    if (pEngine == NULL) {
+        return 0;
+    }
+
+    const float tabWidth = drte_engine__get_tab_width(pEngine);
+
+    float posX;
+    float posY;
+    drte_engine_get_cursor_position(pEngine, &posX, &posY);
+
+    float tabColPosX = (posX + tabWidth) - ((size_t)posX % (size_t)tabWidth);
+
+    drgui_font_metrics metrics;
+    drgui_get_font_metrics(pEngine->pDefaultFont, &metrics);
+
+    return (size_t)(tabColPosX - posX) / metrics.spaceWidth;
 }
 
 bool drte_engine_is_cursor_at_start_of_selection(drte_engine* pEngine)

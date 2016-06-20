@@ -38,4 +38,5 @@ drgui_color textEditorSelectionBGColor; \
 drgui_color textEditorActiveLineColor; \
 drgui_color textEditorLineNumbersColor; \
 drgui_color textEditorLineNumbersBGColor; \
-float textEditorLineNumbersPadding;
+float textEditorLineNumbersPadding; \
+bool textEditorTabsToSpacesEnabled;

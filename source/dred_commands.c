@@ -245,10 +245,8 @@ void dred_command__undo(dred_context* pDred, const char* value)
         return;
     }
 
-    // If the parent of the element is a DRED_CONTROL_TYPE_TEXTBOX then it means a dred textbox is focused and we can do an undo.
-    drgui_element* pTextBox = drgui_get_parent(pFocusedElement);
-    if (pTextBox != NULL && drgui_is_of_type(pTextBox, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_undo(pTextBox);
+    if (pFocusedElement != NULL && drgui_is_of_type(pFocusedElement, DRED_CONTROL_TYPE_TEXTBOX)) {
+        dred_textbox_undo(pFocusedElement);
     }
 }
 
@@ -261,9 +259,8 @@ void dred_command__redo(dred_context* pDred, const char* value)
         return;
     }
 
-    drgui_element* pTextBox = drgui_get_parent(pFocusedElement);
-    if (pTextBox != NULL && drgui_is_of_type(pTextBox, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_redo(pTextBox);
+    if (pFocusedElement != NULL && drgui_is_of_type(pFocusedElement, DRED_CONTROL_TYPE_TEXTBOX)) {
+        dred_textbox_redo(pFocusedElement);
     }
 }
 
@@ -282,15 +279,14 @@ void dred_command__copy(dred_context* pDred, const char* value)
         return;
     }
 
-    drgui_element* pTextBox = drgui_get_parent(pFocusedElement);
-    if (pTextBox != NULL && drgui_is_of_type(pTextBox, DRED_CONTROL_TYPE_TEXTBOX)) {
-        size_t selectedTextLength = dred_textbox_get_selected_text(pTextBox, NULL, 0);
+    if (pFocusedElement != NULL && drgui_is_of_type(pFocusedElement, DRED_CONTROL_TYPE_TEXTBOX)) {
+        size_t selectedTextLength = dred_textbox_get_selected_text(pFocusedElement, NULL, 0);
         char* selectedText = (char*)malloc(selectedTextLength + 1);
         if (selectedText == NULL) {
             return;
         }
 
-        selectedTextLength = dred_textbox_get_selected_text(pTextBox, selectedText, selectedTextLength + 1);
+        selectedTextLength = dred_textbox_get_selected_text(pFocusedElement, selectedText, selectedTextLength + 1);
         dred_clipboard_set_text(selectedText, selectedTextLength);
     }
 }
@@ -304,15 +300,14 @@ void dred_command__paste(dred_context* pDred, const char* value)
         return;
     }
 
-    drgui_element* pTextBox = drgui_get_parent(pFocusedElement);
-    if (pTextBox != NULL && drgui_is_of_type(pTextBox, DRED_CONTROL_TYPE_TEXTBOX)) {
+    if (pFocusedElement != NULL && drgui_is_of_type(pFocusedElement, DRED_CONTROL_TYPE_TEXTBOX)) {
         char* clipboardText = dred_clipboard_get_text();
         if (clipboardText == NULL) {
             return;
         }
 
-        dred_textbox_delete_selected_text(pTextBox);
-        dred_textbox_insert_text_at_cursor(pTextBox, clipboardText);
+        dred_textbox_delete_selected_text(pFocusedElement);
+        dred_textbox_insert_text_at_cursor(pFocusedElement, clipboardText);
 
         dred_clipboard_free_text(clipboardText);
     }
@@ -327,9 +322,8 @@ void dred_command__delete(dred_context* pDred, const char* value)
         return;
     }
 
-    drgui_element* pTextBox = drgui_get_parent(pFocusedElement);
-    if (pTextBox != NULL && drgui_is_of_type(pTextBox, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_delete_selected_text(pTextBox);
+    if (pFocusedElement != NULL && drgui_is_of_type(pFocusedElement, DRED_CONTROL_TYPE_TEXTBOX)) {
+        dred_textbox_delete_selected_text(pFocusedElement);
     }
 }
 
@@ -342,10 +336,8 @@ void dred_command__select_all(dred_context* pDred, const char* value)
         return;
     }
 
-    // If the parent of the element is a DRED_CONTROL_TYPE_TEXTBOX then it means a dred textbox is focused and we can do an undo.
-    drgui_element* pTextBox = drgui_get_parent(pFocusedElement);
-    if (pTextBox != NULL && drgui_is_of_type(pTextBox, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_select_all(pTextBox);
+    if (pFocusedElement != NULL && drgui_is_of_type(pFocusedElement, DRED_CONTROL_TYPE_TEXTBOX)) {
+        dred_textbox_select_all(pFocusedElement);
     }
 }
 

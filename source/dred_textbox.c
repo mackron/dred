@@ -48,6 +48,10 @@ typedef struct
     /// Whether or not the horizontal scrollbar is enabled.
     bool isHorzScrollbarEnabled;
 
+    
+    // Whether or not tabs to spaces is enabled.
+    bool isTabsToSpacesEnabled;
+
 
     /// When selecting lines by clicking and dragging on the line numbers, keeps track of the line to anchor the selection to.
     size_t iLineSelectAnchor;
@@ -189,7 +193,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drgui_set_on_mouse_button_up(pTB->pLineNumbers, dred_textbox__on_mouse_button_up_line_numbers);
     drgui_set_on_paint(pTB->pLineNumbers, dred_textbox__on_paint_line_numbers);
 
-    pTB->pTL = drte_engine_create(pDred->pGUI, sizeof(pTextBox), &pTextBox);
+    pTB->pTL = drte_engine_create(pDred->pGUI, pTextBox);
     if (pTB->pTL == NULL) {
         drgui_delete_element(pTextBox);
         return NULL;
@@ -977,6 +981,37 @@ void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, float size)
 }
 
 
+void dred_textbox_enable_tabs_to_spaces(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return;
+    }
+
+    pTB->isTabsToSpacesEnabled = true;
+}
+
+void dred_textbox_disable_tabs_to_spaces(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return;
+    }
+
+    pTB->isTabsToSpacesEnabled = false;
+}
+
+bool dred_textbox_is_tabs_to_spaces_enabled(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return false;;
+    }
+
+    return pTB->isTabsToSpacesEnabled;
+}
+
+
 void dred_textbox_set_on_cursor_move(dred_textbox* pTextBox, dred_textbox_on_cursor_move_proc proc)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
@@ -1353,7 +1388,16 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
             drte_engine_delete_selected_text(pTB->pTL);
         }
 
-        drte_engine_insert_character_at_cursor(pTB->pTL, utf32);
+        if (utf32 == '\t' && pTB->isTabsToSpacesEnabled) {
+            // This can be optimized...
+            size_t spaceCount = drte_engine_get_spaces_to_next_colum_from_cursor(pTB->pTL);
+            for (size_t i = 0; i < spaceCount; ++i) {
+                drte_engine_insert_character_at_cursor(pTB->pTL, ' ');
+            }
+        } else {
+            drte_engine_insert_character_at_cursor(pTB->pTL, utf32);
+        }
+        
     }
     drte_engine_commit_undo_point(pTB->pTL);
 }
@@ -1383,7 +1427,7 @@ void dred_textbox__on_text_engine_paint_text(drte_engine* pTL, drte_text_run* pR
 
 void dred_textbox__on_text_engine_dirty(drte_engine* pTL, drgui_rect rect)
 {
-    dred_textbox* pTextBox = *(drgui_element**)drte_engine_get_extra_data(pTL);
+    dred_textbox* pTextBox = (dred_textbox*)pTL->pUserData;
     if (pTextBox == NULL) {
         return;
     }
@@ -1403,7 +1447,7 @@ void dred_textbox__on_text_engine_dirty(drte_engine* pTL, drgui_rect rect)
 void dred_textbox__on_text_engine_cursor_move(drte_engine* pTL)
 {
     // If the cursor is off the edge of the container we want to scroll it into position.
-    dred_textbox* pTextBox = *(drgui_element**)drte_engine_get_extra_data(pTL);
+    dred_textbox* pTextBox = (dred_textbox*)pTL->pUserData;
     if (pTextBox == NULL) {
         return;
     }
@@ -1445,7 +1489,7 @@ void dred_textbox__on_text_engine_cursor_move(drte_engine* pTL)
 
 void dred_textbox__on_text_engine_text_changed(drte_engine* pTL)
 {
-    dred_textbox* pTextBox = *(drgui_element**)drte_engine_get_extra_data(pTL);
+    dred_textbox* pTextBox = (dred_textbox*)pTL->pUserData;
     if (pTextBox == NULL) {
         return;
     }
@@ -1465,7 +1509,7 @@ void dred_textbox__on_text_engine_text_changed(drte_engine* pTL)
 
 void dred_textbox__on_text_engine_undo_point_changed(drte_engine* pTL, unsigned int iUndoPoint)
 {
-    dred_textbox* pTextBox = *(drgui_element**)drte_engine_get_extra_data(pTL);
+    dred_textbox* pTextBox = (dred_textbox*)pTL->pUserData;
     if (pTextBox == NULL) {
         return;
     }

@@ -181,6 +181,9 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_textbox_set_line_numbers_color(data->pTextBox, pDred->config.textEditorLineNumbersColor);
     dred_textbox_set_line_numbers_background_color(data->pTextBox, pDred->config.textEditorLineNumbersBGColor);
     dred_textbox_set_line_numbers_padding(data->pTextBox, pDred->config.textEditorLineNumbersPadding);
+    if (pDred->config.textEditorTabsToSpacesEnabled) {
+        dred_textbox_enable_tabs_to_spaces(data->pTextBox);
+    }
 
     if (filePathAbsolute != NULL && filePathAbsolute[0] != '\0') {
         char* pFileData = dr_open_and_read_text_file(filePathAbsolute, NULL);

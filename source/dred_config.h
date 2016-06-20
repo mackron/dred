@@ -108,6 +108,9 @@
 // texteditor-line-numbers-padding textEditorLineNumbersPadding float 16
 //   The padding between the line numbers and the text in the text editor.
 //
+// texteditor-enable-tabs-to-spaces textEditorTabsToSpacesEnabled bool true
+//   Whether or not tabs are converted to spaces.
+//
 // END CONFIG VARS
 
 typedef struct

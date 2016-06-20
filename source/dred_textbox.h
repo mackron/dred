@@ -205,6 +205,16 @@ drgui_element* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox);
 void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, float size);
 
 
+// Enables tabs-to-spaces.
+void dred_textbox_enable_tabs_to_spaces(dred_textbox* pTextBox);
+
+// Disables tab-to-spaces.
+void dred_textbox_disable_tabs_to_spaces(dred_textbox* pTextBox);
+
+// Determines whether or not the textbox should convert tabs to spaces.
+bool dred_textbox_is_tabs_to_spaces_enabled(dred_textbox* pTextBox);
+
+
 // Sets the function to call when the cursor moves.
 void dred_textbox_set_on_cursor_move(dred_textbox* pTextBox, dred_textbox_on_cursor_move_proc proc);
 
