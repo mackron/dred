@@ -53,6 +53,7 @@ bool dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name, dre
     size_t existingIndex;
     if (dred_shortcut_table_find(pTable, shortcut, &existingIndex)) {
         dred_shortcut_table_replace(pTable, existingIndex, cmdStr);
+        return true;   // Already exists.
     }
 
     // If we get here it means the accelerator does not already exist and needs to be added.

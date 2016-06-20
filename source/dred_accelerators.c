@@ -212,7 +212,14 @@ size_t dred_accelerator_to_string(dred_accelerator accelerator, char* strOut, si
     if (accelerator.modifiers != 0) {
         characterStr[characterLength++] = '+';
     }
-    characterLength += drgui_key_to_string(accelerator.key, characterStr + characterLength, sizeof(characterStr) - characterLength);
+    if (accelerator.key == '\t') {
+        characterStr[characterLength++] = 'T';
+        characterStr[characterLength++] = 'A';
+        characterStr[characterLength++] = 'B';
+    } else {
+        characterLength += drgui_key_to_string(accelerator.key, characterStr + characterLength, sizeof(characterStr) - characterLength);
+    }
+    
 
 
     size_t modifiersLength = 0;
