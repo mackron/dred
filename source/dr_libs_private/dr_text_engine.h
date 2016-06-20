@@ -3290,7 +3290,10 @@ void drte_engine__refresh(drte_engine* pEngine)
 
     pEngine->textBoundsHeight = (float)defaultFontMetrics.lineHeight;
 
-    const float tabWidth = drte_engine__get_tab_width(pEngine);
+    float tabWidth = drte_engine__get_tab_width(pEngine);
+    if (tabWidth <= 0) {
+        tabWidth = (float)defaultFontMetrics.spaceWidth;
+    }
 
     size_t iCurrentLine  = 0;
     float runningPosY       = 0;

@@ -39,4 +39,5 @@ drgui_color textEditorActiveLineColor; \
 drgui_color textEditorLineNumbersColor; \
 drgui_color textEditorLineNumbersBGColor; \
 float textEditorLineNumbersPadding; \
-bool textEditorTabsToSpacesEnabled;
+bool textEditorTabsToSpacesEnabled; \
+int textEditorTabSizeInSpaces;

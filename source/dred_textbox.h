@@ -205,6 +205,12 @@ drgui_element* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox);
 void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, float size);
 
 
+// Sets the size of tabs in spaces.
+void dred_textbox_set_tab_size_in_spaces(dred_textbox* pTextBox, unsigned int tabSizeInSpaces);
+
+// Retrieves the size of tabs in spaces.
+unsigned int dred_textbox_get_tab_size_in_spaces(dred_textbox* pTextBox);
+
 // Enables tabs-to-spaces.
 void dred_textbox_enable_tabs_to_spaces(dred_textbox* pTextBox);
 

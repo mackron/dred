@@ -981,6 +981,27 @@ void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, float size)
 }
 
 
+void dred_textbox_set_tab_size_in_spaces(dred_textbox* pTextBox, unsigned int tabSizeInSpaces)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return;
+    }
+
+    drte_engine_set_tab_size(pTB->pTL, tabSizeInSpaces);
+}
+
+unsigned int dred_textbox_get_tab_size_in_spaces(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return 0;
+    }
+
+    return drte_engine_get_tab_size(pTB->pTL);
+}
+
+
 void dred_textbox_enable_tabs_to_spaces(dred_textbox* pTextBox)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
