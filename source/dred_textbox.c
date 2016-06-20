@@ -1594,9 +1594,6 @@ void dred_textbox__on_timer(dred_timer* pTimer, void* pUserData)
     dred_textbox* pTextBox = (dred_textbox*)pUserData;
     assert(pTextBox != NULL);
 
-    dred_textbox_data* data = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(data != NULL);
-
     dred_textbox_step(pTextBox, 100);
 }
 

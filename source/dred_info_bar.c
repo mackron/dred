@@ -31,9 +31,6 @@ void dred_info_bar__on_paint__none(dred_info_bar* pInfoBar, dred_info_bar_data* 
 {
     (void)data;
 
-    dred_context* pDred = dred_control_get_context(pInfoBar);
-    assert(pDred != NULL);
-
     drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
 }
 
@@ -84,7 +81,7 @@ void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_ba
     dred_context* pDred = dred_control_get_context(pInfoBar);
     assert(pDred != NULL);
 
-    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), pDred->config.cmdbarBGColor, pPaintData);
+    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
 
 
     //float padding = 32*pDred->uiScale;
@@ -105,7 +102,7 @@ void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_ba
         
         float textPosX = dred_control_get_width(pInfoBar) - totalWidth;
         float textPosY = (dred_control_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
-        drgui_draw_text(pInfoBar, pFont, data->zoomStr, (int)strlen(data->zoomStr), textPosX, textPosY, drgui_rgb(224, 224, 224), pDred->config.cmdbarBGColor, pPaintData);
+        drgui_draw_text(pInfoBar, pFont, data->zoomStr, (int)strlen(data->zoomStr), textPosX, textPosY, drgui_rgb(224, 224, 224), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
 
         dred_font_release_subfont(pDred->config.pUIFont, pFont);
     }
