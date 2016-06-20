@@ -207,7 +207,6 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drte_engine_set_on_undo_point_changed(pTB->pTL, dred_textbox__on_text_engine_undo_point_changed);
     drte_engine_set_default_text_color(pTB->pTL, drgui_rgb(0, 0, 0));
     drte_engine_set_cursor_color(pTB->pTL, drgui_rgb(0, 0, 0));
-    drte_engine_show_cursor(pTB->pTL);
     drte_engine_set_default_bg_color(pTB->pTL, drgui_rgb(64, 64, 64));
     drte_engine_set_active_line_bg_color(pTB->pTL, drgui_rgb(64, 64, 64));
     drte_engine_set_vertical_align(pTB->pTL, drte_alignment_center);
