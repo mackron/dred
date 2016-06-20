@@ -171,6 +171,16 @@ void dred_image_editor__on_mouse_wheel(dred_image_editor* pImageEditor, int delt
     dred_image_editor_set_image_scale(pImageEditor, newImageScale);
 }
 
+void dred_iamge_editor__on_key_down(dred_image_editor* pImageEditor, drgui_key key, int stateFlags)
+{
+    (void)stateFlags;
+
+    if (key == DRGUI_ESCAPE) {
+        dred_focus_command_bar(dred_control_get_context(pImageEditor));
+    } else {
+    }
+}
+
 void dred_image_editor__on_paint(dred_image_editor* pImageEditor, drgui_rect rect, void* pPaintData)
 {
     (void)rect;
@@ -238,6 +248,7 @@ dred_image_editor* dred_image_editor_create(dred_context* pDred, dred_control* p
     dred_control_set_on_mouse_button_up(pImageEditor, dred_image_editor__on_mouse_button_up);
     dred_control_set_on_mouse_move(pImageEditor, dred_image_editor__on_mouse_move);
     dred_control_set_on_mouse_wheel(pImageEditor, dred_image_editor__on_mouse_wheel);
+    dred_control_set_on_key_down(pImageEditor, dred_iamge_editor__on_key_down);
 
     return pImageEditor;
 }
