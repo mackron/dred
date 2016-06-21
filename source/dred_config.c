@@ -235,6 +235,29 @@ void dred_config_on_set__cmdbar_bg_color_active(dred_context* pDred)
     dred_cmdbar_refresh_styling(pDred->pCmdBar);
 }
 
+void dred_config_on_set__cmdbar_tb_font(dred_context* pDred)
+{
+    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+    dred_update_main_window_layout(pDred);
+}
+
+void dred_config_on_set__cmdbar_tb_text_color(dred_context* pDred)
+{
+    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+}
+
+void dred_config_on_set__cmdbar_padding_horz(dred_context* pDred)
+{
+    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+    dred_update_main_window_layout(pDred);
+}
+
+void dred_config_on_set__cmdbar_padding_vert(dred_context* pDred)
+{
+    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+    dred_update_main_window_layout(pDred);
+}
+
 
 void dred_config_on_set__ui_font(dred_context* pDred)
 {

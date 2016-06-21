@@ -18,7 +18,6 @@ drgui_color cmdbarBGColor; \
 drgui_color cmdbarBGColorActive; \
 dred_font* pCmdbarTBFont; \
 drgui_color cmdbarTBTextColor; \
-dred_font* pCmdbarMessageFont; \
 float cmdbarPaddingX; \
 float cmdbarPaddingY; \
 drgui_color tabgroupBGColor; \

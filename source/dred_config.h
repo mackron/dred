@@ -14,10 +14,10 @@
 //   Whether or not to show the command bar at all times. If this is set to false it will be shown only when it has keyboard focus.
 //
 //
-// window-width windowWidth int none 640
+// window-width windowWidth int none 1280
 //   The width of the window
 //
-// window-height windowHeight int none 480
+// window-height windowHeight int none 720
 //   The height of the window.
 //
 // window-maximized windowMaximized bool none false
@@ -37,19 +37,16 @@
 // cmdbar-bg-color-active cmdbarBGColorActive color dred_config_on_set__cmdbar_bg_color_active 128 51 0
 //   The background color of the command bar while it's got the keyboard focus.
 //
-// cmdbar-tb-font pCmdbarTBFont font none system-font-mono
+// cmdbar-tb-font pCmdbarTBFont font dred_config_on_set__cmdbar_tb_font system-font-mono
 //   The font to use in the text box of the command bar.
 //
-// cmdbar-tb-text-color cmdbarTBTextColor color none 224 224 224
+// cmdbar-tb-text-color cmdbarTBTextColor color dred_config_on_set__cmdbar_tb_text_color 224 224 224
 //   The color of the text in the text box of the command bar.
 //
-// cmdbar-msg-font pCmdbarMessageFont font none system-font-ui
-//   The font to use for the message box of the command bar.
-//
-// cmdbar-padding-horz cmdbarPaddingX float none 2
+// cmdbar-padding-horz cmdbarPaddingX float dred_config_on_set__cmdbar_padding_horz 2
 //   The amount of padding to apply to the command bar on the left and right sides.
 //
-// cmdbar-padding-vert cmdbarPaddingY float none 2
+// cmdbar-padding-vert cmdbarPaddingY float dred_config_on_set__cmdbar_padding_vert 2
 //   The amount of padding to apply to the command bar on the top and bottom sides.
 //
 //
@@ -177,6 +174,18 @@ void dred_config_on_set__cmdbar_bg_color(dred_context* pDred);
 
 // cmdbar-bg-color-active
 void dred_config_on_set__cmdbar_bg_color_active(dred_context* pDred);
+
+// cmdbar-tb-font
+void dred_config_on_set__cmdbar_tb_font(dred_context* pDred);
+
+// cmdbar-tb-text-color
+void dred_config_on_set__cmdbar_tb_text_color(dred_context* pDred);
+
+// cmdbar-padding-horz
+void dred_config_on_set__cmdbar_padding_horz(dred_context* pDred);
+
+// cmdbar-padding-vert
+void dred_config_on_set__cmdbar_padding_vert(dred_context* pDred);
 
 
 // ui-font

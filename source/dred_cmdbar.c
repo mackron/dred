@@ -4,7 +4,6 @@ typedef struct
     dred_context* pDred;
     dred_textbox* pTextBox;
     char message[256];
-    drgui_font* pMessageFont;
 
     dred_info_bar* pInfoBar;
 } dred_cmdbar_data;
@@ -123,12 +122,14 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, drgui_rect rect, void* pPaintDa
     dred_cmdbar__get_segment_rects(pCmdBar, &lrect, &mrect, &rrect);
     drgui_draw_rect(pCmdBar, mrect, bgcolor, pPaintData);
 
+    drgui_font* pMessageFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
+
     drgui_font_metrics messageFontMetrics;
-    drgui_get_font_metrics(data->pMessageFont, &messageFontMetrics);
+    drgui_get_font_metrics(pMessageFont, &messageFontMetrics);
 
     float messageLeft = mrect.left + (4*pDred->uiScale);
     float messageTop  = (((mrect.bottom - mrect.top) - messageFontMetrics.lineHeight) / 2) + scaledPaddingY;
-    drgui_draw_text(pCmdBar, data->pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, drgui_rgb(224, 224, 224), bgcolor, pPaintData);
+    drgui_draw_text(pCmdBar, pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, drgui_rgb(224, 224, 224), bgcolor, pPaintData);
 }
 
 void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement)
@@ -263,8 +264,10 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     drgui_font_metrics fontMetricsTB;
     drgui_get_font_metrics(dred_textbox_get_font(data->pTextBox), &fontMetricsTB);
 
+    drgui_font* pMessageFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
+
     drgui_font_metrics fontMetricsMsg;
-    drgui_get_font_metrics(data->pMessageFont, &fontMetricsMsg);
+    drgui_get_font_metrics(pMessageFont, &fontMetricsMsg);
 
     float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(data->pTextBox)*2;
     float messageHeight = (float)fontMetricsMsg.lineHeight;
@@ -300,7 +303,7 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
         return NULL;
     }
 
-    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pCmdbarTBFont, (float)pDred->uiScale));
+    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pCmdbarTBFont, pDred->uiScale));
     dred_textbox_set_text_color(data->pTextBox, pDred->config.cmdbarTBTextColor);
     dred_textbox_set_cursor_color(data->pTextBox, pDred->config.cmdbarTBTextColor);
     dred_textbox_set_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
@@ -320,7 +323,6 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
     dred_control_set_on_printable_key_down(data->pTextBox, dred_cmdbar_tb__on_printable_key_down);
 
 
-    data->pMessageFont = dred_font_acquire_subfont(pDred->config.pCmdbarMessageFont, (float)pDred->uiScale);
     strcpy_s(data->message, sizeof(data->message), "");
 
 
@@ -344,7 +346,6 @@ void dred_cmdbar_delete(dred_cmdbar* pCmdBar)
     dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
     if (data != NULL) {
         dred_textbox_delete(data->pTextBox);
-        dred_font_release_subfont(data->pDred->config.pCmdbarMessageFont, data->pMessageFont);
     }
 
     dred_control_delete(pCmdBar);
@@ -423,6 +424,19 @@ void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
         return;
     }
 
+    dred_context* pDred = dred_control_get_context(pCmdBar);
+    if (pDred == NULL) {
+        return;
+    }
+
+    // Textbox.
+    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pCmdbarTBFont, pDred->uiScale));
+    dred_textbox_set_text_color(data->pTextBox, pDred->config.cmdbarTBTextColor);
+    dred_textbox_set_cursor_color(data->pTextBox, pDred->config.cmdbarTBTextColor);
+    dred_textbox_set_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
+    dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
+
+    // Info bar.
     dred_info_bar_refresh_styling(data->pInfoBar);
 
 
