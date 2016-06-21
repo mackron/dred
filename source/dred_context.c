@@ -853,7 +853,7 @@ bool dred_open_file_by_type(dred_context* pDred, const char* filePath, const cha
 
 
     // The file should be added to the recent file list. This is done by adding it to the config and then refreshing the menu.
-    if (filePathAbsolute != NULL && filePathAbsolute[0] != '\0') {
+    if (filePathAbsolute[0] != '\0') {
         dred_config_push_recent_file(&pDred->config, filePathAbsolute);
         dred_menu_library_update_recent_files_menu(&pDred->menuLibrary);
     }
@@ -1022,7 +1022,7 @@ bool dred_save_focused_file(dred_context* pDred, const char* newFilePath)
     // Add the file to the recent file's list.
     char absoluteFilePath[DRED_MAX_PATH];
     dred_to_absolute_path(newFilePath, absoluteFilePath, sizeof(absoluteFilePath));
-    if (absoluteFilePath != NULL && absoluteFilePath[0] != '\0') {
+    if (absoluteFilePath[0] != '\0') {
         dred_config_push_recent_file(&pDred->config, absoluteFilePath);
         dred_menu_library_update_recent_files_menu(&pDred->menuLibrary);
     }
@@ -1342,7 +1342,7 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 
     return 0;
 #else
-    GtkWidget* dialog = gtk_message_dialog_new(GTK_WINDOW(pDred->pMainWindow->pGTKWindow), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, message);
+    GtkWidget* dialog = gtk_message_dialog_new(GTK_WINDOW(pDred->pMainWindow->pGTKWindow), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, "%s", message);
     if (dialog == NULL) {
         return 0;
     }

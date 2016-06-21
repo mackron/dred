@@ -24,6 +24,19 @@ dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred)
     
     pDialog->pWindow->pUserData = pDialog;
     pDialog->pWindow->onClose = dred_settings_dialog__on_window_close;
+    pDialog->pWindow->pRootGUIElement->onSize = drgui_on_size_fit_children_to_parent;
+
+
+    pDialog->pSettingsEditor = dred_settings_editor_create(pDred, pDialog->pWindow->pRootGUIElement, NULL);
+    if (pDialog->pSettingsEditor == NULL) {
+        dred_window_delete(pDialog->pWindow);
+        free(pDialog);
+    }
+
+    unsigned int windowSizeX;
+    unsigned int windowSizeY;
+    dred_window_get_client_size(pDialog->pWindow, &windowSizeX, &windowSizeY);
+    dred_control_set_size(pDialog->pSettingsEditor, (float)windowSizeX, (float)windowSizeY);
 
 
     return pDialog;
@@ -57,4 +70,13 @@ void dred_settings_dialog_hide(dred_settings_dialog* pDialog)
     }
 
     dred_window_hide(pDialog->pWindow, 0);
+}
+
+void dred_settings_dialog_refresh_styling(dred_settings_dialog* pDialog)
+{
+    if (pDialog == NULL) {
+        return;
+    }
+
+    dred_settings_editor_refresh_styling(pDialog->pSettingsEditor);
 }

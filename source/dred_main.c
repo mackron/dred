@@ -48,7 +48,7 @@
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wmisleading-indentation"
+    //#pragma GCC diagnostic ignored "-Wmisleading-indentation"
     #pragma GCC diagnostic ignored "-Wshift-negative-value"
 #endif
 #define STB_IMAGE_IMPLEMENTATION

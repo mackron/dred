@@ -223,7 +223,7 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
     dred_context* pDred = dred_control_get_context(pTextEditor);
     assert(pDred != NULL);
 
-    dred_textbox_set_vertical_align(data->pTextBox, drgui_text_engine_alignment_top);
+    dred_textbox_set_vertical_align(data->pTextBox, drte_alignment_top);
     dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
     dred_textbox_set_text_color(data->pTextBox, pDred->config.textEditorTextColor);
     dred_textbox_set_cursor_color(data->pTextBox, pDred->config.textEditorCursorColor);

@@ -60,10 +60,10 @@ float dred_textbox_get_padding_vert(dred_textbox* pTextBox);
 float dred_textbox_get_padding_horz(dred_textbox* pTextBox);
 
 // Sets the vertical alignment of the given text box.
-void dred_textbox_set_vertical_align(dred_textbox* pTextBox, drgui_text_engine_alignment align);
+void dred_textbox_set_vertical_align(dred_textbox* pTextBox, drte_alignment align);
 
 // Sets the horizontal alignment of the given text box.
-void dred_textbox_set_horizontal_align(dred_textbox* pTextBox, drgui_text_engine_alignment align);
+void dred_textbox_set_horizontal_align(dred_textbox* pTextBox, drte_alignment align);
 
 // Sets the width of the line numbers.
 void dred_textbox_set_line_numbers_width(dred_textbox* pTextBox, float lineNumbersWidth);

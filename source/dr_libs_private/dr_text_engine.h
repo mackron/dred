@@ -16,9 +16,6 @@
 //   - Need a way to easily split the file into chunks.
 //   - Need to easily pick out individual characters by their index.
 //   - Need a very simple high-level API while still maintaining good performance characteristics.
-//     - Have a dr_text_buffer() object?
-//       - dr_text_buffer_insert_character(pTextBuffer, size_t index, uint32_t utf32);
-//       - dr_text_buffer_remove_character(pTextBuffer, size_t index);
 // - Rendering callbacks
 //   - The text engine will not do the actual rendering, but instead notify the application.
 // - Notifications for when a region have become invalid and needs redrawing
@@ -794,7 +791,7 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 
 bool drte_is_symbol_or_whitespace(uint32_t utf32)
 {
-    return (utf32 >= 0 && utf32 < '0') || (utf32 >= ':' && utf32 < 'A') || (utf32 >= '[' && utf32 < 'a') || (utf32 > '{'); 
+    return (utf32 < '0') || (utf32 >= ':' && utf32 < 'A') || (utf32 >= '[' && utf32 < 'a') || (utf32 > '{'); 
 }
 
 

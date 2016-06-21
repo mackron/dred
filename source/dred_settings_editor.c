@@ -68,3 +68,14 @@ void dred_settings_editor_delete(dred_settings_editor* pSettingsEditor)
 
     dred_editor_delete(pSettingsEditor);
 }
+
+
+void dred_settings_editor_refresh_styling(dred_settings_editor* pSettingsEditor)
+{
+    dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
+    if (pData == NULL) {
+        return;
+    }
+
+
+}
