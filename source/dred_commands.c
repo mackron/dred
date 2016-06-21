@@ -239,6 +239,12 @@ void dred_command__about(dred_context* pDred, const char* value)
     dred_show_about_dialog(pDred);
 }
 
+void dred_command__settings(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_show_settings_dialog(pDred);
+}
+
 
 void dred_command__undo(dred_context* pDred, const char* value)
 {

@@ -30,6 +30,7 @@
 // quit                     dred_command__exit                      DRED_CMDBAR_NO_CLEAR
 // help                     dred_command__help                      DRED_CMDBAR_RELEASE_KEYBOARD
 // about                    dred_command__about                     DRED_CMDBAR_RELEASE_KEYBOARD
+// settings                 dred_command__settings                  DRED_CMDBAR_RELEASE_KEYBOARD
 // undo                     dred_command__undo                      DRED_CMDBAR_NO_CLEAR
 // redo                     dred_command__redo                      DRED_CMDBAR_NO_CLEAR
 // cut                      dred_command__cut                       DRED_CMDBAR_NO_CLEAR
@@ -158,6 +159,9 @@ void dred_command__help(dred_context* pDred, const char* value);
 
 // about
 void dred_command__about(dred_context* pDred, const char* value);
+
+// settings
+void dred_command__settings(dred_context* pDred, const char* value);
 
 
 

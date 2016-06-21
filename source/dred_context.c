@@ -1388,6 +1388,23 @@ void dred_show_about_dialog(dred_context* pDred)
     dred_about_dialog_show(pDred->pAboutDialog);
 }
 
+void dred_show_settings_dialog(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    if (pDred->pSettingsDialog == NULL) {
+        pDred->pSettingsDialog = dred_settings_dialog_create(pDred);
+        if (pDred->pSettingsDialog == NULL) {
+            return;
+        }
+    }
+
+    assert(pDred->pSettingsDialog != NULL);
+    dred_settings_dialog_show(pDred->pSettingsDialog);
+}
+
 
 void dred_update_main_window_layout(dred_context* pDred)
 {
