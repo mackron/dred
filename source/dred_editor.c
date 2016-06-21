@@ -27,7 +27,7 @@ dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, cons
 
     memset(data, 0, dred_control_get_extra_data_size(pEditor));
 
-    if (filePathAbsolute != NULL) {
+    if (filePathAbsolute != NULL && filePathAbsolute[0] != '\0') {
         if (drpath_clean(filePathAbsolute, data->filePathAbsolute, sizeof(data->filePathAbsolute)) == 0) {
             dred_control_delete(pEditor);
             dred_errorf(pDred, "File path is too long: %s\n", filePathAbsolute);
