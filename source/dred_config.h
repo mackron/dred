@@ -50,71 +50,71 @@
 //   The amount of padding to apply to the command bar on the top and bottom sides.
 //
 //
-// tabgroup-bg-color tabgroupBGColor color dred_config_on_set__tabgroup_bg_color 48 48 48
+// tabgroup-bg-color tabgroupBGColor color dred_config_on_set__tabgroup_generic_refresh 48 48 48
 //   The background color of tab groups. This will be shown when there are no tabs open in the group.
 //
-// tab-bg-color-inactive tabBGColorInvactive color dred_config_on_set__tab_bg_color_inactive 58 58 58
+// tab-bg-color-inactive tabBGColorInvactive color dred_config_on_set__tabgroup_generic_refresh 58 58 58
 //   The background color of tabs while inactive.
 //
-// tab-bg-color-active tabBGColorActive color dred_config_on_set__tab_bg_color_active 16 92 160
+// tab-bg-color-active tabBGColorActive color dred_config_on_set__tabgroup_generic_refresh 16 92 160
 //   The background color of tabs while active.
 //
-// tab-bg-color-hovered tabBGColorHovered color dred_config_on_set__tab_bg_color_hovered 32 128 192
+// tab-bg-color-hovered tabBGColorHovered color dred_config_on_set__tabgroup_generic_refresh 32 128 192
 //   The background color of tabs while hovered.
 //
-// tab-font tabFont font dred_config_on_set__tab_font system-font-ui
+// tab-font tabFont font dred_config_on_set__tabgroup_generic_refresh system-font-ui
 //   The font to use on tabs.
 //
-// tab-text-color tabTextColor color dred_config_on_set__tab_text_color 224 224 224
+// tab-text-color tabTextColor color dred_config_on_set__tabgroup_generic_refresh 224 224 224
 //   The color of the text on tabs.
 //
-// tab-padding tabPadding float dred_config_on_set__tab_padding 4
+// tab-padding tabPadding float dred_config_on_set__tabgroup_generic_refresh 4
 //   The amount of padding to apply to all sides of a tab.
 //
-// tab-show-close-button tabShowCloseButton bool dred_config_on_set__tab_show_close_button true
+// tab-show-close-button tabShowCloseButton bool dred_config_on_set__tabgroup_generic_refresh true
 //   Whether or not to show the close button on tabs.
 //
 //
-// texteditor-font pTextEditorFont font dred_config_on_set__texteditor_font system-font-mono
+// texteditor-font pTextEditorFont font dred_config_on_set__texteditor_generic_refresh system-font-mono
 //   The font to use in text editors.
 //
-// texteditor-text-color textEditorTextColor color none 224 224 224
+// texteditor-text-color textEditorTextColor color dred_config_on_set__texteditor_generic_refresh 224 224 224
 //   The base color of the text in a text editor. Note that syntax highlighting is independant of this variable.
 //
-// texteditor-bg-color textEditorBGColor color none 48 48 48
+// texteditor-bg-color textEditorBGColor color dred_config_on_set__texteditor_generic_refresh 48 48 48
 //   The background color to use in text editors.
 //
-// texteditor-cursor-color textEditorCursorColor color none 224 224 224
+// texteditor-cursor-color textEditorCursorColor color dred_config_on_set__texteditor_generic_refresh 224 224 224
 //   The color of the caret/cursor in text editors.
 //
-// texteditor-cursor-width textEditorCursorWidth float none 1
+// texteditor-cursor-width textEditorCursorWidth float dred_config_on_set__texteditor_generic_refresh 1
 //   The thickness of the caret/cursor in text editors.
 //
-// texteditor-selection-bg-color textEditorSelectionBGColor color none 64 128 192
+// texteditor-selection-bg-color textEditorSelectionBGColor color dred_config_on_set__texteditor_generic_refresh 64 128 192
 //   The background color to use for selected text.
 //
-// texteditor-active-line-color textEditorActiveLineColor color none 40 40 40
+// texteditor-active-line-color textEditorActiveLineColor color dred_config_on_set__texteditor_generic_refresh 40 40 40
 //   The background color of the line that the caret is currently sitting on in a text editor.
 //
-// texteditor-show-line-numbers textEditorShowLineNumbers bool none false
+// texteditor-show-line-numbers textEditorShowLineNumbers bool dred_config_on_set__texteditor_generic_refresh false
 //   Whether or not to show line numbers.
 //
-// texteditor-line-numbers-color textEditorLineNumbersColor color none 80 160 192
+// texteditor-line-numbers-color textEditorLineNumbersColor color dred_config_on_set__texteditor_generic_refresh 80 160 192
 //   The color of the line numbers text.
 //
-// texteditor-line-numbers-bg-color textEditorLineNumbersBGColor color none 48 48 48
+// texteditor-line-numbers-bg-color textEditorLineNumbersBGColor color dred_config_on_set__texteditor_generic_refresh 48 48 48
 //   The color of the background of the line numbers.
 //
-// texteditor-line-numbers-padding textEditorLineNumbersPadding float none 16
+// texteditor-line-numbers-padding textEditorLineNumbersPadding float dred_config_on_set__texteditor_generic_refresh 16
 //   The padding between the line numbers and the text in the text editor.
 //
-// texteditor-enable-tabs-to-spaces textEditorTabsToSpacesEnabled bool none false
+// texteditor-enable-tabs-to-spaces textEditorTabsToSpacesEnabled bool dred_config_on_set__texteditor_generic_refresh false
 //   Whether or not tabs are converted to spaces.
 //
-// texteditor-tab-size-in-spaces textEditorTabSizeInSpaces int none 4
+// texteditor-tab-size-in-spaces textEditorTabSizeInSpaces int dred_config_on_set__texteditor_generic_refresh 4
 //   The size of tabs in spaces.
 //
-// texteditor-scale textEditorScale float none 1
+// texteditor-scale textEditorScale float dred_config_on_set__texteditor_generic_refresh 1
 //   The scale/zoom to use in text editors.
 //
 // END CONFIG VARS
@@ -159,6 +159,10 @@ void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolute
 
 // Set handlers.
 
+// ui-font
+void dred_config_on_set__ui_font(dred_context* pDred);
+
+
 // show-tab-bar
 void dred_config_on_set__show_tab_bar(dred_context* pDred);
 
@@ -188,34 +192,8 @@ void dred_config_on_set__cmdbar_padding_horz(dred_context* pDred);
 void dred_config_on_set__cmdbar_padding_vert(dred_context* pDred);
 
 
-// tabgroup-bg-color
-void dred_config_on_set__tabgroup_bg_color(dred_context* pDred);
+// Tabs and tab groups are refreshed with a generic function.
+void dred_config_on_set__tabgroup_generic_refresh(dred_context* pDred);
 
-// tab-bg-color-inactive
-void dred_config_on_set__tab_bg_color_inactive(dred_context* pDred);
-
-// tab-bg-color-active
-void dred_config_on_set__tab_bg_color_active(dred_context* pDred);
-
-// tab-bg-color-hovered
-void dred_config_on_set__tab_bg_color_hovered(dred_context* pDred);
-
-// tab-font
-void dred_config_on_set__tab_font(dred_context* pDred);
-
-// tab-text-color
-void dred_config_on_set__tab_text_color(dred_context* pDred);
-
-// tab-padding
-void dred_config_on_set__tab_padding(dred_context* pDred);
-
-// tab-show-close-button
-void dred_config_on_set__tab_show_close_button(dred_context* pDred);
-
-
-// ui-font
-void dred_config_on_set__ui_font(dred_context* pDred);
-
-// texteditor-font
-void dred_config_on_set__texteditor_font(dred_context* pDred);
-
+// The text editor is refreshed with a generic function.
+void dred_config_on_set__texteditor_generic_refresh(dred_context* pDred);

@@ -170,21 +170,6 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 
     data->textScale = 1;
 
-    dred_textbox_set_vertical_align(data->pTextBox, drgui_text_engine_alignment_top);
-    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
-    dred_textbox_set_text_color(data->pTextBox, pDred->config.textEditorTextColor);
-    dred_textbox_set_cursor_color(data->pTextBox, pDred->config.textEditorCursorColor);
-    dred_textbox_set_background_color(data->pTextBox, pDred->config.textEditorBGColor);
-    dred_textbox_set_selection_background_color(data->pTextBox, pDred->config.textEditorSelectionBGColor);
-    dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.textEditorActiveLineColor);
-    dred_textbox_set_padding(data->pTextBox, 0);
-    dred_textbox_set_line_numbers_color(data->pTextBox, pDred->config.textEditorLineNumbersColor);
-    dred_textbox_set_line_numbers_background_color(data->pTextBox, pDred->config.textEditorLineNumbersBGColor);
-    dred_textbox_set_line_numbers_padding(data->pTextBox, pDred->config.textEditorLineNumbersPadding);
-    dred_textbox_set_tab_size_in_spaces(data->pTextBox, pDred->config.textEditorTabSizeInSpaces);
-    if (pDred->config.textEditorTabsToSpacesEnabled) {
-        dred_textbox_enable_tabs_to_spaces(data->pTextBox);
-    }
 
     if (filePathAbsolute != NULL && filePathAbsolute[0] != '\0') {
         char* pFileData = dr_open_and_read_text_file(filePathAbsolute, NULL);
@@ -209,11 +194,8 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_textbox_set_on_cursor_move(data->pTextBox, dred_text_editor_textbox__on_cursor_move);
     dred_textbox_set_on_undo_point_changed(data->pTextBox, dred_text_editor_textbox__on_undo_point_changed);
 
-    if (pDred->config.textEditorShowLineNumbers) {
-        dred_text_editor_show_line_numbers(pTextEditor);
-    }
-
-    dred_text_editor_set_text_scale(pTextEditor, pDred->config.textEditorScale);
+    // Initialize the styling.
+    dred_text_editor_refresh_styling(pTextEditor);
     
     return pTextEditor;
 }
@@ -230,6 +212,42 @@ void dred_text_editor_delete(dred_text_editor* pTextEditor)
     }
     
     dred_editor_delete(pTextEditor);
+}
+
+
+void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    assert(data != NULL);
+
+    dred_context* pDred = dred_control_get_context(pTextEditor);
+    assert(pDred != NULL);
+
+    dred_textbox_set_vertical_align(data->pTextBox, drgui_text_engine_alignment_top);
+    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
+    dred_textbox_set_text_color(data->pTextBox, pDred->config.textEditorTextColor);
+    dred_textbox_set_cursor_color(data->pTextBox, pDred->config.textEditorCursorColor);
+    dred_textbox_set_background_color(data->pTextBox, pDred->config.textEditorBGColor);
+    dred_textbox_set_selection_background_color(data->pTextBox, pDred->config.textEditorSelectionBGColor);
+    dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.textEditorActiveLineColor);
+    dred_textbox_set_padding(data->pTextBox, 0);
+    dred_textbox_set_line_numbers_color(data->pTextBox, pDred->config.textEditorLineNumbersColor);
+    dred_textbox_set_line_numbers_background_color(data->pTextBox, pDred->config.textEditorLineNumbersBGColor);
+    dred_textbox_set_line_numbers_padding(data->pTextBox, pDred->config.textEditorLineNumbersPadding);
+    dred_textbox_set_tab_size_in_spaces(data->pTextBox, pDred->config.textEditorTabSizeInSpaces);
+    if (pDred->config.textEditorTabsToSpacesEnabled) {
+        dred_textbox_enable_tabs_to_spaces(data->pTextBox);
+    } else {
+        dred_textbox_disable_tabs_to_spaces(data->pTextBox);
+    }
+
+    if (pDred->config.textEditorShowLineNumbers) {
+        dred_text_editor_show_line_numbers(pTextEditor);
+    } else {
+        dred_text_editor_hide_line_numbers(pTextEditor);
+    }
+
+    dred_text_editor_set_text_scale(pTextEditor, pDred->config.textEditorScale);
 }
 
 

@@ -197,6 +197,15 @@ void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolute
 
 // Set handlers.
 
+void dred_config_on_set__ui_font(dred_context* pDred)
+{
+    // Everything that uses the UI font needs to be updated.
+    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+
+    // The UI font may have resulted in the main window's layout becoming invalid.
+    dred_update_main_window_layout(pDred);
+}
+
 void dred_config_on_set__show_tab_bar(dred_context* pDred)
 {
     if (pDred->config.showTabBar) {
@@ -259,81 +268,22 @@ void dred_config_on_set__cmdbar_padding_vert(dred_context* pDred)
 }
 
 
-void dred_config_on_set__tabgroup_bg_color(dred_context* pDred)
+void dred_config_on_set__tabgroup_generic_refresh(dred_context* pDred)
 {
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
         dred_tabgroup_refresh_styling(pTabGroup);
     }
 }
 
-void dred_config_on_set__tab_bg_color_inactive(dred_context* pDred)
+void dred_config_on_set__texteditor_generic_refresh(dred_context* pDred)
 {
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-        dred_tabgroup_refresh_styling(pTabGroup);
-    }
-}
-
-void dred_config_on_set__tab_bg_color_active(dred_context* pDred)
-{
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-        dred_tabgroup_refresh_styling(pTabGroup);
-    }
-}
-
-void dred_config_on_set__tab_bg_color_hovered(dred_context* pDred)
-{
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-        dred_tabgroup_refresh_styling(pTabGroup);
-    }
-}
-
-void dred_config_on_set__tab_font(dred_context* pDred)
-{
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-        dred_tabgroup_refresh_styling(pTabGroup);
-    }
-}
-
-void dred_config_on_set__tab_text_color(dred_context* pDred)
-{
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-        dred_tabgroup_refresh_styling(pTabGroup);
-    }
-}
-
-void dred_config_on_set__tab_padding(dred_context* pDred)
-{
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-        dred_tabgroup_refresh_styling(pTabGroup);
-    }
-}
-
-void dred_config_on_set__tab_show_close_button(dred_context* pDred)
-{
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-        dred_tabgroup_refresh_styling(pTabGroup);
-    }
-}
-
-
-void dred_config_on_set__ui_font(dred_context* pDred)
-{
-    // Everything that uses the UI font needs to be updated.
-    dred_cmdbar_refresh_styling(pDred->pCmdBar);
-
-    // The UI font may have resulted in the main window's layout becoming invalid.
-    dred_update_main_window_layout(pDred);
-}
-
-void dred_config_on_set__texteditor_font(dred_context* pDred)
-{
-    // The font's of every text editor need to be updated.
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
             dred_control* pControl = dred_tab_get_control(pTab);
             if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                dred_text_editor_set_font(pControl, pDred->config.pTextEditorFont);
+                dred_text_editor_refresh_styling(pControl);
             }
         }
     }
 }
+
