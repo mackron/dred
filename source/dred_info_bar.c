@@ -188,3 +188,26 @@ void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
     // The bar needs to be redrawn.
     drgui_dirty(pInfoBar, drgui_get_local_rect(pInfoBar));
 }
+
+void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar)
+{
+    dred_info_bar_data* data = (dred_info_bar_data*)dred_control_get_extra_data(pInfoBar);
+    if (data == NULL) {
+        return;
+    }
+
+    dred_context* pDred = dred_control_get_context(pInfoBar);
+    assert(pDred != NULL);
+
+    drgui_font* pNewFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
+    if (pNewFont != NULL) {
+        data->pFont = pNewFont;
+
+        // The height of the command bar is based on the size of the font.
+        drgui_font_metrics fontMetrics;
+        drgui_get_font_metrics(data->pFont, &fontMetrics);
+        drgui_set_size(pInfoBar, drgui_get_width(pInfoBar), (float)fontMetrics.lineHeight);
+    }
+
+    drgui_dirty(pInfoBar, drgui_get_local_rect(pInfoBar));
+}

@@ -202,6 +202,44 @@ void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolute
 
 
 // Set handlers.
+
+void dred_config_on_set__show_tab_bar(dred_context* pDred)
+{
+    if (pDred->config.showTabBar) {
+        dred_show_tabbars(pDred);
+    } else {
+        dred_hide_tabbars(pDred);
+    }
+}
+
+void dred_config_on_set__show_menu_bar(dred_context* pDred)
+{
+    if (pDred->config.showMenuBar) {
+        dred_show_menu_bar(pDred);
+    } else {
+        dred_hide_menu_bar(pDred);
+    }
+}
+
+void dred_config_on_set__auto_hide_cmd_bar(dred_context* pDred)
+{
+    if (pDred->config.autoHideCmdBar) {
+        dred_enable_auto_hide_command_bar(pDred);
+    } else {
+        dred_disable_auto_hide_command_bar(pDred);
+    }
+}
+
+
+void dred_config_on_set__ui_font(dred_context* pDred)
+{
+    // Everything that uses the UI font needs to be updated.
+    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+
+    // The UI font may have resulted in the main window's layout becoming invalid.
+    dred_update_main_window_layout(pDred);
+}
+
 void dred_config_on_set__texteditor_font(dred_context* pDred)
 {
     // The font's of every text editor need to be updated.

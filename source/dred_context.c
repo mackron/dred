@@ -1389,6 +1389,19 @@ void dred_show_about_dialog(dred_context* pDred)
 }
 
 
+void dred_update_main_window_layout(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return;
+    }
+
+    unsigned int windowWidth;
+    unsigned int windowHeight;
+    dred_window_get_client_size(pDred->pMainWindow, &windowWidth, &windowHeight);
+    dred__update_main_window_layout(pDred->pMainWindow, (float)windowWidth, (float)windowHeight);
+}
+
+
 void dred_set_command_bar_text(dred_context* pDred, const char* text)
 {
     if (pDred == NULL) {
@@ -1575,11 +1588,7 @@ void dred_show_command_bar(dred_context* pDred)
     }
 
     dred_control_show(pDred->pCmdBar);
-
-    unsigned int windowWidth;
-    unsigned int windowHeight;
-    dred_window_get_client_size(pDred->pMainWindow, &windowWidth, &windowHeight);
-    dred__update_main_window_layout(pDred->pMainWindow, (float)windowWidth, (float)windowHeight);
+    dred_update_main_window_layout(pDred);
 }
 
 void dred_hide_command_bar(dred_context* pDred)
@@ -1589,11 +1598,7 @@ void dred_hide_command_bar(dred_context* pDred)
     }
 
     dred_control_hide(pDred->pCmdBar);
-
-    unsigned int windowWidth;
-    unsigned int windowHeight;
-    dred_window_get_client_size(pDred->pMainWindow, &windowWidth, &windowHeight);
-    dred__update_main_window_layout(pDred->pMainWindow, (float)windowWidth, (float)windowHeight);
+    dred_update_main_window_layout(pDred);
 }
 
 void dred_enable_auto_hide_command_bar(dred_context* pDred)
@@ -1602,12 +1607,10 @@ void dred_enable_auto_hide_command_bar(dred_context* pDred)
         return;
     }
 
-    if (!pDred->config.autoHideCmdBar) {
-        pDred->config.autoHideCmdBar = true;
+    pDred->config.autoHideCmdBar = true;
 
-        if (!dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
-            dred_hide_command_bar(pDred);
-        }
+    if (!dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
+        dred_hide_command_bar(pDred);
     }
 }
 
@@ -1617,10 +1620,8 @@ void dred_disable_auto_hide_command_bar(dred_context* pDred)
         return;
     }
 
-    if (pDred->config.autoHideCmdBar) {
-        pDred->config.autoHideCmdBar = false;
-        dred_show_command_bar(pDred);
-    }
+    pDred->config.autoHideCmdBar = false;
+    dred_show_command_bar(pDred);
 }
 
 void dred_toggle_auto_hide_command_bar(dred_context* pDred)

@@ -245,6 +245,33 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
     }
 }
 
+void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
+{
+    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    assert(data != NULL);
+
+    dred_context* pDred = dred_control_get_context(pCmdBar);
+    assert(pDred != NULL);
+
+
+    drgui_font_metrics fontMetricsTB;
+    drgui_get_font_metrics(dred_textbox_get_font(data->pTextBox), &fontMetricsTB);
+
+    drgui_font_metrics fontMetricsMsg;
+    drgui_get_font_metrics(data->pMessageFont, &fontMetricsMsg);
+
+    float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(data->pTextBox)*2;
+    float messageHeight = (float)fontMetricsMsg.lineHeight;
+    float infobarHeight = (float)drgui_get_height(data->pInfoBar);
+
+    float cmdbarHeight = dr_max(textboxHeight, dr_max(messageHeight, infobarHeight)) + (pDred->config.cmdbarPaddingY*pDred->uiScale*2);
+    float cmdbarWidth = 0;
+    if (pCmdBar->pParent != NULL) {
+        cmdbarWidth = dred_control_get_width(pCmdBar->pParent);
+    }
+    dred_control_set_size(pCmdBar, cmdbarWidth, cmdbarHeight);
+}
+
 dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
 {
     dred_cmdbar* pCmdBar = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_CMDBAR, sizeof(dred_cmdbar_data));
@@ -293,22 +320,7 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
 
 
     // Set the initial size.
-    drgui_font_metrics fontMetricsTB;
-    drgui_get_font_metrics(dred_textbox_get_font(data->pTextBox), &fontMetricsTB);
-
-    drgui_font_metrics fontMetricsMsg;
-    drgui_get_font_metrics(data->pMessageFont, &fontMetricsMsg);
-
-    float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(data->pTextBox)*2;
-    float messageHeight = (float)fontMetricsMsg.lineHeight;
-    float infobarHeight = (float)drgui_get_height(data->pInfoBar);
-
-    float cmdbarHeight = dr_max(textboxHeight, dr_max(messageHeight, infobarHeight)) + (pDred->config.cmdbarPaddingY*pDred->uiScale*2);
-    float cmdbarWidth = 0;
-    if (pParent != NULL) {
-        cmdbarWidth = dred_control_get_width(pParent);
-    }
-    dred_control_set_size(pCmdBar, cmdbarWidth, cmdbarHeight);
+    dred_cmdbar__update_size(pCmdBar);
 
     return pCmdBar;
 }
@@ -392,4 +404,21 @@ void dred_cmdbar_update_info_bar(dred_cmdbar* pCmdBar, dred_control* pControl)
     }
 
     dred_info_bar_update(data->pInfoBar, pControl);
+}
+
+void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
+{
+    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    if (data == NULL) {
+        return;
+    }
+
+    dred_info_bar_refresh_styling(data->pInfoBar);
+
+
+    // The command bar may need to be resized.
+    dred_cmdbar__update_size(pCmdBar);
+
+    // Redraw.
+    drgui_dirty(pCmdBar, drgui_get_local_rect(pCmdBar));
 }

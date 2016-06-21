@@ -234,6 +234,13 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 void dred_show_about_dialog(dred_context* pDred);
 
 
+// Updates the layout of the main window.
+//
+// This will be called whenever something changes that would result in the main window's layout becoming invalid, such as changes
+// to the size or visibility state of the command bar.
+void dred_update_main_window_layout(dred_context* pDred);
+
+
 // Sets the text of the command bar.
 void dred_set_command_bar_text(dred_context* pDred, const char* text);
 

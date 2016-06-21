@@ -12,3 +12,6 @@ void dred_info_bar_delete(dred_info_bar* pInfoBar);
 
 // Updates the info bar based on the given control.
 void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl);
+
+// Refreshes the styling of the info bar.
+void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar);

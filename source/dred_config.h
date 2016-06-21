@@ -4,13 +4,13 @@
 
 // BEGIN CONFIG VARS: <name> <C variable name> <type> <on_set callback> <default value>
 //
-// show-tab-bar showTabBar bool none true
+// show-tab-bar showTabBar bool dred_config_on_set__show_tab_bar true
 //   Whether or not to show the tab bar.
 //
-// show-menu-bar showMenuBar bool none true
+// show-menu-bar showMenuBar bool dred_config_on_set__show_menu_bar true
 //   Whether or not to show the menu bar.
 //
-// auto-hide-cmd-bar autoHideCmdBar bool none false
+// auto-hide-cmd-bar autoHideCmdBar bool dred_config_on_set__auto_hide_cmd_bar false
 //   Whether or not to show the command bar at all times. If this is set to false it will be shown only when it has keyboard focus.
 //
 //
@@ -27,7 +27,7 @@
 // ui-scale uiScale float none 1
 //   The scale of the UI. The total scale of UI elements is equal to the DPI scaling multiplied by this value.
 //
-// ui-font pUIFont font none system-font-ui
+// ui-font pUIFont font dred_config_on_set__ui_font system-font-ui
 //   The default font to use for general UI elements. This will act as the default font in the event that a font fails to load.
 //
 //
@@ -161,6 +161,19 @@ void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolute
 
 
 // Set handlers.
+
+// show-tab-bar
+void dred_config_on_set__show_tab_bar(dred_context* pDred);
+
+// show-menu-bar
+void dred_config_on_set__show_menu_bar(dred_context* pDred);
+
+// auto-hide-cmd-bar
+void dred_config_on_set__auto_hide_cmd_bar(dred_context* pDred);
+
+
+// ui-font
+void dred_config_on_set__ui_font(dred_context* pDred);
 
 // texteditor-font
 void dred_config_on_set__texteditor_font(dred_context* pDred);
