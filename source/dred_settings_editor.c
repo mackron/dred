@@ -2,6 +2,9 @@
 typedef struct
 {
     dred_control* pFontButton;
+    dred_control* pTextColorButton;
+    dred_control* pBGColorButton;
+    dred_control* pLineColorButton;
 } dred_settings_editor_data;
 
 void dred_settings_editor__on_size(dred_settings_editor* pSettingsEditor, float newWidth, float newHeight)
@@ -42,6 +45,67 @@ void dred_settings__btn_choose_font__on_pressed(dred_button* pButton)
     dred_config_set(&pDred->config, "texteditor-font", fontDescStr);
 }
 
+void dred_settings__btn_text_color__on_pressed(dred_button* pButton)
+{
+    dred_window* pWindow = dred_get_element_window(pButton);
+    if (pWindow == NULL) {
+        return; // Should never hit this, but leaving here for sanity.
+    }
+
+    dred_context* pDred = pWindow->pDred;
+
+    drgui_color color = drgui_rgb(0, 0, 0);
+    if (!dred_show_color_picker_dialog(pDred, pWindow, pDred->config.textEditorTextColor, &color)) {
+        return;
+    }
+
+    char colorStr[256];
+    snprintf(colorStr, sizeof(colorStr), "%d %d %d", color.r, color.g, color.b);
+
+    dred_config_set(&pDred->config, "texteditor-text-color", colorStr);
+    dred_config_set(&pDred->config, "texteditor-cursor-color", colorStr);
+}
+
+void dred_settings__btn_bg_color__on_pressed(dred_button* pButton)
+{
+    dred_window* pWindow = dred_get_element_window(pButton);
+    if (pWindow == NULL) {
+        return; // Should never hit this, but leaving here for sanity.
+    }
+
+    dred_context* pDred = pWindow->pDred;
+
+    drgui_color color = drgui_rgb(0, 0, 0);
+    if (!dred_show_color_picker_dialog(pDred, pWindow, pDred->config.textEditorBGColor, &color)) {
+        return;
+    }
+
+    char colorStr[256];
+    snprintf(colorStr, sizeof(colorStr), "%d %d %d", color.r, color.g, color.b);
+
+    dred_config_set(&pDred->config, "texteditor-bg-color", colorStr);
+}
+
+void dred_settings__btn_active_line_color__on_pressed(dred_button* pButton)
+{
+    dred_window* pWindow = dred_get_element_window(pButton);
+    if (pWindow == NULL) {
+        return; // Should never hit this, but leaving here for sanity.
+    }
+
+    dred_context* pDred = pWindow->pDred;
+
+    drgui_color color = drgui_rgb(0, 0, 0);
+    if (!dred_show_color_picker_dialog(pDred, pWindow, pDred->config.textEditorActiveLineColor, &color)) {
+        return;
+    }
+
+    char colorStr[256];
+    snprintf(colorStr, sizeof(colorStr), "%d %d %d", color.r, color.g, color.b);
+
+    dred_config_set(&pDred->config, "texteditor-active-line-color", colorStr);
+}
+
 dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_control* pParent, const char* filePathAbsolute)
 {
     dred_settings_editor* pSettingsEditor = dred_editor_create(pDred, pParent, DRED_CONTROL_TYPE_SETTINGS_EDITOR, filePathAbsolute, sizeof(dred_settings_editor_data));
@@ -60,13 +124,40 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_cont
 
     dred_button_set_on_pressed(pData->pFontButton, dred_settings__btn_choose_font__on_pressed);
     dred_button_set_padding(pData->pFontButton, 16*pDred->uiScale, 6*pDred->uiScale);
-    //dred_button_enable_auto_size(pData->pFontButton);
-    dred_control_set_relative_position(pData->pFontButton, 8, 8);
-    //dred_control_set_size(pData->pFontButton, 128, 32);
+    dred_control_set_relative_position(pData->pFontButton, 8*pDred->uiScale, 8*pDred->uiScale);
 
 
+    pData->pTextColorButton = dred_button_create(pDred, pSettingsEditor, "Text Color...");
+    if (pData->pTextColorButton == NULL) {
+        dred_editor_delete(pSettingsEditor);
+        return NULL;
+    }
+
+    dred_button_set_on_pressed(pData->pTextColorButton, dred_settings__btn_text_color__on_pressed);
+    dred_button_set_padding(pData->pTextColorButton, 16*pDred->uiScale, 6*pDred->uiScale);
+    dred_control_set_relative_position(pData->pTextColorButton, 8*pDred->uiScale, (8+32)*pDred->uiScale);
 
 
+    pData->pBGColorButton = dred_button_create(pDred, pSettingsEditor, "Background Color...");
+    if (pData->pBGColorButton == NULL) {
+        dred_editor_delete(pSettingsEditor);
+        return NULL;
+    }
+
+    dred_button_set_on_pressed(pData->pBGColorButton, dred_settings__btn_bg_color__on_pressed);
+    dred_button_set_padding(pData->pBGColorButton, 16*pDred->uiScale, 6*pDred->uiScale);
+    dred_control_set_relative_position(pData->pBGColorButton, 8*pDred->uiScale, (8+64)*pDred->uiScale);
+
+
+    pData->pLineColorButton = dred_button_create(pDred, pSettingsEditor, "Active Line Color...");
+    if (pData->pLineColorButton == NULL) {
+        dred_editor_delete(pSettingsEditor);
+        return NULL;
+    }
+
+    dred_button_set_on_pressed(pData->pLineColorButton, dred_settings__btn_active_line_color__on_pressed);
+    dred_button_set_padding(pData->pLineColorButton, 16*pDred->uiScale, 6*pDred->uiScale);
+    dred_control_set_relative_position(pData->pLineColorButton, 8*pDred->uiScale, (8+96)*pDred->uiScale);
 
 
     // Events.

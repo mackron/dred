@@ -236,6 +236,9 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 // Shows the font picker dialog. Returns true if the user chose a font, false if they hit the cancel button or an error occurs.
 bool dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut);
 
+// Shows the color picker dialog. Returns true if the user chose a color, false if they hit the cancel button or an error occurs.
+bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, drgui_color initialColor, drgui_color* pColorOut);
+
 
 // Shows the "About" dialog box.
 void dred_show_about_dialog(dred_context* pDred);

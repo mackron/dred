@@ -1496,6 +1496,48 @@ bool dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow
 #endif
 }
 
+bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, drgui_color initialColor, drgui_color* pColorOut)
+{
+    if (pDred == NULL || pColorOut == NULL) {
+        return false;
+    }
+
+    if (pOwnerWindow == NULL) {
+        pOwnerWindow = pDred->pMainWindow;
+    }
+
+#ifdef DRED_WIN32
+    static COLORREF prevcolors[16] = {
+        RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255),
+        RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255),
+        RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255),
+        RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255),
+    };
+
+    CHOOSECOLORA cc;
+    ZeroMemory(&cc, sizeof(cc));
+    cc.lStructSize = sizeof(cc);
+    cc.hwndOwner = pOwnerWindow->hWnd;
+    cc.rgbResult = RGB(initialColor.r, initialColor.g, initialColor.b);
+    cc.lpCustColors = prevcolors;
+    cc.Flags = CC_RGBINIT | CC_ANYCOLOR | CC_FULLOPEN;
+
+    if (!ChooseColorA(&cc)) {
+        return false;
+    }
+
+    pColorOut->r = GetRValue(cc.rgbResult);
+    pColorOut->g = GetGValue(cc.rgbResult);
+    pColorOut->b = GetBValue(cc.rgbResult);
+    pColorOut->a = 255;
+
+    return true;
+#endif
+
+#ifdef DRED_GTK
+#endif
+}
+
 
 void dred_show_about_dialog(dred_context* pDred)
 {
