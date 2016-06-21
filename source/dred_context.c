@@ -1464,7 +1464,7 @@ bool dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow
         return false;
     }
 
-    gtk_dialog_run(GTK_DIALOG(dialog));
+    gint result = gtk_dialog_run(GTK_DIALOG(dialog));
 
     gchar* pangoFontStr = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(dialog));
     if (pangoFontStr == NULL) {
@@ -1492,7 +1492,7 @@ bool dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow
     }
 
     gtk_widget_destroy(dialog);
-    return true;
+    return result == GTK_RESPONSE_OK;
 #endif
 }
 
@@ -1535,6 +1535,28 @@ bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindo
 #endif
 
 #ifdef DRED_GTK
+    GtkWidget* dialog = gtk_color_chooser_dialog_new(NULL, GTK_WINDOW(pDred->pMainWindow->pGTKWindow));
+    if (dialog == NULL) {
+        return false;
+    }
+
+    GdkRGBA rgba;
+    rgba.red   = initialColor.r / 255.0;
+    rgba.green = initialColor.g / 255.0;
+    rgba.blue  = initialColor.b / 255.0;
+    rgba.alpha = initialColor.a / 255.0;
+    gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(dialog), &rgba);
+
+    gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+
+    gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(dialog), &rgba);
+    pColorOut->r = (drgui_byte)(rgba.red * 255);
+    pColorOut->g = (drgui_byte)(rgba.green * 255);
+    pColorOut->b = (drgui_byte)(rgba.blue * 255);
+    pColorOut->a = (drgui_byte)(rgba.alpha * 255);
+
+    gtk_widget_destroy(dialog);
+    return result == GTK_RESPONSE_OK;
 #endif
 }
 
