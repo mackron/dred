@@ -227,4 +227,4 @@ size_t dred_find_command_index(const char* cmdFunc);
 
 
 // Helper function for parsing the "bind" command.
-bool dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSize, dred_shortcut* pShortcutOut, const char** pCmdOut);
+bool dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSize, dred_shortcut* pShortcutOut, char* pCmdOut, size_t cmdOutSize);

@@ -72,8 +72,8 @@ void dred_command__bind(dred_context* pDred, const char* value)
 {
     char shortcutName[256];
     dred_shortcut shortcut;
-    const char* commandStr;
-    if (dred_parse_bind_command(value, shortcutName, sizeof(shortcutName), &shortcut, &commandStr)) {
+    char commandStr[4096];
+    if (dred_parse_bind_command(value, shortcutName, sizeof(shortcutName), &shortcut, commandStr, sizeof(commandStr))) {
         dred_bind_shortcut(pDred, shortcutName, shortcut, commandStr);
     }
 }
@@ -518,7 +518,7 @@ size_t dred_find_command_index(const char* cmdFunc)
     return (size_t)-1;
 }
 
-bool dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSize, dred_shortcut* pShortcutOut, const char** pCmdOut)
+bool dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSize, dred_shortcut* pShortcutOut, char* pCmdOut, size_t cmdOutSize)
 {
     if (value == NULL) {
         return false;
@@ -530,8 +530,17 @@ bool dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSiz
         value = dr_next_token(value, shortcutStr, sizeof(shortcutStr));
         if (value != NULL) {
             if (pShortcutOut) *pShortcutOut = dred_shortcut_parse(shortcutStr);
-            if (pCmdOut) *pCmdOut = dr_first_non_whitespace(value);
-            return true;
+
+            const char* cmd = dr_first_non_whitespace(value);
+            if (cmd == NULL) {
+                return false;
+            }
+
+            if (cmd[0] == '\"') {
+                return dr_next_token(cmd, pCmdOut, cmdOutSize) != NULL;    // <-- This will trim the double-quotes.
+            } else {
+                return strcpy_s(pCmdOut, cmdOutSize, cmd) == 0;
+            }
         }
     }
 

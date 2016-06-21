@@ -624,7 +624,7 @@ void dred_save_dredprivate(dred_context* pDred)
         dred_shortcut_to_string(pDred->shortcutTable.pShortcuts[i], shortcutStr, sizeof(shortcutStr));
 
         char bindingStr[4096];
-        if (snprintf(bindingStr, sizeof(bindingStr), "bind \"%s\" \"%s\" %s\n", pDred->shortcutTable.ppNameStrings[i], shortcutStr, pDred->shortcutTable.ppCmdStrings[i]) < 0) {
+        if (snprintf(bindingStr, sizeof(bindingStr), "bind \"%s\" \"%s\" \"%s\"\n", pDred->shortcutTable.ppNameStrings[i], shortcutStr, pDred->shortcutTable.ppCmdStrings[i]) < 0) {
             continue;   // Error parsing.
         }
 
