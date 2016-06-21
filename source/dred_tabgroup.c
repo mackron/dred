@@ -223,6 +223,43 @@ void dred_tabgroup_delete(dred_tabgroup* pTabGroup)
 }
 
 
+void dred_tabgroup_refresh_styling(dred_tabgroup* pTabGroup)
+{
+    dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
+    if (data == NULL) {
+        return;
+    }
+
+    dred_context* pDred = dred_control_get_context(pTabGroup);
+    if (pDred == NULL) {
+        return;
+    }
+
+
+    // Update tab bar.
+    drgui_tabbar_set_tab_padding(data->pTabBar, pDred->config.tabPadding * pDred->uiScale);
+    drgui_tabbar_set_tab_background_color(data->pTabBar, pDred->config.tabBGColorInvactive);
+    drgui_tabbar_set_tab_background_color_actived(data->pTabBar, pDred->config.tabBGColorActive);
+    drgui_tabbar_set_tab_background_color_hovered(data->pTabBar, pDred->config.tabBGColorHovered);
+    drgui_tabbar_set_font(data->pTabBar, dred_font_acquire_subfont(pDred->config.tabFont, pDred->uiScale));
+    drgui_tabbar_set_text_color(data->pTabBar, pDred->config.tabTextColor);
+    drgui_tabbar_set_close_button_left_padding(data->pTabBar, 6 * pDred->uiScale);
+    drgui_tabbar_set_close_button_image(data->pTabBar, dred_image_acquire_subimage(pDred->config.pImageCross, pDred->uiScale));
+    if (pDred->config.tabShowCloseButton) {
+        drgui_tabbar_show_close_buttons(data->pTabBar);
+    } else {
+        drgui_tabbar_hide_close_buttons(data->pTabBar);
+    }
+
+
+    // The size of some elements may have changed, so update the layout also.
+    dred_tabgroup__refresh_layout(pTabGroup, dred_control_get_width(pTabGroup), dred_control_get_height(pTabGroup));
+
+    // Redraw.
+    drgui_dirty(pTabGroup, drgui_get_local_rect(pTabGroup));
+}
+
+
 void dred_tabgroup_set_next_tabgroup(dred_tabgroup* pTabGroup, dred_tabgroup* pNextTabGroup)
 {
     dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);

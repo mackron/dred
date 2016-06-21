@@ -10,6 +10,10 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent);
 void dred_tabgroup_delete(dred_tabgroup* pTabGroup);
 
 
+// Refreshes the styling of the tab group.
+void dred_tabgroup_refresh_styling(dred_tabgroup* pTabGroup);
+
+
 // Sets the next tab group. This is just a simple setter.
 void dred_tabgroup_set_next_tabgroup(dred_tabgroup* pTabGroup, dred_tabgroup* pNextTabGroup);
 

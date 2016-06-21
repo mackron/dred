@@ -259,6 +259,63 @@ void dred_config_on_set__cmdbar_padding_vert(dred_context* pDred)
 }
 
 
+void dred_config_on_set__tabgroup_bg_color(dred_context* pDred)
+{
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        dred_tabgroup_refresh_styling(pTabGroup);
+    }
+}
+
+void dred_config_on_set__tab_bg_color_inactive(dred_context* pDred)
+{
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        dred_tabgroup_refresh_styling(pTabGroup);
+    }
+}
+
+void dred_config_on_set__tab_bg_color_active(dred_context* pDred)
+{
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        dred_tabgroup_refresh_styling(pTabGroup);
+    }
+}
+
+void dred_config_on_set__tab_bg_color_hovered(dred_context* pDred)
+{
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        dred_tabgroup_refresh_styling(pTabGroup);
+    }
+}
+
+void dred_config_on_set__tab_font(dred_context* pDred)
+{
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        dred_tabgroup_refresh_styling(pTabGroup);
+    }
+}
+
+void dred_config_on_set__tab_text_color(dred_context* pDred)
+{
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        dred_tabgroup_refresh_styling(pTabGroup);
+    }
+}
+
+void dred_config_on_set__tab_padding(dred_context* pDred)
+{
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        dred_tabgroup_refresh_styling(pTabGroup);
+    }
+}
+
+void dred_config_on_set__tab_show_close_button(dred_context* pDred)
+{
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        dred_tabgroup_refresh_styling(pTabGroup);
+    }
+}
+
+
 void dred_config_on_set__ui_font(dred_context* pDred)
 {
     // Everything that uses the UI font needs to be updated.

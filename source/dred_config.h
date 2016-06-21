@@ -50,28 +50,28 @@
 //   The amount of padding to apply to the command bar on the top and bottom sides.
 //
 //
-// tabgroup-bg-color tabgroupBGColor color none 48 48 48
+// tabgroup-bg-color tabgroupBGColor color dred_config_on_set__tabgroup_bg_color 48 48 48
 //   The background color of tab groups. This will be shown when there are no tabs open in the group.
 //
-// tab-bg-color-inactive tabBGColorInvactive color none 58 58 58
+// tab-bg-color-inactive tabBGColorInvactive color dred_config_on_set__tab_bg_color_inactive 58 58 58
 //   The background color of tabs while inactive.
 //
-// tab-bg-color-active tabBGColorActive color none 16 92 160
+// tab-bg-color-active tabBGColorActive color dred_config_on_set__tab_bg_color_active 16 92 160
 //   The background color of tabs while active.
 //
-// tab-bg-color-hovered tabBGColorHovered color none 32 128 192
+// tab-bg-color-hovered tabBGColorHovered color dred_config_on_set__tab_bg_color_hovered 32 128 192
 //   The background color of tabs while hovered.
 //
-// tab-font tabFont font none system-font-ui
+// tab-font tabFont font dred_config_on_set__tab_font system-font-ui
 //   The font to use on tabs.
 //
-// tab-text-color tabTextColor color none 224 224 224
+// tab-text-color tabTextColor color dred_config_on_set__tab_text_color 224 224 224
 //   The color of the text on tabs.
 //
-// tab-padding tabPadding float none 4
+// tab-padding tabPadding float dred_config_on_set__tab_padding 4
 //   The amount of padding to apply to all sides of a tab.
 //
-// tab-show-close-button tabShowCloseButton bool none true
+// tab-show-close-button tabShowCloseButton bool dred_config_on_set__tab_show_close_button true
 //   Whether or not to show the close button on tabs.
 //
 //
@@ -186,6 +186,31 @@ void dred_config_on_set__cmdbar_padding_horz(dred_context* pDred);
 
 // cmdbar-padding-vert
 void dred_config_on_set__cmdbar_padding_vert(dred_context* pDred);
+
+
+// tabgroup-bg-color
+void dred_config_on_set__tabgroup_bg_color(dred_context* pDred);
+
+// tab-bg-color-inactive
+void dred_config_on_set__tab_bg_color_inactive(dred_context* pDred);
+
+// tab-bg-color-active
+void dred_config_on_set__tab_bg_color_active(dred_context* pDred);
+
+// tab-bg-color-hovered
+void dred_config_on_set__tab_bg_color_hovered(dred_context* pDred);
+
+// tab-font
+void dred_config_on_set__tab_font(dred_context* pDred);
+
+// tab-text-color
+void dred_config_on_set__tab_text_color(dred_context* pDred);
+
+// tab-padding
+void dred_config_on_set__tab_padding(dred_context* pDred);
+
+// tab-show-close-button
+void dred_config_on_set__tab_show_close_button(dred_context* pDred);
 
 
 // ui-font
