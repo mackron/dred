@@ -152,6 +152,9 @@ bool dred_config_load_file(dred_config* pConfig, const char* filePath, dred_conf
 // Sets a variable from a name/value string pair.
 void dred_config_set(dred_config* pConfig, const char* name, const char* value);
 
+// Sets a variable to it's default value.
+void dred_config_set_default(dred_config* pConfig, const char* name);
+
 // Pushes a new recent file to the end of the list.
 void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolutePath);
 
