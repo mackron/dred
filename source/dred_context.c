@@ -750,6 +750,7 @@ bool dred__save_editor(dred_editor* pEditor, const char* newFilePath, dred_tab* 
 
 const char* dred_get_editor_type_by_path(const char* filePath)
 {
+    // TODO: Add to this list.
     // Check for known extensions first as a performance optimization. If that fails we'll want to open the file and inspect it.
     if (drpath_extension_equal(filePath, "txt")) {
         return DRED_CONTROL_TYPE_TEXT_EDITOR;
