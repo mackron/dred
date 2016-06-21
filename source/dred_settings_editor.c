@@ -59,8 +59,10 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_cont
     }
 
     dred_button_set_on_pressed(pData->pFontButton, dred_settings__btn_choose_font__on_pressed);
+    dred_button_set_padding(pData->pFontButton, 16*pDred->uiScale, 6*pDred->uiScale);
+    //dred_button_enable_auto_size(pData->pFontButton);
     dred_control_set_relative_position(pData->pFontButton, 8, 8);
-    dred_control_set_size(pData->pFontButton, 128, 32);
+    //dred_control_set_size(pData->pFontButton, 128, 32);
 
 
 

@@ -10,7 +10,10 @@ typedef struct
     drgui_color bgColorPressed;
     drgui_color borderColor;
     float borderWidth;
+    float paddingHorz;
+    float paddingVert;
     bool isMouseOver;
+    bool isAutoSizeEnabled;
     dred_button_on_pressed_proc onPressed;
 } dred_button_data;
 
@@ -148,6 +151,26 @@ void dred_button__on_release_mouse(dred_button* pButton)
     drgui_dirty(pButton, drgui_get_local_rect(pButton));
 }
 
+void dred_button__refresh_layout(dred_button* pButton)
+{
+    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    if (pData == NULL) {
+        return;
+    }
+
+    if (pData->isAutoSizeEnabled) {
+        float textWidth;
+        float textHeight;
+        drgui_measure_string(pData->pSubFont, pData->text, strlen(pData->text), &textWidth, &textHeight);
+
+        dred_control_set_size(pButton, textWidth + (pData->paddingHorz*2), textHeight + (pData->paddingVert*2));
+    }
+
+
+    // Redraw.
+    drgui_dirty(pButton, drgui_get_local_rect(pButton));
+}
+
 dred_button* dred_button_create(dred_context* pDred, dred_control* pParent, const char* text)
 {
     dred_button* pButton = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_BUTTON, sizeof(dred_button_data));
@@ -167,6 +190,9 @@ dred_button* dred_button_create(dred_context* pDred, dred_control* pParent, cons
     pData->bgColorPressed = drgui_rgb(200, 224, 240);
     pData->borderColor = drgui_rgb(32, 64, 160);
     pData->borderWidth = 1;
+    pData->paddingHorz = 16;
+    pData->paddingVert = 4;
+    pData->isAutoSizeEnabled = true;
 
     // Events.
     pButton->onPaint = dred_button__on_paint;
@@ -176,6 +202,8 @@ dred_button* dred_button_create(dred_context* pDred, dred_control* pParent, cons
     pButton->onMouseButtonDown = dred_button__on_mouse_button_down;
     pButton->onMouseButtonUp = dred_button__on_mouse_button_up;
     pButton->onReleaseMouse = dred_button__on_release_mouse;
+
+    dred_button__refresh_layout(pButton);
 
     return pButton;
 }
@@ -205,6 +233,30 @@ void dred_button_set_text(dred_button* pButton, const char* text)
     drgui_dirty(pButton, drgui_get_local_rect(pButton));
 }
 
+void dred_button_enable_auto_size(dred_button* pButton)
+{
+    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    if (pData == NULL) {
+        return;
+    }
+
+    pData->isAutoSizeEnabled = true;
+
+    dred_button__refresh_layout(pButton);
+}
+
+void dred_button_disable_auto_size(dred_button* pButton)
+{
+    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    if (pData == NULL) {
+        return;
+    }
+
+    pData->isAutoSizeEnabled = false;
+
+    dred_button__refresh_layout(pButton);
+}
+
 
 void dred_button_set_font(dred_button* pButton, dred_font* pFont)
 {
@@ -222,8 +274,7 @@ void dred_button_set_font(dred_button* pButton, dred_font* pFont)
     pData->pFont = pFont;
     pData->pSubFont = dred_font_acquire_subfont(pData->pFont, dred_control_get_context(pButton)->uiScale);
 
-    // Redraw.
-    drgui_dirty(pButton, drgui_get_local_rect(pButton));
+    dred_button__refresh_layout(pButton);
 }
 
 void dred_button_set_background_color(dred_button* pButton, drgui_color color)
@@ -263,6 +314,19 @@ void dred_button_set_border_width(dred_button* pButton, float width)
 
     // Redraw.
     drgui_dirty(pButton, drgui_get_local_rect(pButton));
+}
+
+void dred_button_set_padding(dred_button* pButton, float paddingHorz, float paddingVert)
+{
+    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    if (pData == NULL) {
+        return;
+    }
+
+    pData->paddingHorz = paddingHorz;
+    pData->paddingVert = paddingVert;
+
+    dred_button__refresh_layout(pButton);
 }
 
 
