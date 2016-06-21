@@ -54,11 +54,8 @@ void dred_cmdbar__get_segment_rects(dred_cmdbar* pCmdBar, drgui_rect* pLRect, dr
 }
 
 
-void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
+void dred_cmdbar__update_layouts_of_inner_controls(dred_cmdbar* pCmdBar)
 {
-    (void)newWidth;
-    (void)newHeight;
-
     dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
     assert(data != NULL);
 
@@ -73,6 +70,15 @@ void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
     
     dred_control_set_relative_position(data->pInfoBar, rrect.left, rrect.top);
     dred_control_set_size(data->pInfoBar, rrect.right - rrect.left, rrect.bottom - rrect.top);
+}
+
+
+void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
+{
+    (void)newWidth;
+    (void)newHeight;
+
+    dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
 void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, drgui_element* pPrevCapturedElement)
@@ -270,6 +276,10 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
         cmdbarWidth = dred_control_get_width(pCmdBar->pParent);
     }
     dred_control_set_size(pCmdBar, cmdbarWidth, cmdbarHeight);
+
+
+    // A change in size will require the inner controls to have their layouts updated for centering and whatnot.
+    dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
 dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)

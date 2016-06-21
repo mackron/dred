@@ -31,10 +31,10 @@
 //   The default font to use for general UI elements. This will act as the default font in the event that a font fails to load.
 //
 //
-// cmdbar-bg-color cmdbarBGColor color none 64 64 64 
+// cmdbar-bg-color cmdbarBGColor color dred_config_on_set__cmdbar_bg_color 64 64 64 
 //   The background color of the command bar.
 //
-// cmdbar-bg-color-active cmdbarBGColorActive color none 128 51 0
+// cmdbar-bg-color-active cmdbarBGColorActive color dred_config_on_set__cmdbar_bg_color_active 128 51 0
 //   The background color of the command bar while it's got the keyboard focus.
 //
 // cmdbar-tb-font pCmdbarTBFont font none system-font-mono
@@ -170,6 +170,13 @@ void dred_config_on_set__show_menu_bar(dred_context* pDred);
 
 // auto-hide-cmd-bar
 void dred_config_on_set__auto_hide_cmd_bar(dred_context* pDred);
+
+
+// cmdbar-bg-color
+void dred_config_on_set__cmdbar_bg_color(dred_context* pDred);
+
+// cmdbar-bg-color-active
+void dred_config_on_set__cmdbar_bg_color_active(dred_context* pDred);
 
 
 // ui-font

@@ -225,6 +225,17 @@ void dred_config_on_set__auto_hide_cmd_bar(dred_context* pDred)
 }
 
 
+void dred_config_on_set__cmdbar_bg_color(dred_context* pDred)
+{
+    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+}
+
+void dred_config_on_set__cmdbar_bg_color_active(dred_context* pDred)
+{
+    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+}
+
+
 void dred_config_on_set__ui_font(dred_context* pDred)
 {
     // Everything that uses the UI font needs to be updated.
