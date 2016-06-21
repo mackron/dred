@@ -154,6 +154,9 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* 
         dred_show_command_bar(pDred);
     }
 
+    // Hide any message that's showing.
+    dred_cmdbar_set_message(pCmdBar, "");
+
     drgui_dirty(pCmdBar, drgui_get_local_rect(pCmdBar));
 
 
