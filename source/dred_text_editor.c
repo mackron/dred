@@ -234,6 +234,10 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
     dred_textbox_set_line_numbers_color(data->pTextBox, pDred->config.textEditorLineNumbersColor);
     dred_textbox_set_line_numbers_background_color(data->pTextBox, pDred->config.textEditorLineNumbersBGColor);
     dred_textbox_set_line_numbers_padding(data->pTextBox, pDred->config.textEditorLineNumbersPadding);
+    dred_textbox_set_scrollbar_track_color(data->pTextBox, pDred->config.textEditorSBTrackColor);
+    dred_textbox_set_scrollbar_thumb_color(data->pTextBox, pDred->config.textEditorSBThumbColor);
+    dred_textbox_set_scrollbar_thumb_color_hovered(data->pTextBox, pDred->config.textEditorSBThumbColorHovered);
+    dred_textbox_set_scrollbar_thumb_color_pressed(data->pTextBox, pDred->config.textEditorSBThumbColorPressed);
     dred_textbox_set_tab_size_in_spaces(data->pTextBox, pDred->config.textEditorTabSizeInSpaces);
     if (pDred->config.textEditorTabsToSpacesEnabled) {
         dred_textbox_enable_tabs_to_spaces(data->pTextBox);

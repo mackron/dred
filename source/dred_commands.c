@@ -78,6 +78,16 @@ void dred_command__bind(dred_context* pDred, const char* value)
     }
 }
 
+void dred_command__load_config(dred_context* pDred, const char* value)
+{
+    char path[DRED_MAX_PATH];
+    if (!dr_next_token(value, path, sizeof(path))) {
+        return;
+    }
+
+    dred_load_config(pDred, path);
+}
+
 void dred_command__set(dred_context* pDred, const char* value)
 {
     char name[256];

@@ -533,6 +533,50 @@ drgui_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBo
     return pTB->lineNumbersBackgroundColor;
 }
 
+void dred_textbox_set_scrollbar_track_color(dred_textbox* pTextBox, drgui_color color)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return;
+    }
+
+    drgui_sb_set_track_color(pTB->pHorzScrollbar, color);
+    drgui_sb_set_track_color(pTB->pVertScrollbar, color);
+}
+
+void dred_textbox_set_scrollbar_thumb_color(dred_textbox* pTextBox, drgui_color color)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return;
+    }
+
+    drgui_sb_set_default_thumb_color(pTB->pHorzScrollbar, color);
+    drgui_sb_set_default_thumb_color(pTB->pVertScrollbar, color);
+}
+
+void dred_textbox_set_scrollbar_thumb_color_hovered(dred_textbox* pTextBox, drgui_color color)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return;
+    }
+
+    drgui_sb_set_hovered_thumb_color(pTB->pHorzScrollbar, color);
+    drgui_sb_set_hovered_thumb_color(pTB->pVertScrollbar, color);
+}
+
+void dred_textbox_set_scrollbar_thumb_color_pressed(dred_textbox* pTextBox, drgui_color color)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return;
+    }
+
+    drgui_sb_set_pressed_thumb_color(pTB->pHorzScrollbar, color);
+    drgui_sb_set_pressed_thumb_color(pTB->pVertScrollbar, color);
+}
+
 
 
 void dred_textbox_set_text(dred_textbox* pTextBox, const char* text)

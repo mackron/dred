@@ -31,7 +31,7 @@
 //   The default font to use for general UI elements. This will act as the default font in the event that a font fails to load.
 //
 //
-// cmdbar-bg-color cmdbarBGColor color dred_config_on_set__cmdbar_bg_color 64 64 64 
+// cmdbar-bg-color cmdbarBGColor color dred_config_on_set__cmdbar_bg_color 64 64 64
 //   The background color of the command bar.
 //
 // cmdbar-bg-color-active cmdbarBGColorActive color dred_config_on_set__cmdbar_bg_color_active 128 51 0
@@ -68,11 +68,20 @@
 // tab-text-color tabTextColor color dred_config_on_set__tabgroup_generic_refresh 224 224 224
 //   The color of the text on tabs.
 //
+// tab-text-color-active tabTextColorActive color dred_config_on_set__tabgroup_generic_refresh 224 224 224
+//   The color of the text on tabs while active.
+//
+// tab-text-color-hovered tabTextColorHovered color dred_config_on_set__tabgroup_generic_refresh 224 224 224
+//   The color of the text on tabs while hovered.
+//
 // tab-padding tabPadding float dred_config_on_set__tabgroup_generic_refresh 4
 //   The amount of padding to apply to all sides of a tab.
 //
 // tab-show-close-button tabShowCloseButton bool dred_config_on_set__tabgroup_generic_refresh true
 //   Whether or not to show the close button on tabs.
+//
+// tab-close-button-color tabCloseButtonColor color dred_config_on_set__tabgroup_generic_refresh 58 58 58
+//   The color of the close button while inactive.
 //
 //
 // texteditor-font pTextEditorFont font dred_config_on_set__texteditor_generic_refresh system-font-mono
@@ -107,6 +116,18 @@
 //
 // texteditor-line-numbers-padding textEditorLineNumbersPadding float dred_config_on_set__texteditor_generic_refresh 16
 //   The padding between the line numbers and the text in the text editor.
+//
+// texteditor-sb-track-color textEditorSBTrackColor color dred_config_on_set__texteditor_generic_refresh 80 80 80
+//   The color of the track of the scroll bars on text editors.
+//
+// texteditor-sb-thumb-color textEditorSBThumbColor color dred_config_on_set__texteditor_generic_refresh 112 112 112
+//   The color of the thumb of the scroll bars on text editors.
+//
+// texteditor-sb-thumb-color-hovered textEditorSBThumbColorHovered color dred_config_on_set__texteditor_generic_refresh 144 144 144
+//   The color of the thumb of the scroll bars on text editors while hovered.
+//
+// texteditor-sb-thumb-color-pressed textEditorSBThumbColorPressed color dred_config_on_set__texteditor_generic_refresh 180 180 180
+//   The color of the thumb of the scroll bars on text editors while pressed.
 //
 // texteditor-enable-tabs-to-spaces textEditorTabsToSpacesEnabled bool dred_config_on_set__texteditor_generic_refresh false
 //   Whether or not tabs are converted to spaces.

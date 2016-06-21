@@ -89,6 +89,18 @@ void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, drgu
 // Retrieves the color of the background of the line numbers.
 drgui_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBox);
 
+// Sets the color of the track of the scrollbars.
+void dred_textbox_set_scrollbar_track_color(dred_textbox* pTextBox, drgui_color color);
+
+// Sets the color of the thumb of the scrollbars.
+void dred_textbox_set_scrollbar_thumb_color(dred_textbox* pTextBox, drgui_color color);
+
+// Sets the color of the thumb of the scrollbars while hovered.
+void dred_textbox_set_scrollbar_thumb_color_hovered(dred_textbox* pTextBox, drgui_color color);
+
+// Sets the color of the thumb of the scrollbars while pressed.
+void dred_textbox_set_scrollbar_thumb_color_pressed(dred_textbox* pTextBox, drgui_color color);
+
 
 // Sets the text of the given text box.
 void dred_textbox_set_text(dred_textbox* pTextBox, const char* text);

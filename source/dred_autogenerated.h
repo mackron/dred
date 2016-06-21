@@ -26,8 +26,11 @@ drgui_color tabBGColorActive; \
 drgui_color tabBGColorHovered; \
 dred_font* tabFont; \
 drgui_color tabTextColor; \
+drgui_color tabTextColorActive; \
+drgui_color tabTextColorHovered; \
 float tabPadding; \
 bool tabShowCloseButton; \
+drgui_color tabCloseButtonColor; \
 dred_font* pTextEditorFont; \
 drgui_color textEditorTextColor; \
 drgui_color textEditorBGColor; \
@@ -39,6 +42,10 @@ bool textEditorShowLineNumbers; \
 drgui_color textEditorLineNumbersColor; \
 drgui_color textEditorLineNumbersBGColor; \
 float textEditorLineNumbersPadding; \
+drgui_color textEditorSBTrackColor; \
+drgui_color textEditorSBThumbColor; \
+drgui_color textEditorSBThumbColorHovered; \
+drgui_color textEditorSBThumbColorPressed; \
 bool textEditorTabsToSpacesEnabled; \
 int textEditorTabSizeInSpaces; \
 float textEditorScale;

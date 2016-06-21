@@ -175,25 +175,14 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
     data->pNextTabGroup = NULL;
     data->pPrevTabGroup = NULL;
 
-    drgui_tabbar_set_tab_padding(data->pTabBar, pDred->config.tabPadding * pDred->uiScale);
-    drgui_tabbar_set_tab_background_color(data->pTabBar, pDred->config.tabBGColorInvactive);
-    drgui_tabbar_set_tab_background_color_actived(data->pTabBar, pDred->config.tabBGColorActive);
-    drgui_tabbar_set_tab_background_color_hovered(data->pTabBar, pDred->config.tabBGColorHovered);
-    drgui_tabbar_set_font(data->pTabBar, dred_font_acquire_subfont(pDred->config.tabFont, pDred->uiScale));
-    drgui_tabbar_set_text_color(data->pTabBar, pDred->config.tabTextColor);
-    drgui_tabbar_set_close_button_left_padding(data->pTabBar, 6 * pDred->uiScale);
-    drgui_tabbar_set_close_button_image(data->pTabBar, dred_image_acquire_subimage(pDred->config.pImageCross, pDred->uiScale));
-    if (pDred->config.tabShowCloseButton) {
-        drgui_tabbar_show_close_buttons(data->pTabBar);
-    } else {
-        drgui_tabbar_hide_close_buttons(data->pTabBar);
-    }
     drgui_tabbar_enable_close_on_middle_click(data->pTabBar);
     drgui_tabbar_enable_auto_size(data->pTabBar);
     drgui_tabbar_set_on_tab_activated(data->pTabBar, dred_tabbar__on_tab_activated);
     drgui_tabbar_set_on_tab_deactivated(data->pTabBar, dred_tabbar__on_tab_deactivated);
     drgui_tabbar_set_on_tab_closed(data->pTabBar, dred_tabbar__on_tab_close);
     drgui_tabbar_set_on_tab_mouse_button_up(data->pTabBar, dred_tabbar__on_tab_mouse_button_up);
+
+    dred_tabgroup_refresh_styling(pTabGroup);
 
 
     // Events.
@@ -239,12 +228,15 @@ void dred_tabgroup_refresh_styling(dred_tabgroup* pTabGroup)
     // Update tab bar.
     drgui_tabbar_set_tab_padding(data->pTabBar, pDred->config.tabPadding * pDred->uiScale);
     drgui_tabbar_set_tab_background_color(data->pTabBar, pDred->config.tabBGColorInvactive);
-    drgui_tabbar_set_tab_background_color_actived(data->pTabBar, pDred->config.tabBGColorActive);
+    drgui_tabbar_set_tab_background_color_active(data->pTabBar, pDred->config.tabBGColorActive);
     drgui_tabbar_set_tab_background_color_hovered(data->pTabBar, pDred->config.tabBGColorHovered);
     drgui_tabbar_set_font(data->pTabBar, dred_font_acquire_subfont(pDred->config.tabFont, pDred->uiScale));
     drgui_tabbar_set_text_color(data->pTabBar, pDred->config.tabTextColor);
+    drgui_tabbar_set_text_color_active(data->pTabBar, pDred->config.tabTextColorActive);
+    drgui_tabbar_set_text_color_hovered(data->pTabBar, pDred->config.tabTextColorHovered);
     drgui_tabbar_set_close_button_left_padding(data->pTabBar, 6 * pDred->uiScale);
     drgui_tabbar_set_close_button_image(data->pTabBar, dred_image_acquire_subimage(pDred->config.pImageCross, pDred->uiScale));
+    drgui_tabbar_set_close_button_color(data->pTabBar, pDred->config.tabCloseButtonColor);
     if (pDred->config.tabShowCloseButton) {
         drgui_tabbar_show_close_buttons(data->pTabBar);
     } else {
