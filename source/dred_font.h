@@ -34,4 +34,5 @@ void dred_font_delete(dred_font* pFont);
 drgui_font* dred_font_acquire_subfont(dred_font* pFont, float scale);
 void dred_font_release_subfont(dred_font* pFont, drgui_font* pSubfont);
 
+bool dred_font_desc_to_string(dred_font_desc* pDesc, char* strOut, size_t strOutSize);
 bool dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize);

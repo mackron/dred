@@ -1372,6 +1372,95 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 #endif
 }
 
+bool dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut)
+{
+    if (pDred == NULL || pDescOut == NULL) {
+        return false;
+    }
+
+    if (pOwnerWindow == NULL) {
+        pOwnerWindow = pDred->pMainWindow;
+    }
+
+
+#ifdef DRED_WIN32
+    LOGFONTA lf;
+    ZeroMemory(&lf, sizeof(lf));
+    lf.lfHeight = -13;
+    lf.lfWeight = FW_REGULAR;
+    lf.lfItalic = FALSE;
+
+    if (pDefaultFontDesc != NULL) {
+        strncpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), pDefaultFontDesc->family, _TRUNCATE);
+        lf.lfHeight = -(LONG)pDefaultFontDesc->size;
+
+        switch (pDefaultFontDesc->weight)
+        {
+        case dr2d_font_weight_medium:      lf.lfWeight = FW_MEDIUM;     break;
+        case dr2d_font_weight_thin:        lf.lfWeight = FW_THIN;       break;
+        case dr2d_font_weight_extra_light: lf.lfWeight = FW_EXTRALIGHT; break;
+        case dr2d_font_weight_light:       lf.lfWeight = FW_LIGHT;      break;
+        case dr2d_font_weight_semi_bold:   lf.lfWeight = FW_SEMIBOLD;   break;
+        case dr2d_font_weight_bold:        lf.lfWeight = FW_BOLD;       break;
+        case dr2d_font_weight_extra_bold:  lf.lfWeight = FW_EXTRABOLD;  break;
+        case dr2d_font_weight_heavy:       lf.lfWeight = FW_HEAVY;      break;
+        default: break;
+        }
+
+        if (pDefaultFontDesc->slant == dr2d_font_slant_italic || pDefaultFontDesc->slant == dr2d_font_slant_oblique) {
+            lf.lfItalic = TRUE;
+        }
+    }
+
+    CHOOSEFONTA cf;
+    ZeroMemory(&cf, sizeof(cf));
+    cf.lStructSize = sizeof(cf);
+    cf.hwndOwner = pOwnerWindow->hWnd;
+    cf.lpLogFont = &lf;
+    cf.Flags = CF_INITTOLOGFONTSTRUCT;
+
+    if (!ChooseFontA(&cf)) {
+        return false;
+    }
+
+    strcpy_s(pDescOut->family, sizeof(pDescOut->family), lf.lfFaceName);
+
+    if (lf.lfHeight < 0) {
+        pDescOut->size = -lf.lfHeight;
+    } else {
+        pDescOut->size = lf.lfHeight;
+    }
+
+    pDescOut->weight = drgui_font_weight_default;
+    switch (lf.lfWeight)
+    {
+    case FW_MEDIUM:     pDescOut->weight = drgui_font_weight_medium;      break;
+    case FW_THIN:       pDescOut->weight = drgui_font_weight_thin;        break;
+    case FW_EXTRALIGHT: pDescOut->weight = drgui_font_weight_extra_light; break;
+    case FW_LIGHT:      pDescOut->weight = drgui_font_weight_light;       break;
+    case FW_SEMIBOLD:   pDescOut->weight = drgui_font_weight_semi_bold;   break;
+    case FW_BOLD:       pDescOut->weight = drgui_font_weight_bold;        break;
+    case FW_EXTRABOLD:  pDescOut->weight = drgui_font_weight_extra_bold;  break;
+    case FW_HEAVY:      pDescOut->weight = drgui_font_weight_heavy;       break;
+    default: break;
+    }
+
+    pDescOut->slant = drgui_font_slant_none;
+    if (lf.lfItalic) {
+        pDescOut->slant = drgui_font_slant_italic;
+    }
+
+    pDescOut->flags = 0;
+    pDescOut->rotation = 0;
+
+    return true;
+#endif
+
+#ifdef DRED_GTK
+#endif
+}
+
+
 void dred_show_about_dialog(dred_context* pDred)
 {
     if (pDred == NULL) {

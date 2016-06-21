@@ -233,6 +233,9 @@ bool dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath
 // Shows a yes/no/cancel dialog and returns the result as DRED_MESSAGE_BOX_YES, DRED_MESSAGE_BOX_NO or DRED_MESSAGE_BOX_CANCEL.
 unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* message, const char* title);
 
+// Shows the font picker dialog. Returns true if the user chose a font, false if they hit the cancel button or an error occurs.
+bool dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut);
+
 
 // Shows the "About" dialog box.
 void dred_show_about_dialog(dred_context* pDred);

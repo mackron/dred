@@ -159,6 +159,21 @@ void dred_font_release_subfont(dred_font* pFont, drgui_font* pSubFont)
     }
 }
 
+bool dred_font_desc_to_string(dred_font_desc* pDesc, char* strOut, size_t strOutSize)
+{
+    char weightStr[256];
+    if (!dred_font_weight_to_string(pDesc->weight, weightStr, sizeof(weightStr))) {
+        strcpy_s(weightStr, sizeof(weightStr), "default");
+    }
+
+    char slantStr[256];
+    if (!dred_font_slant_to_string(pDesc->slant, slantStr, sizeof(slantStr))) {
+        strcpy_s(slantStr, sizeof(slantStr), "none");
+    }
+
+    return snprintf(strOut, strOutSize, "\"%s\" %d %s %s", pDesc->family, pDesc->size, weightStr, slantStr);
+}
+
 bool dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize)
 {
     if (pFont == NULL) {
@@ -173,16 +188,5 @@ bool dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize)
         return strcpy_s(strOut, strOutSize, "system-font-mono") == 0;
     }
 
-
-    char weightStr[256];
-    if (!dred_font_weight_to_string(pFont->desc.weight, weightStr, sizeof(weightStr))) {
-        strcpy_s(weightStr, sizeof(weightStr), "default");
-    }
-
-    char slantStr[256];
-    if (!dred_font_slant_to_string(pFont->desc.slant, slantStr, sizeof(slantStr))) {
-        strcpy_s(slantStr, sizeof(slantStr), "none");
-    }
-
-    return snprintf(strOut, strOutSize, "\"%s\" %d %s %s", pFont->desc.family, pFont->desc.size, weightStr, slantStr);
+    return dred_font_desc_to_string(&pFont->desc, strOut, strOutSize);
 }
