@@ -599,7 +599,7 @@ void dred_save_dredprivate(dred_context* pDred)
         return;
     }
 
-    
+
     char dredprivatePath[DRED_MAX_PATH];
     dred_get_config_folder_path(dredprivatePath, sizeof(dredprivatePath));
 
@@ -1457,6 +1457,42 @@ bool dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow
 #endif
 
 #ifdef DRED_GTK
+    (void)pDefaultFontDesc;
+
+    GtkWidget* dialog = gtk_font_chooser_dialog_new(NULL, GTK_WINDOW(pDred->pMainWindow->pGTKWindow));
+    if (dialog == NULL) {
+        return false;
+    }
+
+    gtk_dialog_run(GTK_DIALOG(dialog));
+
+    gchar* pangoFontStr = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(dialog));
+    if (pangoFontStr == NULL) {
+        gtk_widget_destroy(dialog);
+        return false;
+    }
+
+    PangoFontDescription* pPangoDesc = pango_font_description_from_string(pangoFontStr);
+    if (pPangoDesc != NULL) {
+        strcpy_s(pDescOut->family, sizeof(pDescOut->family), pango_font_description_get_family(pPangoDesc));
+
+        gint size = pango_font_description_get_size(pPangoDesc);
+        if (size > 0) {
+            if (pango_font_description_get_size_is_absolute(pPangoDesc)) {
+                pDescOut->size = size;
+            } else {
+                pDescOut->size = (unsigned int)(size/PANGO_SCALE * (96.0/72.0));
+            }
+        }
+
+        pDescOut->slant = dred_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
+        pDescOut->weight = dred_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
+
+        pango_font_description_free(pPangoDesc);
+    }
+
+    gtk_widget_destroy(dialog);
+    return true;
 #endif
 }
 

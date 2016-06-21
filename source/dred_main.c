@@ -48,8 +48,10 @@
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
-    //#pragma GCC diagnostic ignored "-Wmisleading-indentation"
     #pragma GCC diagnostic ignored "-Wshift-negative-value"
+    #if !defined(__clang__)
+    #pragma GCC diagnostic ignored "-Wmisleading-indentation"
+    #endif
 #endif
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
