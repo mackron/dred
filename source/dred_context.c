@@ -271,7 +271,6 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_PREV_TAB,   dred_shortcut_create_single(dred_accelerator_create('\t', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "prev-tab");
 
 
-
     // Config
     //
     // The config is loaded in 4 stages. The first initializes it to it's default values, the second loads the .dredprivate file from the main

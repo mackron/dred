@@ -12,6 +12,9 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     // Recent files
     pLibrary->pMenu_RecentFiles = dred_menu_create(pDred, dred_menu_type_popup);
 
+    // Themes.
+    pLibrary->pMenu_Themes = dred_menu_create(pDred, dred_menu_type_popup);
+
     // The default menu.
     pLibrary->pMenu_Default = dred_menu_create(pDred, dred_menu_type_menubar);
     if (pLibrary->pMenu_Default == NULL) {
@@ -30,6 +33,8 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append(pViewMenu_Default, "Toggle Command Bar Auto-Hide", DRED_MENU_ITEM_ID_VIEW_CMD_BAR, "toggle-auto-hide-cmdbar", dred_shortcut_none(), NULL);
 
     dred_menu* pSettingsMenu_Default = dred_menu_create(pDred, dred_menu_type_popup);
+    pLibrary->pThemesItem_Default = dred_menu_item_create_and_append(pSettingsMenu_Default, "Themes", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), pLibrary->pMenu_Themes);
+    dred_menu_item_create_and_append_separator(pSettingsMenu_Default);
     dred_menu_item_create_and_append(pSettingsMenu_Default, "&Settings...", DRED_MENU_ITEM_ID_SETTINGS_SETTINGS, "settings", dred_shortcut_none(), NULL);
 
     dred_menu* pHelpMenu_Default = dred_menu_create(pDred, dred_menu_type_popup);
@@ -90,6 +95,8 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append_with_shortcut(pFindMenu, "&Go To...", DRED_MENU_ITEM_ID_FIND_GOTO, DRED_SHORTCUT_NAME_GOTO);
 
     dred_menu* pSettingsMenu = dred_menu_create(pDred, dred_menu_type_popup);
+    pLibrary->pThemesItem_Default = dred_menu_item_create_and_append(pSettingsMenu, "Themes", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), pLibrary->pMenu_Themes);
+    dred_menu_item_create_and_append_separator(pSettingsMenu);
     dred_menu_item_create_and_append(pSettingsMenu, "&Settings...", DRED_MENU_ITEM_ID_SETTINGS_SETTINGS, "settings", dred_shortcut_none(), NULL);
 
     dred_menu* pHelpMenu = dred_menu_create(pDred, dred_menu_type_popup);
@@ -137,6 +144,7 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
 
 
     dred_menu_library_update_recent_files_menu(pLibrary);
+    dred_menu_library_update_themes_menu(pLibrary);
 
     return true;
 }
@@ -182,4 +190,16 @@ void dred_menu_library_update_recent_files_menu(dred_menu_library* pLibrary)
         dred_menu_item_disable(pLibrary->pOpenRecentItem_Default);
         dred_menu_item_disable(pLibrary->pOpenRecentItem_TextEditor);
     }
+}
+
+void dred_menu_library_update_themes_menu(dred_menu_library* pLibrary)
+{
+    if (pLibrary == NULL || pLibrary->pMenu_Themes == NULL) {
+        return;
+    }
+
+    dred_menu_delete_all_items(pLibrary->pMenu_Themes);
+
+    dred_menu_item_create_and_append(pLibrary->pMenu_Themes, "Dark (Default)", DRED_MENU_ITEM_ID_THEME_0 + 0, "load-config dark.dredtheme",  dred_shortcut_none(), NULL);
+    dred_menu_item_create_and_append(pLibrary->pMenu_Themes, "Light",          DRED_MENU_ITEM_ID_THEME_0 + 1, "load-config light.dredtheme", dred_shortcut_none(), NULL);
 }

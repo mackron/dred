@@ -54,6 +54,7 @@
 #define DRED_MENU_ITEM_ID_HELP_ABOUT        26
 
 #define DRED_MENU_ITEM_ID_RECENT_FILE_0     32768
+#define DRED_MENU_ITEM_ID_THEME_0           DRED_MENU_ITEM_ID_RECENT_FILE_0 + 1024
 
 struct dred_menu_library
 {
@@ -64,6 +65,9 @@ struct dred_menu_library
     // The recent files menu.
     dred_menu* pMenu_RecentFiles;
     size_t recentFileCount;
+
+    // The themes menu.
+    dred_menu* pMenu_Themes;
 
 
     // The menu to use when nothing is opened.
@@ -83,9 +87,14 @@ struct dred_menu_library
     // The Open Recent menu items. We need to keep track of these so we can dynamically enable and disable them.
     dred_menu_item* pOpenRecentItem_Default;
     dred_menu_item* pOpenRecentItem_TextEditor;
+
+    // The Theme menu items.
+    dred_menu_item* pThemesItem_Default;
+    dred_menu_item* pThemesItem_TextEditor;
 };
 
 bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred);
 void dred_menu_library_uninit(dred_menu_library* pLibrary);
 
 void dred_menu_library_update_recent_files_menu(dred_menu_library* pLibrary);
+void dred_menu_library_update_themes_menu(dred_menu_library* pLibrary);
