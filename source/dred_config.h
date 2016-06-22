@@ -172,6 +172,10 @@ typedef struct
     char* recentCommands[DRED_MAX_RECENT_COMMANDS];
     size_t recentCommandsCount;
 
+    // Aliases
+    dred_alias_map aliasMap;
+
+
     // The cross image.
     dred_image* pImageCross;
 

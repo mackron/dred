@@ -674,6 +674,16 @@ void dred_save_dredprivate(dred_context* pDred)
         dred_file_write_string(file, "\"\n");
     }
 
+    // Aliases
+    for (size_t i = 0; i < pDred->config.aliasMap.count; ++i) {
+        dred_file_write_string(file, "alias ");
+        dred_file_write_string(file, pDred->config.aliasMap.keys[i]);
+
+        dred_file_write_string(file, " \"");
+        dred_file_write_string(file, pDred->config.aliasMap.values[i]);
+        dred_file_write_string(file, "\"\n");
+    }
+
     dred_file_close(file);
 }
 

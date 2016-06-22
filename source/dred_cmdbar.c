@@ -264,12 +264,6 @@ void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, drgui_key key, int stat
             dred_textbox_on_key_down(pTextBox, key, stateFlags);
         } break;
     }
-
-    if (key == DRGUI_ESCAPE) {
-        
-    } else {
-        dred_textbox_on_key_down(pTextBox, key, stateFlags);
-    }
 }
 
 void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf32, int stateFlags)
