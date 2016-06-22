@@ -129,7 +129,7 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, drgui_rect rect, void* pPaintDa
 
     float messageLeft = mrect.left + (4*pDred->uiScale);
     float messageTop  = (((mrect.bottom - mrect.top) - messageFontMetrics.lineHeight) / 2) + scaledPaddingY;
-    drgui_draw_text(pCmdBar, pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, drgui_rgb(224, 224, 224), bgcolor, pPaintData);
+    drgui_draw_text(pCmdBar, pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, pDred->config.cmdbarTextColor, bgcolor, pPaintData);
 }
 
 void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement)
@@ -146,6 +146,8 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* 
     assert(pDred != NULL);
 
     // Activate the focused styles.
+    dred_textbox_set_text_color(data->pTextBox, pDred->config.cmdbarTextColorActive);
+    dred_textbox_set_cursor_color(data->pTextBox, pDred->config.cmdbarTextColorActive);
     dred_textbox_set_background_color(data->pTextBox, pDred->config.cmdbarBGColorActive);
     dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.cmdbarBGColorActive);
 
@@ -183,6 +185,8 @@ void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, drgui_element* 
     }
 
     // Deactivate unfocused styles.
+    dred_textbox_set_text_color(data->pTextBox, pDred->config.cmdbarTextColor);
+    dred_textbox_set_cursor_color(data->pTextBox, pDred->config.cmdbarTextColor);
     dred_textbox_set_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
     dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
     
@@ -306,11 +310,6 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
         return NULL;
     }
 
-    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pCmdbarTBFont, pDred->uiScale));
-    dred_textbox_set_text_color(data->pTextBox, pDred->config.cmdbarTBTextColor);
-    dred_textbox_set_cursor_color(data->pTextBox, pDred->config.cmdbarTBTextColor);
-    dred_textbox_set_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
-    dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
     dred_textbox_disable_horizontal_scrollbar(data->pTextBox);
     dred_textbox_disable_vertical_scrollbar(data->pTextBox);
 
@@ -334,9 +333,7 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
 
 
 
-    // Set the initial size.
-    dred_cmdbar__update_size(pCmdBar);
-
+    dred_cmdbar_refresh_styling(pCmdBar);
     return pCmdBar;
 }
 
@@ -434,10 +431,18 @@ void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
 
     // Textbox.
     dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pCmdbarTBFont, pDred->uiScale));
-    dred_textbox_set_text_color(data->pTextBox, pDred->config.cmdbarTBTextColor);
-    dred_textbox_set_cursor_color(data->pTextBox, pDred->config.cmdbarTBTextColor);
-    dred_textbox_set_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
-    dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
+
+    if (dred_cmdbar_has_keyboard_focus(pCmdBar)) {
+        dred_textbox_set_text_color(data->pTextBox, pDred->config.cmdbarTextColorActive);
+        dred_textbox_set_cursor_color(data->pTextBox, pDred->config.cmdbarTextColorActive);
+        dred_textbox_set_background_color(data->pTextBox, pDred->config.cmdbarBGColorActive);
+        dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.cmdbarBGColorActive);
+    } else {
+        dred_textbox_set_text_color(data->pTextBox, pDred->config.cmdbarTextColor);
+        dred_textbox_set_cursor_color(data->pTextBox, pDred->config.cmdbarTextColor);
+        dred_textbox_set_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
+        dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.cmdbarBGColor);
+    }
 
     // Info bar.
     dred_info_bar_refresh_styling(data->pInfoBar);

@@ -27,6 +27,18 @@ drgui_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
     }
 }
 
+drgui_color dred_info_bar__get_text_color(dred_info_bar* pInfoBar)
+{
+    dred_context* pDred = dred_control_get_context(pInfoBar);
+    assert(pDred != NULL);
+
+    if (dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
+        return pDred->config.cmdbarTextColorActive;
+    } else {
+        return pDred->config.cmdbarTextColor;
+    }
+}
+
 void dred_info_bar__on_paint__none(dred_info_bar* pInfoBar, dred_info_bar_data* data, void* pPaintData)
 {
     (void)data;
@@ -65,10 +77,10 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar
         
         float textPosX = dred_control_get_width(pInfoBar) - totalWidth;
         float textPosY = (dred_control_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
-        drgui_draw_text(pInfoBar, pFont, data->lineStr, (int)strlen(data->lineStr), textPosX, textPosY, drgui_rgb(224, 224, 224), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
+        drgui_draw_text(pInfoBar, pFont, data->lineStr, (int)strlen(data->lineStr), textPosX, textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
 
         textPosX += lineStrWidth + padding;
-        drgui_draw_text(pInfoBar, pFont, data->colStr, (int)strlen(data->colStr), textPosX, textPosY, drgui_rgb(224, 224, 224), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
+        drgui_draw_text(pInfoBar, pFont, data->colStr, (int)strlen(data->colStr), textPosX, textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
 
         dred_font_release_subfont(pDred->config.pUIFont, pFont);
     }
@@ -102,7 +114,7 @@ void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_ba
         
         float textPosX = dred_control_get_width(pInfoBar) - totalWidth;
         float textPosY = (dred_control_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
-        drgui_draw_text(pInfoBar, pFont, data->zoomStr, (int)strlen(data->zoomStr), textPosX, textPosY, drgui_rgb(224, 224, 224), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
+        drgui_draw_text(pInfoBar, pFont, data->zoomStr, (int)strlen(data->zoomStr), textPosX, textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
 
         dred_font_release_subfont(pDred->config.pUIFont, pFont);
     }

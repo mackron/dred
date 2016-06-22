@@ -270,7 +270,12 @@ void dred_config_on_set__cmdbar_tb_font(dred_context* pDred)
     dred_update_main_window_layout(pDred);
 }
 
-void dred_config_on_set__cmdbar_tb_text_color(dred_context* pDred)
+void dred_config_on_set__cmdbar_text_color(dred_context* pDred)
+{
+    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+}
+
+void dred_config_on_set__cmdbar_text_color_active(dred_context* pDred)
 {
     dred_cmdbar_refresh_styling(pDred->pCmdBar);
 }

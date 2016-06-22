@@ -40,8 +40,11 @@
 // cmdbar-tb-font pCmdbarTBFont font dred_config_on_set__cmdbar_tb_font system-font-mono
 //   The font to use in the text box of the command bar.
 //
-// cmdbar-tb-text-color cmdbarTBTextColor color dred_config_on_set__cmdbar_tb_text_color 224 224 224
-//   The color of the text in the text box of the command bar.
+// cmdbar-text-color cmdbarTextColor color dred_config_on_set__cmdbar_text_color 224 224 224
+//   The color of the text in the command bar while in it's default state.
+//
+// cmdbar-text-color-active cmdbarTextColorActive color dred_config_on_set__cmdbar_text_color_active 224 224 224
+//   The color of the text in the command bar while in it's focused state.
 //
 // cmdbar-padding-horz cmdbarPaddingX float dred_config_on_set__cmdbar_padding_horz 2
 //   The amount of padding to apply to the command bar on the left and right sides.
@@ -218,8 +221,11 @@ void dred_config_on_set__cmdbar_bg_color_active(dred_context* pDred);
 // cmdbar-tb-font
 void dred_config_on_set__cmdbar_tb_font(dred_context* pDred);
 
-// cmdbar-tb-text-color
-void dred_config_on_set__cmdbar_tb_text_color(dred_context* pDred);
+// cmdbar-text-color
+void dred_config_on_set__cmdbar_text_color(dred_context* pDred);
+
+// cmdbar-text-color-active
+void dred_config_on_set__cmdbar_text_color_active(dred_context* pDred);
 
 // cmdbar-padding-horz
 void dred_config_on_set__cmdbar_padding_horz(dred_context* pDred);
