@@ -1,6 +1,7 @@
 
 typedef struct
 {
+    dred_control* pCloseButton;
     dred_control* pFontButton;
     dred_control* pTextColorButton;
     dred_control* pBGColorButton;
@@ -16,13 +17,22 @@ void dred_settings_editor__on_size(dred_settings_editor* pSettingsEditor, float 
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
 
-    (void)pData;
+    dred_context* pDred = dred_control_get_context(pSettingsEditor);
+
+    dred_control_set_relative_position(pData->pCloseButton,
+        dred_control_get_width(pSettingsEditor) - dred_control_get_width(pData->pCloseButton) - 8*pDred->uiScale,
+        dred_control_get_height(pSettingsEditor) - dred_control_get_height(pData->pCloseButton) - 8*pDred->uiScale);
 }
 
 void dred_settings_editor__on_capture_keyboard(dred_settings_editor* pSettingsEditor, drgui_element* pPrevCapturedElement)
 {
     (void)pSettingsEditor;
     (void)pPrevCapturedElement;
+}
+
+void dred_settings__btn_close__on_pressed(dred_button* pButton)
+{
+    dred_settings_dialog_hide(dred_control_get_context(pButton)->pSettingsDialog);
 }
 
 void dred_settings__btn_choose_font__on_pressed(dred_button* pButton)
@@ -115,6 +125,20 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_cont
 
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
+
+    pData->pCloseButton = dred_button_create(pDred, pSettingsEditor, "Close");
+    if (pData->pCloseButton == NULL) {
+        dred_editor_delete(pSettingsEditor);
+        return NULL;
+    }
+
+    dred_button_set_on_pressed(pData->pCloseButton, dred_settings__btn_close__on_pressed);
+    dred_button_set_padding(pData->pCloseButton, 32*pDred->uiScale, 6*pDred->uiScale);
+    dred_control_set_relative_position(pData->pCloseButton,
+        dred_control_get_width(pSettingsEditor) - dred_control_get_width(pData->pCloseButton) - 8*pDred->uiScale,
+        dred_control_get_height(pSettingsEditor) - dred_control_get_height(pData->pCloseButton) - 8*pDred->uiScale);
+
+
 
     pData->pFontButton = dred_button_create(pDred, pSettingsEditor, "Choose Font...");
     if (pData->pFontButton == NULL) {

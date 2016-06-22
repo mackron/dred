@@ -635,9 +635,6 @@ void dred_save_dredprivate(dred_context* pDred)
     char dredprivatePath[DRED_MAX_PATH];
     dred_get_config_folder_path(dredprivatePath, sizeof(dredprivatePath));
 
-    // TODO: Create the directory structure first. dr_mkdir_recursive().
-    //dr_mkdir_recursive(dredprivatePath);
-
     drpath_append(dredprivatePath, sizeof(dredprivatePath), ".dredprivate");
 
     dred_file file = dred_file_open(dredprivatePath, DRED_FILE_OPEN_MODE_WRITE);
@@ -1599,6 +1596,10 @@ void dred_show_about_dialog(dred_context* pDred)
         return;
     }
 
+    if (dred_about_dialog_is_showing(pDred->pAboutDialog)) {
+        return;
+    }
+
     if (pDred->pAboutDialog == NULL) {
         pDred->pAboutDialog = dred_about_dialog_create(pDred);
         if (pDred->pAboutDialog == NULL) {
@@ -1613,6 +1614,10 @@ void dred_show_about_dialog(dred_context* pDred)
 void dred_show_settings_dialog(dred_context* pDred)
 {
     if (pDred == NULL) {
+        return;
+    }
+
+    if (dred_settings_dialog_is_showing(pDred->pSettingsDialog)) {
         return;
     }
 

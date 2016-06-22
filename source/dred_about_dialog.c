@@ -2009,6 +2009,16 @@ void dred_about_dialog__on_window_close(dred_window* pWindow)
     pDred->pAboutDialog = NULL;
 }
 
+void dred_about_dialog__btn_close__on_pressed(dred_button* pButton)
+{
+    dred_window* pWindow = dred_get_element_window(pButton);
+    if (pWindow == NULL) {
+        return; // Should never hit this, but leaving here for sanity.
+    }
+
+    dred_about_dialog__on_window_close(pWindow);
+}
+
 dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
 {
     if (pDred == NULL) {
@@ -2020,7 +2030,10 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
         return NULL;
     }
 
-    pDialog->pWindow = dred_window_create_dialog(pDred->pMainWindow, "About", (unsigned int)(480*pDred->dpiScale), (unsigned int)(360*pDred->dpiScale));
+    unsigned int windowWidth = (unsigned int)(480*pDred->dpiScale);
+    unsigned int windowHeight = (unsigned int)(360*pDred->dpiScale);
+
+    pDialog->pWindow = dred_window_create_dialog(pDred->pMainWindow, "About", windowWidth, windowHeight);
     if (pDialog->pWindow == NULL) {
         free(pDialog);
         return NULL;
@@ -2033,6 +2046,15 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
 
     pDialog->pLogo = drgui_create_image(pDred->pGUI, g_LogoBannerImage.width, g_LogoBannerImage.height, drgui_image_format_rgba8, g_LogoBannerImage.width*4, g_LogoBannerImage.pixel_data);
 
+
+    dred_window_get_client_size(pDialog->pWindow, &windowWidth, &windowHeight);
+
+
+    pDialog->pCloseButton = dred_button_create(pDred, pDialog->pWindow->pRootGUIElement, "Close");
+    dred_button_set_on_pressed(pDialog->pCloseButton, dred_about_dialog__btn_close__on_pressed);
+    dred_button_set_padding(pDialog->pCloseButton, 32*pDred->uiScale, 6*pDred->uiScale);
+    dred_control_set_relative_position(pDialog->pCloseButton, windowWidth - dred_control_get_width(pDialog->pCloseButton) - 8*pDred->uiScale, windowHeight - dred_control_get_height(pDialog->pCloseButton) - 8*pDred->uiScale);
+
     return pDialog;
 }
 
@@ -2041,6 +2063,9 @@ void dred_about_dialog_delete(dred_about_dialog* pDialog)
     if (pDialog == NULL) {
         return;
     }
+
+    dred_button_delete(pDialog->pCloseButton);
+    pDialog->pCloseButton = NULL;
 
     drgui_delete_image(pDialog->pLogo);
     pDialog->pLogo = NULL;
@@ -2058,6 +2083,7 @@ void dred_about_dialog_show(dred_about_dialog* pDialog)
 
     dred_window_move_to_center(pDialog->pWindow);
     dred_window_show(pDialog->pWindow);
+    pDialog->isShowing = true;
 }
 
 void dred_about_dialog_hide(dred_about_dialog* pDialog)
@@ -2067,4 +2093,14 @@ void dred_about_dialog_hide(dred_about_dialog* pDialog)
     }
 
     dred_window_hide(pDialog->pWindow, 0);
+    pDialog->isShowing = false;
+}
+
+bool dred_about_dialog_is_showing(dred_about_dialog* pDialog)
+{
+    if (pDialog == NULL) {
+        return false;
+    }
+
+    return pDialog->isShowing;
 }
