@@ -85,7 +85,19 @@ void dred_command__load_config(dred_context* pDred, const char* value)
         return;
     }
 
-    dred_load_config(pDred, path);
+    if (drpath_is_relative(path) && !dr_file_exists(path)) {
+        // If the path is relative and the file does not exist relative to the current directory, try making it relative to
+        // the user config directory.
+        char configPath[DRED_MAX_PATH];
+        if (dred_get_config_folder_path(configPath, sizeof(configPath))) {
+            char pathAbsolute[DRED_MAX_PATH];
+            if (drpath_append_and_clean(pathAbsolute, sizeof(pathAbsolute), configPath, path)) {
+                dred_load_config(pDred, pathAbsolute);
+            }
+        }
+    } else {
+        dred_load_config(pDred, path);
+    }
 }
 
 void dred_command__set(dred_context* pDred, const char* value)

@@ -129,6 +129,18 @@
 // texteditor-sb-thumb-color-pressed textEditorSBThumbColorPressed color dred_config_on_set__texteditor_generic_refresh 180 180 180
 //   The color of the thumb of the scroll bars on text editors while pressed.
 //
+// texteditor-sb-size textEditorSBSize float dred_config_on_set__texteditor_generic_refresh 16
+//   The thickness of the scrollbars on text editors.
+//
+// texteditor-show-scrollbar-horz textEditorShowScrollbarHorz bool dred_config_on_set__texteditor_generic_refresh true
+//   Whether or not to show the horizontal scrollbar on text editors.
+//
+// texteditor-show-scrollbar-vert textEditorShowScrollbarVert bool dred_config_on_set__texteditor_generic_refresh true
+//   Whether or not to show the vertical scrollbar on text editors.
+//
+// texteditor-enable-excess-scrolling textEditorEnableExcessScrolling bool dred_config_on_set__texteditor_generic_refresh true
+//   Whether or not the text editor can scroll past the last line.
+//
 // texteditor-enable-tabs-to-spaces textEditorTabsToSpacesEnabled bool dred_config_on_set__texteditor_generic_refresh false
 //   Whether or not tabs are converted to spaces.
 //

@@ -46,6 +46,10 @@ drgui_color textEditorSBTrackColor; \
 drgui_color textEditorSBThumbColor; \
 drgui_color textEditorSBThumbColorHovered; \
 drgui_color textEditorSBThumbColorPressed; \
+float textEditorSBSize; \
+bool textEditorShowScrollbarHorz; \
+bool textEditorShowScrollbarVert; \
+bool textEditorEnableExcessScrolling; \
 bool textEditorTabsToSpacesEnabled; \
 int textEditorTabSizeInSpaces; \
 float textEditorScale;

@@ -48,6 +48,11 @@ typedef struct
     /// Whether or not the horizontal scrollbar is enabled.
     bool isHorzScrollbarEnabled;
 
+    // Whether or not an extra page is added to the scroll range so that the user can scroll past the last line. When set to true,
+    // the user can scroll until the last line is sitting at the top of the text box. When disabled the user can scroll until the
+    // last line is sitting at the bottom.
+    bool isExcessScrollingEnabled;
+
     
     // Whether or not tabs to spaces is enabled.
     bool isTabsToSpacesEnabled;
@@ -223,6 +228,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     pTB->horzScrollbarSize = 16;
     pTB->isVertScrollbarEnabled = true;
     pTB->isHorzScrollbarEnabled = true;
+    pTB->isExcessScrollingEnabled = true;
     pTB->iLineSelectAnchor = 0;
     pTB->onCursorMove = NULL;
     pTB->onUndoPointChanged = NULL;
@@ -1023,6 +1029,30 @@ void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, float size)
     dred_textbox__refresh_scrollbars(pTextBox);
 }
 
+void dred_textbox_enable_excess_scrolling(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return;
+    }
+
+    pTB->isExcessScrollingEnabled = true;
+
+    dred_textbox__refresh_scrollbars(pTextBox);
+}
+
+void dred_textbox_disable_excess_scrolling(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return;
+    }
+
+    pTB->isExcessScrollingEnabled = false;
+
+    dred_textbox__refresh_scrollbars(pTextBox);
+}
+
 
 void dred_textbox_set_tab_size_in_spaces(dred_textbox* pTextBox, unsigned int tabSizeInSpaces)
 {
@@ -1794,7 +1824,13 @@ void dred_textbox__refresh_scrollbar_ranges(dred_textbox* pTextBox)
     // The vertical scrollbar is based on the line count.
     size_t lineCount = drte_engine_get_line_count(pTB->pTL);
     size_t pageSize  = drte_engine_get_visible_line_count_starting_at(pTB->pTL, drgui_sb_get_scroll_position(pTB->pVertScrollbar));
-    drgui_sb_set_range_and_page_size(pTB->pVertScrollbar, 0, (int)(lineCount + pageSize - 1 - 1), (int)pageSize);     // -1 to make the range 0 based. -1 to ensure at least one line is visible.
+
+    size_t extraScroll = 0;
+    if (pTB->isExcessScrollingEnabled) {
+        extraScroll = drte_engine_get_visible_line_count_starting_at(pTB->pTL, drgui_sb_get_scroll_position(pTB->pVertScrollbar)) - 1 - 1;  // -1 to make the range 0 based. -1 to ensure at least one line is visible.
+    }
+
+    drgui_sb_set_range_and_page_size(pTB->pVertScrollbar, 0, (int)(lineCount + extraScroll), (int)pageSize);
 
     if (drgui_sb_is_thumb_visible(pTB->pVertScrollbar)) {
         if (!drgui_is_visible(pTB->pVertScrollbar)) {

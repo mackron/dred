@@ -216,6 +216,12 @@ drgui_element* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox);
 // Sets the size of both the vertical and horizontal scrollbars.
 void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, float size);
 
+// Enables excess scrolling on the vertical scrollbar.
+void dred_textbox_enable_excess_scrolling(dred_textbox* pTextBox);
+
+// Disables excess scrolling on the vertical scrollbar.
+void dred_textbox_disable_excess_scrolling(dred_textbox* pTextBox);
+
 
 // Sets the size of tabs in spaces.
 void dred_textbox_set_tab_size_in_spaces(dred_textbox* pTextBox, unsigned int tabSizeInSpaces);
