@@ -43,6 +43,7 @@
 #define DR_PATH_IMPLEMENTATION
 #include "../../dr_libs/dr_path.h"
 
+#ifndef DRED_NO_IMAGE_EDITOR
 #define DR_PCX_IMPLEMENTATION
 #include "../../dr_libs/dr_pcx.h"
 
@@ -57,6 +58,7 @@
 #include "stb_image.h"
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
+#endif
 #endif
 
 #define DR_GUI_IMPLEMENTATION

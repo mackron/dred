@@ -25,4 +25,8 @@
 #define DRED_MAX_RECENT_FILES       10
 #define DRED_MAX_RECENT_COMMANDS    32
 
+
+// Define these to exclude certain features from the build.
+#define DRED_NO_IMAGE_EDITOR
+
 // KEEP THIS BLANK LINE AT THE END. NEEDED FOR THE .RC FILE.

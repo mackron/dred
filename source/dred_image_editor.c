@@ -1,4 +1,6 @@
 
+#ifndef DRED_NO_IMAGE_EDITOR
+
 typedef struct
 {
     drgui_image* pImage;
@@ -299,3 +301,5 @@ float dred_image_editor_get_image_scale(dred_image_editor* pImageEditor)
 
     return data->imageScale;
 }
+
+#endif
