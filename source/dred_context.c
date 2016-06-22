@@ -593,17 +593,47 @@ bool dred_load_config(dred_context* pDred, const char* configFilePath)
 }
 
 
-void dred_exec(dred_context* pDred, const char* cmd)
+bool dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdOut)
 {
     if (pDred == NULL || cmd == NULL) {
-        return;
+        return false;
     }
 
-    const char* value;
+    dred_command_separator cmdSeparator = dred_command_separator_none;
+
+    char subcmd[4096];
+    while ((cmd = dred_next_command_string(cmd, subcmd, sizeof(subcmd), &cmdSeparator)) != NULL) {
+        const char* value;
+        dred_command command;
+        if (dred_find_command(subcmd, &command, &value)) {
+            if (pLastCmdOut) *pLastCmdOut = command;
+
+            bool result = command.proc(pDred, value);
+            if (result) {
+                if (cmdSeparator == dred_command_separator_or) {
+                    return true;
+                }
+            } else {
+                if (cmdSeparator == dred_command_separator_and || cmdSeparator == dred_command_separator_none) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+
+
+    /*const char* value;
     dred_command command;
     if (dred_find_command(cmd, &command, &value)) {
-        command.proc(pDred, value);
+        bool result = command.proc(pDred, value);
+
+        if (pLastCmdOut) *pLastCmdOut = command;
+        return result;
     }
+
+    return false;*/
 }
 
 bool dred_bind_shortcut(dred_context* pDred, const char* shortcutName, dred_shortcut shortcut, const char* commandStr)
@@ -2166,5 +2196,5 @@ void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t accel
         return;
     }
 
-    dred_exec(pDred, cmd);
+    dred_exec(pDred, cmd, NULL);
 }

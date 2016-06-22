@@ -104,7 +104,7 @@ bool dred_load_config(dred_context* pDred, const char* configFilePath);
 
 
 // Executes a command.
-void dred_exec(dred_context* pDred, const char* cmd);
+bool dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdOut);
 
 // Binds a shortcut.
 bool dred_bind_shortcut(dred_context* pDred, const char* shortcutName, dred_shortcut shortcut, const char* commandStr);

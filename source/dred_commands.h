@@ -53,174 +53,182 @@
 #define DRED_CMDBAR_RELEASE_KEYBOARD    1   // Releases the keyboard if the command was executed from the command bar.
 #define DRED_CMDBAR_NO_CLEAR            2   // Prevents the command bar from being cleared if the command was executed from the command bar.
 
-typedef void (* dred_command_proc) (dred_context* pDred, const char* value);
+typedef bool (* dred_command_proc) (dred_context* pDred, const char* value);
 
-typedef struct
+typedef enum
+{
+    dred_command_separator_none,
+    dred_command_separator_semicolon,
+    dred_command_separator_and,
+    dred_command_separator_or,
+} dred_command_separator;
+
+struct dred_command
 {
     dred_command_proc proc;
     unsigned int flags;
-} dred_command;
+};
 
 
 //// General ////
 
 // Handles the "!" command.
-void dred_command__system_command(dred_context* pDred, const char* value);
+bool dred_command__system_command(dred_context* pDred, const char* value);
 
 // cmdbar
 //
 // This command puts keyboard focus onto the command bar and sets the text in the text box to the value.
-void dred_command__cmdbar(dred_context* pDred, const char* value);
+bool dred_command__cmdbar(dred_context* pDred, const char* value);
 
 // bind
 //
 // Syntax:  bind <name> <shortcut> <command>
 // Example: bind "SelectAll" "CTRL+A" select-all
-void dred_command__bind(dred_context* pDred, const char* value);
+bool dred_command__bind(dred_context* pDred, const char* value);
 
 // load-config
 //
 // Loads and applies a config file.
-void dred_command__load_config(dred_context* pDred, const char* value);
+bool dred_command__load_config(dred_context* pDred, const char* value);
 
 // set
 //
 // Sets a config variable.
-void dred_command__set(dred_context* pDred, const char* value);
+bool dred_command__set(dred_context* pDred, const char* value);
 
 // set
 //
 // Sets a config variable to it's default value.
-void dred_command__set_default(dred_context* pDred, const char* value);
+bool dred_command__set_default(dred_context* pDred, const char* value);
 
 
 // show-menu-bar
-void dred_command__show_menu_bar(dred_context* pDred, const char* value);
+bool dred_command__show_menu_bar(dred_context* pDred, const char* value);
 
 // hide-menu-bar
-void dred_command__hide_menu_bar(dred_context* pDred, const char* value);
+bool dred_command__hide_menu_bar(dred_context* pDred, const char* value);
 
 // toggle-menu-bar
 //
 // Toggles the visibility of the menu bar.
-void dred_command__toggle_menu_bar(dred_context* pDred, const char* value);
+bool dred_command__toggle_menu_bar(dred_context* pDred, const char* value);
 
 
 // show-tabbars
-void dred_command__show_tab_bar(dred_context* pDred, const char* value);
+bool dred_command__show_tab_bar(dred_context* pDred, const char* value);
 
 // hide-tabbars
-void dred_command__hide_tab_bar(dred_context* pDred, const char* value);
+bool dred_command__hide_tab_bar(dred_context* pDred, const char* value);
 
 // toggle-tabbars
 //
 // Toggles the visibility of the tab bars on each tab group.
-void dred_command__toggle_tab_bar(dred_context* pDred, const char* value);
+bool dred_command__toggle_tab_bar(dred_context* pDred, const char* value);
 
 
 // enable-auto-hide-cmdbar
-void dred_command__enable_auto_hide_cmdbar(dred_context* pDred, const char* value);
+bool dred_command__enable_auto_hide_cmdbar(dred_context* pDred, const char* value);
 
 // disable-auto-hide-cmdbar
-void dred_command__disable_auto_hide_cmdbar(dred_context* pDred, const char* value);
+bool dred_command__disable_auto_hide_cmdbar(dred_context* pDred, const char* value);
 
 // toggle-auto-hide-cmdbar
-void dred_command__toggle_auto_hide_cmdbar(dred_context* pDred, const char* value);
+bool dred_command__toggle_auto_hide_cmdbar(dred_context* pDred, const char* value);
 
 
 // next-tab
-void dred_command__next_tab(dred_context* pDred, const char* value);
+bool dred_command__next_tab(dred_context* pDred, const char* value);
 
 // prev-tab
-void dred_command__prev_tab(dred_context* pDred, const char* value);
+bool dred_command__prev_tab(dred_context* pDred, const char* value);
 
 
 
 // new
-void dred_command__new(dred_context* pDred, const char* value);
+bool dred_command__new(dred_context* pDred, const char* value);
 
 // open
-void dred_command__open(dred_context* pDred, const char* value);
+bool dred_command__open(dred_context* pDred, const char* value);
 
 // save
-void dred_command__save(dred_context* pDred, const char* value);
+bool dred_command__save(dred_context* pDred, const char* value);
 
 // save-all
-void dred_command__save_all(dred_context* pDred, const char* value);
+bool dred_command__save_all(dred_context* pDred, const char* value);
 
 // save-as
-void dred_command__save_as(dred_context* pDred, const char* value);
+bool dred_command__save_as(dred_context* pDred, const char* value);
 
 // close
-void dred_command__close(dred_context* pDred, const char* value);
+bool dred_command__close(dred_context* pDred, const char* value);
 
 // close-all
-void dred_command__close_all(dred_context* pDred, const char* value);
+bool dred_command__close_all(dred_context* pDred, const char* value);
 
 // exit
-void dred_command__exit(dred_context* pDred, const char* value);
+bool dred_command__exit(dred_context* pDred, const char* value);
 
 // help
-void dred_command__help(dred_context* pDred, const char* value);
+bool dred_command__help(dred_context* pDred, const char* value);
 
 // about
-void dred_command__about(dred_context* pDred, const char* value);
+bool dred_command__about(dred_context* pDred, const char* value);
 
 // settings
-void dred_command__settings(dred_context* pDred, const char* value);
+bool dred_command__settings(dred_context* pDred, const char* value);
 
 
 
 //// General Editing ////
 
 // undo
-void dred_command__undo(dred_context* pDred, const char* value);
+bool dred_command__undo(dred_context* pDred, const char* value);
 
 // redo
-void dred_command__redo(dred_context* pDred, const char* value);
+bool dred_command__redo(dred_context* pDred, const char* value);
 
 // cut
-void dred_command__cut(dred_context* pDred, const char* value);
+bool dred_command__cut(dred_context* pDred, const char* value);
 
 // copy
-void dred_command__copy(dred_context* pDred, const char* value);
+bool dred_command__copy(dred_context* pDred, const char* value);
 
 // paste
-void dred_command__paste(dred_context* pDred, const char* value);
+bool dred_command__paste(dred_context* pDred, const char* value);
 
 // delete
-void dred_command__delete(dred_context* pDred, const char* value);
+bool dred_command__delete(dred_context* pDred, const char* value);
 
 // select-all
-void dred_command__select_all(dred_context* pDred, const char* value);
+bool dred_command__select_all(dred_context* pDred, const char* value);
 
 
 
 //// Text Editor ////
 
 // goto
-void dred_command__goto(dred_context* pDred, const char* value);
+bool dred_command__goto(dred_context* pDred, const char* value);
 
 // find
-void dred_command__find(dred_context* pDred, const char* value);
+bool dred_command__find(dred_context* pDred, const char* value);
 
 // replace
-void dred_command__replace(dred_context* pDred, const char* value);
+bool dred_command__replace(dred_context* pDred, const char* value);
 
 // replace-all
-void dred_command__replace_all(dred_context* pDred, const char* value);
+bool dred_command__replace_all(dred_context* pDred, const char* value);
 
 // show-line-numbers
-void dred_command__show_line_numbers(dred_context* pDred, const char* value);
+bool dred_command__show_line_numbers(dred_context* pDred, const char* value);
 
 // hide-line-numbers
-void dred_command__hide_line_numbers(dred_context* pDred, const char* value);
+bool dred_command__hide_line_numbers(dred_context* pDred, const char* value);
 
 // toggle-line-numbers
-void dred_command__toggle_line_numbers(dred_context* pDred, const char* value);
+bool dred_command__toggle_line_numbers(dred_context* pDred, const char* value);
 
 // zoom
-void dred_command__zoom(dred_context* pDred, const char* value);
+bool dred_command__zoom(dred_context* pDred, const char* value);
 
 
 
@@ -230,6 +238,10 @@ bool dred_find_command(const char* cmdStr, dred_command* pCommandOut, const char
 
 // Finds the index of the given command function. Returns -1 if the command could not be found.
 size_t dred_find_command_index(const char* cmdFunc);
+
+
+// Retrieves the next sub-command in the given command string.
+const char* dred_next_command_string(const char* cmdStr, char* cmdOut, size_t cmdOutSize, dred_command_separator* pSeparatorOut);
 
 
 // Helper function for parsing the "bind" command.

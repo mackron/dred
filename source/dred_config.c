@@ -84,7 +84,7 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
     }
 
     if (strcmp(key, "exec") == 0) {
-        dred_exec(pData->pConfig->pDred, dr_first_non_whitespace(value));
+        dred_exec(pData->pConfig->pDred, dr_first_non_whitespace(value), NULL);
         return;
     }
 

@@ -286,11 +286,8 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
         char* cmd = malloc(cmdLen + 1);
         if (dred_textbox_get_text(pTextBox, cmd, cmdLen + 1) == cmdLen)
         {
-            const char* value;
             dred_command command;
-            if (dred_find_command(cmd, &command, &value)) {
-                command.proc(dred_control_get_context(pCmdBar), value);
-            }
+            dred_exec(pDred, cmd, &command);
 
             if ((command.flags & DRED_CMDBAR_NO_CLEAR) == 0) {
                 dred_textbox_set_text(pTextBox, "");

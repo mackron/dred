@@ -526,7 +526,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
                 WORD menuItemID = LOWORD(wParam);
                 dred_menu_item* pMenuItem = dred_window_find_menu_item_by_id(pWindow, menuItemID);
                 if (pMenuItem != NULL) {
-                    dred_exec(pWindow->pDred, pMenuItem->command);
+                    dred_exec(pWindow->pDred, pMenuItem->command, NULL);
                 }
             }
         } break;
