@@ -101,6 +101,7 @@
 #include "dred_platform_layer.h"
 #include "dred_commands.h"
 #include "dred_misc.h"
+#include "dred_stock_themes.h"
 #include "common_controls/dred_button.h"
 #include "common_controls/dred_color_button.h"
 
@@ -132,6 +133,7 @@
 #include "dred_platform_layer.c"
 #include "dred_commands.c"
 #include "dred_misc.c"
+#include "dred_stock_themes.c"
 #include "common_controls/dred_button.c"
 #include "common_controls/dred_color_button.c"
 

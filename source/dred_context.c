@@ -187,6 +187,26 @@ void dred_config__on_error(dred_config* pConfig, const char* configPath, const c
 }
 
 
+void dred_create_config_file_if_not_exists(const char* fileName, const char* configString)
+{
+    char configFolderPath[DRED_MAX_PATH];
+    if (!dred_get_config_folder_path(configFolderPath, sizeof(configFolderPath))) {
+        return;
+    }
+
+    char configPathAbsolute[DRED_MAX_PATH];
+    if (!drpath_copy_and_append(configPathAbsolute, sizeof(configPathAbsolute), configFolderPath, fileName)) {
+        return;
+    }
+
+    if (dr_file_exists(configPathAbsolute)) {
+        return;
+    }
+
+    dr_open_and_write_text_file(configPathAbsolute, configString);
+}
+
+
 bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 {
     // TODO: USE dred_error() AND FAMILY FOR PRINTING CRITICAL ERRORS INSTEAD OF printf()
@@ -269,6 +289,11 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_REPLACE,    dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "cmdbar replace-all ");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_NEXT_TAB,   dred_shortcut_create_single(dred_accelerator_create('\t', DRED_KEY_STATE_CTRL_DOWN)), "next-tab");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_PREV_TAB,   dred_shortcut_create_single(dred_accelerator_create('\t', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "prev-tab");
+
+
+    // Before loading configs we want to make sure any stock themes and settings are present.
+    dred_create_config_file_if_not_exists("dark.dredtheme", g_StockTheme_Dark);
+    dred_create_config_file_if_not_exists("light.dredtheme", g_StockTheme_Light);
 
 
     // Config
