@@ -667,6 +667,13 @@ void dred_save_dredprivate(dred_context* pDred)
         dred_file_write_string(file, "\"\n");
     }
 
+    // Recent commands.
+    for (size_t i = pDred->config.recentCommandsCount; i > 0; --i) {
+        dred_file_write_string(file, "recent-cmd \"");
+        dred_file_write_string(file, pDred->config.recentCommands[i-1]);
+        dred_file_write_string(file, "\"\n");
+    }
+
     dred_file_close(file);
 }
 

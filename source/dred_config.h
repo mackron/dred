@@ -168,6 +168,10 @@ typedef struct
     char* recentFiles[DRED_MAX_RECENT_FILES];
     size_t recentFileCount;
 
+    // Recent commands.
+    char* recentCommands[DRED_MAX_RECENT_COMMANDS];
+    size_t recentCommandsCount;
+
     // The cross image.
     dred_image* pImageCross;
 
@@ -193,6 +197,9 @@ void dred_config_set_default(dred_config* pConfig, const char* name);
 
 // Pushes a new recent file to the end of the list.
 void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolutePath);
+
+// Pushes a new recent command to the end of the list.
+void dred_config_push_recent_cmd(dred_config* pConfig, const char* cmd);
 
 
 

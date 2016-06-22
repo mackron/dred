@@ -4,8 +4,9 @@ typedef struct
     dred_context* pDred;
     dred_textbox* pTextBox;
     char message[256];
-
     dred_info_bar* pInfoBar;
+    unsigned int iPrevCommand;
+    char* workingCommand;
 } dred_cmdbar_data;
 
 dred_textbox* dred_cmdbar__get_textbox(dred_cmdbar* pCmdBar)
@@ -211,12 +212,61 @@ void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, drgui_key key, int stat
     dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
+    dred_cmdbar_data* pData = dred_control_get_extra_data(pCmdBar);
+    assert(pData != NULL);
+
     dred_context* pDred = dred_control_get_context(pCmdBar);
+    assert(pDred != NULL);
 
     dred_cmdbar_clear_message(pCmdBar);
 
+    switch (key)
+    {
+        case DRGUI_ESCAPE:
+        {
+            dred_unfocus_command_bar(pDred);
+        } break;
+
+        case DRGUI_ARROW_UP:
+        {
+            if (pData->iPrevCommand == 0) {
+                // The working command needs to be saved so it can be restored later if the user pressed the down key.
+                size_t cmdLen = dred_textbox_get_text(pTextBox, NULL, 0);
+                if (cmdLen > 0) {
+                    pData->workingCommand = malloc(cmdLen + 1);
+                    if (dred_textbox_get_text(pTextBox, pData->workingCommand, cmdLen + 1) != cmdLen) {
+                        free(pData->workingCommand);
+                        pData->workingCommand = NULL;
+                    }
+                }
+            }
+
+            if (dred_cmdbar_set_text_to_previous_command(pCmdBar, pData->iPrevCommand)) {
+                pData->iPrevCommand += 1;
+            }
+        } break;
+
+        case DRGUI_ARROW_DOWN:
+        {
+            if (pData->iPrevCommand > 0) {
+                if (dred_cmdbar_set_text_to_previous_command(pCmdBar, pData->iPrevCommand - 1)) {
+                    pData->iPrevCommand -= 1;
+                }
+            }
+
+            if (pData->iPrevCommand == 0) {
+                dred_cmdbar_set_text(pCmdBar, pData->workingCommand);
+            }
+        } break;
+
+        default: 
+        {
+            dred_textbox_on_key_down(pTextBox, key, stateFlags);
+        } break;
+    }
+
     if (key == DRGUI_ESCAPE) {
-        dred_unfocus_command_bar(pDred);
+        
     } else {
         dred_textbox_on_key_down(pTextBox, key, stateFlags);
     }
@@ -229,6 +279,12 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
     // The parent is the command bar.
     dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
+
+    dred_cmdbar_data* pData = dred_control_get_extra_data(pCmdBar);
+    assert(pData != NULL);
+
+    dred_context* pDred = dred_control_get_context(pCmdBar);
+    assert(pDred != NULL);
 
     if (utf32 == '\r' || utf32 == '\n')
     {
@@ -248,6 +304,14 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
 
             if ((command.flags & DRED_CMDBAR_RELEASE_KEYBOARD) != 0) {
                 dred_unfocus_command_bar(dred_control_get_context(pCmdBar));
+            }
+
+            dred_config_push_recent_cmd(&pDred->config, cmd);
+            pData->iPrevCommand = 0;
+
+            if (pData->workingCommand) {
+                free(pData->workingCommand);
+                pData->workingCommand = NULL;
             }
         }
 
@@ -346,6 +410,7 @@ void dred_cmdbar_delete(dred_cmdbar* pCmdBar)
     dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
     if (data != NULL) {
         dred_textbox_delete(data->pTextBox);
+        free(data->workingCommand);
     }
 
     dred_control_delete(pCmdBar);
@@ -366,6 +431,21 @@ void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text)
     dred_textbox_deselect_all(data->pTextBox);
     dred_textbox_set_text(data->pTextBox, text);
     dred_textbox_move_cursor_to_end_of_text(data->pTextBox);
+}
+
+bool dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigned int iPrevCommand)
+{
+    dred_cmdbar_data* pData = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    if (pData == NULL) {
+        return false;
+    }
+
+    if (iPrevCommand >= pData->pDred->config.recentCommandsCount) {
+        return false;
+    }
+
+    dred_cmdbar_set_text(pCmdBar, pData->pDred->config.recentCommands[iPrevCommand]);
+    return true;
 }
 
 

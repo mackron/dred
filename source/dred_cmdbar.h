@@ -14,6 +14,7 @@ void dred_cmdbar_delete(dred_cmdbar* pCmdBar);
 //
 // This will move the caret to the end of the text.
 void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text);
+bool dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigned int iPrevCommand);
 
 // Determines whether or not the given command bar has the keyboard focus.
 bool dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar);
