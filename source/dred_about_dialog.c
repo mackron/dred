@@ -1940,6 +1940,23 @@ static const struct {
   "\0\0\377}\0\0\377}\0\0\377}\0\0\377}\0\0\377}\0\0\377}\0\0\377",
 };
 
+void dred_about_dialog__on_size(drgui_element* pElement, float newWidth, float newHeight)
+{
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow == NULL) {
+        return;
+    }
+
+    dred_about_dialog* pDialog = (dred_about_dialog*)pWindow->pUserData;
+    assert(pDialog != NULL);
+
+    dred_context* pDred = pWindow->pDred;
+    assert(pDialog != NULL);
+
+    // The close button needs to be repositioned.
+    dred_control_set_relative_position(pDialog->pCloseButton, newWidth - dred_control_get_width(pDialog->pCloseButton) - 8*pDred->uiScale, newHeight - dred_control_get_height(pDialog->pCloseButton) - 8*pDred->uiScale);
+}
+
 void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void* pPaintData)
 {
     (void)rect;
@@ -2041,7 +2058,9 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     
     pDialog->pWindow->pUserData = pDialog;
     pDialog->pWindow->onClose = dred_about_dialog__on_window_close;
+    drgui_set_on_size(pDialog->pWindow->pRootGUIElement, dred_about_dialog__on_size);
     drgui_set_on_paint(pDialog->pWindow->pRootGUIElement, dred_about_dialog__on_paint);
+    
 
 
     pDialog->pLogo = drgui_create_image(pDred->pGUI, g_LogoBannerImage.width, g_LogoBannerImage.height, drgui_image_format_rgba8, g_LogoBannerImage.width*4, g_LogoBannerImage.pixel_data);

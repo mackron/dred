@@ -2,7 +2,8 @@
 void dred_settings_dialog__on_window_close(dred_window* pWindow)
 {
     // Just hide the window. The main context will delete it for real at close time.
-    dred_window_hide(pWindow, 0);
+    dred_settings_dialog* pDialog = (dred_settings_dialog*)pWindow->pUserData;
+    dred_settings_dialog_hide(pDialog);
 }
 
 dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred)
