@@ -622,18 +622,6 @@ bool dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdOut)
     }
 
     return true;
-
-
-    /*const char* value;
-    dred_command command;
-    if (dred_find_command(cmd, &command, &value)) {
-        bool result = command.proc(pDred, value);
-
-        if (pLastCmdOut) *pLastCmdOut = command;
-        return result;
-    }
-
-    return false;*/
 }
 
 bool dred_bind_shortcut(dred_context* pDred, const char* shortcutName, dred_shortcut shortcut, const char* commandStr)
@@ -2185,16 +2173,41 @@ void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t accel
 {
     (void)pWindow;
 
+    dred_accelerator accelerator = pDred->shortcutTable.acceleratorTable.pAccelerators[acceleratorIndex];
+
     // The accelerator should be tied to a shortcut. We need to find that shortcut and execute it's command.
-    size_t shortcutIndex;
-    if (!dred_shortcut_table_find(&pDred->shortcutTable, dred_shortcut_create_single(pDred->shortcutTable.acceleratorTable.pAccelerators[acceleratorIndex]), &shortcutIndex)) {
-        return;
+    for (size_t iShortcut = 0; iShortcut < pDred->shortcutTable.count; ++iShortcut) {
+        dred_shortcut shortcut = pDred->shortcutTable.pShortcuts[iShortcut];
+        if (pDred->queuedAccelerator.key == 0) {
+            if (dred_accelerator_equal(shortcut.accelerators[0], accelerator)) {
+                if (shortcut.accelerators[1].key == 0) {
+                    const char* cmd = dred_shortcut_table_get_command_string_by_index(&pDred->shortcutTable, iShortcut);
+                    if (cmd == NULL) {
+                        return;
+                    }
+
+                    dred_exec(pDred, cmd, NULL);
+                } else {
+                    // There is a shortcut that uses this accelerator as it's first one. Thus, it needs to be queued.
+                    pDred->queuedAccelerator = accelerator;
+                }
+
+                return;
+            }
+        } else {
+            // An accelerator is queued.
+            if (dred_shortcut_equal(shortcut, dred_shortcut_create(pDred->queuedAccelerator, accelerator))) {
+                const char* cmd = dred_shortcut_table_get_command_string_by_index(&pDred->shortcutTable, iShortcut);
+                if (cmd == NULL) {
+                    pDred->queuedAccelerator = dred_accelerator_none();
+                    return;
+                }
+
+                dred_exec(pDred, cmd, NULL);
+            }
+        }
     }
 
-    const char* cmd = dred_shortcut_table_get_command_string_by_index(&pDred->shortcutTable, shortcutIndex);
-    if (cmd == NULL) {
-        return;
-    }
-
-    dred_exec(pDred, cmd, NULL);
+    // Make sure any queued accelerator is cleared.
+    pDred->queuedAccelerator = dred_accelerator_none();
 }
