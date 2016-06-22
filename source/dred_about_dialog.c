@@ -2053,6 +2053,18 @@ void dred_about_dialog__on_window_close(dred_window* pWindow)
     pDred->pAboutDialog = NULL;
 }
 
+/*void dred_about_dialog__on_key_down(dred_window* pWindow, drgui_key key, unsigned int stateFlags)
+{
+    (void)stateFlags;
+
+    dred_about_dialog* pDialog = (dred_about_dialog*)pWindow->pUserData;
+    assert(pDialog != NULL);
+
+    if (key == DRGUI_ESCAPE) {
+        dred_about_dialog__on_window_close(pWindow);
+    }
+}*/
+
 void dred_about_dialog__btn_close__on_pressed(dred_button* pButton)
 {
     dred_window* pWindow = dred_get_element_window(pButton);
@@ -2085,6 +2097,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     
     pDialog->pWindow->pUserData = pDialog;
     pDialog->pWindow->onClose = dred_about_dialog__on_window_close;
+    //pDialog->pWindow->onKeyDown = dred_about_dialog__on_key_down;
     drgui_set_on_size(pDialog->pWindow->pRootGUIElement, dred_about_dialog__on_size);
     drgui_set_on_paint(pDialog->pWindow->pRootGUIElement, dred_about_dialog__on_paint);
     
