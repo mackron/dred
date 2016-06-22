@@ -220,6 +220,13 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     pDred->cmdline = cmdline;
 
+
+    // Make sure the user's config directory exists.
+    char configFolderPath[DRED_MAX_PATH];
+    dred_get_config_folder_path(configFolderPath, sizeof(configFolderPath));
+    dr_mkdir_recursive(configFolderPath);
+
+
     // Open the log file first to ensure we're able to log as soon as possible.
     pDred->logFile = dred__open_log_file();
 
@@ -292,6 +299,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
     // Before loading configs we want to make sure any stock themes and settings are present.
+    dred_create_config_file_if_not_exists(".dred", "");
     dred_create_config_file_if_not_exists("dark.dredtheme", g_StockTheme_Dark);
     dred_create_config_file_if_not_exists("light.dredtheme", g_StockTheme_Light);
 
