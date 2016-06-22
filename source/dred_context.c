@@ -409,6 +409,9 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     }
 
 
+    // This is a little hack to ensure the maximized state is saved correctly.
+    pDred->config.windowMaximized = showWindowMaximized;
+
     pDred->isInitialized = true;
     return true;
 

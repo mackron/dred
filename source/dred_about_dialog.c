@@ -2008,8 +2008,35 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
     drgui_get_font_metrics(pFont, &fontMetrics);
     dred_font_release_subfont(pWindow->pDred->config.pUIFont, pFont);
 
-    drgui_draw_text(pElement, pFont, versionStr, (int)strlen(versionStr), (8*uiScale), bannerRect.bottom + (9*uiScale), drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
-    drgui_draw_text(pElement, pFont, copyrightStr, (int)strlen(copyrightStr), (8*uiScale), bannerRect.bottom + (9*uiScale) + fontMetrics.lineHeight, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    float penPosX = (8*uiScale);
+    float penPosY = bannerRect.bottom + (9*uiScale);
+
+    drgui_draw_text(pElement, pFont, versionStr, (int)strlen(versionStr), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    penPosY += fontMetrics.lineHeight;
+
+    drgui_draw_text(pElement, pFont, copyrightStr, (int)strlen(copyrightStr), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    penPosY += fontMetrics.lineHeight;
+    
+    penPosY += (9*uiScale);
+    drgui_draw_rect(pElement, drgui_make_rect(0, penPosY, dialogRect.right, penPosY + (1 * uiScale)), drgui_rgb(200, 200, 200), pPaintData);
+    penPosY += 9*uiScale;
+
+    const char* creditsTitle = "The following libraries are used internally by dred:";
+    drgui_draw_text(pElement, pFont, creditsTitle, (int)strlen(creditsTitle), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    penPosY += 4*uiScale + fontMetrics.lineHeight;
+
+    static const char* credits[] = {
+        "    dr_libs (https://github.com/mackron/dr_libs)",
+        "    gb_string (https://github.com/gingerBill/gb)",
+        "    nanosvg (https://github.com/memononen/nanosvg)"
+    };
+
+    size_t creditsCount = sizeof(credits) / sizeof(credits[0]);
+
+    for (size_t iCredit = 0; iCredit < creditsCount; ++iCredit) {
+        drgui_draw_text(pElement, pFont, credits[iCredit], strlen(credits[iCredit]), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+        penPosY += fontMetrics.lineHeight;
+    }
 }
 
 void dred_about_dialog__on_window_close(dred_window* pWindow)
@@ -2047,8 +2074,8 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
         return NULL;
     }
 
-    unsigned int windowWidth = (unsigned int)(480*pDred->dpiScale);
-    unsigned int windowHeight = (unsigned int)(360*pDred->dpiScale);
+    unsigned int windowWidth = (unsigned int)(480*pDred->uiScale);
+    unsigned int windowHeight = (unsigned int)(360*pDred->uiScale);
 
     pDialog->pWindow = dred_window_create_dialog(pDred->pMainWindow, "About", windowWidth, windowHeight);
     if (pDialog->pWindow == NULL) {

@@ -1969,7 +1969,7 @@ static void dred_gtk_cb__on_menu_item_activate(GtkWidget *pGTKMenuItem, gpointer
     }
 
     if (pItem->command) {
-        dred_exec(pItem->pDred, pItem->command);
+        dred_exec(pItem->pDred, pItem->command, NULL);
     }
 }
 

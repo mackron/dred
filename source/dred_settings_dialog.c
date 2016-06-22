@@ -17,7 +17,7 @@ dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred)
         return NULL;
     }
 
-    pDialog->pWindow = dred_window_create_dialog(pDred->pMainWindow, "Settings", (unsigned int)(720*pDred->dpiScale), (unsigned int)(360*pDred->dpiScale));
+    pDialog->pWindow = dred_window_create_dialog(pDred->pMainWindow, "Settings", (unsigned int)(720*pDred->uiScale), (unsigned int)(480*pDred->uiScale));
     if (pDialog->pWindow == NULL) {
         free(pDialog);
         return NULL;
