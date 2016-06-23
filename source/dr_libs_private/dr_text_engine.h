@@ -1701,7 +1701,7 @@ bool drte_engine_move_cursor_left(drte_engine* pEngine)
 
 bool drte_engine_move_cursor_right(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
@@ -1725,7 +1725,7 @@ bool drte_engine_move_cursor_right(drte_engine* pEngine)
 
 bool drte_engine_move_cursor_up(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
@@ -1749,7 +1749,7 @@ bool drte_engine_move_cursor_up(drte_engine* pEngine)
 
 bool drte_engine_move_cursor_down(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
@@ -1773,7 +1773,7 @@ bool drte_engine_move_cursor_down(drte_engine* pEngine)
 
 bool drte_engine_move_cursor_y(drte_engine* pEngine, int amount)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
@@ -1797,7 +1797,7 @@ bool drte_engine_move_cursor_y(drte_engine* pEngine, int amount)
 
 bool drte_engine_move_cursor_to_end_of_line(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
@@ -1821,7 +1821,7 @@ bool drte_engine_move_cursor_to_end_of_line(drte_engine* pEngine)
 
 bool drte_engine_move_cursor_to_start_of_line(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
@@ -1845,7 +1845,7 @@ bool drte_engine_move_cursor_to_start_of_line(drte_engine* pEngine)
 
 bool drte_engine_move_cursor_to_end_of_line_by_index(drte_engine* pEngine, size_t iLine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
@@ -1869,7 +1869,7 @@ bool drte_engine_move_cursor_to_end_of_line_by_index(drte_engine* pEngine, size_
 
 bool drte_engine_move_cursor_to_start_of_line_by_index(drte_engine* pEngine, size_t iLine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
@@ -1893,7 +1893,7 @@ bool drte_engine_move_cursor_to_start_of_line_by_index(drte_engine* pEngine, siz
 
 bool drte_engine_move_cursor_to_end_of_text(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
@@ -1917,7 +1917,7 @@ bool drte_engine_move_cursor_to_end_of_text(drte_engine* pEngine)
 
 bool drte_engine_move_cursor_to_start_of_text(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
@@ -1941,7 +1941,7 @@ bool drte_engine_move_cursor_to_start_of_text(drte_engine* pEngine)
 
 void drte_engine_move_cursor_to_start_of_selection(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return;
     }
 
@@ -1958,7 +1958,7 @@ void drte_engine_move_cursor_to_start_of_selection(drte_engine* pEngine)
 
 void drte_engine_move_cursor_to_end_of_selection(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return;
     }
 
@@ -1975,7 +1975,7 @@ void drte_engine_move_cursor_to_end_of_selection(drte_engine* pEngine)
 
 void drte_engine_move_cursor_to_character(drte_engine* pEngine, size_t characterIndex)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return;
     }
 
@@ -1995,7 +1995,7 @@ void drte_engine_move_cursor_to_character(drte_engine* pEngine, size_t character
 
 size_t drte_engine_move_cursor_to_end_of_word(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return 0;
     }
 
@@ -2021,7 +2021,7 @@ size_t drte_engine_move_cursor_to_end_of_word(drte_engine* pEngine)
 
 size_t drte_engine_move_cursor_to_start_of_next_word(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return 0;
     }
 
@@ -2041,7 +2041,7 @@ size_t drte_engine_move_cursor_to_start_of_next_word(drte_engine* pEngine)
 
 size_t drte_engine_move_cursor_to_start_of_word(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return 0;
     }
 
@@ -2080,7 +2080,7 @@ size_t drte_engine_move_cursor_to_start_of_word(drte_engine* pEngine)
 
 size_t drte_engine_get_spaces_to_next_colum_from_cursor(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return 0;
     }
 
