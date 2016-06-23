@@ -16,6 +16,9 @@ typedef struct
     // The style to apply to the cursor.
     dred_text_style cursorStyle;
 
+    // The style to apply to line numbers.
+    dred_text_style lineNumbersStyle;
+
 
     /// The vertical scrollbar.
     drgui_element* pVertScrollbar;
@@ -43,10 +46,10 @@ typedef struct
     float lineNumbersPaddingRight;
 
     // The color of the text of the line numbers.
-    drgui_color lineNumbersColor;
+    //drgui_color lineNumbersColor;
 
     // The color of the background of the line numbers.
-    drgui_color lineNumbersBackgroundColor;
+    //drgui_color lineNumbersBackgroundColor;
 
 
     /// The desired width of the vertical scrollbar.
@@ -189,6 +192,9 @@ void dred_textbox__refresh_style(drgui_element* pTextBox)
 
     // Cursor.
     drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->cursorStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
+
+    // Line numbers.
+    drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->lineNumbersStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
 }
 
 
@@ -255,6 +261,10 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     pTB->cursorStyle.bgColor = drgui_rgb(0, 0, 0);
     pTB->cursorStyle.fgColor = drgui_rgb(0, 0, 0);
 
+    pTB->lineNumbersStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTB->lineNumbersStyle.bgColor = drgui_rgb(64, 64, 64);
+    pTB->lineNumbersStyle.fgColor = drgui_rgb(80, 160, 192);
+
     // Register the styles with the text engine.
     dred_textbox__refresh_style(pTextBox);
 
@@ -262,6 +272,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drte_engine_set_selection_style(pTB->pTL, (drte_style_token)&pTB->selectionStyle);
     drte_engine_set_active_line_style(pTB->pTL, (drte_style_token)&pTB->activeLineStyle);
     drte_engine_set_cursor_style(pTB->pTL, (drte_style_token)&pTB->cursorStyle);
+    drte_engine_set_line_numbers_style(pTB->pTL, (drte_style_token)&pTB->lineNumbersStyle);
 
 
     drte_engine_set_on_paint_rect(pTB->pTL, dred_textbox__on_text_engine_paint_rect);
@@ -282,8 +293,8 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     pTB->padding     = 2;
     pTB->lineNumbersWidth = 64;
     pTB->lineNumbersPaddingRight = 16;
-    pTB->lineNumbersColor = drgui_rgb(80, 160, 192);
-    pTB->lineNumbersBackgroundColor = pTB->defaultStyle.bgColor;
+    //pTB->lineNumbersColor = drgui_rgb(80, 160, 192);
+    //pTB->lineNumbersBackgroundColor = pTB->defaultStyle.bgColor;
     pTB->vertScrollbarSize = 16;
     pTB->horzScrollbarSize = 16;
     pTB->isVertScrollbarEnabled = true;
@@ -571,7 +582,9 @@ void dred_textbox_set_line_numbers_color(dred_textbox* pTextBox, drgui_color col
         return;
     }
 
-    pTB->lineNumbersColor = color;
+    //pTB->lineNumbersColor = color;
+    pTB->lineNumbersStyle.fgColor = color;
+    dred_textbox__refresh_style(pTextBox);
     dred_textbox__refresh_line_numbers(pTextBox);
 }
 
@@ -582,7 +595,7 @@ drgui_color dred_textbox_get_line_numbers_color(dred_textbox* pTextBox)
         return drgui_rgb(0, 0, 0);
     }
 
-    return pTB->lineNumbersColor;
+    return pTB->lineNumbersStyle.fgColor;
 }
 
 void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, drgui_color color)
@@ -592,7 +605,8 @@ void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, drgu
         return;
     }
     
-    pTB->lineNumbersBackgroundColor = color;
+    pTB->lineNumbersStyle.bgColor = color;
+    dred_textbox__refresh_style(pTextBox);
     dred_textbox__refresh_line_numbers(pTextBox);
 }
 
@@ -603,7 +617,7 @@ drgui_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBo
         return drgui_rgb(0, 0, 0);
     }
 
-    return pTB->lineNumbersBackgroundColor;
+    return pTB->lineNumbersStyle.bgColor;
 }
 
 void dred_textbox_set_scrollbar_track_color(dred_textbox* pTextBox, drgui_color color)
@@ -2099,25 +2113,33 @@ void dred_textbox__on_paint_rect_line_numbers(drte_engine* pLayout, drte_style_t
 {
     (void)pLayout;
 
+    dred_text_style* pStyle = (dred_text_style*)styleToken;
+
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
     float offsetX = pTB->padding;
     float offsetY = pTB->padding;
 
-    drgui_draw_rect(pTB->pLineNumbers, drgui_offset_rect(rect, offsetX, offsetY), color, pPaintData);
+    drgui_draw_rect(pTB->pLineNumbers, drgui_offset_rect(rect, offsetX, offsetY), pStyle->bgColor, pPaintData);
+    //drgui_draw_rect(pTB->pLineNumbers, drgui_offset_rect(rect, offsetX, offsetY), color, pPaintData);
 }
 
 void dred_textbox__on_paint_text_line_numbers(drte_engine* pLayout, drte_style_token styleTokenFG, drte_style_token styleTokenBG, drte_text_run* pRun, dred_textbox* pTextBox, void* pPaintData)
 {
     (void)pLayout;
 
+    dred_text_style* pStyleFG = (dred_text_style*)styleTokenFG;
+    dred_text_style* pStyleBG = (dred_text_style*)styleTokenBG;
+
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
     float offsetX = pTB->padding;
     float offsetY = pTB->padding;
-    drgui_draw_text(pTB->pLineNumbers, pRun->pFont, pRun->text, (int)pRun->textLength, (float)pRun->posX + offsetX, (float)pRun->posY + offsetY, pRun->textColor, pRun->backgroundColor, pPaintData);
+
+    drgui_draw_text(pTB->pLineNumbers, pStyleFG->pFont, pRun->text, (int)pRun->textLength, (float)pRun->posX + offsetX, (float)pRun->posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
+    //drgui_draw_text(pTB->pLineNumbers, pRun->pFont, pRun->text, (int)pRun->textLength, (float)pRun->posX + offsetX, (float)pRun->posY + offsetY, pRun->textColor, pRun->backgroundColor, pPaintData);
 }
 
 void dred_textbox__on_paint_line_numbers(drgui_element* pLineNumbers, drgui_rect relativeRect, void* pPaintData)
@@ -2133,15 +2155,15 @@ void dred_textbox__on_paint_line_numbers(drgui_element* pLineNumbers, drgui_rect
     float lineNumbersWidth  = drgui_get_width(pLineNumbers) - (pTB->padding*2) - pTB->lineNumbersPaddingRight;
     float lineNumbersHeight = drgui_get_height(pLineNumbers) - (pTB->padding*2);
 
-    drte_engine_paint_line_numbers(pTB->pTL, lineNumbersWidth, lineNumbersHeight, pTB->lineNumbersColor, pTB->lineNumbersBackgroundColor, dred_textbox__on_paint_text_line_numbers, dred_textbox__on_paint_rect_line_numbers, pTextBox, pPaintData);
+    drte_engine_paint_line_numbers(pTB->pTL, lineNumbersWidth, lineNumbersHeight, pTB->lineNumbersStyle.fgColor, pTB->lineNumbersStyle.bgColor, dred_textbox__on_paint_text_line_numbers, dred_textbox__on_paint_rect_line_numbers, pTextBox, pPaintData);
 
-    drgui_draw_rect_outline(pLineNumbers, drgui_get_local_rect(pLineNumbers), pTB->lineNumbersBackgroundColor, pTB->padding, pPaintData);
+    drgui_draw_rect_outline(pLineNumbers, drgui_get_local_rect(pLineNumbers), pTB->lineNumbersStyle.bgColor, pTB->padding, pPaintData);
 
     // Right padding.
     drgui_rect rightPaddingRect = drgui_get_local_rect(pLineNumbers);
     rightPaddingRect.right -= pTB->padding;
     rightPaddingRect.left   = rightPaddingRect.right - pTB->lineNumbersPaddingRight;
-    drgui_draw_rect(pLineNumbers, rightPaddingRect, pTB->lineNumbersBackgroundColor, pPaintData);
+    drgui_draw_rect(pLineNumbers, rightPaddingRect, pTB->lineNumbersStyle.bgColor, pPaintData);
 }
 
 void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox)

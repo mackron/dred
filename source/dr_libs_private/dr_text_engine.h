@@ -273,6 +273,9 @@ struct drte_engine
     // The style to apply to the cursor.
     uint8_t cursorStyleSlot;
 
+    // The style to apply to line numbers.
+    uint8_t lineNumbersStyleSlot;
+
 
 
     /// The main text of the layout.
@@ -473,6 +476,9 @@ void drte_engine_set_active_line_style(drte_engine* pEngine, drte_style_token st
 
 // Sets the style to use for the cursor.
 void drte_engine_set_cursor_style(drte_engine* pEngine, drte_style_token styleToken);
+
+// Sets the style to use for the line numbers.
+void drte_engine_set_line_numbers_style(drte_engine* pEngine, drte_style_token styleToken);
 
 
 /// Sets the given text engine's text.
@@ -1253,6 +1259,25 @@ void drte_engine_set_cursor_style(drte_engine* pEngine, drte_style_token styleTo
     }
     
     pEngine->cursorStyleSlot = styleSlot;
+    drte_engine__refresh(pEngine);
+}
+
+void drte_engine_set_line_numbers_style(drte_engine* pEngine, drte_style_token styleToken)
+{
+    if (pEngine == NULL) {
+        return;
+    }
+
+    uint8_t styleSlot = drte_engine__get_style_slot(pEngine, styleToken);
+    if (styleSlot == DRTE_INVALID_STYLE_SLOT) {
+        return;
+    }
+
+    if (pEngine->lineNumbersStyleSlot == styleSlot) {
+        return; // Nothing has changed.
+    }
+    
+    pEngine->lineNumbersStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
 }
 
@@ -3482,11 +3507,11 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
     if (pEngine->onPaintRect)
     {
         if (rectTop.bottom > 0) {
-            onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, rectTop, backgroundColor, pElement, pPaintData);
+            onPaintRect(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, rectTop, backgroundColor, pElement, pPaintData);
         }
 
         if (rectBottom.top < lineNumbersHeight) {
-            onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, rectBottom, backgroundColor, pElement, pPaintData);
+            onPaintRect(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, rectBottom, backgroundColor, pElement, pPaintData);
         }
     }
 
@@ -3531,14 +3556,14 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
                 run.pFont           = pFont;
                 run.textColor       = textColor;
                 run.backgroundColor = backgroundColor;
-                run.fgStyleSlot     = pEngine->defaultStyleSlot; // TODO: Change these to the line numbers style.
-                run.bgStyleSlot     = pEngine->defaultStyleSlot;
+                run.fgStyleSlot     = pEngine->lineNumbersStyleSlot;
+                run.bgStyleSlot     = pEngine->lineNumbersStyleSlot;
                 run.text            = iLineStr;
                 run.textLength      = strlen(iLineStr);
                 run.posX            = lineNumbersWidth - textWidth;
                 run.posY            = lineTop;
                 onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, &run, pElement, pPaintData);
-                onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, drgui_make_rect(0, lineTop, run.posX, lineBottom), run.backgroundColor, pElement, pPaintData);
+                onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(0, lineTop, run.posX, lineBottom), run.backgroundColor, pElement, pPaintData);
             }
         }
         else
