@@ -69,6 +69,20 @@ drgui_rect dred_settings_editor__get_side_panel_rect(dred_settings_editor* pSett
     return drgui_make_rect(0, 0, pData->sidePanelWidth, drgui_get_height(pSettingsEditor));
 }
 
+drgui_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSettingsEditor)
+{
+    dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
+    assert(pData != NULL);
+
+    dred_context* pDred = dred_control_get_context(pSettingsEditor);
+    assert(pData != NULL);
+
+    float posX = pData->sidePanelWidth;
+    float posY = drgui_get_height(pSettingsEditor) - (dred_control_get_height(pData->pCloseButton)) - (8*pDred->uiScale * 2);
+
+    return drgui_make_rect(posX, posY, drgui_get_width(pSettingsEditor), drgui_get_height(pSettingsEditor));
+}
+
 int dred_settings_editor__get_side_panel_btn_index_under_point(dred_settings_editor* pSettingsEditor, float posX, float posY)
 {
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
@@ -124,10 +138,13 @@ void dred_settings_editor__refresh_layout(dred_settings_editor* pSettingsEditor)
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
 
+    dred_context* pDred = dred_control_get_context(pSettingsEditor);
+    assert(pData != NULL);
+
     float posX = pData->sidePanelWidth;
     float posY = 0;
     float sizeX = drgui_get_width(pSettingsEditor) - posX;
-    float sizeY = drgui_get_height(pSettingsEditor) - 48;
+    float sizeY = drgui_get_height(pSettingsEditor) - (dred_control_get_height(pData->pCloseButton)) - (8*pDred->uiScale * 2);
 
     // Every page needs to be resized. Every page will be the same size.
     int sideButtonsCount = (int)(sizeof(pData->pages) / sizeof(pData->pages[0]));
@@ -282,6 +299,11 @@ void dred_settings_editor__on_paint(dred_settings_editor* pSettingsEditor, drgui
 
     // Bottom of side panel.
     drgui_draw_rect(pSettingsEditor, drgui_make_rect(0, penPosY, sideRect.right - borderWidth, sideRect.bottom), drgui_rgb(255, 255, 255), pPaintData);
+
+
+    // Action area.
+    drgui_rect actionRect = dred_settings_editor__get_action_area_rect(pSettingsEditor);
+    drgui_draw_rect(pSettingsEditor, actionRect, drgui_rgb(255, 255, 255), pPaintData);
 }
 
 
