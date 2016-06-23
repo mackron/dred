@@ -130,8 +130,6 @@ static drte_color drte_rgb(uint8_t r, uint8_t g, uint8_t b)
 typedef struct
 {
     drte_style_token styleToken;
-    //drte_color bgColor;
-    //drte_color fgColor;
     drte_font_metrics fontMetrics;
 } drte_style;
 
@@ -206,6 +204,19 @@ typedef struct
     float absoluteSickyPosX;
 
 } drte_marker;
+
+typedef struct
+{
+    // The index of the first character in the segment.
+    size_t iCharBeg;
+
+    // The index of the last character in the segment.
+    size_t iCharEnd;
+
+    // The style to apply to the segment.
+    drte_style_token styleToken;
+
+} drte_style_segment;
 
 /// Keeps track of the current state of the text engine. Used for calculating the difference between two states for undo/redo.
 typedef struct
