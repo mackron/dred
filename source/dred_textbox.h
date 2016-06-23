@@ -3,6 +3,13 @@
 
 typedef dred_control dred_textbox;
 
+typedef struct
+{
+    drgui_color bgColor;
+    drgui_color fgColor;
+    drgui_font* pFont;
+} dred_text_style;
+
 typedef void (* dred_textbox_on_cursor_move_proc)(dred_textbox* pTextBox);
 typedef void (* dred_textbox_on_undo_point_changed_proc)(dred_textbox* pTextBox, unsigned int iUndoPoint);
 

@@ -83,6 +83,7 @@ typedef enum
     drte_alignment_bottom,
 } drte_alignment;
 
+
 typedef struct
 {
     int16_t ascent;
@@ -91,11 +92,48 @@ typedef struct
     int16_t spaceWidth;
 } drte_font_metrics;
 
+static drte_font_metrics drte_font_metrics_create(int ascent, int descent, int lineHeight, int spaceWidth)
+{
+    drte_font_metrics metrics;
+    metrics.ascent = (int16_t)ascent;
+    metrics.descent = (int16_t)descent;
+    metrics.lineHeight = (int16_t)lineHeight;
+    metrics.spaceWidth = (int16_t)spaceWidth;
+    return metrics;
+}
+
+
+typedef struct
+{
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+} drte_color;
+
+static drte_color drte_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+{
+    drte_color color;
+    color.r = r;
+    color.g = g;
+    color.b = b;
+    color.a = a;
+    return color;
+}
+
+static drte_color drte_rgb(uint8_t r, uint8_t g, uint8_t b)
+{
+    return drte_rgba(r, g, b, 255);
+}
+
+
 typedef struct
 {
     drte_style_token styleToken;
+    drte_color bgColor;
+    drte_color fgColor;
     drte_font_metrics fontMetrics;
-} drte__style;
+} drte_style;
 
 typedef struct
 {
@@ -114,6 +152,12 @@ typedef struct
 
     /// The backgorund color of the text.
     drgui_color backgroundColor;
+
+    // The style slot to use for the foreground of this run.
+    uint8_t fgStyleSlot;
+
+    // The style slot to use for the background of this run.
+    uint8_t bgStyleSlot;
 
 
     /// The position to draw the text on the x axis.
@@ -144,8 +188,8 @@ typedef struct
 } drte_text_run;
 
 
-typedef void (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_text_run* pRun, drgui_element* pElement, void* pPaintData);
-typedef void (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drgui_rect rect, drgui_color color, drgui_element* pElement, void* pPaintData);
+typedef void (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, drte_text_run* pRun, drgui_element* pElement, void* pPaintData);
+typedef void (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_style_token styleToken, drgui_rect rect, drgui_color color, drgui_element* pElement, void* pPaintData);
 typedef void (* drte_engine_on_cursor_move_proc)       (drte_engine* pEngine);
 typedef void (* drte_engine_on_dirty_proc)             (drte_engine* pEngine, drgui_rect rect);
 typedef void (* drte_engine_on_text_changed_proc)      (drte_engine* pEngine);
@@ -212,13 +256,22 @@ typedef struct
 struct drte_engine
 {
     // The list of registered styles. There is a maximum of 256 styles.
-    drte__style styles[256];
+    drte_style styles[256];
 
     // The number of registered styles.
     uint16_t styleCount;
 
     // The default style.
     uint8_t defaultStyleSlot;
+
+    // The style to apply to selected text. Only the background color is used.
+    uint8_t selectionStyleSlot;
+
+    // The style to apply to active lines. Only the background color is used.
+    uint8_t activeLineStyleSlot;
+
+    // The style to apply to the cursor.
+    uint8_t cursorStyleSlot;
 
 
 
@@ -408,6 +461,19 @@ bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token sty
 // The given style must have been registered first with drte_engine_register_style_token().
 void drte_engine_set_default_style(drte_engine* pEngine, drte_style_token styleToken);
 
+// Sets the style to use for selected text.
+//
+// Only the background color is used for this. The text is drawn with the standard non-selected style.
+void drte_engine_set_selection_style(drte_engine* pEngine, drte_style_token styleToken);
+
+// Sets the style to use for active lines.
+//
+// Only the background color is used for this. The text is drawn with it's normal.
+void drte_engine_set_active_line_style(drte_engine* pEngine, drte_style_token styleToken);
+
+// Sets the style to use for the cursor.
+void drte_engine_set_cursor_style(drte_engine* pEngine, drte_style_token styleToken);
+
 
 /// Sets the given text engine's text.
 void drte_engine_set_text(drte_engine* pEngine, const char* text);
@@ -470,28 +536,28 @@ void drte_engine_set_default_font(drte_engine* pEngine, drgui_font* pFont);
 drgui_font* drte_engine_get_default_font(drte_engine* pEngine);
 
 /// Sets the default text color of the given text engine.
-void drte_engine_set_default_text_color(drte_engine* pEngine, drgui_color color);
+//void drte_engine_set_default_text_color(drte_engine* pEngine, drgui_color color);
 
 /// Retrieves the default text color of the given text engine.
-drgui_color drte_engine_get_default_text_color(drte_engine* pEngine);
+//drgui_color drte_engine_get_default_text_color(drte_engine* pEngine);
 
 /// Sets the default background color of the given text engine.
-void drte_engine_set_default_bg_color(drte_engine* pEngine, drgui_color color);
+//void drte_engine_set_default_bg_color(drte_engine* pEngine, drgui_color color);
 
 /// Retrieves the default background color of the given text engine.
-drgui_color drte_engine_get_default_bg_color(drte_engine* pEngine);
+//drgui_color drte_engine_get_default_bg_color(drte_engine* pEngine);
 
 /// Sets the background color of selected text.
-void drte_engine_set_selection_bg_color(drte_engine* pEngine, drgui_color color);
+//void drte_engine_set_selection_bg_color(drte_engine* pEngine, drgui_color color);
 
 /// Retrieves the background color of selected text.
-drgui_color drte_engine_get_selection_bg_color(drte_engine* pEngine);
+//drgui_color drte_engine_get_selection_bg_color(drte_engine* pEngine);
 
 /// Sets the background color of the line the cursor is sitting on.
-void drte_engine_set_active_line_bg_color(drte_engine* pEngine, drgui_color color);
+//void drte_engine_set_active_line_bg_color(drte_engine* pEngine, drgui_color color);
 
 /// Retrieves the background color of the line the cursor is sitting on.
-drgui_color drte_engine_get_active_line_bg_color(drte_engine* pEngine);
+//drgui_color drte_engine_get_active_line_bg_color(drte_engine* pEngine);
 
 
 /// Sets the size of a tab in spaces.
@@ -525,10 +591,10 @@ void drte_engine_set_cursor_width(drte_engine* pEngine, float cursorWidth);
 float drte_engine_get_cursor_width(drte_engine* pEngine);
 
 /// Sets the color of the text cursor.
-void drte_engine_set_cursor_color(drte_engine* pEngine, drgui_color cursorColor);
+//void drte_engine_set_cursor_color(drte_engine* pEngine, drgui_color cursorColor);
 
 /// Retrieves the color of the text cursor.
-drgui_color drte_engine_get_cursor_color(drte_engine* pEngine);
+//drgui_color drte_engine_get_cursor_color(drte_engine* pEngine);
 
 /// Sets the blink rate of the cursor in milliseconds.
 void drte_engine_set_cursor_blink_rate(drte_engine* pEngine, unsigned int blinkRateInMilliseconds);
@@ -1045,6 +1111,8 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
         return NULL;
     }
 
+    pEngine->defaultStyleSlot = DRTE_INVALID_STYLE_SLOT;
+
     pEngine->defaultTextColor         = drgui_rgb(224, 224, 224);
     pEngine->defaultBackgroundColor   = drgui_rgb(48, 48, 48);
     pEngine->selectionBackgroundColor = drgui_rgb(64, 128, 192);
@@ -1088,13 +1156,11 @@ bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token sty
     }
 
     // If the token already exists just refresh.
-    for (size_t iStyleSlot = 0; iStyleSlot < pEngine->styleCount; ++iStyleSlot) {
-        if (pEngine->styles[iStyleSlot].styleToken == styleToken) {
-            // The style token has already been registered. Just replace it.
-            pEngine->styles[iStyleSlot].fontMetrics = fontMetrics;
-            drte_engine__refresh(pEngine);
-            return true;
-        }
+    uint8_t styleSlot = drte_engine__get_style_slot(pEngine, styleToken);
+    if (styleSlot != DRTE_INVALID_STYLE_SLOT) {
+        pEngine->styles[styleSlot].fontMetrics = fontMetrics;
+        drte_engine__refresh(pEngine);
+        return true;
     }
 
 
@@ -1127,6 +1193,66 @@ void drte_engine_set_default_style(drte_engine* pEngine, drte_style_token styleT
     }
     
     pEngine->defaultStyleSlot = styleSlot;
+    drte_engine__refresh(pEngine);
+}
+
+void drte_engine_set_selection_style(drte_engine* pEngine, drte_style_token styleToken)
+{
+    if (pEngine == NULL) {
+        return;
+    }
+
+    uint8_t styleSlot = drte_engine__get_style_slot(pEngine, styleToken);
+    if (styleSlot == DRTE_INVALID_STYLE_SLOT) {
+        return;
+    }
+
+    if (pEngine->selectionStyleSlot == styleSlot) {
+        return; // Nothing has changed.
+    }
+    
+    pEngine->selectionStyleSlot = styleSlot;
+
+    if (drte_engine_is_anything_selected(pEngine)) {
+        drte_engine__refresh(pEngine);
+    }
+}
+
+void drte_engine_set_active_line_style(drte_engine* pEngine, drte_style_token styleToken)
+{
+    if (pEngine == NULL) {
+        return;
+    }
+
+    uint8_t styleSlot = drte_engine__get_style_slot(pEngine, styleToken);
+    if (styleSlot == DRTE_INVALID_STYLE_SLOT) {
+        return;
+    }
+
+    if (pEngine->activeLineStyleSlot == styleSlot) {
+        return; // Nothing has changed.
+    }
+    
+    pEngine->activeLineStyleSlot = styleSlot;
+    drte_engine__refresh(pEngine);
+}
+
+void drte_engine_set_cursor_style(drte_engine* pEngine, drte_style_token styleToken)
+{
+    if (pEngine == NULL) {
+        return;
+    }
+
+    uint8_t styleSlot = drte_engine__get_style_slot(pEngine, styleToken);
+    if (styleSlot == DRTE_INVALID_STYLE_SLOT) {
+        return;
+    }
+
+    if (pEngine->cursorStyleSlot == styleSlot) {
+        return; // Nothing has changed.
+    }
+    
+    pEngine->cursorStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
 }
 
@@ -1367,7 +1493,7 @@ drgui_font* drte_engine_get_default_font(drte_engine* pEngine)
     return pEngine->pDefaultFont;
 }
 
-void drte_engine_set_default_text_color(drte_engine* pEngine, drgui_color color)
+/*void drte_engine_set_default_text_color(drte_engine* pEngine, drgui_color color)
 {
     if (pEngine == NULL) {
         return;
@@ -1405,9 +1531,9 @@ drgui_color drte_engine_get_default_bg_color(drte_engine* pEngine)
     }
 
     return pEngine->defaultBackgroundColor;
-}
+}*/
 
-void drte_engine_set_selection_bg_color(drte_engine* pEngine, drgui_color color)
+/*void drte_engine_set_selection_bg_color(drte_engine* pEngine, drgui_color color)
 {
     if (pEngine == NULL) {
         return;
@@ -1427,9 +1553,9 @@ drgui_color drte_engine_get_selection_bg_color(drte_engine* pEngine)
     }
 
     return pEngine->selectionBackgroundColor;
-}
+}*/
 
-void drte_engine_set_active_line_bg_color(drte_engine* pEngine, drgui_color color)
+/*void drte_engine_set_active_line_bg_color(drte_engine* pEngine, drgui_color color)
 {
     if (pEngine == NULL) {
         return;
@@ -1447,7 +1573,7 @@ drgui_color drte_engine_get_active_line_bg_color(drte_engine* pEngine)
     }
 
     return pEngine->lineBackgroundColor;
-}
+}*/
 
 
 void drte_engine_set_tab_size(drte_engine* pEngine, unsigned int sizeInSpaces)
@@ -1616,7 +1742,7 @@ float drte_engine_get_cursor_width(drte_engine* pEngine)
     return pEngine->cursorWidth;
 }
 
-void drte_engine_set_cursor_color(drte_engine* pEngine, drgui_color cursorColor)
+/*void drte_engine_set_cursor_color(drte_engine* pEngine, drgui_color cursorColor)
 {
     if (pEngine == NULL) {
         return;
@@ -1634,7 +1760,7 @@ drgui_color drte_engine_get_cursor_color(drte_engine* pEngine)
     }
 
     return pEngine->cursorColor;
-}
+}*/
 
 void drte_engine_set_cursor_blink_rate(drte_engine* pEngine, unsigned int blinkRateInMilliseconds)
 {
@@ -3138,11 +3264,11 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
     drgui_rect rectBottom = drgui_make_rect(0, textRect.bottom, pEngine->containerWidth, pEngine->containerHeight);
 
     if (rectTop.bottom > rect.top) {
-        pEngine->onPaintRect(pEngine, rectTop, pEngine->defaultBackgroundColor, pElement, pPaintData);
+        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, rectTop, pEngine->defaultBackgroundColor, pElement, pPaintData);
     }
 
     if (rectBottom.top < rect.bottom) {
-        pEngine->onPaintRect(pEngine, rectBottom, pEngine->defaultBackgroundColor, pElement, pPaintData);
+        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, rectBottom, pEngine->defaultBackgroundColor, pElement, pPaintData);
     }
 
 
@@ -3162,8 +3288,10 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                     // The line is visible. We draw in 3 main parts - 1) the blank space to the left of the first run; 2) the runs themselves; 3) the blank
                     // space to the right of the last run.
 
+                    uint8_t bgStyleSlot = pEngine->defaultStyleSlot;
                     drgui_color bgcolor = pEngine->defaultBackgroundColor;
                     if (line.index == drte_engine_get_cursor_line(pEngine)) {
+                        bgStyleSlot = pEngine->activeLineStyleSlot;
                         bgcolor = pEngine->lineBackgroundColor;
                     }
 
@@ -3221,10 +3349,10 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                     if (lineLeft > 0)
                     {
                         if (lineSelectionOverhangLeft > 0) {
-                            pEngine->onPaintRect(pEngine, drgui_make_rect(lineLeft - lineSelectionOverhangLeft, lineTop, lineLeft, lineBottom), pEngine->selectionBackgroundColor, pElement, pPaintData);
+                            pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->selectionStyleSlot].styleToken, drgui_make_rect(lineLeft - lineSelectionOverhangLeft, lineTop, lineLeft, lineBottom), pEngine->selectionBackgroundColor, pElement, pPaintData);
                         }
 
-                        pEngine->onPaintRect(pEngine, drgui_make_rect(0, lineTop, lineLeft - lineSelectionOverhangLeft, lineBottom), bgcolor, pElement, pPaintData);
+                        pEngine->onPaintRect(pEngine, pEngine->styles[bgStyleSlot].styleToken, drgui_make_rect(0, lineTop, lineLeft - lineSelectionOverhangLeft, lineBottom), bgcolor, pElement, pPaintData);
                     }
 
 
@@ -3244,7 +3372,9 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                                 drte_text_run run = pEngine->pRuns[iRun];
                                 run.pFont           = pEngine->pDefaultFont;
                                 run.textColor       = pEngine->defaultTextColor;
+                                run.fgStyleSlot     = pEngine->defaultStyleSlot;
                                 run.backgroundColor = bgcolor;
+                                run.bgStyleSlot     = bgStyleSlot;
                                 run.text            = pEngine->text + run.iChar;
                                 run.posX            = runLeft;
                                 run.posY            = lineTop;
@@ -3260,9 +3390,9 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                                         drte_text_run* pSubRun = subruns + iSubRun;
 
                                         if (!drte_engine__is_text_run_whitespace(pEngine, pRun)) {
-                                            pEngine->onPaintText(pEngine, pSubRun, pElement, pPaintData);
+                                            pEngine->onPaintText(pEngine, pEngine->styles[pSubRun->fgStyleSlot].styleToken, pEngine->styles[pSubRun->bgStyleSlot].styleToken, pSubRun, pElement, pPaintData);
                                         } else {
-                                            pEngine->onPaintRect(pEngine, drgui_make_rect(pSubRun->posX, lineTop, pSubRun->posX + pSubRun->width, lineBottom), pSubRun->backgroundColor, pElement, pPaintData);
+                                            pEngine->onPaintRect(pEngine, pEngine->styles[pSubRun->bgStyleSlot].styleToken, drgui_make_rect(pSubRun->posX, lineTop, pSubRun->posX + pSubRun->width, lineBottom), pSubRun->backgroundColor, pElement, pPaintData);
                                         }
                                     }
                                 }
@@ -3270,9 +3400,9 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                                 {
                                     // Nothing is selected.
                                     if (!drte_engine__is_text_run_whitespace(pEngine, &run)) {
-                                        pEngine->onPaintText(pEngine, &run, pElement, pPaintData);
+                                        pEngine->onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, &run, pElement, pPaintData);
                                     } else {
-                                        pEngine->onPaintRect(pEngine, drgui_make_rect(run.posX, lineTop, run.posX + run.width, lineBottom), run.backgroundColor, pElement, pPaintData);
+                                        pEngine->onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(run.posX, lineTop, run.posX + run.width, lineBottom), run.backgroundColor, pElement, pPaintData);
                                     }
                                 }
                             }
@@ -3284,10 +3414,10 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                     if (lineRight < pEngine->containerWidth)
                     {
                         if (lineSelectionOverhangRight > 0) {
-                            pEngine->onPaintRect(pEngine, drgui_make_rect(lineRight, lineTop, lineRight + lineSelectionOverhangRight, lineBottom), pEngine->selectionBackgroundColor, pElement, pPaintData);
+                            pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->selectionStyleSlot].styleToken, drgui_make_rect(lineRight, lineTop, lineRight + lineSelectionOverhangRight, lineBottom), pEngine->selectionBackgroundColor, pElement, pPaintData);
                         }
 
-                        pEngine->onPaintRect(pEngine, drgui_make_rect(lineRight + lineSelectionOverhangRight, lineTop, pEngine->containerWidth, lineBottom), bgcolor, pElement, pPaintData);
+                        pEngine->onPaintRect(pEngine, pEngine->styles[bgStyleSlot].styleToken, drgui_make_rect(lineRight + lineSelectionOverhangRight, lineTop, pEngine->containerWidth, lineBottom), bgcolor, pElement, pPaintData);
                     }
                 }
             }
@@ -3304,12 +3434,12 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
         // There are no lines so we do a simplified branch here.
         float lineTop    = textRect.top;
         float lineBottom = textRect.bottom;
-        pEngine->onPaintRect(pEngine, drgui_make_rect(0, lineTop, pEngine->containerWidth, lineBottom), pEngine->lineBackgroundColor, pElement, pPaintData);
+        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->activeLineStyleSlot].styleToken, drgui_make_rect(0, lineTop, pEngine->containerWidth, lineBottom), pEngine->lineBackgroundColor, pElement, pPaintData);
     }
 
     // The cursor.
     if (pEngine->isShowingCursor && pEngine->isCursorBlinkOn) {
-        pEngine->onPaintRect(pEngine, drte_engine_get_cursor_rect(pEngine), pEngine->cursorColor, pElement, pPaintData);
+        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->cursorStyleSlot].styleToken, drte_engine_get_cursor_rect(pEngine), pEngine->cursorColor, pElement, pPaintData);
     }
 }
 
@@ -3352,11 +3482,11 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
     if (pEngine->onPaintRect)
     {
         if (rectTop.bottom > 0) {
-            onPaintRect(pEngine, rectTop, backgroundColor, pElement, pPaintData);
+            onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, rectTop, backgroundColor, pElement, pPaintData);
         }
 
         if (rectBottom.top < lineNumbersHeight) {
-            onPaintRect(pEngine, rectBottom, backgroundColor, pElement, pPaintData);
+            onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, rectBottom, backgroundColor, pElement, pPaintData);
         }
     }
 
@@ -3401,12 +3531,14 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
                 run.pFont           = pFont;
                 run.textColor       = textColor;
                 run.backgroundColor = backgroundColor;
+                run.fgStyleSlot     = pEngine->defaultStyleSlot; // TODO: Change these to the line numbers style.
+                run.bgStyleSlot     = pEngine->defaultStyleSlot;
                 run.text            = iLineStr;
                 run.textLength      = strlen(iLineStr);
                 run.posX            = lineNumbersWidth - textWidth;
                 run.posY            = lineTop;
-                onPaintText(pEngine, &run, pElement, pPaintData);
-                onPaintRect(pEngine, drgui_make_rect(0, lineTop, run.posX, lineBottom), run.backgroundColor, pElement, pPaintData);
+                onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, &run, pElement, pPaintData);
+                onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, drgui_make_rect(0, lineTop, run.posX, lineBottom), run.backgroundColor, pElement, pPaintData);
             }
         }
         else
@@ -4667,6 +4799,7 @@ size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_
                 {
                     // The entire run is selected.
                     pSubRunsOut[0].backgroundColor = pEngine->selectionBackgroundColor;
+                    pSubRunsOut[0].bgStyleSlot = pEngine->selectionStyleSlot;
                     return 1;
                 }
                 else
@@ -4675,6 +4808,7 @@ size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_
 
                     // Head.
                     pSubRunsOut[0].backgroundColor = pEngine->selectionBackgroundColor;
+                    pSubRunsOut[0].bgStyleSlot     = pEngine->selectionStyleSlot;
                     pSubRunsOut[0].iCharEnd        = iSelectionChar1;
                     pSubRunsOut[0].width           = pSelectionMarker1->relativePosX;
                     pSubRunsOut[0].text            = pEngine->text + pSubRunsOut[0].iChar;
@@ -4705,6 +4839,7 @@ size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_
 
                     // Tail.
                     pSubRunsOut[1].backgroundColor = pEngine->selectionBackgroundColor;
+                    pSubRunsOut[1].bgStyleSlot     = pEngine->selectionStyleSlot;
                     pSubRunsOut[1].iChar           = iSelectionChar0;
                     pSubRunsOut[1].width           = pRunToSplit->width - pSubRunsOut[0].width;
                     pSubRunsOut[1].posX            = pSubRunsOut[0].posX + pSubRunsOut[0].width;
@@ -4727,6 +4862,7 @@ size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_
                     pSubRunsOut[1].iChar           = iSelectionChar0;
                     pSubRunsOut[1].iCharEnd        = iSelectionChar1;
                     pSubRunsOut[1].backgroundColor = pEngine->selectionBackgroundColor;
+                    pSubRunsOut[1].bgStyleSlot     = pEngine->selectionStyleSlot;
                     pSubRunsOut[1].width           = pSelectionMarker1->relativePosX - pSelectionMarker0->relativePosX;
                     pSubRunsOut[1].posX            = pSubRunsOut[0].posX + pSubRunsOut[0].width;
                     pSubRunsOut[1].text            = pEngine->text + pSubRunsOut[1].iChar;
