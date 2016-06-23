@@ -10,11 +10,18 @@
 #endif
 #endif
 
+
+
 // Standard headers.
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <assert.h>
+
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable:4091)   // 'typedef ': ignored on left of 'tagGPFIDL_FLAGS' when no variable is declared
+#endif
 
 // Platform headers.
 #ifdef _WIN32
@@ -142,6 +149,10 @@
 #include "common_controls/dred_button.c"
 #include "common_controls/dred_color_button.c"
 #include "common_controls/dred_checkbox.c"
+
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif
 
 int dred_main(dr_cmdline cmdline)
 {
