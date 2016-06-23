@@ -102,7 +102,7 @@ static drte_font_metrics drte_font_metrics_create(int ascent, int descent, int l
     return metrics;
 }
 
-
+#if 0
 typedef struct
 {
     uint8_t r;
@@ -125,13 +125,13 @@ static drte_color drte_rgb(uint8_t r, uint8_t g, uint8_t b)
 {
     return drte_rgba(r, g, b, 255);
 }
-
+#endif
 
 typedef struct
 {
     drte_style_token styleToken;
-    drte_color bgColor;
-    drte_color fgColor;
+    //drte_color bgColor;
+    //drte_color fgColor;
     drte_font_metrics fontMetrics;
 } drte_style;
 
