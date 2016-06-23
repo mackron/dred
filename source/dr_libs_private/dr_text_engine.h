@@ -72,6 +72,7 @@ extern "C" {
 #endif
 
 typedef struct drte_engine drte_engine;
+typedef uintptr_t drte_style_token;
 
 typedef enum
 {
@@ -81,6 +82,20 @@ typedef enum
     drte_alignment_right,
     drte_alignment_bottom,
 } drte_alignment;
+
+typedef struct
+{
+    int16_t ascent;
+    int16_t descent;
+    int16_t lineHeight;
+    int16_t spaceWidth;
+} drte_font_metrics;
+
+typedef struct
+{
+    drte_style_token styleToken;
+    drte_font_metrics fontMetrics;
+} drte__style;
 
 typedef struct
 {
@@ -127,6 +142,7 @@ typedef struct
     size_t iCharEnd;
 
 } drte_text_run;
+
 
 typedef void (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_text_run* pRun, drgui_element* pElement, void* pPaintData);
 typedef void (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drgui_rect rect, drgui_color color, drgui_element* pElement, void* pPaintData);
@@ -195,6 +211,17 @@ typedef struct
 
 struct drte_engine
 {
+    // The list of registered styles. There is a maximum of 256 styles.
+    drte__style styles[256];
+
+    // The number of registered styles.
+    uint16_t styleCount;
+
+    // The default style.
+    uint8_t defaultStyleSlot;
+
+
+
     /// The main text of the layout.
     char* text;
 
@@ -362,6 +389,24 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData);
 
 /// Deletes the given text engine.
 void drte_engine_delete(drte_engine* pEngine);
+
+
+// Registers a style token.
+//
+// There is a maximum of 255 style tokens that can be registered at any given time.
+//
+// The style token can be anything you would like. It's is an integer the size of a pointer, so it is possible to use a direct pointer for tokens.
+//
+// If the underlying style of the token changes, simply call this function again to force a refresh of the text engine.
+bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token styleToken, drte_font_metrics fontMetrics);
+
+// Sets the default style to use for text.
+//
+// This style is used for any text segments that have not had a style explicitly set. It is also used for drawing the background
+// regions where there is no text.
+//
+// The given style must have been registered first with drte_engine_register_style_token().
+void drte_engine_set_default_style(drte_engine* pEngine, drte_style_token styleToken);
 
 
 /// Sets the given text engine's text.
@@ -789,6 +834,8 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DR_TEXT_ENGINE_IMPLEMENTATION
 
+#define DRTE_INVALID_STYLE_SLOT    255
+
 bool drte_is_symbol_or_whitespace(uint32_t utf32)
 {
     return (utf32 < '0') || (utf32 >= ':' && utf32 < 'A') || (utf32 >= '[' && utf32 < 'a') || (utf32 > '{'); 
@@ -971,6 +1018,20 @@ void drte_engine__begin_dirty(drte_engine* pEngine);
 void drte_engine__end_dirty(drte_engine* pEngine);
 
 
+// Finds a style slot index of the given style token. Returns DRTE_INVALID_STYLE_SLOT if it could not be found.
+uint8_t drte_engine__get_style_slot(drte_engine* pEngine, drte_style_token styleToken)
+{
+    assert(pEngine != NULL);
+    assert(pEngine->styleCount < 256);
+
+    for (uint8_t iStyleSlot = 0; iStyleSlot < pEngine->styleCount; ++iStyleSlot) {
+        if (pEngine->styles[iStyleSlot].styleToken == styleToken) {
+            return iStyleSlot;
+        }
+    }
+
+    return DRTE_INVALID_STYLE_SLOT;
+}
 
 
 drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
@@ -1017,6 +1078,56 @@ void drte_engine_delete(drte_engine* pEngine)
     free(pEngine->preparedState.text);
     free(pEngine->text);
     free(pEngine);
+}
+
+
+bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token styleToken, drte_font_metrics fontMetrics)
+{
+    if (pEngine == NULL) {
+        return false;
+    }
+
+    // If the token already exists just refresh.
+    for (size_t iStyleSlot = 0; iStyleSlot < pEngine->styleCount; ++iStyleSlot) {
+        if (pEngine->styles[iStyleSlot].styleToken == styleToken) {
+            // The style token has already been registered. Just replace it.
+            pEngine->styles[iStyleSlot].fontMetrics = fontMetrics;
+            drte_engine__refresh(pEngine);
+            return true;
+        }
+    }
+
+
+    // If we get here it means the style has not previously been registered. We don't actually need to refresh the engine
+    // here because nothing will actually be using the style token yet.
+    if (pEngine->styleCount == 255) {
+        return false;   // Too many styles. The 256'th slot (index 255) is used as the error indicator.
+    }
+
+    pEngine->styles[pEngine->styleCount].styleToken = styleToken;
+    pEngine->styles[pEngine->styleCount].fontMetrics = fontMetrics;
+
+    pEngine->styleCount += 1;
+    return true;
+}
+
+void drte_engine_set_default_style(drte_engine* pEngine, drte_style_token styleToken)
+{
+    if (pEngine == NULL) {
+        return;
+    }
+
+    uint8_t styleSlot = drte_engine__get_style_slot(pEngine, styleToken);
+    if (styleSlot == DRTE_INVALID_STYLE_SLOT) {
+        return;
+    }
+
+    if (pEngine->defaultStyleSlot == styleSlot) {
+        return; // Nothing has changed.
+    }
+    
+    pEngine->defaultStyleSlot = styleSlot;
+    drte_engine__refresh(pEngine);
 }
 
 
