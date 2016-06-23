@@ -314,7 +314,6 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     //drte_engine_set_cursor_color(pTB->pTL, drgui_rgb(0, 0, 0));
     //drte_engine_set_default_bg_color(pTB->pTL, drgui_rgb(64, 64, 64));
     //drte_engine_set_active_line_bg_color(pTB->pTL, drgui_rgb(64, 64, 64));
-    drte_engine_set_vertical_align(pTB->pTL, drte_alignment_center);
 
     pTB->borderColor = drgui_rgb(0, 0, 0);
     pTB->borderWidth = 0;
@@ -543,26 +542,6 @@ float dred_textbox_get_padding_horz(dred_textbox* pTextBox)
     }
 
     return pTB->padding;
-}
-
-void dred_textbox_set_vertical_align(dred_textbox* pTextBox, drte_alignment align)
-{
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
-        return;
-    }
-
-    drte_engine_set_vertical_align(pTB->pTL, align);
-}
-
-void dred_textbox_set_horizontal_align(dred_textbox* pTextBox, drte_alignment align)
-{
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
-        return;
-    }
-
-    drte_engine_set_horizontal_align(pTB->pTL, align);
 }
 
 void dred_textbox_set_line_numbers_width(dred_textbox* pTextBox, float lineNumbersWidth)

@@ -326,12 +326,6 @@ struct drte_engine
     /// The size of a tab in spaces.
     unsigned int tabSizeInSpaces;
 
-    /// The horizontal alignment.
-    drte_alignment horzAlign;
-
-    /// The vertical alignment.
-    drte_alignment vertAlign;
-
     /// The width of the text cursor.
     float cursorWidth;
 
@@ -537,19 +531,6 @@ void drte_engine_set_tab_size(drte_engine* pEngine, unsigned int sizeInSpaces);
 
 /// Retrieves the size of a tab in spaces.
 unsigned int drte_engine_get_tab_size(drte_engine* pEngine);
-
-
-/// Sets the horizontal alignment of the given text engine.
-void drte_engine_set_horizontal_align(drte_engine* pEngine, drte_alignment alignment);
-
-/// Retrieves the horizontal aligment of the given text engine.
-drte_alignment drte_engine_get_horizontal_align(drte_engine* pEngine);
-
-/// Sets the vertical alignment of the given text engine.
-void drte_engine_set_vertical_align(drte_engine* pEngine, drte_alignment alignment);
-
-/// Retrieves the vertical aligment of the given text engine.
-drte_alignment drte_engine_get_vertical_align(drte_engine* pEngine);
 
 
 /// Retrieves the rectangle of the text relative to the bounds, taking alignment into account.
@@ -880,17 +861,11 @@ bool drte_is_symbol_or_whitespace(uint32_t utf32)
 ///     This will delete every run and re-create them.
 void drte_engine__refresh(drte_engine* pEngine);
 
-/// Refreshes the alignment of the given text engine.
-void drte_engine__refresh_alignment(drte_engine* pEngine);
-
 /// Appends a text run to the list of runs in the given text engine.
 void drte_engine__push_text_run(drte_engine* pEngine, drte_text_run* pRun);
 
 /// Clears the internal list of text runs.
 void drte_engine__clear_text_runs(drte_engine* pEngine);
-
-/// Helper for calculating the offset to apply to each line based on the alignment of the given text engine.
-void drte_engine__calculate_line_alignment_offset(drte_engine* pEngine, float lineWidth, float* pOffsetXOut, float* pOffsetYOut);
 
 /// Helper for determine whether or not the given text run is whitespace.
 bool drte_engine__is_text_run_whitespace(drte_engine* pEngine, drte_text_run* pRun);
@@ -1080,8 +1055,6 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     pEngine->defaultStyleSlot = DRTE_INVALID_STYLE_SLOT;
 
     pEngine->tabSizeInSpaces          = 4;
-    pEngine->horzAlign                = drte_alignment_left;
-    pEngine->vertAlign                = drte_alignment_top;
     pEngine->cursorWidth              = 1;
     pEngine->cursorBlinkRate          = 500;
     pEngine->timeToNextCursorBlink    = pEngine->cursorBlinkRate;
@@ -1481,55 +1454,6 @@ unsigned int drte_engine_get_tab_size(drte_engine* pEngine)
 }
 
 
-void drte_engine_set_horizontal_align(drte_engine* pEngine, drte_alignment alignment)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    if (pEngine->horzAlign != alignment)
-    {
-        pEngine->horzAlign = alignment;
-
-        drte_engine__refresh_alignment(pEngine);
-        drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
-    }
-}
-
-drte_alignment drte_engine_get_horizontal_align(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return drte_alignment_left;
-    }
-
-    return pEngine->horzAlign;
-}
-
-void drte_engine_set_vertical_align(drte_engine* pEngine, drte_alignment alignment)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    if (pEngine->vertAlign != alignment)
-    {
-        pEngine->vertAlign = alignment;
-
-        drte_engine__refresh_alignment(pEngine);
-        drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
-    }
-}
-
-drte_alignment drte_engine_get_vertical_align(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return drte_alignment_top;
-    }
-
-    return pEngine->vertAlign;
-}
-
-
 drgui_rect drte_engine_get_text_rect_relative_to_bounds(drte_engine* pEngine)
 {
     if (pEngine == NULL) {
@@ -1537,60 +1461,8 @@ drgui_rect drte_engine_get_text_rect_relative_to_bounds(drte_engine* pEngine)
     }
 
     drgui_rect rect;
-    rect.left = 0;
-    rect.top  = 0;
-
-
-    switch (pEngine->horzAlign)
-    {
-    case drte_alignment_right:
-        {
-            rect.left = pEngine->containerWidth - pEngine->textBoundsWidth;
-            break;
-        }
-
-    case drte_alignment_center:
-        {
-            rect.left = (pEngine->containerWidth - pEngine->textBoundsWidth) / 2;
-            break;
-        }
-
-    case drte_alignment_left:
-    case drte_alignment_top:     // Invalid for horizontal align.
-    case drte_alignment_bottom:  // Invalid for horizontal align.
-    default:
-        {
-            break;
-        }
-    }
-
-
-    switch (pEngine->vertAlign)
-    {
-    case drte_alignment_bottom:
-        {
-            rect.top = pEngine->containerHeight - pEngine->textBoundsHeight;
-            break;
-        }
-
-    case drte_alignment_center:
-        {
-            rect.top = (pEngine->containerHeight - pEngine->textBoundsHeight) / 2;
-            break;
-        }
-
-    case drte_alignment_top:
-    case drte_alignment_left:    // Invalid for vertical align.
-    case drte_alignment_right:   // Invalid for vertical align.
-    default:
-        {
-            break;
-        }
-    }
-
-
-    rect.left  += pEngine->innerOffsetX;
-    rect.top   += pEngine->innerOffsetY;
+    rect.left   = pEngine->innerOffsetX;
+    rect.top    = pEngine->innerOffsetY;
     rect.right  = rect.left + pEngine->textBoundsWidth;
     rect.bottom = rect.top  + pEngine->textBoundsHeight;
 
@@ -3158,28 +3030,8 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                         size_t iSelectionLine0 = pEngine->pRuns[pSelectionMarker0->iRun].iLine;
                         size_t iSelectionLine1 = pEngine->pRuns[pSelectionMarker1->iRun].iLine;
 
-                        if (line.index >= iSelectionLine0 && line.index < iSelectionLine1)
-                        {
-                            drte_font_metrics defaultFontMetrics = pEngine->styles[pEngine->defaultStyleSlot].fontMetrics;
-
-                            if (pEngine->horzAlign == drte_alignment_right)
-                            {
-                                if (line.index > iSelectionLine0) {
-                                    lineSelectionOverhangLeft = (float)defaultFontMetrics.spaceWidth;
-                                }
-                            }
-                            else if (pEngine->horzAlign == drte_alignment_center)
-                            {
-                                lineSelectionOverhangRight = (float)defaultFontMetrics.spaceWidth;
-
-                                if (line.index > iSelectionLine0) {
-                                    lineSelectionOverhangLeft = (float)defaultFontMetrics.spaceWidth;
-                                }
-                            }
-                            else
-                            {
-                                lineSelectionOverhangRight = (float)defaultFontMetrics.spaceWidth;
-                            }
+                        if (line.index >= iSelectionLine0 && line.index < iSelectionLine1) {
+                            lineSelectionOverhangRight = (float)pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
                         }
                     }
 
@@ -3608,127 +3460,6 @@ void drte_engine__refresh(drte_engine* pEngine)
 
         // Go to the next run string.
         nextRunStart = nextRunEnd;
-    }
-
-    // If we were to return now the text would be alignment top/left. If the alignment is not top/left we need to refresh the layout.
-    if (pEngine->horzAlign != drte_alignment_left || pEngine->vertAlign != drte_alignment_top)
-    {
-        drte_engine__refresh_alignment(pEngine);
-    }
-}
-
-void drte_engine__refresh_alignment(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    float runningPosY = 0;
-
-    unsigned int iCurrentLine = 0;
-    for (size_t iRun = 0; iRun < pEngine->runCount; /* Do Nothing*/)     // iRun is incremented from within the loop.
-    {
-        float lineWidth  = 0;
-        float lineHeight = 0;
-
-        // This loop does a few things. First, it defines the end point for the loop after this one (jRun). Second, it calculates
-        // the line width which is needed for center and right alignment. Third it resets the position of each run to their
-        // unaligned equivalents which will be offsetted in the second loop.
-        size_t jRun;
-        for (jRun = iRun; jRun < pEngine->runCount && pEngine->pRuns[jRun].iLine == iCurrentLine; ++jRun)
-        {
-            drte_text_run* pRun = pEngine->pRuns + jRun;
-            pRun->posX = lineWidth;
-            pRun->posY = runningPosY;
-
-            lineWidth += pRun->width;
-            lineHeight = (lineHeight > pRun->height) ? lineHeight : pRun->height;
-        }
-
-
-        // The actual alignment is done here.
-        float lineOffsetX;
-        float lineOffsetY;
-        drte_engine__calculate_line_alignment_offset(pEngine, lineWidth, OUT &lineOffsetX, OUT &lineOffsetY);
-
-        for (/* Do Nothing*/; iRun < jRun; ++iRun)
-        {
-            drte_text_run* pRun = pEngine->pRuns + iRun;
-            pRun->posX += lineOffsetX;
-            pRun->posY += lineOffsetY;
-        }
-
-
-        // Go to the next line.
-        iCurrentLine += 1;
-        runningPosY  += lineHeight;
-    }
-}
-
-void drte_engine__calculate_line_alignment_offset(drte_engine* pEngine, float lineWidth, float* pOffsetXOut, float* pOffsetYOut)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    float offsetX = 0;
-    float offsetY = 0;
-
-    switch (pEngine->horzAlign)
-    {
-    case drte_alignment_right:
-        {
-            offsetX = pEngine->textBoundsWidth - lineWidth;
-            break;
-        }
-
-    case drte_alignment_center:
-        {
-            offsetX = (pEngine->textBoundsWidth - lineWidth) / 2;
-            break;
-        }
-
-    case drte_alignment_left:
-    case drte_alignment_top:     // Invalid for horizontal alignment.
-    case drte_alignment_bottom:  // Invalid for horizontal alignment.
-    default:
-        {
-            offsetX = 0;
-            break;
-        }
-    }
-
-
-    switch (pEngine->vertAlign)
-    {
-    case drte_alignment_bottom:
-        {
-            offsetY = pEngine->textBoundsHeight - pEngine->textBoundsHeight;
-            break;
-        }
-
-    case drte_alignment_center:
-        {
-            offsetY = (pEngine->textBoundsHeight - pEngine->textBoundsHeight) / 2;
-            break;
-        }
-
-    case drte_alignment_top:
-    case drte_alignment_left:    // Invalid for vertical alignment.
-    case drte_alignment_right:   // Invalid for vertical alignment.
-    default:
-        {
-            offsetY = 0;
-            break;
-        }
-    }
-
-
-    if (pOffsetXOut) {
-        *pOffsetXOut = offsetX;
-    }
-    if (pOffsetYOut) {
-        *pOffsetYOut = offsetY;
     }
 }
 
