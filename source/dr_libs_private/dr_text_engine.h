@@ -144,9 +144,6 @@ typedef struct
     size_t textLength;
 
 
-    /// The font.
-    drgui_font* pFont;
-
     // The style slot to use for the foreground of this run.
     uint8_t fgStyleSlot;
 
@@ -181,6 +178,10 @@ typedef struct
 
 } drte_text_run;
 
+
+typedef void (* drte_engine_on_measure_string_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut);
+typedef void (* drte_engine_on_get_cursor_position_from_point)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+typedef void (* drte_engine_on_get_cursor_position_from_char)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 typedef void (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, drte_text_run* pRun, drgui_element* pElement, void* pPaintData);
 typedef void (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_style_token styleToken, drgui_rect rect, drgui_element* pElement, void* pPaintData);
@@ -271,6 +272,15 @@ struct drte_engine
     uint8_t lineNumbersStyleSlot;
 
 
+    // The function to call when a string needs to be measured.
+    drte_engine_on_measure_string_proc onMeasureString;
+
+    // The function to call when the position of the cursor needs to be retrieved based on a pixel position within that string.
+    drte_engine_on_get_cursor_position_from_point onGetCursorPositionFromPoint;
+
+    // The function to call when the position of the cursor needs to be retrieved based on a character at a specific index.
+    drte_engine_on_get_cursor_position_from_char onGetCursorPositionFromChar;
+
 
     /// The main text of the layout.
     char* text;
@@ -301,9 +311,6 @@ struct drte_engine
     /// The inner offset of the container.
     float innerOffsetY;
 
-
-    /// The default font.
-    drgui_font* pDefaultFont;
 
     /// The size of a tab in spaces.
     unsigned int tabSizeInSpaces;
@@ -512,13 +519,6 @@ float drte_engine_get_inner_offset_x(drte_engine* pEngine);
 
 /// Retrieves the inner offset of the given text engine on the x axis.
 float drte_engine_get_inner_offset_y(drte_engine* pEngine);
-
-
-/// Sets the default font to use for text runs.
-void drte_engine_set_default_font(drte_engine* pEngine, drgui_font* pFont);
-
-/// Retrieves the default font to use for text runs.
-drgui_font* drte_engine_get_default_font(drte_engine* pEngine);
 
 
 /// Sets the size of a tab in spaces.
@@ -1144,6 +1144,7 @@ void drte_engine_set_default_style(drte_engine* pEngine, drte_style_token styleT
     
     pEngine->defaultStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
+    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
 }
 
 void drte_engine_set_selection_style(drte_engine* pEngine, drte_style_token styleToken)
@@ -1165,6 +1166,7 @@ void drte_engine_set_selection_style(drte_engine* pEngine, drte_style_token styl
 
     if (drte_engine_is_anything_selected(pEngine)) {
         drte_engine__refresh(pEngine);
+        drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
     }
 }
 
@@ -1185,6 +1187,7 @@ void drte_engine_set_active_line_style(drte_engine* pEngine, drte_style_token st
     
     pEngine->activeLineStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
+    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
 }
 
 void drte_engine_set_cursor_style(drte_engine* pEngine, drte_style_token styleToken)
@@ -1204,6 +1207,7 @@ void drte_engine_set_cursor_style(drte_engine* pEngine, drte_style_token styleTo
     
     pEngine->cursorStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
+    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
 }
 
 void drte_engine_set_line_numbers_style(drte_engine* pEngine, drte_style_token styleToken)
@@ -1223,6 +1227,7 @@ void drte_engine_set_line_numbers_style(drte_engine* pEngine, drte_style_token s
     
     pEngine->lineNumbersStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
+    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
 }
 
 
@@ -1439,28 +1444,6 @@ float drte_engine_get_inner_offset_y(drte_engine* pEngine)
     return pEngine->innerOffsetY;
 }
 
-
-void drte_engine_set_default_font(drte_engine* pEngine, drgui_font* pFont)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    pEngine->pDefaultFont = pFont;
-
-    // A change in font requires a layout refresh.
-    drte_engine__refresh(pEngine);
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
-}
-
-drgui_font* drte_engine_get_default_font(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return NULL;
-    }
-
-    return pEngine->pDefaultFont;
-}
 
 void drte_engine_set_tab_size(drte_engine* pEngine, unsigned int sizeInSpaces)
 {
@@ -1703,16 +1686,10 @@ drgui_rect drte_engine_get_cursor_rect(drte_engine* pEngine)
 
     drgui_rect lineRect = drgui_make_rect(0, 0, 0, 0);
 
-    if (pEngine->runCount > 0)
-    {
+    if (pEngine->runCount > 0) {
         drte_engine__find_line_info_by_index(pEngine, pEngine->pRuns[pEngine->cursor.iRun].iLine, &lineRect, NULL, NULL);
-    }
-    else if (pEngine->pDefaultFont != NULL)
-    {
-        drgui_font_metrics defaultFontMetrics;
-        drgui_get_font_metrics(pEngine->pDefaultFont, &defaultFontMetrics);
-
-        lineRect.bottom = (float)defaultFontMetrics.lineHeight;
+    } else {
+        lineRect.bottom = (float)pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.lineHeight;
     }
 
 
@@ -1743,10 +1720,7 @@ size_t drte_engine_get_cursor_column(drte_engine* pEngine)
     float posY;
     drte_engine_get_cursor_position(pEngine, &posX, &posY);
 
-    drgui_font_metrics fontMetrics;
-    drgui_get_font_metrics(pEngine->pDefaultFont, &fontMetrics);
-
-    return (unsigned int)((int)posX / fontMetrics.spaceWidth);
+    return (unsigned int)((int)posX / pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth);
 }
 
 size_t drte_engine_get_cursor_character(drte_engine* pEngine)
@@ -2195,10 +2169,7 @@ size_t drte_engine_get_spaces_to_next_colum_from_cursor(drte_engine* pEngine)
 
     float tabColPosX = (posX + tabWidth) - ((size_t)posX % (size_t)tabWidth);
 
-    drgui_font_metrics metrics;
-    drgui_get_font_metrics(pEngine->pDefaultFont, &metrics);
-
-    return (size_t)(tabColPosX - posX) / metrics.spaceWidth;
+    return (size_t)(tabColPosX - posX) / pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
 }
 
 bool drte_engine_is_cursor_at_start_of_selection(drte_engine* pEngine)
@@ -2264,10 +2235,14 @@ void drte_engine_refresh_markers(drte_engine* pEngine)
 
     // Cursor.
     drte_text_run* pRun = pEngine->pRuns + pEngine->cursor.iRun;
-    drgui_get_text_cursor_position_from_char(pRun->pFont, pEngine->text + pRun->iChar, pEngine->cursor.iChar, OUT &pEngine->cursor.relativePosX);
+    if (pEngine->onGetCursorPositionFromChar) {
+        pEngine->onGetCursorPositionFromChar(pEngine, pEngine->styles[pRun->fgStyleSlot].styleToken, pEngine->text + pRun->iChar, pEngine->cursor.iChar, &pEngine->cursor.relativePosX);
+    }
 
     pRun = pEngine->pRuns + pEngine->selectionAnchor.iRun;
-    drgui_get_text_cursor_position_from_char(pRun->pFont, pEngine->text + pRun->iChar, pEngine->selectionAnchor.iChar, OUT &pEngine->selectionAnchor.relativePosX);
+    if (pEngine->onGetCursorPositionFromChar) {
+        pEngine->onGetCursorPositionFromChar(pEngine, pEngine->styles[pRun->fgStyleSlot].styleToken, pEngine->text + pRun->iChar, pEngine->selectionAnchor.iChar, &pEngine->selectionAnchor.relativePosX);
+    }
 }
 
 bool drte_engine_insert_character(drte_engine* pEngine, unsigned int character, size_t insertIndex)
@@ -2972,12 +2947,8 @@ size_t drte_engine_get_visible_line_count_starting_at(drte_engine* pEngine, size
 
     // At this point there may be some empty space below the last line, in which case we use the line height of the default font to fill
     // out the remaining space.
-    if (lastLineBottom + pEngine->innerOffsetY < pEngine->containerHeight)
-    {
-        drgui_font_metrics defaultFontMetrics;
-        if (drgui_get_font_metrics(pEngine->pDefaultFont, &defaultFontMetrics)) {
-            count += (unsigned int)((pEngine->containerHeight - (lastLineBottom + pEngine->innerOffsetY)) / defaultFontMetrics.lineHeight);
-        }
+    if (lastLineBottom + pEngine->innerOffsetY < pEngine->containerHeight) {
+        count += (unsigned int)((pEngine->containerHeight - (lastLineBottom + pEngine->innerOffsetY)) / pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.lineHeight);
     }
 
 
@@ -3178,8 +3149,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
 
                         if (line.index >= iSelectionLine0 && line.index < iSelectionLine1)
                         {
-                            drgui_font_metrics defaultFontMetrics;
-                            drgui_get_font_metrics(pEngine->pDefaultFont, &defaultFontMetrics);
+                            drte_font_metrics defaultFontMetrics = pEngine->styles[pEngine->defaultStyleSlot].fontMetrics;
 
                             if (pEngine->horzAlign == drte_alignment_right)
                             {
@@ -3234,7 +3204,6 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                             if (!drte_engine__is_text_run_whitespace(pEngine, pRun) || pEngine->text[pRun->iChar] == '\t')
                             {
                                 drte_text_run run = pEngine->pRuns[iRun];
-                                run.pFont       = pEngine->pDefaultFont;
                                 run.fgStyleSlot = pEngine->defaultStyleSlot;
                                 run.bgStyleSlot = bgStyleSlot;
                                 run.text        = pEngine->text + run.iChar;
@@ -3360,10 +3329,7 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
     {
         // We failed to retrieve the first line which is probably due to the text engine being empty. We just fake the first line to
         // ensure we get the number 1 to be drawn.
-        drgui_font_metrics fontMetrics;
-        drgui_get_font_metrics(pEngine->pDefaultFont, &fontMetrics);
-
-        line.height = (float)fontMetrics.lineHeight;
+        line.height = (float)pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.lineHeight;
         line.posY = 0;
     }
 
@@ -3383,20 +3349,21 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
                 snprintf(iLineStr, sizeof(iLineStr), "%d", iLine);
                 #endif
 
-                drgui_font* pFont = pEngine->pDefaultFont;
+                float textWidth = 0;
+                float textHeight = 0;
+                if (pEngine->onMeasureString) {
+                    pEngine->onMeasureString(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
+                }
 
-                float textWidth;
-                float textHeight;
-                drgui_measure_string(pFont, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
+                //drgui_measure_string(pFont, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
 
                 drte_text_run run = {0};
-                run.pFont       = pFont;
                 run.fgStyleSlot = pEngine->lineNumbersStyleSlot;
                 run.bgStyleSlot = pEngine->lineNumbersStyleSlot;
                 run.text        = iLineStr;
                 run.textLength  = strlen(iLineStr);
                 run.posX        = lineNumbersWidth - textWidth;
-                run.posY        = lineTop;
+                run.posY        = lineTop;  // TODO: Center this based on the height of the line.
                 onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, &run, pElement, pPaintData);
                 onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(0, lineTop, run.posX, lineBottom), pElement, pPaintData);
             }
@@ -3526,8 +3493,7 @@ void drte_engine__refresh(drte_engine* pEngine)
     pEngine->textBoundsWidth  = 0;
     pEngine->textBoundsHeight = 0;
 
-    drgui_font_metrics defaultFontMetrics;
-    drgui_get_font_metrics(pEngine->pDefaultFont, &defaultFontMetrics);
+    drte_font_metrics defaultFontMetrics = pEngine->styles[pEngine->defaultStyleSlot].fontMetrics;
 
     pEngine->textBoundsHeight = (float)defaultFontMetrics.lineHeight;
 
@@ -3545,15 +3511,16 @@ void drte_engine__refresh(drte_engine* pEngine)
     while (drte_next_run_string(nextRunStart, pEngine->text + pEngine->textLength + 1, OUT &nextRunEnd))
     {
         drte_text_run run;
-        run.iLine          = iCurrentLine;
-        run.iChar          = nextRunStart - pEngine->text;
-        run.iCharEnd       = nextRunEnd   - pEngine->text;
-        run.textLength     = nextRunEnd - nextRunStart;
-        run.width          = 0;
-        run.height         = 0;
-        run.posX           = 0;
-        run.posY           = runningPosY;
-        run.pFont          = pEngine->pDefaultFont;
+        run.iLine      = iCurrentLine;
+        run.iChar      = nextRunStart - pEngine->text;
+        run.iCharEnd   = nextRunEnd   - pEngine->text;
+        run.textLength = nextRunEnd - nextRunStart;
+        run.width      = 0;
+        run.height     = 0;
+        run.posX       = 0;
+        run.posY       = runningPosY;
+        run.fgStyleSlot = pEngine->defaultStyleSlot;
+        run.bgStyleSlot = pEngine->defaultStyleSlot;
 
         // X position
         //
@@ -3599,7 +3566,11 @@ void drte_engine__refresh(drte_engine* pEngine)
         else
         {
             // Normal run.
-            drgui_measure_string(pEngine->pDefaultFont, nextRunStart, run.textLength, &run.width, &run.height);
+            if (pEngine->onMeasureString) {
+                pEngine->onMeasureString(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, nextRunStart, run.textLength, &run.width, &run.height);
+            }
+
+            //drgui_measure_string(pEngine->pDefaultFont, nextRunStart, run.textLength, &run.width, &run.height);
         }
 
 
@@ -3801,10 +3772,7 @@ bool drte_engine__is_text_run_whitespace(drte_engine* pEngine, drte_text_run* pR
 
 float drte_engine__get_tab_width(drte_engine* pEngine)
 {
-    drgui_font_metrics defaultFontMetrics;
-    drgui_get_font_metrics(pEngine->pDefaultFont, &defaultFontMetrics);
-
-    return (float)(defaultFontMetrics.spaceWidth * pEngine->tabSizeInSpaces);
+    return (float)(pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth * pEngine->tabSizeInSpaces);
 }
 
 
@@ -4216,16 +4184,14 @@ bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarke
             {
                 // It's a standard run.
                 float inputPosXRelativeToRun = inputPosXRelativeToText - pRun->posX;
-                if (drgui_get_text_cursor_position_from_point(pRun->pFont, pEngine->text + pRun->iChar, pRun->textLength, pRun->width, inputPosXRelativeToRun, OUT &pMarker->relativePosX, OUT &pMarker->iChar))
-                {
+                if (pEngine->onGetCursorPositionFromPoint) {
+                    pEngine->onGetCursorPositionFromPoint(pEngine, pEngine->styles[pRun->fgStyleSlot].styleToken, pEngine->text + pRun->iChar, pRun->textLength, pRun->width, inputPosXRelativeToRun, OUT &pMarker->relativePosX, OUT &pMarker->iChar);
+
                     // If the marker is past the last character of the run it needs to be moved to the start of the next one.
                     if (pMarker->iChar == pRun->textLength) {
                         drte_engine__move_marker_to_first_character_of_next_run(pEngine, pMarker);
                     }
-                }
-                else
-                {
-                    // An error occured somehow.
+                } else {
                     return false;
                 }
             }
@@ -4270,7 +4236,9 @@ bool drte_engine__move_marker_left(drte_engine* pEngine, drte_marker* pMarker)
             }
             else
             {
-                if (!drgui_get_text_cursor_position_from_char(pRun->pFont, pEngine->text + pEngine->pRuns[pMarker->iRun].iChar, pMarker->iChar, OUT &pMarker->relativePosX)) {
+                if (pEngine->onGetCursorPositionFromChar) {
+                    pEngine->onGetCursorPositionFromChar(pEngine, pEngine->styles[pRun->fgStyleSlot].styleToken, pEngine->text + pEngine->pRuns[pMarker->iRun].iChar, pMarker->iChar, OUT &pMarker->relativePosX);
+                } else {
                     return false;
                 }
             }
@@ -4312,7 +4280,9 @@ bool drte_engine__move_marker_right(drte_engine* pEngine, drte_marker* pMarker)
             }
             else
             {
-                if (!drgui_get_text_cursor_position_from_char(pRun->pFont, pEngine->text + pEngine->pRuns[pMarker->iRun].iChar, pMarker->iChar, OUT &pMarker->relativePosX)) {
+                if (pEngine->onGetCursorPositionFromChar) {
+                    pEngine->onGetCursorPositionFromChar(pEngine, pEngine->styles[pRun->fgStyleSlot].styleToken, pEngine->text + pEngine->pRuns[pMarker->iRun].iChar, pMarker->iChar, OUT &pMarker->relativePosX);
+                } else {
                     return false;
                 }
             }
@@ -4590,7 +4560,12 @@ bool drte_engine__update_marker_relative_position(drte_engine* pEngine, drte_mar
     }
     else
     {
-        return drgui_get_text_cursor_position_from_char(pRun->pFont, pEngine->text + pEngine->pRuns[pMarker->iRun].iChar, pMarker->iChar, OUT &pMarker->relativePosX);
+        if (pEngine->onGetCursorPositionFromChar) {
+            pEngine->onGetCursorPositionFromChar(pEngine, pEngine->styles[pRun->fgStyleSlot].styleToken, pEngine->text + pEngine->pRuns[pMarker->iRun].iChar, pMarker->iChar, OUT &pMarker->relativePosX);
+            return true;
+        }
+
+        return false;
     }
 }
 
