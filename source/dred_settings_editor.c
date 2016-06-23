@@ -99,6 +99,26 @@ int dred_settings_editor__get_side_panel_btn_index_under_point(dred_settings_edi
     return -1;
 }
 
+void dred_settings_editor__select_page_by_index(dred_settings_editor* pSettingsEditor, int newPageIndex)
+{
+    dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
+    assert(pData != NULL);
+
+    int oldPageIndex = pData->selectedPageIndex;
+    if (newPageIndex != oldPageIndex) {
+        if (oldPageIndex != -1) {
+            drgui_hide(pData->pages[oldPageIndex].pGUIElement);
+        }
+        if (newPageIndex != -1) {
+            drgui_show(pData->pages[newPageIndex].pGUIElement);
+        }
+
+        pData->selectedPageIndex = newPageIndex;
+        drgui_dirty(pSettingsEditor, dred_settings_editor__get_side_panel_rect(pSettingsEditor));
+    }
+}
+
+
 void dred_settings_editor__refresh_layout(dred_settings_editor* pSettingsEditor)
 {
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
@@ -152,25 +172,12 @@ void dred_settings_editor__on_mouse_button_down(dred_settings_editor* pSettingsE
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
 
-    int oldPageIndex = pData->selectedPageIndex;
     int newPageIndex = dred_settings_editor__get_side_panel_btn_index_under_point(pSettingsEditor, (float)mousePosX, (float)mousePosY);
     if (newPageIndex == -1) {
         return; // Don't change the selection if nothing was picked.
     }
 
-    // TODO: dred_settings_editor__select_page_by_index().
-
-    if (newPageIndex != oldPageIndex) {
-        if (oldPageIndex != -1) {
-            drgui_hide(pData->pages[oldPageIndex].pGUIElement);
-        }
-        if (newPageIndex != -1) {
-            drgui_show(pData->pages[newPageIndex].pGUIElement);
-        }
-
-        pData->selectedPageIndex = newPageIndex;
-        drgui_dirty(pSettingsEditor, dred_settings_editor__get_side_panel_rect(pSettingsEditor));
-    }
+    dred_settings_editor__select_page_by_index(pSettingsEditor, newPageIndex);
 }
 
 void dred_settings_editor__on_mouse_move(dred_settings_editor* pSettingsEditor, int mousePosX, int mousePosY, int stateFlags)
@@ -307,11 +314,24 @@ void dred_settings__btn_choose_font__on_pressed(dred_button* pButton)
 }
 
 
-void dred_settings_editor_page__on_paint(dred_settings_editor* pSettingsEditor, drgui_rect rect, void* pPaintData)
+void dred_settings_editor_page__on_mouse_enter(drgui_element* pPageElement)
+{
+    dred_settings_editor* pSettingsEditor = drgui_get_parent(pPageElement);
+
+    dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
+    assert(pData != NULL);
+
+    // Clear the hovered state of any buttons on the side panel.
+    if (pData->hoveredPageIndex != -1) {
+        pData->hoveredPageIndex = -1;
+        drgui_dirty(pSettingsEditor, dred_settings_editor__get_side_panel_rect(pSettingsEditor));
+    }
+}
+
+void dred_settings_editor_page__on_paint(drgui_element* pPageElement, drgui_rect rect, void* pPaintData)
 {
     (void)rect;
-
-    drgui_draw_rect(pSettingsEditor, drgui_get_local_rect(pSettingsEditor), drgui_rgb(255, 255, 255), pPaintData);
+    drgui_draw_rect(pPageElement, drgui_get_local_rect(pPageElement), drgui_rgb(255, 255, 255), pPaintData);
 }
 
 bool dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_control* pParent, const char* title)
@@ -328,6 +348,7 @@ bool dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_cont
     }
 
     drgui_hide(pPage->pGUIElement);
+    drgui_set_on_mouse_enter(pPage->pGUIElement, dred_settings_editor_page__on_mouse_enter);
     drgui_set_on_paint(pPage->pGUIElement, dred_settings_editor_page__on_paint);
 
     return true;
@@ -529,6 +550,10 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_cont
     dred_control_set_on_mouse_move(pSettingsEditor, dred_settings_editor__on_mouse_move);
     dred_control_set_on_mouse_leave(pSettingsEditor, dred_settings_editor__on_mouse_leave);
     dred_control_set_on_paint(pSettingsEditor, dred_settings_editor__on_paint);
+
+
+    // Select the General tab by default.
+    dred_settings_editor__select_page_by_index(pSettingsEditor, DRED_SETTINGS_EDITOR_PAGE_GENERAL);
 
 
     return pSettingsEditor;
