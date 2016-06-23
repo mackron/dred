@@ -45,12 +45,6 @@ typedef struct
     /// The padding to the right of the line numbers.
     float lineNumbersPaddingRight;
 
-    // The color of the text of the line numbers.
-    //drgui_color lineNumbersColor;
-
-    // The color of the background of the line numbers.
-    //drgui_color lineNumbersBackgroundColor;
-
 
     /// The desired width of the vertical scrollbar.
     float vertScrollbarSize;
