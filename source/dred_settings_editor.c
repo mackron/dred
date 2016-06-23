@@ -169,9 +169,6 @@ void dred_settings_editor__on_mouse_button_down(dred_settings_editor* pSettingsE
     (void)mouseButton;
     (void)stateFlags;
 
-    dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
-    assert(pData != NULL);
-
     int newPageIndex = dred_settings_editor__get_side_panel_btn_index_under_point(pSettingsEditor, (float)mousePosX, (float)mousePosY);
     if (newPageIndex == -1) {
         return; // Don't change the selection if nothing was picked.
