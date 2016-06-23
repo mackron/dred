@@ -1489,8 +1489,9 @@ bool dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow
     ZeroMemory(&cf, sizeof(cf));
     cf.lStructSize = sizeof(cf);
     cf.hwndOwner = pOwnerWindow->hWnd;
+    cf.hDC = GetDC(pOwnerWindow->hWnd);
     cf.lpLogFont = &lf;
-    cf.Flags = CF_INITTOLOGFONTSTRUCT;
+    cf.Flags = CF_INITTOLOGFONTSTRUCT | CF_BOTH;
 
     if (!ChooseFontA(&cf)) {
         return false;
@@ -2014,11 +2015,18 @@ dred_font* dred__load_system_font_mono(dred_context* pDred)
     fontDesc.rotation = 0;
 
 #ifdef _WIN32
-    // TODO: Use Courier New in Windows XP.
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Consolas");
     fontDesc.size = 13;
     fontDesc.weight = drgui_font_weight_normal;
     fontDesc.slant = drgui_font_slant_none;
+
+    // Fall back to Courier New by default for XP.
+    OSVERSIONINFOA version;
+    ZeroMemory(&version, sizeof(version));
+    version.dwOSVersionInfoSize = sizeof(version);
+    if (GetVersionExA(&version) && version.dwMajorVersion < 6) {
+        strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Courier New");
+    }
 #endif
 
 #ifdef DRED_GTK
