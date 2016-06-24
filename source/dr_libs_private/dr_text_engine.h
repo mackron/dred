@@ -494,6 +494,9 @@ void drte_engine_get_character_position(drte_engine* pEngine, size_t characterIn
 // Gets the character at the given index as a UTF-32 code point.
 uint32_t drte_engine_get_utf32(drte_engine* pEngine, size_t characterIndex);
 
+// Retrieves the indices of the visible lines.
+void drte_engine_get_visible_lines(drte_engine* pEngine, size_t* pFirstLineOut, size_t* pLastLineOut);
+
 
 /// Sets the given text engine's text.
 void drte_engine_set_text(drte_engine* pEngine, const char* text);
@@ -1085,6 +1088,7 @@ typedef struct
     drte_style_token fgStyleToken;
     drte_style_token bgStyleToken;
     float posX;
+    float width;
     bool isAtEnd;
 } drte_segment;
 
@@ -1095,13 +1099,17 @@ float drte_engine__measure_segment(drte_engine* pEngine, drte_segment* pSegment)
 
     float segmentWidth = 0;
     if (pSegment->iCharEnd > pSegment->iCharBeg) {
-        if (drte_engine_get_utf32(pEngine, pSegment->iCharBeg) == '\t') {
+        uint32_t c = drte_engine_get_utf32(pEngine, pSegment->iCharBeg);
+        if (c == '\t') {
             // It was a tab segment.
             float tabWidth = drte_engine__get_tab_width(pEngine);
             size_t tabCount = pSegment->iCharEnd - pSegment->iCharBeg;
             float nextTabPos = (float)((int)(pSegment->posX / tabWidth) + 1) * tabWidth;
             float distanceToNextTab = nextTabPos - pSegment->posX;
             segmentWidth = distanceToNextTab + ((tabCount-1) * tabWidth);
+        } else if (c == '\n') {
+            // Add overhang if selected.
+            segmentWidth = 0;
         } else {
             // It's normal text. We need to refer to the backend for measuring.
             float unused;
@@ -1119,6 +1127,7 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     assert(pEngine != NULL);
     assert(pSegment != NULL);
 
+    // TODO: Handle selection segments here.
     // TODO: Handle styling segments here.
     // TODO: Handle UTF-8 properly.
 
@@ -1132,44 +1141,43 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     // Find the end of the next segment, but don't modify the segment yet. The reason for this is that we need to measure the segment later.
     size_t iCharBeg = pSegment->iCharEnd;
     size_t iCharEnd = iCharBeg;
-    for (;;) {
-        char c = pEngine->text[iCharEnd];
-        if (c == '\0' || c == '\n') {
-            pSegment->isAtEnd = true;
-            iCharEnd += 1;
-            break;
-        }
 
-        if (c == '\t') {
-            if (pEngine->text[iCharBeg] != '\t') {
-                break;
-            } else {
-                // Group tabs into a single segment.
-                for (;;) {
-                    c = pEngine->text[iCharEnd];
-                    if (c == '\0' || c == '\n') {
-                        pSegment->isAtEnd = true;
-                        iCharEnd += 1;
-                        break;
-                    }
-
-                    if (c != '\t') {
-                        break;
-                    }
-
-                    iCharEnd += 1;
-                }
-
+    char c = pEngine->text[iCharBeg];
+    if (c == '\0' || c == '\n') {
+        pSegment->isAtEnd = true;
+    } else {
+        for (;;) {
+            c = pEngine->text[iCharEnd];
+            if (c == '\0' || c == '\n') {
                 break;
             }
-        }
 
-        iCharEnd += 1;
+            if (c == '\t') {
+                if (pEngine->text[iCharBeg] != '\t') {
+                    break;
+                } else {
+                    // Group tabs into a single segment.
+                    for (;;) {
+                        c = pEngine->text[iCharEnd];
+                        if (c == '\0' || c == '\n' || c != '\t') {
+                            break;
+                        }
+
+                        iCharEnd += 1;
+                    }
+
+                    break;
+                }
+            }
+
+            iCharEnd += 1;
+        }
     }
 
-
-    // The width of the previous segment needs to be calculated so that the x position of the next segment can be calculated correctly.
-    float prevWidth = drte_engine__measure_segment(pEngine, pSegment);
+    if (iCharBeg == iCharEnd) {
+        assert(pSegment->isAtEnd == true);
+        iCharEnd += 1;
+    }
 
 
     // We now have everything we need to construct the next segment iterator.
@@ -1177,7 +1185,8 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     pSegment->iCharEnd = iCharEnd;
     pSegment->fgStyleToken = fgStyleToken;
     pSegment->bgStyleToken = bgStyleToken;
-    pSegment->posX += prevWidth;
+    pSegment->posX += pSegment->width;
+    pSegment->width = drte_engine__measure_segment(pEngine, pSegment);
 
     return true;
 }
@@ -1193,6 +1202,7 @@ bool drte_engine__first_segment(drte_engine* pEngine, size_t lineIndex, drte_seg
     pSegment->fgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
     pSegment->bgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
     pSegment->posX = 0;
+    pSegment->width = 0;
     pSegment->isAtEnd = false;
     return drte_engine__next_segment(pEngine, pSegment);
 }
@@ -1495,6 +1505,29 @@ uint32_t drte_engine_get_utf32(drte_engine* pEngine, size_t characterIndex)
 
     // TODO: Handle UTF-8 properly.
     return pEngine->text[characterIndex];
+}
+
+void drte_engine_get_visible_lines(drte_engine* pEngine, size_t* pFirstLineOut, size_t* pLastLineOut)
+{
+    if (pEngine == NULL) {
+        return;
+    }
+
+    size_t iFirstLine = (size_t)(-pEngine->innerOffsetY / drte_engine_get_line_height(pEngine));
+
+    if (pFirstLineOut) {
+        *pFirstLineOut = iFirstLine;
+    }
+
+    if (pLastLineOut) {
+        size_t lineCount = drte_engine_get_line_count(pEngine);
+        size_t iLastLine = iFirstLine + ((size_t)(pEngine->containerHeight / drte_engine_get_line_height(pEngine)));
+        if (iLastLine >= lineCount && lineCount > 0) {
+            iLastLine = lineCount - 1;
+        }
+
+        *pLastLineOut = iLastLine;
+    }
 }
 
 
@@ -3306,11 +3339,69 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
         return;
     }
 
-    //size_t iLineTop;
-    //size_t iLineBottom;
-    //drte_engine_get_visible_lines(pEngine, &iLineTop, &iLineBottom);
+    float lineHeight = drte_engine_get_line_height(pEngine);
 
 
+    size_t iLineTop;
+    size_t iLineBottom;
+    drte_engine_get_visible_lines(pEngine, &iLineTop, &iLineBottom);
+
+    float linePosX = pEngine->innerOffsetX;
+    float linePosY = 0;
+    for (size_t iLine = iLineTop; iLine <= iLineBottom; ++iLine) {
+        float lineWidth = 0;
+
+        drte_segment segment;
+        if (drte_engine__first_segment(pEngine, iLine, &segment)) {
+            do
+            {
+                if (segment.posX > pEngine->containerWidth) {
+                    break;  // All remaining segments on this line (including this one) is clipped. Go to the next line.
+                }
+
+                lineWidth += segment.width;
+
+                // Don't draw segments to the left of the container.
+                if (linePosX + segment.posX + segment.width < 0) {
+                    continue;
+                }
+
+                uint32_t c = drte_engine_get_utf32(pEngine, segment.iCharBeg);
+                if (c == '\t' || c == '\n') {
+                    // It's whitespace.
+                    if (pEngine->onPaintRect) {
+                        pEngine->onPaintRect(pEngine, segment.bgStyleToken, drgui_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pElement, pPaintData);
+                    }
+                } else {
+                    // It's normal text.
+                    // TODO: Gather the text and properly support UTF-8.
+                    const char* text = pEngine->text + segment.iCharBeg;
+                    size_t textLength = segment.iCharEnd - segment.iCharBeg;
+                    if (pEngine->onPaintText) {
+                        pEngine->onPaintText(pEngine, segment.fgStyleToken, segment.bgStyleToken, text, textLength, linePosX + segment.posX, linePosY, pElement, pPaintData);
+                    }
+                }
+            } while (drte_engine__next_segment(pEngine, &segment));
+        }
+
+        // OPTIMIZE: Don't call drte_engine__first_segment() if the line terminated naturally. Instead just continue where we
+        //           left off. Consider drte_engine__first_segment_by_character().
+        //if (segment.isAtEnd) {
+        //    Optimize me.
+        //}
+
+        // The part after the end of the line needs to be drawn.
+        float lineRight = linePosX + lineWidth;
+        if (lineRight < pEngine->containerWidth) {
+            if (pEngine->onPaintRect) {
+                pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, drgui_make_rect(lineRight, linePosY, pEngine->containerWidth, linePosY + lineHeight), pElement, pPaintData);
+            }
+        }
+
+        linePosY += lineHeight;
+    }
+
+#if 0
     // The position of each run will be relative to the text bounds. We want to make it relative to the container bounds.
     drgui_rect textRect = drte_engine_get_text_rect_relative_to_bounds(pEngine);
 
@@ -3459,6 +3550,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
         lineBottom = textRect.bottom;
         pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->activeLineStyleSlot].styleToken, drgui_make_rect(0, lineTop, pEngine->containerWidth, lineBottom), pElement, pPaintData);
     }
+#endif
 
     // The cursor.
     if (pEngine->isShowingCursor && pEngine->isCursorBlinkOn) {
@@ -3467,14 +3559,14 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
 
 
     // The rectangle region below the last line.
-    if (lineBottom < pEngine->containerHeight) {
+    if (linePosY < pEngine->containerHeight) {
         // TODO: Only draw the intersection of the bottom rectangle with the invalid rectangle.
         drgui_rect tailRect;
         tailRect.left = 0;
-        tailRect.top = lineTop;
+        tailRect.top = (iLineBottom + 1) * drte_engine_get_line_height(pEngine) + pEngine->innerOffsetY;
         tailRect.right = pEngine->containerWidth;
         tailRect.bottom = pEngine->containerHeight;
-        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->activeLineStyleSlot].styleToken, tailRect /*drgui_rect_intersection(bottomRect, rect)*/, pElement, pPaintData);
+        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->activeLineStyleSlot].styleToken, tailRect /*drgui_rect_intersection(tailRect, rect)*/, pElement, pPaintData);
     }
 }
 
