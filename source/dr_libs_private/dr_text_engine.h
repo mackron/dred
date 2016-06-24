@@ -152,9 +152,6 @@ typedef struct
     /// The position to draw the text on the x axis.
     float posX;
 
-    /// The position to draw the text on the y axis.
-    float posY;
-
     /// The width of the run.
     float width;
 
@@ -3155,7 +3152,6 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                                 run.bgStyleSlot = bgStyleSlot;
                                 run.text        = pEngine->text + run.iChar;
                                 run.posX        = runLeft;
-                                run.posY        = lineTop;
 
                                 // We paint the run differently depending on whether or not anything is selected. If something is selected
                                 // we need to split the run into a maximum of 3 sub-runs so that the selection rectangle can be drawn correctly.
@@ -3169,7 +3165,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
 
                                         if (!drte_engine__is_text_run_whitespace(pEngine, pRun)) {
                                             pEngine->onPaintText(pEngine, pEngine->styles[pSubRun->fgStyleSlot].styleToken, pEngine->styles[pSubRun->bgStyleSlot].styleToken,
-                                                pSubRun->text, pSubRun->textLength, pSubRun->posX, pSubRun->posY, pElement, pPaintData);
+                                                pSubRun->text, pSubRun->textLength, pSubRun->posX, lineTop, pElement, pPaintData);
                                         } else {
                                             pEngine->onPaintRect(pEngine, pEngine->styles[pSubRun->bgStyleSlot].styleToken, drgui_make_rect(pSubRun->posX, lineTop, pSubRun->posX + pSubRun->width, lineBottom), pElement, pPaintData);
                                         }
@@ -3179,7 +3175,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                                 {
                                     // Nothing is selected.
                                     if (!drte_engine__is_text_run_whitespace(pEngine, &run)) {
-                                        pEngine->onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, run.posX, run.posY, pElement, pPaintData);
+                                        pEngine->onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, run.posX, lineTop, pElement, pPaintData);
                                     } else {
                                         pEngine->onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(run.posX, lineTop, run.posX + run.width, lineBottom), pElement, pPaintData);
                                     }
@@ -3309,8 +3305,7 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
                 run.text        = iLineStr;
                 run.textLength  = strlen(iLineStr);
                 run.posX        = lineNumbersWidth - textWidth;
-                run.posY        = lineTop;  // TODO: Center this based on the height of the line.
-                onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, run.posX, run.posY, pElement, pPaintData);
+                onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, run.posX, lineTop, pElement, pPaintData);
                 onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(0, lineTop, run.posX, lineBottom), pElement, pPaintData);
             }
         }
@@ -3458,7 +3453,6 @@ void drte_engine__refresh(drte_engine* pEngine)
         run.textLength = nextRunEnd - nextRunStart;
         run.width      = 0;
         run.posX       = 0;
-        run.posY       = runningPosY;
         run.fgStyleSlot = pEngine->defaultStyleSlot;
         run.bgStyleSlot = pEngine->defaultStyleSlot;
 
@@ -3893,7 +3887,7 @@ void drte_engine__get_marker_position_relative_to_container(drte_engine* pEngine
     if (pMarker->iRun < pEngine->runCount)
     {
         posX = pEngine->pRuns[pMarker->iRun].posX + pMarker->relativePosX;
-        posY = pEngine->pRuns[pMarker->iRun].posY;
+        posY = pEngine->pRuns[pMarker->iRun].iLine * drte_engine_get_line_height(pEngine);
     }
 
     drgui_rect textRect = drte_engine_get_text_rect_relative_to_bounds(pEngine);
