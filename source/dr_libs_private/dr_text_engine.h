@@ -1083,6 +1083,7 @@ uint8_t drte_engine__get_style_slot(drte_engine* pEngine, drte_style_token style
 // A drte_segment object is used for iterating over the segments of a line.
 typedef struct
 {
+    size_t iLine;
     size_t iCharBeg;
     size_t iCharEnd;
     drte_style_token fgStyleToken;
@@ -1107,7 +1108,7 @@ float drte_engine__measure_segment(drte_engine* pEngine, drte_segment* pSegment)
             float nextTabPos = (float)((int)(pSegment->posX / tabWidth) + 1) * tabWidth;
             float distanceToNextTab = nextTabPos - pSegment->posX;
             segmentWidth = distanceToNextTab + ((tabCount-1) * tabWidth);
-        } else if (c == '\n') {
+        } else if (c == '\n' || c == '\0') {
             // Add overhang if selected.
             segmentWidth = 0;
         } else {
@@ -1146,7 +1147,18 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     if (c == '\0' || c == '\n') {
         pSegment->isAtEnd = true;
     } else {
+        drte_marker* pSelectionMarker0;
+        drte_marker* pSelectionMarker1;
+        drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1);
+
+        if (pSegment->iLine == drte_engine_get_cursor_line(pEngine)) {
+            bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
+        }
+
         for (;;) {
+            // Fix this for multi-select and multi-cursor.
+            
+
             c = pEngine->text[iCharEnd];
             if (c == '\0' || c == '\n') {
                 break;
@@ -1169,6 +1181,8 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
                     break;
                 }
             }
+
+            
 
             iCharEnd += 1;
         }
@@ -1197,6 +1211,7 @@ bool drte_engine__first_segment(drte_engine* pEngine, size_t lineIndex, drte_seg
         return false;
     }
 
+    pSegment->iLine = lineIndex;
     pSegment->iCharBeg = drte_engine_get_line_first_character(pEngine, lineIndex);
     pSegment->iCharEnd = pSegment->iCharBeg;
     pSegment->fgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
@@ -3393,8 +3408,13 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
         // The part after the end of the line needs to be drawn.
         float lineRight = linePosX + lineWidth;
         if (lineRight < pEngine->containerWidth) {
+            drte_style_token bgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
+            if (iLine == drte_engine_get_cursor_line(pEngine)) {
+                bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
+            }
+
             if (pEngine->onPaintRect) {
-                pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, drgui_make_rect(lineRight, linePosY, pEngine->containerWidth, linePosY + lineHeight), pElement, pPaintData);
+                pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(lineRight, linePosY, pEngine->containerWidth, linePosY + lineHeight), pElement, pPaintData);
             }
         }
 
@@ -3566,7 +3586,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
         tailRect.top = (iLineBottom + 1) * drte_engine_get_line_height(pEngine) + pEngine->innerOffsetY;
         tailRect.right = pEngine->containerWidth;
         tailRect.bottom = pEngine->containerHeight;
-        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->activeLineStyleSlot].styleToken, tailRect /*drgui_rect_intersection(tailRect, rect)*/, pElement, pPaintData);
+        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, tailRect /*drgui_rect_intersection(tailRect, rect)*/, pElement, pPaintData);
     }
 }
 
