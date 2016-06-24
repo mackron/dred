@@ -178,7 +178,7 @@ typedef void (* drte_engine_on_measure_string_proc)(drte_engine* pEngine, drte_s
 typedef void (* drte_engine_on_get_cursor_position_from_point)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
 typedef void (* drte_engine_on_get_cursor_position_from_char)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
-typedef void (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, drte_text_run* pRun, drgui_element* pElement, void* pPaintData);
+typedef void (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, drgui_element* pElement, void* pPaintData);
 typedef void (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_style_token styleToken, drgui_rect rect, drgui_element* pElement, void* pPaintData);
 typedef void (* drte_engine_on_cursor_move_proc)       (drte_engine* pEngine);
 typedef void (* drte_engine_on_dirty_proc)             (drte_engine* pEngine, drgui_rect rect);
@@ -3168,7 +3168,8 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                                         drte_text_run* pSubRun = subruns + iSubRun;
 
                                         if (!drte_engine__is_text_run_whitespace(pEngine, pRun)) {
-                                            pEngine->onPaintText(pEngine, pEngine->styles[pSubRun->fgStyleSlot].styleToken, pEngine->styles[pSubRun->bgStyleSlot].styleToken, pSubRun, pElement, pPaintData);
+                                            pEngine->onPaintText(pEngine, pEngine->styles[pSubRun->fgStyleSlot].styleToken, pEngine->styles[pSubRun->bgStyleSlot].styleToken,
+                                                pSubRun->text, pSubRun->textLength, pSubRun->posX, pSubRun->posY, pElement, pPaintData);
                                         } else {
                                             pEngine->onPaintRect(pEngine, pEngine->styles[pSubRun->bgStyleSlot].styleToken, drgui_make_rect(pSubRun->posX, lineTop, pSubRun->posX + pSubRun->width, lineBottom), pElement, pPaintData);
                                         }
@@ -3178,7 +3179,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                                 {
                                     // Nothing is selected.
                                     if (!drte_engine__is_text_run_whitespace(pEngine, &run)) {
-                                        pEngine->onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, &run, pElement, pPaintData);
+                                        pEngine->onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, run.posX, run.posY, pElement, pPaintData);
                                     } else {
                                         pEngine->onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(run.posX, lineTop, run.posX + run.width, lineBottom), pElement, pPaintData);
                                     }
@@ -3309,7 +3310,7 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
                 run.textLength  = strlen(iLineStr);
                 run.posX        = lineNumbersWidth - textWidth;
                 run.posY        = lineTop;  // TODO: Center this based on the height of the line.
-                onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, &run, pElement, pPaintData);
+                onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, run.posX, run.posY, pElement, pPaintData);
                 onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(0, lineTop, run.posX, lineBottom), pElement, pPaintData);
             }
         }
