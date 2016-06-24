@@ -3306,21 +3306,13 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
         return;
     }
 
+    //size_t iLineTop;
+    //size_t iLineBottom;
+    //drte_engine_get_visible_lines(pEngine, &iLineTop, &iLineBottom);
+
 
     // The position of each run will be relative to the text bounds. We want to make it relative to the container bounds.
     drgui_rect textRect = drte_engine_get_text_rect_relative_to_bounds(pEngine);
-
-    // We draw a rectangle above and below the text rectangle. The main text rectangle will be drawn by iterating over each visible run.
-    drgui_rect rectTop    = drgui_make_rect(0, 0, pEngine->containerWidth, textRect.top);
-    drgui_rect rectBottom = drgui_make_rect(0, textRect.bottom, pEngine->containerWidth, pEngine->containerHeight);
-
-    if (rectTop.bottom > rect.top) {
-        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, rectTop, pElement, pPaintData);
-    }
-
-    if (rectBottom.top < rect.bottom) {
-        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, rectBottom, pElement, pPaintData);
-    }
 
 
     // We draw line-by-line, starting from the first visible line.
@@ -3471,6 +3463,18 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
     // The cursor.
     if (pEngine->isShowingCursor && pEngine->isCursorBlinkOn) {
         pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->cursorStyleSlot].styleToken, drte_engine_get_cursor_rect(pEngine), pElement, pPaintData);
+    }
+
+
+    // The rectangle region below the last line.
+    if (lineBottom < pEngine->containerHeight) {
+        // TODO: Only draw the intersection of the bottom rectangle with the invalid rectangle.
+        drgui_rect tailRect;
+        tailRect.left = 0;
+        tailRect.top = lineTop;
+        tailRect.right = pEngine->containerWidth;
+        tailRect.bottom = pEngine->containerHeight;
+        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->activeLineStyleSlot].styleToken, tailRect /*drgui_rect_intersection(bottomRect, rect)*/, pElement, pPaintData);
     }
 }
 
