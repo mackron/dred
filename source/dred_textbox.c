@@ -1918,11 +1918,11 @@ void dred_textbox__refresh_scrollbar_ranges(dred_textbox* pTextBox)
 
     // The vertical scrollbar is based on the line count.
     size_t lineCount = drte_engine_get_line_count(pTB->pTL);
-    size_t pageSize  = drte_engine_get_visible_line_count_starting_at(pTB->pTL, drgui_sb_get_scroll_position(pTB->pVertScrollbar));
+    size_t pageSize  = drte_engine_get_visible_line_count(pTB->pTL);//drte_engine_get_visible_line_count_starting_at(pTB->pTL, drgui_sb_get_scroll_position(pTB->pVertScrollbar));
 
     size_t extraScroll = 0;
     if (pTB->isExcessScrollingEnabled) {
-        extraScroll = drte_engine_get_visible_line_count_starting_at(pTB->pTL, drgui_sb_get_scroll_position(pTB->pVertScrollbar)) - 1 - 1;  // -1 to make the range 0 based. -1 to ensure at least one line is visible.
+        extraScroll = drte_engine_get_visible_line_count(pTB->pTL) - 1 - 1;  // -1 to make the range 0 based. -1 to ensure at least one line is visible.
     }
 
     drgui_sb_set_range_and_page_size(pTB->pVertScrollbar, 0, (int)(lineCount + extraScroll), (int)pageSize);
