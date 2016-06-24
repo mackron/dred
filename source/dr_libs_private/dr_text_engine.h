@@ -159,7 +159,7 @@ typedef struct
     float width;
 
     /// The height of the run.
-    float height;
+    //float height;
 
 
     // PROPERTIES BELOW ARE FOR INTERNAL USE ONLY
@@ -433,9 +433,6 @@ typedef struct
 
     /// The position of the line on the y axis.
     float posY;
-
-    /// The height of the line.
-    float height;
 
     /// The index of the first run on the line.
     size_t iFirstRun;
@@ -2870,6 +2867,9 @@ size_t drte_engine_get_visible_line_count_starting_at(drte_engine* pEngine, size
         return 0;
     }
 
+    // TODO: This can be calculated in constant time.
+
+
     unsigned int count = 0;
     float lastLineBottom = 0;
 
@@ -2896,7 +2896,7 @@ size_t drte_engine_get_visible_line_count_starting_at(drte_engine* pEngine, size
             }
 
             count += 1;
-            lastLineBottom = line.posY + line.height;
+            lastLineBottom = line.posY + drte_engine_get_line_height(pEngine);
 
         } while (drte_engine__next_line(pEngine, &line));
     }
@@ -3073,7 +3073,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
         do
         {
             float lineTop    = line.posY + textRect.top;
-            float lineBottom = lineTop + line.height;
+            float lineBottom = lineTop + drte_engine_get_line_height(pEngine);
 
             if (lineTop < rect.bottom)
             {
@@ -3266,14 +3266,13 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
     {
         // We failed to retrieve the first line which is probably due to the text engine being empty. We just fake the first line to
         // ensure we get the number 1 to be drawn.
-        line.height = drte_engine_get_line_height(pEngine);
         line.posY = 0;
     }
 
     do
     {
         float lineTop    = line.posY + textRect.top;
-        float lineBottom = lineTop + line.height;
+        float lineBottom = lineTop + drte_engine_get_line_height(pEngine);
 
         if (lineTop < lineNumbersHeight)
         {
@@ -3433,8 +3432,7 @@ void drte_engine__refresh(drte_engine* pEngine)
     float tabWidth = drte_engine__get_tab_width(pEngine);
 
     size_t iCurrentLine  = 0;
-    float runningPosY       = 0;
-    float runningLineHeight = 0;
+    float runningPosY = 0;
 
     const char* nextRunStart = pEngine->text;
     const char* nextRunEnd;
@@ -3446,7 +3444,6 @@ void drte_engine__refresh(drte_engine* pEngine)
         run.iCharEnd   = nextRunEnd   - pEngine->text;
         run.textLength = nextRunEnd - nextRunStart;
         run.width      = 0;
-        run.height     = 0;
         run.posX       = 0;
         run.posY       = runningPosY;
         run.fgStyleSlot = pEngine->defaultStyleSlot;
@@ -3477,49 +3474,39 @@ void drte_engine__refresh(drte_engine* pEngine)
             // Tab.
             size_t tabCount = run.iCharEnd - run.iChar;
             run.width  = (float)(((tabCount*(size_t)tabWidth) - ((size_t)run.posX % (size_t)tabWidth)));
-            run.height = drte_engine_get_line_height(pEngine);
         }
         else if (nextRunStart[0] == '\n')
         {
             // New line.
             iCurrentLine += 1;
             run.width  = 0;
-            run.height = drte_engine_get_line_height(pEngine);
         }
         else if (nextRunStart[0] == '\0')
         {
             // Null terminator.
             run.width      = 0;
-            run.height     = drte_engine_get_line_height(pEngine);
             run.textLength = 0;
         }
         else
         {
             // Normal run.
+            float unused;
             if (pEngine->onMeasureString) {
-                pEngine->onMeasureString(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, nextRunStart, run.textLength, &run.width, &run.height);
+                pEngine->onMeasureString(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, nextRunStart, run.textLength, &run.width, &unused);
             }
-
-            //drgui_measure_string(pEngine->pDefaultFont, nextRunStart, run.textLength, &run.width, &run.height);
         }
-
-
-        // The running line height needs to be updated by setting to the maximum size.
-        runningLineHeight = (run.height > runningLineHeight) ? run.height : runningLineHeight;
 
 
         // Update the text bounds.
         if (pEngine->textBoundsWidth < run.posX + run.width) {
             pEngine->textBoundsWidth = run.posX + run.width;
         }
-        pEngine->textBoundsHeight = runningPosY + runningLineHeight;
+        pEngine->textBoundsHeight = runningPosY + drte_engine_get_line_height(pEngine);
 
 
         // A new line means we need to increment the running y position by the running line height.
-        if (nextRunStart[0] == '\n')
-        {
-            runningPosY += runningLineHeight;
-            runningLineHeight = 0;
+        if (nextRunStart[0] == '\n') {
+            runningPosY += drte_engine_get_line_height(pEngine);
         }
 
         // Add the run to the internal list.
@@ -4585,17 +4572,12 @@ bool drte_engine__first_line(drte_engine* pEngine, drte_engine_line* pLine)
 
     pLine->index     = 0;
     pLine->posY      = 0;
-    pLine->height    = 0;
     pLine->iFirstRun = 0;
     pLine->iLastRun  = 0;
 
-    // We need to find the last run in the line and the height. The height is determined by the run with the largest height.
+    // We need to find the last run in the line.
     while (pLine->iLastRun < pEngine->runCount)
     {
-        if (pLine->height < pEngine->pRuns[pLine->iLastRun].height) {
-            pLine->height = pEngine->pRuns[pLine->iLastRun].height;
-        }
-
         pLine->iLastRun += 1;
 
         if (pEngine->pRuns[pLine->iLastRun].iLine != pLine->index) {
@@ -4622,17 +4604,12 @@ bool drte_engine__next_line(drte_engine* pEngine, drte_engine_line* pLine)
     }
 
     pLine->index     += 1;
-    pLine->posY      += pLine->height;
-    pLine->height    = 0;
+    pLine->posY      += drte_engine_get_line_height(pEngine);
     pLine->iFirstRun = pLine->iLastRun + 1;
     pLine->iLastRun  = pLine->iFirstRun;
 
     while (pLine->iLastRun < pEngine->runCount)
     {
-        if (pLine->height < pEngine->pRuns[pLine->iLastRun].height) {
-            pLine->height = pEngine->pRuns[pLine->iLastRun].height;
-        }
-
         pLine->iLastRun += 1;
 
         if (pEngine->pRuns[pLine->iLastRun].iLine != pLine->index) {
