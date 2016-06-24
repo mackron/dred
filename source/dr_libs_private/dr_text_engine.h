@@ -4178,6 +4178,9 @@ float drte_engine__get_run_pos_x(drte_engine* pEngine, size_t iRun)
 
 void drte_engine__get_marker_position_relative_to_container(drte_engine* pEngine, drte_marker* pMarker, float* pPosXOut, float* pPosYOut)
 {
+    if (pPosXOut) *pPosXOut = 0;
+    if (pPosYOut) *pPosYOut = 0;
+
     if (pEngine == NULL || pEngine->pRuns == NULL || pMarker == NULL) {
         return;
     }
