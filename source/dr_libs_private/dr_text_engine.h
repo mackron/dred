@@ -149,9 +149,6 @@ typedef struct
     uint8_t bgStyleSlot;
 
 
-    /// The position to draw the text on the x axis.
-    float posX;
-
     /// The width of the run.
     float width;
 
@@ -999,7 +996,7 @@ size_t drte_engine__get_marker_absolute_char_index(drte_engine* pEngine, drte_ma
 bool drte_engine__has_spacing_between_selection_markers(drte_engine* pEngine);
 
 /// Splits the given run into sub-runs based on the current selection rectangle. Returns the sub-run count.
-size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_run* pRunToSplit, drte_text_run pSubRunsOut[3]);
+size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_run* pRunToSplit, drte_text_run pSubRunsOut[3], float pPosXOut[3]);
 
 
 /// Retrieves pointers to the selection markers in the correct order.
@@ -3117,11 +3114,11 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                     }
 
 
-                    drte_text_run* pFirstRun = pEngine->pRuns + line.iFirstRun;
-                    drte_text_run* pLastRun  = pEngine->pRuns + line.iLastRun;
+                    //drte_text_run* pFirstRun = pEngine->pRuns + line.iFirstRun;
+                    //drte_text_run* pLastRun  = pEngine->pRuns + line.iLastRun;
 
-                    float lineLeft  = pFirstRun->posX + textRect.left;
-                    float lineRight = pLastRun->posX + pLastRun->width + textRect.left;
+                    float lineLeft  = textRect.left;
+                    float lineRight = lineLeft;
 
                     // 1) The blank space to the left of the first run.
                     if (lineLeft > 0)
@@ -3135,12 +3132,11 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
 
 
                     // 2) The runs themselves.
+                    float runLeft = lineLeft;
                     for (size_t iRun = line.iFirstRun; iRun <= line.iLastRun; ++iRun)
                     {
                         drte_text_run* pRun = pEngine->pRuns + iRun;
-
-                        float runLeft  = pRun->posX + textRect.left;
-                        float runRight = runLeft    + pRun->width;
+                        float runRight = runLeft + pRun->width;
 
                         if (runRight > 0 && runLeft < pEngine->containerWidth)
                         {
@@ -3151,23 +3147,24 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                                 run.fgStyleSlot = pEngine->defaultStyleSlot;
                                 run.bgStyleSlot = bgStyleSlot;
                                 run.text        = pEngine->text + run.iChar;
-                                run.posX        = runLeft;
 
                                 // We paint the run differently depending on whether or not anything is selected. If something is selected
                                 // we need to split the run into a maximum of 3 sub-runs so that the selection rectangle can be drawn correctly.
                                 if (drte_engine_is_anything_selected(pEngine))
                                 {
                                     drte_text_run subruns[3];
-                                    size_t subrunCount = drte_engine__split_text_run_by_selection(pEngine, &run, subruns);
+                                    float posx[3];
+
+                                    size_t subrunCount = drte_engine__split_text_run_by_selection(pEngine, &run, subruns, posx);
                                     for (size_t iSubRun = 0; iSubRun < subrunCount; ++iSubRun)
                                     {
                                         drte_text_run* pSubRun = subruns + iSubRun;
 
                                         if (!drte_engine__is_text_run_whitespace(pEngine, pRun)) {
                                             pEngine->onPaintText(pEngine, pEngine->styles[pSubRun->fgStyleSlot].styleToken, pEngine->styles[pSubRun->bgStyleSlot].styleToken,
-                                                pSubRun->text, pSubRun->textLength, pSubRun->posX, lineTop, pElement, pPaintData);
+                                                pSubRun->text, pSubRun->textLength, runLeft + posx[iSubRun], lineTop, pElement, pPaintData);
                                         } else {
-                                            pEngine->onPaintRect(pEngine, pEngine->styles[pSubRun->bgStyleSlot].styleToken, drgui_make_rect(pSubRun->posX, lineTop, pSubRun->posX + pSubRun->width, lineBottom), pElement, pPaintData);
+                                            pEngine->onPaintRect(pEngine, pEngine->styles[pSubRun->bgStyleSlot].styleToken, drgui_make_rect(runLeft + posx[iSubRun], lineTop, runLeft + posx[iSubRun] + pSubRun->width, lineBottom), pElement, pPaintData);
                                         }
                                     }
                                 }
@@ -3175,15 +3172,18 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                                 {
                                     // Nothing is selected.
                                     if (!drte_engine__is_text_run_whitespace(pEngine, &run)) {
-                                        pEngine->onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, run.posX, lineTop, pElement, pPaintData);
+                                        pEngine->onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, runLeft, lineTop, pElement, pPaintData);
                                     } else {
-                                        pEngine->onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(run.posX, lineTop, run.posX + run.width, lineBottom), pElement, pPaintData);
+                                        pEngine->onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(runLeft, lineTop, runRight, lineBottom), pElement, pPaintData);
                                     }
                                 }
                             }
                         }
+
+                        runLeft = runRight;
                     }
 
+                    lineRight = runLeft;
 
                     // 3) The blank space to the right of the last run.
                     if (lineRight < pEngine->containerWidth)
@@ -3299,14 +3299,15 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
                     pEngine->onMeasureString(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
                 }
 
+                float runLeft = lineNumbersWidth - textWidth;
+
                 drte_text_run run = {0};
                 run.fgStyleSlot = pEngine->lineNumbersStyleSlot;
                 run.bgStyleSlot = pEngine->lineNumbersStyleSlot;
                 run.text        = iLineStr;
                 run.textLength  = strlen(iLineStr);
-                run.posX        = lineNumbersWidth - textWidth;
-                onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, run.posX, lineTop, pElement, pPaintData);
-                onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(0, lineTop, run.posX, lineBottom), pElement, pPaintData);
+                onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, runLeft, lineTop, pElement, pPaintData);
+                onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(0, lineTop, runLeft, lineBottom), pElement, pPaintData);
             }
         }
         else
@@ -3444,6 +3445,9 @@ void drte_engine__refresh(drte_engine* pEngine)
 
     const char* nextRunStart = pEngine->text;
     const char* nextRunEnd;
+
+    float nextRunLeft = 0;
+
     while (drte_next_run_string(nextRunStart, pEngine->text + pEngine->textLength + 1, OUT &nextRunEnd))
     {
         drte_text_run run;
@@ -3452,26 +3456,22 @@ void drte_engine__refresh(drte_engine* pEngine)
         run.iCharEnd   = nextRunEnd   - pEngine->text;
         run.textLength = nextRunEnd - nextRunStart;
         run.width      = 0;
-        run.posX       = 0;
         run.fgStyleSlot = pEngine->defaultStyleSlot;
         run.bgStyleSlot = pEngine->defaultStyleSlot;
 
         // X position
         //
         // The x position depends on the previous run that's on the same line.
-        if (pEngine->runCount > 0)
+        /*if (pEngine->runCount > 0)
         {
             drte_text_run* pPrevRun = pEngine->pRuns + (pEngine->runCount - 1);
-            if (pPrevRun->iLine == iCurrentLine)
-            {
-                run.posX = pPrevRun->posX + pPrevRun->width;
-            }
-            else
-            {
+            if (pPrevRun->iLine == iCurrentLine) {
+                nextRunLeft += pPrevRun->width;
+            } else {
                 // It's the first run on the line.
                 run.posX = 0;
             }
-        }
+        }*/
 
 
         // Width and height.
@@ -3480,13 +3480,14 @@ void drte_engine__refresh(drte_engine* pEngine)
         {
             // Tab.
             size_t tabCount = run.iCharEnd - run.iChar;
-            run.width  = (float)(((tabCount*(size_t)tabWidth) - ((size_t)run.posX % (size_t)tabWidth)));
+            run.width  = (float)(((tabCount*(size_t)tabWidth) - ((size_t)nextRunLeft % (size_t)tabWidth)));
         }
         else if (nextRunStart[0] == '\n')
         {
             // New line.
             iCurrentLine += 1;
             run.width  = 0;
+            nextRunLeft = 0;
         }
         else if (nextRunStart[0] == '\0')
         {
@@ -3503,10 +3504,10 @@ void drte_engine__refresh(drte_engine* pEngine)
             }
         }
 
-
+        
         // Update the text bounds.
-        if (pEngine->textBoundsWidth < run.posX + run.width) {
-            pEngine->textBoundsWidth = run.posX + run.width;
+        if (pEngine->textBoundsWidth < nextRunLeft + run.width) {
+            pEngine->textBoundsWidth = nextRunLeft + run.width;
         }
         pEngine->textBoundsHeight = runningPosY + drte_engine_get_line_height(pEngine);
 
@@ -3521,6 +3522,7 @@ void drte_engine__refresh(drte_engine* pEngine)
 
         // Go to the next run string.
         nextRunStart = nextRunEnd;
+        nextRunLeft += run.width;
     }
 }
 
@@ -3651,8 +3653,26 @@ bool drte_engine__find_closest_run_to_point(drte_engine* pEngine, float inputPos
     {
         size_t iRunOut = 0;
 
+        if (inputPosXRelativeToText < 0) {
+            iRunOut = iFirstRunOnLine;
+        } else {
+            float runLeft = 0;
+            for (size_t iRun = iFirstRunOnLine; iRun < iLastRunOnLinePlus1; ++iRun) {
+                const drte_text_run* pRun = pEngine->pRuns + iRun;
+                iRunOut = iRun;
+
+                if (inputPosXRelativeToText >= runLeft && inputPosXRelativeToText <= runLeft + pRun->width) {
+                    break;
+                }
+
+                runLeft += pRun->width;
+            }
+        }
+
+#if 0
         const drte_text_run* pFirstRunOnLine = pEngine->pRuns + iFirstRunOnLine;
         const drte_text_run* pLastRunOnLine  = pEngine->pRuns + (iLastRunOnLinePlus1 - 1);
+
 
         if (inputPosXRelativeToText < pFirstRunOnLine->posX)
         {
@@ -3677,6 +3697,7 @@ bool drte_engine__find_closest_run_to_point(drte_engine* pEngine, float inputPos
                 }
             }
         }
+#endif
 
         if (pRunIndexOut) {
             *pRunIndexOut = iRunOut;
@@ -3749,10 +3770,15 @@ bool drte_engine__find_line_info_by_index(drte_engine* pEngine, size_t iLine, dr
 
         if (pRectOut != NULL)
         {
-            pRectOut->left   = pEngine->pRuns[iFirstRunOnLine].posX;
-            pRectOut->right  = pEngine->pRuns[iLastRunOnLinePlus1 - 1].posX + pEngine->pRuns[iLastRunOnLinePlus1 - 1].width;
+            pRectOut->left   = 0;
+            pRectOut->right  = pRectOut->left;
             pRectOut->top    = lineTop;
             pRectOut->bottom = pRectOut->top + drte_engine_get_line_height(pEngine);
+
+            // The right edge needs to be calculated.
+            for (size_t iRun = iFirstRunOnLine; iRun < iLastRunOnLinePlus1; ++iRun) {
+                pRectOut->right += pEngine->pRuns[iRun].width;
+            }
         }
 
         return true;
@@ -3875,6 +3901,28 @@ bool drte_engine__move_marker_to_point_relative_to_container(drte_engine* pEngin
     return false;
 }
 
+float drte_engine__get_run_pos_x(drte_engine* pEngine, size_t iRun)
+{
+    assert(pEngine != NULL);
+
+    size_t iFirstRunOnLine;
+    size_t iLastRunOnLinePlus1;
+    if (!drte_engine__find_line_info_by_index(pEngine, pEngine->pRuns[iRun].iLine, NULL, &iFirstRunOnLine, &iLastRunOnLinePlus1)) {
+        return 0;
+    }
+
+    if (iRun >= iLastRunOnLinePlus1) {
+        return 0;
+    }
+
+    float runLeft = 0;
+    for (size_t jRun = iFirstRunOnLine; jRun < iRun; ++jRun) {
+        runLeft += pEngine->pRuns[jRun].width;
+    }
+
+    return runLeft;
+}
+
 void drte_engine__get_marker_position_relative_to_container(drte_engine* pEngine, drte_marker* pMarker, float* pPosXOut, float* pPosYOut)
 {
     if (pEngine == NULL || pMarker == NULL) {
@@ -3886,7 +3934,7 @@ void drte_engine__get_marker_position_relative_to_container(drte_engine* pEngine
 
     if (pMarker->iRun < pEngine->runCount)
     {
-        posX = pEngine->pRuns[pMarker->iRun].posX + pMarker->relativePosX;
+        posX = drte_engine__get_run_pos_x(pEngine, pMarker->iRun) + pMarker->relativePosX;
         posY = pEngine->pRuns[pMarker->iRun].iLine * drte_engine_get_line_height(pEngine);
     }
 
@@ -3913,16 +3961,17 @@ bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarke
     if (drte_engine__find_closest_run_to_point(pEngine, inputPosXRelativeToText, inputPosYRelativeToText, OUT &iClosestRunToPoint))
     {
         const drte_text_run* pRun = pEngine->pRuns + iClosestRunToPoint;
+        float runLeft = drte_engine__get_run_pos_x(pEngine, iClosestRunToPoint);
 
         pMarker->iRun = iClosestRunToPoint;
 
-        if (inputPosXRelativeToText < pRun->posX)
+        if (inputPosXRelativeToText < runLeft)
         {
             // It's to the left of the run.
             pMarker->iChar        = 0;
             pMarker->relativePosX = 0;
         }
-        else if (inputPosXRelativeToText > pRun->posX + pRun->width)
+        else if (inputPosXRelativeToText > runLeft + pRun->width)
         {
             // It's to the right of the run. It may be a new-line run. If so, we need to move the marker to the front of it, not the back.
             pMarker->iChar        = pRun->textLength;
@@ -3951,12 +4000,12 @@ bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarke
 
                 const float tabWidth = drte_engine__get_tab_width(pEngine);
 
-                float tabLeft = pRun->posX + pMarker->relativePosX;
+                float tabLeft = runLeft + pMarker->relativePosX;
                 for (/* Do Nothing*/; pMarker->iChar < pRun->textLength; ++pMarker->iChar)
                 {
-                    float tabRight = tabWidth * ((pRun->posX + (tabWidth*(pMarker->iChar + 1))) / tabWidth);
-                    if (tabRight > pRun->posX + pRun->width) {
-                        tabRight = pRun->posX + pRun->width;
+                    float tabRight = tabWidth * ((runLeft + (tabWidth*(pMarker->iChar + 1))) / tabWidth);
+                    if (tabRight > runLeft + pRun->width) {
+                        tabRight = runLeft + pRun->width;
                     }
 
                     if (inputPosXRelativeToText >= tabLeft && inputPosXRelativeToText <= tabRight)
@@ -3965,9 +4014,9 @@ bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarke
                         // value to the character at iChar. Otherwise it should be set to the character at iChar + 1.
                         float charBoundsRightHalf = tabLeft + ceilf(((tabRight - tabLeft) / 2.0f));
                         if (inputPosXRelativeToText <= charBoundsRightHalf) {
-                            pMarker->relativePosX = tabLeft - pRun->posX;
+                            pMarker->relativePosX = tabLeft - runLeft;
                         } else {
-                            pMarker->relativePosX = tabRight - pRun->posX;
+                            pMarker->relativePosX = tabRight - runLeft;
                             pMarker->iChar += 1;
                         }
 
@@ -3985,7 +4034,7 @@ bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarke
             else
             {
                 // It's a standard run.
-                float inputPosXRelativeToRun = inputPosXRelativeToText - pRun->posX;
+                float inputPosXRelativeToRun = inputPosXRelativeToText - runLeft;
                 if (pEngine->onGetCursorPositionFromPoint) {
                     pEngine->onGetCursorPositionFromPoint(pEngine, pEngine->styles[pRun->fgStyleSlot].styleToken, pEngine->text + pRun->iChar, pRun->textLength, pRun->width, inputPosXRelativeToRun, OUT &pMarker->relativePosX, OUT &pMarker->iChar);
 
@@ -4021,6 +4070,8 @@ bool drte_engine__move_marker_left(drte_engine* pEngine, drte_marker* pMarker)
             pMarker->iChar -= 1;
 
             const drte_text_run* pRun = pEngine->pRuns + pMarker->iRun;
+            float runLeft = drte_engine__get_run_pos_x(pEngine, pMarker->iRun);
+
             if (pEngine->text[pRun->iChar] == '\t')
             {
                 const float tabWidth = drte_engine__get_tab_width(pEngine);
@@ -4032,8 +4083,8 @@ bool drte_engine__move_marker_left(drte_engine* pEngine, drte_marker* pMarker)
                 }
                 else
                 {
-                    pMarker->relativePosX  = tabWidth * ((pRun->posX + (tabWidth*(pMarker->iChar + 0))) / tabWidth);
-                    pMarker->relativePosX -= pRun->posX;
+                    pMarker->relativePosX  = tabWidth * ((runLeft + (tabWidth*(pMarker->iChar + 0))) / tabWidth);
+                    pMarker->relativePosX -= runLeft;
                 }
             }
             else
@@ -4073,12 +4124,14 @@ bool drte_engine__move_marker_right(drte_engine* pEngine, drte_marker* pMarker)
             pMarker->iChar += 1;
 
             const drte_text_run* pRun = pEngine->pRuns + pMarker->iRun;
+            float runLeft = drte_engine__get_run_pos_x(pEngine, pMarker->iRun);
+
             if (pEngine->text[pRun->iChar] == '\t')
             {
                 const float tabWidth = drte_engine__get_tab_width(pEngine);
 
-                pMarker->relativePosX  = tabWidth * ((pRun->posX + (tabWidth*(pMarker->iChar + 0))) / tabWidth);
-                pMarker->relativePosX -= pRun->posX;
+                pMarker->relativePosX  = tabWidth * ((runLeft + (tabWidth*(pMarker->iChar + 0))) / tabWidth);
+                pMarker->relativePosX -= runLeft;
             }
             else
             {
@@ -4343,6 +4396,8 @@ bool drte_engine__update_marker_relative_position(drte_engine* pEngine, drte_mar
     }
 
     const drte_text_run* pRun = pEngine->pRuns + pMarker->iRun;
+    float runLeft = drte_engine__get_run_pos_x(pEngine, pMarker->iRun);
+
     if (pEngine->text[pRun->iChar] == '\t')
     {
         const float tabWidth = drte_engine__get_tab_width(pEngine);
@@ -4354,8 +4409,8 @@ bool drte_engine__update_marker_relative_position(drte_engine* pEngine, drte_mar
         }
         else
         {
-            pMarker->relativePosX  = tabWidth * ((pRun->posX + (tabWidth*(pMarker->iChar + 0))) / tabWidth);
-            pMarker->relativePosX -= pRun->posX;
+            pMarker->relativePosX  = tabWidth * ((runLeft + (tabWidth*(pMarker->iChar + 0))) / tabWidth);
+            pMarker->relativePosX -= runLeft;
         }
 
         return true;
@@ -4377,7 +4432,7 @@ void drte_engine__update_marker_sticky_position(drte_engine* pEngine, drte_marke
         return;
     }
 
-    pMarker->absoluteSickyPosX = pEngine->pRuns[pMarker->iRun].posX + pMarker->relativePosX;
+    pMarker->absoluteSickyPosX = drte_engine__get_run_pos_x(pEngine, pMarker->iRun) + pMarker->relativePosX;
 }
 
 size_t drte_engine__get_marker_absolute_char_index(drte_engine* pEngine, drte_marker* pMarker)
@@ -4399,7 +4454,7 @@ bool drte_engine__has_spacing_between_selection_markers(drte_engine* pEngine)
     return (pEngine->cursor.iRun != pEngine->selectionAnchor.iRun || pEngine->cursor.iChar != pEngine->selectionAnchor.iChar);
 }
 
-size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_run* pRunToSplit, drte_text_run pSubRunsOut[3])
+size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_run* pRunToSplit, drte_text_run pSubRunsOut[3], float pPosXOut[3])
 {
     if (pEngine == NULL || pRunToSplit == NULL || pSubRunsOut == NULL) {
         return 0;
@@ -4427,6 +4482,7 @@ size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_
             // The run is somewhere inside the selection region.
             for (int i = 0; i < 3; ++i) {
                 pSubRunsOut[i] = *pRunToSplit;
+                pPosXOut[i] = 0;
             }
 
             if (pRunToSplit->iChar >= iSelectionChar0)
@@ -4452,9 +4508,10 @@ size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_
                     // Tail.
                     pSubRunsOut[1].iChar      = iSelectionChar1;
                     pSubRunsOut[1].width      = pRunToSplit->width - pSelectionMarker1->relativePosX;
-                    pSubRunsOut[1].posX       = pSubRunsOut[0].posX + pSubRunsOut[0].width;
                     pSubRunsOut[1].text       = pEngine->text + pSubRunsOut[1].iChar;
                     pSubRunsOut[1].textLength = pSubRunsOut[1].iCharEnd - pSubRunsOut[1].iChar;
+
+                    pPosXOut[1] = pSubRunsOut[0].width;
 
                     return 2;
                 }
@@ -4476,9 +4533,10 @@ size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_
                     pSubRunsOut[1].bgStyleSlot     = pEngine->selectionStyleSlot;
                     pSubRunsOut[1].iChar           = iSelectionChar0;
                     pSubRunsOut[1].width           = pRunToSplit->width - pSubRunsOut[0].width;
-                    pSubRunsOut[1].posX            = pSubRunsOut[0].posX + pSubRunsOut[0].width;
                     pSubRunsOut[1].text            = pEngine->text + pSubRunsOut[1].iChar;
                     pSubRunsOut[1].textLength      = pSubRunsOut[1].iCharEnd - pSubRunsOut[1].iChar;
+
+                    pPosXOut[1] = pSubRunsOut[0].width;
 
                     return 2;
                 }
@@ -4497,16 +4555,17 @@ size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_
                     pSubRunsOut[1].iCharEnd        = iSelectionChar1;
                     pSubRunsOut[1].bgStyleSlot     = pEngine->selectionStyleSlot;
                     pSubRunsOut[1].width           = pSelectionMarker1->relativePosX - pSelectionMarker0->relativePosX;
-                    pSubRunsOut[1].posX            = pSubRunsOut[0].posX + pSubRunsOut[0].width;
                     pSubRunsOut[1].text            = pEngine->text + pSubRunsOut[1].iChar;
                     pSubRunsOut[1].textLength      = pSubRunsOut[1].iCharEnd - pSubRunsOut[1].iChar;
 
                     // Tail.
                     pSubRunsOut[2].iChar      = iSelectionChar1;
                     pSubRunsOut[2].width      = pRunToSplit->width - pSelectionMarker1->relativePosX;
-                    pSubRunsOut[2].posX       = pSubRunsOut[1].posX + pSubRunsOut[1].width;
                     pSubRunsOut[2].text       = pEngine->text + pSubRunsOut[2].iChar;
                     pSubRunsOut[2].textLength = pSubRunsOut[2].iCharEnd - pSubRunsOut[2].iChar;
+
+                    pPosXOut[1] = pSubRunsOut[0].width;
+                    pPosXOut[2] = pSubRunsOut[0].width + pSubRunsOut[1].width;
 
                     return 3;
                 }
@@ -4516,6 +4575,8 @@ size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_
 
     // If we get here it means the run is not within the selected region.
     pSubRunsOut[0] = *pRunToSplit;
+    pPosXOut[0] = 0;
+
     return 1;
 }
 
