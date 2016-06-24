@@ -282,6 +282,15 @@ struct drte_engine
     // The style to apply to line numbers.
     uint8_t lineNumbersStyleSlot;
 
+    // The height of each line. This is set to the maximum line height of every registered style, or set explicitly if the
+    // DRTE_USE_EXPLICIT_LINE_HEIGHT flag is set.
+    float lineHeight;
+
+
+    // Flags.
+    //   DRTE_USE_EXPLICIT_LINE_HEIGHT
+    uint8_t flags;
+
 
     // The function to call when a string needs to be measured.
     drte_engine_on_measure_string_proc onMeasureString;
@@ -291,6 +300,13 @@ struct drte_engine
 
     // The function to call when the position of the cursor needs to be retrieved based on a character at a specific index.
     drte_engine_on_get_cursor_position_from_char onGetCursorPositionFromChar;
+
+
+    // The index of the first character of every line.
+    size_t* pLines;
+    size_t lineCount;
+    size_t lineBufferSize;
+
 
 
     /// The main text of the layout.
@@ -470,6 +486,13 @@ void drte_engine_set_cursor_style(drte_engine* pEngine, drte_style_token styleTo
 
 // Sets the style to use for the line numbers.
 void drte_engine_set_line_numbers_style(drte_engine* pEngine, drte_style_token styleToken);
+
+
+// Explicitly sets the line height. Set this to 0 to use the line height based off the registered styles.
+void drte_engine_set_line_height(drte_engine* pEngine, float lineHeight);
+
+// Retrieves the line height.
+float drte_engine_get_line_height(drte_engine* pEngine);
 
 
 /// Sets the given text engine's text.
@@ -849,6 +872,11 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 
 #define DRTE_INVALID_STYLE_SLOT    255
 
+// Flags for the drte_engine::flags property.
+#define DRTE_USE_EXPLICIT_LINE_HEIGHT   (1 << 0)
+
+
+// Helper for determining whether or not the given character is a symbol or whitespace.
 bool drte_is_symbol_or_whitespace(uint32_t utf32)
 {
     return (utf32 < '0') || (utf32 >= ':' && utf32 < 'A') || (utf32 >= '[' && utf32 < 'a') || (utf32 > '{'); 
@@ -860,6 +888,9 @@ bool drte_is_symbol_or_whitespace(uint32_t utf32)
 /// @remarks
 ///     This will delete every run and re-create them.
 void drte_engine__refresh(drte_engine* pEngine);
+
+// Performs a full repaint of the entire visible region of the text engine.
+void drte_engine__repaint(drte_engine* pEngine);
 
 /// Appends a text run to the list of runs in the given text engine.
 void drte_engine__push_text_run(drte_engine* pEngine, drte_text_run* pRun);
@@ -881,7 +912,7 @@ bool drte_engine__find_closest_line_to_point(drte_engine* pEngine, float inputPo
 bool drte_engine__find_closest_run_to_point(drte_engine* pEngine, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* pRunIndexOut);
 
 /// Retrieves some basic information about a line, namely the index of the last run on the line, and the line's height.
-bool drte_engine__find_line_info(drte_engine* pEngine, size_t iFirstRunOnLine, size_t* pLastRunIndexOnLinePlus1Out, float* pLineHeightOut);
+bool drte_engine__find_line_info(drte_engine* pEngine, size_t iFirstRunOnLine, size_t* pLastRunIndexOnLinePlus1Out);
 
 /// Retrieves some basic information about a line by it's index.
 bool drte_engine__find_line_info_by_index(drte_engine* pEngine, size_t iLine, drgui_rect* pRectOut, size_t* pFirstRunIndexOut, size_t* pLastRunIndexPlus1Out);
@@ -1053,6 +1084,14 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     }
 
     pEngine->defaultStyleSlot = DRTE_INVALID_STYLE_SLOT;
+    pEngine->selectionStyleSlot = DRTE_INVALID_STYLE_SLOT;
+    pEngine->activeLineStyleSlot = DRTE_INVALID_STYLE_SLOT;
+    pEngine->cursorStyleSlot = DRTE_INVALID_STYLE_SLOT;
+    pEngine->lineNumbersStyleSlot = DRTE_INVALID_STYLE_SLOT;
+
+    pEngine->lineBufferSize = 16;
+    pEngine->lineCount = 0;
+    pEngine->pLines = (size_t*)malloc(pEngine->lineBufferSize * sizeof(*pEngine->pLines));
 
     pEngine->tabSizeInSpaces          = 4;
     pEngine->cursorWidth              = 1;
@@ -1093,6 +1132,10 @@ bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token sty
     uint8_t styleSlot = drte_engine__get_style_slot(pEngine, styleToken);
     if (styleSlot != DRTE_INVALID_STYLE_SLOT) {
         pEngine->styles[styleSlot].fontMetrics = fontMetrics;
+        if (pEngine->lineHeight < fontMetrics.lineHeight && (pEngine->flags & DRTE_USE_EXPLICIT_LINE_HEIGHT) == 0) {
+            pEngine->lineHeight = fontMetrics.lineHeight;
+        }
+
         drte_engine__refresh(pEngine);
         return true;
     }
@@ -1102,6 +1145,10 @@ bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token sty
     // here because nothing will actually be using the style token yet.
     if (pEngine->styleCount == 255) {
         return false;   // Too many styles. The 256'th slot (index 255) is used as the error indicator.
+    }
+
+    if (pEngine->lineHeight < fontMetrics.lineHeight && (pEngine->flags & DRTE_USE_EXPLICIT_LINE_HEIGHT) == 0) {
+        pEngine->lineHeight = fontMetrics.lineHeight;
     }
 
     pEngine->styles[pEngine->styleCount].styleToken = styleToken;
@@ -1128,7 +1175,7 @@ void drte_engine_set_default_style(drte_engine* pEngine, drte_style_token styleT
     
     pEngine->defaultStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+    drte_engine__repaint(pEngine);
 }
 
 void drte_engine_set_selection_style(drte_engine* pEngine, drte_style_token styleToken)
@@ -1150,7 +1197,7 @@ void drte_engine_set_selection_style(drte_engine* pEngine, drte_style_token styl
 
     if (drte_engine_is_anything_selected(pEngine)) {
         drte_engine__refresh(pEngine);
-        drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+        drte_engine__repaint(pEngine);
     }
 }
 
@@ -1171,7 +1218,7 @@ void drte_engine_set_active_line_style(drte_engine* pEngine, drte_style_token st
     
     pEngine->activeLineStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+    drte_engine__repaint(pEngine);
 }
 
 void drte_engine_set_cursor_style(drte_engine* pEngine, drte_style_token styleToken)
@@ -1191,7 +1238,7 @@ void drte_engine_set_cursor_style(drte_engine* pEngine, drte_style_token styleTo
     
     pEngine->cursorStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+    drte_engine__repaint(pEngine);
 }
 
 void drte_engine_set_line_numbers_style(drte_engine* pEngine, drte_style_token styleToken)
@@ -1211,9 +1258,36 @@ void drte_engine_set_line_numbers_style(drte_engine* pEngine, drte_style_token s
     
     pEngine->lineNumbersStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+    drte_engine__repaint(pEngine);
 }
 
+
+void drte_engine_set_line_height(drte_engine* pEngine, float lineHeight)
+{
+    if (pEngine == NULL) {
+        return;
+    }
+
+    // Don't do anything if nothing is changing.
+    if (lineHeight == 0 && (pEngine->flags & DRTE_USE_EXPLICIT_LINE_HEIGHT) == 0) {
+        return;
+    }
+
+    pEngine->flags |= DRTE_USE_EXPLICIT_LINE_HEIGHT;
+    pEngine->lineHeight = lineHeight;
+
+    drte_engine__refresh(pEngine);
+    drte_engine__repaint(pEngine);
+}
+
+float drte_engine_get_line_height(drte_engine* pEngine)
+{
+    if (pEngine == NULL) {
+        return 0;
+    }
+
+    return pEngine->lineHeight;
+}
 
 
 void drte_engine_set_text(drte_engine* pEngine, const char* text)
@@ -1572,7 +1646,7 @@ drgui_rect drte_engine_get_cursor_rect(drte_engine* pEngine)
     if (pEngine->runCount > 0) {
         drte_engine__find_line_info_by_index(pEngine, pEngine->pRuns[pEngine->cursor.iRun].iLine, &lineRect, NULL, NULL);
     } else {
-        lineRect.bottom = (float)pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.lineHeight;
+        lineRect.bottom = drte_engine_get_line_height(pEngine);
     }
 
 
@@ -2831,7 +2905,7 @@ size_t drte_engine_get_visible_line_count_starting_at(drte_engine* pEngine, size
     // At this point there may be some empty space below the last line, in which case we use the line height of the default font to fill
     // out the remaining space.
     if (lastLineBottom + pEngine->innerOffsetY < pEngine->containerHeight) {
-        count += (unsigned int)((pEngine->containerHeight - (lastLineBottom + pEngine->innerOffsetY)) / pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.lineHeight);
+        count += (unsigned int)((pEngine->containerHeight - (lastLineBottom + pEngine->innerOffsetY)) / drte_engine_get_line_height(pEngine));
     }
 
 
@@ -3192,7 +3266,7 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
     {
         // We failed to retrieve the first line which is probably due to the text engine being empty. We just fake the first line to
         // ensure we get the number 1 to be drawn.
-        line.height = (float)pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.lineHeight;
+        line.height = drte_engine_get_line_height(pEngine);
         line.posY = 0;
     }
 
@@ -3354,16 +3428,9 @@ void drte_engine__refresh(drte_engine* pEngine)
 
     // The text bounds also need to be reset at the top.
     pEngine->textBoundsWidth  = 0;
-    pEngine->textBoundsHeight = 0;
-
-    drte_font_metrics defaultFontMetrics = pEngine->styles[pEngine->defaultStyleSlot].fontMetrics;
-
-    pEngine->textBoundsHeight = (float)defaultFontMetrics.lineHeight;
+    pEngine->textBoundsHeight = drte_engine_get_line_height(pEngine);
 
     float tabWidth = drte_engine__get_tab_width(pEngine);
-    if (tabWidth <= 0) {
-        tabWidth = (float)defaultFontMetrics.spaceWidth;
-    }
 
     size_t iCurrentLine  = 0;
     float runningPosY       = 0;
@@ -3410,20 +3477,20 @@ void drte_engine__refresh(drte_engine* pEngine)
             // Tab.
             size_t tabCount = run.iCharEnd - run.iChar;
             run.width  = (float)(((tabCount*(size_t)tabWidth) - ((size_t)run.posX % (size_t)tabWidth)));
-            run.height = (float)defaultFontMetrics.lineHeight;
+            run.height = drte_engine_get_line_height(pEngine);
         }
         else if (nextRunStart[0] == '\n')
         {
             // New line.
             iCurrentLine += 1;
             run.width  = 0;
-            run.height = (float)defaultFontMetrics.lineHeight;
+            run.height = drte_engine_get_line_height(pEngine);
         }
         else if (nextRunStart[0] == '\0')
         {
             // Null terminator.
             run.width      = 0;
-            run.height     = (float)defaultFontMetrics.lineHeight;
+            run.height     = drte_engine_get_line_height(pEngine);
             run.textLength = 0;
         }
         else
@@ -3461,6 +3528,12 @@ void drte_engine__refresh(drte_engine* pEngine)
         // Go to the next run string.
         nextRunStart = nextRunEnd;
     }
+}
+
+void drte_engine__repaint(drte_engine* pEngine)
+{
+    assert(pEngine != NULL);
+    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
 }
 
 
@@ -3514,7 +3587,15 @@ bool drte_engine__is_text_run_whitespace(drte_engine* pEngine, drte_text_run* pR
 
 float drte_engine__get_tab_width(drte_engine* pEngine)
 {
-    return (float)(pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth * pEngine->tabSizeInSpaces);
+    float tabWidth = (float)(pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth * pEngine->tabSizeInSpaces);
+    if (tabWidth <= 0) {
+        tabWidth = (float)pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
+        if (tabWidth <= 0) {
+            tabWidth = 4;
+        }
+    }
+
+    return tabWidth;
 }
 
 
@@ -3531,12 +3612,10 @@ bool drte_engine__find_closest_line_to_point(drte_engine* pEngine, float inputPo
     else
     {
         float runningLineTop = 0;
-
-        float lineHeight;
-        while (drte_engine__find_line_info(pEngine, iFirstRunOnLine, OUT &iLastRunOnLinePlus1, OUT &lineHeight))
+        while (drte_engine__find_line_info(pEngine, iFirstRunOnLine, OUT &iLastRunOnLinePlus1))
         {
             const float lineTop    = runningLineTop;
-            const float lineBottom = lineTop + lineHeight;
+            const float lineBottom = lineTop + drte_engine_get_line_height(pEngine);
 
             if (inputPosYRelativeToText < lineBottom)
             {
@@ -3618,7 +3697,7 @@ bool drte_engine__find_closest_run_to_point(drte_engine* pEngine, float inputPos
     }
 }
 
-bool drte_engine__find_line_info(drte_engine* pEngine, size_t iFirstRunOnLine, size_t* pLastRunIndexOnLinePlus1Out, float* pLineHeightOut)
+bool drte_engine__find_line_info(drte_engine* pEngine, size_t iFirstRunOnLine, size_t* pLastRunIndexOnLinePlus1Out)
 {
     if (pEngine == NULL) {
         return false;
@@ -3627,23 +3706,15 @@ bool drte_engine__find_line_info(drte_engine* pEngine, size_t iFirstRunOnLine, s
     if (iFirstRunOnLine < pEngine->runCount)
     {
         const size_t iLine = pEngine->pRuns[iFirstRunOnLine].iLine;
-        float lineHeight = 0;
 
         size_t iRun;
-        for (iRun = iFirstRunOnLine; iRun < pEngine->runCount && pEngine->pRuns[iRun].iLine == iLine; ++iRun)
-        {
-            if (lineHeight < pEngine->pRuns[iRun].height) {
-                lineHeight = pEngine->pRuns[iRun].height;
-            }
+        for (iRun = iFirstRunOnLine; iRun < pEngine->runCount && pEngine->pRuns[iRun].iLine == iLine; ++iRun) {
         }
 
         assert(iRun > iFirstRunOnLine);
 
         if (pLastRunIndexOnLinePlus1Out) {
             *pLastRunIndexOnLinePlus1Out = iRun;
-        }
-        if (pLineHeightOut) {
-            *pLineHeightOut = lineHeight;
         }
 
         return true;
@@ -3661,21 +3732,16 @@ bool drte_engine__find_line_info_by_index(drte_engine* pEngine, size_t iLine, dr
     size_t iFirstRunOnLine     = 0;
     size_t iLastRunOnLinePlus1 = 0;
 
-    float lineTop    = 0;
-    float lineHeight = 0;
-
+    float lineTop = -drte_engine_get_line_height(pEngine);
     for (size_t iCurrentLine = 0; iCurrentLine <= iLine; ++iCurrentLine)
     {
         iFirstRunOnLine = iLastRunOnLinePlus1;
-        lineTop += lineHeight;
+        lineTop += drte_engine_get_line_height(pEngine);
 
-        if (!drte_engine__find_line_info(pEngine, iFirstRunOnLine, &iLastRunOnLinePlus1, &lineHeight))
-        {
-            // There was an error retrieving information about the line.
-            return false;
+        if (!drte_engine__find_line_info(pEngine, iFirstRunOnLine, &iLastRunOnLinePlus1)) {
+            return false;   // There was an error retrieving information about the line.
         }
     }
-
 
     // At this point we have the first and last runs that make up the line and we can generate our output.
     if (iLastRunOnLinePlus1 > iFirstRunOnLine)
@@ -3692,7 +3758,7 @@ bool drte_engine__find_line_info_by_index(drte_engine* pEngine, size_t iLine, dr
             pRectOut->left   = pEngine->pRuns[iFirstRunOnLine].posX;
             pRectOut->right  = pEngine->pRuns[iLastRunOnLinePlus1 - 1].posX + pEngine->pRuns[iLastRunOnLinePlus1 - 1].width;
             pRectOut->top    = lineTop;
-            pRectOut->bottom = pRectOut->top + lineHeight;
+            pRectOut->bottom = pRectOut->top + drte_engine_get_line_height(pEngine);
         }
 
         return true;
