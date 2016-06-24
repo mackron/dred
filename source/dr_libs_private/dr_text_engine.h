@@ -56,7 +56,9 @@
 //
 //
 // QUICK NOTES
-// - The text engine is optimized for top/left alignment. Other alignments will run on a slightly slower, more generic path.
+// - The text engine is optimized for top/left alignment.
+// - Windows style line endings (\r\n) are converted to \n for the sake of simplicity. Keep this in mind when doing style highlighting which
+//   takes character indices mark the styled region.
 
 
 #ifndef dr_text_engine_h
@@ -478,6 +480,19 @@ void drte_engine_set_line_height(drte_engine* pEngine, float lineHeight);
 
 // Retrieves the line height.
 float drte_engine_get_line_height(drte_engine* pEngine);
+
+
+// Retrieves the index of the line containing the character at the given index.
+size_t drte_engine_get_character_line(drte_engine* pEngine, size_t characterIndex);
+
+// Retrieves the position of the character at the given index, relative to the text rectangle.
+//
+// To make the position relative to the container simply add the inner offset to them.
+void drte_engine_get_character_position(drte_engine* pEngine, size_t characterIndex, float* pPosXOut, float* pPosYOut);
+
+
+// Gets the character at the given index as a UTF-32 code point.
+uint32_t drte_engine_get_utf32(drte_engine* pEngine, size_t characterIndex);
 
 
 /// Sets the given text engine's text.
@@ -1062,6 +1077,127 @@ uint8_t drte_engine__get_style_slot(drte_engine* pEngine, drte_style_token style
 }
 
 
+// A drte_segment object is used for iterating over the segments of a line.
+typedef struct
+{
+    size_t iCharBeg;
+    size_t iCharEnd;
+    drte_style_token fgStyleToken;
+    drte_style_token bgStyleToken;
+    float posX;
+    bool isAtEnd;
+} drte_segment;
+
+float drte_engine__measure_segment(drte_engine* pEngine, drte_segment* pSegment)
+{
+    assert(pEngine != NULL);
+    assert(pSegment != NULL);
+
+    float segmentWidth = 0;
+    if (pSegment->iCharEnd > pSegment->iCharBeg) {
+        if (drte_engine_get_utf32(pEngine, pSegment->iCharBeg) == '\t') {
+            // It was a tab segment.
+            float tabWidth = drte_engine__get_tab_width(pEngine);
+            size_t tabCount = pSegment->iCharEnd - pSegment->iCharBeg;
+            float nextTabPos = (float)((int)(pSegment->posX / tabWidth) + 1) * tabWidth;
+            float distanceToNextTab = nextTabPos - pSegment->posX;
+            segmentWidth = distanceToNextTab + ((tabCount-1) * tabWidth);
+        } else {
+            // It's normal text. We need to refer to the backend for measuring.
+            float unused;
+            if (pEngine->onMeasureString) {
+                pEngine->onMeasureString(pEngine, pSegment->fgStyleToken, pEngine->text + pSegment->iCharBeg, pSegment->iCharEnd - pSegment->iCharBeg, &segmentWidth, &unused);
+            }
+        }
+    }
+
+    return segmentWidth;
+}
+
+bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
+{
+    assert(pEngine != NULL);
+    assert(pSegment != NULL);
+
+    // TODO: Handle styling segments here.
+    // TODO: Handle UTF-8 properly.
+
+    if (pSegment->isAtEnd) {
+        return false;
+    }
+
+    drte_style_token fgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
+    drte_style_token bgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
+
+    // Find the end of the next segment, but don't modify the segment yet. The reason for this is that we need to measure the segment later.
+    size_t iCharBeg = pSegment->iCharEnd;
+    size_t iCharEnd = iCharBeg;
+    for (;;) {
+        char c = pEngine->text[iCharEnd];
+        if (c == '\0' || c == '\n') {
+            pSegment->isAtEnd = true;
+            iCharEnd += 1;
+            break;
+        }
+
+        if (c == '\t') {
+            if (pEngine->text[iCharBeg] != '\t') {
+                break;
+            } else {
+                // Group tabs into a single segment.
+                for (;;) {
+                    c = pEngine->text[iCharEnd];
+                    if (c == '\0' || c == '\n') {
+                        pSegment->isAtEnd = true;
+                        iCharEnd += 1;
+                        break;
+                    }
+
+                    if (c != '\t') {
+                        break;
+                    }
+
+                    iCharEnd += 1;
+                }
+
+                break;
+            }
+        }
+
+        iCharEnd += 1;
+    }
+
+
+    // The width of the previous segment needs to be calculated so that the x position of the next segment can be calculated correctly.
+    float prevWidth = drte_engine__measure_segment(pEngine, pSegment);
+
+
+    // We now have everything we need to construct the next segment iterator.
+    pSegment->iCharBeg = iCharBeg;
+    pSegment->iCharEnd = iCharEnd;
+    pSegment->fgStyleToken = fgStyleToken;
+    pSegment->bgStyleToken = bgStyleToken;
+    pSegment->posX += prevWidth;
+
+    return true;
+}
+
+bool drte_engine__first_segment(drte_engine* pEngine, size_t lineIndex, drte_segment* pSegment)
+{
+    if (pEngine == NULL || pEngine->textLength == 0 || pSegment == NULL) {
+        return false;
+    }
+
+    pSegment->iCharBeg = drte_engine_get_line_first_character(pEngine, lineIndex);
+    pSegment->iCharEnd = pSegment->iCharBeg;
+    pSegment->fgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
+    pSegment->bgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
+    pSegment->posX = 0;
+    pSegment->isAtEnd = false;
+    return drte_engine__next_segment(pEngine, pSegment);
+}
+
+
 drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
 {
     if (pContext == NULL) {
@@ -1277,6 +1413,88 @@ float drte_engine_get_line_height(drte_engine* pEngine)
     }
 
     return pEngine->lineHeight;
+}
+
+
+size_t drte_engine_get_character_line(drte_engine* pEngine, size_t characterIndex)
+{
+    if (pEngine == NULL || characterIndex > pEngine->textLength) {
+        return 0;
+    }
+
+    // TODO: Use an accelerated structure for this. Consider some kind of binary search.
+
+    size_t lineIndex = 0;
+    for (size_t i = 0; i < characterIndex; ++i) {
+        if (pEngine->text[i] == '\n') {
+            lineIndex += 1;
+        }
+    }
+
+    return lineIndex;
+}
+
+void drte_engine_get_character_position(drte_engine* pEngine, size_t characterIndex, float* pPosXOut, float* pPosYOut)
+{
+    if (pPosXOut) *pPosXOut = 0;
+    if (pPosYOut) *pPosYOut = 0;
+
+    if (pEngine == NULL) {
+        return;
+    }
+
+    size_t lineIndex = drte_engine_get_character_line(pEngine, characterIndex);
+
+    float posX = 0;
+    float posY = lineIndex * drte_engine_get_line_height(pEngine);
+
+    drte_segment segment;
+    if (drte_engine__first_segment(pEngine, lineIndex, &segment)) {
+        do
+        {
+            if (characterIndex >= segment.iCharBeg && characterIndex < segment.iCharEnd) {
+                // It's somewhere in this segment.
+                if (drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\t') {
+                    // If the first character in the segment is a tab character, then every character in this segment
+                    // will be a tab. The location of the character is rounded to the nearest tab column.
+                    posX = segment.posX;
+
+                    size_t tabCount = characterIndex - segment.iCharBeg;
+                    if (tabCount > 0) {
+                        float tabWidth = drte_engine__get_tab_width(pEngine);
+                        float nextTabPos = (float)((int)(segment.posX / tabWidth) + 1) * tabWidth;
+                        posX = nextTabPos + ((tabCount-1) * tabWidth);
+                    }
+                } else {
+                    // We must refer to the backend in order to find the exact position of the character.
+                    // TODO: Grab a copy of the string rather than a direct offset.
+                    if (pEngine->onGetCursorPositionFromChar) {
+                        pEngine->onGetCursorPositionFromChar(pEngine, segment.fgStyleToken, pEngine->text + segment.iCharBeg, characterIndex - segment.iCharBeg, &posX);
+                        posX += segment.posX;
+                    }
+                }
+
+                break;
+            }
+        } while (drte_engine__next_segment(pEngine, &segment));
+    }
+
+    if (posX == 0) {
+        int a; a = 1;
+    }
+
+    if (pPosXOut) *pPosXOut = posX;
+    if (pPosYOut) *pPosYOut = posY;
+}
+
+uint32_t drte_engine_get_utf32(drte_engine* pEngine, size_t characterIndex)
+{
+    if (pEngine == NULL) {
+        return 0;
+    }
+
+    // TODO: Handle UTF-8 properly.
+    return pEngine->text[characterIndex];
 }
 
 
@@ -2955,6 +3173,13 @@ size_t drte_engine_get_line_first_character(drte_engine* pEngine, size_t iLine)
         return 0;
     }
 
+    // TODO: Accelerate this:
+    //return pEngine->pLines[iLine];
+
+
+
+    // TODO: REPLACE THIS
+
     size_t firstRunIndex0;
     size_t lastRunIndexPlus1;
     if (drte_engine__find_line_info_by_index(pEngine, iLine, NULL, &firstRunIndex0, &lastRunIndexPlus1)) {
@@ -3925,13 +4150,18 @@ float drte_engine__get_run_pos_x(drte_engine* pEngine, size_t iRun)
 
 void drte_engine__get_marker_position_relative_to_container(drte_engine* pEngine, drte_marker* pMarker, float* pPosXOut, float* pPosYOut)
 {
-    if (pEngine == NULL || pMarker == NULL) {
+    if (pEngine == NULL || pEngine->pRuns == NULL || pMarker == NULL) {
         return;
     }
 
     float posX = 0;
     float posY = 0;
+    drte_engine_get_character_position(pEngine, pEngine->pRuns[pMarker->iRun].iChar + pMarker->iChar, &posX, &posY);
 
+    if (pPosXOut) *pPosXOut = posX + pEngine->innerOffsetX;
+    if (pPosYOut) *pPosYOut = posY + pEngine->innerOffsetY;
+
+#if 0
     if (pMarker->iRun < pEngine->runCount)
     {
         posX = drte_engine__get_run_pos_x(pEngine, pMarker->iRun) + pMarker->relativePosX;
@@ -3949,6 +4179,7 @@ void drte_engine__get_marker_position_relative_to_container(drte_engine* pEngine
     if (pPosYOut) {
         *pPosYOut = posY;
     }
+#endif
 }
 
 bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarker, float inputPosXRelativeToText, float inputPosYRelativeToText)
