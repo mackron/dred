@@ -3169,21 +3169,23 @@ size_t drte_engine_get_line_at_pos_y(drte_engine* pEngine, float posY)
 
 size_t drte_engine_get_line_first_character(drte_engine* pEngine, size_t iLine)
 {
-    if (pEngine == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL || pEngine->runCount == 0 || iLine == 0) {
         return 0;
     }
 
     // TODO: Accelerate this:
     //return pEngine->pLines[iLine];
 
+    size_t i = 0;
+    while (i < pEngine->textLength && iLine > 0) {
+        if (pEngine->text[i] == '\n') {
+            iLine -= 1;
+            if (iLine == 0) {
+                return i + 1;
+            }
+        }
 
-
-    // TODO: REPLACE THIS
-
-    size_t firstRunIndex0;
-    size_t lastRunIndexPlus1;
-    if (drte_engine__find_line_info_by_index(pEngine, iLine, NULL, &firstRunIndex0, &lastRunIndexPlus1)) {
-        return pEngine->pRuns[firstRunIndex0].iChar;
+        i += 1;
     }
 
     return 0;
@@ -3195,6 +3197,18 @@ size_t drte_engine_get_line_last_character(drte_engine* pEngine, size_t iLine)
         return 0;
     }
 
+    size_t i = drte_engine_get_line_first_character(pEngine, iLine);
+    while (i < pEngine->textLength) {
+        if (pEngine->text[i] == '\n') {
+            return i;
+        }
+
+        i += 1;
+    }
+
+    return i;
+
+#if 0
     size_t firstRunIndex0;
     size_t lastRunIndexPlus1;
     if (drte_engine__find_line_info_by_index(pEngine, iLine, NULL, &firstRunIndex0, &lastRunIndexPlus1)) {
@@ -3207,6 +3221,7 @@ size_t drte_engine_get_line_last_character(drte_engine* pEngine, size_t iLine)
     }
 
     return 0;
+#endif
 }
 
 void drte_engine_get_line_character_range(drte_engine* pEngine, size_t iLine, size_t* pCharStartOut, size_t* pCharEndOut)
@@ -3215,9 +3230,21 @@ void drte_engine_get_line_character_range(drte_engine* pEngine, size_t iLine, si
         return;
     }
 
-    size_t charStart = 0;
-    size_t charEnd = 0;
+    size_t charStart = drte_engine_get_line_first_character(pEngine, iLine);
 
+    size_t charEnd = charStart;
+    while (charEnd < pEngine->textLength) {
+        if (pEngine->text[charEnd] == '\n') {
+            break;
+        }
+
+        charEnd += 1;
+    }
+
+    if (pCharStartOut) *pCharStartOut = charStart;
+    if (pCharEndOut) *pCharEndOut = charEnd;
+
+#if 0
     size_t firstRunIndex0;
     size_t lastRunIndexPlus1;
     if (drte_engine__find_line_info_by_index(pEngine, iLine, NULL, &firstRunIndex0, &lastRunIndexPlus1)) {
@@ -3234,6 +3261,7 @@ void drte_engine_get_line_character_range(drte_engine* pEngine, size_t iLine, si
     if (pCharEndOut) {
         *pCharEndOut = charEnd;
     }
+#endif
 }
 
 
