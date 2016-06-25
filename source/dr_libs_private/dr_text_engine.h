@@ -3339,88 +3339,41 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
         return;
     }
 
-#if 0
+    float lineHeight = drte_engine_get_line_height(pEngine);
+
     size_t iLineTop;
     size_t iLineBottom;
     drte_engine_get_visible_lines(pEngine, &iLineTop, &iLineBottom);
 
-    for (size_t iLine = iLineTop; iLine < iLineBottom; ++iLine) {
+    float lineTop = pEngine->innerOffsetY + (iLineTop * lineHeight);
+    for (size_t iLine = iLineTop; iLine <= iLineBottom; ++iLine) {
+        char iLineStr[64];
+        snprintf(iLineStr, sizeof(iLineStr), "%d", iLine+1);
 
-    }
-#endif
-
-
-    // TODO: This can be simplified and optimized.
-
-
-    // The position of each run will be relative to the text bounds. We want to make it relative to the container bounds.
-    drgui_rect textRect = drte_engine_get_text_rect_relative_to_bounds(pEngine);
-
-    // We draw a rectangle above and below the text rectangle. The main text rectangle will be drawn by iterating over each visible run.
-    drgui_rect rectTop    = drgui_make_rect(0, 0, lineNumbersWidth, textRect.top);
-    drgui_rect rectBottom = drgui_make_rect(0, textRect.bottom, lineNumbersWidth, lineNumbersHeight);
-
-    if (pEngine->onPaintRect)
-    {
-        if (rectTop.bottom > 0) {
-            onPaintRect(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, rectTop, pElement, pPaintData);
+        float textWidth = 0;
+        float textHeight = 0;
+        if (pEngine->onMeasureString) {
+            pEngine->onMeasureString(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
         }
 
-        if (rectBottom.top < lineNumbersHeight) {
-            onPaintRect(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, rectBottom, pElement, pPaintData);
-        }
+        float textLeft = lineNumbersWidth - textWidth;
+        float lineBottom = lineTop + lineHeight;
+
+        drte_text_run run = {0};
+        run.fgStyleSlot = pEngine->lineNumbersStyleSlot;
+        run.bgStyleSlot = pEngine->lineNumbersStyleSlot;
+        run.text        = iLineStr;
+        run.textLength  = strlen(iLineStr);
+        onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, textLeft, lineTop, pElement, pPaintData);
+        onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(0, lineTop, textLeft, lineBottom), pElement, pPaintData);
+
+        lineTop = lineBottom;
     }
 
-
-    // Now we draw each line.
-    int iLine = 1;
-
-    drte_engine_line line;
-    drte_engine__first_line(pEngine, &line);
-
-    float lineTop = textRect.top;
-    float lineBottom = lineTop + drte_engine_get_line_height(pEngine);
-    do
-    {
-        if (lineTop < lineNumbersHeight)
-        {
-            if (lineBottom > 0)
-            {
-                char iLineStr[64];
-                #ifdef _MSC_VER
-                _itoa_s(iLine, iLineStr, sizeof(iLineStr), 10);
-                #else
-                snprintf(iLineStr, sizeof(iLineStr), "%d", iLine);
-                #endif
-
-                float textWidth = 0;
-                float textHeight = 0;
-                if (pEngine->onMeasureString) {
-                    pEngine->onMeasureString(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
-                }
-
-                float runLeft = lineNumbersWidth - textWidth;
-
-                drte_text_run run = {0};
-                run.fgStyleSlot = pEngine->lineNumbersStyleSlot;
-                run.bgStyleSlot = pEngine->lineNumbersStyleSlot;
-                run.text        = iLineStr;
-                run.textLength  = strlen(iLineStr);
-                onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, runLeft, lineTop, pElement, pPaintData);
-                onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(0, lineTop, runLeft, lineBottom), pElement, pPaintData);
-            }
-        }
-        else
-        {
-            // The line is below the rectangle which means no other line will be visible and we can terminate early.
-            break;
-        }
-
-        lineTop    += drte_engine_get_line_height(pEngine);
-        lineBottom += drte_engine_get_line_height(pEngine);
-
-        iLine += 1;
-    } while (drte_engine__next_line(pEngine, &line));
+    // The region below the lines.
+    if (lineTop < pEngine->containerHeight) {
+        onPaintRect(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, drgui_make_rect(0, lineTop, lineNumbersWidth, lineNumbersHeight), pElement, pPaintData);
+    }
 }
 
 
@@ -3472,7 +3425,6 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 
     return true;
 }
-
 
 
 
