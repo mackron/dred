@@ -1153,33 +1153,44 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     size_t iCharBeg = pSegment->iCharEnd;
     size_t iCharEnd = iCharBeg;
 
+    if (pSegment->iLine == drte_engine_get_cursor_line(pEngine)) {
+        bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
+    }
+
+    // TODO: Fix this for multi-select and multi-cursor.
+    bool isAnythingSelected = false;
+    bool isInSelection = false;
+    size_t iSelectionCharBeg = 0;
+    size_t iSelectionCharEnd = 0;
+
+    drte_marker* pSelectionMarker0;
+    drte_marker* pSelectionMarker1;
+    if (drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1)) {
+        iSelectionCharBeg = drte_engine__get_marker_absolute_char_index(pEngine, pSelectionMarker0);
+        iSelectionCharEnd = drte_engine__get_marker_absolute_char_index(pEngine, pSelectionMarker1);
+        isInSelection = iCharBeg >= iSelectionCharBeg && iCharBeg < iSelectionCharEnd;
+        isAnythingSelected = iSelectionCharBeg < iSelectionCharEnd;
+    }
+
+    if (isInSelection) {
+        bgStyleToken = pEngine->styles[pEngine->selectionStyleSlot].styleToken;
+    }
+
+    bool clampToChar = false;
+    size_t iMaxChar = (size_t)-1;
+    if (isInSelection) {
+        clampToChar = true;
+        iMaxChar = iSelectionCharEnd;
+    } else if (isAnythingSelected) {
+        clampToChar = true;
+        iMaxChar = iSelectionCharBeg;
+    }
+
+
     char c = pEngine->text[iCharBeg];
     if (c == '\0' || c == '\n') {
         pSegment->isAtEnd = true;
     } else {
-        if (pSegment->iLine == drte_engine_get_cursor_line(pEngine)) {
-            bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
-        }
-
-        // TODO: Fix this for multi-select and multi-cursor.
-        bool isAnythingSelected = false;
-        bool isInSelection = false;
-        size_t iSelectionCharBeg = 0;
-        size_t iSelectionCharEnd = 0;
-
-        drte_marker* pSelectionMarker0;
-        drte_marker* pSelectionMarker1;
-        if (drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1)) {
-            iSelectionCharBeg = drte_engine__get_marker_absolute_char_index(pEngine, pSelectionMarker0);
-            iSelectionCharEnd = drte_engine__get_marker_absolute_char_index(pEngine, pSelectionMarker1);
-            isInSelection = iCharBeg >= iSelectionCharBeg && iCharBeg < iSelectionCharEnd;
-            isAnythingSelected = true;
-        }
-
-        if (isInSelection) {
-            bgStyleToken = pEngine->styles[pEngine->selectionStyleSlot].styleToken;
-        }
-
         for (;;) {
             c = pEngine->text[iCharEnd];
             if (c == '\0' || c == '\n') {
@@ -1197,6 +1208,10 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
                             break;
                         }
 
+                        if (clampToChar && iCharEnd == iMaxChar) {
+                            break;
+                        }
+
                         iCharEnd += 1;
                     }
 
@@ -1206,15 +1221,21 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
 
 
             // Selection.
+            if (clampToChar && iCharEnd == iMaxChar) {
+                break;
+            }
+#if 0
             if (isInSelection && iCharEnd == iSelectionCharEnd) {
                 break;  // Hit the end of the selection rectangle.
             }
             if (isAnythingSelected && !isInSelection && iCharEnd == iSelectionCharBeg) {
                 break;  // Hit the start of the selection rectangle.
             }
+#endif
 
 
             // Styling region.
+
             
 
 
@@ -3418,6 +3439,11 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                 uint32_t c = drte_engine_get_utf32(pEngine, segment.iCharBeg);
                 if (c == '\t' || c == '\n') {
                     // It's whitespace.
+                    if (c == '\n') {
+                        // TODO: Only do this if the character is selected.
+                        segment.width = pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
+                        lineWidth += segment.width;
+                    }
                     if (pEngine->onPaintRect) {
                         pEngine->onPaintRect(pEngine, segment.bgStyleToken, drgui_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pElement, pPaintData);
                     }
