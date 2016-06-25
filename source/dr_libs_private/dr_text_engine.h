@@ -397,16 +397,6 @@ struct drte_engine
     drgui_rect accumulatedDirtyRect;
 
 
-    /// A pointer to the buffer containing details about every run in the layout.
-    drte_text_run* pRuns;
-
-    /// The number of runs in <pRuns>.
-    size_t runCount;
-
-    /// The size of the <pRuns> buffer in drte_text_run's. This is used to determine whether or not the buffer
-    /// needs to be reallocated upon adding a new run.
-    size_t runBufferSize;
-
 
     // Application-defined data.
     void* pUserData;
@@ -873,13 +863,6 @@ void drte_engine__repaint(drte_engine* pEngine);
 ///     This will delete every run and re-create them.
 void drte_engine__refresh(drte_engine* pEngine);
 
-/// Appends a text run to the list of runs in the given text engine.
-void drte_engine__push_text_run(drte_engine* pEngine, drte_text_run* pRun);
-
-/// Clears the internal list of text runs.
-void drte_engine__clear_text_runs(drte_engine* pEngine);
-
-
 
 /// Helper for calculating the width of a tab.
 float drte_engine__get_tab_width(drte_engine* pEngine);
@@ -1230,7 +1213,6 @@ void drte_engine_delete(drte_engine* pEngine)
 
     drte_engine_clear_undo_stack(pEngine);
 
-    free(pEngine->pRuns);
     free(pEngine->preparedState.text);
     free(pEngine->text);
     free(pEngine);
@@ -1503,6 +1485,8 @@ void drte_engine_get_visible_lines(drte_engine* pEngine, size_t* pFirstLineOut, 
         size_t iLastLine = iFirstLine + ((size_t)(pEngine->containerHeight / drte_engine_get_line_height(pEngine)));
         if (iLastLine >= lineCount && lineCount > 0) {
             iLastLine = lineCount - 1;
+        } else {
+            iLastLine = 0;
         }
 
         *pLastLineOut = iLastLine;
@@ -1871,7 +1855,7 @@ drgui_rect drte_engine_get_cursor_rect(drte_engine* pEngine)
 
 size_t drte_engine_get_cursor_line(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL) {
         return 0;
     }
 
@@ -2588,7 +2572,7 @@ bool drte_engine_delete_character_to_left_of_cursor(drte_engine* pEngine)
 
 bool drte_engine_delete_character_to_right_of_cursor(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL) {
         return false;
     }
 
@@ -2814,7 +2798,7 @@ size_t drte_engine_get_selected_text(drte_engine* pEngine, char* textOut, size_t
 
 size_t drte_engine_get_selection_first_line(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL) {
         return 0;
     }
 
@@ -2829,7 +2813,7 @@ size_t drte_engine_get_selection_first_line(drte_engine* pEngine)
 
 size_t drte_engine_get_selection_last_line(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL) {
         return 0;
     }
 
@@ -2864,7 +2848,7 @@ void drte_engine_move_selection_anchor_to_start_of_line(drte_engine* pEngine, si
 
 size_t drte_engine_get_selection_anchor_line(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL) {
         return 0;
     }
 
@@ -3027,7 +3011,7 @@ void drte_engine_clear_undo_stack(drte_engine* pEngine)
 
 size_t drte_engine_get_line_count(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->runCount == 0 || pEngine->text == NULL || pEngine->textLength == 0) {
+    if (pEngine == NULL || pEngine->text == NULL || pEngine->textLength == 0) {
         return 0;
     }
 
@@ -3059,7 +3043,7 @@ float drte_engine_get_line_pos_y(drte_engine* pEngine, size_t iLine)
 
 size_t drte_engine_get_line_at_pos_y(drte_engine* pEngine, float posY)
 {
-    if (pEngine == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL) {
         return 0;
     }
 
@@ -3081,7 +3065,7 @@ size_t drte_engine_get_line_at_pos_y(drte_engine* pEngine, float posY)
 
 size_t drte_engine_get_line_first_character(drte_engine* pEngine, size_t iLine)
 {
-    if (pEngine == NULL || pEngine->runCount == 0 || iLine == 0) {
+    if (pEngine == NULL || iLine == 0) {
         return 0;
     }
 
@@ -3105,7 +3089,7 @@ size_t drte_engine_get_line_first_character(drte_engine* pEngine, size_t iLine)
 
 size_t drte_engine_get_line_last_character(drte_engine* pEngine, size_t iLine)
 {
-    if (pEngine == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL) {
         return 0;
     }
 
@@ -3123,7 +3107,7 @@ size_t drte_engine_get_line_last_character(drte_engine* pEngine, size_t iLine)
 
 void drte_engine_get_line_character_range(drte_engine* pEngine, size_t iLine, size_t* pCharStartOut, size_t* pCharEndOut)
 {
-    if (pEngine == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL) {
         return;
     }
 
@@ -3391,48 +3375,6 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 
 
 
-bool drte_next_run_string(const char* runStart, const char* textEndPastNullTerminator, const char** pRunEndOut)
-{
-    assert(runStart <= textEndPastNullTerminator);
-
-    if (runStart == NULL || runStart == textEndPastNullTerminator)
-    {
-        // String is empty.
-        return false;
-    }
-
-
-    char firstChar = runStart[0];
-    if (firstChar == '\t')
-    {
-        // We loop until we hit anything that is not a tab character (tabs will be grouped together into a single run).
-        do
-        {
-            runStart += 1;
-            *pRunEndOut = runStart;
-        } while (runStart[0] != '\0' && runStart[0] == '\t');
-    }
-    else if (firstChar == '\n')
-    {
-        runStart += 1;
-        *pRunEndOut = runStart;
-    }
-    else if (firstChar == '\0')
-    {
-        assert(runStart + 1 == textEndPastNullTerminator);
-        *pRunEndOut = textEndPastNullTerminator;
-    }
-    else
-    {
-        do
-        {
-            runStart += 1;
-            *pRunEndOut = runStart;
-        } while (runStart[0] != '\0' && runStart[0] != '\t' && runStart[0] != '\n');
-    }
-
-    return true;
-}
 
 void drte_engine__refresh(drte_engine* pEngine)
 {
@@ -3464,93 +3406,6 @@ void drte_engine__refresh(drte_engine* pEngine)
 
     pEngine->textBoundsWidth  = maxLineWidth;
     pEngine->textBoundsHeight = lineCount * drte_engine_get_line_height(pEngine);
-
-
-#if 1
-    // We split the runs based on tabs and new-lines. We want to create runs for tabs and new-line characters as well because we want
-    // to have the entire string covered by runs for the sake of simplicity when it comes to editing.
-    //
-    // The first pass positions the runs based on a top-to-bottom, left-to-right alignment. The second pass then repositions the runs
-    // based on alignment.
-
-    // Runs need to be cleared first.
-    drte_engine__clear_text_runs(pEngine);
-
-    
-
-    float tabWidth = drte_engine__get_tab_width(pEngine);
-
-    size_t iCurrentLine  = 0;
-    float runningPosY = 0;
-
-    const char* nextRunStart = pEngine->text;
-    const char* nextRunEnd;
-
-    float nextRunLeft = 0;
-
-    while (drte_next_run_string(nextRunStart, pEngine->text + pEngine->textLength + 1, OUT &nextRunEnd))
-    {
-        drte_text_run run;
-        run.iLine      = iCurrentLine;
-        run.iChar      = nextRunStart - pEngine->text;
-        run.iCharEnd   = nextRunEnd   - pEngine->text;
-        run.textLength = nextRunEnd - nextRunStart;
-        run.width      = 0;
-        run.fgStyleSlot = pEngine->defaultStyleSlot;
-        run.bgStyleSlot = pEngine->defaultStyleSlot;
-
-
-        // Width and height.
-        assert(nextRunEnd > nextRunStart);
-        if (nextRunStart[0] == '\t')
-        {
-            // Tab.
-            size_t tabCount = run.iCharEnd - run.iChar;
-            run.width  = (float)(((tabCount*(size_t)tabWidth) - ((size_t)nextRunLeft % (size_t)tabWidth)));
-        }
-        else if (nextRunStart[0] == '\n')
-        {
-            // New line.
-            iCurrentLine += 1;
-            run.width  = 0;
-            nextRunLeft = 0;
-        }
-        else if (nextRunStart[0] == '\0')
-        {
-            // Null terminator.
-            run.width      = 0;
-            run.textLength = 0;
-        }
-        else
-        {
-            // Normal run.
-            float unused;
-            if (pEngine->onMeasureString) {
-                pEngine->onMeasureString(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, nextRunStart, run.textLength, &run.width, &unused);
-            }
-        }
-
-        
-        // Update the text bounds.
-        //if (pEngine->textBoundsWidth < nextRunLeft + run.width) {
-        //    pEngine->textBoundsWidth = nextRunLeft + run.width;
-        //}
-        //pEngine->textBoundsHeight = runningPosY + drte_engine_get_line_height(pEngine);
-
-
-        // A new line means we need to increment the running y position by the running line height.
-        if (nextRunStart[0] == '\n') {
-            runningPosY += drte_engine_get_line_height(pEngine);
-        }
-
-        // Add the run to the internal list.
-        drte_engine__push_text_run(pEngine, &run);
-
-        // Go to the next run string.
-        nextRunStart = nextRunEnd;
-        nextRunLeft += run.width;
-    }
-#endif
 }
 
 void drte_engine__repaint(drte_engine* pEngine)
@@ -3559,40 +3414,6 @@ void drte_engine__repaint(drte_engine* pEngine)
     drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
 }
 
-
-void drte_engine__push_text_run(drte_engine* pEngine, drte_text_run* pRun)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    if (pEngine->runBufferSize == pEngine->runCount)
-    {
-        pEngine->runBufferSize = pEngine->runBufferSize*2;
-        if (pEngine->runBufferSize == 0) {
-            pEngine->runBufferSize = 1;
-        }
-
-        pEngine->pRuns = (drte_text_run*)realloc(pEngine->pRuns, sizeof(drte_text_run) * pEngine->runBufferSize);
-        if (pEngine->pRuns == NULL) {
-            pEngine->runCount = 0;
-            pEngine->runBufferSize = 0;
-            return;
-        }
-    }
-
-    pEngine->pRuns[pEngine->runCount] = *pRun;
-    pEngine->runCount += 1;
-}
-
-void drte_engine__clear_text_runs(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    pEngine->runCount = 0;
-}
 
 float drte_engine__get_tab_width(drte_engine* pEngine)
 {
@@ -3645,7 +3466,7 @@ void drte_engine__get_marker_position_relative_to_container(drte_engine* pEngine
     if (pPosXOut) *pPosXOut = 0;
     if (pPosYOut) *pPosYOut = 0;
 
-    if (pEngine == NULL || pEngine->pRuns == NULL || pMarker == NULL) {
+    if (pEngine == NULL || pMarker == NULL) {
         return;
     }
 
@@ -3759,7 +3580,7 @@ bool drte_engine__move_marker_right(drte_engine* pEngine, drte_marker* pMarker)
 
 bool drte_engine__move_marker_up(drte_engine* pEngine, drte_marker* pMarker)
 {
-    if (pEngine == NULL || pMarker == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL || pMarker == NULL) {
         return false;
     }
 
@@ -3768,7 +3589,7 @@ bool drte_engine__move_marker_up(drte_engine* pEngine, drte_marker* pMarker)
 
 bool drte_engine__move_marker_down(drte_engine* pEngine, drte_marker* pMarker)
 {
-    if (pEngine == NULL || pMarker == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL || pMarker == NULL) {
         return false;
     }
 
@@ -3777,7 +3598,7 @@ bool drte_engine__move_marker_down(drte_engine* pEngine, drte_marker* pMarker)
 
 bool drte_engine__move_marker_y(drte_engine* pEngine, drte_marker* pMarker, int amount)
 {
-    if (pEngine == NULL || pMarker == NULL || pEngine->runCount == 0 || amount == 0) {
+    if (pEngine == NULL || pMarker == NULL || amount == 0) {
         return false;
     }
 
@@ -3858,7 +3679,7 @@ bool drte_engine__move_marker_to_start_of_text(drte_engine* pEngine, drte_marker
 
 bool drte_engine__move_marker_to_character(drte_engine* pEngine, drte_marker* pMarker, size_t iChar)
 {
-    if (pEngine == NULL || pMarker == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL || pMarker == NULL) {
         return false;
     }
 
@@ -3887,7 +3708,7 @@ void drte_engine__update_marker_sticky_position(drte_engine* pEngine, drte_marke
 
 size_t drte_engine__get_marker_absolute_char_index(drte_engine* pEngine, drte_marker* pMarker)
 {
-    if (pEngine == NULL || pMarker == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL || pMarker == NULL) {
         return 0;
     }
 
