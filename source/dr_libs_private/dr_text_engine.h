@@ -412,21 +412,6 @@ struct drte_engine
     void* pUserData;
 };
 
-/// Structure containing information about a line. This is used by first_line() and next_line().
-typedef struct
-{
-    /// The index of the line.
-    size_t index;
-
-    /// The index of the first run on the line.
-    size_t iFirstRun;
-
-    /// The index of the last run on the line.
-    size_t iLastRun;
-
-} drte_engine_line;
-
-
 
 /// Creates a new text engine object.
 drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData);
@@ -984,12 +969,6 @@ bool drte_engine__has_spacing_between_selection_markers(drte_engine* pEngine);
 /// Retrieves pointers to the selection markers in the correct order.
 bool drte_engine__get_selection_markers(drte_engine* pEngine, drte_marker** ppSelectionMarker0Out, drte_marker** ppSelectionMarker1Out);
 
-
-/// Retrieves an iterator to the first line in the text engine.
-bool drte_engine__first_line(drte_engine* pEngine, drte_engine_line* pLine);
-
-/// Retrieves an iterator to the next line in the text engine.
-bool drte_engine__next_line(drte_engine* pEngine, drte_engine_line* pLine);
 
 
 /// Removes the undo/redo state stack items after the current undo/redo point.
@@ -4121,64 +4100,6 @@ bool drte_engine__get_selection_markers(drte_engine* pEngine, drte_marker** ppSe
     return result;
 }
 
-
-bool drte_engine__first_line(drte_engine* pEngine, drte_engine_line* pLine)
-{
-    if (pEngine == NULL || pLine == NULL || pEngine->runCount == 0) {
-        return false;
-    }
-
-    pLine->index     = 0;
-    pLine->iFirstRun = 0;
-    pLine->iLastRun  = 0;
-
-    // We need to find the last run in the line.
-    while (pLine->iLastRun < pEngine->runCount)
-    {
-        pLine->iLastRun += 1;
-
-        if (pEngine->pRuns[pLine->iLastRun].iLine != pLine->index) {
-            break;
-        }
-    }
-
-    if (pLine->iLastRun > 0) {
-        pLine->iLastRun -= 1;
-    }
-
-    return true;
-}
-
-bool drte_engine__next_line(drte_engine* pEngine, drte_engine_line* pLine)
-{
-    if (pEngine == NULL || pLine == NULL || pEngine->runCount == 0) {
-        return false;
-    }
-
-    // If there's no more runs, there is no next line.
-    if (pLine->iLastRun == pEngine->runCount - 1) {
-        return false;
-    }
-
-    pLine->index     += 1;
-    pLine->iFirstRun = pLine->iLastRun + 1;
-    pLine->iLastRun  = pLine->iFirstRun;
-
-    while (pLine->iLastRun < pEngine->runCount)
-    {
-        pLine->iLastRun += 1;
-
-        if (pEngine->pRuns[pLine->iLastRun].iLine != pLine->index) {
-            break;
-        }
-    }
-
-    if (pLine->iLastRun > 0) {
-        pLine->iLastRun -= 1;
-    }
-
-    return true;
-}
 
 void drte_engine__trim_undo_stack(drte_engine* pEngine)
 {
