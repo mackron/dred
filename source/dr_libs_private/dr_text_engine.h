@@ -183,20 +183,11 @@ typedef void (* drte_engine_on_undo_point_changed_proc)(drte_engine* pEngine, un
 
 typedef struct
 {
-    /// The index of the run within the line the marker is positioned on.
-    //size_t iRun;
-
-    /// The index of the character within the run the marker is positioned to the left of.
-    //size_t iChar;
-
     // The index of the character the marker is positioned at. This will be to the left of the character.
     size_t iCharAbs;
 
-    /// The position on the x axis, relative to the x position of the run.
-    //float relativePosX;
-
-    /// The absolute position on the x axis to place the marker when moving up and down lines. Note that this is not relative
-    /// to the run, but rather the line. This will be updated when the marker is moved left and right.
+    // The absolute position on the x axis to place the marker when moving up and down lines. This is relative to
+    // the left position of the line. This will be updated when the marker is moved left and right.
     float absoluteSickyPosX;
 
 } drte_marker;
@@ -671,9 +662,6 @@ void drte_engine_swap_selection_markers(drte_engine* pEngine);
 /// Sets the function to call when the cursor in the given text engine is mvoed.
 void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_move_proc proc);
 
-/// Refreshes the cursor and selection marker positions.
-//void drte_engine_refresh_markers(drte_engine* pEngine);
-
 
 /// Inserts a character into the given text engine.
 ///
@@ -810,12 +798,6 @@ size_t drte_engine_get_line_count(drte_engine* pEngine);
 // Use this for controlling the page size for scrollbars.
 size_t drte_engine_get_visible_line_count(drte_engine* pEngine);
 
-/// Retrieves the number of lines that can fit on the visible portion of the layout, starting from the given line.
-///
-/// @remarks
-///     Use this for controlling the page size for scrollbars.
-//size_t drte_engine_get_visible_line_count_starting_at(drte_engine* pEngine, size_t iFirstLine);
-
 /// Retrieves the position of the line at the given index on the y axis.
 ///
 /// @remarks
@@ -929,13 +911,13 @@ bool drte_engine__find_line_info(drte_engine* pEngine, size_t iFirstRunOnLine, s
 bool drte_engine__find_line_info_by_index(drte_engine* pEngine, size_t iLine, drgui_rect* pRectOut, size_t* pFirstRunIndexOut, size_t* pLastRunIndexPlus1Out);
 
 /// Finds the last run on the line that the given run is sitting on.
-bool drte_engine__find_last_run_on_line_starting_from_run(drte_engine* pEngine, size_t iRun, size_t* pLastRunIndexOnLineOut);
+//bool drte_engine__find_last_run_on_line_starting_from_run(drte_engine* pEngine, size_t iRun, size_t* pLastRunIndexOnLineOut);
 
 /// Finds the first run on the line that the given run is sitting on.
-bool drte_engine__find_first_run_on_line_starting_from_run(drte_engine* pEngine, size_t iRun, size_t* pFirstRunIndexOnLineOut);
+//bool drte_engine__find_first_run_on_line_starting_from_run(drte_engine* pEngine, size_t iRun, size_t* pFirstRunIndexOnLineOut);
 
 /// Finds the run containing the character at the given index.
-bool drte_engine__find_run_at_character(drte_engine* pEngine, size_t iChar, size_t* pRunIndexOut);
+//bool drte_engine__find_run_at_character(drte_engine* pEngine, size_t iChar, size_t* pRunIndexOut);
 
 
 /// Creates a blank text marker.
@@ -983,27 +965,9 @@ bool drte_engine__move_marker_to_end_of_text(drte_engine* pEngine, drte_marker* 
 /// Moves the given marker to the start of the text.
 bool drte_engine__move_marker_to_start_of_text(drte_engine* pEngine, drte_marker* pMarker);
 
-/// Moves the given marker to the last character of the given run.
-//bool drte_engine__move_marker_to_last_character_of_run(drte_engine* pEngine, drte_marker* pMarker, size_t iRun);
-
-/// Moves the given marker to the first character of the given run.
-//bool drte_engine__move_marker_to_first_character_of_run(drte_engine* pEngine, drte_marker* pMarker, size_t iRun);
-
-/// Moves the given marker to the last character of the previous run.
-//bool drte_engine__move_marker_to_last_character_of_prev_run(drte_engine* pEngine, drte_marker* pMarker);
-
-/// Moves the given marker to the first character of the next run.
-//bool drte_engine__move_marker_to_first_character_of_next_run(drte_engine* pEngine, drte_marker* pMarker);
-
 /// Moves the given marker to the character at the given position.
 bool drte_engine__move_marker_to_character(drte_engine* pEngine, drte_marker* pMarker, size_t iChar);
 
-
-/// Updates the relative position of the given marker.
-///
-/// @remarks
-///     This assumes the iRun and iChar properties are valid.
-//bool drte_engine__update_marker_relative_position(drte_engine* pEngine, drte_marker* pMarker);
 
 /// Updates the sticky position of the given marker.
 void drte_engine__update_marker_sticky_position(drte_engine* pEngine, drte_marker* pMarker);
@@ -1015,9 +979,6 @@ size_t drte_engine__get_marker_absolute_char_index(drte_engine* pEngine, drte_ma
 
 /// Helper function for determining whether or not there is any spacing between the selection markers.
 bool drte_engine__has_spacing_between_selection_markers(drte_engine* pEngine);
-
-/// Splits the given run into sub-runs based on the current selection rectangle. Returns the sub-run count.
-//size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_run* pRunToSplit, drte_text_run pSubRunsOut[3], float pPosXOut[3]);
 
 
 /// Retrieves pointers to the selection markers in the correct order.
@@ -1223,24 +1184,10 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
             }
 
 
-            // Selection.
+            // Selection and styling segment clamp.
             if (clampToChar && iCharEnd == iMaxChar) {
                 break;
             }
-#if 0
-            if (isInSelection && iCharEnd == iSelectionCharEnd) {
-                break;  // Hit the end of the selection rectangle.
-            }
-            if (isAnythingSelected && !isInSelection && iCharEnd == iSelectionCharBeg) {
-                break;  // Hit the start of the selection rectangle.
-            }
-#endif
-
-
-            // Styling region.
-
-            
-
 
             iCharEnd += 1;
         }
@@ -2475,26 +2422,6 @@ void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_
     pEngine->onCursorMove = proc;
 }
 
-#if 0
-void drte_engine_refresh_markers(drte_engine* pEngine)
-{
-    if (pEngine == NULL || pEngine->pRuns == NULL) {
-        return;
-    }
-
-    // Cursor.
-    drte_text_run* pRun = pEngine->pRuns + pEngine->cursor.iRun;
-    if (pEngine->onGetCursorPositionFromChar) {
-        pEngine->onGetCursorPositionFromChar(pEngine, pEngine->styles[pRun->fgStyleSlot].styleToken, pEngine->text + pRun->iChar, pEngine->cursor.iChar, &pEngine->cursor.relativePosX);
-    }
-
-    pRun = pEngine->pRuns + pEngine->selectionAnchor.iRun;
-    if (pEngine->onGetCursorPositionFromChar) {
-        pEngine->onGetCursorPositionFromChar(pEngine, pEngine->styles[pRun->fgStyleSlot].styleToken, pEngine->text + pRun->iChar, pEngine->selectionAnchor.iChar, &pEngine->selectionAnchor.relativePosX);
-    }
-}
-#endif
-
 bool drte_engine_insert_character(drte_engine* pEngine, unsigned int character, size_t insertIndex)
 {
     if (pEngine == NULL) {
@@ -2855,7 +2782,7 @@ void drte_engine_select(drte_engine* pEngine, size_t firstCharacter, size_t last
     pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
 
     drte_engine__on_cursor_move(pEngine);
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- Optimize this to only redraw the selected regions.
 }
 
 void drte_engine_select_word_under_cursor(drte_engine* pEngine)
@@ -3157,64 +3084,6 @@ size_t drte_engine_get_visible_line_count(drte_engine* pEngine)
     return (size_t)(pEngine->containerHeight / drte_engine_get_line_height(pEngine)) + 1;
 }
 
-#if 0
-size_t drte_engine_get_visible_line_count_starting_at(drte_engine* pEngine, size_t iFirstLine)
-{
-    if (pEngine == NULL || pEngine->runCount == 0) {
-        return 0;
-    }
-
-    // TODO: This can be calculated in constant time.
-
-
-    unsigned int count = 0;
-    float lastLineBottom = 0;
-
-    // First thing we do is find the first line.
-    unsigned int iLine = 0;
-    drte_engine_line line;
-    if (drte_engine__first_line(pEngine, &line))
-    {
-        do
-        {
-            if (iLine >= iFirstLine) {
-                break;
-            }
-
-            iLine += 1;
-        } while (drte_engine__next_line(pEngine, &line));
-
-
-        // At this point we are at the first line and we need to start counting.
-        do
-        {
-            if (line.posY + pEngine->innerOffsetY >= pEngine->containerHeight) {
-                break;
-            }
-
-            count += 1;
-            lastLineBottom = line.posY + drte_engine_get_line_height(pEngine);
-
-        } while (drte_engine__next_line(pEngine, &line));
-    }
-
-
-    // At this point there may be some empty space below the last line, in which case we use the line height of the default font to fill
-    // out the remaining space.
-    if (lastLineBottom + pEngine->innerOffsetY < pEngine->containerHeight) {
-        count += (unsigned int)((pEngine->containerHeight - (lastLineBottom + pEngine->innerOffsetY)) / drte_engine_get_line_height(pEngine));
-    }
-
-
-
-    if (count == 0) {
-        return 1;
-    }
-
-    return count;
-}
-#endif
-
 float drte_engine_get_line_pos_y(drte_engine* pEngine, size_t iLine)
 {
     drgui_rect lineRect;
@@ -3231,16 +3100,20 @@ size_t drte_engine_get_line_at_pos_y(drte_engine* pEngine, float posY)
         return 0;
     }
 
-    drgui_rect textRect = drte_engine_get_text_rect_relative_to_bounds(pEngine);
-
-    size_t iRun;
-
-    float inputPosYRelativeToText = posY - textRect.top;
-    if (!drte_engine__find_closest_run_to_point(pEngine, 0, inputPosYRelativeToText, &iRun)) {
-        return 0;
+    size_t lineCount = drte_engine_get_line_count(pEngine);
+    if (lineCount == 0) {
+        return false;
     }
 
-    return pEngine->pRuns[iRun].iLine;
+    intptr_t iLine = (intptr_t)(posY / drte_engine_get_line_height(pEngine));
+    if (iLine < 0) {
+        iLine = 0;
+    }
+    if ((size_t)iLine >= lineCount) {
+        iLine = lineCount-1;
+    }
+
+    return iLine;
 }
 
 size_t drte_engine_get_line_first_character(drte_engine* pEngine, size_t iLine)
@@ -3283,21 +3156,6 @@ size_t drte_engine_get_line_last_character(drte_engine* pEngine, size_t iLine)
     }
 
     return i;
-
-#if 0
-    size_t firstRunIndex0;
-    size_t lastRunIndexPlus1;
-    if (drte_engine__find_line_info_by_index(pEngine, iLine, NULL, &firstRunIndex0, &lastRunIndexPlus1)) {
-        size_t charEnd = pEngine->pRuns[lastRunIndexPlus1 - 1].iCharEnd;
-        if (charEnd > 0) {
-            charEnd -= 1;
-        }
-
-        return charEnd;
-    }
-
-    return 0;
-#endif
 }
 
 void drte_engine_get_line_character_range(drte_engine* pEngine, size_t iLine, size_t* pCharStartOut, size_t* pCharEndOut)
@@ -3319,25 +3177,6 @@ void drte_engine_get_line_character_range(drte_engine* pEngine, size_t iLine, si
 
     if (pCharStartOut) *pCharStartOut = charStart;
     if (pCharEndOut) *pCharEndOut = charEnd;
-
-#if 0
-    size_t firstRunIndex0;
-    size_t lastRunIndexPlus1;
-    if (drte_engine__find_line_info_by_index(pEngine, iLine, NULL, &firstRunIndex0, &lastRunIndexPlus1)) {
-        charStart = pEngine->pRuns[firstRunIndex0].iChar;
-        charEnd   = pEngine->pRuns[lastRunIndexPlus1 - 1].iCharEnd;
-        if (charEnd > 0) {
-            charEnd -= 1;
-        }
-    }
-
-    if (pCharStartOut) {
-        *pCharStartOut = charStart;
-    }
-    if (pCharEndOut) {
-        *pCharEndOut = charEnd;
-    }
-#endif
 }
 
 
@@ -3454,157 +3293,6 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
         linePosY += lineHeight;
     }
 
-#if 0
-    // The position of each run will be relative to the text bounds. We want to make it relative to the container bounds.
-    drgui_rect textRect = drte_engine_get_text_rect_relative_to_bounds(pEngine);
-
-
-    // We draw line-by-line, starting from the first visible line.
-    float lineTop    = textRect.top;
-    float lineBottom = lineTop + drte_engine_get_line_height(pEngine);
-
-    drte_engine_line line;
-    if (drte_engine__first_line(pEngine, &line))
-    {
-        do
-        {
-            if (lineTop < rect.bottom)
-            {
-                if (lineBottom > rect.top)
-                {
-                    // The line is visible. We draw in 3 main parts - 1) the blank space to the left of the first run; 2) the runs themselves; 3) the blank
-                    // space to the right of the last run.
-
-                    uint8_t bgStyleSlot = pEngine->defaultStyleSlot;
-                    if (line.index == drte_engine_get_cursor_line(pEngine)) {
-                        bgStyleSlot = pEngine->activeLineStyleSlot;
-                    }
-
-                    float lineSelectionOverhangLeft  = 0;
-                    float lineSelectionOverhangRight = 0;
-
-                    if (drte_engine_is_anything_selected(pEngine))
-                    {
-                        drte_marker* pSelectionMarker0 = &pEngine->selectionAnchor;
-                        drte_marker* pSelectionMarker1 = &pEngine->cursor;
-                        if (pEngine->pRuns[pSelectionMarker0->iRun].iChar + pSelectionMarker0->iChar > pEngine->pRuns[pSelectionMarker1->iRun].iChar + pSelectionMarker1->iChar)
-                        {
-                            drte_marker* temp = pSelectionMarker0;
-                            pSelectionMarker0 = pSelectionMarker1;
-                            pSelectionMarker1 = temp;
-                        }
-
-                        size_t iSelectionLine0 = pEngine->pRuns[pSelectionMarker0->iRun].iLine;
-                        size_t iSelectionLine1 = pEngine->pRuns[pSelectionMarker1->iRun].iLine;
-
-                        if (line.index >= iSelectionLine0 && line.index < iSelectionLine1) {
-                            lineSelectionOverhangRight = (float)pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
-                        }
-                    }
-
-
-                    //drte_text_run* pFirstRun = pEngine->pRuns + line.iFirstRun;
-                    //drte_text_run* pLastRun  = pEngine->pRuns + line.iLastRun;
-
-                    float lineLeft  = textRect.left;
-                    float lineRight = lineLeft;
-
-                    // 1) The blank space to the left of the first run.
-                    if (lineLeft > 0)
-                    {
-                        if (lineSelectionOverhangLeft > 0) {
-                            pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->selectionStyleSlot].styleToken, drgui_make_rect(lineLeft - lineSelectionOverhangLeft, lineTop, lineLeft, lineBottom), pElement, pPaintData);
-                        }
-
-                        pEngine->onPaintRect(pEngine, pEngine->styles[bgStyleSlot].styleToken, drgui_make_rect(0, lineTop, lineLeft - lineSelectionOverhangLeft, lineBottom), pElement, pPaintData);
-                    }
-
-
-                    // 2) The runs themselves.
-                    float runLeft = lineLeft;
-                    for (size_t iRun = line.iFirstRun; iRun <= line.iLastRun; ++iRun)
-                    {
-                        drte_text_run* pRun = pEngine->pRuns + iRun;
-                        float runRight = runLeft + pRun->width;
-
-                        if (runRight > 0 && runLeft < pEngine->containerWidth)
-                        {
-                            // The run is visible.
-                            if (!drte_engine__is_text_run_whitespace(pEngine, pRun) || pEngine->text[pRun->iChar] == '\t')
-                            {
-                                drte_text_run run = pEngine->pRuns[iRun];
-                                run.fgStyleSlot = pEngine->defaultStyleSlot;
-                                run.bgStyleSlot = bgStyleSlot;
-                                run.text        = pEngine->text + run.iChar;
-
-                                // We paint the run differently depending on whether or not anything is selected. If something is selected
-                                // we need to split the run into a maximum of 3 sub-runs so that the selection rectangle can be drawn correctly.
-                                if (drte_engine_is_anything_selected(pEngine))
-                                {
-                                    drte_text_run subruns[3];
-                                    float posx[3];
-
-                                    size_t subrunCount = drte_engine__split_text_run_by_selection(pEngine, &run, subruns, posx);
-                                    for (size_t iSubRun = 0; iSubRun < subrunCount; ++iSubRun)
-                                    {
-                                        drte_text_run* pSubRun = subruns + iSubRun;
-
-                                        if (!drte_engine__is_text_run_whitespace(pEngine, pRun)) {
-                                            pEngine->onPaintText(pEngine, pEngine->styles[pSubRun->fgStyleSlot].styleToken, pEngine->styles[pSubRun->bgStyleSlot].styleToken,
-                                                pSubRun->text, pSubRun->textLength, runLeft + posx[iSubRun], lineTop, pElement, pPaintData);
-                                        } else {
-                                            pEngine->onPaintRect(pEngine, pEngine->styles[pSubRun->bgStyleSlot].styleToken, drgui_make_rect(runLeft + posx[iSubRun], lineTop, runLeft + posx[iSubRun] + pSubRun->width, lineBottom), pElement, pPaintData);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    // Nothing is selected.
-                                    if (!drte_engine__is_text_run_whitespace(pEngine, &run)) {
-                                        pEngine->onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, runLeft, lineTop, pElement, pPaintData);
-                                    } else {
-                                        pEngine->onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(runLeft, lineTop, runRight, lineBottom), pElement, pPaintData);
-                                    }
-                                }
-                            }
-                        }
-
-                        runLeft = runRight;
-                    }
-
-                    lineRight = runLeft;
-
-                    // 3) The blank space to the right of the last run.
-                    if (lineRight < pEngine->containerWidth)
-                    {
-                        if (lineSelectionOverhangRight > 0) {
-                            pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->selectionStyleSlot].styleToken, drgui_make_rect(lineRight, lineTop, lineRight + lineSelectionOverhangRight, lineBottom), pElement, pPaintData);
-                        }
-
-                        pEngine->onPaintRect(pEngine, pEngine->styles[bgStyleSlot].styleToken, drgui_make_rect(lineRight + lineSelectionOverhangRight, lineTop, pEngine->containerWidth, lineBottom), pElement, pPaintData);
-                    }
-                }
-            }
-            else
-            {
-                // The line is below the rectangle which means no other line will be visible and we can terminate early.
-                break;
-            }
-
-            lineTop += drte_engine_get_line_height(pEngine);
-            lineBottom += drte_engine_get_line_height(pEngine);
-
-        } while (drte_engine__next_line(pEngine, &line));
-    }
-    else
-    {
-        // There are no lines so we do a simplified branch here.
-        lineTop    = textRect.top;
-        lineBottom = textRect.bottom;
-        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->activeLineStyleSlot].styleToken, drgui_make_rect(0, lineTop, pEngine->containerWidth, lineBottom), pElement, pPaintData);
-    }
-#endif
-
     // The cursor.
     if (pEngine->isShowingCursor && pEngine->isCursorBlinkOn) {
         pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->cursorStyleSlot].styleToken, drte_engine_get_cursor_rect(pEngine), pElement, pPaintData);
@@ -3650,6 +3338,16 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
     if (pEngine == NULL || onPaintText == NULL || onPaintRect == NULL) {
         return;
     }
+
+#if 0
+    size_t iLineTop;
+    size_t iLineBottom;
+    drte_engine_get_visible_lines(pEngine, &iLineTop, &iLineBottom);
+
+    for (size_t iLine = iLineTop; iLine < iLineBottom; ++iLine) {
+
+    }
+#endif
 
 
     // TODO: This can be simplified and optimized.
@@ -4043,76 +3741,6 @@ bool drte_engine__find_closest_line_to_point(drte_engine* pEngine, float inputPo
     return result;
 }
 
-bool drte_engine__find_closest_run_to_point(drte_engine* pEngine, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* pRunIndexOut)
-{
-    if (pEngine == NULL) {
-        return false;
-    }
-
-    size_t iFirstRunOnLine;
-    size_t iLastRunOnLinePlus1;
-    if (drte_engine__find_closest_line_to_point(pEngine, inputPosYRelativeToText, OUT &iFirstRunOnLine, OUT &iLastRunOnLinePlus1))
-    {
-        size_t iRunOut = 0;
-
-        if (inputPosXRelativeToText < 0) {
-            iRunOut = iFirstRunOnLine;
-        } else {
-            float runLeft = 0;
-            for (size_t iRun = iFirstRunOnLine; iRun < iLastRunOnLinePlus1; ++iRun) {
-                const drte_text_run* pRun = pEngine->pRuns + iRun;
-                iRunOut = iRun;
-
-                if (inputPosXRelativeToText >= runLeft && inputPosXRelativeToText <= runLeft + pRun->width) {
-                    break;
-                }
-
-                runLeft += pRun->width;
-            }
-        }
-
-#if 0
-        const drte_text_run* pFirstRunOnLine = pEngine->pRuns + iFirstRunOnLine;
-        const drte_text_run* pLastRunOnLine  = pEngine->pRuns + (iLastRunOnLinePlus1 - 1);
-
-
-        if (inputPosXRelativeToText < pFirstRunOnLine->posX)
-        {
-            // It's to the left of the first run.
-            iRunOut = iFirstRunOnLine;
-        }
-        else if (inputPosXRelativeToText > pLastRunOnLine->posX + pLastRunOnLine->width)
-        {
-            // It's to the right of the last run.
-            iRunOut = iLastRunOnLinePlus1 - 1;
-        }
-        else
-        {
-            // It's in the middle of the line. We just iterate over each run on the line and return the first one that contains the point.
-            for (size_t iRun = iFirstRunOnLine; iRun < iLastRunOnLinePlus1; ++iRun)
-            {
-                const drte_text_run* pRun = pEngine->pRuns + iRun;
-                iRunOut = iRun;
-
-                if (inputPosXRelativeToText >= pRun->posX && inputPosXRelativeToText <= pRun->posX + pRun->width) {
-                    break;
-                }
-            }
-        }
-#endif
-
-        if (pRunIndexOut) {
-            *pRunIndexOut = iRunOut;
-        }
-
-        return true;
-    }
-    else
-    {
-        // There was an error finding the closest line.
-        return false;
-    }
-}
 
 bool drte_engine__find_line_info(drte_engine* pEngine, size_t iFirstRunOnLine, size_t* pLastRunIndexOnLinePlus1Out)
 {
@@ -4192,80 +3820,6 @@ bool drte_engine__find_line_info_by_index(drte_engine* pEngine, size_t iLine, dr
     }
 }
 
-bool drte_engine__find_last_run_on_line_starting_from_run(drte_engine* pEngine, size_t iRun, size_t* pLastRunIndexOnLineOut)
-{
-    if (pEngine == NULL || pEngine->pRuns == NULL) {
-        return false;
-    }
-
-    size_t result = iRun;
-
-    size_t iLine = pEngine->pRuns[iRun].iLine;
-    for (/* Do Nothing*/; iRun < pEngine->runCount && pEngine->pRuns[iRun].iLine == iLine; ++iRun)
-    {
-        result = iRun;
-    }
-
-    if (pLastRunIndexOnLineOut) {
-        *pLastRunIndexOnLineOut = result;
-    }
-
-    return true;
-}
-
-bool drte_engine__find_first_run_on_line_starting_from_run(drte_engine* pEngine, size_t iRun, size_t* pFirstRunIndexOnLineOut)
-{
-    if (pEngine == NULL) {
-        return false;
-    }
-
-    size_t result = iRun;
-
-    size_t iLine = pEngine->pRuns[iRun].iLine;
-    for (/* Do Nothing*/; iRun > 0 && pEngine->pRuns[iRun - 1].iLine == iLine; --iRun)
-    {
-        result = iRun - 1;
-    }
-
-    if (pFirstRunIndexOnLineOut) {
-        *pFirstRunIndexOnLineOut = result;
-    }
-
-    return true;
-}
-
-bool drte_engine__find_run_at_character(drte_engine* pEngine, size_t iChar, size_t* pRunIndexOut)
-{
-    if (pEngine == NULL || pEngine->runCount == 0) {
-        return false;
-    }
-
-    size_t result = 0;
-    if (iChar < pEngine->textLength)
-    {
-        for (size_t iRun = 0; iRun < pEngine->runCount; ++iRun)
-        {
-            const drte_text_run* pRun = pEngine->pRuns + iRun;
-
-            if (iChar < pRun->iCharEnd)
-            {
-                result = iRun;
-                break;
-            }
-        }
-    }
-    else
-    {
-        // The character index is too high. Return the last run.
-        result = pEngine->runCount - 1;
-    }
-
-    if (pRunIndexOut) {
-        *pRunIndexOut = result;
-    }
-
-    return true;
-}
 
 
 drte_marker drte_engine__new_marker()
@@ -4344,19 +3898,7 @@ bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarke
         return false;
     }
 
-    size_t lineCount = drte_engine_get_line_count(pEngine);
-    if (lineCount == 0) {
-        pMarker->iCharAbs = 0;
-        return false;
-    }
-
-    intptr_t iLine = (intptr_t)(inputPosYRelativeToText / drte_engine_get_line_height(pEngine));
-    if (iLine < 0) {
-        iLine = 0;
-    }
-    if ((size_t)iLine >= lineCount) {
-        iLine = lineCount-1;
-    }
+    size_t iLine = drte_engine_get_line_at_pos_y(pEngine, inputPosYRelativeToText);
 
     // Once we have the line, finding the specific character under the point is done by iterating over each segment and finding the one
     // containing the point on the x axis. Once the segment has been found, we use the backend to get the exact character.
@@ -4416,107 +3958,6 @@ bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarke
     }
 
     return false;
-
-#if 0
-    size_t iClosestRunToPoint;
-    if (drte_engine__find_closest_run_to_point(pEngine, inputPosXRelativeToText, inputPosYRelativeToText, OUT &iClosestRunToPoint))
-    {
-        const drte_text_run* pRun = pEngine->pRuns + iClosestRunToPoint;
-        float runLeft = drte_engine__get_run_pos_x(pEngine, iClosestRunToPoint);
-
-        pMarker->iRun = iClosestRunToPoint;
-
-        if (inputPosXRelativeToText < runLeft)
-        {
-            // It's to the left of the run.
-            pMarker->iChar        = 0;
-            pMarker->relativePosX = 0;
-        }
-        else if (inputPosXRelativeToText > runLeft + pRun->width)
-        {
-            // It's to the right of the run. It may be a new-line run. If so, we need to move the marker to the front of it, not the back.
-            pMarker->iChar        = pRun->textLength;
-            pMarker->relativePosX = pRun->width;
-
-            if (pEngine->text[pRun->iChar] == '\n') {
-                assert(pMarker->iChar == 1);
-                pMarker->iChar        = 0;
-                pMarker->relativePosX = 0;
-            }
-        }
-        else
-        {
-            // It's somewhere in the middle of the run. We need to handle this a little different for tab runs since they are aligned differently.
-            if (pEngine->text[pRun->iChar] == '\n')
-            {
-                // It's a new line character. It needs to be placed at the beginning of it.
-                pMarker->iChar        = 0;
-                pMarker->relativePosX = 0;
-            }
-            else if (pEngine->text[pRun->iChar] == '\t')
-            {
-                // It's a tab run.
-                pMarker->iChar        = 0;
-                pMarker->relativePosX = 0;
-
-                const float tabWidth = drte_engine__get_tab_width(pEngine);
-
-                float tabLeft = runLeft + pMarker->relativePosX;
-                for (/* Do Nothing*/; pMarker->iChar < pRun->textLength; ++pMarker->iChar)
-                {
-                    float tabRight = tabWidth * ((runLeft + (tabWidth*(pMarker->iChar + 1))) / tabWidth);
-                    if (tabRight > runLeft + pRun->width) {
-                        tabRight = runLeft + pRun->width;
-                    }
-
-                    if (inputPosXRelativeToText >= tabLeft && inputPosXRelativeToText <= tabRight)
-                    {
-                        // The input position is somewhere on top of this character. If it's positioned on the left side of the character, set the output
-                        // value to the character at iChar. Otherwise it should be set to the character at iChar + 1.
-                        float charBoundsRightHalf = tabLeft + ceilf(((tabRight - tabLeft) / 2.0f));
-                        if (inputPosXRelativeToText <= charBoundsRightHalf) {
-                            pMarker->relativePosX = tabLeft - runLeft;
-                        } else {
-                            pMarker->relativePosX = tabRight - runLeft;
-                            pMarker->iChar += 1;
-                        }
-
-                        break;
-                    }
-
-                    tabLeft = tabRight;
-                }
-
-                // If we're past the last character in the tab run, we want to move to the start of the next run.
-                if (pMarker->iChar == pRun->textLength) {
-                    drte_engine__move_marker_to_first_character_of_next_run(pEngine, pMarker);
-                }
-            }
-            else
-            {
-                // It's a standard run.
-                float inputPosXRelativeToRun = inputPosXRelativeToText - runLeft;
-                if (pEngine->onGetCursorPositionFromPoint) {
-                    pEngine->onGetCursorPositionFromPoint(pEngine, pEngine->styles[pRun->fgStyleSlot].styleToken, pEngine->text + pRun->iChar, pRun->textLength, pRun->width, inputPosXRelativeToRun, OUT &pMarker->relativePosX, OUT &pMarker->iChar);
-
-                    // If the marker is past the last character of the run it needs to be moved to the start of the next one.
-                    if (pMarker->iChar == pRun->textLength) {
-                        drte_engine__move_marker_to_first_character_of_next_run(pEngine, pMarker);
-                    }
-                } else {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-    else
-    {
-        // Couldn't find a run.
-        return false;
-    }
-#endif
 }
 
 bool drte_engine__move_marker_left(drte_engine* pEngine, drte_marker* pMarker)
@@ -4533,55 +3974,6 @@ bool drte_engine__move_marker_left(drte_engine* pEngine, drte_marker* pMarker)
 
     drte_engine__update_marker_sticky_position(pEngine, pMarker);
     return true;
-
-#if 0
-    if (pEngine->runCount > 0)
-    {
-        if (pMarker->iChar > 0)
-        {
-            pMarker->iChar -= 1;
-
-            const drte_text_run* pRun = pEngine->pRuns + pMarker->iRun;
-            float runLeft = drte_engine__get_run_pos_x(pEngine, pMarker->iRun);
-
-            if (pEngine->text[pRun->iChar] == '\t')
-            {
-                const float tabWidth = drte_engine__get_tab_width(pEngine);
-
-                if (pMarker->iChar == 0)
-                {
-                    // Simple case - it's the first tab character which means the relative position is just 0.
-                    pMarker->relativePosX = 0;
-                }
-                else
-                {
-                    pMarker->relativePosX  = tabWidth * ((runLeft + (tabWidth*(pMarker->iChar + 0))) / tabWidth);
-                    pMarker->relativePosX -= runLeft;
-                }
-            }
-            else
-            {
-                if (pEngine->onGetCursorPositionFromChar) {
-                    pEngine->onGetCursorPositionFromChar(pEngine, pEngine->styles[pRun->fgStyleSlot].styleToken, pEngine->text + pEngine->pRuns[pMarker->iRun].iChar, pMarker->iChar, OUT &pMarker->relativePosX);
-                } else {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            // We're at the beginning of the run which means we need to transfer the cursor to the end of the previous run.
-            if (!drte_engine__move_marker_to_last_character_of_prev_run(pEngine, pMarker)) {
-                return false;
-            }
-        }
-
-        drte_engine__update_marker_sticky_position(pEngine, pMarker);
-        return true;
-    }
-
-    return false;
-#endif
 }
 
 bool drte_engine__move_marker_right(drte_engine* pEngine, drte_marker* pMarker)
@@ -4598,47 +3990,6 @@ bool drte_engine__move_marker_right(drte_engine* pEngine, drte_marker* pMarker)
 
     drte_engine__update_marker_sticky_position(pEngine, pMarker);
     return true;
-
-#if 0
-    if (pEngine->runCount > 0)
-    {
-        if (pMarker->iChar + 1 < pEngine->pRuns[pMarker->iRun].textLength)
-        {
-            pMarker->iChar += 1;
-
-            const drte_text_run* pRun = pEngine->pRuns + pMarker->iRun;
-            float runLeft = drte_engine__get_run_pos_x(pEngine, pMarker->iRun);
-
-            if (pEngine->text[pRun->iChar] == '\t')
-            {
-                const float tabWidth = drte_engine__get_tab_width(pEngine);
-
-                pMarker->relativePosX  = tabWidth * ((runLeft + (tabWidth*(pMarker->iChar + 0))) / tabWidth);
-                pMarker->relativePosX -= runLeft;
-            }
-            else
-            {
-                if (pEngine->onGetCursorPositionFromChar) {
-                    pEngine->onGetCursorPositionFromChar(pEngine, pEngine->styles[pRun->fgStyleSlot].styleToken, pEngine->text + pEngine->pRuns[pMarker->iRun].iChar, pMarker->iChar, OUT &pMarker->relativePosX);
-                } else {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            // We're at the end of the run which means we need to transfer the cursor to the beginning of the next run.
-            if (!drte_engine__move_marker_to_first_character_of_next_run(pEngine, pMarker)) {
-                return false;
-            }
-        }
-
-        drte_engine__update_marker_sticky_position(pEngine, pMarker);
-        return true;
-    }
-
-    return false;
-#endif
 }
 
 bool drte_engine__move_marker_up(drte_engine* pEngine, drte_marker* pMarker)
@@ -4684,39 +4035,6 @@ bool drte_engine__move_marker_y(drte_engine* pEngine, drte_marker* pMarker, int 
     drte_engine__move_marker_to_point(pEngine, pMarker, newMarkerPosX, newMarkerPosY);
 
     return true;
-
-#if 0
-    const drte_text_run* pOldRun = pEngine->pRuns + pMarker->iRun;
-
-    int iNewLine = (int)pOldRun->iLine + amount;
-    if (iNewLine >= (int)drte_engine_get_line_count(pEngine)) {
-        iNewLine = (int)drte_engine_get_line_count(pEngine) - 1;
-    }
-    if (iNewLine < 0) {
-        iNewLine = 0;
-    }
-
-    if ((int)pOldRun->iLine == iNewLine) {
-        return false;   // The lines are the same.
-    }
-
-    drgui_rect lineRect;
-    size_t iFirstRunOnLine;
-    size_t iLastRunOnLinePlus1;
-    if (drte_engine__find_line_info_by_index(pEngine, iNewLine, OUT &lineRect, OUT &iFirstRunOnLine, OUT &iLastRunOnLinePlus1))
-    {
-        float newMarkerPosX = pMarker->absoluteSickyPosX;
-        float newMarkerPosY = lineRect.top;
-        drte_engine__move_marker_to_point(pEngine, pMarker, newMarkerPosX, newMarkerPosY);
-
-        return true;
-    }
-    else
-    {
-        // An error occured while finding information about the line above.
-        return false;
-    }
-#endif
 }
 
 bool drte_engine__move_marker_to_end_of_line(drte_engine* pEngine, drte_marker* pMarker)
@@ -4773,78 +4091,6 @@ bool drte_engine__move_marker_to_start_of_text(drte_engine* pEngine, drte_marker
     return drte_engine__move_marker_to_character(pEngine, pMarker, 0);
 }
 
-#if 0
-bool drte_engine__move_marker_to_last_character_of_run(drte_engine* pEngine, drte_marker* pMarker, size_t iRun)
-{
-    if (pEngine == NULL || pMarker == NULL) {
-        return false;
-    }
-
-    if (iRun < pEngine->runCount)
-    {
-        pMarker->iRun         = iRun;
-        pMarker->iChar        = pEngine->pRuns[pMarker->iRun].textLength;
-        pMarker->relativePosX = pEngine->pRuns[pMarker->iRun].width;
-
-        if (pMarker->iChar > 0)
-        {
-            // At this point we are located one character past the last character - we need to move it left.
-            return drte_engine__move_marker_left(pEngine, pMarker);
-        }
-
-        return true;
-    }
-
-    return false;
-}
-
-bool drte_engine__move_marker_to_first_character_of_run(drte_engine* pEngine, drte_marker* pMarker, size_t iRun)
-{
-    if (pEngine == NULL || pMarker == NULL) {
-        return false;
-    }
-
-    if (iRun < pEngine->runCount)
-    {
-        pMarker->iRun         = iRun;
-        pMarker->iChar        = 0;
-        pMarker->relativePosX = 0;
-
-        drte_engine__update_marker_sticky_position(pEngine, pMarker);
-
-        return true;
-    }
-
-    return false;
-}
-
-bool drte_engine__move_marker_to_last_character_of_prev_run(drte_engine* pEngine, drte_marker* pMarker)
-{
-    if (pEngine == NULL || pMarker == NULL) {
-        return false;
-    }
-
-    if (pMarker->iRun > 0) {
-        return drte_engine__move_marker_to_last_character_of_run(pEngine, pMarker, pMarker->iRun - 1);
-    }
-
-    return false;
-}
-
-bool drte_engine__move_marker_to_first_character_of_next_run(drte_engine* pEngine, drte_marker* pMarker)
-{
-    if (pEngine == NULL || pMarker == NULL) {
-        return false;
-    }
-
-    if (pEngine->runCount > 0 && pMarker->iRun < pEngine->runCount - 1) {
-        return drte_engine__move_marker_to_first_character_of_run(pEngine, pMarker, pMarker->iRun + 1);
-    }
-
-    return false;
-}
-#endif
-
 bool drte_engine__move_marker_to_character(drte_engine* pEngine, drte_marker* pMarker, size_t iChar)
 {
     if (pEngine == NULL || pMarker == NULL || pEngine->runCount == 0) {
@@ -4860,44 +4106,6 @@ bool drte_engine__move_marker_to_character(drte_engine* pEngine, drte_marker* pM
     return true;
 }
 
-#if 0
-bool drte_engine__update_marker_relative_position(drte_engine* pEngine, drte_marker* pMarker)
-{
-    if (pEngine == NULL || pMarker == NULL || pEngine->runCount == 0) {
-        return false;
-    }
-
-    const drte_text_run* pRun = pEngine->pRuns + pMarker->iRun;
-    float runLeft = drte_engine__get_run_pos_x(pEngine, pMarker->iRun);
-
-    if (pEngine->text[pRun->iChar] == '\t')
-    {
-        const float tabWidth = drte_engine__get_tab_width(pEngine);
-
-        if (pMarker->iChar == 0)
-        {
-            // Simple case - it's the first tab character which means the relative position is just 0.
-            pMarker->relativePosX = 0;
-        }
-        else
-        {
-            pMarker->relativePosX  = tabWidth * ((runLeft + (tabWidth*(pMarker->iChar + 0))) / tabWidth);
-            pMarker->relativePosX -= runLeft;
-        }
-
-        return true;
-    }
-    else
-    {
-        if (pEngine->onGetCursorPositionFromChar) {
-            pEngine->onGetCursorPositionFromChar(pEngine, pEngine->styles[pRun->fgStyleSlot].styleToken, pEngine->text + pEngine->pRuns[pMarker->iRun].iChar, pMarker->iChar, OUT &pMarker->relativePosX);
-            return true;
-        }
-
-        return false;
-    }
-}
-#endif
 
 void drte_engine__update_marker_sticky_position(drte_engine* pEngine, drte_marker* pMarker)
 {
@@ -4930,155 +4138,6 @@ bool drte_engine__has_spacing_between_selection_markers(drte_engine* pEngine)
 
     return pEngine->cursor.iCharAbs || pEngine->selectionAnchor.iCharAbs;
 }
-
-#if 0
-size_t drte_engine__split_text_run_by_selection(drte_engine* pEngine, drte_text_run* pRunToSplit, drte_text_run pSubRunsOut[3], float pPosXOut[3])
-{
-    if (pEngine == NULL || pRunToSplit == NULL || pSubRunsOut == NULL) {
-        return 0;
-    }
-
-    drte_marker* pSelectionMarker0 = &pEngine->selectionAnchor;
-    drte_marker* pSelectionMarker1 = &pEngine->cursor;
-    if (pEngine->pRuns[pSelectionMarker0->iRun].iChar + pSelectionMarker0->iChar > pEngine->pRuns[pSelectionMarker1->iRun].iChar + pSelectionMarker1->iChar)
-    {
-        drte_marker* temp = pSelectionMarker0;
-        pSelectionMarker0 = pSelectionMarker1;
-        pSelectionMarker1 = temp;
-    }
-
-    drte_text_run* pSelectionRun0 = pEngine->pRuns + pSelectionMarker0->iRun;
-    drte_text_run* pSelectionRun1 = pEngine->pRuns + pSelectionMarker1->iRun;
-
-    size_t iSelectionChar0 = pSelectionRun0->iChar + pSelectionMarker0->iChar;
-    size_t iSelectionChar1 = pSelectionRun1->iChar + pSelectionMarker1->iChar;
-
-    if (drte_engine_is_anything_selected(pEngine))
-    {
-        if (pRunToSplit->iChar < iSelectionChar1 && pRunToSplit->iCharEnd > iSelectionChar0)
-        {
-            // The run is somewhere inside the selection region.
-            for (int i = 0; i < 3; ++i) {
-                pSubRunsOut[i] = *pRunToSplit;
-                pPosXOut[i] = 0;
-            }
-
-            if (pRunToSplit->iChar >= iSelectionChar0)
-            {
-                // The first part of the run is selected.
-                if (pRunToSplit->iCharEnd <= iSelectionChar1)
-                {
-                    // The entire run is selected.
-                    pSubRunsOut[0].bgStyleSlot = pEngine->selectionStyleSlot;
-                    return 1;
-                }
-                else
-                {
-                    // The head part of the run is selected, and the tail is deselected.
-
-                    // Head.
-                    pSubRunsOut[0].bgStyleSlot     = pEngine->selectionStyleSlot;
-                    pSubRunsOut[0].iCharEnd        = iSelectionChar1;
-                    pSubRunsOut[0].width           = pSelectionMarker1->relativePosX;
-                    pSubRunsOut[0].text            = pEngine->text + pSubRunsOut[0].iChar;
-                    pSubRunsOut[0].textLength      = pSubRunsOut[0].iCharEnd - pSubRunsOut[0].iChar;
-
-                    // Tail.
-                    pSubRunsOut[1].iChar      = iSelectionChar1;
-                    pSubRunsOut[1].width      = pRunToSplit->width - pSelectionMarker1->relativePosX;
-                    pSubRunsOut[1].text       = pEngine->text + pSubRunsOut[1].iChar;
-                    pSubRunsOut[1].textLength = pSubRunsOut[1].iCharEnd - pSubRunsOut[1].iChar;
-
-                    pPosXOut[1] = pSubRunsOut[0].width;
-
-                    return 2;
-                }
-            }
-            else
-            {
-                // The first part of the run is deselected. There will be at least 2, but possibly 3 sub-runs in this case.
-                if (pRunToSplit->iCharEnd <= iSelectionChar1)
-                {
-                    // The head of the run is deselected and the tail is selected.
-
-                    // Head.
-                    pSubRunsOut[0].iCharEnd        = iSelectionChar0;
-                    pSubRunsOut[0].width           = pSelectionMarker0->relativePosX;
-                    pSubRunsOut[0].text            = pEngine->text + pSubRunsOut[0].iChar;
-                    pSubRunsOut[0].textLength      = pSubRunsOut[0].iCharEnd - pSubRunsOut[0].iChar;
-
-                    // Tail.
-                    pSubRunsOut[1].bgStyleSlot     = pEngine->selectionStyleSlot;
-                    pSubRunsOut[1].iChar           = iSelectionChar0;
-                    pSubRunsOut[1].width           = pRunToSplit->width - pSubRunsOut[0].width;
-                    pSubRunsOut[1].text            = pEngine->text + pSubRunsOut[1].iChar;
-                    pSubRunsOut[1].textLength      = pSubRunsOut[1].iCharEnd - pSubRunsOut[1].iChar;
-
-                    pPosXOut[1] = pSubRunsOut[0].width;
-
-                    return 2;
-                }
-                else
-                {
-                    // The head and tail are both deselected, and the middle section is selected.
-
-                    // Head.
-                    pSubRunsOut[0].iCharEnd   = iSelectionChar0;
-                    pSubRunsOut[0].width      = pSelectionMarker0->relativePosX;
-                    pSubRunsOut[0].text       = pEngine->text + pSubRunsOut[0].iChar;
-                    pSubRunsOut[0].textLength = pSubRunsOut[0].iCharEnd - pSubRunsOut[0].iChar;
-
-                    // Mid.
-                    pSubRunsOut[1].iChar           = iSelectionChar0;
-                    pSubRunsOut[1].iCharEnd        = iSelectionChar1;
-                    pSubRunsOut[1].bgStyleSlot     = pEngine->selectionStyleSlot;
-                    pSubRunsOut[1].width           = pSelectionMarker1->relativePosX - pSelectionMarker0->relativePosX;
-                    pSubRunsOut[1].text            = pEngine->text + pSubRunsOut[1].iChar;
-                    pSubRunsOut[1].textLength      = pSubRunsOut[1].iCharEnd - pSubRunsOut[1].iChar;
-
-                    // Tail.
-                    pSubRunsOut[2].iChar      = iSelectionChar1;
-                    pSubRunsOut[2].width      = pRunToSplit->width - pSelectionMarker1->relativePosX;
-                    pSubRunsOut[2].text       = pEngine->text + pSubRunsOut[2].iChar;
-                    pSubRunsOut[2].textLength = pSubRunsOut[2].iCharEnd - pSubRunsOut[2].iChar;
-
-                    pPosXOut[1] = pSubRunsOut[0].width;
-                    pPosXOut[2] = pSubRunsOut[0].width + pSubRunsOut[1].width;
-
-                    return 3;
-                }
-            }
-        }
-    }
-
-    // If we get here it means the run is not within the selected region.
-    pSubRunsOut[0] = *pRunToSplit;
-    pPosXOut[0] = 0;
-
-    return 1;
-}
-#endif
-
-#if 0
-bool drte_engine__is_run_selected(drte_engine* pEngine, unsigned int iRun)
-{
-    if (drte_engine_is_anything_selected(pEngine))
-    {
-        drte_marker* pSelectionMarker0;
-        drte_marker* pSelectionMarker1;
-        if (!drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1)) {
-            return false;
-        }
-
-        unsigned int iSelectionChar0 = pEngine->pRuns[pSelectionMarker0->iRun].iChar + pSelectionMarker0->iChar;
-        unsigned int iSelectionChar1 = pEngine->pRuns[pSelectionMarker1->iRun].iChar + pSelectionMarker1->iChar;
-
-        return pEngine->pRuns[iRun].iChar < iSelectionChar1 && pEngine->pRuns[iRun].iCharEnd > iSelectionChar0;
-    }
-
-    return false;
-}
-#endif
 
 bool drte_engine__get_selection_markers(drte_engine* pEngine, drte_marker** ppSelectionMarker0Out, drte_marker** ppSelectionMarker1Out)
 {
