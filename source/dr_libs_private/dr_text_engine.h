@@ -3312,15 +3312,23 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
         }
 
         float textLeft = lineNumbersWidth - textWidth;
+        float textTop  = lineTop + (lineHeight - textHeight) / 2;
+
         float lineBottom = lineTop + lineHeight;
 
-        drte_text_run run = {0};
-        run.fgStyleSlot = pEngine->lineNumbersStyleSlot;
-        run.bgStyleSlot = pEngine->lineNumbersStyleSlot;
-        run.text        = iLineStr;
-        run.textLength  = strlen(iLineStr);
-        onPaintText(pEngine, pEngine->styles[run.fgStyleSlot].styleToken, pEngine->styles[run.bgStyleSlot].styleToken, run.text, run.textLength, textLeft, lineTop, pElement, pPaintData);
-        onPaintRect(pEngine, pEngine->styles[run.bgStyleSlot].styleToken, drgui_make_rect(0, lineTop, textLeft, lineBottom), pElement, pPaintData);
+        drte_style_token fgStyleToken = pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken;
+        drte_style_token bgStyleToken = pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken;
+
+        onPaintText(pEngine, fgStyleToken, bgStyleToken, iLineStr, strlen(iLineStr), textLeft, textTop, pElement, pPaintData);
+        onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, textLeft, lineBottom), pElement, pPaintData);
+
+        // There could be a region above and below the text. This will happen if the line height of the line numbers is
+        // smaller than the main line height.
+        if (textHeight < lineHeight) {
+            onPaintRect(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, drgui_make_rect(textLeft, lineTop, lineNumbersWidth, textTop), pElement, pPaintData);
+            onPaintRect(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, drgui_make_rect(textLeft, textTop + textHeight, lineNumbersWidth, lineBottom), pElement, pPaintData);
+        }
+
 
         lineTop = lineBottom;
     }
