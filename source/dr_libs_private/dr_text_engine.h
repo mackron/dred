@@ -1229,21 +1229,29 @@ bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token sty
     uint8_t styleSlot = drte_engine__get_style_slot(pEngine, styleToken);
     if (styleSlot != DRTE_INVALID_STYLE_SLOT) {
         pEngine->styles[styleSlot].fontMetrics = fontMetrics;
-        if (pEngine->lineHeight < fontMetrics.lineHeight && (pEngine->flags & DRTE_USE_EXPLICIT_LINE_HEIGHT) == 0) {
-            pEngine->lineHeight = fontMetrics.lineHeight;
+
+        if (!(pEngine->flags & DRTE_USE_EXPLICIT_LINE_HEIGHT)) {
+            pEngine->lineHeight = 0;
+            for (uint16_t i = 0; i < pEngine->styleCount; ++i) {
+                if (pEngine->lineHeight < fontMetrics.lineHeight) {
+                    pEngine->lineHeight = fontMetrics.lineHeight;
+                }
+            }
         }
 
         drte_engine__refresh(pEngine);
+        drte_engine__repaint(pEngine);
         return true;
     }
 
 
-    // If we get here it means the style has not previously been registered. We don't actually need to refresh the engine
-    // here because nothing will actually be using the style token yet.
+    // If we get here it means the style has not previously been registered. We don't need to do any repainting or refreshing here
+    // because the style will not actually be used anything yet.
     if (pEngine->styleCount == 255) {
         return false;   // Too many styles. The 256'th slot (index 255) is used as the error indicator.
     }
 
+    // Line heights need to be refreshed if it has not been set explicitly.
     if (pEngine->lineHeight < fontMetrics.lineHeight && (pEngine->flags & DRTE_USE_EXPLICIT_LINE_HEIGHT) == 0) {
         pEngine->lineHeight = fontMetrics.lineHeight;
     }
