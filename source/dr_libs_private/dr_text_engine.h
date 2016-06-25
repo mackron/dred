@@ -104,70 +104,11 @@ static drte_font_metrics drte_font_metrics_create(int ascent, int descent, int l
     return metrics;
 }
 
-#if 0
-typedef struct
-{
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t a;
-} drte_color;
-
-static drte_color drte_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-{
-    drte_color color;
-    color.r = r;
-    color.g = g;
-    color.b = b;
-    color.a = a;
-    return color;
-}
-
-static drte_color drte_rgb(uint8_t r, uint8_t g, uint8_t b)
-{
-    return drte_rgba(r, g, b, 255);
-}
-#endif
-
 typedef struct
 {
     drte_style_token styleToken;
     drte_font_metrics fontMetrics;
 } drte_style;
-
-typedef struct
-{
-    /// A pointer to the start of the string. This is NOT null terminated.
-    const char* text;
-
-    /// The length of the string, in bytes.
-    size_t textLength;
-
-
-    // The style slot to use for the foreground of this run.
-    uint8_t fgStyleSlot;
-
-    // The style slot to use for the background of this run.
-    uint8_t bgStyleSlot;
-
-
-    /// The width of the run.
-    float width;
-
-
-    // PROPERTIES BELOW ARE FOR INTERNAL USE ONLY
-
-    /// Index of the line the run is placed on. For runs that are new line characters, this will represent the number of lines that came before it. For
-    /// example, if this run represents the new-line character for the first line, this will be 0 and so on.
-    size_t iLine;
-
-    /// Index in the main text string of the first character of the run.
-    size_t iChar;
-
-    /// Index in the main text string of the character just past the last character in the run.
-    size_t iCharEnd;
-
-} drte_text_run;
 
 
 typedef void (* drte_engine_on_measure_string_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut);
