@@ -1132,6 +1132,16 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     // TODO: Handle styling segments here.
     // TODO: Handle UTF-8 properly.
 
+    // The next segment is clamped to a specific character with the following priorities, from highest priority to lowest
+    // - The end of the text
+    // - The end of the line
+    // - Tab boundaries
+    // - Selection boundaries
+    // - Styling segment boundaries
+    //
+    // If the next character begins in the middle of a segment, it will be clamped against said segment.
+
+
     if (pSegment->isAtEnd) {
         return false;
     }
@@ -1147,18 +1157,30 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     if (c == '\0' || c == '\n') {
         pSegment->isAtEnd = true;
     } else {
-        drte_marker* pSelectionMarker0;
-        drte_marker* pSelectionMarker1;
-        drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1);
-
         if (pSegment->iLine == drte_engine_get_cursor_line(pEngine)) {
             bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
         }
 
-        for (;;) {
-            // Fix this for multi-select and multi-cursor.
-            
+        // TODO: Fix this for multi-select and multi-cursor.
+        bool isAnythingSelected = false;
+        bool isInSelection = false;
+        size_t iSelectionCharBeg = 0;
+        size_t iSelectionCharEnd = 0;
 
+        drte_marker* pSelectionMarker0;
+        drte_marker* pSelectionMarker1;
+        if (drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1)) {
+            iSelectionCharBeg = drte_engine__get_marker_absolute_char_index(pEngine, pSelectionMarker0);
+            iSelectionCharEnd = drte_engine__get_marker_absolute_char_index(pEngine, pSelectionMarker1);
+            isInSelection = iCharBeg >= iSelectionCharBeg && iCharBeg < iSelectionCharEnd;
+            isAnythingSelected = true;
+        }
+
+        if (isInSelection) {
+            bgStyleToken = pEngine->styles[pEngine->selectionStyleSlot].styleToken;
+        }
+
+        for (;;) {
             c = pEngine->text[iCharEnd];
             if (c == '\0' || c == '\n') {
                 break;
@@ -1182,7 +1204,19 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
                 }
             }
 
+
+            // Selection.
+            if (isInSelection && iCharEnd == iSelectionCharEnd) {
+                break;  // Hit the end of the selection rectangle.
+            }
+            if (isAnythingSelected && !isInSelection && iCharEnd == iSelectionCharBeg) {
+                break;  // Hit the start of the selection rectangle.
+            }
+
+
+            // Styling region.
             
+
 
             iCharEnd += 1;
         }
