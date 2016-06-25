@@ -861,14 +861,17 @@ bool drte_is_symbol_or_whitespace(uint32_t utf32)
 }
 
 
+
+
+// Performs a full repaint of the entire visible region of the text engine.
+void drte_engine__repaint(drte_engine* pEngine);
+
+
 /// Performs a complete refresh of the given text engine.
 ///
 /// @remarks
 ///     This will delete every run and re-create them.
 void drte_engine__refresh(drte_engine* pEngine);
-
-// Performs a full repaint of the entire visible region of the text engine.
-void drte_engine__repaint(drte_engine* pEngine);
 
 /// Appends a text run to the list of runs in the given text engine.
 void drte_engine__push_text_run(drte_engine* pEngine, drte_text_run* pRun);
@@ -876,33 +879,10 @@ void drte_engine__push_text_run(drte_engine* pEngine, drte_text_run* pRun);
 /// Clears the internal list of text runs.
 void drte_engine__clear_text_runs(drte_engine* pEngine);
 
-/// Helper for determine whether or not the given text run is whitespace.
-bool drte_engine__is_text_run_whitespace(drte_engine* pEngine, drte_text_run* pRun);
+
 
 /// Helper for calculating the width of a tab.
 float drte_engine__get_tab_width(drte_engine* pEngine);
-
-
-/// Finds the line that's closest to the given point relative to the text.
-bool drte_engine__find_closest_line_to_point(drte_engine* pEngine, float inputPosYRelativeToText, size_t* pFirstRunIndexOnLineOut, size_t* pLastRunIndexOnLinePlus1Out);
-
-/// Finds the run that's closest to the given point relative to the text.
-bool drte_engine__find_closest_run_to_point(drte_engine* pEngine, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* pRunIndexOut);
-
-/// Retrieves some basic information about a line, namely the index of the last run on the line, and the line's height.
-bool drte_engine__find_line_info(drte_engine* pEngine, size_t iFirstRunOnLine, size_t* pLastRunIndexOnLinePlus1Out);
-
-/// Retrieves some basic information about a line by it's index.
-bool drte_engine__find_line_info_by_index(drte_engine* pEngine, size_t iLine, drgui_rect* pRectOut, size_t* pFirstRunIndexOut, size_t* pLastRunIndexPlus1Out);
-
-/// Finds the last run on the line that the given run is sitting on.
-//bool drte_engine__find_last_run_on_line_starting_from_run(drte_engine* pEngine, size_t iRun, size_t* pLastRunIndexOnLineOut);
-
-/// Finds the first run on the line that the given run is sitting on.
-//bool drte_engine__find_first_run_on_line_starting_from_run(drte_engine* pEngine, size_t iRun, size_t* pFirstRunIndexOnLineOut);
-
-/// Finds the run containing the character at the given index.
-//bool drte_engine__find_run_at_character(drte_engine* pEngine, size_t iChar, size_t* pRunIndexOut);
 
 
 /// Creates a blank text marker.
@@ -3047,11 +3027,20 @@ void drte_engine_clear_undo_stack(drte_engine* pEngine)
 
 size_t drte_engine_get_line_count(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->runCount == 0) {
+    if (pEngine == NULL || pEngine->runCount == 0 || pEngine->text == NULL || pEngine->textLength == 0) {
         return 0;
     }
 
-    return pEngine->pRuns[pEngine->runCount - 1].iLine + 1;
+    // TODO: Accelerate this.
+
+    size_t lineCount = 1;
+    for (size_t i = 0; i < pEngine->textLength; ++i) {
+        if (pEngine->text[i] == '\n') {
+            lineCount += 1;
+        }
+    }
+
+    return lineCount;
 }
 
 size_t drte_engine_get_visible_line_count(drte_engine* pEngine)
@@ -3065,12 +3054,7 @@ size_t drte_engine_get_visible_line_count(drte_engine* pEngine)
 
 float drte_engine_get_line_pos_y(drte_engine* pEngine, size_t iLine)
 {
-    drgui_rect lineRect;
-    if (!drte_engine__find_line_info_by_index(pEngine, iLine, &lineRect, NULL, NULL)) {
-        return 0;
-    }
-
-    return lineRect.top;
+    return iLine * drte_engine_get_line_height(pEngine);
 }
 
 size_t drte_engine_get_line_at_pos_y(drte_engine* pEngine, float posY)
@@ -3456,6 +3440,33 @@ void drte_engine__refresh(drte_engine* pEngine)
         return;
     }
 
+    // TODO: DELETE THIS ENTIRE FUNCTION. RESIZE LINES AS TEXT IS INSERTED AND DELETED.
+
+    // All we are doing here is resizing the text bounds. This will be optimized later.
+    float maxLineWidth = 0;
+
+    size_t lineCount = drte_engine_get_line_count(pEngine);
+    for (size_t iLine = 0; iLine < lineCount; ++iLine) {
+        float thisLineWidth = 0;
+
+        drte_segment segment;
+        if (drte_engine__first_segment(pEngine, iLine, &segment)) {
+            do
+            {
+                thisLineWidth += segment.width;
+            } while (drte_engine__next_segment(pEngine, &segment));
+        }
+
+        if (maxLineWidth < thisLineWidth) {
+            maxLineWidth = thisLineWidth;
+        }
+    }
+
+    pEngine->textBoundsWidth  = maxLineWidth;
+    pEngine->textBoundsHeight = lineCount * drte_engine_get_line_height(pEngine);
+
+
+#if 1
     // We split the runs based on tabs and new-lines. We want to create runs for tabs and new-line characters as well because we want
     // to have the entire string covered by runs for the sake of simplicity when it comes to editing.
     //
@@ -3465,9 +3476,7 @@ void drte_engine__refresh(drte_engine* pEngine)
     // Runs need to be cleared first.
     drte_engine__clear_text_runs(pEngine);
 
-    // The text bounds also need to be reset at the top.
-    pEngine->textBoundsWidth  = 0;
-    pEngine->textBoundsHeight = drte_engine_get_line_height(pEngine);
+    
 
     float tabWidth = drte_engine__get_tab_width(pEngine);
 
@@ -3489,20 +3498,6 @@ void drte_engine__refresh(drte_engine* pEngine)
         run.width      = 0;
         run.fgStyleSlot = pEngine->defaultStyleSlot;
         run.bgStyleSlot = pEngine->defaultStyleSlot;
-
-        // X position
-        //
-        // The x position depends on the previous run that's on the same line.
-        /*if (pEngine->runCount > 0)
-        {
-            drte_text_run* pPrevRun = pEngine->pRuns + (pEngine->runCount - 1);
-            if (pPrevRun->iLine == iCurrentLine) {
-                nextRunLeft += pPrevRun->width;
-            } else {
-                // It's the first run on the line.
-                run.posX = 0;
-            }
-        }*/
 
 
         // Width and height.
@@ -3537,10 +3532,10 @@ void drte_engine__refresh(drte_engine* pEngine)
 
         
         // Update the text bounds.
-        if (pEngine->textBoundsWidth < nextRunLeft + run.width) {
-            pEngine->textBoundsWidth = nextRunLeft + run.width;
-        }
-        pEngine->textBoundsHeight = runningPosY + drte_engine_get_line_height(pEngine);
+        //if (pEngine->textBoundsWidth < nextRunLeft + run.width) {
+        //    pEngine->textBoundsWidth = nextRunLeft + run.width;
+        //}
+        //pEngine->textBoundsHeight = runningPosY + drte_engine_get_line_height(pEngine);
 
 
         // A new line means we need to increment the running y position by the running line height.
@@ -3555,6 +3550,7 @@ void drte_engine__refresh(drte_engine* pEngine)
         nextRunStart = nextRunEnd;
         nextRunLeft += run.width;
     }
+#endif
 }
 
 void drte_engine__repaint(drte_engine* pEngine)
@@ -3598,20 +3594,6 @@ void drte_engine__clear_text_runs(drte_engine* pEngine)
     pEngine->runCount = 0;
 }
 
-bool drte_engine__is_text_run_whitespace(drte_engine* pEngine, drte_text_run* pRun)
-{
-    if (pRun == NULL) {
-        return false;
-    }
-
-    if (pEngine->text[pRun->iChar] != '\t' && pEngine->text[pRun->iChar] != '\n')
-    {
-        return false;
-    }
-
-    return true;
-}
-
 float drte_engine__get_tab_width(drte_engine* pEngine)
 {
     float tabWidth = (float)(pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth * pEngine->tabSizeInSpaces);
@@ -3623,132 +3605,6 @@ float drte_engine__get_tab_width(drte_engine* pEngine)
     }
 
     return tabWidth;
-}
-
-
-bool drte_engine__find_closest_line_to_point(drte_engine* pEngine, float inputPosYRelativeToText, size_t* pFirstRunIndexOnLineOut, size_t* pLastRunIndexOnLinePlus1Out)
-{
-    size_t iFirstRunOnLine     = 0;
-    size_t iLastRunOnLinePlus1 = 0;
-
-    bool result = true;
-    if (pEngine == NULL || pEngine->runCount == 0)
-    {
-        result = false;
-    }
-    else
-    {
-        float runningLineTop = 0;
-        while (drte_engine__find_line_info(pEngine, iFirstRunOnLine, OUT &iLastRunOnLinePlus1))
-        {
-            const float lineTop    = runningLineTop;
-            const float lineBottom = lineTop + drte_engine_get_line_height(pEngine);
-
-            if (inputPosYRelativeToText < lineBottom)
-            {
-                // It's on this line.
-                break;
-            }
-            else
-            {
-                // It's not on this line - go to the next one, unless we're already on the last line.
-                if (iLastRunOnLinePlus1 == pEngine->runCount) {
-                    break;
-                }
-
-                iFirstRunOnLine = iLastRunOnLinePlus1;
-                runningLineTop  = lineBottom;
-            }
-        }
-    }
-
-    if (pFirstRunIndexOnLineOut) {
-        *pFirstRunIndexOnLineOut = iFirstRunOnLine;
-    }
-    if (pLastRunIndexOnLinePlus1Out) {
-        *pLastRunIndexOnLinePlus1Out = iLastRunOnLinePlus1;
-    }
-
-    return result;
-}
-
-
-bool drte_engine__find_line_info(drte_engine* pEngine, size_t iFirstRunOnLine, size_t* pLastRunIndexOnLinePlus1Out)
-{
-    if (pEngine == NULL) {
-        return false;
-    }
-
-    if (iFirstRunOnLine < pEngine->runCount)
-    {
-        const size_t iLine = pEngine->pRuns[iFirstRunOnLine].iLine;
-
-        size_t iRun;
-        for (iRun = iFirstRunOnLine; iRun < pEngine->runCount && pEngine->pRuns[iRun].iLine == iLine; ++iRun) {
-        }
-
-        assert(iRun > iFirstRunOnLine);
-
-        if (pLastRunIndexOnLinePlus1Out) {
-            *pLastRunIndexOnLinePlus1Out = iRun;
-        }
-
-        return true;
-    }
-
-    return false;
-}
-
-bool drte_engine__find_line_info_by_index(drte_engine* pEngine, size_t iLine, drgui_rect* pRectOut, size_t* pFirstRunIndexOut, size_t* pLastRunIndexPlus1Out)
-{
-    if (pEngine == NULL) {
-        return false;
-    }
-
-    size_t iFirstRunOnLine     = 0;
-    size_t iLastRunOnLinePlus1 = 0;
-
-    float lineTop = -drte_engine_get_line_height(pEngine);
-    for (size_t iCurrentLine = 0; iCurrentLine <= iLine; ++iCurrentLine)
-    {
-        iFirstRunOnLine = iLastRunOnLinePlus1;
-        lineTop += drte_engine_get_line_height(pEngine);
-
-        if (!drte_engine__find_line_info(pEngine, iFirstRunOnLine, &iLastRunOnLinePlus1)) {
-            return false;   // There was an error retrieving information about the line.
-        }
-    }
-
-    // At this point we have the first and last runs that make up the line and we can generate our output.
-    if (iLastRunOnLinePlus1 > iFirstRunOnLine)
-    {
-        if (pFirstRunIndexOut) {
-            *pFirstRunIndexOut = iFirstRunOnLine;
-        }
-        if (pLastRunIndexPlus1Out) {
-            *pLastRunIndexPlus1Out = iLastRunOnLinePlus1;
-        }
-
-        if (pRectOut != NULL)
-        {
-            pRectOut->left   = 0;
-            pRectOut->right  = pRectOut->left;
-            pRectOut->top    = lineTop;
-            pRectOut->bottom = pRectOut->top + drte_engine_get_line_height(pEngine);
-
-            // The right edge needs to be calculated.
-            for (size_t iRun = iFirstRunOnLine; iRun < iLastRunOnLinePlus1; ++iRun) {
-                pRectOut->right += pEngine->pRuns[iRun].width;
-            }
-        }
-
-        return true;
-    }
-    else
-    {
-        // We couldn't find any runs.
-        return false;
-    }
 }
 
 
@@ -3782,28 +3638,6 @@ bool drte_engine__move_marker_to_point_relative_to_container(drte_engine* pEngin
     }
 
     return false;
-}
-
-float drte_engine__get_run_pos_x(drte_engine* pEngine, size_t iRun)
-{
-    assert(pEngine != NULL);
-
-    size_t iFirstRunOnLine;
-    size_t iLastRunOnLinePlus1;
-    if (!drte_engine__find_line_info_by_index(pEngine, pEngine->pRuns[iRun].iLine, NULL, &iFirstRunOnLine, &iLastRunOnLinePlus1)) {
-        return 0;
-    }
-
-    if (iRun >= iLastRunOnLinePlus1) {
-        return 0;
-    }
-
-    float runLeft = 0;
-    for (size_t jRun = iFirstRunOnLine; jRun < iRun; ++jRun) {
-        runLeft += pEngine->pRuns[jRun].width;
-    }
-
-    return runLeft;
 }
 
 void drte_engine__get_marker_position_relative_to_container(drte_engine* pEngine, drte_marker* pMarker, float* pPosXOut, float* pPosYOut)
