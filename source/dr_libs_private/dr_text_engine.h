@@ -290,9 +290,9 @@ struct drte_engine
 
 
     // The index of the first character of every line.
-    size_t* pLines;
-    size_t lineCount;
-    size_t lineBufferSize;
+    //size_t* pLines;
+    //size_t lineCount;
+    //size_t lineBufferSize;
 
 
 
@@ -1187,9 +1187,9 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     pEngine->cursorStyleSlot = DRTE_INVALID_STYLE_SLOT;
     pEngine->lineNumbersStyleSlot = DRTE_INVALID_STYLE_SLOT;
 
-    pEngine->lineBufferSize = 16;
-    pEngine->lineCount = 0;
-    pEngine->pLines = (size_t*)malloc(pEngine->lineBufferSize * sizeof(*pEngine->pLines));
+    //pEngine->lineBufferSize = 16;
+    //pEngine->lineCount = 0;
+    //pEngine->pLines = (size_t*)malloc(pEngine->lineBufferSize * sizeof(*pEngine->pLines));
 
     pEngine->tabSizeInSpaces          = 4;
     pEngine->cursorWidth              = 1;
