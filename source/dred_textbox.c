@@ -392,7 +392,6 @@ void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont)
 
         // The caret position needs to be refreshes. We'll cheat here a little bit and just do a full refresh of the text engine.
         drte_engine__refresh(pTB->pTL);
-        drte_engine_refresh_markers(pTB->pTL);
     }
     drgui_end_dirty(pTextBox);
 }
