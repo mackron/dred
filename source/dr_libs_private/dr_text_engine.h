@@ -138,8 +138,8 @@ typedef struct
     // The index of the last character in the segment.
     size_t iCharEnd;
 
-    // The style to apply to the segment.
-    drte_style_token styleToken;
+    // The slot of the style to apply to this segment.
+    uint8_t styleSlot;
 
 } drte_style_segment;
 
@@ -945,12 +945,9 @@ uint8_t drte_engine__get_style_slot(drte_engine* pEngine, drte_style_token style
 }
 
 // Gets the style token associated with the given slot.
-drte_style_token drte_engine__get_stlye_token(drte_engine* pEngine, uint8_t styleSlot)
+drte_style_token drte_engine__get_style_token(drte_engine* pEngine, uint8_t styleSlot)
 {
     assert(pEngine != NULL);
-    assert(styleSlot != DRTE_INVALID_STYLE_SLOT);
-    assert(styleSlot < 255);
-
     return pEngine->styles[styleSlot].styleToken;
 }
 
@@ -971,7 +968,7 @@ bool drte_engine__get_character_style_segment(drte_engine* pEngine, size_t iChar
 
     pSegmentOut->iCharBeg = (size_t)-1;
     pSegmentOut->iCharEnd = (size_t)-1;
-    pSegmentOut->styleToken = 0;
+    pSegmentOut->styleSlot = DRTE_INVALID_STYLE_SLOT;
     return false;
 }
 
@@ -991,7 +988,7 @@ bool drte_engine__get_next_style_segment_from_character(drte_engine* pEngine, si
 
     pSegmentOut->iCharBeg = (size_t)-1;
     pSegmentOut->iCharEnd = (size_t)-1;
-    pSegmentOut->styleToken = 0;
+    pSegmentOut->styleSlot = DRTE_INVALID_STYLE_SLOT;
     return false;
 }
 
@@ -1030,7 +1027,7 @@ float drte_engine__measure_segment(drte_engine* pEngine, drte_segment* pSegment)
         } else {
             // It's normal text. We need to refer to the backend for measuring.
             float unused;
-            if (pEngine->onMeasureString) {
+            if (pEngine->onMeasureString && pSegment->fgStyleToken != 0) {
                 pEngine->onMeasureString(pEngine, pSegment->fgStyleToken, pEngine->text + pSegment->iCharBeg, pSegment->iCharEnd - pSegment->iCharBeg, &segmentWidth, &unused);
             }
         }
@@ -1123,9 +1120,9 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     // Clamp to style segment.
     if (isInStyleSegment) {
         clampToChar = true;
-        fgStyleToken = styleSegment.styleToken;
+        fgStyleToken = drte_engine__get_style_token(pEngine, styleSegment.styleSlot);
         if (!isInSelection) {
-            bgStyleToken = styleSegment.styleToken;
+            fgStyleToken = drte_engine__get_style_token(pEngine, styleSegment.styleSlot);
         }
 
         iMaxChar = drte_min(iMaxChar, styleSegment.iCharEnd);
@@ -1494,7 +1491,7 @@ void drte_engine_get_character_position(drte_engine* pEngine, size_t characterIn
                 } else {
                     // We must refer to the backend in order to find the exact position of the character.
                     // TODO: Grab a copy of the string rather than a direct offset.
-                    if (pEngine->onGetCursorPositionFromChar) {
+                    if (pEngine->onGetCursorPositionFromChar && segment.fgStyleToken != 0) {
                         pEngine->onGetCursorPositionFromChar(pEngine, segment.fgStyleToken, pEngine->text + segment.iCharBeg, characterIndex - segment.iCharBeg, &posX);
                         posX += segment.posX;
                     }
@@ -1574,7 +1571,7 @@ void drte_engine_add_style_segment(drte_engine* pEngine, size_t iCharBeg, size_t
 
     pEngine->pStyleSegments[pEngine->styleSegmentCount].iCharBeg = iCharBeg;
     pEngine->pStyleSegments[pEngine->styleSegmentCount].iCharEnd = iCharEnd;
-    pEngine->pStyleSegments[pEngine->styleSegmentCount].styleToken = styleToken;
+    pEngine->pStyleSegments[pEngine->styleSegmentCount].styleSlot = drte_engine__get_style_slot(pEngine, styleToken);
     pEngine->styleSegmentCount += 1;
 }
 
@@ -3288,7 +3285,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                         segment.width = pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
                         lineWidth += segment.width;
                     }
-                    if (pEngine->onPaintRect) {
+                    if (pEngine->onPaintRect && segment.bgStyleToken != 0) {
                         pEngine->onPaintRect(pEngine, segment.bgStyleToken, drgui_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pElement, pPaintData);
                     }
                 } else {
@@ -3299,7 +3296,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
 
                     // TODO: Draw text on the base line to properly handle font's of differing sizes.
 
-                    if (pEngine->onPaintText) {
+                    if (pEngine->onPaintText && segment.fgStyleToken != 0 && segment.bgStyleToken != 0) {
                         pEngine->onPaintText(pEngine, segment.fgStyleToken, segment.bgStyleToken, text, textLength, linePosX + segment.posX, linePosY, pElement, pPaintData);
                     }
                 }
@@ -3320,7 +3317,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                 bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
             }
 
-            if (pEngine->onPaintRect) {
+            if (pEngine->onPaintRect && bgStyleToken != 0) {
                 pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(lineRight, linePosY, pEngine->containerWidth, linePosY + lineHeight), pElement, pPaintData);
             }
         }
@@ -3329,13 +3326,13 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
     }
 
     // The cursor.
-    if (pEngine->isShowingCursor && pEngine->isCursorBlinkOn) {
+    if (pEngine->isShowingCursor && pEngine->isCursorBlinkOn && pEngine->styles[pEngine->cursorStyleSlot].styleToken != 0) {
         pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->cursorStyleSlot].styleToken, drte_engine_get_cursor_rect(pEngine), pElement, pPaintData);
     }
 
 
     // The rectangle region below the last line.
-    if (linePosY < pEngine->containerHeight) {
+    if (linePosY < pEngine->containerHeight && pEngine->styles[pEngine->defaultStyleSlot].styleToken != 0) {
         // TODO: Only draw the intersection of the bottom rectangle with the invalid rectangle.
         drgui_rect tailRect;
         tailRect.left = 0;
@@ -3380,6 +3377,9 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
     size_t iLineBottom;
     drte_engine_get_visible_lines(pEngine, &iLineTop, &iLineBottom);
 
+    drte_style_token fgStyleToken = pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken;
+    drte_style_token bgStyleToken = pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken;
+
     float lineTop = pEngine->innerOffsetY + (iLineTop * lineHeight);
     for (size_t iLine = iLineTop; iLine <= iLineBottom; ++iLine) {
         char iLineStr[64];
@@ -3387,8 +3387,8 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
 
         float textWidth = 0;
         float textHeight = 0;
-        if (pEngine->onMeasureString) {
-            pEngine->onMeasureString(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
+        if (pEngine->onMeasureString && fgStyleToken) {
+            pEngine->onMeasureString(pEngine, fgStyleToken, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
         }
 
         float textLeft = lineNumbersWidth - textWidth;
@@ -3396,26 +3396,24 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
 
         float lineBottom = lineTop + lineHeight;
 
-        drte_style_token fgStyleToken = pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken;
-        drte_style_token bgStyleToken = pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken;
+        if (fgStyleToken != 0 && bgStyleToken != 0) {
+            onPaintText(pEngine, fgStyleToken, bgStyleToken, iLineStr, strlen(iLineStr), textLeft, textTop, pElement, pPaintData);
+            onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, textLeft, lineBottom), pElement, pPaintData);
 
-        onPaintText(pEngine, fgStyleToken, bgStyleToken, iLineStr, strlen(iLineStr), textLeft, textTop, pElement, pPaintData);
-        onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, textLeft, lineBottom), pElement, pPaintData);
-
-        // There could be a region above and below the text. This will happen if the line height of the line numbers is
-        // smaller than the main line height.
-        if (textHeight < lineHeight) {
-            onPaintRect(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, drgui_make_rect(textLeft, lineTop, lineNumbersWidth, textTop), pElement, pPaintData);
-            onPaintRect(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, drgui_make_rect(textLeft, textTop + textHeight, lineNumbersWidth, lineBottom), pElement, pPaintData);
+            // There could be a region above and below the text. This will happen if the line height of the line numbers is
+            // smaller than the main line height.
+            if (textHeight < lineHeight) {
+                onPaintRect(pEngine, bgStyleToken, drgui_make_rect(textLeft, lineTop, lineNumbersWidth, textTop), pElement, pPaintData);
+                onPaintRect(pEngine, bgStyleToken, drgui_make_rect(textLeft, textTop + textHeight, lineNumbersWidth, lineBottom), pElement, pPaintData);
+            }
         }
-
 
         lineTop = lineBottom;
     }
 
     // The region below the lines.
-    if (lineTop < pEngine->containerHeight) {
-        onPaintRect(pEngine, pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken, drgui_make_rect(0, lineTop, lineNumbersWidth, lineNumbersHeight), pElement, pPaintData);
+    if (lineTop < pEngine->containerHeight && bgStyleToken != 0) {
+        onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, lineNumbersWidth, lineNumbersHeight), pElement, pPaintData);
     }
 }
 
