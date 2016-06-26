@@ -16,8 +16,6 @@
 //   - Need a way to easily split the file into chunks.
 //   - Need to easily pick out individual characters by their index.
 //   - Need a very simple high-level API while still maintaining good performance characteristics.
-// - Rendering callbacks
-//   - The text engine will not do the actual rendering, but instead notify the application.
 // - Notifications for when a region have become invalid and needs redrawing
 // - Line numbers
 // - Underlines
@@ -84,7 +82,6 @@ typedef enum
     drte_alignment_right,
     drte_alignment_bottom,
 } drte_alignment;
-
 
 typedef struct
 {
@@ -305,7 +302,19 @@ struct drte_engine
     unsigned int selectionModeCounter;
 
     /// Whether or not anything is selected.
-    bool isAnythingSelected;
+    bool isAnythingSelected;    // <-- TODO: I don't like this. See if we can get rid of it.
+
+
+    // The list of styling segments set by the application. This is used for syntax highlighting.
+    drte_style_segment* pStyleSegments;
+
+    // The number of active style segments.
+    size_t styleSegmentCount;
+
+    // The size of the buffer holding the style segments.
+    size_t styleSegmentBufferSize;
+
+
 
 
     /// The function to call when a text run needs to be painted.
@@ -406,6 +415,10 @@ uint32_t drte_engine_get_utf32(drte_engine* pEngine, size_t characterIndex);
 
 // Retrieves the indices of the visible lines.
 void drte_engine_get_visible_lines(drte_engine* pEngine, size_t* pFirstLineOut, size_t* pLastLineOut);
+
+
+// Adds a style segment.
+void drte_engine_add_style_segment(drte_engine* pEngine, size_t iCharBeg, size_t iCharEnd, drte_style_token styleToken);
 
 
 /// Sets the given text engine's text.
@@ -785,6 +798,11 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 #define DRTE_USE_EXPLICIT_LINE_HEIGHT   (1 << 0)
 
 
+// min
+#define drte_min(a, b) (((a) < (b)) ? (a) : (b))
+
+
+
 // Helper for determining whether or not the given character is a symbol or whitespace.
 bool drte_is_symbol_or_whitespace(uint32_t utf32)
 {
@@ -926,6 +944,57 @@ uint8_t drte_engine__get_style_slot(drte_engine* pEngine, drte_style_token style
     return DRTE_INVALID_STYLE_SLOT;
 }
 
+// Gets the style token associated with the given slot.
+drte_style_token drte_engine__get_stlye_token(drte_engine* pEngine, uint8_t styleSlot)
+{
+    assert(pEngine != NULL);
+    assert(styleSlot != DRTE_INVALID_STYLE_SLOT);
+    assert(styleSlot < 255);
+
+    return pEngine->styles[styleSlot].styleToken;
+}
+
+
+// Retrieves the style segment that the character at the given index is sitting on.
+bool drte_engine__get_character_style_segment(drte_engine* pEngine, size_t iChar, drte_style_segment* pSegmentOut)
+{
+    assert(pEngine != NULL);
+    assert(pSegmentOut != NULL);
+
+    // Just a simple linear search for now.
+    for (size_t i = 0; i < pEngine->styleSegmentCount; ++i) {
+        if (iChar >= pEngine->pStyleSegments[i].iCharBeg && iChar < pEngine->pStyleSegments[i].iCharEnd) {
+            *pSegmentOut = pEngine->pStyleSegments[i];
+            return true;
+        }
+    }
+
+    pSegmentOut->iCharBeg = (size_t)-1;
+    pSegmentOut->iCharEnd = (size_t)-1;
+    pSegmentOut->styleToken = 0;
+    return false;
+}
+
+// Retrieves the style segment coming after the given character. This will include the segment the character is sitting in, if any.
+bool drte_engine__get_next_style_segment_from_character(drte_engine* pEngine, size_t iChar, drte_style_segment* pSegmentOut)
+{
+    assert(pEngine != NULL);
+    assert(pSegmentOut != NULL);
+
+    // Just a simple linear search for now.
+    for (size_t i = 0; i < pEngine->styleSegmentCount; ++i) {
+        if (iChar < pEngine->pStyleSegments[i].iCharEnd) {
+            *pSegmentOut = pEngine->pStyleSegments[i];
+            return true;
+        }
+    }
+
+    pSegmentOut->iCharBeg = (size_t)-1;
+    pSegmentOut->iCharEnd = (size_t)-1;
+    pSegmentOut->styleToken = 0;
+    return false;
+}
+
 
 // A drte_segment object is used for iterating over the segments of a line.
 typedef struct
@@ -978,6 +1047,7 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     // TODO: Handle selection segments here.
     // TODO: Handle styling segments here.
     // TODO: Handle UTF-8 properly.
+    // TODO: There is LOTS of optimization opportunity in this function.
 
     // The next segment is clamped to a specific character with the following priorities, from highest priority to lowest
     // - The end of the text
@@ -1023,15 +1093,47 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
         bgStyleToken = pEngine->styles[pEngine->selectionStyleSlot].styleToken;
     }
 
+
+    drte_style_segment styleSegment;
+    bool isInStyleSegment = false;
+    if (drte_engine__get_character_style_segment(pEngine, iCharBeg, &styleSegment)) {  // <-- Optimize this. This requires a full search, but we only care about segments on the line.
+        isInStyleSegment = true;
+    } else {
+        if (!drte_engine__get_next_style_segment_from_character(pEngine, iCharBeg, &styleSegment)) {
+            styleSegment.iCharBeg = (size_t)-1;
+            styleSegment.iCharEnd = (size_t)-1;
+        }
+    }
+
+
     bool clampToChar = false;
     size_t iMaxChar = (size_t)-1;
+
+    // Clamp to selection.
     if (isInSelection) {
         clampToChar = true;
         iMaxChar = iSelectionCharEnd;
     } else if (isAnythingSelected) {
         clampToChar = true;
-        iMaxChar = iSelectionCharBeg;
+        if (iSelectionCharBeg > iCharBeg) {
+            iMaxChar = iSelectionCharBeg;
+        }
     }
+
+    // Clamp to style segment.
+    if (isInStyleSegment) {
+        clampToChar = true;
+        fgStyleToken = styleSegment.styleToken;
+        if (!isInSelection) {
+            bgStyleToken = styleSegment.styleToken;
+        }
+
+        iMaxChar = drte_min(iMaxChar, styleSegment.iCharEnd);
+    } else {
+        iMaxChar = drte_min(iMaxChar, styleSegment.iCharBeg);
+    }
+    
+
 
 
     char c = pEngine->text[iCharBeg];
@@ -1132,6 +1234,10 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     //pEngine->lineCount = 0;
     //pEngine->pLines = (size_t*)malloc(pEngine->lineBufferSize * sizeof(*pEngine->pLines));
 
+    pEngine->styleSegmentBufferSize = 0;
+    pEngine->styleSegmentCount = 0;
+    pEngine->pStyleSegments = NULL;
+
     pEngine->tabSizeInSpaces          = 4;
     pEngine->cursorWidth              = 1;
     pEngine->cursorBlinkRate          = 500;
@@ -1187,7 +1293,7 @@ bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token sty
 
 
     // If we get here it means the style has not previously been registered. We don't need to do any repainting or refreshing here
-    // because the style will not actually be used anything yet.
+    // because the style will not actually be used by anything yet.
     if (pEngine->styleCount == 255) {
         return false;   // Too many styles. The 256'th slot (index 255) is used as the error indicator.
     }
@@ -1440,6 +1546,36 @@ void drte_engine_get_visible_lines(drte_engine* pEngine, size_t* pFirstLineOut, 
 
         *pLastLineOut = iLastLine;
     }
+}
+
+
+void drte_engine_add_style_segment(drte_engine* pEngine, size_t iCharBeg, size_t iCharEnd, drte_style_token styleToken)
+{
+    if (pEngine == NULL) {
+        return;
+    }
+
+    // Just add it to the end for now, but later on these should be sorted.
+    if (pEngine->styleSegmentCount == pEngine->styleSegmentBufferSize) {
+        size_t newBufferSize = (pEngine->styleSegmentBufferSize == 0) ? 16 : pEngine->styleSegmentBufferSize * 2;
+        drte_style_segment* pNewStyleSegments = (drte_style_segment*)realloc(pEngine->pStyleSegments, newBufferSize * sizeof(*pNewStyleSegments));
+        if (pNewStyleSegments == NULL) {
+            return;
+        }
+
+        pEngine->styleSegmentBufferSize = newBufferSize;
+        pEngine->pStyleSegments = pNewStyleSegments;
+    }
+
+    assert(pEngine->styleSegmentCount < pEngine->styleSegmentBufferSize);
+
+    // TODO: Sort this based on iCharBeg.
+    // TODO: Split and memory manage overlapping styles.
+
+    pEngine->pStyleSegments[pEngine->styleSegmentCount].iCharBeg = iCharBeg;
+    pEngine->pStyleSegments[pEngine->styleSegmentCount].iCharEnd = iCharEnd;
+    pEngine->pStyleSegments[pEngine->styleSegmentCount].styleToken = styleToken;
+    pEngine->styleSegmentCount += 1;
 }
 
 
@@ -3160,6 +3296,9 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                     // TODO: Gather the text and properly support UTF-8.
                     const char* text = pEngine->text + segment.iCharBeg;
                     size_t textLength = segment.iCharEnd - segment.iCharBeg;
+
+                    // TODO: Draw text on the base line to properly handle font's of differing sizes.
+
                     if (pEngine->onPaintText) {
                         pEngine->onPaintText(pEngine, segment.fgStyleToken, segment.bgStyleToken, text, textLength, linePosX + segment.posX, linePosY, pElement, pPaintData);
                     }
