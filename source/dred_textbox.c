@@ -22,6 +22,7 @@ typedef struct
 
     // TEST STYLES
     dred_text_style testStyle0;
+    dred_text_style testStyle1;
 
 
     /// The vertical scrollbar.
@@ -197,6 +198,7 @@ void dred_textbox__refresh_style(drgui_element* pTextBox)
 
     // TESTS
     drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->testStyle0, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
+    drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->testStyle1, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
 }
 
 
@@ -226,12 +228,50 @@ bool dred_textbox_engine__on_get_next_highlight(drte_engine* pEngine, size_t iCh
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data((dred_textbox*)pUserData);
     assert(pTB != NULL);
 
-    if (iChar < 8) {
+    drcpp_region region;
+
+    // Highest priority stuff first.
+
+
+   
+
+
+    // Line comments.
+    if (drcpp_parser_get_line_comment_of_character(pEngine->text, iChar, &region)) {
+        *pCharBegOut = region.iCharBeg;
+        *pCharEndOut = region.iCharEnd;
+        *pStyleTokenOut = (drte_style_token)&pTB->testStyle1;
+        return false;
+    }
+
+
+    // TODO: Strings.
+
+    // TODO: Keywords
+    /*if (iChar < 8) {
         *pCharBegOut = 4;
         *pCharEndOut = 8;
-        *pStyleTokenOut = (drte_style_token)&pTB->testStyle0;
+        *pStyleTokenOut = (drte_style_token)&pTB->testStyle1;
+        return true;
+    }*/
+
+    // If we get here it means we are not in the middle of a highlighted token so now we need to check if there is one on this line.
+
+    // TODO: Block comments.
+
+
+    // Line comments.
+    if (drcpp_parser_get_next_line_comment_on_line(pEngine->text, iChar, &region)) {
+        *pCharBegOut = region.iCharBeg;
+        *pCharEndOut = region.iCharEnd;
+        *pStyleTokenOut = (drte_style_token)&pTB->testStyle1;
         return true;
     }
+
+
+    // TODO: Strings
+
+    // TODO: Keywords
 
     return false;
 }
@@ -282,6 +322,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
         return NULL;
     }
 
+
     pTB->pTL->onMeasureString = dred_textbox_engine__on_measure_string_proc;
     pTB->pTL->onGetCursorPositionFromPoint = dred_textbox_engine__on_get_cursor_position_from_point;
     pTB->pTL->onGetCursorPositionFromChar = dred_textbox_engine__on_get_cursor_position_from_char;
@@ -311,7 +352,11 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     // Test styling.
     pTB->testStyle0.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
     pTB->testStyle0.bgColor = drgui_rgb(64, 64, 64);
-    pTB->testStyle0.fgColor = drgui_rgb(128, 32, 32);
+    pTB->testStyle0.fgColor = drgui_rgb(64, 160, 255);
+
+    pTB->testStyle1.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTB->testStyle1.bgColor = drgui_rgb(64, 64, 64);
+    pTB->testStyle1.fgColor = drgui_rgb(64, 192, 92);
 
 
     // Register the styles with the text engine.

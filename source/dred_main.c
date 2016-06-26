@@ -76,6 +76,9 @@
 #define DR_TEXT_ENGINE_IMPLEMENTATION
 #include "dr_libs_private/dr_text_engine.h"
 
+#define DR_CPP_IMPLEMENTATION
+#include "../../dr_ci/source/lang/dr_cpp.h"
+
 #define GB_STRING_IMPLEMENTATION
 #include "gb_string.h"
 
