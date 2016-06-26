@@ -20,6 +20,10 @@ typedef struct
     dred_text_style lineNumbersStyle;
 
 
+    // TEST STYLES
+    dred_text_style testStyle0;
+
+
     /// The vertical scrollbar.
     drgui_element* pVertScrollbar;
 
@@ -189,39 +193,48 @@ void dred_textbox__refresh_style(drgui_element* pTextBox)
 
     // Line numbers.
     drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->lineNumbersStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
+
+
+    // TESTS
+    drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->testStyle0, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
 }
 
 
 void dred_textbox_engine__on_measure_string_proc(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut)
 {
     (void)pEngine;
-    //if (styleToken == 0) {
-    //    return;
-    //}
-
     drgui_measure_string(((dred_text_style*)styleToken)->pFont, text, textLength, pWidthOut, pHeightOut);
 }
 
 void dred_textbox_engine__on_get_cursor_position_from_point(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     (void)pEngine;
-    //if (styleToken == 0) {
-    //    return;
-    //}
-
     drgui_get_text_cursor_position_from_point(((dred_text_style*)styleToken)->pFont, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
 }
 
 void dred_textbox_engine__on_get_cursor_position_from_char(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
     (void)pEngine;
-    //if (styleToken == 0) {
-    //    return;
-    //}
-
     drgui_get_text_cursor_position_from_char(((dred_text_style*)styleToken)->pFont, text, characterIndex, pTextCursorPosXOut);
 }
 
+
+bool dred_textbox_engine__on_get_next_highlight(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData)
+{
+    (void)pEngine;
+
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data((dred_textbox*)pUserData);
+    assert(pTB != NULL);
+
+    if (iChar < 8) {
+        *pCharBegOut = 4;
+        *pCharEndOut = 8;
+        *pStyleTokenOut = (drte_style_token)&pTB->testStyle0;
+        return true;
+    }
+
+    return false;
+}
 
 
 dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
@@ -294,8 +307,20 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     pTB->lineNumbersStyle.bgColor = drgui_rgb(64, 64, 64);
     pTB->lineNumbersStyle.fgColor = drgui_rgb(80, 160, 192);
 
+
+    // Test styling.
+    pTB->testStyle0.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTB->testStyle0.bgColor = drgui_rgb(64, 64, 64);
+    pTB->testStyle0.fgColor = drgui_rgb(128, 32, 32);
+
+
     // Register the styles with the text engine.
     dred_textbox__refresh_style(pTextBox);
+
+
+    drte_engine_set_highlighter(pTB->pTL, dred_textbox_engine__on_get_next_highlight, pTextBox);
+    
+
 
     drte_engine_set_default_style(pTB->pTL, (drte_style_token)&pTB->defaultStyle);
     drte_engine_set_selection_style(pTB->pTL, (drte_style_token)&pTB->selectionStyle);
@@ -381,6 +406,9 @@ void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont)
     {
         //drte_engine_set_default_font(pTB->pTL, pFont);
         pTB->defaultStyle.pFont = pFont;
+        pTB->lineNumbersStyle.pFont = pFont;
+        pTB->testStyle0.pFont = pFont;
+
         dred_textbox__refresh_style(pTextBox);
 
         // The font used for line numbers are tied to the main font at the moment.
