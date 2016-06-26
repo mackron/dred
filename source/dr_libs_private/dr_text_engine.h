@@ -999,8 +999,8 @@ typedef struct
     size_t iLine;
     size_t iCharBeg;
     size_t iCharEnd;
-    drte_style_token fgStyleToken;
-    drte_style_token bgStyleToken;
+    uint8_t fgStyleSlot;
+    uint8_t bgStyleSlot;
     float posX;
     float width;
     bool isAtEnd;
@@ -1027,8 +1027,9 @@ float drte_engine__measure_segment(drte_engine* pEngine, drte_segment* pSegment)
         } else {
             // It's normal text. We need to refer to the backend for measuring.
             float unused;
-            if (pEngine->onMeasureString && pSegment->fgStyleToken != 0) {
-                pEngine->onMeasureString(pEngine, pSegment->fgStyleToken, pEngine->text + pSegment->iCharBeg, pSegment->iCharEnd - pSegment->iCharBeg, &segmentWidth, &unused);
+            drte_style_token fgStyleToken = drte_engine__get_style_token(pEngine, pSegment->fgStyleSlot);
+            if (pEngine->onMeasureString && fgStyleToken) {
+                pEngine->onMeasureString(pEngine, fgStyleToken, pEngine->text + pSegment->iCharBeg, pSegment->iCharEnd - pSegment->iCharBeg, &segmentWidth, &unused);
             }
         }
     }
@@ -1060,15 +1061,15 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
         return false;
     }
 
-    drte_style_token fgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
-    drte_style_token bgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
+    uint8_t fgStyleSlot = pEngine->defaultStyleSlot;
+    uint8_t bgStyleSlot = pEngine->defaultStyleSlot;
 
     // Find the end of the next segment, but don't modify the segment yet. The reason for this is that we need to measure the segment later.
     size_t iCharBeg = pSegment->iCharEnd;
     size_t iCharEnd = iCharBeg;
 
     if (pSegment->iLine == drte_engine_get_cursor_line(pEngine)) {
-        bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
+        bgStyleSlot = pEngine->activeLineStyleSlot;
     }
 
     // TODO: Fix this for multi-select and multi-cursor.
@@ -1087,7 +1088,7 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     }
 
     if (isInSelection) {
-        bgStyleToken = pEngine->styles[pEngine->selectionStyleSlot].styleToken;
+        bgStyleSlot = pEngine->selectionStyleSlot;
     }
 
 
@@ -1120,11 +1121,7 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     // Clamp to style segment.
     if (isInStyleSegment) {
         clampToChar = true;
-        fgStyleToken = drte_engine__get_style_token(pEngine, styleSegment.styleSlot);
-        if (!isInSelection) {
-            fgStyleToken = drte_engine__get_style_token(pEngine, styleSegment.styleSlot);
-        }
-
+        fgStyleSlot = styleSegment.styleSlot;
         iMaxChar = drte_min(iMaxChar, styleSegment.iCharEnd);
     } else {
         iMaxChar = drte_min(iMaxChar, styleSegment.iCharBeg);
@@ -1184,8 +1181,8 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     // We now have everything we need to construct the next segment iterator.
     pSegment->iCharBeg = iCharBeg;
     pSegment->iCharEnd = iCharEnd;
-    pSegment->fgStyleToken = fgStyleToken;
-    pSegment->bgStyleToken = bgStyleToken;
+    pSegment->fgStyleSlot = fgStyleSlot;
+    pSegment->bgStyleSlot = bgStyleSlot;
     pSegment->posX += pSegment->width;
     pSegment->width = drte_engine__measure_segment(pEngine, pSegment);
 
@@ -1201,8 +1198,8 @@ bool drte_engine__first_segment(drte_engine* pEngine, size_t lineIndex, drte_seg
     pSegment->iLine = lineIndex;
     pSegment->iCharBeg = drte_engine_get_line_first_character(pEngine, lineIndex);
     pSegment->iCharEnd = pSegment->iCharBeg;
-    pSegment->fgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
-    pSegment->bgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
+    pSegment->fgStyleSlot = pEngine->defaultStyleSlot;
+    pSegment->bgStyleSlot = pEngine->defaultStyleSlot;
     pSegment->posX = 0;
     pSegment->width = 0;
     pSegment->isAtEnd = false;
@@ -1491,8 +1488,9 @@ void drte_engine_get_character_position(drte_engine* pEngine, size_t characterIn
                 } else {
                     // We must refer to the backend in order to find the exact position of the character.
                     // TODO: Grab a copy of the string rather than a direct offset.
-                    if (pEngine->onGetCursorPositionFromChar && segment.fgStyleToken != 0) {
-                        pEngine->onGetCursorPositionFromChar(pEngine, segment.fgStyleToken, pEngine->text + segment.iCharBeg, characterIndex - segment.iCharBeg, &posX);
+                    drte_style_token fgStyleToken = drte_engine__get_style_token(pEngine, segment.fgStyleSlot);
+                    if (pEngine->onGetCursorPositionFromChar && fgStyleToken != 0) {
+                        pEngine->onGetCursorPositionFromChar(pEngine, fgStyleToken, pEngine->text + segment.iCharBeg, characterIndex - segment.iCharBeg, &posX);
                         posX += segment.posX;
                     }
                 }
@@ -3285,8 +3283,10 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                         segment.width = pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
                         lineWidth += segment.width;
                     }
-                    if (pEngine->onPaintRect && segment.bgStyleToken != 0) {
-                        pEngine->onPaintRect(pEngine, segment.bgStyleToken, drgui_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pElement, pPaintData);
+
+                    drte_style_token bgStyleToken = drte_engine__get_style_token(pEngine, segment.bgStyleSlot);
+                    if (pEngine->onPaintRect && bgStyleToken != 0) {
+                        pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pElement, pPaintData);
                     }
                 } else {
                     // It's normal text.
@@ -3296,8 +3296,10 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
 
                     // TODO: Draw text on the base line to properly handle font's of differing sizes.
 
-                    if (pEngine->onPaintText && segment.fgStyleToken != 0 && segment.bgStyleToken != 0) {
-                        pEngine->onPaintText(pEngine, segment.fgStyleToken, segment.bgStyleToken, text, textLength, linePosX + segment.posX, linePosY, pElement, pPaintData);
+                    drte_style_token fgStyleToken = drte_engine__get_style_token(pEngine, segment.fgStyleSlot);
+                    drte_style_token bgStyleToken = drte_engine__get_style_token(pEngine, segment.bgStyleSlot);
+                    if (pEngine->onPaintText && fgStyleToken != 0 && bgStyleToken != 0) {
+                        pEngine->onPaintText(pEngine, fgStyleToken, bgStyleToken, text, textLength, linePosX + segment.posX, linePosY, pElement, pPaintData);
                     }
                 }
             } while (drte_engine__next_segment(pEngine, &segment));
@@ -3620,8 +3622,10 @@ bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarke
                 } else {
                     float unused;
                     size_t iChar;
+
+                    drte_style_token fgStyleToken = drte_engine__get_style_token(pEngine, segment.fgStyleSlot);
                     if (pEngine->onGetCursorPositionFromPoint) {
-                        pEngine->onGetCursorPositionFromPoint(pEngine, segment.fgStyleToken, pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg, segment.width, inputPosXRelativeToText - segment.posX, OUT &unused, OUT &iChar);
+                        pEngine->onGetCursorPositionFromPoint(pEngine, fgStyleToken, pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg, segment.width, inputPosXRelativeToText - segment.posX, OUT &unused, OUT &iChar);
                         pMarker->iCharAbs = segment.iCharBeg + iChar;
                     }
                 }
