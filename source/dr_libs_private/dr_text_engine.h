@@ -804,7 +804,7 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 // Helper for determining whether or not the given character is a symbol or whitespace.
 bool drte_is_symbol_or_whitespace(uint32_t utf32)
 {
-    return (utf32 < '0') || (utf32 >= ':' && utf32 < 'A') || (utf32 >= '[' && utf32 < 'a') || (utf32 > '{'); 
+    return (utf32 < '0') || (utf32 >= ':' && utf32 < 'A') || (utf32 >= '[' && utf32 < 'a') || (utf32 > '{');
 }
 
 
@@ -1267,7 +1267,7 @@ void drte_engine_set_default_style(drte_engine* pEngine, drte_style_token styleT
     if (pEngine->defaultStyleSlot == styleSlot) {
         return; // Nothing has changed.
     }
-    
+
     pEngine->defaultStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
     drte_engine__repaint(pEngine);
@@ -1287,7 +1287,7 @@ void drte_engine_set_selection_style(drte_engine* pEngine, drte_style_token styl
     if (pEngine->selectionStyleSlot == styleSlot) {
         return; // Nothing has changed.
     }
-    
+
     pEngine->selectionStyleSlot = styleSlot;
 
     if (drte_engine_is_anything_selected(pEngine)) {
@@ -1310,7 +1310,7 @@ void drte_engine_set_active_line_style(drte_engine* pEngine, drte_style_token st
     if (pEngine->activeLineStyleSlot == styleSlot) {
         return; // Nothing has changed.
     }
-    
+
     pEngine->activeLineStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
     drte_engine__repaint(pEngine);
@@ -1330,7 +1330,7 @@ void drte_engine_set_cursor_style(drte_engine* pEngine, drte_style_token styleTo
     if (pEngine->cursorStyleSlot == styleSlot) {
         return; // Nothing has changed.
     }
-    
+
     pEngine->cursorStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
     drte_engine__repaint(pEngine);
@@ -1350,7 +1350,7 @@ void drte_engine_set_line_numbers_style(drte_engine* pEngine, drte_style_token s
     if (pEngine->lineNumbersStyleSlot == styleSlot) {
         return; // Nothing has changed.
     }
-    
+
     pEngine->lineNumbersStyleSlot = styleSlot;
     drte_engine__refresh(pEngine);
     drte_engine__repaint(pEngine);
@@ -1463,10 +1463,6 @@ void drte_engine_get_character_position(drte_engine* pEngine, size_t characterIn
         } while (drte_engine__next_segment(pEngine, &segment));
     }
 
-    if (posX == 0) {
-        int a; a = 1;
-    }
-
     if (pPosXOut) *pPosXOut = posX;
     if (pPosYOut) *pPosYOut = posY;
 }
@@ -1498,8 +1494,6 @@ void drte_engine_get_visible_lines(drte_engine* pEngine, size_t* pFirstLineOut, 
         size_t iLastLine = iFirstLine + ((size_t)(pEngine->containerHeight / drte_engine_get_line_height(pEngine)));
         if (iLastLine >= lineCount && lineCount > 0) {
             iLastLine = lineCount - 1;
-        } else {
-            iLastLine = 0;
         }
 
         *pLastLineOut = iLastLine;
@@ -2242,7 +2236,7 @@ size_t drte_engine_move_cursor_to_end_of_word(drte_engine* pEngine)
         iChar += 1;
     }
 
-    
+
 
     drte_engine_move_cursor_to_character(pEngine, iChar);
     return iChar;
@@ -2770,7 +2764,7 @@ void drte_engine_select_word_under_cursor(drte_engine* pEngine)
             moveToStartOfNextWord = true;
         }
     }
-    
+
     drte_engine_enter_selection_mode(pEngine);
     if (moveToStartOfNextWord) {
         drte_engine_move_cursor_to_start_of_next_word(pEngine);
@@ -3318,7 +3312,7 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
     float lineTop = pEngine->innerOffsetY + (iLineTop * lineHeight);
     for (size_t iLine = iLineTop; iLine <= iLineBottom; ++iLine) {
         char iLineStr[64];
-        snprintf(iLineStr, sizeof(iLineStr), "%d", iLine+1);
+        snprintf(iLineStr, sizeof(iLineStr), "%d", (int)iLine+1);   // TODO: drte_string_to_int(). This snprintf() has shown up in profiling so best fix this.
 
         float textWidth = 0;
         float textHeight = 0;
@@ -4067,7 +4061,7 @@ void drte_engine__end_dirty(drte_engine* pEngine)
     pEngine->dirtyCounter -= 1;
 
     if (pEngine->dirtyCounter == 0) {
-        if (pEngine->onDirty) {
+        if (pEngine->onDirty && drgui_rect_has_volume(pEngine->accumulatedDirtyRect)) {
             pEngine->onDirty(pEngine, pEngine->accumulatedDirtyRect);
         }
 
