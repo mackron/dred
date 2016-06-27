@@ -241,7 +241,7 @@ bool dred_textbox_engine__on_get_next_highlight(drte_engine* pEngine, size_t iCh
         *pCharBegOut = region.iCharBeg;
         *pCharEndOut = region.iCharEnd;
         *pStyleTokenOut = (drte_style_token)&pTB->testStyle1;
-        return false;
+        return true;
     }
 
 
@@ -1435,6 +1435,8 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
         return;
     }
 
+    drte_engine__begin_dirty(pTB->pTL);
+
     switch (key)
     {
         case DRGUI_BACKSPACE:
@@ -1637,6 +1639,8 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
 
         default: break;
     }
+
+    drte_engine__end_dirty(pTB->pTL);
 }
 
 void dred_textbox_on_key_up(dred_textbox* pTextBox, drgui_key key, int stateFlags)
@@ -2248,6 +2252,9 @@ void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox)
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
+    drgui_rect lineNumbersRectOld = drgui_get_local_rect(pTB->pLineNumbers);
+    drgui_begin_dirty(pTB->pLineNumbers);
+    
     float lineNumbersWidth = 0;
     if (drgui_is_visible(pTB->pLineNumbers)) {
         lineNumbersWidth = pTB->lineNumbersWidth;
@@ -2265,5 +2272,6 @@ void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox)
 
 
     // Force a redraw just to be sure everything is in a valid state.
-    drgui_dirty(pTextBox, drgui_get_local_rect(pTextBox));
+    drgui_dirty(pTextBox, drgui_rect_union(lineNumbersRectOld, drgui_get_local_rect(pTB->pLineNumbers)));
+    drgui_end_dirty(pTB->pLineNumbers);
 }
