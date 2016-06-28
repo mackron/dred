@@ -1007,6 +1007,13 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
         return false;
     }
 
+    if (pSegment->isAtEndOfLine) {
+        pSegment->iLine += 1;
+        pSegment->posX = 0;
+        pSegment->width = 0;
+        pSegment->isAtEndOfLine = false;
+    }
+
     uint8_t fgStyleSlot = pEngine->defaultStyleSlot;
     uint8_t bgStyleSlot = pEngine->defaultStyleSlot;
 
@@ -1018,12 +1025,7 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
         bgStyleSlot = pEngine->activeLineStyleSlot;
     }
 
-    if (pSegment->isAtEndOfLine) {
-        pSegment->iLine += 1;
-        pSegment->posX = 0;
-        pSegment->width = 0;
-        pSegment->isAtEndOfLine = false;
-    }
+    
 
     // TODO: Fix this for multi-select and multi-cursor.
     bool isAnythingSelected = false;
@@ -3174,19 +3176,19 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
     float lineHeight = drte_engine_get_line_height(pEngine);
 
 
-    // Optimize this.
-
     size_t iLineTop;
     size_t iLineBottom;
     drte_engine_get_visible_lines(pEngine, &iLineTop, &iLineBottom);
 
     float linePosX = pEngine->innerOffsetX;
     float linePosY = 0;
-    for (size_t iLine = iLineTop; iLine <= iLineBottom; ++iLine) {
-        float lineWidth = 0;
 
-        drte_segment segment;
-        if (drte_engine__first_segment_on_line(pEngine, iLine, &segment)) {
+    drte_segment segment;
+    if (drte_engine__first_segment_on_line(pEngine, iLineTop, &segment)) {
+        size_t iLine = iLineTop;
+        while (iLine <= iLineBottom) {
+            float lineWidth = 0;
+
             do
             {
                 if (segment.posX > pEngine->containerWidth) {
@@ -3235,29 +3237,39 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                     break;
                 }
             } while (drte_engine__next_segment(pEngine, &segment));
-        }
 
-        // OPTIMIZE: Don't call drte_engine__first_segment_on_line() if the line terminated naturally. Instead just continue where we
-        //           left off. Consider drte_engine__first_segment_on_line_by_character().
-        //if (segment.isAtEnd) {
-        //    Optimize me.
-        //}
 
-        // The part after the end of the line needs to be drawn.
-        float lineRight = linePosX + lineWidth;
-        if (lineRight < pEngine->containerWidth) {
-            drte_style_token bgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
-            if (iLine == drte_engine_get_cursor_line(pEngine)) {
-                bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
+            // The part after the end of the line needs to be drawn.
+            float lineRight = linePosX + lineWidth;
+            if (lineRight < pEngine->containerWidth) {
+                drte_style_token bgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
+                if (segment.iLine == drte_engine_get_cursor_line(pEngine)) {
+                    bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
+                }
+
+                if (pEngine->onPaintRect && bgStyleToken != 0) {
+                    pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(lineRight, linePosY, pEngine->containerWidth, linePosY + lineHeight), pElement, pPaintData);
+                }
             }
 
-            if (pEngine->onPaintRect && bgStyleToken != 0) {
-                pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(lineRight, linePosY, pEngine->containerWidth, linePosY + lineHeight), pElement, pPaintData);
-            }
-        }
+            linePosY += lineHeight;
 
-        linePosY += lineHeight;
+
+            // Go to the first segment of the next line.
+            if (!drte_engine__next_segment(pEngine, &segment)) {
+                break;
+            }
+
+            iLine += 1;
+        }        
+    } else {
+        // Couldn't create a segment iterator. Likely means there is no text. Just draw a single blank line.
+        drte_style_token bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
+        if (pEngine->onPaintRect && bgStyleToken != 0) {
+            pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(linePosX, linePosY, pEngine->containerWidth, linePosY + lineHeight), pElement, pPaintData);
+        }
     }
+
 
     // The cursor.
     if (pEngine->isShowingCursor && pEngine->isCursorBlinkOn && pEngine->styles[pEngine->cursorStyleSlot].styleToken != 0) {
