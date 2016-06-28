@@ -3245,6 +3245,9 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
 
                 // Don't draw segments to the left of the container.
                 if (linePosX + segment.posX + segment.width < 0) {
+                    if (pEngine->text[segment.iCharBeg] == '\n') {
+                        break;
+                    }
                     continue;
                 }
 
@@ -3459,26 +3462,25 @@ void drte_engine__refresh(drte_engine* pEngine)
 
     // All we are doing here is resizing the text bounds. This will be optimized later.
     float maxLineWidth = 0;
+    size_t lineCount = 0;
 
-    size_t lineCount = drte_engine_get_line_count(pEngine);
-    for (size_t iLine = 0; iLine < lineCount; ++iLine) {
-        float thisLineWidth = 0;
+    drte_segment segment;
+    if (drte_engine__first_segment(pEngine, 0, &segment)) {
+        float currentLineWidth = 0;
 
-        drte_segment segment;
-        if (drte_engine__first_segment_on_line(pEngine, iLine, &segment)) {
-            do
-            {
-                thisLineWidth += segment.width;
-
-                if (pEngine->text[segment.iCharBeg] == '\n') {
-                    break;
+        do
+        {
+            if (pEngine->text[segment.iCharBeg] == '\n') {
+                if (maxLineWidth < currentLineWidth) {
+                    maxLineWidth = currentLineWidth;
                 }
-            } while (drte_engine__next_segment(pEngine, &segment));
-        }
 
-        if (maxLineWidth < thisLineWidth) {
-            maxLineWidth = thisLineWidth;
-        }
+                lineCount += 1;
+                currentLineWidth = 0;
+            } else {
+                currentLineWidth += segment.width;
+            }
+        } while (drte_engine__next_segment(pEngine, &segment));
     }
 
     pEngine->textBoundsWidth  = maxLineWidth;
