@@ -1913,8 +1913,10 @@ void drte_engine_move_cursor_to_point(drte_engine* pEngine, float posX, float po
     }
 
     if (iPrevChar != pEngine->cursor.iCharAbs) {
-        drte_engine__on_cursor_move(pEngine);
-        drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: This can be optimized. Only redraw the previous line and the new cursor rectangle.
+        drte_engine__begin_dirty(pEngine);
+            drte_engine__on_cursor_move(pEngine);
+            drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: This can be optimized. Only redraw the previous line and the new cursor rectangle.
+        drte_engine__end_dirty(pEngine);
     }
 }
 
@@ -1931,8 +1933,10 @@ bool drte_engine_move_cursor_left(drte_engine* pEngine)
         }
 
         if (iPrevChar != pEngine->cursor.iCharAbs) {
-            drte_engine__on_cursor_move(pEngine);
-            drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
+            drte_engine__begin_dirty(pEngine);
+                drte_engine__on_cursor_move(pEngine);
+                drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
+            drte_engine__end_dirty(pEngine);
         }
 
         return true;
@@ -1954,8 +1958,10 @@ bool drte_engine_move_cursor_right(drte_engine* pEngine)
         }
 
         if (iPrevChar != pEngine->cursor.iCharAbs) {
-            drte_engine__on_cursor_move(pEngine);
-            drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
+            drte_engine__begin_dirty(pEngine);
+                drte_engine__on_cursor_move(pEngine);
+                drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
+            drte_engine__end_dirty(pEngine);
         }
 
         return true;
@@ -1977,8 +1983,10 @@ bool drte_engine_move_cursor_up(drte_engine* pEngine)
         }
 
         if (iPrevChar != pEngine->cursor.iCharAbs) {
-            drte_engine__on_cursor_move(pEngine);
-            drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
+            drte_engine__begin_dirty(pEngine);
+                drte_engine__on_cursor_move(pEngine);
+                drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
+            drte_engine__end_dirty(pEngine);
         }
 
         return true;
@@ -2000,8 +2008,10 @@ bool drte_engine_move_cursor_down(drte_engine* pEngine)
         }
 
         if (iPrevChar != pEngine->cursor.iCharAbs) {
-            drte_engine__on_cursor_move(pEngine);
-            drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
+            drte_engine__begin_dirty(pEngine);
+                drte_engine__on_cursor_move(pEngine);
+                drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
+            drte_engine__end_dirty(pEngine);
         }
 
         return true;
