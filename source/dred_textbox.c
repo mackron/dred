@@ -401,6 +401,12 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     pTB->onCursorMove = NULL;
     pTB->onUndoPointChanged = NULL;
 
+
+
+    // TESTING
+    drte_engine_select(pTB->pTL, 1, 4);
+    drte_engine_select(pTB->pTL, 8, 15);
+
     return pTextBox;
 }
 
@@ -1343,9 +1349,6 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
         // If we are not in selection mode, make sure everything is deselected.
         if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) == 0) {
             drte_engine_deselect_all(pTB->pTL);
-            drte_engine_leave_selection_mode(pTB->pTL);
-        } else {
-            drte_engine_enter_selection_mode(pTB->pTL);
         }
 
         float offsetX;
@@ -1355,16 +1358,10 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
 
         // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
         drgui_capture_mouse(pTextBox);
-
-        // If we didn't previously enter selection mode we'll need to do that now so we can drag select.
-        if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) == 0) {
-            drte_engine_enter_selection_mode(pTB->pTL);
-        }
     }
 
     if (mouseButton == DRGUI_MOUSE_BUTTON_RIGHT)
     {
-        drte_engine_leave_selection_mode(pTB->pTL);
     }
 }
 
@@ -1403,9 +1400,11 @@ void dred_textbox_on_mouse_button_dblclick(dred_textbox* pTextBox, int mouseButt
 
     if (mouseButton == DRGUI_MOUSE_BUTTON_LEFT) {
         if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) == 0) {
-            drte_engine_leave_selection_mode(pTB->pTL);
-            drte_engine_deselect_all(pTB->pTL);
-
+            // If the control key is not being held down make sure other selection regions are cleared.
+            if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) == 0) {
+                drte_engine_deselect_all(pTB->pTL);
+            }
+            
             drte_engine_select_word_under_cursor(pTB->pTL);
         }
     }
@@ -1467,11 +1466,7 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
 
         case DRGUI_ARROW_LEFT:
         {
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_enter_selection_mode(pTB->pTL);
-            }
-
-            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL)) {
                 drte_engine_move_cursor_to_start_of_selection(pTB->pTL);
                 drte_engine_deselect_all(pTB->pTL);
             } else {
@@ -1481,19 +1476,11 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
                     drte_engine_move_cursor_left(pTB->pTL);
                 }
             }
-
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_leave_selection_mode(pTB->pTL);
-            }
         } break;
 
         case DRGUI_ARROW_RIGHT:
         {
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_enter_selection_mode(pTB->pTL);
-            }
-
-            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL)) {
                 drte_engine_move_cursor_to_end_of_selection(pTB->pTL);
                 drte_engine_deselect_all(pTB->pTL);
             } else {
@@ -1503,54 +1490,30 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
                     drte_engine_move_cursor_right(pTB->pTL);
                 }
             }
-
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_leave_selection_mode(pTB->pTL);
-            }
         } break;
 
         case DRGUI_ARROW_UP:
         {
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_enter_selection_mode(pTB->pTL);
-            }
-
-            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL)) {
                 drte_engine_deselect_all(pTB->pTL);
             }
 
             drte_engine_move_cursor_up(pTB->pTL);
-
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_leave_selection_mode(pTB->pTL);
-            }
         } break;
 
         case DRGUI_ARROW_DOWN:
         {
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_enter_selection_mode(pTB->pTL);
-            }
-
-            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL)) {
                 drte_engine_deselect_all(pTB->pTL);
             }
 
             drte_engine_move_cursor_down(pTB->pTL);
-
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_leave_selection_mode(pTB->pTL);
-            }
         } break;
 
 
         case DRGUI_END:
         {
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_enter_selection_mode(pTB->pTL);
-            }
-
-            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL)) {
                 drte_engine_deselect_all(pTB->pTL);
             }
 
@@ -1559,19 +1522,11 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
             } else {
                 drte_engine_move_cursor_to_end_of_line(pTB->pTL);
             }
-
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_leave_selection_mode(pTB->pTL);
-            }
         } break;
 
         case DRGUI_HOME:
         {
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_enter_selection_mode(pTB->pTL);
-            }
-
-            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL)) {
                 drte_engine_deselect_all(pTB->pTL);
             }
 
@@ -1580,19 +1535,11 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
             } else {
                 drte_engine_move_cursor_to_start_of_line(pTB->pTL);
             }
-
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_leave_selection_mode(pTB->pTL);
-            }
         } break;
 
         case DRGUI_PAGE_UP:
         {
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_enter_selection_mode(pTB->pTL);
-            }
-
-            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL)) {
                 drte_engine_deselect_all(pTB->pTL);
             }
 
@@ -1602,19 +1549,11 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
             }
 
             drte_engine_move_cursor_y(pTB->pTL, -drgui_sb_get_page_size(pTB->pVertScrollbar));
-
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_leave_selection_mode(pTB->pTL);
-            }
         } break;
 
         case DRGUI_PAGE_DOWN:
         {
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_enter_selection_mode(pTB->pTL);
-            }
-
-            if (drte_engine_is_anything_selected(pTB->pTL) && !drte_engine_is_in_selection_mode(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL)) {
                 drte_engine_deselect_all(pTB->pTL);
             }
 
@@ -1629,9 +1568,6 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
 
             drte_engine_move_cursor_y(pTB->pTL, drgui_sb_get_page_size(pTB->pVertScrollbar));
 
-            if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-                drte_engine_leave_selection_mode(pTB->pTL);
-            }
         } break;
 
         default: break;
@@ -1888,7 +1824,7 @@ void dred_textbox_on_release_mouse(dred_textbox* pTextBox)
         return;
     }
 
-    drte_engine_leave_selection_mode(pTB->pTL);
+
 }
 
 
@@ -2093,53 +2029,50 @@ void dred_textbox__on_mouse_move_line_numbers(drgui_element* pLineNumbers, int r
         if (drgui_get_element_with_mouse_capture(pLineNumbers->pContext) == pLineNumbers)
         {
             // We just move the cursor around based on the line number we've moved over.
-            drte_engine_enter_selection_mode(pTB->pTL);
-            {
-                //float offsetX = pTextEditorData->padding;
-                float offsetY = pTB->padding;
-                size_t iLine = drte_engine_get_line_at_pos_y(pTB->pTL, relativeMousePosY - offsetY);
-                size_t iAnchorLine = pTB->iLineSelectAnchor;
-                size_t lineCount = drte_engine_get_line_count(pTB->pTL);
 
-                size_t iSelectionFirstLine = drte_engine_get_selection_first_line(pTB->pTL);
-                size_t iSelectionLastLine = drte_engine_get_selection_last_line(pTB->pTL);
-                if (iSelectionLastLine != iSelectionFirstLine) {
-                    iSelectionLastLine -= 1;
-                }
+            //float offsetX = pTextEditorData->padding;
+            float offsetY = pTB->padding;
+            size_t iLine = drte_engine_get_line_at_pos_y(pTB->pTL, relativeMousePosY - offsetY);
+            size_t iAnchorLine = pTB->iLineSelectAnchor;
+            size_t lineCount = drte_engine_get_line_count(pTB->pTL);
 
-                // If we're moving updwards we want to position the cursor at the start of the line. Otherwise we want to move the cursor to the start
-                // of the next line, or the end of the text.
-                bool movingUp = false;
-                if (iLine < iAnchorLine) {
-                    movingUp = true;
-                }
+            size_t iSelectionFirstLine = drte_engine_get_selection_first_line(pTB->pTL);
+            size_t iSelectionLastLine = drte_engine_get_selection_last_line(pTB->pTL);
+            if (iSelectionLastLine != iSelectionFirstLine) {
+                iSelectionLastLine -= 1;
+            }
 
-                // If we're moving up the selection anchor needs to be placed at the end of the last line. Otherwise we need to move it to the start
-                // of the first line.
-                if (movingUp) {
-                    if (iAnchorLine + 1 < lineCount) {
-                        drte_engine_move_selection_anchor_to_start_of_line(pTB->pTL, iAnchorLine + 1);
-                    } else {
-                        drte_engine_move_selection_anchor_to_end_of_line(pTB->pTL, iAnchorLine);
-                    }
+            // If we're moving updwards we want to position the cursor at the start of the line. Otherwise we want to move the cursor to the start
+            // of the next line, or the end of the text.
+            bool movingUp = false;
+            if (iLine < iAnchorLine) {
+                movingUp = true;
+            }
+
+            // If we're moving up the selection anchor needs to be placed at the end of the last line. Otherwise we need to move it to the start
+            // of the first line.
+            if (movingUp) {
+                if (iAnchorLine + 1 < lineCount) {
+                    drte_engine_move_selection_anchor_to_start_of_line(pTB->pTL, iAnchorLine + 1);
                 } else {
-                    drte_engine_move_selection_anchor_to_start_of_line(pTB->pTL, iAnchorLine);
+                    drte_engine_move_selection_anchor_to_end_of_line(pTB->pTL, iAnchorLine);
                 }
+            } else {
+                drte_engine_move_selection_anchor_to_start_of_line(pTB->pTL, iAnchorLine);
+            }
 
 
-                // If we're moving up we want the cursor to be placed at the start of the selection range. Otherwise we want to place the cursor
-                // at the end of the selection range.
-                if (movingUp) {
-                    drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, iLine);
+            // If we're moving up we want the cursor to be placed at the start of the selection range. Otherwise we want to place the cursor
+            // at the end of the selection range.
+            if (movingUp) {
+                drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, iLine);
+            } else {
+                if (iLine + 1 < lineCount) {
+                    drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, iLine + 1);
                 } else {
-                    if (iLine + 1 < lineCount) {
-                        drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, iLine + 1);
-                    } else {
-                        drte_engine_move_cursor_to_end_of_line_by_index(pTB->pTL, iLine);
-                    }
+                    drte_engine_move_cursor_to_end_of_line_by_index(pTB->pTL, iLine);
                 }
             }
-            drte_engine_leave_selection_mode(pTB->pTL);
         }
     }
 }
@@ -2165,15 +2098,11 @@ void dred_textbox__on_mouse_button_down_line_numbers(drgui_element* pLineNumbers
 
         drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, pTB->iLineSelectAnchor);
 
-        drte_engine_enter_selection_mode(pTB->pTL);
-        {
-            if (pTB->iLineSelectAnchor + 1 < drte_engine_get_line_count(pTB->pTL)) {
-                drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, pTB->iLineSelectAnchor + 1);
-            } else {
-                drte_engine_move_cursor_to_end_of_line(pTB->pTL);
-            }
+        if (pTB->iLineSelectAnchor + 1 < drte_engine_get_line_count(pTB->pTL)) {
+            drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, pTB->iLineSelectAnchor + 1);
+        } else {
+            drte_engine_move_cursor_to_end_of_line(pTB->pTL);
         }
-        drte_engine_leave_selection_mode(pTB->pTL);
 
         drgui_capture_mouse(pLineNumbers);
     }

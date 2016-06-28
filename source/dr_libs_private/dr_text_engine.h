@@ -128,6 +128,12 @@ typedef struct
 
 typedef struct
 {
+    size_t iCharBeg;
+    size_t iCharEnd;
+} drte_region;
+
+typedef struct
+{
     // The index of the first character in the segment.
     size_t iCharBeg;
 
@@ -147,12 +153,6 @@ typedef struct
 
     /// The index of the character the cursor is positioned at.
     size_t cursorPos;
-
-    /// The index of the character the selection anchor is positioned at.
-    size_t selectionAnchorPos;
-
-    /// Whether or not anything is selected.
-    bool isAnythingSelected;
 
 } drte_engine_state;
 
@@ -289,17 +289,12 @@ struct drte_engine
     /// The cursor.
     drte_marker cursor;
 
-    /// The selection anchor.
-    drte_marker selectionAnchor;
 
+    // The list of selection regions.
+    drte_region* pSelections;
 
-    /// The selection mode counter. When this is greater than 0 we are in selection mode, otherwise we are not. This
-    /// is incremented by enter_selection_mode() and decremented by leave_selection_mode().
-    unsigned int selectionModeCounter;
-
-    /// Whether or not anything is selected.
-    bool isAnythingSelected;    // <-- TODO: I don't like this. See if we can get rid of it.
-
+    // The number of active selection regions. When this is 0, nothing is selected.
+    size_t selectionCount;
 
 
     /// The function to call when a text run needs to be painted.
@@ -572,9 +567,6 @@ bool drte_engine_is_cursor_at_start_of_selection(drte_engine* pEngine);
 /// Determines whether or not the cursor is sitting at the end fo the selection.
 bool drte_engine_is_cursor_at_end_of_selection(drte_engine* pEngine);
 
-/// Swaps the position of the cursor based on the current selection.
-void drte_engine_swap_selection_markers(drte_engine* pEngine);
-
 /// Sets the function to call when the cursor in the given text engine is mvoed.
 void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_move_proc proc);
 
@@ -619,26 +611,6 @@ bool drte_engine_delete_character_to_right_of_cursor(drte_engine* pEngine);
 /// @return True if the text within the text engine has changed.
 bool drte_engine_delete_selected_text(drte_engine* pEngine);
 
-
-/// Enter's into selection mode.
-///
-/// @remarks
-///     An application will typically enter selection mode when the Shift key is pressed, and then leave when the key is released.
-///     @par
-///     This will increment an internal counter, which is decremented with a corresponding call to drte_engine_leave_selection_mode().
-///     Selection mode will be enabled so long as this counter is greater than 0. Thus, you must ensure you cleanly leave selection
-///     mode.
-void drte_engine_enter_selection_mode(drte_engine* pEngine);
-
-/// Leaves selection mode.
-///
-/// @remarks
-///     This decrements the internal counter. Selection mode will not be disabled while this reference counter is greater than 0. Always
-///     ensure a leave is correctly matched with an enter.
-void drte_engine_leave_selection_mode(drte_engine* pEngine);
-
-/// Determines whether or not the given text engine is in selection mode.
-bool drte_engine_is_in_selection_mode(drte_engine* pEngine);
 
 /// Determines whether or not anything is selected in the given text engine.
 bool drte_engine_is_anything_selected(drte_engine* pEngine);
@@ -796,6 +768,25 @@ bool drte_is_symbol_or_whitespace(uint32_t utf32)
     return (utf32 < '0') || (utf32 >= ':' && utf32 < 'A') || (utf32 >= '[' && utf32 < 'a') || (utf32 > '{');
 }
 
+// Helper for swapping the characters in a region.
+static drte_region drte_region_swap_characters(drte_region region)
+{
+    drte_region result;
+    result.iCharBeg = region.iCharEnd;
+    result.iCharEnd = region.iCharBeg;
+
+    return result;
+}
+
+// Helper for normalizing a region which just means to swap the beginning and end characters if they are the wrong way around.
+static drte_region drte_region_normalize(drte_region region)
+{
+    if (region.iCharBeg < region.iCharEnd) {
+        return region;  // Already normalized.
+    }
+
+    return drte_region_swap_characters(region);
+}
 
 
 
@@ -871,14 +862,6 @@ void drte_engine__update_marker_sticky_position(drte_engine* pEngine, drte_marke
 size_t drte_engine__get_marker_absolute_char_index(drte_engine* pEngine, drte_marker* pMarker);
 
 
-/// Helper function for determining whether or not there is any spacing between the selection markers.
-bool drte_engine__has_spacing_between_selection_markers(drte_engine* pEngine);
-
-
-/// Retrieves pointers to the selection markers in the correct order.
-bool drte_engine__get_selection_markers(drte_engine* pEngine, drte_marker** ppSelectionMarker0Out, drte_marker** ppSelectionMarker1Out);
-
-
 
 /// Removes the undo/redo state stack items after the current undo/redo point.
 void drte_engine__trim_undo_stack(drte_engine* pEngine);
@@ -939,6 +922,43 @@ drte_style_token drte_engine__get_style_token(drte_engine* pEngine, uint8_t styl
 }
 
 
+// Retrieves the next selection region starting from the given character, including the region the character is sitting in, if any.
+bool drte_engine__get_next_selection_from_character(drte_engine* pEngine, uint32_t iChar, drte_region* pSelectionOut)
+{
+    assert(pEngine != NULL);
+    assert(pSelectionOut != NULL);
+    
+    // Selections can be in any order. Need to first check every single one to determine if any are on top of the character. If so we
+    // just return the first one. Otherwise we fall through to the next loop which finds the closest selection to the character.
+    bool foundSelectionAfterChar = false;
+    drte_region closestSelection;
+    closestSelection.iCharBeg = (size_t)-1;
+    closestSelection.iCharEnd = (size_t)-1;
+
+    for (size_t iSelection = 0; iSelection < pEngine->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pEngine->pSelections[iSelection]);
+        if (iChar >= selection.iCharBeg && iChar < selection.iCharEnd) {
+            *pSelectionOut = selection;
+            return true;
+        }
+
+        if (selection.iCharBeg > iChar) {
+            foundSelectionAfterChar = true;
+            if (closestSelection.iCharBeg > selection.iCharBeg) {
+                closestSelection = selection;
+            }
+        }
+    }
+
+
+    if (foundSelectionAfterChar) {
+        *pSelectionOut = closestSelection;
+    }
+
+    return foundSelectionAfterChar;
+}
+
+
 // A drte_segment object is used for iterating over the segments of a line.
 typedef struct
 {
@@ -989,7 +1009,6 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     assert(pEngine != NULL);
     assert(pSegment != NULL);
 
-    // TODO: Handle selection segments here.
     // TODO: Handle UTF-8 properly.
     // TODO: There is LOTS of optimization opportunity in this function.
 
@@ -1026,20 +1045,12 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     }
 
     
-
-    // TODO: Fix this for multi-select and multi-cursor.
     bool isAnythingSelected = false;
     bool isInSelection = false;
-    size_t iSelectionCharBeg = 0;
-    size_t iSelectionCharEnd = 0;
-
-    drte_marker* pSelectionMarker0;
-    drte_marker* pSelectionMarker1;
-    if (drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1)) {
-        iSelectionCharBeg = drte_engine__get_marker_absolute_char_index(pEngine, pSelectionMarker0);
-        iSelectionCharEnd = drte_engine__get_marker_absolute_char_index(pEngine, pSelectionMarker1);
-        isInSelection = iCharBeg >= iSelectionCharBeg && iCharBeg < iSelectionCharEnd;
-        isAnythingSelected = iSelectionCharBeg < iSelectionCharEnd;
+    drte_region selection;
+    if (drte_engine__get_next_selection_from_character(pEngine, iCharBeg, &selection)) {
+        isInSelection = iCharBeg >= selection.iCharBeg && iCharBeg < selection.iCharEnd;
+        isAnythingSelected = true;
     }
 
     if (isInSelection) {
@@ -1065,10 +1076,10 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
 
     // Clamp to selection.
     if (isInSelection) {
-        iMaxChar = iSelectionCharEnd;
+        iMaxChar = selection.iCharEnd;
     } else if (isAnythingSelected) {
-        if (iSelectionCharBeg > iCharBeg) {
-            iMaxChar = iSelectionCharBeg;
+        if (selection.iCharBeg > iCharBeg) {
+            iMaxChar = selection.iCharBeg;
         }
     }
 
@@ -1216,6 +1227,9 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     //pEngine->lineCount = 0;
     //pEngine->pLines = (size_t*)malloc(pEngine->lineBufferSize * sizeof(*pEngine->pLines));
 
+    pEngine->pSelections = NULL;
+    pEngine->selectionCount = 0;
+
     pEngine->tabSizeInSpaces          = 4;
     pEngine->cursorWidth              = 1;
     pEngine->cursorBlinkRate          = 500;
@@ -1223,7 +1237,7 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     pEngine->isCursorBlinkOn          = true;
     pEngine->isShowingCursor          = false;
     pEngine->cursor                   = drte_engine__new_marker();
-    pEngine->selectionAnchor          = drte_engine__new_marker();
+    //pEngine->selectionAnchor          = drte_engine__new_marker();
     pEngine->accumulatedDirtyRect     = drgui_make_inside_out_rect();
     pEngine->pUserData                = pUserData;
 
@@ -1912,10 +1926,6 @@ void drte_engine_move_cursor_to_point(drte_engine* pEngine, float posX, float po
     size_t iPrevChar = pEngine->cursor.iCharAbs;
     drte_engine__move_marker_to_point_relative_to_container(pEngine, &pEngine->cursor, posX, posY);
 
-    if (drte_engine_is_in_selection_mode(pEngine)) {
-        pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-    }
-
     if (iPrevChar != pEngine->cursor.iCharAbs) {
         drte_engine__begin_dirty(pEngine);
             drte_engine__on_cursor_move(pEngine);
@@ -1932,10 +1942,6 @@ bool drte_engine_move_cursor_left(drte_engine* pEngine)
 
     size_t iPrevChar = pEngine->cursor.iCharAbs;
     if (drte_engine__move_marker_left(pEngine, &pEngine->cursor)) {
-        if (drte_engine_is_in_selection_mode(pEngine)) {
-            pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-        }
-
         if (iPrevChar != pEngine->cursor.iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine);
@@ -1957,10 +1963,6 @@ bool drte_engine_move_cursor_right(drte_engine* pEngine)
 
     size_t iPrevChar = pEngine->cursor.iCharAbs;
     if (drte_engine__move_marker_right(pEngine, &pEngine->cursor)) {
-        if (drte_engine_is_in_selection_mode(pEngine)) {
-            pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-        }
-
         if (iPrevChar != pEngine->cursor.iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine);
@@ -1982,10 +1984,6 @@ bool drte_engine_move_cursor_up(drte_engine* pEngine)
 
     size_t iPrevChar = pEngine->cursor.iCharAbs;
     if (drte_engine__move_marker_up(pEngine, &pEngine->cursor)) {
-        if (drte_engine_is_in_selection_mode(pEngine)) {
-            pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-        }
-
         if (iPrevChar != pEngine->cursor.iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine);
@@ -2007,10 +2005,6 @@ bool drte_engine_move_cursor_down(drte_engine* pEngine)
 
     size_t iPrevChar = pEngine->cursor.iCharAbs;
     if (drte_engine__move_marker_down(pEngine, &pEngine->cursor)) {
-        if (drte_engine_is_in_selection_mode(pEngine)) {
-            pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-        }
-
         if (iPrevChar != pEngine->cursor.iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine);
@@ -2032,10 +2026,6 @@ bool drte_engine_move_cursor_y(drte_engine* pEngine, int amount)
 
     size_t iPrevChar = pEngine->cursor.iCharAbs;
     if (drte_engine__move_marker_y(pEngine, &pEngine->cursor, amount)) {
-        if (drte_engine_is_in_selection_mode(pEngine)) {
-            pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-        }
-
         if (iPrevChar != pEngine->cursor.iCharAbs) {
             drte_engine__on_cursor_move(pEngine);
             drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
@@ -2055,10 +2045,6 @@ bool drte_engine_move_cursor_to_end_of_line(drte_engine* pEngine)
 
     size_t iPrevChar = pEngine->cursor.iCharAbs;
     if (drte_engine__move_marker_to_end_of_line(pEngine, &pEngine->cursor)) {
-        if (drte_engine_is_in_selection_mode(pEngine)) {
-            pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-        }
-
         if (iPrevChar != pEngine->cursor.iCharAbs) {
             drte_engine__on_cursor_move(pEngine);
             drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
@@ -2078,10 +2064,6 @@ bool drte_engine_move_cursor_to_start_of_line(drte_engine* pEngine)
 
     size_t iPrevChar = pEngine->cursor.iCharAbs;
     if (drte_engine__move_marker_to_start_of_line(pEngine, &pEngine->cursor)) {
-        if (drte_engine_is_in_selection_mode(pEngine)) {
-            pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-        }
-
         if (iPrevChar != pEngine->cursor.iCharAbs) {
             drte_engine__on_cursor_move(pEngine);
             drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
@@ -2101,10 +2083,6 @@ bool drte_engine_move_cursor_to_end_of_line_by_index(drte_engine* pEngine, size_
 
     size_t iPrevChar = pEngine->cursor.iCharAbs;
     if (drte_engine__move_marker_to_end_of_line_by_index(pEngine, &pEngine->cursor, iLine)) {
-        if (drte_engine_is_in_selection_mode(pEngine)) {
-            pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-        }
-
         if (iPrevChar != pEngine->cursor.iCharAbs) {
             drte_engine__on_cursor_move(pEngine);
             drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
@@ -2124,10 +2102,6 @@ bool drte_engine_move_cursor_to_start_of_line_by_index(drte_engine* pEngine, siz
 
     size_t iPrevChar = pEngine->cursor.iCharAbs;
     if (drte_engine__move_marker_to_start_of_line_by_index(pEngine, &pEngine->cursor, iLine)) {
-        if (drte_engine_is_in_selection_mode(pEngine)) {
-            pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-        }
-
         if (iPrevChar != pEngine->cursor.iCharAbs) {
             drte_engine__on_cursor_move(pEngine);
             drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
@@ -2147,10 +2121,6 @@ bool drte_engine_move_cursor_to_end_of_text(drte_engine* pEngine)
 
     size_t iPrevChar = pEngine->cursor.iCharAbs;
     if (drte_engine__move_marker_to_end_of_text(pEngine, &pEngine->cursor)) {
-        if (drte_engine_is_in_selection_mode(pEngine)) {
-            pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-        }
-
         if (iPrevChar != pEngine->cursor.iCharAbs) {
             drte_engine__on_cursor_move(pEngine);
             drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
@@ -2170,10 +2140,6 @@ bool drte_engine_move_cursor_to_start_of_text(drte_engine* pEngine)
 
     size_t iPrevChar = pEngine->cursor.iCharAbs;
     if (drte_engine__move_marker_to_start_of_text(pEngine, &pEngine->cursor)) {
-        if (drte_engine_is_in_selection_mode(pEngine)) {
-            pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-        }
-
         if (iPrevChar != pEngine->cursor.iCharAbs) {
             drte_engine__on_cursor_move(pEngine);
             drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
@@ -2187,36 +2153,20 @@ bool drte_engine_move_cursor_to_start_of_text(drte_engine* pEngine)
 
 void drte_engine_move_cursor_to_start_of_selection(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->text == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL || pEngine->selectionCount == 0) {
         return;
     }
 
-    drte_marker* pSelectionMarker0;
-    drte_marker* pSelectionMarker1;
-    if (drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1))
-    {
-        pEngine->cursor = *pSelectionMarker0;
-        pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-
-        drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
-    }
+    drte_engine_move_cursor_to_character(pEngine, drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]).iCharBeg);
 }
 
 void drte_engine_move_cursor_to_end_of_selection(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->text == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL || pEngine->selectionCount == 0) {
         return;
     }
 
-    drte_marker* pSelectionMarker0;
-    drte_marker* pSelectionMarker1;
-    if (drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1))
-    {
-        pEngine->cursor = *pSelectionMarker1;
-        pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-
-        drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
-    }
+    drte_engine_move_cursor_to_character(pEngine, drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]).iCharEnd);
 }
 
 void drte_engine_move_cursor_to_character(drte_engine* pEngine, size_t characterIndex)
@@ -2227,10 +2177,6 @@ void drte_engine_move_cursor_to_character(drte_engine* pEngine, size_t character
 
     size_t iPrevChar = pEngine->cursor.iCharAbs;
     if (drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, characterIndex)) {
-        if (drte_engine_is_in_selection_mode(pEngine)) {
-            pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-        }
-
         if (iPrevChar != pEngine->cursor.iCharAbs) {
             drte_engine__on_cursor_move(pEngine);
             drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
@@ -2342,47 +2288,18 @@ size_t drte_engine_get_spaces_to_next_colum_from_cursor(drte_engine* pEngine)
 
 bool drte_engine_is_cursor_at_start_of_selection(drte_engine* pEngine)
 {
-    drte_marker* pSelectionMarker0;
-    drte_marker* pSelectionMarker1;
-    if (drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1)) {
-        return &pEngine->cursor == pSelectionMarker0;
+    if (pEngine == NULL || pEngine->selectionCount == 0) {
+        return false;
     }
-
-    return false;
+    
+    drte_region region = drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]);
+    return pEngine->cursor.iCharAbs == region.iCharBeg;
 }
 
 bool drte_engine_is_cursor_at_end_of_selection(drte_engine* pEngine)
 {
-    drte_marker* pSelectionMarker0;
-    drte_marker* pSelectionMarker1;
-    if (drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1)) {
-        return &pEngine->cursor == pSelectionMarker1;
-    }
-
-    return false;
-}
-
-void drte_engine_swap_selection_markers(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_marker* pSelectionMarker0;
-    drte_marker* pSelectionMarker1;
-    if (drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1))
-    {
-        size_t iPrevChar = pEngine->cursor.iCharAbs;
-
-        drte_marker temp = *pSelectionMarker0;
-        *pSelectionMarker0 = *pSelectionMarker1;
-        *pSelectionMarker1 = temp;
-
-        if (iPrevChar != pEngine->cursor.iCharAbs) {
-            drte_engine__on_cursor_move(pEngine);
-            drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
-        }
-    }
+    drte_region region = drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]);
+    return pEngine->cursor.iCharAbs == region.iCharEnd;
 }
 
 void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_move_proc proc)
@@ -2623,6 +2540,14 @@ bool drte_engine_delete_character_to_right_of_cursor(drte_engine* pEngine)
 
 bool drte_engine_delete_selected_text(drte_engine* pEngine)
 {
+    if (pEngine == NULL) {
+        return false;
+    }
+
+    // TODO: Implement me.
+    return false;
+
+#if 0
     // Don't do anything if nothing is selected.
     if (!drte_engine_is_anything_selected(pEngine)) {
         return false;
@@ -2660,42 +2585,9 @@ bool drte_engine_delete_selected_text(drte_engine* pEngine)
 
     drte_engine__end_dirty(pEngine);
     return wasTextChanged;
+#endif
 }
 
-
-void drte_engine_enter_selection_mode(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    // If we've just entered selection mode and nothing is currently selected, we want to set the selection anchor to the current cursor position.
-    if (!drte_engine_is_in_selection_mode(pEngine) && !pEngine->isAnythingSelected) {
-        pEngine->selectionAnchor = pEngine->cursor;
-    }
-
-    pEngine->selectionModeCounter += 1;
-}
-
-void drte_engine_leave_selection_mode(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    if (pEngine->selectionModeCounter > 0) {
-        pEngine->selectionModeCounter -= 1;
-    }
-}
-
-bool drte_engine_is_in_selection_mode(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return false;
-    }
-
-    return pEngine->selectionModeCounter > 0;
-}
 
 bool drte_engine_is_anything_selected(drte_engine* pEngine)
 {
@@ -2703,7 +2595,7 @@ bool drte_engine_is_anything_selected(drte_engine* pEngine)
         return false;
     }
 
-    return pEngine->isAnythingSelected;
+    return pEngine->selectionCount > 0;
 }
 
 void drte_engine_deselect_all(drte_engine* pEngine)
@@ -2712,7 +2604,7 @@ void drte_engine_deselect_all(drte_engine* pEngine)
         return;
     }
 
-    pEngine->isAnythingSelected = false;
+    pEngine->selectionCount = 0;
 
     drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
 }
@@ -2723,13 +2615,10 @@ void drte_engine_select_all(drte_engine* pEngine)
         return;
     }
 
-    drte_engine__move_marker_to_start_of_text(pEngine, &pEngine->selectionAnchor);
-    drte_engine__move_marker_to_end_of_text(pEngine, &pEngine->cursor);
+    // Deselect everything first to ensure any multi-select stuff is cleared.
+    drte_engine_deselect_all(pEngine);
 
-    pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
-
-    drte_engine__on_cursor_move(pEngine);
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+    drte_engine_select(pEngine, 0, pEngine->textLength);
 }
 
 void drte_engine_select(drte_engine* pEngine, size_t firstCharacter, size_t lastCharacter)
@@ -2738,21 +2627,32 @@ void drte_engine_select(drte_engine* pEngine, size_t firstCharacter, size_t last
         return;
     }
 
-    drte_engine__move_marker_to_character(pEngine, &pEngine->selectionAnchor, firstCharacter);
-    drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, lastCharacter);
+    // TODO: Implement me
+    //drte_engine_begin_new_selection(pEngine, firstCharacter);
+    //drte_engine_set_current_selection_end_point(pEngine, lastCharacter);
 
-    pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
+    drte_region* pNewSelections = (drte_region*)realloc(pEngine->pSelections, (pEngine->selectionCount + 1) * sizeof(*pNewSelections));
+    if (pNewSelections == NULL) {
+        return;
+    }
 
-    drte_engine__on_cursor_move(pEngine);
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- Optimize this to only redraw the selected regions.
+    pEngine->pSelections = pNewSelections;
+    pEngine->pSelections[pEngine->selectionCount].iCharBeg = firstCharacter;
+    pEngine->pSelections[pEngine->selectionCount].iCharEnd = lastCharacter;
+    pEngine->selectionCount += 1;
+
+    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- Only mark the selection region as dirty?
 }
 
 void drte_engine_select_word_under_cursor(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->selectionCount == 0) {
         return;
     }
 
+    // TODO: Reimplement me. Just use low-level functions for retrieving the character range of the word and then call drte_engine_select().
+
+#if 0
     bool moveToStartOfNextWord = false;
 
     // Move to the start of the word if we're not already there.
@@ -2777,6 +2677,7 @@ void drte_engine_select_word_under_cursor(drte_engine* pEngine)
         }
     }
 
+
     drte_engine_enter_selection_mode(pEngine);
     if (moveToStartOfNextWord) {
         drte_engine_move_cursor_to_start_of_next_word(pEngine);
@@ -2784,10 +2685,16 @@ void drte_engine_select_word_under_cursor(drte_engine* pEngine)
         drte_engine_move_cursor_to_end_of_word(pEngine);
     }
     drte_engine_leave_selection_mode(pEngine);
+#endif
 }
 
 size_t drte_engine_get_selected_text(drte_engine* pEngine, char* textOut, size_t textOutSize)
 {
+    // Safety.
+    if (textOut != NULL && textOutSize > 0) {
+        textOut[0] = '\0';
+    }
+
     if (pEngine == NULL || (textOut != NULL && textOutSize == 0)) {
         return 0;
     }
@@ -2797,37 +2704,27 @@ size_t drte_engine_get_selected_text(drte_engine* pEngine, char* textOut, size_t
     }
 
 
-    drte_marker* pSelectionMarker0;
-    drte_marker* pSelectionMarker1;
-    if (!drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1)) {
-        return false;
+    // The selected text is just every selection concatenated together.
+    size_t length = 0;
+    for (size_t iSelection = 0; iSelection < pEngine->selectionCount; ++iSelection) {
+        drte_region region = drte_region_normalize(pEngine->pSelections[iSelection]);
+        if (textOut != NULL) {
+            drgui__strncpy_s(textOut+length, textOutSize-length, pEngine->text+region.iCharBeg, (region.iCharEnd - region.iCharBeg));
+        }
+        
+        length += (region.iCharEnd - region.iCharEnd);
     }
 
-    size_t iSelectionChar0 = pSelectionMarker0->iCharAbs;
-    size_t iSelectionChar1 = pSelectionMarker1->iCharAbs;
-
-    size_t selectedTextLength = iSelectionChar1 - iSelectionChar0;
-
-    if (textOut != NULL) {
-        drgui__strncpy_s(textOut, textOutSize, pEngine->text + iSelectionChar0, selectedTextLength);
-    }
-
-    return selectedTextLength;
+    return length;
 }
 
 size_t drte_engine_get_selection_first_line(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->selectionCount == 0) {
         return 0;
     }
 
-    drte_marker* pSelectionMarker0;
-    drte_marker* pSelectionMarker1;
-    if (!drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1)) {
-        return 0;
-    }
-
-    return drte_engine_get_character_line(pEngine, pSelectionMarker0->iCharAbs);
+    return drte_engine_get_character_line(pEngine, drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]).iCharBeg);
 }
 
 size_t drte_engine_get_selection_last_line(drte_engine* pEngine)
@@ -2836,13 +2733,7 @@ size_t drte_engine_get_selection_last_line(drte_engine* pEngine)
         return 0;
     }
 
-    drte_marker* pSelectionMarker0;
-    drte_marker* pSelectionMarker1;
-    if (!drte_engine__get_selection_markers(pEngine, &pSelectionMarker0, &pSelectionMarker1)) {
-        return 0;
-    }
-
-    return drte_engine_get_character_line(pEngine, pSelectionMarker1->iCharAbs);
+    return drte_engine_get_character_line(pEngine, drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]).iCharEnd);
 }
 
 void drte_engine_move_selection_anchor_to_end_of_line(drte_engine* pEngine, size_t iLine)
@@ -2851,27 +2742,25 @@ void drte_engine_move_selection_anchor_to_end_of_line(drte_engine* pEngine, size
         return;
     }
 
-    drte_engine__move_marker_to_end_of_line_by_index(pEngine, &pEngine->selectionAnchor, iLine);
-    pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
+    pEngine->pSelections[pEngine->selectionCount-1].iCharBeg = drte_engine_get_line_last_character(pEngine, iLine);
 }
 
 void drte_engine_move_selection_anchor_to_start_of_line(drte_engine* pEngine, size_t iLine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->selectionCount == 0) {
         return;
     }
 
-    drte_engine__move_marker_to_start_of_line_by_index(pEngine, &pEngine->selectionAnchor, iLine);
-    pEngine->isAnythingSelected = drte_engine__has_spacing_between_selection_markers(pEngine);
+    pEngine->pSelections[pEngine->selectionCount-1].iCharBeg = drte_engine_get_line_first_character(pEngine, iLine);
 }
 
 size_t drte_engine_get_selection_anchor_line(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->selectionCount == 0) {
         return 0;
     }
 
-    return drte_engine_get_character_line(pEngine, pEngine->selectionAnchor.iCharAbs);
+    return drte_engine_get_character_line(pEngine, pEngine->pSelections[pEngine->selectionCount-1].iCharBeg);
 }
 
 
@@ -2890,9 +2779,7 @@ bool drte_engine_prepare_undo_point(drte_engine* pEngine)
     pEngine->preparedState.text = (char*)malloc(pEngine->textLength + 1);
     drgui__strcpy_s(pEngine->preparedState.text, pEngine->textLength + 1, (pEngine->text != NULL) ? pEngine->text : "");
 
-    pEngine->preparedState.cursorPos          = drte_engine__get_marker_absolute_char_index(pEngine, &pEngine->cursor);
-    pEngine->preparedState.selectionAnchorPos = drte_engine__get_marker_absolute_char_index(pEngine, &pEngine->selectionAnchor);
-    pEngine->preparedState.isAnythingSelected = pEngine->isAnythingSelected;
+    pEngine->preparedState.cursorPos = drte_engine__get_marker_absolute_char_index(pEngine, &pEngine->cursor);
 
     return true;
 }
@@ -2911,10 +2798,8 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
 
     // The undo state is creating by diff-ing the prepared state and the current state.
     drte_engine_state currentState;
-    currentState.text               = pEngine->text;
-    currentState.cursorPos          = drte_engine__get_marker_absolute_char_index(pEngine, &pEngine->cursor);
-    currentState.selectionAnchorPos = drte_engine__get_marker_absolute_char_index(pEngine, &pEngine->selectionAnchor);
-    currentState.isAnythingSelected = pEngine->isAnythingSelected;
+    currentState.text = pEngine->text;
+    currentState.cursorPos = drte_engine__get_marker_absolute_char_index(pEngine, &pEngine->cursor);
 
     drte_engine_undo_state undoState;
     if (!drte_engine__diff_states(&pEngine->preparedState, &currentState, &undoState)) {
@@ -3774,45 +3659,6 @@ size_t drte_engine__get_marker_absolute_char_index(drte_engine* pEngine, drte_ma
 }
 
 
-bool drte_engine__has_spacing_between_selection_markers(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return false;
-    }
-
-    return pEngine->cursor.iCharAbs || pEngine->selectionAnchor.iCharAbs;
-}
-
-bool drte_engine__get_selection_markers(drte_engine* pEngine, drte_marker** ppSelectionMarker0Out, drte_marker** ppSelectionMarker1Out)
-{
-    bool result = false;
-
-    drte_marker* pSelectionMarker0 = NULL;
-    drte_marker* pSelectionMarker1 = NULL;
-    if (pEngine != NULL && drte_engine_is_anything_selected(pEngine))
-    {
-        pSelectionMarker0 = &pEngine->selectionAnchor;
-        pSelectionMarker1 = &pEngine->cursor;
-        if (pSelectionMarker0->iCharAbs > pSelectionMarker1->iCharAbs)
-        {
-            drte_marker* temp = pSelectionMarker0;
-            pSelectionMarker0 = pSelectionMarker1;
-            pSelectionMarker1 = temp;
-        }
-
-        result = true;
-    }
-
-    if (ppSelectionMarker0Out) {
-        *ppSelectionMarker0Out = pSelectionMarker0;
-    }
-    if (ppSelectionMarker1Out) {
-        *ppSelectionMarker1Out = pSelectionMarker1;
-    }
-
-    return result;
-}
-
 
 void drte_engine__trim_undo_stack(drte_engine* pEngine)
 {
@@ -3965,13 +3811,9 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
 
         // Markers needs to be updated after refreshing the layout.
         drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, pUndoState->oldState.cursorPos);
-        drte_engine__move_marker_to_character(pEngine, &pEngine->selectionAnchor, pUndoState->oldState.selectionAnchorPos);
 
         // The cursor's sticky position needs to be updated whenever the text is edited.
         drte_engine__update_marker_sticky_position(pEngine, &pEngine->cursor);
-
-        // Ensure we mark the text as selected if appropriate.
-        pEngine->isAnythingSelected = pUndoState->oldState.isAnythingSelected;
 
 
         if (pEngine->onTextChanged) {
@@ -4010,13 +3852,9 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
 
         // Markers needs to be updated after refreshing the layout.
         drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, pUndoState->newState.cursorPos);
-        drte_engine__move_marker_to_character(pEngine, &pEngine->selectionAnchor, pUndoState->newState.selectionAnchorPos);
 
         // The cursor's sticky position needs to be updated whenever the text is edited.
         drte_engine__update_marker_sticky_position(pEngine, &pEngine->cursor);
-
-        // Ensure we mark the text as selected if appropriate.
-        pEngine->isAnythingSelected = pUndoState->newState.isAnythingSelected;
 
 
         if (pEngine->onTextChanged) {
