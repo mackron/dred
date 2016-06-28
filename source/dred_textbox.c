@@ -404,8 +404,10 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
 
 
     // TESTING
-    drte_engine_select(pTB->pTL, 1, 4);
-    drte_engine_select(pTB->pTL, 8, 15);
+    drte_engine_select(pTB->pTL, 1, 8);
+    drte_engine_select(pTB->pTL, 2, 7);
+    
+    
 
     return pTextBox;
 }

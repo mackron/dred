@@ -1058,6 +1058,7 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     }
 
 
+
     // Highlight segment.
     drte_style_segment highlightSegment;
     drte_style_token highlightStyleToken;
@@ -2420,12 +2421,20 @@ bool drte_engine_delete_text_range(drte_engine* pEngine, size_t iFirstCh, size_t
         return false;
     }
 
+    if (iFirstCh > pEngine->textLength) {
+        iFirstCh = pEngine->textLength;
+    }
+
+    if (iLastChPlus1 > pEngine->textLength) {
+        iLastChPlus1 = pEngine->textLength;
+    }
+
+
     if (iFirstCh > iLastChPlus1) {
         size_t temp = iFirstCh;
         iFirstCh = iLastChPlus1;
         iLastChPlus1 = temp;
     }
-
 
     size_t bytesToRemove = iLastChPlus1 - iFirstCh;
     if (bytesToRemove > 0)
@@ -2538,14 +2547,78 @@ bool drte_engine_delete_character_to_right_of_cursor(drte_engine* pEngine)
     return false;
 }
 
+int drte_region_qsort(const void* pSelection0, const void* pSelection1)
+{
+    drte_region selection0 = *(const drte_region*)pSelection0;
+    drte_region selection1 = *(const drte_region*)pSelection1;
+
+    if (selection0.iCharBeg < selection1.iCharBeg) {
+        return -1;
+    }
+    if (selection0.iCharBeg > selection1.iCharBeg) {
+        return +1;
+    }
+
+    return 0;
+}
+
 bool drte_engine_delete_selected_text(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->selectionCount == 0) {
         return false;
     }
 
-    // TODO: Implement me.
-    return false;
+    // To delete selected text we need to ensure there are no overlaps. Selections are then deleted back to front.
+    drte_region* pSortedSelections = (drte_region*)malloc(pEngine->selectionCount * sizeof(*pSortedSelections));
+    if (pSortedSelections == NULL) {
+        return false;
+    }
+
+    for (size_t iSelection = 0; iSelection < pEngine->selectionCount; ++iSelection) {
+        pSortedSelections[iSelection] = pEngine->pSelections[iSelection];
+    }
+
+    for (size_t iSelection = 0; iSelection < pEngine->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pSortedSelections[iSelection]);
+        for (size_t iSelection2 = iSelection+1; iSelection2 < pEngine->selectionCount; ++iSelection2) {
+            if (iSelection != iSelection2) {
+                drte_region selection2 = drte_region_normalize(pSortedSelections[iSelection2]);
+                if (selection.iCharBeg < selection2.iCharBeg) {
+                    if (selection2.iCharEnd < selection.iCharEnd) {
+                        selection2.iCharEnd = selection.iCharEnd;
+                        pSortedSelections[iSelection2] = selection2;
+                    }
+                    if (selection.iCharEnd > selection2.iCharBeg) {
+                        selection.iCharEnd = selection2.iCharBeg;
+                    }
+                } else {
+                    if (selection.iCharBeg < selection2.iCharEnd) {
+                        selection.iCharBeg = selection2.iCharEnd;
+                        if (selection.iCharEnd < selection.iCharBeg) {
+                            selection.iCharEnd = selection.iCharBeg;
+                        }
+                    }
+                }
+            }
+        }
+
+        pSortedSelections[iSelection] = selection;
+    }
+
+    qsort(pSortedSelections, pEngine->selectionCount, sizeof(*pSortedSelections), drte_region_qsort);
+
+    drte_engine__begin_dirty(pEngine);
+    bool wasTextChanged = false;
+    for (size_t iSelection = pEngine->selectionCount; iSelection > 0; --iSelection) {
+        drte_region selection = pSortedSelections[iSelection-1];
+        if (selection.iCharBeg < selection.iCharEnd) {
+            wasTextChanged = drte_engine_delete_text_range(pEngine, selection.iCharBeg, selection.iCharEnd) || wasTextChanged;
+        }
+    }
+    drte_engine__end_dirty(pEngine);
+
+    free(pSortedSelections);
+    return wasTextChanged;
 
 #if 0
     // Don't do anything if nothing is selected.
