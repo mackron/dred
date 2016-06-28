@@ -3493,7 +3493,7 @@ bool drte_engine__move_marker_to_point_relative_to_container(drte_engine* pEngin
     pMarker->absoluteSickyPosX = 0;
 
     float inputPosXRelativeToText = inputPosX - pEngine->innerOffsetX;
-    float inputPosYRelativeToText = inputPosY - pEngine->innerOffsetX;
+    float inputPosYRelativeToText = inputPosY - pEngine->innerOffsetY;
     if (drte_engine__move_marker_to_point(pEngine, pMarker, inputPosXRelativeToText, inputPosYRelativeToText))
     {
         drte_engine__update_marker_sticky_position(pEngine, pMarker);
