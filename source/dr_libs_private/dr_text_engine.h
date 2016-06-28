@@ -3955,32 +3955,32 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
         pEngine->text[pEngine->textLength] = '\0';
     }
 
-    // TODO: This needs improving because it results in multiple onTextChanged and onDirty events being posted.
+    // TODO: This needs improving because it results in multiple onTextChanged events being posted.
 
-    // Insert the old text.
-    drte_engine_insert_text(pEngine, pUndoState->oldText, pUndoState->diffPos);
-
-
-    // Markers needs to be updated after refreshing the layout.
-    drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, pUndoState->oldState.cursorPos);
-    drte_engine__move_marker_to_character(pEngine, &pEngine->selectionAnchor, pUndoState->oldState.selectionAnchorPos);
-
-    // The cursor's sticky position needs to be updated whenever the text is edited.
-    drte_engine__update_marker_sticky_position(pEngine, &pEngine->cursor);
-
-    // Ensure we mark the text as selected if appropriate.
-    pEngine->isAnythingSelected = pUndoState->oldState.isAnythingSelected;
+    drte_engine__begin_dirty(pEngine);
+    {
+        // Insert the old text.
+        drte_engine_insert_text(pEngine, pUndoState->oldText, pUndoState->diffPos);
 
 
-    if (pEngine->onTextChanged) {
-        pEngine->onTextChanged(pEngine);
+        // Markers needs to be updated after refreshing the layout.
+        drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, pUndoState->oldState.cursorPos);
+        drte_engine__move_marker_to_character(pEngine, &pEngine->selectionAnchor, pUndoState->oldState.selectionAnchorPos);
+
+        // The cursor's sticky position needs to be updated whenever the text is edited.
+        drte_engine__update_marker_sticky_position(pEngine, &pEngine->cursor);
+
+        // Ensure we mark the text as selected if appropriate.
+        pEngine->isAnythingSelected = pUndoState->oldState.isAnythingSelected;
+
+
+        if (pEngine->onTextChanged) {
+            pEngine->onTextChanged(pEngine);
+        }
+
+        drte_engine__on_cursor_move(pEngine);
     }
-
-    drte_engine__on_cursor_move(pEngine);
-
-    if (pEngine->onDirty) {
-        pEngine->onDirty(pEngine, drte_engine__local_rect(pEngine));
-    }
+    drte_engine__end_dirty(pEngine);
 }
 
 void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState)
@@ -4001,32 +4001,31 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
         pEngine->text[pEngine->textLength] = '\0';
     }
 
-    // TODO: This needs improving because it results in multiple onTextChanged and onDirty events being posted.
-
-    // Insert the new text.
-    drte_engine_insert_text(pEngine, pUndoState->newText, pUndoState->diffPos);
-
-
-    // Markers needs to be updated after refreshing the layout.
-    drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, pUndoState->newState.cursorPos);
-    drte_engine__move_marker_to_character(pEngine, &pEngine->selectionAnchor, pUndoState->newState.selectionAnchorPos);
-
-    // The cursor's sticky position needs to be updated whenever the text is edited.
-    drte_engine__update_marker_sticky_position(pEngine, &pEngine->cursor);
-
-    // Ensure we mark the text as selected if appropriate.
-    pEngine->isAnythingSelected = pUndoState->newState.isAnythingSelected;
+    // TODO: This needs improving because it results in multiple onTextChanged events being posted.
+    drte_engine__begin_dirty(pEngine);
+    {
+        // Insert the new text.
+        drte_engine_insert_text(pEngine, pUndoState->newText, pUndoState->diffPos);
 
 
-    if (pEngine->onTextChanged) {
-        pEngine->onTextChanged(pEngine);
+        // Markers needs to be updated after refreshing the layout.
+        drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, pUndoState->newState.cursorPos);
+        drte_engine__move_marker_to_character(pEngine, &pEngine->selectionAnchor, pUndoState->newState.selectionAnchorPos);
+
+        // The cursor's sticky position needs to be updated whenever the text is edited.
+        drte_engine__update_marker_sticky_position(pEngine, &pEngine->cursor);
+
+        // Ensure we mark the text as selected if appropriate.
+        pEngine->isAnythingSelected = pUndoState->newState.isAnythingSelected;
+
+
+        if (pEngine->onTextChanged) {
+            pEngine->onTextChanged(pEngine);
+        }
+
+        drte_engine__on_cursor_move(pEngine);
     }
-
-    drte_engine__on_cursor_move(pEngine);
-
-    if (pEngine->onDirty) {
-        pEngine->onDirty(pEngine, drte_engine__local_rect(pEngine));
-    }
+    drte_engine__end_dirty(pEngine);
 }
 
 
