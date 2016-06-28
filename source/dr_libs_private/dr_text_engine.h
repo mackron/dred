@@ -1519,8 +1519,12 @@ void drte_engine_get_visible_lines(drte_engine* pEngine, size_t* pFirstLineOut, 
     if (pLastLineOut) {
         size_t lineCount = drte_engine_get_line_count(pEngine);
         size_t iLastLine = iFirstLine + ((size_t)(pEngine->containerHeight / drte_engine_get_line_height(pEngine)));
-        if (iLastLine >= lineCount && lineCount > 0) {
-            iLastLine = lineCount - 1;
+        if (lineCount == 0) {
+            iLastLine = 0;
+        } else {
+            if (iLastLine >= lineCount) {
+                iLastLine = lineCount - 1;
+            }
         }
 
         *pLastLineOut = iLastLine;
