@@ -404,10 +404,6 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
 
 
     // TESTING
-    drte_engine_select(pTB->pTL, 1, 8);
-    drte_engine_select(pTB->pTL, 2, 7);
-    
-    
 
     return pTextBox;
 }
@@ -1333,6 +1329,7 @@ void dred_textbox_on_mouse_move(dred_textbox* pTextBox, int relativeMousePosX, i
         dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
         drte_engine_move_cursor_to_point(pTB->pTL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
+        drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL));
     }
 }
 
@@ -1348,15 +1345,30 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
 
     if (mouseButton == DRGUI_MOUSE_BUTTON_LEFT)
     {
-        // If we are not in selection mode, make sure everything is deselected.
-        if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) == 0) {
-            drte_engine_deselect_all(pTB->pTL);
+        if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
+            if (!drte_engine_is_anything_selected(pTB->pTL)) {
+                drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL));
+            }
+        } else {
+            if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) == 0) {
+                drte_engine_deselect_all(pTB->pTL);
+            }
         }
+
+
 
         float offsetX;
         float offsetY;
         dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
         drte_engine_move_cursor_to_point(pTB->pTL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
+
+
+        if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
+            drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL));
+        } else {
+            drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL));
+        }
+
 
         // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
         drgui_capture_mouse(pTextBox);
@@ -1382,6 +1394,14 @@ void dred_textbox_on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, in
     {
         if (drgui_get_element_with_mouse_capture(pTextBox->pContext) == pTextBox)
         {
+            size_t iCharBeg;
+            size_t iCharEnd;
+            if (drte_engine_get_last_selection(pTB->pTL, &iCharBeg, &iCharEnd)) {
+                if (iCharBeg == iCharEnd) {
+                    drte_engine_cancel_selection(pTB->pTL);
+                }
+            }
+
             // Releasing the mouse will leave selectionmode.
             drgui_release_mouse(pTextBox->pContext);
         }
@@ -1408,6 +1428,12 @@ void dred_textbox_on_mouse_button_dblclick(dred_textbox* pTextBox, int mouseButt
             }
             
             drte_engine_select_word_under_cursor(pTB->pTL);
+
+            size_t iCharBeg;
+            size_t iCharEnd;
+            if (drte_engine_get_last_selection(pTB->pTL, &iCharBeg, &iCharEnd)) {
+                drte_engine_move_cursor_to_character(pTB->pTL, iCharEnd);
+            }
         }
     }
 }
@@ -1444,6 +1470,7 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
             {
                 if (drte_engine_is_anything_selected(pTB->pTL)) {
                     wasTextChanged = drte_engine_delete_selected_text(pTB->pTL);
+                    drte_engine_deselect_all(pTB->pTL);
                 } else {
                     wasTextChanged = drte_engine_delete_character_to_left_of_cursor(pTB->pTL);
                 }
@@ -1458,6 +1485,7 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
             {
                 if (drte_engine_is_anything_selected(pTB->pTL)) {
                     wasTextChanged = drte_engine_delete_selected_text(pTB->pTL);
+                    drte_engine_deselect_all(pTB->pTL);
                 } else {
                     wasTextChanged = drte_engine_delete_character_to_right_of_cursor(pTB->pTL);
                 }

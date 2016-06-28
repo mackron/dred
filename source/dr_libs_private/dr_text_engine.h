@@ -651,6 +651,21 @@ void drte_engine_move_selection_anchor_to_start_of_line(drte_engine* pEngine, si
 /// Retrieves the line the selection anchor is sitting on.
 size_t drte_engine_get_selection_anchor_line(drte_engine* pEngine);
 
+// Begins a new selection region.
+void drte_engine_begin_selection(drte_engine* pEngine, size_t iCharBeg);
+
+// Cancels the most recent selection.
+void drte_engine_cancel_selection(drte_engine* pEngine);
+
+// Sets the anchor of the most recent selection region.
+void drte_engine_set_selection_anchor(drte_engine* pEngine, size_t iCharBeg);
+
+// Sets the end point of the most recent selection region.
+void drte_engine_set_selection_end_point(drte_engine* pEngine, size_t iCharEnd);
+
+// Retrieves the character range of the last selection, if any.
+bool drte_engine_get_last_selection(drte_engine* pEngine, size_t* iCharBegOut, size_t* iCharEndOut);
+
 
 /// Prepares the next undo/redo point.
 ///
@@ -2325,6 +2340,8 @@ bool drte_engine_insert_character(drte_engine* pEngine, unsigned int character, 
 
 
     // TODO: Add proper support for UTF-8.
+    // TODO: Bounds check the insert index.
+
     char* pOldText = pEngine->text;
     char* pNewText = (char*)malloc(pEngine->textLength + 1 + 1);   // +1 for the new character and +1 for the null terminator.
 
@@ -2704,6 +2721,7 @@ void drte_engine_select(drte_engine* pEngine, size_t firstCharacter, size_t last
     //drte_engine_begin_new_selection(pEngine, firstCharacter);
     //drte_engine_set_current_selection_end_point(pEngine, lastCharacter);
 
+#if 0
     drte_region* pNewSelections = (drte_region*)realloc(pEngine->pSelections, (pEngine->selectionCount + 1) * sizeof(*pNewSelections));
     if (pNewSelections == NULL) {
         return;
@@ -2713,17 +2731,156 @@ void drte_engine_select(drte_engine* pEngine, size_t firstCharacter, size_t last
     pEngine->pSelections[pEngine->selectionCount].iCharBeg = firstCharacter;
     pEngine->pSelections[pEngine->selectionCount].iCharEnd = lastCharacter;
     pEngine->selectionCount += 1;
+#endif
 
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- Only mark the selection region as dirty?
+    drte_engine_begin_selection(pEngine, firstCharacter);
+    drte_engine_set_selection_end_point(pEngine, lastCharacter);
+
+    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+}
+
+
+bool drte_engine_get_start_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut)
+{
+    if (pEngine == NULL) {
+        return false;
+    }
+
+    if (iChar > 0) {
+        iChar -= 1;
+
+        // Skip whitespace.
+        if (dr_is_whitespace(pEngine->text[iChar])) {
+            while (iChar > 0) {
+                if (!dr_is_whitespace(pEngine->text[iChar])) {
+                    break;
+                }
+
+                iChar -= 1;
+            }
+        }
+
+        if (!drte_is_symbol_or_whitespace(pEngine->text[iChar])) {
+            while (iChar > 0) {
+                uint32_t c = pEngine->text[iChar-1];
+                if (drte_is_symbol_or_whitespace(c)) {
+                    break;
+                }
+
+                iChar -= 1;
+            }
+        }
+    }
+
+    if (pWordBegOut) *pWordBegOut = iChar;
+    return true;
+}
+
+bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordEndOut)
+{
+    if (pEngine == NULL) {
+        return false;
+    }
+
+    if (!drte_is_symbol_or_whitespace(pEngine->text[iChar])) {
+        while (pEngine->text[iChar] != '\0') {
+            uint32_t c = pEngine->text[iChar];
+            if (drte_is_symbol_or_whitespace(c)) {
+                break;
+            }
+
+            iChar += 1;
+        }
+    } else {
+        iChar += 1;
+    }
+
+    if (pWordEndOut) *pWordEndOut = iChar;
+    return true;
+}
+
+bool drte_engine_get_start_of_next_word_from_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut)
+{
+    if (pEngine == NULL) {
+        return false;
+    }
+
+    while (pEngine->text[iChar] != '\0') {
+        uint32_t c = pEngine->text[iChar];
+        if (!dr_is_whitespace(c)) {
+            break;
+        }
+
+        iChar += 1;
+    }
+
+    if (pWordBegOut) *pWordBegOut = iChar;
+    return true;
+}
+
+// TODO: Make this public.
+bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut, size_t* pWordEndOut)
+{
+    if (pEngine == NULL) {
+        return false;
+    }
+
+    bool moveToStartOfNextWord = false;
+
+    // Move to the start of the word if we're not already there.
+    if (iChar > 0) {
+        uint32_t c = pEngine->text[iChar];
+        uint32_t cprev = pEngine->text[iChar-1];
+
+        if (!dr_is_whitespace(c) && !dr_is_whitespace(cprev)) {
+            drte_engine_get_start_of_word_containing_character(pEngine, iChar, &iChar);
+        } else if (dr_is_whitespace(c) && dr_is_whitespace(cprev)) {
+            iChar -= 1;
+            while (iChar > 0) {
+                if (!dr_is_whitespace(pEngine->text[iChar-1]) || pEngine->text[iChar-1] == '\n') {
+                    break;
+                }
+                iChar -= 1;
+            }
+
+            moveToStartOfNextWord = true;
+        }
+    }
+
+    if (pWordBegOut) *pWordBegOut = iChar;
+
+    if (moveToStartOfNextWord) {
+        drte_engine_get_start_of_next_word_from_character(pEngine, iChar, pWordEndOut);
+    } else {
+        drte_engine_get_end_of_word_containing_character(pEngine, iChar, pWordEndOut);
+    }
+
+    return true;
+}
+
+// TODO: Make this public.
+bool drte_engine_get_word_under_cursor(drte_engine* pEngine, size_t* pWordBegOut, size_t* pWordEndOut)
+{
+    if (pEngine == NULL) {
+        return false;
+    }
+
+    return drte_engine_get_word_containing_character(pEngine, pEngine->cursor.iCharAbs, pWordBegOut, pWordEndOut);
 }
 
 void drte_engine_select_word_under_cursor(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->selectionCount == 0) {
+    if (pEngine == NULL) {
         return;
     }
 
-    // TODO: Reimplement me. Just use low-level functions for retrieving the character range of the word and then call drte_engine_select().
+    size_t iWordBeg;
+    size_t iWordEnd;
+    if (!drte_engine_get_word_under_cursor(pEngine, &iWordBeg, &iWordEnd)) {
+        return;
+    }
+
+    drte_engine_select(pEngine, iWordBeg, iWordEnd);
 
 #if 0
     bool moveToStartOfNextWord = false;
@@ -2811,20 +2968,12 @@ size_t drte_engine_get_selection_last_line(drte_engine* pEngine)
 
 void drte_engine_move_selection_anchor_to_end_of_line(drte_engine* pEngine, size_t iLine)
 {
-    if (pEngine == NULL) {
-        return;
-    }
-
-    pEngine->pSelections[pEngine->selectionCount-1].iCharBeg = drte_engine_get_line_last_character(pEngine, iLine);
+    drte_engine_set_selection_anchor(pEngine, drte_engine_get_line_last_character(pEngine, iLine));
 }
 
 void drte_engine_move_selection_anchor_to_start_of_line(drte_engine* pEngine, size_t iLine)
 {
-    if (pEngine == NULL || pEngine->selectionCount == 0) {
-        return;
-    }
-
-    pEngine->pSelections[pEngine->selectionCount-1].iCharBeg = drte_engine_get_line_first_character(pEngine, iLine);
+    drte_engine_set_selection_anchor(pEngine, drte_engine_get_line_first_character(pEngine, iLine));
 }
 
 size_t drte_engine_get_selection_anchor_line(drte_engine* pEngine)
@@ -2834,6 +2983,68 @@ size_t drte_engine_get_selection_anchor_line(drte_engine* pEngine)
     }
 
     return drte_engine_get_character_line(pEngine, pEngine->pSelections[pEngine->selectionCount-1].iCharBeg);
+}
+
+
+void drte_engine_begin_selection(drte_engine* pEngine, size_t iCharBeg)
+{
+    if (pEngine == NULL) {
+        return;
+    }
+
+    drte_region* pNewSelections = (drte_region*)realloc(pEngine->pSelections, (pEngine->selectionCount + 1) * sizeof(*pNewSelections));
+    if (pNewSelections == NULL) {
+        return;
+    }
+
+    pEngine->pSelections = pNewSelections;
+    pEngine->pSelections[pEngine->selectionCount].iCharBeg = iCharBeg;
+    pEngine->pSelections[pEngine->selectionCount].iCharEnd = iCharBeg;
+    pEngine->selectionCount += 1;
+
+    drte_engine__repaint(pEngine);
+}
+
+void drte_engine_cancel_selection(drte_engine* pEngine)
+{
+    if (pEngine == NULL || pEngine->selectionCount == 0) {
+        return;
+    }
+
+    pEngine->selectionCount -= 1;
+}
+
+void drte_engine_set_selection_anchor(drte_engine* pEngine, size_t iCharBeg)
+{
+    if (pEngine == NULL || pEngine->selectionCount == 0) {
+        return;
+    }
+
+    pEngine->pSelections[pEngine->selectionCount-1].iCharBeg = iCharBeg;
+    drte_engine__repaint(pEngine);
+}
+
+void drte_engine_set_selection_end_point(drte_engine* pEngine, size_t iCharEnd)
+{
+    if (pEngine == NULL || pEngine->selectionCount == 0) {
+        return;
+    }
+
+    pEngine->pSelections[pEngine->selectionCount-1].iCharEnd = iCharEnd;
+    drte_engine__repaint(pEngine);
+}
+
+bool drte_engine_get_last_selection(drte_engine* pEngine, size_t* iCharBegOut, size_t* iCharEndOut)
+{
+    if (pEngine == NULL || pEngine->selectionCount == 0) {
+        return false;
+    }
+
+    drte_region selection = drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]);
+
+    if (iCharBegOut) *iCharBegOut = selection.iCharBeg;
+    if (iCharEndOut) *iCharEndOut = selection.iCharEnd;
+    return true;
 }
 
 
