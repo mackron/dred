@@ -961,6 +961,7 @@ typedef struct
     float posX;
     float width;
     bool isAtEnd;
+    bool isAtEndOfLine;
 } drte_segment;
 
 float drte_engine__measure_segment(drte_engine* pEngine, drte_segment* pSegment)
@@ -1028,6 +1029,13 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
         bgStyleSlot = pEngine->activeLineStyleSlot;
     }
 
+    if (pSegment->isAtEndOfLine) {
+        pSegment->iLine += 1;
+        pSegment->posX = 0;
+        pSegment->width = 0;
+        pSegment->isAtEndOfLine = false;
+    }
+
     // TODO: Fix this for multi-select and multi-cursor.
     bool isAnythingSelected = false;
     bool isInSelection = false;
@@ -1084,44 +1092,49 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
 
 
     char c = pEngine->text[iCharBeg];
-    if (c == '\0' || c == '\n') {
+    if (c == '\0') {
         pSegment->isAtEnd = true;
     } else {
-        for (;;) {
-            c = pEngine->text[iCharEnd];
-            if (c == '\0' || c == '\n') {
-                break;
-            }
-
-            if (c == '\t') {
-                if (pEngine->text[iCharBeg] != '\t') {
-                    break;
-                } else {
-                    // Group tabs into a single segment.
-                    for (;;) {
-                        c = pEngine->text[iCharEnd];
-                        if (c == '\0' || c == '\n' || c != '\t') {
-                            break;
-                        }
-
-                        if (iCharEnd == iMaxChar) {
-                            break;
-                        }
-
-                        iCharEnd += 1;
-                    }
-
+        if (c == '\n') {
+            pSegment->isAtEndOfLine = true;
+            iCharEnd += 1;
+        } else {
+            for (;;) {
+                c = pEngine->text[iCharEnd];
+                if (c == '\0' || c == '\n') {
                     break;
                 }
+
+                if (c == '\t') {
+                    if (pEngine->text[iCharBeg] != '\t') {
+                        break;
+                    } else {
+                        // Group tabs into a single segment.
+                        for (;;) {
+                            c = pEngine->text[iCharEnd];
+                            if (c == '\0' || c == '\n' || c != '\t') {
+                                break;
+                            }
+
+                            if (iCharEnd == iMaxChar) {
+                                break;
+                            }
+
+                            iCharEnd += 1;
+                        }
+
+                        break;
+                    }
+                }
+
+
+                // Selection and styling segment clamp.
+                if (iCharEnd == iMaxChar) {
+                    break;
+                }
+
+                iCharEnd += 1;
             }
-
-
-            // Selection and styling segment clamp.
-            if (iCharEnd == iMaxChar) {
-                break;
-            }
-
-            iCharEnd += 1;
         }
     }
 
@@ -1142,7 +1155,37 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     return true;
 }
 
-bool drte_engine__first_segment(drte_engine* pEngine, size_t lineIndex, drte_segment* pSegment)
+bool drte_engine__next_segment_on_line(drte_engine* pEngine, drte_segment* pSegment)
+{
+    assert(pEngine != NULL);
+    assert(pSegment != NULL);
+
+    if (pSegment->isAtEndOfLine) {
+        return false;
+    }
+
+    return drte_engine__next_segment(pEngine, pSegment);
+}
+
+bool drte_engine__first_segment(drte_engine* pEngine, size_t iChar, drte_segment* pSegment)
+{
+    if (pEngine == NULL || pEngine->textLength == 0 || pSegment == NULL) {
+        return false;
+    }
+
+    pSegment->iLine = drte_engine_get_character_line(pEngine, iChar);
+    pSegment->iCharBeg = iChar;
+    pSegment->iCharEnd = pSegment->iCharBeg;
+    pSegment->fgStyleSlot = pEngine->defaultStyleSlot;
+    pSegment->bgStyleSlot = pEngine->defaultStyleSlot;
+    pSegment->posX = 0;
+    pSegment->width = 0;
+    pSegment->isAtEnd = false;
+    pSegment->isAtEndOfLine = false;
+    return drte_engine__next_segment(pEngine, pSegment);
+}
+
+bool drte_engine__first_segment_on_line(drte_engine* pEngine, size_t lineIndex, drte_segment* pSegment)
 {
     if (pEngine == NULL || pEngine->textLength == 0 || pSegment == NULL) {
         return false;
@@ -1156,6 +1199,7 @@ bool drte_engine__first_segment(drte_engine* pEngine, size_t lineIndex, drte_seg
     pSegment->posX = 0;
     pSegment->width = 0;
     pSegment->isAtEnd = false;
+    pSegment->isAtEndOfLine = false;
     return drte_engine__next_segment(pEngine, pSegment);
 }
 
@@ -1432,7 +1476,7 @@ void drte_engine_get_character_position(drte_engine* pEngine, size_t characterIn
     float posY = lineIndex * drte_engine_get_line_height(pEngine);
 
     drte_segment segment;
-    if (drte_engine__first_segment(pEngine, lineIndex, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine, lineIndex, &segment)) {
         do
         {
             if (characterIndex >= segment.iCharBeg && characterIndex < segment.iCharEnd) {
@@ -1460,7 +1504,7 @@ void drte_engine_get_character_position(drte_engine* pEngine, size_t characterIn
 
                 break;
             }
-        } while (drte_engine__next_segment(pEngine, &segment));
+        } while (drte_engine__next_segment_on_line(pEngine, &segment));
     }
 
     if (pPosXOut) *pPosXOut = posX;
@@ -3178,6 +3222,8 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
     float lineHeight = drte_engine_get_line_height(pEngine);
 
 
+    // Optimize this.
+
     size_t iLineTop;
     size_t iLineBottom;
     drte_engine_get_visible_lines(pEngine, &iLineTop, &iLineBottom);
@@ -3188,7 +3234,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
         float lineWidth = 0;
 
         drte_segment segment;
-        if (drte_engine__first_segment(pEngine, iLine, &segment)) {
+        if (drte_engine__first_segment_on_line(pEngine, iLine, &segment)) {
             do
             {
                 if (segment.posX > pEngine->containerWidth) {
@@ -3229,11 +3275,15 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                         pEngine->onPaintText(pEngine, fgStyleToken, bgStyleToken, text, textLength, linePosX + segment.posX, linePosY, pElement, pPaintData);
                     }
                 }
+
+                if (pEngine->text[segment.iCharBeg] == '\n') {
+                    break;
+                }
             } while (drte_engine__next_segment(pEngine, &segment));
         }
 
-        // OPTIMIZE: Don't call drte_engine__first_segment() if the line terminated naturally. Instead just continue where we
-        //           left off. Consider drte_engine__first_segment_by_character().
+        // OPTIMIZE: Don't call drte_engine__first_segment_on_line() if the line terminated naturally. Instead just continue where we
+        //           left off. Consider drte_engine__first_segment_on_line_by_character().
         //if (segment.isAtEnd) {
         //    Optimize me.
         //}
@@ -3415,10 +3465,14 @@ void drte_engine__refresh(drte_engine* pEngine)
         float thisLineWidth = 0;
 
         drte_segment segment;
-        if (drte_engine__first_segment(pEngine, iLine, &segment)) {
+        if (drte_engine__first_segment_on_line(pEngine, iLine, &segment)) {
             do
             {
                 thisLineWidth += segment.width;
+
+                if (pEngine->text[segment.iCharBeg] == '\n') {
+                    break;
+                }
             } while (drte_engine__next_segment(pEngine, &segment));
         }
 
@@ -3517,7 +3571,7 @@ bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarke
     }
 
     drte_segment segment;
-    if (drte_engine__first_segment(pEngine, (size_t)iLine, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine, (size_t)iLine, &segment)) {
         do
         {
             if (inputPosXRelativeToText >= segment.posX && inputPosXRelativeToText < segment.posX + segment.width) {
@@ -3559,7 +3613,7 @@ bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarke
 
                 return true;
             }
-        } while (drte_engine__next_segment(pEngine, &segment));
+        } while (drte_engine__next_segment_on_line(pEngine, &segment));
 
         // If we get here it means the position is to the right of the line. Just pin it to the end of the line.
         assert(drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\n' || drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\0');
