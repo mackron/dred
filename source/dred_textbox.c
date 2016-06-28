@@ -462,9 +462,6 @@ void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont)
         // Emulate a scroll to ensure the scroll position is pinned to a line.
         dred_textbox__on_vscroll(pTB->pVertScrollbar, drgui_sb_get_scroll_position(pTB->pVertScrollbar));
         dred_textbox__refresh_scrollbars(pTextBox);
-
-        // The caret position needs to be refreshes. We'll cheat here a little bit and just do a full refresh of the text engine.
-        drte_engine__refresh(pTB->pTL);
     }
     drgui_end_dirty(pTextBox);
 }
@@ -2014,11 +2011,14 @@ void dred_textbox__refresh_scrollbar_ranges(dred_textbox* pTextBox)
     }
 
 
+    // TODO: Fix the horizontal scrollbar
+#if 0
     // The horizontal scrollbar is a per-pixel scrollbar, and is based on the width of the text versus the width of the container.
     drgui_rect textRect = drte_engine_get_text_rect_relative_to_bounds(pTB->pTL);
     float containerWidth;
     drte_engine_get_container_size(pTB->pTL, &containerWidth, NULL);
     drgui_sb_set_range_and_page_size(pTB->pHorzScrollbar, 0, (int)(textRect.right - textRect.left + (containerWidth/2)), (int)containerWidth);
+#endif
 
     if (drgui_sb_is_thumb_visible(pTB->pHorzScrollbar)) {
         if (!drgui_is_visible(pTB->pHorzScrollbar)) {

@@ -286,13 +286,6 @@ struct drte_engine
     bool isShowingCursor;
 
 
-    /// The total width of the text.
-    float textBoundsWidth;
-
-    /// The total height of the text.
-    float textBoundsHeight;
-
-
     /// The cursor.
     drte_marker cursor;
 
@@ -478,10 +471,6 @@ void drte_engine_set_tab_size(drte_engine* pEngine, unsigned int sizeInSpaces);
 
 /// Retrieves the size of a tab in spaces.
 unsigned int drte_engine_get_tab_size(drte_engine* pEngine);
-
-
-/// Retrieves the rectangle of the text relative to the bounds, taking alignment into account.
-drgui_rect drte_engine_get_text_rect_relative_to_bounds(drte_engine* pEngine);
 
 
 /// Sets the width of the text cursor.
@@ -818,7 +807,7 @@ void drte_engine__repaint(drte_engine* pEngine);
 ///
 /// @remarks
 ///     This will delete every run and re-create them.
-void drte_engine__refresh(drte_engine* pEngine);
+//void drte_engine__refresh(drte_engine* pEngine);
 
 
 /// Helper for calculating the width of a tab.
@@ -1273,7 +1262,6 @@ bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token sty
             }
         }
 
-        drte_engine__refresh(pEngine);
         drte_engine__repaint(pEngine);
         return true;
     }
@@ -1313,7 +1301,6 @@ void drte_engine_set_default_style(drte_engine* pEngine, drte_style_token styleT
     }
 
     pEngine->defaultStyleSlot = styleSlot;
-    drte_engine__refresh(pEngine);
     drte_engine__repaint(pEngine);
 }
 
@@ -1335,7 +1322,6 @@ void drte_engine_set_selection_style(drte_engine* pEngine, drte_style_token styl
     pEngine->selectionStyleSlot = styleSlot;
 
     if (drte_engine_is_anything_selected(pEngine)) {
-        drte_engine__refresh(pEngine);
         drte_engine__repaint(pEngine);
     }
 }
@@ -1356,7 +1342,6 @@ void drte_engine_set_active_line_style(drte_engine* pEngine, drte_style_token st
     }
 
     pEngine->activeLineStyleSlot = styleSlot;
-    drte_engine__refresh(pEngine);
     drte_engine__repaint(pEngine);
 }
 
@@ -1376,7 +1361,6 @@ void drte_engine_set_cursor_style(drte_engine* pEngine, drte_style_token styleTo
     }
 
     pEngine->cursorStyleSlot = styleSlot;
-    drte_engine__refresh(pEngine);
     drte_engine__repaint(pEngine);
 }
 
@@ -1396,7 +1380,6 @@ void drte_engine_set_line_numbers_style(drte_engine* pEngine, drte_style_token s
     }
 
     pEngine->lineNumbersStyleSlot = styleSlot;
-    drte_engine__refresh(pEngine);
     drte_engine__repaint(pEngine);
 }
 
@@ -1410,7 +1393,6 @@ void drte_engine_set_highlighter(drte_engine* pEngine, drte_engine_on_get_next_h
     pEngine->onGetNextHighlight = proc;
     pEngine->pHighlightUserData = pUserData;
 
-    drte_engine__refresh(pEngine);
     drte_engine__repaint(pEngine);
 }
 
@@ -1429,7 +1411,6 @@ void drte_engine_set_line_height(drte_engine* pEngine, float lineHeight)
     pEngine->flags |= DRTE_USE_EXPLICIT_LINE_HEIGHT;
     pEngine->lineHeight = lineHeight;
 
-    drte_engine__refresh(pEngine);
     drte_engine__repaint(pEngine);
 }
 
@@ -1572,8 +1553,6 @@ void drte_engine_set_text(drte_engine* pEngine, const char* text)
 
     pEngine->textLength = dst - pEngine->text;
 
-    // A change in text means we need to refresh the layout.
-    drte_engine__refresh(pEngine);
 
     // If the position of the cursor is past the last character we'll need to move it.
     if (drte_engine__get_marker_absolute_char_index(pEngine, &pEngine->cursor) >= pEngine->textLength) {
@@ -1768,7 +1747,6 @@ void drte_engine_set_tab_size(drte_engine* pEngine, unsigned int sizeInSpaces)
     {
         pEngine->tabSizeInSpaces = sizeInSpaces;
 
-        drte_engine__refresh(pEngine);
         drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
     }
 }
@@ -1780,22 +1758,6 @@ unsigned int drte_engine_get_tab_size(drte_engine* pEngine)
     }
 
     return pEngine->tabSizeInSpaces;
-}
-
-
-drgui_rect drte_engine_get_text_rect_relative_to_bounds(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return drgui_make_rect(0, 0, 0, 0);
-    }
-
-    drgui_rect rect;
-    rect.left   = pEngine->innerOffsetX;
-    rect.top    = pEngine->innerOffsetY;
-    rect.right  = rect.left + pEngine->textBoundsWidth;
-    rect.bottom = rect.top  + pEngine->textBoundsHeight;
-
-    return rect;
 }
 
 
@@ -2451,9 +2413,6 @@ bool drte_engine_insert_character(drte_engine* pEngine, unsigned int character, 
 
 
 
-    // The layout will have changed so it needs to be refreshed.
-    drte_engine__refresh(pEngine);
-
     if (pEngine->onTextChanged) {
         pEngine->onTextChanged(pEngine);
     }
@@ -2513,9 +2472,6 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
     free(pOldText);
 
 
-    // The layout will have changed so it needs to be refreshed.
-    drte_engine__refresh(pEngine);
-
     if (pEngine->onTextChanged) {
         pEngine->onTextChanged(pEngine);
     }
@@ -2544,9 +2500,6 @@ bool drte_engine_delete_text_range(drte_engine* pEngine, size_t iFirstCh, size_t
         memmove(pEngine->text + iFirstCh, pEngine->text + iLastChPlus1, pEngine->textLength - iLastChPlus1);
         pEngine->textLength -= bytesToRemove;
         pEngine->text[pEngine->textLength] = '\0';
-
-        // The layout will have changed.
-        drte_engine__refresh(pEngine);
 
         if (pEngine->onTextChanged) {
             pEngine->onTextChanged(pEngine);
@@ -2638,7 +2591,6 @@ bool drte_engine_delete_character_to_right_of_cursor(drte_engine* pEngine)
 
 
         // The layout will have changed.
-        drte_engine__refresh(pEngine);
         drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, iAbsoluteMarkerChar);
 
         if (pEngine->onTextChanged) {
@@ -3451,7 +3403,7 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 
 
 
-
+#if 0
 void drte_engine__refresh(drte_engine* pEngine)
 {
     if (pEngine == NULL) {
@@ -3486,6 +3438,7 @@ void drte_engine__refresh(drte_engine* pEngine)
     pEngine->textBoundsWidth  = maxLineWidth;
     pEngine->textBoundsHeight = lineCount * drte_engine_get_line_height(pEngine);
 }
+#endif
 
 void drte_engine__repaint(drte_engine* pEngine)
 {
@@ -3527,10 +3480,8 @@ bool drte_engine__move_marker_to_point_relative_to_container(drte_engine* pEngin
     pMarker->iCharAbs = 0;
     pMarker->absoluteSickyPosX = 0;
 
-    drgui_rect textRect = drte_engine_get_text_rect_relative_to_bounds(pEngine);
-
-    float inputPosXRelativeToText = inputPosX - textRect.left;
-    float inputPosYRelativeToText = inputPosY - textRect.top;
+    float inputPosXRelativeToText = inputPosX - pEngine->innerOffsetX;
+    float inputPosYRelativeToText = inputPosY - pEngine->innerOffsetX;
     if (drte_engine__move_marker_to_point(pEngine, pMarker, inputPosXRelativeToText, inputPosYRelativeToText))
     {
         drte_engine__update_marker_sticky_position(pEngine, pMarker);
@@ -3984,10 +3935,6 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
     drte_engine_insert_text(pEngine, pUndoState->oldText, pUndoState->diffPos);
 
 
-    // The layout will have changed so it needs to be refreshed.
-    drte_engine__refresh(pEngine);
-
-
     // Markers needs to be updated after refreshing the layout.
     drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, pUndoState->oldState.cursorPos);
     drte_engine__move_marker_to_character(pEngine, &pEngine->selectionAnchor, pUndoState->oldState.selectionAnchorPos);
@@ -4032,10 +3979,6 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
 
     // Insert the new text.
     drte_engine_insert_text(pEngine, pUndoState->newText, pUndoState->diffPos);
-
-
-    // The layout will have changed so it needs to be refreshed.
-    drte_engine__refresh(pEngine);
 
 
     // Markers needs to be updated after refreshing the layout.
