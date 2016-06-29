@@ -1453,8 +1453,13 @@ void dred_textbox_on_mouse_move(dred_textbox* pTextBox, int relativeMousePosX, i
         float offsetY;
         dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
+        size_t iPrevCursorChar = drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
         drte_engine_move_cursor_to_point(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
-        drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+
+        size_t iNextCursorChar = drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+        if (iPrevCursorChar != iNextCursorChar) {
+            drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+        }
     }
 }
 
@@ -1500,6 +1505,7 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
         
 
         drte_engine_move_cursor_to_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iChar);
+        drte_engine__update_marker_sticky_position(pTB->pTL, &pTB->pTL->pCursors[drte_engine_get_last_cursor(pTB->pTL)]);
 
 
         // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
