@@ -2364,6 +2364,9 @@ void dred_textbox__on_mouse_move_line_numbers(drgui_element* pLineNumbers, int r
                     drte_engine_move_cursor_to_end_of_line_by_index(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iLine);
                 }
             }
+
+
+            drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
         }
     }
 }
@@ -2381,21 +2384,39 @@ void dred_textbox__on_mouse_button_down_line_numbers(drgui_element* pLineNumbers
 
     if (mouseButton == DRGUI_MOUSE_BUTTON_LEFT)
     {
+        drgui_capture_mouse(pLineNumbers);
+
+        // If the shift key is down and we already have a selection, this is equivalent to a mouse drag.
+        if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
+            if (drte_engine_is_anything_selected(pTB->pTL)) {
+                dred_textbox__on_mouse_move_line_numbers(pLineNumbers, relativeMousePosX, relativeMousePosY, stateFlags | DRGUI_MOUSE_BUTTON_LEFT_DOWN);
+                return;
+            }
+        }
+
+
         //float offsetX = pTextEditorData->padding;
         float offsetY = pTB->padding;
-        pTB->iLineSelectAnchor = drte_engine_get_line_at_pos_y(pTB->pTL, relativeMousePosY - offsetY);
+        size_t iClickedLine = drte_engine_get_line_at_pos_y(pTB->pTL, relativeMousePosY - offsetY);
 
-        drte_engine_deselect_all(pTB->pTL);
+        if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
+            pTB->iLineSelectAnchor = drte_engine_get_cursor_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+        } else {
+            pTB->iLineSelectAnchor = iClickedLine;
+        }
+        
 
-        drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), pTB->iLineSelectAnchor);
+        dred_textbox_deselect_all(pTextBox);
+        drte_engine_begin_selection(pTB->pTL, drte_engine_get_line_first_character(pTB->pTL, pTB->iLineSelectAnchor));
 
-        if (pTB->iLineSelectAnchor + 1 < drte_engine_get_line_count(pTB->pTL)) {
-            drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), pTB->iLineSelectAnchor + 1);
+
+        if (iClickedLine + 1 < drte_engine_get_line_count(pTB->pTL)) {
+            drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iClickedLine + 1);
         } else {
             drte_engine_move_cursor_to_end_of_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
         }
 
-        drgui_capture_mouse(pLineNumbers);
+        drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
     }
 }
 
