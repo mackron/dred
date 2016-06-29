@@ -517,6 +517,9 @@ void drte_engine_insert_cursor(drte_engine* pEngine, size_t iChar);
 // Removes a cursor by it's index.
 void drte_engine_remove_cursor(drte_engine* pEngine, size_t cursorIndex);
 
+// Removes any overlapping cursors, leaving only one of the overlapping cursors remaining.
+void drte_engine_remove_overlapping_cursors(drte_engine* pEngine);
+
 // Retrieves the last cursor.
 size_t drte_engine_get_last_cursor(drte_engine* pEngine);
 
@@ -2130,6 +2133,24 @@ void drte_engine_remove_cursor(drte_engine* pEngine, size_t cursorIndex)
     drte_engine__repaint(pEngine);
 }
 
+void drte_engine_remove_overlapping_cursors(drte_engine* pEngine)
+{
+    if (pEngine == NULL || pEngine->cursorCount == 0) {
+        return;
+    }
+
+    drte_engine__begin_dirty(pEngine);
+    for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
+        for (size_t jCursor = iCursor+1; jCursor < pEngine->cursorCount; ++jCursor) {
+            if (pEngine->pCursors[iCursor].iCharAbs == pEngine->pCursors[jCursor].iCharAbs) {
+                drte_engine_remove_cursor(pEngine, jCursor);
+                break;
+            }
+        }
+    }
+    drte_engine__end_dirty(pEngine);
+}
+
 size_t drte_engine_get_last_cursor(drte_engine* pEngine)
 {
     if (pEngine == NULL || pEngine->cursorCount == 0) {
@@ -2844,6 +2865,8 @@ bool drte_engine_delete_character_to_left_of_cursors(drte_engine* pEngine, bool 
                 continue;
             }
 
+            wasTextChanged = true;
+
             for (size_t iCursor2 = 0; iCursor2 < pEngine->cursorCount; ++iCursor2) {
                 if (iCursor2 != iCursor) {
                     if (pEngine->pCursors[iCursor2].iCharAbs > iCursorChar && pEngine->pCursors[iCursor2].iCharAbs > 0) {
@@ -2903,6 +2926,8 @@ bool drte_engine_delete_character_to_right_of_cursors(drte_engine* pEngine, bool
             if ((leaveNewLines && pEngine->text[pEngine->pCursors[iCursor].iCharAbs] == '\n') || !drte_engine_delete_character_to_right_of_cursor(pEngine, iCursor)) {
                 continue;
             }
+
+            wasTextChanged = true;
 
             for (size_t iCursor2 = 0; iCursor2 < pEngine->cursorCount; ++iCursor2) {
                 if (iCursor2 != iCursor) {

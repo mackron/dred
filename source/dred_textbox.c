@@ -982,6 +982,19 @@ bool dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox)
     return wasTextChanged;
 }
 
+bool dred_textbox_delete_selected_text_no_undo(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return false;
+    }
+
+    bool wasTextChanged = drte_engine_delete_selected_text(pTB->pTL, true);  // <-- "true" means to update the positions of cursors to compensate.
+    drte_engine_deselect_all(pTB->pTL);
+
+    return wasTextChanged;
+}
+
 bool dred_textbox_delete_selected_text(dred_textbox* pTextBox)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
@@ -992,10 +1005,7 @@ bool dred_textbox_delete_selected_text(dred_textbox* pTextBox)
     bool wasTextChanged = false;
     drte_engine_prepare_undo_point(pTB->pTL);
     {
-        wasTextChanged = drte_engine_delete_selected_text(pTB->pTL, true);  // <-- "true" means to update the positions of cursors to compensate.
-        drte_engine_deselect_all(pTB->pTL);
-
-        // TODO: Remove any duplicate cursors.
+        wasTextChanged = dred_textbox_delete_selected_text_no_undo(pTextBox);
     }
     if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
 
@@ -1138,7 +1148,7 @@ bool dred_textbox_find_and_replace_next(dred_textbox* pTextBox, const char* text
             drte_engine_select(pTB->pTL, selectionStart, selectionEnd);
             drte_engine_move_cursor_to_end_of_selection(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
 
-            wasTextChanged = dred_textbox_delete_selected_text(pTextBox) || wasTextChanged;
+            wasTextChanged = dred_textbox_delete_selected_text_no_undo(pTextBox) || wasTextChanged;
             wasTextChanged = drte_engine_insert_text_at_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), replacement) || wasTextChanged;
         }
     }
@@ -1173,7 +1183,7 @@ bool dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text,
             drte_engine_select(pTB->pTL, selectionStart, selectionEnd);
             drte_engine_move_cursor_to_end_of_selection(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
 
-            wasTextChanged = dred_textbox_delete_selected_text(pTextBox) || wasTextChanged;
+            wasTextChanged = dred_textbox_delete_selected_text_no_undo(pTextBox) || wasTextChanged;
             wasTextChanged = drte_engine_insert_text_at_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), replacement) || wasTextChanged;
         }
 
@@ -1596,7 +1606,8 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
             drte_engine_prepare_undo_point(pTB->pTL);
             {
                 if (drte_engine_is_anything_selected(pTB->pTL)) {
-                    wasTextChanged = dred_textbox_delete_selected_text(pTextBox);
+                    wasTextChanged = dred_textbox_delete_selected_text_no_undo(pTextBox);
+                    drte_engine_remove_overlapping_cursors(pTB->pTL);
                 } else {
                     wasTextChanged = drte_engine_delete_character_to_left_of_cursors(pTB->pTL, pTB->pTL->cursorCount > 1);  // <-- Last argument controls whether or not new lines should block deletion.
                 }
@@ -1610,7 +1621,8 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
             drte_engine_prepare_undo_point(pTB->pTL);
             {
                 if (drte_engine_is_anything_selected(pTB->pTL)) {
-                    wasTextChanged = dred_textbox_delete_selected_text(pTextBox);
+                    wasTextChanged = dred_textbox_delete_selected_text_no_undo(pTextBox);
+                    drte_engine_remove_overlapping_cursors(pTB->pTL);
                 } else {
                     wasTextChanged = drte_engine_delete_character_to_right_of_cursors(pTB->pTL, pTB->pTL->cursorCount > 1); // <-- Last argument controls whether or not new lines should block deletion.
                 }
@@ -1862,7 +1874,7 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
     drte_engine_prepare_undo_point(pTB->pTL);
     {
         if (drte_engine_is_anything_selected(pTB->pTL)) {
-            dred_textbox_delete_selected_text(pTextBox);
+            dred_textbox_delete_selected_text_no_undo(pTextBox);
         }
 
         if (utf32 == '\t' && pTB->isTabsToSpacesEnabled) {
