@@ -3088,22 +3088,6 @@ void drte_engine_select(drte_engine* pEngine, size_t firstCharacter, size_t last
         return;
     }
 
-    // TODO: Implement me
-    //drte_engine_begin_new_selection(pEngine, firstCharacter);
-    //drte_engine_set_current_selection_end_point(pEngine, lastCharacter);
-
-#if 0
-    drte_region* pNewSelections = (drte_region*)realloc(pEngine->pSelections, (pEngine->selectionCount + 1) * sizeof(*pNewSelections));
-    if (pNewSelections == NULL) {
-        return;
-    }
-
-    pEngine->pSelections = pNewSelections;
-    pEngine->pSelections[pEngine->selectionCount].iCharBeg = firstCharacter;
-    pEngine->pSelections[pEngine->selectionCount].iCharEnd = lastCharacter;
-    pEngine->selectionCount += 1;
-#endif
-
     drte_engine_begin_selection(pEngine, firstCharacter);
     drte_engine_set_selection_end_point(pEngine, lastCharacter);
 
