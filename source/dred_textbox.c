@@ -312,6 +312,31 @@ void dred_textbox__insert_cursor(dred_textbox* pTextBox, size_t iChar)
     drte_engine_insert_cursor(pTB->pTL, iChar);
 }
 
+bool dred_textbox__get_cursor_selection(dred_textbox* pTextBox, size_t* iSelectionOut)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(pTB != NULL);
+
+    size_t iCursor = drte_engine_get_last_cursor(pTB->pTL);
+    for (size_t iSelection = 0; iSelection < pTB->pTL->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTB->pTL->pSelections[iSelection]);
+        if (selection.iCharBeg == pTB->pTL->pCursors[iCursor].iCharAbs || selection.iCharEnd == pTB->pTL->pCursors[iCursor].iCharAbs) {
+            if (iSelectionOut) *iSelectionOut = iSelection;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool dred_textbox__is_cursor_on_selection(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(pTB != NULL);
+
+    return dred_textbox__get_cursor_selection(pTextBox, NULL);
+}
+
 bool dred_textbox__move_cursor_to_start_of_selection(dred_textbox* pTextBox, size_t* iSelectionOut)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
@@ -1600,7 +1625,7 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
                 dred_textbox__move_cursor_to_start_of_selection(pTextBox, NULL);
                 dred_textbox_deselect_all(pTextBox);
             } else {
-                if (!drte_engine_is_anything_selected(pTB->pTL) && isShiftDown) {
+                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
                     drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
                 }
 
@@ -1628,11 +1653,11 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
                 dred_textbox__move_cursor_to_end_of_selection(pTextBox, NULL);
                 dred_textbox_deselect_all(pTextBox);
             } else {
-                if (!drte_engine_is_anything_selected(pTB->pTL) && isShiftDown) {
+                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
                     drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
                 }
 
-                if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) != 0) {
+                if (isCtrlDown) {
                     drte_engine_move_cursor_to_start_of_next_word(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
                 } else {
                     drte_engine_move_cursor_right(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
@@ -1654,18 +1679,46 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
         {
             if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
+            } else {
+                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                }
             }
 
             drte_engine_move_cursor_up(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+
+            if (isShiftDown) {
+                drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+
+                size_t iSelCharBeg;
+                size_t iSelCharEnd;
+                if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_engine_cancel_last_selection(pTB->pTL);
+                }
+            }
         } break;
 
         case DRGUI_ARROW_DOWN:
         {
             if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
+            } else {
+                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                }
             }
 
             drte_engine_move_cursor_down(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+
+            if (isShiftDown) {
+                drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+
+                size_t iSelCharBeg;
+                size_t iSelCharEnd;
+                if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_engine_cancel_last_selection(pTB->pTL);
+                }
+            }
         } break;
 
 
@@ -1673,6 +1726,10 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
         {
             if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
+            } else {
+                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                }
             }
 
             if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) != 0) {
@@ -1680,12 +1737,26 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
             } else {
                 drte_engine_move_cursor_to_end_of_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
             }
+
+            if (isShiftDown) {
+                drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+
+                size_t iSelCharBeg;
+                size_t iSelCharEnd;
+                if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_engine_cancel_last_selection(pTB->pTL);
+                }
+            }
         } break;
 
         case DRGUI_HOME:
         {
             if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
+            } else {
+                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                }
             }
 
             if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) != 0) {
@@ -1693,12 +1764,26 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
             } else {
                 drte_engine_move_cursor_to_start_of_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
             }
+
+            if (isShiftDown) {
+                drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+
+                size_t iSelCharBeg;
+                size_t iSelCharEnd;
+                if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_engine_cancel_last_selection(pTB->pTL);
+                }
+            }
         } break;
 
         case DRGUI_PAGE_UP:
         {
             if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
+            } else {
+                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                }
             }
 
             int scrollOffset = drgui_sb_get_page_size(pTB->pVertScrollbar);
@@ -1707,12 +1792,26 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
             }
 
             drte_engine_move_cursor_y(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), -drgui_sb_get_page_size(pTB->pVertScrollbar));
+
+            if (isShiftDown) {
+                drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+
+                size_t iSelCharBeg;
+                size_t iSelCharEnd;
+                if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_engine_cancel_last_selection(pTB->pTL);
+                }
+            }
         } break;
 
         case DRGUI_PAGE_DOWN:
         {
             if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
+            } else {
+                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                }
             }
 
             int scrollOffset = drgui_sb_get_page_size(pTB->pVertScrollbar);
@@ -1725,6 +1824,16 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
             }
 
             drte_engine_move_cursor_y(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), drgui_sb_get_page_size(pTB->pVertScrollbar));
+
+            if (isShiftDown) {
+                drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+
+                size_t iSelCharBeg;
+                size_t iSelCharEnd;
+                if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_engine_cancel_last_selection(pTB->pTL);
+                }
+            }
 
         } break;
 
