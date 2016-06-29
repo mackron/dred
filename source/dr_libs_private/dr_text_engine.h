@@ -631,7 +631,7 @@ bool drte_engine_delete_character_to_right_of_cursors(drte_engine* pEngine, bool
 /// Deletes the currently selected text.
 ///
 /// @return True if the text within the text engine has changed.
-bool drte_engine_delete_selected_text(drte_engine* pEngine);
+bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors);
 
 
 /// Determines whether or not anything is selected in the given text engine.
@@ -676,8 +676,11 @@ size_t drte_engine_get_selection_anchor_line(drte_engine* pEngine);
 // Begins a new selection region.
 void drte_engine_begin_selection(drte_engine* pEngine, size_t iCharBeg);
 
+// Cancels a selection by it's index.
+void drte_engine_cancel_selection(drte_engine* pEngine, size_t iSelection);
+
 // Cancels the most recent selection.
-void drte_engine_cancel_selection(drte_engine* pEngine);
+void drte_engine_cancel_last_selection(drte_engine* pEngine);
 
 // Sets the anchor of the most recent selection region.
 void drte_engine_set_selection_anchor(drte_engine* pEngine, size_t iCharBeg);
@@ -2851,7 +2854,7 @@ int drte_region_qsort(const void* pSelection0, const void* pSelection1)
     return 0;
 }
 
-bool drte_engine_delete_selected_text(drte_engine* pEngine)
+bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors)
 {
     if (pEngine == NULL || pEngine->selectionCount == 0) {
         return false;
@@ -2902,6 +2905,22 @@ bool drte_engine_delete_selected_text(drte_engine* pEngine)
         drte_region selection = pSortedSelections[iSelection-1];
         if (selection.iCharBeg < selection.iCharEnd) {
             wasTextChanged = drte_engine_delete_text_range(pEngine, selection.iCharBeg, selection.iCharEnd) || wasTextChanged;
+            if (wasTextChanged) {
+                if (updateCursors) {
+                    for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
+                        size_t iCursorChar = pEngine->pCursors[iCursor].iCharAbs;
+                        if (iCursorChar > selection.iCharBeg) {
+                            if (iCursorChar > selection.iCharEnd) {
+                                iCursorChar -= (selection.iCharEnd - selection.iCharBeg);
+                            } else {
+                                iCursorChar -= (iCursorChar - selection.iCharBeg);
+                            }
+
+                            drte_engine_move_cursor_to_character(pEngine, iCursor, iCursorChar);
+                        }
+                    }
+                }
+            }
         }
     }
     drte_engine__end_dirty(pEngine);
@@ -3277,7 +3296,20 @@ void drte_engine_begin_selection(drte_engine* pEngine, size_t iCharBeg)
     drte_engine__repaint(pEngine);
 }
 
-void drte_engine_cancel_selection(drte_engine* pEngine)
+void drte_engine_cancel_selection(drte_engine* pEngine, size_t iSelection)
+{
+    if (pEngine == NULL || pEngine->selectionCount == 0) {
+        return;
+    }
+
+    for (/* Do Nothing */; iSelection < pEngine->selectionCount-1; ++iSelection) {
+        pEngine->pSelections[iSelection] = pEngine->pSelections[iSelection+1];
+    }
+
+    pEngine->selectionCount -= 1;
+}
+
+void drte_engine_cancel_last_selection(drte_engine* pEngine)
 {
     if (pEngine == NULL || pEngine->selectionCount == 0) {
         return;
