@@ -3381,8 +3381,6 @@ void drte_engine_begin_selection(drte_engine* pEngine, size_t iCharBeg)
     pEngine->pSelections[pEngine->selectionCount].iCharBeg = iCharBeg;
     pEngine->pSelections[pEngine->selectionCount].iCharEnd = iCharBeg;
     pEngine->selectionCount += 1;
-
-    drte_engine__repaint(pEngine);
 }
 
 void drte_engine_cancel_selection(drte_engine* pEngine, size_t iSelection)
@@ -3413,8 +3411,10 @@ void drte_engine_set_selection_anchor(drte_engine* pEngine, size_t iCharBeg)
         return;
     }
 
-    pEngine->pSelections[pEngine->selectionCount-1].iCharBeg = iCharBeg;
-    drte_engine__repaint(pEngine);
+    if (pEngine->pSelections[pEngine->selectionCount-1].iCharBeg != iCharBeg) {
+        pEngine->pSelections[pEngine->selectionCount-1].iCharBeg = iCharBeg;
+        drte_engine__repaint(pEngine);
+    }
 }
 
 void drte_engine_set_selection_end_point(drte_engine* pEngine, size_t iCharEnd)
@@ -3423,8 +3423,10 @@ void drte_engine_set_selection_end_point(drte_engine* pEngine, size_t iCharEnd)
         return;
     }
 
-    pEngine->pSelections[pEngine->selectionCount-1].iCharEnd = iCharEnd;
-    drte_engine__repaint(pEngine);
+    if (pEngine->pSelections[pEngine->selectionCount-1].iCharEnd != iCharEnd) {
+        pEngine->pSelections[pEngine->selectionCount-1].iCharEnd = iCharEnd;
+        drte_engine__repaint(pEngine);
+    }
 }
 
 bool drte_engine_get_last_selection(drte_engine* pEngine, size_t* iCharBegOut, size_t* iCharEndOut)
