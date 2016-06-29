@@ -331,9 +331,6 @@ bool dred_textbox__get_cursor_selection(dred_textbox* pTextBox, size_t* iSelecti
 
 bool dred_textbox__is_cursor_on_selection(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
-
     return dred_textbox__get_cursor_selection(pTextBox, NULL);
 }
 
@@ -2412,7 +2409,10 @@ void dred_textbox__on_mouse_button_down_line_numbers(drgui_element* pLineNumbers
         }
         
 
-        dred_textbox_deselect_all(pTextBox);
+        if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) == 0) {
+            dred_textbox_deselect_all(pTextBox);
+        }
+
         drte_engine_begin_selection(pTB->pTL, drte_engine_get_line_first_character(pTB->pTL, pTB->iLineSelectAnchor));
 
 
