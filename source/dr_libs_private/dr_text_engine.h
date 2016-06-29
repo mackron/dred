@@ -4575,13 +4575,6 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
 
 
 
-        // Markers needs to be updated after refreshing the layout.
-        //drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, pUndoState->oldState.cursorPos);
-
-        // The cursor's sticky position needs to be updated whenever the text is edited.
-        //drte_engine__update_marker_sticky_position(pEngine, &pEngine->cursor);
-
-
         if (pEngine->onTextChanged) {
             pEngine->onTextChanged(pEngine);
         }
@@ -4589,8 +4582,6 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
         for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
             drte_engine__on_cursor_move(pEngine, iCursor);
         }
-
-        //drte_engine__on_cursor_move(pEngine, cursorIndex);
     }
     drte_engine__end_dirty(pEngine);
 }
@@ -4651,18 +4642,9 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
         }
 
 
-        // Markers needs to be updated after refreshing the layout.
-        //drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, pUndoState->newState.cursorPos);
-
-        // The cursor's sticky position needs to be updated whenever the text is edited.
-        //drte_engine__update_marker_sticky_position(pEngine, &pEngine->cursor);
-
-
         if (pEngine->onTextChanged) {
             pEngine->onTextChanged(pEngine);
         }
-
-        //drte_engine__on_cursor_move(pEngine, cursorIndex);
 
         for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
             drte_engine__on_cursor_move(pEngine, iCursor);
