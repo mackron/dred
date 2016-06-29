@@ -277,6 +277,42 @@ bool dred_textbox_engine__on_get_next_highlight(drte_engine* pEngine, size_t iCh
 }
 
 
+void dred_textbox__clear_all_cursors(dred_textbox* pTextBox)
+{
+    // The last cursor is _not_ cleared.
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(pTB != NULL);
+
+    drte_engine__begin_dirty(pTB->pTL);
+    while (pTB->pTL->cursorCount > 1) {
+        drte_engine_remove_cursor(pTB->pTL, pTB->pTL->cursorCount-2);
+    }
+    drte_engine__end_dirty(pTB->pTL);
+}
+
+void dred_textbox__insert_cursor(dred_textbox* pTextBox, size_t iChar)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(pTB != NULL);
+
+    // If we are trying to insert a cursor on top of an existing cursor we need to just move the existing one to the end of the list,
+    // thus making it the current cursor. We don't want cursors to be sitting on top of each other.
+    size_t iExistingCursor = (size_t)-1;
+    for (size_t iCursor = 0; iCursor < pTB->pTL->cursorCount; ++iCursor) {
+        if (pTB->pTL->pCursors[iCursor].iCharAbs == iChar) {
+            iExistingCursor = iCursor;
+            break;
+        }
+    }
+
+    if (iExistingCursor != (size_t)-1) {
+        drte_engine_remove_cursor(pTB->pTL, iExistingCursor);
+    }
+
+    drte_engine_insert_cursor(pTB->pTL, iChar);
+}
+
+
 dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
 {
     dred_textbox* pTextBox = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_TEXTBOX, sizeof(dred_textbox_data));
@@ -1354,6 +1390,7 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
         } else {
             if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) == 0) {
                 drte_engine_deselect_all(pTB->pTL);
+                dred_textbox__clear_all_cursors(pTextBox);
             }
         }
 
@@ -1361,14 +1398,21 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
         float offsetX;
         float offsetY;
         dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
-        drte_engine_move_cursor_to_point(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
 
+        size_t iChar = drte_engine_get_character_by_point_relative_to_container(pTB->pTL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
 
         if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
-            drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+            drte_engine_set_selection_end_point(pTB->pTL, iChar);
         } else {
-            drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+            if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) != 0) {
+                dred_textbox__insert_cursor(pTextBox, iChar);
+            }
+
+            drte_engine_begin_selection(pTB->pTL, iChar);
         }
+        
+
+        drte_engine_move_cursor_to_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iChar);
 
 
         // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
@@ -1395,6 +1439,8 @@ void dred_textbox_on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, in
     {
         if (drgui_get_element_with_mouse_capture(pTextBox->pContext) == pTextBox)
         {
+            // When we first pressed the mouse we may have started a new selection. If we never ended up selecting anything we'll want to
+            // cancel that selection.
             size_t iCharBeg;
             size_t iCharEnd;
             if (drte_engine_get_last_selection(pTB->pTL, &iCharBeg, &iCharEnd)) {
@@ -1473,7 +1519,7 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
                     wasTextChanged = drte_engine_delete_selected_text(pTB->pTL);
                     drte_engine_deselect_all(pTB->pTL);
                 } else {
-                    wasTextChanged = drte_engine_delete_character_to_left_of_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                    wasTextChanged = drte_engine_delete_character_to_left_of_cursors(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
                 }
             }
             if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
@@ -1488,7 +1534,7 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
                     wasTextChanged = drte_engine_delete_selected_text(pTB->pTL);
                     drte_engine_deselect_all(pTB->pTL);
                 } else {
-                    wasTextChanged = drte_engine_delete_character_to_right_of_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                    wasTextChanged = drte_engine_delete_character_to_right_of_cursors(pTB->pTL, true);  // <-- "true" means to leave new-line characters in-place.
                 }
             }
             if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
@@ -1630,15 +1676,27 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
         }
 
         if (utf32 == '\t' && pTB->isTabsToSpacesEnabled) {
-            // This can be optimized...
-            size_t spaceCount = drte_engine_get_spaces_to_next_colum_from_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
-            for (size_t i = 0; i < spaceCount; ++i) {
-                drte_engine_insert_character_at_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), ' ');
+            for (size_t iCursor = 0; iCursor < pTB->pTL->cursorCount; ++iCursor) {
+                size_t iCursorChar = pTB->pTL->pCursors[iCursor].iCharAbs;
+
+                // This can be optimized by inserting a string of spaces rather than individual characters.
+                size_t spaceCount = drte_engine_get_spaces_to_next_colum_from_cursor(pTB->pTL, iCursor);
+                for (size_t i = 0; i < spaceCount; ++i) {
+                    drte_engine_insert_character_at_cursor(pTB->pTL, iCursor, ' ');
+                }
+
+                // Any cursor whose character position comes after this cursor needs to be moved.
+                for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
+                    if (iCursor2 != iCursor) {
+                        if (pTB->pTL->pCursors[iCursor2].iCharAbs > iCursorChar) {
+                            drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + spaceCount);
+                        }
+                    }
+                }
             }
         } else {
-            drte_engine_insert_character_at_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), utf32);
+            drte_engine_insert_character_at_cursors(pTB->pTL, utf32);
         }
-        
     }
     drte_engine_commit_undo_point(pTB->pTL);
 }
