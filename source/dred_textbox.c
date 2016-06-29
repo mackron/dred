@@ -1560,6 +1560,9 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
 
     drte_engine__begin_dirty(pTB->pTL);
 
+    bool isShiftDown = (stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0;
+    bool isCtrlDown  = (stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) != 0;
+
     switch (key)
     {
         case DRGUI_BACKSPACE:
@@ -1593,35 +1596,63 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
 
         case DRGUI_ARROW_LEFT:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox__move_cursor_to_start_of_selection(pTextBox, NULL);
                 dred_textbox_deselect_all(pTextBox);
             } else {
-                if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) != 0) {
+                if (!drte_engine_is_anything_selected(pTB->pTL) && isShiftDown) {
+                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                }
+
+                if (isCtrlDown) {
                     drte_engine_move_cursor_to_start_of_word(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
                 } else {
                     drte_engine_move_cursor_left(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                }
+
+                if (isShiftDown) {
+                    drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+
+                    size_t iSelCharBeg;
+                    size_t iSelCharEnd;
+                    if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                        drte_engine_cancel_last_selection(pTB->pTL);
+                    }
                 }
             }
         } break;
 
         case DRGUI_ARROW_RIGHT:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox__move_cursor_to_end_of_selection(pTextBox, NULL);
                 dred_textbox_deselect_all(pTextBox);
             } else {
+                if (!drte_engine_is_anything_selected(pTB->pTL) && isShiftDown) {
+                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                }
+
                 if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) != 0) {
                     drte_engine_move_cursor_to_start_of_next_word(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
                 } else {
                     drte_engine_move_cursor_right(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                }
+
+                if (isShiftDown) {
+                    drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+
+                    size_t iSelCharBeg;
+                    size_t iSelCharEnd;
+                    if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                        drte_engine_cancel_last_selection(pTB->pTL);
+                    }
                 }
             }
         } break;
 
         case DRGUI_ARROW_UP:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
             }
 
@@ -1630,7 +1661,7 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
 
         case DRGUI_ARROW_DOWN:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
             }
 
@@ -1640,7 +1671,7 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
 
         case DRGUI_END:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
             }
 
@@ -1653,7 +1684,7 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
 
         case DRGUI_HOME:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
             }
 
@@ -1666,7 +1697,7 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
 
         case DRGUI_PAGE_UP:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
             }
 
@@ -1680,7 +1711,7 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
 
         case DRGUI_PAGE_DOWN:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
             }
 

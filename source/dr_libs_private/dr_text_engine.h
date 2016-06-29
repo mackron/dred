@@ -148,8 +148,20 @@ typedef struct
 /// Keeps track of the current state of the text engine. Used for calculating the difference between two states for undo/redo.
 typedef struct
 {
-    /// The text. Can be null in some cases where it isn't used.
+    // The text. Can be null in some cases where it isn't used.
     char* text;
+
+    // The list of cursors.
+    drte_marker* pCursors;
+
+    // The cursor count.
+    size_t cursorCount;
+
+    // The list of selection regions at the time the state was captured.
+    drte_region* pSelections;
+
+    // The selection count.
+    size_t selectionCount;
 
 } drte_engine_state;
 
@@ -790,6 +802,7 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 //
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DR_TEXT_ENGINE_IMPLEMENTATION
+#include <stdlib.h>
 
 #define DRTE_INVALID_STYLE_SLOT    255
 
@@ -797,10 +810,74 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 #define DRTE_USE_EXPLICIT_LINE_HEIGHT   (1 << 0)
 
 
+#ifndef STB_STRETCHY_BUFFER_H_INCLUDED
+#define STB_STRETCHY_BUFFER_H_INCLUDED
+
+#ifndef NO_STRETCHY_BUFFER_SHORT_NAMES
+#define sb_free   stb_sb_free
+#define sb_push   stb_sb_push
+#define sb_count  stb_sb_count
+#define sb_add    stb_sb_add
+#define sb_last   stb_sb_last
+#endif
+
+#define stb_sb_free(a)         ((a) ? free(stb__sbraw(a)),0 : 0)
+#define stb_sb_push(a,v)       (stb__sbmaybegrow(a,1), (a)[stb__sbn(a)++] = (v))
+#define stb_sb_count(a)        ((a) ? stb__sbn(a) : 0)
+#define stb_sb_add(a,n)        (stb__sbmaybegrow(a,n), stb__sbn(a)+=(n), &(a)[stb__sbn(a)-(n)])
+#define stb_sb_last(a)         ((a)[stb__sbn(a)-1])
+
+#define stb__sbraw(a) ((int *) (a) - 2)
+#define stb__sbm(a)   stb__sbraw(a)[0]
+#define stb__sbn(a)   stb__sbraw(a)[1]
+
+#define stb__sbneedgrow(a,n)  ((a)==0 || stb__sbn(a)+(n) >= stb__sbm(a))
+#define stb__sbmaybegrow(a,n) (stb__sbneedgrow(a,(n)) ? stb__sbgrow(a,n) : 0)
+#define stb__sbgrow(a,n)      ((a) = stb__sbgrowf((a), (n), sizeof(*(a))))
+
+static void * stb__sbgrowf(void *arr, int increment, int itemsize)
+{
+   int dbl_cur = arr ? 2*stb__sbm(arr) : 0;
+   int min_needed = stb_sb_count(arr) + increment;
+   int m = dbl_cur > min_needed ? dbl_cur : min_needed;
+   int *p = (int *) realloc(arr ? stb__sbraw(arr) : 0, itemsize * m + sizeof(int)*2);
+   if (p) {
+      if (!arr)
+         p[1] = 0;
+      p[0] = m;
+      return p+2;
+   } else {
+      #ifdef STRETCHY_BUFFER_OUT_OF_MEMORY
+      STRETCHY_BUFFER_OUT_OF_MEMORY ;
+      #endif
+      return (void *) (2*sizeof(int)); // try to force a NULL pointer exception later
+   }
+}
+#endif // STB_STRETCHY_BUFFER_H_INCLUDED
+
+#define stb_sb_remove(a,i) (((a) ? stb__sbremove((a), (i), sizeof(*(a)))) : 0)
+
+static void * stb__sbremove(void *arr, int i, int itemsize)
+{
+    int count = stb_sb_count(arr);
+    if (count > 0) {
+        int* p = stb__sbraw(arr);
+        if (p) {
+            if (i < count+1) {
+                memmove((char*)arr + (itemsize * i), (char*)arr + (itemsize * (i+1)), itemsize * (count-i-1));
+            }
+
+            p[0] -= 1;  // Count.
+        }
+    }
+
+    return arr;
+}
+
+
+
 // min
 #define drte_min(a, b) (((a) < (b)) ? (a) : (b))
-
-
 
 // Helper for determining whether or not the given character is a symbol or whitespace.
 bool drte_is_symbol_or_whitespace(uint32_t utf32)
@@ -1295,11 +1372,14 @@ void drte_engine_delete(drte_engine* pEngine)
     }
 
     drte_engine_clear_undo_stack(pEngine);
+    
+    free(pEngine->preparedState.text);
+    free(pEngine->preparedState.pCursors);
+    free(pEngine->preparedState.pSelections);
 
     free(pEngine->pSelections);
     free(pEngine->pCursors);
 
-    free(pEngine->preparedState.text);  // <-- TODO: drte_engine_state_release()
     free(pEngine->text);
     free(pEngine);
 }
@@ -3362,10 +3442,20 @@ bool drte_engine_prepare_undo_point(drte_engine* pEngine)
     // If we have a previously prepared state we'll need to clear it.
     if (pEngine->preparedState.text != NULL) {
         free(pEngine->preparedState.text);
+        free(pEngine->preparedState.pCursors);
+        free(pEngine->preparedState.pSelections);
     }
 
     pEngine->preparedState.text = (char*)malloc(pEngine->textLength + 1);
     drgui__strcpy_s(pEngine->preparedState.text, pEngine->textLength + 1, (pEngine->text != NULL) ? pEngine->text : "");
+
+    pEngine->preparedState.cursorCount = pEngine->cursorCount;
+    pEngine->preparedState.pCursors = (drte_marker*)malloc(pEngine->cursorCount * sizeof(drte_marker));
+    memcpy(pEngine->preparedState.pCursors, pEngine->pCursors, pEngine->cursorCount * sizeof(*pEngine->preparedState.pCursors));
+
+    pEngine->preparedState.selectionCount = pEngine->selectionCount;
+    pEngine->preparedState.pSelections = (drte_region*)malloc(pEngine->selectionCount * sizeof(drte_region));
+    memcpy(pEngine->preparedState.pSelections, pEngine->pSelections, pEngine->selectionCount * sizeof(*pEngine->preparedState.pSelections));
 
     return true;
 }
@@ -3385,6 +3475,10 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
     // The undo state is creating by diff-ing the prepared state and the current state.
     drte_engine_state currentState;
     currentState.text = pEngine->text;
+    currentState.pCursors = pEngine->pCursors;
+    currentState.cursorCount = pEngine->cursorCount;
+    currentState.pSelections = pEngine->pSelections;
+    currentState.selectionCount = pEngine->selectionCount;
 
     drte_engine_undo_state undoState;
     if (!drte_engine__diff_states(&pEngine->preparedState, &currentState, &undoState)) {
@@ -4333,9 +4427,27 @@ bool drte_engine__diff_states(drte_engine_state* pPrevState, drte_engine_state* 
     pUndoStateOut->oldText = (char*)malloc(oldTextLen + 1);
     drgui__strncpy_s(pUndoStateOut->oldText, oldTextLen + 1, prevText + sameChCountStart, oldTextLen);
 
+    pUndoStateOut->oldState.cursorCount = pPrevState->cursorCount;
+    pUndoStateOut->oldState.pCursors = (drte_marker*)malloc(pPrevState->cursorCount * sizeof(*pUndoStateOut->oldState.pCursors));
+    memcpy(pUndoStateOut->oldState.pCursors, pPrevState->pCursors, pPrevState->cursorCount * sizeof(*pUndoStateOut->oldState.pCursors));
+
+    pUndoStateOut->oldState.selectionCount = pPrevState->selectionCount;
+    pUndoStateOut->oldState.pSelections = (drte_region*)malloc(pPrevState->selectionCount * sizeof(*pUndoStateOut->oldState.pSelections));
+    memcpy(pUndoStateOut->oldState.pSelections, pPrevState->pSelections, pPrevState->selectionCount * sizeof(*pUndoStateOut->oldState.pSelections));
+
+
     size_t newTextLen = currLen - sameChCountStart - sameChCountEnd;
     pUndoStateOut->newText = (char*)malloc(newTextLen + 1);
     drgui__strncpy_s(pUndoStateOut->newText, newTextLen + 1, currText + sameChCountStart, newTextLen);
+
+    pUndoStateOut->newState.cursorCount = pCurrentState->cursorCount;
+    pUndoStateOut->newState.pCursors = (drte_marker*)malloc(pCurrentState->cursorCount * sizeof(*pUndoStateOut->newState.pCursors));
+    memcpy(pUndoStateOut->newState.pCursors, pCurrentState->pCursors, pCurrentState->cursorCount * sizeof(*pUndoStateOut->newState.pCursors));
+
+    pUndoStateOut->newState.selectionCount = pCurrentState->selectionCount;
+    pUndoStateOut->newState.pSelections = (drte_region*)malloc(pCurrentState->selectionCount * sizeof(*pUndoStateOut->newState.pSelections));
+    memcpy(pUndoStateOut->newState.pSelections, pCurrentState->pSelections, pCurrentState->selectionCount * sizeof(*pUndoStateOut->newState.pSelections));
+
 
     return true;
 }
@@ -4349,8 +4461,21 @@ void drte_engine__uninit_undo_state(drte_engine_undo_state* pUndoState)
     free(pUndoState->oldText);
     pUndoState->oldText = NULL;
 
+    free(pUndoState->oldState.pCursors);
+    pUndoState->oldState.pCursors = NULL;
+
+    free(pUndoState->oldState.pSelections);
+    pUndoState->oldState.pSelections = NULL;
+
+
     free(pUndoState->newText);
     pUndoState->newText = NULL;
+
+    free(pUndoState->newState.pCursors);
+    pUndoState->newState.pCursors = NULL;
+
+    free(pUndoState->newState.pSelections);
+    pUndoState->newState.pSelections = NULL;
 }
 
 void drte_engine__push_undo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState)
@@ -4406,6 +4531,38 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
         // Insert the old text.
         drte_engine_insert_text(pEngine, pUndoState->oldText, pUndoState->diffPos);
 
+        // Cursors.
+        if (pUndoState->oldState.cursorCount > 0) {
+            drte_marker* pNewCursors = (drte_marker*)realloc(pEngine->pCursors, pUndoState->oldState.cursorCount * sizeof(*pNewCursors));
+            if (pNewCursors != NULL) {
+                pEngine->pCursors = pNewCursors;
+                for (size_t iCursor = 0; iCursor < pUndoState->oldState.cursorCount; ++iCursor) {
+                    pEngine->pCursors[iCursor] = pUndoState->oldState.pCursors[iCursor];
+                    drte_engine__update_marker_sticky_position(pEngine, &pEngine->pCursors[iCursor]);
+                }
+
+                pEngine->cursorCount = pUndoState->oldState.cursorCount;
+            }
+        } else {
+            pEngine->cursorCount = 0;
+        }
+
+        // Selections.
+        if (pUndoState->oldState.selectionCount > 0) {
+            drte_region* pNewSelections = (drte_region*)realloc(pEngine->pSelections, pUndoState->oldState.selectionCount * sizeof(*pNewSelections));
+            if (pNewSelections != NULL) {
+                pEngine->pSelections = pNewSelections;
+                for (size_t iSelection = 0; iSelection < pUndoState->oldState.selectionCount; ++iSelection) {
+                    pEngine->pSelections[iSelection] = pUndoState->oldState.pSelections[iSelection];
+                }
+
+                pEngine->selectionCount = pUndoState->oldState.selectionCount;
+            }
+        } else {
+            pEngine->selectionCount = 0;
+        }
+
+
 
         // Markers needs to be updated after refreshing the layout.
         //drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, pUndoState->oldState.cursorPos);
@@ -4416,6 +4573,10 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
 
         if (pEngine->onTextChanged) {
             pEngine->onTextChanged(pEngine);
+        }
+
+        for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
+            drte_engine__on_cursor_move(pEngine, iCursor);
         }
 
         //drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -4447,6 +4608,37 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
         // Insert the new text.
         drte_engine_insert_text(pEngine, pUndoState->newText, pUndoState->diffPos);
 
+        // Cursors.
+        if (pUndoState->newState.cursorCount > 0) {
+            drte_marker* pNewCursors = (drte_marker*)realloc(pEngine->pCursors, pUndoState->newState.cursorCount * sizeof(*pNewCursors));
+            if (pNewCursors != NULL) {
+                pEngine->pCursors = pNewCursors;
+                for (size_t iCursor = 0; iCursor < pUndoState->newState.cursorCount; ++iCursor) {
+                    pEngine->pCursors[iCursor] = pUndoState->newState.pCursors[iCursor];
+                    drte_engine__update_marker_sticky_position(pEngine, &pEngine->pCursors[iCursor]);
+                }
+
+                pEngine->cursorCount = pUndoState->newState.cursorCount;
+            }
+        } else {
+            pEngine->cursorCount = 0;
+        }
+
+        // Selections.
+        if (pUndoState->newState.selectionCount > 0) {
+            drte_region* pNewSelections = (drte_region*)realloc(pEngine->pSelections, pUndoState->newState.selectionCount * sizeof(*pNewSelections));
+            if (pNewSelections != NULL) {
+                pEngine->pSelections = pNewSelections;
+                for (size_t iSelection = 0; iSelection < pUndoState->newState.selectionCount; ++iSelection) {
+                    pEngine->pSelections[iSelection] = pUndoState->newState.pSelections[iSelection];
+                }
+
+                pEngine->selectionCount = pUndoState->newState.selectionCount;
+            }
+        } else {
+            pEngine->selectionCount = 0;
+        }
+
 
         // Markers needs to be updated after refreshing the layout.
         //drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, pUndoState->newState.cursorPos);
@@ -4460,6 +4652,10 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
         }
 
         //drte_engine__on_cursor_move(pEngine, cursorIndex);
+
+        for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
+            drte_engine__on_cursor_move(pEngine, iCursor);
+        }
     }
     drte_engine__end_dirty(pEngine);
 }
