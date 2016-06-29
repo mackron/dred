@@ -3322,7 +3322,7 @@ size_t drte_engine_get_selected_text(drte_engine* pEngine, char* textOut, size_t
             drgui__strncpy_s(textOut+length, textOutSize-length, pEngine->text+region.iCharBeg, (region.iCharEnd - region.iCharBeg));
         }
         
-        length += (region.iCharEnd - region.iCharEnd);
+        length += (region.iCharEnd - region.iCharBeg);
     }
 
     return length;
