@@ -54,33 +54,6 @@ void dred_text_editor__on_capture_keyboard(dred_text_editor* pTextEditor, drgui_
     dred_capture_keyboard(dred_control_get_context(pTextBox), pTextBox);
 }
 
-bool dred_text_editor__on_save(dred_text_editor* pTextEditor, dred_file file)
-{
-    dred_textbox* pTextBox = dred_text_editor__get_textbox(pTextEditor);
-    if (pTextBox == NULL) {
-        return false;
-    }
-
-    size_t textLength = dred_textbox_get_text(pTextBox, NULL, 0);
-    char* text = malloc(textLength + 1);
-    if (text == NULL) {
-        return false;
-    }
-    dred_textbox_get_text(pTextBox, text, textLength+1);
-
-    bool result = dred_file_write_string(file, text);
-    free(text);
-
-    // After saving we need to update the base undo point and unmark the file as modified.
-    if (result) {
-        dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
-        assert(data != NULL);
-        data->iBaseUndoPoint = dred_textbox_get_undo_points_remaining_count(pTextBox);
-    }
-
-    return result;
-}
-
 void dred_text_editor_textbox__on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)
 {
     if (key == DRGUI_ESCAPE) {
@@ -166,6 +139,36 @@ void dred_text_editor_textbox__on_undo_point_changed(dred_textbox* pTextBox, uns
     }
 }
 
+bool dred_text_editor__on_save(dred_text_editor* pTextEditor, dred_file file, const char* filePath)
+{
+    dred_textbox* pTextBox = dred_text_editor__get_textbox(pTextEditor);
+    if (pTextBox == NULL) {
+        return false;
+    }
+
+    size_t textLength = dred_textbox_get_text(pTextBox, NULL, 0);
+    char* text = malloc(textLength + 1);
+    if (text == NULL) {
+        return false;
+    }
+    dred_textbox_get_text(pTextBox, text, textLength+1);
+
+    bool result = dred_file_write_string(file, text);
+    free(text);
+
+    // After saving we need to update the base undo point and unmark the file as modified.
+    if (result) {
+        dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+        assert(data != NULL);
+        data->iBaseUndoPoint = dred_textbox_get_undo_points_remaining_count(pTextBox);
+
+        // Syntax highlighting needs to be updated based on the file extension.
+        dred_text_editor_set_highlighter(pTextEditor, dred_get_language_by_file_path(dred_control_get_context(pTextEditor), filePath));
+    }
+
+    return result;
+}
+
 dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pParent, const char* filePathAbsolute)
 {
     dred_text_editor* pTextEditor = dred_editor_create(pDred, pParent, DRED_CONTROL_TYPE_TEXT_EDITOR, filePathAbsolute, sizeof(dred_text_editor_data));
@@ -184,10 +187,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 
     data->textScale = 1;
 
-    if (drpath_extension_equal(filePathAbsolute, "c") || drpath_extension_equal(filePathAbsolute, "h")) {
-        dred_highlighter_init(&data->highlighter, pDred, dred_textbox_get_engine(data->pTextBox), g_KeywordsC, sizeof(g_KeywordsC) / sizeof(g_KeywordsC[0]));
-        drte_engine_set_highlighter(dred_textbox_get_engine(data->pTextBox), data->highlighter.onNextHighlight, &data->highlighter);
-    }
+    dred_text_editor_set_highlighter(pTextEditor, dred_get_language_by_file_path(pDred, filePathAbsolute));
 
 
     if (filePathAbsolute != NULL && filePathAbsolute[0] != '\0') {
@@ -325,10 +325,19 @@ void dred_text_editor_set_highlighter(dred_text_editor* pTextEditor, const char*
     drte_engine* pEngine = dred_textbox_get_engine(dred_text_editor__get_textbox(pTextEditor));
     assert(pEngine != NULL);
 
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    assert(data != NULL);
+
+    dred_context* pDred = dred_control_get_context(pTextEditor);
+    assert(pDred != NULL);
+
     if (lang == NULL) {
         drte_engine_set_highlighter(pEngine, NULL, NULL);
     } else {
-        
+        if (strcmp(lang, "c") == 0) {
+            dred_highlighter_init(&data->highlighter, pDred, dred_textbox_get_engine(data->pTextBox), g_KeywordsC, sizeof(g_KeywordsC) / sizeof(g_KeywordsC[0]));
+            drte_engine_set_highlighter(dred_textbox_get_engine(data->pTextBox), data->highlighter.onNextHighlight, &data->highlighter);
+        }
     }
 }
 

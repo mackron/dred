@@ -2145,6 +2145,20 @@ dred_font* dred_parse_and_load_font(dred_context* pDred, const char* value)
 }
 
 
+const char* dred_get_language_by_file_path(dred_context* pDred, const char* filePath)
+{
+    (void)pDred;
+
+    // TODO: Use a map for this to make this easier to maintain. Also consider auto-generating default mappings.
+
+    if (drpath_extension_equal(filePath, "c") || drpath_extension_equal(filePath, "h")) {
+        return "c";
+    }
+
+    return "";
+}
+
+
 void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab, dred_tab* pOldActiveTab)
 {
     (void)pOldActiveTab;

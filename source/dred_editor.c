@@ -129,7 +129,7 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
         return false;
     }
 
-    if (!data->onSave(pEditor, file)) {
+    if (!data->onSave(pEditor, file, actualFilePath)) {
         dred_file_close(file);
         return false;
     }

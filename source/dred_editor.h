@@ -3,7 +3,7 @@
 
 typedef dred_control dred_editor;
 
-typedef bool (* dred_editor_on_save_proc)(dred_editor* pEditor, dred_file file);
+typedef bool (* dred_editor_on_save_proc)(dred_editor* pEditor, dred_file file, const char* filePath);
 typedef void (* dred_editor_on_modified_proc)(dred_editor* pEditor);
 typedef void (* dred_editor_on_unmodified_proc)(dred_editor* pEditor);
 
