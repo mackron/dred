@@ -36,3 +36,9 @@ void dred_font_release_subfont(dred_font* pFont, drgui_font* pSubfont);
 
 bool dred_font_desc_to_string(dred_font_desc* pDesc, char* strOut, size_t strOutSize);
 bool dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize);
+
+// Retrieves the metrics of a font at a given scale.
+bool dred_font_get_metrics(dred_font* pFont, float scale, drgui_font_metrics* pMetricsOut);
+
+// Measures a string using the given font and scale.
+bool dred_font_measure_string(dred_font* pFont, float scale, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut);

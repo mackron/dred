@@ -53,4 +53,7 @@ bool textEditorShowScrollbarVert; \
 bool textEditorEnableExcessScrolling; \
 bool textEditorTabsToSpacesEnabled; \
 int textEditorTabSizeInSpaces; \
-float textEditorScale;
+float textEditorScale; \
+drgui_color cppCommentTextColor; \
+drgui_color cppStringTextColor; \
+drgui_color cppKeywordTextColor;

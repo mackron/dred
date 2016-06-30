@@ -14,6 +14,9 @@ void dred_text_editor_delete(dred_text_editor* pTextEditor);
 // Refreshes the styling of the given text editor.
 void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor);
 
+// Sets the syntax highlighting for the given text editor based on a language string.
+void dred_text_editor_set_highlighter(dred_text_editor* pTextEditor, const char* lang);
+
 
 // Sets the base font to use with this text editor.
 void dred_text_editor_set_font(dred_text_editor* pTextEditor, dred_font* pFont);

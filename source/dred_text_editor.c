@@ -4,7 +4,11 @@ typedef struct
     dred_textbox* pTextBox;
     unsigned int iBaseUndoPoint;    // Used to determine whether or no the file has been modified.
     float textScale;
+
+    dred_highlighter highlighter;
 } dred_text_editor_data;
+
+
 
 dred_textbox* dred_text_editor__get_textbox(dred_text_editor* pTextEditor)
 {
@@ -15,6 +19,16 @@ dred_textbox* dred_text_editor__get_textbox(dred_text_editor* pTextEditor)
 
     return data->pTextBox;
 }
+
+void dred_text_editor__register_style(dred_text_editor* pTextEditor, dred_text_style* pStyle)
+{
+    drgui_font_metrics fontMetrics;
+    drgui_get_font_metrics(pStyle->pFont, &fontMetrics);
+
+    drte_font_metrics drteFontMetrics = drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth);
+    drte_engine_register_style_token(dred_textbox_get_engine(dred_text_editor__get_textbox(pTextEditor)), (drte_style_token)pStyle, drteFontMetrics);
+}
+
 
 void dred_text_editor__on_size(dred_text_editor* pTextEditor, float newWidth, float newHeight)
 {
@@ -170,6 +184,11 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 
     data->textScale = 1;
 
+    if (drpath_extension_equal(filePathAbsolute, "c") || drpath_extension_equal(filePathAbsolute, "h")) {
+        dred_highlighter_init(&data->highlighter, pDred, dred_textbox_get_engine(data->pTextBox), g_KeywordsC, sizeof(g_KeywordsC) / sizeof(g_KeywordsC[0]));
+        drte_engine_set_highlighter(dred_textbox_get_engine(data->pTextBox), data->highlighter.onNextHighlight, &data->highlighter);
+    }
+
 
     if (filePathAbsolute != NULL && filePathAbsolute[0] != '\0') {
         char* pFileData = dr_open_and_read_text_file(filePathAbsolute, NULL);
@@ -183,6 +202,10 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
         dred_textbox_clear_undo_stack(data->pTextBox);
         dr_free_file_data(pFileData);
     }
+
+
+    
+
 
     // Events.
     dred_control_set_on_size(pTextEditor, dred_text_editor__on_size);
@@ -223,53 +246,90 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
     dred_context* pDred = dred_control_get_context(pTextEditor);
     assert(pDred != NULL);
 
-    dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
-    dred_textbox_set_text_color(data->pTextBox, pDred->config.textEditorTextColor);
-    dred_textbox_set_cursor_color(data->pTextBox, pDred->config.textEditorCursorColor);
-    dred_textbox_set_background_color(data->pTextBox, pDred->config.textEditorBGColor);
-    dred_textbox_set_selection_background_color(data->pTextBox, pDred->config.textEditorSelectionBGColor);
-    dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.textEditorActiveLineColor);
-    dred_textbox_set_padding(data->pTextBox, 0);
-    dred_textbox_set_line_numbers_color(data->pTextBox, pDred->config.textEditorLineNumbersColor);
-    dred_textbox_set_line_numbers_background_color(data->pTextBox, pDred->config.textEditorLineNumbersBGColor);
-    dred_textbox_set_line_numbers_padding(data->pTextBox, pDred->config.textEditorLineNumbersPadding);
+    drgui_begin_dirty(pTextEditor);
+    {
+        // Highlighting.
+        data->highlighter.styles.common.comment.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->config.textEditorScale);
+        data->highlighter.styles.common.comment.bgColor = pDred->config.textEditorBGColor;
+        data->highlighter.styles.common.comment.fgColor = pDred->config.cppCommentTextColor;
+        dred_text_editor__register_style(pTextEditor, &data->highlighter.styles.common.comment);
+
+        data->highlighter.styles.common.string.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->config.textEditorScale);
+        data->highlighter.styles.common.string.bgColor = pDred->config.textEditorBGColor;
+        data->highlighter.styles.common.string.fgColor = pDred->config.cppStringTextColor;
+        dred_text_editor__register_style(pTextEditor, &data->highlighter.styles.common.string);
+        
+        data->highlighter.styles.common.keyword.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->config.textEditorScale);
+        data->highlighter.styles.common.keyword.bgColor = pDred->config.textEditorBGColor;
+        data->highlighter.styles.common.keyword.fgColor = pDred->config.cppKeywordTextColor;
+        dred_text_editor__register_style(pTextEditor, &data->highlighter.styles.common.keyword);
+
+
+        dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
+        dred_textbox_set_text_color(data->pTextBox, pDred->config.textEditorTextColor);
+        dred_textbox_set_cursor_color(data->pTextBox, pDred->config.textEditorCursorColor);
+        dred_textbox_set_background_color(data->pTextBox, pDred->config.textEditorBGColor);
+        dred_textbox_set_selection_background_color(data->pTextBox, pDred->config.textEditorSelectionBGColor);
+        dred_textbox_set_active_line_background_color(data->pTextBox, pDred->config.textEditorActiveLineColor);
+        dred_textbox_set_padding(data->pTextBox, 0);
+        dred_textbox_set_line_numbers_color(data->pTextBox, pDred->config.textEditorLineNumbersColor);
+        dred_textbox_set_line_numbers_background_color(data->pTextBox, pDred->config.textEditorLineNumbersBGColor);
+        dred_textbox_set_line_numbers_padding(data->pTextBox, pDred->config.textEditorLineNumbersPadding);
     
-    dred_textbox_set_scrollbar_track_color(data->pTextBox, pDred->config.textEditorSBTrackColor);
-    dred_textbox_set_scrollbar_thumb_color(data->pTextBox, pDred->config.textEditorSBThumbColor);
-    dred_textbox_set_scrollbar_thumb_color_hovered(data->pTextBox, pDred->config.textEditorSBThumbColorHovered);
-    dred_textbox_set_scrollbar_thumb_color_pressed(data->pTextBox, pDred->config.textEditorSBThumbColorPressed);
-    dred_textbox_set_scrollbar_size(data->pTextBox, pDred->config.textEditorSBSize * pDred->uiScale);
-    if (pDred->config.textEditorShowScrollbarHorz) {
-        dred_textbox_enable_horizontal_scrollbar(data->pTextBox);
-    } else {
-        dred_textbox_disable_horizontal_scrollbar(data->pTextBox);
-    }
-    if (pDred->config.textEditorShowScrollbarVert) {
-        dred_textbox_enable_vertical_scrollbar(data->pTextBox);
-    } else {
-        dred_textbox_disable_vertical_scrollbar(data->pTextBox);
-    }
-    if (pDred->config.textEditorEnableExcessScrolling) {
-        dred_textbox_enable_excess_scrolling(data->pTextBox);
-    } else {
-        dred_textbox_disable_excess_scrolling(data->pTextBox);
-    }
+        dred_textbox_set_scrollbar_track_color(data->pTextBox, pDred->config.textEditorSBTrackColor);
+        dred_textbox_set_scrollbar_thumb_color(data->pTextBox, pDred->config.textEditorSBThumbColor);
+        dred_textbox_set_scrollbar_thumb_color_hovered(data->pTextBox, pDred->config.textEditorSBThumbColorHovered);
+        dred_textbox_set_scrollbar_thumb_color_pressed(data->pTextBox, pDred->config.textEditorSBThumbColorPressed);
+        dred_textbox_set_scrollbar_size(data->pTextBox, pDred->config.textEditorSBSize * pDred->uiScale);
+        if (pDred->config.textEditorShowScrollbarHorz) {
+            dred_textbox_enable_horizontal_scrollbar(data->pTextBox);
+        } else {
+            dred_textbox_disable_horizontal_scrollbar(data->pTextBox);
+        }
+        if (pDred->config.textEditorShowScrollbarVert) {
+            dred_textbox_enable_vertical_scrollbar(data->pTextBox);
+        } else {
+            dred_textbox_disable_vertical_scrollbar(data->pTextBox);
+        }
+        if (pDred->config.textEditorEnableExcessScrolling) {
+            dred_textbox_enable_excess_scrolling(data->pTextBox);
+        } else {
+            dred_textbox_disable_excess_scrolling(data->pTextBox);
+        }
 
 
-    dred_textbox_set_tab_size_in_spaces(data->pTextBox, pDred->config.textEditorTabSizeInSpaces);
-    if (pDred->config.textEditorTabsToSpacesEnabled) {
-        dred_textbox_enable_tabs_to_spaces(data->pTextBox);
-    } else {
-        dred_textbox_disable_tabs_to_spaces(data->pTextBox);
+        dred_textbox_set_tab_size_in_spaces(data->pTextBox, pDred->config.textEditorTabSizeInSpaces);
+        if (pDred->config.textEditorTabsToSpacesEnabled) {
+            dred_textbox_enable_tabs_to_spaces(data->pTextBox);
+        } else {
+            dred_textbox_disable_tabs_to_spaces(data->pTextBox);
+        }
+
+        if (pDred->config.textEditorShowLineNumbers) {
+            dred_text_editor_show_line_numbers(pTextEditor);
+        } else {
+            dred_text_editor_hide_line_numbers(pTextEditor);
+        }
+
+        dred_text_editor_set_text_scale(pTextEditor, pDred->config.textEditorScale);
+    }
+    drgui_end_dirty(pTextEditor);
+}
+
+void dred_text_editor_set_highlighter(dred_text_editor* pTextEditor, const char* lang)
+{
+    if (pTextEditor == NULL) {
+        return;
     }
 
-    if (pDred->config.textEditorShowLineNumbers) {
-        dred_text_editor_show_line_numbers(pTextEditor);
-    } else {
-        dred_text_editor_hide_line_numbers(pTextEditor);
-    }
+    drte_engine* pEngine = dred_textbox_get_engine(dred_text_editor__get_textbox(pTextEditor));
+    assert(pEngine != NULL);
 
-    dred_text_editor_set_text_scale(pTextEditor, pDred->config.textEditorScale);
+    if (lang == NULL) {
+        drte_engine_set_highlighter(pEngine, NULL, NULL);
+    } else {
+        
+    }
 }
 
 

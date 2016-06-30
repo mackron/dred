@@ -21,8 +21,8 @@ typedef struct
 
 
     // TEST STYLES
-    dred_text_style testStyle0;
-    dred_text_style testStyle1;
+    //dred_text_style testStyle0;
+    //dred_text_style testStyle1;
 
 
     /// The vertical scrollbar.
@@ -177,6 +177,10 @@ void dred_textbox__refresh_style(drgui_element* pTextBox)
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
+    dred_context* pDred = dred_control_get_context(pTextBox);
+    assert(pDred != NULL);
+
+
     drgui_font_metrics fontMetrics;
     drgui_get_font_metrics(pTB->defaultStyle.pFont, &fontMetrics);
 
@@ -197,8 +201,8 @@ void dred_textbox__refresh_style(drgui_element* pTextBox)
 
 
     // TESTS
-    drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->testStyle0, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
-    drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->testStyle1, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
+    //drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->testStyle0, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
+    //drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->testStyle1, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
 }
 
 
@@ -220,7 +224,7 @@ void dred_textbox_engine__on_get_cursor_position_from_char(drte_engine* pEngine,
     drgui_get_text_cursor_position_from_char(((dred_text_style*)styleToken)->pFont, text, characterIndex, pTextCursorPosXOut);
 }
 
-
+#if 0
 bool dred_textbox_engine__on_get_next_highlight(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData)
 {
     (void)pEngine;
@@ -275,6 +279,7 @@ bool dred_textbox_engine__on_get_next_highlight(drte_engine* pEngine, size_t iCh
 
     return false;
 }
+#endif
 
 
 void dred_textbox__clear_all_cursors(dred_textbox* pTextBox)
@@ -458,20 +463,20 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
 
 
     // Test styling.
-    pTB->testStyle0.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    /*pTB->testStyle0.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
     pTB->testStyle0.bgColor = drgui_rgb(64, 64, 64);
     pTB->testStyle0.fgColor = drgui_rgb(64, 160, 255);
 
     pTB->testStyle1.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
     pTB->testStyle1.bgColor = drgui_rgb(64, 64, 64);
-    pTB->testStyle1.fgColor = drgui_rgb(64, 192, 92);
+    pTB->testStyle1.fgColor = drgui_rgb(64, 192, 92);*/
 
 
     // Register the styles with the text engine.
     dred_textbox__refresh_style(pTextBox);
 
 
-    drte_engine_set_highlighter(pTB->pTL, dred_textbox_engine__on_get_next_highlight, pTextBox);
+    //drte_engine_set_highlighter(pTB->pTL, dred_textbox_engine__on_get_next_highlight, pTextBox);
     
 
 
@@ -552,6 +557,17 @@ void dred_textbox_delete(dred_textbox* pTextBox)
 }
 
 
+drte_engine* dred_textbox_get_engine(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return NULL;
+    }
+
+    return pTB->pTL;
+}
+
+
 void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
@@ -564,7 +580,7 @@ void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont)
         //drte_engine_set_default_font(pTB->pTL, pFont);
         pTB->defaultStyle.pFont = pFont;
         pTB->lineNumbersStyle.pFont = pFont;
-        pTB->testStyle0.pFont = pFont;
+        //pTB->testStyle0.pFont = pFont;
 
         dred_textbox__refresh_style(pTextBox);
 

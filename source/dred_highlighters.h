@@ -5,33 +5,55 @@ typedef enum
     dred_highlight_category_default,
     dred_highlight_category_comment,
     dred_highlight_category_string,
-    dred_highlight_category_token
+    dred_highlight_category_datatype,
+    dred_highlight_category_instruction
 } dred_highlight_category;
 
 typedef struct
 {
     const char* keyword;
+    dred_highlight_category category;
 } dred_highlight_keyword;
 
-#if 0
 static dred_highlight_keyword g_KeywordsC[] = {
-    "char",
-    "short",
-    "int",
-    "float",
-    "unsigned"
+    { "char",     dred_highlight_category_datatype },
+    { "short",    dred_highlight_category_datatype },
+    { "int",      dred_highlight_category_datatype },
+    { "float",    dred_highlight_category_datatype },
+    { "unsigned", dred_highlight_category_datatype }
 };
-#endif
 
 typedef struct
 {
-    const char* text;   // <-- This is a reference, not a copy.
-    dred_highlight_keyword* keywords;
-    size_t keywordCount;
-} dred_highlighter_generic;
+    dred_context* pDred;
+    drte_engine* pEngine;
+    drte_engine_on_get_next_highlight_proc onNextHighlight;
+
+    union
+    {
+        struct
+        {
+            dred_text_style comment;
+            dred_text_style string;
+            dred_text_style keyword;
+        } common;
+
+        struct
+        {
+            int unused;
+        } cpp;
+    } styles;
+
+    union
+    {
+        struct
+        {
+            dred_highlight_keyword* keywords;
+            size_t keywordCount;
+        } builtin;
+    } data;
+    
+} dred_highlighter;
 
 //
-bool dred_highlighter_generic_init(dred_highlighter_generic* pHighlighter, const char* text, dred_highlight_keyword* keywords, size_t keywordCount);
-
-// Gets the next highlight based on the given character.
-bool dred_highlighter_generic_get_next_highlight(dred_highlighter_generic* pHighlighter, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, dred_highlight_category* pCategoryOut);
+bool dred_highlighter_init(dred_highlighter* pHighlighter, dred_context* pDred, drte_engine* pEngine, dred_highlight_keyword* keywords, size_t keywordCount);

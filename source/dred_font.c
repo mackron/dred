@@ -190,3 +190,38 @@ bool dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize)
 
     return dred_font_desc_to_string(&pFont->desc, strOut, strOutSize);
 }
+
+
+bool dred_font_get_metrics(dred_font* pFont, float scale, drgui_font_metrics* pMetricsOut)
+{
+    if (pFont == NULL) {
+        return false;   
+    }
+
+    drgui_font* pSubFont = dred_font_acquire_subfont(pFont, scale);
+    if (pSubFont == NULL) {
+        return false;
+    }
+
+    bool result = drgui_get_font_metrics(pSubFont, pMetricsOut);
+    
+    dred_font_release_subfont(pFont, pSubFont);
+    return result;
+}
+
+bool dred_font_measure_string(dred_font* pFont, float scale, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut)
+{
+    if (pFont == NULL) {
+        return false;   
+    }
+
+    drgui_font* pSubFont = dred_font_acquire_subfont(pFont, scale);
+    if (pSubFont == NULL) {
+        return false;
+    }
+
+    bool result = drgui_measure_string(pSubFont, text, textLength, pWidthOut, pHeightOut);
+    
+    dred_font_release_subfont(pFont, pSubFont);
+    return result;
+}

@@ -3,13 +3,6 @@
 
 typedef dred_control dred_textbox;
 
-typedef struct
-{
-    drgui_color bgColor;
-    drgui_color fgColor;
-    drgui_font* pFont;
-} dred_text_style;
-
 typedef void (* dred_textbox_on_cursor_move_proc)(dred_textbox* pTextBox);
 typedef void (* dred_textbox_on_undo_point_changed_proc)(dred_textbox* pTextBox, unsigned int iUndoPoint);
 
@@ -19,6 +12,10 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent);
 
 // Deletes the given text box control.
 void dred_textbox_delete(dred_textbox* pTextBox);
+
+
+// Retrieves a pointer to the internal text engine.
+drte_engine* dred_textbox_get_engine(dred_textbox* pTextBox);
 
 
 // Sets the font to use with the given text box.
