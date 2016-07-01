@@ -234,7 +234,7 @@ struct drte_engine
 
     // The index of the first character of every line.
     //size_t* pLines;
-    //size_t lineCount;
+    size_t lineCount;
     //size_t lineBufferSize;
 
 
@@ -610,6 +610,9 @@ void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_
 /// @return True if the text within the text engine has changed.
 bool drte_engine_insert_character(drte_engine* pEngine, unsigned int character, size_t insertIndex);
 
+// Deletes the character at the given index. Returns true if the text was changed.
+bool drte_engine_delete_character(drte_engine* pEngine, size_t iChar);
+
 /// Inserts the given string at the given character index.
 ///
 /// @return True if the text within the text engine has changed.
@@ -618,7 +621,7 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
 /// Deletes a range of text in the given text engine.
 ///
 /// @return True if the text within the text engine has changed.
-bool drte_engine_delete_text_range(drte_engine* pEngine, size_t iFirstCh, size_t iLastChPlus1);
+bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLastChPlus1);
 
 /// Inserts a character at the position of the cursor.
 ///
@@ -913,17 +916,8 @@ static drte_region drte_region_normalize(drte_region region)
 // Performs a full repaint of the entire visible region of the text engine.
 void drte_engine__repaint(drte_engine* pEngine);
 
-
-/// Performs a complete refresh of the given text engine.
-///
-/// @remarks
-///     This will delete every run and re-create them.
-//void drte_engine__refresh(drte_engine* pEngine);
-
-
 /// Helper for calculating the width of a tab.
 float drte_engine__get_tab_width(drte_engine* pEngine);
-
 
 /// Creates a blank text marker.
 drte_marker drte_engine__new_marker();
@@ -1345,7 +1339,7 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     pEngine->lineNumbersStyleSlot = DRTE_INVALID_STYLE_SLOT;
 
     //pEngine->lineBufferSize = 16;
-    //pEngine->lineCount = 0;
+    pEngine->lineCount = 1; // <-- There's always at least one line in a text editor.
     //pEngine->pLines = (size_t*)malloc(pEngine->lineBufferSize * sizeof(*pEngine->pLines));
 
 
@@ -1768,40 +1762,13 @@ void drte_engine_set_text(drte_engine* pEngine, const char* text)
         return;
     }
 
-    size_t textLength = strlen(text);
-
-    free(pEngine->text);
-    pEngine->text = (char*)malloc(textLength + 1);     // +1 for null terminator.
-
-    // We now need to copy over the text, however we need to skip past \r characters in order to normalize line endings
-    // and keep everything simple.
-          char* dst = pEngine->text;
-    const char* src = text;
-    while (*src != '\0')
-    {
-        if (*src != '\r') {
-            *dst++ = *src;
-        }
-
-        src++;
-    }
-    *dst = '\0';
-
-    pEngine->textLength = dst - pEngine->text;
-
-
-    // Cursors need to be clamped against the end of the text.
-    for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
-        if (pEngine->pCursors[iCursor].iCharAbs >= pEngine->textLength) {
-            drte_engine_move_cursor_to_end_of_text(pEngine, iCursor);
-        }
+    // Remove existing text first.
+    if (pEngine->textLength > 0) {
+        drte_engine_delete_text(pEngine, 0, pEngine->textLength);
     }
 
-    if (pEngine->onTextChanged) {
-        pEngine->onTextChanged(pEngine);
-    }
-
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+    // Insert new text.
+    drte_engine_insert_text(pEngine, text, 0);
 }
 
 size_t drte_engine_get_text(drte_engine* pEngine, char* textOut, size_t textOutSize)
@@ -2612,56 +2579,34 @@ void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_
     pEngine->onCursorMove = proc;
 }
 
-bool drte_engine_insert_character(drte_engine* pEngine, unsigned int character, size_t insertIndex)
+bool drte_engine_insert_character(drte_engine* pEngine, uint32_t utf32, size_t insertIndex)
 {
-    if (pEngine == NULL) {
-        return false;
+    // Transform '\r' to '\n'. Should this be done at a higher level, but the application?
+    if (utf32 == '\r') {
+        utf32 = '\n';
     }
 
-    // Transform '\r' to '\n'.
-    if (character == '\r') {
-        character = '\n';
-    }
+    // TODO: Do a proper UTF-32 -> UTF-8 conversion.
+    char utf8[16];
+    utf8[0] = (char)utf32;
+    utf8[1] = '\0';
 
+    return drte_engine_insert_text(pEngine, utf8, insertIndex);
+}
 
-    // TODO: Add proper support for UTF-8.
-    // TODO: Bounds check the insert index.
-
-    char* pOldText = pEngine->text;
-    char* pNewText = (char*)malloc(pEngine->textLength + 1 + 1);   // +1 for the new character and +1 for the null terminator.
-
-    if (insertIndex > 0) {
-        memcpy(pNewText, pOldText, insertIndex);
-    }
-
-    pNewText[insertIndex] = (char)character;
-
-    if (insertIndex < pEngine->textLength) {
-        memcpy(pNewText + insertIndex + 1, pOldText + insertIndex, pEngine->textLength - insertIndex);
-    }
-
-    pEngine->textLength += 1;
-    pEngine->text = pNewText;
-    pNewText[pEngine->textLength] = '\0';
-
-    free(pOldText);
-
-
-
-
-    if (pEngine->onTextChanged) {
-        pEngine->onTextChanged(pEngine);
-    }
-
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
-
-    return true;
+bool drte_engine_delete_character(drte_engine* pEngine, size_t iChar)
+{
+    return drte_engine_delete_text(pEngine, iChar, iChar+1);
 }
 
 bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t insertIndex)
 {
     if (pEngine == NULL || text == NULL) {
         return false;;
+    }
+
+    if (insertIndex > pEngine->textLength) {
+        return false;
     }
 
     size_t newTextLength = strlen(text);
@@ -2680,6 +2625,7 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
 
 
     // Replace \r\n with \n.
+    size_t linesAddedCount = 0;
     {
         char* dst = pNewText + insertIndex;
         const char* src = text;
@@ -2688,6 +2634,10 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
         {
             if (*src != '\r') {
                 *dst++ = *src;
+            }
+
+            if (*src == '\n') {
+                linesAddedCount += 1;
             }
 
             src++;
@@ -2708,6 +2658,12 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
     free(pOldText);
 
 
+    // Adjust lines.
+    if (linesAddedCount > 0) {
+        pEngine->lineCount += linesAddedCount;
+    }
+    
+
     if (pEngine->onTextChanged) {
         pEngine->onTextChanged(pEngine);
     }
@@ -2717,7 +2673,7 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
     return true;
 }
 
-bool drte_engine_delete_text_range(drte_engine* pEngine, size_t iFirstCh, size_t iLastChPlus1)
+bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLastChPlus1)
 {
     if (pEngine == NULL || iLastChPlus1 == iFirstCh) {
         return false;
@@ -2738,12 +2694,28 @@ bool drte_engine_delete_text_range(drte_engine* pEngine, size_t iFirstCh, size_t
         iLastChPlus1 = temp;
     }
 
+
+    size_t linesRemovedCount = 0;
+    for (size_t iChar = iFirstCh; iChar < iLastChPlus1; ++iChar) {
+        if (pEngine->text[iChar] == '\n') {
+            linesRemovedCount += 1;
+        }
+    }
+
+
     size_t bytesToRemove = iLastChPlus1 - iFirstCh;
     if (bytesToRemove > 0)
     {
         memmove(pEngine->text + iFirstCh, pEngine->text + iLastChPlus1, pEngine->textLength - iLastChPlus1);
         pEngine->textLength -= bytesToRemove;
         pEngine->text[pEngine->textLength] = '\0';
+
+        if (pEngine->lineCount <= linesRemovedCount) {
+            pEngine->lineCount = 1;
+        } else {
+            pEngine->lineCount -= linesRemovedCount;
+        }
+        
 
         if (pEngine->onTextChanged) {
             pEngine->onTextChanged(pEngine);
@@ -3009,7 +2981,7 @@ bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors)
     for (size_t iSelection = pEngine->selectionCount; iSelection > 0; --iSelection) {
         drte_region selection = pSortedSelections[iSelection-1];
         if (selection.iCharBeg < selection.iCharEnd) {
-            wasTextChanged = drte_engine_delete_text_range(pEngine, selection.iCharBeg, selection.iCharEnd) || wasTextChanged;
+            wasTextChanged = drte_engine_delete_text(pEngine, selection.iCharBeg, selection.iCharEnd) || wasTextChanged;
             if (wasTextChanged) {
                 if (updateCursors) {
                     for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
@@ -3052,7 +3024,7 @@ bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors)
     size_t iSelectionChar1 = pSelectionMarker1->iCharAbs;
 
     drte_engine__begin_dirty(pEngine);
-    bool wasTextChanged = drte_engine_delete_text_range(pEngine, iSelectionChar0, iSelectionChar1);
+    bool wasTextChanged = drte_engine_delete_text(pEngine, iSelectionChar0, iSelectionChar1);
     if (wasTextChanged)
     {
         // The marker needs to be updated based on the new layout.
@@ -3609,16 +3581,7 @@ size_t drte_engine_get_line_count(drte_engine* pEngine)
         return 0;
     }
 
-    // TODO: Accelerate this.
-
-    size_t lineCount = 1;
-    for (size_t i = 0; i < pEngine->textLength; ++i) {
-        if (pEngine->text[i] == '\n') {
-            lineCount += 1;
-        }
-    }
-
-    return lineCount;
+    return pEngine->lineCount;
 }
 
 size_t drte_engine_get_visible_line_count(drte_engine* pEngine)
@@ -4524,9 +4487,7 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
     }
 
     // When undoing we want to remove the new text and replace it with the old text.
-
-    size_t iFirstCh     = pUndoState->diffPos;
-    size_t iLastChPlus1 = pUndoState->diffPos + strlen(pUndoState->newText);
+#if 0
     size_t bytesToRemove = iLastChPlus1 - iFirstCh;
     if (bytesToRemove > 0)
     {
@@ -4534,11 +4495,16 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
         pEngine->textLength -= bytesToRemove;
         pEngine->text[pEngine->textLength] = '\0';
     }
+#endif
 
     // TODO: This needs improving because it results in multiple onTextChanged events being posted.
-
     drte_engine__begin_dirty(pEngine);
     {
+        // Remove the new text.
+        size_t iFirstCh     = pUndoState->diffPos;
+        size_t iLastChPlus1 = pUndoState->diffPos + strlen(pUndoState->newText);
+        drte_engine_delete_text(pEngine, iFirstCh, iLastChPlus1);
+
         // Insert the old text.
         drte_engine_insert_text(pEngine, pUndoState->oldText, pUndoState->diffPos);
 
@@ -4593,9 +4559,7 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
     }
 
     // An redo is just the opposite of an undo. We want to remove the old text and replace it with the new text.
-
-    size_t iFirstCh     = pUndoState->diffPos;
-    size_t iLastChPlus1 = pUndoState->diffPos + strlen(pUndoState->oldText);
+#if 0
     size_t bytesToRemove = iLastChPlus1 - iFirstCh;
     if (bytesToRemove > 0)
     {
@@ -4603,10 +4567,16 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
         pEngine->textLength -= bytesToRemove;
         pEngine->text[pEngine->textLength] = '\0';
     }
+#endif
 
     // TODO: This needs improving because it results in multiple onTextChanged events being posted.
     drte_engine__begin_dirty(pEngine);
     {
+        // Remove the old text.
+        size_t iFirstCh     = pUndoState->diffPos;
+        size_t iLastChPlus1 = pUndoState->diffPos + strlen(pUndoState->oldText);
+        drte_engine_delete_text(pEngine, iFirstCh, iLastChPlus1);
+
         // Insert the new text.
         drte_engine_insert_text(pEngine, pUndoState->newText, pUndoState->diffPos);
 
