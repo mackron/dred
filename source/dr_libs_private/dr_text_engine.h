@@ -233,9 +233,9 @@ struct drte_engine
 
 
     // The index of the first character of every line.
-    //size_t* pLines;
+    size_t* pLines;
     size_t lineCount;
-    //size_t lineBufferSize;
+    size_t lineBufferSize;
 
 
     // The function to call for handling syntax highlighting. See documentation for drte_engine_set_highlighter() for information
@@ -293,10 +293,6 @@ struct drte_engine
 
     /// Whether or not the cursor is being shown. False by default.
     bool isShowingCursor;
-
-
-    /// The cursor.
-    //drte_marker cursor;
 
 
     // The list of active cursors.
@@ -608,7 +604,7 @@ void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_
 /// Inserts a character into the given text engine.
 ///
 /// @return True if the text within the text engine has changed.
-bool drte_engine_insert_character(drte_engine* pEngine, unsigned int character, size_t insertIndex);
+bool drte_engine_insert_character(drte_engine* pEngine, uint32_t utf32, size_t insertIndex);
 
 // Deletes the character at the given index. Returns true if the text was changed.
 bool drte_engine_delete_character(drte_engine* pEngine, size_t iChar);
@@ -1073,7 +1069,7 @@ bool drte_engine__get_next_selection_from_character(drte_engine* pEngine, uint32
 }
 
 
-// A drte_segment object is used for iterating over the segments of a line.
+// A drte_segment object is used for iterating over the segments of a chunk of text.
 typedef struct
 {
     size_t iLine;
@@ -1338,9 +1334,9 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     pEngine->cursorStyleSlot = DRTE_INVALID_STYLE_SLOT;
     pEngine->lineNumbersStyleSlot = DRTE_INVALID_STYLE_SLOT;
 
-    //pEngine->lineBufferSize = 16;
+    pEngine->lineBufferSize = 1;
     pEngine->lineCount = 1; // <-- There's always at least one line in a text editor.
-    //pEngine->pLines = (size_t*)malloc(pEngine->lineBufferSize * sizeof(*pEngine->pLines));
+    pEngine->pLines = (size_t*)malloc(pEngine->lineBufferSize * sizeof(*pEngine->pLines));
 
 
     pEngine->pCursors = NULL;
@@ -1348,16 +1344,14 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     pEngine->pSelections = NULL;
     pEngine->selectionCount = 0;
 
-    pEngine->tabSizeInSpaces          = 4;
-    pEngine->cursorWidth              = 1;
-    pEngine->cursorBlinkRate          = 500;
-    pEngine->timeToNextCursorBlink    = pEngine->cursorBlinkRate;
-    pEngine->isCursorBlinkOn          = true;
-    pEngine->isShowingCursor          = false;
-    //pEngine->cursor                   = drte_engine__new_marker();
-    //pEngine->selectionAnchor          = drte_engine__new_marker();
-    pEngine->accumulatedDirtyRect     = drgui_make_inside_out_rect();
-    pEngine->pUserData                = pUserData;
+    pEngine->tabSizeInSpaces       = 4;
+    pEngine->cursorWidth           = 1;
+    pEngine->cursorBlinkRate       = 500;
+    pEngine->timeToNextCursorBlink = pEngine->cursorBlinkRate;
+    pEngine->isCursorBlinkOn       = true;
+    pEngine->isShowingCursor       = false;
+    pEngine->accumulatedDirtyRect  = drgui_make_inside_out_rect();
+    pEngine->pUserData             = pUserData;
 
     return pEngine;
 }
@@ -2614,6 +2608,9 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
         return false;
     }
 
+    // We need to get the index of the line that's being inserted so we can know how to update the internal line cache.
+    size_t iLine = drte_engine_get_character_line(pEngine, insertIndex);
+
 
     // TODO: Add proper support for UTF-8.
     char* pOldText = pEngine->text;
@@ -2660,7 +2657,50 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
 
     // Adjust lines.
     if (linesAddedCount > 0) {
-        pEngine->lineCount += linesAddedCount;
+        size_t newLineCount = pEngine->lineCount + linesAddedCount;
+
+#if 0
+        if (newLineCount >= pEngine->lineBufferSize) {
+            
+        }
+
+        // All existing lines coming after the line the text was inserted at need to be moved down newLineCount slots. They also need to have their
+        // first character index updated.
+        for (size_t i = iLine; i < pEngine->lineCount; ++i) {
+            size_t iSrc = pEngine->lineCount - i - 1;
+            size_t iDst = iSrc + linesAddedCount;
+            pEngine->pLines[iDst] = pEngine->pLines[iSrc] + newTextLength;
+        }
+
+        // The newly inserted lines need to be initialized.
+        size_t iRunningChar;
+        for (size_t i = iLine; i < iLine + linesAddedCount; ++i) {
+            if (i == 0) {
+                pEngine->pLines[i] = 0;
+            } else {
+                iRunningChar = pEngine->pLines[i-1];
+                while (pEngine->text[iRunningChar] != '\0') {
+                    if (pEngine->text[iRunningChar] == '\n') {
+                        iRunningChar += 1;
+                        break;
+                    }
+
+                    iRunningChar += 1;
+                }
+
+                pEngine->pLines[i+1] = iRunningChar;
+            }
+        }
+#endif
+
+        pEngine->lineCount = newLineCount;
+    } else {
+#if 0
+        // No new lines were added, but we still need to update the character positions of the line cache.
+        for (size_t i = iLine; i < pEngine->lineCount; ++i) {
+            pEngine->pLines[i] += newTextLength;
+        }
+#endif
     }
     
 
@@ -2694,6 +2734,9 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
         iLastChPlus1 = temp;
     }
 
+
+    // We need to get the index of the line that's being inserted so we can know how to update the internal line cache.
+    size_t iLine = drte_engine_get_character_line(pEngine, iFirstCh);
 
     size_t linesRemovedCount = 0;
     for (size_t iChar = iFirstCh; iChar < iLastChPlus1; ++iChar) {
