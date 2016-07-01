@@ -20,11 +20,6 @@ typedef struct
     dred_text_style lineNumbersStyle;
 
 
-    // TEST STYLES
-    //dred_text_style testStyle0;
-    //dred_text_style testStyle1;
-
-
     /// The vertical scrollbar.
     drgui_element* pVertScrollbar;
 
@@ -177,10 +172,6 @@ void dred_textbox__refresh_style(drgui_element* pTextBox)
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
-    dred_context* pDred = dred_control_get_context(pTextBox);
-    assert(pDred != NULL);
-
-
     drgui_font_metrics fontMetrics;
     drgui_get_font_metrics(pTB->defaultStyle.pFont, &fontMetrics);
 
@@ -198,11 +189,6 @@ void dred_textbox__refresh_style(drgui_element* pTextBox)
 
     // Line numbers.
     drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->lineNumbersStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
-
-
-    // TESTS
-    //drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->testStyle0, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
-    //drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->testStyle1, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
 }
 
 
@@ -223,63 +209,6 @@ void dred_textbox_engine__on_get_cursor_position_from_char(drte_engine* pEngine,
     (void)pEngine;
     drgui_get_text_cursor_position_from_char(((dred_text_style*)styleToken)->pFont, text, characterIndex, pTextCursorPosXOut);
 }
-
-#if 0
-bool dred_textbox_engine__on_get_next_highlight(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData)
-{
-    (void)pEngine;
-
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data((dred_textbox*)pUserData);
-    assert(pTB != NULL);
-
-    drcpp_region region;
-
-    // Highest priority stuff first.
-
-
-   
-
-
-    // Line comments.
-    if (drcpp_parser_get_line_comment_of_character(pEngine->text, iChar, &region)) {
-        *pCharBegOut = region.iCharBeg;
-        *pCharEndOut = region.iCharEnd;
-        *pStyleTokenOut = (drte_style_token)&pTB->testStyle1;
-        return true;
-    }
-
-
-    // TODO: Strings.
-
-    // TODO: Keywords
-    /*if (iChar < 8) {
-        *pCharBegOut = 4;
-        *pCharEndOut = 8;
-        *pStyleTokenOut = (drte_style_token)&pTB->testStyle1;
-        return true;
-    }*/
-
-    // If we get here it means we are not in the middle of a highlighted token so now we need to check if there is one on this line.
-
-    // TODO: Block comments.
-
-
-    // Line comments.
-    if (drcpp_parser_get_next_line_comment_on_line(pEngine->text, iChar, &region)) {
-        *pCharBegOut = region.iCharBeg;
-        *pCharEndOut = region.iCharEnd;
-        *pStyleTokenOut = (drte_style_token)&pTB->testStyle1;
-        return true;
-    }
-
-
-    // TODO: Strings
-
-    // TODO: Keywords
-
-    return false;
-}
-#endif
 
 
 void dred_textbox__clear_all_cursors(dred_textbox* pTextBox)
