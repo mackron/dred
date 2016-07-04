@@ -891,6 +891,11 @@ static void * stb__sbremove(void *arr, int i, int itemsize)
 // Helper for determining whether or not the given character is a symbol or whitespace.
 bool drte_is_symbol_or_whitespace(uint32_t utf32)
 {
+    // Special case for underscores. This is a bit of a hack and should probably be moved out of here later.
+    if (utf32 == '_') {
+        return false;
+    }
+
     return (utf32 < '0') || (utf32 >= ':' && utf32 < 'A') || (utf32 >= '[' && utf32 < 'a') || (utf32 > '{');
 }
 
