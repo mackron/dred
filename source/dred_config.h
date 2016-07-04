@@ -153,6 +153,9 @@
 // texteditor-scale textEditorScale float dred_config_on_set__texteditor_generic_refresh 1
 //   The scale/zoom to use in text editors.
 //
+// texteditor-enable-auto-indent textEditorEnableAutoIndent bool dred_config_on_set__texteditor_generic_refresh true
+//   Whether or not automatic indenting is enabled for when the user creates a new line.
+//
 //
 // cpp-comment-text-color cppCommentTextColor color dred_config_on_set__cpp_syntax_color 64 192 92
 //   The color to use for C/C++ comments.

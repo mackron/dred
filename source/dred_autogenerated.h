@@ -54,6 +54,7 @@ bool textEditorEnableExcessScrolling; \
 bool textEditorTabsToSpacesEnabled; \
 int textEditorTabSizeInSpaces; \
 float textEditorScale; \
+bool textEditorEnableAutoIndent; \
 drgui_color cppCommentTextColor; \
 drgui_color cppStringTextColor; \
 drgui_color cppKeywordTextColor;

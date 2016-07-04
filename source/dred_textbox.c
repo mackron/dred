@@ -1852,7 +1852,69 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
                 }
             }
         } else {
+            drte_engine__begin_dirty(pTB->pTL);
+
             drte_engine_insert_character_at_cursors(pTB->pTL, utf32);
+
+            if (utf32 == '\r' || utf32 == '\n') {
+                dred_context* pDred = dred_control_get_context(pTextBox);
+                if (pDred->config.textEditorEnableAutoIndent) {
+                    for (size_t iCursor = 0; iCursor < pTB->pTL->cursorCount; ++iCursor) {
+                        size_t iCursorChar = pTB->pTL->pCursors[iCursor].iCharAbs;
+                        size_t iCursorLine = drte_engine_get_character_line(pTB->pTL, iCursorChar);
+                        if (iCursorLine > 0) {
+                            size_t iPrevLineChar = drte_engine_get_line_first_character(pTB->pTL, iCursorLine-1);
+                            size_t indentationCount = 0;
+                            for (;;) {
+                                // TODO: Use a character iterator for this.
+                                uint32_t c = drte_engine_get_utf32(pTB->pTL, iPrevLineChar);
+                                if (c == '\0' || c == '\n') {
+                                    break;
+                                }
+
+                                if (!dr_is_whitespace(c)) {
+                                    break;
+                                }
+
+
+                                iPrevLineChar += 1;
+
+                                if (c == '\t') {
+                                    indentationCount += pDred->config.textEditorTabSizeInSpaces;
+                                } else {
+                                    indentationCount += 1;
+                                }
+                            }
+
+                            size_t extraTabCount    = indentationCount / pDred->config.textEditorTabSizeInSpaces;
+                            size_t extraSpacesCount = indentationCount - (extraTabCount * pDred->config.textEditorTabSizeInSpaces);
+                            if (pTB->isTabsToSpacesEnabled) {
+                                extraSpacesCount = extraTabCount * pDred->config.textEditorTabSizeInSpaces;
+                                extraTabCount = 0;
+                            }
+
+                            size_t extraCharactersCount = extraTabCount + extraSpacesCount;
+
+                            for (size_t i = 0; i < extraTabCount; ++i) {
+                                drte_engine_insert_character_at_cursor(pTB->pTL, iCursor, '\t');
+                            }
+                            for (size_t i = 0; i < extraSpacesCount; ++i) {
+                                drte_engine_insert_character_at_cursor(pTB->pTL, iCursor, ' ');
+                            }
+
+                            // Any cursor whose character position comes after this cursor needs to be moved.
+                            for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
+                                if (iCursor2 != iCursor) {
+                                    if (pTB->pTL->pCursors[iCursor2].iCharAbs > iCursorChar) {
+                                        drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + extraCharactersCount);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            drte_engine__end_dirty(pTB->pTL);
         }
     }
     drte_engine_commit_undo_point(pTB->pTL);
