@@ -806,7 +806,11 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 #ifdef DR_TEXT_ENGINE_IMPLEMENTATION
 #include <stdlib.h>
 
-#define DRTE_INVALID_STYLE_SLOT    255
+#ifndef DRTE_PAGE_LINE_COUNT
+#define DRTE_PAGE_LINE_COUNT    256
+#endif
+
+#define DRTE_INVALID_STYLE_SLOT 255
 
 // Flags for the drte_engine::flags property.
 #define DRTE_USE_EXPLICIT_LINE_HEIGHT   (1 << 0)
@@ -1334,9 +1338,9 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     pEngine->cursorStyleSlot = DRTE_INVALID_STYLE_SLOT;
     pEngine->lineNumbersStyleSlot = DRTE_INVALID_STYLE_SLOT;
 
-    pEngine->lineBufferSize = 1;
+    pEngine->lineBufferSize = DRTE_PAGE_LINE_COUNT;
     pEngine->lineCount = 1; // <-- There's always at least one line in a text editor.
-    pEngine->pLines = (size_t*)malloc(pEngine->lineBufferSize * sizeof(*pEngine->pLines));
+    pEngine->pLines = (size_t*)calloc(pEngine->lineBufferSize, sizeof(*pEngine->pLines));   // <-- calloc() is important here. It initializes the first line to 0.
 
 
     pEngine->pCursors = NULL;
@@ -2659,9 +2663,15 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
     if (linesAddedCount > 0) {
         size_t newLineCount = pEngine->lineCount + linesAddedCount;
 
-#if 0
         if (newLineCount >= pEngine->lineBufferSize) {
-            
+            size_t newLineBufferSize = (pEngine->lineBufferSize == 0) ? DRTE_PAGE_LINE_COUNT : dr_round_up(newLineCount, DRTE_PAGE_LINE_COUNT);
+            size_t* pNewLines = (size_t*)realloc(pEngine->pLines, newLineBufferSize * sizeof(*pNewLines));
+            if (pNewLines == NULL) {
+                return false;   // Ran out of memory?
+            }
+
+            pEngine->lineBufferSize = newLineBufferSize;
+            pEngine->pLines = pNewLines;
         }
 
         // All existing lines coming after the line the text was inserted at need to be moved down newLineCount slots. They also need to have their
@@ -2674,33 +2684,26 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
 
         // The newly inserted lines need to be initialized.
         size_t iRunningChar;
-        for (size_t i = iLine; i < iLine + linesAddedCount; ++i) {
-            if (i == 0) {
-                pEngine->pLines[i] = 0;
-            } else {
-                iRunningChar = pEngine->pLines[i-1];
-                while (pEngine->text[iRunningChar] != '\0') {
-                    if (pEngine->text[iRunningChar] == '\n') {
-                        iRunningChar += 1;
-                        break;
-                    }
-
+        for (size_t i = iLine+1; i <= iLine + linesAddedCount; ++i) {
+            iRunningChar = pEngine->pLines[i-1];
+            while (pEngine->text[iRunningChar] != '\0') {
+                if (pEngine->text[iRunningChar] == '\n') {
                     iRunningChar += 1;
+                    break;
                 }
 
-                pEngine->pLines[i+1] = iRunningChar;
+                iRunningChar += 1;
             }
+
+            pEngine->pLines[i] = iRunningChar;
         }
-#endif
 
         pEngine->lineCount = newLineCount;
     } else {
-#if 0
         // No new lines were added, but we still need to update the character positions of the line cache.
-        for (size_t i = iLine; i < pEngine->lineCount; ++i) {
+        for (size_t i = iLine+1; i < pEngine->lineCount; ++i) {
             pEngine->pLines[i] += newTextLength;
         }
-#endif
     }
     
 
@@ -2753,12 +2756,24 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
         pEngine->textLength -= bytesToRemove;
         pEngine->text[pEngine->textLength] = '\0';
 
-        if (pEngine->lineCount <= linesRemovedCount) {
-            pEngine->lineCount = 1;
+        if (linesRemovedCount > 0) {
+            if (pEngine->lineCount <= linesRemovedCount) {
+                pEngine->lineCount = 1;
+            } else {
+                for (size_t i = iLine+1; i < (pEngine->lineCount - linesRemovedCount); ++i) {
+                    size_t iDst = i;
+                    size_t iSrc = i + linesRemovedCount;
+                    pEngine->pLines[iDst] = pEngine->pLines[iSrc] - bytesToRemove;
+                }
+
+                pEngine->lineCount -= linesRemovedCount;
+            }
         } else {
-            pEngine->lineCount -= linesRemovedCount;
+            // No lines were removed, but we still need to update the character positions of the line cache.
+            for (size_t i = iLine+1; i < pEngine->lineCount; ++i) {
+                pEngine->pLines[i] -= bytesToRemove;
+            }
         }
-        
 
         if (pEngine->onTextChanged) {
             pEngine->onTextChanged(pEngine);
@@ -2905,11 +2920,9 @@ bool drte_engine_delete_character_to_right_of_cursor(drte_engine* pEngine, size_
     size_t iAbsoluteMarkerChar = pEngine->pCursors[cursorIndex].iCharAbs;
     if (iAbsoluteMarkerChar < pEngine->textLength)
     {
-        // TODO: Add proper support for UTF-8.
-        memmove(pEngine->text + iAbsoluteMarkerChar, pEngine->text + iAbsoluteMarkerChar + 1, pEngine->textLength - iAbsoluteMarkerChar);
-        pEngine->textLength -= 1;
-        pEngine->text[pEngine->textLength] = '\0';
-
+        if (!drte_engine_delete_text(pEngine, iAbsoluteMarkerChar, iAbsoluteMarkerChar + 1)) {
+            return false;
+        }
 
 
         // The layout will have changed.
