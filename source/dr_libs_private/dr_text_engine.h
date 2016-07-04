@@ -1568,8 +1568,24 @@ size_t drte_engine_get_character_line(drte_engine* pEngine, size_t characterInde
         return 0;
     }
 
-    // TODO: Use an accelerated structure for this. Consider some kind of binary search.
+    // TODO: Use an accelerated search for this.
 
+#if 1
+    // Linear search. Simple, but slow.
+    size_t lineIndex = 0;
+    for (size_t iLine = 0; iLine < pEngine->lineCount; ++iLine) {
+        if (pEngine->pLines[iLine] > characterIndex) {
+            break;
+        }
+
+        lineIndex = iLine;
+    }
+
+    return lineIndex;
+#endif
+
+#if 0
+    // Brute force character by character.
     size_t lineIndex = 0;
     for (size_t i = 0; i < characterIndex; ++i) {
         if (pEngine->text[i] == '\n') {
@@ -1578,6 +1594,7 @@ size_t drte_engine_get_character_line(drte_engine* pEngine, size_t characterInde
     }
 
     return lineIndex;
+#endif
 }
 
 void drte_engine_get_character_position(drte_engine* pEngine, size_t characterIndex, float* pPosXOut, float* pPosYOut)
@@ -2676,8 +2693,8 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
 
         // All existing lines coming after the line the text was inserted at need to be moved down newLineCount slots. They also need to have their
         // first character index updated.
-        for (size_t i = iLine; i < pEngine->lineCount; ++i) {
-            size_t iSrc = pEngine->lineCount - i - 1;
+        for (size_t i = pEngine->lineCount; i > iLine; --i) {
+            size_t iSrc = i-1;
             size_t iDst = iSrc + linesAddedCount;
             pEngine->pLines[iDst] = pEngine->pLines[iSrc] + newTextLength;
         }
