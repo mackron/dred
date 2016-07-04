@@ -334,10 +334,16 @@ void dred_text_editor_set_highlighter(dred_text_editor* pTextEditor, const char*
     if (lang == NULL) {
         drte_engine_set_highlighter(pEngine, NULL, NULL);
     } else {
+        // Unfortunately highlighting is not quite ready for prime time.
+        drte_engine_set_highlighter(pEngine, NULL, NULL);
+        (void)pDred;
+        (void)data;
+#if 0
         if (strcmp(lang, "c") == 0) {
             dred_highlighter_init(&data->highlighter, pDred, dred_textbox_get_engine(data->pTextBox), g_KeywordsC, sizeof(g_KeywordsC) / sizeof(g_KeywordsC[0]));
             drte_engine_set_highlighter(dred_textbox_get_engine(data->pTextBox), data->highlighter.onNextHighlight, &data->highlighter);
         }
+#endif
     }
 }
 
