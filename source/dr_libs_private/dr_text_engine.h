@@ -101,17 +101,19 @@ typedef struct
 } drte_style;
 
 
-typedef void (* drte_engine_on_measure_string_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut);
-typedef void (* drte_engine_on_get_cursor_position_from_point_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-typedef void (* drte_engine_on_get_cursor_position_from_char_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
-typedef bool (* drte_engine_on_get_next_highlight_proc)(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData);
-
-typedef void (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, drgui_element* pElement, void* pPaintData);
-typedef void (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_style_token styleToken, drgui_rect rect, drgui_element* pElement, void* pPaintData);
-typedef void (* drte_engine_on_cursor_move_proc)       (drte_engine* pEngine);
-typedef void (* drte_engine_on_dirty_proc)             (drte_engine* pEngine, drgui_rect rect);
-typedef void (* drte_engine_on_text_changed_proc)      (drte_engine* pEngine);
-typedef void (* drte_engine_on_undo_point_changed_proc)(drte_engine* pEngine, unsigned int iUndoPoint);
+typedef void   (* drte_engine_on_measure_string_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut);
+typedef void   (* drte_engine_on_get_cursor_position_from_point_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+typedef void   (* drte_engine_on_get_cursor_position_from_char_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+typedef bool   (* drte_engine_on_get_next_highlight_proc)(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData);
+               
+typedef void   (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, drgui_element* pElement, void* pPaintData);
+typedef void   (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_style_token styleToken, drgui_rect rect, drgui_element* pElement, void* pPaintData);
+typedef void   (* drte_engine_on_cursor_move_proc)       (drte_engine* pEngine);
+typedef void   (* drte_engine_on_dirty_proc)             (drte_engine* pEngine, drgui_rect rect);
+typedef void   (* drte_engine_on_text_changed_proc)      (drte_engine* pEngine);
+typedef void   (* drte_engine_on_undo_point_changed_proc)(drte_engine* pEngine, unsigned int iUndoPoint);
+typedef size_t (* drte_engine_on_get_undo_state_proc)    (drte_engine* pEngine, void* pDataOut);
+typedef void   (* drte_engine_on_apply_undo_state_proc)  (drte_engine* pEngine, size_t dataSize, const void* pData);
 
 typedef struct
 {
@@ -160,6 +162,12 @@ typedef struct
 
     // The selection count.
     size_t selectionCount;
+
+    // The size of the application-defined data.
+    size_t userDataSize;
+
+    // A pointer to the application-defined data. This is malloc'd and free'd.
+    void* pUserData;
 
 } drte_engine_state;
 
@@ -259,6 +267,12 @@ struct drte_engine
 
     /// The function to call when the current undo point has changed.
     drte_engine_on_undo_point_changed_proc onUndoPointChanged;
+
+    // The function to call when application-defined data needs to be saved and restored for undo/redo points.
+    drte_engine_on_get_undo_state_proc onGetUndoState;
+
+    // The function to call when application-defined data needs to be applied for undo/redo points.
+    drte_engine_on_apply_undo_state_proc onApplyUndoState;
 
 
     /// The width of the container.
@@ -1314,6 +1328,7 @@ void drte_engine_delete(drte_engine* pEngine)
     free(pEngine->preparedState.text);
     free(pEngine->preparedState.pCursors);
     free(pEngine->preparedState.pSelections);
+    free(pEngine->preparedState.pUserData);
 
     free(pEngine->pSelections);
     free(pEngine->pCursors);
@@ -3456,6 +3471,7 @@ bool drte_engine_prepare_undo_point(drte_engine* pEngine)
         free(pEngine->preparedState.text);
         free(pEngine->preparedState.pCursors);
         free(pEngine->preparedState.pSelections);
+        free(pEngine->preparedState.pUserData);
     }
 
     pEngine->preparedState.text = (char*)malloc(pEngine->textLength + 1);
@@ -3468,6 +3484,19 @@ bool drte_engine_prepare_undo_point(drte_engine* pEngine)
     pEngine->preparedState.selectionCount = pEngine->selectionCount;
     pEngine->preparedState.pSelections = (drte_region*)malloc(pEngine->selectionCount * sizeof(drte_region));
     memcpy(pEngine->preparedState.pSelections, pEngine->pSelections, pEngine->selectionCount * sizeof(*pEngine->preparedState.pSelections));
+
+    if (pEngine->onGetUndoState) {
+        pEngine->preparedState.userDataSize = pEngine->onGetUndoState(pEngine, NULL);
+        pEngine->preparedState.pUserData = malloc(pEngine->preparedState.userDataSize);
+        if (pEngine->preparedState.pUserData != NULL) {
+            pEngine->onGetUndoState(pEngine, pEngine->preparedState.pUserData);
+            return false;
+        }
+    } else {
+        pEngine->preparedState.userDataSize = 0;
+        pEngine->preparedState.pUserData = NULL;
+    }
+    
 
     return true;
 }
@@ -3491,10 +3520,24 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
     currentState.cursorCount = pEngine->cursorCount;
     currentState.pSelections = pEngine->pSelections;
     currentState.selectionCount = pEngine->selectionCount;
+    currentState.userDataSize = 0;
+    currentState.pUserData = NULL;
 
     drte_engine_undo_state undoState;
     if (!drte_engine__diff_states(&pEngine->preparedState, &currentState, &undoState)) {
         return false;
+    }
+
+    if (pEngine->onGetUndoState) {
+        undoState.newState.userDataSize = pEngine->onGetUndoState(pEngine, NULL);
+        undoState.newState.pUserData = malloc(undoState.newState.userDataSize);
+        if (undoState.newState.pUserData != NULL) {
+            pEngine->onGetUndoState(pEngine, undoState.newState.pUserData);
+            return false;
+        }
+    } else {
+        undoState.newState.userDataSize = 0;
+        undoState.newState.pUserData = NULL;
     }
 
 
@@ -4510,6 +4553,13 @@ bool drte_engine__diff_states(drte_engine_state* pPrevState, drte_engine_state* 
     pUndoStateOut->oldState.pSelections = (drte_region*)malloc(pPrevState->selectionCount * sizeof(*pUndoStateOut->oldState.pSelections));
     memcpy(pUndoStateOut->oldState.pSelections, pPrevState->pSelections, pPrevState->selectionCount * sizeof(*pUndoStateOut->oldState.pSelections));
 
+    pUndoStateOut->oldState.userDataSize = pPrevState->userDataSize;
+    pUndoStateOut->oldState.pUserData = NULL;
+    if (pPrevState->userDataSize > 0 && pPrevState->pUserData != NULL) {
+        pUndoStateOut->oldState.pUserData = malloc(pPrevState->userDataSize);
+        memcpy(pUndoStateOut->oldState.pUserData, pPrevState->pUserData, pPrevState->userDataSize);
+    }
+
 
     size_t newTextLen = currLen - sameChCountStart - sameChCountEnd;
     pUndoStateOut->newText = (char*)malloc(newTextLen + 1);
@@ -4523,6 +4573,12 @@ bool drte_engine__diff_states(drte_engine_state* pPrevState, drte_engine_state* 
     pUndoStateOut->newState.pSelections = (drte_region*)malloc(pCurrentState->selectionCount * sizeof(*pUndoStateOut->newState.pSelections));
     memcpy(pUndoStateOut->newState.pSelections, pCurrentState->pSelections, pCurrentState->selectionCount * sizeof(*pUndoStateOut->newState.pSelections));
 
+    pUndoStateOut->newState.userDataSize = pCurrentState->userDataSize;
+    pUndoStateOut->newState.pUserData = NULL;
+    if (pPrevState->userDataSize > 0 && pCurrentState->pUserData != NULL) {
+        pUndoStateOut->newState.pUserData = malloc(pCurrentState->userDataSize);
+        memcpy(pUndoStateOut->newState.pUserData, pCurrentState->pUserData, pCurrentState->userDataSize);
+    }
 
     return true;
 }
@@ -4542,6 +4598,9 @@ void drte_engine__uninit_undo_state(drte_engine_undo_state* pUndoState)
     free(pUndoState->oldState.pSelections);
     pUndoState->oldState.pSelections = NULL;
 
+    free(pUndoState->oldState.pUserData);
+    pUndoState->oldState.pUserData = NULL;
+
 
     free(pUndoState->newText);
     pUndoState->newText = NULL;
@@ -4551,6 +4610,9 @@ void drte_engine__uninit_undo_state(drte_engine_undo_state* pUndoState)
 
     free(pUndoState->newState.pSelections);
     pUndoState->newState.pSelections = NULL;
+
+    free(pUndoState->newState.pUserData);
+    pUndoState->newState.pUserData = NULL;
 }
 
 void drte_engine__push_undo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState)
@@ -4588,15 +4650,6 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
     }
 
     // When undoing we want to remove the new text and replace it with the old text.
-#if 0
-    size_t bytesToRemove = iLastChPlus1 - iFirstCh;
-    if (bytesToRemove > 0)
-    {
-        memmove(pEngine->text + iFirstCh, pEngine->text + iLastChPlus1, pEngine->textLength - iLastChPlus1);
-        pEngine->textLength -= bytesToRemove;
-        pEngine->text[pEngine->textLength] = '\0';
-    }
-#endif
 
     // TODO: This needs improving because it results in multiple onTextChanged events being posted.
     drte_engine__begin_dirty(pEngine);
@@ -4649,6 +4702,12 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
         for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
             drte_engine__on_cursor_move(pEngine, iCursor);
         }
+
+
+        // Application-defined data.
+        if (pEngine->onApplyUndoState) {
+            pEngine->onApplyUndoState(pEngine, pUndoState->newState.userDataSize, pUndoState->newState.pUserData);
+        }
     }
     drte_engine__end_dirty(pEngine);
 }
@@ -4660,15 +4719,6 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
     }
 
     // An redo is just the opposite of an undo. We want to remove the old text and replace it with the new text.
-#if 0
-    size_t bytesToRemove = iLastChPlus1 - iFirstCh;
-    if (bytesToRemove > 0)
-    {
-        memmove(pEngine->text + iFirstCh, pEngine->text + iLastChPlus1, pEngine->textLength - iLastChPlus1);
-        pEngine->textLength -= bytesToRemove;
-        pEngine->text[pEngine->textLength] = '\0';
-    }
-#endif
 
     // TODO: This needs improving because it results in multiple onTextChanged events being posted.
     drte_engine__begin_dirty(pEngine);
@@ -4719,6 +4769,12 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
 
         for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
             drte_engine__on_cursor_move(pEngine, iCursor);
+        }
+
+
+        // Application-defined data.
+        if (pEngine->onApplyUndoState) {
+            pEngine->onApplyUndoState(pEngine, pUndoState->newState.userDataSize, pUndoState->newState.pUserData);
         }
     }
     drte_engine__end_dirty(pEngine);
