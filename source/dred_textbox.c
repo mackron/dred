@@ -1,4 +1,12 @@
 
+// A cursor in a textbox is tied to either 1 or 0 selection regions. When a cursor is not associated with a selection, the
+// index of the selection region is set to -1.
+typedef struct
+{
+    size_t iEngineCursor;        // <-- Always >= 0.
+    size_t iEngineSelection;     // <-- Set to -1 if the cursor is not associated with a selection.
+} dred_textbox_cursor;
+
 typedef struct
 {
     /// The text engine.
@@ -63,9 +71,15 @@ typedef struct
     // last line is sitting at the bottom.
     bool isExcessScrollingEnabled;
 
-    
     // Whether or not tabs to spaces is enabled.
     bool isTabsToSpacesEnabled;
+
+
+    // The number of active cursors.
+    size_t cursorCount;
+
+    // The buffer containing the active cursors.
+    dred_textbox_cursor* pCursors;
 
 
     /// When selecting lines by clicking and dragging on the line numbers, keeps track of the line to anchor the selection to.
@@ -124,22 +138,29 @@ void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox);
 
 
 /// on_paint_rect()
-void dred_textbox__on_text_engine_paint_rect(drte_engine* pLayout, drte_style_token styleToken, drgui_rect rect, dred_textbox* pTextBox, void* pPaintData);
+void dred_textbox_engine__on_paint_rect(drte_engine* pLayout, drte_style_token styleToken, drgui_rect rect, dred_textbox* pTextBox, void* pPaintData);
 
 /// on_paint_text()
-void dred_textbox__on_text_engine_paint_text(drte_engine* pTL, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, dred_textbox* pTextBox, void* pPaintData);
+void dred_textbox_engine__on_paint_text(drte_engine* pTL, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, dred_textbox* pTextBox, void* pPaintData);
 
 /// on_dirty()
-void dred_textbox__on_text_engine_dirty(drte_engine* pTL, drgui_rect rect);
+void dred_textbox_engine__on_dirty(drte_engine* pTL, drgui_rect rect);
 
 /// on_cursor_move()
-void dred_textbox__on_text_engine_cursor_move(drte_engine* pTL);
+void dred_textbox_engine__on_cursor_move(drte_engine* pTL);
 
 /// on_text_changed()
-void dred_textbox__on_text_engine_text_changed(drte_engine* pTL);
+void dred_textbox_engine__on_text_changed(drte_engine* pTL);
 
 /// on_undo_point_changed()
-void dred_textbox__on_text_engine_undo_point_changed(drte_engine* pTL, unsigned int iUndoPoint);
+void dred_textbox_engine__on_undo_point_changed(drte_engine* pTL, unsigned int iUndoPoint);
+
+// on_get_undo_state()
+size_t dred_textbox_engine__on_get_undo_state(drte_engine* pTL, void* pDataOut);
+
+// on_apply_undo_state()
+void dred_textbox_engine__on_apply_undo_state(drte_engine* pTL, size_t dataSize, const void* pData);
+
 
 // dred_textbox__refresh_horizontal_scrollbar_range_and_page_size()
 void dred_textbox__refresh_horizontal_scrollbar_range_and_page_size(dred_textbox* pTextBox);
@@ -220,11 +241,34 @@ void dred_textbox__clear_all_cursors(dred_textbox* pTextBox)
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
+    // Engine.
     drte_engine__begin_dirty(pTB->pTL);
     while (pTB->pTL->cursorCount > 1) {
         drte_engine_remove_cursor(pTB->pTL, pTB->pTL->cursorCount-2);
     }
     drte_engine__end_dirty(pTB->pTL);
+
+
+    // Local list.
+    if (pTB->cursorCount > 1) {
+        pTB->pCursors[0] = pTB->pCursors[pTB->cursorCount-1];
+        pTB->cursorCount = 1;
+    }
+}
+
+void dred_textbox__remove_cursor(dred_textbox* pTextBox, size_t iCursor)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(pTB != NULL);
+
+    // Remove from the engine.
+    drte_engine_remove_cursor(pTB->pTL, iCursor);
+
+    // Remove from the local list.
+    for (size_t i = iCursor; i < pTB->cursorCount-1; ++i) {
+        pTB->pCursors[i] = pTB->pCursors[i+1];
+    }
+    pTB->cursorCount -= 1;
 }
 
 void dred_textbox__insert_cursor(dred_textbox* pTextBox, size_t iChar)
@@ -242,11 +286,23 @@ void dred_textbox__insert_cursor(dred_textbox* pTextBox, size_t iChar)
         }
     }
 
+    size_t iEngineSelection = (size_t)-1;
     if (iExistingCursor != (size_t)-1) {
-        drte_engine_remove_cursor(pTB->pTL, iExistingCursor);
+        iEngineSelection = pTB->pCursors[iExistingCursor].iEngineSelection;
+        dred_textbox__remove_cursor(pTextBox, iExistingCursor);
     }
 
-    drte_engine_insert_cursor(pTB->pTL, iChar);
+    size_t iEngineCursor = drte_engine_insert_cursor(pTB->pTL, iChar);
+
+    dred_textbox_cursor* pNewCursors = (dred_textbox_cursor*)realloc(pTB->pCursors, (pTB->cursorCount+1) * sizeof(*pNewCursors));
+    if (pNewCursors == NULL) {
+        return;
+    }
+
+    pTB->pCursors = pNewCursors;
+    pTB->pCursors[pTB->cursorCount].iEngineSelection = iEngineSelection;
+    pTB->pCursors[pTB->cursorCount].iEngineCursor = iEngineCursor;
+    pTB->cursorCount += 1;
 }
 
 bool dred_textbox__get_cursor_selection(dred_textbox* pTextBox, size_t* iSelectionOut)
@@ -365,7 +421,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
         return NULL;
     }
 
-    drte_engine_insert_cursor(pTB->pTL, 0);
+    dred_textbox__insert_cursor(pTextBox, 0);
 
 
     pTB->pTL->onMeasureString = dred_textbox_engine__on_measure_string_proc;
@@ -419,12 +475,15 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drte_engine_set_line_numbers_style(pTB->pTL, (drte_style_token)&pTB->lineNumbersStyle);
 
 
-    drte_engine_set_on_paint_rect(pTB->pTL, dred_textbox__on_text_engine_paint_rect);
-    drte_engine_set_on_paint_text(pTB->pTL, dred_textbox__on_text_engine_paint_text);
-    drte_engine_set_on_dirty(pTB->pTL, dred_textbox__on_text_engine_dirty);
-    drte_engine_set_on_cursor_move(pTB->pTL, dred_textbox__on_text_engine_cursor_move);
-    drte_engine_set_on_text_changed(pTB->pTL, dred_textbox__on_text_engine_text_changed);
-    drte_engine_set_on_undo_point_changed(pTB->pTL, dred_textbox__on_text_engine_undo_point_changed);
+    drte_engine_set_on_paint_rect(pTB->pTL, dred_textbox_engine__on_paint_rect);
+    drte_engine_set_on_paint_text(pTB->pTL, dred_textbox_engine__on_paint_text);
+    drte_engine_set_on_dirty(pTB->pTL, dred_textbox_engine__on_dirty);
+    drte_engine_set_on_cursor_move(pTB->pTL, dred_textbox_engine__on_cursor_move);
+    drte_engine_set_on_text_changed(pTB->pTL, dred_textbox_engine__on_text_changed);
+    drte_engine_set_on_undo_point_changed(pTB->pTL, dred_textbox_engine__on_undo_point_changed);
+    pTB->pTL->onGetUndoState = dred_textbox_engine__on_get_undo_state;
+    pTB->pTL->onApplyUndoState = dred_textbox_engine__on_apply_undo_state;
+
     //drte_engine_set_default_text_color(pTB->pTL, drgui_rgb(0, 0, 0));
     //drte_engine_set_cursor_color(pTB->pTL, drgui_rgb(0, 0, 0));
     //drte_engine_set_default_bg_color(pTB->pTL, drgui_rgb(64, 64, 64));
@@ -1828,31 +1887,53 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
 
     drte_engine_prepare_undo_point(pTB->pTL);
     {
-        if (drte_engine_is_anything_selected(pTB->pTL)) {
-            dred_textbox_delete_selected_text_no_undo(pTextBox);
-        }
+        drte_engine__begin_dirty(pTB->pTL);
+        if (utf32 == '\t') {
+            // TODO: Loop over each cursor.
 
-        if (utf32 == '\t' && pTB->isTabsToSpacesEnabled) {
-            for (size_t iCursor = 0; iCursor < pTB->pTL->cursorCount; ++iCursor) {
-                size_t iCursorChar = pTB->pTL->pCursors[iCursor].iCharAbs;
 
-                // This can be optimized by inserting a string of spaces rather than individual characters.
-                size_t spaceCount = drte_engine_get_spaces_to_next_colum_from_cursor(pTB->pTL, iCursor);
-                for (size_t i = 0; i < spaceCount; ++i) {
-                    drte_engine_insert_character_at_cursor(pTB->pTL, iCursor, ' ');
-                }
+            bool isSelectionOverMultipleLines = false;
 
-                // Any cursor whose character position comes after this cursor needs to be moved.
-                for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
-                    if (iCursor2 != iCursor) {
-                        if (pTB->pTL->pCursors[iCursor2].iCharAbs > iCursorChar) {
-                            drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + spaceCount);
+            size_t iSelection;
+            bool isSomethingSelected = dred_textbox__get_cursor_selection(pTextBox, &iSelection);
+            if (isSomethingSelected) {
+                isSelectionOverMultipleLines = drte_engine_get_selection_first_line(pTB->pTL) != drte_engine_get_selection_last_line(pTB->pTL);
+            }
+
+            if (isSomethingSelected && !isSelectionOverMultipleLines) {
+                //drte_engine_delete_selection(pTB->pTL, iSelection);
+                drte_engine_cancel_selection(pTB->pTL, iSelection);
+                // TODO: Detach the selection from the cursor.
+            }
+
+            if (isSelectionOverMultipleLines) {
+                printf("Block Indent\n");
+            }
+
+            if (pTB->isTabsToSpacesEnabled) {
+                for (size_t iCursor = 0; iCursor < pTB->pTL->cursorCount; ++iCursor) {
+                    size_t iCursorChar = pTB->pTL->pCursors[iCursor].iCharAbs;
+
+                    // This can be optimized by inserting a string of spaces rather than individual characters.
+                    size_t spaceCount = drte_engine_get_spaces_to_next_colum_from_cursor(pTB->pTL, iCursor);
+                    for (size_t i = 0; i < spaceCount; ++i) {
+                        drte_engine_insert_character_at_cursor(pTB->pTL, iCursor, ' ');
+                    }
+
+                    // Any cursor whose character position comes after this cursor needs to be moved.
+                    for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
+                        if (iCursor2 != iCursor) {
+                            if (pTB->pTL->pCursors[iCursor2].iCharAbs > iCursorChar) {
+                                drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + spaceCount);
+                            }
                         }
                     }
                 }
             }
         } else {
-            drte_engine__begin_dirty(pTB->pTL);
+            if (drte_engine_is_anything_selected(pTB->pTL)) {
+                dred_textbox_delete_selected_text_no_undo(pTextBox);
+            }
 
             drte_engine_insert_character_at_cursors(pTB->pTL, utf32);
 
@@ -1914,14 +1995,14 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
                     }
                 }
             }
-            drte_engine__end_dirty(pTB->pTL);
         }
+        drte_engine__end_dirty(pTB->pTL);
     }
     drte_engine_commit_undo_point(pTB->pTL);
 }
 
 
-void dred_textbox__on_text_engine_paint_rect(drte_engine* pTL, drte_style_token styleToken, drgui_rect rect, dred_textbox* pTextBox, void* pPaintData)
+void dred_textbox_engine__on_paint_rect(drte_engine* pTL, drte_style_token styleToken, drgui_rect rect, dred_textbox* pTextBox, void* pPaintData)
 {
     (void)pTL;
 
@@ -1934,7 +2015,7 @@ void dred_textbox__on_text_engine_paint_rect(drte_engine* pTL, drte_style_token 
     drgui_draw_rect(pTextBox, drgui_offset_rect(rect, offsetX, offsetY), pStyle->bgColor, pPaintData);
 }
 
-void dred_textbox__on_text_engine_paint_text(drte_engine* pTL, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, dred_textbox* pTextBox, void* pPaintData)
+void dred_textbox_engine__on_paint_text(drte_engine* pTL, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, dred_textbox* pTextBox, void* pPaintData)
 {
     (void)pTL;
 
@@ -1948,7 +2029,7 @@ void dred_textbox__on_text_engine_paint_text(drte_engine* pTL, drte_style_token 
     drgui_draw_text(pTextBox, pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
 }
 
-void dred_textbox__on_text_engine_dirty(drte_engine* pTL, drgui_rect rect)
+void dred_textbox_engine__on_dirty(drte_engine* pTL, drgui_rect rect)
 {
     dred_textbox* pTextBox = (dred_textbox*)pTL->pUserData;
     if (pTextBox == NULL) {
@@ -1967,7 +2048,7 @@ void dred_textbox__on_text_engine_dirty(drte_engine* pTL, drgui_rect rect)
     drgui_dirty(pTextBox, drgui_offset_rect(rect, offsetX, offsetY));
 }
 
-void dred_textbox__on_text_engine_cursor_move(drte_engine* pTL)
+void dred_textbox_engine__on_cursor_move(drte_engine* pTL)
 {
     // If the cursor is off the edge of the container we want to scroll it into position.
     dred_textbox* pTextBox = (dred_textbox*)pTL->pUserData;
@@ -2010,7 +2091,7 @@ void dred_textbox__on_text_engine_cursor_move(drte_engine* pTL)
     }
 }
 
-void dred_textbox__on_text_engine_text_changed(drte_engine* pTL)
+void dred_textbox_engine__on_text_changed(drte_engine* pTL)
 {
     dred_textbox* pTextBox = (dred_textbox*)pTL->pUserData;
     if (pTextBox == NULL) {
@@ -2030,7 +2111,7 @@ void dred_textbox__on_text_engine_text_changed(drte_engine* pTL)
     drgui_dirty(pTB->pLineNumbers, drgui_get_local_rect(pTB->pLineNumbers));
 }
 
-void dred_textbox__on_text_engine_undo_point_changed(drte_engine* pTL, unsigned int iUndoPoint)
+void dred_textbox_engine__on_undo_point_changed(drte_engine* pTL, unsigned int iUndoPoint)
 {
     dred_textbox* pTextBox = (dred_textbox*)pTL->pUserData;
     if (pTextBox == NULL) {
@@ -2046,6 +2127,68 @@ void dred_textbox__on_text_engine_undo_point_changed(drte_engine* pTL, unsigned 
         pTB->onUndoPointChanged(pTextBox, iUndoPoint);
     }
 }
+
+size_t dred_textbox_engine__on_get_undo_state(drte_engine* pTL, void* pDataOut)
+{
+    //printf("Getting Undo State...\n");
+
+    dred_textbox* pTextBox = (dred_textbox*)pTL->pUserData;
+    if (pTextBox == NULL) {
+        return 0;
+    }
+
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return 0;
+    }
+
+    if (pDataOut != NULL) {
+        *((size_t*)pDataOut) = pTB->cursorCount;
+
+        dred_textbox_cursor* pCursorOut = (dred_textbox_cursor*)((uint8_t*)pDataOut + sizeof(pTB->cursorCount));
+        for (size_t i = 0; i < pTB->cursorCount; ++i) {
+            pCursorOut[i] = pTB->pCursors[i];
+        }
+    }
+
+    return sizeof(pTB->cursorCount) + (sizeof(*pTB->pCursors) * pTB->cursorCount);
+}
+
+void dred_textbox_engine__on_apply_undo_state(drte_engine* pTL, size_t dataSize, const void* pData)
+{
+    //printf("Applying Undo State...\n");
+
+    assert(pData != NULL);
+    (void)dataSize;
+
+    dred_textbox* pTextBox = (dred_textbox*)pTL->pUserData;
+    if (pTextBox == NULL) {
+        return;
+    }
+
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return;
+    }
+
+    
+    size_t cursorCount = *((const size_t*)pData);
+    const dred_textbox_cursor* pCursors = (const dred_textbox_cursor*)((const uint8_t*)pData + sizeof(pTB->cursorCount));
+
+    if (cursorCount > pTB->cursorCount) {
+        dred_textbox_cursor* pNewCursors = (dred_textbox_cursor*)realloc(pTB->pCursors, cursorCount * sizeof(*pTB->pCursors));
+        if (pNewCursors == NULL) {
+            return;
+        }
+
+        pTB->pCursors = pNewCursors;
+    }
+
+    memcpy(pTB->pCursors, pCursors, cursorCount * sizeof(*pTB->pCursors));
+    pTB->cursorCount = cursorCount;
+}
+
+
 
 
 void dred_textbox_on_paint(dred_textbox* pTextBox, drgui_rect relativeRect, void* pPaintData)

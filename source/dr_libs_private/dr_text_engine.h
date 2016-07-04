@@ -519,8 +519,8 @@ void drte_engine_hide_cursor(drte_engine* pEngine);
 /// Determines whether or not the cursor is visible.
 bool drte_engine_is_showing_cursor(drte_engine* pEngine);
 
-// Inserts a new cursor.
-void drte_engine_insert_cursor(drte_engine* pEngine, size_t iChar);
+// Inserts a new cursor. Returns the index of the new cursor.
+size_t drte_engine_insert_cursor(drte_engine* pEngine, size_t iChar);
 
 // Removes a cursor by it's index.
 void drte_engine_remove_cursor(drte_engine* pEngine, size_t cursorIndex);
@@ -2035,15 +2035,15 @@ bool drte_engine_is_showing_cursor(drte_engine* pEngine)
     return pEngine->isShowingCursor;
 }
 
-void drte_engine_insert_cursor(drte_engine* pEngine, size_t iChar)
+size_t drte_engine_insert_cursor(drte_engine* pEngine, size_t iChar)
 {
     if (pEngine == NULL) {
-        return;
+        return (size_t)-1;
     }
 
     drte_marker* pNewCursors = (drte_marker*)realloc(pEngine->pCursors, (pEngine->cursorCount+1) * sizeof(*pNewCursors));
     if (pNewCursors == NULL) {
-        return;
+        return (size_t)-1;
     }
 
     pEngine->pCursors = pNewCursors;
@@ -2051,9 +2051,12 @@ void drte_engine_insert_cursor(drte_engine* pEngine, size_t iChar)
     pEngine->pCursors[pEngine->cursorCount].absoluteSickyPosX = 0;
     pEngine->cursorCount += 1;
 
-    drte_engine_move_cursor_to_character(pEngine, pEngine->cursorCount-1, iChar);
+    drte_engine__begin_dirty(pEngine);
+        drte_engine_move_cursor_to_character(pEngine, pEngine->cursorCount-1, iChar);
+        drte_engine__repaint(pEngine);
+    drte_engine__end_dirty(pEngine);
 
-    drte_engine__repaint(pEngine);
+    return pEngine->cursorCount - 1;
 }
 
 void drte_engine_remove_cursor(drte_engine* pEngine, size_t cursorIndex)
@@ -3485,18 +3488,17 @@ bool drte_engine_prepare_undo_point(drte_engine* pEngine)
     pEngine->preparedState.pSelections = (drte_region*)malloc(pEngine->selectionCount * sizeof(drte_region));
     memcpy(pEngine->preparedState.pSelections, pEngine->pSelections, pEngine->selectionCount * sizeof(*pEngine->preparedState.pSelections));
 
+    pEngine->preparedState.userDataSize = 0;
+    pEngine->preparedState.pUserData = NULL;
     if (pEngine->onGetUndoState) {
         pEngine->preparedState.userDataSize = pEngine->onGetUndoState(pEngine, NULL);
-        pEngine->preparedState.pUserData = malloc(pEngine->preparedState.userDataSize);
-        if (pEngine->preparedState.pUserData != NULL) {
-            pEngine->onGetUndoState(pEngine, pEngine->preparedState.pUserData);
-            return false;
+        if (pEngine->preparedState.userDataSize > 0) {
+            pEngine->preparedState.pUserData = malloc(pEngine->preparedState.userDataSize);
+            if (pEngine->preparedState.pUserData != NULL) {
+                pEngine->onGetUndoState(pEngine, pEngine->preparedState.pUserData);
+            }
         }
-    } else {
-        pEngine->preparedState.userDataSize = 0;
-        pEngine->preparedState.pUserData = NULL;
     }
-    
 
     return true;
 }
@@ -3528,16 +3530,16 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
         return false;
     }
 
+    undoState.newState.userDataSize = 0;
+    undoState.newState.pUserData = NULL;
     if (pEngine->onGetUndoState) {
         undoState.newState.userDataSize = pEngine->onGetUndoState(pEngine, NULL);
-        undoState.newState.pUserData = malloc(undoState.newState.userDataSize);
-        if (undoState.newState.pUserData != NULL) {
-            pEngine->onGetUndoState(pEngine, undoState.newState.pUserData);
-            return false;
+        if (undoState.newState.userDataSize > 0) {
+            undoState.newState.pUserData = malloc(undoState.newState.userDataSize);
+            if (undoState.newState.pUserData != NULL) {
+                pEngine->onGetUndoState(pEngine, undoState.newState.pUserData);
+            }
         }
-    } else {
-        undoState.newState.userDataSize = 0;
-        undoState.newState.pUserData = NULL;
     }
 
 
@@ -4092,44 +4094,6 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
     return true;
 }
 
-
-
-#if 0
-void drte_engine__refresh(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    // TODO: DELETE THIS ENTIRE FUNCTION. RESIZE LINES AS TEXT IS INSERTED AND DELETED.
-
-    // All we are doing here is resizing the text bounds. This will be optimized later.
-    float maxLineWidth = 0;
-    size_t lineCount = 0;
-
-    drte_segment segment;
-    if (drte_engine__first_segment(pEngine, 0, &segment)) {
-        float currentLineWidth = 0;
-
-        do
-        {
-            if (pEngine->text[segment.iCharBeg] == '\n') {
-                if (maxLineWidth < currentLineWidth) {
-                    maxLineWidth = currentLineWidth;
-                }
-
-                lineCount += 1;
-                currentLineWidth = 0;
-            } else {
-                currentLineWidth += segment.width;
-            }
-        } while (drte_engine__next_segment(pEngine, &segment));
-    }
-
-    pEngine->textBoundsWidth  = maxLineWidth;
-    pEngine->textBoundsHeight = lineCount * drte_engine_get_line_height(pEngine);
-}
-#endif
 
 void drte_engine__repaint(drte_engine* pEngine)
 {
@@ -4706,7 +4670,7 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
 
         // Application-defined data.
         if (pEngine->onApplyUndoState) {
-            pEngine->onApplyUndoState(pEngine, pUndoState->newState.userDataSize, pUndoState->newState.pUserData);
+            pEngine->onApplyUndoState(pEngine, pUndoState->oldState.userDataSize, pUndoState->oldState.pUserData);
         }
     }
     drte_engine__end_dirty(pEngine);
