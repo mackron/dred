@@ -3710,9 +3710,10 @@ size_t drte_engine_get_line_first_character(drte_engine* pEngine, size_t iLine)
         return 0;
     }
 
-    // TODO: Accelerate this:
-    //return pEngine->pLines[iLine];
+    return pEngine->pLines[iLine];
 
+#if 0
+    // Brute force
     size_t i = 0;
     while (i < pEngine->textLength && iLine > 0) {
         if (pEngine->text[i] == '\n') {
@@ -3726,6 +3727,7 @@ size_t drte_engine_get_line_first_character(drte_engine* pEngine, size_t iLine)
     }
 
     return 0;
+#endif
 }
 
 size_t drte_engine_get_line_last_character(drte_engine* pEngine, size_t iLine)
