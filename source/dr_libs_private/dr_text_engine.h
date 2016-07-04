@@ -738,6 +738,11 @@ size_t drte_engine_get_line_count(drte_engine* pEngine);
 // Use this for controlling the page size for scrollbars.
 size_t drte_engine_get_visible_line_count(drte_engine* pEngine);
 
+// Retrieves the width of the visible lines.
+//
+// Use this for implementing horizontal scrollbars.
+float drte_engine_get_visible_line_width(drte_engine* pEngine);
+
 /// Retrieves the position of the line at the given index on the y axis.
 ///
 /// @remarks
@@ -3675,6 +3680,46 @@ size_t drte_engine_get_visible_line_count(drte_engine* pEngine)
     }
 
     return (size_t)(pEngine->containerHeight / drte_engine_get_line_height(pEngine)) + 1;
+}
+
+float drte_engine_get_visible_line_width(drte_engine* pEngine)
+{
+    size_t iLineTop;
+    size_t iLineBottom;
+    drte_engine_get_visible_lines(pEngine, &iLineTop, &iLineBottom);
+
+    float maxLineWidth = 0;
+
+    drte_segment segment;
+    if (drte_engine__first_segment_on_line(pEngine, iLineTop, &segment)) {
+        size_t iLine = iLineTop;
+        while (iLine <= iLineBottom) {
+            float lineWidth = 0;
+
+            do
+            {
+                lineWidth += segment.width;
+
+                if (pEngine->text[segment.iCharBeg] == '\n') {
+                    break;
+                }
+            } while (drte_engine__next_segment(pEngine, &segment));
+
+
+            if (maxLineWidth < lineWidth) {
+                maxLineWidth = lineWidth;
+            }
+            
+            // Go to the first segment of the next line.
+            if (!drte_engine__next_segment(pEngine, &segment)) {
+                break;
+            }
+
+            iLine += 1;
+        }
+    }
+
+    return maxLineWidth;
 }
 
 float drte_engine_get_line_pos_y(drte_engine* pEngine, size_t iLine)

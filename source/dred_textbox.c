@@ -141,6 +141,8 @@ void dred_textbox__on_text_engine_text_changed(drte_engine* pTL);
 /// on_undo_point_changed()
 void dred_textbox__on_text_engine_undo_point_changed(drte_engine* pTL, unsigned int iUndoPoint);
 
+// dred_textbox__refresh_horizontal_scrollbar_range_and_page_size()
+void dred_textbox__refresh_horizontal_scrollbar_range_and_page_size(dred_textbox* pTextBox);
 
 void dred_textbox__on_vscroll(drgui_element* pSBElement, int scrollPos)
 {
@@ -151,6 +153,7 @@ void dred_textbox__on_vscroll(drgui_element* pSBElement, int scrollPos)
     assert(pTB != NULL);
 
     drte_engine_set_inner_offset_y(pTB->pTL, -drte_engine_get_line_pos_y(pTB->pTL, scrollPos));
+    dred_textbox__refresh_horizontal_scrollbar_range_and_page_size(pTextBox);
 
     // The line numbers need to be redrawn.
     drgui_dirty(pTB->pLineNumbers, drgui_get_local_rect(pTB->pLineNumbers));
@@ -2163,6 +2166,17 @@ void dred_textbox__refresh_scrollbars(dred_textbox* pTextBox)
     dred_textbox__refresh_scrollbar_ranges(pTextBox);
 }
 
+void dred_textbox__refresh_horizontal_scrollbar_range_and_page_size(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(pTB != NULL);
+
+    float textWidth = drte_engine_get_visible_line_width(pTB->pTL);
+    float containerWidth;
+    drte_engine_get_container_size(pTB->pTL, &containerWidth, NULL);
+    drgui_sb_set_range_and_page_size(pTB->pHorzScrollbar, 0, (int)(textWidth + (containerWidth/2)), (int)containerWidth);
+}
+
 void dred_textbox__refresh_scrollbar_ranges(dred_textbox* pTextBox)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
@@ -2190,14 +2204,8 @@ void dred_textbox__refresh_scrollbar_ranges(dred_textbox* pTextBox)
     }
 
 
-    // TODO: Fix the horizontal scrollbar
-#if 0
     // The horizontal scrollbar is a per-pixel scrollbar, and is based on the width of the text versus the width of the container.
-    drgui_rect textRect = drte_engine_get_text_rect_relative_to_bounds(pTB->pTL);
-    float containerWidth;
-    drte_engine_get_container_size(pTB->pTL, &containerWidth, NULL);
-    drgui_sb_set_range_and_page_size(pTB->pHorzScrollbar, 0, (int)(textRect.right - textRect.left + (containerWidth/2)), (int)containerWidth);
-#endif
+    dred_textbox__refresh_horizontal_scrollbar_range_and_page_size(pTextBox);
 
     if (drgui_sb_is_thumb_visible(pTB->pHorzScrollbar)) {
         if (!drgui_is_visible(pTB->pHorzScrollbar)) {
