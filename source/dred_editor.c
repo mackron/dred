@@ -4,6 +4,7 @@ typedef struct
 {
     char filePathAbsolute[DRED_MAX_PATH];
     dred_editor_on_save_proc onSave;
+    dred_editor_on_reload_proc onReload;
     dred_editor_on_modified_proc onModified;
     dred_editor_on_unmodified_proc onUnmodified;
     bool isModified;
@@ -153,6 +154,25 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
     }
 }
 
+bool dred_editor_reload(dred_editor* pEditor)
+{
+    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    if (data == NULL) {
+        return false;
+    }
+
+    if (data->onReload == NULL) {
+        return false;
+    }
+
+    const char* fileName = dred_editor_get_file_path(pEditor);
+    if (fileName == NULL || fileName[0] == '\0') {
+        return false;
+    }
+
+    return data->onReload(pEditor);
+}
+
 
 void dred_editor_mark_as_modified(dred_editor* pEditor)
 {
@@ -219,6 +239,16 @@ void dred_editor_set_on_save(dred_editor* pEditor, dred_editor_on_save_proc proc
     }
 
     data->onSave = proc;
+}
+
+void dred_editor_set_on_reload(dred_editor* pEditor, dred_editor_on_reload_proc proc)
+{
+    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    data->onReload = proc;
 }
 
 void dred_editor_set_on_modified(dred_editor* pEditor, dred_editor_on_modified_proc proc)

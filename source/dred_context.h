@@ -227,6 +227,10 @@ void dred_delete_editor_by_type(dred_editor* pEditor);
 bool dred_are_any_open_files_modified(dred_context* pDred);
 
 
+// Reloads the focused file.
+bool dred_reload_focused_file(dred_context* pDred);
+
+
 // Show the Open File dialog.
 void dred_show_open_file_dialog(dred_context* pDred);
 

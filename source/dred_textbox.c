@@ -252,6 +252,7 @@ void dred_textbox__clear_all_cursors(dred_textbox* pTextBox)
     // Local list.
     if (pTB->cursorCount > 1) {
         pTB->pCursors[0] = pTB->pCursors[pTB->cursorCount-1];
+        pTB->pCursors[0].iEngineSelection = (size_t)-1;
         pTB->cursorCount = 1;
     }
 }
@@ -870,11 +871,24 @@ void dred_textbox_set_text(dred_textbox* pTextBox, const char* text)
         return;
     }
 
+
+    // The cursors and selection regions need to be cancelled here to ensure they don't reference invalid regions due to a
+    // change in text. This should not have any major usability issues, but it can be tweaked if need be.
+    dred_textbox__clear_all_cursors(pTextBox);
+    drte_engine_deselect_all(pTB->pTL);    
+    size_t iCursorChar = drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+
+
+    // Set the text.
     drte_engine_prepare_undo_point(pTB->pTL);
     {
         drte_engine_set_text(pTB->pTL, text);
     }
     drte_engine_commit_undo_point(pTB->pTL);
+
+
+    // Restore cursors.
+    drte_engine_move_cursor_to_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iCursorChar);
 }
 
 size_t dred_textbox_get_text(dred_textbox* pTextBox, char* pTextOut, size_t textOutSize)

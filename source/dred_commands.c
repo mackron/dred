@@ -300,6 +300,13 @@ bool dred_command__settings(dred_context* pDred, const char* value)
     return true;
 }
 
+bool dred_command__reload(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_reload_focused_file(pDred);
+    return true;
+}
+
 
 bool dred_command__undo(dred_context* pDred, const char* value)
 {

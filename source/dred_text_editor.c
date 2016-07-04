@@ -169,6 +169,31 @@ bool dred_text_editor__on_save(dred_text_editor* pTextEditor, dred_file file, co
     return result;
 }
 
+bool dred_text_editor__on_reload(dred_text_editor* pTextEditor)
+{
+    dred_textbox* pTextBox = dred_text_editor__get_textbox(pTextEditor);
+    if (pTextBox == NULL) {
+        return false;
+    }
+
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    assert(data != NULL);
+
+    char* pFileData = dr_open_and_read_text_file(dred_editor_get_file_path(pTextEditor), NULL);
+    if (pFileData == NULL) {
+        return false;
+    }
+
+    dred_textbox_set_text(data->pTextBox, pFileData);
+    dr_free_file_data(pFileData);
+
+    // After reloading we need to update the base undo point and unmark the file as modified.
+    data->iBaseUndoPoint = dred_textbox_get_undo_points_remaining_count(pTextBox);
+    dred_editor_unmark_as_modified(pTextEditor);
+
+    return true;
+}
+
 dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pParent, const char* filePathAbsolute)
 {
     dred_text_editor* pTextEditor = dred_editor_create(pDred, pParent, DRED_CONTROL_TYPE_TEXT_EDITOR, filePathAbsolute, sizeof(dred_text_editor_data));
@@ -204,13 +229,11 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     }
 
 
-    
-
-
     // Events.
     dred_control_set_on_size(pTextEditor, dred_text_editor__on_size);
     dred_control_set_on_capture_keyboard(pTextEditor, dred_text_editor__on_capture_keyboard);
     dred_editor_set_on_save(pTextEditor, dred_text_editor__on_save);
+    dred_editor_set_on_reload(pTextEditor, dred_text_editor__on_reload);
     dred_control_set_on_mouse_button_up(data->pTextBox, dred_text_editor_textbox__on_mouse_button_up);
     dred_control_set_on_mouse_wheel(data->pTextBox, dred_text_editor_textbox__on_mouse_wheel);
     dred_control_set_on_key_down(data->pTextBox, dred_text_editor_textbox__on_key_down);

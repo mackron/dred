@@ -296,6 +296,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_REPLACE,    dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "cmdbar replace-all ");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_NEXT_TAB,   dred_shortcut_create_single(dred_accelerator_create('\t', DRED_KEY_STATE_CTRL_DOWN)), "next-tab");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_PREV_TAB,   dred_shortcut_create_single(dred_accelerator_create('\t', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "prev-tab");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_NEXT_TAB,   dred_shortcut_create_single(dred_accelerator_create(DRGUI_F5, 0)), "reload");
 
 
     // Before loading configs we want to make sure any stock themes and settings are present.
@@ -1260,6 +1261,17 @@ bool dred_are_any_open_files_modified(dred_context* pDred)
     }
 
     return false;
+}
+
+
+bool dred_reload_focused_file(dred_context* pDred)
+{
+    dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
+    if (pFocusedEditor == NULL) {
+        return false;
+    }
+
+    return dred_editor_reload(pFocusedEditor);
 }
 
 
