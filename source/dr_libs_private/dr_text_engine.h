@@ -32,8 +32,6 @@
 // - Word wrap
 
 // PAST ISSUES
-// - Selection mode became as issue where it would often get "stuck" due to incorrectly enabling/disabling selection mode. Might want
-//   to look into a more robust solution that avoids this problem at a fundamental level. That state flags in mouse events helps a lot.
 
 
 // BRAINSTORMING
@@ -1647,14 +1645,11 @@ void drte_engine_get_character_position(drte_engine* pEngine, size_t characterIn
     if (pPosYOut) *pPosYOut = posY;
 }
 
-size_t drte_engine_get_character_by_point(drte_engine* pEngine, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer)
+size_t drte_engine_get_character_by_point(drte_engine* pEngine, float inputPosXRelativeToText, float inputPosYRelativeToText)
 {
     if (pEngine == NULL) {
         return 0;
     }
-
-    float inputPosXRelativeToText = inputPosXRelativeToContainer - pEngine->innerOffsetX;
-    float inputPosYRelativeToText = inputPosYRelativeToContainer - pEngine->innerOffsetY;
 
     size_t iLine = drte_engine_get_line_at_pos_y(pEngine, inputPosYRelativeToText);
     size_t iChar = 0;
