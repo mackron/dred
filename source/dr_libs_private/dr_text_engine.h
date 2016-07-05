@@ -600,8 +600,11 @@ size_t drte_engine_move_cursor_to_start_of_next_word(drte_engine* pEngine, size_
 // Moves the cursor to the start of the current word.
 size_t drte_engine_move_cursor_to_start_of_word(drte_engine* pEngine, size_t cursorIndex);
 
+// Retrieves the number of characters between the given character index and the next tab column.
+size_t drte_engine_get_spaces_to_next_column_from_character(drte_engine* pEngine, size_t iChar);
+
 /// Retrieves the number of characters between the cursor and the next tab column.
-size_t drte_engine_get_spaces_to_next_colum_from_cursor(drte_engine* pEngine, size_t cursorIndex);
+size_t drte_engine_get_spaces_to_next_column_from_cursor(drte_engine* pEngine, size_t cursorIndex);
 
 /// Determines whether or not the cursor is sitting at the start of the selection.
 bool drte_engine_is_cursor_at_start_of_selection(drte_engine* pEngine, size_t cursorIndex);
@@ -616,7 +619,7 @@ void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_
 /// Inserts a character into the given text engine.
 ///
 /// @return True if the text within the text engine has changed.
-bool drte_engine_insert_character(drte_engine* pEngine, uint32_t utf32, size_t insertIndex);
+bool drte_engine_insert_character(drte_engine* pEngine, size_t insertIndex, uint32_t utf32);
 
 // Deletes the character at the given index. Returns true if the text was changed.
 bool drte_engine_delete_character(drte_engine* pEngine, size_t iChar);
@@ -2525,21 +2528,35 @@ size_t drte_engine_move_cursor_to_start_of_word(drte_engine* pEngine, size_t cur
     return iChar;
 }
 
-size_t drte_engine_get_spaces_to_next_colum_from_cursor(drte_engine* pEngine, size_t cursorIndex)
+size_t drte_engine_get_spaces_to_next_column_from_character(drte_engine* pEngine, size_t iChar)
 {
-    if (pEngine == NULL || pEngine->text == NULL || pEngine->cursorCount <= cursorIndex) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return 0;
     }
+
+    if (iChar > pEngine->textLength) {
+        iChar = pEngine->textLength;
+    }
+
 
     const float tabWidth = drte_engine__get_tab_width(pEngine);
 
     float posX;
     float posY;
-    drte_engine_get_cursor_position(pEngine, cursorIndex, &posX, &posY);
+    drte_engine_get_character_position(pEngine, iChar, &posX, &posY);
 
     float tabColPosX = (posX + tabWidth) - ((size_t)posX % (size_t)tabWidth);
 
     return (size_t)(tabColPosX - posX) / pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
+}
+
+size_t drte_engine_get_spaces_to_next_column_from_cursor(drte_engine* pEngine, size_t cursorIndex)
+{
+    if (pEngine == NULL || pEngine->text == NULL || pEngine->cursorCount <= cursorIndex) {
+        return 0;
+    }
+
+    return drte_engine_get_spaces_to_next_column_from_character(pEngine, drte_engine_get_cursor_character(pEngine, cursorIndex));
 }
 
 bool drte_engine_is_cursor_at_start_of_selection(drte_engine* pEngine, size_t cursorIndex)
@@ -2571,7 +2588,7 @@ void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_
     pEngine->onCursorMove = proc;
 }
 
-bool drte_engine_insert_character(drte_engine* pEngine, uint32_t utf32, size_t insertIndex)
+bool drte_engine_insert_character(drte_engine* pEngine, size_t insertIndex, uint32_t utf32)
 {
     // Transform '\r' to '\n'. Should this be done at a higher level, but the application?
     if (utf32 == '\r') {
@@ -2789,7 +2806,7 @@ bool drte_engine_insert_character_at_cursor(drte_engine* pEngine, size_t cursorI
 
     drte_engine__begin_dirty(pEngine);
     {
-        drte_engine_insert_character(pEngine, character, pEngine->pCursors[cursorIndex].iCharAbs);
+        drte_engine_insert_character(pEngine, pEngine->pCursors[cursorIndex].iCharAbs, character);
         drte_engine__move_marker_to_character(pEngine, &pEngine->pCursors[cursorIndex], pEngine->pCursors[cursorIndex].iCharAbs + 1);
     }
     drte_engine__end_dirty(pEngine);

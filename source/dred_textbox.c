@@ -378,7 +378,7 @@ bool dred_textbox__move_cursor_to_end_of_selection(dred_textbox* pTextBox, size_
     return false;
 }
 
-bool dred_textbox__insert_tab_at_cursor(dred_textbox* pTextBox, size_t iCursor)
+bool dred_textbox__insert_tab(dred_textbox* pTextBox, size_t iChar)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
@@ -388,42 +388,50 @@ bool dred_textbox__insert_tab_at_cursor(dred_textbox* pTextBox, size_t iCursor)
 
     drte_engine__begin_dirty(pTB->pTL);
 
-    size_t iCursorChar = pTB->pTL->pCursors[iCursor].iCharAbs;
-    
     bool wasTextChanged = false;
     size_t insertedCharacterCount;
     if (pDred->config.textEditorTabsToSpacesEnabled) {
-        insertedCharacterCount = drte_engine_get_spaces_to_next_colum_from_cursor(pTB->pTL, iCursor);
+        insertedCharacterCount = drte_engine_get_spaces_to_next_column_from_character(pTB->pTL, iChar);
         for (size_t i = 0; i < insertedCharacterCount; ++i) {
-            wasTextChanged = drte_engine_insert_character_at_cursor(pTB->pTL, iCursor, ' ') || wasTextChanged;
+            wasTextChanged = drte_engine_insert_character(pTB->pTL, iChar, ' ') || wasTextChanged;
         }
     } else {
         insertedCharacterCount = 1;
-        wasTextChanged = drte_engine_insert_character_at_cursor(pTB->pTL, iCursor, '\t') || wasTextChanged;
+        wasTextChanged = drte_engine_insert_character(pTB->pTL, iChar, '\t') || wasTextChanged;
     }
 
     
     // Any cursor whose character position comes after this cursor needs to be moved.
     for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
-        if (iCursor2 != iCursor) {
-            if (pTB->pTL->pCursors[iCursor2].iCharAbs > iCursorChar) {
-                drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
-            }
+        if (pTB->pTL->pCursors[iCursor2].iCharAbs >= iChar) {
+            drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
         }
     }
 
     // As with cursors, selections need to be updated too.
     for (size_t iSelection = 0; iSelection < pTB->pTL->selectionCount; ++iSelection) {
         drte_region selection = drte_region_normalize(pTB->pTL->pSelections[iSelection]);
-        if (selection.iCharBeg > iCursorChar) {
+        if (selection.iCharBeg > iChar) {
             pTB->pTL->pSelections[iSelection].iCharBeg += insertedCharacterCount;
             pTB->pTL->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+        } else {
+            if (selection.iCharEnd > iChar) {
+                pTB->pTL->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+            }
         }
     }
 
 
     drte_engine__end_dirty(pTB->pTL);
     return wasTextChanged;
+}
+
+bool dred_textbox__insert_tab_at_cursor(dred_textbox* pTextBox, size_t iCursor)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(pTB != NULL);
+
+    return dred_textbox__insert_tab(pTextBox, pTB->pTL->pCursors[iCursor].iCharAbs);
 }
 
 
@@ -1970,6 +1978,13 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
 
                 if (isDoingBlockIndent) {
                     printf("Block indent...\n");
+                    // A block indent is done by simply inserting a tab at the beginning of each selected line.
+                    size_t iLineBeg = drte_engine_get_selection_first_line(pTB->pTL, iSelection);
+                    size_t iLineEnd = drte_engine_get_selection_last_line(pTB->pTL, iSelection);
+
+                    for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
+                        dred_textbox__insert_tab(pTextBox, drte_engine_get_line_first_character(pTB->pTL, iLine));
+                    }
                 } else {
                     // We're not doing a block indent so we just insert a tab at the cursor like normal.
                     if (isSomethingSelected) {
