@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>dred - Fast, lightweight tools for programmers and game developers.</title>
-    <meta name="description" content="dred is a fast, lightweight text editor.">
+    <title>dred - A fast, lightweight, cross-platform text editor.</title>
+    <meta name="description" content="dred is a fast, lightweight cross-platform text editor.">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
     <style>
@@ -64,9 +64,10 @@
         }
         .feature-header2 {
             color:#666666;
-            font-size: 40px;
+            font-size: 2em;
             font-weight:bold;
-            margin-bottom:1em;
+            /*margin-bottom:1em;*/
+            line-height: 1em;
         }
     </style>
 </head>
@@ -74,7 +75,7 @@
 <body style="margin:0; padding:0">
     <div style="border-bottom:solid 1px #333; text-align:center; padding:64px; background-color:#eee;">
         <div><img src="img/logo1_large.png" style="width:auto; height:auto; min-height:70px;"></div>
-        <div style="padding:16px; color:#333; font-size:14pt;">A fast, lightweight text editor.</div>
+        <div style="padding:16px; color:#333; font-size:14pt;">A fast, lightweight, cross-platform text editor.</div>
         <div style="margin-top:32px;">
             <a class="a-download" href="#">Free Download</a>
         </div>
@@ -82,16 +83,45 @@
     
     <div style="margin:0 auto; text-align:center; margin-top:3em; border-bottom:solid 1px #000">
         <div class="feature-header2">Fast and lightweight</div>
-        <table style="margin:0 auto; border-collapse:collapse; width:75%; margin-top:2em; margin-bottom:2em">
+        <table style="margin:0 auto; border-collapse:collapse; width:66%; margin-top:1em; margin-bottom:2em;">
             <tr>
-                <td>
+                <td style="vertical-align:top; text-align:left;">
                     <img src="img/light-weight-1.png">
                 </td>
-                <td style="padding:0 1em; vertical-align:top; text-align:left;">
-                    <ul style="padding:0; margin:0;">
+                <td style="width:100%; padding:0 1em; vertical-align:top; text-align:left;">
+                    <ul style="padding:0 1em; margin:0;">
                         <li>dred is built as a single executable. Nothing more. Just drop it in and run.</li>
-                        <li>dred is small - it's executable is less than a megabyte and it uses less memory than most other popular text editors.</li>
+                        <li>dred is small. It's executable is less than a megabyte and it uses less memory than most other popular text editors.</li>
                         <li>dred is fast, with virtually instant loading. Stop wasting time waiting for things to load and increase productivity.</li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+        <div class="feature-header2" style="padding-top:0em">Multi-edit and multi-select</div>
+        <table style="margin:0 auto; border-collapse:collapse; width:66%; margin-top:1em; margin-bottom:2em">
+            <tr>
+                <td style="vertical-align:top; text-align:left;">
+                    <img src="img/multiedit-1.gif">
+                </td>
+                <td style="width:100%; padding:0 1em; vertical-align:top; text-align:left;">
+                    <ul style="padding:0 1em; margin:0;">
+                        <li>Stop making the same change many times - just do it all in one go.</li>
+                        <li>Just hold down CTRL and select text as you normally would. Easy and intuitive.</li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+        <div class="feature-header2" style="padding-top:0em">Customizable</div>
+        <table style="margin:0 auto; border-collapse:collapse; width:66%; margin-top:1em; margin-bottom:2em">
+            <tr>
+                <td style="vertical-align:top; text-align:left;">
+                    <img src="img/theme-1.gif">
+                </td>
+                <td style="width:100%; padding:0 1em; vertical-align:top; text-align:left;">
+                    <ul style="padding:0 1em; margin:0;">
+                        <li>dred has a simple but powerful configuration system which allows you to change most settings. More settings are being added all the time!.</li>
+                        <li>Loading dred from a directory with a .dred file will automatically load the config file.</li>
+                        <li>Config files can be loaded at run time with the "load-config" command.</li>
                     </ul>
                 </td>
             </tr>
@@ -124,7 +154,7 @@
             <li>&middot;</li>
             <li><a href="#">Issues</a></li>
         </ul>
-        Developed by David Reid - <a href="mailto:mackron@gmail.com">mackron@gmail.com</a>
+        Developed by David Reid - <a href="mailto:davidreidsoftware@gmail.com">davidreidsoftware@gmail.com</a>
     </div>
 
     <!-- Call me curious... -->
