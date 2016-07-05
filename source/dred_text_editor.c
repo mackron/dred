@@ -122,6 +122,25 @@ void dred_text_editor_textbox__on_cursor_move(dred_textbox* pTextBox)
     dred_update_info_bar(dred_control_get_context(pTextEditor), pTextEditor);
 }
 
+void dred_text_editor_textbox__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement)
+{
+    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
+    if (pTextEditor == NULL) {
+        return;
+    }
+
+    dred_context* pDred = dred_control_get_context(pTextBox);
+    assert(pDred != NULL);
+
+    if (pDred->config.enableAutoReload) {
+        dred_editor_check_if_dirty_and_reload(pTextEditor);
+    }
+
+    // Fall through to the text boxes normal capture_keyboard event handler...
+    dred_textbox_on_capture_keyboard(pTextBox, pPrevCapturedElement);
+}
+
+
 void dred_text_editor_textbox__on_undo_point_changed(dred_textbox* pTextBox, unsigned int iUndoPoint)
 {
     dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
@@ -237,6 +256,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_control_set_on_mouse_button_up(data->pTextBox, dred_text_editor_textbox__on_mouse_button_up);
     dred_control_set_on_mouse_wheel(data->pTextBox, dred_text_editor_textbox__on_mouse_wheel);
     dred_control_set_on_key_down(data->pTextBox, dred_text_editor_textbox__on_key_down);
+    dred_control_set_on_capture_keyboard(data->pTextBox, dred_text_editor_textbox__on_capture_keyboard);
     dred_textbox_set_on_cursor_move(data->pTextBox, dred_text_editor_textbox__on_cursor_move);
     dred_textbox_set_on_undo_point_changed(data->pTextBox, dred_text_editor_textbox__on_undo_point_changed);
 

@@ -303,7 +303,7 @@ bool dred_command__settings(dred_context* pDred, const char* value)
 bool dred_command__reload(dred_context* pDred, const char* value)
 {
     (void)value;
-    dred_reload_focused_file(pDred);
+    dred_check_if_focused_file_is_dirty_and_reload(pDred);
     return true;
 }
 

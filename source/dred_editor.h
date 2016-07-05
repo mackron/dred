@@ -40,6 +40,9 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath);
 // Reloads the given editor.
 bool dred_editor_reload(dred_editor* pEditor);
 
+// Checks if the file tied to the given editor is dirty and reloads it if so.
+bool dred_editor_check_if_dirty_and_reload(dred_editor* pEditor);
+
 
 // Marks the editor as modified.
 void dred_editor_mark_as_modified(dred_editor* pEditor);

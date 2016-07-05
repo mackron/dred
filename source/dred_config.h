@@ -13,6 +13,9 @@
 // auto-hide-cmd-bar autoHideCmdBar bool dred_config_on_set__auto_hide_cmd_bar false
 //   Whether or not to show the command bar at all times. If this is set to false it will be shown only when it has keyboard focus.
 //
+// enable-auto-reload enableAutoReload bool dred_config_on_set__enable_auto_reload true
+//   Whether or not dirty files will automatically be reloaded. When disabled, reloading requires manual reloading via the "reload" command.
+//
 //
 // window-width windowWidth int none 1280
 //   The width of the window
@@ -235,6 +238,9 @@ void dred_config_on_set__show_menu_bar(dred_context* pDred);
 
 // auto-hide-cmd-bar
 void dred_config_on_set__auto_hide_cmd_bar(dred_context* pDred);
+
+// enable-auto-reload
+void dred_config_on_set__enable_auto_reload(dred_context* pDred);
 
 
 // cmdbar-bg-color

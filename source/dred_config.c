@@ -298,6 +298,11 @@ void dred_config_on_set__auto_hide_cmd_bar(dred_context* pDred)
     }
 }
 
+void dred_config_on_set__enable_auto_reload(dred_context* pDred)
+{
+    (void)pDred;
+}
+
 
 void dred_config_on_set__cmdbar_bg_color(dred_context* pDred)
 {

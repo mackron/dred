@@ -182,6 +182,21 @@ bool dred_editor_reload(dred_editor* pEditor)
     return true;
 }
 
+bool dred_editor_check_if_dirty_and_reload(dred_editor* pEditor)
+{
+    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    if (data == NULL) {
+        return false;
+    }
+
+    if (data->fileLastModifiedTime >= dr_get_file_modified_time(dred_editor_get_file_path(pEditor))) {
+        return false;   // Not modified.
+    }
+
+    // It's dirty. Try reloading.
+    return dred_editor_reload(pEditor);
+}
+
 
 void dred_editor_mark_as_modified(dred_editor* pEditor)
 {

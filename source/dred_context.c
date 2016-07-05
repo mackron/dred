@@ -1274,6 +1274,16 @@ bool dred_reload_focused_file(dred_context* pDred)
     return dred_editor_reload(pFocusedEditor);
 }
 
+bool dred_check_if_focused_file_is_dirty_and_reload(dred_context* pDred)
+{
+    dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
+    if (pFocusedEditor == NULL) {
+        return false;
+    }
+
+    return dred_editor_check_if_dirty_and_reload(pFocusedEditor);
+}
+
 
 void dred_show_open_file_dialog(dred_context* pDred)
 {
