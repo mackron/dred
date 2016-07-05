@@ -70,6 +70,7 @@
 
 #define DR_GUI_IMPLEMENTATION
 #define DR_GUI_INCLUDE_WIP
+#define DRGUI_NO_TEXT_EDITING
 #define DR_2D_IMPLEMENTATION
 #include "../../dr_libs/dr_gui.h"
 
