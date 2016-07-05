@@ -58,16 +58,17 @@
         }
         
         .feature-header {
-            color:#666666;
-            font-size: 20px;
+            color:#aaa;
+            font-size: 2.0em;
             font-weight:bold;
         }
         .feature-header2 {
-            color:#666666;
-            font-size: 2em;
+            color:#444;
+            font-size: 1.5em;
             font-weight:bold;
             /*margin-bottom:1em;*/
             line-height: 1em;
+            text-align:left;
         }
     </style>
 </head>
@@ -81,74 +82,129 @@
         </div>
     </div>
     
-    <div style="margin:0 auto; text-align:center; margin-top:3em; border-bottom:solid 1px #000">
-        <div class="feature-header2">Fast and lightweight</div>
-        <table style="margin:0 auto; border-collapse:collapse; width:66%; margin-top:1em; margin-bottom:2em;">
+    <div style="margin:0 auto; text-align:center; margin-top:3em;">
+        <table style="margin:0 auto; border-collapse:collapse; width:75%; margin-top:1em; margin-bottom:2em;">
             <tr>
-                <td style="vertical-align:top; text-align:left;">
-                    <img src="img/light-weight-1.png">
+                <td style="vertical-align:top;">
+                    <div class="feature-header2">Fast and lightweight</div>
+                    <table style="margin:0 auto; border-collapse:collapse; width:100%; margin-top:1em; margin-bottom:2em;">
+                        <tr>
+                            <td style="vertical-align:top; text-align:left;">
+                                <img src="img/light-weight-1.png">
+                            </td>
+                            <td style="width:100%; padding:0 1em; vertical-align:top; text-align:left;">
+                                <ul style="padding:0 1em; margin:0;">
+                                    <li>dred is built as a single executable. Nothing more. Just drop it in and run.</li>
+                                    <li>dred's executable is less than a megabyte and it uses less memory than most other popular text editors.</li>
+                                    <li>dred is fast, with virtually instant loading. Stop wasting time waiting for things to load!</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
-                <td style="width:100%; padding:0 1em; vertical-align:top; text-align:left;">
-                    <ul style="padding:0 1em; margin:0;">
-                        <li>dred is built as a single executable. Nothing more. Just drop it in and run.</li>
-                        <li>dred is small. It's executable is less than a megabyte and it uses less memory than most other popular text editors.</li>
-                        <li>dred is fast, with virtually instant loading. Stop wasting time waiting for things to load and increase productivity.</li>
-                    </ul>
+                
+                <td style="vertical-align:top; padding-left:1em">
+                    <div class="feature-header2" style="padding-top:0em">Multi-edit and multi-select</div>
+                    <table style="margin:0 auto; border-collapse:collapse; width:100%; margin-top:1em; margin-bottom:2em">
+                        <tr>
+                            <td style="vertical-align:top; text-align:left;">
+                                <img src="img/multiedit-1.gif">
+                            </td>
+                            <td style="width:100%; padding:0 1em; vertical-align:top; text-align:left;">
+                                <ul style="padding:0 1em; margin:0;">
+                                    <li>Stop making the same change many times - just do it all in one go.</li>
+                                    <li>Just hold down CTRL and select text as you normally would. Easy and intuitive.</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            
+            <tr>
+                <td style="vertical-align:top; padding-top:3em">
+                    <div class="feature-header2" style="padding-top:0em">Customizable</div>
+                    <table style="margin:0 auto; border-collapse:collapse; width:100%; margin-top:1em; margin-bottom:2em">
+                        <tr>
+                            <td style="vertical-align:top; text-align:left;">
+                                <img src="img/theme-1.gif">
+                            </td>
+                            <td style="width:100%; padding:0 1em; vertical-align:top; text-align:left;">
+                                <ul style="padding:0 1em; margin:0;">
+                                    <li>dred has a simple but powerful configuration system. More settings are being added all the time!</li>
+                                    <li>Loading dred from a directory with a .dred file will automatically load the config file.</li>
+                                    <li>Config files can be loaded at run time with the "load-config" command.</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            
+                <td style="vertical-align:top; padding-top:3em; padding-left:1em">
+                    <div class="feature-header2" style="padding-top:0em">Powerful command bar</div>
+                    <table style="margin:0 auto; border-collapse:collapse; width:100%; margin-top:1em; margin-bottom:2em">
+                        <tr>
+                            <td style="vertical-align:top; text-align:left;">
+                                <img src="img/cmdbar-1.gif">
+                            </td>
+                            <td style="width:100%; padding:0 1em; vertical-align:top; text-align:left;">
+                                <ul style="padding:0 1em; margin:0;">
+                                    <li>dred includes a command bar for executing complex commands.</li>
+                                    <li>dred can execute system commands using "!".</li>
+                                    <li>Toggle the command bar with the escape key.</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
         </table>
-        <div class="feature-header2" style="padding-top:0em">Multi-edit and multi-select</div>
-        <table style="margin:0 auto; border-collapse:collapse; width:66%; margin-top:1em; margin-bottom:2em">
-            <tr>
-                <td style="vertical-align:top; text-align:left;">
-                    <img src="img/multiedit-1.gif">
-                </td>
-                <td style="width:100%; padding:0 1em; vertical-align:top; text-align:left;">
-                    <ul style="padding:0 1em; margin:0;">
-                        <li>Stop making the same change many times - just do it all in one go.</li>
-                        <li>Just hold down CTRL and select text as you normally would. Easy and intuitive.</li>
-                    </ul>
-                </td>
-            </tr>
-        </table>
-        <div class="feature-header2" style="padding-top:0em">Customizable</div>
-        <table style="margin:0 auto; border-collapse:collapse; width:66%; margin-top:1em; margin-bottom:2em">
-            <tr>
-                <td style="vertical-align:top; text-align:left;">
-                    <img src="img/theme-1.gif">
-                </td>
-                <td style="width:100%; padding:0 1em; vertical-align:top; text-align:left;">
-                    <ul style="padding:0 1em; margin:0;">
-                        <li>dred has a simple but powerful configuration system which allows you to change most settings. More settings are being added all the time!.</li>
-                        <li>Loading dred from a directory with a .dred file will automatically load the config file.</li>
-                        <li>Config files can be loaded at run time with the "load-config" command.</li>
-                    </ul>
-                </td>
-            </tr>
-        </table>
+        
+        <div style="background-color:#eee; padding-bottom:1em;">
+            <div class="feature-header" style="padding-top:1em; border-top:solid 1px #aaa;">And much more...</div>
+            <table style="width:66%; margin:0 auto; margin-top:1em; text-align:center;">
+                <tr>
+                    <td style="width:50%; vertical-align:top; text-align:left;">
+                        <ul>
+                            <li>Supports Windows and Linux</li>
+                            <li>Recent files</li>
+                            <li>Have multiple files open at a time</li>
+                            <li>Easy configuration for distractionless mode:
+                                <ul>
+                                    <li>hide-menu-bar / show-menu-bar</li>
+                                    <li>hide-tab-bar / show-tab-bar</li>
+                                    <li>enable-auto-hide-cmdbar / disable-auto-hide-cmdbar</li>
+                                </ul>
+                            </li>
+                            <li>Custom key bindings:
+                                <ul>
+                                    <li>Example: <code>bind "Compile" "CTRL+F9" "!gcc %"</code></li>
+                                    <li>The "%" symbol represents the currently focused file</li>
+                                </ul>
+                            </li>
+                            <li>Detection and reloading of externally modified files</li>
+                        </ul>
+                    </td>
+                    <td style="width:50%; vertical-align:top; text-align:left;">
+                        <ul>
+                            <li>Block indent/unindent (Tab, Shift+Tab)</li>
+                            <li>Automatic indentation</li>
+                            <li>Unlimited undo/redo</li>
+                            <li>Line numbers</li>
+                            <li>Configurable tab stops</li>
+                            <li>Find and replace</li>
+                            <li>Goto line</li>
+                            <li>Support for both Windows and Unix line endings</li>
+                            <li>Zooming (Ctrl + Mouse Wheel)</li>
+                            <li>DPI awareness on Windows</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
     
-    <table style="margin:0 auto; border-collapse:collapse; width:90%; margin-top:2em;">
-        <tr>
-            <td style="width:66%; vertical-align:top; padding-right:4em;">
-                <div style="font-size:14pt;">Standard Features</div>
-                <ul>
-                    <li>Fast and lightweight.</li>
-                    <li>Built for programmers and power users.</li>
-                    <li>Lots of cusomization options</li>
-                </ul>
-            </td>
-            <td style="width:33%; vertical-align:top;">
-                <div style="font-size:14pt;">Paid Features</div>
-                <ul>
-                    <li>Git integration</li>
-                    <li>Issue tracking</li>
-                </ul>
-            </td>
-        </tr>
-    </table>
-
-    <div style="color:#999; font-size:11pt; background-color:#eee; border-top:solid 1px #000; margin-top:32px; padding:16px 0px; text-align:center;">
+    <div style="color:#999; font-size:11pt; background-color:#eee; border-top:solid 1px #000; padding:1em 0px; text-align:center;">
         <ul class="footer-links">
             <li><a href="#">Documentation</a></li>
             <li>&middot;</li>
