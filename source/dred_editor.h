@@ -51,6 +51,9 @@ void dred_editor_unmark_as_modified(dred_editor* pEditor);
 bool dred_editor_is_modified(dred_editor* pEditor);
 
 
+// Updates the last modified time of the file.
+void dred_editor_update_file_last_modified_time(dred_editor* pEditor);
+
 // Determines if the editor is read-only.
 bool dred_editor_is_read_only(dred_editor* pEditor);
 

@@ -3,6 +3,7 @@
 typedef struct
 {
     char filePathAbsolute[DRED_MAX_PATH];
+    uint64_t fileLastModifiedTime;
     dred_editor_on_save_proc onSave;
     dred_editor_on_reload_proc onReload;
     dred_editor_on_modified_proc onModified;
@@ -34,6 +35,8 @@ dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, cons
             dred_errorf(pDred, "File path is too long: %s\n", filePathAbsolute);
             return NULL;
         }
+
+        dred_editor_update_file_last_modified_time(pEditor);
     }
 
     data->isReadOnly = dr_is_file_read_only(filePathAbsolute);
@@ -145,6 +148,7 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
     }
 
     dred_editor_unmark_as_modified(pEditor);
+    dred_editor_update_file_last_modified_time(pEditor);
     data->isReadOnly = dr_is_file_read_only(actualFilePath);
 
     if (newFilePath != NULL && newFilePath[0] != '\0') {
@@ -170,7 +174,12 @@ bool dred_editor_reload(dred_editor* pEditor)
         return false;
     }
 
-    return data->onReload(pEditor);
+    if (!data->onReload(pEditor)) {
+        return false;
+    }
+
+    dred_editor_update_file_last_modified_time(pEditor);
+    return true;
 }
 
 
@@ -218,6 +227,16 @@ bool dred_editor_is_modified(dred_editor* pEditor)
     return data->isModified;
 }
 
+
+void dred_editor_update_file_last_modified_time(dred_editor* pEditor)
+{
+    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    data->fileLastModifiedTime = dr_get_file_modified_time(dred_editor_get_file_path(pEditor));
+}
 
 bool dred_editor_is_read_only(dred_editor* pEditor)
 {
