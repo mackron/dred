@@ -1040,6 +1040,7 @@ bool drte_engine__get_next_selection_from_character(drte_engine* pEngine, uint32
 typedef struct
 {
     size_t iLine;
+    size_t iCursorLine;
     size_t iCharBeg;
     size_t iCharEnd;
     uint8_t fgStyleSlot;
@@ -1117,7 +1118,7 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     size_t iCharBeg = pSegment->iCharEnd;
     size_t iCharEnd = iCharBeg;
 
-    if (pEngine->cursorCount > 0 && pSegment->iLine == drte_engine_get_cursor_line(pEngine, pEngine->cursorCount-1)) {
+    if (pEngine->cursorCount > 0 && pSegment->iLine == pSegment->iCursorLine) {
         bgStyleSlot = pEngine->activeLineStyleSlot;
     }
 
@@ -1254,6 +1255,7 @@ bool drte_engine__first_segment(drte_engine* pEngine, size_t iChar, drte_segment
     }
 
     pSegment->iLine = drte_engine_get_character_line(pEngine, iChar);
+    pSegment->iCursorLine = drte_engine_get_cursor_line(pEngine, pEngine->cursorCount-1);
     pSegment->iCharBeg = iChar;
     pSegment->iCharEnd = pSegment->iCharBeg;
     pSegment->fgStyleSlot = pEngine->defaultStyleSlot;
@@ -1272,6 +1274,7 @@ bool drte_engine__first_segment_on_line(drte_engine* pEngine, size_t lineIndex, 
     }
 
     pSegment->iLine = lineIndex;
+    pSegment->iCursorLine = drte_engine_get_cursor_line(pEngine, pEngine->cursorCount-1);
     pSegment->iCharBeg = drte_engine_get_line_first_character(pEngine, lineIndex);
     pSegment->iCharEnd = pSegment->iCharBeg;
     pSegment->fgStyleSlot = pEngine->defaultStyleSlot;
