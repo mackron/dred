@@ -659,6 +659,9 @@ bool drte_engine_delete_character_to_right_of_cursors(drte_engine* pEngine, bool
 /// @return True if the text within the text engine has changed.
 bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors);
 
+// Deletes the text of a specific selection.
+bool drte_engine_delete_selection_text(drte_engine* pEngine, size_t iSelectionToDelete, bool updateCursorsAndSelection);
+
 
 /// Determines whether or not anything is selected in the given text engine.
 bool drte_engine_is_anything_selected(drte_engine* pEngine);
@@ -685,10 +688,10 @@ void drte_engine_select_word_under_cursor(drte_engine* pEngine, size_t cursorInd
 size_t drte_engine_get_selected_text(drte_engine* pEngine, char* textOut, size_t textOutLength);
 
 /// Retrieves the index of the first line of the current selection.
-size_t drte_engine_get_selection_first_line(drte_engine* pEngine);
+size_t drte_engine_get_selection_first_line(drte_engine* pEngine, size_t iSelection);
 
 /// Retrieves the index of the last line of the current selection.
-size_t drte_engine_get_selection_last_line(drte_engine* pEngine);
+size_t drte_engine_get_selection_last_line(drte_engine* pEngine, size_t iSelection);
 
 /// Moves the selection anchor to the end of the given line.
 void drte_engine_move_selection_anchor_to_end_of_line(drte_engine* pEngine, size_t iLine);
@@ -3051,46 +3054,78 @@ bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors)
 
     free(pSortedSelections);
     return wasTextChanged;
+}
 
-#if 0
-    // Don't do anything if nothing is selected.
-    if (!drte_engine_is_anything_selected(pEngine)) {
+bool drte_engine_delete_selection_text(drte_engine* pEngine, size_t iSelectionToDelete, bool updateCursorsAndSelection)
+{
+    if (pEngine == NULL || pEngine->selectionCount == 0) {
         return false;
     }
 
-    drte_marker* pSelectionMarker0 = &pEngine->selectionAnchor;
-    drte_marker* pSelectionMarker1 = &pEngine->cursor;
-    if (pSelectionMarker0->iCharAbs > pSelectionMarker1->iCharAbs)
-    {
-        drte_marker* temp = pSelectionMarker0;
-        pSelectionMarker0 = pSelectionMarker1;
-        pSelectionMarker1 = temp;
+    drte_region selectionToDelete = drte_region_normalize(pEngine->pSelections[iSelectionToDelete]);
+    if (selectionToDelete.iCharBeg == selectionToDelete.iCharEnd) {
+        return false;   // Nothing is selected.
     }
 
-    size_t iSelectionChar0 = pSelectionMarker0->iCharAbs;
-    size_t iSelectionChar1 = pSelectionMarker1->iCharAbs;
-
+    bool wasTextChanged = false;
     drte_engine__begin_dirty(pEngine);
-    bool wasTextChanged = drte_engine_delete_text(pEngine, iSelectionChar0, iSelectionChar1);
-    if (wasTextChanged)
     {
-        // The marker needs to be updated based on the new layout.
-        drte_engine__move_marker_to_character(pEngine, &pEngine->cursor, iSelectionChar0);
+        wasTextChanged = drte_engine_delete_text(pEngine, selectionToDelete.iCharBeg, selectionToDelete.iCharEnd) || wasTextChanged;
 
-        // The cursor's sticky position also needs to be updated.
-        drte_engine__update_marker_sticky_position(pEngine, &pEngine->cursor);
+        if (updateCursorsAndSelection) {
+            for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
+                size_t iCursorChar = pEngine->pCursors[iCursor].iCharAbs;
+                if (iCursorChar > selectionToDelete.iCharBeg && iCursorChar < selectionToDelete.iCharEnd) {
+                    drte_engine_move_cursor_to_character(pEngine, iCursor, selectionToDelete.iCharBeg);
+                } else {
+                    if (iCursorChar >= selectionToDelete.iCharEnd) {
+                        drte_engine_move_cursor_to_character(pEngine, iCursor, iCursorChar - (selectionToDelete.iCharEnd - selectionToDelete.iCharBeg));
+                    }
+                }
+            }
 
-        drte_engine__on_cursor_move(pEngine);
+            // <---> = selection
+            // |---| = selectionToDelete
+            for (size_t iSelection = 0; iSelection < pEngine->selectionCount; ++iSelection) {
+                drte_region selection = drte_region_normalize(pEngine->pSelections[iSelection]);
+                if (selection.iCharBeg < selectionToDelete.iCharBeg) {
+                    if (selection.iCharEnd > selectionToDelete.iCharBeg) {
+                        if (selection.iCharEnd < selectionToDelete.iCharEnd) {
+                            // <---|--->---|
+                            selection.iCharEnd = selectionToDelete.iCharBeg;
+                        } else {
+                            // <---|---|--->
+                            selection.iCharEnd -= selectionToDelete.iCharEnd - selectionToDelete.iCharBeg;
+                        }
+                    }
+                } else {
+                    if (selection.iCharBeg < selectionToDelete.iCharEnd) {
+                        if (selection.iCharEnd < selectionToDelete.iCharEnd) {
+                            // |---<--->---|
+                            selection.iCharBeg = selection.iCharEnd = selectionToDelete.iCharBeg;
+                        } else {
+                            // |---<---|--->
+                            selection.iCharBeg = selectionToDelete.iCharBeg;
+                        }
+                    } else {
+                        selection.iCharBeg -= (selectionToDelete.iCharEnd - selectionToDelete.iCharBeg);
+                        selection.iCharEnd -= (selectionToDelete.iCharEnd - selectionToDelete.iCharBeg);
+                    }
+                }
 
-
-        // Reset the selection marker.
-        pEngine->selectionAnchor = pEngine->cursor;
-        pEngine->isAnythingSelected = false;
+                if (pEngine->pSelections[iSelection].iCharBeg < pEngine->pSelections[iSelection].iCharEnd) {
+                    pEngine->pSelections[iSelection].iCharBeg = selection.iCharBeg;
+                    pEngine->pSelections[iSelection].iCharEnd = selection.iCharEnd;
+                } else {
+                    pEngine->pSelections[iSelection].iCharBeg = selection.iCharEnd;
+                    pEngine->pSelections[iSelection].iCharEnd = selection.iCharBeg;
+                }
+            }
+        }
     }
-
     drte_engine__end_dirty(pEngine);
+
     return wasTextChanged;
-#endif
 }
 
 
@@ -3347,22 +3382,22 @@ size_t drte_engine_get_selected_text(drte_engine* pEngine, char* textOut, size_t
     return length;
 }
 
-size_t drte_engine_get_selection_first_line(drte_engine* pEngine)
+size_t drte_engine_get_selection_first_line(drte_engine* pEngine, size_t iSelection)
 {
     if (pEngine == NULL || pEngine->selectionCount == 0) {
         return 0;
     }
 
-    return drte_engine_get_character_line(pEngine, drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]).iCharBeg);
+    return drte_engine_get_character_line(pEngine, drte_region_normalize(pEngine->pSelections[iSelection]).iCharBeg);
 }
 
-size_t drte_engine_get_selection_last_line(drte_engine* pEngine)
+size_t drte_engine_get_selection_last_line(drte_engine* pEngine, size_t iSelection)
 {
     if (pEngine == NULL) {
         return 0;
     }
 
-    return drte_engine_get_character_line(pEngine, drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]).iCharEnd);
+    return drte_engine_get_character_line(pEngine, drte_region_normalize(pEngine->pSelections[iSelection]).iCharEnd);
 }
 
 void drte_engine_move_selection_anchor_to_end_of_line(drte_engine* pEngine, size_t iLine)

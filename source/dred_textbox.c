@@ -306,12 +306,11 @@ void dred_textbox__insert_cursor(dred_textbox* pTextBox, size_t iChar)
     pTB->cursorCount += 1;
 }
 
-bool dred_textbox__get_cursor_selection(dred_textbox* pTextBox, size_t* iSelectionOut)
+bool dred_textbox__get_cursor_selection(dred_textbox* pTextBox, size_t iCursor, size_t* iSelectionOut)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
-    size_t iCursor = drte_engine_get_last_cursor(pTB->pTL);
     for (size_t iSelection = 0; iSelection < pTB->pTL->selectionCount; ++iSelection) {
         drte_region selection = drte_region_normalize(pTB->pTL->pSelections[iSelection]);
         if (selection.iCharBeg == pTB->pTL->pCursors[iCursor].iCharAbs || selection.iCharEnd == pTB->pTL->pCursors[iCursor].iCharAbs) {
@@ -325,7 +324,10 @@ bool dred_textbox__get_cursor_selection(dred_textbox* pTextBox, size_t* iSelecti
 
 bool dred_textbox__is_cursor_on_selection(dred_textbox* pTextBox)
 {
-    return dred_textbox__get_cursor_selection(pTextBox, NULL);
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(pTB != NULL);
+
+    return dred_textbox__get_cursor_selection(pTextBox, drte_engine_get_last_cursor(pTB->pTL), NULL);
 }
 
 bool dred_textbox__move_cursor_to_start_of_selection(dred_textbox* pTextBox, size_t* iSelectionOut)
@@ -374,6 +376,54 @@ bool dred_textbox__move_cursor_to_end_of_selection(dred_textbox* pTextBox, size_
     }
 
     return false;
+}
+
+bool dred_textbox__insert_tab_at_cursor(dred_textbox* pTextBox, size_t iCursor)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    assert(pTB != NULL);
+
+    dred_context* pDred = dred_control_get_context(pTextBox);
+    assert(pDred != NULL);
+
+    drte_engine__begin_dirty(pTB->pTL);
+
+    size_t iCursorChar = pTB->pTL->pCursors[iCursor].iCharAbs;
+    
+    bool wasTextChanged = false;
+    size_t insertedCharacterCount;
+    if (pDred->config.textEditorTabsToSpacesEnabled) {
+        insertedCharacterCount = drte_engine_get_spaces_to_next_colum_from_cursor(pTB->pTL, iCursor);
+        for (size_t i = 0; i < insertedCharacterCount; ++i) {
+            wasTextChanged = drte_engine_insert_character_at_cursor(pTB->pTL, iCursor, ' ') || wasTextChanged;
+        }
+    } else {
+        insertedCharacterCount = 1;
+        wasTextChanged = drte_engine_insert_character_at_cursor(pTB->pTL, iCursor, '\t') || wasTextChanged;
+    }
+
+    
+    // Any cursor whose character position comes after this cursor needs to be moved.
+    for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
+        if (iCursor2 != iCursor) {
+            if (pTB->pTL->pCursors[iCursor2].iCharAbs > iCursorChar) {
+                drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
+            }
+        }
+    }
+
+    // As with cursors, selections need to be updated too.
+    for (size_t iSelection = 0; iSelection < pTB->pTL->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTB->pTL->pSelections[iSelection]);
+        if (selection.iCharBeg > iCursorChar) {
+            pTB->pTL->pSelections[iSelection].iCharBeg += insertedCharacterCount;
+            pTB->pTL->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+        }
+    }
+
+
+    drte_engine__end_dirty(pTB->pTL);
+    return wasTextChanged;
 }
 
 
@@ -1903,13 +1953,42 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
     {
         drte_engine__begin_dirty(pTB->pTL);
         if (utf32 == '\t') {
+            // The tab key is a complex case because it can be handled differently depending on the configuration:
+            //   - If multiple lines are selected, they need to be block-indented
+            //     - Otherwise they need to be inserted like any other character, unless...
+            //   - If tabs-to-spaces is enabled, tabs need to be converted to spaces.
+            //
+            // The tab key is handled for each cursor.
+            for (size_t iCursor = 0; iCursor < pTB->cursorCount; ++iCursor) {
+                bool isDoingBlockIndent = false;
+
+                size_t iSelection;
+                bool isSomethingSelected = dred_textbox__get_cursor_selection(pTextBox, iCursor, &iSelection);
+                if (isSomethingSelected) {
+                    isDoingBlockIndent = drte_engine_get_selection_first_line(pTB->pTL, iSelection) != drte_engine_get_selection_last_line(pTB->pTL, iSelection);
+                }
+
+                if (isDoingBlockIndent) {
+                    printf("Block indent...\n");
+                } else {
+                    // We're not doing a block indent so we just insert a tab at the cursor like normal.
+                    if (isSomethingSelected) {
+                        drte_engine_delete_selection_text(pTB->pTL, iSelection, true);
+                        drte_engine_cancel_selection(pTB->pTL, iSelection);
+                    }
+
+                    dred_textbox__insert_tab_at_cursor(pTextBox, iCursor);
+                }
+            }
+
+#if 0
             // TODO: Loop over each cursor.
 
 
             bool isSelectionOverMultipleLines = false;
 
             size_t iSelection;
-            bool isSomethingSelected = dred_textbox__get_cursor_selection(pTextBox, &iSelection);
+            bool isSomethingSelected = dred_textbox__get_cursor_selection(pTextBox, drte_engine_get_last_cursor(pTB->pTL), &iSelection);
             if (isSomethingSelected) {
                 isSelectionOverMultipleLines = drte_engine_get_selection_first_line(pTB->pTL) != drte_engine_get_selection_last_line(pTB->pTL);
             }
@@ -1944,6 +2023,7 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
                     }
                 }
             }
+#endif
         } else {
             if (drte_engine_is_anything_selected(pTB->pTL)) {
                 dred_textbox_delete_selected_text_no_undo(pTextBox);
@@ -2506,8 +2586,8 @@ void dred_textbox__on_mouse_move_line_numbers(drgui_element* pLineNumbers, int r
             size_t iAnchorLine = pTB->iLineSelectAnchor;
             size_t lineCount = drte_engine_get_line_count(pTB->pTL);
 
-            size_t iSelectionFirstLine = drte_engine_get_selection_first_line(pTB->pTL);
-            size_t iSelectionLastLine = drte_engine_get_selection_last_line(pTB->pTL);
+            size_t iSelectionFirstLine = drte_engine_get_selection_first_line(pTB->pTL, pTB->pTL->selectionCount-1);
+            size_t iSelectionLastLine = drte_engine_get_selection_last_line(pTB->pTL, pTB->pTL->selectionCount-1);
             if (iSelectionLastLine != iSelectionFirstLine) {
                 iSelectionLastLine -= 1;
             }
