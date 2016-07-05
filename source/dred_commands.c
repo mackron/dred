@@ -211,6 +211,13 @@ bool dred_command__prev_tab(dred_context* pDred, const char* value)
 }
 
 
+bool dred_command__cd(dred_context* pDred, const char* value)
+{
+    (void)pDred;
+    return dr_set_current_directory(value);
+}
+
+
 
 bool dred_command__new(dred_context* pDred, const char* value)
 {

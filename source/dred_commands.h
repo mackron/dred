@@ -20,6 +20,7 @@
 // toggle-auto-hide-cmdbar  dred_command__toggle_auto_hide_cmdbar   DRED_CMDBAR_RELEASE_KEYBOARD
 // next-tab                 dred_command__next_tab                  DRED_CMDBAR_RELEASE_KEYBOARD
 // prev-tab                 dred_command__prev_tab                  DRED_CMDBAR_RELEASE_KEYBOARD
+// cd                       dred_command__cd                        0
 // new                      dred_command__new                       DRED_CMDBAR_RELEASE_KEYBOARD
 // open                     dred_command__open                      DRED_CMDBAR_RELEASE_KEYBOARD
 // save                     dred_command__save                      DRED_CMDBAR_RELEASE_KEYBOARD
@@ -143,6 +144,10 @@ bool dred_command__next_tab(dred_context* pDred, const char* value);
 
 // prev-tab
 bool dred_command__prev_tab(dred_context* pDred, const char* value);
+
+
+// cd
+bool dred_command__cd(dred_context* pDred, const char* value);
 
 
 
