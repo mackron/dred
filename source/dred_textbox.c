@@ -1092,7 +1092,7 @@ bool dred_textbox_insert_text_at_cursor(dred_textbox* pTextBox, const char* text
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
-        return false;;
+        return false;
     }
 
     bool wasTextChanged = false;
@@ -1101,6 +1101,87 @@ bool dred_textbox_insert_text_at_cursor(dred_textbox* pTextBox, const char* text
         wasTextChanged = drte_engine_insert_text_at_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), text);
     }
     if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
+
+    return wasTextChanged;
+}
+
+bool dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return false;
+    }
+
+    drte_engine__begin_dirty(pTB->pTL);
+
+    bool wasTextChanged = false;
+    drte_engine_prepare_undo_point(pTB->pTL);
+    {
+        for (size_t iSelection = 0; iSelection < pTB->pTL->selectionCount; ++iSelection) {
+            size_t iLineBeg = drte_engine_get_selection_first_line(pTB->pTL, iSelection);
+            size_t iLineEnd = drte_engine_get_selection_last_line(pTB->pTL, iSelection);
+            if (iLineBeg != iLineEnd) {
+                for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
+                    size_t iLineChar = drte_engine_get_line_first_character(pTB->pTL, iLine);
+                    size_t iLineCharNonWS = iLineChar;
+                    for (;;) {
+                        uint32_t c = drte_engine_get_utf32(pTB->pTL, iLineCharNonWS);
+                        if (c == '\0' || c == '\n' || !dr_is_whitespace(c)) {
+                            break;
+                        }
+
+                        iLineCharNonWS += 1;
+                    }
+
+                    if (iLineCharNonWS > iLineChar) {
+                        size_t charactersRemovedCount = 0;
+                        uint32_t c = drte_engine_get_utf32(pTB->pTL, iLineChar);
+                        if (c == '\t') {
+                            charactersRemovedCount = 1;
+                        } else {
+                            charactersRemovedCount = 0; //(iLineCharNonWS - iLineChar);
+                            for (size_t iChar = iLineChar; iChar < iLineCharNonWS; ++iChar) {
+                                if (charactersRemovedCount >= drte_engine_get_tab_size(pTB->pTL)) {
+                                    break;
+                                }
+
+                                c = drte_engine_get_utf32(pTB->pTL, iChar);
+                                if (c == '\t') {
+                                    break;
+                                }
+
+                                charactersRemovedCount += 1;
+                            }
+                        }
+
+                        wasTextChanged = drte_engine_delete_text(pTB->pTL, iLineChar, iLineChar + charactersRemovedCount) || wasTextChanged;
+
+                        // Cursors and selections need to be updated.
+                        for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
+                            if (pTB->pTL->pCursors[iCursor2].iCharAbs >= iLineChar) {
+                                drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs - charactersRemovedCount);
+                            }
+                        }
+
+                        for (size_t iSelection2 = 0; iSelection2 < pTB->pTL->selectionCount; ++iSelection2) {
+                            drte_region selection = drte_region_normalize(pTB->pTL->pSelections[iSelection2]);
+                            if (selection.iCharBeg > iLineChar + charactersRemovedCount) {
+                                pTB->pTL->pSelections[iSelection2].iCharBeg -= charactersRemovedCount;
+                                pTB->pTL->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
+                            } else {
+                                if (selection.iCharEnd > iLineChar) {
+                                    pTB->pTL->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
+
+    drte_engine__end_dirty(pTB->pTL);
 
     return wasTextChanged;
 }
@@ -1977,7 +2058,6 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
                 }
 
                 if (isDoingBlockIndent) {
-                    printf("Block indent...\n");
                     // A block indent is done by simply inserting a tab at the beginning of each selected line.
                     size_t iLineBeg = drte_engine_get_selection_first_line(pTB->pTL, iSelection);
                     size_t iLineEnd = drte_engine_get_selection_last_line(pTB->pTL, iSelection);
@@ -1995,50 +2075,6 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
                     dred_textbox__insert_tab_at_cursor(pTextBox, iCursor);
                 }
             }
-
-#if 0
-            // TODO: Loop over each cursor.
-
-
-            bool isSelectionOverMultipleLines = false;
-
-            size_t iSelection;
-            bool isSomethingSelected = dred_textbox__get_cursor_selection(pTextBox, drte_engine_get_last_cursor(pTB->pTL), &iSelection);
-            if (isSomethingSelected) {
-                isSelectionOverMultipleLines = drte_engine_get_selection_first_line(pTB->pTL) != drte_engine_get_selection_last_line(pTB->pTL);
-            }
-
-            if (isSomethingSelected && !isSelectionOverMultipleLines) {
-                //drte_engine_delete_selection(pTB->pTL, iSelection);
-                drte_engine_cancel_selection(pTB->pTL, iSelection);
-                // TODO: Detach the selection from the cursor.
-            }
-
-            if (isSelectionOverMultipleLines) {
-                printf("Block Indent\n");
-            }
-
-            if (pTB->isTabsToSpacesEnabled) {
-                for (size_t iCursor = 0; iCursor < pTB->pTL->cursorCount; ++iCursor) {
-                    size_t iCursorChar = pTB->pTL->pCursors[iCursor].iCharAbs;
-
-                    // This can be optimized by inserting a string of spaces rather than individual characters.
-                    size_t spaceCount = drte_engine_get_spaces_to_next_colum_from_cursor(pTB->pTL, iCursor);
-                    for (size_t i = 0; i < spaceCount; ++i) {
-                        drte_engine_insert_character_at_cursor(pTB->pTL, iCursor, ' ');
-                    }
-
-                    // Any cursor whose character position comes after this cursor needs to be moved.
-                    for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
-                        if (iCursor2 != iCursor) {
-                            if (pTB->pTL->pCursors[iCursor2].iCharAbs > iCursorChar) {
-                                drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + spaceCount);
-                            }
-                        }
-                    }
-                }
-            }
-#endif
         } else {
             if (drte_engine_is_anything_selected(pTB->pTL)) {
                 dred_textbox_delete_selected_text_no_undo(pTextBox);

@@ -524,3 +524,13 @@ void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, float textSc
     dred_textbox_set_font(data->pTextBox, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale * data->textScale));    // TODO: <-- This font needs to be unacquired.
     dred_textbox_set_cursor_width(data->pTextBox, pDred->config.textEditorCursorWidth * pDred->uiScale * data->textScale);
 }
+
+void dred_text_editor_unindent_selected_blocks(dred_text_editor* pTextEditor)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    dred_textbox_unindent_selected_blocks(data->pTextBox);
+}

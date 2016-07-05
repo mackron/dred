@@ -48,6 +48,7 @@
 // hide-line-numbers        dred_command__hide_line_numbers         DRED_CMDBAR_RELEASE_KEYBOARD
 // toggle-line-numbers      dred_command__toggle_line_numbers       DRED_CMDBAR_RELEASE_KEYBOARD
 // zoom                     dred_command__zoom                      DRED_CMDBAR_RELEASE_KEYBOARD
+// unindent                 dred_command__unindent                  DRED_CMDBAR_RELEASE_KEYBOARD
 //
 // END COMMAND LIST
 
@@ -235,6 +236,9 @@ bool dred_command__toggle_line_numbers(dred_context* pDred, const char* value);
 
 // zoom
 bool dred_command__zoom(dred_context* pDred, const char* value);
+
+// unindent
+bool dred_command__unindent(dred_context* pDred, const char* value);
 
 
 

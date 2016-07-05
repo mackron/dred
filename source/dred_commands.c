@@ -569,6 +569,22 @@ bool dred_command__zoom(dred_context* pDred, const char* value)
     return true;
 }
 
+bool dred_command__unindent(dred_context* pDred, const char* value)
+{
+    (void)value;
+
+    dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
+    if (pFocusedEditor == NULL) {
+        return false;
+    }
+
+    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+        dred_text_editor_unindent_selected_blocks(pFocusedEditor);
+    }
+
+    return true;
+}
+
 
 
 

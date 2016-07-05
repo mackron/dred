@@ -151,6 +151,9 @@ bool dred_textbox_delete_selected_text(dred_textbox* pTextBox);
 // @return True if the text within the text engine has changed.
 bool dred_textbox_insert_text_at_cursor(dred_textbox* pTextBox, const char* text);
 
+// Unindents selected text.
+bool dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox);
+
 // Performs an undo operation.
 bool dred_textbox_undo(dred_textbox* pTextBox);
 

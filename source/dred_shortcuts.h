@@ -12,11 +12,13 @@
 #define DRED_SHORTCUT_NAME_COPY         "Copy"
 #define DRED_SHORTCUT_NAME_PASTE        "Paste"
 #define DRED_SHORTCUT_NAME_SELECT_ALL   "SelectAll"
+#define DRED_SHORTCUT_NAME_UNINDENT     "Unindent"
 #define DRED_SHORTCUT_NAME_GOTO         "GoTo"
 #define DRED_SHORTCUT_NAME_FIND         "Find"
 #define DRED_SHORTCUT_NAME_REPLACE      "FindAndReplace"
 #define DRED_SHORTCUT_NAME_NEXT_TAB     "NextTab"
 #define DRED_SHORTCUT_NAME_PREV_TAB     "PrevTab"
+#define DRED_SHORTCUT_NAME_RELOAD       "Reload"
 
 struct dred_shortcut
 {

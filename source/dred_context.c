@@ -291,12 +291,13 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_COPY,       dred_shortcut_create_single(dred_accelerator_create('C', DRED_KEY_STATE_CTRL_DOWN)), "copy");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_PASTE,      dred_shortcut_create_single(dred_accelerator_create('V', DRED_KEY_STATE_CTRL_DOWN)), "paste");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_SELECT_ALL, dred_shortcut_create_single(dred_accelerator_create('A', DRED_KEY_STATE_CTRL_DOWN)), "select-all");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_UNINDENT,   dred_shortcut_create_single(dred_accelerator_create('\t', DRED_KEY_STATE_SHIFT_DOWN)), "unindent");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_GOTO,       dred_shortcut_create_single(dred_accelerator_create('G', DRED_KEY_STATE_CTRL_DOWN)), "cmdbar goto ");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_FIND,       dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN)), "cmdbar find ");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_REPLACE,    dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "cmdbar replace-all ");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_NEXT_TAB,   dred_shortcut_create_single(dred_accelerator_create('\t', DRED_KEY_STATE_CTRL_DOWN)), "next-tab");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_PREV_TAB,   dred_shortcut_create_single(dred_accelerator_create('\t', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "prev-tab");
-    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_NEXT_TAB,   dred_shortcut_create_single(dred_accelerator_create(DRGUI_F5, 0)), "reload");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_RELOAD,     dred_shortcut_create_single(dred_accelerator_create(DRGUI_F5, 0)), "reload");
 
 
     // Before loading configs we want to make sure any stock themes and settings are present.
