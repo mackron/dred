@@ -846,11 +846,14 @@ const char* dred_get_editor_type_by_path(const char* filePath)
 
 dred_tab* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char* filePathAbsolute)
 {
+    char filePathAbsoluteClean[DRED_MAX_PATH];
+    drpath_clean(filePathAbsolute, filePathAbsoluteClean, sizeof(filePathAbsoluteClean));
+
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
             dred_control* pControl = dred_tab_get_control(pTab);
             if (pControl != NULL && dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
-                if (drpath_equal(dred_editor_get_file_path(pControl), filePathAbsolute)) {
+                if (drpath_equal(dred_editor_get_file_path(pControl), filePathAbsoluteClean)) {
                     return pTab;
                 }
             }
