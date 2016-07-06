@@ -1088,7 +1088,7 @@ bool dred_textbox_delete_selected_text(dred_textbox* pTextBox)
     return wasTextChanged;
 }
 
-bool dred_textbox_insert_text_at_cursor(dred_textbox* pTextBox, const char* text)
+bool dred_textbox_insert_text_at_cursors(dred_textbox* pTextBox, const char* text)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -1098,7 +1098,35 @@ bool dred_textbox_insert_text_at_cursor(dred_textbox* pTextBox, const char* text
     bool wasTextChanged = false;
     drte_engine_prepare_undo_point(pTB->pTL);
     {
-        wasTextChanged = drte_engine_insert_text_at_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), text);
+        size_t insertedCharacterCount = strlen(text);
+
+        for (size_t iCursor = 0; iCursor < pTB->cursorCount; ++iCursor) {
+            size_t iChar = drte_engine_get_cursor_character(pTB->pTL, iCursor);
+
+            wasTextChanged = drte_engine_insert_text_at_cursor(pTB->pTL, iCursor, text) || wasTextChanged;
+            
+            // Cursors and selections after this cursor need to be updated.
+            for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
+                if (iCursor != iCursor2) {
+                    if (pTB->pTL->pCursors[iCursor2].iCharAbs >= iChar) {
+                        drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
+                    }
+                }
+            }
+
+            // As with cursors, selections need to be updated too.
+            for (size_t iSelection = 0; iSelection < pTB->pTL->selectionCount; ++iSelection) {
+                drte_region selection = drte_region_normalize(pTB->pTL->pSelections[iSelection]);
+                if (selection.iCharBeg > iChar) {
+                    pTB->pTL->pSelections[iSelection].iCharBeg += insertedCharacterCount;
+                    pTB->pTL->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+                } else {
+                    if (selection.iCharEnd > iChar) {
+                        pTB->pTL->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+                    }
+                }
+            }
+        }
     }
     if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
 

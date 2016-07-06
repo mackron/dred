@@ -149,7 +149,7 @@ bool dred_textbox_delete_selected_text(dred_textbox* pTextBox);
 // Inserts a character at the position of the cursor.
 //
 // @return True if the text within the text engine has changed.
-bool dred_textbox_insert_text_at_cursor(dred_textbox* pTextBox, const char* text);
+bool dred_textbox_insert_text_at_cursors(dred_textbox* pTextBox, const char* text);
 
 // Unindents selected text.
 bool dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox);

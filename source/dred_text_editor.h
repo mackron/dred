@@ -11,6 +11,12 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 void dred_text_editor_delete(dred_text_editor* pTextEditor);
 
 
+// Inserts text at every cursor.
+//
+// Returns whether or not the text was changed.
+bool dred_text_editor_insert_text_at_cursors(dred_text_editor* pTextEditor, const char* text);
+
+
 // Refreshes the styling of the given text editor.
 void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor);
 

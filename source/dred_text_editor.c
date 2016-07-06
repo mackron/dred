@@ -281,6 +281,17 @@ void dred_text_editor_delete(dred_text_editor* pTextEditor)
 }
 
 
+bool dred_text_editor_insert_text_at_cursors(dred_text_editor* pTextEditor, const char* text)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return false;
+    }
+
+    return dred_textbox_insert_text_at_cursors(data->pTextBox, text);
+}
+
+
 void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
 {
     dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);

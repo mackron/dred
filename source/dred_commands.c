@@ -396,7 +396,7 @@ bool dred_command__paste(dred_context* pDred, const char* value)
         }
 
         dred_textbox_delete_selected_text(pFocusedElement);
-        dred_textbox_insert_text_at_cursor(pFocusedElement, clipboardText);
+        dred_textbox_insert_text_at_cursors(pFocusedElement, clipboardText);
 
         dred_clipboard_free_text(clipboardText);
         return true;
@@ -587,6 +587,25 @@ bool dred_command__unindent(dred_context* pDred, const char* value)
 
     if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         dred_text_editor_unindent_selected_blocks(pFocusedEditor);
+    }
+
+    return true;
+}
+
+bool dred_command__insert_date(dred_context* pDred, const char* value)
+{
+    (void)value;
+
+    dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
+    if (pFocusedEditor == NULL) {
+        return false;
+    }
+
+    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+        char dateStr[256];
+        dr_datetime_short(dr_now(), dateStr, sizeof(dateStr));
+
+        dred_text_editor_insert_text_at_cursors(pFocusedEditor, dateStr);
     }
 
     return true;
