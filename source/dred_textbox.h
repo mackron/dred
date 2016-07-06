@@ -144,11 +144,13 @@ bool dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox);
 // Deletes the currently selected text.
 //
 // @return True if the text within the text engine has changed.
+bool dred_textbox_delete_selected_text_no_undo(dred_textbox* pTextBox);
 bool dred_textbox_delete_selected_text(dred_textbox* pTextBox);
 
 // Inserts a character at the position of the cursor.
 //
 // @return True if the text within the text engine has changed.
+bool dred_textbox_insert_text_at_cursors_no_undo(dred_textbox* pTextBox, const char* text);
 bool dred_textbox_insert_text_at_cursors(dred_textbox* pTextBox, const char* text);
 
 // Unindents selected text.
@@ -238,6 +240,13 @@ void dred_textbox_disable_tabs_to_spaces(dred_textbox* pTextBox);
 
 // Determines whether or not the textbox should convert tabs to spaces.
 bool dred_textbox_is_tabs_to_spaces_enabled(dred_textbox* pTextBox);
+
+
+// Prepares an undo point.
+bool dred_textbox_prepare_undo_point(dred_textbox* pTextBox);
+
+// Commits an undo point.
+bool dred_textbox_commit_undo_point(dred_textbox* pTextBox);
 
 
 // Sets the function to call when the cursor moves.

@@ -395,8 +395,13 @@ bool dred_command__paste(dred_context* pDred, const char* value)
             return false;
         }
 
-        dred_textbox_delete_selected_text(pFocusedElement);
-        dred_textbox_insert_text_at_cursors(pFocusedElement, clipboardText);
+        bool wasTextChanged = false;
+        dred_textbox_prepare_undo_point(pFocusedElement);
+        {
+            wasTextChanged = dred_textbox_delete_selected_text_no_undo(pFocusedElement) || wasTextChanged;
+            wasTextChanged = dred_textbox_insert_text_at_cursors_no_undo(pFocusedElement, clipboardText) || wasTextChanged;
+        }
+        if (wasTextChanged) { dred_textbox_commit_undo_point(pFocusedElement); }
 
         dred_clipboard_free_text(clipboardText);
         return true;
