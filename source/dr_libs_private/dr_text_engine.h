@@ -724,6 +724,13 @@ void drte_engine_set_selection_end_point(drte_engine* pEngine, size_t iCharEnd);
 bool drte_engine_get_last_selection(drte_engine* pEngine, size_t* iCharBegOut, size_t* iCharEndOut);
 
 
+// Retrieves the word under the given character.
+bool drte_engine_get_word_under_cursor(drte_engine* pEngine, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
+
+// Retrieves the word under the point relative to the container.
+bool drte_engine_get_word_under_point(drte_engine* pEngine, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut);
+
+
 /// Prepares the next undo/redo point.
 ///
 /// @remarks
@@ -3312,15 +3319,6 @@ bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iCha
     return true;
 }
 
-// TODO: Make this public.
-bool drte_engine_get_word_under_cursor(drte_engine* pEngine, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut)
-{
-    if (pEngine == NULL || pEngine->cursorCount <= cursorIndex) {
-        return false;
-    }
-
-    return drte_engine_get_word_containing_character(pEngine, pEngine->pCursors[cursorIndex].iCharAbs, pWordBegOut, pWordEndOut);
-}
 
 void drte_engine_select_word_under_cursor(drte_engine* pEngine, size_t cursorIndex)
 {
@@ -3516,6 +3514,24 @@ bool drte_engine_get_last_selection(drte_engine* pEngine, size_t* iCharBegOut, s
     return true;
 }
 
+
+bool drte_engine_get_word_under_cursor(drte_engine* pEngine, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut)
+{
+    if (pEngine == NULL || pEngine->cursorCount <= cursorIndex) {
+        return false;
+    }
+
+    return drte_engine_get_word_containing_character(pEngine, pEngine->pCursors[cursorIndex].iCharAbs, pWordBegOut, pWordEndOut);
+}
+
+bool drte_engine_get_word_under_point(drte_engine* pEngine, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut)
+{
+    if (pEngine == NULL) {
+        return false;
+    }
+
+    return drte_engine_get_word_containing_character(pEngine, drte_engine_get_character_by_point_relative_to_container(pEngine, posX, posY), pWordBegOut, pWordEndOut);
+}
 
 
 bool drte_engine_prepare_undo_point(drte_engine* pEngine)

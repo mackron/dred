@@ -86,6 +86,13 @@ typedef struct
     size_t iLineSelectAnchor;
 
 
+    // Whether or not we are doing word based mouse-drag selection.
+    bool isDoingWordSelect;
+
+    // The word to act as the achor when doing word based selection.
+    drte_region wordSelectionAnchor;
+
+
     /// The function to call when the text cursor/caret moves.
     dred_textbox_on_cursor_move_proc onCursorMove;
 
@@ -1641,7 +1648,24 @@ void dred_textbox_on_mouse_move(dred_textbox* pTextBox, int relativeMousePosX, i
         drte_engine__begin_dirty(pTB->pTL);
         {
             size_t iPrevCursorChar = drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
-            drte_engine_move_cursor_to_point(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
+
+            if (pTB->isDoingWordSelect) {
+                size_t iWordCharBeg;
+                size_t iWordCharEnd;
+                if (drte_engine_get_word_under_point(pTB->pTL, relativeMousePosX - offsetX, relativeMousePosY - offsetY, &iWordCharBeg, &iWordCharEnd)) {
+                    if (iWordCharEnd < pTB->wordSelectionAnchor.iCharEnd) {
+                        pTB->pTL->pSelections[pTB->pTL->selectionCount-1].iCharBeg = pTB->wordSelectionAnchor.iCharEnd;
+                        pTB->pTL->pSelections[pTB->pTL->selectionCount-1].iCharEnd = iWordCharBeg;
+                    } else {
+                        pTB->pTL->pSelections[pTB->pTL->selectionCount-1].iCharBeg = pTB->wordSelectionAnchor.iCharBeg;
+                        pTB->pTL->pSelections[pTB->pTL->selectionCount-1].iCharEnd = iWordCharEnd;
+                    }
+
+                    drte_engine_move_cursor_to_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), pTB->pTL->pSelections[pTB->pTL->selectionCount-1].iCharEnd);
+                }
+            } else {
+                drte_engine_move_cursor_to_point(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
+            }
 
             size_t iNextCursorChar = drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
             if (iPrevCursorChar != iNextCursorChar) {
@@ -1664,6 +1688,8 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
 
     if (mouseButton == DRGUI_MOUSE_BUTTON_LEFT)
     {
+        pTB->isDoingWordSelect = false;
+
         if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
             if (!drte_engine_is_anything_selected(pTB->pTL)) {
                 drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
@@ -1758,10 +1784,18 @@ void dred_textbox_on_mouse_button_dblclick(dred_textbox* pTextBox, int mouseButt
             
             drte_engine_select_word_under_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
 
+            if (pTB->pTL->selectionCount > 0) {
+                
+            }
+
             size_t iCharBeg;
             size_t iCharEnd;
             if (drte_engine_get_last_selection(pTB->pTL, &iCharBeg, &iCharEnd)) {
                 drte_engine_move_cursor_to_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iCharEnd);
+
+                pTB->isDoingWordSelect = true;
+                pTB->wordSelectionAnchor.iCharBeg = iCharBeg;
+                pTB->wordSelectionAnchor.iCharEnd = iCharEnd;
             }
         }
     }
