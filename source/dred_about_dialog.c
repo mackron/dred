@@ -69,7 +69,7 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
     drgui_get_image_size(pDialog->pLogo, &logoWidth, &logoHeight);
 
     drgui_rect bannerRect = dialogRect;
-    bannerRect.bottom = (logoHeight*10 + 64.0f) * uiScale;
+    bannerRect.bottom = (logoHeight*10 + 80.0f) * uiScale;
 
     drgui_draw_image_args args;
     memset(&args, 0, sizeof(args));
@@ -88,17 +88,31 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
     args.backgroundColor = drgui_rgb(255, 255, 255);
     drgui_draw_image(pElement, pDialog->pLogo, &args, pPaintData);
 
-    drgui_draw_rect(pElement, drgui_make_rect(0, bannerRect.bottom, dialogRect.right, bannerRect.bottom + (1 * uiScale)), drgui_rgb(200, 200, 200), pPaintData);
+    
 
-    const char* versionStr = "dred version " DRED_VERSION_STRING;
-    const char* copyrightStr = "Copyright \xC2\xA9 2016 David Reid";
     drgui_font* pFont = dred_font_acquire_subfont(pWindow->pDred->config.pUIFont, uiScale);
     drgui_font_metrics fontMetrics;
     drgui_get_font_metrics(pFont, &fontMetrics);
+
+    float penPosX = 0;
+    float penPosY = bannerRect.bottom - (fontMetrics.lineHeight*2.0f);
+
+    const char* linkStr = "https://www.drsoftware.com.au";
+
+    float linkWidth;
+    drgui_measure_string(pFont, linkStr, strlen(linkStr), &linkWidth, NULL);
+    drgui_draw_text(pElement, pFont, linkStr, (int)strlen(linkStr), ((dialogRect.right - dialogRect.left) - linkWidth) / 2, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+
+
+    const char* versionStr = "dred version " DRED_VERSION_STRING;
+    const char* copyrightStr = "Copyright \xC2\xA9 2016 David Reid";
     dred_font_release_subfont(pWindow->pDred->config.pUIFont, pFont);
 
-    float penPosX = (8*uiScale);
-    float penPosY = bannerRect.bottom + (9*uiScale);
+    penPosX = (8*uiScale);
+    penPosY = bannerRect.bottom;
+
+    drgui_draw_rect(pElement, drgui_make_rect(0, bannerRect.bottom, dialogRect.right, penPosY + (1 * uiScale)), drgui_rgb(200, 200, 200), pPaintData);
+    penPosY += (9*uiScale);
 
     drgui_draw_text(pElement, pFont, versionStr, (int)strlen(versionStr), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
     penPosY += fontMetrics.lineHeight;
