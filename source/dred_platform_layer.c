@@ -496,7 +496,13 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
 
         case WM_MOVE:
         {
-            dred_window_on_move(pWindow, (int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam));
+            // WM_MOVE passes it's position in client coordinates, but for dred's purposes the actual window position what we need.
+            RECT rect;
+            GetWindowRect(hWnd, &rect);
+            dred_window_on_move(pWindow, rect.left, rect.top);
+
+            // This technique will use the position of the client area.
+            //dred_window_on_move(pWindow, (int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam));
         } break;
 
         case WM_SIZE:
@@ -811,6 +817,30 @@ void dred_window_get_client_size__win32(dred_window* pWindow, unsigned int* pWid
     if (pHeightOut != NULL) {
         *pHeightOut = rect.bottom - rect.top;
     }
+}
+
+
+void dred_window_set_position__win32(dred_window* pWindow, int posX, int posY)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+    SetWindowPos(pWindow->hWnd, NULL, posX, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+}
+
+void dred_window_get_position__win32(dred_window* pWindow, int* pPosXOut, int* pPosYOut)
+{
+    if (pWindow == NULL) {
+        if (pPosXOut) *pPosXOut = 0;
+        if (pPosYOut) *pPosYOut = 0;
+    }
+
+    RECT rect;
+    GetWindowRect(pWindow->hWnd, &rect);
+
+    if (pPosXOut) *pPosXOut = rect.left;
+    if (pPosYOut) *pPosYOut = rect.top;
 }
 
 
@@ -1735,11 +1765,11 @@ static void dred_gtk_cb__on_paint(GtkWidget* pGTKWindow, cairo_t* pCairoContext,
     }
 }
 
-static void dred_gtk_cb__on_configure(GtkWidget* pGTKWindow, GdkEventConfigure* pEvent, gpointer pUserData)
+static bool dred_gtk_cb__on_configure(GtkWidget* pGTKWindow, GdkEventConfigure* pEvent, gpointer pUserData)
 {
     dred_window* pWindow = pUserData;
     if (pWindow == NULL) {
-        return;
+        return false;
     }
 
     // If the window's size has changed, it's panel and surface need to be resized, and then redrawn.
@@ -1774,6 +1804,32 @@ static void dred_gtk_cb__on_configure(GtkWidget* pGTKWindow, GdkEventConfigure* 
 
     pWindow->absoluteClientPosX = (int)pEvent->x;
     pWindow->absoluteClientPosY = (int)pEvent->y;
+
+    return false;
+}
+
+static bool dred_gtk_cb__on_configure__move(GtkWidget* pGTKWindow, GdkEventConfigure* pEvent, gpointer pUserData)
+{
+    (void)pGTKWindow;
+
+    dred_window* pWindow = pUserData;
+    if (pWindow == NULL) {
+        return false;
+    }
+
+    if (pWindow->windowPosX != pEvent->x || pWindow->windowPosY != pEvent->y) {
+        int posX;
+        int posY;
+        dred_window_get_position(pWindow, &posX, &posY);
+        dred_window_on_move(pWindow, posX, posY);
+
+        //dred_window_on_move(pWindow, pEvent->x, pEvent->y);
+    }
+
+    pWindow->windowPosX = pEvent->x;
+    pWindow->windowPosY = pEvent->y;
+
+    return false;
 }
 
 static gboolean dred_gtk_cb__on_mouse_enter(GtkWidget* pGTKWindow, GdkEventCrossing* pEvent, gpointer pUserData)
@@ -2061,6 +2117,7 @@ dred_window* dred_window_create__gtk__internal(dred_context* pDred, GtkWidget* p
         GDK_FOCUS_CHANGE_MASK);
 
     g_signal_connect(pGTKWindow, "delete-event",         G_CALLBACK(dred_gtk_cb__on_close),             pWindow);     // Close.
+    g_signal_connect(pGTKWindow, "configure-event",      G_CALLBACK(dred_gtk_cb__on_configure__move),   pWindow);     // Reposition and resize.
     g_signal_connect(pGTKWindow, "hide",                 G_CALLBACK(dred_gtk_cb__on_hide),              pWindow);     // Hide.
     g_signal_connect(pGTKWindow, "show",                 G_CALLBACK(dred_gtk_cb__on_show),              pWindow);     // Show.
     g_signal_connect(pGTKWindow, "key-press-event",      G_CALLBACK(dred_gtk_cb__on_key_down),          pWindow);     // Key down.
@@ -2109,6 +2166,8 @@ dred_window* dred_window_create__gtk__internal(dred_context* pDred, GtkWidget* p
 
     pWindow->pGTKBox = pGTKBox;
     pWindow->pGTKClientArea = pGTKClientArea;
+
+    dred_window_get_position(pWindow, &pWindow->windowPosX, &pWindow->windowPosY);
 
     return pWindow;
 
@@ -2219,6 +2278,26 @@ void dred_window_get_client_size__gtk(dred_window* pWindow, unsigned int* pWidth
 
     if (pWidthOut) *pWidthOut = alloc.width;
     if (pHeightOut) *pHeightOut = alloc.height;
+}
+
+
+void dred_window_set_position__gtk(dred_window* pWindow, int posX, int posY)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+    gtk_window_move(GTK_WINDOW(pWindow->pGTKWindow), posX, posY);
+}
+
+void dred_window_get_position__gtk(dred_window* pWindow, int* pPosXOut, int* pPosYOut)
+{
+    if (pWindow == NULL) {
+        if (pPosXOut) *pPosXOut = 0;
+        if (pPosYOut) *pPosYOut = 0;
+    }
+
+    gtk_window_get_position(GTK_WINDOW(pWindow->pGTKWindow), pPosXOut, pPosYOut);
 }
 
 
@@ -2953,6 +3032,30 @@ void dred_window_get_size(dred_window* pWindow, unsigned int* pWidthOut, unsigne
     dred_window_get_size__gtk(pWindow, pWidthOut, pHeightOut);
 #endif
 }
+
+
+void dred_window_set_position(dred_window* pWindow, int posX, int posY)
+{
+#ifdef DRED_WIN32
+    dred_window_set_position__win32(pWindow, posX, posY);
+#endif
+
+#ifdef DRED_GTK
+    dred_window_set_position__gtk(pWindow, posX, posY);
+#endif
+}
+
+void dred_window_get_position(dred_window* pWindow, int* pPosXOut, int* pPosYOut)
+{
+#ifdef DRED_WIN32
+    dred_window_get_position__win32(pWindow, pPosXOut, pPosYOut);
+#endif
+
+#ifdef DRED_GTK
+    dred_window_get_position__gtk(pWindow, pPosXOut, pPosYOut);
+#endif
+}
+
 
 void dred_window_get_client_size(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut)
 {

@@ -17,6 +17,15 @@
 //   Whether or not dirty files will automatically be reloaded. When disabled, reloading requires manual reloading via the "reload" command.
 //
 //
+// use-default-window-pos useDefaultWindowPos bool none true
+//   Internal use only. Used to determine whether or not the operation system should decide where to place the main window.
+//
+// window-pos-x windowPosX int none 0
+//   The position of the window on the x axis.
+//
+// window-pos-y windowPosY int none 0
+//   The position of the window on the y axis.
+//
 // window-width windowWidth int none 1280
 //   The width of the window
 //

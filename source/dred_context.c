@@ -143,6 +143,14 @@ void dred_window_cb__on_main_window_close(dred_window* pWindow)
     dred_close(pWindow->pDred);
 }
 
+void dred_window_cb__on_main_window_move(dred_window* pWindow, int posX, int posY)
+{
+    assert(pWindow != NULL);
+    
+    pWindow->pDred->config.windowPosX = posX;
+    pWindow->pDred->config.windowPosY = posY;
+}
+
 void dred_window_cb__on_main_window_size(drgui_element* pElement, float width, float height)
 {
     (void)height;
@@ -339,6 +347,8 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
     // The main window.
+    int windowPosX = pDred->config.windowPosX;
+    int windowPosY = pDred->config.windowPosY;
     unsigned int windowWidth =  (unsigned int)(pDred->config.windowWidth*pDred->dpiScale);
     unsigned int windowHeight = (unsigned int)(pDred->config.windowHeight*pDred->dpiScale);
     bool showWindowMaximized = pDred->config.windowMaximized;
@@ -350,6 +360,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     }
 
     pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
+    pDred->pMainWindow->onMove = dred_window_cb__on_main_window_move;
     drgui_set_on_size(pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_size);
 
     // Ensure the accelerators are bound. This needs to be done after loading the initial configs.
@@ -398,6 +409,13 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     if (!pDred->config.showMenuBar) {
         dred_window_hide_menu(pDred->pMainWindow);
     }
+    if (!pDred->config.useDefaultWindowPos) {
+        dred_window_set_position(pDred->pMainWindow, windowPosX, windowPosY);
+    }
+
+    // We only want to use the default window position on first run.
+    pDred->config.useDefaultWindowPos = false;
+
 
 
 

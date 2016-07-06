@@ -10,6 +10,9 @@ bool showTabBar; \
 bool showMenuBar; \
 bool autoHideCmdBar; \
 bool enableAutoReload; \
+bool useDefaultWindowPos; \
+int windowPosX; \
+int windowPosY; \
 int windowWidth; \
 int windowHeight; \
 bool windowMaximized; \

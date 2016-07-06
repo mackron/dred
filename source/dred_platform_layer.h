@@ -177,6 +177,11 @@ struct dred_window
     // The position of the inner section of the window. This is set in the configure event handler.
     int absoluteClientPosX;
     int absoluteClientPosY;
+
+    // The position of the window. This is set by the configure event handler, and is used to detect whether or not the window has
+    // moved and thus need to have the on_move event posted.
+    int windowPosX;
+    int windowPosY;
 #endif
 };
 
@@ -195,6 +200,10 @@ void dred_window_set_title(dred_window* pWindow, const char* title);
 // Sets the size of the window.
 void dred_window_set_size(dred_window* pWindow, unsigned int newWidth, unsigned int newHeight);
 void dred_window_get_size(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut);
+
+// Sets the position of the window.
+void dred_window_set_position(dred_window* pWindow, int posX, int posY);
+void dred_window_get_position(dred_window* pWindow, int* pPosXOut, int* pPosYOut);
 
 // Retrieves the size of the client area of the given window. This does not include the size of the menu.
 void dred_window_get_client_size(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut);
