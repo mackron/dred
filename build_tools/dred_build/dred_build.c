@@ -43,8 +43,10 @@ typedef struct
     char name[256];
     char varname[256];
     unsigned int type;
+    char typeSrc[256];
     char setCallback[256];
     char defaultValue[1024];
+    char defaultValueSrc[1024];
     char* documentation;
 } config_var;
 
@@ -220,7 +222,7 @@ void fwrite_string(FILE* pFile, const char* str)
 void generate_commands_list(FILE* pFileOut)
 {
     assert(pFileOut != NULL);
-    
+
     size_t fileDataSize;
     char* fileData = dr_open_and_read_text_file("../source/dred_commands.h", &fileDataSize);
     if (fileData == NULL) {
@@ -239,6 +241,13 @@ void generate_commands_list(FILE* pFileOut)
             break;
         }
         nextLine = dr_next_line(nextLine);
+    }
+
+
+    FILE* pFileOutWWW = dr_fopen("../www-dev/commands.html", "w+b");
+    if (pFileOut == NULL) {
+        printf("Failed to create output WWW file.");
+        return;
     }
 
 
@@ -293,6 +302,12 @@ void generate_commands_list(FILE* pFileOut)
         snprintf(line, sizeof(line), "    {%s, %s},\n", proc, flags);
         Commands = gb_append_cstring(Commands, line);
 
+
+        char htmlLine[4096];
+        snprintf(htmlLine, sizeof(htmlLine), "<div id=\"%s\" class=\"cmd-title\">%s</div>\n", name, name);
+        fwrite_string(pFileOutWWW, htmlLine);
+
+
         runningNameLength += strlen(name)+1;
         commandCount += 1;
 
@@ -310,6 +325,9 @@ void generate_commands_list(FILE* pFileOut)
     fwrite_string(pFileOut, CommandNamePool);
     fwrite_string(pFileOut, CommandNames);
     fwrite_string(pFileOut, Commands);
+
+
+    fclose(pFileOutWWW);
 }
 
 void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
@@ -568,13 +586,12 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
                 continue;
             }
 
-            char type[32];
-            next = dr_next_token(next, type, sizeof(type));
+            next = dr_next_token(next, var.typeSrc, sizeof(var.typeSrc));
             if (next == NULL) {
                 nextLine = dr_next_line(nextLine);
                 continue;
             }
-            var.type = parse_config_var_type(type);
+            var.type = parse_config_var_type(var.typeSrc);
 
             next = dr_next_token(next, var.setCallback, sizeof(var.setCallback));
             if (next == NULL) {
@@ -587,6 +604,7 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
             get_config_var_default_value(var.type, var.defaultValue, sizeof(var.defaultValue));
 
             const char* defaultValue = next;
+            strcpy_s(var.defaultValueSrc, sizeof(var.defaultValueSrc), defaultValue);
 
             char unused[1024];
             if (dr_next_token(next, unused, sizeof(unused))) {
@@ -822,6 +840,36 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
     }
     funcOutput = gb_append_cstring(funcOutput, "}\n\n");
     fwrite_string(pFileOut, funcOutput);
+
+
+
+    FILE* pFileOutWWW = dr_fopen("../www-dev/configs.html", "w+b");
+    if (pFileOut == NULL) {
+        printf("Failed to create output WWW file.");
+        return;
+    }
+
+    for (unsigned int iVar = 0; iVar < varCount; ++iVar) {
+        config_var* pVar = &pConfigVars[iVar];
+
+        const char* format =
+            "<div id=\"%s\" class=\"cfg-title\">\n"
+            "    %s\n"
+            "    <div style=\"padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;\">\n"
+            "        <div style=\"margin-bottom:0.5em;\">%s</div>\n"
+            "        <table style=\"border-collapse:collapse; margin:0; padding:0;\">\n"
+            "            <tr><td>Type:</td><td>%s</td></tr>\n"
+            "            <tr><td style=\"padding-right:1em;\">Default Value:</td><td>%s</td></tr>\n"
+            "        </table>\n"
+            "    </div>\n"
+            "</div>\n";
+
+        char htmlLine[4096];
+        snprintf(htmlLine, sizeof(htmlLine), format, pVar->name, pVar->name, pVar->documentation, pVar->typeSrc, pVar->defaultValueSrc);
+        fwrite_string(pFileOutWWW, htmlLine);
+    }
+
+    fclose(pFileOutWWW);
 }
 
 int main(int argc, char** argv)
