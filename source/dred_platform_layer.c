@@ -1221,7 +1221,7 @@ void dred_menu_item_delete__win32(dred_menu_item* pItem)
         return;
     }
 
-    RemoveMenu(pItem->pOwnerMenu->hMenu, pItem->index, MF_BYPOSITION);
+    RemoveMenu(pItem->pOwnerMenu->hMenu, (UINT)pItem->index, MF_BYPOSITION);
 
     // Remove the item from the list.
     assert(pItem->pOwnerMenu->menuItemCount > 0);
@@ -1245,7 +1245,7 @@ void dred_menu_item_enable__win32(dred_menu_item* pItem)
         return;
     }
 
-    EnableMenuItem(pItem->pOwnerMenu->hMenu, pItem->index, MF_BYPOSITION | MF_ENABLED);
+    EnableMenuItem(pItem->pOwnerMenu->hMenu, (UINT)pItem->index, MF_BYPOSITION | MF_ENABLED);
 }
 
 void dred_menu_item_disable__win32(dred_menu_item* pItem)
@@ -1254,7 +1254,7 @@ void dred_menu_item_disable__win32(dred_menu_item* pItem)
         return;
     }
 
-    EnableMenuItem(pItem->pOwnerMenu->hMenu, pItem->index, MF_BYPOSITION | MF_GRAYED);
+    EnableMenuItem(pItem->pOwnerMenu->hMenu, (UINT)pItem->index, MF_BYPOSITION | MF_GRAYED);
 }
 
 

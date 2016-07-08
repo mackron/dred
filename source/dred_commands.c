@@ -713,7 +713,7 @@ bool dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSiz
         return false;
     }
 
-    value = dr_next_token(value, nameOut, nameOutSize);
+    value = dr_next_token(value, nameOut, (unsigned int)nameOutSize);
     if (value != NULL) {
         char shortcutStr[256];
         value = dr_next_token(value, shortcutStr, sizeof(shortcutStr));
@@ -726,7 +726,7 @@ bool dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSiz
             }
 
             if (cmd[0] == '\"') {
-                return dr_next_token(cmd, pCmdOut, cmdOutSize) != NULL;    // <-- This will trim the double-quotes.
+                return dr_next_token(cmd, pCmdOut, (unsigned int)cmdOutSize) != NULL;    // <-- This will trim the double-quotes.
             } else {
                 return strcpy_s(pCmdOut, cmdOutSize, cmd) == 0;
             }

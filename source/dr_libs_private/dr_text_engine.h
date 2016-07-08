@@ -1007,7 +1007,7 @@ drte_style_token drte_engine__get_style_token(drte_engine* pEngine, uint8_t styl
 
 
 // Retrieves the next selection region starting from the given character, including the region the character is sitting in, if any.
-bool drte_engine__get_next_selection_from_character(drte_engine* pEngine, uint32_t iChar, drte_region* pSelectionOut)
+bool drte_engine__get_next_selection_from_character(drte_engine* pEngine, size_t iChar, drte_region* pSelectionOut)
 {
     assert(pEngine != NULL);
     assert(pSelectionOut != NULL);

@@ -137,7 +137,7 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
     size_t creditsCount = sizeof(credits) / sizeof(credits[0]);
 
     for (size_t iCredit = 0; iCredit < creditsCount; ++iCredit) {
-        drgui_draw_text(pElement, pFont, credits[iCredit], strlen(credits[iCredit]), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+        drgui_draw_text(pElement, pFont, credits[iCredit], (int)strlen(credits[iCredit]), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
         penPosY += fontMetrics.lineHeight;
     }
 }
