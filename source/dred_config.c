@@ -265,7 +265,7 @@ void dred_config_on_set__ui_font(dred_context* pDred)
 {
     // Everything that uses the UI font needs to be updated.
     dred_cmdbar_refresh_styling(pDred->pCmdBar);
-    //dred_settings_dialog_refresh_styling(pDred->pSettingsDialog);
+    dred_settings_dialog_refresh_styling(pDred->pSettingsDialog);
 
     // The UI font may have resulted in the main window's layout becoming invalid.
     dred_update_main_window_layout(pDred);
