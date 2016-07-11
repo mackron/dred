@@ -151,24 +151,6 @@ typedef struct
     // The text. Can be null in some cases where it isn't used.
     char* text;
 
-    // The list of cursors.
-    drte_marker* pCursors;
-
-    // The cursor count.
-    size_t cursorCount;
-
-    // The list of selection regions at the time the state was captured.
-    drte_region* pSelections;
-
-    // The selection count.
-    size_t selectionCount;
-
-    // The size of the application-defined data.
-    size_t userDataSize;
-
-    // A pointer to the application-defined data. This is malloc'd and free'd.
-    void* pUserData;
-
 } drte_engine_state;
 
 typedef struct
@@ -194,6 +176,16 @@ typedef struct
     drte_engine_state newState;
 
 } drte_engine_undo_state;
+
+
+// Used internally for implementing the undo/redo stack.
+typedef struct
+{
+    size_t stackPtr;
+    size_t bufferSize;
+    void* pBuffer;
+} drte_stack_buffer;
+
 
 struct drte_engine
 {
@@ -342,6 +334,20 @@ struct drte_engine
 
     /// The index of the undo/redo state item we are currently sitting on.
     unsigned int iUndoState;
+
+
+
+    // Whether or not there is a prepared undo state.
+    bool hasPreparedUndoState;
+
+    // The buffer containing the raw data of the prepared undo state.
+    drte_stack_buffer preparedUndoState;
+
+    // The main undo/redo buffer, implemented on a stack-based allocation scheme.
+    drte_stack_buffer undoBuffer;
+
+    // The offset in the main undo buffer of the first byte of the current undo point.
+    size_t currentUndoDataOffset;
 
 
     /// The counter used to determine when an onDirty event needs to be posted.
@@ -836,9 +842,31 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 #ifdef DR_TEXT_ENGINE_IMPLEMENTATION
 #include <stdlib.h>
 
+#ifdef _MSC_VER
+#define DRTE_INLINE __forceinline
+#else
+#define DRTE_INLINE inline
+#endif
+
+#ifndef DRTE_STACK_BUFFER_ALIGNMENT
+#define DRTE_STACK_BUFFER_ALIGNMENT sizeof(size_t)
+#endif
+
+#ifndef DRTE_STACK_BUFFER_BLOCK_SIZE
+#define DRTE_STACK_BUFFER_BLOCK_SIZE 4096
+#endif
+
 #ifndef DRTE_PAGE_LINE_COUNT
 #define DRTE_PAGE_LINE_COUNT    256
 #endif
+
+/*#ifndef DRTE_UNDO_BUFFER_BLOCK_SIZE
+#define DRTE_UNDO_BUFFER_BLOCK_SIZE DRTE_STACK_BUFFER_BLOCK_SIZE
+#endif
+
+#ifndef DRTE_UNDO_BUFFER_ALIGNMENT
+#define DRTE_UNDO_BUFFER_ALIGNMENT DRTE_STACK_BUFFER_ALIGNMENT
+#endif*/
 
 #define DRTE_INVALID_STYLE_SLOT 255
 
@@ -880,6 +908,104 @@ static drte_region drte_region_normalize(drte_region region)
 
     return drte_region_swap_characters(region);
 }
+
+
+
+//// Stack Buffer ////
+//
+// A stack buffer is a simple FILO buffer where blocks memory of arbitrary sizes are pushed to the end and, likewise, freed from the end.
+//
+// Do not persistently store pointers returned by drte_stack_buffer_alloc(). Instead store offsets by interrogating the stackPtr property.
+//
+// Data can be popped from the internal buffer with drte_stack_buffer_free() or drte_stack_buffer_set_stack_ptr(). Note that these will
+// ensure the stack pointer is aligned based on DRTE_STACK_BUFFER_ALIGNMENT, so you will want to call drte_stack_buffer_get_stack_ptr()
+// after the fact if you need to access the stack pointer again later.
+bool drte_stack_buffer_init(drte_stack_buffer* pStack)
+{
+    if (pStack == NULL) {
+        return false;
+    }
+
+    memset(pStack, 0, sizeof(*pStack));
+    return true;
+}
+
+void drte_stack_buffer_uninit(drte_stack_buffer* pStack)
+{
+    if (pStack == NULL) {
+        return;
+    }
+
+    free(pStack->pBuffer);
+}
+
+size_t drte_stack_buffer_get_stack_ptr(drte_stack_buffer* pStack)
+{
+    if (pStack == NULL) {
+        return 0;
+    }
+
+    return pStack->stackPtr;
+}
+
+size_t drte_stack_buffer_set_stack_ptr(drte_stack_buffer* pStack, size_t newStackPtr)
+{
+    if (pStack == NULL) {
+        return 0;
+    }
+
+    assert(newStackPtr <= pStack->bufferSize);   // <-- If you trigger this it means you're trying to move the stack pointer beyond the buffer.
+
+    pStack->stackPtr = dr_round_up(newStackPtr, DRTE_STACK_BUFFER_ALIGNMENT);
+    return pStack->stackPtr;
+}
+
+void* drte_stack_buffer_alloc(drte_stack_buffer* pStack, size_t sizeInBytes)
+{
+    if (pStack == NULL || sizeInBytes == 0) {
+        return NULL;
+    }
+
+    // The allocated size is always aligned.
+    sizeInBytes = dr_round_up(sizeInBytes, DRTE_STACK_BUFFER_ALIGNMENT);
+
+    size_t newStackPtr = pStack->stackPtr + sizeInBytes;
+    if (newStackPtr > pStack->bufferSize) {
+        size_t newBufferSize = (pStack->bufferSize == 0) ? DRTE_STACK_BUFFER_BLOCK_SIZE : dr_round_up(newStackPtr, DRTE_STACK_BUFFER_BLOCK_SIZE);
+        void* pNewBuffer = realloc(pStack->pBuffer, newBufferSize);
+        if (pNewBuffer == NULL) {
+            return NULL;
+        }
+
+        pStack->bufferSize = newBufferSize;
+        pStack->pBuffer = pNewBuffer;
+    }
+
+    void* pResult = (void*)((uint8_t*)pStack->pBuffer + pStack->stackPtr);
+
+    pStack->stackPtr = newStackPtr;
+    return pResult;
+}
+
+void drte_stack_buffer_free(drte_stack_buffer* pStack, size_t sizeInBytes)
+{
+    if (pStack == NULL || sizeInBytes == 0) {
+        return;
+    }
+
+    assert(sizeInBytes <= pStack->stackPtr);     // <-- If you trigger this is means you're trying to free too much.
+    drte_stack_buffer_set_stack_ptr(pStack, pStack->stackPtr - sizeInBytes);
+}
+
+void* drte_stack_buffer_get_data_ptr(drte_stack_buffer* pStack, size_t offset)
+{
+    if (pStack == NULL || pStack->stackPtr < offset) {
+        return NULL;
+    }
+
+    return (void*)((uint8_t*)pStack->pBuffer + offset);
+}
+
 
 
 
@@ -960,10 +1086,10 @@ void drte_engine__uninit_undo_state(drte_engine_undo_state* pUndoState);
 void drte_engine__push_undo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState);
 
 /// Applies the given undo state.
-void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState);
+void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState, const void* pUndoDataPtr);
 
 /// Applies the given undo state as a redo operation.
-void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState);
+void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState, const void* pUndoDataPtr);
 
 
 /// Retrieves a rectangle relative to the given text engine that's equal to the size of the container.
@@ -1330,6 +1456,9 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     pEngine->accumulatedDirtyRect  = drgui_make_inside_out_rect();
     pEngine->pUserData             = pUserData;
 
+    drte_stack_buffer_init(&pEngine->preparedUndoState);
+    drte_stack_buffer_init(&pEngine->undoBuffer);
+
     return pEngine;
 }
 
@@ -1342,9 +1471,9 @@ void drte_engine_delete(drte_engine* pEngine)
     drte_engine_clear_undo_stack(pEngine);
     
     free(pEngine->preparedState.text);
-    free(pEngine->preparedState.pCursors);
-    free(pEngine->preparedState.pSelections);
-    free(pEngine->preparedState.pUserData);
+
+    drte_stack_buffer_uninit(&pEngine->undoBuffer);
+    drte_stack_buffer_uninit(&pEngine->preparedUndoState);
 
     free(pEngine->pSelections);
     free(pEngine->pCursors);
@@ -3534,6 +3663,125 @@ bool drte_engine_get_word_under_point(drte_engine* pEngine, float posX, float po
 }
 
 
+bool drte_engine__capture_and_push_undo_state__user_data(drte_engine* pEngine, drte_stack_buffer* pStack)
+{
+    assert(pEngine != NULL);
+    assert(pStack != NULL);
+
+    // Make room in the undo buffer for the application-defined prepared state.
+    size_t preparedStateUserDataSize = 0;
+    if (pEngine->onGetUndoState) {
+        preparedStateUserDataSize = pEngine->onGetUndoState(pEngine, NULL);
+    }
+
+    void* pPreparedUserData = drte_stack_buffer_alloc(pStack, sizeof(size_t) + preparedStateUserDataSize);     // <-- sizeof(size_t) is for storing the size of the user data.
+    if (pPreparedUserData == NULL) {
+        return false;
+    }
+
+    if (preparedStateUserDataSize > 0) {
+        *(size_t*)pPreparedUserData = preparedStateUserDataSize;
+        if (pEngine->onGetUndoState(pEngine, (uint8_t*)pPreparedUserData + sizeof(size_t)) != preparedStateUserDataSize) {
+            return false;   // Inconsistent data size returned by onGetUndoState().
+        }
+    }
+
+    return true;
+}
+
+bool drte_engine__capture_and_push_undo_state__cursors(drte_engine* pEngine, drte_stack_buffer* pStack)
+{
+    assert(pEngine != NULL);
+    assert(pStack != NULL);
+
+    size_t sizeInBytes = 
+        sizeof(pEngine->cursorCount) +
+        sizeof(drte_marker) * pEngine->cursorCount;
+
+    uint8_t* pData = drte_stack_buffer_alloc(pStack, sizeInBytes);
+    if (pData == NULL) {
+        return false;
+    }
+
+    memcpy(pData, &pEngine->cursorCount, sizeof(pEngine->cursorCount));
+    memcpy(pData + sizeof(pEngine->cursorCount), pEngine->pCursors, sizeof(drte_marker) * pEngine->cursorCount);
+
+    return true;
+}
+
+bool drte_engine__capture_and_push_undo_state__selections(drte_engine* pEngine, drte_stack_buffer* pStack)
+{
+    assert(pEngine != NULL);
+    assert(pStack != NULL);
+
+    size_t sizeInBytes = 
+        sizeof(pEngine->selectionCount) +
+        sizeof(drte_region) * pEngine->selectionCount;
+
+    uint8_t* pData = drte_stack_buffer_alloc(pStack, sizeInBytes);
+    if (pData == NULL) {
+        return false;
+    }
+
+    memcpy(pData, &pEngine->selectionCount, sizeof(pEngine->selectionCount));
+    memcpy(pData + sizeof(pEngine->selectionCount), pEngine->pSelections, sizeof(drte_region) * pEngine->selectionCount);
+
+    return true;
+}
+
+bool drte_engine__capture_and_push_undo_state(drte_engine* pEngine, drte_stack_buffer* pStack)
+{
+    if (pEngine == NULL || pStack == NULL) {
+        return false;
+    }
+
+    size_t oldStackPtr = drte_stack_buffer_get_stack_ptr(pStack);
+
+    if (!drte_engine__capture_and_push_undo_state__user_data(pEngine, pStack)) {
+        drte_stack_buffer_set_stack_ptr(pStack, oldStackPtr);
+        return false;
+    }
+
+    if (!drte_engine__capture_and_push_undo_state__cursors(pEngine, pStack)) {
+        drte_stack_buffer_set_stack_ptr(pStack, oldStackPtr);
+        return false;
+    }
+
+    if (!drte_engine__capture_and_push_undo_state__selections(pEngine, pStack)) {
+        drte_stack_buffer_set_stack_ptr(pStack, oldStackPtr);
+        return false;
+    }
+
+    return true;
+}
+
+size_t drte_engine__get_prev_undo_data_offset(drte_engine* pEngine)
+{
+    if (pEngine == NULL) {
+        return 0;
+    }
+
+    if (pEngine->undoBuffer.pBuffer == NULL || pEngine->undoStackCount == 0) {
+        return 0;
+    }
+
+    return *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, pEngine->currentUndoDataOffset + 0));
+}
+
+size_t drte_engine__get_next_undo_data_offset(drte_engine* pEngine)
+{
+    if (pEngine == NULL) {
+        return 0;
+    }
+
+    if (pEngine->undoBuffer.pBuffer == NULL || pEngine->undoStackCount == 0) {
+        return 0;
+    }
+
+    return *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, pEngine->currentUndoDataOffset + sizeof(size_t)));
+}
+
+
 bool drte_engine_prepare_undo_point(drte_engine* pEngine)
 {
     if (pEngine == NULL) {
@@ -3541,34 +3789,19 @@ bool drte_engine_prepare_undo_point(drte_engine* pEngine)
     }
 
     // If we have a previously prepared state we'll need to clear it.
-    if (pEngine->preparedState.text != NULL) {
+    if (pEngine->hasPreparedUndoState) {
         free(pEngine->preparedState.text);
-        free(pEngine->preparedState.pCursors);
-        free(pEngine->preparedState.pSelections);
-        free(pEngine->preparedState.pUserData);
+        drte_stack_buffer_set_stack_ptr(&pEngine->preparedUndoState, 0);
     }
 
     pEngine->preparedState.text = (char*)malloc(pEngine->textLength + 1);
     drgui__strcpy_s(pEngine->preparedState.text, pEngine->textLength + 1, (pEngine->text != NULL) ? pEngine->text : "");
 
-    pEngine->preparedState.cursorCount = pEngine->cursorCount;
-    pEngine->preparedState.pCursors = (drte_marker*)malloc(pEngine->cursorCount * sizeof(drte_marker));
-    memcpy(pEngine->preparedState.pCursors, pEngine->pCursors, pEngine->cursorCount * sizeof(*pEngine->preparedState.pCursors));
 
-    pEngine->preparedState.selectionCount = pEngine->selectionCount;
-    pEngine->preparedState.pSelections = (drte_region*)malloc(pEngine->selectionCount * sizeof(drte_region));
-    memcpy(pEngine->preparedState.pSelections, pEngine->pSelections, pEngine->selectionCount * sizeof(*pEngine->preparedState.pSelections));
-
-    pEngine->preparedState.userDataSize = 0;
-    pEngine->preparedState.pUserData = NULL;
-    if (pEngine->onGetUndoState) {
-        pEngine->preparedState.userDataSize = pEngine->onGetUndoState(pEngine, NULL);
-        if (pEngine->preparedState.userDataSize > 0) {
-            pEngine->preparedState.pUserData = malloc(pEngine->preparedState.userDataSize);
-            if (pEngine->preparedState.pUserData != NULL) {
-                pEngine->onGetUndoState(pEngine, pEngine->preparedState.pUserData);
-            }
-        }
+    // If the prepared undo point is cancelled later on we'll need to free the memory at some point.
+    pEngine->hasPreparedUndoState = drte_engine__capture_and_push_undo_state(pEngine, &pEngine->preparedUndoState);
+    if (!pEngine->hasPreparedUndoState) {
+        return false;   // <-- An error occured while trying to capture the undo state.
     }
 
     return true;
@@ -3581,44 +3814,84 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
     }
 
     // The undo point must have been prepared earlier.
-    if (pEngine->preparedState.text == NULL) {
+    if (!pEngine->hasPreparedUndoState) {
         return false;
     }
 
-
+    
     // The undo state is creating by diff-ing the prepared state and the current state.
     drte_engine_state currentState;
     currentState.text = pEngine->text;
-    currentState.pCursors = pEngine->pCursors;
-    currentState.cursorCount = pEngine->cursorCount;
-    currentState.pSelections = pEngine->pSelections;
-    currentState.selectionCount = pEngine->selectionCount;
-    currentState.userDataSize = 0;
-    currentState.pUserData = NULL;
 
     drte_engine_undo_state undoState;
     if (!drte_engine__diff_states(&pEngine->preparedState, &currentState, &undoState)) {
         return false;
     }
 
-    undoState.newState.userDataSize = 0;
-    undoState.newState.pUserData = NULL;
-    if (pEngine->onGetUndoState) {
-        undoState.newState.userDataSize = pEngine->onGetUndoState(pEngine, NULL);
-        if (undoState.newState.userDataSize > 0) {
-            undoState.newState.pUserData = malloc(undoState.newState.userDataSize);
-            if (undoState.newState.pUserData != NULL) {
-                pEngine->onGetUndoState(pEngine, undoState.newState.pUserData);
-            }
-        }
-    }
-
-
     // At this point we have the undo state ready and we just need to add it the undo stack. Before doing so, however,
     // we need to trim the end fo the stack.
     drte_engine__trim_undo_stack(pEngine);
     drte_engine__push_undo_state(pEngine, &undoState);
 
+
+
+
+    // The undo buffer needs to be trimmed.
+    drte_stack_buffer_set_stack_ptr(&pEngine->undoBuffer, drte_engine__get_next_undo_data_offset(pEngine));
+    
+    // The data to push onto the stack is done in 3 main parts. The first part is the header which stores the size and offsets of each major section. The
+    // second part is the prepared data. The third part is the state at the time of comitting.
+    size_t prevUndoDataOffset = pEngine->currentUndoDataOffset;
+    size_t nextUndoDataOffset = 0;
+    
+    // Header.
+    size_t headerSize =
+        sizeof(size_t) +    // Prev undo data offset.
+        sizeof(size_t) +    // Next undo data offset.
+        sizeof(size_t) +    // Old state local offset.
+        sizeof(size_t);     // New state local offset.
+    size_t headerOffset = drte_stack_buffer_get_stack_ptr(&pEngine->undoBuffer);
+
+    if (drte_stack_buffer_alloc(&pEngine->undoBuffer, headerSize) == NULL) {
+        drte_stack_buffer_set_stack_ptr(&pEngine->undoBuffer, pEngine->currentUndoDataOffset);
+        return false;
+    }
+
+
+    // Prepared data.
+    size_t preparedDataSize = drte_stack_buffer_get_stack_ptr(&pEngine->preparedUndoState);
+    size_t preparedDataOffset = drte_stack_buffer_get_stack_ptr(&pEngine->undoBuffer);
+
+    if (drte_stack_buffer_alloc(&pEngine->undoBuffer, preparedDataSize) == NULL) {
+        drte_stack_buffer_set_stack_ptr(&pEngine->undoBuffer, pEngine->currentUndoDataOffset);
+        return false;
+    }
+
+    memcpy(drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, preparedDataOffset), drte_stack_buffer_get_data_ptr(&pEngine->preparedUndoState, 0), preparedDataSize);
+
+
+    // Committed data.
+    size_t committedDataOffset = drte_stack_buffer_get_stack_ptr(&pEngine->undoBuffer);
+
+    if (!drte_engine__capture_and_push_undo_state(pEngine, &pEngine->undoBuffer)) {
+        drte_stack_buffer_set_stack_ptr(&pEngine->undoBuffer, pEngine->currentUndoDataOffset);
+        return false;
+    }
+
+    nextUndoDataOffset = drte_stack_buffer_get_stack_ptr(&pEngine->undoBuffer);
+
+
+    // The header needs to be written last.
+    *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*0)) = prevUndoDataOffset;
+    *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*1)) = nextUndoDataOffset;
+    *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*2)) = preparedDataOffset  - headerOffset;
+    *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*3)) = committedDataOffset - headerOffset;
+    
+
+    pEngine->currentUndoDataOffset = headerOffset;
+
+    drte_stack_buffer_set_stack_ptr(&pEngine->preparedUndoState, 0);
+    pEngine->hasPreparedUndoState = false;
     return true;
 }
 
@@ -3628,18 +3901,25 @@ bool drte_engine_undo(drte_engine* pEngine)
         return false;
     }
 
-    if (drte_engine_get_undo_points_remaining_count(pEngine) > 0)
-    {
+    if (drte_engine_get_undo_points_remaining_count(pEngine) > 0) {
+        const void* pUndoDataPtr = drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, pEngine->currentUndoDataOffset);
+        if (pUndoDataPtr == NULL) {
+            return false;
+        }
+
+
         drte_engine_undo_state* pUndoState = pEngine->pUndoStack + (pEngine->iUndoState - 1);
         assert(pUndoState != NULL);
 
-        drte_engine__apply_undo_state(pEngine, pUndoState);
+        drte_engine__apply_undo_state(pEngine, pUndoState, pUndoDataPtr);
         pEngine->iUndoState -= 1;
 
         if (pEngine->onUndoPointChanged) {
             pEngine->onUndoPointChanged(pEngine, pEngine->iUndoState);
         }
 
+
+        pEngine->currentUndoDataOffset = drte_engine__get_prev_undo_data_offset(pEngine);
         return true;
     }
 
@@ -3652,18 +3932,25 @@ bool drte_engine_redo(drte_engine* pEngine)
         return false;
     }
 
-    if (drte_engine_get_redo_points_remaining_count(pEngine) > 0)
-    {
+    if (drte_engine_get_redo_points_remaining_count(pEngine) > 0) {
+        const void* pUndoDataPtr = drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, drte_engine__get_next_undo_data_offset(pEngine));
+        if (pUndoDataPtr == NULL) {
+            return false;
+        }
+
+
         drte_engine_undo_state* pUndoState = pEngine->pUndoStack + pEngine->iUndoState;
         assert(pUndoState != NULL);
 
-        drte_engine__apply_redo_state(pEngine, pUndoState);
+        drte_engine__apply_redo_state(pEngine, pUndoState, pUndoDataPtr);
         pEngine->iUndoState += 1;
 
         if (pEngine->onUndoPointChanged) {
             pEngine->onUndoPointChanged(pEngine, pEngine->iUndoState);
         }
 
+
+        pEngine->currentUndoDataOffset = drte_engine__get_next_undo_data_offset(pEngine);
         return true;
     }
 
@@ -4580,40 +4867,9 @@ bool drte_engine__diff_states(drte_engine_state* pPrevState, drte_engine_state* 
     pUndoStateOut->oldText = (char*)malloc(oldTextLen + 1);
     drgui__strncpy_s(pUndoStateOut->oldText, oldTextLen + 1, prevText + sameChCountStart, oldTextLen);
 
-    pUndoStateOut->oldState.cursorCount = pPrevState->cursorCount;
-    pUndoStateOut->oldState.pCursors = (drte_marker*)malloc(pPrevState->cursorCount * sizeof(*pUndoStateOut->oldState.pCursors));
-    memcpy(pUndoStateOut->oldState.pCursors, pPrevState->pCursors, pPrevState->cursorCount * sizeof(*pUndoStateOut->oldState.pCursors));
-
-    pUndoStateOut->oldState.selectionCount = pPrevState->selectionCount;
-    pUndoStateOut->oldState.pSelections = (drte_region*)malloc(pPrevState->selectionCount * sizeof(*pUndoStateOut->oldState.pSelections));
-    memcpy(pUndoStateOut->oldState.pSelections, pPrevState->pSelections, pPrevState->selectionCount * sizeof(*pUndoStateOut->oldState.pSelections));
-
-    pUndoStateOut->oldState.userDataSize = pPrevState->userDataSize;
-    pUndoStateOut->oldState.pUserData = NULL;
-    if (pPrevState->userDataSize > 0 && pPrevState->pUserData != NULL) {
-        pUndoStateOut->oldState.pUserData = malloc(pPrevState->userDataSize);
-        memcpy(pUndoStateOut->oldState.pUserData, pPrevState->pUserData, pPrevState->userDataSize);
-    }
-
-
     size_t newTextLen = currLen - sameChCountStart - sameChCountEnd;
     pUndoStateOut->newText = (char*)malloc(newTextLen + 1);
     drgui__strncpy_s(pUndoStateOut->newText, newTextLen + 1, currText + sameChCountStart, newTextLen);
-
-    pUndoStateOut->newState.cursorCount = pCurrentState->cursorCount;
-    pUndoStateOut->newState.pCursors = (drte_marker*)malloc(pCurrentState->cursorCount * sizeof(*pUndoStateOut->newState.pCursors));
-    memcpy(pUndoStateOut->newState.pCursors, pCurrentState->pCursors, pCurrentState->cursorCount * sizeof(*pUndoStateOut->newState.pCursors));
-
-    pUndoStateOut->newState.selectionCount = pCurrentState->selectionCount;
-    pUndoStateOut->newState.pSelections = (drte_region*)malloc(pCurrentState->selectionCount * sizeof(*pUndoStateOut->newState.pSelections));
-    memcpy(pUndoStateOut->newState.pSelections, pCurrentState->pSelections, pCurrentState->selectionCount * sizeof(*pUndoStateOut->newState.pSelections));
-
-    pUndoStateOut->newState.userDataSize = pCurrentState->userDataSize;
-    pUndoStateOut->newState.pUserData = NULL;
-    if (pPrevState->userDataSize > 0 && pCurrentState->pUserData != NULL) {
-        pUndoStateOut->newState.pUserData = malloc(pCurrentState->userDataSize);
-        memcpy(pUndoStateOut->newState.pUserData, pCurrentState->pUserData, pCurrentState->userDataSize);
-    }
 
     return true;
 }
@@ -4627,27 +4883,8 @@ void drte_engine__uninit_undo_state(drte_engine_undo_state* pUndoState)
     free(pUndoState->oldText);
     pUndoState->oldText = NULL;
 
-    free(pUndoState->oldState.pCursors);
-    pUndoState->oldState.pCursors = NULL;
-
-    free(pUndoState->oldState.pSelections);
-    pUndoState->oldState.pSelections = NULL;
-
-    free(pUndoState->oldState.pUserData);
-    pUndoState->oldState.pUserData = NULL;
-
-
     free(pUndoState->newText);
     pUndoState->newText = NULL;
-
-    free(pUndoState->newState.pCursors);
-    pUndoState->newState.pCursors = NULL;
-
-    free(pUndoState->newState.pSelections);
-    pUndoState->newState.pSelections = NULL;
-
-    free(pUndoState->newState.pUserData);
-    pUndoState->newState.pUserData = NULL;
 }
 
 void drte_engine__push_undo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState)
@@ -4678,7 +4915,110 @@ void drte_engine__push_undo_state(drte_engine* pEngine, drte_engine_undo_state* 
     free(pOldStack);
 }
 
-void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState)
+
+typedef struct
+{
+    size_t prevUndoDataOffset;
+    size_t nextUndoDataOffset;
+    size_t oldStateLocalOffset;
+    size_t newStateLocalOffset;
+
+    const uint8_t* pOldState;
+    const uint8_t* pNewState;
+
+    struct
+    {
+        size_t userDataSize;
+        const void* pUserData;
+        size_t cursorCount;
+        const drte_marker* pCursors;
+        size_t selectionCount;
+        const drte_region* pSelections;
+    } oldState;
+
+    struct
+    {
+        size_t userDataSize;
+        const void* pUserData;
+        size_t cursorCount;
+        const drte_marker* pCursors;
+        size_t selectionCount;
+        const drte_region* pSelections;
+    } newState;
+} drte_undo_state_info;
+
+static DRTE_INLINE void drte_engine__breakdown_undo_state_info(const uint8_t* pUndoData, drte_undo_state_info* pInfoOut)
+{
+    assert(pInfoOut != NULL);
+
+    drte_undo_state_info result;
+    result.prevUndoDataOffset  = *(const size_t*)(pUndoData + sizeof(size_t)*0);
+    result.nextUndoDataOffset  = *(const size_t*)(pUndoData + sizeof(size_t)*1);
+    result.oldStateLocalOffset = *(const size_t*)(pUndoData + sizeof(size_t)*2);
+    result.newStateLocalOffset = *(const size_t*)(pUndoData + sizeof(size_t)*3);
+
+    result.pOldState = pUndoData + result.oldStateLocalOffset;
+    result.pNewState = pUndoData + result.newStateLocalOffset;
+
+    size_t runningOffset = 0;
+    result.oldState.userDataSize = *(const size_t*)(result.pOldState + runningOffset);    runningOffset += sizeof(size_t);
+    result.oldState.pUserData = result.pOldState + runningOffset;                         runningOffset += result.oldState.userDataSize;
+    result.oldState.cursorCount = *(const size_t*)(result.pOldState + runningOffset);     runningOffset += sizeof(size_t);
+    result.oldState.pCursors = (const drte_marker*)(result.pOldState + runningOffset);    runningOffset += sizeof(drte_marker)*result.oldState.cursorCount;
+    result.oldState.selectionCount = *(const size_t*)(result.pOldState + runningOffset);  runningOffset += sizeof(size_t);
+    result.oldState.pSelections = (const drte_region*)(result.pOldState + runningOffset); runningOffset += sizeof(drte_region)*result.oldState.selectionCount;
+
+    runningOffset = 0;
+    result.newState.userDataSize = *(const size_t*)(result.pNewState + runningOffset);    runningOffset += sizeof(size_t);
+    result.newState.pUserData = result.pNewState + runningOffset;                         runningOffset += result.newState.userDataSize;
+    result.newState.cursorCount = *(const size_t*)(result.pNewState + runningOffset);     runningOffset += sizeof(size_t);
+    result.newState.pCursors = (const drte_marker*)(result.pNewState + runningOffset);    runningOffset += sizeof(drte_marker)*result.newState.cursorCount;
+    result.newState.selectionCount = *(const size_t*)(result.pNewState + runningOffset);  runningOffset += sizeof(size_t);
+    result.newState.pSelections = (const drte_region*)(result.pNewState + runningOffset); runningOffset += sizeof(drte_region)*result.newState.selectionCount;
+
+    *pInfoOut = result;
+}
+
+void drte_engine__set_cursors(drte_engine* pEngine, size_t cursorCount, const drte_marker* pCursors)
+{
+    assert(pEngine != NULL);
+
+    if (cursorCount > 0) {
+        drte_marker* pNewCursors = (drte_marker*)realloc(pEngine->pCursors, cursorCount * sizeof(*pNewCursors));
+        if (pNewCursors != NULL) {
+            pEngine->pCursors = pNewCursors;
+            for (size_t iCursor = 0; iCursor < cursorCount; ++iCursor) {
+                pEngine->pCursors[iCursor] = pCursors[iCursor];
+                drte_engine__update_marker_sticky_position(pEngine, &pEngine->pCursors[iCursor]);
+            }
+
+            pEngine->cursorCount = cursorCount;
+        }
+    } else {
+        pEngine->cursorCount = 0;
+    } 
+}
+
+void drte_engine__set_selections(drte_engine* pEngine, size_t selectionCount, const drte_region* pSelections)
+{
+    assert(pEngine != NULL);
+
+    if (selectionCount > 0) {
+        drte_region* pNewSelections = (drte_region*)realloc(pEngine->pSelections, selectionCount * sizeof(*pNewSelections));
+        if (pNewSelections != NULL) {
+            pEngine->pSelections = pNewSelections;
+            for (size_t iSelection = 0; iSelection < selectionCount; ++iSelection) {
+                pEngine->pSelections[iSelection] = pSelections[iSelection];
+            }
+
+            pEngine->selectionCount = selectionCount;
+        }
+    } else {
+        pEngine->selectionCount = 0;
+    }
+}
+
+void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState, const void* pUndoDataPtr)
 {
     if (pEngine == NULL || pUndoState == NULL) {
         return;
@@ -4689,6 +5029,10 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
     // TODO: This needs improving because it results in multiple onTextChanged events being posted.
     drte_engine__begin_dirty(pEngine);
     {
+        drte_undo_state_info state;
+        drte_engine__breakdown_undo_state_info(pUndoDataPtr, &state);
+
+
         // Remove the new text.
         size_t iFirstCh     = pUndoState->diffPos;
         size_t iLastChPlus1 = pUndoState->diffPos + strlen(pUndoState->newText);
@@ -4697,36 +5041,12 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
         // Insert the old text.
         drte_engine_insert_text(pEngine, pUndoState->oldText, pUndoState->diffPos);
 
-        // Cursors.
-        if (pUndoState->oldState.cursorCount > 0) {
-            drte_marker* pNewCursors = (drte_marker*)realloc(pEngine->pCursors, pUndoState->oldState.cursorCount * sizeof(*pNewCursors));
-            if (pNewCursors != NULL) {
-                pEngine->pCursors = pNewCursors;
-                for (size_t iCursor = 0; iCursor < pUndoState->oldState.cursorCount; ++iCursor) {
-                    pEngine->pCursors[iCursor] = pUndoState->oldState.pCursors[iCursor];
-                    drte_engine__update_marker_sticky_position(pEngine, &pEngine->pCursors[iCursor]);
-                }
 
-                pEngine->cursorCount = pUndoState->oldState.cursorCount;
-            }
-        } else {
-            pEngine->cursorCount = 0;
-        }
+        // Cursors.
+        drte_engine__set_cursors(pEngine, state.oldState.cursorCount, state.oldState.pCursors);
 
         // Selections.
-        if (pUndoState->oldState.selectionCount > 0) {
-            drte_region* pNewSelections = (drte_region*)realloc(pEngine->pSelections, pUndoState->oldState.selectionCount * sizeof(*pNewSelections));
-            if (pNewSelections != NULL) {
-                pEngine->pSelections = pNewSelections;
-                for (size_t iSelection = 0; iSelection < pUndoState->oldState.selectionCount; ++iSelection) {
-                    pEngine->pSelections[iSelection] = pUndoState->oldState.pSelections[iSelection];
-                }
-
-                pEngine->selectionCount = pUndoState->oldState.selectionCount;
-            }
-        } else {
-            pEngine->selectionCount = 0;
-        }
+        drte_engine__set_selections(pEngine, state.oldState.selectionCount, state.oldState.pSelections);
 
 
 
@@ -4741,13 +5061,13 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
 
         // Application-defined data.
         if (pEngine->onApplyUndoState) {
-            pEngine->onApplyUndoState(pEngine, pUndoState->oldState.userDataSize, pUndoState->oldState.pUserData);
+            pEngine->onApplyUndoState(pEngine, state.oldState.userDataSize, state.oldState.pUserData);
         }
     }
     drte_engine__end_dirty(pEngine);
 }
 
-void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState)
+void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState, const void* pUndoDataPtr)
 {
     if (pEngine == NULL || pUndoState == NULL) {
         return;
@@ -4758,6 +5078,10 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
     // TODO: This needs improving because it results in multiple onTextChanged events being posted.
     drte_engine__begin_dirty(pEngine);
     {
+        drte_undo_state_info state;
+        drte_engine__breakdown_undo_state_info(pUndoDataPtr, &state);
+
+
         // Remove the old text.
         size_t iFirstCh     = pUndoState->diffPos;
         size_t iLastChPlus1 = pUndoState->diffPos + strlen(pUndoState->oldText);
@@ -4766,36 +5090,13 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
         // Insert the new text.
         drte_engine_insert_text(pEngine, pUndoState->newText, pUndoState->diffPos);
 
-        // Cursors.
-        if (pUndoState->newState.cursorCount > 0) {
-            drte_marker* pNewCursors = (drte_marker*)realloc(pEngine->pCursors, pUndoState->newState.cursorCount * sizeof(*pNewCursors));
-            if (pNewCursors != NULL) {
-                pEngine->pCursors = pNewCursors;
-                for (size_t iCursor = 0; iCursor < pUndoState->newState.cursorCount; ++iCursor) {
-                    pEngine->pCursors[iCursor] = pUndoState->newState.pCursors[iCursor];
-                    drte_engine__update_marker_sticky_position(pEngine, &pEngine->pCursors[iCursor]);
-                }
 
-                pEngine->cursorCount = pUndoState->newState.cursorCount;
-            }
-        } else {
-            pEngine->cursorCount = 0;
-        }
+        // Cursors.
+        drte_engine__set_cursors(pEngine, state.newState.cursorCount, state.newState.pCursors);
 
         // Selections.
-        if (pUndoState->newState.selectionCount > 0) {
-            drte_region* pNewSelections = (drte_region*)realloc(pEngine->pSelections, pUndoState->newState.selectionCount * sizeof(*pNewSelections));
-            if (pNewSelections != NULL) {
-                pEngine->pSelections = pNewSelections;
-                for (size_t iSelection = 0; iSelection < pUndoState->newState.selectionCount; ++iSelection) {
-                    pEngine->pSelections[iSelection] = pUndoState->newState.pSelections[iSelection];
-                }
+        drte_engine__set_selections(pEngine, state.newState.selectionCount, state.newState.pSelections);
 
-                pEngine->selectionCount = pUndoState->newState.selectionCount;
-            }
-        } else {
-            pEngine->selectionCount = 0;
-        }
 
 
         if (pEngine->onTextChanged) {
@@ -4809,7 +5110,7 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
 
         // Application-defined data.
         if (pEngine->onApplyUndoState) {
-            pEngine->onApplyUndoState(pEngine, pUndoState->newState.userDataSize, pUndoState->newState.pUserData);
+            pEngine->onApplyUndoState(pEngine, state.newState.userDataSize, state.newState.pUserData);
         }
     }
     drte_engine__end_dirty(pEngine);
