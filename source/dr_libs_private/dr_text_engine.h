@@ -145,38 +145,6 @@ typedef struct
 
 } drte_style_segment;
 
-/// Keeps track of the current state of the text engine. Used for calculating the difference between two states for undo/redo.
-typedef struct
-{
-    // The text. Can be null in some cases where it isn't used.
-    char* text;
-
-} drte_engine_state;
-
-typedef struct
-{
-    /// The position in the main string where the change is located. The length of the relevant string is used to determines how
-    /// large of a chunk of text needs to be replaced.
-    size_t diffPos;
-
-    /// The string that was replaced. On undo, this will be inserted into the text engine. Can be empty, in which case this state
-    /// object was created in response to an insert operation.
-    char* oldText;
-
-    /// The string that replaces the old text. On redo, this will be inserted into the text engine. This can be empty, in which case
-    /// this state object was created in response to a delete operation.
-    char* newText;
-
-    /// The state of the text engine at the time the undo point was prepared, not including the text. The <text> attribute
-    /// of this object is always null.
-    drte_engine_state oldState;
-
-    /// The state of the text engine at the time the undo point was committed, not including the text. The <text> attribute
-    /// of this object is always null.
-    drte_engine_state newState;
-
-} drte_engine_undo_state;
-
 
 // Used internally for implementing the undo/redo stack.
 typedef struct
@@ -337,18 +305,11 @@ struct drte_engine
     drte_engine_on_cursor_move_proc onCursorMove;
 
 
-    /// The prepared undo/redo state. This will be filled with some state by PrepareUndoRedoPoint() and again with CreateUndoRedoPoint().
-    drte_engine_state preparedState;
-
-    /// The undo/redo stack.
-    drte_engine_undo_state* pUndoStack;
-
     /// The number of items in the undo/redo stack.
     unsigned int undoStackCount;
 
     /// The index of the undo/redo state item we are currently sitting on.
     unsigned int iUndoState;
-
 
 
     // Whether or not there is a prepared undo state.
@@ -974,9 +935,24 @@ size_t drte_stack_buffer_set_stack_ptr(drte_stack_buffer* pStack, size_t newStac
         return 0;
     }
 
-    assert(newStackPtr <= pStack->bufferSize);   // <-- If you trigger this it means you're trying to move the stack pointer beyond the buffer.
+    assert(newStackPtr <= pStack->stackPtr);   // <-- If you trigger this it means you're trying to move the stack pointer beyond the valid area. You cannot use this function to grow the buffer.
 
     pStack->stackPtr = dr_round_up(newStackPtr, DRTE_STACK_BUFFER_ALIGNMENT);
+
+    // Shrink the buffer if we're getting a bit too wasteful.
+    size_t desiredBufferSize = dr_round_up(pStack->stackPtr, DRTE_STACK_BUFFER_BLOCK_SIZE);
+    if (desiredBufferSize == 0) {
+        desiredBufferSize = DRTE_STACK_BUFFER_BLOCK_SIZE;
+    }
+
+    if (desiredBufferSize < pStack->bufferSize) {
+        void* pNewBuffer = realloc(pStack->pBuffer, desiredBufferSize);
+        if (pNewBuffer != NULL) {
+            pStack->pBuffer = pNewBuffer;
+            pStack->bufferSize = desiredBufferSize;
+        }
+    }
+
     return pStack->stackPtr;
 }
 
@@ -1093,23 +1069,11 @@ size_t drte_engine__get_marker_absolute_char_index(drte_engine* pEngine, drte_ma
 
 
 
-/// Removes the undo/redo state stack items after the current undo/redo point.
-void drte_engine__trim_undo_stack(drte_engine* pEngine);
-
-/// Initializes the given undo state object by diff-ing the given layout states.
-bool drte_engine__diff_states(drte_engine_state* pPrevState, drte_engine_state* pCurrentState, drte_engine_undo_state* pUndoStateOut);
-
-/// Uninitializes the given undo state object. This basically just free's the internal string.
-void drte_engine__uninit_undo_state(drte_engine_undo_state* pUndoState);
-
-/// Pushes an undo state onto the undo stack.
-void drte_engine__push_undo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState);
-
 /// Applies the given undo state.
-void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState, const void* pUndoDataPtr);
+void drte_engine__apply_undo_state(drte_engine* pEngine, const void* pUndoDataPtr);
 
 /// Applies the given undo state as a redo operation.
-void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState, const void* pUndoDataPtr);
+void drte_engine__apply_redo_state(drte_engine* pEngine, const void* pUndoDataPtr);
 
 
 /// Retrieves a rectangle relative to the given text engine that's equal to the size of the container.
@@ -1517,8 +1481,6 @@ void drte_engine_delete(drte_engine* pEngine)
 
     drte_engine_clear_undo_stack(pEngine);
     
-    free(pEngine->preparedState.text);
-
     drte_stack_buffer_uninit(&pEngine->undoBuffer);
     drte_stack_buffer_uninit(&pEngine->preparedUndoState);
 
@@ -3852,13 +3814,8 @@ bool drte_engine_prepare_undo_point(drte_engine* pEngine)
 
     // If we have a previously prepared state we'll need to clear it.
     if (pEngine->hasPreparedUndoState) {
-        free(pEngine->preparedState.text);
         drte_stack_buffer_set_stack_ptr(&pEngine->preparedUndoState, 0);
     }
-
-    pEngine->preparedState.text = (char*)malloc(pEngine->textLength + 1);
-    drgui__strcpy_s(pEngine->preparedState.text, pEngine->textLength + 1, (pEngine->text != NULL) ? pEngine->text : "");
-
 
     // If the prepared undo point is cancelled later on we'll need to free the memory at some point.
     pEngine->preparedUndoTextChangeCount = 0;
@@ -3892,26 +3849,16 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
         return false;
     }
 
-    
-    // The undo state is creating by diff-ing the prepared state and the current state.
-    drte_engine_state currentState;
-    currentState.text = pEngine->text;
-
-    drte_engine_undo_state undoState;
-    if (!drte_engine__diff_states(&pEngine->preparedState, &currentState, &undoState)) {
-        return false;
-    }
-
-    // At this point we have the undo state ready and we just need to add it the undo stack. Before doing so, however,
-    // we need to trim the end fo the stack.
-    drte_engine__trim_undo_stack(pEngine);
-    drte_engine__push_undo_state(pEngine, &undoState);
-
-
 
 
     // The undo buffer needs to be trimmed.
-    drte_stack_buffer_set_stack_ptr(&pEngine->undoBuffer, drte_engine__get_next_undo_data_offset(pEngine));
+    if (drte_engine_get_redo_points_remaining_count(pEngine) > 0) {
+        drte_stack_buffer_set_stack_ptr(&pEngine->undoBuffer, drte_engine__get_next_undo_data_offset(pEngine));
+        pEngine->currentUndoDataOffset = drte_stack_buffer_get_stack_ptr(&pEngine->undoBuffer);
+    }
+
+    pEngine->undoStackCount = pEngine->iUndoState;
+
     
     // The data to push onto the stack is done in 3 main parts. The first part is the header which stores the size and offsets of each major section. The
     // second part is the prepared data. The third part is the state at the time of comitting.
@@ -3963,18 +3910,26 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
     *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*3)) = committedDataOffset - headerOffset;
     *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*4)) = headerSize + pEngine->preparedUndoTextChangesOffset;
     
-
     pEngine->currentUndoDataOffset = headerOffset;
 
     drte_stack_buffer_set_stack_ptr(&pEngine->preparedUndoState, 0);
     pEngine->hasPreparedUndoState = false;
     pEngine->preparedUndoTextChangeCount = 0;
+
+
+    pEngine->undoStackCount += 1;
+    pEngine->iUndoState += 1;
+
+    if (pEngine->onUndoPointChanged) {
+        pEngine->onUndoPointChanged(pEngine, pEngine->iUndoState);
+    }
+
     return true;
 }
 
 bool drte_engine_undo(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->pUndoStack == NULL) {
+    if (pEngine == NULL) {
         return false;
     }
 
@@ -3984,11 +3939,7 @@ bool drte_engine_undo(drte_engine* pEngine)
             return false;
         }
 
-
-        drte_engine_undo_state* pUndoState = pEngine->pUndoStack + (pEngine->iUndoState - 1);
-        assert(pUndoState != NULL);
-
-        drte_engine__apply_undo_state(pEngine, pUndoState, pUndoDataPtr);
+        drte_engine__apply_undo_state(pEngine, pUndoDataPtr);
         pEngine->iUndoState -= 1;
 
         if (pEngine->onUndoPointChanged) {
@@ -4005,29 +3956,27 @@ bool drte_engine_undo(drte_engine* pEngine)
 
 bool drte_engine_redo(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->pUndoStack == NULL) {
+    if (pEngine == NULL) {
         return false;
     }
 
     if (drte_engine_get_redo_points_remaining_count(pEngine) > 0) {
-        const void* pUndoDataPtr = drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, drte_engine__get_next_undo_data_offset(pEngine));
+        const void* pUndoDataPtr = drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, pEngine->currentUndoDataOffset /*drte_engine__get_next_undo_data_offset(pEngine)*/);
         if (pUndoDataPtr == NULL) {
             return false;
         }
 
-
-        drte_engine_undo_state* pUndoState = pEngine->pUndoStack + pEngine->iUndoState;
-        assert(pUndoState != NULL);
-
-        drte_engine__apply_redo_state(pEngine, pUndoState, pUndoDataPtr);
+        drte_engine__apply_redo_state(pEngine, pUndoDataPtr);
         pEngine->iUndoState += 1;
 
         if (pEngine->onUndoPointChanged) {
             pEngine->onUndoPointChanged(pEngine, pEngine->iUndoState);
         }
 
+        if (drte_engine_get_redo_points_remaining_count(pEngine) > 0) {
+            pEngine->currentUndoDataOffset = drte_engine__get_next_undo_data_offset(pEngine);
+        }
 
-        pEngine->currentUndoDataOffset = drte_engine__get_next_undo_data_offset(pEngine);
         return true;
     }
 
@@ -4060,17 +4009,13 @@ unsigned int drte_engine_get_redo_points_remaining_count(drte_engine* pEngine)
 
 void drte_engine_clear_undo_stack(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->pUndoStack == NULL) {
+    if (pEngine == NULL) {
         return;
     }
 
-    for (unsigned int i = 0; i < pEngine->undoStackCount; ++i) {
-        drte_engine__uninit_undo_state(pEngine->pUndoStack + i);
-    }
+    drte_stack_buffer_set_stack_ptr(&pEngine->undoBuffer, 0);
+    drte_stack_buffer_set_stack_ptr(&pEngine->preparedUndoState, 0);
 
-    free(pEngine->pUndoStack);
-
-    pEngine->pUndoStack = NULL;
     pEngine->undoStackCount = 0;
 
     if (pEngine->iUndoState > 0) {
@@ -4869,130 +4814,6 @@ size_t drte_engine__get_marker_absolute_char_index(drte_engine* pEngine, drte_ma
 
 
 
-void drte_engine__trim_undo_stack(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    while (pEngine->undoStackCount > pEngine->iUndoState)
-    {
-        unsigned int iLastItem = pEngine->undoStackCount - 1;
-
-        drte_engine__uninit_undo_state(pEngine->pUndoStack + iLastItem);
-        pEngine->undoStackCount -= 1;
-    }
-}
-
-bool drte_engine__diff_states(drte_engine_state* pPrevState, drte_engine_state* pCurrentState, drte_engine_undo_state* pUndoStateOut)
-{
-    if (pPrevState == NULL || pCurrentState == NULL || pUndoStateOut == NULL) {
-        return false;
-    }
-
-    if (pPrevState->text == NULL || pCurrentState->text == NULL) {
-        return false;
-    }
-
-    const char* prevText = pPrevState->text;
-    const char* currText = pCurrentState->text;
-
-    const size_t prevLen = strlen(prevText);
-    const size_t currLen = strlen(currText);
-
-
-    // The first step is to find the position of the first differing character.
-    size_t sameChCountStart;
-    for (sameChCountStart = 0; sameChCountStart < prevLen && sameChCountStart < currLen; ++sameChCountStart)
-    {
-        char prevCh = prevText[sameChCountStart];
-        char currCh = currText[sameChCountStart];
-
-        if (prevCh != currCh) {
-            break;
-        }
-    }
-
-    // The next step is to find the position of the last differing character.
-    size_t sameChCountEnd;
-    for (sameChCountEnd = 0; sameChCountEnd < prevLen && sameChCountEnd < currLen; ++sameChCountEnd)
-    {
-        // Don't move beyond the first differing character.
-        if (prevLen - sameChCountEnd <= sameChCountStart ||
-            currLen - sameChCountEnd <= sameChCountStart)
-        {
-            break;
-        }
-
-        char prevCh = prevText[prevLen - sameChCountEnd - 1];
-        char currCh = currText[currLen - sameChCountEnd - 1];
-
-        if (prevCh != currCh) {
-            break;
-        }
-    }
-
-
-    // At this point we know which section of the text is different. We now need to initialize the undo state object.
-    pUndoStateOut->diffPos       = sameChCountStart;
-    pUndoStateOut->newState      = *pCurrentState;
-    pUndoStateOut->newState.text = NULL;
-    pUndoStateOut->oldState      = *pPrevState;
-    pUndoStateOut->oldState.text = NULL;
-
-    size_t oldTextLen = prevLen - sameChCountStart - sameChCountEnd;
-    pUndoStateOut->oldText = (char*)malloc(oldTextLen + 1);
-    drgui__strncpy_s(pUndoStateOut->oldText, oldTextLen + 1, prevText + sameChCountStart, oldTextLen);
-
-    size_t newTextLen = currLen - sameChCountStart - sameChCountEnd;
-    pUndoStateOut->newText = (char*)malloc(newTextLen + 1);
-    drgui__strncpy_s(pUndoStateOut->newText, newTextLen + 1, currText + sameChCountStart, newTextLen);
-
-    return true;
-}
-
-void drte_engine__uninit_undo_state(drte_engine_undo_state* pUndoState)
-{
-    if (pUndoState == NULL) {
-        return;
-    }
-
-    free(pUndoState->oldText);
-    pUndoState->oldText = NULL;
-
-    free(pUndoState->newText);
-    pUndoState->newText = NULL;
-}
-
-void drte_engine__push_undo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState)
-{
-    if (pEngine == NULL || pUndoState == NULL) {
-        return;
-    }
-
-    assert(pEngine->iUndoState == pEngine->undoStackCount);
-
-
-    drte_engine_undo_state* pOldStack = pEngine->pUndoStack;
-    drte_engine_undo_state* pNewStack = (drte_engine_undo_state*)malloc(sizeof(*pNewStack) * (pEngine->undoStackCount + 1));
-
-    if (pEngine->undoStackCount > 0) {
-        memcpy(pNewStack, pOldStack, sizeof(*pNewStack) * (pEngine->undoStackCount));
-    }
-
-    pNewStack[pEngine->undoStackCount] = *pUndoState;
-    pEngine->pUndoStack = pNewStack;
-    pEngine->undoStackCount += 1;
-    pEngine->iUndoState += 1;
-
-    if (pEngine->onUndoPointChanged) {
-        pEngine->onUndoPointChanged(pEngine, pEngine->iUndoState);
-    }
-
-    free(pOldStack);
-}
-
-
 typedef struct
 {
     size_t prevUndoDataOffset;
@@ -5158,9 +4979,9 @@ void drte_engine__apply_text_changes(drte_engine* pEngine, size_t changeCount, c
     }
 }
 
-void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState, const void* pUndoDataPtr)
+void drte_engine__apply_undo_state(drte_engine* pEngine, const void* pUndoDataPtr)
 {
-    if (pEngine == NULL || pUndoState == NULL) {
+    if (pEngine == NULL) {
         return;
     }
 
@@ -5198,9 +5019,9 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state*
     drte_engine__end_dirty(pEngine);
 }
 
-void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState, const void* pUndoDataPtr)
+void drte_engine__apply_redo_state(drte_engine* pEngine, const void* pUndoDataPtr)
 {
-    if (pEngine == NULL || pUndoState == NULL) {
+    if (pEngine == NULL) {
         return;
     }
 
