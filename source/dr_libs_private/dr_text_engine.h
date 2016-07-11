@@ -186,6 +186,20 @@ typedef struct
     void* pBuffer;
 } drte_stack_buffer;
 
+typedef enum
+{
+	drte_undo_change_type_insert,
+	drte_undo_change_type_delete
+} drte_undo_change_type;
+
+typedef struct
+{
+	drte_undo_change_type type;
+	size_t iCharBeg;
+	size_t iCharEnd;
+	size_t textOffset;
+} drte_undo_change;
+
 
 struct drte_engine
 {
@@ -339,6 +353,12 @@ struct drte_engine
 
     // Whether or not there is a prepared undo state.
     bool hasPreparedUndoState;
+
+    // The number of textual changes in the prepared undo state.
+    size_t preparedUndoTextChangeCount;
+
+    // The local offset of the textual changes in the prepared undo state.
+    size_t preparedUndoTextChangesOffset;
 
     // The buffer containing the raw data of the prepared undo state.
     drte_stack_buffer preparedUndoState;
@@ -1417,6 +1437,33 @@ bool drte_engine__first_segment_on_line(drte_engine* pEngine, size_t lineIndex, 
     pSegment->isAtEnd = false;
     pSegment->isAtEndOfLine = false;
     return drte_engine__next_segment(pEngine, pSegment);
+}
+
+
+void drte_engine__push_text_change_to_prepared_undo_state(drte_engine* pEngine, drte_undo_change_type type, size_t iCharBeg, size_t iCharEnd, const char* text)
+{
+    if (pEngine == NULL || text == NULL) {
+        return;
+    }
+
+    size_t sizeInBytes = 
+        sizeof(type) + 
+        sizeof(size_t) +
+        sizeof(size_t) +
+        (iCharEnd - iCharBeg) + 1;  // +1 for null terminator.
+
+    uint8_t* pData = (uint8_t*)drte_stack_buffer_alloc(&pEngine->preparedUndoState, sizeInBytes);
+    if (pData == NULL) {
+        return;
+    }
+
+    memcpy(pData, &type, sizeof(type));
+    memcpy(pData + sizeof(type), &iCharBeg, sizeof(iCharBeg));
+    memcpy(pData + sizeof(type) + sizeof(iCharBeg), &iCharEnd, sizeof(iCharEnd));
+    memcpy(pData + sizeof(type) + sizeof(iCharBeg) + sizeof(iCharEnd), text, (iCharEnd - iCharBeg));
+    *(pData + sizeof(type) + sizeof(iCharBeg) + sizeof(iCharEnd) + (iCharEnd - iCharBeg)) = '\0';
+
+    *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->preparedUndoState, pEngine->preparedUndoTextChangesOffset)) += 1;
 }
 
 
@@ -2855,6 +2902,14 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
             pEngine->pLines[i] += newTextLength;
         }
     }
+
+
+
+    // Add the change to the prepared state.
+    if (pEngine->hasPreparedUndoState) {
+        drte_engine__push_text_change_to_prepared_undo_state(pEngine, drte_undo_change_type_insert, insertIndex, insertIndex + newTextLength, text);
+    }
+
     
 
     if (pEngine->onTextChanged) {
@@ -2902,6 +2957,12 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
     size_t bytesToRemove = iLastChPlus1 - iFirstCh;
     if (bytesToRemove > 0)
     {
+        // Add the change to the prepared state.
+        if (pEngine->hasPreparedUndoState) {
+            drte_engine__push_text_change_to_prepared_undo_state(pEngine, drte_undo_change_type_delete, iFirstCh, iLastChPlus1, pEngine->text + iFirstCh);
+        }
+
+
         memmove(pEngine->text + iFirstCh, pEngine->text + iLastChPlus1, pEngine->textLength - iLastChPlus1);
         pEngine->textLength -= bytesToRemove;
         pEngine->text[pEngine->textLength] = '\0';
@@ -2924,6 +2985,7 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
                 pEngine->pLines[i] -= bytesToRemove;
             }
         }
+
 
         if (pEngine->onTextChanged) {
             pEngine->onTextChanged(pEngine);
@@ -3799,10 +3861,22 @@ bool drte_engine_prepare_undo_point(drte_engine* pEngine)
 
 
     // If the prepared undo point is cancelled later on we'll need to free the memory at some point.
+    pEngine->preparedUndoTextChangeCount = 0;
     pEngine->hasPreparedUndoState = drte_engine__capture_and_push_undo_state(pEngine, &pEngine->preparedUndoState);
     if (!pEngine->hasPreparedUndoState) {
         return false;   // <-- An error occured while trying to capture the undo state.
     }
+
+    // Allocate space for the text change count and initialize to 0 to begin with.
+    pEngine->preparedUndoTextChangesOffset = drte_stack_buffer_get_stack_ptr(&pEngine->preparedUndoState);
+    void* pTextChangeCount = drte_stack_buffer_alloc(&pEngine->preparedUndoState, sizeof(size_t));
+    if (pTextChangeCount == NULL) {
+        pEngine->hasPreparedUndoState = false;
+        return false;
+    }
+
+    *(size_t*)pTextChangeCount = 0;
+
 
     return true;
 }
@@ -3849,7 +3923,8 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
         sizeof(size_t) +    // Prev undo data offset.
         sizeof(size_t) +    // Next undo data offset.
         sizeof(size_t) +    // Old state local offset.
-        sizeof(size_t);     // New state local offset.
+        sizeof(size_t) +    // New state local offset.
+        sizeof(size_t);     // The offset of the text changes.
     size_t headerOffset = drte_stack_buffer_get_stack_ptr(&pEngine->undoBuffer);
 
     if (drte_stack_buffer_alloc(&pEngine->undoBuffer, headerSize) == NULL) {
@@ -3886,12 +3961,14 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
     *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*1)) = nextUndoDataOffset;
     *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*2)) = preparedDataOffset  - headerOffset;
     *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*3)) = committedDataOffset - headerOffset;
+    *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*4)) = headerSize + pEngine->preparedUndoTextChangesOffset;
     
 
     pEngine->currentUndoDataOffset = headerOffset;
 
     drte_stack_buffer_set_stack_ptr(&pEngine->preparedUndoState, 0);
     pEngine->hasPreparedUndoState = false;
+    pEngine->preparedUndoTextChangeCount = 0;
     return true;
 }
 
@@ -4922,6 +4999,10 @@ typedef struct
     size_t nextUndoDataOffset;
     size_t oldStateLocalOffset;
     size_t newStateLocalOffset;
+    size_t textChangesOffset;
+
+    size_t textChangeCount;
+    const uint8_t* pTextChanges;
 
     const uint8_t* pOldState;
     const uint8_t* pNewState;
@@ -4956,6 +5037,10 @@ static DRTE_INLINE void drte_engine__breakdown_undo_state_info(const uint8_t* pU
     result.nextUndoDataOffset  = *(const size_t*)(pUndoData + sizeof(size_t)*1);
     result.oldStateLocalOffset = *(const size_t*)(pUndoData + sizeof(size_t)*2);
     result.newStateLocalOffset = *(const size_t*)(pUndoData + sizeof(size_t)*3);
+    result.textChangesOffset   = *(const size_t*)(pUndoData + sizeof(size_t)*4);
+
+    result.textChangeCount = *(const size_t*)(pUndoData + result.textChangesOffset);
+    result.pTextChanges = pUndoData + result.textChangesOffset + sizeof(size_t);
 
     result.pOldState = pUndoData + result.oldStateLocalOffset;
     result.pNewState = pUndoData + result.newStateLocalOffset;
@@ -5018,28 +5103,74 @@ void drte_engine__set_selections(drte_engine* pEngine, size_t selectionCount, co
     }
 }
 
+void drte_engine__apply_text_changes_reversed(drte_engine* pEngine, size_t changeCount, const uint8_t* pData)
+{
+    // Each item in pData is formatted as:
+    //   type, iCharBeg, iCharEnd, text (null terminated).
+
+    assert(pEngine != NULL);
+    assert(pData != NULL);
+
+    if (changeCount == 0) {
+        return;
+    }
+
+    drte_undo_change_type type = *(drte_undo_change_type*)(pData + 0);
+    size_t iCharBeg = *(size_t*)(pData + sizeof(drte_undo_change_type));
+    size_t iCharEnd = *(size_t*)(pData + sizeof(drte_undo_change_type) + sizeof(size_t));
+    const char* text = (const char*)(pData + sizeof(drte_undo_change_type) + sizeof(size_t) + sizeof(size_t));
+    size_t sizeInBytes = sizeof(drte_undo_change_type) + sizeof(size_t) + sizeof(size_t) + (iCharEnd - iCharBeg) + 1;
+
+    // We need to do the next changes before doing this one. This is how we do it in reverse.
+    drte_engine__apply_text_changes_reversed(pEngine, changeCount - 1, pData + dr_round_up(sizeInBytes, DRTE_STACK_BUFFER_ALIGNMENT));
+
+    // Now we apply the change, remembering to transform inserts into deletes and vice versa.
+    if (type == drte_undo_change_type_insert) {
+        drte_engine_delete_text(pEngine, iCharBeg, iCharEnd);
+    } else {
+        drte_engine_insert_text(pEngine, text, iCharBeg);
+    }
+}
+
+void drte_engine__apply_text_changes(drte_engine* pEngine, size_t changeCount, const uint8_t* pData)
+{
+    // Each item in pData is formatted as:
+    //   type, iCharBeg, iCharEnd, text (null terminated).
+
+    assert(pEngine != NULL);
+    assert(pData != NULL);
+
+    for (size_t i = 0; i < changeCount; ++i) {
+        drte_undo_change_type type = *(drte_undo_change_type*)(pData + 0);
+        size_t iCharBeg = *(size_t*)(pData + sizeof(drte_undo_change_type));
+        size_t iCharEnd = *(size_t*)(pData + sizeof(drte_undo_change_type) + sizeof(size_t));
+        const char* text = (const char*)(pData + sizeof(drte_undo_change_type) + sizeof(size_t) + sizeof(size_t));
+        size_t sizeInBytes = sizeof(drte_undo_change_type) + sizeof(size_t) + sizeof(size_t) + (iCharEnd - iCharBeg) + 1;
+
+        // Now we apply the change, remembering to transform inserts into deletes and vice versa.
+        if (type == drte_undo_change_type_insert) {
+            drte_engine_insert_text(pEngine, text, iCharBeg);
+        } else {
+            drte_engine_delete_text(pEngine, iCharBeg, iCharEnd);
+        }
+
+        pData += dr_round_up(sizeInBytes, DRTE_STACK_BUFFER_ALIGNMENT);
+    }
+}
+
 void drte_engine__apply_undo_state(drte_engine* pEngine, drte_engine_undo_state* pUndoState, const void* pUndoDataPtr)
 {
     if (pEngine == NULL || pUndoState == NULL) {
         return;
     }
 
-    // When undoing we want to remove the new text and replace it with the old text.
-
-    // TODO: This needs improving because it results in multiple onTextChanged events being posted.
     drte_engine__begin_dirty(pEngine);
     {
         drte_undo_state_info state;
         drte_engine__breakdown_undo_state_info(pUndoDataPtr, &state);
 
-
-        // Remove the new text.
-        size_t iFirstCh     = pUndoState->diffPos;
-        size_t iLastChPlus1 = pUndoState->diffPos + strlen(pUndoState->newText);
-        drte_engine_delete_text(pEngine, iFirstCh, iLastChPlus1);
-
-        // Insert the old text.
-        drte_engine_insert_text(pEngine, pUndoState->oldText, pUndoState->diffPos);
+        // Text.
+        drte_engine__apply_text_changes_reversed(pEngine, state.textChangeCount, state.pTextChanges);
 
 
         // Cursors.
@@ -5073,22 +5204,13 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, drte_engine_undo_state*
         return;
     }
 
-    // An redo is just the opposite of an undo. We want to remove the old text and replace it with the new text.
-
-    // TODO: This needs improving because it results in multiple onTextChanged events being posted.
     drte_engine__begin_dirty(pEngine);
     {
         drte_undo_state_info state;
         drte_engine__breakdown_undo_state_info(pUndoDataPtr, &state);
 
-
-        // Remove the old text.
-        size_t iFirstCh     = pUndoState->diffPos;
-        size_t iLastChPlus1 = pUndoState->diffPos + strlen(pUndoState->oldText);
-        drte_engine_delete_text(pEngine, iFirstCh, iLastChPlus1);
-
-        // Insert the new text.
-        drte_engine_insert_text(pEngine, pUndoState->newText, pUndoState->diffPos);
+        // Text.
+        drte_engine__apply_text_changes(pEngine, state.textChangeCount, state.pTextChanges);
 
 
         // Cursors.
