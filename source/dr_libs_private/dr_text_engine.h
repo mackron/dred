@@ -3486,41 +3486,6 @@ void drte_engine_select_word_under_cursor(drte_engine* pEngine, size_t cursorInd
     }
 
     drte_engine_select(pEngine, iWordBeg, iWordEnd);
-
-#if 0
-    bool moveToStartOfNextWord = false;
-
-    // Move to the start of the word if we're not already there.
-    size_t iChar = drte_engine_get_cursor_character(pEngine);
-    if (iChar > 0) {
-        uint32_t c = pEngine->text[iChar];
-        uint32_t cprev = pEngine->text[iChar-1];
-
-        if (!dr_is_whitespace(c) && !dr_is_whitespace(cprev)) {
-            drte_engine_move_cursor_to_start_of_word(pEngine);
-        } else if (dr_is_whitespace(c) && dr_is_whitespace(cprev)) {
-            iChar -= 1;
-            while (iChar > 0) {
-                if (!dr_is_whitespace(pEngine->text[iChar-1]) || pEngine->text[iChar-1] == '\n') {
-                    break;
-                }
-                iChar -= 1;
-            }
-
-            drte_engine_move_cursor_to_character(pEngine, iChar);
-            moveToStartOfNextWord = true;
-        }
-    }
-
-
-    drte_engine_enter_selection_mode(pEngine);
-    if (moveToStartOfNextWord) {
-        drte_engine_move_cursor_to_start_of_next_word(pEngine);
-    } else {
-        drte_engine_move_cursor_to_end_of_word(pEngine);
-    }
-    drte_engine_leave_selection_mode(pEngine);
-#endif
 }
 
 size_t drte_engine_get_selected_text(drte_engine* pEngine, char* textOut, size_t textOutSize)
@@ -4146,6 +4111,29 @@ size_t drte_engine_get_line_last_character(drte_engine* pEngine, size_t iLine)
         return 0;
     }
 
+    if (iLine+1 < pEngine->lineCount) {
+        size_t iLineEnd = pEngine->pLines[iLine+1];
+        assert(iLineEnd > 0);
+
+        if (pEngine->text[iLineEnd-1] == '\n') {
+            iLineEnd -= 1;
+            if (iLineEnd > 0) {
+                if (pEngine->text[iLineEnd-1] == '\r') {
+                    iLineEnd -= 1;
+                }
+            }
+        }
+
+        return iLineEnd;
+    }
+
+    // It's the last line. Just return the position of the null terminator.
+    return pEngine->pLines[iLine] + strlen(pEngine->text + pEngine->pLines[iLine]);
+    
+
+
+#if 0
+    // Brute force.
     size_t i = drte_engine_get_line_first_character(pEngine, iLine);
     while (i < pEngine->textLength) {
         if (pEngine->text[i] == '\n') {
@@ -4156,6 +4144,7 @@ size_t drte_engine_get_line_last_character(drte_engine* pEngine, size_t iLine)
     }
 
     return i;
+#endif
 }
 
 void drte_engine_get_line_character_range(drte_engine* pEngine, size_t iLine, size_t* pCharStartOut, size_t* pCharEndOut)
