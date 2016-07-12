@@ -2760,7 +2760,7 @@ bool drte_engine_delete_character(drte_engine* pEngine, size_t iChar)
 bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t insertIndex)
 {
     if (pEngine == NULL || text == NULL) {
-        return false;;
+        return false;
     }
 
     if (insertIndex > pEngine->textLength) {
