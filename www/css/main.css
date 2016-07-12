@@ -15,15 +15,16 @@ a:hover {
 
 .a-download {
     text-decoration:none;
-    color:#333;
+    color:#ddd;
     border:solid 1px #000;
-    border-radius:2px;
+    border-radius:4px;
     padding:16px 32px;
+    background-color:#720000;
 }
 .a-download:hover {
-    background-color:#ddeaee;
+    background-color:#610000;
     text-decoration:none;
-    color:#333;
+    color:#ddd;
 }
 
 .a-sublink {
@@ -61,4 +62,19 @@ a:hover {
     /*margin-bottom:1em;*/
     line-height: 1em;
     text-align:left;
+}
+
+.header-link-table {
+}
+.header-link-table td {
+    padding:0.5em 0;
+    padding-right:2em;
+    vertical-align:center;
+}
+.header-link-table a {
+    color:#e0d7cf;
+    text-decoration:none;
+}
+.header-link-table a:hover {
+    color:#ffffff;
 }
