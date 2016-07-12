@@ -1185,8 +1185,7 @@ float drte_engine__measure_segment(drte_engine* pEngine, drte_segment* pSegment)
             float nextTabPos = (float)((int)(pSegment->posX / tabWidth) + 1) * tabWidth;
             float distanceToNextTab = nextTabPos - pSegment->posX;
             segmentWidth = distanceToNextTab + ((tabCount-1) * tabWidth);
-        } else if (c == '\n' || c == '\0') {
-            // Add overhang if selected.
+        } else if (pSegment->iCharBeg == pSegment->iLineCharEnd) {
             segmentWidth = 0;
         } else {
             // It's normal text. We need to refer to the backend for measuring.
@@ -1228,6 +1227,7 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
         pSegment->posX = 0;
         pSegment->width = 0;
         pSegment->isAtEndOfLine = false;
+        drte_engine_get_line_character_range(pEngine, pSegment->iLine, &pSegment->iLineCharBeg, &pSegment->iLineCharEnd);
     }
 
     uint8_t fgStyleSlot = pEngine->defaultStyleSlot;
@@ -1295,13 +1295,13 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     if (c == '\0') {
         pSegment->isAtEnd = true;
     } else {
-        if (c == '\n') {
+        if (iCharBeg == pSegment->iLineCharEnd) {
             pSegment->isAtEndOfLine = true;
             iCharEnd += 1;
         } else {
             for (;;) {
                 c = pEngine->text[iCharEnd];
-                if (c == '\0' || c == '\n') {
+                if (c == '\0' || iCharEnd == pSegment->iLineCharEnd) {
                     break;
                 }
 
@@ -1312,7 +1312,7 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
                         // Group tabs into a single segment.
                         for (;;) {
                             c = pEngine->text[iCharEnd];
-                            if (c == '\0' || c == '\n' || c != '\t') {
+                            if (c == '\0' || iCharEnd == pSegment->iLineCharEnd || c != '\t') {
                                 break;
                             }
 
