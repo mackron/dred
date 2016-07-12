@@ -1827,7 +1827,6 @@ size_t drte_engine_get_character_by_point(drte_engine* pEngine, float inputPosXR
         } while (drte_engine__next_segment_on_line(pEngine, &segment));
 
         // If we get here it means the position is to the right of the line. Just pin it to the end of the line.
-        assert(drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\r' || drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\n' || drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\0');
         iChar = segment.iCharBeg;   // <-- segment.iCharBeg should be sitting on a new line or null terminator.
 
         return iChar;
@@ -3475,9 +3474,10 @@ bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iCha
         if (!dr_is_whitespace(c) && !dr_is_whitespace(cprev)) {
             drte_engine_get_start_of_word_containing_character(pEngine, iChar, &iChar);
         } else if (dr_is_whitespace(c) && dr_is_whitespace(cprev)) {
+            size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, drte_engine_get_character_line(pEngine, iChar));
             iChar -= 1;
             while (iChar > 0) {
-                if (!dr_is_whitespace(pEngine->text[iChar-1]) || pEngine->text[iChar-1] == '\n') {
+                if (!dr_is_whitespace(pEngine->text[iChar-1]) || iChar == iLineCharBeg) {
                     break;
                 }
                 iChar -= 1;
@@ -4056,7 +4056,7 @@ float drte_engine_get_visible_line_width(drte_engine* pEngine)
             {
                 lineWidth += segment.width;
 
-                if (pEngine->text[segment.iCharBeg] == '\n') {
+                if (segment.iCharBeg == segment.iLineCharEnd) {
                     break;
                 }
             } while (drte_engine__next_segment(pEngine, &segment));
@@ -4266,16 +4266,16 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
 
                 // Don't draw segments to the left of the container.
                 if (linePosX + segment.posX + segment.width < 0) {
-                    if (pEngine->text[segment.iCharBeg] == '\n') {
+                    if (segment.iCharBeg == segment.iLineCharEnd) {
                         break;
                     }
                     continue;
                 }
 
                 uint32_t c = drte_engine_get_utf32(pEngine, segment.iCharBeg);
-                if (c == '\t' || c == '\n') {
+                if (c == '\t' || segment.iCharBeg == segment.iLineCharEnd) {
                     // It's whitespace.
-                    if (c == '\n') {
+                    if (segment.iCharBeg == segment.iLineCharEnd) {
                         // TODO: Only do this if the character is selected.
                         segment.width = pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
                         lineWidth += segment.width;
@@ -4300,7 +4300,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                     }
                 }
 
-                if (pEngine->text[segment.iCharBeg] == '\n') {
+                if (segment.iCharBeg == segment.iLineCharEnd) {
                     break;
                 }
             } while (drte_engine__next_segment(pEngine, &segment));
@@ -4623,7 +4623,6 @@ bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarke
         } while (drte_engine__next_segment_on_line(pEngine, &segment));
 
         // If we get here it means the position is to the right of the line. Just pin it to the end of the line.
-        assert(drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\n' || drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\0');
         pMarker->iCharAbs = segment.iCharBeg;   // <-- segment.iCharBeg should be sitting on a new line or null terminator.
 
         return true;
