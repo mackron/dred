@@ -1228,6 +1228,8 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
         pSegment->width = 0;
         pSegment->isAtEndOfLine = false;
         drte_engine_get_line_character_range(pEngine, pSegment->iLine, &pSegment->iLineCharBeg, &pSegment->iLineCharEnd);
+
+        pSegment->iCharEnd = pSegment->iLineCharBeg;
     }
 
     uint8_t fgStyleSlot = pEngine->defaultStyleSlot;
@@ -2784,6 +2786,7 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
     }
 
 
+#if 0
     // Replace \r\n with \n.
     size_t linesAddedCount = 0;
     {
@@ -2805,6 +2808,25 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
         }
 
         newTextLength = dst - (pNewText + insertIndex);
+    }
+#endif
+
+    size_t linesAddedCount = 0;
+
+    char* dst = pNewText + insertIndex;
+    const char* src = text;
+    while (*src != '\0') {
+        if (src[0] == '\n') {
+            linesAddedCount += 1;
+        } else if (src[0] == '\r' && src[1] == '\n') {
+            linesAddedCount += 1;
+
+            *dst++ = *src;
+            src += 1;
+        }
+
+        *dst++ = *src;
+        src += 1;
     }
 
     if (insertIndex < pEngine->textLength) {
@@ -3109,16 +3131,21 @@ bool drte_engine_delete_character_to_right_of_cursor(drte_engine* pEngine, size_
         return false;
     }
 
-    size_t iAbsoluteMarkerChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (iAbsoluteMarkerChar < pEngine->textLength)
+    size_t iCharBeg = pEngine->pCursors[cursorIndex].iCharAbs;
+    if (iCharBeg < pEngine->textLength)
     {
-        if (!drte_engine_delete_text(pEngine, iAbsoluteMarkerChar, iAbsoluteMarkerChar + 1)) {
+        size_t iCharEnd = iCharBeg+1;
+        if (pEngine->text[iCharBeg] == '\r' && pEngine->text[iCharEnd] == '\n') {
+            iCharEnd += 1;  // It's a \r\n line ending.
+        }
+
+        if (!drte_engine_delete_text(pEngine, iCharBeg, iCharEnd)) {
             return false;
         }
 
 
         // The layout will have changed.
-        drte_engine__move_marker_to_character(pEngine, &pEngine->pCursors[cursorIndex], iAbsoluteMarkerChar);
+        drte_engine__move_marker_to_character(pEngine, &pEngine->pCursors[cursorIndex], iCharBeg);
 
         if (pEngine->onTextChanged) {
             pEngine->onTextChanged(pEngine);
@@ -4641,8 +4668,20 @@ bool drte_engine__move_marker_left(drte_engine* pEngine, drte_marker* pMarker)
         return false;   // Already at the start of the string. Nowhere to go.
     }
 
+    // Line boundary.
+    size_t iLine = drte_engine_get_character_line(pEngine, pMarker->iCharAbs);
+    if (iLine > 0) {
+        size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, iLine);
+        if (iLineCharBeg == pMarker->iCharAbs) {
+            drte_engine__move_marker_to_end_of_line_by_index(pEngine, pMarker, iLine-1);
+            goto finish;
+        }
+    }
+
+
     pMarker->iCharAbs -= 1;
 
+finish:
     drte_engine__update_marker_sticky_position(pEngine, pMarker);
     return true;
 }
@@ -4657,8 +4696,20 @@ bool drte_engine__move_marker_right(drte_engine* pEngine, drte_marker* pMarker)
         return false;   // Already at the end. Nowhere to go.
     }
 
+    // Line boundary.
+    size_t iLine = drte_engine_get_character_line(pEngine, pMarker->iCharAbs);
+    if (iLine+1 < drte_engine_get_line_count(pEngine)) {
+        size_t iLineCharEnd = drte_engine_get_line_last_character(pEngine, iLine);
+        if (iLineCharEnd == pMarker->iCharAbs) {
+            drte_engine__move_marker_to_start_of_line_by_index(pEngine, pMarker, iLine+1);
+            goto finish;
+        }
+    }
+
+
     pMarker->iCharAbs += 1;
 
+finish:
     drte_engine__update_marker_sticky_position(pEngine, pMarker);
     return true;
 }
