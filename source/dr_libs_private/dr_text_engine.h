@@ -1157,6 +1157,8 @@ bool drte_engine__get_next_selection_from_character(drte_engine* pEngine, size_t
 typedef struct
 {
     size_t iLine;
+    size_t iLineCharBeg;
+    size_t iLineCharEnd;
     size_t iCursorLine;
     size_t iCharBeg;
     size_t iCharEnd;
@@ -1381,6 +1383,8 @@ bool drte_engine__first_segment(drte_engine* pEngine, size_t iChar, drte_segment
     pSegment->width = 0;
     pSegment->isAtEnd = false;
     pSegment->isAtEndOfLine = false;
+    drte_engine_get_line_character_range(pEngine, pSegment->iLine, &pSegment->iLineCharBeg, &pSegment->iLineCharEnd);
+
     return drte_engine__next_segment(pEngine, pSegment);
 }
 
@@ -1400,6 +1404,8 @@ bool drte_engine__first_segment_on_line(drte_engine* pEngine, size_t lineIndex, 
     pSegment->width = 0;
     pSegment->isAtEnd = false;
     pSegment->isAtEndOfLine = false;
+    drte_engine_get_line_character_range(pEngine, pSegment->iLine, &pSegment->iLineCharBeg, &pSegment->iLineCharEnd);
+
     return drte_engine__next_segment(pEngine, pSegment);
 }
 
@@ -4129,8 +4135,6 @@ size_t drte_engine_get_line_last_character(drte_engine* pEngine, size_t iLine)
 
     // It's the last line. Just return the position of the null terminator.
     return pEngine->pLines[iLine] + strlen(pEngine->text + pEngine->pLines[iLine]);
-    
-
 
 #if 0
     // Brute force.
@@ -4153,6 +4157,11 @@ void drte_engine_get_line_character_range(drte_engine* pEngine, size_t iLine, si
         return;
     }
 
+    if (pCharStartOut) *pCharStartOut = drte_engine_get_line_first_character(pEngine, iLine);
+    if (pCharEndOut) *pCharEndOut = drte_engine_get_line_last_character(pEngine, iLine);
+
+#if 0
+    // Brute force.
     size_t charStart = drte_engine_get_line_first_character(pEngine, iLine);
 
     size_t charEnd = charStart;
@@ -4166,6 +4175,7 @@ void drte_engine_get_line_character_range(drte_engine* pEngine, size_t iLine, si
 
     if (pCharStartOut) *pCharStartOut = charStart;
     if (pCharEndOut) *pCharEndOut = charEnd;
+#endif
 }
 
 
