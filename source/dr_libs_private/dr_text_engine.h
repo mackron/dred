@@ -841,14 +841,6 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 #define DRTE_PAGE_LINE_COUNT    256
 #endif
 
-/*#ifndef DRTE_UNDO_BUFFER_BLOCK_SIZE
-#define DRTE_UNDO_BUFFER_BLOCK_SIZE DRTE_STACK_BUFFER_BLOCK_SIZE
-#endif
-
-#ifndef DRTE_UNDO_BUFFER_ALIGNMENT
-#define DRTE_UNDO_BUFFER_ALIGNMENT DRTE_STACK_BUFFER_ALIGNMENT
-#endif*/
-
 #define DRTE_INVALID_STYLE_SLOT 255
 
 // Flags for the drte_engine::flags property.
@@ -2785,31 +2777,6 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
         memcpy(pNewText, pOldText, insertIndex);
     }
 
-
-#if 0
-    // Replace \r\n with \n.
-    size_t linesAddedCount = 0;
-    {
-        char* dst = pNewText + insertIndex;
-        const char* src = text;
-        size_t srcLen = newTextLength;
-        while (*src != '\0' && srcLen > 0)
-        {
-            if (*src != '\r') {
-                *dst++ = *src;
-            }
-
-            if (*src == '\n') {
-                linesAddedCount += 1;
-            }
-
-            src++;
-            srcLen -= 1;
-        }
-
-        newTextLength = dst - (pNewText + insertIndex);
-    }
-#endif
 
     size_t linesAddedCount = 0;
 
