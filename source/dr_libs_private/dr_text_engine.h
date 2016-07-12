@@ -1827,7 +1827,7 @@ size_t drte_engine_get_character_by_point(drte_engine* pEngine, float inputPosXR
         } while (drte_engine__next_segment_on_line(pEngine, &segment));
 
         // If we get here it means the position is to the right of the line. Just pin it to the end of the line.
-        assert(drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\n' || drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\0');
+        assert(drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\r' || drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\n' || drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\0');
         iChar = segment.iCharBeg;   // <-- segment.iCharBeg should be sitting on a new line or null terminator.
 
         return iChar;
@@ -2744,11 +2744,6 @@ void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_
 
 bool drte_engine_insert_character(drte_engine* pEngine, size_t insertIndex, uint32_t utf32)
 {
-    // Transform '\r' to '\n'. Should this be done at a higher level, but the application?
-    if (utf32 == '\r') {
-        utf32 = '\n';
-    }
-
     // TODO: Do a proper UTF-32 -> UTF-8 conversion.
     char utf8[16];
     utf8[0] = (char)utf32;

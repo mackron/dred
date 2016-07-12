@@ -2176,21 +2176,35 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
                 dred_textbox_delete_selected_text_no_undo(pTextBox);
             }
 
+            // Convert to line endings.
+            if (utf32 == '\r') {
+                utf32 = '\n';
+            }
+
+            // TODO: Check if the character is a line feed, and if so convert it to the standard line endings.
+
             drte_engine_insert_character_at_cursors(pTB->pTL, utf32);
 
-            if (utf32 == '\r' || utf32 == '\n') {
+            if (utf32 == '\n') {
                 dred_context* pDred = dred_control_get_context(pTextBox);
                 if (pDred->config.textEditorEnableAutoIndent) {
                     for (size_t iCursor = 0; iCursor < pTB->pTL->cursorCount; ++iCursor) {
                         size_t iCursorChar = pTB->pTL->pCursors[iCursor].iCharAbs;
                         size_t iCursorLine = drte_engine_get_character_line(pTB->pTL, iCursorChar);
                         if (iCursorLine > 0) {
-                            size_t iPrevLineChar = drte_engine_get_line_first_character(pTB->pTL, iCursorLine-1);
+                            size_t iPrevLineCharBeg;
+                            size_t iPrevLineCharEnd;
+                            drte_engine_get_line_character_range(pTB->pTL, iCursorLine-1, &iPrevLineCharBeg, &iPrevLineCharEnd);
+
                             size_t indentationCount = 0;
                             for (;;) {
+                                if (iPrevLineCharBeg == iPrevLineCharEnd) {
+                                    break;  // End of line.
+                                }
+
                                 // TODO: Use a character iterator for this.
-                                uint32_t c = drte_engine_get_utf32(pTB->pTL, iPrevLineChar);
-                                if (c == '\0' || c == '\n') {
+                                uint32_t c = drte_engine_get_utf32(pTB->pTL, iPrevLineCharBeg);
+                                if (c == '\0') {
                                     break;
                                 }
 
@@ -2199,7 +2213,7 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
                                 }
 
 
-                                iPrevLineChar += 1;
+                                iPrevLineCharBeg += 1;
 
                                 if (c == '\t') {
                                     indentationCount += pDred->config.textEditorTabSizeInSpaces;
