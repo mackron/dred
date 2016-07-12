@@ -2850,6 +2850,9 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
                 if (pEngine->text[iRunningChar] == '\n') {
                     iRunningChar += 1;
                     break;
+                } else if (pEngine->text[iRunningChar] == '\r' && pEngine->text[iRunningChar+1] == '\n') {
+                    iRunningChar += 2;
+                    break;
                 }
 
                 iRunningChar += 1;
@@ -2913,6 +2916,9 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
     for (size_t iChar = iFirstCh; iChar < iLastChPlus1; ++iChar) {
         if (pEngine->text[iChar] == '\n') {
             linesRemovedCount += 1;
+        } else if (pEngine->text[iChar] == '\r' && pEngine->text[iChar+1] == '\n') {
+            linesRemovedCount += 1;
+            iChar += 1;
         }
     }
 
@@ -3066,9 +3072,21 @@ bool drte_engine_delete_character_to_left_of_cursors(drte_engine* pEngine, bool 
     {
         for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
             size_t iCursorChar = pEngine->pCursors[iCursor].iCharAbs;
-            if (iCursorChar == 0 || (leaveNewLines && pEngine->text[iCursorChar-1] == '\n') || !drte_engine_delete_character_to_left_of_cursor(pEngine, iCursor)) {
+            if (iCursorChar == 0) {
                 continue;
             }
+
+            if (leaveNewLines) {
+                size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, drte_engine_get_cursor_line(pEngine, iCursor));
+                if (iCursorChar == iLineCharBeg) {
+                    continue;
+                }
+            }
+
+            if (!drte_engine_delete_character_to_left_of_cursor(pEngine, iCursor)) {
+                continue;
+            }
+
 
             wasTextChanged = true;
 
@@ -3126,7 +3144,14 @@ bool drte_engine_delete_character_to_right_of_cursors(drte_engine* pEngine, bool
     {
         for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
             size_t iCursorChar = pEngine->pCursors[iCursor].iCharAbs;
-            if ((leaveNewLines && pEngine->text[pEngine->pCursors[iCursor].iCharAbs] == '\n') || !drte_engine_delete_character_to_right_of_cursor(pEngine, iCursor)) {
+            if (leaveNewLines) {
+                size_t iLineCharEnd = drte_engine_get_line_last_character(pEngine, drte_engine_get_cursor_line(pEngine, iCursor));
+                if (iCursorChar == iLineCharEnd) {
+                    continue;
+                }                
+            }
+
+            if (!drte_engine_delete_character_to_right_of_cursor(pEngine, iCursor)) {
                 continue;
             }
 
