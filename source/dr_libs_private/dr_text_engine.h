@@ -280,6 +280,9 @@ struct drte_engine
     /// Whether or not the cursor is being shown. False by default.
     bool isShowingCursor;
 
+    // Whether or not word wrap is enabled.
+    bool isWordWrapEnabled;
+
 
     // The list of active cursors.
     drte_marker* pCursors;
@@ -601,6 +604,16 @@ bool drte_engine_is_cursor_at_end_of_selection(drte_engine* pEngine, size_t curs
 
 /// Sets the function to call when the cursor in the given text engine is mvoed.
 void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_move_proc proc);
+
+
+// Enables word wrap.
+void drte_engine_enable_word_wrap(drte_engine* pEngine);
+
+// Disables word wrap.
+void drte_engine_disable_word_wrap(drte_engine* pEngine);
+
+// Determines whether or not word wrap is enabled.
+bool drte_engine_is_word_wrap_enabled(drte_engine* pEngine);
 
 
 /// Inserts a character into the given text engine.
@@ -1083,6 +1096,10 @@ void drte_engine__begin_dirty(drte_engine* pEngine);
 
 /// Decrements the dirty counter, and if it hits 0 posts the onDirty callback.
 void drte_engine__end_dirty(drte_engine* pEngine);
+
+
+// Refreshes the line number cache.
+void drte_engine__refresh_line_numbers(drte_engine* pEngine);
 
 
 // Finds a style slot index of the given style token. Returns DRTE_INVALID_STYLE_SLOT if it could not be found.
@@ -1950,7 +1967,11 @@ void drte_engine_set_container_size(drte_engine* pEngine, float containerWidth, 
     pEngine->containerWidth  = containerWidth;
     pEngine->containerHeight = containerHeight;
 
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+    if (pEngine->isWordWrapEnabled) {
+        drte_engine__refresh_line_numbers(pEngine);
+    } else {
+        drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+    }
 }
 
 void drte_engine_get_container_size(drte_engine* pEngine, float* pContainerWidthOut, float* pContainerHeightOut)
@@ -2734,6 +2755,37 @@ void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_
 
     pEngine->onCursorMove = proc;
 }
+
+
+void drte_engine_enable_word_wrap(drte_engine* pEngine)
+{
+    if (pEngine == NULL) {
+        return;
+    }
+
+    pEngine->isWordWrapEnabled = true;
+    drte_engine__refresh_line_numbers(pEngine);
+}
+
+void drte_engine_disable_word_wrap(drte_engine* pEngine)
+{
+    if (pEngine == NULL) {
+        return;
+    }
+
+    pEngine->isWordWrapEnabled = false;
+    drte_engine__refresh_line_numbers(pEngine);
+}
+
+bool drte_engine_is_word_wrap_enabled(drte_engine* pEngine)
+{
+    if (pEngine == NULL) {
+        return false;
+    }
+
+    return pEngine->isWordWrapEnabled;
+}
+
 
 bool drte_engine_insert_character(drte_engine* pEngine, size_t insertIndex, uint32_t utf32)
 {
@@ -5158,6 +5210,70 @@ void drte_engine__end_dirty(drte_engine* pEngine)
 
         pEngine->accumulatedDirtyRect = drgui_make_inside_out_rect();
     }
+}
+
+
+void drte_engine__refresh_line_numbers(drte_engine* pEngine)
+{
+    assert(pEngine == NULL);
+
+    // Count lines.
+    size_t newLineCount = 1;
+    if (pEngine->isWordWrapEnabled) {
+        // TODO: Implement me.
+    } else {
+        for (size_t iChar = 0; iChar < pEngine->textLength; ++iChar) {
+            if (pEngine->text[iChar] == '\n') {
+                newLineCount += 1;
+            } else if (pEngine->text[iChar] == '\r' && pEngine->text[iChar+1] == '\n') {
+                newLineCount += 1;
+                iChar += 1;
+            }
+        }
+    }
+
+
+    // Make room.
+    if (pEngine->lineBufferSize < newLineCount) {
+        size_t newBufferSize = dr_round_up(newLineCount, DRTE_PAGE_LINE_COUNT);
+        size_t* pNewLines = (size_t*)realloc(pEngine->pLines, newBufferSize * sizeof(*pNewLines));
+        if (pNewLines == NULL) {
+            return;
+        }
+
+        pEngine->lineBufferSize = newBufferSize;
+        pEngine->pLines = pNewLines;
+    }
+
+    pEngine->lineCount = newLineCount;
+
+
+    // Find the line boundaries.
+    newLineCount = 1;
+    pEngine->pLines[0] = 0;
+
+    if (pEngine->isWordWrapEnabled) {
+        // TODO: Implement me.
+    } else {
+        for (size_t iChar = 0; iChar < pEngine->textLength; ++iChar) {
+            bool foundLine = false;
+            if (pEngine->text[iChar] == '\n') {
+                newLineCount += 1;
+                foundLine = true;
+            } else if (pEngine->text[iChar] == '\r' && pEngine->text[iChar+1] == '\n') {
+                newLineCount += 1;
+                iChar += 1;
+                foundLine = true;
+            }
+
+            if (foundLine) {
+                pEngine->pLines[newLineCount-1] = iChar+1;
+            }
+        }
+    }
+
+
+    drte_engine__repaint(pEngine);
 }
 #endif  //DR_TEXT_ENGINE_IMPLEMENTATION
 
