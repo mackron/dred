@@ -1201,7 +1201,7 @@ bool dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox)
             size_t iLineEnd = drte_engine_get_selection_last_line(pTB->pTL, iSelection);
             if (iLineBeg != iLineEnd) {
                 for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
-                    size_t iLineChar = drte_engine_get_line_first_character(pTB->pTL, iLine);
+                    size_t iLineChar = drte_engine_get_line_first_character(pTB->pTL, NULL, iLine);
                     size_t iLineCharNonWS = iLineChar;
                     for (;;) {
                         uint32_t c = drte_engine_get_utf32(pTB->pTL, iLineCharNonWS);
@@ -1401,7 +1401,7 @@ bool dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text,
     }
 
     size_t originalCursorLine = drte_engine_get_cursor_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
-    size_t originalCursorPos = drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)) - drte_engine_get_line_first_character(pTB->pTL, originalCursorLine);
+    size_t originalCursorPos = drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)) - drte_engine_get_line_first_character(pTB->pTL, NULL, originalCursorLine);
     int originalScrollPosX = drgui_sb_get_scroll_position(pTB->pHorzScrollbar);
     int originalScrollPosY = drgui_sb_get_scroll_position(pTB->pVertScrollbar);
 
@@ -1426,7 +1426,7 @@ bool dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text,
         // The cursor may have moved so we'll need to restore it.
         size_t lineCharStart;
         size_t lineCharEnd;
-        drte_engine_get_line_character_range(pTB->pTL, originalCursorLine, &lineCharStart, &lineCharEnd);
+        drte_engine_get_line_character_range(pTB->pTL, NULL, originalCursorLine, &lineCharStart, &lineCharEnd);
 
         size_t newCursorPos = lineCharStart + originalCursorPos;
         if (newCursorPos > lineCharEnd) {
@@ -1771,7 +1771,7 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
         float offsetY;
         dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
-        size_t iChar = drte_engine_get_character_by_point_relative_to_container(pTB->pTL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
+        size_t iChar = drte_engine_get_character_by_point_relative_to_container(pTB->pTL, NULL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
 
         if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
             drte_engine_set_selection_end_point(pTB->pTL, iChar);
@@ -2190,7 +2190,7 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
                     size_t iLineEnd = drte_engine_get_selection_last_line(pTB->pTL, iSelection);
 
                     for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
-                        dred_textbox__insert_tab(pTextBox, drte_engine_get_line_first_character(pTB->pTL, iLine));
+                        dred_textbox__insert_tab(pTextBox, drte_engine_get_line_first_character(pTB->pTL, NULL, iLine));
                     }
                 } else {
                     // We're not doing a block indent so we just insert a tab at the cursor like normal.
@@ -2221,11 +2221,11 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
                 if (pDred->config.textEditorEnableAutoIndent) {
                     for (size_t iCursor = 0; iCursor < pTB->pTL->cursorCount; ++iCursor) {
                         size_t iCursorChar = pTB->pTL->pCursors[iCursor].iCharAbs;
-                        size_t iCursorLine = drte_engine_get_character_line(pTB->pTL, iCursorChar);
+                        size_t iCursorLine = drte_engine_get_character_line(pTB->pTL, NULL, iCursorChar);
                         if (iCursorLine > 0) {
                             size_t iPrevLineCharBeg;
                             size_t iPrevLineCharEnd;
-                            drte_engine_get_line_character_range(pTB->pTL, iCursorLine-1, &iPrevLineCharBeg, &iPrevLineCharEnd);
+                            drte_engine_get_line_character_range(pTB->pTL, NULL, iCursorLine-1, &iPrevLineCharBeg, &iPrevLineCharEnd);
 
                             size_t indentationCount = 0;
                             for (;;) {
@@ -2774,7 +2774,7 @@ void dred_textbox__on_mouse_move_line_numbers(drgui_element* pLineNumbers, int r
 
             //float offsetX = pTextEditorData->padding;
             float offsetY = pTB->padding + pTB->pTL->innerOffsetY;
-            size_t iLine = drte_engine_get_line_at_pos_y(pTB->pTL, relativeMousePosY - offsetY);
+            size_t iLine = drte_engine_get_line_at_pos_y(pTB->pTL, NULL, relativeMousePosY - offsetY);
             size_t iAnchorLine = pTB->iLineSelectAnchor;
             size_t lineCount = drte_engine_get_line_count(pTB->pTL);
 
@@ -2848,7 +2848,7 @@ void dred_textbox__on_mouse_button_down_line_numbers(drgui_element* pLineNumbers
 
         //float offsetX = pTextEditorData->padding;
         float offsetY = pTB->padding + pTB->pTL->innerOffsetY;
-        size_t iClickedLine = drte_engine_get_line_at_pos_y(pTB->pTL, relativeMousePosY - offsetY);
+        size_t iClickedLine = drte_engine_get_line_at_pos_y(pTB->pTL, NULL, relativeMousePosY - offsetY);
 
         if ((stateFlags & DRGUI_KEY_STATE_SHIFT_DOWN) != 0) {
             pTB->iLineSelectAnchor = drte_engine_get_cursor_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
@@ -2861,7 +2861,7 @@ void dred_textbox__on_mouse_button_down_line_numbers(drgui_element* pLineNumbers
             dred_textbox_deselect_all(pTextBox);
         }
 
-        drte_engine_begin_selection(pTB->pTL, drte_engine_get_line_first_character(pTB->pTL, pTB->iLineSelectAnchor));
+        drte_engine_begin_selection(pTB->pTL, drte_engine_get_line_first_character(pTB->pTL, NULL, pTB->iLineSelectAnchor));
 
 
         if (iClickedLine + 1 < drte_engine_get_line_count(pTB->pTL)) {
