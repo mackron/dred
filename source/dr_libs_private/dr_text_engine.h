@@ -4304,8 +4304,12 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
 
             do
             {
-                if (segment.posX > pEngine->containerWidth) {
-                    break;  // All remaining segments on this line (including this one) is clipped. Go to the next line.
+                if (linePosX + segment.posX > pEngine->containerWidth) {
+                    // All remaining segments on this line (including this one) is clipped. Go to the next line.
+                    segment.iCharBeg = segment.iLineCharEnd;
+                    segment.iCharEnd = segment.iLineCharEnd;
+                    segment.isAtEndOfLine = true;
+                    break;
                 }
 
                 lineWidth += segment.width;
@@ -5215,12 +5219,21 @@ void drte_engine__end_dirty(drte_engine* pEngine)
 
 void drte_engine__refresh_line_numbers(drte_engine* pEngine)
 {
-    assert(pEngine == NULL);
+    assert(pEngine != NULL);
+#if 0
 
     // Count lines.
     size_t newLineCount = 1;
     if (pEngine->isWordWrapEnabled) {
         // TODO: Implement me.
+        for (size_t iChar = 0; iChar < pEngine->textLength; ++iChar) {
+            if (pEngine->text[iChar] == '\n') {
+                newLineCount += 1;
+            } else if (pEngine->text[iChar] == '\r' && pEngine->text[iChar+1] == '\n') {
+                newLineCount += 1;
+                iChar += 1;
+            }
+        }
     } else {
         for (size_t iChar = 0; iChar < pEngine->textLength; ++iChar) {
             if (pEngine->text[iChar] == '\n') {
@@ -5254,6 +5267,21 @@ void drte_engine__refresh_line_numbers(drte_engine* pEngine)
 
     if (pEngine->isWordWrapEnabled) {
         // TODO: Implement me.
+        for (size_t iChar = 0; iChar < pEngine->textLength; ++iChar) {
+            bool foundLine = false;
+            if (pEngine->text[iChar] == '\n') {
+                newLineCount += 1;
+                foundLine = true;
+            } else if (pEngine->text[iChar] == '\r' && pEngine->text[iChar+1] == '\n') {
+                newLineCount += 1;
+                iChar += 1;
+                foundLine = true;
+            }
+
+            if (foundLine) {
+                pEngine->pLines[newLineCount-1] = iChar+1;
+            }
+        }
     } else {
         for (size_t iChar = 0; iChar < pEngine->textLength; ++iChar) {
             bool foundLine = false;
@@ -5271,7 +5299,7 @@ void drte_engine__refresh_line_numbers(drte_engine* pEngine)
             }
         }
     }
-
+#endif
 
     drte_engine__repaint(pEngine);
 }
