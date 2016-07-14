@@ -59,6 +59,7 @@ bool textEditorTabsToSpacesEnabled; \
 int textEditorTabSizeInSpaces; \
 float textEditorScale; \
 bool textEditorEnableAutoIndent; \
+bool textEditorEnableWordWrap; \
 drgui_color cppCommentTextColor; \
 drgui_color cppStringTextColor; \
 drgui_color cppKeywordTextColor;

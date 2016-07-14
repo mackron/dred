@@ -262,6 +262,11 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 
     // Initialize the styling.
     dred_text_editor_refresh_styling(pTextEditor);
+
+    // Word wrap.
+    if (pDred->config.textEditorEnableWordWrap) {
+        dred_text_editor_enable_word_wrap(pTextEditor);
+    }
     
     return pTextEditor;
 }
@@ -278,6 +283,37 @@ void dred_text_editor_delete(dred_text_editor* pTextEditor)
     }
     
     dred_editor_delete(pTextEditor);
+}
+
+
+void dred_text_editor_enable_word_wrap(dred_text_editor* pTextEditor)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    dred_textbox_enable_word_wrap(data->pTextBox);
+}
+
+void dred_text_editor_disable_word_wrap(dred_text_editor* pTextEditor)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return;
+    }
+
+    dred_textbox_disable_word_wrap(data->pTextBox);
+}
+
+bool dred_text_editor_is_word_wrap_enabled(dred_text_editor* pTextEditor)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return false;
+    }
+
+    return dred_textbox_is_word_wrap_enabled(data->pTextBox);
 }
 
 

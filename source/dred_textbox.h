@@ -100,6 +100,16 @@ void dred_textbox_set_scrollbar_thumb_color_hovered(dred_textbox* pTextBox, drgu
 void dred_textbox_set_scrollbar_thumb_color_pressed(dred_textbox* pTextBox, drgui_color color);
 
 
+// Enables word wrap.
+void dred_textbox_enable_word_wrap(dred_textbox* pTextBox);
+
+// Disables word wrap.
+void dred_textbox_disable_word_wrap(dred_textbox* pTextBox);
+
+// Determines whether or not word wrap is enabled.
+bool dred_textbox_is_word_wrap_enabled(dred_textbox* pTextBox);
+
+
 // Sets the text of the given text box.
 void dred_textbox_set_text(dred_textbox* pTextBox, const char* text);
 

@@ -350,6 +350,7 @@ void dred_config_on_set__tabgroup_generic_refresh(dred_context* pDred)
     }
 }
 
+
 void dred_config_on_set__texteditor_generic_refresh(dred_context* pDred)
 {
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
@@ -357,6 +358,22 @@ void dred_config_on_set__texteditor_generic_refresh(dred_context* pDred)
             dred_control* pControl = dred_tab_get_control(pTab);
             if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
                 dred_text_editor_refresh_styling(pControl);
+            }
+        }
+    }
+}
+
+void dred_config_on_set__texteditor_word_wrap(dred_context* pDred)
+{
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
+        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+            dred_control* pControl = dred_tab_get_control(pTab);
+            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+                if (pDred->config.textEditorEnableWordWrap) {
+                    dred_text_editor_enable_word_wrap(pControl);
+                } else {
+                    dred_text_editor_disable_word_wrap(pControl);
+                }
             }
         }
     }

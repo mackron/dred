@@ -928,6 +928,37 @@ void dred_textbox_set_scrollbar_thumb_color_pressed(dred_textbox* pTextBox, drgu
 }
 
 
+void dred_textbox_enable_word_wrap(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return;
+    }
+
+    drte_engine_enable_word_wrap(pTB->pTL);
+}
+
+void dred_textbox_disable_word_wrap(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return;
+    }
+
+    drte_engine_disable_word_wrap(pTB->pTL);
+}
+
+bool dred_textbox_is_word_wrap_enabled(dred_textbox* pTextBox)
+{
+    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
+    if (pTB == NULL) {
+        return false;
+    }
+
+    return drte_engine_is_word_wrap_enabled(pTB->pTL);
+}
+
+
 
 void dred_textbox_set_text(dred_textbox* pTextBox, const char* text)
 {

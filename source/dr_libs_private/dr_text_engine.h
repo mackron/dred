@@ -1099,7 +1099,7 @@ void drte_engine__end_dirty(drte_engine* pEngine);
 
 
 // Refreshes the line number cache.
-void drte_engine__refresh_line_numbers(drte_engine* pEngine);
+void drte_engine__refresh_line_wrapping(drte_engine* pEngine);
 
 
 // Finds a style slot index of the given style token. Returns DRTE_INVALID_STYLE_SLOT if it could not be found.
@@ -1968,7 +1968,7 @@ void drte_engine_set_container_size(drte_engine* pEngine, float containerWidth, 
     pEngine->containerHeight = containerHeight;
 
     if (pEngine->isWordWrapEnabled) {
-        drte_engine__refresh_line_numbers(pEngine);
+        drte_engine__refresh_line_wrapping(pEngine);
     } else {
         drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
     }
@@ -2749,7 +2749,7 @@ bool drte_engine_is_cursor_at_end_of_selection(drte_engine* pEngine, size_t curs
 
 void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_move_proc proc)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->isWordWrapEnabled) {
         return;
     }
 
@@ -2759,22 +2759,22 @@ void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_
 
 void drte_engine_enable_word_wrap(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->isWordWrapEnabled) {
         return;
     }
 
     pEngine->isWordWrapEnabled = true;
-    drte_engine__refresh_line_numbers(pEngine);
+    drte_engine__refresh_line_wrapping(pEngine);
 }
 
 void drte_engine_disable_word_wrap(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || !pEngine->isWordWrapEnabled) {
         return;
     }
 
     pEngine->isWordWrapEnabled = false;
-    drte_engine__refresh_line_numbers(pEngine);
+    drte_engine__refresh_line_wrapping(pEngine);
 }
 
 bool drte_engine_is_word_wrap_enabled(drte_engine* pEngine)
@@ -5217,10 +5217,9 @@ void drte_engine__end_dirty(drte_engine* pEngine)
 }
 
 
-void drte_engine__refresh_line_numbers(drte_engine* pEngine)
+void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
 {
     assert(pEngine != NULL);
-#if 0
 
     // Count lines.
     size_t newLineCount = 1;
@@ -5299,7 +5298,6 @@ void drte_engine__refresh_line_numbers(drte_engine* pEngine)
             }
         }
     }
-#endif
 
     drte_engine__repaint(pEngine);
 }

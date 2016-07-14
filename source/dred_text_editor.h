@@ -11,6 +11,16 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 void dred_text_editor_delete(dred_text_editor* pTextEditor);
 
 
+// Enables word wrap.
+void dred_text_editor_enable_word_wrap(dred_text_editor* pTextEditor);
+
+// Disables word wrap.
+void dred_text_editor_disable_word_wrap(dred_text_editor* pTextEditor);
+
+// Determines whether or not word wrap is enabled.
+bool dred_text_editor_is_word_wrap_enabled(dred_text_editor* pTextEditor);
+
+
 // Inserts text at every cursor.
 //
 // Returns whether or not the text was changed.
