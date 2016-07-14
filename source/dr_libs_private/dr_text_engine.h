@@ -1468,6 +1468,16 @@ void drte_line_cache_uninit(drte_line_cache* pLineCache)
     pLineCache->count = 0;
 }
 
+size_t drte_line_cache_get_line_count(drte_line_cache* pLineCache)
+{
+    if (pLineCache == NULL) {
+        return 0;
+    }
+
+    return pLineCache->count;
+}
+
+
 size_t drte_line_cache_get_line_first_character(drte_line_cache* pLineCache, size_t iLine)
 {
     if (pLineCache == NULL || iLine >= pLineCache->count) {
@@ -1517,6 +1527,17 @@ bool drte_line_cache_insert_lines(drte_line_cache* pLineCache, size_t insertLine
     return true;
 }
 
+bool drte_line_cache_append_line(drte_line_cache* pLineCache, size_t iLineCharBeg)
+{
+    size_t lineCount = drte_line_cache_get_line_count(pLineCache);
+    if (!drte_line_cache_insert_lines(pLineCache, lineCount, 1, 0)) {
+        return false;
+    }
+
+    drte_line_cache_set_line_first_character(pLineCache, lineCount, iLineCharBeg);
+    return true;
+}
+
 bool drte_line_cache_remove_lines(drte_line_cache* pLineCache, size_t firstLineIndex, size_t lineCount, size_t characterOffset)
 {
     if (pLineCache == NULL || firstLineIndex >= pLineCache->count) {
@@ -1536,15 +1557,6 @@ bool drte_line_cache_remove_lines(drte_line_cache* pLineCache, size_t firstLineI
     }
 
     return true;
-}
-
-size_t drte_line_cache_get_line_count(drte_line_cache* pLineCache)
-{
-    if (pLineCache == NULL) {
-        return 0;
-    }
-
-    return pLineCache->count;
 }
 
 bool drte_line_cache_offset_lines(drte_line_cache* pLineCache, size_t firstLineIndex, size_t characterOffset)
@@ -1594,6 +1606,15 @@ size_t drte_line_cache_find_line_by_character(drte_line_cache* pLineCache, size_
 
     return lineIndex;
 #endif
+}
+
+void drte_line_cache_clear(drte_line_cache* pLineCache)
+{
+    if (pLineCache == NULL) {
+        return;
+    }
+
+    pLineCache->count = 0;
 }
 
 
@@ -2923,6 +2944,13 @@ void drte_engine_enable_word_wrap(drte_engine* pEngine)
         return;
     }
 
+    // The wrapped line cache will not have been initialized at this point so we need to do that first.
+    if (!drte_line_cache_init(&pEngine->_wrappedLines)) {
+        return;
+    }
+
+    pEngine->pWrappedLines = &pEngine->_wrappedLines;
+
     pEngine->isWordWrapEnabled = true;
     drte_engine__refresh_line_wrapping(pEngine);
 }
@@ -2932,6 +2960,11 @@ void drte_engine_disable_word_wrap(drte_engine* pEngine)
     if (pEngine == NULL || !pEngine->isWordWrapEnabled) {
         return;
     }
+
+    pEngine->pWrappedLines = &pEngine->_unwrappedLines;
+
+    // We do not need the wrapped line cache.
+    drte_line_cache_uninit(&pEngine->_unwrappedLines);
 
     pEngine->isWordWrapEnabled = false;
     drte_engine__refresh_line_wrapping(pEngine);
@@ -3021,13 +3054,13 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
 
     // Adjust lines.
     if (linesAddedCount > 0) {
-        if (!drte_line_cache_insert_lines(pEngine->pWrappedLines, iLine+1, linesAddedCount, newTextLength)) {
+        if (!drte_line_cache_insert_lines(pEngine->pUnwrappedLines, iLine+1, linesAddedCount, newTextLength)) {
             return false;
         }
 
         size_t iRunningChar;
         for (size_t i = iLine+1; i <= iLine + linesAddedCount; ++i) {
-            iRunningChar = drte_line_cache_get_line_first_character(pEngine->pWrappedLines, i-1);
+            iRunningChar = drte_line_cache_get_line_first_character(pEngine->pUnwrappedLines, i-1);
             while (pEngine->text[iRunningChar] != '\0') {
                 if (pEngine->text[iRunningChar] == '\n') {
                     iRunningChar += 1;
@@ -3040,11 +3073,11 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
                 iRunningChar += 1;
             }
 
-            drte_line_cache_set_line_first_character(pEngine->pWrappedLines, i, iRunningChar);
+            drte_line_cache_set_line_first_character(pEngine->pUnwrappedLines, i, iRunningChar);
         }
     } else {
         // No new lines were added, but we still need to update the character positions of the line cache.
-        drte_line_cache_offset_lines(pEngine->pWrappedLines, iLine+1, newTextLength);
+        drte_line_cache_offset_lines(pEngine->pUnwrappedLines, iLine+1, newTextLength);
     }
 
 
@@ -3115,12 +3148,12 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
         pEngine->text[pEngine->textLength] = '\0';
 
         if (linesRemovedCount > 0) {
-            if (!drte_line_cache_remove_lines(pEngine->pWrappedLines, iLine+1, linesRemovedCount, bytesToRemove)) {
+            if (!drte_line_cache_remove_lines(pEngine->pUnwrappedLines, iLine+1, linesRemovedCount, bytesToRemove)) {
                 return false;
             }
         } else {
             // No lines were removed, but we still need to update the character positions of the line cache.
-            drte_line_cache_offset_lines_negative(pEngine->pWrappedLines, iLine+1, bytesToRemove);
+            drte_line_cache_offset_lines_negative(pEngine->pUnwrappedLines, iLine+1, bytesToRemove);
         }
 
 
@@ -5304,6 +5337,22 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
 {
     assert(pEngine != NULL);
 
+    // When word wrap is enabled we need to recalculate the lines and then repaint. There is no need to do
+    // this when word wrap is disabled, but it will need a repaint.
+    if (pEngine->isWordWrapEnabled) {
+        // Make sure the cache is cleared to begin with.
+        drte_line_cache_clear(pEngine->pWrappedLines);
+
+        // Line wrapping is done by simply sub-diving each unwrapped line based on word boundaries.
+        size_t lineCount = drte_line_cache_get_line_count(pEngine->pUnwrappedLines);
+        for (size_t iLine = 0; iLine < lineCount; ++iLine) {
+            float lineWidth = 0;
+            size_t iLineCharBeg = drte_line_cache_get_line_first_character(pEngine->pUnwrappedLines, iLine);
+
+            drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
+        }
+    }
+
 #if 0
     // Count lines.
     size_t newLineCount = 1;
@@ -5383,6 +5432,11 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
         }
     }
 #endif
+
+    // Cursors need to have their sticky positions refreshed.
+    for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
+        drte_engine__update_marker_sticky_position(pEngine, &pEngine->pCursors[iCursor]);
+    }
 
     drte_engine__repaint(pEngine);
 }
