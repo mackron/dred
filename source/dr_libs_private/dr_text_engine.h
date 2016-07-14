@@ -169,6 +169,15 @@ typedef struct
 } drte_undo_change;
 
 
+// Used internally for caching lines. APIs for working on line caches are private.
+typedef struct
+{
+	size_t* pLines;
+	size_t bufferSize;
+	size_t count;
+} drte_line_cache;
+
+
 struct drte_engine
 {
     // The list of registered styles. There is a maximum of 256 styles.
@@ -1419,6 +1428,148 @@ bool drte_engine__first_segment_on_line(drte_engine* pEngine, size_t lineIndex, 
 
     return drte_engine__next_segment(pEngine, pSegment);
 }
+
+
+
+//// Line Cache ////
+
+bool drte_line_cache_init(drte_line_cache* pLineCache)
+{
+    if (pLineCache == NULL) {
+        return false;
+    }
+
+    // There's always at least one line.
+    pLineCache->bufferSize = DRTE_PAGE_LINE_COUNT;
+    pLineCache->pLines = (size_t*)calloc(pLineCache->bufferSize, sizeof(*pLineCache->pLines));   // <-- calloc() is important here. It initializes the first line to 0.
+    pLineCache->count = 1;
+    
+    return true;
+}
+
+void drte_line_cache_uninit(drte_line_cache* pLineCache)
+{
+    if (pLineCache == NULL) {
+        return;
+    }
+
+    free(pLineCache->pLines);
+}
+
+size_t drte_line_cache_get_line_first_character(drte_line_cache* pLineCache, size_t iLine)
+{
+    if (pLineCache == NULL || iLine >= pLineCache->count) {
+        return 0;
+    }
+
+    return pLineCache->pLines[iLine];
+}
+
+void drte_line_cache_set_line_first_character(drte_line_cache* pLineCache, size_t iLine, size_t iCharBeg)
+{
+    if (pLineCache == NULL || iLine >= pLineCache->count) {
+        return;
+    }
+
+    pLineCache->pLines[iLine] = iCharBeg;
+}
+
+bool drte_line_cache_insert_lines(drte_line_cache* pLineCache, size_t insertLineIndex, size_t lineCount, size_t characterOffset)
+{
+    if (pLineCache == NULL || insertLineIndex > pLineCache->count) {
+        return false;
+    }
+
+    size_t newLineCount = pLineCache->count + lineCount;
+
+    if (newLineCount >= pLineCache->bufferSize) {
+        size_t newLineBufferSize = (pLineCache->bufferSize == 0) ? DRTE_PAGE_LINE_COUNT : dr_round_up(newLineCount, DRTE_PAGE_LINE_COUNT);
+        size_t* pNewLines = (size_t*)realloc(pLineCache->pLines, newLineBufferSize * sizeof(*pNewLines));
+        if (pNewLines == NULL) {
+            return false;   // Ran out of memory?
+        }
+
+        pLineCache->bufferSize = newLineBufferSize;
+        pLineCache->pLines = pNewLines;
+    }
+
+    // All existing lines coming after the line the text was inserted at need to be moved down newLineCount slots. They also need to have their
+    // first character index updated.
+    for (size_t i = pLineCache->count; i > insertLineIndex; --i) {
+        size_t iSrc = i-1;
+        size_t iDst = iSrc + lineCount;
+        pLineCache->pLines[iDst] = pLineCache->pLines[iSrc] + characterOffset;
+    }
+
+    return true;
+}
+
+bool drte_line_cache_remove_lines(drte_line_cache* pLineCache, size_t firstLineIndex, size_t lineCount, size_t characterOffset)
+{
+    if (pLineCache == NULL || firstLineIndex >= pLineCache->count) {
+        return false;
+    }
+
+    if (pLineCache->count <= lineCount) {
+        pLineCache->count = 1;
+    } else {
+        for (size_t i = firstLineIndex+1; i < (pLineCache->count - lineCount); ++i) {
+            size_t iDst = i;
+            size_t iSrc = i + lineCount;
+            pLineCache->pLines[iDst] = pLineCache->pLines[iSrc] - characterOffset;
+        }
+
+        pLineCache->count -= lineCount;
+    }
+
+    return true;
+}
+
+size_t drte_line_cache_get_line_count(drte_line_cache* pLineCache)
+{
+    if (pLineCache == NULL) {
+        return 0;
+    }
+
+    return pLineCache->count;
+}
+
+bool drte_line_cache_offset_lines(drte_line_cache* pLineCache, size_t firstLineIndex, size_t characterOffset)
+{
+    if (pLineCache == NULL || firstLineIndex >= pLineCache->count) {
+        return false;
+    }
+
+    for (size_t iLine = firstLineIndex; iLine < pLineCache->count; ++iLine) {
+        pLineCache->pLines[iLine] += characterOffset;
+    }
+
+    return true;
+}
+
+size_t drte_line_cache_find_line_by_character(drte_line_cache* pLineCache, size_t iChar)
+{
+    if (pLineCache == NULL) {
+        return 0;
+    }
+
+    // TODO: Make this a binary search.
+
+#if 1
+    // Linear search. Simple, but slow.
+    size_t lineIndex = 0;
+    for (size_t iLine = 0; iLine < pLineCache->count; ++iLine) {
+        if (pLineCache->pLines[iLine] > iChar) {
+            break;
+        }
+
+        lineIndex = iLine;
+    }
+
+    return lineIndex;
+#endif
+}
+
 
 
 void drte_engine__push_text_change_to_prepared_undo_state(drte_engine* pEngine, drte_undo_change_type type, size_t iCharBeg, size_t iCharEnd, const char* text)
