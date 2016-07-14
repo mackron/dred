@@ -221,10 +221,17 @@ struct drte_engine
     drte_engine_on_get_cursor_position_from_char_proc onGetCursorPositionFromChar;
 
 
-    // The index of the first character of every line.
-    size_t* pLines;
-    size_t lineCount;
-    size_t lineBufferSize;
+
+    // This unusual construct is to make handling word wrapping easier. One line cache is used for storing information about raw,
+    // unwrapped lines. The other is for storing information about wrapped lines. When word wrap is not being used, we optimize things
+    // by having the wrapped line cache and unwrapped line cache point to the same underlying line cache to save on memory.
+
+    // The line caches.
+    drte_line_cache _unwrappedLines;
+    drte_line_cache _wrappedLines;
+    drte_line_cache* pUnwrappedLines;   // Always points to _unwrappedLines. Exists only for consistency with pWrappedLines.
+    drte_line_cache* pWrappedLines;     // Points to _wrappedLines if word wrap is enabled; points to _unwrappedLines when word wrap is disabled.
+
 
 
     // The function to call for handling syntax highlighting. See documentation for drte_engine_set_highlighter() for information
@@ -1454,6 +1461,11 @@ void drte_line_cache_uninit(drte_line_cache* pLineCache)
     }
 
     free(pLineCache->pLines);
+
+    // It's important to clear everything to zero in case this is called multiple times after each other which is abolutely possible.
+    pLineCache->pLines = NULL;
+    pLineCache->bufferSize = 0;
+    pLineCache->count = 0;
 }
 
 size_t drte_line_cache_get_line_first_character(drte_line_cache* pLineCache, size_t iLine)
@@ -1501,6 +1513,7 @@ bool drte_line_cache_insert_lines(drte_line_cache* pLineCache, size_t insertLine
         pLineCache->pLines[iDst] = pLineCache->pLines[iSrc] + characterOffset;
     }
 
+    pLineCache->count = newLineCount;
     return true;
 }
 
@@ -1513,7 +1526,7 @@ bool drte_line_cache_remove_lines(drte_line_cache* pLineCache, size_t firstLineI
     if (pLineCache->count <= lineCount) {
         pLineCache->count = 1;
     } else {
-        for (size_t i = firstLineIndex+1; i < (pLineCache->count - lineCount); ++i) {
+        for (size_t i = firstLineIndex; i < (pLineCache->count - lineCount); ++i) {
             size_t iDst = i;
             size_t iSrc = i + lineCount;
             pLineCache->pLines[iDst] = pLineCache->pLines[iSrc] - characterOffset;
@@ -1542,6 +1555,19 @@ bool drte_line_cache_offset_lines(drte_line_cache* pLineCache, size_t firstLineI
 
     for (size_t iLine = firstLineIndex; iLine < pLineCache->count; ++iLine) {
         pLineCache->pLines[iLine] += characterOffset;
+    }
+
+    return true;
+}
+
+bool drte_line_cache_offset_lines_negative(drte_line_cache* pLineCache, size_t firstLineIndex, size_t characterOffset)
+{
+    if (pLineCache == NULL || firstLineIndex >= pLineCache->count) {
+        return false;
+    }
+
+    for (size_t iLine = firstLineIndex; iLine < pLineCache->count; ++iLine) {
+        pLineCache->pLines[iLine] -= characterOffset;
     }
 
     return true;
@@ -1616,9 +1642,14 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     pEngine->cursorStyleSlot = DRTE_INVALID_STYLE_SLOT;
     pEngine->lineNumbersStyleSlot = DRTE_INVALID_STYLE_SLOT;
 
-    pEngine->lineBufferSize = DRTE_PAGE_LINE_COUNT;
-    pEngine->lineCount = 1; // <-- There's always at least one line in a text editor.
-    pEngine->pLines = (size_t*)calloc(pEngine->lineBufferSize, sizeof(*pEngine->pLines));   // <-- calloc() is important here. It initializes the first line to 0.
+
+    // Note that _wrappedLines is intentionally left uninitialized because word wrap is disabled by default.
+    drte_line_cache_init(&pEngine->_unwrappedLines);
+
+    // Both line caches point to the same underlying structure to save on memory. This is only the case when word wrap is disabled, which is
+    // the default behaviour.
+    pEngine->pUnwrappedLines = &pEngine->_unwrappedLines;
+    pEngine->pWrappedLines = &pEngine->_unwrappedLines;
 
 
     pEngine->pCursors = NULL;
@@ -1632,6 +1663,7 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     pEngine->timeToNextCursorBlink = pEngine->cursorBlinkRate;
     pEngine->isCursorBlinkOn       = true;
     pEngine->isShowingCursor       = false;
+    pEngine->isWordWrapEnabled     = false;
     pEngine->accumulatedDirtyRect  = drgui_make_inside_out_rect();
     pEngine->pUserData             = pUserData;
 
@@ -1651,6 +1683,9 @@ void drte_engine_delete(drte_engine* pEngine)
     
     drte_stack_buffer_uninit(&pEngine->undoBuffer);
     drte_stack_buffer_uninit(&pEngine->preparedUndoState);
+
+    drte_line_cache_uninit(&pEngine->_unwrappedLines);
+    drte_line_cache_uninit(&pEngine->_wrappedLines);
 
     free(pEngine->pSelections);
     free(pEngine->pCursors);
@@ -1848,33 +1883,7 @@ size_t drte_engine_get_character_line(drte_engine* pEngine, size_t characterInde
         return 0;
     }
 
-    // TODO: Use an accelerated search for this.
-
-#if 1
-    // Linear search. Simple, but slow.
-    size_t lineIndex = 0;
-    for (size_t iLine = 0; iLine < pEngine->lineCount; ++iLine) {
-        if (pEngine->pLines[iLine] > characterIndex) {
-            break;
-        }
-
-        lineIndex = iLine;
-    }
-
-    return lineIndex;
-#endif
-
-#if 0
-    // Brute force character by character.
-    size_t lineIndex = 0;
-    for (size_t i = 0; i < characterIndex; ++i) {
-        if (pEngine->text[i] == '\n') {
-            lineIndex += 1;
-        }
-    }
-
-    return lineIndex;
-#endif
+    return drte_line_cache_find_line_by_character(pEngine->pWrappedLines, characterIndex);
 }
 
 void drte_engine_get_character_position(drte_engine* pEngine, size_t characterIndex, float* pPosXOut, float* pPosYOut)
@@ -3012,31 +3021,13 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
 
     // Adjust lines.
     if (linesAddedCount > 0) {
-        size_t newLineCount = pEngine->lineCount + linesAddedCount;
-
-        if (newLineCount >= pEngine->lineBufferSize) {
-            size_t newLineBufferSize = (pEngine->lineBufferSize == 0) ? DRTE_PAGE_LINE_COUNT : dr_round_up(newLineCount, DRTE_PAGE_LINE_COUNT);
-            size_t* pNewLines = (size_t*)realloc(pEngine->pLines, newLineBufferSize * sizeof(*pNewLines));
-            if (pNewLines == NULL) {
-                return false;   // Ran out of memory?
-            }
-
-            pEngine->lineBufferSize = newLineBufferSize;
-            pEngine->pLines = pNewLines;
+        if (!drte_line_cache_insert_lines(pEngine->pWrappedLines, iLine+1, linesAddedCount, newTextLength)) {
+            return false;
         }
 
-        // All existing lines coming after the line the text was inserted at need to be moved down newLineCount slots. They also need to have their
-        // first character index updated.
-        for (size_t i = pEngine->lineCount; i > iLine; --i) {
-            size_t iSrc = i-1;
-            size_t iDst = iSrc + linesAddedCount;
-            pEngine->pLines[iDst] = pEngine->pLines[iSrc] + newTextLength;
-        }
-
-        // The newly inserted lines need to be initialized.
         size_t iRunningChar;
         for (size_t i = iLine+1; i <= iLine + linesAddedCount; ++i) {
-            iRunningChar = pEngine->pLines[i-1];
+            iRunningChar = drte_line_cache_get_line_first_character(pEngine->pWrappedLines, i-1);
             while (pEngine->text[iRunningChar] != '\0') {
                 if (pEngine->text[iRunningChar] == '\n') {
                     iRunningChar += 1;
@@ -3049,15 +3040,11 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
                 iRunningChar += 1;
             }
 
-            pEngine->pLines[i] = iRunningChar;
+            drte_line_cache_set_line_first_character(pEngine->pWrappedLines, i, iRunningChar);
         }
-
-        pEngine->lineCount = newLineCount;
     } else {
         // No new lines were added, but we still need to update the character positions of the line cache.
-        for (size_t i = iLine+1; i < pEngine->lineCount; ++i) {
-            pEngine->pLines[i] += newTextLength;
-        }
+        drte_line_cache_offset_lines(pEngine->pWrappedLines, iLine+1, newTextLength);
     }
 
 
@@ -3128,22 +3115,12 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
         pEngine->text[pEngine->textLength] = '\0';
 
         if (linesRemovedCount > 0) {
-            if (pEngine->lineCount <= linesRemovedCount) {
-                pEngine->lineCount = 1;
-            } else {
-                for (size_t i = iLine+1; i < (pEngine->lineCount - linesRemovedCount); ++i) {
-                    size_t iDst = i;
-                    size_t iSrc = i + linesRemovedCount;
-                    pEngine->pLines[iDst] = pEngine->pLines[iSrc] - bytesToRemove;
-                }
-
-                pEngine->lineCount -= linesRemovedCount;
+            if (!drte_line_cache_remove_lines(pEngine->pWrappedLines, iLine+1, linesRemovedCount, bytesToRemove)) {
+                return false;
             }
         } else {
             // No lines were removed, but we still need to update the character positions of the line cache.
-            for (size_t i = iLine+1; i < pEngine->lineCount; ++i) {
-                pEngine->pLines[i] -= bytesToRemove;
-            }
+            drte_line_cache_offset_lines_negative(pEngine->pWrappedLines, iLine+1, bytesToRemove);
         }
 
 
@@ -4223,7 +4200,7 @@ size_t drte_engine_get_line_count(drte_engine* pEngine)
         return 0;
     }
 
-    return pEngine->lineCount;
+    return drte_line_cache_get_line_count(pEngine->pWrappedLines);
 }
 
 size_t drte_engine_get_visible_line_count(drte_engine* pEngine)
@@ -4308,24 +4285,7 @@ size_t drte_engine_get_line_first_character(drte_engine* pEngine, size_t iLine)
         return 0;
     }
 
-    return pEngine->pLines[iLine];
-
-#if 0
-    // Brute force
-    size_t i = 0;
-    while (i < pEngine->textLength && iLine > 0) {
-        if (pEngine->text[i] == '\n') {
-            iLine -= 1;
-            if (iLine == 0) {
-                return i + 1;
-            }
-        }
-
-        i += 1;
-    }
-
-    return 0;
-#endif
+    return drte_line_cache_get_line_first_character(pEngine->pWrappedLines, iLine);
 }
 
 size_t drte_engine_get_line_last_character(drte_engine* pEngine, size_t iLine)
@@ -4334,8 +4294,11 @@ size_t drte_engine_get_line_last_character(drte_engine* pEngine, size_t iLine)
         return 0;
     }
 
-    if (iLine+1 < pEngine->lineCount) {
-        size_t iLineEnd = pEngine->pLines[iLine+1];
+    // The line caches only store the index of the first character of the line. We can quality get the last character of the line
+    // by simply interrogating the first character of the _next_ line. However, there is no next line for the last line so we handle
+    // that one in a special way.
+    if (iLine+1 < drte_engine_get_line_count(pEngine)) {
+        size_t iLineEnd = drte_line_cache_get_line_first_character(pEngine->pWrappedLines, iLine+1);
         assert(iLineEnd > 0);
 
         if (pEngine->text[iLineEnd-1] == '\n') {
@@ -4351,21 +4314,7 @@ size_t drte_engine_get_line_last_character(drte_engine* pEngine, size_t iLine)
     }
 
     // It's the last line. Just return the position of the null terminator.
-    return pEngine->pLines[iLine] + strlen(pEngine->text + pEngine->pLines[iLine]);
-
-#if 0
-    // Brute force.
-    size_t i = drte_engine_get_line_first_character(pEngine, iLine);
-    while (i < pEngine->textLength) {
-        if (pEngine->text[i] == '\n') {
-            return i;
-        }
-
-        i += 1;
-    }
-
-    return i;
-#endif
+    return drte_line_cache_get_line_first_character(pEngine->pWrappedLines, iLine) + strlen(pEngine->text + drte_line_cache_get_line_first_character(pEngine->pWrappedLines, iLine));
 }
 
 void drte_engine_get_line_character_range(drte_engine* pEngine, size_t iLine, size_t* pCharStartOut, size_t* pCharEndOut)
@@ -4376,23 +4325,6 @@ void drte_engine_get_line_character_range(drte_engine* pEngine, size_t iLine, si
 
     if (pCharStartOut) *pCharStartOut = drte_engine_get_line_first_character(pEngine, iLine);
     if (pCharEndOut) *pCharEndOut = drte_engine_get_line_last_character(pEngine, iLine);
-
-#if 0
-    // Brute force.
-    size_t charStart = drte_engine_get_line_first_character(pEngine, iLine);
-
-    size_t charEnd = charStart;
-    while (charEnd < pEngine->textLength) {
-        if (pEngine->text[charEnd] == '\n') {
-            break;
-        }
-
-        charEnd += 1;
-    }
-
-    if (pCharStartOut) *pCharStartOut = charStart;
-    if (pCharEndOut) *pCharEndOut = charEnd;
-#endif
 }
 
 
@@ -5372,6 +5304,7 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
 {
     assert(pEngine != NULL);
 
+#if 0
     // Count lines.
     size_t newLineCount = 1;
     if (pEngine->isWordWrapEnabled) {
@@ -5449,6 +5382,7 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
             }
         }
     }
+#endif
 
     drte_engine__repaint(pEngine);
 }
