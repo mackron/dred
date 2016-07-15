@@ -1039,12 +1039,6 @@ void drte_engine__repaint(drte_engine* pEngine);
 float drte_engine__get_tab_width(drte_engine* pEngine);
 
 
-/// Moves the given text marker to the given point, relative to the container.
-bool drte_engine__move_cursor_to_point_relative_to_container(drte_engine* pEngine, drte_cursor* pCursor, float inputPosX, float inputPosY);
-
-/// Retrieves the position of the given text marker relative to the container.
-void drte_engine__get_cursor_position_relative_to_container(drte_engine* pEngine, drte_cursor* pCursor, float* pPosXOut, float* pPosYOut);
-
 /// Moves the marker to the given point, relative to the text rectangle.
 bool drte_engine__move_cursor_to_point(drte_engine* pEngine, drte_cursor* pCursor, float inputPosXRelativeToText, float inputPosYRelativeToText);
 
@@ -2445,11 +2439,27 @@ size_t drte_engine_get_last_cursor(drte_engine* pEngine)
 
 void drte_engine_get_cursor_position(drte_engine* pEngine, size_t cursorIndex, float* pPosXOut, float* pPosYOut)
 {
+    if (pPosXOut) *pPosXOut = 0;
+    if (pPosYOut) *pPosYOut = 0;
+
     if (pEngine == NULL || pEngine->cursorCount <= cursorIndex) {
         return;
     }
 
-    drte_engine__get_cursor_position_relative_to_container(pEngine, &pEngine->pCursors[cursorIndex], pPosXOut, pPosYOut);
+    // If the character is on a different line to the cursor, it means the cursor is pinned to the end of the previous line and the character
+    // is the first character on the _next_ line. This will happen when word wrap is enabled. In this case things need to be treated a bit
+    // differently to calculate the x position.
+    float posX = 0;
+    float posY = 0;
+    if (pEngine->pCursors[cursorIndex].iLine != drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs)) {
+        drte_engine_measure_line(pEngine, pEngine->pCursors[cursorIndex].iLine, &posX, NULL);
+        posY = drte_engine_get_line_pos_y(pEngine, pEngine->pCursors[cursorIndex].iLine);
+    } else {
+        drte_engine_get_character_position(pEngine, pEngine->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs, &posX, &posY);
+    }
+
+    if (pPosXOut) *pPosXOut = posX + pEngine->innerOffsetX;
+    if (pPosYOut) *pPosYOut = posY + pEngine->innerOffsetY;
 }
 
 drgui_rect drte_engine_get_cursor_rect(drte_engine* pEngine, size_t cursorIndex)
@@ -2505,13 +2515,22 @@ void drte_engine_move_cursor_to_point(drte_engine* pEngine, size_t cursorIndex, 
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    drte_engine__move_cursor_to_point_relative_to_container(pEngine, &pEngine->pCursors[cursorIndex], posX, posY);
+    
+    pEngine->pCursors[cursorIndex].iCharAbs = 0;
+    pEngine->pCursors[cursorIndex].iLine = 0;
+    pEngine->pCursors[cursorIndex].absoluteSickyPosX = 0;
 
-    if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
-        drte_engine__begin_dirty(pEngine);
-            drte_engine__on_cursor_move(pEngine, cursorIndex);
-            drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: This can be optimized. Only redraw the previous line and the new cursor rectangle.
-        drte_engine__end_dirty(pEngine);
+    float inputPosXRelativeToText = posX - pEngine->innerOffsetX;
+    float inputPosYRelativeToText = posY - pEngine->innerOffsetY;
+    if (drte_engine__move_cursor_to_point(pEngine, &pEngine->pCursors[cursorIndex], inputPosXRelativeToText, inputPosYRelativeToText)) {
+        drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
+        
+        if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
+            drte_engine__begin_dirty(pEngine);
+                drte_engine__on_cursor_move(pEngine, cursorIndex);
+                drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: This can be optimized. Only redraw the previous line and the new cursor rectangle.
+            drte_engine__end_dirty(pEngine);
+        }
     }
 }
 
@@ -4700,53 +4719,6 @@ float drte_engine__get_tab_width(drte_engine* pEngine)
     return tabWidth;
 }
 
-
-
-bool drte_engine__move_cursor_to_point_relative_to_container(drte_engine* pEngine, drte_cursor* pCursor, float inputPosX, float inputPosY)
-{
-    if (pEngine == NULL || pCursor == NULL) {
-        return false;
-    }
-
-    pCursor->iCharAbs = 0;
-    pCursor->iLine = 0;
-    pCursor->absoluteSickyPosX = 0;
-
-    float inputPosXRelativeToText = inputPosX - pEngine->innerOffsetX;
-    float inputPosYRelativeToText = inputPosY - pEngine->innerOffsetY;
-    if (drte_engine__move_cursor_to_point(pEngine, pCursor, inputPosXRelativeToText, inputPosYRelativeToText))
-    {
-        drte_engine__update_cursor_sticky_position(pEngine, pCursor);
-        return true;
-    }
-
-    return false;
-}
-
-void drte_engine__get_cursor_position_relative_to_container(drte_engine* pEngine, drte_cursor* pCursor, float* pPosXOut, float* pPosYOut)
-{
-    if (pPosXOut) *pPosXOut = 0;
-    if (pPosYOut) *pPosYOut = 0;
-
-    if (pEngine == NULL || pCursor == NULL) {
-        return;
-    }
-
-    // If the character is on a different line to the cursor, it means the cursor is pinned to the end of the previous line and the character
-    // is the first character on the _next_ line. This will happen when word wrap is enabled. In this case things need to be treated a bit
-    // differently to calculate the x position.
-    float posX = 0;
-    float posY = 0;
-    if (pCursor->iLine != drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pCursor->iCharAbs)) {
-        drte_engine_measure_line(pEngine, pCursor->iLine, &posX, NULL);
-        posY = drte_engine_get_line_pos_y(pEngine, pCursor->iLine);
-    } else {
-        drte_engine_get_character_position(pEngine, pEngine->pWrappedLines, pCursor->iCharAbs, &posX, &posY);
-    }
-
-    if (pPosXOut) *pPosXOut = posX + pEngine->innerOffsetX;
-    if (pPosYOut) *pPosYOut = posY + pEngine->innerOffsetY;
-}
 
 bool drte_engine__move_cursor_to_point(drte_engine* pEngine, drte_cursor* pCursor, float inputPosXRelativeToText, float inputPosYRelativeToText)
 {
