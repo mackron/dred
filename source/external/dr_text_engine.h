@@ -2609,6 +2609,9 @@ bool drte_engine_move_cursor_left(drte_engine* pEngine, size_t cursorIndex)
         size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, iLine);
         if (iLineCharBeg == iPrevChar) {
             drte_engine_move_cursor_to_end_of_line_by_index(pEngine, cursorIndex, iLine-1);
+            if (pEngine->pCursors[cursorIndex].iCharAbs == iPrevChar) {
+                pEngine->pCursors[cursorIndex].iCharAbs -= 1;
+            }
         } else {
             pEngine->pCursors[cursorIndex].iCharAbs -= 1;
         }
@@ -2617,6 +2620,7 @@ bool drte_engine_move_cursor_left(drte_engine* pEngine, size_t cursorIndex)
     }
 
     if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
+        pEngine->pCursors[cursorIndex].iLine = drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs);
         drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
 
         drte_engine__begin_dirty(pEngine);
@@ -2654,6 +2658,7 @@ bool drte_engine_move_cursor_right(drte_engine* pEngine, size_t cursorIndex)
     }
 
     if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
+        pEngine->pCursors[cursorIndex].iLine = drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs);
         drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
 
         drte_engine__begin_dirty(pEngine);
@@ -2697,7 +2702,7 @@ bool drte_engine_move_cursor_y(drte_engine* pEngine, size_t cursorIndex, int amo
     }
 
     // Moving a marker up or down depends on it's sticky position.
-    intptr_t iNewLine = drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs) + amount;
+    intptr_t iNewLine = pEngine->pCursors[cursorIndex].iLine + amount;
     if (iNewLine < 0) {
         iNewLine = 0;
     }
