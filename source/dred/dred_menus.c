@@ -87,6 +87,8 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append_separator(pViewMenu);
     dred_menu_item_create_and_append(pViewMenu, "Toggle &Line Numbers", DRED_MENU_ITEM_ID_VIEW_LINE_NUMBERS, "toggle-line-numbers", dred_shortcut_none(), NULL);
     dred_menu_item_create_and_append(pViewMenu, "Reset &Zoom", DRED_MENU_ITEM_ID_VIEW_RESET_ZOOM, "zoom 1", dred_shortcut_none(), NULL);
+    dred_menu_item_create_and_append_separator(pViewMenu);
+    dred_menu_item_create_and_append(pViewMenu, "Toggle Word &Wrap", DRED_MENU_ITEM_ID_VIEW_WORD_WRAP, "toggle-word-wrap", dred_shortcut_none(), NULL);
 
     dred_menu* pFindMenu = dred_menu_create(pDred, dred_menu_type_popup);
     dred_menu_item_create_and_append_with_shortcut(pFindMenu, "&Find...", DRED_MENU_ITEM_ID_FIND_FIND, DRED_SHORTCUT_NAME_FIND);
