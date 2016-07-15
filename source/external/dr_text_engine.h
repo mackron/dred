@@ -18,7 +18,6 @@
 //   - Need a very simple high-level API while still maintaining good performance characteristics.
 // - Notifications for when a region have become invalid and needs redrawing
 // - Line numbers
-// - Underlines
 // - Getting words under a specific point in the text region.
 //   - Useful for right-click context menus and whatnot (go to definition, etc.)
 // - Multi-line editing and selection
@@ -124,7 +123,10 @@ typedef struct
     // the left position of the line. This will be updated when the marker is moved left and right.
     float absoluteSickyPosX;
 
-} drte_marker;
+    // Whether or not the cursor is pinned to the end of the line. This is only really used when word wrap is enabled.
+    bool isPinnedToEndOfLine;
+
+} drte_cursor;
 
 typedef struct
 {
@@ -301,7 +303,7 @@ struct drte_engine
 
 
     // The list of active cursors.
-    drte_marker* pCursors;
+    drte_cursor* pCursors;
 
     // The number of active cursors.
     size_t cursorCount;
@@ -1032,61 +1034,59 @@ void drte_engine__repaint(drte_engine* pEngine);
 /// Helper for calculating the width of a tab.
 float drte_engine__get_tab_width(drte_engine* pEngine);
 
-/// Creates a blank text marker.
-drte_marker drte_engine__new_marker();
 
 /// Moves the given text marker to the given point, relative to the container.
-bool drte_engine__move_marker_to_point_relative_to_container(drte_engine* pEngine, drte_marker* pMarker, float inputPosX, float inputPosY);
+bool drte_engine__move_cursor_to_point_relative_to_container(drte_engine* pEngine, drte_cursor* pMarker, float inputPosX, float inputPosY);
 
 /// Retrieves the position of the given text marker relative to the container.
-void drte_engine__get_marker_position_relative_to_container(drte_engine* pEngine, drte_marker* pMarker, float* pPosXOut, float* pPosYOut);
+void drte_engine__get_cursor_position_relative_to_container(drte_engine* pEngine, drte_cursor* pMarker, float* pPosXOut, float* pPosYOut);
 
 /// Moves the marker to the given point, relative to the text rectangle.
-bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarker, float inputPosXRelativeToText, float inputPosYRelativeToText);
+bool drte_engine__move_cursor_to_point(drte_engine* pEngine, drte_cursor* pMarker, float inputPosXRelativeToText, float inputPosYRelativeToText);
 
 /// Moves the given marker to the left by one character.
-bool drte_engine__move_marker_left(drte_engine* pEngine, drte_marker* pMarker);
+bool drte_engine__move_cursor_left(drte_engine* pEngine, drte_cursor* pMarker);
 
 /// Moves the given marker to the right by one character.
-bool drte_engine__move_marker_right(drte_engine* pEngine, drte_marker* pMarker);
+bool drte_engine__move_cursor_right(drte_engine* pEngine, drte_cursor* pMarker);
 
 /// Moves the given marker up one line.
-bool drte_engine__move_marker_up(drte_engine* pEngine, drte_marker* pMarker);
+bool drte_engine__move_cursor_up(drte_engine* pEngine, drte_cursor* pMarker);
 
 /// Moves the given marker down one line.
-bool drte_engine__move_marker_down(drte_engine* pEngine, drte_marker* pMarker);
+bool drte_engine__move_cursor_down(drte_engine* pEngine, drte_cursor* pMarker);
 
 /// Moves the given marker down one line.
-bool drte_engine__move_marker_y(drte_engine* pEngine, drte_marker* pMarker, int amount);
+bool drte_engine__move_cursor_y(drte_engine* pEngine, drte_cursor* pMarker, int amount);
 
 /// Moves the given marker to the end of the line it's currently sitting on.
-bool drte_engine__move_marker_to_end_of_line(drte_engine* pEngine, drte_marker* pMarker);
+bool drte_engine__move_cursor_to_end_of_line(drte_engine* pEngine, drte_cursor* pMarker);
 
 /// Moves the given marker to the start of the line it's currently sitting on.
-bool drte_engine__move_marker_to_start_of_line(drte_engine* pEngine, drte_marker* pMarker);
+bool drte_engine__move_cursor_to_start_of_line(drte_engine* pEngine, drte_cursor* pMarker);
 
 /// Moves the given marker to the end of the line at the given index.
-bool drte_engine__move_marker_to_end_of_line_by_index(drte_engine* pEngine, drte_marker* pMarker, size_t iLine);
+bool drte_engine__move_cursor_to_end_of_line_by_index(drte_engine* pEngine, drte_cursor* pMarker, size_t iLine);
 
 /// Moves the given marker to the start of the line at the given index.
-bool drte_engine__move_marker_to_start_of_line_by_index(drte_engine* pEngine, drte_marker* pMarker, size_t iLine);
+bool drte_engine__move_cursor_to_start_of_line_by_index(drte_engine* pEngine, drte_cursor* pMarker, size_t iLine);
 
 /// Moves the given marker to the end of the text.
-bool drte_engine__move_marker_to_end_of_text(drte_engine* pEngine, drte_marker* pMarker);
+bool drte_engine__move_cursor_to_end_of_text(drte_engine* pEngine, drte_cursor* pMarker);
 
 /// Moves the given marker to the start of the text.
-bool drte_engine__move_marker_to_start_of_text(drte_engine* pEngine, drte_marker* pMarker);
+bool drte_engine__move_cursor_to_start_of_text(drte_engine* pEngine, drte_cursor* pMarker);
 
 /// Moves the given marker to the character at the given position.
-bool drte_engine__move_marker_to_character(drte_engine* pEngine, drte_marker* pMarker, size_t iChar);
+bool drte_engine__move_cursor_to_character(drte_engine* pEngine, drte_cursor* pMarker, size_t iChar);
 
 
 /// Updates the sticky position of the given marker.
-void drte_engine__update_marker_sticky_position(drte_engine* pEngine, drte_marker* pMarker);
+void drte_engine__update_cursor_sticky_position(drte_engine* pEngine, drte_cursor* pMarker);
 
 
 /// Retrieves the index of the character the given marker is located at.
-size_t drte_engine__get_marker_absolute_char_index(drte_engine* pEngine, drte_marker* pMarker);
+size_t drte_engine__get_cursor_absolute_char_index(drte_engine* pEngine, drte_cursor* pMarker);
 
 
 
@@ -2399,7 +2399,7 @@ size_t drte_engine_insert_cursor(drte_engine* pEngine, size_t iChar)
         return (size_t)-1;
     }
 
-    drte_marker* pNewCursors = (drte_marker*)realloc(pEngine->pCursors, (pEngine->cursorCount+1) * sizeof(*pNewCursors));
+    drte_cursor* pNewCursors = (drte_cursor*)realloc(pEngine->pCursors, (pEngine->cursorCount+1) * sizeof(*pNewCursors));
     if (pNewCursors == NULL) {
         return (size_t)-1;
     }
@@ -2407,6 +2407,7 @@ size_t drte_engine_insert_cursor(drte_engine* pEngine, size_t iChar)
     pEngine->pCursors = pNewCursors;
     pEngine->pCursors[pEngine->cursorCount].iCharAbs = 0;
     pEngine->pCursors[pEngine->cursorCount].absoluteSickyPosX = 0;
+    pEngine->pCursors[pEngine->cursorCount].isPinnedToEndOfLine = false;
     pEngine->cursorCount += 1;
 
     drte_engine__begin_dirty(pEngine);
@@ -2464,7 +2465,7 @@ void drte_engine_get_cursor_position(drte_engine* pEngine, size_t cursorIndex, f
         return;
     }
 
-    drte_engine__get_marker_position_relative_to_container(pEngine, &pEngine->pCursors[cursorIndex], pPosXOut, pPosYOut);
+    drte_engine__get_cursor_position_relative_to_container(pEngine, &pEngine->pCursors[cursorIndex], pPosXOut, pPosYOut);
 }
 
 drgui_rect drte_engine_get_cursor_rect(drte_engine* pEngine, size_t cursorIndex)
@@ -2509,7 +2510,7 @@ size_t drte_engine_get_cursor_character(drte_engine* pEngine, size_t cursorIndex
         return 0;
     }
 
-    return drte_engine__get_marker_absolute_char_index(pEngine, &pEngine->pCursors[cursorIndex]);
+    return drte_engine__get_cursor_absolute_char_index(pEngine, &pEngine->pCursors[cursorIndex]);
 }
 
 void drte_engine_move_cursor_to_point(drte_engine* pEngine, size_t cursorIndex, float posX, float posY)
@@ -2519,7 +2520,7 @@ void drte_engine_move_cursor_to_point(drte_engine* pEngine, size_t cursorIndex, 
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    drte_engine__move_marker_to_point_relative_to_container(pEngine, &pEngine->pCursors[cursorIndex], posX, posY);
+    drte_engine__move_cursor_to_point_relative_to_container(pEngine, &pEngine->pCursors[cursorIndex], posX, posY);
 
     if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
         drte_engine__begin_dirty(pEngine);
@@ -2536,7 +2537,7 @@ bool drte_engine_move_cursor_left(drte_engine* pEngine, size_t cursorIndex)
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_marker_left(pEngine, &pEngine->pCursors[cursorIndex])) {
+    if (drte_engine__move_cursor_left(pEngine, &pEngine->pCursors[cursorIndex])) {
         if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -2557,7 +2558,7 @@ bool drte_engine_move_cursor_right(drte_engine* pEngine, size_t cursorIndex)
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_marker_right(pEngine, &pEngine->pCursors[cursorIndex])) {
+    if (drte_engine__move_cursor_right(pEngine, &pEngine->pCursors[cursorIndex])) {
         if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -2578,7 +2579,7 @@ bool drte_engine_move_cursor_up(drte_engine* pEngine, size_t cursorIndex)
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_marker_up(pEngine, &pEngine->pCursors[cursorIndex])) {
+    if (drte_engine__move_cursor_up(pEngine, &pEngine->pCursors[cursorIndex])) {
         if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -2599,7 +2600,7 @@ bool drte_engine_move_cursor_down(drte_engine* pEngine, size_t cursorIndex)
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_marker_down(pEngine, &pEngine->pCursors[cursorIndex])) {
+    if (drte_engine__move_cursor_down(pEngine, &pEngine->pCursors[cursorIndex])) {
         if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -2620,7 +2621,7 @@ bool drte_engine_move_cursor_y(drte_engine* pEngine, size_t cursorIndex, int amo
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_marker_y(pEngine, &pEngine->pCursors[cursorIndex], amount)) {
+    if (drte_engine__move_cursor_y(pEngine, &pEngine->pCursors[cursorIndex], amount)) {
         if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -2641,7 +2642,7 @@ bool drte_engine_move_cursor_to_end_of_line(drte_engine* pEngine, size_t cursorI
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_marker_to_end_of_line(pEngine, &pEngine->pCursors[cursorIndex])) {
+    if (drte_engine__move_cursor_to_end_of_line(pEngine, &pEngine->pCursors[cursorIndex])) {
         if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -2662,7 +2663,7 @@ bool drte_engine_move_cursor_to_start_of_line(drte_engine* pEngine, size_t curso
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_marker_to_start_of_line(pEngine, &pEngine->pCursors[cursorIndex])) {
+    if (drte_engine__move_cursor_to_start_of_line(pEngine, &pEngine->pCursors[cursorIndex])) {
         if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -2683,7 +2684,7 @@ bool drte_engine_move_cursor_to_end_of_line_by_index(drte_engine* pEngine, size_
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_marker_to_end_of_line_by_index(pEngine, &pEngine->pCursors[cursorIndex], iLine)) {
+    if (drte_engine__move_cursor_to_end_of_line_by_index(pEngine, &pEngine->pCursors[cursorIndex], iLine)) {
         if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -2704,7 +2705,7 @@ bool drte_engine_move_cursor_to_start_of_line_by_index(drte_engine* pEngine, siz
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_marker_to_start_of_line_by_index(pEngine, &pEngine->pCursors[cursorIndex], iLine)) {
+    if (drte_engine__move_cursor_to_start_of_line_by_index(pEngine, &pEngine->pCursors[cursorIndex], iLine)) {
         if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -2725,7 +2726,7 @@ bool drte_engine_move_cursor_to_end_of_text(drte_engine* pEngine, size_t cursorI
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_marker_to_end_of_text(pEngine, &pEngine->pCursors[cursorIndex])) {
+    if (drte_engine__move_cursor_to_end_of_text(pEngine, &pEngine->pCursors[cursorIndex])) {
         if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -2746,7 +2747,7 @@ bool drte_engine_move_cursor_to_start_of_text(drte_engine* pEngine, size_t curso
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_marker_to_start_of_text(pEngine, &pEngine->pCursors[cursorIndex])) {
+    if (drte_engine__move_cursor_to_start_of_text(pEngine, &pEngine->pCursors[cursorIndex])) {
         if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -2785,7 +2786,7 @@ void drte_engine_move_cursor_to_character(drte_engine* pEngine, size_t cursorInd
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_marker_to_character(pEngine, &pEngine->pCursors[cursorIndex], characterIndex)) {
+    if (drte_engine__move_cursor_to_character(pEngine, &pEngine->pCursors[cursorIndex], characterIndex)) {
         if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
             drte_engine__begin_dirty(pEngine);
                 drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -3181,13 +3182,13 @@ bool drte_engine_insert_character_at_cursor(drte_engine* pEngine, size_t cursorI
     drte_engine__begin_dirty(pEngine);
     {
         drte_engine_insert_character(pEngine, pEngine->pCursors[cursorIndex].iCharAbs, character);
-        drte_engine__move_marker_to_character(pEngine, &pEngine->pCursors[cursorIndex], pEngine->pCursors[cursorIndex].iCharAbs + 1);
+        drte_engine__move_cursor_to_character(pEngine, &pEngine->pCursors[cursorIndex], pEngine->pCursors[cursorIndex].iCharAbs + 1);
     }
     drte_engine__end_dirty(pEngine);
 
 
     // The cursor's sticky position needs to be updated whenever the text is edited.
-    drte_engine__update_marker_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
+    drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
 
 
     drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -3216,7 +3217,7 @@ bool drte_engine_insert_character_at_cursors(drte_engine* pEngine, unsigned int 
             for (size_t iCursor2 = 0; iCursor2 < pEngine->cursorCount; ++iCursor2) {
                 if (iCursor2 != iCursor) {
                     if (pEngine->pCursors[iCursor2].iCharAbs > iCursorChar) {
-                        wasTextChanged = drte_engine__move_marker_to_character(pEngine, &pEngine->pCursors[iCursor2], pEngine->pCursors[iCursor2].iCharAbs + 1) || wasTextChanged;
+                        wasTextChanged = drte_engine__move_cursor_to_character(pEngine, &pEngine->pCursors[iCursor2], pEngine->pCursors[iCursor2].iCharAbs + 1) || wasTextChanged;
                     }
                 }
             }
@@ -3235,15 +3236,15 @@ bool drte_engine_insert_text_at_cursor(drte_engine* pEngine, size_t cursorIndex,
 
     drte_engine__begin_dirty(pEngine);
     {
-        size_t cursorPos = drte_engine__get_marker_absolute_char_index(pEngine, &pEngine->pCursors[cursorIndex]);
+        size_t cursorPos = drte_engine__get_cursor_absolute_char_index(pEngine, &pEngine->pCursors[cursorIndex]);
         drte_engine_insert_text(pEngine, text, cursorPos);
-        drte_engine__move_marker_to_character(pEngine, &pEngine->pCursors[cursorIndex], cursorPos + strlen(text));
+        drte_engine__move_cursor_to_character(pEngine, &pEngine->pCursors[cursorIndex], cursorPos + strlen(text));
     }
     drte_engine__end_dirty(pEngine);
 
 
     // The cursor's sticky position needs to be updated whenever the text is edited.
-    drte_engine__update_marker_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
+    drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
 
     drte_engine__on_cursor_move(pEngine, cursorIndex);
 
@@ -3297,7 +3298,7 @@ bool drte_engine_delete_character_to_left_of_cursors(drte_engine* pEngine, bool 
             for (size_t iCursor2 = 0; iCursor2 < pEngine->cursorCount; ++iCursor2) {
                 if (iCursor2 != iCursor) {
                     if (pEngine->pCursors[iCursor2].iCharAbs > iCursorChar && pEngine->pCursors[iCursor2].iCharAbs > 0) {
-                        wasTextChanged = drte_engine__move_marker_to_character(pEngine, &pEngine->pCursors[iCursor2], pEngine->pCursors[iCursor2].iCharAbs - 1) || wasTextChanged;
+                        wasTextChanged = drte_engine__move_cursor_to_character(pEngine, &pEngine->pCursors[iCursor2], pEngine->pCursors[iCursor2].iCharAbs - 1) || wasTextChanged;
                     }
                 }
             }
@@ -3328,7 +3329,7 @@ bool drte_engine_delete_character_to_right_of_cursor(drte_engine* pEngine, size_
 
 
         // The layout will have changed.
-        drte_engine__move_marker_to_character(pEngine, &pEngine->pCursors[cursorIndex], iCharBeg);
+        drte_engine__move_cursor_to_character(pEngine, &pEngine->pCursors[cursorIndex], iCharBeg);
 
         if (pEngine->onTextChanged) {
             pEngine->onTextChanged(pEngine);
@@ -3369,7 +3370,7 @@ bool drte_engine_delete_character_to_right_of_cursors(drte_engine* pEngine, bool
             for (size_t iCursor2 = 0; iCursor2 < pEngine->cursorCount; ++iCursor2) {
                 if (iCursor2 != iCursor) {
                     if (pEngine->pCursors[iCursor2].iCharAbs > iCursorChar && pEngine->pCursors[iCursor2].iCharAbs > 0) {
-                        wasTextChanged = drte_engine__move_marker_to_character(pEngine, &pEngine->pCursors[iCursor2], pEngine->pCursors[iCursor2].iCharAbs - 1) || wasTextChanged;
+                        wasTextChanged = drte_engine__move_cursor_to_character(pEngine, &pEngine->pCursors[iCursor2], pEngine->pCursors[iCursor2].iCharAbs - 1) || wasTextChanged;
                     }
                 }
             }
@@ -3932,7 +3933,7 @@ bool drte_engine__capture_and_push_undo_state__cursors(drte_engine* pEngine, drt
 
     size_t sizeInBytes = 
         sizeof(pEngine->cursorCount) +
-        sizeof(drte_marker) * pEngine->cursorCount;
+        sizeof(drte_cursor) * pEngine->cursorCount;
 
     uint8_t* pData = drte_stack_buffer_alloc(pStack, sizeInBytes);
     if (pData == NULL) {
@@ -3940,7 +3941,7 @@ bool drte_engine__capture_and_push_undo_state__cursors(drte_engine* pEngine, drt
     }
 
     memcpy(pData, &pEngine->cursorCount, sizeof(pEngine->cursorCount));
-    memcpy(pData + sizeof(pEngine->cursorCount), pEngine->pCursors, sizeof(drte_marker) * pEngine->cursorCount);
+    memcpy(pData + sizeof(pEngine->cursorCount), pEngine->pCursors, sizeof(drte_cursor) * pEngine->cursorCount);
 
     return true;
 }
@@ -4634,7 +4635,7 @@ bool drte_engine_find_next(drte_engine* pEngine, const char* text, size_t* pSele
 
     size_t cursorPos = 0;
     if (pEngine->cursorCount > 0) {
-        cursorPos = drte_engine__get_marker_absolute_char_index(pEngine, &pEngine->pCursors[pEngine->cursorCount-1]);
+        cursorPos = drte_engine__get_cursor_absolute_char_index(pEngine, &pEngine->pCursors[pEngine->cursorCount-1]);
     }
 
     char* nextOccurance = strstr(pEngine->text + cursorPos, text);
@@ -4664,7 +4665,7 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 
     size_t cursorPos = 0;
     if (pEngine->cursorCount > 0) {
-        drte_engine__get_marker_absolute_char_index(pEngine, &pEngine->pCursors[pEngine->cursorCount-1]);
+        drte_engine__get_cursor_absolute_char_index(pEngine, &pEngine->pCursors[pEngine->cursorCount-1]);
     }
 
     char* nextOccurance = strstr(pEngine->text + cursorPos, text);
@@ -4705,16 +4706,7 @@ float drte_engine__get_tab_width(drte_engine* pEngine)
 
 
 
-drte_marker drte_engine__new_marker()
-{
-    drte_marker marker;
-    marker.iCharAbs = 0;
-    marker.absoluteSickyPosX = 0;
-
-    return marker;
-}
-
-bool drte_engine__move_marker_to_point_relative_to_container(drte_engine* pEngine, drte_marker* pMarker, float inputPosX, float inputPosY)
+bool drte_engine__move_cursor_to_point_relative_to_container(drte_engine* pEngine, drte_cursor* pMarker, float inputPosX, float inputPosY)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return false;
@@ -4725,16 +4717,16 @@ bool drte_engine__move_marker_to_point_relative_to_container(drte_engine* pEngin
 
     float inputPosXRelativeToText = inputPosX - pEngine->innerOffsetX;
     float inputPosYRelativeToText = inputPosY - pEngine->innerOffsetY;
-    if (drte_engine__move_marker_to_point(pEngine, pMarker, inputPosXRelativeToText, inputPosYRelativeToText))
+    if (drte_engine__move_cursor_to_point(pEngine, pMarker, inputPosXRelativeToText, inputPosYRelativeToText))
     {
-        drte_engine__update_marker_sticky_position(pEngine, pMarker);
+        drte_engine__update_cursor_sticky_position(pEngine, pMarker);
         return true;
     }
 
     return false;
 }
 
-void drte_engine__get_marker_position_relative_to_container(drte_engine* pEngine, drte_marker* pMarker, float* pPosXOut, float* pPosYOut)
+void drte_engine__get_cursor_position_relative_to_container(drte_engine* pEngine, drte_cursor* pMarker, float* pPosXOut, float* pPosYOut)
 {
     if (pPosXOut) *pPosXOut = 0;
     if (pPosYOut) *pPosYOut = 0;
@@ -4751,7 +4743,7 @@ void drte_engine__get_marker_position_relative_to_container(drte_engine* pEngine
     if (pPosYOut) *pPosYOut = posY + pEngine->innerOffsetY;
 }
 
-bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarker, float inputPosXRelativeToText, float inputPosYRelativeToText)
+bool drte_engine__move_cursor_to_point(drte_engine* pEngine, drte_cursor* pMarker, float inputPosXRelativeToText, float inputPosYRelativeToText)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return false;
@@ -4820,7 +4812,7 @@ bool drte_engine__move_marker_to_point(drte_engine* pEngine, drte_marker* pMarke
     return false;
 }
 
-bool drte_engine__move_marker_left(drte_engine* pEngine, drte_marker* pMarker)
+bool drte_engine__move_cursor_left(drte_engine* pEngine, drte_cursor* pMarker)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return false;
@@ -4835,7 +4827,7 @@ bool drte_engine__move_marker_left(drte_engine* pEngine, drte_marker* pMarker)
     if (iLine > 0) {
         size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, iLine);
         if (iLineCharBeg == pMarker->iCharAbs) {
-            drte_engine__move_marker_to_end_of_line_by_index(pEngine, pMarker, iLine-1);
+            drte_engine__move_cursor_to_end_of_line_by_index(pEngine, pMarker, iLine-1);
             goto finish;
         }
     }
@@ -4844,11 +4836,11 @@ bool drte_engine__move_marker_left(drte_engine* pEngine, drte_marker* pMarker)
     pMarker->iCharAbs -= 1;
 
 finish:
-    drte_engine__update_marker_sticky_position(pEngine, pMarker);
+    drte_engine__update_cursor_sticky_position(pEngine, pMarker);
     return true;
 }
 
-bool drte_engine__move_marker_right(drte_engine* pEngine, drte_marker* pMarker)
+bool drte_engine__move_cursor_right(drte_engine* pEngine, drte_cursor* pMarker)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return false;
@@ -4863,7 +4855,7 @@ bool drte_engine__move_marker_right(drte_engine* pEngine, drte_marker* pMarker)
     if (iLine+1 < drte_engine_get_line_count(pEngine)) {
         size_t iLineCharEnd = drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, iLine);
         if (iLineCharEnd == pMarker->iCharAbs) {
-            drte_engine__move_marker_to_start_of_line_by_index(pEngine, pMarker, iLine+1);
+            drte_engine__move_cursor_to_start_of_line_by_index(pEngine, pMarker, iLine+1);
             goto finish;
         }
     }
@@ -4872,29 +4864,29 @@ bool drte_engine__move_marker_right(drte_engine* pEngine, drte_marker* pMarker)
     pMarker->iCharAbs += 1;
 
 finish:
-    drte_engine__update_marker_sticky_position(pEngine, pMarker);
+    drte_engine__update_cursor_sticky_position(pEngine, pMarker);
     return true;
 }
 
-bool drte_engine__move_marker_up(drte_engine* pEngine, drte_marker* pMarker)
+bool drte_engine__move_cursor_up(drte_engine* pEngine, drte_cursor* pMarker)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return false;
     }
 
-    return drte_engine__move_marker_y(pEngine, pMarker, -1);
+    return drte_engine__move_cursor_y(pEngine, pMarker, -1);
 }
 
-bool drte_engine__move_marker_down(drte_engine* pEngine, drte_marker* pMarker)
+bool drte_engine__move_cursor_down(drte_engine* pEngine, drte_cursor* pMarker)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return false;
     }
 
-    return drte_engine__move_marker_y(pEngine, pMarker, 1);
+    return drte_engine__move_cursor_y(pEngine, pMarker, 1);
 }
 
-bool drte_engine__move_marker_y(drte_engine* pEngine, drte_marker* pMarker, int amount)
+bool drte_engine__move_cursor_y(drte_engine* pEngine, drte_cursor* pMarker, int amount)
 {
     if (pEngine == NULL || pMarker == NULL || amount == 0) {
         return false;
@@ -4916,96 +4908,96 @@ bool drte_engine__move_marker_y(drte_engine* pEngine, drte_marker* pMarker, int 
 
     float newMarkerPosX = pMarker->absoluteSickyPosX;
     float newMarkerPosY = drte_engine_get_line_pos_y(pEngine, (size_t)iNewLine);
-    drte_engine__move_marker_to_point(pEngine, pMarker, newMarkerPosX, newMarkerPosY);
+    drte_engine__move_cursor_to_point(pEngine, pMarker, newMarkerPosX, newMarkerPosY);
 
     return true;
 }
 
-bool drte_engine__move_marker_to_end_of_line(drte_engine* pEngine, drte_marker* pMarker)
+bool drte_engine__move_cursor_to_end_of_line(drte_engine* pEngine, drte_cursor* pMarker)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return false;
     }
 
-    if (!drte_engine__move_marker_to_character(pEngine, pMarker, drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pMarker->iCharAbs)))) {
+    if (!drte_engine__move_cursor_to_character(pEngine, pMarker, drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pMarker->iCharAbs)))) {
         return false;
     }
 
-    drte_engine__update_marker_sticky_position(pEngine, pMarker);
+    drte_engine__update_cursor_sticky_position(pEngine, pMarker);
     return true;
 }
 
-bool drte_engine__move_marker_to_start_of_line(drte_engine* pEngine, drte_marker* pMarker)
+bool drte_engine__move_cursor_to_start_of_line(drte_engine* pEngine, drte_cursor* pMarker)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return false;
     }
 
-    if (!drte_engine__move_marker_to_character(pEngine, pMarker, drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pMarker->iCharAbs)))) {
+    if (!drte_engine__move_cursor_to_character(pEngine, pMarker, drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pMarker->iCharAbs)))) {
         return false;
     }
 
-    drte_engine__update_marker_sticky_position(pEngine, pMarker);
+    drte_engine__update_cursor_sticky_position(pEngine, pMarker);
     return true;
 }
 
-bool drte_engine__move_marker_to_end_of_line_by_index(drte_engine* pEngine, drte_marker* pMarker, size_t iLine)
+bool drte_engine__move_cursor_to_end_of_line_by_index(drte_engine* pEngine, drte_cursor* pMarker, size_t iLine)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return false;
     }
 
-    if (!drte_engine__move_marker_to_character(pEngine, pMarker, drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, iLine))) {
+    if (!drte_engine__move_cursor_to_character(pEngine, pMarker, drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, iLine))) {
         return false;
     }
 
-    drte_engine__update_marker_sticky_position(pEngine, pMarker);
+    drte_engine__update_cursor_sticky_position(pEngine, pMarker);
     return true;
 }
 
-bool drte_engine__move_marker_to_start_of_line_by_index(drte_engine* pEngine, drte_marker* pMarker, size_t iLine)
+bool drte_engine__move_cursor_to_start_of_line_by_index(drte_engine* pEngine, drte_cursor* pMarker, size_t iLine)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return false;
     }
 
-    if (!drte_engine__move_marker_to_character(pEngine, pMarker, drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, iLine))) {
+    if (!drte_engine__move_cursor_to_character(pEngine, pMarker, drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, iLine))) {
         return false;
     }
 
-    drte_engine__update_marker_sticky_position(pEngine, pMarker);
+    drte_engine__update_cursor_sticky_position(pEngine, pMarker);
     return true;
 }
 
-bool drte_engine__move_marker_to_end_of_text(drte_engine* pEngine, drte_marker* pMarker)
+bool drte_engine__move_cursor_to_end_of_text(drte_engine* pEngine, drte_cursor* pMarker)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return false;
     }
 
-    if (!drte_engine__move_marker_to_character(pEngine, pMarker, pEngine->textLength)) {    // <-- Don't subtract 1 here because otherwise we'll end up on the _left_ of the last character.
+    if (!drte_engine__move_cursor_to_character(pEngine, pMarker, pEngine->textLength)) {    // <-- Don't subtract 1 here because otherwise we'll end up on the _left_ of the last character.
         return false;
     }
 
-    drte_engine__update_marker_sticky_position(pEngine, pMarker);
+    drte_engine__update_cursor_sticky_position(pEngine, pMarker);
     return true;
 }
 
-bool drte_engine__move_marker_to_start_of_text(drte_engine* pEngine, drte_marker* pMarker)
+bool drte_engine__move_cursor_to_start_of_text(drte_engine* pEngine, drte_cursor* pMarker)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return false;
     }
 
-    if (!drte_engine__move_marker_to_character(pEngine, pMarker, 0)) {
+    if (!drte_engine__move_cursor_to_character(pEngine, pMarker, 0)) {
         return false;
     }
 
-    drte_engine__update_marker_sticky_position(pEngine, pMarker);
+    drte_engine__update_cursor_sticky_position(pEngine, pMarker);
     return true;
 }
 
-bool drte_engine__move_marker_to_character(drte_engine* pEngine, drte_marker* pMarker, size_t iChar)
+bool drte_engine__move_cursor_to_character(drte_engine* pEngine, drte_cursor* pMarker, size_t iChar)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return false;
@@ -5021,7 +5013,7 @@ bool drte_engine__move_marker_to_character(drte_engine* pEngine, drte_marker* pM
 }
 
 
-void drte_engine__update_marker_sticky_position(drte_engine* pEngine, drte_marker* pMarker)
+void drte_engine__update_cursor_sticky_position(drte_engine* pEngine, drte_cursor* pMarker)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return;
@@ -5034,7 +5026,7 @@ void drte_engine__update_marker_sticky_position(drte_engine* pEngine, drte_marke
     pMarker->absoluteSickyPosX = charPosX;
 }
 
-size_t drte_engine__get_marker_absolute_char_index(drte_engine* pEngine, drte_marker* pMarker)
+size_t drte_engine__get_cursor_absolute_char_index(drte_engine* pEngine, drte_cursor* pMarker)
 {
     if (pEngine == NULL || pMarker == NULL) {
         return 0;
@@ -5064,7 +5056,7 @@ typedef struct
         size_t userDataSize;
         const void* pUserData;
         size_t cursorCount;
-        const drte_marker* pCursors;
+        const drte_cursor* pCursors;
         size_t selectionCount;
         const drte_region* pSelections;
     } oldState;
@@ -5074,7 +5066,7 @@ typedef struct
         size_t userDataSize;
         const void* pUserData;
         size_t cursorCount;
-        const drte_marker* pCursors;
+        const drte_cursor* pCursors;
         size_t selectionCount;
         const drte_region* pSelections;
     } newState;
@@ -5101,7 +5093,7 @@ static DRTE_INLINE void drte_engine__breakdown_undo_state_info(const uint8_t* pU
     result.oldState.userDataSize = *(const size_t*)(result.pOldState + runningOffset);    runningOffset += sizeof(size_t);
     result.oldState.pUserData = result.pOldState + runningOffset;                         runningOffset += result.oldState.userDataSize;
     result.oldState.cursorCount = *(const size_t*)(result.pOldState + runningOffset);     runningOffset += sizeof(size_t);
-    result.oldState.pCursors = (const drte_marker*)(result.pOldState + runningOffset);    runningOffset += sizeof(drte_marker)*result.oldState.cursorCount;
+    result.oldState.pCursors = (const drte_cursor*)(result.pOldState + runningOffset);    runningOffset += sizeof(drte_cursor)*result.oldState.cursorCount;
     result.oldState.selectionCount = *(const size_t*)(result.pOldState + runningOffset);  runningOffset += sizeof(size_t);
     result.oldState.pSelections = (const drte_region*)(result.pOldState + runningOffset); runningOffset += sizeof(drte_region)*result.oldState.selectionCount;
 
@@ -5109,24 +5101,24 @@ static DRTE_INLINE void drte_engine__breakdown_undo_state_info(const uint8_t* pU
     result.newState.userDataSize = *(const size_t*)(result.pNewState + runningOffset);    runningOffset += sizeof(size_t);
     result.newState.pUserData = result.pNewState + runningOffset;                         runningOffset += result.newState.userDataSize;
     result.newState.cursorCount = *(const size_t*)(result.pNewState + runningOffset);     runningOffset += sizeof(size_t);
-    result.newState.pCursors = (const drte_marker*)(result.pNewState + runningOffset);    runningOffset += sizeof(drte_marker)*result.newState.cursorCount;
+    result.newState.pCursors = (const drte_cursor*)(result.pNewState + runningOffset);    runningOffset += sizeof(drte_cursor)*result.newState.cursorCount;
     result.newState.selectionCount = *(const size_t*)(result.pNewState + runningOffset);  runningOffset += sizeof(size_t);
     result.newState.pSelections = (const drte_region*)(result.pNewState + runningOffset); runningOffset += sizeof(drte_region)*result.newState.selectionCount;
 
     *pInfoOut = result;
 }
 
-void drte_engine__set_cursors(drte_engine* pEngine, size_t cursorCount, const drte_marker* pCursors)
+void drte_engine__set_cursors(drte_engine* pEngine, size_t cursorCount, const drte_cursor* pCursors)
 {
     assert(pEngine != NULL);
 
     if (cursorCount > 0) {
-        drte_marker* pNewCursors = (drte_marker*)realloc(pEngine->pCursors, cursorCount * sizeof(*pNewCursors));
+        drte_cursor* pNewCursors = (drte_cursor*)realloc(pEngine->pCursors, cursorCount * sizeof(*pNewCursors));
         if (pNewCursors != NULL) {
             pEngine->pCursors = pNewCursors;
             for (size_t iCursor = 0; iCursor < cursorCount; ++iCursor) {
                 pEngine->pCursors[iCursor] = pCursors[iCursor];
-                drte_engine__update_marker_sticky_position(pEngine, &pEngine->pCursors[iCursor]);
+                drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[iCursor]);
             }
 
             pEngine->cursorCount = cursorCount;
@@ -5369,13 +5361,13 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
         // Line wrapping is done by simply sub-diving each unwrapped line based on word boundaries.
         size_t lineCount = drte_line_cache_get_line_count(pEngine->pUnwrappedLines);
         for (size_t iLine = 0; iLine < lineCount; ++iLine) {
-            float lineWidth = 0;
+            //float lineWidth = 0;
             size_t iLineCharBeg;
             size_t iLineCharEnd;
             drte_engine_get_line_character_range(pEngine, pEngine->pUnwrappedLines, iLine, &iLineCharBeg, &iLineCharEnd);
 
             // We need to iterate over each word in the line.
-            unsigned int wordsOnLine = 0;
+            //unsigned int wordsOnLine = 0;
             for (;;) {
                 size_t iWordCharEnd;
                 size_t iWordCharBeg;
@@ -5398,7 +5390,7 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
 
     // Cursors need to have their sticky positions refreshed.
     for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
-        drte_engine__update_marker_sticky_position(pEngine, &pEngine->pCursors[iCursor]);
+        drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[iCursor]);
     }
 
     drte_engine__repaint(pEngine);

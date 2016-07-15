@@ -411,7 +411,7 @@ bool dred_textbox__insert_tab(dred_textbox* pTextBox, size_t iChar)
     // Any cursor whose character position comes after this cursor needs to be moved.
     for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
         if (pTB->pTL->pCursors[iCursor2].iCharAbs >= iChar) {
-            drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
+            drte_engine__move_cursor_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
         }
     }
 
@@ -1145,7 +1145,7 @@ bool dred_textbox_insert_text_at_cursors_no_undo(dred_textbox* pTextBox, const c
         for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
             if (iCursor != iCursor2) {
                 if (pTB->pTL->pCursors[iCursor2].iCharAbs >= iChar) {
-                    drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
+                    drte_engine__move_cursor_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
                 }
             }
         }
@@ -1238,7 +1238,7 @@ bool dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox)
                         // Cursors and selections need to be updated.
                         for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
                             if (pTB->pTL->pCursors[iCursor2].iCharAbs >= iLineChar) {
-                                drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs - charactersRemovedCount);
+                                drte_engine__move_cursor_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs - charactersRemovedCount);
                             }
                         }
 
@@ -1785,7 +1785,7 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
         
 
         drte_engine_move_cursor_to_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iChar);
-        drte_engine__update_marker_sticky_position(pTB->pTL, &pTB->pTL->pCursors[drte_engine_get_last_cursor(pTB->pTL)]);
+        drte_engine__update_cursor_sticky_position(pTB->pTL, &pTB->pTL->pCursors[drte_engine_get_last_cursor(pTB->pTL)]);
 
 
         // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
@@ -2273,7 +2273,7 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
                             for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
                                 if (iCursor2 != iCursor) {
                                     if (pTB->pTL->pCursors[iCursor2].iCharAbs > iCursorChar) {
-                                        drte_engine__move_marker_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + extraCharactersCount);
+                                        drte_engine__move_cursor_to_character(pTB->pTL, &pTB->pTL->pCursors[iCursor2], pTB->pTL->pCursors[iCursor2].iCharAbs + extraCharactersCount);
                                     }
                                 }
                             }
