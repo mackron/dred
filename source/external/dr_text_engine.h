@@ -555,7 +555,10 @@ size_t drte_engine_get_cursor_column(drte_engine* pEngine, size_t cursorIndex);
 size_t drte_engine_get_cursor_character(drte_engine* pEngine, size_t cursorIndex);
 
 /// Moves the cursor to the closest character based on the given input position.
-void drte_engine_move_cursor_to_point(drte_engine* pEngine, size_t cursorIndex, float posX, float posY);
+bool drte_engine_move_cursor_to_point(drte_engine* pEngine, size_t cursorIndex, float posX, float posY);
+
+/// Moves the cursor to the closest character based on the given input position, relative to the text (not the container).
+bool drte_engine_move_cursor_to_point_relative_to_text(drte_engine* pEngine, size_t cursorIndex, float posXRelativeToText, float posYRelativeToText);
 
 /// Moves the cursor of the given text engine to the left by one character.
 bool drte_engine_move_cursor_left(drte_engine* pEngine, size_t cursorIndex);
@@ -1039,28 +1042,8 @@ void drte_engine__repaint(drte_engine* pEngine);
 float drte_engine__get_tab_width(drte_engine* pEngine);
 
 
-/// Moves the marker to the given point, relative to the text rectangle.
-bool drte_engine__move_cursor_to_point(drte_engine* pEngine, drte_cursor* pCursor, float inputPosXRelativeToText, float inputPosYRelativeToText);
-
-/// Moves the given marker up one line.
-bool drte_engine__move_cursor_up(drte_engine* pEngine, drte_cursor* pCursor);
-
-/// Moves the given marker down one line.
-bool drte_engine__move_cursor_down(drte_engine* pEngine, drte_cursor* pCursor);
-
-/// Moves the given marker down one line.
-bool drte_engine__move_cursor_y(drte_engine* pEngine, drte_cursor* pCursor, int amount);
-
-/// Moves the given marker to the character at the given position.
-bool drte_engine__move_cursor_to_character(drte_engine* pEngine, drte_cursor* pCursor, size_t iChar);
-
-
 /// Updates the sticky position of the given marker.
 void drte_engine__update_cursor_sticky_position(drte_engine* pEngine, drte_cursor* pCursor);
-
-
-/// Retrieves the index of the character the given marker is located at.
-size_t drte_engine__get_cursor_absolute_char_index(drte_engine* pEngine, drte_cursor* pCursor);
 
 
 
@@ -2505,13 +2488,13 @@ size_t drte_engine_get_cursor_character(drte_engine* pEngine, size_t cursorIndex
         return 0;
     }
 
-    return drte_engine__get_cursor_absolute_char_index(pEngine, &pEngine->pCursors[cursorIndex]);
+    return pEngine->pCursors[cursorIndex].iCharAbs;
 }
 
-void drte_engine_move_cursor_to_point(drte_engine* pEngine, size_t cursorIndex, float posX, float posY)
+bool drte_engine_move_cursor_to_point(drte_engine* pEngine, size_t cursorIndex, float posX, float posY)
 {
     if (pEngine == NULL || pEngine->cursorCount <= cursorIndex) {
-        return;
+        return false;
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
@@ -2522,16 +2505,90 @@ void drte_engine_move_cursor_to_point(drte_engine* pEngine, size_t cursorIndex, 
 
     float inputPosXRelativeToText = posX - pEngine->innerOffsetX;
     float inputPosYRelativeToText = posY - pEngine->innerOffsetY;
-    if (drte_engine__move_cursor_to_point(pEngine, &pEngine->pCursors[cursorIndex], inputPosXRelativeToText, inputPosYRelativeToText)) {
-        drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
-        
-        if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
-            drte_engine__begin_dirty(pEngine);
-                drte_engine__on_cursor_move(pEngine, cursorIndex);
-                drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: This can be optimized. Only redraw the previous line and the new cursor rectangle.
-            drte_engine__end_dirty(pEngine);
-        }
+    if (!drte_engine_move_cursor_to_point_relative_to_text(pEngine, cursorIndex, inputPosXRelativeToText, inputPosYRelativeToText)) {
+        return false;
     }
+
+    drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
+        
+    if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
+        drte_engine__begin_dirty(pEngine);
+            drte_engine__on_cursor_move(pEngine, cursorIndex);
+            drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: This can be optimized. Only redraw the previous line and the new cursor rectangle.
+        drte_engine__end_dirty(pEngine);
+    }
+
+    return true;
+}
+
+bool drte_engine_move_cursor_to_point_relative_to_text(drte_engine* pEngine, size_t cursorIndex, float posXRelativeToText, float posYRelativeToText)
+{
+    if (pEngine == NULL || pEngine->cursorCount <= cursorIndex) {
+        return false;
+    }
+
+    size_t iLine = drte_engine_get_line_at_pos_y(pEngine, pEngine->pWrappedLines, posYRelativeToText);
+    pEngine->pCursors[cursorIndex].iLine = iLine;
+
+    // Once we have the line, finding the specific character under the point is done by iterating over each segment and finding the one
+    // containing the point on the x axis. Once the segment has been found, we use the backend to get the exact character.
+    if (posXRelativeToText < 0) {
+        pEngine->pCursors[cursorIndex].iCharAbs = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, (size_t)iLine);
+        return true;    // It's to the left of the line, so just pin it to the first character in the line.
+    }
+
+    drte_segment segment;
+    if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, (size_t)iLine, &segment)) {
+        do
+        {
+            if (posXRelativeToText >= segment.posX && posXRelativeToText < segment.posX + segment.width) {
+                // It's somewhere on this run. If it's a tab segment it needs to be handled slightly differently because of the way tabs
+                // are aligned to tab columns.
+                if (drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\t') {
+                    const float tabWidth = drte_engine__get_tab_width(pEngine);
+
+                    pEngine->pCursors[cursorIndex].iCharAbs = segment.iCharBeg;
+
+                    float tabLeft = segment.posX;
+                    for (/* Do Nothing*/; pEngine->pCursors[cursorIndex].iCharAbs < segment.iCharEnd; ++pEngine->pCursors[cursorIndex].iCharAbs)
+                    {
+                        float tabRight = tabWidth * ((segment.posX + (tabWidth*((pEngine->pCursors[cursorIndex].iCharAbs-segment.iCharBeg) + 1))) / tabWidth);
+                        if (posXRelativeToText >= tabLeft && posXRelativeToText <= tabRight)
+                        {
+                            // The input position is somewhere on top of this character. If it's positioned on the left side of the character, set the output
+                            // value to the character at iChar. Otherwise it should be set to the character at iChar + 1.
+                            float charBoundsRightHalf = tabLeft + ceilf(((tabRight - tabLeft) / 2.0f));
+                            if (posXRelativeToText > charBoundsRightHalf) {
+                                pEngine->pCursors[cursorIndex].iCharAbs += 1;
+                            }
+
+                            break;
+                        }
+
+                        tabLeft = tabRight;
+                    }
+                } else {
+                    float unused;
+                    size_t iChar;
+
+                    drte_style_token fgStyleToken = drte_engine__get_style_token(pEngine, segment.fgStyleSlot);
+                    if (pEngine->onGetCursorPositionFromPoint) {
+                        pEngine->onGetCursorPositionFromPoint(pEngine, fgStyleToken, pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg, segment.width, posXRelativeToText - segment.posX, OUT &unused, OUT &iChar);
+                        pEngine->pCursors[cursorIndex].iCharAbs = segment.iCharBeg + iChar;
+                    }
+                }
+
+                return true;
+            }
+        } while (drte_engine__next_segment_on_line(pEngine, &segment));
+
+        // If we get here it means the position is to the right of the line. Just pin it to the end of the line.
+        pEngine->pCursors[cursorIndex].iCharAbs = segment.iCharBeg;   // <-- segment.iCharBeg should be sitting on a new line or null terminator.
+
+        return true;
+    }
+
+    return false;
 }
 
 bool drte_engine_move_cursor_left(drte_engine* pEngine, size_t cursorIndex)
@@ -2614,19 +2671,7 @@ bool drte_engine_move_cursor_up(drte_engine* pEngine, size_t cursorIndex)
         return false;
     }
 
-    size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_cursor_up(pEngine, &pEngine->pCursors[cursorIndex])) {
-        if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
-            drte_engine__begin_dirty(pEngine);
-                drte_engine__on_cursor_move(pEngine, cursorIndex);
-                drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
-            drte_engine__end_dirty(pEngine);
-        }
-
-        return true;
-    }
-
-    return false;
+    return drte_engine_move_cursor_y(pEngine, cursorIndex, -1);
 }
 
 bool drte_engine_move_cursor_down(drte_engine* pEngine, size_t cursorIndex)
@@ -2635,19 +2680,7 @@ bool drte_engine_move_cursor_down(drte_engine* pEngine, size_t cursorIndex)
         return false;
     }
 
-    size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_cursor_down(pEngine, &pEngine->pCursors[cursorIndex])) {
-        if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
-            drte_engine__begin_dirty(pEngine);
-                drte_engine__on_cursor_move(pEngine, cursorIndex);
-                drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
-            drte_engine__end_dirty(pEngine);
-        }
-
-        return true;
-    }
-
-    return false;
+    return drte_engine_move_cursor_y(pEngine, cursorIndex, 1);
 }
 
 bool drte_engine_move_cursor_y(drte_engine* pEngine, size_t cursorIndex, int amount)
@@ -2657,18 +2690,33 @@ bool drte_engine_move_cursor_y(drte_engine* pEngine, size_t cursorIndex, int amo
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_cursor_y(pEngine, &pEngine->pCursors[cursorIndex], amount)) {
-        if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
-            drte_engine__begin_dirty(pEngine);
-                drte_engine__on_cursor_move(pEngine, cursorIndex);
-                drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
-            drte_engine__end_dirty(pEngine);
-        }
 
-        return true;
+    size_t lineCount = drte_engine_get_line_count(pEngine);
+    if (lineCount == 0) {
+        return false;
     }
 
-    return false;
+    // Moving a marker up or down depends on it's sticky position.
+    intptr_t iNewLine = drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs) + amount;
+    if (iNewLine < 0) {
+        iNewLine = 0;
+    }
+    if ((size_t)iNewLine > lineCount) {
+        iNewLine = lineCount - 1;
+    }
+
+    float newMarkerPosX = pEngine->pCursors[cursorIndex].absoluteSickyPosX;
+    float newMarkerPosY = drte_engine_get_line_pos_y(pEngine, (size_t)iNewLine);
+    drte_engine_move_cursor_to_point_relative_to_text(pEngine, cursorIndex, newMarkerPosX, newMarkerPosY);
+
+    if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
+        drte_engine__begin_dirty(pEngine);
+            drte_engine__on_cursor_move(pEngine, cursorIndex);
+            drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
+        drte_engine__end_dirty(pEngine);
+    }
+
+    return true;
 }
 
 bool drte_engine_move_cursor_to_end_of_line(drte_engine* pEngine, size_t cursorIndex)
@@ -2758,15 +2806,20 @@ void drte_engine_move_cursor_to_character_and_line(drte_engine* pEngine, size_t 
         return;
     }
 
+    // Clamp the character to the end of the string.
+    if (iChar > pEngine->textLength) {
+        iChar = pEngine->textLength;
+    }
+
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    if (drte_engine__move_cursor_to_character(pEngine, &pEngine->pCursors[cursorIndex], iChar)) {
-        pEngine->pCursors[cursorIndex].iLine = iLine;
-        if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
-            drte_engine__begin_dirty(pEngine);
-                drte_engine__on_cursor_move(pEngine, cursorIndex);
-                drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
-            drte_engine__end_dirty(pEngine);
-        }
+    pEngine->pCursors[cursorIndex].iCharAbs = iChar;
+    pEngine->pCursors[cursorIndex].iLine = iLine;
+
+    if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
+        drte_engine__begin_dirty(pEngine);
+            drte_engine__on_cursor_move(pEngine, cursorIndex);
+            drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.
+        drte_engine__end_dirty(pEngine);
     }
 }
 
@@ -3226,7 +3279,7 @@ bool drte_engine_insert_text_at_cursor(drte_engine* pEngine, size_t cursorIndex,
 
     drte_engine__begin_dirty(pEngine);
     {
-        size_t cursorPos = drte_engine__get_cursor_absolute_char_index(pEngine, &pEngine->pCursors[cursorIndex]);
+        size_t cursorPos = pEngine->pCursors[cursorIndex].iCharAbs;
         drte_engine_insert_text(pEngine, text, cursorPos);
         drte_engine_move_cursor_to_character(pEngine, cursorIndex, cursorPos + strlen(text));
     }
@@ -4650,7 +4703,7 @@ bool drte_engine_find_next(drte_engine* pEngine, const char* text, size_t* pSele
 
     size_t cursorPos = 0;
     if (pEngine->cursorCount > 0) {
-        cursorPos = drte_engine__get_cursor_absolute_char_index(pEngine, &pEngine->pCursors[pEngine->cursorCount-1]);
+        cursorPos = pEngine->pCursors[pEngine->cursorCount-1].iCharAbs;
     }
 
     char* nextOccurance = strstr(pEngine->text + cursorPos, text);
@@ -4680,7 +4733,7 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 
     size_t cursorPos = 0;
     if (pEngine->cursorCount > 0) {
-        drte_engine__get_cursor_absolute_char_index(pEngine, &pEngine->pCursors[pEngine->cursorCount-1]);
+        cursorPos = pEngine->pCursors[pEngine->cursorCount-1].iCharAbs;
     }
 
     char* nextOccurance = strstr(pEngine->text + cursorPos, text);
@@ -4720,159 +4773,26 @@ float drte_engine__get_tab_width(drte_engine* pEngine)
 }
 
 
-bool drte_engine__move_cursor_to_point(drte_engine* pEngine, drte_cursor* pCursor, float inputPosXRelativeToText, float inputPosYRelativeToText)
-{
-    if (pEngine == NULL || pCursor == NULL) {
-        return false;
-    }
-
-    size_t iLine = drte_engine_get_line_at_pos_y(pEngine, pEngine->pWrappedLines, inputPosYRelativeToText);
-    pCursor->iLine = iLine;
-
-    // Once we have the line, finding the specific character under the point is done by iterating over each segment and finding the one
-    // containing the point on the x axis. Once the segment has been found, we use the backend to get the exact character.
-    if (inputPosXRelativeToText < 0) {
-        pCursor->iCharAbs = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, (size_t)iLine);
-        return true;    // It's to the left of the line, so just pin it to the first character in the line.
-    }
-
-    drte_segment segment;
-    if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, (size_t)iLine, &segment)) {
-        do
-        {
-            if (inputPosXRelativeToText >= segment.posX && inputPosXRelativeToText < segment.posX + segment.width) {
-                // It's somewhere on this run. If it's a tab segment it needs to be handled slightly differently because of the way tabs
-                // are aligned to tab columns.
-                if (drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\t') {
-                    const float tabWidth = drte_engine__get_tab_width(pEngine);
-
-                    pCursor->iCharAbs = segment.iCharBeg;
-
-                    float tabLeft = segment.posX;
-                    for (/* Do Nothing*/; pCursor->iCharAbs < segment.iCharEnd; ++pCursor->iCharAbs)
-                    {
-                        float tabRight = tabWidth * ((segment.posX + (tabWidth*((pCursor->iCharAbs-segment.iCharBeg) + 1))) / tabWidth);
-                        if (inputPosXRelativeToText >= tabLeft && inputPosXRelativeToText <= tabRight)
-                        {
-                            // The input position is somewhere on top of this character. If it's positioned on the left side of the character, set the output
-                            // value to the character at iChar. Otherwise it should be set to the character at iChar + 1.
-                            float charBoundsRightHalf = tabLeft + ceilf(((tabRight - tabLeft) / 2.0f));
-                            if (inputPosXRelativeToText > charBoundsRightHalf) {
-                                pCursor->iCharAbs += 1;
-                            }
-
-                            break;
-                        }
-
-                        tabLeft = tabRight;
-                    }
-                } else {
-                    float unused;
-                    size_t iChar;
-
-                    drte_style_token fgStyleToken = drte_engine__get_style_token(pEngine, segment.fgStyleSlot);
-                    if (pEngine->onGetCursorPositionFromPoint) {
-                        pEngine->onGetCursorPositionFromPoint(pEngine, fgStyleToken, pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg, segment.width, inputPosXRelativeToText - segment.posX, OUT &unused, OUT &iChar);
-                        pCursor->iCharAbs = segment.iCharBeg + iChar;
-                    }
-                }
-
-                return true;
-            }
-        } while (drte_engine__next_segment_on_line(pEngine, &segment));
-
-        // If we get here it means the position is to the right of the line. Just pin it to the end of the line.
-        pCursor->iCharAbs = segment.iCharBeg;   // <-- segment.iCharBeg should be sitting on a new line or null terminator.
-
-        return true;
-    }
-
-    return false;
-}
-
-bool drte_engine__move_cursor_up(drte_engine* pEngine, drte_cursor* pCursor)
-{
-    if (pEngine == NULL || pCursor == NULL) {
-        return false;
-    }
-
-    return drte_engine__move_cursor_y(pEngine, pCursor, -1);
-}
-
-bool drte_engine__move_cursor_down(drte_engine* pEngine, drte_cursor* pCursor)
-{
-    if (pEngine == NULL || pCursor == NULL) {
-        return false;
-    }
-
-    return drte_engine__move_cursor_y(pEngine, pCursor, 1);
-}
-
-bool drte_engine__move_cursor_y(drte_engine* pEngine, drte_cursor* pCursor, int amount)
-{
-    if (pEngine == NULL || pCursor == NULL || amount == 0) {
-        return false;
-    }
-
-    size_t lineCount = drte_engine_get_line_count(pEngine);
-    if (lineCount == 0) {
-        return false;
-    }
-
-    // Moving a marker up or down depends on it's sticky position.
-    intptr_t iNewLine = drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pCursor->iCharAbs) + amount;
-    if (iNewLine < 0) {
-        iNewLine = 0;
-    }
-    if ((size_t)iNewLine > lineCount) {
-        iNewLine = lineCount - 1;
-    }
-
-    float newMarkerPosX = pCursor->absoluteSickyPosX;
-    float newMarkerPosY = drte_engine_get_line_pos_y(pEngine, (size_t)iNewLine);
-    drte_engine__move_cursor_to_point(pEngine, pCursor, newMarkerPosX, newMarkerPosY);
-
-    return true;
-}
-
-bool drte_engine__move_cursor_to_character(drte_engine* pEngine, drte_cursor* pCursor, size_t iChar)
-{
-    if (pEngine == NULL || pCursor == NULL) {
-        return false;
-    }
-
-    // Clamp the character to the end of the string.
-    if (iChar > pEngine->textLength) {
-        iChar = pEngine->textLength;
-    }
-
-    pCursor->iCharAbs = iChar;
-    return true;
-}
-
-
 void drte_engine__update_cursor_sticky_position(drte_engine* pEngine, drte_cursor* pCursor)
 {
     if (pEngine == NULL || pCursor == NULL) {
         return;
     }
 
+    // If the character is on a different line to the cursor, it means the cursor is pinned to the end of the previous line and the character
+    // is the first character on the _next_ line. This will happen when word wrap is enabled. In this case things need to be treated a bit
+    // differently to calculate the x position.
     float charPosX;
     float charPosY;
-    drte_engine_get_character_position(pEngine, pEngine->pWrappedLines, pCursor->iCharAbs, &charPosX, &charPosY);
+    if (pCursor->iLine != drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pCursor->iCharAbs)) {
+        drte_engine_measure_line(pEngine, pCursor->iLine, &charPosX, NULL);
+        charPosY = drte_engine_get_line_pos_y(pEngine, pCursor->iLine);
+    } else {
+        drte_engine_get_character_position(pEngine, pEngine->pWrappedLines, pCursor->iCharAbs, &charPosX, &charPosY);
+    }
 
     pCursor->absoluteSickyPosX = charPosX;
 }
-
-size_t drte_engine__get_cursor_absolute_char_index(drte_engine* pEngine, drte_cursor* pCursor)
-{
-    if (pEngine == NULL || pCursor == NULL) {
-        return 0;
-    }
-
-    return pCursor->iCharAbs;
-}
-
 
 
 typedef struct
