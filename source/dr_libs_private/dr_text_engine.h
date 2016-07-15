@@ -3681,7 +3681,11 @@ bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iCha
         uint32_t c = pEngine->text[iChar];
         uint32_t cprev = pEngine->text[iChar-1];
 
-        if (!dr_is_whitespace(c) && !dr_is_whitespace(cprev)) {
+        if (c == '\0') {
+            return false;
+        }
+
+        if (!dr_is_whitespace(c) && !dr_is_whitespace(cprev) && !drte_is_symbol_or_whitespace(c)) {
             drte_engine_get_start_of_word_containing_character(pEngine, iChar, &iChar);
         } else if (dr_is_whitespace(c) && dr_is_whitespace(cprev)) {
             size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, iChar));
@@ -3697,15 +3701,22 @@ bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iCha
         }
     }
 
-    if (pWordBegOut) *pWordBegOut = iChar;
-
+    size_t iWordCharEnd;
+    bool result;
     if (moveToStartOfNextWord) {
-        drte_engine_get_start_of_next_word_from_character(pEngine, iChar, pWordEndOut);
+        result = drte_engine_get_start_of_next_word_from_character(pEngine, iChar, &iWordCharEnd);
     } else {
-        drte_engine_get_end_of_word_containing_character(pEngine, iChar, pWordEndOut);
+        result = drte_engine_get_end_of_word_containing_character(pEngine, iChar, &iWordCharEnd);
     }
 
-    return true;
+    if (pWordBegOut) *pWordBegOut = iChar;
+    if (pWordEndOut) *pWordEndOut = iWordCharEnd;
+
+    if (result) {
+        result = iChar < iWordCharEnd;
+    }
+
+    return result;
 }
 
 
@@ -4342,8 +4353,8 @@ size_t drte_engine_get_line_last_character(drte_engine* pEngine, drte_line_cache
     // The line caches only store the index of the first character of the line. We can quality get the last character of the line
     // by simply interrogating the first character of the _next_ line. However, there is no next line for the last line so we handle
     // that one in a special way.
-    if (iLine+1 < drte_engine_get_line_count(pEngine)) {
-        size_t iLineEnd = drte_line_cache_get_line_first_character(pEngine->pWrappedLines, iLine+1);
+    if (iLine+1 < drte_line_cache_get_line_count(pLineCache)) {
+        size_t iLineEnd = drte_line_cache_get_line_first_character(pLineCache, iLine+1);
         assert(iLineEnd > 0);
 
         if (pEngine->text[iLineEnd-1] == '\n') {
@@ -4359,7 +4370,7 @@ size_t drte_engine_get_line_last_character(drte_engine* pEngine, drte_line_cache
     }
 
     // It's the last line. Just return the position of the null terminator.
-    return drte_line_cache_get_line_first_character(pEngine->pWrappedLines, iLine) + strlen(pEngine->text + drte_line_cache_get_line_first_character(pEngine->pWrappedLines, iLine));
+    return drte_line_cache_get_line_first_character(pLineCache, iLine) + strlen(pEngine->text + drte_line_cache_get_line_first_character(pLineCache, iLine));
 }
 
 void drte_engine_get_line_character_range(drte_engine* pEngine, drte_line_cache* pLineCache, size_t iLine, size_t* pCharStartOut, size_t* pCharEndOut)
@@ -5359,91 +5370,31 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
         size_t lineCount = drte_line_cache_get_line_count(pEngine->pUnwrappedLines);
         for (size_t iLine = 0; iLine < lineCount; ++iLine) {
             float lineWidth = 0;
-            size_t iLineCharBeg = drte_line_cache_get_line_first_character(pEngine->pUnwrappedLines, iLine);
+            size_t iLineCharBeg;
+            size_t iLineCharEnd;
+            drte_engine_get_line_character_range(pEngine, pEngine->pUnwrappedLines, iLine, &iLineCharBeg, &iLineCharEnd);
 
-            drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
+            // We need to iterate over each word in the line.
+            unsigned int wordsOnLine = 0;
+            for (;;) {
+                size_t iWordCharEnd;
+                size_t iWordCharBeg;
+                if (drte_engine_get_word_containing_character(pEngine, iLineCharBeg, &iWordCharBeg, &iWordCharEnd)) {
+                    drte_line_cache_append_line(pEngine->pWrappedLines, iWordCharBeg);
+                    iLineCharBeg = iWordCharEnd;
+
+                    if (iWordCharEnd == iLineCharEnd) {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            // There will be some leftover on the line.
+            //drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
         }
     }
-
-#if 0
-    // Count lines.
-    size_t newLineCount = 1;
-    if (pEngine->isWordWrapEnabled) {
-        // TODO: Implement me.
-        for (size_t iChar = 0; iChar < pEngine->textLength; ++iChar) {
-            if (pEngine->text[iChar] == '\n') {
-                newLineCount += 1;
-            } else if (pEngine->text[iChar] == '\r' && pEngine->text[iChar+1] == '\n') {
-                newLineCount += 1;
-                iChar += 1;
-            }
-        }
-    } else {
-        for (size_t iChar = 0; iChar < pEngine->textLength; ++iChar) {
-            if (pEngine->text[iChar] == '\n') {
-                newLineCount += 1;
-            } else if (pEngine->text[iChar] == '\r' && pEngine->text[iChar+1] == '\n') {
-                newLineCount += 1;
-                iChar += 1;
-            }
-        }
-    }
-
-
-    // Make room.
-    if (pEngine->lineBufferSize < newLineCount) {
-        size_t newBufferSize = dr_round_up(newLineCount, DRTE_PAGE_LINE_COUNT);
-        size_t* pNewLines = (size_t*)realloc(pEngine->pLines, newBufferSize * sizeof(*pNewLines));
-        if (pNewLines == NULL) {
-            return;
-        }
-
-        pEngine->lineBufferSize = newBufferSize;
-        pEngine->pLines = pNewLines;
-    }
-
-    pEngine->lineCount = newLineCount;
-
-
-    // Find the line boundaries.
-    newLineCount = 1;
-    pEngine->pLines[0] = 0;
-
-    if (pEngine->isWordWrapEnabled) {
-        // TODO: Implement me.
-        for (size_t iChar = 0; iChar < pEngine->textLength; ++iChar) {
-            bool foundLine = false;
-            if (pEngine->text[iChar] == '\n') {
-                newLineCount += 1;
-                foundLine = true;
-            } else if (pEngine->text[iChar] == '\r' && pEngine->text[iChar+1] == '\n') {
-                newLineCount += 1;
-                iChar += 1;
-                foundLine = true;
-            }
-
-            if (foundLine) {
-                pEngine->pLines[newLineCount-1] = iChar+1;
-            }
-        }
-    } else {
-        for (size_t iChar = 0; iChar < pEngine->textLength; ++iChar) {
-            bool foundLine = false;
-            if (pEngine->text[iChar] == '\n') {
-                newLineCount += 1;
-                foundLine = true;
-            } else if (pEngine->text[iChar] == '\r' && pEngine->text[iChar+1] == '\n') {
-                newLineCount += 1;
-                iChar += 1;
-                foundLine = true;
-            }
-
-            if (foundLine) {
-                pEngine->pLines[newLineCount-1] = iChar+1;
-            }
-        }
-    }
-#endif
 
     // Cursors need to have their sticky positions refreshed.
     for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
