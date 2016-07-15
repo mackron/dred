@@ -6,7 +6,7 @@
 #include "../../../dr_libs/dr_path.h"
 
 #define GB_STRING_IMPLEMENTATION
-#include "../../source/dred/gb_string.h"
+#include "../../source/external/gb_string.h"
 
 #define NANOSVG_ALL_COLOR_KEYWORDS
 #define NANOSVG_IMPLEMENTATION

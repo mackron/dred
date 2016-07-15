@@ -62,7 +62,7 @@
     #endif
 #endif
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "../external/stb_image.h"
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif
@@ -81,7 +81,7 @@
 #include "../../dr_ci/source/lang/dr_cpp.h"
 
 #define GB_STRING_IMPLEMENTATION
-#include "gb_string.h"
+#include "../external/gb_string.h"
 
 
 // dred header files.
