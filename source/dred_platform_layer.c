@@ -2583,14 +2583,26 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
         char transformedText[256];
         strncpy_s(transformedText, sizeof(transformedText), text, _TRUNCATE);
 
+        bool useMnemonic = true;
         for (char* c = transformedText; c[0] != '\0'; c += 1) {
+            // If the text has an underscore, don't use mnemonics. Otherwise we'll end up with incorrect text.
+            if (c[0] == '_') {
+                useMnemonic = false;
+                break;
+            }
+
             if (c[0] == '&') {
                 c[0] = '_';
                 break;
             }
         }
 
-        pGTKMenuItem = gtk_menu_item_new_with_mnemonic(transformedText);
+        if (useMnemonic) {
+            pGTKMenuItem = gtk_menu_item_new_with_mnemonic(transformedText);
+        } else {
+            pGTKMenuItem = gtk_menu_item_new_with_label(transformedText);
+        }
+
         if (pGTKMenuItem == NULL) {
             return NULL;
         }
