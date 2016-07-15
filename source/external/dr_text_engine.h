@@ -104,7 +104,7 @@ typedef void   (* drte_engine_on_measure_string_proc)(drte_engine* pEngine, drte
 typedef void   (* drte_engine_on_get_cursor_position_from_point_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
 typedef void   (* drte_engine_on_get_cursor_position_from_char_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 typedef bool   (* drte_engine_on_get_next_highlight_proc)(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData);
-               
+
 typedef void   (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, drgui_element* pElement, void* pPaintData);
 typedef void   (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_style_token styleToken, drgui_rect rect, drgui_element* pElement, void* pPaintData);
 typedef void   (* drte_engine_on_cursor_move_proc)       (drte_engine* pEngine);
@@ -746,6 +746,9 @@ void drte_engine_set_selection_end_point(drte_engine* pEngine, size_t iCharEnd);
 bool drte_engine_get_last_selection(drte_engine* pEngine, size_t* iCharBegOut, size_t* iCharEndOut);
 
 
+// Retrieves the last character of the word beginning with a character which can be at any position within said word.
+bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordEndOut);
+
 // Retrieves the word under the given character.
 bool drte_engine_get_word_under_cursor(drte_engine* pEngine, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
 
@@ -1103,7 +1106,7 @@ bool drte_engine__get_next_selection_from_character(drte_engine* pEngine, size_t
 {
     assert(pEngine != NULL);
     assert(pSelectionOut != NULL);
-    
+
     // Selections can be in any order. Need to first check every single one to determine if any are on top of the character. If so we
     // just return the first one. Otherwise we fall through to the next loop which finds the closest selection to the character.
     bool foundSelectionAfterChar = false;
@@ -1226,7 +1229,7 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
         bgStyleSlot = pEngine->activeLineStyleSlot;
     }
 
-    
+
     bool isAnythingSelected = false;
     bool isInSelection = false;
     drte_region selection;
@@ -1398,6 +1401,86 @@ bool drte_engine__first_segment_on_line(drte_engine* pEngine, drte_line_cache* p
 
 
 
+// Word iteration.
+typedef struct
+{
+    size_t iCharRangeBeg;
+    size_t iCharRangeEnd;
+    size_t iCharBeg;
+    size_t iCharEnd;
+    bool isAtEnd;
+} drte_word_iterator;
+
+bool drte_engine__next_word(drte_engine* pEngine, drte_word_iterator* pIterator)
+{
+    if (pEngine == NULL || pIterator == NULL) {
+        return false;
+    }
+
+    if (pIterator->isAtEnd) {
+        return false;
+    }
+
+    pIterator->iCharBeg = pIterator->iCharEnd;
+
+    size_t iCharEnd;
+    if (!drte_engine_get_end_of_word_containing_character(pEngine, pIterator->iCharBeg, &iCharEnd)) {
+        pIterator->isAtEnd = true;
+        return false;
+    }
+
+    // Always make sure the last character never goes beyond the end of the range.
+    if (iCharEnd > pIterator->iCharRangeEnd) {
+        iCharEnd = pIterator->iCharRangeEnd;
+    }
+
+    pIterator->iCharEnd = iCharEnd;
+
+    // If we got an empty word we will fall back to the remaining section of the range as the last part.
+    if (pIterator->iCharBeg == pIterator->iCharEnd) {
+        pIterator->iCharEnd = pIterator->iCharRangeEnd;
+    }
+
+
+    if (pIterator->iCharBeg == pIterator->iCharEnd) {
+        pIterator->isAtEnd = true;
+        return false;
+    }
+
+    return true;
+}
+
+bool drte_engine__first_word(drte_engine* pEngine, size_t iCharRangeBeg, size_t iCharRangeEnd, drte_word_iterator* pIterator)
+{
+    if (pEngine == NULL || pEngine->textLength == 0 || pIterator == NULL) {
+        return false;
+    }
+
+    if (iCharRangeBeg >= iCharRangeEnd) {
+        return false;
+    }
+
+    if (iCharRangeBeg > pEngine->textLength) {
+        return false;
+    }
+
+    // Clamp the end character to the last character in the text.
+    if (iCharRangeEnd > pEngine->textLength) {
+        iCharRangeEnd = pEngine->textLength;
+    }
+
+
+    pIterator->iCharRangeBeg = iCharRangeBeg;
+    pIterator->iCharRangeEnd = iCharRangeEnd;
+    pIterator->iCharBeg = iCharRangeBeg;
+    pIterator->iCharEnd = iCharRangeBeg;
+    pIterator->isAtEnd = false;
+
+    return drte_engine__next_word(pEngine, pIterator);
+}
+
+
+
 //// Line Cache ////
 
 bool drte_line_cache_init(drte_line_cache* pLineCache)
@@ -1410,7 +1493,7 @@ bool drte_line_cache_init(drte_line_cache* pLineCache)
     pLineCache->bufferSize = DRTE_PAGE_LINE_COUNT;
     pLineCache->pLines = (size_t*)calloc(pLineCache->bufferSize, sizeof(*pLineCache->pLines));   // <-- calloc() is important here. It initializes the first line to 0.
     pLineCache->count = 1;
-    
+
     return true;
 }
 
@@ -1585,8 +1668,8 @@ void drte_engine__push_text_change_to_prepared_undo_state(drte_engine* pEngine, 
         return;
     }
 
-    size_t sizeInBytes = 
-        sizeof(type) + 
+    size_t sizeInBytes =
+        sizeof(type) +
         sizeof(size_t) +
         sizeof(size_t) +
         (iCharEnd - iCharBeg) + 1;  // +1 for null terminator.
@@ -1661,7 +1744,7 @@ void drte_engine_delete(drte_engine* pEngine)
     }
 
     drte_engine_clear_undo_stack(pEngine);
-    
+
     drte_stack_buffer_uninit(&pEngine->undoBuffer);
     drte_stack_buffer_uninit(&pEngine->preparedUndoState);
 
@@ -2498,7 +2581,7 @@ bool drte_engine_move_cursor_to_point(drte_engine* pEngine, size_t cursorIndex, 
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    
+
     pEngine->pCursors[cursorIndex].iCharAbs = 0;
     pEngine->pCursors[cursorIndex].iLine = 0;
     pEngine->pCursors[cursorIndex].absoluteSickyPosX = 0;
@@ -2510,7 +2593,7 @@ bool drte_engine_move_cursor_to_point(drte_engine* pEngine, size_t cursorIndex, 
     }
 
     drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
-        
+
     if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
         drte_engine__begin_dirty(pEngine);
             drte_engine__on_cursor_move(pEngine, cursorIndex);
@@ -2949,7 +3032,7 @@ bool drte_engine_is_cursor_at_start_of_selection(drte_engine* pEngine, size_t cu
     if (pEngine == NULL || pEngine->selectionCount == 0 || pEngine->cursorCount <= cursorIndex) {
         return false;
     }
-    
+
     drte_region region = drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]);
     return pEngine->pCursors[cursorIndex].iCharAbs == region.iCharBeg;
 }
@@ -3000,7 +3083,7 @@ void drte_engine_disable_word_wrap(drte_engine* pEngine)
     pEngine->pWrappedLines = &pEngine->_unwrappedLines;
 
     // We do not need the wrapped line cache.
-    drte_line_cache_uninit(&pEngine->_unwrappedLines);
+    drte_line_cache_uninit(&pEngine->_wrappedLines);
 
     pEngine->isWordWrapEnabled = false;
     drte_engine__refresh_line_wrapping(pEngine);
@@ -3130,7 +3213,7 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
         drte_engine__refresh_line_wrapping(pEngine);
     }
 
-    
+
 
     if (pEngine->onTextChanged) {
         pEngine->onTextChanged(pEngine);
@@ -3260,7 +3343,7 @@ bool drte_engine_insert_character_at_cursors(drte_engine* pEngine, unsigned int 
             } else {
                 wasTextChanged = true;
             }
-            
+
             // Any cursor whose character position comes after this cursor needs to be moved.
             for (size_t iCursor2 = 0; iCursor2 < pEngine->cursorCount; ++iCursor2) {
                 if (iCursor2 != iCursor) {
@@ -3406,7 +3489,7 @@ bool drte_engine_delete_character_to_right_of_cursors(drte_engine* pEngine, bool
                 size_t iLineCharEnd = drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, drte_engine_get_cursor_line(pEngine, iCursor));
                 if (iCursorChar == iLineCharEnd) {
                     continue;
-                }                
+                }
             }
 
             if (!drte_engine_delete_character_to_right_of_cursor(pEngine, iCursor)) {
@@ -3807,7 +3890,7 @@ size_t drte_engine_get_selected_text(drte_engine* pEngine, char* textOut, size_t
         if (textOut != NULL) {
             drgui__strncpy_s(textOut+length, textOutSize-length, pEngine->text+region.iCharBeg, (region.iCharEnd - region.iCharBeg));
         }
-        
+
         length += (region.iCharEnd - region.iCharBeg);
     }
 
@@ -3979,7 +4062,7 @@ bool drte_engine__capture_and_push_undo_state__cursors(drte_engine* pEngine, drt
     assert(pEngine != NULL);
     assert(pStack != NULL);
 
-    size_t sizeInBytes = 
+    size_t sizeInBytes =
         sizeof(pEngine->cursorCount) +
         sizeof(drte_cursor) * pEngine->cursorCount;
 
@@ -3999,7 +4082,7 @@ bool drte_engine__capture_and_push_undo_state__selections(drte_engine* pEngine, 
     assert(pEngine != NULL);
     assert(pStack != NULL);
 
-    size_t sizeInBytes = 
+    size_t sizeInBytes =
         sizeof(pEngine->selectionCount) +
         sizeof(drte_region) * pEngine->selectionCount;
 
@@ -4120,12 +4203,12 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
 
     pEngine->undoStackCount = pEngine->iUndoState;
 
-    
+
     // The data to push onto the stack is done in 3 main parts. The first part is the header which stores the size and offsets of each major section. The
     // second part is the prepared data. The third part is the state at the time of comitting.
     size_t prevUndoDataOffset = pEngine->currentUndoDataOffset;
     size_t nextUndoDataOffset = 0;
-    
+
     // Header.
     size_t headerSize =
         sizeof(size_t) +    // Prev undo data offset.
@@ -4170,7 +4253,7 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
     *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*2)) = preparedDataOffset  - headerOffset;
     *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*3)) = committedDataOffset - headerOffset;
     *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*4)) = headerSize + pEngine->preparedUndoTextChangesOffset;
-    
+
     pEngine->currentUndoDataOffset = headerOffset;
 
     drte_stack_buffer_set_stack_ptr(&pEngine->preparedUndoState, 0);
@@ -4335,7 +4418,7 @@ float drte_engine_get_visible_line_width(drte_engine* pEngine)
             if (maxLineWidth < lineWidth) {
                 maxLineWidth = lineWidth;
             }
-            
+
             // Go to the first segment of the next line.
             if (!drte_engine__next_segment(pEngine, &segment)) {
                 break;
@@ -4352,7 +4435,7 @@ void drte_engine_measure_line(drte_engine* pEngine, size_t iLine, float* pWidthO
 {
     if (pWidthOut) *pWidthOut = 0;
     if (pHeightOut) *pHeightOut = 0;
-    
+
     if (pEngine == NULL) {
         return;
     }
@@ -4417,7 +4500,7 @@ size_t drte_engine_get_line_first_character(drte_engine* pEngine, drte_line_cach
 
 size_t drte_engine_get_line_last_character(drte_engine* pEngine, drte_line_cache* pLineCache, size_t iLine)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return 0;
     }
 
@@ -4591,7 +4674,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
             }
 
             iLine += 1;
-        }        
+        }
     } else {
         // Couldn't create a segment iterator. Likely means there is no text. Just draw a single blank line.
         drte_style_token bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
@@ -4662,31 +4745,48 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
     drte_style_token fgStyleToken = pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken;
     drte_style_token bgStyleToken = pEngine->styles[pEngine->lineNumbersStyleSlot].styleToken;
 
+    size_t lineNumber = iLineTop;
+
     float lineTop = pEngine->innerOffsetY + (iLineTop * lineHeight);
     for (size_t iLine = iLineTop; iLine <= iLineBottom; ++iLine) {
-        char iLineStr[64];
-        snprintf(iLineStr, sizeof(iLineStr), "%d", (int)iLine+1);   // TODO: drte_string_to_int(). This snprintf() has shown up in profiling so best fix this.
+        float lineBottom = lineTop + lineHeight;
+        bool drawLineNumber = false;
 
-        float textWidth = 0;
-        float textHeight = 0;
-        if (pEngine->onMeasureString && fgStyleToken) {
-            pEngine->onMeasureString(pEngine, fgStyleToken, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
+        size_t iLineCharBeg;
+        size_t iLineCharEnd;
+        drte_engine_get_line_character_range(pEngine, pEngine->pWrappedLines, iLine, &iLineCharBeg, &iLineCharEnd);
+        if (iLine == 0 || pEngine->text[iLineCharBeg-1] == '\n') {
+            lineNumber += 1;
+            drawLineNumber = true;
         }
 
-        float textLeft = lineNumbersWidth - textWidth;
-        float textTop  = lineTop + (lineHeight - textHeight) / 2;
+        if (drawLineNumber) {
+            char iLineStr[64];
+            snprintf(iLineStr, sizeof(iLineStr), "%d", (int)lineNumber);   // TODO: drte_string_to_int(). This snprintf() has shown up in profiling so best fix this.
 
-        float lineBottom = lineTop + lineHeight;
+            float textWidth = 0;
+            float textHeight = 0;
+            if (pEngine->onMeasureString && fgStyleToken) {
+                pEngine->onMeasureString(pEngine, fgStyleToken, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
+            }
 
-        if (fgStyleToken != 0 && bgStyleToken != 0) {
-            onPaintText(pEngine, fgStyleToken, bgStyleToken, iLineStr, strlen(iLineStr), textLeft, textTop, pElement, pPaintData);
-            onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, textLeft, lineBottom), pElement, pPaintData);
+            float textLeft = lineNumbersWidth - textWidth;
+            float textTop  = lineTop + (lineHeight - textHeight) / 2;
 
-            // There could be a region above and below the text. This will happen if the line height of the line numbers is
-            // smaller than the main line height.
-            if (textHeight < lineHeight) {
-                onPaintRect(pEngine, bgStyleToken, drgui_make_rect(textLeft, lineTop, lineNumbersWidth, textTop), pElement, pPaintData);
-                onPaintRect(pEngine, bgStyleToken, drgui_make_rect(textLeft, textTop + textHeight, lineNumbersWidth, lineBottom), pElement, pPaintData);
+            if (fgStyleToken != 0 && bgStyleToken != 0) {
+                onPaintText(pEngine, fgStyleToken, bgStyleToken, iLineStr, strlen(iLineStr), textLeft, textTop, pElement, pPaintData);
+                onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, textLeft, lineBottom), pElement, pPaintData);
+
+                // There could be a region above and below the text. This will happen if the line height of the line numbers is
+                // smaller than the main line height.
+                if (textHeight < lineHeight) {
+                    onPaintRect(pEngine, bgStyleToken, drgui_make_rect(textLeft, lineTop, lineNumbersWidth, textTop), pElement, pPaintData);
+                    onPaintRect(pEngine, bgStyleToken, drgui_make_rect(textLeft, textTop + textHeight, lineNumbersWidth, lineBottom), pElement, pPaintData);
+                }
+            }
+        } else {
+            if (fgStyleToken != 0 && bgStyleToken != 0) {
+                onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, lineNumbersWidth, lineBottom), pElement, pPaintData);
             }
         }
 
@@ -4888,7 +4988,7 @@ void drte_engine__set_cursors(drte_engine* pEngine, size_t cursorCount, const dr
         }
     } else {
         pEngine->cursorCount = 0;
-    } 
+    }
 }
 
 void drte_engine__set_selections(drte_engine* pEngine, size_t selectionCount, const drte_region* pSelections)
@@ -5129,6 +5229,47 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
             size_t iLineCharEnd;
             drte_engine_get_line_character_range(pEngine, pEngine->pUnwrappedLines, iLine, &iLineCharBeg, &iLineCharEnd);
 
+            size_t wordsOnLine = 0;
+            float linePosX = 0;
+
+            drte_word_iterator word;
+            if (drte_engine__first_word(pEngine, iLineCharBeg, iLineCharEnd, &word)) {
+                do
+                {
+                    // If the end of the word falls outside of the visible region, end the existing line and then start a new one.
+                    float charPosX;
+                    drte_engine_get_character_position(pEngine, pEngine->pUnwrappedLines, word.iCharEnd, &charPosX, NULL);
+
+                    if ((charPosX - linePosX) > pEngine->containerWidth) {
+                        // It needs wrapping.
+
+                        // End the current line...
+                        if (wordsOnLine > 0) {
+                            drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
+                            drte_engine_get_character_position(pEngine, pEngine->pUnwrappedLines, word.iCharBeg, &linePosX, NULL);
+                        } else {
+                            // It's a long word which spans multiple lines. The word itself needs to be subdivided.
+                            // TODO: Implement me.
+                        }
+
+                        // Begin a new line.
+                        wordsOnLine = 1;
+                        iLineCharBeg = word.iCharBeg;
+                    } else {
+                        wordsOnLine += 1;
+                    }
+                } while (drte_engine__next_word(pEngine, &word));
+
+                if (wordsOnLine > 0) {
+                    drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
+                }
+            } else {
+                drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
+            }
+
+
+
+#if 0
             // We need to iterate over each word in the line.
             //unsigned int wordsOnLine = 0;
             for (;;) {
@@ -5147,13 +5288,14 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
             }
 
             // There will be some leftover on the line.
-            //drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
+            drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
+#endif
         }
     }
 
     // Cursors need to have their sticky positions refreshed.
     for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
-        drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[iCursor]);
+        drte_engine_move_cursor_to_character(pEngine, iCursor, drte_engine_get_cursor_character(pEngine, iCursor));
     }
 
     drte_engine__repaint(pEngine);
