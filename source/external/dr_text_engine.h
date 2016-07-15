@@ -5224,7 +5224,6 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
         // Line wrapping is done by simply sub-diving each unwrapped line based on word boundaries.
         size_t lineCount = drte_line_cache_get_line_count(pEngine->pUnwrappedLines);
         for (size_t iLine = 0; iLine < lineCount; ++iLine) {
-            //float lineWidth = 0;
             size_t iLineCharBeg;
             size_t iLineCharEnd;
             drte_engine_get_line_character_range(pEngine, pEngine->pUnwrappedLines, iLine, &iLineCharBeg, &iLineCharEnd);
@@ -5266,30 +5265,6 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
             } else {
                 drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
             }
-
-
-
-#if 0
-            // We need to iterate over each word in the line.
-            //unsigned int wordsOnLine = 0;
-            for (;;) {
-                size_t iWordCharEnd;
-                size_t iWordCharBeg;
-                if (drte_engine_get_word_containing_character(pEngine, iLineCharBeg, &iWordCharBeg, &iWordCharEnd)) {
-                    drte_line_cache_append_line(pEngine->pWrappedLines, iWordCharBeg);
-                    iLineCharBeg = iWordCharEnd;
-
-                    if (iWordCharEnd == iLineCharEnd) {
-                        break;
-                    }
-                } else {
-                    break;
-                }
-            }
-
-            // There will be some leftover on the line.
-            drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
-#endif
         }
     }
 
