@@ -2,7 +2,7 @@
 
 
 // Commands
-#define DRED_COMMAND_COUNT 48
+#define DRED_COMMAND_COUNT 49
 
 const char g_CommandNamePool[] = 
     "!\0"
@@ -50,6 +50,7 @@ const char g_CommandNamePool[] =
     "show-line-numbers\0"
     "hide-line-numbers\0"
     "toggle-line-numbers\0"
+    "toggle-word-wrap\0"
     "zoom\0"
     "unindent\0"
     "insert-date\0";
@@ -101,8 +102,9 @@ const char* g_CommandNames[] = {
     g_CommandNamePool + 396,
     g_CommandNamePool + 414,
     g_CommandNamePool + 434,
-    g_CommandNamePool + 439,
-    g_CommandNamePool + 448,
+    g_CommandNamePool + 451,
+    g_CommandNamePool + 456,
+    g_CommandNamePool + 465,
 };
 
 dred_command g_Commands[] = {
@@ -151,6 +153,7 @@ dred_command g_Commands[] = {
     {dred_command__show_line_numbers, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__hide_line_numbers, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__toggle_line_numbers, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__toggle_word_wrap, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__zoom, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__unindent, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__insert_date, DRED_CMDBAR_RELEASE_KEYBOARD},

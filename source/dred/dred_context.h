@@ -311,6 +311,16 @@ void dred_hide_line_numbers(dred_context* pDred);
 void dred_toggle_line_numbers(dred_context* pDred);
 
 
+// Enables word wrap on text editors.
+void dred_enable_word_wrap(dred_context* pDred);
+
+// Disables word wrap on text editor.
+void dred_disable_word_wrap(dred_context* pDred);
+
+// Toggles word wrap on text editors.
+void dred_toggle_word_wrap(dred_context* pDred);
+
+
 // Shows the command bar.
 void dred_show_command_bar(dred_context* pDred);
 

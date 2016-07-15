@@ -567,6 +567,13 @@ bool dred_command__toggle_line_numbers(dred_context* pDred, const char* value)
     return true;
 }
 
+bool dred_command__toggle_word_wrap(dred_context* pDred, const char* value)
+{
+    (void)value;
+    dred_toggle_word_wrap(pDred);
+    return true;
+}
+
 bool dred_command__zoom(dred_context* pDred, const char* value)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
