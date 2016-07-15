@@ -936,6 +936,9 @@ void dred_textbox_enable_word_wrap(dred_textbox* pTextBox)
     }
 
     drte_engine_enable_word_wrap(pTB->pTL);
+
+    // Line numbers need to be redrawn.
+    dred_textbox__refresh_line_numbers(pTextBox);
 }
 
 void dred_textbox_disable_word_wrap(dred_textbox* pTextBox)
@@ -946,6 +949,9 @@ void dred_textbox_disable_word_wrap(dred_textbox* pTextBox)
     }
 
     drte_engine_disable_word_wrap(pTB->pTL);
+
+    // Line numbers need to be redrawn.
+    dred_textbox__refresh_line_numbers(pTextBox);
 }
 
 bool dred_textbox_is_word_wrap_enabled(dred_textbox* pTextBox)
