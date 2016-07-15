@@ -10,9 +10,9 @@
 
 #define NANOSVG_ALL_COLOR_KEYWORDS
 #define NANOSVG_IMPLEMENTATION
-#include "nanosvg.h"
+#include "../external/nanosvg.h"
 #define NANOSVGRAST_IMPLEMENTATION
-#include "nanosvgrast.h"
+#include "../external/nanosvgrast.h"
 
 #include <stdio.h>
 #include <assert.h>
