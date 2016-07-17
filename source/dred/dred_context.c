@@ -251,7 +251,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     // The drawing context.
 #ifdef DRED_WIN32
-    pDred->pDrawingContext = dr2d_create_context_gdi();
+    pDred->pDrawingContext = dr2d_create_context_gdi(NULL);
 #endif
 #ifdef DRED_GTK
     pDred->pDrawingContext = dr2d_create_context_cairo();
@@ -1680,21 +1680,73 @@ bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindo
 }
 
 
+void dred__test_print(dred_context* pDred, dr2d_surface* pPaintSurface, float offsetX, float offsetY, float pageSizeX, float pageSizeY, float scaleX, float scaleY)
+{
+    (void)pDred;
+
+    dr2d_font* pFont = dr2d_create_font(pPaintSurface->pContext, "Liberation Mono", (unsigned int)(13*scaleY), dr2d_font_weight_normal, dr2d_font_slant_none, 0, 0);
+    if (pFont == NULL) {
+        return;
+    }
+
+    dr2d_begin_draw(pPaintSurface);
+    {
+        dr2d_draw_rect_outline(pPaintSurface, offsetX, offsetY, offsetX + pageSizeX, offsetY + pageSizeY, dr2d_rgb(0, 0, 0), 2*scaleX);
+
+        const char* text = "Printing is not yet implemented.";
+        dr2d_draw_text(pPaintSurface, pFont, text, strlen(text), offsetX + (8*scaleX), offsetY + (8*scaleY), dr2d_rgb(0, 0, 0), dr2d_rgba(0, 0, 0, 0));
+    }
+    dr2d_end_draw(pPaintSurface);
+
+    dr2d_delete_font(pFont);
+}
+
 #ifdef DRED_GTK
 void dred_gtk__on_begin_print(GtkPrintOperation *pPrint, GtkPrintContext *context, gpointer user_data)
 {
     (void)context;
     (void)user_data;
     gtk_print_operation_set_n_pages(pPrint, 1);
+
+    //context->
 }
 
 void dred_gtk__on_draw_page(GtkPrintOperation *pPrint, GtkPrintContext *context, gint page_nr, gpointer user_data)
 {
     (void)pPrint;
     (void)context;
-    (void)user_data;
     (void)page_nr;
     (void)user_data;
+
+    dred_context* pDred = (dred_context*)user_data;
+    assert(pDred != NULL);
+
+    GtkPageSetup* pPageSetup = gtk_print_context_get_page_setup(context);
+    if (pPageSetup == NULL) {
+        return;
+    }
+
+    double dpiX = gtk_print_context_get_dpi_x(context);
+    double dpiY = gtk_print_context_get_dpi_y(context);
+    double pageSizeX = gtk_print_context_get_width(context);
+    double pageSizeY = gtk_print_context_get_height(context);
+
+    cairo_t* cr = gtk_print_context_get_cairo_context(context);
+
+    dr2d_context* pPaintContext = dr2d_create_context_cairo();
+    if (pPaintContext == NULL) {
+        return;
+    }
+
+    dr2d_surface* pPaintSurface = dr2d_create_surface_cairo(pPaintContext, cr);
+    if (pPaintSurface == NULL) {
+        return;
+    }
+
+    dred__test_print(pDred, pPaintSurface, 0, 0, pageSizeX, pageSizeY, 1, 1);
+
+    dr2d_delete_surface(pPaintSurface);
+    dr2d_delete_context(pPaintContext);
 }
 #endif
 
@@ -1715,9 +1767,6 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
     pd.lStructSize = sizeof(pd);
     pd.hwndOwner = pOwnerWindow->hWnd;
     pd.Flags = PD_RETURNDC;
-    pd.nMinPage = 0;
-    pd.nMaxPage = 128;
-
     if (!PrintDlgA(&pd)) {
         return false;
     }
@@ -1725,8 +1774,19 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
     HDC hPrintDC = pd.hDC;
 
     // Printing is usually done at a much higher DPI than normal so everything needs to be scaled.
-    double scaleX = GetDeviceCaps(hPrintDC, LOGPIXELSX) / 72;
-    double scaleY = GetDeviceCaps(hPrintDC, LOGPIXELSY) / 72;
+    float scaleX = GetDeviceCaps(hPrintDC, LOGPIXELSX) / 72.0f;
+    float scaleY = GetDeviceCaps(hPrintDC, LOGPIXELSY) / 72.0f;
+
+    int physicalWidth   = GetDeviceCaps(hPrintDC, PHYSICALWIDTH);
+    int physicalHeight  = GetDeviceCaps(hPrintDC, PHYSICALHEIGHT);
+    int physicalOffsetX = GetDeviceCaps(hPrintDC, PHYSICALOFFSETX);
+    int physicalOffsetY = GetDeviceCaps(hPrintDC, PHYSICALOFFSETY);
+
+    // TODO: Support custom margins.
+
+    int printableWidth  = physicalWidth  - physicalOffsetX*2;
+    int printableHeight = physicalHeight - physicalOffsetY*2;
+
 
     DOCINFOA di;
     ZeroMemory(&di, sizeof(di));
@@ -1738,27 +1798,20 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
 
     // TEST PAGE.
     if (StartPage(hPrintDC) > 0) {
-#if 0
-        LOGFONTA logfont;
-	    memset(&logfont, 0, sizeof(logfont));
-        logfont.lfHeight      = -10*scaleY;
-	    logfont.lfWeight      = FW_REGULAR;
-	    logfont.lfItalic      = FALSE;
-	    logfont.lfCharSet     = DEFAULT_CHARSET;
-        logfont.lfQuality     = ANTIALIASED_QUALITY;
-        logfont.lfEscapement  = 0;
-        logfont.lfOrientation = 0;
+        dr2d_context* pPaintContext = dr2d_create_context_gdi(hPrintDC);
+        if (pPaintContext == NULL) {
+            return false;
+        }
 
-        const char* family = "Arial";
-        size_t familyLength = strlen(family);
-	    memcpy(logfont.lfFaceName, family, (familyLength < 31) ? familyLength : 31);
+        dr2d_surface* pPaintSurface = dr2d_create_surface_gdi_HDC(pPaintContext, hPrintDC);
+        if (pPaintSurface == NULL) {
+            return false;
+        }
 
-	    HFONT hFont = CreateFontIndirectA(&logfont);
-        SelectObject(hPrintDC, hFont);
+        dred__test_print(pDred, pPaintSurface, (float)physicalOffsetX, (float)physicalOffsetY, (float)printableWidth, (float)printableHeight, scaleX, scaleY);
 
-        TextOutA(hPrintDC, 0, 0, "THIS IS A TEST!", strlen("THIS IS A TEST!"));
-        Rectangle(hPrintDC, 0*scaleX, 32*scaleY, 128*scaleX, (128+32)*scaleY);
-#endif
+        dr2d_delete_surface(pPaintSurface);
+        dr2d_delete_context(pPaintContext);
 
         EndPage(hPrintDC);
     }
@@ -1769,6 +1822,8 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
 
     PDEVMODEA pDevMode = (PDEVMODEA)GlobalLock(pd.hDevMode);
     LPDEVNAMES pDevNames = (LPDEVNAMES)GlobalLock(pd.hDevNames); (void)pDevNames;
+
+    //pDevMode->
 
     strcpy_s(pInfoOut->printerName, sizeof(pInfoOut->printerName), (char*)pDevMode->dmDeviceName);
     pInfoOut->firstPage = pd.nFromPage;
@@ -1798,8 +1853,8 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
 
     gtk_print_operation_set_print_settings(pPrint, pSettings);
 
-    g_signal_connect(pPrint, "begin_print", G_CALLBACK(dred_gtk__on_begin_print), NULL);
-    g_signal_connect(pPrint, "draw_page", G_CALLBACK(dred_gtk__on_draw_page), NULL);
+    g_signal_connect(pPrint, "begin_print", G_CALLBACK(dred_gtk__on_begin_print), pDred);
+    g_signal_connect(pPrint, "draw_page", G_CALLBACK(dred_gtk__on_draw_page), pDred);
 
     GtkPrintOperationResult printResult = gtk_print_operation_run(pPrint, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, GTK_WINDOW(pOwnerWindow->pGTKWindow), NULL);
     if (printResult != GTK_PRINT_OPERATION_RESULT_APPLY) {
