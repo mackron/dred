@@ -785,6 +785,16 @@ void drte_engine_clear_undo_stack(drte_engine* pEngine);
 /// Retrieves the number of lines in the given text engine.
 size_t drte_engine_get_line_count(drte_engine* pEngine);
 
+// Gets the number of lines per page.
+//
+// This does not include partially visible lines. Use this for printing.
+size_t drte_engine_get_line_count_per_page(drte_engine* pEngine);
+
+// Retrieves the page count.
+//
+// Use this for printing.
+size_t drte_engine_get_page_count(drte_engine* pEngine);
+
 // Retrieves the number of lines that can fit on the visible region of the text engine.
 //
 // Use this for controlling the page size for scrollbars.
@@ -4380,6 +4390,30 @@ size_t drte_engine_get_line_count(drte_engine* pEngine)
     }
 
     return drte_line_cache_get_line_count(pEngine->pWrappedLines);
+}
+
+size_t drte_engine_get_line_count_per_page(drte_engine* pEngine)
+{
+    if (pEngine == NULL) {
+        return 1;
+    }
+
+    size_t lineCount = (size_t)(pEngine->containerHeight / drte_engine_get_line_height(pEngine));
+    if (lineCount == 0) {
+        lineCount = 1;  // Always at least one line on a page.
+    }
+
+    return lineCount;
+}
+
+size_t drte_engine_get_page_count(drte_engine* pEngine)
+{
+    size_t pageCount = drte_engine_get_line_count(pEngine) / drte_engine_get_line_count_per_page(pEngine);
+    if (pageCount == 0) {
+        pageCount = 1;  // Always at least one page.
+    }
+
+    return pageCount;
 }
 
 size_t drte_engine_get_visible_line_count(drte_engine* pEngine)

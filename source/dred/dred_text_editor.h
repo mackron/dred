@@ -11,6 +11,10 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 void dred_text_editor_delete(dred_text_editor* pTextEditor);
 
 
+// Retrieves a copy of the text.
+size_t dred_text_editor_get_text(dred_text_editor* pTextEditor, char* pTextOut, size_t textOutSize);
+
+
 // Enables word wrap.
 void dred_text_editor_enable_word_wrap(dred_text_editor* pTextEditor);
 

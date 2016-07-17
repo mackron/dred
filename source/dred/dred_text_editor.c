@@ -286,6 +286,17 @@ void dred_text_editor_delete(dred_text_editor* pTextEditor)
 }
 
 
+size_t dred_text_editor_get_text(dred_text_editor* pTextEditor, char* pTextOut, size_t textOutSize)
+{
+    dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
+    if (data == NULL) {
+        return 0;
+    }
+
+    return dred_textbox_get_text(data->pTextBox, pTextOut, textOutSize);
+}
+
+
 void dred_text_editor_enable_word_wrap(dred_text_editor* pTextEditor)
 {
     dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
