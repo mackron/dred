@@ -1931,7 +1931,6 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
         return false;
     }
 
-
     // Pages.
     size_t iPageBeg = pd.nFromPage;
     size_t iPageEnd = pd.nToPage;
@@ -1939,13 +1938,14 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
         iPageEnd = pageCount;
     }
 
-    for (size_t iPage = iPageBeg; iPage < iPageEnd; ++iPage) {
-        if (StartPage(hPrintDC) > 0) {
-            dred__print_page(&printData, iPage);
-            EndPage(hPrintDC);
+    for (WORD iCopy = 0; iCopy < pd.nCopies; ++iCopy) {
+        for (size_t iPage = iPageBeg; iPage < iPageEnd; ++iPage) {
+            if (StartPage(hPrintDC) > 0) {
+                dred__print_page(&printData, iPage);
+                EndPage(hPrintDC);
+            }
         }
     }
-
 
     EndDoc(hPrintDC);
 
