@@ -146,7 +146,7 @@ void dred_window_cb__on_main_window_close(dred_window* pWindow)
 void dred_window_cb__on_main_window_move(dred_window* pWindow, int posX, int posY)
 {
     assert(pWindow != NULL);
-    
+
     pWindow->pDred->config.windowPosX = posX;
     pWindow->pDred->config.windowPosY = posY;
 }
@@ -293,6 +293,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_SAVE_ALL,   dred_shortcut_create_single(dred_accelerator_create('S', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "save-all");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_CLOSE,      dred_shortcut_create_single(dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN)), "close");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_CLOSE_ALL,  dred_shortcut_create_single(dred_accelerator_create('W', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "close-all");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_PRINT,      dred_shortcut_create_single(dred_accelerator_create('P', DRED_KEY_STATE_CTRL_DOWN)), "print");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_UNDO,       dred_shortcut_create_single(dred_accelerator_create('Z', DRED_KEY_STATE_CTRL_DOWN)), "undo");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_REDO,       dred_shortcut_create_single(dred_accelerator_create('Y', DRED_KEY_STATE_CTRL_DOWN)), "redo");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_CUT,        dred_shortcut_create_single(dred_accelerator_create('X', DRED_KEY_STATE_CTRL_DOWN)), "cut");
@@ -1653,7 +1654,7 @@ bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindo
 #endif
 
 #ifdef DRED_GTK
-    GtkWidget* dialog = gtk_color_chooser_dialog_new(NULL, GTK_WINDOW(pDred->pMainWindow->pGTKWindow));
+    GtkWidget* dialog = gtk_color_chooser_dialog_new(NULL, GTK_WINDOW(pOwnerWindow->pGTKWindow));
     if (dialog == NULL) {
         return false;
     }
@@ -1675,6 +1676,97 @@ bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindo
 
     gtk_widget_destroy(dialog);
     return result == GTK_RESPONSE_OK;
+#endif
+}
+
+bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_print_info* pInfoOut)
+{
+    if (pDred == NULL || pInfoOut == NULL) {
+        return false;
+    }
+
+    if (pOwnerWindow == NULL) {
+        pOwnerWindow = pDred->pMainWindow;
+    }
+
+
+#ifdef DRED_WIN32
+    PRINTDLGA pd;
+    ZeroMemory(&pd, sizeof(pd));
+    pd.lStructSize = sizeof(pd);
+    pd.hwndOwner = pOwnerWindow->hWnd;
+    pd.nMinPage = 0;
+    pd.nMaxPage = 128;
+
+    if (!PrintDlgA(&pd)) {
+        return false;
+    }
+
+    PDEVMODEA pDevMode = (PDEVMODEA)GlobalLock(pd.hDevMode);
+    LPDEVNAMES pDevNames = (LPDEVNAMES)GlobalLock(pd.hDevNames); (void)pDevNames;
+
+    strcpy_s(pInfoOut->printerName, sizeof(pInfoOut->printerName), (char*)pDevMode->dmDeviceName);
+    pInfoOut->firstPage = pd.nFromPage;
+    pInfoOut->lastPage  = pd.nToPage;
+    pInfoOut->copies    = pd.nCopies;
+
+    if (pd.hDevMode != NULL) GlobalFree(pd.hDevMode);
+    if (pd.hDevNames != NULL) GlobalFree(pd.hDevNames);
+    return true;
+#endif
+
+#ifdef DRED_GTK
+    GtkPrintOperation* pPrint = gtk_print_operation_new();
+    if (pPrint == NULL) {
+        return false;
+    }
+
+    // TODO: Set default settings based on previous settings.
+    GtkPrintSettings* pSettings = gtk_print_settings_new();
+    //gtk_print_settings_set_printer(pSettings, p)
+
+    // TODO: Set page ranges based on settings reported by the currently focused editor.
+    GtkPageRange pageRange;
+    pageRange.start = 0;
+    pageRange.end = 128;
+    gtk_print_settings_set_page_ranges(pSettings, &pageRange, 1);
+
+    gtk_print_operation_set_print_settings(pPrint, pSettings);
+
+
+    GtkPrintOperationResult printResult = gtk_print_operation_run(pPrint, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, GTK_WINDOW(pOwnerWindow->pGTKWindow), NULL);
+    if (printResult != GTK_PRINT_OPERATION_RESULT_APPLY) {
+        g_object_unref(pPrint);
+        g_object_unref(pSettings);
+        return false;
+    }
+
+    // Save settings so the next print operation can have it's default settings set to the previous print settings.
+    GtkPrintSettings* pNewSettings = gtk_print_operation_get_print_settings(pPrint);
+    if (pNewSettings != NULL) {
+        strcpy_s(pInfoOut->printerName, sizeof(pInfoOut->printerName), gtk_print_settings_get_printer(pNewSettings));
+        pInfoOut->copies = gtk_print_settings_get_n_copies(pNewSettings);
+
+        // GTK supports multiple page ranges, however dred's abstraction currently does not. For now we just fall back to using
+        // the first page range.
+        //
+        // TODO: Add support for page ranges.
+        gint pageRangeCount;
+        GtkPageRange* pPageRanges = gtk_print_settings_get_page_ranges(pNewSettings, &pageRangeCount);
+        if (pPageRanges != NULL && pageRangeCount > 0) {
+            pInfoOut->firstPage = pPageRanges[0].start;
+            pInfoOut->lastPage = pPageRanges[0].end;
+        } else {
+            pInfoOut->firstPage = 0;
+            pInfoOut->lastPage = 0;
+        }
+
+        g_object_unref(pNewSettings);
+    }
+
+    g_object_unref(pSettings);
+    g_object_unref(pPrint);
+    return true;
 #endif
 }
 

@@ -40,7 +40,7 @@ struct dred_context
 
     // The about window.
     dred_about_dialog* pAboutDialog;
-    
+
     // The settings dialog window.
     dred_settings_dialog* pSettingsDialog;
 
@@ -249,12 +249,21 @@ bool dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow
 // Shows the color picker dialog. Returns true if the user chose a color, false if they hit the cancel button or an error occurs.
 bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, drgui_color initialColor, drgui_color* pColorOut);
 
+// Shows the "Print" dialog box.
+//
+// This is a little different to other platform-specific dialog boxes in that it performs the full printing operation from start
+// to finish. It does not
+bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_print_info* pInfoOut);
+
+
 
 // Shows the "About" dialog box.
 void dred_show_about_dialog(dred_context* pDred);
 
 // Shows the "Settings" dialog box.
 void dred_show_settings_dialog(dred_context* pDred);
+
+
 
 
 // Updates the layout of the main window.

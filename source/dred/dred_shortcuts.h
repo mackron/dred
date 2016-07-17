@@ -6,6 +6,7 @@
 #define DRED_SHORTCUT_NAME_SAVE_ALL     "SaveAll"
 #define DRED_SHORTCUT_NAME_CLOSE        "Close"
 #define DRED_SHORTCUT_NAME_CLOSE_ALL    "CloseAll"
+#define DRED_SHORTCUT_NAME_PRINT        "Print"
 #define DRED_SHORTCUT_NAME_UNDO         "Undo"
 #define DRED_SHORTCUT_NAME_REDO         "Redo"
 #define DRED_SHORTCUT_NAME_CUT          "Cut"

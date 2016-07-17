@@ -68,6 +68,8 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append_with_shortcut(pFileMenu, "&Close", DRED_MENU_ITEM_ID_FILE_CLOSE, DRED_SHORTCUT_NAME_CLOSE);
     dred_menu_item_create_and_append_with_shortcut(pFileMenu, "Clos&e All", DRED_MENU_ITEM_ID_FILE_CLOSE_ALL, DRED_SHORTCUT_NAME_CLOSE_ALL);
     dred_menu_item_create_and_append_separator(pFileMenu);
+    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "Print...", DRED_MENU_ITEM_ID_FILE_PRINT, DRED_SHORTCUT_NAME_PRINT);
+    dred_menu_item_create_and_append_separator(pFileMenu);
     dred_menu_item_create_and_append(pFileMenu, "E&xit", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_shortcut_create_single(dred_accelerator_create(DRGUI_F4, DRED_KEY_STATE_ALT_DOWN)), NULL);
 
     dred_menu* pEditMenu = dred_menu_create(pDred, dred_menu_type_popup);

@@ -2,7 +2,7 @@
 
 
 // Commands
-#define DRED_COMMAND_COUNT 49
+#define DRED_COMMAND_COUNT 50
 
 const char g_CommandNamePool[] = 
     "!\0"
@@ -35,6 +35,7 @@ const char g_CommandNamePool[] =
     "help\0"
     "about\0"
     "settings\0"
+    "print\0"
     "reload\0"
     "undo\0"
     "redo\0"
@@ -87,24 +88,25 @@ const char* g_CommandNames[] = {
     g_CommandNamePool + 283,
     g_CommandNamePool + 289,
     g_CommandNamePool + 298,
-    g_CommandNamePool + 305,
-    g_CommandNamePool + 310,
-    g_CommandNamePool + 315,
-    g_CommandNamePool + 319,
-    g_CommandNamePool + 324,
+    g_CommandNamePool + 304,
+    g_CommandNamePool + 311,
+    g_CommandNamePool + 316,
+    g_CommandNamePool + 321,
+    g_CommandNamePool + 325,
     g_CommandNamePool + 330,
-    g_CommandNamePool + 337,
-    g_CommandNamePool + 348,
-    g_CommandNamePool + 353,
-    g_CommandNamePool + 358,
-    g_CommandNamePool + 366,
-    g_CommandNamePool + 378,
-    g_CommandNamePool + 396,
-    g_CommandNamePool + 414,
-    g_CommandNamePool + 434,
-    g_CommandNamePool + 451,
-    g_CommandNamePool + 456,
-    g_CommandNamePool + 465,
+    g_CommandNamePool + 336,
+    g_CommandNamePool + 343,
+    g_CommandNamePool + 354,
+    g_CommandNamePool + 359,
+    g_CommandNamePool + 364,
+    g_CommandNamePool + 372,
+    g_CommandNamePool + 384,
+    g_CommandNamePool + 402,
+    g_CommandNamePool + 420,
+    g_CommandNamePool + 440,
+    g_CommandNamePool + 457,
+    g_CommandNamePool + 462,
+    g_CommandNamePool + 471,
 };
 
 dred_command g_Commands[] = {
@@ -138,6 +140,7 @@ dred_command g_Commands[] = {
     {dred_command__help, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__about, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__settings, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__print, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__reload, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__undo, DRED_CMDBAR_NO_CLEAR},
     {dred_command__redo, DRED_CMDBAR_NO_CLEAR},

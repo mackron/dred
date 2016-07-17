@@ -33,6 +33,7 @@
 // help                     dred_command__help                      DRED_CMDBAR_RELEASE_KEYBOARD
 // about                    dred_command__about                     DRED_CMDBAR_RELEASE_KEYBOARD
 // settings                 dred_command__settings                  DRED_CMDBAR_RELEASE_KEYBOARD
+// print                    dred_command__print                     DRED_CMDBAR_RELEASE_KEYBOARD
 // reload                   dred_command__reload                    DRED_CMDBAR_RELEASE_KEYBOARD
 // undo                     dred_command__undo                      DRED_CMDBAR_NO_CLEAR
 // redo                     dred_command__redo                      DRED_CMDBAR_NO_CLEAR
@@ -185,6 +186,9 @@ bool dred_command__about(dred_context* pDred, const char* value);
 
 // settings
 bool dred_command__settings(dred_context* pDred, const char* value);
+
+// print
+bool dred_command__print(dred_context* pDred, const char* value);
 
 // reload
 //
