@@ -1679,6 +1679,25 @@ bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindo
 #endif
 }
 
+
+#ifdef DRED_GTK
+void dred_gtk__on_begin_print(GtkPrintOperation *pPrint, GtkPrintContext *context, gpointer user_data)
+{
+    (void)context;
+    (void)user_data;
+    gtk_print_operation_set_n_pages(pPrint, 1);
+}
+
+void dred_gtk__on_draw_page(GtkPrintOperation *pPrint, GtkPrintContext *context, gint page_nr, gpointer user_data)
+{
+    (void)pPrint;
+    (void)context;
+    (void)user_data;
+    (void)page_nr;
+    (void)user_data;
+}
+#endif
+
 bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_print_info* pInfoOut)
 {
     if (pDred == NULL || pInfoOut == NULL) {
@@ -1695,12 +1714,58 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
     ZeroMemory(&pd, sizeof(pd));
     pd.lStructSize = sizeof(pd);
     pd.hwndOwner = pOwnerWindow->hWnd;
+    pd.Flags = PD_RETURNDC;
     pd.nMinPage = 0;
     pd.nMaxPage = 128;
 
     if (!PrintDlgA(&pd)) {
         return false;
     }
+
+    HDC hPrintDC = pd.hDC;
+
+    // Printing is usually done at a much higher DPI than normal so everything needs to be scaled.
+    double scaleX = GetDeviceCaps(hPrintDC, LOGPIXELSX) / 72;
+    double scaleY = GetDeviceCaps(hPrintDC, LOGPIXELSY) / 72;
+
+    DOCINFOA di;
+    ZeroMemory(&di, sizeof(di));
+    di.cbSize = sizeof(di);
+    di.lpszDocName = dred_editor_get_file_path(dred_get_focused_editor(pDred));
+    if (StartDocA(hPrintDC, &di) <= 0) {
+        return false;
+    }
+
+    // TEST PAGE.
+    if (StartPage(hPrintDC) > 0) {
+#if 0
+        LOGFONTA logfont;
+	    memset(&logfont, 0, sizeof(logfont));
+        logfont.lfHeight      = -10*scaleY;
+	    logfont.lfWeight      = FW_REGULAR;
+	    logfont.lfItalic      = FALSE;
+	    logfont.lfCharSet     = DEFAULT_CHARSET;
+        logfont.lfQuality     = ANTIALIASED_QUALITY;
+        logfont.lfEscapement  = 0;
+        logfont.lfOrientation = 0;
+
+        const char* family = "Arial";
+        size_t familyLength = strlen(family);
+	    memcpy(logfont.lfFaceName, family, (familyLength < 31) ? familyLength : 31);
+
+	    HFONT hFont = CreateFontIndirectA(&logfont);
+        SelectObject(hPrintDC, hFont);
+
+        TextOutA(hPrintDC, 0, 0, "THIS IS A TEST!", strlen("THIS IS A TEST!"));
+        Rectangle(hPrintDC, 0*scaleX, 32*scaleY, 128*scaleX, (128+32)*scaleY);
+#endif
+
+        EndPage(hPrintDC);
+    }
+
+    EndDoc(hPrintDC);
+    DeleteObject(hPrintDC);
+
 
     PDEVMODEA pDevMode = (PDEVMODEA)GlobalLock(pd.hDevMode);
     LPDEVNAMES pDevNames = (LPDEVNAMES)GlobalLock(pd.hDevNames); (void)pDevNames;
@@ -1726,13 +1791,15 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
     //gtk_print_settings_set_printer(pSettings, p)
 
     // TODO: Set page ranges based on settings reported by the currently focused editor.
-    GtkPageRange pageRange;
-    pageRange.start = 0;
-    pageRange.end = 128;
-    gtk_print_settings_set_page_ranges(pSettings, &pageRange, 1);
+    //GtkPageRange pageRange;
+    //pageRange.start = 0;
+    //pageRange.end = 128;
+    //gtk_print_settings_set_page_ranges(pSettings, &pageRange, 1);
 
     gtk_print_operation_set_print_settings(pPrint, pSettings);
 
+    g_signal_connect(pPrint, "begin_print", G_CALLBACK(dred_gtk__on_begin_print), NULL);
+    g_signal_connect(pPrint, "draw_page", G_CALLBACK(dred_gtk__on_draw_page), NULL);
 
     GtkPrintOperationResult printResult = gtk_print_operation_run(pPrint, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, GTK_WINDOW(pOwnerWindow->pGTKWindow), NULL);
     if (printResult != GTK_PRINT_OPERATION_RESULT_APPLY) {
