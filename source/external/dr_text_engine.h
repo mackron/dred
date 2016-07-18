@@ -587,6 +587,18 @@ bool drte_engine_move_cursor_to_end_of_line_by_index(drte_engine* pEngine, size_
 /// Moves the cursor of the given text engine to the start of the line at the given index.
 bool drte_engine_move_cursor_to_start_of_line_by_index(drte_engine* pEngine, size_t cursorIndex, size_t iLine);
 
+/// Moves the cursor to the end of the unwrapped line it is sitting on.
+bool drte_engine_move_cursor_to_end_of_unwrapped_line(drte_engine* pEngine, size_t cursorIndex);
+
+/// Moves the cursor to the start of the unwrapped line it is sitting on.
+bool drte_engine_move_cursor_to_start_of_unwrapped_line(drte_engine* pEngine, size_t cursorIndex);
+
+/// Determines whether or not the given cursor is at the end of a wrapped line.
+bool drte_engine_is_cursor_at_end_of_wrapped_line(drte_engine* pEngine, size_t cursorIndex);
+
+/// Determines whether or not the given cursor is at the start of a wrapped line.
+bool drte_engine_is_cursor_at_start_of_wrapped_line(drte_engine* pEngine, size_t cursorIndex);
+
 /// Moves the cursor of the given text engine to the end of the text.
 bool drte_engine_move_cursor_to_end_of_text(drte_engine* pEngine, size_t cursorIndex);
 
@@ -2855,6 +2867,60 @@ bool drte_engine_move_cursor_to_start_of_line_by_index(drte_engine* pEngine, siz
     return true;
 }
 
+bool drte_engine_move_cursor_to_end_of_unwrapped_line(drte_engine* pEngine, size_t cursorIndex)
+{
+    if (pEngine == NULL || pEngine->text == NULL || pEngine->cursorCount <= cursorIndex) {
+        return false;
+    }
+
+    drte_engine_move_cursor_to_character(pEngine, cursorIndex, drte_engine_get_line_last_character(pEngine, pEngine->pUnwrappedLines, drte_engine_get_character_line(pEngine, pEngine->pUnwrappedLines, pEngine->pCursors[cursorIndex].iCharAbs)));
+    return true;
+}
+
+bool drte_engine_move_cursor_to_start_of_unwrapped_line(drte_engine* pEngine, size_t cursorIndex)
+{
+    if (pEngine == NULL || pEngine->text == NULL || pEngine->cursorCount <= cursorIndex) {
+        return false;
+    }
+
+    drte_engine_move_cursor_to_character(pEngine, cursorIndex, drte_engine_get_line_first_character(pEngine, pEngine->pUnwrappedLines, drte_engine_get_character_line(pEngine, pEngine->pUnwrappedLines, pEngine->pCursors[cursorIndex].iCharAbs)));
+    return true;
+}
+
+bool drte_engine_is_cursor_at_end_of_wrapped_line(drte_engine* pEngine, size_t cursorIndex)
+{
+    if (pEngine == NULL || pEngine->text == NULL || pEngine->cursorCount <= cursorIndex) {
+        return false;
+    }
+
+    size_t iCursorChar = pEngine->pCursors[cursorIndex].iCharAbs;
+    size_t iCursorLine = pEngine->pCursors[cursorIndex].iLine;
+
+    size_t iWrappedLineLastChar = drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, iCursorLine);
+    if (iCursorChar == iWrappedLineLastChar) {
+        return true;
+    }
+
+    return false;
+}
+
+bool drte_engine_is_cursor_at_start_of_wrapped_line(drte_engine* pEngine, size_t cursorIndex)
+{
+    if (pEngine == NULL || pEngine->text == NULL || pEngine->cursorCount <= cursorIndex) {
+        return false;
+    }
+
+    size_t iCursorChar = pEngine->pCursors[cursorIndex].iCharAbs;
+    size_t iCursorLine = pEngine->pCursors[cursorIndex].iLine;
+
+    size_t iWrappedLineLastChar = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, iCursorLine);
+    if (iCursorChar == iWrappedLineLastChar) {
+        return true;
+    }
+
+    return false;
+}
+
 bool drte_engine_move_cursor_to_end_of_text(drte_engine* pEngine, size_t cursorIndex)
 {
     if (pEngine == NULL || pEngine->text == NULL || pEngine->cursorCount <= cursorIndex) {
@@ -2910,10 +2976,12 @@ void drte_engine_move_cursor_to_character_and_line(drte_engine* pEngine, size_t 
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
+    size_t iPrevLine = pEngine->pCursors[cursorIndex].iLine;
+
     pEngine->pCursors[cursorIndex].iCharAbs = iChar;
     pEngine->pCursors[cursorIndex].iLine = iLine;
 
-    if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
+    if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs || iPrevLine != pEngine->pCursors[cursorIndex].iLine) {
         drte_engine__begin_dirty(pEngine);
             drte_engine__on_cursor_move(pEngine, cursorIndex);
             drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));   // <-- TODO: Optimize this so that only the changed region is redrawn.

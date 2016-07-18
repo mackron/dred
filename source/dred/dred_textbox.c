@@ -2048,7 +2048,11 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
             if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) != 0) {
                 drte_engine_move_cursor_to_end_of_text(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
             } else {
-                drte_engine_move_cursor_to_end_of_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                if (drte_engine_is_cursor_at_end_of_wrapped_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL))) {
+                    drte_engine_move_cursor_to_end_of_unwrapped_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                } else {
+                    drte_engine_move_cursor_to_end_of_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                }
             }
 
             if (isShiftDown) {
@@ -2075,7 +2079,11 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
             if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) != 0) {
                 drte_engine_move_cursor_to_start_of_text(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
             } else {
-                drte_engine_move_cursor_to_start_of_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                if (drte_engine_is_cursor_at_start_of_wrapped_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL))) {
+                    drte_engine_move_cursor_to_start_of_unwrapped_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                } else {
+                    drte_engine_move_cursor_to_start_of_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                }
             }
 
             if (isShiftDown) {
