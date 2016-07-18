@@ -1226,9 +1226,13 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTab
     // initialized properly. In particular, if we don't do this, the cursor will not be set to the correct value
     // because the sub-editor won't be attached to a window at creation time.
 
+    float sizeX;
+    float sizeY;
+    dred_tabgroup_get_body_size(pTabGroup, &sizeX, &sizeY);
+
     dred_editor* pEditor = NULL;
     if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-        pEditor = dred_text_editor_create(pDred, pTabGroup, filePathAbsolute);
+        pEditor = dred_text_editor_create(pDred, pTabGroup, sizeX, sizeY, filePathAbsolute);
     }
 #ifndef DRED_NO_IMAGE_EDITOR
     if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_IMAGE_EDITOR)) {
@@ -1241,7 +1245,7 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTab
 
     // Fall back to a text editor if it's an unknown extension.
     if (pEditor == NULL) {
-        pEditor = dred_text_editor_create(pDred, pTabGroup, filePathAbsolute);
+        pEditor = dred_text_editor_create(pDred, pTabGroup, sizeX, sizeY, filePathAbsolute);
     }
 
     return pEditor;

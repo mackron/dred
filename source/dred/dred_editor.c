@@ -12,7 +12,7 @@ typedef struct
     bool isReadOnly;
 } dred_editor_data;
 
-dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, const char* type, const char* filePathAbsolute, size_t extraDataSize)
+dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, const char* type, float sizeX, float sizeY, const char* filePathAbsolute, size_t extraDataSize)
 {
     if (!dred_is_control_type_of_type(type, DRED_CONTROL_TYPE_EDITOR)) {
         dred_errorf(pDred, "[DEVELOPER ERROR] Attempting to create an editor that is not of an editor type (%s).", type);
@@ -23,6 +23,8 @@ dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, cons
     if (pEditor == NULL) {
         return NULL;
     }
+
+    dred_control_set_size(pEditor, sizeX, sizeY);
 
     dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
     assert(data != NULL);

@@ -251,6 +251,23 @@ void dred_tabgroup_refresh_styling(dred_tabgroup* pTabGroup)
     drgui_dirty(pTabGroup, drgui_get_local_rect(pTabGroup));
 }
 
+void dred_tabgroup_get_body_size(dred_tabgroup* pTabGroup, float* pSizeXOut, float* pSizeYOut)
+{
+    if (pSizeXOut) *pSizeXOut = 0;
+    if (pSizeYOut) *pSizeYOut = 0;
+
+    if (pTabGroup == NULL) {
+        return;
+    }
+
+    float parentSizeX;
+    float parentSizeY;
+    dred_control_get_size(pTabGroup, &parentSizeX, &parentSizeY);
+
+    if (pSizeXOut) *pSizeXOut = parentSizeX;
+    if (pSizeYOut) *pSizeYOut = parentSizeY - dred_tabgroup__get_tabbar_height(pTabGroup);
+}
+
 
 void dred_tabgroup_set_next_tabgroup(dred_tabgroup* pTabGroup, dred_tabgroup* pNextTabGroup)
 {

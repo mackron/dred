@@ -13,6 +13,9 @@ void dred_tabgroup_delete(dred_tabgroup* pTabGroup);
 // Refreshes the styling of the tab group.
 void dred_tabgroup_refresh_styling(dred_tabgroup* pTabGroup);
 
+// Calculates the size of the content area of the given tab group.
+void dred_tabgroup_get_body_size(dred_tabgroup* pTabGroup, float* pSizeXOut, float* pSizeYOut);
+
 
 // Sets the next tab group. This is just a simple setter.
 void dred_tabgroup_set_next_tabgroup(dred_tabgroup* pTabGroup, dred_tabgroup* pNextTabGroup);

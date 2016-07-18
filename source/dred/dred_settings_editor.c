@@ -527,7 +527,7 @@ bool dred_settings_editor__init_page__text_editor(dred_settings_editor* pSetting
 
 dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_control* pParent, const char* filePathAbsolute)
 {
-    dred_settings_editor* pSettingsEditor = dred_editor_create(pDred, pParent, DRED_CONTROL_TYPE_SETTINGS_EDITOR, filePathAbsolute, sizeof(dred_settings_editor_data));
+    dred_settings_editor* pSettingsEditor = dred_editor_create(pDred, pParent, DRED_CONTROL_TYPE_SETTINGS_EDITOR, 0, 0, filePathAbsolute, sizeof(dred_settings_editor_data));
     if (pSettingsEditor == NULL) {
         return NULL;
     }

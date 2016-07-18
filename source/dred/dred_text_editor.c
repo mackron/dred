@@ -213,9 +213,9 @@ bool dred_text_editor__on_reload(dred_text_editor* pTextEditor)
     return true;
 }
 
-dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pParent, const char* filePathAbsolute)
+dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pParent, float sizeX, float sizeY, const char* filePathAbsolute)
 {
-    dred_text_editor* pTextEditor = dred_editor_create(pDred, pParent, DRED_CONTROL_TYPE_TEXT_EDITOR, filePathAbsolute, sizeof(dred_text_editor_data));
+    dred_text_editor* pTextEditor = dred_editor_create(pDred, pParent, DRED_CONTROL_TYPE_TEXT_EDITOR, sizeX, sizeY, filePathAbsolute, sizeof(dred_text_editor_data));
     if (pTextEditor == NULL) {
         return NULL;
     }
@@ -229,10 +229,10 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
         return NULL;
     }
 
+    dred_control_set_size(data->pTextBox, sizeX, sizeY);
+
     data->textScale = 1;
-
     dred_text_editor_set_highlighter(pTextEditor, dred_get_language_by_file_path(pDred, filePathAbsolute));
-
 
     if (filePathAbsolute != NULL && filePathAbsolute[0] != '\0') {
         char* pFileData = dr_open_and_read_text_file(filePathAbsolute, NULL);
@@ -267,6 +267,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     if (pDred->config.textEditorEnableWordWrap) {
         dred_text_editor_enable_word_wrap(pTextEditor);
     }
+    
     
     return pTextEditor;
 }
