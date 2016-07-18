@@ -1701,7 +1701,11 @@ typedef struct
 
 void dred__init_print_font(dred_print_data* pPrintData)
 {
-    pPrintData->pFont = dr2d_create_font(pPrintData->pPaintContext, "Liberation Mono", (unsigned int)(10*pPrintData->scaleY), dr2d_font_weight_normal, dr2d_font_slant_none, 0, 0);
+    dred_font* pFont = pPrintData->pDred->config.pTextEditorFont;
+    dr2d_font_weight fontWeight = (dr2d_font_weight)pFont->desc.weight;
+    dr2d_font_slant fontSlant = (dr2d_font_slant)pFont->desc.slant;
+
+    pPrintData->pFont = dr2d_create_font(pPrintData->pPaintContext, pFont->desc.family, (unsigned int)(pFont->desc.size*pPrintData->scaleY), fontWeight, fontSlant, 0, 0);
     if (pPrintData->pFont == NULL) {
         return;
     }
@@ -2024,7 +2028,7 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
             pInfoOut->lastPage = 0;
         }
 
-        g_object_unref(pNewSettings);
+        //g_object_unref(pNewSettings);
     }
 
     g_object_unref(pSettings);
