@@ -1403,7 +1403,7 @@ bool drte_engine__first_segment(drte_engine* pEngine, drte_line_cache* pLineCach
     return drte_engine__next_segment(pEngine, pSegment);
 }
 
-bool drte_engine__first_segment_on_line(drte_engine* pEngine, drte_line_cache* pLineCache, size_t lineIndex, drte_segment* pSegment)
+bool drte_engine__first_segment_on_line(drte_engine* pEngine, drte_line_cache* pLineCache, size_t lineIndex, size_t iChar, drte_segment* pSegment)
 {
     if (pEngine == NULL || pEngine->textLength == 0 || pSegment == NULL) {
         return false;
@@ -1412,15 +1412,22 @@ bool drte_engine__first_segment_on_line(drte_engine* pEngine, drte_line_cache* p
     pSegment->pLineCache = pLineCache;
     pSegment->iLine = lineIndex;
     pSegment->iCursorLine = drte_engine_get_cursor_line(pEngine, pEngine->cursorCount-1);
-    pSegment->iCharBeg = drte_engine_get_line_first_character(pEngine, pLineCache, lineIndex);
-    pSegment->iCharEnd = pSegment->iCharBeg;
+    pSegment->iCharBeg = iChar;
+    pSegment->iCharEnd = iChar;
     pSegment->fgStyleSlot = pEngine->defaultStyleSlot;
     pSegment->bgStyleSlot = pEngine->defaultStyleSlot;
     pSegment->posX = 0;
     pSegment->width = 0;
     pSegment->isAtEnd = false;
     pSegment->isAtEndOfLine = false;
-    drte_engine_get_line_character_range(pEngine, pSegment->pLineCache, pSegment->iLine, &pSegment->iLineCharBeg, &pSegment->iLineCharEnd);
+
+    if (iChar == (size_t)-1) {
+        pSegment->iCharBeg = drte_engine_get_line_first_character(pEngine, pLineCache, lineIndex);
+        pSegment->iCharEnd = pSegment->iCharBeg;
+    }
+
+    pSegment->iLineCharBeg = pSegment->iCharBeg;
+    pSegment->iLineCharEnd = drte_engine_get_line_last_character(pEngine, pLineCache, lineIndex);
 
     return drte_engine__next_segment(pEngine, pSegment);
 }
@@ -2017,7 +2024,7 @@ void drte_engine_get_character_position(drte_engine* pEngine, drte_line_cache* p
     float posY = lineIndex * drte_engine_get_line_height(pEngine);
 
     drte_segment segment;
-    if (drte_engine__first_segment_on_line(pEngine, pLineCache, lineIndex, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine, pLineCache, lineIndex, (size_t)-1, &segment)) {
         do
         {
             if (characterIndex >= segment.iCharBeg && characterIndex < segment.iCharEnd) {
@@ -2073,7 +2080,7 @@ size_t drte_engine_get_character_by_point(drte_engine* pEngine, drte_line_cache*
     }
 
     drte_segment segment;
-    if (drte_engine__first_segment_on_line(pEngine, pLineCache, (size_t)iLine, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine, pLineCache, (size_t)iLine, (size_t)-1, &segment)) {
         do
         {
             if (inputPosXRelativeToText >= segment.posX && inputPosXRelativeToText < segment.posX + segment.width) {
@@ -2679,7 +2686,7 @@ bool drte_engine_move_cursor_to_point_relative_to_text(drte_engine* pEngine, siz
     }
 
     drte_segment segment;
-    if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, (size_t)iLine, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, (size_t)iLine, (size_t)-1, &segment)) {
         do
         {
             if (posXRelativeToText >= segment.posX && posXRelativeToText < segment.posX + segment.width) {
@@ -4538,7 +4545,7 @@ float drte_engine_get_visible_line_width(drte_engine* pEngine)
     float maxLineWidth = 0;
 
     drte_segment segment;
-    if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, iLineTop, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, iLineTop, (size_t)-1, &segment)) {
         size_t iLine = iLineTop;
         while (iLine <= iLineBottom) {
             float lineWidth = 0;
@@ -4583,7 +4590,7 @@ void drte_engine_measure_line(drte_engine* pEngine, size_t iLine, float* pWidthO
         float lineWidth = 0;
 
         drte_segment segment;
-        if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, iLine, &segment)) {
+        if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, iLine, (size_t)-1, &segment)) {
             do
             {
                 lineWidth += segment.width;
@@ -4731,7 +4738,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
     float linePosY = 0;
 
     drte_segment segment;
-    if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, iLineTop, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, iLineTop, (size_t)-1, &segment)) {
         size_t iLine = iLineTop;
         while (iLine <= iLineBottom) {
             float lineWidth = 0;
@@ -5375,52 +5382,75 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
             size_t iLineCharEnd;
             drte_engine_get_line_character_range(pEngine, pEngine->pUnwrappedLines, iLine, &iLineCharBeg, &iLineCharEnd);
 
-            size_t wordsOnLine = 0;
-            float linePosX = 0;
-
-            drte_word_iterator word;
-            if (drte_engine__first_word(pEngine, iLineCharBeg, iLineCharEnd, &word)) {
-                do
-                {
-                    // If the end of the word falls outside of the visible region, end the existing line and then start a new one.
-                    float charPosX;
-                    drte_engine_get_character_position(pEngine, pEngine->pUnwrappedLines, word.iCharEnd, &charPosX, NULL);
-
-                    if ((charPosX - linePosX) > pEngine->containerWidth) {
-                        // It needs wrapping.
-
-                        // End the current line...
-                        if (wordsOnLine > 0) {
-                            drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
-                            drte_engine_get_character_position(pEngine, pEngine->pUnwrappedLines, word.iCharBeg, &linePosX, NULL);
-                        } else {
-                            // It's a long word which spans multiple lines. The word itself needs to be subdivided.
-                            // TODO: Implement me.
-                        }
-
-                        // Begin a new line.
-                        wordsOnLine = 1;
-                        iLineCharBeg = word.iCharBeg;
-                    } else {
-                        wordsOnLine += 1;
-                    }
-                } while (drte_engine__next_word(pEngine, &word));
-
-                if (wordsOnLine > 0) {
+            if (iLineCharBeg < iLineCharEnd) {
+                float runningWidth = 0;
+                while (iLineCharBeg < iLineCharEnd) {
                     drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
+
+                    drte_segment segment;
+                    if (!drte_engine__first_segment_on_line(pEngine, pEngine->pUnwrappedLines, iLine, iLineCharBeg, &segment)) {
+                        break;
+                    }
+
+                    do
+                    {
+                        if ((runningWidth + segment.width) > pEngine->containerWidth) {
+                            float unused = 0;
+                            size_t iChar = iLineCharBeg;
+                            if (pEngine->onGetCursorPositionFromPoint) {
+                                pEngine->onGetCursorPositionFromPoint(pEngine, drte_engine__get_style_token(pEngine, segment.fgStyleSlot), pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg,
+                                    segment.width, pEngine->containerWidth, &unused, &iChar);
+                            }
+
+                            if (iChar == 0) {
+                                iChar = 1;  // Always make sure wrapping has at least one character.
+                            }
+
+
+                            size_t iWordCharBeg;
+                            size_t iWordCharEnd;
+                            if (!drte_engine_get_word_containing_character(pEngine, iLineCharBeg + iChar, &iWordCharBeg, &iWordCharEnd)) {
+                                iLineCharBeg = iWordCharEnd;
+                                runningWidth = 0;
+                                break;
+                            }
+
+                            if (iWordCharBeg < iLineCharBeg) {
+                                iWordCharBeg = iLineCharBeg;
+                            }
+
+                            if (iWordCharBeg == iLineCharBeg) {
+                                iWordCharBeg = iLineCharBeg + iChar;   // The word itself is longer than the container which means it needs to be split based on the exact character.
+                            }
+
+
+                            iLineCharBeg = iWordCharBeg;
+                            runningWidth = 0;
+                            break;
+                        } else {
+                            runningWidth += segment.width;
+                            iLineCharBeg = segment.iCharEnd;
+                        }
+                    } while (drte_engine__next_segment_on_line(pEngine, &segment));
                 }
             } else {
-                drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
+                drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);  // <-- Empty line.
             }
         }
     }
 
     // Cursors need to have their sticky positions refreshed.
-    for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
-        drte_engine_move_cursor_to_character(pEngine, iCursor, drte_engine_get_cursor_character(pEngine, iCursor));
-    }
+    drte_engine__begin_dirty(pEngine);
+    {
+        for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
+            drte_engine_move_cursor_to_character(pEngine, iCursor, drte_engine_get_cursor_character(pEngine, iCursor));
+        }
 
-    drte_engine__repaint(pEngine);
+        drte_engine__repaint(pEngine);
+    }
+    drte_engine__end_dirty(pEngine);
+
+    
 }
 #endif  //DR_TEXT_ENGINE_IMPLEMENTATION
 
