@@ -1063,6 +1063,10 @@ void* drte_stack_buffer_get_data_ptr(drte_stack_buffer* pStack, size_t offset)
 // Performs a full repaint of the entire visible region of the text engine.
 void drte_engine__repaint(drte_engine* pEngine);
 
+// Performs a full refresh of the text engine, including refreshing line wrapping and repaining.
+void drte_engine__refresh(drte_engine* pEngine);
+
+
 /// Helper for calculating the width of a tab.
 float drte_engine__get_tab_width(drte_engine* pEngine);
 
@@ -1801,7 +1805,7 @@ bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token sty
             }
         }
 
-        drte_engine__repaint(pEngine);
+        drte_engine__refresh(pEngine);
         return true;
     }
 
@@ -1840,7 +1844,7 @@ void drte_engine_set_default_style(drte_engine* pEngine, drte_style_token styleT
     }
 
     pEngine->defaultStyleSlot = styleSlot;
-    drte_engine__repaint(pEngine);
+    drte_engine__refresh(pEngine);
 }
 
 void drte_engine_set_selection_style(drte_engine* pEngine, drte_style_token styleToken)
@@ -1861,7 +1865,7 @@ void drte_engine_set_selection_style(drte_engine* pEngine, drte_style_token styl
     pEngine->selectionStyleSlot = styleSlot;
 
     if (drte_engine_is_anything_selected(pEngine)) {
-        drte_engine__repaint(pEngine);
+        drte_engine__refresh(pEngine);
     }
 }
 
@@ -1881,7 +1885,7 @@ void drte_engine_set_active_line_style(drte_engine* pEngine, drte_style_token st
     }
 
     pEngine->activeLineStyleSlot = styleSlot;
-    drte_engine__repaint(pEngine);
+    drte_engine__refresh(pEngine);
 }
 
 void drte_engine_set_cursor_style(drte_engine* pEngine, drte_style_token styleToken)
@@ -1900,7 +1904,7 @@ void drte_engine_set_cursor_style(drte_engine* pEngine, drte_style_token styleTo
     }
 
     pEngine->cursorStyleSlot = styleSlot;
-    drte_engine__repaint(pEngine);
+    drte_engine__refresh(pEngine);
 }
 
 void drte_engine_set_line_numbers_style(drte_engine* pEngine, drte_style_token styleToken)
@@ -1919,7 +1923,7 @@ void drte_engine_set_line_numbers_style(drte_engine* pEngine, drte_style_token s
     }
 
     pEngine->lineNumbersStyleSlot = styleSlot;
-    drte_engine__repaint(pEngine);
+    drte_engine__refresh(pEngine);
 }
 
 
@@ -1932,7 +1936,7 @@ void drte_engine_set_highlighter(drte_engine* pEngine, drte_engine_on_get_next_h
     pEngine->onGetNextHighlight = proc;
     pEngine->pHighlightUserData = pUserData;
 
-    drte_engine__repaint(pEngine);
+    drte_engine__refresh(pEngine);
 }
 
 
@@ -4963,6 +4967,12 @@ void drte_engine__repaint(drte_engine* pEngine)
 {
     assert(pEngine != NULL);
     drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+}
+
+void drte_engine__refresh(drte_engine* pEngine)
+{
+    assert(pEngine != NULL);
+    drte_engine__refresh_line_wrapping(pEngine);    // <-- This will redraw for us.
 }
 
 
