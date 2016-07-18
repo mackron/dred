@@ -4729,8 +4729,11 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                     // It's whitespace.
                     if (segment.iCharBeg == segment.iLineCharEnd) {
                         // TODO: Only do this if the character is selected.
-                        segment.width = pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
-                        lineWidth += segment.width;
+                        uint32_t cend = drte_engine_get_utf32(pEngine, segment.iCharEnd);
+                        if (cend == '\r' || cend == '\n') {
+                            segment.width = pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
+                            lineWidth += segment.width;
+                        }
                     }
 
                     drte_style_token bgStyleToken = drte_engine__get_style_token(pEngine, segment.bgStyleSlot);
