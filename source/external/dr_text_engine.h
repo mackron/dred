@@ -1654,15 +1654,41 @@ bool drte_line_cache_offset_lines_negative(drte_line_cache* pLineCache, size_t f
     return true;
 }
 
+
+size_t drte_line_cache_find_line_by_character__internal(drte_line_cache* pLineCache, size_t iChar, size_t iLineBeg, size_t iLineEnd)
+{
+    assert(pLineCache != NULL);
+    
+    if (iLineBeg+1 == iLineEnd || iChar >= pLineCache->pLines[iLineBeg] && iChar < pLineCache->pLines[iLineBeg+1]) {
+        return iLineBeg;    // It's on iLineBeg.
+    }
+
+    size_t iLineMid = iLineEnd - ((iLineEnd - iLineBeg)/2);
+    if (iChar >= pLineCache->pLines[iLineMid]) {
+        return drte_line_cache_find_line_by_character__internal(pLineCache, iChar, iLineMid, iLineEnd);
+    } else {
+        return drte_line_cache_find_line_by_character__internal(pLineCache, iChar, iLineBeg, iLineMid);
+    }
+}
+
 size_t drte_line_cache_find_line_by_character(drte_line_cache* pLineCache, size_t iChar)
 {
-    if (pLineCache == NULL) {
+    if (pLineCache == NULL || pLineCache->count <= 1) {
         return 0;
     }
 
+#if 1
+    if (iChar >= pLineCache->pLines[pLineCache->count-1]) {
+        return pLineCache->count-1;
+    }
+
+    return drte_line_cache_find_line_by_character__internal(pLineCache, iChar, 0, pLineCache->count-1); // <-- We've already checked the last line so start at the second-last line.
+#endif
+
+
     // TODO: Make this a binary search.
 
-#if 1
+#if 0
     // Linear search. Simple, but slow.
     size_t lineIndex = 0;
     for (size_t iLine = 0; iLine < pLineCache->count; ++iLine) {
@@ -2218,13 +2244,19 @@ void drte_engine_set_container_size(drte_engine* pEngine, float containerWidth, 
         return;
     }
 
+    bool hasWidthChanged = pEngine->containerWidth != containerWidth;
+    bool hasHeightChanged = pEngine->containerHeight != containerHeight;
+    if (!hasWidthChanged && !hasHeightChanged) {
+        return; // That size has not changed.
+    }
+
     pEngine->containerWidth  = containerWidth;
     pEngine->containerHeight = containerHeight;
 
-    if (pEngine->isWordWrapEnabled) {
+    if (pEngine->isWordWrapEnabled && hasWidthChanged) {    // <-- Word wrapping does not need to be refreshed if the width has not changed.
         drte_engine__refresh_line_wrapping(pEngine);
     } else {
-        drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+        drte_engine__repaint(pEngine);
     }
 }
 

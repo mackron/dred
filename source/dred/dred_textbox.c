@@ -1692,13 +1692,16 @@ void dred_textbox_on_size(dred_textbox* pTextBox, float newWidth, float newHeigh
     float containerWidth;
     float containerHeight;
     dred_textbox__calculate_text_engine_container_size(pTextBox, &containerWidth, &containerHeight);
-    drte_engine_set_container_size(pTB->pTL, containerWidth, containerHeight);
 
-    // Scrollbars need to be refreshed first.
-    dred_textbox__refresh_scrollbars(pTextBox);
+    if (containerWidth != newWidth || containerHeight != newHeight) {
+        drte_engine_set_container_size(pTB->pTL, containerWidth, containerHeight);
 
-    // Line numbers need to be refreshed.
-    dred_textbox__refresh_line_numbers(pTextBox);
+        // Scrollbars need to be refreshed first.
+        dred_textbox__refresh_scrollbars(pTextBox);
+
+        // Line numbers need to be refreshed.
+        dred_textbox__refresh_line_numbers(pTextBox);
+    }
 }
 
 void dred_textbox_on_mouse_move(dred_textbox* pTextBox, int relativeMousePosX, int relativeMousePosY, int stateFlags)
