@@ -1665,8 +1665,8 @@ bool drte_line_cache_offset_lines_negative(drte_line_cache* pLineCache, size_t f
 size_t drte_line_cache_find_line_by_character__internal(drte_line_cache* pLineCache, size_t iChar, size_t iLineBeg, size_t iLineEnd)
 {
     assert(pLineCache != NULL);
-    
-    if (iLineBeg+1 == iLineEnd || iChar >= pLineCache->pLines[iLineBeg] && iChar < pLineCache->pLines[iLineBeg+1]) {
+
+    if ((iLineBeg+1 == iLineEnd) || (iChar >= pLineCache->pLines[iLineBeg] && iChar < pLineCache->pLines[iLineBeg+1])) {
         return iLineBeg;    // It's on iLineBeg.
     }
 
@@ -4519,9 +4519,16 @@ size_t drte_engine_get_line_count_per_page(drte_engine* pEngine)
 
 size_t drte_engine_get_page_count(drte_engine* pEngine)
 {
-    size_t pageCount = drte_engine_get_line_count(pEngine) / drte_engine_get_line_count_per_page(pEngine);
+    size_t lineCount    = drte_engine_get_line_count(pEngine);
+    size_t linesPerPage = drte_engine_get_line_count_per_page(pEngine);
+
+    size_t pageCount = lineCount / linesPerPage;
     if (pageCount == 0) {
         pageCount = 1;  // Always at least one page.
+    }
+
+    if (lineCount % linesPerPage != 0) {
+        pageCount += 1;
     }
 
     return pageCount;
@@ -5399,30 +5406,27 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
                             size_t iChar = iLineCharBeg;
                             if (pEngine->onGetCursorPositionFromPoint) {
                                 pEngine->onGetCursorPositionFromPoint(pEngine, drte_engine__get_style_token(pEngine, segment.fgStyleSlot), pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg,
-                                    segment.width, pEngine->containerWidth, &unused, &iChar);
+                                    segment.width, pEngine->containerWidth - runningWidth, &unused, &iChar);
                             }
-
-                            if (iChar == 0) {
-                                iChar = 1;  // Always make sure wrapping has at least one character.
-                            }
-
 
                             size_t iWordCharBeg;
                             size_t iWordCharEnd;
                             if (!drte_engine_get_word_containing_character(pEngine, iLineCharBeg + iChar, &iWordCharBeg, &iWordCharEnd)) {
-                                iLineCharBeg = iWordCharEnd;
+                                iLineCharBeg = segment.iCharEnd;
                                 runningWidth = 0;
                                 break;
                             }
 
-                            if (iWordCharBeg < iLineCharBeg) {
-                                iWordCharBeg = iLineCharBeg;
+
+                            size_t iPrevLineChar = pEngine->pWrappedLines->pLines[pEngine->pWrappedLines->count-1];
+                            if (iWordCharBeg <= iPrevLineChar) {
+                                iWordCharBeg  = segment.iCharBeg + iChar;   // The word itself is longer than the container which means it needs to be split based on the exact character.
                             }
 
+                            // Always make sure wrapping has at least one character.
                             if (iWordCharBeg == iLineCharBeg) {
-                                iWordCharBeg = iLineCharBeg + iChar;   // The word itself is longer than the container which means it needs to be split based on the exact character.
+                                iWordCharBeg += 1;
                             }
-
 
                             iLineCharBeg = iWordCharBeg;
                             runningWidth = 0;
@@ -5450,7 +5454,7 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
     }
     drte_engine__end_dirty(pEngine);
 
-    
+
 }
 #endif  //DR_TEXT_ENGINE_IMPLEMENTATION
 
