@@ -1,9 +1,9 @@
 
 #define DR_IMPLEMENTATION
-#include "../../../dr_libs/dr.h"
+#include "../../../../dr_libs/dr.h"
 
 #define DR_PATH_IMPLEMENTATION
-#include "../../../dr_libs/dr_path.h"
+#include "../../../../dr_libs/dr_path.h"
 
 #define GB_STRING_IMPLEMENTATION
 #include "../../source/external/gb_string.h"
