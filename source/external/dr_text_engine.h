@@ -2695,13 +2695,13 @@ bool drte_engine_move_cursor_left(drte_engine* pEngine, size_t cursorIndex)
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    size_t iLine     = pEngine->pCursors[cursorIndex].iLine;
+    size_t iPrevLine = pEngine->pCursors[cursorIndex].iLine;
 
     // Line boundary.
-    if (iLine > 0) {
-        size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, iLine);
+    if (iPrevLine > 0) {
+        size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, iPrevLine);
         if (iLineCharBeg == iPrevChar) {
-            drte_engine_move_cursor_to_end_of_line_by_index(pEngine, cursorIndex, iLine-1);
+            drte_engine_move_cursor_to_end_of_line_by_index(pEngine, cursorIndex, iPrevLine-1);
             if (pEngine->pCursors[cursorIndex].iCharAbs == iPrevChar) {
                 pEngine->pCursors[cursorIndex].iCharAbs -= 1;
             }
@@ -2712,7 +2712,7 @@ bool drte_engine_move_cursor_left(drte_engine* pEngine, size_t cursorIndex)
         pEngine->pCursors[cursorIndex].iCharAbs -= 1;
     }
 
-    if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
+    if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs || iPrevLine != pEngine->pCursors[cursorIndex].iLine) {
         pEngine->pCursors[cursorIndex].iLine = drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs);
         drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
 
@@ -2736,13 +2736,13 @@ bool drte_engine_move_cursor_right(drte_engine* pEngine, size_t cursorIndex)
     }
 
     size_t iPrevChar = pEngine->pCursors[cursorIndex].iCharAbs;
-    size_t iLine     = pEngine->pCursors[cursorIndex].iLine;
+    size_t iPrevLine = pEngine->pCursors[cursorIndex].iLine;
 
     // Line boundary.
-    if (iLine+1 < drte_engine_get_line_count(pEngine)) {
-        size_t iLineCharEnd = drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, iLine);
+    if (iPrevLine+1 < drte_engine_get_line_count(pEngine)) {
+        size_t iLineCharEnd = drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, iPrevLine);
         if (iLineCharEnd == iPrevChar) {
-            drte_engine_move_cursor_to_start_of_line_by_index(pEngine, cursorIndex, iLine+1);
+            drte_engine_move_cursor_to_start_of_line_by_index(pEngine, cursorIndex, iPrevLine+1);
         } else {
             pEngine->pCursors[cursorIndex].iCharAbs += 1;
         }
@@ -2750,7 +2750,7 @@ bool drte_engine_move_cursor_right(drte_engine* pEngine, size_t cursorIndex)
         pEngine->pCursors[cursorIndex].iCharAbs += 1;
     }
 
-    if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs) {
+    if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs || iPrevLine != pEngine->pCursors[cursorIndex].iLine) {
         pEngine->pCursors[cursorIndex].iLine = drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs);
         drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
 
