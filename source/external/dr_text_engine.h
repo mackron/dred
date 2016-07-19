@@ -921,6 +921,75 @@ static drte_region drte_region_normalize(drte_region region)
     return drte_region_swap_characters(region);
 }
 
+// strcpy_s()
+static int drte__strcpy_s(char* dst, size_t dstSizeInBytes, const char* src)
+{
+#ifdef _MSC_VER
+    return strcpy_s(dst, dstSizeInBytes, src);
+#else
+    if (dst == 0) {
+        return EINVAL;
+    }
+    if (dstSizeInBytes == 0) {
+        return ERANGE;
+    }
+    if (src == 0) {
+        dst[0] = '\0';
+        return EINVAL;
+    }
+
+    size_t i;
+    for (i = 0; i < dstSizeInBytes && src[i] != '\0'; ++i) {
+        dst[i] = src[i];
+    }
+
+    if (i < dstSizeInBytes) {
+        dst[i] = '\0';
+        return 0;
+    }
+
+    dst[0] = '\0';
+    return ERANGE;
+#endif
+}
+
+// strncpy_s()
+int drte__strncpy_s(char* dst, size_t dstSizeInBytes, const char* src, size_t count)
+{
+#ifdef _MSC_VER
+    return strncpy_s(dst, dstSizeInBytes, src, count);
+#else
+    if (dst == 0) {
+        return EINVAL;
+    }
+    if (dstSizeInBytes == 0) {
+        return EINVAL;
+    }
+    if (src == 0) {
+        dst[0] = '\0';
+        return EINVAL;
+    }
+
+    size_t maxcount = count;
+    if (count == ((size_t)-1) || count >= dstSizeInBytes) {        // -1 = _TRUNCATE
+        maxcount = dstSizeInBytes - 1;
+    }
+
+    size_t i;
+    for (i = 0; i < maxcount && src[i] != '\0'; ++i) {
+        dst[i] = src[i];
+    }
+
+    if (src[i] == '\0' || i == count || count == ((size_t)-1)) {
+        dst[i] = '\0';
+        return 0;
+    }
+
+    dst[0] = '\0';
+    return ERANGE;
+#endif
+}
+
 
 
 //// Rect ////
@@ -2223,7 +2292,7 @@ size_t drte_engine_get_text(drte_engine* pEngine, char* textOut, size_t textOutS
     }
 
 
-    if (drgui__strcpy_s(textOut, textOutSize, (pEngine->text != NULL) ? pEngine->text : "") == 0) {
+    if (drte__strcpy_s(textOut, textOutSize, (pEngine->text != NULL) ? pEngine->text : "") == 0) {
         return pEngine->textLength;
     }
 
@@ -4023,7 +4092,7 @@ size_t drte_engine_get_selected_text(drte_engine* pEngine, char* textOut, size_t
     for (size_t iSelection = 0; iSelection < pEngine->selectionCount; ++iSelection) {
         drte_region region = drte_region_normalize(pEngine->pSelections[iSelection]);
         if (textOut != NULL) {
-            drgui__strncpy_s(textOut+length, textOutSize-length, pEngine->text+region.iCharBeg, (region.iCharEnd - region.iCharBeg));
+            drte__strncpy_s(textOut+length, textOutSize-length, pEngine->text+region.iCharBeg, (region.iCharEnd - region.iCharBeg));
         }
 
         length += (region.iCharEnd - region.iCharBeg);
