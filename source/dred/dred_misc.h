@@ -15,3 +15,17 @@ drgui_font_slant dred_font_slant_from_pango(PangoStyle slant);
 #endif
 
 drgui_color dred_parse_color(const char* color);
+
+
+
+// Type conversion
+
+static DRED_INLINE drgui_rect drte_rect_to_drgui(drte_rect rect)
+{
+    return drgui_make_rect(rect.left, rect.top, rect.right, rect.bottom);
+}
+
+static DRED_INLINE drte_rect drgui_rect_to_drte(drgui_rect rect)
+{
+    return drte_make_rect(rect.left, rect.top, rect.right, rect.bottom);
+}

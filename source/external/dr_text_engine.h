@@ -67,15 +67,24 @@ typedef struct
 } drte_style;
 
 
+typedef struct 
+{
+    float left;
+    float top;
+    float right;
+    float bottom;
+} drte_rect;
+
+
 typedef void   (* drte_engine_on_measure_string_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut);
 typedef void   (* drte_engine_on_get_cursor_position_from_point_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
 typedef void   (* drte_engine_on_get_cursor_position_from_char_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 typedef bool   (* drte_engine_on_get_next_highlight_proc)(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData);
 
 typedef void   (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData);
-typedef void   (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_style_token styleToken, drgui_rect rect, void* pPaintData);
+typedef void   (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_style_token styleToken, drte_rect rect, void* pPaintData);
 typedef void   (* drte_engine_on_cursor_move_proc)       (drte_engine* pEngine);
-typedef void   (* drte_engine_on_dirty_proc)             (drte_engine* pEngine, drgui_rect rect);
+typedef void   (* drte_engine_on_dirty_proc)             (drte_engine* pEngine, drte_rect rect);
 typedef void   (* drte_engine_on_text_changed_proc)      (drte_engine* pEngine);
 typedef void   (* drte_engine_on_undo_point_changed_proc)(drte_engine* pEngine, unsigned int iUndoPoint);
 typedef size_t (* drte_engine_on_get_undo_state_proc)    (drte_engine* pEngine, void* pDataOut);
@@ -323,7 +332,7 @@ struct drte_engine
     unsigned int dirtyCounter;
 
     /// The accumulated dirty rectangle. When dirtyCounter hits 0, this is the rectangle that's posted to the onDirty callback.
-    drgui_rect accumulatedDirtyRect;
+    drte_rect accumulatedDirtyRect;
 
 
 
@@ -510,7 +519,7 @@ size_t drte_engine_get_last_cursor(drte_engine* pEngine);
 void drte_engine_get_cursor_position(drte_engine* pEngine, size_t cursorIndex, float* pPosXOut, float* pPosYOut);
 
 /// Retrieves the rectangle of the cursor, relative to the container.
-drgui_rect drte_engine_get_cursor_rect(drte_engine* pEngine, size_t cursorIndex);
+drte_rect drte_engine_get_cursor_rect(drte_engine* pEngine, size_t cursorIndex);
 
 /// Retrieves the index of the line the cursor is currently sitting on.
 size_t drte_engine_get_cursor_line(drte_engine* pEngine, size_t cursorIndex);
@@ -818,7 +827,7 @@ void drte_engine_set_on_paint_rect(drte_engine* pEngine, drte_engine_on_paint_re
 ///     Typically a text engine will be painted to a GUI element. A pointer to an element can be passed to this function
 ///     which will be passed to the callback functions. This is purely for convenience and nothing is actually drawn to
 ///     the element outside of the callback functions.
-void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, void* pPaintData);
+void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData);
 
 
 /// Steps the given text engine by the given number of milliseconds.
@@ -910,6 +919,48 @@ static drte_region drte_region_normalize(drte_region region)
     }
 
     return drte_region_swap_characters(region);
+}
+
+
+
+//// Rect ////
+
+static DRTE_INLINE drte_rect drte_make_rect(float left, float top, float right, float bottom)
+{
+    drte_rect rect;
+    rect.left   = left;
+    rect.top    = top;
+    rect.right  = right;
+    rect.bottom = bottom;
+
+    return rect;
+}
+
+static DRTE_INLINE drte_rect drte_make_inside_out_rect()
+{
+    drte_rect rect;
+    rect.left   =  FLT_MAX;
+    rect.top    =  FLT_MAX;
+    rect.right  = -FLT_MAX;
+    rect.bottom = -FLT_MAX;
+
+    return rect;
+}
+
+static DRTE_INLINE drte_rect drte_rect_union(drte_rect rect0, drte_rect rect1)
+{
+    drte_rect result;
+    result.left   = (rect0.left   < rect1.left)   ? rect0.left   : rect1.left;
+    result.top    = (rect0.top    < rect1.top)    ? rect0.top    : rect1.top;
+    result.right  = (rect0.right  > rect1.right)  ? rect0.right  : rect1.right;
+    result.bottom = (rect0.bottom > rect1.bottom) ? rect0.bottom : rect1.bottom;
+
+    return result;
+}
+
+static DRTE_INLINE bool drte_rect_has_volume(drte_rect rect)
+{
+    return rect.right > rect.left && rect.bottom > rect.top;
 }
 
 
@@ -1051,14 +1102,14 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, const void* pUndoDataPt
 
 
 /// Retrieves a rectangle relative to the given text engine that's equal to the size of the container.
-drgui_rect drte_engine__local_rect(drte_engine* pEngine);
+drte_rect drte_engine__local_rect(drte_engine* pEngine);
 
 
 /// Called when a cursor moves.
 void drte_engine__on_cursor_move(drte_engine* pEngine, size_t cursorIndex);
 
 /// Called when the text engine needs to be redrawn.
-void drte_engine__on_dirty(drte_engine* pEngine, drgui_rect rect);
+void drte_engine__on_dirty(drte_engine* pEngine, drte_rect rect);
 
 /// Increments the counter. The counter is decremented with drte_engine__end_dirty(). Use this for batching redraws.
 void drte_engine__begin_dirty(drte_engine* pEngine);
@@ -1754,7 +1805,7 @@ drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
     pEngine->isCursorBlinkOn       = true;
     pEngine->isShowingCursor       = false;
     pEngine->isWordWrapEnabled     = false;
-    pEngine->accumulatedDirtyRect  = drgui_make_inside_out_rect();
+    pEngine->accumulatedDirtyRect  = drte_make_inside_out_rect();
     pEngine->pUserData             = pUserData;
 
     drte_stack_buffer_init(&pEngine->preparedUndoState);
@@ -2560,10 +2611,10 @@ void drte_engine_get_cursor_position(drte_engine* pEngine, size_t cursorIndex, f
     if (pPosYOut) *pPosYOut = posY + pEngine->innerOffsetY;
 }
 
-drgui_rect drte_engine_get_cursor_rect(drte_engine* pEngine, size_t cursorIndex)
+drte_rect drte_engine_get_cursor_rect(drte_engine* pEngine, size_t cursorIndex)
 {
     if (pEngine == NULL || pEngine->cursorCount <= cursorIndex) {
-        return drgui_make_rect(0, 0, 0, 0);
+        return drte_make_rect(0, 0, 0, 0);
     }
 
 
@@ -2571,7 +2622,7 @@ drgui_rect drte_engine_get_cursor_rect(drte_engine* pEngine, size_t cursorIndex)
     float cursorPosY;
     drte_engine_get_cursor_position(pEngine, cursorIndex, &cursorPosX, &cursorPosY);
 
-    return drgui_make_rect(cursorPosX, cursorPosY, cursorPosX + pEngine->cursorWidth, cursorPosY + drte_engine_get_line_height(pEngine));
+    return drte_make_rect(cursorPosX, cursorPosY, cursorPosX + pEngine->cursorWidth, cursorPosY + drte_engine_get_line_height(pEngine));
 }
 
 size_t drte_engine_get_cursor_line(drte_engine* pEngine, size_t cursorIndex)
@@ -4678,7 +4729,7 @@ void drte_engine_set_on_paint_rect(drte_engine* pEngine, drte_engine_on_paint_re
     pEngine->onPaintRect = proc;
 }
 
-void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, void* pPaintData)
+void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
 {
     if (pEngine == NULL || pEngine->onPaintText == NULL || pEngine->onPaintRect == NULL) {
         return;
@@ -4751,7 +4802,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, void* pPaintData)
 
                     drte_style_token bgStyleToken = drte_engine__get_style_token(pEngine, segment.bgStyleSlot);
                     if (pEngine->onPaintRect && bgStyleToken != 0) {
-                        pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pPaintData);
+                        pEngine->onPaintRect(pEngine, bgStyleToken, drte_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pPaintData);
                     }
                 } else {
                     // It's normal text.
@@ -4783,7 +4834,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, void* pPaintData)
                 }
 
                 if (pEngine->onPaintRect && bgStyleToken != 0) {
-                    pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(lineRight, linePosY, pEngine->containerWidth, linePosY + lineHeight), pPaintData);
+                    pEngine->onPaintRect(pEngine, bgStyleToken, drte_make_rect(lineRight, linePosY, pEngine->containerWidth, linePosY + lineHeight), pPaintData);
                 }
             }
 
@@ -4801,7 +4852,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, void* pPaintData)
         // Couldn't create a segment iterator. Likely means there is no text. Just draw a single blank line.
         drte_style_token bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
         if (pEngine->onPaintRect && bgStyleToken != 0) {
-            pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(linePosX, linePosY, pEngine->containerWidth, linePosY + lineHeight), pPaintData);
+            pEngine->onPaintRect(pEngine, bgStyleToken, drte_make_rect(linePosX, linePosY, pEngine->containerWidth, linePosY + lineHeight), pPaintData);
         }
     }
 
@@ -4817,7 +4868,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, void* pPaintData)
     // The rectangle region below the last line.
     if (linePosY < pEngine->containerHeight && pEngine->styles[pEngine->defaultStyleSlot].styleToken != 0) {
         // TODO: Only draw the intersection of the bottom rectangle with the invalid rectangle.
-        drgui_rect tailRect;
+        drte_rect tailRect;
         tailRect.left = 0;
         tailRect.top = (iLineBottom + 1) * drte_engine_get_line_height(pEngine) + pEngine->innerOffsetY;
         tailRect.right = pEngine->containerWidth;
@@ -4897,18 +4948,18 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
 
             if (fgStyleToken != 0 && bgStyleToken != 0) {
                 onPaintText(pEngine, fgStyleToken, bgStyleToken, iLineStr, strlen(iLineStr), textLeft, textTop, pPaintData);
-                onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, textLeft, lineBottom), pPaintData);
+                onPaintRect(pEngine, bgStyleToken, drte_make_rect(0, lineTop, textLeft, lineBottom), pPaintData);
 
                 // There could be a region above and below the text. This will happen if the line height of the line numbers is
                 // smaller than the main line height.
                 if (textHeight < lineHeight) {
-                    onPaintRect(pEngine, bgStyleToken, drgui_make_rect(textLeft, lineTop, lineNumbersWidth, textTop), pPaintData);
-                    onPaintRect(pEngine, bgStyleToken, drgui_make_rect(textLeft, textTop + textHeight, lineNumbersWidth, lineBottom), pPaintData);
+                    onPaintRect(pEngine, bgStyleToken, drte_make_rect(textLeft, lineTop, lineNumbersWidth, textTop), pPaintData);
+                    onPaintRect(pEngine, bgStyleToken, drte_make_rect(textLeft, textTop + textHeight, lineNumbersWidth, lineBottom), pPaintData);
                 }
             }
         } else {
             if (fgStyleToken != 0 && bgStyleToken != 0) {
-                onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, lineNumbersWidth, lineBottom), pPaintData);
+                onPaintRect(pEngine, bgStyleToken, drte_make_rect(0, lineTop, lineNumbersWidth, lineBottom), pPaintData);
             }
         }
 
@@ -4917,7 +4968,7 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
 
     // The region below the lines.
     if (lineTop < pEngine->containerHeight && bgStyleToken != 0) {
-        onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, lineNumbersWidth, lineNumbersHeight), pPaintData);
+        onPaintRect(pEngine, bgStyleToken, drte_make_rect(0, lineTop, lineNumbersWidth, lineNumbersHeight), pPaintData);
     }
 }
 
@@ -5274,13 +5325,13 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, const void* pUndoDataPt
 }
 
 
-drgui_rect drte_engine__local_rect(drte_engine* pEngine)
+drte_rect drte_engine__local_rect(drte_engine* pEngine)
 {
     if (pEngine == NULL) {
-        return drgui_make_rect(0, 0, 0, 0);
+        return drte_make_rect(0, 0, 0, 0);
     }
 
-    return drgui_make_rect(0, 0, pEngine->containerWidth, pEngine->containerHeight);
+    return drte_make_rect(0, 0, pEngine->containerWidth, pEngine->containerHeight);
 }
 
 
@@ -5301,11 +5352,11 @@ void drte_engine__on_cursor_move(drte_engine* pEngine, size_t cursorIndex)
     drte_engine__on_dirty(pEngine, drte_engine_get_cursor_rect(pEngine, cursorIndex));
 }
 
-void drte_engine__on_dirty(drte_engine* pEngine, drgui_rect rect)
+void drte_engine__on_dirty(drte_engine* pEngine, drte_rect rect)
 {
     drte_engine__begin_dirty(pEngine);
     {
-        pEngine->accumulatedDirtyRect = drgui_rect_union(pEngine->accumulatedDirtyRect, rect);
+        pEngine->accumulatedDirtyRect = drte_rect_union(pEngine->accumulatedDirtyRect, rect);
     }
     drte_engine__end_dirty(pEngine);
 }
@@ -5330,11 +5381,11 @@ void drte_engine__end_dirty(drte_engine* pEngine)
     pEngine->dirtyCounter -= 1;
 
     if (pEngine->dirtyCounter == 0) {
-        if (pEngine->onDirty && drgui_rect_has_volume(pEngine->accumulatedDirtyRect)) {
+        if (pEngine->onDirty && drte_rect_has_volume(pEngine->accumulatedDirtyRect)) {
             pEngine->onDirty(pEngine, pEngine->accumulatedDirtyRect);
         }
 
-        pEngine->accumulatedDirtyRect = drgui_make_inside_out_rect();
+        pEngine->accumulatedDirtyRect = drte_make_inside_out_rect();
     }
 }
 

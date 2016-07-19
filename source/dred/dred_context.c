@@ -1727,7 +1727,7 @@ void dred__uninit_print_font(dred_print_data* pPrintData)
     dr2d_delete_font(pPrintData->pFont);
 }
 
-void dred__on_paint_rect_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, drgui_rect rect, void* pPaintData)
+void dred__on_paint_rect_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, drte_rect rect, void* pPaintData)
 {
     (void)pTextEngine;
     (void)styleToken;
@@ -1778,7 +1778,7 @@ void dred__print_page(dred_print_data* pPrintData, size_t iPage)
         drte_engine_set_inner_offset_y(pPrintData->pTextEngine, -(iPage * drte_engine_get_line_height(pPrintData->pTextEngine) * drte_engine_get_line_count_per_page(pPrintData->pTextEngine)));
 
         // Paint.
-        drte_engine_paint(pPrintData->pTextEngine, drgui_make_rect(0, 0, drte_engine_get_container_width(pPrintData->pTextEngine), drte_engine_get_container_height(pPrintData->pTextEngine)), pPrintData);
+        drte_engine_paint(pPrintData->pTextEngine, drte_make_rect(0, 0, drte_engine_get_container_width(pPrintData->pTextEngine), drte_engine_get_container_height(pPrintData->pTextEngine)), pPrintData);
     }
     dr2d_end_draw(pPrintData->pPaintSurface);
 }
