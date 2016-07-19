@@ -3,39 +3,6 @@
 //
 // David Reid - mackron@gmail.com
 
-// REQUIREMENTS
-//
-// - Full UTF-8, UTF-16 (LE and BE) and UTF-32 support
-//   - UTF-8 internally, high-level conversion routines at a higher level for UTF-16 and UTF-32.
-// - Syntax highlighting
-//   - Must be able to plug-in custom highlighters.
-// - Lexing
-//   - This will be used to identify words for doing word-based movement and finding the word under a point.
-// - Efficient editing of huge files
-//   - Reallocating and moving around a monolithic buffer is way too slow.
-//   - Need a way to easily split the file into chunks.
-//   - Need to easily pick out individual characters by their index.
-//   - Need a very simple high-level API while still maintaining good performance characteristics.
-// - Notifications for when a region have become invalid and needs redrawing
-// - Line numbers
-// - Getting words under a specific point in the text region.
-//   - Useful for right-click context menus and whatnot (go to definition, etc.)
-// - Multi-line editing and selection
-//   - Box selection, just like MSVC's ALT+LMB selection.
-// - Carets
-//   - Block caret for insert mode.
-// - Overwrite mode
-// - Inserting and removing text and any position, not just where the cursor is placed.
-//   - All editing should be done like this.
-//   - Will enable multi-line editing.
-// - Word wrap
-
-// PAST ISSUES
-
-
-// BRAINSTORMING
-
-
 // USAGE
 //
 // dr_text_engine is a single-file library. To use it, do something like the following in one .c file.
@@ -5457,6 +5424,30 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
 
 }
 #endif  //DR_TEXT_ENGINE_IMPLEMENTATION
+
+
+// REQUIREMENTS
+//
+// - Full UTF-8, UTF-16 (LE and BE) and UTF-32 support
+//   - UTF-8 internally, high-level conversion routines at a higher level for UTF-16 and UTF-32.
+// - Syntax highlighting
+//   - Must be able to plug-in custom highlighters.
+// - Efficient editing of huge files
+//   - Reallocating and moving around a monolithic buffer is way too slow.
+//   - Need a way to easily split the file into chunks.
+//   - Need to easily pick out individual characters by their index.
+//   - Need a very simple high-level API while still maintaining good performance characteristics.
+// - Notifications for when a region have become invalid and needs redrawing
+// - Getting words under a specific point in the text region.
+//   - Useful for right-click context menus and whatnot (go to definition, etc.)
+// - Multi-line editing and selection
+//   - Box selection, just like MSVC's ALT+LMB selection.
+// - Carets
+//   - Block caret for insert mode.
+// - Overwrite mode
+//
+//
+// BRAINSTORMING
 
 
 /*
