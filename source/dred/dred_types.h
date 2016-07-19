@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 typedef struct dred_context dred_context;
 typedef struct dred_window dred_window;

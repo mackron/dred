@@ -1,3 +1,5 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
+
 // This file contains all of the highlighters for every supported language.
 
 typedef enum

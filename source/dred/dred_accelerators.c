@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 
 bool dred_accelerator_table_init(dred_accelerator_table* pTable)

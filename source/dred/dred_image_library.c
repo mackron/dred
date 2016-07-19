@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 
 bool dred_image_library_init__stock_images(dred_image_library* pLibrary)

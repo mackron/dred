@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 #ifndef DRED_NO_IMAGE_EDITOR
 

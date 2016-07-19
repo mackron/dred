@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 
 // This flag is posted on on_hide events when a popup window is automatically hidden as a result of the user clicking

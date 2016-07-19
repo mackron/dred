@@ -1,3 +1,5 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
+
 // Controls are the base GUI element used in dred. Whenever a GUI element is required, it'll be based
 // off this object.
 //

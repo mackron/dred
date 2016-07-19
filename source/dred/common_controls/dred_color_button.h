@@ -1,3 +1,5 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
+
 // The checkbox control is a box with a check mark and a label. The size of the box is based on the size of the font.
 
 #define DRED_CONTROL_TYPE_COLOR_BUTTON   "dred.common.colorbutton"

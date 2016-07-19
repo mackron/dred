@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 bool dred_alias_map_init(dred_alias_map* pMap)
 {

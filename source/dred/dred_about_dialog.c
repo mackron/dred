@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 // TODO: Move this to autogen.
 static const struct {

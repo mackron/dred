@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 #define DRED_VERSION_MAJOR          0
 #define DRED_VERSION_MINOR          2

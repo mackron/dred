@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 dred_font* dred_font_library__create_font_for_real(dred_font_library* pLibrary, dred_font_desc* pDesc)
 {

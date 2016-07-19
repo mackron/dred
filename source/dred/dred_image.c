@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 void dred_image__delete_subimage_by_index(dred_image* pImage, size_t index)
 {

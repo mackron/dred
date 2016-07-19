@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 drgui_font* dred_font__find_subfont_by_scaled_size(dred_font* pFont, unsigned int scaledSize, size_t* pIndexOut)
 {

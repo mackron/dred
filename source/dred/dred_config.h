@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 // All config variables are defined in the section below. The pre-build tool will look at these variables and construct the main
 // config struct based on their names and types.

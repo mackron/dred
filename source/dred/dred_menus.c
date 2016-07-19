@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
 {

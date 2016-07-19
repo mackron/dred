@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 bool dred_shortcut_table_init(dred_shortcut_table* pTable)
 {

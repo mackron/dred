@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 float dred__get_cmd_bar_height(dred_context* pDred)
 {

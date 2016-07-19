@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 // Stock shortcut names.
 #define DRED_SHORTCUT_NAME_NEW          "New"

@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 // A cursor in a textbox is tied to either 1 or 0 selection regions. When a cursor is not associated with a selection, the
 // index of the selection region is set to -1.

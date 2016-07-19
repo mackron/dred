@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 // dred_get_config_folder_path()
 bool dred_get_config_folder_path(char* pathOut, size_t pathOutSize);

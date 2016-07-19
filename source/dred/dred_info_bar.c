@@ -1,3 +1,4 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
 
 #define DRED_INFO_BAR_TYPE_NONE             0
 #define DRED_INFO_BAR_TYPE_TEXT_EDITOR      1

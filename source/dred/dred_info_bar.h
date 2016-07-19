@@ -1,3 +1,5 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
+
 // The info bar contains information about a specific type of control. It is contextual depending on the type.
 
 #define DRED_CONTROL_TYPE_INFO_BAR   "dred.infobar"

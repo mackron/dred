@@ -1,3 +1,5 @@
+// Copyright (C) 2016 David Reid. See included LICENSE file.
+
 // The command bar is the control that sits along the bottom of the main window.
 
 #define DRED_CONTROL_TYPE_CMDBAR   "dred.cmdbar"
