@@ -1727,21 +1727,19 @@ void dred__uninit_print_font(dred_print_data* pPrintData)
     dr2d_delete_font(pPrintData->pFont);
 }
 
-void dred__on_paint_rect_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, drgui_rect rect, dred_textbox* pTextBox, void* pPaintData)
+void dred__on_paint_rect_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, drgui_rect rect, void* pPaintData)
 {
     (void)pTextEngine;
     (void)styleToken;
     (void)rect;
-    (void)pTextBox;
     (void)pPaintData;
 }
 
-void dred__on_paint_text_for_printing(drte_engine* pTextEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, dred_textbox* pTextBox, void* pPaintData)
+void dred__on_paint_text_for_printing(drte_engine* pTextEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
 {
     (void)pTextEngine;
     (void)styleTokenFG;
     (void)styleTokenBG;
-    (void)pTextBox;
 
     dred_print_data* pPrintData = pPaintData;
     assert(pPrintData != NULL);
@@ -1780,7 +1778,7 @@ void dred__print_page(dred_print_data* pPrintData, size_t iPage)
         drte_engine_set_inner_offset_y(pPrintData->pTextEngine, -(iPage * drte_engine_get_line_height(pPrintData->pTextEngine) * drte_engine_get_line_count_per_page(pPrintData->pTextEngine)));
 
         // Paint.
-        drte_engine_paint(pPrintData->pTextEngine, drgui_make_rect(0, 0, drte_engine_get_container_width(pPrintData->pTextEngine), drte_engine_get_container_height(pPrintData->pTextEngine)), NULL, pPrintData);
+        drte_engine_paint(pPrintData->pTextEngine, drgui_make_rect(0, 0, drte_engine_get_container_width(pPrintData->pTextEngine), drte_engine_get_container_height(pPrintData->pTextEngine)), pPrintData);
     }
     dr2d_end_draw(pPrintData->pPaintSurface);
 }

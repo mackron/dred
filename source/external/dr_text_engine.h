@@ -72,8 +72,8 @@ typedef void   (* drte_engine_on_get_cursor_position_from_point_proc)(drte_engin
 typedef void   (* drte_engine_on_get_cursor_position_from_char_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 typedef bool   (* drte_engine_on_get_next_highlight_proc)(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData);
 
-typedef void   (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, drgui_element* pElement, void* pPaintData);
-typedef void   (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_style_token styleToken, drgui_rect rect, drgui_element* pElement, void* pPaintData);
+typedef void   (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData);
+typedef void   (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_style_token styleToken, drgui_rect rect, void* pPaintData);
 typedef void   (* drte_engine_on_cursor_move_proc)       (drte_engine* pEngine);
 typedef void   (* drte_engine_on_dirty_proc)             (drte_engine* pEngine, drgui_rect rect);
 typedef void   (* drte_engine_on_text_changed_proc)      (drte_engine* pEngine);
@@ -818,7 +818,7 @@ void drte_engine_set_on_paint_rect(drte_engine* pEngine, drte_engine_on_paint_re
 ///     Typically a text engine will be painted to a GUI element. A pointer to an element can be passed to this function
 ///     which will be passed to the callback functions. This is purely for convenience and nothing is actually drawn to
 ///     the element outside of the callback functions.
-void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pElement, void* pPaintData);
+void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, void* pPaintData);
 
 
 /// Steps the given text engine by the given number of milliseconds.
@@ -829,7 +829,7 @@ void drte_engine_step(drte_engine* pEngine, unsigned int milliseconds);
 
 
 /// Calls the given painting callbacks for the line numbers of the given text engine.
-void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth, float lineNumbersHeight, drte_engine_on_paint_text_proc onPaintText, drte_engine_on_paint_rect_proc onPaintRect, drgui_element* pElement, void* pPaintData);
+void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth, float lineNumbersHeight, drte_engine_on_paint_text_proc onPaintText, drte_engine_on_paint_rect_proc onPaintRect, void* pPaintData);
 
 
 /// Finds the given string starting from the cursor and then looping back.
@@ -4678,7 +4678,7 @@ void drte_engine_set_on_paint_rect(drte_engine* pEngine, drte_engine_on_paint_re
     pEngine->onPaintRect = proc;
 }
 
-void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pElement, void* pPaintData)
+void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, void* pPaintData)
 {
     if (pEngine == NULL || pEngine->onPaintText == NULL || pEngine->onPaintRect == NULL) {
         return;
@@ -4751,7 +4751,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
 
                     drte_style_token bgStyleToken = drte_engine__get_style_token(pEngine, segment.bgStyleSlot);
                     if (pEngine->onPaintRect && bgStyleToken != 0) {
-                        pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pElement, pPaintData);
+                        pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pPaintData);
                     }
                 } else {
                     // It's normal text.
@@ -4764,7 +4764,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                     drte_style_token fgStyleToken = drte_engine__get_style_token(pEngine, segment.fgStyleSlot);
                     drte_style_token bgStyleToken = drte_engine__get_style_token(pEngine, segment.bgStyleSlot);
                     if (pEngine->onPaintText && fgStyleToken != 0 && bgStyleToken != 0) {
-                        pEngine->onPaintText(pEngine, fgStyleToken, bgStyleToken, text, textLength, linePosX + segment.posX, linePosY, pElement, pPaintData);
+                        pEngine->onPaintText(pEngine, fgStyleToken, bgStyleToken, text, textLength, linePosX + segment.posX, linePosY, pPaintData);
                     }
                 }
 
@@ -4783,7 +4783,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
                 }
 
                 if (pEngine->onPaintRect && bgStyleToken != 0) {
-                    pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(lineRight, linePosY, pEngine->containerWidth, linePosY + lineHeight), pElement, pPaintData);
+                    pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(lineRight, linePosY, pEngine->containerWidth, linePosY + lineHeight), pPaintData);
                 }
             }
 
@@ -4801,7 +4801,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
         // Couldn't create a segment iterator. Likely means there is no text. Just draw a single blank line.
         drte_style_token bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
         if (pEngine->onPaintRect && bgStyleToken != 0) {
-            pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(linePosX, linePosY, pEngine->containerWidth, linePosY + lineHeight), pElement, pPaintData);
+            pEngine->onPaintRect(pEngine, bgStyleToken, drgui_make_rect(linePosX, linePosY, pEngine->containerWidth, linePosY + lineHeight), pPaintData);
         }
     }
 
@@ -4809,7 +4809,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
     // Cursors.
     if (pEngine->isShowingCursor && pEngine->isCursorBlinkOn && pEngine->styles[pEngine->cursorStyleSlot].styleToken != 0) {
         for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
-            pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->cursorStyleSlot].styleToken, drte_engine_get_cursor_rect(pEngine, iCursor), pElement, pPaintData);
+            pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->cursorStyleSlot].styleToken, drte_engine_get_cursor_rect(pEngine, iCursor), pPaintData);
         }
     }
 
@@ -4822,7 +4822,7 @@ void drte_engine_paint(drte_engine* pEngine, drgui_rect rect, drgui_element* pEl
         tailRect.top = (iLineBottom + 1) * drte_engine_get_line_height(pEngine) + pEngine->innerOffsetY;
         tailRect.right = pEngine->containerWidth;
         tailRect.bottom = pEngine->containerHeight;
-        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, tailRect /*drgui_rect_intersection(tailRect, rect)*/, pElement, pPaintData);
+        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, tailRect, pPaintData);
     }
 }
 
@@ -4852,7 +4852,7 @@ void drte_engine_step(drte_engine* pEngine, unsigned int milliseconds)
 
 
 
-void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth, float lineNumbersHeight, drte_engine_on_paint_text_proc onPaintText, drte_engine_on_paint_rect_proc onPaintRect, drgui_element* pElement, void* pPaintData)
+void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth, float lineNumbersHeight, drte_engine_on_paint_text_proc onPaintText, drte_engine_on_paint_rect_proc onPaintRect, void* pPaintData)
 {
     if (pEngine == NULL || onPaintText == NULL || onPaintRect == NULL) {
         return;
@@ -4896,19 +4896,19 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
             float textTop  = lineTop + (lineHeight - textHeight) / 2;
 
             if (fgStyleToken != 0 && bgStyleToken != 0) {
-                onPaintText(pEngine, fgStyleToken, bgStyleToken, iLineStr, strlen(iLineStr), textLeft, textTop, pElement, pPaintData);
-                onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, textLeft, lineBottom), pElement, pPaintData);
+                onPaintText(pEngine, fgStyleToken, bgStyleToken, iLineStr, strlen(iLineStr), textLeft, textTop, pPaintData);
+                onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, textLeft, lineBottom), pPaintData);
 
                 // There could be a region above and below the text. This will happen if the line height of the line numbers is
                 // smaller than the main line height.
                 if (textHeight < lineHeight) {
-                    onPaintRect(pEngine, bgStyleToken, drgui_make_rect(textLeft, lineTop, lineNumbersWidth, textTop), pElement, pPaintData);
-                    onPaintRect(pEngine, bgStyleToken, drgui_make_rect(textLeft, textTop + textHeight, lineNumbersWidth, lineBottom), pElement, pPaintData);
+                    onPaintRect(pEngine, bgStyleToken, drgui_make_rect(textLeft, lineTop, lineNumbersWidth, textTop), pPaintData);
+                    onPaintRect(pEngine, bgStyleToken, drgui_make_rect(textLeft, textTop + textHeight, lineNumbersWidth, lineBottom), pPaintData);
                 }
             }
         } else {
             if (fgStyleToken != 0 && bgStyleToken != 0) {
-                onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, lineNumbersWidth, lineBottom), pElement, pPaintData);
+                onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, lineNumbersWidth, lineBottom), pPaintData);
             }
         }
 
@@ -4917,7 +4917,7 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
 
     // The region below the lines.
     if (lineTop < pEngine->containerHeight && bgStyleToken != 0) {
-        onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, lineNumbersWidth, lineNumbersHeight), pElement, pPaintData);
+        onPaintRect(pEngine, bgStyleToken, drgui_make_rect(0, lineTop, lineNumbersWidth, lineNumbersHeight), pPaintData);
     }
 }
 
