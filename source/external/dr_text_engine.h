@@ -31,6 +31,7 @@ extern "C" {
 #endif
 
 typedef struct drte_engine drte_engine;
+typedef struct drte_view drte_view;
 typedef uintptr_t drte_style_token;
 
 typedef enum
@@ -155,6 +156,19 @@ typedef struct
 	size_t count;
 } drte_line_cache;
 
+struct drte_view
+{
+    // A pointer to the engine that owns this view.
+    drte_engine* pEngine;
+
+    // The size of the container of the view.
+    float sizeX;
+    float sizeY;
+
+    // The inner offset of the view. This is used for doing scrolling.
+    float innerOffsetX;
+    float innerOffsetY;
+};
 
 struct drte_engine
 {
@@ -346,6 +360,7 @@ drte_engine* drte_engine_create(void* pUserData);
 
 /// Deletes the given text engine.
 void drte_engine_delete(drte_engine* pEngine);
+
 
 
 // Registers a style token.
@@ -846,6 +861,39 @@ bool drte_engine_find_next(drte_engine* pEngine, const char* text, size_t* pSele
 
 /// Finds the given string starting from the cursor, but does not loop back.
 bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut);
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Views
+//
+///////////////////////////////////////////////////////////////////////////////
+
+// Creates a view for the given text engine.
+drte_view* drte_view_create(drte_engine* pEngine);
+
+// Deletes the given view.
+void drte_view_delete(drte_view* pView);
+
+
+// Sets the size of the container of the view.
+void drte_view_set_size(drte_view* pView, float sizeX, float sizeY);
+
+// Retrieves the size of the view.
+float drte_view_get_size_x(drte_view* pView);
+float drte_view_get_size_y(drte_view* pView);
+
+
+// Sets the inner offset of the view.
+void drte_view_set_inner_offset(drte_view* pView, float innerOffsetX, float innerOffsetY);
+
+// Retrieves the size of the view.
+float drte_view_get_inner_offset_x(drte_view* pView);
+float drte_view_get_inner_offset_y(drte_view* pView);
+
 
 
 #ifdef __cplusplus
@@ -5536,9 +5584,99 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
         drte_engine__repaint(pEngine);
     }
     drte_engine__end_dirty(pEngine);
-
-
 }
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Views
+//
+///////////////////////////////////////////////////////////////////////////////
+
+drte_view* drte_view_create(drte_engine* pEngine)
+{
+    if (pEngine == NULL) {
+        return NULL;
+    }
+
+    drte_view* pView = (drte_view*)calloc(1, sizeof(*pView));
+    if (pView == NULL) {
+        return NULL;
+    }
+
+    pView->pEngine = pEngine;
+
+    return pView;
+}
+
+void drte_view_delete(drte_view* pView)
+{
+    if (pView == NULL) {
+        return;
+    }
+
+    free(pView);
+}
+
+
+void drte_view_set_size(drte_view* pView, float sizeX, float sizeY)
+{
+    if (pView == NULL) {
+        return;
+    }
+
+    pView->sizeX = sizeX;
+    pView->sizeY = sizeY;
+}
+
+float drte_view_get_size_x(drte_view* pView)
+{
+    if (pView == NULL) {
+        return 0;
+    }
+
+    return pView->sizeX;
+}
+float drte_view_get_size_y(drte_view* pView)
+{
+    if (pView == NULL) {
+        return 0;
+    }
+
+    return pView->sizeY;
+}
+
+
+void drte_view_set_inner_offset(drte_view* pView, float innerOffsetX, float innerOffsetY)
+{
+    if (pView == NULL) {
+        return;
+    }
+
+    pView->innerOffsetX = innerOffsetX;
+    pView->innerOffsetY = innerOffsetY;
+}
+
+float drte_view_get_inner_offset_x(drte_view* pView)
+{
+    if (pView == NULL) {
+        return 0;
+    }
+
+    return pView->innerOffsetX;
+}
+float drte_view_get_inner_offset_y(drte_view* pView)
+{
+    if (pView == NULL) {
+        return 0;
+    }
+
+    return pView->innerOffsetY;
+}
+
+
 #endif  //DR_TEXT_ENGINE_IMPLEMENTATION
 
 
