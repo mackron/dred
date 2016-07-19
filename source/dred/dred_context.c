@@ -1858,7 +1858,7 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
 
     // When printing a text editor we need to use a different text engine for layout because the dimensions are different
     // and we need to force word wrap.
-    printData.pTextEngine = drte_engine_create(pDred->pGUI, &printData);
+    printData.pTextEngine = drte_engine_create(&printData);
     if (printData.pTextEngine == NULL) {
         return false;
     }

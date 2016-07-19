@@ -342,7 +342,7 @@ struct drte_engine
 
 
 /// Creates a new text engine object.
-drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData);
+drte_engine* drte_engine_create(void* pUserData);
 
 /// Deletes the given text engine.
 void drte_engine_delete(drte_engine* pEngine);
@@ -1766,12 +1766,8 @@ void drte_engine__push_text_change_to_prepared_undo_state(drte_engine* pEngine, 
 }
 
 
-drte_engine* drte_engine_create(drgui_context* pContext, void* pUserData)
+drte_engine* drte_engine_create(void* pUserData)
 {
-    if (pContext == NULL) {
-        return NULL;
-    }
-
     drte_engine* pEngine = (drte_engine*)calloc(1, sizeof(*pEngine));
     if (pEngine == NULL) {
         return NULL;

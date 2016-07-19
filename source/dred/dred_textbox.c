@@ -482,7 +482,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     drgui_set_on_mouse_button_up(pTB->pLineNumbers, dred_textbox__on_mouse_button_up_line_numbers);
     drgui_set_on_paint(pTB->pLineNumbers, dred_textbox__on_paint_line_numbers);
 
-    pTB->pTL = drte_engine_create(pDred->pGUI, pTextBox);
+    pTB->pTL = drte_engine_create(pTextBox);
     if (pTB->pTL == NULL) {
         drgui_delete_element(pTextBox);
         return NULL;
