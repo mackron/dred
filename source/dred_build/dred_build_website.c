@@ -65,10 +65,18 @@ char* dred_build__generate_website__on_resolve_value(drwg_context* pWebgen, cons
     return NULL;
 }
 
-void dred_build__generate_website__on_free_value(drwg_context* pWebgen, char* valueReturnedByOnResolveValue)
+void dred_build__generate_website__on_free_value(drwg_context* pWebgen, char* valueReturnedByOnResolveValue, void* pUserData)
 {
     (void)pWebgen;
+    (void)pUserData;
     drwg_free_string(valueReturnedByOnResolveValue);
+}
+
+void dred_build__generate_website__on_error(drwg_context* pWebgen, const char* message, void* pUserData)
+{
+    (void)pWebgen;
+    (void)pUserData;
+    printf("%s\n", message);
 }
 
 bool dred_build__generate_website(command_var* pCommandVars, config_var* pConfigVars)
@@ -77,8 +85,11 @@ bool dred_build__generate_website(command_var* pCommandVars, config_var* pConfig
     context.pCommandVars = pCommandVars;
     context.pConfigVars = pConfigVars;
 
+    char errorStr[4096];
+
     drwg_context webgen;
-    if (!drwg_context_init(&webgen, "../../../source/website", "../../../build/website")) {
+    if (!drwg_context_init(&webgen, "../../../source/website", "../../../build/website", errorStr, sizeof(errorStr))) {
+        printf("%s\n", errorStr);
         return false;
     }
 
