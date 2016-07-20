@@ -15,6 +15,11 @@
 #define NANOSVGRAST_IMPLEMENTATION
 #include "../external/nanosvgrast.h"
 
+#define DR_WEBGEN_IMPLEMENTATION
+#include "../../../dr_webgen/dr_webgen.h"
+
+#include "dred_build_website.c"
+
 #include <stdio.h>
 #include <assert.h>
 
@@ -911,6 +916,11 @@ int main(int argc, char** argv)
 
     fclose(pFileOut);
     fclose(pFileOutH);
+
+
+    // Website.
+    dred_build__generate_website();
+
 
     return 0;
 }
