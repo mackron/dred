@@ -3786,6 +3786,18 @@ bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors)
         return false;
     }
 
+    bool wasTextChanged = false;
+    drte_engine__begin_dirty(pEngine);
+    {
+        for (size_t iSelection = 0; iSelection < pEngine->selectionCount; ++iSelection) {
+            wasTextChanged = drte_engine_delete_selection_text(pEngine, iSelection, updateCursors) || wasTextChanged;
+        }
+    }
+    drte_engine__end_dirty(pEngine);
+
+    return wasTextChanged;
+
+#if 0
     // To delete selected text we need to ensure there are no overlaps. Selections are then deleted back to front.
     drte_region* pSortedSelections = (drte_region*)malloc(pEngine->selectionCount * sizeof(*pSortedSelections));
     if (pSortedSelections == NULL) {
@@ -3853,6 +3865,7 @@ bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors)
 
     free(pSortedSelections);
     return wasTextChanged;
+#endif
 }
 
 bool drte_engine_delete_selection_text(drte_engine* pEngine, size_t iSelectionToDelete, bool updateCursorsAndSelection)
@@ -3869,8 +3882,7 @@ bool drte_engine_delete_selection_text(drte_engine* pEngine, size_t iSelectionTo
     bool wasTextChanged = false;
     drte_engine__begin_dirty(pEngine);
     {
-        wasTextChanged = drte_engine_delete_text(pEngine, selectionToDelete.iCharBeg, selectionToDelete.iCharEnd) || wasTextChanged;
-
+        // Update cursors and selections _before_ deleting the text.
         if (updateCursorsAndSelection) {
             for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
                 size_t iCursorChar = pEngine->pCursors[iCursor].iCharAbs;
@@ -3921,6 +3933,8 @@ bool drte_engine_delete_selection_text(drte_engine* pEngine, size_t iSelectionTo
                 }
             }
         }
+
+        wasTextChanged = drte_engine_delete_text(pEngine, selectionToDelete.iCharBeg, selectionToDelete.iCharEnd) || wasTextChanged;
     }
     drte_engine__end_dirty(pEngine);
 
