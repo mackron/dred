@@ -11,9 +11,6 @@ char* dred_build__generate_website__on_resolve_value(drwg_context* pWebgen, cons
 {
     assert(pWebgen != NULL);
 
-    //command_var* pCommandVars = (command_var*)pUserData;
-    //assert(pCommandVars != NULL);
-
     dred_build_context* pBuildContext = (dred_build_context*)pUserData;
     assert(pBuildContext != NULL);
 
