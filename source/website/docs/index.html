@@ -21,9 +21,9 @@
                         <table class="header-link-table" style="">
                             <tr>
                                 <td style="vertical-align:center; padding-right:2em;"><a href="../index.html"><img src="../img/logo1_large_white.png" style="height:24px; min-width:100%;"></a></td>
-                                <td><a href="../download.html">Downloads</a></td>
-                                <td><a href="../screenshots.html">Screenshots</a></td>
-                                <td><a href="../docs/index.html">Documentation</a></td>
+                                <td><a href="{{ relative-path "download.html" }}">Downloads</a></td>
+                                <td><a href="{{ relative-path "screenshots.html" }}">Screenshots</a></td>
+                                <td><a href="{{ relative-path "docs/index.html" }}">Documentation</a></td>
                             </tr>
                         </table>    
                     </td>
@@ -81,6 +81,8 @@
         </div>
         Developed by David Reid - <a href="mailto:davidreidsoftware@gmail.com">davidreidsoftware@gmail.com</a>
     </div>
+	
+	{{ include "template-footer.html" }}
 
     <!-- Call me curious... -->
     <script>
