@@ -52,8 +52,6 @@
 #include "../../../dr_gui/dr_2d.h"
 
 #define DR_GUI_IMPLEMENTATION
-#define DR_GUI_INCLUDE_WIP
-#define DRGUI_NO_TEXT_EDITING
 #include "../../../dr_gui/dr_gui.h"
 
 
