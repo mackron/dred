@@ -2067,6 +2067,8 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
                     drte_engine_cancel_last_selection(pTB->pTL);
                 }
             }
+
+            drte_engine__update_cursor_sticky_position(pTB->pTL, &pTB->pTL->pCursors[drte_engine_get_last_cursor(pTB->pTL)]);
         } break;
 
         case DRGUI_HOME:
@@ -2098,6 +2100,8 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
                     drte_engine_cancel_last_selection(pTB->pTL);
                 }
             }
+
+            drte_engine__update_cursor_sticky_position(pTB->pTL, &pTB->pTL->pCursors[drte_engine_get_last_cursor(pTB->pTL)]);
         } break;
 
         case DRGUI_PAGE_UP:
