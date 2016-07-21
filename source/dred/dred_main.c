@@ -48,9 +48,6 @@
 #define DR_IMPLEMENTATION
 #include "../../../../dr_libs/dr.h"
 
-#define DR_PATH_IMPLEMENTATION
-#include "../../../../dr_libs/dr_path.h"
-
 #ifndef DRED_NO_IMAGE_EDITOR
 #define DR_PCX_IMPLEMENTATION
 #include "../../../../dr_libs/dr_pcx.h"
@@ -73,7 +70,7 @@
 #define DR_GUI_INCLUDE_WIP
 #define DRGUI_NO_TEXT_EDITING
 #define DR_2D_IMPLEMENTATION
-#include "../../../../dr_libs/dr_gui.h"
+#include "../../../../dr_libs/old/dr_gui.h"
 
 #define DR_TEXT_ENGINE_IMPLEMENTATION
 #include "../external/dr_text_engine.h"
