@@ -1736,6 +1736,9 @@ void dred_textbox_on_mouse_move(dred_textbox* pTextBox, int relativeMousePosX, i
                     }
 
                     drte_engine_move_cursor_to_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), pTB->pTL->pSelections[pTB->pTL->selectionCount-1].iCharEnd);
+                } else {
+                    // There is no word under the point, so just fall back to standard character selection for this case.
+                    drte_engine_move_cursor_to_point(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
                 }
             } else {
                 drte_engine_move_cursor_to_point(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
