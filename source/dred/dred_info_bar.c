@@ -193,13 +193,6 @@ void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
             snprintf(data->lineStr, sizeof(data->lineStr), "Ln %d", (int)dred_text_editor_get_cursor_line(pControl) + 1);
             snprintf(data->colStr,  sizeof(data->colStr),  "Col %d", (int)dred_text_editor_get_cursor_column(pControl) + 1);
         }
-#ifndef DRED_NO_IMAGE_EDITOR
-        else if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_IMAGE_EDITOR))
-        {
-            data->type = DRED_INFO_BAR_TYPE_IMAGE_EDITOR;
-            snprintf(data->zoomStr, sizeof(data->zoomStr), "%d%%", (int)(dred_image_editor_get_image_scale(pControl) * 100));
-        }
-#endif
     }
 
 

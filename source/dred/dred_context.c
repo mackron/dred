@@ -845,22 +845,6 @@ const char* dred_get_editor_type_by_path(const char* filePath)
         return DRED_CONTROL_TYPE_TEXT_EDITOR;
     }
 
-#ifndef DRED_NO_IMAGE_EDITOR
-    // Images.
-    if (drpath_extension_equal(filePath, "pcx") ||
-        drpath_extension_equal(filePath, "png") ||
-        drpath_extension_equal(filePath, "jpg") || drpath_extension_equal(filePath, "jpeg") ||
-        drpath_extension_equal(filePath, "bmp") ||
-        drpath_extension_equal(filePath, "gif") ||
-        drpath_extension_equal(filePath, "tga") ||
-        drpath_extension_equal(filePath, "hdr") ||
-        drpath_extension_equal(filePath, "pic") ||
-        drpath_extension_equal(filePath, "psd") ||
-        drpath_extension_equal(filePath, "ppm") || drpath_extension_equal(filePath, "pgm")) {
-        return DRED_CONTROL_TYPE_IMAGE_EDITOR;
-    }
-#endif
-
     return NULL;
 }
 
@@ -1235,11 +1219,6 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTab
     if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         pEditor = dred_text_editor_create(pDred, pTabGroup, sizeX, sizeY, filePathAbsolute);
     }
-#ifndef DRED_NO_IMAGE_EDITOR
-    if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_IMAGE_EDITOR)) {
-        pEditor = dred_image_editor_create(pDred, pTabGroup, filePathAbsolute);
-    }
-#endif
     if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_SETTINGS_EDITOR)) {
         pEditor = dred_settings_editor_create(pDred, pTabGroup, filePathAbsolute);
     }
@@ -1258,12 +1237,6 @@ void dred_delete_editor_by_type(dred_editor* pEditor)
         dred_text_editor_delete(pEditor);
         return;
     }
-#ifndef DRED_NO_IMAGE_EDITOR
-    if (dred_control_is_of_type(pEditor, DRED_CONTROL_TYPE_IMAGE_EDITOR)) {
-        dred_image_editor_delete(pEditor);
-        return;
-    }
-#endif
     if (dred_control_is_of_type(pEditor, DRED_CONTROL_TYPE_SETTINGS_EDITOR)) {
         dred_settings_editor_delete(pEditor);
         return;
@@ -2630,11 +2603,6 @@ void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab, dred_tab* pOldAc
         if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
             dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_TextEditor);
         }
-#ifndef DRED_NO_IMAGE_EDITOR
-        else if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_IMAGE_EDITOR)) {
-            dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_Default);
-        }
-#endif
         else {
             dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_Default);
         }

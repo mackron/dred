@@ -48,24 +48,6 @@
 #define DR_IMPLEMENTATION
 #include "../../../../dr_libs/dr.h"
 
-#ifndef DRED_NO_IMAGE_EDITOR
-#define DR_PCX_IMPLEMENTATION
-#include "../../../../dr_libs/dr_pcx.h"
-
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wshift-negative-value"
-    #if !defined(__clang__)
-    #pragma GCC diagnostic ignored "-Wmisleading-indentation"
-    #endif
-#endif
-#define STB_IMAGE_IMPLEMENTATION
-#include "../external/stb_image.h"
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
-#endif
-
 #define DR_GUI_IMPLEMENTATION
 #define DR_GUI_INCLUDE_WIP
 #define DRGUI_NO_TEXT_EDITING
@@ -108,7 +90,6 @@
 #include "dred_editor.h"
 #include "dred_settings_editor.h"
 #include "dred_text_editor.h"
-#include "dred_image_editor.h"
 #include "dred_font.h"
 #include "dred_font_library.h"
 #include "dred_image.h"
@@ -144,7 +125,6 @@
 #include "dred_editor.c"
 #include "dred_settings_editor.c"
 #include "dred_text_editor.c"
-#include "dred_image_editor.c"
 #include "dred_font.c"
 #include "dred_font_library.c"
 #include "dred_image.c"
