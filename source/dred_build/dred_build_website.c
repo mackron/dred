@@ -85,17 +85,13 @@ bool dred_build__generate_website(command_var* pCommandVars, config_var* pConfig
     context.pCommandVars = pCommandVars;
     context.pConfigVars = pConfigVars;
 
-    char errorStr[4096];
-
     drwg_context webgen;
-    if (!drwg_context_init(&webgen, "../../../source/website", "../../../build/website", errorStr, sizeof(errorStr))) {
-        printf("%s\n", errorStr);
+    if (!drwg_context_init(&webgen, "../../../source/website", "../../../build/website", dred_build__generate_website__on_error, &context)) {
         return false;
     }
 
     webgen.onResolveValue = dred_build__generate_website__on_resolve_value;
     webgen.onFreeValue = dred_build__generate_website__on_free_value;
-    webgen.pUserData = &context;
 
 
     // Properties.
