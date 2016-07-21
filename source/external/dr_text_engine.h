@@ -4030,7 +4030,7 @@ bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size
     }
 
     if (!drte_is_symbol_or_whitespace(pEngine->text[iChar])) {
-        while (pEngine->text[iChar] != '\0') {
+        while (pEngine->text[iChar] != '\0' && pEngine->text[iChar] != '\n' && !(pEngine->text[iChar] == '\r' && pEngine->text[iChar+1])) {
             uint32_t c = pEngine->text[iChar];
             if (drte_is_symbol_or_whitespace(c)) {
                 break;
@@ -4039,7 +4039,9 @@ bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size
             iChar += 1;
         }
     } else {
-        iChar += 1;
+        if (pEngine->text[iChar] != '\n' && !(pEngine->text[iChar] == '\r' && pEngine->text[iChar+1])) {
+            iChar += 1;
+        }
     }
 
     if (pWordEndOut) *pWordEndOut = iChar;
