@@ -48,11 +48,13 @@
 #define DR_IMPLEMENTATION
 #include "../../../../dr_libs/dr.h"
 
+#define DR_2D_IMPLEMENTATION
+#include "../../../dr_gui/dr_2d.h"
+
 #define DR_GUI_IMPLEMENTATION
 #define DR_GUI_INCLUDE_WIP
 #define DRGUI_NO_TEXT_EDITING
-#define DR_2D_IMPLEMENTATION
-#include "../../../../dr_libs/old/dr_gui.h"
+#include "../../../dr_gui/dr_gui.h"
 
 #define DR_TEXT_ENGINE_IMPLEMENTATION
 #include "../external/dr_text_engine.h"
