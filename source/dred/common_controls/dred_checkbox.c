@@ -5,14 +5,14 @@ typedef struct
 {
     char text[64];
     dred_font* pFont;
-    drgui_font* pSubFont;
-    drgui_color textColor;
-    drgui_color bgColor;
-    drgui_color boxBGColor;
-    drgui_color boxBGColorHovered;
-    drgui_color boxBGColorPressed;
-    drgui_color boxBorderColor;
-    drgui_color checkColor;
+    dred_gui_font* pSubFont;
+    dred_color textColor;
+    dred_color bgColor;
+    dred_color boxBGColor;
+    dred_color boxBGColorHovered;
+    dred_color boxBGColorPressed;
+    dred_color boxBorderColor;
+    dred_color checkColor;
     float borderWidth;
     float padding;
     bool isMouseOver;
@@ -22,7 +22,7 @@ typedef struct
     dred_checkbox_on_checked_changed_proc onCheckChanged;
 } dred_checkbox_data;
 
-drgui_rect dred_checkbox__get_box_rect(dred_checkbox* pCheckbox)
+dred_rect dred_checkbox__get_box_rect(dred_checkbox* pCheckbox)
 {
     // The size of the box is based on the size of the font.
     assert(pCheckbox != NULL);
@@ -30,7 +30,7 @@ drgui_rect dred_checkbox__get_box_rect(dred_checkbox* pCheckbox)
     dred_checkbox_data* pData = (dred_checkbox_data*)dred_control_get_extra_data(pCheckbox);
     assert(pData != NULL);
     
-    drgui_font_metrics metrics;
+    dred_gui_font_metrics metrics;
     drgui_get_font_metrics(pData->pSubFont, &metrics);
 
     float posX = 0;
@@ -38,7 +38,7 @@ drgui_rect dred_checkbox__get_box_rect(dred_checkbox* pCheckbox)
     return drgui_make_rect(posX, posY, posX + metrics.lineHeight, posY + metrics.lineHeight);
 }
 
-void dred_checkbox__on_paint(dred_checkbox* pCheckbox, drgui_rect rect, void* pPaintData)
+void dred_checkbox__on_paint(dred_checkbox* pCheckbox, dred_rect rect, void* pPaintData)
 {
     (void)rect;
 
@@ -53,7 +53,7 @@ void dred_checkbox__on_paint(dred_checkbox* pCheckbox, drgui_rect rect, void* pP
     }
 
     // Draw the box first.
-    drgui_color boxBGColor = pData->boxBGColor;
+    dred_color boxBGColor = pData->boxBGColor;
     if (drgui_has_mouse_capture(pCheckbox)) {
         boxBGColor = pData->boxBGColorHovered;
         if (pData->isMouseOver) {
@@ -63,8 +63,8 @@ void dred_checkbox__on_paint(dred_checkbox* pCheckbox, drgui_rect rect, void* pP
         boxBGColor = pData->boxBGColorHovered;
     }
 
-    drgui_rect bgrect = drgui_get_local_rect(pCheckbox);
-    drgui_rect boxRect = dred_checkbox__get_box_rect(pCheckbox);
+    dred_rect bgrect = drgui_get_local_rect(pCheckbox);
+    dred_rect boxRect = dred_checkbox__get_box_rect(pCheckbox);
 
     drgui_draw_rect_outline(pCheckbox, boxRect, pData->boxBorderColor, pData->borderWidth, pPaintData);
     drgui_draw_rect(pCheckbox, drgui_grow_rect(boxRect, -pData->borderWidth), boxBGColor, pPaintData);
@@ -186,7 +186,7 @@ void dred_checkbox__refresh_layout(dred_checkbox* pCheckbox)
         float textHeight;
         drgui_measure_string(pData->pSubFont, pData->text, strlen(pData->text), &textWidth, &textHeight);
 
-        drgui_rect boxRect = dred_checkbox__get_box_rect(pCheckbox);
+        dred_rect boxRect = dred_checkbox__get_box_rect(pCheckbox);
         float boxWidth = (boxRect.right - boxRect.left);
 
         dred_control_set_size(pCheckbox, textWidth + boxWidth + pData->padding, textHeight);
@@ -305,7 +305,7 @@ void dred_checkbox_set_font(dred_checkbox* pCheckbox, dred_font* pFont)
     dred_checkbox__refresh_layout(pCheckbox);
 }
 
-void dred_checkbox_set_background_color(dred_checkbox* pCheckbox, drgui_color color)
+void dred_checkbox_set_background_color(dred_checkbox* pCheckbox, dred_color color)
 {
     dred_checkbox_data* pData = (dred_checkbox_data*)dred_control_get_extra_data(pCheckbox);
     if (pData == NULL) {
@@ -318,7 +318,7 @@ void dred_checkbox_set_background_color(dred_checkbox* pCheckbox, drgui_color co
     drgui_dirty(pCheckbox, drgui_get_local_rect(pCheckbox));
 }
 
-void dred_checkbox_set_border_color(dred_checkbox* pCheckbox, drgui_color color)
+void dred_checkbox_set_border_color(dred_checkbox* pCheckbox, dred_color color)
 {
     dred_checkbox_data* pData = (dred_checkbox_data*)dred_control_get_extra_data(pCheckbox);
     if (pData == NULL) {

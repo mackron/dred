@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-drgui_font* dred_font__find_subfont_by_scaled_size(dred_font* pFont, unsigned int scaledSize, size_t* pIndexOut)
+dred_gui_font* dred_font__find_subfont_by_scaled_size(dred_font* pFont, unsigned int scaledSize, size_t* pIndexOut)
 {
     assert(pFont != NULL);
     assert(pIndexOut != NULL);
@@ -15,7 +15,7 @@ drgui_font* dred_font__find_subfont_by_scaled_size(dred_font* pFont, unsigned in
     return NULL;
 }
 
-drgui_font* dred_font__create_subfont(dred_font* pFont, unsigned int scaledSize, size_t* pIndexOut)
+dred_gui_font* dred_font__create_subfont(dred_font* pFont, unsigned int scaledSize, size_t* pIndexOut)
 {
     assert(pFont != NULL);
     assert(pIndexOut != NULL);
@@ -34,7 +34,7 @@ drgui_font* dred_font__create_subfont(dred_font* pFont, unsigned int scaledSize,
 
     assert(pFont->subfontCount < pFont->subfontBufferSize);
 
-    drgui_font* pGUIFont = drgui_create_font(pFont->pDred->pGUI, pFont->desc.family, scaledSize, pFont->desc.weight, pFont->desc.slant, 0, 0);
+    dred_gui_font* pGUIFont = drgui_create_font(pFont->pDred->pGUI, pFont->desc.family, scaledSize, pFont->desc.weight, pFont->desc.slant, 0, 0);
     if (pGUIFont == NULL) {
         return NULL;
     }
@@ -89,7 +89,7 @@ dred_font* dred_font_create(dred_context* pDred, dred_font_desc* pDesc)
 
     // Create the initial font.
     size_t index;
-    drgui_font* pGUIFont = dred_font__create_subfont(pFont, pDesc->size, &index);
+    dred_gui_font* pGUIFont = dred_font__create_subfont(pFont, pDesc->size, &index);
     if (pGUIFont == NULL) {
         free(pFont->pSubFonts);
         free(pFont);
@@ -116,7 +116,7 @@ void dred_font_delete(dred_font* pFont)
 }
 
 
-drgui_font* dred_font_acquire_subfont(dred_font* pFont, float scale)
+dred_gui_font* dred_font_acquire_subfont(dred_font* pFont, float scale)
 {
     if (pFont == NULL) {
         return NULL;
@@ -127,7 +127,7 @@ drgui_font* dred_font_acquire_subfont(dred_font* pFont, float scale)
     scaledSize = dr_clamp(scaledSize, DRED_MIN_FONT_SIZE, DRED_MAX_FONT_SIZE);
 
     size_t subfontIndex;
-    drgui_font* pSubFont = dred_font__find_subfont_by_scaled_size(pFont, scaledSize, &subfontIndex);
+    dred_gui_font* pSubFont = dred_font__find_subfont_by_scaled_size(pFont, scaledSize, &subfontIndex);
     if (pSubFont == NULL) {
         pSubFont = dred_font__create_subfont(pFont, scaledSize, &subfontIndex);
         if (pSubFont == NULL) {
@@ -141,7 +141,7 @@ drgui_font* dred_font_acquire_subfont(dred_font* pFont, float scale)
     return pSubFont;
 }
 
-void dred_font_release_subfont(dred_font* pFont, drgui_font* pSubFont)
+void dred_font_release_subfont(dred_font* pFont, dred_gui_font* pSubFont)
 {
     if (pFont == NULL || pSubFont == NULL) {
         return;
@@ -193,13 +193,13 @@ bool dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize)
 }
 
 
-bool dred_font_get_metrics(dred_font* pFont, float scale, drgui_font_metrics* pMetricsOut)
+bool dred_font_get_metrics(dred_font* pFont, float scale, dred_gui_font_metrics* pMetricsOut)
 {
     if (pFont == NULL) {
         return false;   
     }
 
-    drgui_font* pSubFont = dred_font_acquire_subfont(pFont, scale);
+    dred_gui_font* pSubFont = dred_font_acquire_subfont(pFont, scale);
     if (pSubFont == NULL) {
         return false;
     }
@@ -216,7 +216,7 @@ bool dred_font_measure_string(dred_font* pFont, float scale, const char* text, s
         return false;   
     }
 
-    drgui_font* pSubFont = dred_font_acquire_subfont(pFont, scale);
+    dred_gui_font* pSubFont = dred_font_acquire_subfont(pFont, scale);
     if (pSubFont == NULL) {
         return false;
     }

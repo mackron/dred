@@ -40,7 +40,7 @@ typedef struct
 
 
     /// The color of the border.
-    drgui_color borderColor;
+    dred_color borderColor;
 
     /// The width of the border.
     float borderWidth;
@@ -114,7 +114,7 @@ void dred_textbox__get_text_offset(dred_textbox* pTextBox, float* pOffsetXOut, f
 void dred_textbox__calculate_text_engine_container_size(dred_textbox* pTextBox, float* pWidthOut, float* pHeightOut);
 
 /// Retrieves the rectangle of the text engine's container.
-drgui_rect dred_textbox__get_text_rect(dred_textbox* pTextBox);
+dred_rect dred_textbox__get_text_rect(dred_textbox* pTextBox);
 
 /// Refreshes the range, page sizes and layouts of the scrollbars.
 void dred_textbox__refresh_scrollbars(dred_textbox* pTextBox);
@@ -126,7 +126,7 @@ void dred_textbox__refresh_scrollbar_ranges(dred_textbox* pTextBox);
 void dred_textbox__refresh_scrollbar_layouts(dred_textbox* pTextBox);
 
 /// Retrieves a rectangle representing the space between the edges of the two scrollbars.
-drgui_rect dred_textbox__get_scrollbar_dead_space_rect(dred_textbox* pTextBox);
+dred_rect dred_textbox__get_scrollbar_dead_space_rect(dred_textbox* pTextBox);
 
 
 /// Called when a mouse button is pressed on the line numbers element.
@@ -139,7 +139,7 @@ void dred_textbox__on_mouse_button_down_line_numbers(dred_control* pLineNumbers,
 void dred_textbox__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the line numbers element needs to be drawn.
-void dred_textbox__on_paint_line_numbers(dred_control* pLineNumbers, drgui_rect relativeRect, void* pPaintData);
+void dred_textbox__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect relativeRect, void* pPaintData);
 
 /// Refreshes the line number of the given text editor.
 void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox);
@@ -204,7 +204,7 @@ void dred_textbox__refresh_style(drgui_element* pTextBox)
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
-    drgui_font_metrics fontMetrics;
+    dred_gui_font_metrics fontMetrics;
     drgui_get_font_metrics(pTB->defaultStyle.pFont, &fontMetrics);
 
     // Default.
@@ -626,7 +626,7 @@ drte_engine* dred_textbox_get_engine(dred_textbox* pTextBox)
 }
 
 
-void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont)
+void dred_textbox_set_font(dred_textbox* pTextBox, dred_gui_font* pFont)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -652,7 +652,7 @@ void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont)
     drgui_end_dirty(pTextBox);
 }
 
-drgui_font* dred_textbox_get_font(dred_textbox* pTextBox)
+dred_gui_font* dred_textbox_get_font(dred_textbox* pTextBox)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -662,7 +662,7 @@ drgui_font* dred_textbox_get_font(dred_textbox* pTextBox)
     return pTB->defaultStyle.pFont;
 }
 
-void dred_textbox_set_text_color(dred_textbox* pTextBox, drgui_color color)
+void dred_textbox_set_text_color(dred_textbox* pTextBox, dred_color color)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -673,7 +673,7 @@ void dred_textbox_set_text_color(dred_textbox* pTextBox, drgui_color color)
     dred_textbox__refresh_style(pTextBox);
 }
 
-void dred_textbox_set_background_color(dred_textbox* pTextBox, drgui_color color)
+void dred_textbox_set_background_color(dred_textbox* pTextBox, dred_color color)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -684,7 +684,7 @@ void dred_textbox_set_background_color(dred_textbox* pTextBox, drgui_color color
     dred_textbox__refresh_style(pTextBox);
 }
 
-void dred_textbox_set_selection_background_color(dred_textbox* pTextBox, drgui_color color)
+void dred_textbox_set_selection_background_color(dred_textbox* pTextBox, dred_color color)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -695,7 +695,7 @@ void dred_textbox_set_selection_background_color(dred_textbox* pTextBox, drgui_c
     dred_textbox__refresh_style(pTextBox);
 }
 
-drgui_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox)
+dred_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -705,7 +705,7 @@ drgui_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox)
     return pTB->selectionStyle.bgColor;
 }
 
-void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, drgui_color color)
+void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, dred_color color)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -737,7 +737,7 @@ float dred_textbox_get_cursor_width(dred_textbox* pTextBox)
     return drte_engine_get_cursor_width(pTB->pTL);
 }
 
-void dred_textbox_set_cursor_color(dred_textbox* pTextBox, drgui_color color)
+void dred_textbox_set_cursor_color(dred_textbox* pTextBox, dred_color color)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -749,7 +749,7 @@ void dred_textbox_set_cursor_color(dred_textbox* pTextBox, drgui_color color)
     //drte_engine_set_cursor_color(pTB->pTL, color);
 }
 
-void dred_textbox_set_border_color(dred_textbox* pTextBox, drgui_color color)
+void dred_textbox_set_border_color(dred_textbox* pTextBox, dred_color color)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -839,7 +839,7 @@ float dred_textbox_get_line_numbers_padding(dred_textbox* pTextBox)
     return pTB->lineNumbersPaddingRight;
 }
 
-void dred_textbox_set_line_numbers_color(dred_textbox* pTextBox, drgui_color color)
+void dred_textbox_set_line_numbers_color(dred_textbox* pTextBox, dred_color color)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -852,7 +852,7 @@ void dred_textbox_set_line_numbers_color(dred_textbox* pTextBox, drgui_color col
     dred_textbox__refresh_line_numbers(pTextBox);
 }
 
-drgui_color dred_textbox_get_line_numbers_color(dred_textbox* pTextBox)
+dred_color dred_textbox_get_line_numbers_color(dred_textbox* pTextBox)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -862,7 +862,7 @@ drgui_color dred_textbox_get_line_numbers_color(dred_textbox* pTextBox)
     return pTB->lineNumbersStyle.fgColor;
 }
 
-void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, drgui_color color)
+void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, dred_color color)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -874,7 +874,7 @@ void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, drgu
     dred_textbox__refresh_line_numbers(pTextBox);
 }
 
-drgui_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBox)
+dred_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBox)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -884,7 +884,7 @@ drgui_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBo
     return pTB->lineNumbersStyle.bgColor;
 }
 
-void dred_textbox_set_scrollbar_track_color(dred_textbox* pTextBox, drgui_color color)
+void dred_textbox_set_scrollbar_track_color(dred_textbox* pTextBox, dred_color color)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -895,7 +895,7 @@ void dred_textbox_set_scrollbar_track_color(dred_textbox* pTextBox, drgui_color 
     dred_scrollbar_set_track_color(pTB->pVertScrollbar, color);
 }
 
-void dred_textbox_set_scrollbar_thumb_color(dred_textbox* pTextBox, drgui_color color)
+void dred_textbox_set_scrollbar_thumb_color(dred_textbox* pTextBox, dred_color color)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -906,7 +906,7 @@ void dred_textbox_set_scrollbar_thumb_color(dred_textbox* pTextBox, drgui_color 
     dred_scrollbar_set_default_thumb_color(pTB->pVertScrollbar, color);
 }
 
-void dred_textbox_set_scrollbar_thumb_color_hovered(dred_textbox* pTextBox, drgui_color color)
+void dred_textbox_set_scrollbar_thumb_color_hovered(dred_textbox* pTextBox, dred_color color)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -917,7 +917,7 @@ void dred_textbox_set_scrollbar_thumb_color_hovered(dred_textbox* pTextBox, drgu
     dred_scrollbar_set_hovered_thumb_color(pTB->pVertScrollbar, color);
 }
 
-void dred_textbox_set_scrollbar_thumb_color_pressed(dred_textbox* pTextBox, drgui_color color)
+void dred_textbox_set_scrollbar_thumb_color_pressed(dred_textbox* pTextBox, dred_color color)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -2502,29 +2502,29 @@ void dred_textbox_engine__on_apply_undo_state(drte_engine* pTL, size_t dataSize,
 
 
 
-void dred_textbox_on_paint(dred_textbox* pTextBox, drgui_rect relativeRect, void* pPaintData)
+void dred_textbox_on_paint(dred_textbox* pTextBox, dred_rect relativeRect, void* pPaintData)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
         return;
     }
 
-    drgui_rect textRect = dred_textbox__get_text_rect(pTextBox);
+    dred_rect textRect = dred_textbox__get_text_rect(pTextBox);
 
     // The dead space between the scrollbars should always be drawn with the default background color.
     //drgui_draw_rect(pTextBox, dred_textbox__get_scrollbar_dead_space_rect(pTextBox), pTB->defaultStyle.bgColor, pPaintData);
 
     // Border.
-    drgui_rect borderRect = drgui_get_local_rect(pTextBox);
+    dred_rect borderRect = drgui_get_local_rect(pTextBox);
     drgui_draw_rect_outline(pTextBox, borderRect, pTB->borderColor, pTB->borderWidth, pPaintData);
 
     // Padding.
-    drgui_rect paddingRect = drgui_grow_rect(textRect, pTB->padding);
+    dred_rect paddingRect = drgui_grow_rect(textRect, pTB->padding);
     drgui_draw_rect_outline(pTextBox, paddingRect, pTB->defaultStyle.bgColor, pTB->padding, pPaintData);
 
     // Text.
     drgui_set_clip(pTextBox, drgui_clamp_rect(textRect, relativeRect), pPaintData);
-    drte_engine_paint(pTB->pTL, drgui_rect_to_drte(drgui_offset_rect(drgui_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top)), pPaintData);
+    drte_engine_paint(pTB->pTL, dred_rect_to_drte(drgui_offset_rect(drgui_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top)), pPaintData);
 }
 
 void dred_textbox__on_timer(dred_timer* pTimer, void* pUserData)
@@ -2652,7 +2652,7 @@ void dred_textbox__calculate_text_engine_container_size(dred_textbox* pTextBox, 
     }
 }
 
-drgui_rect dred_textbox__get_text_rect(dred_textbox* pTextBox)
+dred_rect dred_textbox__get_text_rect(dred_textbox* pTextBox)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -2760,7 +2760,7 @@ void dred_textbox__refresh_scrollbar_layouts(dred_textbox* pTextBox)
     dred_textbox__refresh_line_numbers(pTextBox);
 }
 
-drgui_rect dred_textbox__get_scrollbar_dead_space_rect(dred_textbox* pTextBox)
+dred_rect dred_textbox__get_scrollbar_dead_space_rect(dred_textbox* pTextBox)
 {
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
@@ -2942,7 +2942,7 @@ void dred_textbox__on_paint_text_line_numbers(drte_engine* pEngine, drte_style_t
     drgui_draw_text(pTB->pLineNumbers, pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
 }
 
-void dred_textbox__on_paint_line_numbers(dred_control* pLineNumbers, drgui_rect relativeRect, void* pPaintData)
+void dred_textbox__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect relativeRect, void* pPaintData)
 {
     (void)relativeRect;
 
@@ -2960,7 +2960,7 @@ void dred_textbox__on_paint_line_numbers(dred_control* pLineNumbers, drgui_rect 
     drgui_draw_rect_outline(pLineNumbers, drgui_get_local_rect(pLineNumbers), pTB->lineNumbersStyle.bgColor, pTB->padding, pPaintData);
 
     // Right padding.
-    drgui_rect rightPaddingRect = drgui_get_local_rect(pLineNumbers);
+    dred_rect rightPaddingRect = drgui_get_local_rect(pLineNumbers);
     rightPaddingRect.right -= pTB->padding;
     rightPaddingRect.left   = rightPaddingRect.right - pTB->lineNumbersPaddingRight;
     drgui_draw_rect(pLineNumbers, rightPaddingRect, pTB->lineNumbersStyle.bgColor, pPaintData);
@@ -2971,7 +2971,7 @@ void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox)
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
-    drgui_rect lineNumbersRectOld = drgui_get_local_rect(pTB->pLineNumbers);
+    dred_rect lineNumbersRectOld = drgui_get_local_rect(pTB->pLineNumbers);
     drgui_begin_dirty(pTB->pLineNumbers);
     
     float lineNumbersWidth = 0;
@@ -2991,6 +2991,6 @@ void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox)
 
 
     // Force a redraw just to be sure everything is in a valid state.
-    drgui_dirty(pTextBox, drgui_rect_union(lineNumbersRectOld, drgui_get_local_rect(pTB->pLineNumbers)));
+    drgui_dirty(pTextBox, dred_rect_union(lineNumbersRectOld, drgui_get_local_rect(pTB->pLineNumbers)));
     drgui_end_dirty(pTB->pLineNumbers);
 }

@@ -4,12 +4,12 @@ typedef struct
 {
     char text[64];
     dred_font* pFont;
-    drgui_font* pSubFont;
-    drgui_color textColor;
-    drgui_color bgColor;
-    drgui_color bgColorHovered;
-    drgui_color bgColorPressed;
-    drgui_color borderColor;
+    dred_gui_font* pSubFont;
+    dred_color textColor;
+    dred_color bgColor;
+    dred_color bgColorHovered;
+    dred_color bgColorPressed;
+    dred_color borderColor;
     float borderWidth;
     float paddingHorz;
     float paddingVert;
@@ -18,7 +18,7 @@ typedef struct
     dred_button_on_pressed_proc onPressed;
 } dred_button_data;
 
-void dred_button__on_paint(dred_button* pButton, drgui_rect rect, void* pPaintData)
+void dred_button__on_paint(dred_button* pButton, dred_rect rect, void* pPaintData)
 {
     (void)rect;
 
@@ -33,7 +33,7 @@ void dred_button__on_paint(dred_button* pButton, drgui_rect rect, void* pPaintDa
     }
 
 
-    drgui_color bgColor = pData->bgColor;
+    dred_color bgColor = pData->bgColor;
     if (drgui_has_mouse_capture(pButton)) {
         bgColor = pData->bgColorHovered;
         if (pData->isMouseOver) {
@@ -48,7 +48,7 @@ void dred_button__on_paint(dred_button* pButton, drgui_rect rect, void* pPaintDa
     drgui_draw_rect_outline(pButton, drgui_get_local_rect(pButton), pData->borderColor, pData->borderWidth, pPaintData);
 
     // Text and background. The text is centered.
-    drgui_rect bgrect = drgui_grow_rect(drgui_get_local_rect(pButton), -pData->borderWidth);
+    dred_rect bgrect = drgui_grow_rect(drgui_get_local_rect(pButton), -pData->borderWidth);
 
     float textWidth;
     float textHeight;
@@ -278,7 +278,7 @@ void dred_button_set_font(dred_button* pButton, dred_font* pFont)
     dred_button__refresh_layout(pButton);
 }
 
-void dred_button_set_background_color(dred_button* pButton, drgui_color color)
+void dred_button_set_background_color(dred_button* pButton, dred_color color)
 {
     dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
@@ -291,7 +291,7 @@ void dred_button_set_background_color(dred_button* pButton, drgui_color color)
     drgui_dirty(pButton, drgui_get_local_rect(pButton));
 }
 
-void dred_button_set_border_color(dred_button* pButton, drgui_color color)
+void dred_button_set_border_color(dred_button* pButton, dred_color color)
 {
     dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {

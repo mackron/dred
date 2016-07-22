@@ -31,7 +31,7 @@ typedef struct
     
 
     // The font to use for everything.
-    drgui_font* pFont;
+    dred_gui_font* pFont;
 
     // The width of the side panel.
     float sidePanelWidth;
@@ -43,13 +43,13 @@ typedef struct
     float sidePanelBtnPaddingYRatio;
 
     // The color of the text of side panels.
-    drgui_color sidePanelBtnTextColor;
+    dred_color sidePanelBtnTextColor;
 
     // The color of the border of side panel buttons.
-    drgui_color sidePanelBtnBorderColor;
+    dred_color sidePanelBtnBorderColor;
 
     // The background color of side panel buttons while hovered.
-    drgui_color sidePanelBtnGBColorHovered;
+    dred_color sidePanelBtnGBColorHovered;
 
     // Everything in the settings editor is grouped into "pages". This array holds those pages, with specific pages
     // being accessable with a 0 based index DRED_SETTINGS_PAGE_*.
@@ -62,7 +62,7 @@ typedef struct
     int hoveredPageIndex;
 } dred_settings_editor_data;
 
-drgui_rect dred_settings_editor__get_side_panel_rect(dred_settings_editor* pSettingsEditor)
+dred_rect dred_settings_editor__get_side_panel_rect(dred_settings_editor* pSettingsEditor)
 {
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
@@ -70,7 +70,7 @@ drgui_rect dred_settings_editor__get_side_panel_rect(dred_settings_editor* pSett
     return drgui_make_rect(0, 0, pData->sidePanelWidth, drgui_get_height(pSettingsEditor));
 }
 
-drgui_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSettingsEditor)
+dred_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSettingsEditor)
 {
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
@@ -94,7 +94,7 @@ int dred_settings_editor__get_side_panel_btn_index_under_point(dred_settings_edi
     }
 
 
-    drgui_font_metrics metrics;
+    dred_gui_font_metrics metrics;
     drgui_get_font_metrics(pData->pFont, &metrics);
 
     float paddingY = metrics.lineHeight*pData->sidePanelBtnPaddingYRatio;
@@ -221,7 +221,7 @@ void dred_settings_editor__on_mouse_leave(dred_settings_editor* pSettingsEditor)
     }
 }
 
-void dred_settings_editor__on_paint(dred_settings_editor* pSettingsEditor, drgui_rect rect, void* pPaintData)
+void dred_settings_editor__on_paint(dred_settings_editor* pSettingsEditor, dred_rect rect, void* pPaintData)
 {
     (void)rect;
 
@@ -231,13 +231,13 @@ void dred_settings_editor__on_paint(dred_settings_editor* pSettingsEditor, drgui
     dred_context* pDred = dred_control_get_context(pSettingsEditor);
     assert(pDred != NULL);
 
-    drgui_rect sideRect = dred_settings_editor__get_side_panel_rect(pSettingsEditor);
+    dred_rect sideRect = dred_settings_editor__get_side_panel_rect(pSettingsEditor);
 
     // Side buttons.
     float penPosX = 0;
     float penPosY = pData->sidePanelBtnOffsetY;
 
-    drgui_font_metrics metrics;
+    dred_gui_font_metrics metrics;
     drgui_get_font_metrics(pData->pFont, &metrics);
 
     float paddingY = metrics.lineHeight*pData->sidePanelBtnPaddingYRatio;
@@ -247,8 +247,8 @@ void dred_settings_editor__on_paint(dred_settings_editor* pSettingsEditor, drgui
 
     int sideButtonsCount = (int)(sizeof(pData->pages) / sizeof(pData->pages[0]));
     for (int i = 0; i < sideButtonsCount; ++i) {
-        drgui_color bgColor = drgui_rgb(255, 255, 255); //drgui_rgb(128, 32, 32);
-        drgui_color borderColor = bgColor;
+        dred_color bgColor = drgui_rgb(255, 255, 255); //drgui_rgb(128, 32, 32);
+        dred_color borderColor = bgColor;
         if (pData->selectedPageIndex == i) {
             selectedBtnPosY = penPosY;
             borderColor = pData->sidePanelBtnBorderColor;
@@ -283,15 +283,15 @@ void dred_settings_editor__on_paint(dred_settings_editor* pSettingsEditor, drgui
         float gapPosY0 = selectedBtnPosY + (1*pDred->uiScale);
         float gapPosY1 = selectedBtnPosY - (1*pDred->uiScale) + btnHeight;
 
-        drgui_rect sideBorderRect0 = drgui_make_rect(sideRect.right - borderWidth, sideRect.top, sideRect.right, gapPosY0);
-        drgui_rect sideBorderRect1 = drgui_make_rect(sideRect.right - borderWidth, gapPosY0, sideRect.right, gapPosY1);
-        drgui_rect sideBorderRect2 = drgui_make_rect(sideRect.right - borderWidth, gapPosY1, sideRect.right, sideRect.bottom);
+        dred_rect sideBorderRect0 = drgui_make_rect(sideRect.right - borderWidth, sideRect.top, sideRect.right, gapPosY0);
+        dred_rect sideBorderRect1 = drgui_make_rect(sideRect.right - borderWidth, gapPosY0, sideRect.right, gapPosY1);
+        dred_rect sideBorderRect2 = drgui_make_rect(sideRect.right - borderWidth, gapPosY1, sideRect.right, sideRect.bottom);
 
         drgui_draw_rect(pSettingsEditor, sideBorderRect0, pData->sidePanelBtnBorderColor, pPaintData);
         drgui_draw_rect(pSettingsEditor, sideBorderRect1, drgui_rgb(255, 255, 255), pPaintData);
         drgui_draw_rect(pSettingsEditor, sideBorderRect2, pData->sidePanelBtnBorderColor, pPaintData);
     } else {
-        drgui_rect sideBorderRect0 = drgui_make_rect(sideRect.right - borderWidth, sideRect.top, sideRect.right, sideRect.bottom);
+        dred_rect sideBorderRect0 = drgui_make_rect(sideRect.right - borderWidth, sideRect.top, sideRect.right, sideRect.bottom);
         drgui_draw_rect(pSettingsEditor, sideBorderRect0, pData->sidePanelBtnBorderColor, pPaintData);
     }
 
@@ -303,7 +303,7 @@ void dred_settings_editor__on_paint(dred_settings_editor* pSettingsEditor, drgui
 
 
     // Action area.
-    drgui_rect actionRect = dred_settings_editor__get_action_area_rect(pSettingsEditor);
+    dred_rect actionRect = dred_settings_editor__get_action_area_rect(pSettingsEditor);
     drgui_draw_rect(pSettingsEditor, actionRect, drgui_rgb(255, 255, 255), pPaintData);
 }
 
@@ -348,7 +348,7 @@ void dred_settings_editor_page__on_mouse_enter(drgui_element* pPageElement)
     }
 }
 
-void dred_settings_editor_page__on_paint(drgui_element* pPageElement, drgui_rect rect, void* pPaintData)
+void dred_settings_editor_page__on_paint(drgui_element* pPageElement, dred_rect rect, void* pPaintData)
 {
     (void)rect;
     drgui_draw_rect(pPageElement, drgui_get_local_rect(pPageElement), drgui_rgb(255, 255, 255), pPaintData);
@@ -388,7 +388,7 @@ bool dred_settings_editor__init_page__general(dred_settings_editor* pSettingsEdi
         return false;
     }
 
-    drgui_font_metrics fontMetrics;
+    dred_gui_font_metrics fontMetrics;
     drgui_get_font_metrics(pData->pFont, &fontMetrics);
 
     float penPosX = 8*pDred->uiScale;
@@ -429,7 +429,7 @@ bool dred_settings_editor__init_page__theme(dred_settings_editor* pSettingsEdito
         return false;
     }
 
-    drgui_font_metrics fontMetrics;
+    dred_gui_font_metrics fontMetrics;
     drgui_get_font_metrics(pData->pFont, &fontMetrics);
 
     float penPosX = 8*pDred->uiScale;
@@ -504,7 +504,7 @@ bool dred_settings_editor__init_page__text_editor(dred_settings_editor* pSetting
         return false;
     }
 
-    drgui_font_metrics fontMetrics;
+    dred_gui_font_metrics fontMetrics;
     drgui_get_font_metrics(pData->pFont, &fontMetrics);
 
     float penPosX = 8*pDred->uiScale;

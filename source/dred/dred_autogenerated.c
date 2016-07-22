@@ -1037,15 +1037,15 @@ const uint8_t g_StockImageData[] = {
 };
 
 const dred_image_desc g_StockImages[DRED_STOCK_IMAGE_COUNT][DRED_STOCK_IMAGE_SCALE_COUNT] = {
-    {{1.0f, 16, 16, drgui_image_format_rgba8, g_StockImageData + 0},
-     {1.5f, 24, 24, drgui_image_format_rgba8, g_StockImageData + 1024},
-     {2.0f, 32, 32, drgui_image_format_rgba8, g_StockImageData + 3328}},
-    {{1.0f, 7, 16, drgui_image_format_rgba8, g_StockImageData + 7424},
-     {1.5f, 10, 24, drgui_image_format_rgba8, g_StockImageData + 7872},
-     {2.0f, 14, 32, drgui_image_format_rgba8, g_StockImageData + 8832}},
-    {{1.0f, 7, 16, drgui_image_format_rgba8, g_StockImageData + 10624},
-     {1.5f, 10, 24, drgui_image_format_rgba8, g_StockImageData + 11072},
-     {2.0f, 14, 32, drgui_image_format_rgba8, g_StockImageData + 12032}}
+    {{1.0f, 16, 16, dred_gui_image_format_rgba8, g_StockImageData + 0},
+     {1.5f, 24, 24, dred_gui_image_format_rgba8, g_StockImageData + 1024},
+     {2.0f, 32, 32, dred_gui_image_format_rgba8, g_StockImageData + 3328}},
+    {{1.0f, 7, 16, dred_gui_image_format_rgba8, g_StockImageData + 7424},
+     {1.5f, 10, 24, dred_gui_image_format_rgba8, g_StockImageData + 7872},
+     {2.0f, 14, 32, dred_gui_image_format_rgba8, g_StockImageData + 8832}},
+    {{1.0f, 7, 16, dred_gui_image_format_rgba8, g_StockImageData + 10624},
+     {1.5f, 10, 24, dred_gui_image_format_rgba8, g_StockImageData + 11072},
+     {2.0f, 14, 32, dred_gui_image_format_rgba8, g_StockImageData + 12032}}
 };
 
 

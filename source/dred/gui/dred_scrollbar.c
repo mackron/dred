@@ -26,16 +26,16 @@ typedef struct
     int mouseWheelScale;
 
     /// The color of the track.
-    drgui_color trackColor;
+    dred_color trackColor;
 
     /// The color of the thumb while not hovered or pressed.
-    drgui_color thumbColor;
+    dred_color thumbColor;
 
     /// The color of the thumb while hovered.
-    drgui_color thumbColorHovered;
+    dred_color thumbColorHovered;
 
     /// The color of the thumb while pressed.
-    drgui_color thumbColorPressed;
+    dred_color thumbColorPressed;
 
     /// The function to call when the scroll position changes.
     dred_scrollbar_on_scroll_proc onScroll;
@@ -424,7 +424,7 @@ int dred_scrollbar_get_mouse_wheel_scale(dred_scrollbar* pScrollbar)
 }
 
 
-void dred_scrollbar_set_track_color(dred_scrollbar* pScrollbar, drgui_color color)
+void dred_scrollbar_set_track_color(dred_scrollbar* pScrollbar, dred_color color)
 {
     dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
@@ -434,7 +434,7 @@ void dred_scrollbar_set_track_color(dred_scrollbar* pScrollbar, drgui_color colo
     pSB->trackColor = color;
 }
 
-void dred_scrollbar_set_default_thumb_color(dred_scrollbar* pScrollbar, drgui_color color)
+void dred_scrollbar_set_default_thumb_color(dred_scrollbar* pScrollbar, dred_color color)
 {
     dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
@@ -444,7 +444,7 @@ void dred_scrollbar_set_default_thumb_color(dred_scrollbar* pScrollbar, drgui_co
     pSB->thumbColor = color;
 }
 
-void dred_scrollbar_set_hovered_thumb_color(dred_scrollbar* pScrollbar, drgui_color color)
+void dred_scrollbar_set_hovered_thumb_color(dred_scrollbar* pScrollbar, dred_color color)
 {
     dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
@@ -454,7 +454,7 @@ void dred_scrollbar_set_hovered_thumb_color(dred_scrollbar* pScrollbar, drgui_co
     pSB->thumbColorHovered = color;
 }
 
-void dred_scrollbar_set_pressed_thumb_color(dred_scrollbar* pScrollbar, drgui_color color)
+void dred_scrollbar_set_pressed_thumb_color(dred_scrollbar* pScrollbar, dred_color color)
 {
     dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
@@ -486,14 +486,14 @@ dred_scrollbar_on_scroll_proc dred_scrollbar_get_on_scroll(dred_scrollbar* pScro
 }
 
 
-drgui_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar)
+dred_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar)
 {
     dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return drgui_make_rect(0, 0, 0, 0);
     }
 
-    drgui_rect rect = {0, 0, 0, 0};
+    dred_rect rect = {0, 0, 0, 0};
     rect.left = pSB->thumbPadding;
     rect.top  = pSB->thumbPadding;
 
@@ -595,8 +595,8 @@ void dred_scrollbar_on_mouse_move(dred_scrollbar* pScrollbar, int relativeMouseP
         {
             bool wasThumbHovered = pSB->thumbHovered;
 
-            drgui_rect thumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
-            pSB->thumbHovered = drgui_rect_contains_point(thumbRect, (float)relativeMousePosX, (float)relativeMousePosY);
+            dred_rect thumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
+            pSB->thumbHovered = dred_rect_contains_point(thumbRect, (float)relativeMousePosX, (float)relativeMousePosY);
 
             if (wasThumbHovered != pSB->thumbHovered) {
                 drgui_dirty(pScrollbar, thumbRect);
@@ -618,8 +618,8 @@ void dred_scrollbar_on_mouse_button_down(dred_scrollbar* pScrollbar, int button,
     {
         if (dred_scrollbar_is_thumb_visible(pScrollbar))
         {
-            drgui_rect thumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
-            if (drgui_rect_contains_point(thumbRect, (float)relativeMousePosX, (float)relativeMousePosY))
+            dred_rect thumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
+            if (dred_rect_contains_point(thumbRect, (float)relativeMousePosX, (float)relativeMousePosY))
             {
                 if (!pSB->thumbPressed)
                 {
@@ -683,7 +683,7 @@ void dred_scrollbar_on_mouse_wheel(dred_scrollbar* pScrollbar, int delta, int re
     dred_scrollbar_scroll(pScrollbar, -delta * dred_scrollbar_get_mouse_wheel_scale(pScrollbar));
 }
 
-void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, drgui_rect relativeClippingRect, void* pPaintData)
+void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, dred_rect relativeClippingRect, void* pPaintData)
 {
     (void)relativeClippingRect;
 
@@ -692,7 +692,7 @@ void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, drgui_rect relativeClip
         return;
     }
 
-    drgui_rect thumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
+    dred_rect thumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
 
     if (dred_scrollbar_is_thumb_visible(pScrollbar))
     {
@@ -705,7 +705,7 @@ void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, drgui_rect relativeClip
         drgui_draw_rect(pScrollbar, drgui_make_rect(thumbRect.right, thumbRect.top, drgui_get_width(pScrollbar), thumbRect.bottom), pSB->trackColor, pPaintData); // Right
 
         // Thumb.
-        drgui_color thumbColor;
+        dred_color thumbColor;
         if (pSB->thumbPressed) {
             thumbColor = pSB->thumbColorPressed;
         } else if (pSB->thumbHovered) {
@@ -730,15 +730,15 @@ DRGUI_PRIVATE void dred_scrollbar_refresh_thumb(dred_scrollbar* pScrollbar)
     dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     assert(pSB != NULL);
 
-    drgui_rect oldThumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
+    dred_rect oldThumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
 
     pSB->thumbSize = dred_scrollbar_calculate_thumb_size(pScrollbar);
     pSB->thumbPos  = dred_scrollbar_calculate_thumb_position(pScrollbar);
 
-    drgui_rect newThumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
-    if (!drgui_rect_equal(oldThumbRect, newThumbRect))
+    dred_rect newThumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
+    if (!dred_rect_equal(oldThumbRect, newThumbRect))
     {
-        drgui_dirty(pScrollbar, drgui_rect_union(oldThumbRect, newThumbRect));
+        drgui_dirty(pScrollbar, dred_rect_union(oldThumbRect, newThumbRect));
     }
 }
 
@@ -793,7 +793,7 @@ DRGUI_PRIVATE float dred_scrollbar_get_track_size(dred_scrollbar* pScrollbar)
 
 DRGUI_PRIVATE void dred_scrollbar_make_relative_to_thumb(dred_scrollbar* pScrollbar, float* pPosX, float* pPosY)
 {
-    drgui_rect thumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
+    dred_rect thumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
 
     if (pPosX != NULL) {
         *pPosX -= thumbRect.left;

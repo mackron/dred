@@ -9,14 +9,14 @@
 
 typedef struct
 {
-    drgui_font* pFont;
+    dred_gui_font* pFont;
     int type;
     char lineStr[32];
     char colStr[32];
     char zoomStr[32];
 } dred_info_bar_data;
 
-drgui_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
+dred_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
 {
     dred_context* pDred = dred_control_get_context(pInfoBar);
     assert(pDred != NULL);
@@ -28,7 +28,7 @@ drgui_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
     }
 }
 
-drgui_color dred_info_bar__get_text_color(dred_info_bar* pInfoBar)
+dred_color dred_info_bar__get_text_color(dred_info_bar* pInfoBar)
 {
     dred_context* pDred = dred_control_get_context(pInfoBar);
     assert(pDred != NULL);
@@ -60,10 +60,10 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar
     float padding = 32*pDred->uiScale;
     float paddingRight = pDred->config.cmdbarPaddingX*pDred->uiScale;
 
-    drgui_font* pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
+    dred_gui_font* pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
     if (pFont != NULL)
     {
-        drgui_font_metrics fontMetrics;
+        dred_gui_font_metrics fontMetrics;
         drgui_get_font_metrics(pFont, &fontMetrics);
 
         // The text info will be right-aligned so we need to measure first.
@@ -100,10 +100,10 @@ void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_ba
     //float padding = 32*pDred->uiScale;
     float paddingRight = pDred->config.cmdbarPaddingX*pDred->uiScale;
 
-    drgui_font* pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
+    dred_gui_font* pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
     if (pFont != NULL)
     {
-        drgui_font_metrics fontMetrics;
+        dred_gui_font_metrics fontMetrics;
         drgui_get_font_metrics(pFont, &fontMetrics);
 
         // The text info will be right-aligned so we need to measure first.
@@ -122,7 +122,7 @@ void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_ba
 }
 
 
-void dred_info_bar__on_paint(dred_info_bar* pInfoBar, drgui_rect rect, void* pPaintData)
+void dred_info_bar__on_paint(dred_info_bar* pInfoBar, dred_rect rect, void* pPaintData)
 {
     (void)rect;
 
@@ -161,7 +161,7 @@ dred_info_bar* dred_info_bar_create(dred_context* pDred, dred_control* pParent)
 
 
     // The height of the command bar is based on the size of the font.
-    drgui_font_metrics fontMetrics;
+    dred_gui_font_metrics fontMetrics;
     drgui_get_font_metrics(data->pFont, &fontMetrics);
     drgui_set_size(pInfoBar, 0, (float)fontMetrics.lineHeight);
 
@@ -210,12 +210,12 @@ void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar)
     dred_context* pDred = dred_control_get_context(pInfoBar);
     assert(pDred != NULL);
 
-    drgui_font* pNewFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
+    dred_gui_font* pNewFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
     if (pNewFont != NULL) {
         data->pFont = pNewFont;
 
         // The height of the command bar is based on the size of the font.
-        drgui_font_metrics fontMetrics;
+        dred_gui_font_metrics fontMetrics;
         drgui_get_font_metrics(data->pFont, &fontMetrics);
         drgui_set_size(pInfoBar, drgui_get_width(pInfoBar), (float)fontMetrics.lineHeight);
     }

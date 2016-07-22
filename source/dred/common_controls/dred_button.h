@@ -13,8 +13,8 @@ void dred_button_enable_auto_size(dred_button* pButton);
 void dred_button_disable_auto_size(dred_button* pButton);
 
 void dred_button_set_font(dred_button* pButton, dred_font* pFont);
-void dred_button_set_background_color(dred_button* pButton, drgui_color color);
-void dred_button_set_border_color(dred_button* pButton, drgui_color color);
+void dred_button_set_background_color(dred_button* pButton, dred_color color);
+void dred_button_set_border_color(dred_button* pButton, dred_color color);
 void dred_button_set_border_width(dred_button* pButton, float width);
 void dred_button_set_padding(dred_button* pButton, float paddingHorz, float paddingVert);
 

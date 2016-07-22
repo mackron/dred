@@ -5,7 +5,7 @@ typedef struct
     float scale;
     unsigned int width;
     unsigned int height;
-    drgui_image_format format;
+    dred_gui_image_format format;
     const void* pImageData;
 } dred_image_desc;
 
@@ -13,7 +13,7 @@ typedef struct
 {
     unsigned int referenceCount;
     float scale;
-    drgui_image* pGUIImage;
+    dred_gui_image* pGUIImage;
 } dred_subimage;
 
 struct dred_image
@@ -32,5 +32,5 @@ struct dred_image
 dred_image* dred_image_create(dred_context* pDred, unsigned int id, const dred_image_desc* pDesc, size_t descCount);
 void dred_image_delete(dred_image* pImage);
 
-drgui_image* dred_image_acquire_subimage(dred_image* pImage, float scale);
-void dred_image_release_subimage(dred_image* pImage, drgui_image* pSubImage);
+dred_gui_image* dred_image_acquire_subimage(dred_image* pImage, float scale);
+void dred_image_release_subimage(dred_image* pImage, dred_gui_image* pSubImage);

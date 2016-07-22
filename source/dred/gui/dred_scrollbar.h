@@ -106,16 +106,16 @@ int dred_scrollbar_get_mouse_wheel_scale(dred_scrollbar* pScrollbar);
 
 
 /// Sets the color of the track.
-void dred_scrollbar_set_track_color(dred_scrollbar* pScrollbar, drgui_color color);
+void dred_scrollbar_set_track_color(dred_scrollbar* pScrollbar, dred_color color);
 
 /// Sets the default color of the thumb.
-void dred_scrollbar_set_default_thumb_color(dred_scrollbar* pScrollbar, drgui_color color);
+void dred_scrollbar_set_default_thumb_color(dred_scrollbar* pScrollbar, dred_color color);
 
 /// Sets the hovered color of the thumb.
-void dred_scrollbar_set_hovered_thumb_color(dred_scrollbar* pScrollbar, drgui_color color);
+void dred_scrollbar_set_hovered_thumb_color(dred_scrollbar* pScrollbar, dred_color color);
 
 /// Sets the pressed color of the thumb.
-void dred_scrollbar_set_pressed_thumb_color(dred_scrollbar* pScrollbar, drgui_color color);
+void dred_scrollbar_set_pressed_thumb_color(dred_scrollbar* pScrollbar, dred_color color);
 
 
 /// Sets the function to call when the given scrollbar is scrolled.
@@ -126,7 +126,7 @@ dred_scrollbar_on_scroll_proc dred_scrollbar_get_on_scroll(dred_scrollbar* pScro
 
 
 /// Calculates the relative rectangle of the given scrollbar's thumb.
-drgui_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar);
+dred_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar);
 
 
 /// Called when the size event needs to be processed for the given scrollbar.
@@ -148,4 +148,4 @@ void dred_scrollbar_on_mouse_button_up(dred_scrollbar* pScrollbar, int button, i
 void dred_scrollbar_on_mouse_wheel(dred_scrollbar* pScrollbar, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the paint event needs to be processed.
-void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, drgui_rect relativeClippingRect, void* pPaintData);
+void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, dred_rect relativeClippingRect, void* pPaintData);

@@ -88,7 +88,7 @@ const char* config_var_type_to_string(unsigned int type)
         return "dred_image*";
     }
     if (type == CONFIG_VAR_TYPE_COLOR) {
-        return "drgui_color";
+        return "dred_color";
     }
 
     return "UNKOWN TYPE";
@@ -475,7 +475,7 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
                 imageStr = gb_append_cstring(imageStr, ",\n     ");
             }
 
-            snprintf(line, sizeof(line), "{%.1ff, %d, %d, %s, g_StockImageData + %d}", scale, scaledWidth, scaledHeight, "drgui_image_format_rgba8", runningDataOffset);
+            snprintf(line, sizeof(line), "{%.1ff, %d, %d, %s, g_StockImageData + %d}", scale, scaledWidth, scaledHeight, "dred_gui_image_format_rgba8", runningDataOffset);
             imageStr = gb_append_cstring(imageStr, line);
 
             

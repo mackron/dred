@@ -15,8 +15,8 @@ void dred_checkbox_enable_auto_size(dred_checkbox* pCheckbox);
 void dred_checkbox_disable_auto_size(dred_checkbox* pCheckbox);
 
 void dred_checkbox_set_font(dred_checkbox* pCheckbox, dred_font* pFont);
-void dred_checkbox_set_background_color(dred_checkbox* pCheckbox, drgui_color color);
-void dred_checkbox_set_border_color(dred_checkbox* pCheckbox, drgui_color color);
+void dred_checkbox_set_background_color(dred_checkbox* pCheckbox, dred_color color);
+void dred_checkbox_set_border_color(dred_checkbox* pCheckbox, dred_color color);
 void dred_checkbox_set_border_width(dred_checkbox* pCheckbox, float width);
 void dred_checkbox_set_padding(dred_checkbox* pCheckbox, float padding);
 

@@ -1464,12 +1464,12 @@ static void dred_platform__on_global_release_keyboard__win32(drgui_element* pEle
     }
 }
 
-static void dred_platform__on_global_dirty__win32(drgui_element* pElement, drgui_rect relativeRect)
+static void dred_platform__on_global_dirty__win32(drgui_element* pElement, dred_rect relativeRect)
 {
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow != NULL)
     {
-        drgui_rect absoluteRect = relativeRect;
+        dred_rect absoluteRect = relativeRect;
         drgui_make_rect_absolute(pElement, &absoluteRect);
 
 
@@ -1747,7 +1747,7 @@ static void dred_gtk_cb__on_paint(GtkWidget* pGTKWindow, cairo_t* pCairoContext,
     double clipBottom;
     cairo_clip_extents(pCairoContext, &clipLeft, &clipTop, &clipRight, &clipBottom);
 
-    drgui_rect drawRect;
+    dred_rect drawRect;
     drawRect.left   = (float)clipLeft;
     drawRect.top    = (float)clipTop;
     drawRect.right  = (float)clipRight;
@@ -2841,15 +2841,15 @@ static void dred_platform__on_global_release_keyboard__gtk(drgui_element* pEleme
     }
 }
 
-static void dred_platform__on_global_dirty__gtk(drgui_element* pElement, drgui_rect relativeRect)
+static void dred_platform__on_global_dirty__gtk(drgui_element* pElement, dred_rect relativeRect)
 {
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow != NULL && pWindow->pGTKWindow != NULL)
     {
-        drgui_rect absoluteRect = relativeRect;
+        dred_rect absoluteRect = relativeRect;
         drgui_make_rect_absolute(pElement, &absoluteRect);
 
-        if (drgui_rect_has_volume(absoluteRect)) {
+        if (dred_rect_has_volume(absoluteRect)) {
             gtk_widget_queue_draw_area(pWindow->pGTKClientArea,
                 (gint)absoluteRect.left, (gint)absoluteRect.top, (gint)(absoluteRect.right - absoluteRect.left), (gint)(absoluteRect.bottom - absoluteRect.top));
 

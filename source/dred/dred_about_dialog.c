@@ -47,7 +47,7 @@ void dred_about_dialog__on_size(drgui_element* pElement, float newWidth, float n
     dred_control_set_relative_position(pDialog->pCloseButton, newWidth - dred_control_get_width(pDialog->pCloseButton) - 8*pDred->uiScale, newHeight - dred_control_get_height(pDialog->pCloseButton) - 8*pDred->uiScale);
 }
 
-void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void* pPaintData)
+void dred_about_dialog__on_paint(drgui_element* pElement, dred_rect rect, void* pPaintData)
 {
     (void)rect;
 
@@ -61,7 +61,7 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
 
     float uiScale = (float)pWindow->pDred->uiScale;
 
-    drgui_rect dialogRect = drgui_get_local_rect(pElement);
+    dred_rect dialogRect = drgui_get_local_rect(pElement);
 
     drgui_draw_rect(pElement, dialogRect, drgui_rgb(255, 255, 255), pPaintData);
 
@@ -69,7 +69,7 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
     unsigned int logoHeight;
     drgui_get_image_size(pDialog->pLogo, &logoWidth, &logoHeight);
 
-    drgui_rect bannerRect = dialogRect;
+    dred_rect bannerRect = dialogRect;
     bannerRect.bottom = (logoHeight*10 + 80.0f) * uiScale;
 
     drgui_draw_image_args args;
@@ -91,8 +91,8 @@ void dred_about_dialog__on_paint(drgui_element* pElement, drgui_rect rect, void*
 
     
 
-    drgui_font* pFont = dred_font_acquire_subfont(pWindow->pDred->config.pUIFont, uiScale);
-    drgui_font_metrics fontMetrics;
+    dred_gui_font* pFont = dred_font_acquire_subfont(pWindow->pDred->config.pUIFont, uiScale);
+    dred_gui_font_metrics fontMetrics;
     drgui_get_font_metrics(pFont, &fontMetrics);
 
     float penPosX = 0;
@@ -207,7 +207,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     
 
 
-    pDialog->pLogo = drgui_create_image(pDred->pGUI, g_LogoBannerImage.width, g_LogoBannerImage.height, drgui_image_format_rgba8, g_LogoBannerImage.width*4, g_LogoBannerImage.pixel_data);
+    pDialog->pLogo = drgui_create_image(pDred->pGUI, g_LogoBannerImage.width, g_LogoBannerImage.height, dred_gui_image_format_rgba8, g_LogoBannerImage.width*4, g_LogoBannerImage.pixel_data);
 
 
     dred_window_get_client_size(pDialog->pWindow, &windowWidth, &windowHeight);

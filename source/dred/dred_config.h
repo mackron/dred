@@ -186,9 +186,9 @@
 
 typedef struct
 {
-    drgui_color bgColor;
-    drgui_color fgColor;
-    drgui_font* pFont;
+    dred_color bgColor;
+    dred_color fgColor;
+    dred_gui_font* pFont;
 } dred_text_style;
 
 typedef struct

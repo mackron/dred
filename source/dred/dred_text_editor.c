@@ -23,7 +23,7 @@ dred_textbox* dred_text_editor__get_textbox(dred_text_editor* pTextEditor)
 
 void dred_text_editor__register_style(dred_text_editor* pTextEditor, dred_text_style* pStyle)
 {
-    drgui_font_metrics fontMetrics;
+    dred_gui_font_metrics fontMetrics;
     drgui_get_font_metrics(pStyle->pFont, &fontMetrics);
 
     drte_font_metrics drteFontMetrics = drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth);

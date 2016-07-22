@@ -1528,23 +1528,23 @@ bool dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow
         pDescOut->size = lf.lfHeight;
     }
 
-    pDescOut->weight = drgui_font_weight_default;
+    pDescOut->weight = dred_gui_font_weight_default;
     switch (lf.lfWeight)
     {
-    case FW_MEDIUM:     pDescOut->weight = drgui_font_weight_medium;      break;
-    case FW_THIN:       pDescOut->weight = drgui_font_weight_thin;        break;
-    case FW_EXTRALIGHT: pDescOut->weight = drgui_font_weight_extra_light; break;
-    case FW_LIGHT:      pDescOut->weight = drgui_font_weight_light;       break;
-    case FW_SEMIBOLD:   pDescOut->weight = drgui_font_weight_semi_bold;   break;
-    case FW_BOLD:       pDescOut->weight = drgui_font_weight_bold;        break;
-    case FW_EXTRABOLD:  pDescOut->weight = drgui_font_weight_extra_bold;  break;
-    case FW_HEAVY:      pDescOut->weight = drgui_font_weight_heavy;       break;
+    case FW_MEDIUM:     pDescOut->weight = dred_gui_font_weight_medium;      break;
+    case FW_THIN:       pDescOut->weight = dred_gui_font_weight_thin;        break;
+    case FW_EXTRALIGHT: pDescOut->weight = dred_gui_font_weight_extra_light; break;
+    case FW_LIGHT:      pDescOut->weight = dred_gui_font_weight_light;       break;
+    case FW_SEMIBOLD:   pDescOut->weight = dred_gui_font_weight_semi_bold;   break;
+    case FW_BOLD:       pDescOut->weight = dred_gui_font_weight_bold;        break;
+    case FW_EXTRABOLD:  pDescOut->weight = dred_gui_font_weight_extra_bold;  break;
+    case FW_HEAVY:      pDescOut->weight = dred_gui_font_weight_heavy;       break;
     default: break;
     }
 
-    pDescOut->slant = drgui_font_slant_none;
+    pDescOut->slant = dred_gui_font_slant_none;
     if (lf.lfItalic) {
-        pDescOut->slant = drgui_font_slant_italic;
+        pDescOut->slant = dred_gui_font_slant_italic;
     }
 
     pDescOut->flags = 0;
@@ -1593,7 +1593,7 @@ bool dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow
 #endif
 }
 
-bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, drgui_color initialColor, drgui_color* pColorOut)
+bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_color initialColor, dred_color* pColorOut)
 {
     if (pDred == NULL || pColorOut == NULL) {
         return false;
@@ -1647,10 +1647,10 @@ bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindo
     gint result = gtk_dialog_run(GTK_DIALOG(dialog));
 
     gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(dialog), &rgba);
-    pColorOut->r = (drgui_byte)(rgba.red * 255);
-    pColorOut->g = (drgui_byte)(rgba.green * 255);
-    pColorOut->b = (drgui_byte)(rgba.blue * 255);
-    pColorOut->a = (drgui_byte)(rgba.alpha * 255);
+    pColorOut->r = (uint8_t)(rgba.red * 255);
+    pColorOut->g = (uint8_t)(rgba.green * 255);
+    pColorOut->b = (uint8_t)(rgba.blue * 255);
+    pColorOut->a = (uint8_t)(rgba.alpha * 255);
 
     gtk_widget_destroy(dialog);
     return result == GTK_RESPONSE_OK;
@@ -2390,15 +2390,15 @@ dred_font* dred__load_system_font_ui(dred_context* pDred)
 #ifdef _WIN32
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Segoe UI");
     fontDesc.size = 12;
-    fontDesc.weight = drgui_font_weight_normal;
-    fontDesc.slant = drgui_font_slant_none;
+    fontDesc.weight = dred_gui_font_weight_normal;
+    fontDesc.slant = dred_gui_font_slant_none;
 #endif
 
 #ifdef __linux__
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "sans");
     fontDesc.size = 13;
-    fontDesc.weight = drgui_font_weight_normal;
-    fontDesc.slant = drgui_font_slant_none;
+    fontDesc.weight = dred_gui_font_weight_normal;
+    fontDesc.slant = dred_gui_font_slant_none;
 
     #if 1
     GSettings* settings = g_settings_new("org.mate.interface");
@@ -2442,8 +2442,8 @@ dred_font* dred__load_system_font_mono(dred_context* pDred)
 #ifdef _WIN32
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Consolas");
     fontDesc.size = 13;
-    fontDesc.weight = drgui_font_weight_normal;
-    fontDesc.slant = drgui_font_slant_none;
+    fontDesc.weight = dred_gui_font_weight_normal;
+    fontDesc.slant = dred_gui_font_slant_none;
 
     // Fall back to Courier New by default for XP.
     OSVERSIONINFOA version;
@@ -2457,8 +2457,8 @@ dred_font* dred__load_system_font_mono(dred_context* pDred)
 #ifdef DRED_GTK
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "monospace");
     fontDesc.size = 13;
-    fontDesc.weight = drgui_font_weight_normal;
-    fontDesc.slant = drgui_font_slant_none;
+    fontDesc.weight = dred_gui_font_weight_normal;
+    fontDesc.slant = dred_gui_font_slant_none;
 
     #if 0
     FcPattern* basepat = FcNameParse((const FcChar8*)"monospace");
@@ -2530,8 +2530,8 @@ dred_font* dred_parse_and_load_font(dred_context* pDred, const char* value)
     dred_font_desc fontDesc;
     fontDesc.flags = 0;
     fontDesc.rotation = 0;
-    fontDesc.weight = drgui_font_weight_normal;
-    fontDesc.slant = drgui_font_slant_none;
+    fontDesc.weight = dred_gui_font_weight_normal;
+    fontDesc.slant = dred_gui_font_slant_none;
 
     // Family.
     value = dr_next_token(value, fontDesc.family, sizeof(fontDesc.family));

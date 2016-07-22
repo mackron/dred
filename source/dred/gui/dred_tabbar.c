@@ -25,46 +25,46 @@ struct dred_tabbar_data
 
 
     /// The default font to use for tab bar items.
-    drgui_font* pFont;
+    dred_gui_font* pFont;
 
     /// The default color to use for tab bar item text.
-    drgui_color tabTextColor;
+    dred_color tabTextColor;
 
     /// The default color to use for tab bar item text while active.
-    drgui_color tabTextColorActivated;
+    dred_color tabTextColorActivated;
 
     /// The default color to use for tab bar item text while hovered.
-    drgui_color tabTextColorHovered;
+    dred_color tabTextColorHovered;
 
     /// The default background color of tab bar items.
-    drgui_color tabBackgroundColor;
+    dred_color tabBackgroundColor;
 
     /// The background color of tab bar items while hovered.
-    drgui_color tabBackgroundColorHovered;
+    dred_color tabBackgroundColorHovered;
 
     /// The background color of tab bar items while selected.
-    drgui_color tabBackbroundColorActivated;
+    dred_color tabBackbroundColorActivated;
 
     /// The padding to apply to the text of tabs.
     float tabPadding;
 
     /// The image to use for the close button.
-    drgui_image* pCloseButtonImage;
+    dred_gui_image* pCloseButtonImage;
 
     /// The padding to the left of the close button.
     float closeButtonPaddingLeft;
 
     /// The default color of the close button.
-    drgui_color closeButtonColorDefault;
+    dred_color closeButtonColorDefault;
 
     /// The color of the close button when the tab is hovered, but not the close button itself.
-    drgui_color closeButtonColorTabHovered;
+    dred_color closeButtonColorTabHovered;
 
     /// The color of the close button when it is hovered.
-    drgui_color closeButtonColorHovered;
+    dred_color closeButtonColorHovered;
 
     /// The color of the close button when it is pressed.
-    drgui_color closeButtonColorPressed;
+    dred_color closeButtonColorPressed;
 
 
     /// Whether or not auto-sizing is enabled. Disabled by default.
@@ -140,7 +140,7 @@ struct drgui_tab
 DRGUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut);
 
 /// Paints the given menu item.
-DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, drgui_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
+DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
 
 /// Finds the tab sitting under the given point, if any.
 DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, bool* pIsOverCloseButtonOut);
@@ -251,7 +251,7 @@ dred_tabbar_orientation dred_tabbar_get_orientation(dred_tabbar* pTabBar)
 }
 
 
-void dred_tabbar_set_font(dred_tabbar* pTabBar, drgui_font* pFont)
+void dred_tabbar_set_font(dred_tabbar* pTabBar, dred_gui_font* pFont)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -270,7 +270,7 @@ void dred_tabbar_set_font(dred_tabbar* pTabBar, drgui_font* pFont)
     }
 }
 
-drgui_font* dred_tabbar_get_font(dred_tabbar* pTabBar)
+dred_gui_font* dred_tabbar_get_font(dred_tabbar* pTabBar)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -281,7 +281,7 @@ drgui_font* dred_tabbar_get_font(dred_tabbar* pTabBar)
 }
 
 
-void dred_tabbar_set_text_color(dred_tabbar* pTabBar, drgui_color color)
+void dred_tabbar_set_text_color(dred_tabbar* pTabBar, dred_color color)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -295,7 +295,7 @@ void dred_tabbar_set_text_color(dred_tabbar* pTabBar, drgui_color color)
     }
 }
 
-drgui_color dred_tabbar_get_text_color(dred_tabbar* pTabBar)
+dred_color dred_tabbar_get_text_color(dred_tabbar* pTabBar)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -305,7 +305,7 @@ drgui_color dred_tabbar_get_text_color(dred_tabbar* pTabBar)
     return pTB->tabTextColor;
 }
 
-void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, drgui_color color)
+void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, dred_color color)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -319,7 +319,7 @@ void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, drgui_color color)
     }
 }
 
-void dred_tabbar_set_text_color_hovered(dred_tabbar* pTabBar, drgui_color color)
+void dred_tabbar_set_text_color_hovered(dred_tabbar* pTabBar, dred_color color)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -334,7 +334,7 @@ void dred_tabbar_set_text_color_hovered(dred_tabbar* pTabBar, drgui_color color)
 }
 
 
-void dred_tabbar_set_close_button_image(dred_tabbar* pTabBar, drgui_image* pImage)
+void dred_tabbar_set_close_button_image(dred_tabbar* pTabBar, dred_gui_image* pImage)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -348,7 +348,7 @@ void dred_tabbar_set_close_button_image(dred_tabbar* pTabBar, drgui_image* pImag
     }
 }
 
-drgui_image* dred_tabbar_get_close_button_image(dred_tabbar* pTabBar)
+dred_gui_image* dred_tabbar_get_close_button_image(dred_tabbar* pTabBar)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -358,7 +358,7 @@ drgui_image* dred_tabbar_get_close_button_image(dred_tabbar* pTabBar)
     return pTB->pCloseButtonImage;
 }
 
-void dred_tabbar_set_close_button_color(dred_tabbar* pTabBar, drgui_color color)
+void dred_tabbar_set_close_button_color(dred_tabbar* pTabBar, dred_color color)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -422,7 +422,7 @@ float dred_tabbar_get_close_button_left_padding(dred_tabbar* pTabBar)
 }
 
 
-void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, drgui_color color)
+void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, dred_color color)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -436,7 +436,7 @@ void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, drgui_color colo
     }
 }
 
-drgui_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar)
+dred_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -446,7 +446,7 @@ drgui_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar)
     return pTB->tabBackgroundColor;
 }
 
-void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, drgui_color color)
+void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, dred_color color)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -460,7 +460,7 @@ void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, drgui_co
     }
 }
 
-drgui_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar)
+dred_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -470,7 +470,7 @@ drgui_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar)
     return pTB->tabBackgroundColorHovered;
 }
 
-void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, drgui_color color)
+void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, dred_color color)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -484,7 +484,7 @@ void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, drgui_col
     }
 }
 
-drgui_color dred_tabbar_get_tab_background_color_actived(dred_tabbar* pTabBar)
+dred_color dred_tabbar_get_tab_background_color_actived(dred_tabbar* pTabBar)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -568,7 +568,7 @@ void dred_tabbar_measure_tab(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidt
     }
 }
 
-void dred_tabbar_paint_tab(dred_tabbar* pTabBar, drgui_tab* pTab, drgui_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData)
+void dred_tabbar_paint_tab(dred_tabbar* pTabBar, drgui_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -596,7 +596,7 @@ void dred_tabbar_resize_by_tabs(dred_tabbar* pTabBar)
     float maxHeight = 0;
     if (pTB->pFirstTab == NULL) {
         // There are no tabs. Set initial size based on the line height of the font.
-        drgui_font_metrics fontMetrics;
+        dred_gui_font_metrics fontMetrics;
         if (drgui_get_font_metrics(pTB->pFont, &fontMetrics)) {
             if (pTB->orientation == dred_tabbar_orientation_top || pTB->orientation == dred_tabbar_orientation_bottom) {
                 maxHeight = fontMetrics.lineHeight + (pTB->tabPadding*2);
@@ -993,7 +993,7 @@ void dred_tabbar_on_mouse_button_up(dred_tabbar* pTabBar, int mouseButton, int r
     }
 }
 
-void dred_tabbar_on_paint(dred_tabbar* pTabBar, drgui_rect relativeClippingRect, void* pPaintData)
+void dred_tabbar_on_paint(dred_tabbar* pTabBar, dred_rect relativeClippingRect, void* pPaintData)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -1078,7 +1078,7 @@ DRGUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, drgu
     }
 }
 
-DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, drgui_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData)
+DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData)
 {
     (void)relativeClippingRect;
 
@@ -1088,9 +1088,9 @@ DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_
     }
 
     // Background.
-    drgui_color bgcolor = pTB->tabBackgroundColor;
-    drgui_color closeButtonColor = pTB->closeButtonColorDefault;
-    drgui_color textColor = pTB->tabTextColor;
+    dred_color bgcolor = pTB->tabBackgroundColor;
+    dred_color closeButtonColor = pTB->closeButtonColorDefault;
+    dred_color textColor = pTB->tabTextColor;
 
     if (pTB->pHoveredTab == pTab) {
         bgcolor = pTB->tabBackgroundColorHovered;
@@ -1187,13 +1187,13 @@ DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, 
             if (pIsOverCloseButtonOut)
             {
                 // The close button is in the center, vertically.
-                drgui_rect closeButtonRect;
+                dred_rect closeButtonRect;
                 closeButtonRect.left   = runningPosX + tabWidth - (pTB->tabPadding + closeButtonWidth);
                 closeButtonRect.right  = closeButtonRect.left + closeButtonWidth;
                 closeButtonRect.top    = runningPosY + (tabHeight - (pTB->tabPadding + closeButtonHeight))/2;
                 closeButtonRect.bottom = closeButtonRect.top + closeButtonHeight;
 
-                if (pTB->isShowingCloseButton && drgui_rect_contains_point(closeButtonRect, relativePosX, relativePosY)) {
+                if (pTB->isShowingCloseButton && dred_rect_contains_point(closeButtonRect, relativePosX, relativePosY)) {
                     *pIsOverCloseButtonOut = true;
                 } else {
                     *pIsOverCloseButtonOut = false;

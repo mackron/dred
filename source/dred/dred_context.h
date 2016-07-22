@@ -248,7 +248,7 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 bool dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut);
 
 // Shows the color picker dialog. Returns true if the user chose a color, false if they hit the cancel button or an error occurs.
-bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, drgui_color initialColor, drgui_color* pColorOut);
+bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_color initialColor, dred_color* pColorOut);
 
 // Shows the "Print" dialog box.
 //

@@ -16,7 +16,7 @@ typedef enum
 typedef struct drgui_tab drgui_tab;
 
 typedef void (* dred_tabbar_on_measure_tab_proc)        (dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut);
-typedef void (* dred_tabbar_on_paint_tab_proc)          (dred_tabbar* pTabBar, drgui_tab* pTab, drgui_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
+typedef void (* dred_tabbar_on_paint_tab_proc)          (dred_tabbar* pTabBar, drgui_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
 typedef void (* dred_tabbar_on_tab_activated_proc)      (dred_tabbar* pTabBar, drgui_tab* pTab, drgui_tab* pOldActiveTab);
 typedef void (* dred_tabbar_on_tab_deactivated_proc)    (dred_tabbar* pTabBar, drgui_tab* pTab, drgui_tab* pNewActiveTab);
 typedef void (* dred_tabbar_on_tab_close_proc)          (dred_tabbar* pTabBar, drgui_tab* pTab);
@@ -47,31 +47,31 @@ dred_tabbar_orientation dred_tabbar_get_orientation(dred_tabbar* pTabBar);
 
 
 /// Sets the default font to use for tabs.
-void dred_tabbar_set_font(dred_tabbar* pTabBar, drgui_font* pFont);
+void dred_tabbar_set_font(dred_tabbar* pTabBar, dred_gui_font* pFont);
 
 /// Retrieves the default font to use for tabs.
-drgui_font* dred_tabbar_get_font(dred_tabbar* pTabBar);
+dred_gui_font* dred_tabbar_get_font(dred_tabbar* pTabBar);
 
 // Sets the color of the text to use on tabs.
-void dred_tabbar_set_text_color(dred_tabbar* pTabBar, drgui_color color);
+void dred_tabbar_set_text_color(dred_tabbar* pTabBar, dred_color color);
 
 // Retrieves the color of the text to use on tabs.
-drgui_color dred_tabbar_get_text_color(dred_tabbar* pTabBar);
+dred_color dred_tabbar_get_text_color(dred_tabbar* pTabBar);
 
 // Sets the color of the text to use on active tabs.
-void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, drgui_color color);
+void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, dred_color color);
 
 // Sets the color of the text to use on hovered tabs.
-void dred_tabbar_set_text_color_hovered(dred_tabbar* pTabBar, drgui_color color);
+void dred_tabbar_set_text_color_hovered(dred_tabbar* pTabBar, dred_color color);
 
 /// Sets the image to use for close buttons.
-void dred_tabbar_set_close_button_image(dred_tabbar* pTabBar, drgui_image* pImage);
+void dred_tabbar_set_close_button_image(dred_tabbar* pTabBar, dred_gui_image* pImage);
 
 /// Retrieves the image being used for the close buttons.
-drgui_image* dred_tabbar_get_close_button_image(dred_tabbar* pTabBar);
+dred_gui_image* dred_tabbar_get_close_button_image(dred_tabbar* pTabBar);
 
 // Sets the default color of the close button.
-void dred_tabbar_set_close_button_color(dred_tabbar* pTabBar, drgui_color color);
+void dred_tabbar_set_close_button_color(dred_tabbar* pTabBar, dred_color color);
 
 // Sets the padding to apply the the text of each tab.
 void dred_tabbar_set_tab_padding(dred_tabbar* pTabBar, float padding);
@@ -86,22 +86,22 @@ void dred_tabbar_set_close_button_left_padding(dred_tabbar* pTabBar, float paddi
 float dred_tabbar_get_close_button_left_padding(dred_tabbar* pTabBar);
 
 // Sets the default background color of tabs. This is the color of inactive tabs.
-void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, drgui_color color);
+void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, dred_color color);
 
 // Retrieves the default background color of tabs while inactive.
-drgui_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar);
+dred_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar);
 
 // Sets the background color of tabs while hovered.
-void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, drgui_color color);
+void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, dred_color color);
 
 // Retrieves the background color of tabs while hovered.
-drgui_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar);
+dred_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar);
 
 // Sets the background color of tabs while activated.
-void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, drgui_color color);
+void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, dred_color color);
 
 // Retrieves the background color of tabs while activated.
-drgui_color dred_tabbar_get_tab_background_color_actived(dred_tabbar* pTabBar);
+dred_color dred_tabbar_get_tab_background_color_actived(dred_tabbar* pTabBar);
 
 
 /// Sets the function to call when a tab needs to be measured.
@@ -127,7 +127,7 @@ void dred_tabbar_set_on_tab_mouse_button_up(dred_tabbar* pTabBar, dred_tabbar_on
 void dred_tabbar_measure_tab(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut);
 
 /// Paints the given tab.
-void dred_tabbar_paint_tab(dred_tabbar* pTabBar, drgui_tab* pTab, drgui_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
+void dred_tabbar_paint_tab(dred_tabbar* pTabBar, drgui_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
 
 
 /// Sets the width or height of the tab bar to that of it's tabs based on it's orientation.
@@ -214,7 +214,7 @@ void dred_tabbar_on_mouse_button_down(dred_tabbar* pTabBar, int mouseButton, int
 void dred_tabbar_on_mouse_button_up(dred_tabbar* pTabBar, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the paint event needs to be processed for the given tab control.
-void dred_tabbar_on_paint(dred_tabbar* pTabBar, drgui_rect relativeClippingRect, void* pPaintData);
+void dred_tabbar_on_paint(dred_tabbar* pTabBar, dred_rect relativeClippingRect, void* pPaintData);
 
 
 

@@ -115,8 +115,8 @@
 //
 // Event-Driven Drawing (Win32):
 //
-// void my_global_on_dirty_win32(drgui_element* pElement, drgui_rect relativeRect) {
-//     drgui_rect absoluteRect = relativeRect;
+// void my_global_on_dirty_win32(drgui_element* pElement, dred_rect relativeRect) {
+//     dred_rect absoluteRect = relativeRect;
 //     drgui_make_rect_absolute(pElement, &absoluteRect);
 //
 //     RECT rect;
@@ -155,18 +155,16 @@
 #define DRED_MAX_FONT_FAMILY_LENGTH  128
 #endif
 
-
 typedef struct drgui_context drgui_context;
 typedef struct drgui_element drgui_element;
-typedef struct drgui_color drgui_color;
-typedef struct drgui_rect drgui_rect;
-typedef struct drgui_painting_callbacks drgui_painting_callbacks;
-typedef struct drgui_font drgui_font;
-typedef struct drgui_image drgui_image;
-typedef struct drgui_font_metrics drgui_font_metrics;
-typedef struct drgui_glyph_metrics drgui_glyph_metrics;
+typedef struct dred_color dred_color;
+typedef struct dred_rect dred_rect;
+typedef struct dred_gui_painting_callbacks dred_gui_painting_callbacks;
+typedef struct dred_gui_font dred_gui_font;
+typedef struct dred_gui_image dred_gui_image;
+typedef struct dred_gui_font_metrics dred_gui_font_metrics;
+typedef struct dred_glyph_metrics dred_glyph_metrics;
 
-typedef unsigned char drgui_byte;
 typedef unsigned int drgui_key;
 
 typedef void* drgui_resource;
@@ -188,43 +186,43 @@ typedef enum
 /// Font weights.
 typedef enum
 {
-    drgui_font_weight_medium,
-    drgui_font_weight_thin,
-    drgui_font_weight_extra_light,
-    drgui_font_weight_light,
-    drgui_font_weight_semi_light,
-    drgui_font_weight_book,
-    drgui_font_weight_semi_bold,
-    drgui_font_weight_bold,
-    drgui_font_weight_extra_bold,
-    drgui_font_weight_heavy,
-    drgui_font_weight_extra_heavy,
+    dred_gui_font_weight_medium,
+    dred_gui_font_weight_thin,
+    dred_gui_font_weight_extra_light,
+    dred_gui_font_weight_light,
+    dred_gui_font_weight_semi_light,
+    dred_gui_font_weight_book,
+    dred_gui_font_weight_semi_bold,
+    dred_gui_font_weight_bold,
+    dred_gui_font_weight_extra_bold,
+    dred_gui_font_weight_heavy,
+    dred_gui_font_weight_extra_heavy,
 
-    drgui_font_weight_normal  = drgui_font_weight_medium,
-    drgui_font_weight_default = drgui_font_weight_medium
+    dred_gui_font_weight_normal  = dred_gui_font_weight_medium,
+    dred_gui_font_weight_default = dred_gui_font_weight_medium
 
-} drgui_font_weight;
+} dred_gui_font_weight;
 
 /// Font slants.
 typedef enum
 {
-    drgui_font_slant_none,
-    drgui_font_slant_italic,
-    drgui_font_slant_oblique
+    dred_gui_font_slant_none,
+    dred_gui_font_slant_italic,
+    dred_gui_font_slant_oblique
 
-} drgui_font_slant;
+} dred_gui_font_slant;
 
 /// Image formats.
 typedef enum
 {
-    drgui_image_format_rgba8,
-    drgui_image_format_bgra8,
-    drgui_image_format_argb8,
-} drgui_image_format;
+    dred_gui_image_format_rgba8,
+    dred_gui_image_format_bgra8,
+    dred_gui_image_format_argb8,
+} dred_gui_image_format;
 
 
 /// Font metrics.
-struct drgui_font_metrics
+struct dred_gui_font_metrics
 {
     int ascent;
     int descent;
@@ -233,7 +231,7 @@ struct drgui_font_metrics
 };
 
 /// Glyph metrics.
-struct drgui_glyph_metrics
+struct dred_glyph_metrics
 {
     int width;
     int height;
@@ -245,16 +243,16 @@ struct drgui_glyph_metrics
 
 
 /// Structure representing an RGBA color. Color components are specified in the range of 0 - 255.
-struct drgui_color
+struct dred_color
 {
-    drgui_byte r;
-    drgui_byte g;
-    drgui_byte b;
-    drgui_byte a;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
 };
 
 /// Structure representing a rectangle.
-struct drgui_rect
+struct dred_rect
 {
     float left;
     float top;
@@ -316,14 +314,14 @@ typedef struct
 
 
     /// The foreground tint color. This is not applied to the background color, and the alpha component is ignored.
-    drgui_color foregroundTint;
+    dred_color foregroundTint;
 
     /// The background color. Only used if the DR2D_IMAGE_DRAW_BACKGROUND option is set.
-    drgui_color backgroundColor;
+    dred_color backgroundColor;
 
     /// The bounds color. This color is used for the region of the bounds that sit on the outside of the destination rectangle. This will
     /// usually be set to the same value as backgroundColor, but it could also be used to draw a border around the image.
-    drgui_color boundsColor;
+    dred_color boundsColor;
 
 
     /// Flags for controlling how the image should be drawn.
@@ -346,8 +344,8 @@ typedef void (* drgui_on_mouse_wheel_proc)          (drgui_element* pElement, in
 typedef void (* drgui_on_key_down_proc)             (drgui_element* pElement, drgui_key key, int stateFlags);
 typedef void (* drgui_on_key_up_proc)               (drgui_element* pElement, drgui_key key, int stateFlags);
 typedef void (* drgui_on_printable_key_down_proc)   (drgui_element* pElement, unsigned int character, int stateFlags);
-typedef void (* drgui_on_paint_proc)                (drgui_element* pElement, drgui_rect relativeRect, void* pPaintData);
-typedef void (* drgui_on_dirty_proc)                (drgui_element* pElement, drgui_rect relativeRect);
+typedef void (* drgui_on_paint_proc)                (drgui_element* pElement, dred_rect relativeRect, void* pPaintData);
+typedef void (* drgui_on_dirty_proc)                (drgui_element* pElement, dred_rect relativeRect);
 typedef bool (* drgui_on_hittest_proc)              (drgui_element* pElement, float relativePosX, float relativePosY);
 typedef void (* drgui_on_capture_mouse_proc)        (drgui_element* pElement);
 typedef void (* drgui_on_release_mouse_proc)        (drgui_element* pElement);
@@ -359,35 +357,35 @@ typedef void (* drgui_on_log)                       (drgui_context* pContext, co
 
 typedef void (* drgui_draw_begin_proc)                   (void* pPaintData);
 typedef void (* drgui_draw_end_proc)                     (void* pPaintData);
-typedef void (* drgui_set_clip_proc)                     (drgui_rect relativeRect, void* pPaintData);
-typedef void (* drgui_get_clip_proc)                     (drgui_rect* pRectOut, void* pPaintData);
-typedef void (* drgui_draw_line_proc)                    (float startX, float startY, float endX, float endY, float width, drgui_color color, void* pPaintData);
-typedef void (* drgui_draw_rect_proc)                    (drgui_rect relativeRect, drgui_color color, void* pPaintData);
-typedef void (* drgui_draw_rect_outline_proc)            (drgui_rect relativeRect, drgui_color color, float outlineWidth, void* pPaintData);
-typedef void (* drgui_draw_rect_with_outline_proc)       (drgui_rect relativeRect, drgui_color color, float outlineWidth, drgui_color outlineColor, void* pPaintData);
-typedef void (* drgui_draw_round_rect_proc)              (drgui_rect relativeRect, drgui_color color, float radius, void* pPaintData);
-typedef void (* drgui_draw_round_rect_outline_proc)      (drgui_rect relativeRect, drgui_color color, float radius, float outlineWidth, void* pPaintData);
-typedef void (* drgui_draw_round_rect_with_outline_proc) (drgui_rect relativeRect, drgui_color color, float radius, float outlineWidth, drgui_color outlineColor, void* pPaintData);
-typedef void (* drgui_draw_text_proc)                    (drgui_resource font, const char* text, int textLengthInBytes, float posX, float posY, drgui_color color, drgui_color backgroundColor, void* pPaintData);
+typedef void (* drgui_set_clip_proc)                     (dred_rect relativeRect, void* pPaintData);
+typedef void (* drgui_get_clip_proc)                     (dred_rect* pRectOut, void* pPaintData);
+typedef void (* drgui_draw_line_proc)                    (float startX, float startY, float endX, float endY, float width, dred_color color, void* pPaintData);
+typedef void (* drgui_draw_rect_proc)                    (dred_rect relativeRect, dred_color color, void* pPaintData);
+typedef void (* drgui_draw_rect_outline_proc)            (dred_rect relativeRect, dred_color color, float outlineWidth, void* pPaintData);
+typedef void (* drgui_draw_rect_with_outline_proc)       (dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, void* pPaintData);
+typedef void (* drgui_draw_round_rect_proc)              (dred_rect relativeRect, dred_color color, float radius, void* pPaintData);
+typedef void (* drgui_draw_round_rect_outline_proc)      (dred_rect relativeRect, dred_color color, float radius, float outlineWidth, void* pPaintData);
+typedef void (* drgui_draw_round_rect_with_outline_proc) (dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData);
+typedef void (* drgui_draw_text_proc)                    (drgui_resource font, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData);
 typedef void (* drgui_draw_image_proc)                   (drgui_resource image, drgui_draw_image_args* pArgs, void* pPaintData);
 
-typedef drgui_resource (* drgui_create_font_proc)                        (void* pPaintingContext, const char* family, unsigned int size, drgui_font_weight weight, drgui_font_slant slant, float rotation, unsigned int flags);
+typedef drgui_resource (* drgui_create_font_proc)                        (void* pPaintingContext, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags);
 typedef void           (* drgui_delete_font_proc)                        (drgui_resource font);
 typedef unsigned int   (* drgui_get_font_size_proc)                      (drgui_resource font);
-typedef bool           (* drgui_get_font_metrics_proc)                   (drgui_resource font, drgui_font_metrics* pMetricsOut);
-typedef bool           (* drgui_get_glyph_metrics_proc)                  (drgui_resource font, unsigned int utf32, drgui_glyph_metrics* pMetricsOut);
+typedef bool           (* drgui_get_font_metrics_proc)                   (drgui_resource font, dred_gui_font_metrics* pMetricsOut);
+typedef bool           (* drgui_get_glyph_metrics_proc)                  (drgui_resource font, unsigned int utf32, dred_glyph_metrics* pMetricsOut);
 typedef bool           (* drgui_measure_string_proc)                     (drgui_resource font, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
 typedef bool           (* drgui_get_text_cursor_position_from_point_proc)(drgui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
 typedef bool           (* drgui_get_text_cursor_position_from_char_proc) (drgui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
-typedef drgui_resource     (* drgui_create_image_proc)            (void* pPaintingContext, unsigned int width, unsigned int height, drgui_image_format format, unsigned int stride, const void* pImageData);
+typedef drgui_resource     (* drgui_create_image_proc)            (void* pPaintingContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pImageData);
 typedef void               (* drgui_delete_image_proc)            (drgui_resource image);
-typedef drgui_image_format (* drgui_get_optimal_image_format_proc)(void* pPaintingContext);
+typedef dred_gui_image_format (* drgui_get_optimal_image_format_proc)(void* pPaintingContext);
 typedef void               (* drgui_get_image_size_proc)          (drgui_resource image, unsigned int* pWidthOut, unsigned int* pHeightOut);
 typedef void*              (* drgui_map_image_data_proc)          (drgui_resource image, unsigned int accessFlags);
 typedef void               (* drgui_unmap_image_data_proc)        (drgui_resource image);
 
-typedef bool (* drgui_visible_iteration_proc)(drgui_element* pElement, drgui_rect *pRelativeRect, void* pUserData);
+typedef bool (* drgui_visible_iteration_proc)(drgui_element* pElement, dred_rect *pRelativeRect, void* pUserData);
 
 
 // Key state flags.
@@ -547,7 +545,7 @@ drgui_key drgui_key_parse(const char* str)
 
 
 /// Structure containing callbacks for painting routines.
-struct drgui_painting_callbacks
+struct dred_gui_painting_callbacks
 {
     drgui_draw_begin_proc                          drawBegin;
     drgui_draw_end_proc                            drawEnd;
@@ -582,7 +580,7 @@ struct drgui_painting_callbacks
     drgui_unmap_image_data_proc                    unmapImageData;
 };
 
-struct drgui_image
+struct dred_gui_image
 {
     /// A pointer to the context that owns this image.
     drgui_context* pContext;
@@ -591,7 +589,7 @@ struct drgui_image
     drgui_resource hResource;
 };
 
-struct drgui_font
+struct dred_gui_font
 {
     /// A pointer to the context that owns this font.
     drgui_context* pContext;
@@ -603,10 +601,10 @@ struct drgui_font
     unsigned int size;
 
     /// The font's weight.
-    drgui_font_weight weight;
+    dred_gui_font_weight weight;
 
     /// The fon't slant.
-    drgui_font_slant slant;
+    dred_gui_font_slant slant;
 
     /// The fon't rotation.
     float rotation;
@@ -674,7 +672,7 @@ struct drgui_element
     unsigned int flags;
 
     // The region of the element that's dirty.
-    drgui_rect dirtyRect;
+    dred_rect dirtyRect;
 
 
     /// The function to call when the element's relative position moves.
@@ -739,7 +737,7 @@ struct drgui_element
     size_t extraDataSize;
 
     /// A pointer to the extra data.
-    drgui_byte pExtraData[1];
+    uint8_t pExtraData[1];
 };
 
 struct drgui_context
@@ -748,7 +746,7 @@ struct drgui_context
     void* pPaintingContext;
 
     /// The painting callbacks.
-    drgui_painting_callbacks paintingCallbacks;
+    dred_gui_painting_callbacks paintingCallbacks;
 
 
     /// The inbound event counter. This is incremented with drgui_begin_inbound_event() and decremented with
@@ -1221,16 +1219,16 @@ float drgui_get_height(const drgui_element* pElement);
 
 
 /// Retrieves the absolute rectangle for the given element.
-drgui_rect drgui_get_absolute_rect(const drgui_element* pElement);
+dred_rect drgui_get_absolute_rect(const drgui_element* pElement);
 
 /// Retrieves the relative rectangle for the given element.
-drgui_rect drgui_get_relative_rect(const drgui_element* pElement);
+dred_rect drgui_get_relative_rect(const drgui_element* pElement);
 
 /// Retrieves the local rectangle for the given element.
 ///
 /// @remarks
 ///     The local rectangle is equivalent to drgui_make_rect(0, 0, drgui_get_width(pElement), drgui_get_height(pElement));
-drgui_rect drgui_get_local_rect(const drgui_element* pElement);
+dred_rect drgui_get_local_rect(const drgui_element* pElement);
 
 
 
@@ -1241,7 +1239,7 @@ drgui_rect drgui_get_local_rect(const drgui_element* pElement);
 /// @remarks
 ///     This can only be called once, so it should always be done after initialization. This will fail if called
 ///     more than once.
-bool drgui_register_painting_callbacks(drgui_context* pContext, void* pPaintingContext, drgui_painting_callbacks callbacks);
+bool drgui_register_painting_callbacks(drgui_context* pContext, void* pPaintingContext, dred_gui_painting_callbacks callbacks);
 
 
 /// Performs a recursive traversal of all visible elements in the given rectangle.
@@ -1255,7 +1253,7 @@ bool drgui_register_painting_callbacks(drgui_context* pContext, void* pPaintingC
 ///     @par
 ///     The iteration callback function takes a pointer to a rectangle structure that represents the visible portion of the
 ///     element. This pointer can be modified by the callback to create an adjusted rectangle which can be used for clipping.
-bool drgui_iterate_visible_elements(drgui_element* pParentElement, drgui_rect relativeRect, drgui_visible_iteration_proc callback, void* pUserData);
+bool drgui_iterate_visible_elements(drgui_element* pParentElement, dred_rect relativeRect, drgui_visible_iteration_proc callback, void* pUserData);
 
 
 /// Disable's automatic dirtying of elements.
@@ -1280,7 +1278,7 @@ void drgui_end_dirty(drgui_element* pElement);
 ///
 /// @remarks
 ///     This will not redraw the element immediately, but instead post a paint event.
-void drgui_dirty(drgui_element* pElement, drgui_rect relativeRect);
+void drgui_dirty(drgui_element* pElement, dred_rect relativeRect);
 
 
 /// Draws the given element.
@@ -1292,31 +1290,31 @@ void drgui_dirty(drgui_element* pElement, drgui_rect relativeRect);
 ///     This will call painting event handlers which will give the application time to do custom drawing.
 ///     @par
 ///     When using easy_draw to do drawing, pPaintData must be set to a pointer to the relevant easydraw_surface object.
-void drgui_draw(drgui_element* pElement, drgui_rect relativeRect, void* pPaintData);
+void drgui_draw(drgui_element* pElement, dred_rect relativeRect, void* pPaintData);
 
 /// Retrieves the current clipping rectangle.
-void drgui_get_clip(drgui_element* pElement, drgui_rect* pRelativeRect, void* pPaintData);
+void drgui_get_clip(drgui_element* pElement, dred_rect* pRelativeRect, void* pPaintData);
 
 /// Sets the clipping rectangle to apply to all future draw operations on this element.
-void drgui_set_clip(drgui_element* pElement, drgui_rect relativeRect, void* pPaintData);
+void drgui_set_clip(drgui_element* pElement, dred_rect relativeRect, void* pPaintData);
 
 /// Draws a rectangle on the given element.
-void drgui_draw_rect(drgui_element* pElement, drgui_rect relativeRect, drgui_color color, void* pPaintData);
+void drgui_draw_rect(drgui_element* pElement, dred_rect relativeRect, dred_color color, void* pPaintData);
 
 /// Draws the outline of a rectangle on the given element.
-void drgui_draw_rect_outline(drgui_element* pElement, drgui_rect relativeRect, drgui_color color, float outlineWidth, void* pPaintData);
+void drgui_draw_rect_outline(drgui_element* pElement, dred_rect relativeRect, dred_color color, float outlineWidth, void* pPaintData);
 
 /// Draws a filled rectangle with an outline on the given element.
-void drgui_draw_rect_with_outline(drgui_element* pElement, drgui_rect relativeRect, drgui_color color, float outlineWidth, drgui_color outlineColor, void* pPaintData);
+void drgui_draw_rect_with_outline(drgui_element* pElement, dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, void* pPaintData);
 
 /// Draws a rectangle with rounded corners on the given element.
-void drgui_draw_round_rect(drgui_element* pElement, drgui_rect relativeRect, drgui_color color, float radius, void* pPaintData);
+void drgui_draw_round_rect(drgui_element* pElement, dred_rect relativeRect, dred_color color, float radius, void* pPaintData);
 
 /// Draws the outline of a rectangle with rounded corners on the given element.
-void drgui_draw_round_rect_outline(drgui_element* pElement, drgui_rect relativeRect, drgui_color color, float radius, float outlineWidth, void* pPaintData);
+void drgui_draw_round_rect_outline(drgui_element* pElement, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, void* pPaintData);
 
 /// Draws a filled rectangle and it's outline with rounded corners on the given element.
-void drgui_draw_round_rect_with_outline(drgui_element* pElement, drgui_rect relativeRect, drgui_color color, float radius, float outlineWidth, drgui_color outlineColor, void* pPaintData);
+void drgui_draw_round_rect_with_outline(drgui_element* pElement, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData);
 
 /// Draws a run of text on the given element.
 ///
@@ -1325,35 +1323,35 @@ void drgui_draw_round_rect_with_outline(drgui_element* pElement, drgui_rect rela
 ///     calls to this function.
 ///     @par
 ///     \c textSizeInBytes can be -1 in which case the text string is treated as null terminated.
-void drgui_draw_text(drgui_element* pElement, drgui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, drgui_color color, drgui_color backgroundColor, void* pPaintData);
+void drgui_draw_text(drgui_element* pElement, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData);
 
 /// Draws an image.
-void drgui_draw_image(drgui_element* pElement, drgui_image* pImage, drgui_draw_image_args* pArgs, void* pPaintData);
+void drgui_draw_image(drgui_element* pElement, dred_gui_image* pImage, drgui_draw_image_args* pArgs, void* pPaintData);
 
 
 /// Creates a font resource.
-drgui_font* drgui_create_font(drgui_context* pContext, const char* family, unsigned int size, drgui_font_weight weight, drgui_font_slant slant, float rotation, unsigned int flags);
+dred_gui_font* drgui_create_font(drgui_context* pContext, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags);
 
 /// Deletes a font resource.
-void drgui_delete_font(drgui_font* pFont);
+void drgui_delete_font(dred_gui_font* pFont);
 
 /// Retrieves the metrics of the given font.
-bool drgui_get_font_metrics(drgui_font* pFont, drgui_font_metrics* pMetricsOut);
+bool drgui_get_font_metrics(dred_gui_font* pFont, dred_gui_font_metrics* pMetricsOut);
 
 /// Retrieves the metrics of the glyph for the given character when rendered with the given font.
-bool drgui_get_glyph_metrics(drgui_font* pFont, unsigned int utf32, drgui_glyph_metrics* pMetricsOut);
+bool drgui_get_glyph_metrics(dred_gui_font* pFont, unsigned int utf32, dred_glyph_metrics* pMetricsOut);
 
 /// Retrieves the dimensions of the given string when drawn with the given font.
 ///
 /// @remarks
 ///     When the length of the text is 0, the width will be set to 0 and the height will be set to the line height.
-bool drgui_measure_string(drgui_font* pFont, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut);
+bool drgui_measure_string(dred_gui_font* pFont, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut);
 
 /// Retrieves the position to place a text cursor based on the given point for the given string when drawn with the given font.
-bool drgui_get_text_cursor_position_from_point(drgui_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+bool drgui_get_text_cursor_position_from_point(dred_gui_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
 
 /// Retrieves the position to palce a text cursor based on the character at the given index for the given string when drawn with the given font.
-bool drgui_get_text_cursor_position_from_char(drgui_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+bool drgui_get_text_cursor_position_from_char(dred_gui_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 
 
@@ -1367,16 +1365,16 @@ bool drgui_get_text_cursor_position_from_char(drgui_font* pFont, const char* tex
 ///     If stride is set to 0, it is assumed to be tightly packed.
 ///     @par
 ///     Use drgui_map_image_data() and drgui_unmap_image_data() to update or retrieve image data.
-drgui_image* drgui_create_image(drgui_context* pContext, unsigned int width, unsigned int height, drgui_image_format format, unsigned int stride, const void* pData);
+dred_gui_image* drgui_create_image(drgui_context* pContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pData);
 
 /// Deletes the given image.
-void drgui_delete_image(drgui_image* pImage);
+void drgui_delete_image(dred_gui_image* pImage);
 
 /// Retrieves the size of the given image.
-void drgui_get_image_size(drgui_image* pImage, unsigned int* pWidthOut, unsigned int* pHeightOut);
+void drgui_get_image_size(dred_gui_image* pImage, unsigned int* pWidthOut, unsigned int* pHeightOut);
 
 /// Retrieves the optimal image format for the given context.
-drgui_image_format drgui_get_optimal_image_format(drgui_context* pContext);
+dred_gui_image_format drgui_get_optimal_image_format(drgui_context* pContext);
 
 /// Retrieves a pointer to a buffer representing the given image's data.
 ///
@@ -1386,10 +1384,10 @@ drgui_image_format drgui_get_optimal_image_format(drgui_context* pContext);
 /// writing to this pointer, nothing is actually updated until drgui_unmap_image_data() is called.
 ///
 /// The returned data will contain the image data at the time of the mapping.
-void* drgui_map_image_data(drgui_image* pImage, unsigned int accessFlags);
+void* drgui_map_image_data(dred_gui_image* pImage, unsigned int accessFlags);
 
 /// Unmaps the given image data.
-void drgui_unmap_image_data(drgui_image* pImage);
+void drgui_unmap_image_data(dred_gui_image* pImage);
 
 
 
@@ -1411,7 +1409,7 @@ bool drgui_pass_through_hit_test(drgui_element* pElement, float mousePosX, float
 //// Painting ////
 
 /// Draws a border around the given element.
-void drgui_draw_border(drgui_element* pElement, float borderWidth, drgui_color color, void* pUserData);
+void drgui_draw_border(drgui_element* pElement, float borderWidth, dred_color color, void* pUserData);
 
 
 
@@ -1422,22 +1420,22 @@ void drgui_draw_border(drgui_element* pElement, float borderWidth, drgui_color c
 /////////////////////////////////////////////////////////////////
 
 /// Creates a color object from a set of RGBA color components.
-drgui_color drgui_rgba(drgui_byte r, drgui_byte g, drgui_byte b, drgui_byte a);
+dred_color drgui_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
 /// Creates a color object from a set of RGB color components.
-drgui_color drgui_rgb(drgui_byte r, drgui_byte g, drgui_byte b);
+dred_color drgui_rgb(uint8_t r, uint8_t g, uint8_t b);
 
 /// Clamps the given rectangle to another.
-drgui_rect drgui_clamp_rect(drgui_rect rect, drgui_rect other);
+dred_rect drgui_clamp_rect(dred_rect rect, dred_rect other);
 
 /// Clamps the given rectangle to the given element and returns whether or not any of it is contained within the element's rectangle.
-bool drgui_clamp_rect_to_element(const drgui_element* pElement, drgui_rect* pRelativeRect);
+bool drgui_clamp_rect_to_element(const drgui_element* pElement, dred_rect* pRelativeRect);
 
 /// Converts the given rectangle from absolute to relative to the given element.
-drgui_rect drgui_make_rect_relative(const drgui_element* pElement, drgui_rect* pRect);
+dred_rect drgui_make_rect_relative(const drgui_element* pElement, dred_rect* pRect);
 
 /// Converts the given rectangle from relative to absolute based on the given element.
-drgui_rect drgui_make_rect_absolute(const drgui_element* pElement, drgui_rect* pRect);
+dred_rect drgui_make_rect_absolute(const drgui_element* pElement, dred_rect* pRect);
 
 /// Converts the given point from absolute to relative to the given element.
 void drgui_make_point_relative(const drgui_element* pElement, float* positionX, float* positionY);
@@ -1445,15 +1443,15 @@ void drgui_make_point_relative(const drgui_element* pElement, float* positionX, 
 /// Converts the given point from relative to absolute based on the given element.
 void drgui_make_point_absolute(const drgui_element* pElement, float* positionX, float* positionY);
 
-/// Creates a drgui_rect object.
-drgui_rect drgui_make_rect(float left, float top, float right, float bottom);
+/// Creates a dred_rect object.
+dred_rect drgui_make_rect(float left, float top, float right, float bottom);
 
 /// Creates an inside-out rectangle.
 ///
 /// @remarks
 ///     An inside our rectangle is a negative-dimension rectangle with each edge at the extreme edges. The left edge will be at the
 ///     right-most side and the right edge will be at the left-most side. The same applies for the top and bottom edges.
-drgui_rect drgui_make_inside_out_rect();
+dred_rect drgui_make_inside_out_rect();
 
 /// Expands the given rectangle on all sides by the given amount.
 ///
@@ -1462,7 +1460,7 @@ drgui_rect drgui_make_inside_out_rect();
 ///     @par
 ///     The growth amount can be negative, in which case it will be shrunk. Note that this does not do any checking to ensure the rectangle
 ///     contains positive dimensions after a shrink.
-drgui_rect drgui_grow_rect(drgui_rect rect, float amount);
+dred_rect drgui_grow_rect(dred_rect rect, float amount);
 
 /// Scales the given rectangle.
 ///
@@ -1472,13 +1470,13 @@ drgui_rect drgui_grow_rect(drgui_rect rect, float amount);
 /// @remarks
 ///     This will modify the <left> and <top> properties which means the rectangle will change position. To adjust only the size, scale the
 ///     rectangle manually.
-drgui_rect drgui_scale_rect(drgui_rect rect, float scaleX, float scaleY);
+dred_rect drgui_scale_rect(dred_rect rect, float scaleX, float scaleY);
 
 /// Offsets the given rectangle.
-drgui_rect drgui_offset_rect(drgui_rect rect, float offsetX, float offsetY);
+dred_rect drgui_offset_rect(dred_rect rect, float offsetX, float offsetY);
 
 /// Creates a rectangle that contains both of the given rectangles.
-drgui_rect drgui_rect_union(drgui_rect rect0, drgui_rect rect1);
+dred_rect dred_rect_union(dred_rect rect0, dred_rect rect1);
 
 /// Determines whether or not the given rectangle contains the given point.
 ///
@@ -1487,13 +1485,13 @@ drgui_rect drgui_rect_union(drgui_rect rect0, drgui_rect rect1);
 ///     is sitting on the left or top border, true will be returned. The reason for this is that elements may sit exactly side-by-side with
 ///     each other, and if we use this function to determine if a point is contained within an element (which we do), we would end up having
 ///     this return true for both elements, which we don't want.
-bool drgui_rect_contains_point(drgui_rect rect, float posX, float posY);
+bool dred_rect_contains_point(dred_rect rect, float posX, float posY);
 
 /// Determines whether or not two rectangles are equal.
-bool drgui_rect_equal(drgui_rect rect0, drgui_rect rect1);
+bool dred_rect_equal(dred_rect rect0, dred_rect rect1);
 
 /// Determines whether or not the given rectangle has any volume (width and height > 0).
-bool drgui_rect_has_volume(drgui_rect rect);
+bool dred_rect_has_volume(dred_rect rect);
 
 
 

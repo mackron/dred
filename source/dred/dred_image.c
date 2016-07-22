@@ -75,7 +75,7 @@ void dred_image_delete(dred_image* pImage)
 }
 
 
-drgui_image* dred_image_acquire_subimage(dred_image* pImage, float scale)
+dred_gui_image* dred_image_acquire_subimage(dred_image* pImage, float scale)
 {
     if (pImage == NULL) {
         return NULL;
@@ -98,7 +98,7 @@ drgui_image* dred_image_acquire_subimage(dred_image* pImage, float scale)
     return pClosestImage->pGUIImage;
 }
 
-void dred_image_release_subimage(dred_image* pImage, drgui_image* pSubImage)
+void dred_image_release_subimage(dred_image* pImage, dred_gui_image* pSubImage)
 {
     if (pImage == NULL || pSubImage == NULL) {
         return;
