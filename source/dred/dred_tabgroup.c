@@ -167,7 +167,7 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
     dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
     assert(data != NULL);
 
-    data->pTabBar = drgui_create_tab_bar(pDred->pGUI, pTabGroup, drgui_tabbar_orientation_top, 0, NULL);
+    data->pTabBar = dred_tabbar_create(pDred, pTabGroup, dred_tabbar_orientation_top, 0, NULL);
     if (data->pTabBar == NULL) {
         dred_control_delete(pTabGroup);
         return NULL;
@@ -176,12 +176,12 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
     data->pNextTabGroup = NULL;
     data->pPrevTabGroup = NULL;
 
-    drgui_tabbar_enable_close_on_middle_click(data->pTabBar);
-    drgui_tabbar_enable_auto_size(data->pTabBar);
-    drgui_tabbar_set_on_tab_activated(data->pTabBar, dred_tabbar__on_tab_activated);
-    drgui_tabbar_set_on_tab_deactivated(data->pTabBar, dred_tabbar__on_tab_deactivated);
-    drgui_tabbar_set_on_tab_closed(data->pTabBar, dred_tabbar__on_tab_close);
-    drgui_tabbar_set_on_tab_mouse_button_up(data->pTabBar, dred_tabbar__on_tab_mouse_button_up);
+    dred_tabbar_enable_close_on_middle_click(data->pTabBar);
+    dred_tabbar_enable_auto_size(data->pTabBar);
+    dred_tabbar_set_on_tab_activated(data->pTabBar, dred_tabbar__on_tab_activated);
+    dred_tabbar_set_on_tab_deactivated(data->pTabBar, dred_tabbar__on_tab_deactivated);
+    dred_tabbar_set_on_tab_closed(data->pTabBar, dred_tabbar__on_tab_close);
+    dred_tabbar_set_on_tab_mouse_button_up(data->pTabBar, dred_tabbar__on_tab_mouse_button_up);
 
     dred_tabgroup_refresh_styling(pTabGroup);
 
@@ -206,7 +206,7 @@ void dred_tabgroup_delete(dred_tabgroup* pTabGroup)
 
     dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
     if (data != NULL) {
-        drgui_delete_tab_bar(data->pTabBar);
+        dred_tabbar_delete(data->pTabBar);
     }
 
     dred_control_delete(pTabGroup);
@@ -227,21 +227,21 @@ void dred_tabgroup_refresh_styling(dred_tabgroup* pTabGroup)
 
 
     // Update tab bar.
-    drgui_tabbar_set_tab_padding(data->pTabBar, pDred->config.tabPadding * pDred->uiScale);
-    drgui_tabbar_set_tab_background_color(data->pTabBar, pDred->config.tabBGColorInvactive);
-    drgui_tabbar_set_tab_background_color_active(data->pTabBar, pDred->config.tabBGColorActive);
-    drgui_tabbar_set_tab_background_color_hovered(data->pTabBar, pDred->config.tabBGColorHovered);
-    drgui_tabbar_set_font(data->pTabBar, dred_font_acquire_subfont(pDred->config.tabFont, pDred->uiScale));
-    drgui_tabbar_set_text_color(data->pTabBar, pDred->config.tabTextColor);
-    drgui_tabbar_set_text_color_active(data->pTabBar, pDred->config.tabTextColorActive);
-    drgui_tabbar_set_text_color_hovered(data->pTabBar, pDred->config.tabTextColorHovered);
-    drgui_tabbar_set_close_button_left_padding(data->pTabBar, 6 * pDred->uiScale);
-    drgui_tabbar_set_close_button_image(data->pTabBar, dred_image_acquire_subimage(pDred->config.pImageCross, pDred->uiScale));
-    drgui_tabbar_set_close_button_color(data->pTabBar, pDred->config.tabCloseButtonColor);
+    dred_tabbar_set_tab_padding(data->pTabBar, pDred->config.tabPadding * pDred->uiScale);
+    dred_tabbar_set_tab_background_color(data->pTabBar, pDred->config.tabBGColorInvactive);
+    dred_tabbar_set_tab_background_color_active(data->pTabBar, pDred->config.tabBGColorActive);
+    dred_tabbar_set_tab_background_color_hovered(data->pTabBar, pDred->config.tabBGColorHovered);
+    dred_tabbar_set_font(data->pTabBar, dred_font_acquire_subfont(pDred->config.tabFont, pDred->uiScale));
+    dred_tabbar_set_text_color(data->pTabBar, pDred->config.tabTextColor);
+    dred_tabbar_set_text_color_active(data->pTabBar, pDred->config.tabTextColorActive);
+    dred_tabbar_set_text_color_hovered(data->pTabBar, pDred->config.tabTextColorHovered);
+    dred_tabbar_set_close_button_left_padding(data->pTabBar, 6 * pDred->uiScale);
+    dred_tabbar_set_close_button_image(data->pTabBar, dred_image_acquire_subimage(pDred->config.pImageCross, pDred->uiScale));
+    dred_tabbar_set_close_button_color(data->pTabBar, pDred->config.tabCloseButtonColor);
     if (pDred->config.tabShowCloseButton) {
-        drgui_tabbar_show_close_buttons(data->pTabBar);
+        dred_tabbar_show_close_buttons(data->pTabBar);
     } else {
-        drgui_tabbar_hide_close_buttons(data->pTabBar);
+        dred_tabbar_hide_close_buttons(data->pTabBar);
     }
 
 
@@ -313,43 +313,43 @@ dred_tabgroup* dred_tabgroup_prev_tabgroup(dred_tabgroup* pTabGroup)
 
 void dred_tabgroup_activate_tab(dred_tabgroup* pTabGroup, dred_tab* pTab)
 {
-    drgui_tabbar_activate_tab(dred_tabgroup__get_tabbar(pTabGroup), pTab);
+    dred_tabbar_activate_tab(dred_tabgroup__get_tabbar(pTabGroup), pTab);
 }
 
 void dred_tabgroup_activate_next_tab(dred_tabgroup* pTabGroup)
 {
-    drgui_tabbar_activate_next_tab(dred_tabgroup__get_tabbar(pTabGroup));
+    dred_tabbar_activate_next_tab(dred_tabgroup__get_tabbar(pTabGroup));
 }
 
 void dred_tabgroup_activate_prev_tab(dred_tabgroup* pTabGroup)
 {
-    drgui_tabbar_activate_prev_tab(dred_tabgroup__get_tabbar(pTabGroup));
+    dred_tabbar_activate_prev_tab(dred_tabgroup__get_tabbar(pTabGroup));
 }
 
 dred_tab* dred_tabgroup_get_active_tab(dred_tabgroup* pTabGroup)
 {
-    return drgui_tabbar_get_active_tab(dred_tabgroup__get_tabbar(pTabGroup));
+    return dred_tabbar_get_active_tab(dred_tabgroup__get_tabbar(pTabGroup));
 }
 
 
 dred_tab* dred_tabgroup_first_tab(dred_tabgroup* pTabGroup)
 {
-    return drgui_tabbar_get_first_tab(dred_tabgroup__get_tabbar(pTabGroup));
+    return dred_tabbar_get_first_tab(dred_tabgroup__get_tabbar(pTabGroup));
 }
 
 dred_tab* dred_tabgroup_last_tab(dred_tabgroup* pTabGroup)
 {
-    return drgui_tabbar_get_last_tab(dred_tabgroup__get_tabbar(pTabGroup));
+    return dred_tabbar_get_last_tab(dred_tabgroup__get_tabbar(pTabGroup));
 }
 
 dred_tab* dred_tabgroup_next_tab(dred_tabgroup* pTabGroup, dred_tab* pTab)
 {
-    return drgui_tabbar_get_next_tab(dred_tabgroup__get_tabbar(pTabGroup), pTab);
+    return dred_tabbar_get_next_tab(dred_tabgroup__get_tabbar(pTabGroup), pTab);
 }
 
 dred_tab* dred_tabgroup_prev_tab(dred_tabgroup* pTabGroup, dred_tab* pTab)
 {
-    return drgui_tabbar_get_prev_tab(dred_tabgroup__get_tabbar(pTabGroup), pTab);
+    return dred_tabbar_get_prev_tab(dred_tabgroup__get_tabbar(pTabGroup), pTab);
 }
 
 

@@ -146,7 +146,7 @@ DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_
 /// Finds the tab sitting under the given point, if any.
 DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, bool* pIsOverCloseButtonOut);
 
-dred_tabbar* drgui_create_tab_bar(dred_context* pDred, drgui_element* pParent, dred_tabbar_orientation orientation, size_t extraDataSize, const void* pExtraData)
+dred_tabbar* dred_tabbar_create(dred_context* pDred, drgui_element* pParent, dred_tabbar_orientation orientation, size_t extraDataSize, const void* pExtraData)
 {
     dred_tabbar* pTabBar = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_TABBAR, sizeof(drgui_tab_bar) + extraDataSize);
     if (pTabBar == NULL) {
@@ -205,7 +205,7 @@ dred_tabbar* drgui_create_tab_bar(dred_context* pDred, drgui_element* pParent, d
     return pTabBar;
 }
 
-void drgui_delete_tab_bar(dred_tabbar* pTabBar)
+void dred_tabbar_delete(dred_tabbar* pTabBar)
 {
     drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {

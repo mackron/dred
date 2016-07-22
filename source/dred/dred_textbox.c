@@ -173,9 +173,9 @@ void dred_textbox_engine__on_apply_undo_state(drte_engine* pTL, size_t dataSize,
 // dred_textbox__refresh_horizontal_scrollbar()
 void dred_textbox__refresh_horizontal_scrollbar(dred_textbox* pTextBox);
 
-void dred_textbox__on_vscroll(drgui_element* pSBElement, int scrollPos)
+void dred_textbox__on_vscroll(dred_scrollbar* pSBElement, int scrollPos)
 {
-    dred_textbox* pTextBox = *(drgui_element**)drgui_sb_get_extra_data(pSBElement);
+    dred_textbox* pTextBox = *(drgui_element**)dred_scrollbar_get_extra_data(pSBElement);
     assert(pTextBox != NULL);
 
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
@@ -188,9 +188,9 @@ void dred_textbox__on_vscroll(drgui_element* pSBElement, int scrollPos)
     drgui_dirty(pTB->pLineNumbers, drgui_get_local_rect(pTB->pLineNumbers));
 }
 
-void dred_textbox__on_hscroll(drgui_element* pSBElement, int scrollPos)
+void dred_textbox__on_hscroll(dred_scrollbar* pSBElement, int scrollPos)
 {
-    dred_textbox* pTextBox = *(drgui_element**)drgui_sb_get_extra_data(pSBElement);
+    dred_textbox* pTextBox = *(drgui_element**)dred_scrollbar_get_extra_data(pSBElement);
     assert(pTextBox != NULL);
 
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
@@ -468,12 +468,12 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
-    pTB->pVertScrollbar = drgui_create_scrollbar(pDred->pGUI, pTextBox, drgui_sb_orientation_vertical, sizeof(pTextBox), &pTextBox);
-    drgui_sb_set_on_scroll(pTB->pVertScrollbar, dred_textbox__on_vscroll);
-    drgui_sb_set_mouse_wheel_scele(pTB->pVertScrollbar, 3);
+    pTB->pVertScrollbar = dred_scrollbar_create(pDred, pTextBox, dred_scrollbar_orientation_vertical, sizeof(pTextBox), &pTextBox);
+    dred_scrollbar_set_on_scroll(pTB->pVertScrollbar, dred_textbox__on_vscroll);
+    dred_scrollbar_set_mouse_wheel_scele(pTB->pVertScrollbar, 3);
 
-    pTB->pHorzScrollbar = drgui_create_scrollbar(pDred->pGUI, pTextBox, drgui_sb_orientation_horizontal, sizeof(pTextBox), &pTextBox);
-    drgui_sb_set_on_scroll(pTB->pHorzScrollbar, dred_textbox__on_hscroll);
+    pTB->pHorzScrollbar = dred_scrollbar_create(pDred, pTextBox, dred_scrollbar_orientation_horizontal, sizeof(pTextBox), &pTextBox);
+    dred_scrollbar_set_on_scroll(pTB->pHorzScrollbar, dred_textbox__on_hscroll);
 
     pTB->pLineNumbers = drgui_create_element(pDred->pGUI, pTextBox, sizeof(pTextBox), &pTextBox);
     drgui_hide(pTB->pLineNumbers);
@@ -601,12 +601,12 @@ void dred_textbox_delete(dred_textbox* pTextBox)
     }
 
     if (pTB->pHorzScrollbar) {
-        drgui_delete_element(pTB->pHorzScrollbar);
+        dred_scrollbar_delete(pTB->pHorzScrollbar);
         pTB->pHorzScrollbar = NULL;
     }
 
     if (pTB->pVertScrollbar) {
-        drgui_delete_element(pTB->pVertScrollbar);
+        dred_scrollbar_delete(pTB->pVertScrollbar);
         pTB->pVertScrollbar = NULL;
     }
 
@@ -645,7 +645,7 @@ void dred_textbox_set_font(dred_textbox* pTextBox, drgui_font* pFont)
         dred_textbox__refresh_line_numbers(pTextBox);
 
         // Emulate a scroll to ensure the scroll position is pinned to a line.
-        dred_textbox__on_vscroll(pTB->pVertScrollbar, drgui_sb_get_scroll_position(pTB->pVertScrollbar));
+        dred_textbox__on_vscroll(pTB->pVertScrollbar, dred_scrollbar_get_scroll_position(pTB->pVertScrollbar));
         dred_textbox__refresh_scrollbars(pTextBox);
     }
     drgui_end_dirty(pTextBox);
@@ -890,8 +890,8 @@ void dred_textbox_set_scrollbar_track_color(dred_textbox* pTextBox, drgui_color 
         return;
     }
 
-    drgui_sb_set_track_color(pTB->pHorzScrollbar, color);
-    drgui_sb_set_track_color(pTB->pVertScrollbar, color);
+    dred_scrollbar_set_track_color(pTB->pHorzScrollbar, color);
+    dred_scrollbar_set_track_color(pTB->pVertScrollbar, color);
 }
 
 void dred_textbox_set_scrollbar_thumb_color(dred_textbox* pTextBox, drgui_color color)
@@ -901,8 +901,8 @@ void dred_textbox_set_scrollbar_thumb_color(dred_textbox* pTextBox, drgui_color 
         return;
     }
 
-    drgui_sb_set_default_thumb_color(pTB->pHorzScrollbar, color);
-    drgui_sb_set_default_thumb_color(pTB->pVertScrollbar, color);
+    dred_scrollbar_set_default_thumb_color(pTB->pHorzScrollbar, color);
+    dred_scrollbar_set_default_thumb_color(pTB->pVertScrollbar, color);
 }
 
 void dred_textbox_set_scrollbar_thumb_color_hovered(dred_textbox* pTextBox, drgui_color color)
@@ -912,8 +912,8 @@ void dred_textbox_set_scrollbar_thumb_color_hovered(dred_textbox* pTextBox, drgu
         return;
     }
 
-    drgui_sb_set_hovered_thumb_color(pTB->pHorzScrollbar, color);
-    drgui_sb_set_hovered_thumb_color(pTB->pVertScrollbar, color);
+    dred_scrollbar_set_hovered_thumb_color(pTB->pHorzScrollbar, color);
+    dred_scrollbar_set_hovered_thumb_color(pTB->pVertScrollbar, color);
 }
 
 void dred_textbox_set_scrollbar_thumb_color_pressed(dred_textbox* pTextBox, drgui_color color)
@@ -923,8 +923,8 @@ void dred_textbox_set_scrollbar_thumb_color_pressed(dred_textbox* pTextBox, drgu
         return;
     }
 
-    drgui_sb_set_pressed_thumb_color(pTB->pHorzScrollbar, color);
-    drgui_sb_set_pressed_thumb_color(pTB->pVertScrollbar, color);
+    dred_scrollbar_set_pressed_thumb_color(pTB->pHorzScrollbar, color);
+    dred_scrollbar_set_pressed_thumb_color(pTB->pVertScrollbar, color);
 }
 
 
@@ -1408,8 +1408,8 @@ bool dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text,
 
     size_t originalCursorLine = drte_engine_get_cursor_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
     size_t originalCursorPos = drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)) - drte_engine_get_line_first_character(pTB->pTL, NULL, originalCursorLine);
-    int originalScrollPosX = drgui_sb_get_scroll_position(pTB->pHorzScrollbar);
-    int originalScrollPosY = drgui_sb_get_scroll_position(pTB->pVertScrollbar);
+    int originalScrollPosX = dred_scrollbar_get_scroll_position(pTB->pHorzScrollbar);
+    int originalScrollPosY = dred_scrollbar_get_scroll_position(pTB->pVertScrollbar);
 
     bool wasTextChanged = false;
     drte_engine_prepare_undo_point(pTB->pTL);
@@ -1444,8 +1444,8 @@ bool dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text,
 
 
     // The scroll positions may have moved so we'll need to restore them.
-    drgui_sb_scroll_to(pTB->pHorzScrollbar, originalScrollPosX);
-    drgui_sb_scroll_to(pTB->pVertScrollbar, originalScrollPosY);
+    dred_scrollbar_scroll_to(pTB->pHorzScrollbar, originalScrollPosX);
+    dred_scrollbar_scroll_to(pTB->pVertScrollbar, originalScrollPosY);
 
     return wasTextChanged;
 }
@@ -1890,7 +1890,7 @@ void dred_textbox_on_mouse_wheel(dred_textbox* pTextBox, int delta, int relative
         return;
     }
 
-    drgui_sb_scroll(pTB->pVertScrollbar, -delta * drgui_sb_get_mouse_wheel_scale(pTB->pVertScrollbar));
+    dred_scrollbar_scroll(pTB->pVertScrollbar, -delta * dred_scrollbar_get_mouse_wheel_scale(pTB->pVertScrollbar));
 }
 
 void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)
@@ -2117,12 +2117,12 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
                 }
             }
 
-            int scrollOffset = drgui_sb_get_page_size(pTB->pVertScrollbar);
+            int scrollOffset = dred_scrollbar_get_page_size(pTB->pVertScrollbar);
             if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) == 0) {
-                drgui_sb_scroll(pTB->pVertScrollbar, -scrollOffset);
+                dred_scrollbar_scroll(pTB->pVertScrollbar, -scrollOffset);
             }
 
-            drte_engine_move_cursor_y(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), -drgui_sb_get_page_size(pTB->pVertScrollbar));
+            drte_engine_move_cursor_y(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), -dred_scrollbar_get_page_size(pTB->pVertScrollbar));
 
             if (isShiftDown) {
                 drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
@@ -2145,16 +2145,16 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFl
                 }
             }
 
-            int scrollOffset = drgui_sb_get_page_size(pTB->pVertScrollbar);
+            int scrollOffset = dred_scrollbar_get_page_size(pTB->pVertScrollbar);
             if (scrollOffset > (int)(drte_engine_get_line_count(pTB->pTL) - drte_engine_get_cursor_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)))) {
                 scrollOffset = 0;
             }
 
             if ((stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) == 0) {
-                drgui_sb_scroll(pTB->pVertScrollbar, scrollOffset);
+                dred_scrollbar_scroll(pTB->pVertScrollbar, scrollOffset);
             }
 
-            drte_engine_move_cursor_y(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), drgui_sb_get_page_size(pTB->pVertScrollbar));
+            drte_engine_move_cursor_y(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), dred_scrollbar_get_page_size(pTB->pVertScrollbar));
 
             if (isShiftDown) {
                 drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
@@ -2373,13 +2373,13 @@ void dred_textbox_engine__on_cursor_move(drte_engine* pTL)
 
     // If the cursor is above or below the container, we need to scroll vertically.
     int iLine = (int)drte_engine_get_cursor_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
-    if (iLine < drgui_sb_get_scroll_position(pTB->pVertScrollbar)) {
-        drgui_sb_scroll_to(pTB->pVertScrollbar, iLine);
+    if (iLine < dred_scrollbar_get_scroll_position(pTB->pVertScrollbar)) {
+        dred_scrollbar_scroll_to(pTB->pVertScrollbar, iLine);
     }
 
-    int iBottomLine = drgui_sb_get_scroll_position(pTB->pVertScrollbar) + drgui_sb_get_page_size(pTB->pVertScrollbar) - 1;
+    int iBottomLine = dred_scrollbar_get_scroll_position(pTB->pVertScrollbar) + dred_scrollbar_get_page_size(pTB->pVertScrollbar) - 1;
     if (iLine >= iBottomLine) {
-        drgui_sb_scroll_to(pTB->pVertScrollbar, iLine - (drgui_sb_get_page_size(pTB->pVertScrollbar) - 1) + 1);
+        dred_scrollbar_scroll_to(pTB->pVertScrollbar, iLine - (dred_scrollbar_get_page_size(pTB->pVertScrollbar) - 1) + 1);
     }
 
 
@@ -2389,10 +2389,10 @@ void dred_textbox_engine__on_cursor_move(drte_engine* pTL)
     drte_engine_get_cursor_position(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), &cursorPosX, &cursorPosY);
 
     if (cursorPosX < 0) {
-        drgui_sb_scroll_to(pTB->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTB->pTL)) - 100);
+        dred_scrollbar_scroll_to(pTB->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTB->pTL)) - 100);
     }
     if (cursorPosX >= drte_engine_get_container_width(pTB->pTL)) {
-        drgui_sb_scroll_to(pTB->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTB->pTL) - drte_engine_get_container_width(pTB->pTL)) + 100);
+        dred_scrollbar_scroll_to(pTB->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTB->pTL) - drte_engine_get_container_width(pTB->pTL)) + 100);
     }
 
 
@@ -2689,9 +2689,9 @@ void dred_textbox__refresh_horizontal_scrollbar(dred_textbox* pTextBox)
     float textWidth = drte_engine_get_visible_line_width(pTB->pTL);
     float containerWidth;
     drte_engine_get_container_size(pTB->pTL, &containerWidth, NULL);
-    drgui_sb_set_range_and_page_size(pTB->pHorzScrollbar, 0, (int)(textWidth + (containerWidth/4)), (int)containerWidth);
+    dred_scrollbar_set_range_and_page_size(pTB->pHorzScrollbar, 0, (int)(textWidth + (containerWidth/4)), (int)containerWidth);
 
-    if (drgui_sb_is_thumb_visible(pTB->pHorzScrollbar)) {
+    if (dred_scrollbar_is_thumb_visible(pTB->pHorzScrollbar)) {
         if (!drgui_is_visible(pTB->pHorzScrollbar)) {
             drgui_show(pTB->pHorzScrollbar);
             dred_textbox__refresh_line_numbers(pTextBox);
@@ -2711,16 +2711,16 @@ void dred_textbox__refresh_scrollbar_ranges(dred_textbox* pTextBox)
 
     // The vertical scrollbar is based on the line count.
     size_t lineCount = drte_engine_get_line_count(pTB->pTL);
-    size_t pageSize  = drte_engine_get_visible_line_count(pTB->pTL);//drte_engine_get_visible_line_count_starting_at(pTB->pTL, drgui_sb_get_scroll_position(pTB->pVertScrollbar));
+    size_t pageSize  = drte_engine_get_visible_line_count(pTB->pTL);//drte_engine_get_visible_line_count_starting_at(pTB->pTL, dred_scrollbar_get_scroll_position(pTB->pVertScrollbar));
 
     size_t extraScroll = 0;
     if (pTB->isExcessScrollingEnabled) {
         extraScroll = drte_engine_get_visible_line_count(pTB->pTL) - 1 - 1;  // -1 to make the range 0 based. -1 to ensure at least one line is visible.
     }
 
-    drgui_sb_set_range_and_page_size(pTB->pVertScrollbar, 0, (int)(lineCount + extraScroll), (int)pageSize);
+    dred_scrollbar_set_range_and_page_size(pTB->pVertScrollbar, 0, (int)(lineCount + extraScroll), (int)pageSize);
 
-    if (drgui_sb_is_thumb_visible(pTB->pVertScrollbar)) {
+    if (dred_scrollbar_is_thumb_visible(pTB->pVertScrollbar)) {
         if (!drgui_is_visible(pTB->pVertScrollbar)) {
             drgui_show(pTB->pVertScrollbar);
         }
@@ -2745,8 +2745,8 @@ void dred_textbox__refresh_scrollbar_layouts(dred_textbox* pTextBox)
     float offsetRight  = pTB->borderWidth;
     float offsetBottom = pTB->borderWidth;
 
-    float scrollbarSizeH = (drgui_sb_is_thumb_visible(pTB->pHorzScrollbar) && pTB->isHorzScrollbarEnabled) ? pTB->horzScrollbarSize : 0;
-    float scrollbarSizeV = (drgui_sb_is_thumb_visible(pTB->pVertScrollbar) && pTB->isVertScrollbarEnabled) ? pTB->vertScrollbarSize : 0;
+    float scrollbarSizeH = (dred_scrollbar_is_thumb_visible(pTB->pHorzScrollbar) && pTB->isHorzScrollbarEnabled) ? pTB->horzScrollbarSize : 0;
+    float scrollbarSizeV = (dred_scrollbar_is_thumb_visible(pTB->pVertScrollbar) && pTB->isVertScrollbarEnabled) ? pTB->vertScrollbarSize : 0;
 
     drgui_set_size(pTB->pVertScrollbar, scrollbarSizeV, drgui_get_height(pTextBox) /*- scrollbarSizeH*/ - (offsetTop + offsetBottom));
     drgui_set_size(pTB->pHorzScrollbar, drgui_get_width(pTextBox) - scrollbarSizeV - (offsetLeft + offsetRight), scrollbarSizeH);

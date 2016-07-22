@@ -16,7 +16,7 @@ void dred_tab__init(dred_tab* pTab, dred_control* pControl)
 
 dred_tab* dred_tab_create_and_append(drgui_element* pTabBar, const char* text, dred_control* pControl)
 {
-    drgui_tab* pTab = drgui_tabbar_create_and_append_tab(pTabBar, text, sizeof(dred_tab_data), NULL);
+    drgui_tab* pTab = dred_tabbar_create_and_append_tab(pTabBar, text, sizeof(dred_tab_data), NULL);
     if (pTab == NULL) {
         return NULL;
     }
@@ -27,7 +27,7 @@ dred_tab* dred_tab_create_and_append(drgui_element* pTabBar, const char* text, d
 
 dred_tab* dred_tab_create_and_prepend(drgui_element* pTabBar, const char* text, dred_control* pControl)
 {
-    drgui_tab* pTab = drgui_tabbar_create_and_prepend_tab(pTabBar, text, sizeof(dred_tab_data), NULL);
+    drgui_tab* pTab = dred_tabbar_create_and_prepend_tab(pTabBar, text, sizeof(dred_tab_data), NULL);
     if (pTab == NULL) {
         return NULL;
     }
@@ -81,5 +81,5 @@ dred_control* dred_tab_get_tabgroup(dred_tab* pTab)
     }
 
     // The tab group is the parent of the tab bar.
-    return dred_control_get_parent(pTab->pTBElement);
+    return dred_control_get_parent(pTab->pTabBar);
 }

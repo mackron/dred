@@ -109,7 +109,7 @@ DRGUI_PRIVATE int dred_scrollbar_maxi(int x, int y)
 }
 
 
-dred_scrollbar* drgui_create_scrollbar(dred_context* pDred, drgui_element* pParent, dred_scrollbar_orientation orientation, size_t extraDataSize, const void* pExtraData)
+dred_scrollbar* dred_scrollbar_create(dred_context* pDred, drgui_element* pParent, dred_scrollbar_orientation orientation, size_t extraDataSize, const void* pExtraData)
 {
     if (orientation == dred_scrollbar_orientation_none) {
         return NULL;
@@ -163,7 +163,7 @@ dred_scrollbar* drgui_create_scrollbar(dred_context* pDred, drgui_element* pPare
     return pScrollbar;
 }
 
-void drgui_delete_scrollbar(dred_scrollbar* pScrollbar)
+void dred_scrollbar_delete(dred_scrollbar* pScrollbar)
 {
     if (pScrollbar == NULL) {
         return;

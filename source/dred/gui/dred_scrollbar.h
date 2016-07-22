@@ -14,10 +14,10 @@ typedef void (* dred_scrollbar_on_scroll_proc)(dred_scrollbar* pScrollbar, int s
 
 
 /// Creates a scrollbar element.
-dred_scrollbar* drgui_create_scrollbar(dred_context* pDred, drgui_element* pParent, dred_scrollbar_orientation orientation, size_t extraDataSize, const void* pExtraData);
+dred_scrollbar* dred_scrollbar_create(dred_context* pDred, drgui_element* pParent, dred_scrollbar_orientation orientation, size_t extraDataSize, const void* pExtraData);
 
 /// Deletes the given scrollbar element.
-void drgui_delete_scrollbar(dred_scrollbar* pScrollbar);
+void dred_scrollbar_delete(dred_scrollbar* pScrollbar);
 
 
 /// Retrieves the size of the extra data associated with the scrollbar.

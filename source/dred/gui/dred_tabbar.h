@@ -30,10 +30,10 @@ typedef void (* dred_tabbar_on_tab_mouse_button_up_proc)(dred_tabbar* pTabBar, d
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Creates a new tab bar control.
-dred_tabbar* drgui_create_tab_bar(dred_context* pDred, drgui_element* pParent, dred_tabbar_orientation orientation, size_t extraDataSize, const void* pExtraData);
+dred_tabbar* dred_tabbar_create(dred_context* pDred, drgui_element* pParent, dred_tabbar_orientation orientation, size_t extraDataSize, const void* pExtraData);
 
 /// Deletes the given tab bar control.
-void drgui_delete_tab_bar(dred_tabbar* pTabBar);
+void dred_tabbar_delete(dred_tabbar* pTabBar);
 
 
 /// Retrieves the size of the extra data associated with the scrollbar.
