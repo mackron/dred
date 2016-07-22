@@ -110,7 +110,7 @@ struct drgui_tab_bar
 struct drgui_tab
 {
     /// The tab bar that owns the tab.
-    drgui_element* pTBElement;
+    dred_tabbar* pTabBar;
 
     /// A pointer to the next tab in the tab bar.
     drgui_tab* pNextTab;
@@ -138,26 +138,22 @@ struct drgui_tab
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Default implementation of the item measure event.
-DRGUI_PRIVATE void dred_tabbar_on_measure_tab_default(drgui_element* pTBElement, drgui_tab* pTab, float* pWidthOut, float* pHeightOut);
+DRGUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut);
 
 /// Paints the given menu item.
-DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(drgui_element* pTBElement, drgui_tab* pTab, drgui_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
+DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, drgui_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
 
 /// Finds the tab sitting under the given point, if any.
-DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(drgui_element* pTBElement, float relativePosX, float relativePosY, bool* pIsOverCloseButtonOut);
+DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, bool* pIsOverCloseButtonOut);
 
-drgui_element* drgui_create_tab_bar(drgui_context* pContext, drgui_element* pParent, dred_tabbar_orientation orientation, size_t extraDataSize, const void* pExtraData)
+dred_tabbar* drgui_create_tab_bar(dred_context* pDred, drgui_element* pParent, dred_tabbar_orientation orientation, size_t extraDataSize, const void* pExtraData)
 {
-    if (pContext == NULL) {
+    dred_tabbar* pTabBar = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_TABBAR, sizeof(drgui_tab_bar) + extraDataSize);
+    if (pTabBar == NULL) {
         return NULL;
     }
 
-    drgui_element* pTBElement = drgui_create_element(pContext, pParent, sizeof(drgui_tab_bar) + extraDataSize, NULL);
-    if (pTBElement == NULL) {
-        return NULL;
-    }
-
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     assert(pTB != NULL);
 
     pTB->orientation                 = orientation;
@@ -200,18 +196,18 @@ drgui_element* drgui_create_tab_bar(drgui_context* pContext, drgui_element* pPar
 
 
     // Event handlers.
-    drgui_set_on_mouse_leave(pTBElement, dred_tabbar_on_mouse_leave);
-    drgui_set_on_mouse_move(pTBElement, dred_tabbar_on_mouse_move);
-    drgui_set_on_mouse_button_down(pTBElement, dred_tabbar_on_mouse_button_down);
-    drgui_set_on_mouse_button_up(pTBElement, dred_tabbar_on_mouse_button_up);
-    drgui_set_on_paint(pTBElement, dred_tabbar_on_paint);
+    drgui_set_on_mouse_leave(pTabBar, dred_tabbar_on_mouse_leave);
+    drgui_set_on_mouse_move(pTabBar, dred_tabbar_on_mouse_move);
+    drgui_set_on_mouse_button_down(pTabBar, dred_tabbar_on_mouse_button_down);
+    drgui_set_on_mouse_button_up(pTabBar, dred_tabbar_on_mouse_button_up);
+    drgui_set_on_paint(pTabBar, dred_tabbar_on_paint);
 
-    return pTBElement;
+    return pTabBar;
 }
 
-void drgui_delete_tab_bar(drgui_element* pTBElement)
+void drgui_delete_tab_bar(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -221,13 +217,13 @@ void drgui_delete_tab_bar(drgui_element* pTBElement)
     }
 
 
-    drgui_delete_element(pTBElement);
+    drgui_delete_element(pTabBar);
 }
 
 
-size_t dred_tabbar_get_extra_data_size(drgui_element* pTBElement)
+size_t dred_tabbar_get_extra_data_size(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return 0;
     }
@@ -235,9 +231,9 @@ size_t dred_tabbar_get_extra_data_size(drgui_element* pTBElement)
     return pTB->extraDataSize;
 }
 
-void* dred_tabbar_get_extra_data(drgui_element* pTBElement)
+void* dred_tabbar_get_extra_data(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -245,9 +241,9 @@ void* dred_tabbar_get_extra_data(drgui_element* pTBElement)
     return pTB->pExtraData;
 }
 
-dred_tabbar_orientation dred_tabbar_get_orientation(drgui_element* pTBElement)
+dred_tabbar_orientation dred_tabbar_get_orientation(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return dred_tabbar_orientation_top;
     }
@@ -256,9 +252,9 @@ dred_tabbar_orientation dred_tabbar_get_orientation(drgui_element* pTBElement)
 }
 
 
-void dred_tabbar_set_font(drgui_element* pTBElement, drgui_font* pFont)
+void dred_tabbar_set_font(dred_tabbar* pTabBar, drgui_font* pFont)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -267,17 +263,17 @@ void dred_tabbar_set_font(drgui_element* pTBElement, drgui_font* pFont)
 
     // A change in font may have changed the size of the tabbar.
     if (pTB->isAutoSizeEnabled) {
-        dred_tabbar_resize_by_tabs(pTBElement);
+        dred_tabbar_resize_by_tabs(pTabBar);
     }
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
-drgui_font* dred_tabbar_get_font(drgui_element* pTBElement)
+drgui_font* dred_tabbar_get_font(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -286,23 +282,23 @@ drgui_font* dred_tabbar_get_font(drgui_element* pTBElement)
 }
 
 
-void dred_tabbar_set_text_color(drgui_element* pTBElement, drgui_color color)
+void dred_tabbar_set_text_color(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     pTB->tabTextColor = color;
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
-drgui_color dred_tabbar_get_text_color(drgui_element* pTBElement)
+drgui_color dred_tabbar_get_text_color(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return drgui_rgb(0, 0, 0);
     }
@@ -310,52 +306,52 @@ drgui_color dred_tabbar_get_text_color(drgui_element* pTBElement)
     return pTB->tabTextColor;
 }
 
-void dred_tabbar_set_text_color_active(drgui_element* pTBElement, drgui_color color)
+void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     pTB->tabTextColorActivated = color;
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
-void dred_tabbar_set_text_color_hovered(drgui_element* pTBElement, drgui_color color)
+void dred_tabbar_set_text_color_hovered(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     pTB->tabTextColorHovered = color;
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
 
-void dred_tabbar_set_close_button_image(drgui_element* pTBElement, drgui_image* pImage)
+void dred_tabbar_set_close_button_image(dred_tabbar* pTabBar, drgui_image* pImage)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     pTB->pCloseButtonImage = pImage;
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
-drgui_image* dred_tabbar_get_close_button_image(drgui_element* pTBElement)
+drgui_image* dred_tabbar_get_close_button_image(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -363,38 +359,38 @@ drgui_image* dred_tabbar_get_close_button_image(drgui_element* pTBElement)
     return pTB->pCloseButtonImage;
 }
 
-void dred_tabbar_set_close_button_color(drgui_element* pTBElement, drgui_color color)
+void dred_tabbar_set_close_button_color(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     pTB->closeButtonColorDefault = color;
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
 
-void dred_tabbar_set_tab_padding(drgui_element* pTBElement, float padding)
+void dred_tabbar_set_tab_padding(dred_tabbar* pTabBar, float padding)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     pTB->tabPadding = padding;
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
-float dred_tabbar_get_tab_padding(drgui_element* pTBElement)
+float dred_tabbar_get_tab_padding(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return 0;
     }
@@ -402,23 +398,23 @@ float dred_tabbar_get_tab_padding(drgui_element* pTBElement)
     return pTB->tabPadding;
 }
 
-void dred_tabbar_set_close_button_left_padding(drgui_element* pTBElement, float padding)
+void dred_tabbar_set_close_button_left_padding(dred_tabbar* pTabBar, float padding)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     pTB->closeButtonPaddingLeft = padding;
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
-float dred_tabbar_get_close_button_left_padding(drgui_element* pTBElement)
+float dred_tabbar_get_close_button_left_padding(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return 0;
     }
@@ -427,23 +423,23 @@ float dred_tabbar_get_close_button_left_padding(drgui_element* pTBElement)
 }
 
 
-void dred_tabbar_set_tab_background_color(drgui_element* pTBElement, drgui_color color)
+void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     pTB->tabBackgroundColor = color;
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
-drgui_color dred_tabbar_get_tab_background_color(drgui_element* pTBElement)
+drgui_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return drgui_rgb(0, 0, 0);
     }
@@ -451,23 +447,23 @@ drgui_color dred_tabbar_get_tab_background_color(drgui_element* pTBElement)
     return pTB->tabBackgroundColor;
 }
 
-void dred_tabbar_set_tab_background_color_hovered(drgui_element* pTBElement, drgui_color color)
+void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     pTB->tabBackgroundColorHovered = color;
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
-drgui_color dred_tabbar_get_tab_background_color_hovered(drgui_element* pTBElement)
+drgui_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return drgui_rgb(0, 0, 0);
     }
@@ -475,23 +471,23 @@ drgui_color dred_tabbar_get_tab_background_color_hovered(drgui_element* pTBEleme
     return pTB->tabBackgroundColorHovered;
 }
 
-void dred_tabbar_set_tab_background_color_active(drgui_element* pTBElement, drgui_color color)
+void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     pTB->tabBackbroundColorActivated = color;
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
-drgui_color dred_tabbar_get_tab_background_color_actived(drgui_element* pTBElement)
+drgui_color dred_tabbar_get_tab_background_color_actived(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return drgui_rgb(0, 0, 0);
     }
@@ -500,9 +496,9 @@ drgui_color dred_tabbar_get_tab_background_color_actived(drgui_element* pTBEleme
 }
 
 
-void dred_tabbar_set_on_measure_tab(drgui_element* pTBElement, dred_tabbar_on_measure_tab_proc proc)
+void dred_tabbar_set_on_measure_tab(dred_tabbar* pTabBar, dred_tabbar_on_measure_tab_proc proc)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -510,9 +506,9 @@ void dred_tabbar_set_on_measure_tab(drgui_element* pTBElement, dred_tabbar_on_me
     pTB->onMeasureTab = proc;
 }
 
-void dred_tabbar_set_on_paint_tab(drgui_element* pTBElement, dred_tabbar_on_paint_tab_proc proc)
+void dred_tabbar_set_on_paint_tab(dred_tabbar* pTabBar, dred_tabbar_on_paint_tab_proc proc)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -520,9 +516,9 @@ void dred_tabbar_set_on_paint_tab(drgui_element* pTBElement, dred_tabbar_on_pain
     pTB->onPaintTab = proc;
 }
 
-void dred_tabbar_set_on_tab_activated(drgui_element* pTBElement, dred_tabbar_on_tab_activated_proc proc)
+void dred_tabbar_set_on_tab_activated(dred_tabbar* pTabBar, dred_tabbar_on_tab_activated_proc proc)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -530,9 +526,9 @@ void dred_tabbar_set_on_tab_activated(drgui_element* pTBElement, dred_tabbar_on_
     pTB->onTabActivated = proc;
 }
 
-void dred_tabbar_set_on_tab_deactivated(drgui_element* pTBElement, dred_tabbar_on_tab_deactivated_proc proc)
+void dred_tabbar_set_on_tab_deactivated(dred_tabbar* pTabBar, dred_tabbar_on_tab_deactivated_proc proc)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -540,9 +536,9 @@ void dred_tabbar_set_on_tab_deactivated(drgui_element* pTBElement, dred_tabbar_o
     pTB->onTabDeactivated = proc;
 }
 
-void dred_tabbar_set_on_tab_closed(drgui_element* pTBElement, dred_tabbar_on_tab_close_proc proc)
+void dred_tabbar_set_on_tab_closed(dred_tabbar* pTabBar, dred_tabbar_on_tab_close_proc proc)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -550,9 +546,9 @@ void dred_tabbar_set_on_tab_closed(drgui_element* pTBElement, dred_tabbar_on_tab
     pTB->onTabClose = proc;
 }
 
-void dred_tabbar_set_on_tab_mouse_button_up(drgui_element* pTBElement, dred_tabbar_on_tab_mouse_button_up_proc proc)
+void dred_tabbar_set_on_tab_mouse_button_up(dred_tabbar* pTabBar, dred_tabbar_on_tab_mouse_button_up_proc proc)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -561,34 +557,34 @@ void dred_tabbar_set_on_tab_mouse_button_up(drgui_element* pTBElement, dred_tabb
 }
 
 
-void dred_tabbar_measure_tab(drgui_element* pTBElement, drgui_tab* pTab, float* pWidthOut, float* pHeightOut)
+void dred_tabbar_measure_tab(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     if (pTB->onMeasureTab) {
-        pTB->onMeasureTab(pTBElement, pTab, pWidthOut, pHeightOut);
+        pTB->onMeasureTab(pTabBar, pTab, pWidthOut, pHeightOut);
     }
 }
 
-void dred_tabbar_paint_tab(drgui_element* pTBElement, drgui_tab* pTab, drgui_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData)
+void dred_tabbar_paint_tab(dred_tabbar* pTabBar, drgui_tab* pTab, drgui_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     if (pTB->onPaintTab) {
-        pTB->onPaintTab(pTBElement, pTab, relativeClippingRect, offsetX, offsetY, width, height, pPaintData);
+        pTB->onPaintTab(pTabBar, pTab, relativeClippingRect, offsetX, offsetY, width, height, pPaintData);
     }
 }
 
 
-void dred_tabbar_resize_by_tabs(drgui_element* pTBElement)
+void dred_tabbar_resize_by_tabs(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -613,7 +609,7 @@ void dred_tabbar_resize_by_tabs(drgui_element* pTBElement)
         for (drgui_tab* pTab = pTB->pFirstTab; pTab != NULL; pTab = pTab->pNextTab) {
             float tabWidth  = 0;
             float tabHeight = 0;
-            dred_tabbar_measure_tab(pTBElement, pTab, &tabWidth, &tabHeight);
+            dred_tabbar_measure_tab(pTabBar, pTab, &tabWidth, &tabHeight);
 
             maxWidth  = (tabWidth  > maxWidth)  ? tabWidth  : maxWidth;
             maxHeight = (tabHeight > maxHeight) ? tabHeight : maxHeight;
@@ -624,15 +620,15 @@ void dred_tabbar_resize_by_tabs(drgui_element* pTBElement)
 
 
     if (pTB->orientation == dred_tabbar_orientation_top || pTB->orientation == dred_tabbar_orientation_bottom) {
-        drgui_set_size(pTBElement, drgui_get_width(pTBElement), maxHeight);
+        drgui_set_size(pTabBar, drgui_get_width(pTabBar), maxHeight);
     } else {
-        drgui_set_size(pTBElement, maxWidth, drgui_get_height(pTBElement));
+        drgui_set_size(pTabBar, maxWidth, drgui_get_height(pTabBar));
     }
 }
 
-void dred_tabbar_enable_auto_size(drgui_element* pTBElement)
+void dred_tabbar_enable_auto_size(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -640,9 +636,9 @@ void dred_tabbar_enable_auto_size(drgui_element* pTBElement)
     pTB->isAutoSizeEnabled = true;
 }
 
-void dred_tabbar_disable_auto_size(drgui_element* pTBElement)
+void dred_tabbar_disable_auto_size(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -650,9 +646,9 @@ void dred_tabbar_disable_auto_size(drgui_element* pTBElement)
     pTB->isAutoSizeEnabled = false;
 }
 
-bool dred_tabbar_is_auto_size_enabled(drgui_element* pTBElement)
+bool dred_tabbar_is_auto_size_enabled(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return false;
     }
@@ -661,9 +657,9 @@ bool dred_tabbar_is_auto_size_enabled(drgui_element* pTBElement)
 }
 
 
-drgui_tab* dred_tabbar_get_first_tab(drgui_element* pTBElement)
+drgui_tab* dred_tabbar_get_first_tab(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -671,9 +667,9 @@ drgui_tab* dred_tabbar_get_first_tab(drgui_element* pTBElement)
     return pTB->pFirstTab;
 }
 
-drgui_tab* dred_tabbar_get_last_tab(drgui_element* pTBElement)
+drgui_tab* dred_tabbar_get_last_tab(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -681,22 +677,22 @@ drgui_tab* dred_tabbar_get_last_tab(drgui_element* pTBElement)
     return pTB->pLastTab;
 }
 
-drgui_tab* dred_tabbar_get_next_tab(drgui_element* pTBElement, drgui_tab* pTab)
+drgui_tab* dred_tabbar_get_next_tab(dred_tabbar* pTabBar, drgui_tab* pTab)
 {
-    (void)pTBElement;
+    (void)pTabBar;
     return drgui_tab_get_next_tab(pTab);
 }
 
-drgui_tab* dred_tabbar_get_prev_tab(drgui_element* pTBElement, drgui_tab* pTab)
+drgui_tab* dred_tabbar_get_prev_tab(dred_tabbar* pTabBar, drgui_tab* pTab)
 {
-    (void)pTBElement;
+    (void)pTabBar;
     return drgui_tab_get_prev_tab(pTab);
 }
 
 
-void dred_tabbar_activate_tab(drgui_element* pTBElement, drgui_tab* pTab)
+void dred_tabbar_activate_tab(dred_tabbar* pTabBar, drgui_tab* pTab)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -712,28 +708,28 @@ void dred_tabbar_activate_tab(drgui_element* pTBElement, drgui_tab* pTab)
     pTB->pActiveTab = pNewActiveTab;
 
     if (pTB->onTabDeactivated && pOldActiveTab != NULL) {
-        pTB->onTabDeactivated(pTBElement, pOldActiveTab, pNewActiveTab);
+        pTB->onTabDeactivated(pTabBar, pOldActiveTab, pNewActiveTab);
     }
 
     if (pTB->onTabActivated && pNewActiveTab != NULL) {
-        pTB->onTabActivated(pTBElement, pNewActiveTab, pOldActiveTab);
+        pTB->onTabActivated(pTabBar, pNewActiveTab, pOldActiveTab);
     }
 
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
-void dred_tabbar_activate_next_tab(drgui_element* pTBElement)
+void dred_tabbar_activate_next_tab(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     if (pTB->pActiveTab == NULL) {
-        dred_tabbar_activate_tab(pTBElement, pTB->pFirstTab);
+        dred_tabbar_activate_tab(pTabBar, pTB->pFirstTab);
         return;
     }
 
@@ -743,18 +739,18 @@ void dred_tabbar_activate_next_tab(drgui_element* pTBElement)
         pNextTab = pTB->pFirstTab;
     }
 
-    dred_tabbar_activate_tab(pTBElement, pNextTab);
+    dred_tabbar_activate_tab(pTabBar, pNextTab);
 }
 
-void dred_tabbar_activate_prev_tab(drgui_element* pTBElement)
+void dred_tabbar_activate_prev_tab(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     if (pTB->pActiveTab == NULL) {
-        dred_tabbar_activate_tab(pTBElement, pTB->pLastTab);
+        dred_tabbar_activate_tab(pTabBar, pTB->pLastTab);
         return;
     }
 
@@ -764,12 +760,12 @@ void dred_tabbar_activate_prev_tab(drgui_element* pTBElement)
         pPrevTab = pTB->pLastTab;
     }
 
-    dred_tabbar_activate_tab(pTBElement, pPrevTab);
+    dred_tabbar_activate_tab(pTabBar, pPrevTab);
 }
 
-drgui_tab* dred_tabbar_get_active_tab(drgui_element* pTBElement)
+drgui_tab* dred_tabbar_get_active_tab(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -778,16 +774,16 @@ drgui_tab* dred_tabbar_get_active_tab(drgui_element* pTBElement)
 }
 
 
-bool dred_tabbar_is_tab_in_view(drgui_element* pTBElement, drgui_tab* pTabIn)
+bool dred_tabbar_is_tab_in_view(dred_tabbar* pTabBar, drgui_tab* pTabIn)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return false;
     }
 
     float tabbarWidth  = 0;
     float tabbarHeight = 0;
-    drgui_get_size(pTBElement, &tabbarWidth, &tabbarHeight);
+    drgui_get_size(pTabBar, &tabbarWidth, &tabbarHeight);
 
 
     // Each tab.
@@ -797,7 +793,7 @@ bool dred_tabbar_is_tab_in_view(drgui_element* pTBElement, drgui_tab* pTabIn)
     {
         float tabWidth  = 0;
         float tabHeight = 0;
-        dred_tabbar_measure_tab(pTBElement, pTab, &tabWidth, &tabHeight);
+        dred_tabbar_measure_tab(pTabBar, pTab, &tabWidth, &tabHeight);
 
         if (pTab == pTabIn) {
             return runningPosX + tabWidth <= tabbarWidth && runningPosY + tabHeight <= tabbarHeight;
@@ -815,38 +811,38 @@ bool dred_tabbar_is_tab_in_view(drgui_element* pTBElement, drgui_tab* pTabIn)
 }
 
 
-void dred_tabbar_show_close_buttons(drgui_element* pTBElement)
+void dred_tabbar_show_close_buttons(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     pTB->isShowingCloseButton = true;
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
-void dred_tabbar_hide_close_buttons(drgui_element* pTBElement)
+void dred_tabbar_hide_close_buttons(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
     pTB->isShowingCloseButton = false;
 
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
 
-void dred_tabbar_enable_close_on_middle_click(drgui_element* pTBElement)
+void dred_tabbar_enable_close_on_middle_click(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -854,9 +850,9 @@ void dred_tabbar_enable_close_on_middle_click(drgui_element* pTBElement)
     pTB->isCloseOnMiddleClickEnabled = true;
 }
 
-void dred_tabbar_disable_close_on_middle_click(drgui_element* pTBElement)
+void dred_tabbar_disable_close_on_middle_click(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -864,9 +860,9 @@ void dred_tabbar_disable_close_on_middle_click(drgui_element* pTBElement)
     pTB->isCloseOnMiddleClickEnabled = false;
 }
 
-bool dred_tabbar_is_close_on_middle_click_enabled(drgui_element* pTBElement)
+bool dred_tabbar_is_close_on_middle_click_enabled(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return false;
     }
@@ -875,9 +871,9 @@ bool dred_tabbar_is_close_on_middle_click_enabled(drgui_element* pTBElement)
 }
 
 
-void dred_tabbar_on_mouse_leave(drgui_element* pTBElement)
+void dred_tabbar_on_mouse_leave(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -887,17 +883,17 @@ void dred_tabbar_on_mouse_leave(drgui_element* pTBElement)
         pTB->pHoveredTab = NULL;
         pTB->isCloseButtonHovered = false;
 
-        if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-            drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+        if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+            drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
         }
     }
 }
 
-void dred_tabbar_on_mouse_move(drgui_element* pTBElement, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_tabbar_on_mouse_move(dred_tabbar* pTabBar, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)stateFlags;
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -905,24 +901,24 @@ void dred_tabbar_on_mouse_move(drgui_element* pTBElement, int relativeMousePosX,
     bool isCloseButtonHovered = false;
 
     drgui_tab* pOldHoveredTab = pTB->pHoveredTab;
-    drgui_tab* pNewHoveredTab = dred_tabbar_find_tab_under_point(pTBElement, (float)relativeMousePosX, (float)relativeMousePosY, &isCloseButtonHovered);
+    drgui_tab* pNewHoveredTab = dred_tabbar_find_tab_under_point(pTabBar, (float)relativeMousePosX, (float)relativeMousePosY, &isCloseButtonHovered);
 
     if (pOldHoveredTab != pNewHoveredTab || pTB->isCloseButtonHovered != isCloseButtonHovered)
     {
         pTB->pHoveredTab = pNewHoveredTab;
         pTB->isCloseButtonHovered = isCloseButtonHovered;
 
-        if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-            drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+        if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+            drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
         }
     }
 }
 
-void dred_tabbar_on_mouse_button_down(drgui_element* pTBElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_tabbar_on_mouse_button_down(dred_tabbar* pTabBar, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)stateFlags;
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -932,17 +928,17 @@ void dred_tabbar_on_mouse_button_down(drgui_element* pTBElement, int mouseButton
         bool isOverCloseButton = false;
 
         drgui_tab* pOldActiveTab = pTB->pActiveTab;
-        drgui_tab* pNewActiveTab = dred_tabbar_find_tab_under_point(pTBElement, (float)relativeMousePosX, (float)relativeMousePosY, &isOverCloseButton);
+        drgui_tab* pNewActiveTab = dred_tabbar_find_tab_under_point(pTabBar, (float)relativeMousePosX, (float)relativeMousePosY, &isOverCloseButton);
 
         if (pNewActiveTab != NULL && pOldActiveTab != pNewActiveTab && !isOverCloseButton) {
-            dred_tabbar_activate_tab(pTBElement, pNewActiveTab);
+            dred_tabbar_activate_tab(pTabBar, pNewActiveTab);
         }
 
         if (isOverCloseButton && mouseButton == DRGUI_MOUSE_BUTTON_LEFT) {
             pTB->pTabWithCloseButtonPressed = pNewActiveTab;
 
-            if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-                drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+            if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+                drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
             }
         }
     }
@@ -950,42 +946,42 @@ void dred_tabbar_on_mouse_button_down(drgui_element* pTBElement, int mouseButton
     {
         if (pTB->isCloseOnMiddleClickEnabled)
         {
-            drgui_tab* pHoveredTab = dred_tabbar_find_tab_under_point(pTBElement, (float)relativeMousePosX, (float)relativeMousePosY, NULL);
+            drgui_tab* pHoveredTab = dred_tabbar_find_tab_under_point(pTabBar, (float)relativeMousePosX, (float)relativeMousePosY, NULL);
             if (pHoveredTab != NULL) {
                 if (pTB->onTabClose) {
-                    pTB->onTabClose(pTBElement, pHoveredTab);
+                    pTB->onTabClose(pTabBar, pHoveredTab);
                 }
             }
         }
     }
 }
 
-void dred_tabbar_on_mouse_button_up(drgui_element* pTBElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_tabbar_on_mouse_button_up(dred_tabbar* pTabBar, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)stateFlags;
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
 
 
     bool releasedOverCloseButton = false;
-    drgui_tab* pTabUnderMouse = dred_tabbar_find_tab_under_point(pTBElement, (float)relativeMousePosX, (float)relativeMousePosY, &releasedOverCloseButton);
+    drgui_tab* pTabUnderMouse = dred_tabbar_find_tab_under_point(pTabBar, (float)relativeMousePosX, (float)relativeMousePosY, &releasedOverCloseButton);
 
     if (pTB->pTabWithCloseButtonPressed != NULL && mouseButton == DRGUI_MOUSE_BUTTON_LEFT)
     {
         if (releasedOverCloseButton && pTabUnderMouse == pTB->pTabWithCloseButtonPressed) {
             if (pTB->onTabClose) {
-                pTB->onTabClose(pTBElement, pTB->pTabWithCloseButtonPressed);
+                pTB->onTabClose(pTabBar, pTB->pTabWithCloseButtonPressed);
             }
         }
 
 
         pTB->pTabWithCloseButtonPressed = NULL;
 
-        if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-            drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+        if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+            drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
         }
     }
     else
@@ -993,14 +989,14 @@ void dred_tabbar_on_mouse_button_up(drgui_element* pTBElement, int mouseButton, 
         if (!releasedOverCloseButton && pTB->onTabMouseButtonUp) {
             // TODO: Improve this by passing the mouse position relative to the tab. Currently it is relative to the tab BAR. Can have
             // the dred_tabbar_find_tab_under_point() function return the position relative to the tab.
-            pTB->onTabMouseButtonUp(pTBElement, pTabUnderMouse, mouseButton, relativeMousePosX, relativeMousePosY, stateFlags);
+            pTB->onTabMouseButtonUp(pTabBar, pTabUnderMouse, mouseButton, relativeMousePosX, relativeMousePosY, stateFlags);
         }
     }
 }
 
-void dred_tabbar_on_paint(drgui_element* pTBElement, drgui_rect relativeClippingRect, void* pPaintData)
+void dred_tabbar_on_paint(dred_tabbar* pTabBar, drgui_rect relativeClippingRect, void* pPaintData)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -1008,7 +1004,7 @@ void dred_tabbar_on_paint(drgui_element* pTBElement, drgui_rect relativeClipping
 
     float tabbarWidth  = 0;
     float tabbarHeight = 0;
-    drgui_get_size(pTBElement, &tabbarWidth, &tabbarHeight);
+    drgui_get_size(pTabBar, &tabbarWidth, &tabbarHeight);
 
 
     // Each tab.
@@ -1018,7 +1014,7 @@ void dred_tabbar_on_paint(drgui_element* pTBElement, drgui_rect relativeClipping
     {
         float tabWidth  = 0;
         float tabHeight = 0;
-        dred_tabbar_measure_tab(pTBElement, pTab, &tabWidth, &tabHeight);
+        dred_tabbar_measure_tab(pTabBar, pTab, &tabWidth, &tabHeight);
 
         // If a part of the tab is out of bounds, stop drawing.
         if (runningPosX > tabbarWidth || runningPosY > tabbarHeight) {
@@ -1026,14 +1022,14 @@ void dred_tabbar_on_paint(drgui_element* pTBElement, drgui_rect relativeClipping
         }
 
 
-        dred_tabbar_paint_tab(pTBElement, pTab, relativeClippingRect, runningPosX, runningPosY, tabWidth, tabHeight, pPaintData);
+        dred_tabbar_paint_tab(pTabBar, pTab, relativeClippingRect, runningPosX, runningPosY, tabWidth, tabHeight, pPaintData);
 
         // After painting the tab, there may be a region of the background that was not drawn by the tab painting callback. We'll need to
         // draw that here.
         if (pTB->orientation == dred_tabbar_orientation_top || pTB->orientation == dred_tabbar_orientation_bottom) {
-            drgui_draw_rect(pTBElement, drgui_make_rect(runningPosX, runningPosY + tabHeight, tabbarWidth, tabbarHeight), pTB->tabBackgroundColor, pPaintData);
+            drgui_draw_rect(pTabBar, drgui_make_rect(runningPosX, runningPosY + tabHeight, tabbarWidth, tabbarHeight), pTB->tabBackgroundColor, pPaintData);
         } else {
-            drgui_draw_rect(pTBElement, drgui_make_rect(runningPosX + tabWidth, runningPosY, tabbarWidth, runningPosY + tabHeight), pTB->tabBackgroundColor, pPaintData);
+            drgui_draw_rect(pTabBar, drgui_make_rect(runningPosX + tabWidth, runningPosY, tabbarWidth, runningPosY + tabHeight), pTB->tabBackgroundColor, pPaintData);
         }
 
 
@@ -1047,13 +1043,13 @@ void dred_tabbar_on_paint(drgui_element* pTBElement, drgui_rect relativeClipping
 
 
     // Background. We just draw a quad around the region that is not covered by items.
-    drgui_draw_rect(pTBElement, drgui_make_rect(runningPosX, runningPosY, tabbarWidth, tabbarHeight), pTB->tabBackgroundColor, pPaintData);
+    drgui_draw_rect(pTabBar, drgui_make_rect(runningPosX, runningPosY, tabbarWidth, tabbarHeight), pTB->tabBackgroundColor, pPaintData);
 }
 
 
-DRGUI_PRIVATE void dred_tabbar_on_measure_tab_default(drgui_element* pTBElement, drgui_tab* pTab, float* pWidthOut, float* pHeightOut)
+DRGUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -1083,11 +1079,11 @@ DRGUI_PRIVATE void dred_tabbar_on_measure_tab_default(drgui_element* pTBElement,
     }
 }
 
-DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(drgui_element* pTBElement, drgui_tab* pTab, drgui_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData)
+DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, drgui_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData)
 {
     (void)relativeClippingRect;
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -1116,14 +1112,14 @@ DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(drgui_element* pTBElement, d
         }
     }
 
-    drgui_draw_rect_outline(pTBElement, drgui_make_rect(offsetX, offsetY, offsetX + width, offsetY + height), bgcolor, pTB->tabPadding, pPaintData);
+    drgui_draw_rect_outline(pTabBar, drgui_make_rect(offsetX, offsetY, offsetX + width, offsetY + height), bgcolor, pTB->tabPadding, pPaintData);
 
 
     // Text.
     float textPosX = offsetX + pTB->tabPadding;
     float textPosY = offsetY + pTB->tabPadding;
     if (pTab != NULL) {
-        drgui_draw_text(pTBElement, pTB->pFont, pTab->text, (int)strlen(pTab->text), textPosX, textPosY, textColor, bgcolor, pPaintData);
+        drgui_draw_text(pTabBar, pTB->pFont, pTab->text, (int)strlen(pTab->text), textPosX, textPosY, textColor, bgcolor, pPaintData);
     }
 
 
@@ -1160,17 +1156,17 @@ DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(drgui_element* pTBElement, d
         args.backgroundColor = bgcolor;
         args.boundsColor     = bgcolor;
         args.options         = DRGUI_IMAGE_DRAW_BACKGROUND | DRGUI_IMAGE_DRAW_BOUNDS | DRGUI_IMAGE_CLIP_BOUNDS | DRGUI_IMAGE_ALIGN_CENTER;
-        drgui_draw_image(pTBElement, pTB->pCloseButtonImage, &args, pPaintData);
+        drgui_draw_image(pTabBar, pTB->pCloseButtonImage, &args, pPaintData);
 
 
         /// Space between the text and the padding.
-        drgui_draw_rect(pTBElement, drgui_make_rect(textPosX + textWidth, textPosY, closeButtonPosX, textPosY + textHeight), bgcolor, pPaintData);
+        drgui_draw_rect(pTabBar, drgui_make_rect(textPosX + textWidth, textPosY, closeButtonPosX, textPosY + textHeight), bgcolor, pPaintData);
     }
 }
 
-DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(drgui_element* pTBElement, float relativePosX, float relativePosY, bool* pIsOverCloseButtonOut)
+DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, bool* pIsOverCloseButtonOut)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -1185,7 +1181,7 @@ DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(drgui_element* pTBElem
     {
         float tabWidth  = 0;
         float tabHeight = 0;
-        dred_tabbar_measure_tab(pTBElement, pTab, &tabWidth, &tabHeight);
+        dred_tabbar_measure_tab(pTabBar, pTab, &tabWidth, &tabHeight);
 
         if (relativePosX >= runningPosX && relativePosX < runningPosX + tabWidth && relativePosY >= runningPosY && relativePosY < runningPosY + tabHeight)
         {
@@ -1231,10 +1227,10 @@ DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(drgui_element* pTBElem
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Appends the given tab to the given tab bar.
-DRGUI_PRIVATE void tab_append(drgui_tab* pTab, drgui_element* pTBElement);
+DRGUI_PRIVATE void tab_append(drgui_tab* pTab, dred_tabbar* pTabBar);
 
 /// Prepends the given tab to the given tab bar.
-DRGUI_PRIVATE void tab_prepend(drgui_tab* pTab, drgui_element* pTBElement);
+DRGUI_PRIVATE void tab_prepend(drgui_tab* pTab, dred_tabbar* pTabBar);
 
 /// Detaches the given tab bar from it's tab bar element's hierarchy.
 ///
@@ -1245,9 +1241,9 @@ DRGUI_PRIVATE void tab_detach_from_hierarchy(drgui_tab* pTab);
 /// Detaches the given tab bar from it's tab bar element.
 DRGUI_PRIVATE void tab_detach(drgui_tab* pTab);
 
-DRGUI_PRIVATE drgui_tab* tb_create_tab(drgui_element* pTBElement, const char* text, size_t extraDataSize, const void* pExtraData)
+DRGUI_PRIVATE drgui_tab* tb_create_tab(dred_tabbar* pTabBar, const char* text, size_t extraDataSize, const void* pExtraData)
 {
-    if (pTBElement == NULL) {
+    if (pTabBar == NULL) {
         return NULL;
     }
 
@@ -1256,7 +1252,7 @@ DRGUI_PRIVATE drgui_tab* tb_create_tab(drgui_element* pTBElement, const char* te
         return NULL;
     }
 
-    pTab->pTBElement = NULL;
+    pTab->pTabBar = NULL;
     pTab->pNextTab   = NULL;
     pTab->pPrevTab   = NULL;
     pTab->text[0]    = '\0';
@@ -1273,23 +1269,23 @@ DRGUI_PRIVATE drgui_tab* tb_create_tab(drgui_element* pTBElement, const char* te
     return pTab;
 }
 
-drgui_tab* dred_tabbar_create_and_append_tab(drgui_element* pTBElement, const char* text, size_t extraDataSize, const void* pExtraData)
+drgui_tab* dred_tabbar_create_and_append_tab(dred_tabbar* pTabBar, const char* text, size_t extraDataSize, const void* pExtraData)
 {
-    drgui_tab* pTab = (drgui_tab*)tb_create_tab(pTBElement, text, extraDataSize, pExtraData);
+    drgui_tab* pTab = (drgui_tab*)tb_create_tab(pTabBar, text, extraDataSize, pExtraData);
     if (pTab != NULL)
     {
-        tab_append(pTab, pTBElement);
+        tab_append(pTab, pTabBar);
     }
 
     return pTab;
 }
 
-drgui_tab* dred_tabbar_create_and_prepend_tab(drgui_element* pTBElement, const char* text, size_t extraDataSize, const void* pExtraData)
+drgui_tab* dred_tabbar_create_and_prepend_tab(dred_tabbar* pTabBar, const char* text, size_t extraDataSize, const void* pExtraData)
 {
-    drgui_tab* pTab = (drgui_tab*)tb_create_tab(pTBElement, text, extraDataSize, pExtraData);
+    drgui_tab* pTab = (drgui_tab*)tb_create_tab(pTabBar, text, extraDataSize, pExtraData);
     if (pTab != NULL)
     {
-        tab_prepend(pTab, pTBElement);
+        tab_prepend(pTab, pTabBar);
     }
 
     return pTab;
@@ -1311,7 +1307,7 @@ drgui_element* drgui_tab_get_tab_bar_element(drgui_tab* pTab)
         return NULL;
     }
 
-    return pTab->pTBElement;
+    return pTab->pTabBar;
 }
 
 size_t drgui_tab_get_extra_data_size(drgui_tab* pTab)
@@ -1346,8 +1342,8 @@ void drgui_tab_set_text(drgui_tab* pTab, const char* text)
     }
 
     // The content of the menu has changed so we'll need to schedule a redraw.
-    if (drgui_is_auto_dirty_enabled(pTab->pTBElement->pContext)) {
-        drgui_dirty(pTab->pTBElement, drgui_get_local_rect(pTab->pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTab->pTabBar->pContext)) {
+        drgui_dirty(pTab->pTabBar, drgui_get_local_rect(pTab->pTabBar));
     }
 }
 
@@ -1386,10 +1382,10 @@ void drgui_tab_move_to_front(drgui_tab* pTab)
         return;
     }
 
-    drgui_element* pTBElement = pTab->pTBElement;
+    dred_tabbar* pTabBar = pTab->pTabBar;
 
     tab_detach_from_hierarchy(pTab);
-    tab_prepend(pTab, pTBElement);
+    tab_prepend(pTab, pTabBar);
 }
 
 bool drgui_tab_is_in_view(drgui_tab* pTab)
@@ -1398,7 +1394,7 @@ bool drgui_tab_is_in_view(drgui_tab* pTab)
         return false;
     }
 
-    return dred_tabbar_is_tab_in_view(pTab->pTBElement, pTab);
+    return dred_tabbar_is_tab_in_view(pTab->pTabBar, pTab);
 }
 
 void drgui_tab_move_into_view(drgui_tab* pTab)
@@ -1411,16 +1407,16 @@ void drgui_tab_move_into_view(drgui_tab* pTab)
 
 
 
-DRGUI_PRIVATE void tab_append(drgui_tab* pTab, drgui_element* pTBElement)
+DRGUI_PRIVATE void tab_append(drgui_tab* pTab, dred_tabbar* pTabBar)
 {
-    if (pTab == NULL || pTBElement == NULL) {
+    if (pTab == NULL || pTabBar == NULL) {
         return;
     }
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     assert(pTB != NULL);
 
-    pTab->pTBElement = pTBElement;
+    pTab->pTabBar = pTabBar;
     if (pTB->pFirstTab == NULL)
     {
         assert(pTB->pLastTab == NULL);
@@ -1440,25 +1436,25 @@ DRGUI_PRIVATE void tab_append(drgui_tab* pTab, drgui_element* pTBElement)
 
 
     if (pTB->isAutoSizeEnabled) {
-        dred_tabbar_resize_by_tabs(pTBElement);
+        dred_tabbar_resize_by_tabs(pTabBar);
     }
 
     // The content of the menu has changed so we'll need to schedule a redraw.
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
-DRGUI_PRIVATE void tab_prepend(drgui_tab* pTab, drgui_element* pTBElement)
+DRGUI_PRIVATE void tab_prepend(drgui_tab* pTab, dred_tabbar* pTabBar)
 {
-    if (pTab == NULL || pTBElement == NULL) {
+    if (pTab == NULL || pTabBar == NULL) {
         return;
     }
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     assert(pTB != NULL);
 
-    pTab->pTBElement = pTBElement;
+    pTab->pTabBar = pTabBar;
     if (pTB->pFirstTab == NULL)
     {
         assert(pTB->pLastTab == NULL);
@@ -1478,12 +1474,12 @@ DRGUI_PRIVATE void tab_prepend(drgui_tab* pTab, drgui_element* pTBElement)
 
 
     if (pTB->isAutoSizeEnabled) {
-        dred_tabbar_resize_by_tabs(pTBElement);
+        dred_tabbar_resize_by_tabs(pTabBar);
     }
 
     // The content of the menu has changed so we'll need to schedule a redraw.
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
 
@@ -1493,12 +1489,12 @@ DRGUI_PRIVATE void tab_detach_from_hierarchy(drgui_tab* pTab)
         return;
     }
 
-    drgui_element* pTBElement = pTab->pTBElement;
-    if (pTBElement == NULL) {
+    dred_tabbar* pTabBar = pTab->pTabBar;
+    if (pTabBar == NULL) {
         return;
     }
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     assert(pTB != NULL);
 
 
@@ -1522,7 +1518,7 @@ DRGUI_PRIVATE void tab_detach_from_hierarchy(drgui_tab* pTab)
 
     pTab->pNextTab   = NULL;
     pTab->pPrevTab   = NULL;
-    pTab->pTBElement = NULL;
+    pTab->pTabBar = NULL;
 }
 
 DRGUI_PRIVATE void tab_detach(drgui_tab* pTab)
@@ -1531,12 +1527,12 @@ DRGUI_PRIVATE void tab_detach(drgui_tab* pTab)
         return;
     }
 
-    drgui_element* pTBElement = pTab->pTBElement;
-    if (pTBElement == NULL) {
+    dred_tabbar* pTabBar = pTab->pTabBar;
+    if (pTabBar == NULL) {
         return;
     }
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTBElement);
+    drgui_tab_bar* pTB = (drgui_tab_bar*)drgui_get_extra_data(pTabBar);
     assert(pTB != NULL);
 
     if (pTB->pHoveredTab == pTab) {
@@ -1557,11 +1553,11 @@ DRGUI_PRIVATE void tab_detach(drgui_tab* pTab)
 
 
     if (pTB->isAutoSizeEnabled) {
-        dred_tabbar_resize_by_tabs(pTBElement);
+        dred_tabbar_resize_by_tabs(pTabBar);
     }
 
     // The content of the menu has changed so we'll need to schedule a redraw.
-    if (drgui_is_auto_dirty_enabled(pTBElement->pContext)) {
-        drgui_dirty(pTBElement, drgui_get_local_rect(pTBElement));
+    if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
+        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
     }
 }
