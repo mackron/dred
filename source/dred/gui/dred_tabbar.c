@@ -1,8 +1,7 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-typedef struct drgui_tab_bar drgui_tab_bar;
-
-struct drgui_tab_bar
+typedef struct dred_tabbar_data dred_tabbar_data;
+struct dred_tabbar_data
 {
     /// The orientation.
     dred_tabbar_orientation orientation;
@@ -148,12 +147,12 @@ DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, 
 
 dred_tabbar* dred_tabbar_create(dred_context* pDred, drgui_element* pParent, dred_tabbar_orientation orientation, size_t extraDataSize, const void* pExtraData)
 {
-    dred_tabbar* pTabBar = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_TABBAR, sizeof(drgui_tab_bar) + extraDataSize);
+    dred_tabbar* pTabBar = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_TABBAR, sizeof(dred_tabbar_data) + extraDataSize);
     if (pTabBar == NULL) {
         return NULL;
     }
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     assert(pTB != NULL);
 
     pTB->orientation                 = orientation;
@@ -207,7 +206,7 @@ dred_tabbar* dred_tabbar_create(dred_context* pDred, drgui_element* pParent, dre
 
 void dred_tabbar_delete(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -223,7 +222,7 @@ void dred_tabbar_delete(dred_tabbar* pTabBar)
 
 size_t dred_tabbar_get_extra_data_size(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return 0;
     }
@@ -233,7 +232,7 @@ size_t dred_tabbar_get_extra_data_size(dred_tabbar* pTabBar)
 
 void* dred_tabbar_get_extra_data(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -243,7 +242,7 @@ void* dred_tabbar_get_extra_data(dred_tabbar* pTabBar)
 
 dred_tabbar_orientation dred_tabbar_get_orientation(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return dred_tabbar_orientation_top;
     }
@@ -254,7 +253,7 @@ dred_tabbar_orientation dred_tabbar_get_orientation(dred_tabbar* pTabBar)
 
 void dred_tabbar_set_font(dred_tabbar* pTabBar, drgui_font* pFont)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -273,7 +272,7 @@ void dred_tabbar_set_font(dred_tabbar* pTabBar, drgui_font* pFont)
 
 drgui_font* dred_tabbar_get_font(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -284,7 +283,7 @@ drgui_font* dred_tabbar_get_font(dred_tabbar* pTabBar)
 
 void dred_tabbar_set_text_color(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -298,7 +297,7 @@ void dred_tabbar_set_text_color(dred_tabbar* pTabBar, drgui_color color)
 
 drgui_color dred_tabbar_get_text_color(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return drgui_rgb(0, 0, 0);
     }
@@ -308,7 +307,7 @@ drgui_color dred_tabbar_get_text_color(dred_tabbar* pTabBar)
 
 void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -322,7 +321,7 @@ void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, drgui_color color)
 
 void dred_tabbar_set_text_color_hovered(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -337,7 +336,7 @@ void dred_tabbar_set_text_color_hovered(dred_tabbar* pTabBar, drgui_color color)
 
 void dred_tabbar_set_close_button_image(dred_tabbar* pTabBar, drgui_image* pImage)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -351,7 +350,7 @@ void dred_tabbar_set_close_button_image(dred_tabbar* pTabBar, drgui_image* pImag
 
 drgui_image* dred_tabbar_get_close_button_image(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -361,7 +360,7 @@ drgui_image* dred_tabbar_get_close_button_image(dred_tabbar* pTabBar)
 
 void dred_tabbar_set_close_button_color(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -376,7 +375,7 @@ void dred_tabbar_set_close_button_color(dred_tabbar* pTabBar, drgui_color color)
 
 void dred_tabbar_set_tab_padding(dred_tabbar* pTabBar, float padding)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -390,7 +389,7 @@ void dred_tabbar_set_tab_padding(dred_tabbar* pTabBar, float padding)
 
 float dred_tabbar_get_tab_padding(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return 0;
     }
@@ -400,7 +399,7 @@ float dred_tabbar_get_tab_padding(dred_tabbar* pTabBar)
 
 void dred_tabbar_set_close_button_left_padding(dred_tabbar* pTabBar, float padding)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -414,7 +413,7 @@ void dred_tabbar_set_close_button_left_padding(dred_tabbar* pTabBar, float paddi
 
 float dred_tabbar_get_close_button_left_padding(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return 0;
     }
@@ -425,7 +424,7 @@ float dred_tabbar_get_close_button_left_padding(dred_tabbar* pTabBar)
 
 void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -439,7 +438,7 @@ void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, drgui_color colo
 
 drgui_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return drgui_rgb(0, 0, 0);
     }
@@ -449,7 +448,7 @@ drgui_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar)
 
 void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -463,7 +462,7 @@ void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, drgui_co
 
 drgui_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return drgui_rgb(0, 0, 0);
     }
@@ -473,7 +472,7 @@ drgui_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar)
 
 void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, drgui_color color)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -487,7 +486,7 @@ void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, drgui_col
 
 drgui_color dred_tabbar_get_tab_background_color_actived(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return drgui_rgb(0, 0, 0);
     }
@@ -498,7 +497,7 @@ drgui_color dred_tabbar_get_tab_background_color_actived(dred_tabbar* pTabBar)
 
 void dred_tabbar_set_on_measure_tab(dred_tabbar* pTabBar, dred_tabbar_on_measure_tab_proc proc)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -508,7 +507,7 @@ void dred_tabbar_set_on_measure_tab(dred_tabbar* pTabBar, dred_tabbar_on_measure
 
 void dred_tabbar_set_on_paint_tab(dred_tabbar* pTabBar, dred_tabbar_on_paint_tab_proc proc)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -518,7 +517,7 @@ void dred_tabbar_set_on_paint_tab(dred_tabbar* pTabBar, dred_tabbar_on_paint_tab
 
 void dred_tabbar_set_on_tab_activated(dred_tabbar* pTabBar, dred_tabbar_on_tab_activated_proc proc)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -528,7 +527,7 @@ void dred_tabbar_set_on_tab_activated(dred_tabbar* pTabBar, dred_tabbar_on_tab_a
 
 void dred_tabbar_set_on_tab_deactivated(dred_tabbar* pTabBar, dred_tabbar_on_tab_deactivated_proc proc)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -538,7 +537,7 @@ void dred_tabbar_set_on_tab_deactivated(dred_tabbar* pTabBar, dred_tabbar_on_tab
 
 void dred_tabbar_set_on_tab_closed(dred_tabbar* pTabBar, dred_tabbar_on_tab_close_proc proc)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -548,7 +547,7 @@ void dred_tabbar_set_on_tab_closed(dred_tabbar* pTabBar, dred_tabbar_on_tab_clos
 
 void dred_tabbar_set_on_tab_mouse_button_up(dred_tabbar* pTabBar, dred_tabbar_on_tab_mouse_button_up_proc proc)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -559,7 +558,7 @@ void dred_tabbar_set_on_tab_mouse_button_up(dred_tabbar* pTabBar, dred_tabbar_on
 
 void dred_tabbar_measure_tab(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -571,7 +570,7 @@ void dred_tabbar_measure_tab(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidt
 
 void dred_tabbar_paint_tab(dred_tabbar* pTabBar, drgui_tab* pTab, drgui_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -584,7 +583,7 @@ void dred_tabbar_paint_tab(dred_tabbar* pTabBar, drgui_tab* pTab, drgui_rect rel
 
 void dred_tabbar_resize_by_tabs(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -628,7 +627,7 @@ void dred_tabbar_resize_by_tabs(dred_tabbar* pTabBar)
 
 void dred_tabbar_enable_auto_size(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -638,7 +637,7 @@ void dred_tabbar_enable_auto_size(dred_tabbar* pTabBar)
 
 void dred_tabbar_disable_auto_size(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -648,7 +647,7 @@ void dred_tabbar_disable_auto_size(dred_tabbar* pTabBar)
 
 bool dred_tabbar_is_auto_size_enabled(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return false;
     }
@@ -659,7 +658,7 @@ bool dred_tabbar_is_auto_size_enabled(dred_tabbar* pTabBar)
 
 drgui_tab* dred_tabbar_get_first_tab(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -669,7 +668,7 @@ drgui_tab* dred_tabbar_get_first_tab(dred_tabbar* pTabBar)
 
 drgui_tab* dred_tabbar_get_last_tab(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -692,7 +691,7 @@ drgui_tab* dred_tabbar_get_prev_tab(dred_tabbar* pTabBar, drgui_tab* pTab)
 
 void dred_tabbar_activate_tab(dred_tabbar* pTabBar, drgui_tab* pTab)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -723,7 +722,7 @@ void dred_tabbar_activate_tab(dred_tabbar* pTabBar, drgui_tab* pTab)
 
 void dred_tabbar_activate_next_tab(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -744,7 +743,7 @@ void dred_tabbar_activate_next_tab(dred_tabbar* pTabBar)
 
 void dred_tabbar_activate_prev_tab(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -765,7 +764,7 @@ void dred_tabbar_activate_prev_tab(dred_tabbar* pTabBar)
 
 drgui_tab* dred_tabbar_get_active_tab(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -776,7 +775,7 @@ drgui_tab* dred_tabbar_get_active_tab(dred_tabbar* pTabBar)
 
 bool dred_tabbar_is_tab_in_view(dred_tabbar* pTabBar, drgui_tab* pTabIn)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return false;
     }
@@ -813,7 +812,7 @@ bool dred_tabbar_is_tab_in_view(dred_tabbar* pTabBar, drgui_tab* pTabIn)
 
 void dred_tabbar_show_close_buttons(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -827,7 +826,7 @@ void dred_tabbar_show_close_buttons(dred_tabbar* pTabBar)
 
 void dred_tabbar_hide_close_buttons(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -842,7 +841,7 @@ void dred_tabbar_hide_close_buttons(dred_tabbar* pTabBar)
 
 void dred_tabbar_enable_close_on_middle_click(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -852,7 +851,7 @@ void dred_tabbar_enable_close_on_middle_click(dred_tabbar* pTabBar)
 
 void dred_tabbar_disable_close_on_middle_click(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -862,7 +861,7 @@ void dred_tabbar_disable_close_on_middle_click(dred_tabbar* pTabBar)
 
 bool dred_tabbar_is_close_on_middle_click_enabled(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return false;
     }
@@ -873,7 +872,7 @@ bool dred_tabbar_is_close_on_middle_click_enabled(dred_tabbar* pTabBar)
 
 void dred_tabbar_on_mouse_leave(dred_tabbar* pTabBar)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -893,7 +892,7 @@ void dred_tabbar_on_mouse_move(dred_tabbar* pTabBar, int relativeMousePosX, int 
 {
     (void)stateFlags;
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -918,7 +917,7 @@ void dred_tabbar_on_mouse_button_down(dred_tabbar* pTabBar, int mouseButton, int
 {
     (void)stateFlags;
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -960,7 +959,7 @@ void dred_tabbar_on_mouse_button_up(dred_tabbar* pTabBar, int mouseButton, int r
 {
     (void)stateFlags;
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -996,7 +995,7 @@ void dred_tabbar_on_mouse_button_up(dred_tabbar* pTabBar, int mouseButton, int r
 
 void dred_tabbar_on_paint(dred_tabbar* pTabBar, drgui_rect relativeClippingRect, void* pPaintData)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -1049,7 +1048,7 @@ void dred_tabbar_on_paint(dred_tabbar* pTabBar, drgui_rect relativeClippingRect,
 
 DRGUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -1083,7 +1082,7 @@ DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_
 {
     (void)relativeClippingRect;
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return;
     }
@@ -1166,7 +1165,7 @@ DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_
 
 DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, bool* pIsOverCloseButtonOut)
 {
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
         return NULL;
     }
@@ -1413,7 +1412,7 @@ DRGUI_PRIVATE void tab_append(drgui_tab* pTab, dred_tabbar* pTabBar)
         return;
     }
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     assert(pTB != NULL);
 
     pTab->pTabBar = pTabBar;
@@ -1451,7 +1450,7 @@ DRGUI_PRIVATE void tab_prepend(drgui_tab* pTab, dred_tabbar* pTabBar)
         return;
     }
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     assert(pTB != NULL);
 
     pTab->pTabBar = pTabBar;
@@ -1494,7 +1493,7 @@ DRGUI_PRIVATE void tab_detach_from_hierarchy(drgui_tab* pTab)
         return;
     }
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     assert(pTB != NULL);
 
 
@@ -1532,7 +1531,7 @@ DRGUI_PRIVATE void tab_detach(drgui_tab* pTab)
         return;
     }
 
-    drgui_tab_bar* pTB = (drgui_tab_bar*)dred_control_get_extra_data(pTabBar);
+    dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     assert(pTB != NULL);
 
     if (pTB->pHoveredTab == pTab) {

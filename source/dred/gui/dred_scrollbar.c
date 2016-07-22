@@ -69,7 +69,7 @@ typedef struct
     /// A pointer to the extra data.
     char pExtraData[1];
 
-} drgui_scrollbar;
+} dred_scrollbar_data;
 
 
 /// Refreshes the given scrollbar's thumb layout and redraws it.
@@ -115,12 +115,12 @@ dred_scrollbar* dred_scrollbar_create(dred_context* pDred, drgui_element* pParen
         return NULL;
     }
 
-    dred_scrollbar* pScrollbar = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_SCROLLBAR, sizeof(drgui_scrollbar) + extraDataSize);
+    dred_scrollbar* pScrollbar = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_SCROLLBAR, sizeof(dred_scrollbar_data) + extraDataSize);
     if (pScrollbar == NULL) {
         return NULL;
     }
 
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     assert(pSB != NULL);
 
     pSB->orientation       = orientation;
@@ -175,7 +175,7 @@ void dred_scrollbar_delete(dred_scrollbar* pScrollbar)
 
 size_t dred_scrollbar_get_extra_data_size(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return 0;
     }
@@ -185,7 +185,7 @@ size_t dred_scrollbar_get_extra_data_size(dred_scrollbar* pScrollbar)
 
 void* dred_scrollbar_get_extra_data(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return NULL;
     }
@@ -196,7 +196,7 @@ void* dred_scrollbar_get_extra_data(dred_scrollbar* pScrollbar)
 
 dred_scrollbar_orientation dred_scrollbar_get_orientation(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return dred_scrollbar_orientation_none;
     }
@@ -207,7 +207,7 @@ dred_scrollbar_orientation dred_scrollbar_get_orientation(dred_scrollbar* pScrol
 
 void dred_scrollbar_set_range(dred_scrollbar* pScrollbar, int rangeMin, int rangeMax)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -225,7 +225,7 @@ void dred_scrollbar_set_range(dred_scrollbar* pScrollbar, int rangeMin, int rang
 
 void dred_scrollbar_get_range(dred_scrollbar* pScrollbar, int* pRangeMinOut, int* pRangeMaxOut)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -242,7 +242,7 @@ void dred_scrollbar_get_range(dred_scrollbar* pScrollbar, int* pRangeMinOut, int
 
 void dred_scrollbar_set_page_size(dred_scrollbar* pScrollbar, int pageSize)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -259,7 +259,7 @@ void dred_scrollbar_set_page_size(dred_scrollbar* pScrollbar, int pageSize)
 
 int dred_scrollbar_get_page_size(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return 0;
     }
@@ -270,7 +270,7 @@ int dred_scrollbar_get_page_size(dred_scrollbar* pScrollbar)
 
 void dred_scrollbar_set_range_and_page_size(dred_scrollbar* pScrollbar, int rangeMin, int rangeMax, int pageSize)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -290,7 +290,7 @@ void dred_scrollbar_set_range_and_page_size(dred_scrollbar* pScrollbar, int rang
 
 void dred_scrollbar_set_scroll_position(dred_scrollbar* pScrollbar, int position)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -307,7 +307,7 @@ void dred_scrollbar_set_scroll_position(dred_scrollbar* pScrollbar, int position
 
 int dred_scrollbar_get_scroll_position(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return 0;
     }
@@ -318,7 +318,7 @@ int dred_scrollbar_get_scroll_position(dred_scrollbar* pScrollbar)
 
 void dred_scrollbar_scroll(dred_scrollbar* pScrollbar, int offset)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -328,7 +328,7 @@ void dred_scrollbar_scroll(dred_scrollbar* pScrollbar, int offset)
 
 void dred_scrollbar_scroll_to(dred_scrollbar* pScrollbar, int newScrollPos)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -347,7 +347,7 @@ void dred_scrollbar_scroll_to(dred_scrollbar* pScrollbar, int newScrollPos)
 
 void dred_scrollbar_enable_thumb_auto_hide(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -363,7 +363,7 @@ void dred_scrollbar_enable_thumb_auto_hide(dred_scrollbar* pScrollbar)
 
 void dred_scrollbar_disable_thumb_auto_hide(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -379,7 +379,7 @@ void dred_scrollbar_disable_thumb_auto_hide(dred_scrollbar* pScrollbar)
 
 bool dred_scrollbar_is_thumb_auto_hide_enabled(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return false;
     }
@@ -389,7 +389,7 @@ bool dred_scrollbar_is_thumb_auto_hide_enabled(dred_scrollbar* pScrollbar)
 
 bool dred_scrollbar_is_thumb_visible(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return false;
     }
@@ -405,7 +405,7 @@ bool dred_scrollbar_is_thumb_visible(dred_scrollbar* pScrollbar)
 
 void dred_scrollbar_set_mouse_wheel_scele(dred_scrollbar* pScrollbar, int scale)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -415,7 +415,7 @@ void dred_scrollbar_set_mouse_wheel_scele(dred_scrollbar* pScrollbar, int scale)
 
 int dred_scrollbar_get_mouse_wheel_scale(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return 1;
     }
@@ -426,7 +426,7 @@ int dred_scrollbar_get_mouse_wheel_scale(dred_scrollbar* pScrollbar)
 
 void dred_scrollbar_set_track_color(dred_scrollbar* pScrollbar, drgui_color color)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -436,7 +436,7 @@ void dred_scrollbar_set_track_color(dred_scrollbar* pScrollbar, drgui_color colo
 
 void dred_scrollbar_set_default_thumb_color(dred_scrollbar* pScrollbar, drgui_color color)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -446,7 +446,7 @@ void dred_scrollbar_set_default_thumb_color(dred_scrollbar* pScrollbar, drgui_co
 
 void dred_scrollbar_set_hovered_thumb_color(dred_scrollbar* pScrollbar, drgui_color color)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -456,7 +456,7 @@ void dred_scrollbar_set_hovered_thumb_color(dred_scrollbar* pScrollbar, drgui_co
 
 void dred_scrollbar_set_pressed_thumb_color(dred_scrollbar* pScrollbar, drgui_color color)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -467,7 +467,7 @@ void dred_scrollbar_set_pressed_thumb_color(dred_scrollbar* pScrollbar, drgui_co
 
 void dred_scrollbar_set_on_scroll(dred_scrollbar* pScrollbar, dred_scrollbar_on_scroll_proc onScroll)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -477,7 +477,7 @@ void dred_scrollbar_set_on_scroll(dred_scrollbar* pScrollbar, dred_scrollbar_on_
 
 dred_scrollbar_on_scroll_proc dred_scrollbar_get_on_scroll(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return NULL;
     }
@@ -488,7 +488,7 @@ dred_scrollbar_on_scroll_proc dred_scrollbar_get_on_scroll(dred_scrollbar* pScro
 
 drgui_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return drgui_make_rect(0, 0, 0, 0);
     }
@@ -523,7 +523,7 @@ void dred_scrollbar_on_size(dred_scrollbar* pScrollbar, float newWidth, float ne
     (void)newWidth;
     (void)newHeight;
 
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -533,7 +533,7 @@ void dred_scrollbar_on_size(dred_scrollbar* pScrollbar, float newWidth, float ne
 
 void dred_scrollbar_on_mouse_leave(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -560,7 +560,7 @@ void dred_scrollbar_on_mouse_move(dred_scrollbar* pScrollbar, int relativeMouseP
 {
     (void)stateFlags;
 
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -609,7 +609,7 @@ void dred_scrollbar_on_mouse_button_down(dred_scrollbar* pScrollbar, int button,
 {
     (void)stateFlags;
 
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -652,7 +652,7 @@ void dred_scrollbar_on_mouse_button_up(dred_scrollbar* pScrollbar, int button, i
     (void)relativeMousePosY;
     (void)stateFlags;
 
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -675,7 +675,7 @@ void dred_scrollbar_on_mouse_wheel(dred_scrollbar* pScrollbar, int delta, int re
     (void)relativeMousePosY;
     (void)stateFlags;
 
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -687,7 +687,7 @@ void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, drgui_rect relativeClip
 {
     (void)relativeClippingRect;
 
-    const drgui_scrollbar* pSB = (const drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
         return;
     }
@@ -727,7 +727,7 @@ void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, drgui_rect relativeClip
 
 DRGUI_PRIVATE void dred_scrollbar_refresh_thumb(dred_scrollbar* pScrollbar)
 {
-    drgui_scrollbar* pSB = (drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     assert(pSB != NULL);
 
     drgui_rect oldThumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
@@ -744,7 +744,7 @@ DRGUI_PRIVATE void dred_scrollbar_refresh_thumb(dred_scrollbar* pScrollbar)
 
 DRGUI_PRIVATE float dred_scrollbar_calculate_thumb_size(dred_scrollbar* pScrollbar)
 {
-    const drgui_scrollbar* pSB = (const drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     assert(pSB != NULL);
 
     float trackSize = dred_scrollbar_get_track_size(pScrollbar);
@@ -762,7 +762,7 @@ DRGUI_PRIVATE float dred_scrollbar_calculate_thumb_size(dred_scrollbar* pScrollb
 
 DRGUI_PRIVATE float dred_scrollbar_calculate_thumb_position(dred_scrollbar* pScrollbar)
 {
-    const drgui_scrollbar* pSB = (const drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     assert(pSB != NULL);
 
     float trackSize = dred_scrollbar_get_track_size(pScrollbar);
@@ -781,7 +781,7 @@ DRGUI_PRIVATE float dred_scrollbar_calculate_thumb_position(dred_scrollbar* pScr
 
 DRGUI_PRIVATE float dred_scrollbar_get_track_size(dred_scrollbar* pScrollbar)
 {
-    const drgui_scrollbar* pSB = (const drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     assert(pSB != NULL);
 
     if (pSB->orientation == dred_scrollbar_orientation_vertical) {
@@ -806,7 +806,7 @@ DRGUI_PRIVATE void dred_scrollbar_make_relative_to_thumb(dred_scrollbar* pScroll
 
 DRGUI_PRIVATE int dred_scrollbar_calculate_scroll_pos_from_thumb_pos(dred_scrollbar* pScrollbar, float thumbPos)
 {
-    const drgui_scrollbar* pSB = (const drgui_scrollbar*)dred_control_get_extra_data(pScrollbar);
+    const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     assert(pSB != NULL);
 
     float trackSize = dred_scrollbar_get_track_size(pScrollbar);
