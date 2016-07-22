@@ -30,13 +30,13 @@ typedef struct
 
 
     /// The vertical scrollbar.
-    drgui_element* pVertScrollbar;
+    dred_scrollbar* pVertScrollbar;
 
     /// The horizontal scrollbar.
-    drgui_element* pHorzScrollbar;
+    dred_scrollbar* pHorzScrollbar;
 
     /// The line numbers element.
-    drgui_element* pLineNumbers;
+    dred_control* pLineNumbers;
 
 
     /// The color of the border.
@@ -130,16 +130,16 @@ drgui_rect dred_textbox__get_scrollbar_dead_space_rect(dred_textbox* pTextBox);
 
 
 /// Called when a mouse button is pressed on the line numbers element.
-void dred_textbox__on_mouse_move_line_numbers(drgui_element* pLineNumbers, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textbox__on_mouse_move_line_numbers(dred_control* pLineNumbers, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when a mouse button is pressed on the line numbers element.
-void dred_textbox__on_mouse_button_down_line_numbers(drgui_element* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textbox__on_mouse_button_down_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when a mouse button is pressed on the line numbers element.
-void dred_textbox__on_mouse_button_up_line_numbers(drgui_element* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textbox__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the line numbers element needs to be drawn.
-void dred_textbox__on_paint_line_numbers(drgui_element* pLineNumbers, drgui_rect relativeRect, void* pPaintData);
+void dred_textbox__on_paint_line_numbers(dred_control* pLineNumbers, drgui_rect relativeRect, void* pPaintData);
 
 /// Refreshes the line number of the given text editor.
 void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox);
@@ -475,7 +475,8 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     pTB->pHorzScrollbar = dred_scrollbar_create(pDred, pTextBox, dred_scrollbar_orientation_horizontal, sizeof(pTextBox), &pTextBox);
     dred_scrollbar_set_on_scroll(pTB->pHorzScrollbar, dred_textbox__on_hscroll);
 
-    pTB->pLineNumbers = drgui_create_element(pDred->pGUI, pTextBox, sizeof(pTextBox), &pTextBox);
+    pTB->pLineNumbers = dred_control_create(pDred, pTextBox, "dred.common.linenumbers", sizeof(pTextBox));
+    memcpy(dred_control_get_extra_data(pTB->pLineNumbers), &pTextBox, sizeof(pTextBox));
     drgui_hide(pTB->pLineNumbers);
     drgui_set_on_mouse_move(pTB->pLineNumbers, dred_textbox__on_mouse_move_line_numbers);
     drgui_set_on_mouse_button_down(pTB->pLineNumbers, dred_textbox__on_mouse_button_down_line_numbers);
@@ -596,7 +597,7 @@ void dred_textbox_delete(dred_textbox* pTextBox)
     }
 
     if (pTB->pLineNumbers) {
-        drgui_delete_element(pTB->pLineNumbers);
+        dred_control_delete(pTB->pLineNumbers);
         pTB->pLineNumbers = NULL;
     }
 
@@ -610,7 +611,7 @@ void dred_textbox_delete(dred_textbox* pTextBox)
         pTB->pVertScrollbar = NULL;
     }
 
-    drgui_delete_element(pTextBox);
+    dred_control_delete(pTextBox);
 }
 
 
@@ -2780,11 +2781,11 @@ drgui_rect dred_textbox__get_scrollbar_dead_space_rect(dred_textbox* pTextBox)
 }
 
 
-void dred_textbox__on_mouse_move_line_numbers(drgui_element* pLineNumbers, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textbox__on_mouse_move_line_numbers(dred_control* pLineNumbers, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
 
-    dred_textbox* pTextBox = *(drgui_element**)drgui_get_extra_data(pLineNumbers);
+    dred_textbox* pTextBox = *(drgui_element**)dred_control_get_extra_data(pLineNumbers);
     assert(pTextBox != NULL);
 
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
@@ -2846,12 +2847,12 @@ void dred_textbox__on_mouse_move_line_numbers(drgui_element* pLineNumbers, int r
     }
 }
 
-void dred_textbox__on_mouse_button_down_line_numbers(drgui_element* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textbox__on_mouse_button_down_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
     (void)stateFlags;
 
-    dred_textbox* pTextBox = *(drgui_element**)drgui_get_extra_data(pLineNumbers);
+    dred_textbox* pTextBox = *(drgui_element**)dred_control_get_extra_data(pLineNumbers);
     assert(pTextBox != NULL);
 
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
@@ -2898,7 +2899,7 @@ void dred_textbox__on_mouse_button_down_line_numbers(drgui_element* pLineNumbers
     }
 }
 
-void dred_textbox__on_mouse_button_up_line_numbers(drgui_element* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textbox__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
     (void)relativeMousePosY;
@@ -2941,11 +2942,11 @@ void dred_textbox__on_paint_text_line_numbers(drte_engine* pEngine, drte_style_t
     drgui_draw_text(pTB->pLineNumbers, pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
 }
 
-void dred_textbox__on_paint_line_numbers(drgui_element* pLineNumbers, drgui_rect relativeRect, void* pPaintData)
+void dred_textbox__on_paint_line_numbers(dred_control* pLineNumbers, drgui_rect relativeRect, void* pPaintData)
 {
     (void)relativeRect;
 
-    dred_textbox* pTextBox = *((drgui_element**)drgui_get_extra_data(pLineNumbers));
+    dred_textbox* pTextBox = *((drgui_element**)dred_control_get_extra_data(pLineNumbers));
     assert(pTextBox != NULL);
 
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
