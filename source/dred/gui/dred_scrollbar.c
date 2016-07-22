@@ -88,7 +88,7 @@ DRGUI_PRIVATE float dred_scrollbar_get_track_size(dred_scrollbar* pScrollbar);
 DRGUI_PRIVATE void dred_scrollbar_make_relative_to_thumb(dred_scrollbar* pScrollbar, float* pPosX, float* pPosY);
 
 /// Calculates the scroll position based on the current position of the thumb. This is used for scrolling while dragging the thumb.
-DRGUI_PRIVATE int dred_scrollbar_calculate_scroll_pos_from_thumb_pos(drgui_element* pScrollba, float thumbPosr);
+DRGUI_PRIVATE int dred_scrollbar_calculate_scroll_pos_from_thumb_pos(dred_scrollbar* pScrollbar, float thumbPosr);
 
 /// Simple clamp function.
 DRGUI_PRIVATE float dred_scrollbar_clampf(float n, float lower, float upper)
@@ -169,7 +169,7 @@ void dred_scrollbar_delete(dred_scrollbar* pScrollbar)
         return;
     }
 
-    drgui_delete_element(pScrollbar);
+    dred_control_delete(pScrollbar);
 }
 
 

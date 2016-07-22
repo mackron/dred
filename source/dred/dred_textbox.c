@@ -485,7 +485,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
 
     pTB->pTL = drte_engine_create(pTextBox);
     if (pTB->pTL == NULL) {
-        drgui_delete_element(pTextBox);
+        dred_control_delete(pTextBox);
         return NULL;
     }
 

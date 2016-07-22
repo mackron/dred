@@ -216,7 +216,7 @@ void dred_tabbar_delete(dred_tabbar* pTabBar)
     }
 
 
-    drgui_delete_element(pTabBar);
+    dred_control_delete(pTabBar);
 }
 
 
