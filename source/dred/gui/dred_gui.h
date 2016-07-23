@@ -43,12 +43,12 @@
 //   properly.
 // - A global outbound event handler should be implemented for each of the following events:
 //   - on_dirty: Called when a region of an element is marked as dirty and needs to be redrawn. The application will want to
-//     invalidate the container window to trigger an operating system redraw. Set this with drgui_set_global_on_dirty().
+//     invalidate the container window to trigger an operating system redraw. Set this with dred_gui_set_global_on_dirty().
 //   - on_capture_mouse: Called when the mouse is captured and gives the application the opportunity to capture the mouse against
-//     the container window at the operating system level. Set with drgui_set_global_on_capture_mouse().
+//     the container window at the operating system level. Set with dred_gui_set_global_on_capture_mouse().
 //   - on_release_mouse: Called when the mouse is released. The opposite of on_capture_mouse.
 //   - on_capture_keyboard: Called when an element is given the keyboard focus and gives the application the opportunity to
-//     apply the keyboard focus to the container window. Set with drgui_set_global_on_capture_keyboard().
+//     apply the keyboard focus to the container window. Set with dred_gui_set_global_on_capture_keyboard().
 //   - on_release_keyboard: Called when an element loses the keyboard focus. The opposite of on_capture_keyboard.
 //   - on_change_cursor: Called when the current cursor needs to be changed as a result of the mouse moving over a new element.
 //
@@ -859,34 +859,34 @@ void dred_gui_uninit(dred_gui* pGUI);
 /// @remarks
 ///     The intention behind this event is to allow the application to let dr_gui know that the mouse have left the window. Since dr_gui does
 ///     not have any notion of a window it must rely on the host application to notify it.
-void drgui_post_inbound_event_mouse_leave(dred_control* pTopLevelControl);
+void dred_gui_post_inbound_event_mouse_leave(dred_control* pTopLevelControl);
 
 /// Posts a mouse move inbound event.
-void drgui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int mousePosX, int mousePosY, int stateFlags);
+void dred_gui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int mousePosX, int mousePosY, int stateFlags);
 
 /// Posts a mouse button down inbound event.
-void drgui_post_inbound_event_mouse_button_down(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+void dred_gui_post_inbound_event_mouse_button_down(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
 
 /// Posts a mouse button up inbound event.
-void drgui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+void dred_gui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
 
 /// Posts a mouse button double-clicked inbound event.
-void drgui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+void dred_gui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
 
 /// Posts a mouse wheel inbound event.
-void drgui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+void dred_gui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
 
 /// Posts a key down inbound event.
-void drgui_post_inbound_event_key_down(dred_gui* pGUI, dred_key key, int stateFlags);
+void dred_gui_post_inbound_event_key_down(dred_gui* pGUI, dred_key key, int stateFlags);
 
 /// Posts a key up inbound event.
-void drgui_post_inbound_event_key_up(dred_gui* pGUI, dred_key key, int stateFlags);
+void dred_gui_post_inbound_event_key_up(dred_gui* pGUI, dred_key key, int stateFlags);
 
 /// Posts a printable key down inbound event.
 ///
 /// @remarks
 ///     The \c character argument should be a UTF-32 code point.
-void drgui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int character, int stateFlags);
+void dred_gui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int character, int stateFlags);
 
 
 /// Registers the global on_dirty event callback.
@@ -894,7 +894,7 @@ void drgui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int ch
 /// @remarks
 ///     This is called whenever a region of an element is marked as dirty and allows an application to mark the region of the
 ///     container window as dirty to trigger an operating system level repaint of the window.
-void drgui_set_global_on_dirty(dred_gui* pGUI, dred_gui_on_dirty_proc onDirty);
+void dred_gui_set_global_on_dirty(dred_gui* pGUI, dred_gui_on_dirty_proc onDirty);
 
 /// Registers the global on_capture_mouse event callback.
 ///
@@ -904,7 +904,7 @@ void drgui_set_global_on_dirty(dred_gui* pGUI, dred_gui_on_dirty_proc onDirty);
 ///     @par
 ///     The advantage of using a global event callback is that it can be set once at the context level rather than many times
 ///     at the element level.
-void drgui_set_global_on_capture_mouse(dred_gui* pGUI, dred_gui_on_capture_mouse_proc onCaptureMouse);
+void dred_gui_set_global_on_capture_mouse(dred_gui* pGUI, dred_gui_on_capture_mouse_proc onCaptureMouse);
 
 /// Registers the global on_release_mouse event callback.
 ///
@@ -914,7 +914,7 @@ void drgui_set_global_on_capture_mouse(dred_gui* pGUI, dred_gui_on_capture_mouse
 ///     @par
 ///     The advantage of using a global event callback is that it can be set once at the context level rather than many times
 ///     at the element level.
-void drgui_set_global_on_release_mouse(dred_gui* pGUI, dred_gui_on_release_mouse_proc onReleaseMouse);
+void dred_gui_set_global_on_release_mouse(dred_gui* pGUI, dred_gui_on_release_mouse_proc onReleaseMouse);
 
 /// Registers the global on_capture_keyboard event callback.
 ///
@@ -924,7 +924,7 @@ void drgui_set_global_on_release_mouse(dred_gui* pGUI, dred_gui_on_release_mouse
 ///     @par
 ///     The advantage of using a global event callback is that it can be set once at the context level rather than many times
 ///     at the element level.
-void drgui_set_global_on_capture_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onCaptureKeyboard);
+void dred_gui_set_global_on_capture_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onCaptureKeyboard);
 
 /// Registers the global on_release_keyboard event callback.
 ///
@@ -934,20 +934,20 @@ void drgui_set_global_on_capture_keyboard(dred_gui* pGUI, dred_gui_on_capture_ke
 ///     @par
 ///     The advantage of using a global event callback is that it can be set once at the context level rather than many times
 ///     at the element level.
-void drgui_set_global_on_release_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onReleaseKeyboard);
+void dred_gui_set_global_on_release_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onReleaseKeyboard);
 
 /// Sets the global on_change_cursor event callback.
 ///
 /// @remarks
 ///     This is called whenever the operating system needs to change the cursor.
-void drgui_set_global_on_change_cursor(dred_gui* pGUI, dred_gui_on_change_cursor_proc onChangeCursor);
+void dred_gui_set_global_on_change_cursor(dred_gui* pGUI, dred_gui_on_change_cursor_proc onChangeCursor);
 
 /// Sets the function to call when an element is deleted.
-void drgui_set_on_delete_element(dred_gui* pGUI, dred_gui_on_delete_element_proc onDeleteControl);
+void dred_gui_set_on_delete_element(dred_gui* pGUI, dred_gui_on_delete_element_proc onDeleteControl);
 
 
 /// Registers the callback to call when a log message is posted.
-void drgui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog);
+void dred_gui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog);
 
 
 

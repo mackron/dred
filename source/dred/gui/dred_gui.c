@@ -1000,7 +1000,7 @@ void dred_gui_uninit(dred_gui* pGUI)
 /////////////////////////////////////////////////////////////////
 // Events
 
-void drgui_post_inbound_event_mouse_leave(dred_control* pTopLevelControl)
+void dred_gui_post_inbound_event_mouse_leave(dred_control* pTopLevelControl)
 {
     if (pTopLevelControl == NULL) {
         return;
@@ -1019,7 +1019,7 @@ void drgui_post_inbound_event_mouse_leave(dred_control* pTopLevelControl)
     drgui_end_inbound_event(pGUI);
 }
 
-void drgui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int mousePosX, int mousePosY, int stateFlags)
+void dred_gui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int mousePosX, int mousePosY, int stateFlags)
 {
     if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
         return;
@@ -1062,7 +1062,7 @@ void drgui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int mou
     drgui_end_inbound_event(pTopLevelControl->pGUI);
 }
 
-void drgui_post_inbound_event_mouse_button_down(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+void dred_gui_post_inbound_event_mouse_button_down(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
     if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
         return;
@@ -1096,7 +1096,7 @@ void drgui_post_inbound_event_mouse_button_down(dred_control* pTopLevelControl, 
     drgui_end_inbound_event(pGUI);
 }
 
-void drgui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+void dred_gui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
     if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
         return;
@@ -1130,7 +1130,7 @@ void drgui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl, in
     drgui_end_inbound_event(pGUI);
 }
 
-void drgui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+void dred_gui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
     if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
         return;
@@ -1164,7 +1164,7 @@ void drgui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelContr
     drgui_end_inbound_event(pGUI);
 }
 
-void drgui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int delta, int mousePosX, int mousePosY, int stateFlags)
+void dred_gui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int delta, int mousePosX, int mousePosY, int stateFlags)
 {
     if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
         return;
@@ -1198,7 +1198,7 @@ void drgui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int de
     drgui_end_inbound_event(pGUI);
 }
 
-void drgui_post_inbound_event_key_down(dred_gui* pGUI, dred_key key, int stateFlags)
+void dred_gui_post_inbound_event_key_down(dred_gui* pGUI, dred_key key, int stateFlags)
 {
     if (pGUI == NULL) {
         return;
@@ -1213,7 +1213,7 @@ void drgui_post_inbound_event_key_down(dred_gui* pGUI, dred_key key, int stateFl
     drgui_end_inbound_event(pGUI);
 }
 
-void drgui_post_inbound_event_key_up(dred_gui* pGUI, dred_key key, int stateFlags)
+void dred_gui_post_inbound_event_key_up(dred_gui* pGUI, dred_key key, int stateFlags)
 {
     if (pGUI == NULL) {
         return;
@@ -1228,7 +1228,7 @@ void drgui_post_inbound_event_key_up(dred_gui* pGUI, dred_key key, int stateFlag
     drgui_end_inbound_event(pGUI);
 }
 
-void drgui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int character, int stateFlags)
+void dred_gui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int character, int stateFlags)
 {
     if (pGUI == NULL) {
         return;
@@ -1245,56 +1245,56 @@ void drgui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int ch
 
 
 
-void drgui_set_global_on_dirty(dred_gui * pGUI, dred_gui_on_dirty_proc onDirty)
+void dred_gui_set_global_on_dirty(dred_gui * pGUI, dred_gui_on_dirty_proc onDirty)
 {
     if (pGUI != NULL) {
         pGUI->onGlobalDirty = onDirty;
     }
 }
 
-void drgui_set_global_on_capture_mouse(dred_gui* pGUI, dred_gui_on_capture_mouse_proc onCaptureMouse)
+void dred_gui_set_global_on_capture_mouse(dred_gui* pGUI, dred_gui_on_capture_mouse_proc onCaptureMouse)
 {
     if (pGUI != NULL) {
         pGUI->onGlobalCaptureMouse = onCaptureMouse;
     }
 }
 
-void drgui_set_global_on_release_mouse(dred_gui* pGUI, dred_gui_on_release_mouse_proc onReleaseMouse)
+void dred_gui_set_global_on_release_mouse(dred_gui* pGUI, dred_gui_on_release_mouse_proc onReleaseMouse)
 {
     if (pGUI != NULL) {
         pGUI->onGlobalReleaseMouse = onReleaseMouse;
     }
 }
 
-void drgui_set_global_on_capture_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onCaptureKeyboard)
+void dred_gui_set_global_on_capture_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onCaptureKeyboard)
 {
     if (pGUI != NULL) {
         pGUI->onGlobalCaptureKeyboard = onCaptureKeyboard;
     }
 }
 
-void drgui_set_global_on_release_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onReleaseKeyboard)
+void dred_gui_set_global_on_release_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onReleaseKeyboard)
 {
     if (pGUI != NULL) {
         pGUI->onGlobalReleaseKeyboard = onReleaseKeyboard;
     }
 }
 
-void drgui_set_global_on_change_cursor(dred_gui* pGUI, dred_gui_on_change_cursor_proc onChangeCursor)
+void dred_gui_set_global_on_change_cursor(dred_gui* pGUI, dred_gui_on_change_cursor_proc onChangeCursor)
 {
     if (pGUI != NULL) {
         pGUI->onChangeCursor = onChangeCursor;
     }
 }
 
-void drgui_set_on_delete_element(dred_gui* pGUI, dred_gui_on_delete_element_proc onDeleteControl)
+void dred_gui_set_on_delete_element(dred_gui* pGUI, dred_gui_on_delete_element_proc onDeleteControl)
 {
     if (pGUI != NULL) {
         pGUI->onDeleteControl = onDeleteControl;
     }
 }
 
-void drgui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog)
+void dred_gui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog)
 {
     if (pGUI != NULL) {
         pGUI->onLog = onLog;
