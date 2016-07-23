@@ -363,7 +363,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
     pDred->pMainWindow->onMove = dred_window_cb__on_main_window_move;
-    drgui_set_on_size(pDred->pMainWindow->pRootGUIElement, dred_window_cb__on_main_window_size);
+    drgui_set_on_size(pDred->pMainWindow->pRootGUIControl, dred_window_cb__on_main_window_size);
 
     // Ensure the accelerators are bound. This needs to be done after loading the initial configs.
     dred_window_bind_accelerators(pDred->pMainWindow, &pDred->shortcutTable.acceleratorTable);
@@ -371,7 +371,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
     // The main tab group container.
-    pDred->pMainTabgroupContainer = dred_tabgroup_container_create(pDred, pDred->pMainWindow->pRootGUIElement);
+    pDred->pMainTabgroupContainer = dred_tabgroup_container_create(pDred, pDred->pMainWindow->pRootGUIControl);
     if (pDred->pMainTabgroupContainer == NULL) {
         printf("Failed to create main tab group container.\n");
         goto on_error;
@@ -385,7 +385,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
     // The command bar. Ensure this is given a valid initial size.
-    pDred->pCmdBar = dred_cmdbar_create(pDred, pDred->pMainWindow->pRootGUIElement);
+    pDred->pCmdBar = dred_cmdbar_create(pDred, pDred->pMainWindow->pRootGUIControl);
     if (pDred->pCmdBar == NULL) {
         printf("Failed to create command bar.\n");
         goto on_error;

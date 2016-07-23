@@ -173,9 +173,9 @@ void dred_textbox_engine__on_apply_undo_state(drte_engine* pTL, size_t dataSize,
 // dred_textbox__refresh_horizontal_scrollbar()
 void dred_textbox__refresh_horizontal_scrollbar(dred_textbox* pTextBox);
 
-void dred_textbox__on_vscroll(dred_scrollbar* pSBElement, int scrollPos)
+void dred_textbox__on_vscroll(dred_scrollbar* pSBControl, int scrollPos)
 {
-    dred_textbox* pTextBox = *(dred_control**)dred_scrollbar_get_extra_data(pSBElement);
+    dred_textbox* pTextBox = *(dred_control**)dred_scrollbar_get_extra_data(pSBControl);
     assert(pTextBox != NULL);
 
     dred_textbox_data* pTB = (dred_textbox_data*)drgui_get_extra_data(pTextBox);
@@ -188,9 +188,9 @@ void dred_textbox__on_vscroll(dred_scrollbar* pSBElement, int scrollPos)
     drgui_dirty(pTB->pLineNumbers, drgui_get_local_rect(pTB->pLineNumbers));
 }
 
-void dred_textbox__on_hscroll(dred_scrollbar* pSBElement, int scrollPos)
+void dred_textbox__on_hscroll(dred_scrollbar* pSBControl, int scrollPos)
 {
-    dred_textbox* pTextBox = *(dred_control**)dred_scrollbar_get_extra_data(pSBElement);
+    dred_textbox* pTextBox = *(dred_control**)dred_scrollbar_get_extra_data(pSBControl);
     assert(pTextBox != NULL);
 
     dred_textbox_data* pTB = (dred_textbox_data*)drgui_get_extra_data(pTextBox);
@@ -2537,9 +2537,9 @@ void dred_textbox__on_timer(dred_timer* pTimer, void* pUserData)
     dred_textbox_step(pTextBox, 100);
 }
 
-void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedElement)
+void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedControl)
 {
-    (void)pPrevCapturedElement;
+    (void)pPrevCapturedControl;
 
     dred_textbox_data* pTB = (dred_textbox_data*)drgui_get_extra_data(pTextBox);
     if (pTB == NULL) {
@@ -2553,9 +2553,9 @@ void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPre
     }
 }
 
-void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, dred_control* pNewCapturedElement)
+void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, dred_control* pNewCapturedControl)
 {
-    (void)pNewCapturedElement;
+    (void)pNewCapturedControl;
 
     dred_textbox_data* pTB = (dred_textbox_data*)drgui_get_extra_data(pTextBox);
     if (pTB == NULL) {

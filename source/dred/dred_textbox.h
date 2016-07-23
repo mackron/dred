@@ -299,10 +299,10 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
 void dred_textbox_on_paint(dred_textbox* pTextBox, dred_rect relativeRect, void* pPaintData);
 
 // on_capture_keyboard
-void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedElement);
+void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedControl);
 
 // on_release_keyboard
-void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, dred_control* pNewCapturedElement);
+void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, dred_control* pNewCapturedControl);
 
 // on_capture_mouse
 void dred_textbox_on_capture_mouse(dred_textbox* pTextBox);

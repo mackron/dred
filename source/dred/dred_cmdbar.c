@@ -82,9 +82,9 @@ void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
-void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, dred_control* pPrevCapturedElement)
+void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, dred_control* pPrevCapturedControl)
 {
-    (void)pPrevCapturedElement;
+    (void)pPrevCapturedControl;
 
     dred_cmdbar_data* data = drgui_get_extra_data(pCmdBar);
     assert(data != NULL);
@@ -134,9 +134,9 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, dred_rect rect, void* pPaintDat
     drgui_draw_text(pCmdBar, pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, pDred->config.cmdbarTextColor, bgcolor, pPaintData);
 }
 
-void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedElement)
+void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedControl)
 {
-    (void)pPrevCapturedElement;
+    (void)pPrevCapturedControl;
 
     dred_cmdbar* pCmdBar = drgui_get_parent(pTextBox);
     assert(pCmdBar != NULL);
@@ -165,12 +165,12 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, dred_control* p
 
 
     // Fall through to the default handler.
-    dred_textbox_on_capture_keyboard(pTextBox, pPrevCapturedElement);
+    dred_textbox_on_capture_keyboard(pTextBox, pPrevCapturedControl);
 }
 
-void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, dred_control* pNextCapturedElement)
+void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, dred_control* pNextCapturedControl)
 {
-    (void)pNextCapturedElement;
+    (void)pNextCapturedControl;
 
     dred_cmdbar* pCmdBar = drgui_get_parent(pTextBox);
     assert(pCmdBar != NULL);
@@ -182,7 +182,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, dred_control* p
     assert(pDred != NULL);
 
     // If the element being captured is the inner text box, just ignore it and pretend that we're not actually losing focus.
-    if (drgui_is_descendant(pNextCapturedElement, dred_cmdbar__get_textbox(pCmdBar))) {
+    if (drgui_is_descendant(pNextCapturedControl, dred_cmdbar__get_textbox(pCmdBar))) {
         return;
     }
 
@@ -202,7 +202,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, dred_control* p
 
 
     // Fall through to the default handler.
-    dred_textbox_on_release_keyboard(pTextBox, pNextCapturedElement);
+    dred_textbox_on_release_keyboard(pTextBox, pNextCapturedControl);
 }
 
 void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, dred_key key, int stateFlags)

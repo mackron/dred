@@ -42,9 +42,9 @@ void dred_text_editor__on_size(dred_text_editor* pTextEditor, float newWidth, fl
     drgui_set_size(pTextBox, newWidth, newHeight);
 }
 
-void dred_text_editor__on_capture_keyboard(dred_text_editor* pTextEditor, dred_control* pPrevCapturedElement)
+void dred_text_editor__on_capture_keyboard(dred_text_editor* pTextEditor, dred_control* pPrevCapturedControl)
 {
-    (void)pPrevCapturedElement;
+    (void)pPrevCapturedControl;
     
     // When a text editor receives keyboard focus it should be routed down to the text box control.
     dred_textbox* pTextBox = dred_text_editor__get_textbox(pTextEditor);
@@ -123,7 +123,7 @@ void dred_text_editor_textbox__on_cursor_move(dred_textbox* pTextBox)
     dred_update_info_bar(drgui_get_context(pTextEditor), pTextEditor);
 }
 
-void dred_text_editor_textbox__on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedElement)
+void dred_text_editor_textbox__on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedControl)
 {
     dred_text_editor* pTextEditor = drgui_get_parent(pTextBox);
     if (pTextEditor == NULL) {
@@ -138,7 +138,7 @@ void dred_text_editor_textbox__on_capture_keyboard(dred_textbox* pTextBox, dred_
     }
 
     // Fall through to the text boxes normal capture_keyboard event handler...
-    dred_textbox_on_capture_keyboard(pTextBox, pPrevCapturedElement);
+    dred_textbox_on_capture_keyboard(pTextBox, pPrevCapturedControl);
 }
 
 

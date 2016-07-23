@@ -26,10 +26,10 @@ dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred)
     
     pDialog->pWindow->pUserData = pDialog;
     pDialog->pWindow->onClose = dred_settings_dialog__on_window_close;
-    pDialog->pWindow->pRootGUIElement->onSize = drgui_on_size_fit_children_to_parent;
+    pDialog->pWindow->pRootGUIControl->onSize = drgui_on_size_fit_children_to_parent;
 
 
-    pDialog->pSettingsEditor = dred_settings_editor_create(pDred, pDialog->pWindow->pRootGUIElement, NULL);
+    pDialog->pSettingsEditor = dred_settings_editor_create(pDred, pDialog->pWindow->pRootGUIControl, NULL);
     if (pDialog->pSettingsEditor == NULL) {
         dred_window_delete(pDialog->pWindow);
         free(pDialog);

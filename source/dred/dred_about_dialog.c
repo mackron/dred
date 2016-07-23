@@ -72,7 +72,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
     dred_rect bannerRect = dialogRect;
     bannerRect.bottom = (logoHeight*10 + 80.0f) * uiScale;
 
-    drgui_draw_image_args args;
+    dred_gui_draw_image_args args;
     memset(&args, 0, sizeof(args));
     args.srcWidth = (float)logoWidth;
     args.srcHeight = (float)logoHeight;
@@ -202,8 +202,8 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     pDialog->pWindow->pUserData = pDialog;
     pDialog->pWindow->onClose = dred_about_dialog__on_window_close;
     //pDialog->pWindow->onKeyDown = dred_about_dialog__on_key_down;
-    drgui_set_on_size(pDialog->pWindow->pRootGUIElement, dred_about_dialog__on_size);
-    drgui_set_on_paint(pDialog->pWindow->pRootGUIElement, dred_about_dialog__on_paint);
+    drgui_set_on_size(pDialog->pWindow->pRootGUIControl, dred_about_dialog__on_size);
+    drgui_set_on_paint(pDialog->pWindow->pRootGUIControl, dred_about_dialog__on_paint);
     
 
 
@@ -213,7 +213,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     dred_window_get_client_size(pDialog->pWindow, &windowWidth, &windowHeight);
 
 
-    pDialog->pCloseButton = dred_button_create(pDred, pDialog->pWindow->pRootGUIElement, "Close");
+    pDialog->pCloseButton = dred_button_create(pDred, pDialog->pWindow->pRootGUIControl, "Close");
     dred_button_set_on_pressed(pDialog->pCloseButton, dred_about_dialog__btn_close__on_pressed);
     dred_button_set_padding(pDialog->pCloseButton, 32*pDred->uiScale, 6*pDred->uiScale);
     drgui_set_relative_position(pDialog->pCloseButton, windowWidth - drgui_get_width(pDialog->pCloseButton) - 8*pDred->uiScale, windowHeight - drgui_get_height(pDialog->pCloseButton) - 8*pDred->uiScale);

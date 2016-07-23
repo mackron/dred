@@ -23,10 +23,10 @@
 #define IS_AUTO_DIRTY_DISABLED              (1U << 1)
 #define IS_RELEASING_KEYBOARD               (1U << 2)
 
-// Element Flags
-#define IS_ELEMENT_HIDDEN                   (1U << 0)
-#define IS_ELEMENT_CLIPPING_DISABLED        (1U << 1)
-#define IS_ELEMENT_DEAD                     (1U << 31)
+// Control Flags
+#define IS_CONTROL_HIDDEN                   (1U << 0)
+#define IS_CONTROL_CLIPPING_DISABLED        (1U << 1)
+#define IS_CONTROL_DEAD                     (1U << 31)
 
 
 static int drgui__strcpy_s(char* dst, size_t dstSizeInBytes, const char* src)
@@ -171,19 +171,19 @@ void drgui_delete_element_for_real(dred_control* pControl);
 
 
 /// Orphans the given element without triggering a redraw of the parent nor the child.
-void drgui_detach_without_redraw(dred_control* pChildElement);
+void drgui_detach_without_redraw(dred_control* pChildControl);
 
 /// Appends the given element without first detaching it from the old parent, nor does it post a redraw.
-void drgui_append_without_detach_or_redraw(dred_control* pChildElement, dred_control* pParentElement);
+void drgui_append_without_detach_or_redraw(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Appends the given element without first detaching it from the old parent.
-void drgui_append_without_detach(dred_control* pChildElement, dred_control* pParentElement);
+void drgui_append_without_detach(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Prepends the given element without first detaching it from the old parent, nor does it post a redraw.
-void drgui_prepend_without_detach_or_redraw(dred_control* pChildElement, dred_control* pParentElement);
+void drgui_prepend_without_detach_or_redraw(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Prepends the given element without first detaching it from the old parent.
-void drgui_prepend_without_detach(dred_control* pChildElement, dred_control* pParentElement);
+void drgui_prepend_without_detach(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Appends an element to another as it's sibling, but does not detach it from the previous parent nor trigger a redraw.
 void drgui_append_sibling_without_detach_or_redraw(dred_control* pControlToAppend, dred_control* pControlToAppendTo);
@@ -208,18 +208,18 @@ void drgui_end_auto_dirty(dred_control* pControl);
 ///
 /// @remarks
 ///     This is equivalent to drgui_begin_auto_dirty() immediately followed by drgui_end_auto_dirty().
-void drgui_auto_dirty(dred_control* pTopLevelElement, dred_rect rect);
+void drgui_auto_dirty(dred_control* pTopLevelControl, dred_rect rect);
 
 
 /// Recursively applies the given offset to the absolute positions of the children of the given element.
 ///
 /// @remarks
 ///     This is called when the absolute position of an element is changed.
-void drgui_apply_offset_to_children_recursive(dred_control* pParentElement, float offsetX, float offsetY);
+void drgui_apply_offset_to_children_recursive(dred_control* pParentControl, float offsetX, float offsetY);
 
 
 /// The function to call when the mouse may have entered into a new element.
-void drgui_update_mouse_enter_and_leave_state(dred_gui* pContext, dred_control* pNewElementUnderMouse);
+void drgui_update_mouse_enter_and_leave_state(dred_gui* pContext, dred_control* pNewControlUnderMouse);
 
 
 /// Functions for posting outbound events.
@@ -241,10 +241,10 @@ void drgui_post_outbound_event_capture_mouse(dred_control* pControl);
 void drgui_post_outbound_event_capture_mouse_global(dred_control* pControl);
 void drgui_post_outbound_event_release_mouse(dred_control* pControl);
 void drgui_post_outbound_event_release_mouse_global(dred_control* pControl);
-void drgui_post_outbound_event_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedElement);
-void drgui_post_outbound_event_capture_keyboard_global(dred_control* pControl, dred_control* pPrevCapturedElement);
-void drgui_post_outbound_event_release_keyboard(dred_control* pControl, dred_control* pNewCapturedElement);
-void drgui_post_outbound_event_release_keyboard_global(dred_control* pControl, dred_control* pNewCapturedElement);
+void drgui_post_outbound_event_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl);
+void drgui_post_outbound_event_capture_keyboard_global(dred_control* pControl, dred_control* pPrevCapturedControl);
+void drgui_post_outbound_event_release_keyboard(dred_control* pControl, dred_control* pNewCapturedControl);
+void drgui_post_outbound_event_release_keyboard_global(dred_control* pControl, dred_control* pNewCapturedControl);
 
 /// Posts a log message.
 void drgui_log(dred_gui* pContext, const char* message);
@@ -329,14 +329,14 @@ void drgui_mark_element_as_dead(dred_control* pControl)
     assert(pControl != NULL);
     assert(pControl->pContext != NULL);
 
-    pControl->flags |= IS_ELEMENT_DEAD;
+    pControl->flags |= IS_CONTROL_DEAD;
 
 
-    if (pControl->pContext->pFirstDeadElement != NULL) {
-        pControl->pNextDeadElement = pControl->pContext->pFirstDeadElement;
+    if (pControl->pContext->pFirstDeadControl != NULL) {
+        pControl->pNextDeadControl = pControl->pContext->pFirstDeadControl;
     }
 
-    pControl->pContext->pFirstDeadElement = pControl;
+    pControl->pContext->pFirstDeadControl = pControl;
 }
 
 bool drgui_is_element_marked_as_dead(const dred_control* pControl)
@@ -345,19 +345,19 @@ bool drgui_is_element_marked_as_dead(const dred_control* pControl)
         return false;
     }
 
-    return (pControl->flags & IS_ELEMENT_DEAD) != 0;
+    return (pControl->flags & IS_CONTROL_DEAD) != 0;
 }
 
 void drgui_delete_elements_marked_as_dead(dred_gui* pContext)
 {
     assert(pContext != NULL);
 
-    while (pContext->pFirstDeadElement != NULL)
+    while (pContext->pFirstDeadControl != NULL)
     {
-        dred_control* pDeadElement = pContext->pFirstDeadElement;
-        pContext->pFirstDeadElement = pContext->pFirstDeadElement->pNextDeadElement;
+        dred_control* pDeadControl = pContext->pFirstDeadControl;
+        pContext->pFirstDeadControl = pContext->pFirstDeadControl->pNextDeadControl;
 
-        drgui_delete_element_for_real(pDeadElement);
+        drgui_delete_element_for_real(pDeadControl);
     }
 }
 
@@ -397,20 +397,20 @@ void drgui_delete_element_for_real(dred_control* pControlToDelete)
 
     // If the element is marked as dead
     if (drgui_is_element_marked_as_dead(pControlToDelete)) {
-        if (pContext->pFirstDeadElement == pControlToDelete) {
-            pContext->pFirstDeadElement = pContext->pFirstDeadElement->pNextDeadElement;
+        if (pContext->pFirstDeadControl == pControlToDelete) {
+            pContext->pFirstDeadControl = pContext->pFirstDeadControl->pNextDeadControl;
         } else {
-            dred_control* pPrevDeadElement = pContext->pFirstDeadElement;
-            while (pPrevDeadElement != NULL) {
-                if (pPrevDeadElement->pNextDeadElement == pControlToDelete) {
+            dred_control* pPrevDeadControl = pContext->pFirstDeadControl;
+            while (pPrevDeadControl != NULL) {
+                if (pPrevDeadControl->pNextDeadControl == pControlToDelete) {
                     break;
                 }
 
-                pPrevDeadElement = pPrevDeadElement->pNextDeadElement;
+                pPrevDeadControl = pPrevDeadControl->pNextDeadControl;
             }
 
-            if (pPrevDeadElement != NULL) {
-                pControlToDelete->pNextDeadElement = pControlToDelete->pNextDeadElement;
+            if (pPrevDeadControl != NULL) {
+                pControlToDelete->pNextDeadControl = pControlToDelete->pNextDeadControl;
             }
         }
     }
@@ -445,50 +445,50 @@ void drgui_detach_without_redraw(dred_control* pControl)
     pControl->pNextSibling = NULL;
 }
 
-void drgui_append_without_detach_or_redraw(dred_control* pChildElement, dred_control* pParentElement)
+void drgui_append_without_detach_or_redraw(dred_control* pChildControl, dred_control* pParentControl)
 {
-    pChildElement->pParent = pParentElement;
-    if (pChildElement->pParent != NULL) {
-        if (pChildElement->pParent->pLastChild != NULL) {
-            pChildElement->pPrevSibling = pChildElement->pParent->pLastChild;
-            pChildElement->pPrevSibling->pNextSibling = pChildElement;
+    pChildControl->pParent = pParentControl;
+    if (pChildControl->pParent != NULL) {
+        if (pChildControl->pParent->pLastChild != NULL) {
+            pChildControl->pPrevSibling = pChildControl->pParent->pLastChild;
+            pChildControl->pPrevSibling->pNextSibling = pChildControl;
         }
 
-        if (pChildElement->pParent->pFirstChild == NULL) {
-            pChildElement->pParent->pFirstChild = pChildElement;
+        if (pChildControl->pParent->pFirstChild == NULL) {
+            pChildControl->pParent->pFirstChild = pChildControl;
         }
 
-        pChildElement->pParent->pLastChild = pChildElement;
+        pChildControl->pParent->pLastChild = pChildControl;
     }
 }
 
-void drgui_append_without_detach(dred_control* pChildElement, dred_control* pParentElement)
+void drgui_append_without_detach(dred_control* pChildControl, dred_control* pParentControl)
 {
-    drgui_append_without_detach_or_redraw(pChildElement, pParentElement);
-    drgui_auto_dirty(pChildElement, drgui_make_rect(0, 0, pChildElement->width, pChildElement->height));
+    drgui_append_without_detach_or_redraw(pChildControl, pParentControl);
+    drgui_auto_dirty(pChildControl, drgui_make_rect(0, 0, pChildControl->width, pChildControl->height));
 }
 
-void drgui_prepend_without_detach_or_redraw(dred_control* pChildElement, dred_control* pParentElement)
+void drgui_prepend_without_detach_or_redraw(dred_control* pChildControl, dred_control* pParentControl)
 {
-    pChildElement->pParent = pParentElement;
-    if (pChildElement->pParent != NULL) {
-        if (pChildElement->pParent->pFirstChild != NULL) {
-            pChildElement->pNextSibling = pChildElement->pParent->pFirstChild;
-            pChildElement->pNextSibling->pPrevSibling = pChildElement;
+    pChildControl->pParent = pParentControl;
+    if (pChildControl->pParent != NULL) {
+        if (pChildControl->pParent->pFirstChild != NULL) {
+            pChildControl->pNextSibling = pChildControl->pParent->pFirstChild;
+            pChildControl->pNextSibling->pPrevSibling = pChildControl;
         }
 
-        if (pChildElement->pParent->pLastChild == NULL) {
-            pChildElement->pParent->pLastChild = pChildElement;
+        if (pChildControl->pParent->pLastChild == NULL) {
+            pChildControl->pParent->pLastChild = pChildControl;
         }
 
-        pChildElement->pParent->pFirstChild = pChildElement;
+        pChildControl->pParent->pFirstChild = pChildControl;
     }
 }
 
-void drgui_prepend_without_detach(dred_control* pChildElement, dred_control* pParentElement)
+void drgui_prepend_without_detach(dred_control* pChildControl, dred_control* pParentControl)
 {
-    drgui_prepend_without_detach_or_redraw(pChildElement, pParentElement);
-    drgui_auto_dirty(pChildElement, drgui_make_rect(0, 0, pChildElement->width, pChildElement->height));
+    drgui_prepend_without_detach_or_redraw(pChildControl, pParentControl);
+    drgui_auto_dirty(pChildControl, drgui_make_rect(0, 0, pChildControl->width, pChildControl->height));
 }
 
 void drgui_append_sibling_without_detach_or_redraw(dred_control* pControlToAppend, dred_control* pControlToAppendTo)
@@ -592,33 +592,33 @@ void drgui__change_cursor(dred_control* pControl, dred_cursor_type cursor)
 
 
 
-void drgui_apply_offset_to_children_recursive(dred_control* pParentElement, float offsetX, float offsetY)
+void drgui_apply_offset_to_children_recursive(dred_control* pParentControl, float offsetX, float offsetY)
 {
-    assert(pParentElement != NULL);
+    assert(pParentControl != NULL);
 
-    for (dred_control* pChild = pParentElement->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling)
+    for (dred_control* pChild = pParentControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling)
     {
-        drgui_begin_auto_dirty(pParentElement);
+        drgui_begin_auto_dirty(pParentControl);
         {
-            drgui_auto_dirty(pParentElement, drgui_get_local_rect(pParentElement));
+            drgui_auto_dirty(pParentControl, drgui_get_local_rect(pParentControl));
             pChild->absolutePosX += offsetX;
             pChild->absolutePosY += offsetY;
 
             drgui_apply_offset_to_children_recursive(pChild, offsetX, offsetY);
         }
-        drgui_end_auto_dirty(pParentElement);
+        drgui_end_auto_dirty(pParentControl);
     }
 }
 
-DRED_GUI_PRIVATE void drgui_post_on_mouse_leave_recursive(dred_gui* pContext, dred_control* pNewElementUnderMouse, dred_control* pOldElementUnderMouse)
+DRED_GUI_PRIVATE void drgui_post_on_mouse_leave_recursive(dred_gui* pContext, dred_control* pNewControlUnderMouse, dred_control* pOldControlUnderMouse)
 {
     (void)pContext;
 
-    dred_control* pOldAncestor = pOldElementUnderMouse;
+    dred_control* pOldAncestor = pOldControlUnderMouse;
     while (pOldAncestor != NULL)
     {
-        bool isOldElementUnderMouse = pNewElementUnderMouse == pOldAncestor || drgui_is_ancestor(pOldAncestor, pNewElementUnderMouse);
-        if (!isOldElementUnderMouse)
+        bool isOldControlUnderMouse = pNewControlUnderMouse == pOldAncestor || drgui_is_ancestor(pOldAncestor, pNewControlUnderMouse);
+        if (!isOldControlUnderMouse)
         {
             drgui_post_outbound_event_mouse_leave(pOldAncestor);
         }
@@ -627,58 +627,58 @@ DRED_GUI_PRIVATE void drgui_post_on_mouse_leave_recursive(dred_gui* pContext, dr
     }
 }
 
-DRED_GUI_PRIVATE void drgui_post_on_mouse_enter_recursive(dred_gui* pContext, dred_control* pNewElementUnderMouse, dred_control* pOldElementUnderMouse)
+DRED_GUI_PRIVATE void drgui_post_on_mouse_enter_recursive(dred_gui* pContext, dred_control* pNewControlUnderMouse, dred_control* pOldControlUnderMouse)
 {
-    if (pNewElementUnderMouse == NULL) {
+    if (pNewControlUnderMouse == NULL) {
         return;
     }
 
 
-    if (pNewElementUnderMouse->pParent != NULL) {
-        drgui_post_on_mouse_enter_recursive(pContext, pNewElementUnderMouse->pParent, pOldElementUnderMouse);
+    if (pNewControlUnderMouse->pParent != NULL) {
+        drgui_post_on_mouse_enter_recursive(pContext, pNewControlUnderMouse->pParent, pOldControlUnderMouse);
     }
 
-    bool wasNewElementUnderMouse = pOldElementUnderMouse == pNewElementUnderMouse || drgui_is_ancestor(pNewElementUnderMouse, pOldElementUnderMouse);
-    if (!wasNewElementUnderMouse)
+    bool wasNewControlUnderMouse = pOldControlUnderMouse == pNewControlUnderMouse || drgui_is_ancestor(pNewControlUnderMouse, pOldControlUnderMouse);
+    if (!wasNewControlUnderMouse)
     {
-        drgui_post_outbound_event_mouse_enter(pNewElementUnderMouse);
+        drgui_post_outbound_event_mouse_enter(pNewControlUnderMouse);
     }
 }
 
-void drgui_update_mouse_enter_and_leave_state(dred_gui* pContext, dred_control* pNewElementUnderMouse)
+void drgui_update_mouse_enter_and_leave_state(dred_gui* pContext, dred_control* pNewControlUnderMouse)
 {
     if (pContext == NULL) {
         return;
     }
 
-    dred_control* pOldElementUnderMouse = pContext->pControlUnderMouse;
-    if (pOldElementUnderMouse != pNewElementUnderMouse)
+    dred_control* pOldControlUnderMouse = pContext->pControlUnderMouse;
+    if (pOldControlUnderMouse != pNewControlUnderMouse)
     {
         // We don't change the enter and leave state if an element is capturing the mouse.
         if (pContext->pControlWithMouseCapture == NULL)
         {
-            pContext->pControlUnderMouse = pNewElementUnderMouse;
+            pContext->pControlUnderMouse = pNewControlUnderMouse;
 
             dred_cursor_type newCursor = dred_cursor_default;
-            if (pNewElementUnderMouse != NULL) {
-                newCursor = pNewElementUnderMouse->cursor;
+            if (pNewControlUnderMouse != NULL) {
+                newCursor = pNewControlUnderMouse->cursor;
             }
 
 
             // It's intuitive to check that the new cursor is different to the old one before trying to change it, but that is not actually
             // what we want to do. We'll let the event handler manage it themselves because it's possible the window manager might do some
             // window-specific cursor management and the old and new elements are on different windows.
-            drgui__change_cursor(pNewElementUnderMouse, newCursor);
+            drgui__change_cursor(pNewControlUnderMouse, newCursor);
 
 
 
             // The the event handlers below, remember that ancestors are considered hovered if a descendant is the element under the mouse.
 
             // on_mouse_leave
-            drgui_post_on_mouse_leave_recursive(pContext, pNewElementUnderMouse, pOldElementUnderMouse);
+            drgui_post_on_mouse_leave_recursive(pContext, pNewControlUnderMouse, pOldControlUnderMouse);
 
             // on_mouse_enter
-            drgui_post_on_mouse_enter_recursive(pContext, pNewElementUnderMouse, pOldElementUnderMouse);
+            drgui_post_on_mouse_enter_recursive(pContext, pNewControlUnderMouse, pOldControlUnderMouse);
         }
     }
 }
@@ -890,42 +890,42 @@ void drgui_post_outbound_event_release_mouse_global(dred_control* pControl)
 }
 
 
-void drgui_post_outbound_event_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedElement)
+void drgui_post_outbound_event_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
 {
     if (pControl != NULL)
     {
         if (pControl->onCaptureKeyboard) {
-            pControl->onCaptureKeyboard(pControl, pPrevCapturedElement);
+            pControl->onCaptureKeyboard(pControl, pPrevCapturedControl);
         }
     }
 }
 
-void drgui_post_outbound_event_capture_keyboard_global(dred_control* pControl, dred_control* pPrevCapturedElement)
+void drgui_post_outbound_event_capture_keyboard_global(dred_control* pControl, dred_control* pPrevCapturedControl)
 {
     if (pControl != NULL && pControl->pContext != NULL)
     {
         if (pControl->pContext->onGlobalCaptureKeyboard) {
-            pControl->pContext->onGlobalCaptureKeyboard(pControl, pPrevCapturedElement);
+            pControl->pContext->onGlobalCaptureKeyboard(pControl, pPrevCapturedControl);
         }
     }
 }
 
-void drgui_post_outbound_event_release_keyboard(dred_control* pControl, dred_control* pNewCapturedElement)
+void drgui_post_outbound_event_release_keyboard(dred_control* pControl, dred_control* pNewCapturedControl)
 {
     if (pControl != NULL)
     {
         if (pControl->onReleaseKeyboard) {
-            pControl->onReleaseKeyboard(pControl, pNewCapturedElement);
+            pControl->onReleaseKeyboard(pControl, pNewCapturedControl);
         }
     }
 }
 
-void drgui_post_outbound_event_release_keyboard_global(dred_control* pControl, dred_control* pNewCapturedElement)
+void drgui_post_outbound_event_release_keyboard_global(dred_control* pControl, dred_control* pNewCapturedControl)
 {
     if (pControl != NULL && pControl->pContext != NULL)
     {
         if (pControl->pContext->onGlobalReleaseKeyboard) {
-            pControl->pContext->onGlobalReleaseKeyboard(pControl, pNewCapturedElement);
+            pControl->pContext->onGlobalReleaseKeyboard(pControl, pNewCapturedControl);
         }
     }
 }
@@ -1002,54 +1002,54 @@ void drgui_delete_context(dred_gui* pContext)
 /////////////////////////////////////////////////////////////////
 // Events
 
-void drgui_post_inbound_event_mouse_leave(dred_control* pTopLevelElement)
+void drgui_post_inbound_event_mouse_leave(dred_control* pTopLevelControl)
 {
-    if (pTopLevelElement == NULL) {
+    if (pTopLevelControl == NULL) {
         return;
     }
 
-    dred_gui* pContext = pTopLevelElement->pContext;
+    dred_gui* pContext = pTopLevelControl->pContext;
     if (pContext == NULL) {
         return;
     }
 
     drgui_begin_inbound_event(pContext);
     {
-        // We assume that was previously under the mouse was either pTopLevelElement itself or one of it's descendants.
+        // We assume that was previously under the mouse was either pTopLevelControl itself or one of it's descendants.
         drgui_update_mouse_enter_and_leave_state(pContext, NULL);
     }
     drgui_end_inbound_event(pContext);
 }
 
-void drgui_post_inbound_event_mouse_move(dred_control* pTopLevelElement, int mousePosX, int mousePosY, int stateFlags)
+void drgui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int mousePosX, int mousePosY, int stateFlags)
 {
-    if (pTopLevelElement == NULL || pTopLevelElement->pContext == NULL) {
+    if (pTopLevelControl == NULL || pTopLevelControl->pContext == NULL) {
         return;
     }
 
 
-    drgui_begin_inbound_event(pTopLevelElement->pContext);
+    drgui_begin_inbound_event(pTopLevelControl->pContext);
     {
         /// A pointer to the top level element that was passed in from the last inbound mouse move event.
-        pTopLevelElement->pContext->pLastMouseMoveTopLevelElement = pTopLevelElement;
+        pTopLevelControl->pContext->pLastMouseMoveTopLevelControl = pTopLevelControl;
 
         /// The position of the mouse that was passed in from the last inbound mouse move event.
-        pTopLevelElement->pContext->lastMouseMovePosX = (float)mousePosX;
-        pTopLevelElement->pContext->lastMouseMovePosY = (float)mousePosY;
+        pTopLevelControl->pContext->lastMouseMovePosX = (float)mousePosX;
+        pTopLevelControl->pContext->lastMouseMovePosY = (float)mousePosY;
 
 
 
         // The first thing we need to do is find the new element that's sitting under the mouse.
-        dred_control* pNewElementUnderMouse = drgui_find_element_under_point(pTopLevelElement, (float)mousePosX, (float)mousePosY);
+        dred_control* pNewControlUnderMouse = drgui_find_element_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
 
         // Now that we know which element is sitting under the mouse we need to check if the mouse has entered into a new element.
-        drgui_update_mouse_enter_and_leave_state(pTopLevelElement->pContext, pNewElementUnderMouse);
+        drgui_update_mouse_enter_and_leave_state(pTopLevelControl->pContext, pNewControlUnderMouse);
 
 
-        dred_control* pEventReceiver = pTopLevelElement->pContext->pControlWithMouseCapture;
+        dred_control* pEventReceiver = pTopLevelControl->pContext->pControlWithMouseCapture;
         if (pEventReceiver == NULL)
         {
-            pEventReceiver = pNewElementUnderMouse;
+            pEventReceiver = pNewControlUnderMouse;
         }
 
         if (pEventReceiver != NULL)
@@ -1061,16 +1061,16 @@ void drgui_post_inbound_event_mouse_move(dred_control* pTopLevelElement, int mou
             drgui_post_outbound_event_mouse_move(pEventReceiver, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
         }
     }
-    drgui_end_inbound_event(pTopLevelElement->pContext);
+    drgui_end_inbound_event(pTopLevelControl->pContext);
 }
 
-void drgui_post_inbound_event_mouse_button_down(dred_control* pTopLevelElement, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+void drgui_post_inbound_event_mouse_button_down(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
-    if (pTopLevelElement == NULL || pTopLevelElement->pContext == NULL) {
+    if (pTopLevelControl == NULL || pTopLevelControl->pContext == NULL) {
         return;
     }
 
-    dred_gui* pContext = pTopLevelElement->pContext;
+    dred_gui* pContext = pTopLevelControl->pContext;
     drgui_begin_inbound_event(pContext);
     {
         dred_control* pEventReceiver = pContext->pControlWithMouseCapture;
@@ -1081,7 +1081,7 @@ void drgui_post_inbound_event_mouse_button_down(dred_control* pTopLevelElement, 
             if (pEventReceiver == NULL)
             {
                 // We'll get here if this message is posted without a prior mouse move event.
-                pEventReceiver = drgui_find_element_under_point(pTopLevelElement, (float)mousePosX, (float)mousePosY);
+                pEventReceiver = drgui_find_element_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
             }
         }
 
@@ -1098,13 +1098,13 @@ void drgui_post_inbound_event_mouse_button_down(dred_control* pTopLevelElement, 
     drgui_end_inbound_event(pContext);
 }
 
-void drgui_post_inbound_event_mouse_button_up(dred_control* pTopLevelElement, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+void drgui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
-    if (pTopLevelElement == NULL || pTopLevelElement->pContext == NULL) {
+    if (pTopLevelControl == NULL || pTopLevelControl->pContext == NULL) {
         return;
     }
 
-    dred_gui* pContext = pTopLevelElement->pContext;
+    dred_gui* pContext = pTopLevelControl->pContext;
     drgui_begin_inbound_event(pContext);
     {
         dred_control* pEventReceiver = pContext->pControlWithMouseCapture;
@@ -1115,7 +1115,7 @@ void drgui_post_inbound_event_mouse_button_up(dred_control* pTopLevelElement, in
             if (pEventReceiver == NULL)
             {
                 // We'll get here if this message is posted without a prior mouse move event.
-                pEventReceiver = drgui_find_element_under_point(pTopLevelElement, (float)mousePosX, (float)mousePosY);
+                pEventReceiver = drgui_find_element_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
             }
         }
 
@@ -1132,13 +1132,13 @@ void drgui_post_inbound_event_mouse_button_up(dred_control* pTopLevelElement, in
     drgui_end_inbound_event(pContext);
 }
 
-void drgui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelElement, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+void drgui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
-    if (pTopLevelElement == NULL || pTopLevelElement->pContext == NULL) {
+    if (pTopLevelControl == NULL || pTopLevelControl->pContext == NULL) {
         return;
     }
 
-    dred_gui* pContext = pTopLevelElement->pContext;
+    dred_gui* pContext = pTopLevelControl->pContext;
     drgui_begin_inbound_event(pContext);
     {
         dred_control* pEventReceiver = pContext->pControlWithMouseCapture;
@@ -1149,7 +1149,7 @@ void drgui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelEleme
             if (pEventReceiver == NULL)
             {
                 // We'll get here if this message is posted without a prior mouse move event.
-                pEventReceiver = drgui_find_element_under_point(pTopLevelElement, (float)mousePosX, (float)mousePosY);
+                pEventReceiver = drgui_find_element_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
             }
         }
 
@@ -1166,13 +1166,13 @@ void drgui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelEleme
     drgui_end_inbound_event(pContext);
 }
 
-void drgui_post_inbound_event_mouse_wheel(dred_control* pTopLevelElement, int delta, int mousePosX, int mousePosY, int stateFlags)
+void drgui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int delta, int mousePosX, int mousePosY, int stateFlags)
 {
-    if (pTopLevelElement == NULL || pTopLevelElement->pContext == NULL) {
+    if (pTopLevelControl == NULL || pTopLevelControl->pContext == NULL) {
         return;
     }
 
-    dred_gui* pContext = pTopLevelElement->pContext;
+    dred_gui* pContext = pTopLevelControl->pContext;
     drgui_begin_inbound_event(pContext);
     {
         dred_control* pEventReceiver = pContext->pControlWithMouseCapture;
@@ -1183,7 +1183,7 @@ void drgui_post_inbound_event_mouse_wheel(dred_control* pTopLevelElement, int de
             if (pEventReceiver == NULL)
             {
                 // We'll get here if this message is posted without a prior mouse move event.
-                pEventReceiver = drgui_find_element_under_point(pTopLevelElement, (float)mousePosX, (float)mousePosY);
+                pEventReceiver = drgui_find_element_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
             }
         }
 
@@ -1289,10 +1289,10 @@ void drgui_set_global_on_change_cursor(dred_gui* pContext, dred_gui_on_change_cu
     }
 }
 
-void drgui_set_on_delete_element(dred_gui* pContext, dred_gui_on_delete_element_proc onDeleteElement)
+void drgui_set_on_delete_element(dred_gui* pContext, dred_gui_on_delete_element_proc onDeleteControl)
 {
     if (pContext != NULL) {
-        pContext->onDeleteElement = onDeleteElement;
+        pContext->onDeleteControl = onDeleteControl;
     }
 }
 
@@ -1306,7 +1306,7 @@ void drgui_set_on_log(dred_gui* pContext, dred_gui_on_log onLog)
 
 
 /////////////////////////////////////////////////////////////////
-// Elements
+// Controls
 
 dred_control* drgui_create_element(dred_context* pDred, dred_control* pParent, const char* type, size_t extraDataSize)
 {
@@ -1360,8 +1360,8 @@ void drgui_delete_element(dred_control* pControl)
 
     // Notify the application that the element is being deleted. Do this at the top so the event handler can access things like the hierarchy and
     // whatnot in case it needs it.
-    if (pContext->onDeleteElement) {
-        pContext->onDeleteElement(pControl);
+    if (pContext->onDeleteControl) {
+        pContext->onDeleteControl(pControl);
     }
 
 
@@ -1373,9 +1373,9 @@ void drgui_delete_element(dred_control* pControl)
         needsMouseUpdate = true;
     }
 
-    if (pContext->pLastMouseMoveTopLevelElement == pControl)
+    if (pContext->pLastMouseMoveTopLevelControl == pControl)
     {
-        pContext->pLastMouseMoveTopLevelElement = NULL;
+        pContext->pLastMouseMoveTopLevelControl = NULL;
         pContext->lastMouseMovePosX = 0;
         pContext->lastMouseMovePosY = 0;
         needsMouseUpdate = false;       // It was a top-level element so the mouse enter/leave state doesn't need an update.
@@ -1397,23 +1397,23 @@ void drgui_delete_element(dred_control* pControl)
     }
 
     // Is this element in the middle of being marked as dirty?
-    for (size_t iDirtyElement = 0; iDirtyElement < pContext->dirtyElementCount; ++iDirtyElement) {
-        if (pContext->ppDirtyElements[iDirtyElement] == pControl) {
+    for (size_t iDirtyControl = 0; iDirtyControl < pContext->dirtyControlCount; ++iDirtyControl) {
+        if (pContext->ppDirtyControls[iDirtyControl] == pControl) {
             drgui_log(pContext, "WARNING: Deleting an element while it is being marked as dirty.");
-            for (size_t iDirtyElement2 = iDirtyElement; iDirtyElement2+1 < pContext->dirtyElementCount; ++iDirtyElement2) {
-                pContext->ppDirtyElements[iDirtyElement2] = pContext->ppDirtyElements[iDirtyElement2+1];
+            for (size_t iDirtyControl2 = iDirtyControl; iDirtyControl2+1 < pContext->dirtyControlCount; ++iDirtyControl2) {
+                pContext->ppDirtyControls[iDirtyControl2] = pContext->ppDirtyControls[iDirtyControl2+1];
             }
 
-            pContext->dirtyElementCount -= 1;
+            pContext->dirtyControlCount -= 1;
             break;
         }
     }
 
 #if 0
-    if (pContext->pDirtyTopLevelElement == pControl)
+    if (pContext->pDirtyTopLevelControl == pControl)
     {
         drgui_log(pContext, "WARNING: Deleting an element while it is being marked as dirty.");
-        pContext->pDirtyTopLevelElement = NULL;
+        pContext->pDirtyTopLevelControl = NULL;
     }
 #endif
 
@@ -1423,7 +1423,7 @@ void drgui_delete_element(dred_control* pControl)
     if (needsMouseUpdate)
     {
         pControl->onHitTest = drgui_pass_through_hit_test;        // <-- This ensures we don't include this element when searching for the new element under the mouse.
-        drgui_update_mouse_enter_and_leave_state(pContext, drgui_find_element_under_point(pContext->pLastMouseMoveTopLevelElement, pContext->lastMouseMovePosX, pContext->lastMouseMovePosY));
+        drgui_update_mouse_enter_and_leave_state(pContext, drgui_find_element_under_point(pContext->pLastMouseMoveTopLevelControl, pContext->lastMouseMovePosX, pContext->lastMouseMovePosY));
     }
 
 
@@ -1528,7 +1528,7 @@ bool dred_is_control_type_of_type(const char* type, const char* base)
 void drgui_hide(dred_control* pControl)
 {
     if (pControl != NULL) {
-        pControl->flags |= IS_ELEMENT_HIDDEN;
+        pControl->flags |= IS_CONTROL_HIDDEN;
         drgui_auto_dirty(pControl, drgui_get_local_rect(pControl));
     }
 }
@@ -1536,7 +1536,7 @@ void drgui_hide(dred_control* pControl)
 void drgui_show(dred_control* pControl)
 {
     if (pControl != NULL) {
-        pControl->flags &= ~IS_ELEMENT_HIDDEN;
+        pControl->flags &= ~IS_CONTROL_HIDDEN;
         drgui_auto_dirty(pControl, drgui_get_local_rect(pControl));
     }
 }
@@ -1544,7 +1544,7 @@ void drgui_show(dred_control* pControl)
 bool drgui_is_visible(const dred_control* pControl)
 {
     if (pControl != NULL) {
-        return (pControl->flags & IS_ELEMENT_HIDDEN) == 0;
+        return (pControl->flags & IS_CONTROL_HIDDEN) == 0;
     }
 
     return false;
@@ -1568,21 +1568,21 @@ bool drgui_is_visible_recursive(const dred_control* pControl)
 void drgui_disable_clipping(dred_control* pControl)
 {
     if (pControl != NULL) {
-        pControl->flags |= IS_ELEMENT_CLIPPING_DISABLED;
+        pControl->flags |= IS_CONTROL_CLIPPING_DISABLED;
     }
 }
 
 void drgui_enable_clipping(dred_control* pControl)
 {
     if (pControl != NULL) {
-        pControl->flags &= ~IS_ELEMENT_CLIPPING_DISABLED;
+        pControl->flags &= ~IS_CONTROL_CLIPPING_DISABLED;
     }
 }
 
 bool drgui_is_clipping_enabled(const dred_control* pControl)
 {
     if (pControl != NULL) {
-        return (pControl->flags & IS_ELEMENT_CLIPPING_DISABLED) == 0;
+        return (pControl->flags & IS_CONTROL_CLIPPING_DISABLED) == 0;
     }
 
     return true;
@@ -1639,7 +1639,7 @@ void drgui_release_mouse(dred_gui* pContext)
 
 
     // After releasing the mouse the cursor may be sitting on top of a different element - we want to recheck that.
-    drgui_update_mouse_enter_and_leave_state(pContext, drgui_find_element_under_point(pContext->pLastMouseMoveTopLevelElement, pContext->lastMouseMovePosX, pContext->lastMouseMovePosY));
+    drgui_update_mouse_enter_and_leave_state(pContext, drgui_find_element_under_point(pContext->pLastMouseMoveTopLevelControl, pContext->lastMouseMovePosX, pContext->lastMouseMovePosY));
 }
 
 void drgui_release_mouse_no_global_notify(dred_gui* pContext)
@@ -1673,7 +1673,7 @@ bool drgui_has_mouse_capture(dred_control* pControl)
 }
 
 
-DRED_GUI_PRIVATE void drgui_release_keyboard_private(dred_gui* pContext, dred_control* pNewCapturedElement)
+DRED_GUI_PRIVATE void drgui_release_keyboard_private(dred_gui* pContext, dred_control* pNewCapturedControl)
 {
     assert(pContext != NULL);
 
@@ -1684,12 +1684,12 @@ DRED_GUI_PRIVATE void drgui_release_keyboard_private(dred_gui* pContext, dred_co
 
     pContext->flags |= IS_RELEASING_KEYBOARD;
     {
-        dred_control* pPrevCapturedElement = pContext->pControlWithKeyboardCapture;
+        dred_control* pPrevCapturedControl = pContext->pControlWithKeyboardCapture;
         pContext->pControlWithKeyboardCapture = NULL;
 
-        if (!drgui_is_element_marked_as_dead(pPrevCapturedElement)) {   // <-- There's a chace the element is releaseing the keyboard due to being deleted. Don't want to post an event in this case.
-            drgui_post_outbound_event_release_keyboard(pPrevCapturedElement, pNewCapturedElement);
-            drgui_post_outbound_event_release_keyboard_global(pPrevCapturedElement, pNewCapturedElement);
+        if (!drgui_is_element_marked_as_dead(pPrevCapturedControl)) {   // <-- There's a chace the element is releaseing the keyboard due to being deleted. Don't want to post an event in this case.
+            drgui_post_outbound_event_release_keyboard(pPrevCapturedControl, pNewCapturedControl);
+            drgui_post_outbound_event_release_keyboard_global(pPrevCapturedControl, pNewCapturedControl);
         }
     }
     pContext->flags &= ~IS_RELEASING_KEYBOARD;
@@ -1719,8 +1719,8 @@ void drgui_capture_keyboard(dred_control* pControl)
     if (pControl->pContext->pControlWithKeyboardCapture != pControl)
     {
         // Release the previous capture first.
-        dred_control* pPrevElementWithKeyboardCapture = pControl->pContext->pControlWithKeyboardCapture;
-        if (pPrevElementWithKeyboardCapture != NULL) {
+        dred_control* pPrevControlWithKeyboardCapture = pControl->pContext->pControlWithKeyboardCapture;
+        if (pPrevControlWithKeyboardCapture != NULL) {
             drgui_release_keyboard_private(pControl->pContext, pControl);
         }
 
@@ -1733,10 +1733,10 @@ void drgui_capture_keyboard(dred_control* pControl)
         // local event handler may change the keyboard capture internally, such as if it wants to pass it's focus onto an internal child
         // element or whatnot. In this case we don't want to fire the global event handler because it will result in superfluous event
         // posting, and could also be posted with an incorrect element.
-        drgui_post_outbound_event_capture_keyboard(pControl, pPrevElementWithKeyboardCapture);
+        drgui_post_outbound_event_capture_keyboard(pControl, pPrevControlWithKeyboardCapture);
 
         if (pControl == pControl->pContext->pControlWithKeyboardCapture) {  // <-- Only post the global event handler if the element still has the capture.
-            drgui_post_outbound_event_capture_keyboard_global(pControl, pPrevElementWithKeyboardCapture);
+            drgui_post_outbound_event_capture_keyboard_global(pControl, pPrevControlWithKeyboardCapture);
         }
     }
 }
@@ -2029,9 +2029,9 @@ bool drgui_find_element_under_point_iterator(dred_control* pControl, dred_rect* 
     return true;
 }
 
-dred_control* drgui_find_element_under_point(dred_control* pTopLevelElement, float absolutePosX, float absolutePosY)
+dred_control* drgui_find_element_under_point(dred_control* pTopLevelControl, float absolutePosX, float absolutePosY)
 {
-    if (pTopLevelElement == NULL) {
+    if (pTopLevelControl == NULL) {
         return NULL;
     }
 
@@ -2039,7 +2039,7 @@ dred_control* drgui_find_element_under_point(dred_control* pTopLevelElement, flo
     data.pControlUnderPoint = NULL;
     data.absolutePosX = absolutePosX;
     data.absolutePosY = absolutePosY;
-    drgui_iterate_visible_elements(pTopLevelElement, drgui_get_absolute_rect(pTopLevelElement), drgui_find_element_under_point_iterator, &data);
+    drgui_iterate_visible_elements(pTopLevelControl, drgui_get_absolute_rect(pTopLevelControl), drgui_find_element_under_point_iterator, &data);
 
     return data.pControlUnderPoint;
 }
@@ -2050,33 +2050,33 @@ bool drgui_is_element_under_mouse(dred_control* pControl)
         return false;
     }
 
-    return drgui_find_element_under_point(pControl->pContext->pLastMouseMoveTopLevelElement, pControl->pContext->lastMouseMovePosX, pControl->pContext->lastMouseMovePosY) == pControl;
+    return drgui_find_element_under_point(pControl->pContext->pLastMouseMoveTopLevelControl, pControl->pContext->lastMouseMovePosX, pControl->pContext->lastMouseMovePosY) == pControl;
 }
 
 
 
 //// Hierarchy ////
 
-dred_control* drgui_get_parent(dred_control* pChildElement)
+dred_control* drgui_get_parent(dred_control* pChildControl)
 {
-    if (pChildElement == NULL) {
+    if (pChildControl == NULL) {
         return NULL;
     }
 
-    return pChildElement->pParent;
+    return pChildControl->pParent;
 }
 
-void drgui_detach(dred_control* pChildElement)
+void drgui_detach(dred_control* pChildControl)
 {
-    if (pChildElement == NULL) {
+    if (pChildControl == NULL) {
         return;
     }
 
-    dred_control* pOldParent = pChildElement->pParent;
+    dred_control* pOldParent = pChildControl->pParent;
 
 
     // We orphan the element using the private API. This will not mark the parent element as dirty so we need to do that afterwards.
-    drgui_detach_without_redraw(pChildElement);
+    drgui_detach_without_redraw(pChildControl);
 
     // The region of the old parent needs to be redrawn.
     if (pOldParent != NULL) {
@@ -2084,45 +2084,45 @@ void drgui_detach(dred_control* pChildElement)
     }
 }
 
-void drgui_append(dred_control* pChildElement, dred_control* pParentElement)
+void drgui_append(dred_control* pChildControl, dred_control* pParentControl)
 {
-    if (pChildElement == NULL) {
+    if (pChildControl == NULL) {
         return;
     }
 
     // We first need to orphan the element. If the parent element is the new parent is the same as the old one, as in we
     // are just moving the child element to the end of the children list, we want to delay the repaint until the end. To
     // do this we use drgui_detach_without_redraw() because that will not trigger a redraw.
-    if (pChildElement->pParent != pParentElement) {
-        drgui_detach(pChildElement);
+    if (pChildControl->pParent != pParentControl) {
+        drgui_detach(pChildControl);
     } else {
-        drgui_detach_without_redraw(pChildElement);
+        drgui_detach_without_redraw(pChildControl);
     }
 
 
     // Now we attach it to the end of the new parent.
-    if (pParentElement != NULL) {
-        drgui_append_without_detach(pChildElement, pParentElement);
+    if (pParentControl != NULL) {
+        drgui_append_without_detach(pChildControl, pParentControl);
     }
 }
 
-void drgui_prepend(dred_control* pChildElement, dred_control* pParentElement)
+void drgui_prepend(dred_control* pChildControl, dred_control* pParentControl)
 {
-    if (pChildElement == NULL) {
+    if (pChildControl == NULL) {
         return;
     }
 
     // See comment in drgui_append() for explanation on this.
-    if (pChildElement->pParent != pParentElement) {
-        drgui_detach(pChildElement);
+    if (pChildControl->pParent != pParentControl) {
+        drgui_detach(pChildControl);
     } else {
-        drgui_detach_without_redraw(pChildElement);
+        drgui_detach_without_redraw(pChildControl);
     }
 
 
     // Now we need to attach the element to the beginning of the parent.
-    if (pParentElement != NULL) {
-        drgui_prepend_without_detach(pChildElement, pParentElement);
+    if (pParentControl != NULL) {
+        drgui_prepend_without_detach(pChildControl, pParentControl);
     }
 }
 
@@ -2175,30 +2175,30 @@ dred_control* drgui_find_top_level_element(dred_control* pControl)
     return pControl;
 }
 
-bool drgui_is_parent(dred_control* pParentElement, dred_control* pChildElement)
+bool drgui_is_parent(dred_control* pParentControl, dred_control* pChildControl)
 {
-    if (pParentElement == NULL || pChildElement == NULL) {
+    if (pParentControl == NULL || pChildControl == NULL) {
         return false;
     }
 
-    return pParentElement == pChildElement->pParent;
+    return pParentControl == pChildControl->pParent;
 }
 
-bool drgui_is_child(dred_control* pChildElement, dred_control* pParentElement)
+bool drgui_is_child(dred_control* pChildControl, dred_control* pParentControl)
 {
-    return drgui_is_parent(pParentElement, pChildElement);
+    return drgui_is_parent(pParentControl, pChildControl);
 }
 
-bool drgui_is_ancestor(dred_control* pAncestorElement, dred_control* pChildElement)
+bool drgui_is_ancestor(dred_control* pAncestorControl, dred_control* pChildControl)
 {
-    if (pAncestorElement == NULL || pChildElement == NULL) {
+    if (pAncestorControl == NULL || pChildControl == NULL) {
         return false;
     }
 
-    dred_control* pParent = pChildElement->pParent;
+    dred_control* pParent = pChildControl->pParent;
     while (pParent != NULL)
     {
-        if (pParent == pAncestorElement) {
+        if (pParent == pAncestorControl) {
             return true;
         }
 
@@ -2209,19 +2209,19 @@ bool drgui_is_ancestor(dred_control* pAncestorElement, dred_control* pChildEleme
     return false;
 }
 
-bool drgui_is_descendant(dred_control* pChildElement, dred_control* pAncestorElement)
+bool drgui_is_descendant(dred_control* pChildControl, dred_control* pAncestorControl)
 {
-    return drgui_is_ancestor(pAncestorElement, pChildElement);
+    return drgui_is_ancestor(pAncestorControl, pChildControl);
 }
 
-bool drgui_is_self_or_ancestor(dred_control* pAncestorElement, dred_control* pChildElement)
+bool drgui_is_self_or_ancestor(dred_control* pAncestorControl, dred_control* pChildControl)
 {
-    return pAncestorElement == pChildElement || drgui_is_ancestor(pAncestorElement, pChildElement);
+    return pAncestorControl == pChildControl || drgui_is_ancestor(pAncestorControl, pChildControl);
 }
 
-bool drgui_is_self_or_descendant(dred_control* pChildElement, dred_control* pAncestorElement)
+bool drgui_is_self_or_descendant(dred_control* pChildControl, dred_control* pAncestorControl)
 {
-    return pChildElement == pAncestorElement || drgui_is_descendant(pChildElement, pAncestorElement);
+    return pChildControl == pAncestorControl || drgui_is_descendant(pChildControl, pAncestorControl);
 }
 
 
@@ -2498,9 +2498,9 @@ bool drgui_register_painting_callbacks(dred_gui* pContext, void* pPaintingContex
 }
 
 
-bool drgui_iterate_visible_elements(dred_control* pParentElement, dred_rect relativeRect, drgui_visible_iteration_proc callback, void* pUserData)
+bool drgui_iterate_visible_elements(dred_control* pParentControl, dred_rect relativeRect, dred_gui_visible_iteration_proc callback, void* pUserData)
 {
-    if (pParentElement == NULL) {
+    if (pParentControl == NULL) {
         return false;
     }
 
@@ -2509,20 +2509,20 @@ bool drgui_iterate_visible_elements(dred_control* pParentElement, dred_rect rela
     }
 
 
-    if (!drgui_is_visible(pParentElement)) {
+    if (!drgui_is_visible(pParentControl)) {
         return true;
     }
 
     dred_rect clampedRelativeRect = relativeRect;
-    if (drgui_clamp_rect_to_element(pParentElement, &clampedRelativeRect))
+    if (drgui_clamp_rect_to_element(pParentControl, &clampedRelativeRect))
     {
         // We'll only get here if some part of the rectangle was inside the element.
-        if (!callback(pParentElement, &clampedRelativeRect, pUserData)) {
+        if (!callback(pParentControl, &clampedRelativeRect, pUserData)) {
             return false;
         }
     }
 
-    for (dred_control* pChild = pParentElement->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling)
+    for (dred_control* pChild = pParentControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling)
     {
         float childRelativePosX = drgui_get_relative_position_x(pChild);
         float childRelativePosY = drgui_get_relative_position_y(pChild);
@@ -2582,37 +2582,37 @@ dred_control* drgui_begin_dirty(dred_control* pControl)
     dred_gui* pContext = pControl->pContext;
     assert(pContext != NULL);
 
-    dred_control* pTopLevelElement = drgui_find_top_level_element(pControl);
-    assert(pTopLevelElement != NULL);
+    dred_control* pTopLevelControl = drgui_find_top_level_element(pControl);
+    assert(pTopLevelControl != NULL);
 
     // The element needs to be added to the list of dirty elements if it doesn't exist already.
     bool isAlreadyDirty = false;
-    for (size_t iDirtyElementCount = 0; iDirtyElementCount < pContext->dirtyElementCount; ++iDirtyElementCount) {
-        if (pContext->ppDirtyElements[iDirtyElementCount] == pTopLevelElement) {
+    for (size_t iDirtyControlCount = 0; iDirtyControlCount < pContext->dirtyControlCount; ++iDirtyControlCount) {
+        if (pContext->ppDirtyControls[iDirtyControlCount] == pTopLevelControl) {
             isAlreadyDirty = true;
             break;
         }
     }
 
     if (!isAlreadyDirty) {
-        if (pContext->dirtyElementCount == pContext->dirtyElementBufferSize) {
-            size_t newBufferSize = pContext->dirtyElementBufferSize == 0 ? 1 : pContext->dirtyElementBufferSize*2;
-            dred_control** ppNewDirtyElements = (dred_control**)realloc(pContext->ppDirtyElements, newBufferSize * sizeof(*ppNewDirtyElements));
-            if (ppNewDirtyElements == NULL) {
+        if (pContext->dirtyControlCount == pContext->dirtyControlBufferSize) {
+            size_t newBufferSize = pContext->dirtyControlBufferSize == 0 ? 1 : pContext->dirtyControlBufferSize*2;
+            dred_control** ppNewDirtyControls = (dred_control**)realloc(pContext->ppDirtyControls, newBufferSize * sizeof(*ppNewDirtyControls));
+            if (ppNewDirtyControls == NULL) {
                 return NULL;
             }
 
-            pContext->ppDirtyElements = ppNewDirtyElements;
-            pContext->dirtyElementBufferSize = newBufferSize;
+            pContext->ppDirtyControls = ppNewDirtyControls;
+            pContext->dirtyControlBufferSize = newBufferSize;
         }
 
-        pContext->ppDirtyElements[pContext->dirtyCounter] = pTopLevelElement;
-        pContext->dirtyElementCount += 1;
+        pContext->ppDirtyControls[pContext->dirtyCounter] = pTopLevelControl;
+        pContext->dirtyControlCount += 1;
     }
 
 
     pContext->dirtyCounter += 1;
-    return pTopLevelElement;
+    return pTopLevelControl;
 }
 
 void drgui_end_dirty(dred_control* pControl)
@@ -2624,18 +2624,18 @@ void drgui_end_dirty(dred_control* pControl)
     dred_gui* pContext = pControl->pContext;
     assert(pContext != NULL);
 
-    assert(pContext->dirtyElementCount > 0);
+    assert(pContext->dirtyControlCount > 0);
     assert(pContext->dirtyCounter > 0);
 
     pContext->dirtyCounter -= 1;
     if (pContext->dirtyCounter == 0)
     {
-        for (size_t i = 0; i < pContext->dirtyElementCount; ++i) {
-            drgui_post_outbound_event_dirty_global(pContext->ppDirtyElements[i], pContext->ppDirtyElements[i]->dirtyRect);
-            pContext->ppDirtyElements[i]->dirtyRect = drgui_make_inside_out_rect();
+        for (size_t i = 0; i < pContext->dirtyControlCount; ++i) {
+            drgui_post_outbound_event_dirty_global(pContext->ppDirtyControls[i], pContext->ppDirtyControls[i]->dirtyRect);
+            pContext->ppDirtyControls[i]->dirtyRect = drgui_make_inside_out_rect();
         }
 
-        pContext->dirtyElementCount = 0;
+        pContext->dirtyControlCount = 0;
     }
 }
 
@@ -2648,12 +2648,12 @@ void drgui_dirty(dred_control* pControl, dred_rect relativeRect)
     //dred_gui* pContext = pControl->pContext;
     //assert(pContext != NULL);
 
-    dred_control* pTopLevelElement = drgui_begin_dirty(pControl);
-    if (pTopLevelElement == NULL) {
+    dred_control* pTopLevelControl = drgui_begin_dirty(pControl);
+    if (pTopLevelControl == NULL) {
         return;
     }
     
-    pTopLevelElement->dirtyRect = dred_rect_union(pTopLevelElement->dirtyRect, drgui_make_rect_absolute(pControl, &relativeRect));
+    pTopLevelControl->dirtyRect = dred_rect_union(pTopLevelControl->dirtyRect, drgui_make_rect_absolute(pControl, &relativeRect));
     drgui_end_dirty(pControl);
 }
 
@@ -2832,7 +2832,7 @@ void drgui_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* t
     pControl->pContext->paintingCallbacks.drawText(pFont->internalFont, text, textLengthInBytes, absolutePosX, absolutePosY, color, backgroundColor, pPaintData);
 }
 
-void drgui_draw_image(dred_control* pControl, dred_gui_image* pImage, drgui_draw_image_args* pArgs, void* pPaintData)
+void drgui_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_draw_image_args* pArgs, void* pPaintData)
 {
     if (pControl == NULL || pImage == NULL || pArgs == NULL) {
         return;
@@ -3424,7 +3424,7 @@ void drgui_draw_round_rect_dr_2d(dred_rect, dred_color, float, void*);
 void drgui_draw_round_rect_outline_dr_2d(dred_rect, dred_color, float, float, void*);
 void drgui_draw_round_rect_with_outline_dr_2d(dred_rect, dred_color, float, float, dred_color, void*);
 void drgui_draw_text_dr_2d(dred_gui_resource, const char*, int, float, float, dred_color, dred_color, void*);
-void drgui_draw_image_dr_2d(dred_gui_resource image, drgui_draw_image_args* pArgs, void* pPaintData);
+void drgui_draw_image_dr_2d(dred_gui_resource image, dred_gui_draw_image_args* pArgs, void* pPaintData);
 
 dred_gui_resource drgui_create_font_dr_2d(void*, const char*, unsigned int, dred_gui_font_weight, dred_gui_font_slant, float, unsigned int flags);
 void drgui_delete_font_dr_2d(dred_gui_resource);
@@ -3579,7 +3579,7 @@ void drgui_draw_text_dr_2d(dred_gui_resource font, const char* text, int textSiz
     dr2d_draw_text(pSurface, (dr2d_font*)font, text, textSizeInBytes, posX, posY, dr2d_rgba(color.r, color.g, color.b, color.a), dr2d_rgba(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a));
 }
 
-void drgui_draw_image_dr_2d(dred_gui_resource image, drgui_draw_image_args* pArgs, void* pPaintData)
+void drgui_draw_image_dr_2d(dred_gui_resource image, dred_gui_draw_image_args* pArgs, void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);

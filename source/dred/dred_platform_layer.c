@@ -9,13 +9,13 @@
 // Helper for creating the root GUI element of a window.
 dred_control* dred_platform__create_root_gui_element(dred_context* pDred, dred_window* pWindow)
 {
-    dred_control* pRootGUIElement = drgui_create_element(pDred, NULL, "RootGUIElement", sizeof(pWindow));
-    if (pRootGUIElement == NULL) {
+    dred_control* pRootGUIControl = drgui_create_element(pDred, NULL, "RootGUIControl", sizeof(pWindow));
+    if (pRootGUIControl == NULL) {
         return NULL;
     }
 
-    memcpy(drgui_get_extra_data(pRootGUIElement), &pWindow, sizeof(pWindow));
-    return pRootGUIElement;
+    memcpy(drgui_get_extra_data(pRootGUIControl), &pWindow, sizeof(pWindow));
+    return pRootGUIControl;
 }
 
 
@@ -550,7 +550,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
         {
             RECT rect;
             if (GetUpdateRect(hWnd, &rect, FALSE)) {
-                drgui_draw(pWindow->pRootGUIElement, drgui_make_rect((float)rect.left, (float)rect.top, (float)rect.right, (float)rect.bottom), pWindow->pDrawingSurface);
+                drgui_draw(pWindow->pRootGUIControl, drgui_make_rect((float)rect.left, (float)rect.top, (float)rect.right, (float)rect.bottom), pWindow->pDrawingSurface);
             }
         } break;
 
@@ -673,8 +673,8 @@ dred_window* dred_window_create__win32__internal(dred_context* pDred, HWND hWnd)
         goto on_error;
     }
 
-    pWindow->pRootGUIElement = dred_platform__create_root_gui_element(pDred, pWindow);
-    if (pWindow->pRootGUIElement == NULL) {
+    pWindow->pRootGUIControl = dred_platform__create_root_gui_element(pDred, pWindow);
+    if (pWindow->pRootGUIControl == NULL) {
         goto on_error;
     }
 
@@ -682,7 +682,7 @@ dred_window* dred_window_create__win32__internal(dred_context* pDred, HWND hWnd)
     unsigned int windowWidth;
     unsigned int windowHeight;
     dred_window_get_client_size(pWindow, &windowWidth, &windowHeight);
-    drgui_set_size(pWindow->pRootGUIElement, (float)windowWidth, (float)windowHeight);
+    drgui_set_size(pWindow->pRootGUIControl, (float)windowWidth, (float)windowHeight);
 
 
     // The dred window needs to be linked to the Win32 window handle so it can be accessed from the event handler.
@@ -729,9 +729,9 @@ void dred_window_delete__win32(dred_window* pWindow)
         return;
     }
 
-    if (pWindow->pRootGUIElement) {
-        drgui_delete_element(pWindow->pRootGUIElement);
-        pWindow->pRootGUIElement = NULL;
+    if (pWindow->pRootGUIControl) {
+        drgui_delete_element(pWindow->pRootGUIControl);
+        pWindow->pRootGUIControl = NULL;
     }
 
     if (pWindow->pDrawingSurface) {
@@ -1440,9 +1440,9 @@ static void dred_platform__on_global_release_mouse__win32(dred_control* pControl
     }
 }
 
-static void dred_platform__on_global_capture_keyboard__win32(dred_control* pControl, dred_control* pPrevCapturedElement)
+static void dred_platform__on_global_capture_keyboard__win32(dred_control* pControl, dred_control* pPrevCapturedControl)
 {
-    (void)pPrevCapturedElement;
+    (void)pPrevCapturedControl;
 
     dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL) {
@@ -1451,13 +1451,13 @@ static void dred_platform__on_global_capture_keyboard__win32(dred_control* pCont
     }
 }
 
-static void dred_platform__on_global_release_keyboard__win32(dred_control* pControl, dred_control* pNewCapturedElement)
+static void dred_platform__on_global_release_keyboard__win32(dred_control* pControl, dred_control* pNewCapturedControl)
 {
-    (void)pNewCapturedElement;
+    (void)pNewCapturedControl;
 
     dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL) {
-        dred_window* pNewWindow = dred_get_element_window(pNewCapturedElement);
+        dred_window* pNewWindow = dred_get_element_window(pNewCapturedControl);
         if (pWindow != pNewWindow) {
             SetFocus(NULL);
         }
@@ -1752,7 +1752,7 @@ static void dred_gtk_cb__on_paint(GtkWidget* pGTKWindow, cairo_t* pCairoContext,
     drawRect.top    = (float)clipTop;
     drawRect.right  = (float)clipRight;
     drawRect.bottom = (float)clipBottom;
-    drgui_draw(pWindow->pRootGUIElement, drawRect, pWindow->pDrawingSurface);
+    drgui_draw(pWindow->pRootGUIControl, drawRect, pWindow->pDrawingSurface);
 
     // At this point the GUI has been drawn, however nothing has been drawn to the window yet. To do this we will
     // use cairo directly with a cairo_set_source_surface() / cairo_paint() pair. We can get a pointer to dr_2d's
@@ -2104,8 +2104,8 @@ dred_window* dred_window_create__gtk__internal(dred_context* pDred, GtkWidget* p
     pWindow->pGTKWindow = pGTKWindow;
     pWindow->isShowingMenu = true;
 
-    pWindow->pRootGUIElement = dred_platform__create_root_gui_element(pDred, pWindow);
-    if (pWindow->pRootGUIElement == NULL) {
+    pWindow->pRootGUIControl = dred_platform__create_root_gui_element(pDred, pWindow);
+    if (pWindow->pRootGUIControl == NULL) {
         goto on_error;
     }
 
@@ -2224,7 +2224,7 @@ void dred_window_delete__gtk(dred_window* pWindow)
         dred_gtk__delete_accels(pWindow->pAccels, pWindow->accelCount);
     }
 
-    drgui_delete_element(pWindow->pRootGUIElement);
+    drgui_delete_element(pWindow->pRootGUIControl);
     dr2d_delete_surface(pWindow->pDrawingSurface);
 
     gtk_widget_destroy(pWindow->pGTKClientArea);
@@ -2817,9 +2817,9 @@ static void dred_platform__on_global_release_mouse__gtk(dred_control* pControl)
     }
 }
 
-static void dred_platform__on_global_capture_keyboard__gtk(dred_control* pControl, dred_control* pPrevCapturedElement)
+static void dred_platform__on_global_capture_keyboard__gtk(dred_control* pControl, dred_control* pPrevCapturedControl)
 {
-    (void)pPrevCapturedElement;
+    (void)pPrevCapturedControl;
 
     dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL) {
@@ -2828,13 +2828,13 @@ static void dred_platform__on_global_capture_keyboard__gtk(dred_control* pContro
     }
 }
 
-static void dred_platform__on_global_release_keyboard__gtk(dred_control* pControl, dred_control* pNewCapturedElement)
+static void dred_platform__on_global_release_keyboard__gtk(dred_control* pControl, dred_control* pNewCapturedControl)
 {
-    (void)pNewCapturedElement;
+    (void)pNewCapturedControl;
 
     dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL) {
-        dred_window* pNewWindow = dred_get_element_window(pNewCapturedElement);
+        dred_window* pNewWindow = dred_get_element_window(pNewCapturedControl);
         if (pWindow != pNewWindow) {
             //gtk_widget_grab_focus(NULL);
         }
@@ -3313,7 +3313,7 @@ void dred_window_on_size(dred_window* pWindow, unsigned int newWidth, unsigned i
     }
 
     // Always resize the root GUI element so that it's the exact same size as the window.
-    drgui_set_size(pWindow->pRootGUIElement, (float)newWidth, (float)newHeight);
+    drgui_set_size(pWindow->pRootGUIControl, (float)newWidth, (float)newHeight);
 }
 
 void dred_window_on_move(dred_window* pWindow, int newPosX, int newPosY)
@@ -3336,7 +3336,7 @@ void dred_window_on_mouse_leave(dred_window* pWindow)
         pWindow->onMouseLeave(pWindow);
     }
 
-    drgui_post_inbound_event_mouse_leave(pWindow->pRootGUIElement);
+    drgui_post_inbound_event_mouse_leave(pWindow->pRootGUIControl);
 }
 
 void dred_window_on_mouse_move(dred_window* pWindow, int mousePosX, int mousePosY, unsigned int stateFlags)
@@ -3345,7 +3345,7 @@ void dred_window_on_mouse_move(dred_window* pWindow, int mousePosX, int mousePos
         pWindow->onMouseMove(pWindow, mousePosX, mousePosY, stateFlags);
     }
 
-    drgui_post_inbound_event_mouse_move(pWindow->pRootGUIElement, mousePosX, mousePosY, stateFlags);
+    drgui_post_inbound_event_mouse_move(pWindow->pRootGUIControl, mousePosX, mousePosY, stateFlags);
 }
 
 void dred_window_on_mouse_button_down(dred_window* pWindow, int mouseButton, int mousePosX, int mousePosY, unsigned int stateFlags)
@@ -3354,7 +3354,7 @@ void dred_window_on_mouse_button_down(dred_window* pWindow, int mouseButton, int
         pWindow->onMouseButtonDown(pWindow, mouseButton, mousePosX, mousePosY, stateFlags);
     }
 
-    drgui_post_inbound_event_mouse_button_down(pWindow->pRootGUIElement, mouseButton, mousePosX, mousePosY, stateFlags);
+    drgui_post_inbound_event_mouse_button_down(pWindow->pRootGUIControl, mouseButton, mousePosX, mousePosY, stateFlags);
 }
 
 void dred_window_on_mouse_button_up(dred_window* pWindow, int mouseButton, int mousePosX, int mousePosY, unsigned int stateFlags)
@@ -3363,7 +3363,7 @@ void dred_window_on_mouse_button_up(dred_window* pWindow, int mouseButton, int m
         pWindow->onMouseButtonUp(pWindow, mouseButton, mousePosX, mousePosY, stateFlags);
     }
 
-    drgui_post_inbound_event_mouse_button_up(pWindow->pRootGUIElement, mouseButton, mousePosX, mousePosY, stateFlags);
+    drgui_post_inbound_event_mouse_button_up(pWindow->pRootGUIControl, mouseButton, mousePosX, mousePosY, stateFlags);
 }
 
 void dred_window_on_mouse_button_dblclick(dred_window* pWindow, int mouseButton, int mousePosX, int mousePosY, unsigned int stateFlags)
@@ -3372,7 +3372,7 @@ void dred_window_on_mouse_button_dblclick(dred_window* pWindow, int mouseButton,
         pWindow->onMouseButtonDblClick(pWindow, mouseButton, mousePosX, mousePosY, stateFlags);
     }
 
-    drgui_post_inbound_event_mouse_button_dblclick(pWindow->pRootGUIElement, mouseButton, mousePosX, mousePosY, stateFlags);
+    drgui_post_inbound_event_mouse_button_dblclick(pWindow->pRootGUIControl, mouseButton, mousePosX, mousePosY, stateFlags);
 }
 
 void dred_window_on_mouse_wheel(dred_window* pWindow, int delta, int mousePosX, int mousePosY, unsigned int stateFlags)
@@ -3381,7 +3381,7 @@ void dred_window_on_mouse_wheel(dred_window* pWindow, int delta, int mousePosX, 
         pWindow->onMouseWheel(pWindow, delta, mousePosX, mousePosY, stateFlags);
     }
 
-    drgui_post_inbound_event_mouse_wheel(pWindow->pRootGUIElement, delta, mousePosX, mousePosY, stateFlags);
+    drgui_post_inbound_event_mouse_wheel(pWindow->pRootGUIControl, delta, mousePosX, mousePosY, stateFlags);
 }
 
 void dred_window_on_key_down(dred_window* pWindow, dred_key key, unsigned int stateFlags)
@@ -3390,8 +3390,8 @@ void dred_window_on_key_down(dred_window* pWindow, dred_key key, unsigned int st
         pWindow->onKeyDown(pWindow, key, stateFlags);
     }
 
-    if (pWindow->pRootGUIElement) {
-        drgui_post_inbound_event_key_down(pWindow->pRootGUIElement->pContext, key, stateFlags);
+    if (pWindow->pRootGUIControl) {
+        drgui_post_inbound_event_key_down(pWindow->pRootGUIControl->pContext, key, stateFlags);
     }
 }
 
@@ -3401,8 +3401,8 @@ void dred_window_on_key_up(dred_window* pWindow, dred_key key, unsigned int stat
         pWindow->onKeyUp(pWindow, key, stateFlags);
     }
 
-    if (pWindow->pRootGUIElement) {
-        drgui_post_inbound_event_key_up(pWindow->pRootGUIElement->pContext, key, stateFlags);
+    if (pWindow->pRootGUIControl) {
+        drgui_post_inbound_event_key_up(pWindow->pRootGUIControl->pContext, key, stateFlags);
     }
 }
 
@@ -3412,8 +3412,8 @@ void dred_window_on_printable_key_down(dred_window* pWindow, unsigned int charac
         pWindow->onPrintableKeyDown(pWindow, character, stateFlags);
     }
 
-    if (pWindow->pRootGUIElement) {
-        drgui_post_inbound_event_printable_key_down(pWindow->pRootGUIElement->pContext, character, stateFlags);
+    if (pWindow->pRootGUIControl) {
+        drgui_post_inbound_event_printable_key_down(pWindow->pRootGUIControl->pContext, character, stateFlags);
     }
 }
 
@@ -3455,16 +3455,16 @@ dred_window* dred_get_element_window(dred_control* pControl)
         return NULL;
     }
 
-    dred_control* pRootGUIElement = drgui_find_top_level_element(pControl);
-    if (pRootGUIElement == NULL) {
+    dred_control* pRootGUIControl = drgui_find_top_level_element(pControl);
+    if (pRootGUIControl == NULL) {
         return NULL;
     }
 
-    if (!drgui_is_of_type(pRootGUIElement, "RootGUIElement")) {
+    if (!drgui_is_of_type(pRootGUIControl, "RootGUIControl")) {
         return NULL;
     }
 
-    dred_window** ppWindow = drgui_get_extra_data(pRootGUIElement);
+    dred_window** ppWindow = drgui_get_extra_data(pRootGUIControl);
     if (ppWindow == NULL) {
         return NULL;
     }

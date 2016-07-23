@@ -1138,7 +1138,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drg
         unsigned int iconHeight;
         drgui_get_image_size(pTB->pCloseButtonImage, &iconWidth, &iconHeight);
 
-        drgui_draw_image_args args;
+        dred_gui_draw_image_args args;
         args.dstX            = closeButtonPosX;
         args.dstY            = closeButtonPosY;
         args.dstWidth        = (float)iconWidth;

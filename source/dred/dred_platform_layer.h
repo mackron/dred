@@ -95,7 +95,7 @@ struct dred_window
     dred_menu* pMenu;
 
     // The window's top level GUI element.
-    dred_control* pRootGUIElement;
+    dred_control* pRootGUIControl;
 
     // The surface we'll be drawing to when drawing the GUI.
     dr2d_surface* pDrawingSurface;

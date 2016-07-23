@@ -328,13 +328,13 @@ bool dred_command__undo(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedElement = dred_get_element_with_keyboard_capture(pDred);
-    if (pFocusedElement == NULL) {
+    dred_control* pFocusedControl = dred_get_element_with_keyboard_capture(pDred);
+    if (pFocusedControl == NULL) {
         return true;
     }
 
-    if (pFocusedElement != NULL && drgui_is_of_type(pFocusedElement, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_undo(pFocusedElement);
+    if (pFocusedControl != NULL && drgui_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
+        dred_textbox_undo(pFocusedControl);
         return true;
     }
 
@@ -345,13 +345,13 @@ bool dred_command__redo(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedElement = dred_get_element_with_keyboard_capture(pDred);
-    if (pFocusedElement == NULL) {
+    dred_control* pFocusedControl = dred_get_element_with_keyboard_capture(pDred);
+    if (pFocusedControl == NULL) {
         return false;
     }
 
-    if (pFocusedElement != NULL && drgui_is_of_type(pFocusedElement, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_redo(pFocusedElement);
+    if (pFocusedControl != NULL && drgui_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
+        dred_textbox_redo(pFocusedControl);
         return true;
     }
 
@@ -369,19 +369,19 @@ bool dred_command__copy(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedElement = dred_get_element_with_keyboard_capture(pDred);
-    if (pFocusedElement == NULL) {
+    dred_control* pFocusedControl = dred_get_element_with_keyboard_capture(pDred);
+    if (pFocusedControl == NULL) {
         return true;
     }
 
-    if (pFocusedElement != NULL && drgui_is_of_type(pFocusedElement, DRED_CONTROL_TYPE_TEXTBOX)) {
-        size_t selectedTextLength = dred_textbox_get_selected_text(pFocusedElement, NULL, 0);
+    if (pFocusedControl != NULL && drgui_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
+        size_t selectedTextLength = dred_textbox_get_selected_text(pFocusedControl, NULL, 0);
         char* selectedText = (char*)malloc(selectedTextLength + 1);
         if (selectedText == NULL) {
             return false;
         }
 
-        selectedTextLength = dred_textbox_get_selected_text(pFocusedElement, selectedText, selectedTextLength + 1);
+        selectedTextLength = dred_textbox_get_selected_text(pFocusedControl, selectedText, selectedTextLength + 1);
         dred_clipboard_set_text(selectedText, selectedTextLength);
         return true;
     }
@@ -393,24 +393,24 @@ bool dred_command__paste(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedElement = dred_get_element_with_keyboard_capture(pDred);
-    if (pFocusedElement == NULL) {
+    dred_control* pFocusedControl = dred_get_element_with_keyboard_capture(pDred);
+    if (pFocusedControl == NULL) {
         return false;
     }
 
-    if (pFocusedElement != NULL && drgui_is_of_type(pFocusedElement, DRED_CONTROL_TYPE_TEXTBOX)) {
+    if (pFocusedControl != NULL && drgui_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
         char* clipboardText = dred_clipboard_get_text();
         if (clipboardText == NULL) {
             return false;
         }
 
         bool wasTextChanged = false;
-        dred_textbox_prepare_undo_point(pFocusedElement);
+        dred_textbox_prepare_undo_point(pFocusedControl);
         {
-            wasTextChanged = dred_textbox_delete_selected_text_no_undo(pFocusedElement) || wasTextChanged;
-            wasTextChanged = dred_textbox_insert_text_at_cursors_no_undo(pFocusedElement, clipboardText) || wasTextChanged;
+            wasTextChanged = dred_textbox_delete_selected_text_no_undo(pFocusedControl) || wasTextChanged;
+            wasTextChanged = dred_textbox_insert_text_at_cursors_no_undo(pFocusedControl, clipboardText) || wasTextChanged;
         }
-        if (wasTextChanged) { dred_textbox_commit_undo_point(pFocusedElement); }
+        if (wasTextChanged) { dred_textbox_commit_undo_point(pFocusedControl); }
 
         dred_clipboard_free_text(clipboardText);
         return true;
@@ -423,13 +423,13 @@ bool dred_command__delete(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedElement = dred_get_element_with_keyboard_capture(pDred);
-    if (pFocusedElement == NULL) {
+    dred_control* pFocusedControl = dred_get_element_with_keyboard_capture(pDred);
+    if (pFocusedControl == NULL) {
         return false;
     }
 
-    if (pFocusedElement != NULL && drgui_is_of_type(pFocusedElement, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_delete_selected_text(pFocusedElement);
+    if (pFocusedControl != NULL && drgui_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
+        dred_textbox_delete_selected_text(pFocusedControl);
         return true;
     }
 
@@ -440,13 +440,13 @@ bool dred_command__select_all(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedElement = dred_get_element_with_keyboard_capture(pDred);
-    if (pFocusedElement == NULL) {
+    dred_control* pFocusedControl = dred_get_element_with_keyboard_capture(pDred);
+    if (pFocusedControl == NULL) {
         return false;
     }
 
-    if (pFocusedElement != NULL && drgui_is_of_type(pFocusedElement, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_select_all(pFocusedElement);
+    if (pFocusedControl != NULL && drgui_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
+        dred_textbox_select_all(pFocusedControl);
         return true;
     }
 

@@ -5,7 +5,7 @@
 // General
 // - dr_gui is a low-level GUI system that works on generic objects referred to as "elements".
 // - An element is the most basic unit in dr_gui. It contains basic information about it's layout and hierarchy.
-// - Elements can be used as the building blocks for more complex controls such as list boxes and scrollbars.
+// - Controls can be used as the building blocks for more complex controls such as list boxes and scrollbars.
 // - The layout of elements use floats instead of integers. The rationale for this is that it makes it easier to do certain
 //   layout arithmetic. For example, if you want to evenly distribute 3 elements across a fixed area, the integer based
 //   arithmetic can cause rounding errors which cause the elements to not sit flush against the area. By using float-based
@@ -90,7 +90,7 @@
 //   handling of the paint message.
 // - Real-time application guidelines (games, etc.):
 //   - drgui_disable_auto_dirty()
-//   - drgui_draw(pTopLevelElement, 0, 0, viewportWidth, viewportHeight) at the end of every frame after your main loop.
+//   - drgui_draw(pTopLevelControl, 0, 0, viewportWidth, viewportHeight) at the end of every frame after your main loop.
 //
 
 
@@ -109,7 +109,7 @@
 //
 // Basic Drawing:
 //
-// drgui_draw(pTopLevelElement, 0, 0, drgui_get_width(pTopLevelElement), drgui_get_height(pTopLevelElement));
+// drgui_draw(pTopLevelControl, 0, 0, drgui_get_width(pTopLevelControl), drgui_get_height(pTopLevelControl));
 //
 // -------------------------
 //
@@ -131,15 +131,15 @@
 //
 // LRESULT CALLBACK MyWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 //     ...
-//     dred_control* pTopLevelElement = (dred_control*)GetWindowLongPtr(hWnd, 0);
-//     if (pTopLevelElement != NULL) {
+//     dred_control* pTopLevelControl = (dred_control*)GetWindowLongPtr(hWnd, 0);
+//     if (pTopLevelControl != NULL) {
 //         switch (msg) {
 //             ...
 //             case WM_PAINT:
 //             {
 //                 RECT rect;
 //                 if (GetUpdateRect(hWnd, &rect, FALSE)) {
-//                     drgui_draw(pTopLevelElement, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+//                     drgui_draw(pTopLevelControl, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
 //                 }
 //
 //                 break;
@@ -327,7 +327,7 @@ typedef struct
     /// Flags for controlling how the image should be drawn.
     unsigned int options;
 
-} drgui_draw_image_args;
+} dred_gui_draw_image_args;
 
 
 typedef void (* dred_gui_on_move_proc)                 (dred_control* pControl, float newRelativePosX, float newRelativePosY);
@@ -347,43 +347,43 @@ typedef void (* dred_gui_on_dirty_proc)                (dred_control* pControl, 
 typedef bool (* dred_gui_on_hittest_proc)              (dred_control* pControl, float relativePosX, float relativePosY);
 typedef void (* dred_gui_on_capture_mouse_proc)        (dred_control* pControl);
 typedef void (* dred_gui_on_release_mouse_proc)        (dred_control* pControl);
-typedef void (* dred_gui_on_capture_keyboard_proc)     (dred_control* pControl, dred_control* pPrevCapturedElement);
-typedef void (* dred_gui_on_release_keyboard_proc)     (dred_control* pControl, dred_control* pNewCapturedElement);
+typedef void (* dred_gui_on_capture_keyboard_proc)     (dred_control* pControl, dred_control* pPrevCapturedControl);
+typedef void (* dred_gui_on_release_keyboard_proc)     (dred_control* pControl, dred_control* pNewCapturedControl);
 typedef void (* dred_gui_on_change_cursor_proc)        (dred_control* pControl, dred_cursor_type cursor);
 typedef void (* dred_gui_on_delete_element_proc)       (dred_control* pControl);
 typedef void (* dred_gui_on_log)                       (dred_gui* pContext, const char* message);
 
-typedef void (* drgui_draw_begin_proc)                   (void* pPaintData);
-typedef void (* drgui_draw_end_proc)                     (void* pPaintData);
-typedef void (* drgui_set_clip_proc)                     (dred_rect relativeRect, void* pPaintData);
-typedef void (* drgui_get_clip_proc)                     (dred_rect* pRectOut, void* pPaintData);
-typedef void (* drgui_draw_line_proc)                    (float startX, float startY, float endX, float endY, float width, dred_color color, void* pPaintData);
-typedef void (* drgui_draw_rect_proc)                    (dred_rect relativeRect, dred_color color, void* pPaintData);
-typedef void (* drgui_draw_rect_outline_proc)            (dred_rect relativeRect, dred_color color, float outlineWidth, void* pPaintData);
-typedef void (* drgui_draw_rect_with_outline_proc)       (dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, void* pPaintData);
-typedef void (* drgui_draw_round_rect_proc)              (dred_rect relativeRect, dred_color color, float radius, void* pPaintData);
-typedef void (* drgui_draw_round_rect_outline_proc)      (dred_rect relativeRect, dred_color color, float radius, float outlineWidth, void* pPaintData);
-typedef void (* drgui_draw_round_rect_with_outline_proc) (dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData);
-typedef void (* drgui_draw_text_proc)                    (dred_gui_resource font, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData);
-typedef void (* drgui_draw_image_proc)                   (dred_gui_resource image, drgui_draw_image_args* pArgs, void* pPaintData);
+typedef void (* dred_gui_draw_begin_proc)                   (void* pPaintData);
+typedef void (* dred_gui_draw_end_proc)                     (void* pPaintData);
+typedef void (* dred_gui_set_clip_proc)                     (dred_rect relativeRect, void* pPaintData);
+typedef void (* dred_gui_get_clip_proc)                     (dred_rect* pRectOut, void* pPaintData);
+typedef void (* dred_gui_draw_line_proc)                    (float startX, float startY, float endX, float endY, float width, dred_color color, void* pPaintData);
+typedef void (* dred_gui_draw_rect_proc)                    (dred_rect relativeRect, dred_color color, void* pPaintData);
+typedef void (* dred_gui_draw_rect_outline_proc)            (dred_rect relativeRect, dred_color color, float outlineWidth, void* pPaintData);
+typedef void (* dred_gui_draw_rect_with_outline_proc)       (dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, void* pPaintData);
+typedef void (* dred_gui_draw_round_rect_proc)              (dred_rect relativeRect, dred_color color, float radius, void* pPaintData);
+typedef void (* dred_gui_draw_round_rect_outline_proc)      (dred_rect relativeRect, dred_color color, float radius, float outlineWidth, void* pPaintData);
+typedef void (* dred_gui_draw_round_rect_with_outline_proc) (dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData);
+typedef void (* dred_gui_draw_text_proc)                    (dred_gui_resource font, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData);
+typedef void (* dred_gui_draw_image_proc)                   (dred_gui_resource image, dred_gui_draw_image_args* pArgs, void* pPaintData);
 
-typedef dred_gui_resource (* drgui_create_font_proc)                        (void* pPaintingContext, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags);
-typedef void              (* drgui_delete_font_proc)                        (dred_gui_resource font);
-typedef unsigned int      (* drgui_get_font_size_proc)                      (dred_gui_resource font);
-typedef bool              (* drgui_get_font_metrics_proc)                   (dred_gui_resource font, dred_gui_font_metrics* pMetricsOut);
-typedef bool              (* drgui_get_glyph_metrics_proc)                  (dred_gui_resource font, unsigned int utf32, dred_glyph_metrics* pMetricsOut);
-typedef bool              (* drgui_measure_string_proc)                     (dred_gui_resource font, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
-typedef bool              (* drgui_get_text_cursor_position_from_point_proc)(dred_gui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-typedef bool              (* drgui_get_text_cursor_position_from_char_proc) (dred_gui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+typedef dred_gui_resource (* dred_gui_create_font_proc)                        (void* pPaintingContext, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags);
+typedef void              (* dred_gui_delete_font_proc)                        (dred_gui_resource font);
+typedef unsigned int      (* dred_gui_get_font_size_proc)                      (dred_gui_resource font);
+typedef bool              (* dred_gui_get_font_metrics_proc)                   (dred_gui_resource font, dred_gui_font_metrics* pMetricsOut);
+typedef bool              (* dred_gui_get_glyph_metrics_proc)                  (dred_gui_resource font, unsigned int utf32, dred_glyph_metrics* pMetricsOut);
+typedef bool              (* dred_gui_measure_string_proc)                     (dred_gui_resource font, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
+typedef bool              (* dred_gui_get_text_cursor_position_from_point_proc)(dred_gui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+typedef bool              (* dred_gui_get_text_cursor_position_from_char_proc) (dred_gui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
-typedef dred_gui_resource     (* drgui_create_image_proc)            (void* pPaintingContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pImageData);
-typedef void                  (* drgui_delete_image_proc)            (dred_gui_resource image);
-typedef dred_gui_image_format (* drgui_get_optimal_image_format_proc)(void* pPaintingContext);
-typedef void                  (* drgui_get_image_size_proc)          (dred_gui_resource image, unsigned int* pWidthOut, unsigned int* pHeightOut);
-typedef void*                 (* drgui_map_image_data_proc)          (dred_gui_resource image, unsigned int accessFlags);
-typedef void                  (* drgui_unmap_image_data_proc)        (dred_gui_resource image);
+typedef dred_gui_resource     (* dred_gui_create_image_proc)            (void* pPaintingContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pImageData);
+typedef void                  (* dred_gui_delete_image_proc)            (dred_gui_resource image);
+typedef dred_gui_image_format (* dred_gui_get_optimal_image_format_proc)(void* pPaintingContext);
+typedef void                  (* dred_gui_get_image_size_proc)          (dred_gui_resource image, unsigned int* pWidthOut, unsigned int* pHeightOut);
+typedef void*                 (* dred_gui_map_image_data_proc)          (dred_gui_resource image, unsigned int accessFlags);
+typedef void                  (* dred_gui_unmap_image_data_proc)        (dred_gui_resource image);
 
-typedef bool (* drgui_visible_iteration_proc)(dred_control* pControl, dred_rect *pRelativeRect, void* pUserData);
+typedef bool (* dred_gui_visible_iteration_proc)(dred_control* pControl, dred_rect *pRelativeRect, void* pUserData);
 
 
 // Key state flags.
@@ -428,7 +428,7 @@ typedef bool (* drgui_visible_iteration_proc)(dred_control* pControl, dred_rect 
 #define DRED_GUI_F11                    0xffc8
 #define DRED_GUI_F12                    0xffc9
 
-static size_t dred_gui_strcpy(char* dst, size_t dstSize, const char* src)
+static size_t dred_gui_strcpy_len(char* dst, size_t dstSize, const char* src)
 {
     if (strcpy_s(dst, dstSize, src) == 0) {
         return strlen(dst);
@@ -451,30 +451,30 @@ static inline size_t dred_key_to_string(dred_key key, char* strOut, size_t strOu
 
     switch (key)
     {
-    case DRED_GUI_BACKSPACE:   return dred_gui_strcpy(strOut, strOutSize, "Backspace");
-    case DRED_GUI_SHIFT:       return dred_gui_strcpy(strOut, strOutSize, "Shift");
-    case DRED_GUI_ESCAPE:      return dred_gui_strcpy(strOut, strOutSize, "Escape");
-    case DRED_GUI_PAGE_UP:     return dred_gui_strcpy(strOut, strOutSize, "Page Up");
-    case DRED_GUI_PAGE_DOWN:   return dred_gui_strcpy(strOut, strOutSize, "Page Down");
-    case DRED_GUI_END:         return dred_gui_strcpy(strOut, strOutSize, "End");
-    case DRED_GUI_HOME:        return dred_gui_strcpy(strOut, strOutSize, "Home");
-    case DRED_GUI_ARROW_LEFT:  return dred_gui_strcpy(strOut, strOutSize, "Arrow Left");
-    case DRED_GUI_ARROW_UP:    return dred_gui_strcpy(strOut, strOutSize, "Arrow Up");
-    case DRED_GUI_ARROW_RIGHT: return dred_gui_strcpy(strOut, strOutSize, "Arrow Right");
-    case DRED_GUI_ARROW_DOWN:  return dred_gui_strcpy(strOut, strOutSize, "Arrow Down");
-    case DRED_GUI_DELETE:      return dred_gui_strcpy(strOut, strOutSize, "Delete");
-    case DRED_GUI_F1:          return dred_gui_strcpy(strOut, strOutSize, "F1");
-    case DRED_GUI_F2:          return dred_gui_strcpy(strOut, strOutSize, "F2");
-    case DRED_GUI_F3:          return dred_gui_strcpy(strOut, strOutSize, "F3");
-    case DRED_GUI_F4:          return dred_gui_strcpy(strOut, strOutSize, "F4");
-    case DRED_GUI_F5:          return dred_gui_strcpy(strOut, strOutSize, "F5");
-    case DRED_GUI_F6:          return dred_gui_strcpy(strOut, strOutSize, "F6");
-    case DRED_GUI_F7:          return dred_gui_strcpy(strOut, strOutSize, "F7");
-    case DRED_GUI_F8:          return dred_gui_strcpy(strOut, strOutSize, "F8");
-    case DRED_GUI_F9:          return dred_gui_strcpy(strOut, strOutSize, "F9");
-    case DRED_GUI_F10:         return dred_gui_strcpy(strOut, strOutSize, "F10");
-    case DRED_GUI_F11:         return dred_gui_strcpy(strOut, strOutSize, "F11");
-    case DRED_GUI_F12:         return dred_gui_strcpy(strOut, strOutSize, "F12");
+    case DRED_GUI_BACKSPACE:   return dred_gui_strcpy_len(strOut, strOutSize, "Backspace");
+    case DRED_GUI_SHIFT:       return dred_gui_strcpy_len(strOut, strOutSize, "Shift");
+    case DRED_GUI_ESCAPE:      return dred_gui_strcpy_len(strOut, strOutSize, "Escape");
+    case DRED_GUI_PAGE_UP:     return dred_gui_strcpy_len(strOut, strOutSize, "Page Up");
+    case DRED_GUI_PAGE_DOWN:   return dred_gui_strcpy_len(strOut, strOutSize, "Page Down");
+    case DRED_GUI_END:         return dred_gui_strcpy_len(strOut, strOutSize, "End");
+    case DRED_GUI_HOME:        return dred_gui_strcpy_len(strOut, strOutSize, "Home");
+    case DRED_GUI_ARROW_LEFT:  return dred_gui_strcpy_len(strOut, strOutSize, "Arrow Left");
+    case DRED_GUI_ARROW_UP:    return dred_gui_strcpy_len(strOut, strOutSize, "Arrow Up");
+    case DRED_GUI_ARROW_RIGHT: return dred_gui_strcpy_len(strOut, strOutSize, "Arrow Right");
+    case DRED_GUI_ARROW_DOWN:  return dred_gui_strcpy_len(strOut, strOutSize, "Arrow Down");
+    case DRED_GUI_DELETE:      return dred_gui_strcpy_len(strOut, strOutSize, "Delete");
+    case DRED_GUI_F1:          return dred_gui_strcpy_len(strOut, strOutSize, "F1");
+    case DRED_GUI_F2:          return dred_gui_strcpy_len(strOut, strOutSize, "F2");
+    case DRED_GUI_F3:          return dred_gui_strcpy_len(strOut, strOutSize, "F3");
+    case DRED_GUI_F4:          return dred_gui_strcpy_len(strOut, strOutSize, "F4");
+    case DRED_GUI_F5:          return dred_gui_strcpy_len(strOut, strOutSize, "F5");
+    case DRED_GUI_F6:          return dred_gui_strcpy_len(strOut, strOutSize, "F6");
+    case DRED_GUI_F7:          return dred_gui_strcpy_len(strOut, strOutSize, "F7");
+    case DRED_GUI_F8:          return dred_gui_strcpy_len(strOut, strOutSize, "F8");
+    case DRED_GUI_F9:          return dred_gui_strcpy_len(strOut, strOutSize, "F9");
+    case DRED_GUI_F10:         return dred_gui_strcpy_len(strOut, strOutSize, "F10");
+    case DRED_GUI_F11:         return dred_gui_strcpy_len(strOut, strOutSize, "F11");
+    case DRED_GUI_F12:         return dred_gui_strcpy_len(strOut, strOutSize, "F12");
     }
 
     if (key >= 32 && key <= 126) {
@@ -545,37 +545,37 @@ dred_key dred_key_parse(const char* str)
 /// Structure containing callbacks for painting routines.
 struct dred_gui_painting_callbacks
 {
-    drgui_draw_begin_proc                          drawBegin;
-    drgui_draw_end_proc                            drawEnd;
+    dred_gui_draw_begin_proc                          drawBegin;
+    dred_gui_draw_end_proc                            drawEnd;
 
-    drgui_set_clip_proc                            setClip;
-    drgui_get_clip_proc                            getClip;
+    dred_gui_set_clip_proc                            setClip;
+    dred_gui_get_clip_proc                            getClip;
 
-    drgui_draw_line_proc                           drawLine;
-    drgui_draw_rect_proc                           drawRect;
-    drgui_draw_rect_outline_proc                   drawRectOutline;
-    drgui_draw_rect_with_outline_proc              drawRectWithOutline;
-    drgui_draw_round_rect_proc                     drawRoundRect;
-    drgui_draw_round_rect_outline_proc             drawRoundRectOutline;
-    drgui_draw_round_rect_with_outline_proc        drawRoundRectWithOutline;
-    drgui_draw_text_proc                           drawText;
-    drgui_draw_image_proc                          drawImage;
+    dred_gui_draw_line_proc                           drawLine;
+    dred_gui_draw_rect_proc                           drawRect;
+    dred_gui_draw_rect_outline_proc                   drawRectOutline;
+    dred_gui_draw_rect_with_outline_proc              drawRectWithOutline;
+    dred_gui_draw_round_rect_proc                     drawRoundRect;
+    dred_gui_draw_round_rect_outline_proc             drawRoundRectOutline;
+    dred_gui_draw_round_rect_with_outline_proc        drawRoundRectWithOutline;
+    dred_gui_draw_text_proc                           drawText;
+    dred_gui_draw_image_proc                          drawImage;
 
-    drgui_create_font_proc                         createFont;
-    drgui_delete_font_proc                         deleteFont;
-    drgui_get_font_size_proc                       getFontSize;
-    drgui_get_font_metrics_proc                    getFontMetrics;
-    drgui_get_glyph_metrics_proc                   getGlyphMetrics;
-    drgui_measure_string_proc                      measureString;
-    drgui_get_text_cursor_position_from_point_proc getTextCursorPositionFromPoint;
-    drgui_get_text_cursor_position_from_char_proc  getTextCursorPositionFromChar;
+    dred_gui_create_font_proc                         createFont;
+    dred_gui_delete_font_proc                         deleteFont;
+    dred_gui_get_font_size_proc                       getFontSize;
+    dred_gui_get_font_metrics_proc                    getFontMetrics;
+    dred_gui_get_glyph_metrics_proc                   getGlyphMetrics;
+    dred_gui_measure_string_proc                      measureString;
+    dred_gui_get_text_cursor_position_from_point_proc getTextCursorPositionFromPoint;
+    dred_gui_get_text_cursor_position_from_char_proc  getTextCursorPositionFromChar;
 
-    drgui_create_image_proc                        createImage;
-    drgui_delete_image_proc                        deleteImage;
-    drgui_get_optimal_image_format_proc            getOptimalImageFormat;
-    drgui_get_image_size_proc                      getImageSize;
-    drgui_map_image_data_proc                      mapImageData;
-    drgui_unmap_image_data_proc                    unmapImageData;
+    dred_gui_create_image_proc                        createImage;
+    dred_gui_delete_image_proc                        deleteImage;
+    dred_gui_get_optimal_image_format_proc            getOptimalImageFormat;
+    dred_gui_get_image_size_proc                      getImageSize;
+    dred_gui_map_image_data_proc                      mapImageData;
+    dred_gui_unmap_image_data_proc                    unmapImageData;
 };
 
 struct dred_gui_image
@@ -641,8 +641,8 @@ struct dred_control
     /// A pointer to the next dead element. When an element is deleted during an event handler it is not deleted straight away but
     /// rather at the end of the current batch of event processing. Dead elements are stored in a linked list, with this pointer
     /// acting as the link between items. This will be null if the element is the last in the list, or is not marked as dead. Note
-    /// that this should not be used to check if the element is marked as dead - use the IS_ELEMENT_DEAD flag instead.
-    dred_control* pNextDeadElement;
+    /// that this should not be used to check if the element is marked as dead - use the IS_CONTROL_DEAD flag instead.
+    dred_control* pNextDeadControl;
 
 
     /// The type of the element, as a string. This is only every used by the host application, and is intended to be used as way
@@ -760,8 +760,8 @@ struct dred_gui
     /// used as a way to check for erroneous outbound event generation.
     int outboundEventLockCounter;
 
-    /// A pointer to the first element that has been marked as dead. Elements marked as dead are stored as a linked list.
-    dred_control* pFirstDeadElement;
+    /// A pointer to the first element that has been marked as dead. Controls marked as dead are stored as a linked list.
+    dred_control* pFirstDeadControl;
 
     /// A pointer to the element that is sitting directly under the mouse. This is updated on every inbound mouse move event
     /// and is used for determining when a mouse enter/leave event needs to be posted.
@@ -804,7 +804,7 @@ struct dred_gui
     dred_gui_on_change_cursor_proc onChangeCursor;
 
     /// The function to call when an element is deleted.
-    dred_gui_on_delete_element_proc onDeleteElement;
+    dred_gui_on_delete_element_proc onDeleteControl;
 
 
     /// The function to call when a log message is posted.
@@ -813,7 +813,7 @@ struct dred_gui
 
 
     /// A pointer to the top level element that was passed in from the last inbound mouse move event.
-    dred_control* pLastMouseMoveTopLevelElement;
+    dred_control* pLastMouseMoveTopLevelControl;
 
     /// The position of the mouse that was passed in from the last inbound mouse move event.
     float lastMouseMovePosX;
@@ -821,13 +821,13 @@ struct dred_gui
 
 
     // A pointer to the list of dirty elements.
-    dred_control** ppDirtyElements;
+    dred_control** ppDirtyControls;
 
     // The size of the buffer containing the dirty elements.
-    size_t dirtyElementBufferSize;
+    size_t dirtyControlBufferSize;
 
     // The number of dirty top-level elements.
-    size_t dirtyElementCount;
+    size_t dirtyControlCount;
 
     /// The counter to use when determining whether or not an on_dirty event needs to be posted. This is incremented with
     /// drgui_begin_auto_dirty() and decremented with drgui_end_auto_dirty(). When the counter is decremented and hits
@@ -859,22 +859,22 @@ void drgui_delete_context(dred_gui* pContext);
 /// @remarks
 ///     The intention behind this event is to allow the application to let dr_gui know that the mouse have left the window. Since dr_gui does
 ///     not have any notion of a window it must rely on the host application to notify it.
-void drgui_post_inbound_event_mouse_leave(dred_control* pTopLevelElement);
+void drgui_post_inbound_event_mouse_leave(dred_control* pTopLevelControl);
 
 /// Posts a mouse move inbound event.
-void drgui_post_inbound_event_mouse_move(dred_control* pTopLevelElement, int mousePosX, int mousePosY, int stateFlags);
+void drgui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int mousePosX, int mousePosY, int stateFlags);
 
 /// Posts a mouse button down inbound event.
-void drgui_post_inbound_event_mouse_button_down(dred_control* pTopLevelElement, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+void drgui_post_inbound_event_mouse_button_down(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
 
 /// Posts a mouse button up inbound event.
-void drgui_post_inbound_event_mouse_button_up(dred_control* pTopLevelElement, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+void drgui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
 
 /// Posts a mouse button double-clicked inbound event.
-void drgui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelElement, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+void drgui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
 
 /// Posts a mouse wheel inbound event.
-void drgui_post_inbound_event_mouse_wheel(dred_control* pTopLevelElement, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+void drgui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
 
 /// Posts a key down inbound event.
 void drgui_post_inbound_event_key_down(dred_gui* pContext, dred_key key, int stateFlags);
@@ -943,7 +943,7 @@ void drgui_set_global_on_release_keyboard(dred_gui* pContext, dred_gui_on_captur
 void drgui_set_global_on_change_cursor(dred_gui* pContext, dred_gui_on_change_cursor_proc onChangeCursor);
 
 /// Sets the function to call when an element is deleted.
-void drgui_set_on_delete_element(dred_gui* pContext, dred_gui_on_delete_element_proc onDeleteElement);
+void drgui_set_on_delete_element(dred_gui* pContext, dred_gui_on_delete_element_proc onDeleteControl);
 
 
 /// Registers the callback to call when a log message is posted.
@@ -953,7 +953,7 @@ void drgui_set_on_log(dred_gui* pContext, dred_gui_on_log onLog);
 
 
 /////////////////////////////////////////////////////////////////
-// Elements
+// Controls
 
 /// Creates an element.
 dred_control* drgui_create_element(dred_context* pDred, dred_control* pParent, const char* type, size_t extraDataSize);
@@ -1139,26 +1139,26 @@ bool drgui_is_point_inside_element_bounds(const dred_control* pControl, float ab
 bool drgui_is_point_inside_element(dred_control* pControl, float absolutePosX, float absolutePosY);
 
 /// Finds the element under the given point taking mouse pass-through and hit testing into account.
-dred_control* drgui_find_element_under_point(dred_control* pTopLevelElement, float absolutePosX, float absolutePosY);
+dred_control* drgui_find_element_under_point(dred_control* pTopLevelControl, float absolutePosX, float absolutePosY);
 
 /// Determines whether or not the given element is currently sitting directly under the mouse.
-bool drgui_is_element_under_mouse(dred_control* pTopLevelElement);
+bool drgui_is_element_under_mouse(dred_control* pTopLevelControl);
 
 
 
 //// Hierarchy ////
 
 // Retrieves the parent of the given element.
-dred_control* drgui_get_parent(dred_control* pChildElement);
+dred_control* drgui_get_parent(dred_control* pChildControl);
 
 /// Detaches the given element from it's parent.
-void drgui_detach(dred_control* pChildElement);
+void drgui_detach(dred_control* pChildControl);
 
 /// Attaches the given element as a child of the given parent element, and appends it to the end of the children list.
-void drgui_append(dred_control* pChildElement, dred_control* pParentElement);
+void drgui_append(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Attaches the given element as a child of the given parent element, and prepends it to the end of the children list.
-void drgui_prepend(dred_control* pChildElement, dred_control* pParentElement);
+void drgui_prepend(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Appends the given element to the given sibling.
 void drgui_append_sibling(dred_control* pControlToAppend, dred_control* pControlToAppendTo);
@@ -1176,25 +1176,25 @@ dred_control* drgui_find_top_level_element(dred_control* pControl);
 ///
 /// @remarks
 ///     This is not recursive. Use drgui_is_ancestor() to do a recursive traversal.
-bool drgui_is_parent(dred_control* pParentElement, dred_control* pChildElement);
+bool drgui_is_parent(dred_control* pParentControl, dred_control* pChildControl);
 
 /// Determines whether or not the given element is a child of the other.
 ///
 /// @remarks
 ///     This is not recursive. Use drgui_is_descendant() to do a recursive traversal.
-bool drgui_is_child(dred_control* pChildElement, dred_control* pParentElement);
+bool drgui_is_child(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Determines whether or not the given element is an ancestor of the other.
-bool drgui_is_ancestor(dred_control* pAncestorElement, dred_control* pChildElement);
+bool drgui_is_ancestor(dred_control* pAncestorControl, dred_control* pChildControl);
 
 /// Determines whether or not the given element is a descendant of the other.
-bool drgui_is_descendant(dred_control* pChildElement, dred_control* pAncestorElement);
+bool drgui_is_descendant(dred_control* pChildControl, dred_control* pAncestorControl);
 
 /// Determines whether or not the given element is itself or a descendant.
-bool drgui_is_self_or_ancestor(dred_control* pAncestorElement, dred_control* pChildElement);
+bool drgui_is_self_or_ancestor(dred_control* pAncestorControl, dred_control* pChildControl);
 
 /// Determines whether or not the given element is itself or a descendant.
-bool drgui_is_self_or_descendant(dred_control* pChildElement, dred_control* pAncestorElement);
+bool drgui_is_self_or_descendant(dred_control* pChildControl, dred_control* pAncestorControl);
 
 
 
@@ -1254,16 +1254,16 @@ bool drgui_register_painting_callbacks(dred_gui* pContext, void* pPaintingContex
 
 /// Performs a recursive traversal of all visible elements in the given rectangle.
 ///
-/// @param pParentElement [in] A pointer to the element to iterate.
+/// @param pParentControl [in] A pointer to the element to iterate.
 ///
 /// @remarks
-///     pParentElement will be included in the iteration is it is within the rectangle.
+///     pParentControl will be included in the iteration is it is within the rectangle.
 ///     @par
-///     The rectangle should be relative to pParentElement.
+///     The rectangle should be relative to pParentControl.
 ///     @par
 ///     The iteration callback function takes a pointer to a rectangle structure that represents the visible portion of the
 ///     element. This pointer can be modified by the callback to create an adjusted rectangle which can be used for clipping.
-bool drgui_iterate_visible_elements(dred_control* pParentElement, dred_rect relativeRect, drgui_visible_iteration_proc callback, void* pUserData);
+bool drgui_iterate_visible_elements(dred_control* pParentControl, dred_rect relativeRect, dred_gui_visible_iteration_proc callback, void* pUserData);
 
 
 /// Disable's automatic dirtying of elements.
@@ -1336,7 +1336,7 @@ void drgui_draw_round_rect_with_outline(dred_control* pControl, dred_rect relati
 void drgui_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData);
 
 /// Draws an image.
-void drgui_draw_image(dred_control* pControl, dred_gui_image* pImage, drgui_draw_image_args* pArgs, void* pPaintData);
+void drgui_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_draw_image_args* pArgs, void* pPaintData);
 
 
 /// Creates a font resource.
