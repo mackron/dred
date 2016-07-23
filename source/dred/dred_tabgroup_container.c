@@ -11,7 +11,7 @@ void dred_tabgroup_container__on_size(dred_tabgroup_container* pContainer, float
     assert(data != NULL);
 
     if (data->splitAxis == dred_tabgroup_split_axis_none) {
-        drgui_on_size_fit_children_to_parent(pContainer, newWidth, newHeight);  // <-- Need to rethink this when the resize bar is added. Maybe just make an assumption on the layout? Branch based on the types of each child?
+        dred_control_on_size_fit_children_to_parent(pContainer, newWidth, newHeight);  // <-- Need to rethink this when the resize bar is added. Maybe just make an assumption on the layout? Branch based on the types of each child?
     } else {
         // Reposition and size the two child panels depending on the split axis.
     }

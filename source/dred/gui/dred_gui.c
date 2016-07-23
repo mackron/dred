@@ -1420,7 +1420,7 @@ void dred_control_delete(dred_control* pControl)
     // Deleting this element may have resulted in the mouse entering a new element. Here is where we do a mouse enter/leave update.
     if (needsMouseUpdate)
     {
-        pControl->onHitTest = drgui_pass_through_hit_test;        // <-- This ensures we don't include this element when searching for the new element under the mouse.
+        pControl->onHitTest = dred_control_pass_through_hit_test;        // <-- This ensures we don't include this element when searching for the new element under the mouse.
         drgui_update_mouse_enter_and_leave_state(pGUI, dred_gui_find_control_under_point(pGUI->pLastMouseMoveTopLevelControl, pGUI->lastMouseMovePosX, pGUI->lastMouseMovePosY));
     }
 
@@ -3167,14 +3167,14 @@ void dred_gui_unmap_image_data(dred_gui_image* pImage)
 
 //// Hit Testing and Layout ////
 
-void drgui_on_size_fit_children_to_parent(dred_control* pControl, float newWidth, float newHeight)
+void dred_control_on_size_fit_children_to_parent(dred_control* pControl, float newWidth, float newHeight)
 {
     for (dred_control* pChild = pControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
         dred_control_set_size(pChild, newWidth, newHeight);
     }
 }
 
-bool drgui_pass_through_hit_test(dred_control* pControl, float mousePosX, float mousePosY)
+bool dred_control_pass_through_hit_test(dred_control* pControl, float mousePosX, float mousePosY)
 {
     (void)pControl;
     (void)mousePosX;

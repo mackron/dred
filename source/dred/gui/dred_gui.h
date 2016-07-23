@@ -1412,10 +1412,10 @@ void dred_gui_unmap_image_data(dred_gui_image* pImage);
 //// Hit Testing and Layout ////
 
 /// An on_size event callback that resizes every child element to that of the parent.
-void drgui_on_size_fit_children_to_parent(dred_control* pControl, float newWidth, float newHeight);
+void dred_control_on_size_fit_children_to_parent(dred_control* pControl, float newWidth, float newHeight);
 
 /// An on_hit_test event callback that can be used to always fail the mouse hit test.
-bool drgui_pass_through_hit_test(dred_control* pControl, float mousePosX, float mousePosY);
+bool dred_control_pass_through_hit_test(dred_control* pControl, float mousePosX, float mousePosY);
 
 
 //// Painting ////
