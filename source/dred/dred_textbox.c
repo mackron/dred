@@ -2323,7 +2323,7 @@ void dred_textbox_engine__on_paint_rect(drte_engine* pTL, drte_style_token style
     float offsetY;
     dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
-    dred_control_draw_rect(pTextBox, dred_offset_rect(drte_rect_to_drgui(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
+    dred_control_draw_rect(pTextBox, dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
 }
 
 void dred_textbox_engine__on_paint_text(drte_engine* pTL, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
@@ -2356,7 +2356,7 @@ void dred_textbox_engine__on_dirty(drte_engine* pTL, drte_rect rect)
     float offsetY;
     dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
-    dred_control_dirty(pTextBox, dred_offset_rect(drte_rect_to_drgui(rect), offsetX, offsetY));
+    dred_control_dirty(pTextBox, dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY));
 }
 
 void dred_textbox_engine__on_cursor_move(drte_engine* pTL)
@@ -2923,7 +2923,7 @@ void dred_textbox__on_paint_rect_line_numbers(drte_engine* pEngine, drte_style_t
     float offsetX = pTB->padding;
     float offsetY = pTB->padding;
 
-    dred_control_draw_rect(pTB->pLineNumbers, dred_offset_rect(drte_rect_to_drgui(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
+    dred_control_draw_rect(pTB->pLineNumbers, dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
 }
 
 void dred_textbox__on_paint_text_line_numbers(drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)

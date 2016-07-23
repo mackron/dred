@@ -20,7 +20,7 @@ dred_color dred_parse_color(const char* color);
 
 // Type conversion
 
-static DRED_INLINE dred_rect drte_rect_to_drgui(drte_rect rect)
+static DRED_INLINE dred_rect drte_rect_to_dred(drte_rect rect)
 {
     return dred_make_rect(rect.left, rect.top, rect.right, rect.bottom);
 }
