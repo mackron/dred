@@ -4,10 +4,10 @@
 
 #define DRED_CONTROL_TYPE_CMDBAR   "dred.cmdbar"
 
-typedef dred_control dred_cmdbar;
+typedef dred_element dred_cmdbar;
 
 // dred_cmdbar_create()
-dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent);
+dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_element* pParent);
 
 // dred_cmdbar_delete()
 void dred_cmdbar_delete(dred_cmdbar* pCmdBar);
@@ -28,7 +28,7 @@ void dred_cmdbar_set_message(dred_cmdbar* pCmdBar, const char* text);
 void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar);
 
 // Updates the info bar based on the given control.
-void dred_cmdbar_update_info_bar(dred_cmdbar* pCmdBar, dred_control* pControl);
+void dred_cmdbar_update_info_bar(dred_cmdbar* pCmdBar, dred_element* pControl);
 
 // Refreshes the styling of the command bar.
 void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar);

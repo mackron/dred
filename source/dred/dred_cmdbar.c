@@ -20,12 +20,12 @@ dred_textbox* dred_cmdbar__get_textbox(dred_cmdbar* pCmdBar)
 
 dred_rect dred_cmdbar__get_inner_rect(dred_cmdbar* pCmdBar)
 {
-    dred_context* pDred = dred_control_get_context(pCmdBar);
+    dred_context* pDred = drgui_get_context(pCmdBar);
     assert(pDred != NULL);
 
     float cmdbarWidth;
     float cmdbarHeight;
-    dred_control_get_size(pCmdBar, &cmdbarWidth, &cmdbarHeight);
+    drgui_get_size(pCmdBar, &cmdbarWidth, &cmdbarHeight);
 
     float scaledPaddingX = pDred->config.cmdbarPaddingX*pDred->uiScale;
     float scaledPaddingY = pDred->config.cmdbarPaddingY*pDred->uiScale;
@@ -66,11 +66,11 @@ void dred_cmdbar__update_layouts_of_inner_controls(dred_cmdbar* pCmdBar)
     dred_rect rrect;
     dred_cmdbar__get_segment_rects(pCmdBar, &lrect, &mrect, &rrect);
 
-    dred_control_set_relative_position(data->pTextBox, lrect.left, lrect.top);
-    dred_control_set_size(data->pTextBox, lrect.right - lrect.left, lrect.bottom - lrect.top);
+    drgui_set_relative_position(data->pTextBox, lrect.left, lrect.top);
+    drgui_set_size(data->pTextBox, lrect.right - lrect.left, lrect.bottom - lrect.top);
     
-    dred_control_set_relative_position(data->pInfoBar, rrect.left, rrect.top);
-    dred_control_set_size(data->pInfoBar, rrect.right - rrect.left, rrect.bottom - rrect.top);
+    drgui_set_relative_position(data->pInfoBar, rrect.left, rrect.top);
+    drgui_set_size(data->pInfoBar, rrect.right - rrect.left, rrect.bottom - rrect.top);
 }
 
 
@@ -99,7 +99,7 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, dred_rect rect, void* pPaintDat
     dred_cmdbar_data* data = drgui_get_extra_data(pCmdBar);
     assert(data != NULL);
 
-    dred_context* pDred = dred_control_get_context(pCmdBar);
+    dred_context* pDred = drgui_get_context(pCmdBar);
     assert(pDred != NULL);
 
     dred_rect localRect = drgui_get_local_rect(pCmdBar);
@@ -138,13 +138,13 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, dred_element* p
 {
     (void)pPrevCapturedElement;
 
-    dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
+    dred_cmdbar* pCmdBar = drgui_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
     dred_cmdbar_data* data = drgui_get_extra_data(pCmdBar);
     assert(data != NULL);
 
-    dred_context* pDred = dred_control_get_context(pCmdBar);
+    dred_context* pDred = drgui_get_context(pCmdBar);
     assert(pDred != NULL);
 
     // Activate the focused styles.
@@ -172,17 +172,17 @@ void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, dred_element* p
 {
     (void)pNextCapturedElement;
 
-    dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
+    dred_cmdbar* pCmdBar = drgui_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
     dred_cmdbar_data* data = drgui_get_extra_data(pCmdBar);
     assert(data != NULL);
 
-    dred_context* pDred = dred_control_get_context(pCmdBar);
+    dred_context* pDred = drgui_get_context(pCmdBar);
     assert(pDred != NULL);
 
     // If the element being captured is the inner text box, just ignore it and pretend that we're not actually losing focus.
-    if (dred_control_is_descendant(pNextCapturedElement, dred_cmdbar__get_textbox(pCmdBar))) {
+    if (drgui_is_descendant(pNextCapturedElement, dred_cmdbar__get_textbox(pCmdBar))) {
         return;
     }
 
@@ -210,13 +210,13 @@ void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, dred_key key, int state
     (void)stateFlags;
 
     // The parent is the command bar.
-    dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
+    dred_cmdbar* pCmdBar = drgui_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
     dred_cmdbar_data* pData = drgui_get_extra_data(pCmdBar);
     assert(pData != NULL);
 
-    dred_context* pDred = dred_control_get_context(pCmdBar);
+    dred_context* pDred = drgui_get_context(pCmdBar);
     assert(pDred != NULL);
 
     dred_cmdbar_clear_message(pCmdBar);
@@ -272,13 +272,13 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
     (void)stateFlags;
 
     // The parent is the command bar.
-    dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
+    dred_cmdbar* pCmdBar = drgui_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
     dred_cmdbar_data* pData = drgui_get_extra_data(pCmdBar);
     assert(pData != NULL);
 
-    dred_context* pDred = dred_control_get_context(pCmdBar);
+    dred_context* pDred = drgui_get_context(pCmdBar);
     assert(pDred != NULL);
 
     if (utf32 == '\r' || utf32 == '\n')
@@ -295,7 +295,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
             }
 
             if ((command.flags & DRED_CMDBAR_RELEASE_KEYBOARD) != 0) {
-                dred_unfocus_command_bar(dred_control_get_context(pCmdBar));
+                dred_unfocus_command_bar(drgui_get_context(pCmdBar));
             }
 
             dred_config_push_recent_cmd(&pDred->config, cmd);
@@ -320,7 +320,7 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     dred_cmdbar_data* data = (dred_cmdbar_data*)drgui_get_extra_data(pCmdBar);
     assert(data != NULL);
 
-    dred_context* pDred = dred_control_get_context(pCmdBar);
+    dred_context* pDred = drgui_get_context(pCmdBar);
     assert(pDred != NULL);
 
 
@@ -339,16 +339,16 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     float cmdbarHeight = dr_max(textboxHeight, dr_max(messageHeight, infobarHeight)) + (pDred->config.cmdbarPaddingY*pDred->uiScale*2);
     float cmdbarWidth = 0;
     if (pCmdBar->pParent != NULL) {
-        cmdbarWidth = dred_control_get_width(pCmdBar->pParent);
+        cmdbarWidth = drgui_get_width(pCmdBar->pParent);
     }
-    dred_control_set_size(pCmdBar, cmdbarWidth, cmdbarHeight);
+    drgui_set_size(pCmdBar, cmdbarWidth, cmdbarHeight);
 
 
     // A change in size will require the inner controls to have their layouts updated for centering and whatnot.
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
-dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
+dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_element* pParent)
 {
     dred_cmdbar* pCmdBar = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_CMDBAR, sizeof(dred_cmdbar_data));
     if (pCmdBar == NULL) {
@@ -370,15 +370,15 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
     dred_textbox_disable_vertical_scrollbar(data->pTextBox);
 
     // Events.
-    dred_control_set_on_size(pCmdBar, dred_cmdbar__on_size);
-    dred_control_set_on_capture_keyboard(pCmdBar, dred_cmdbar__on_capture_keyboard);
-    dred_control_set_on_paint(pCmdBar, dred_cmdbar__on_paint);
+    drgui_set_on_size(pCmdBar, dred_cmdbar__on_size);
+    drgui_set_on_capture_keyboard(pCmdBar, dred_cmdbar__on_capture_keyboard);
+    drgui_set_on_paint(pCmdBar, dred_cmdbar__on_paint);
 
     // Text box event overrides.
-    dred_control_set_on_capture_keyboard(data->pTextBox, dred_cmdbar_tb__on_capture_keyboard);
-    dred_control_set_on_release_keyboard(data->pTextBox, dred_cmdbar_tb__on_release_keyboard);
-    dred_control_set_on_key_down(data->pTextBox, dred_cmdbar_tb__on_key_down);
-    dred_control_set_on_printable_key_down(data->pTextBox, dred_cmdbar_tb__on_printable_key_down);
+    drgui_set_on_capture_keyboard(data->pTextBox, dred_cmdbar_tb__on_capture_keyboard);
+    drgui_set_on_release_keyboard(data->pTextBox, dred_cmdbar_tb__on_release_keyboard);
+    drgui_set_on_key_down(data->pTextBox, dred_cmdbar_tb__on_key_down);
+    drgui_set_on_printable_key_down(data->pTextBox, dred_cmdbar_tb__on_printable_key_down);
 
 
     strcpy_s(data->message, sizeof(data->message), "");
@@ -448,7 +448,7 @@ bool dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
         return false;
     }
 
-    return dred_control_has_keyboard_capture(data->pTextBox);
+    return drgui_has_keyboard_capture(data->pTextBox);
 }
 
 
@@ -479,7 +479,7 @@ void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar)
     }
 }
 
-void dred_cmdbar_update_info_bar(dred_cmdbar* pCmdBar, dred_control* pControl)
+void dred_cmdbar_update_info_bar(dred_cmdbar* pCmdBar, dred_element* pControl)
 {
     dred_cmdbar_data* data = (dred_cmdbar_data*)drgui_get_extra_data(pCmdBar);
     if (data == NULL) {
@@ -496,7 +496,7 @@ void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(pCmdBar);
+    dred_context* pDred = drgui_get_context(pCmdBar);
     if (pDred == NULL) {
         return;
     }

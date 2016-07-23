@@ -6,7 +6,7 @@ float dred__get_cmd_bar_height(dred_context* pDred)
         return 0;
     }
 
-    return dred_control_get_height(pDred->pCmdBar);
+    return drgui_get_height(pDred->pCmdBar);
 }
 
 void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabgroup_container* pContainer, float parentWidth, float parentHeight)
@@ -15,7 +15,7 @@ void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabg
         return;
     }
 
-    dred_control_set_size(pContainer, parentWidth, parentHeight - dred__get_cmd_bar_height(pDred));
+    drgui_set_size(pContainer, parentWidth, parentHeight - dred__get_cmd_bar_height(pDred));
 }
 
 void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float parentWidth, float parentHeight)
@@ -26,8 +26,8 @@ void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float
         return;
     }
 
-    dred_control_set_size(pCmdBar, parentWidth, dred_control_get_height(pCmdBar));
-    dred_control_set_relative_position(pCmdBar, 0, parentHeight - dred__get_cmd_bar_height(pDred));
+    drgui_set_size(pCmdBar, parentWidth, drgui_get_height(pCmdBar));
+    drgui_set_relative_position(pCmdBar, 0, parentHeight - dred__get_cmd_bar_height(pDred));
 }
 
 void dred__update_main_window_layout(dred_window* pWindow, float windowWidth, float windowHeight)
@@ -63,7 +63,7 @@ void dred__update_window_title(dred_context* pDred)
     // The window title depends on the currently focused tab.
     dred_tab* pFocusedTab = dred_get_focused_tab(pDred);
     if (pFocusedTab != NULL) {
-        dred_control* pFocusedControl = dred_tab_get_control(pFocusedTab);
+        dred_element* pFocusedControl = dred_tab_get_control(pFocusedTab);
         if (pFocusedControl != NULL) {
             if (drgui_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_EDITOR)) {
                 const char* filePath = dred_editor_get_file_path(pFocusedControl);
@@ -107,7 +107,7 @@ void dred__refresh_editor_tab_text(dred_editor* pEditor, dred_tab* pTab)
     snprintf(tabText, sizeof(tabText), "%s%s%s", filename, modified, readonly);
     dred_tab_set_text(pTab, tabText);
 
-    dred_context* pDred = dred_control_get_context(pEditor);
+    dred_context* pDred = drgui_get_context(pEditor);
     assert(pDred != NULL);
 
     if (dred_get_focused_tab(pDred) == pTab) {
@@ -392,7 +392,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     }
 
     if (pDred->config.autoHideCmdBar) {
-        dred_control_hide(pDred->pCmdBar);
+        drgui_hide(pDred->pCmdBar);
     }
 
 
@@ -731,7 +731,7 @@ void dred_save_dredprivate(dred_context* pDred)
 }
 
 
-void dred_capture_keyboard(dred_context* pDred, dred_control* pControl)
+void dred_capture_keyboard(dred_context* pDred, dred_element* pControl)
 {
     if (pDred == NULL) {
         return;
@@ -800,7 +800,7 @@ dred_editor* dred_get_focused_editor(dred_context* pDred)
         return NULL;
     }
 
-    dred_control* pControl = dred_tab_get_control(pFocusedTab);
+    dred_element* pControl = dred_tab_get_control(pFocusedTab);
     if (pControl == NULL) {
         return NULL;
     }
@@ -855,7 +855,7 @@ dred_tab* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char*
 
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
+            dred_element* pControl = dred_tab_get_control(pTab);
             if (pControl != NULL && drgui_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
                 if (drpath_equal(dred_editor_get_file_path(pControl), filePathAbsoluteClean)) {
                     return pTab;
@@ -1053,9 +1053,9 @@ bool dred_close_all_tabs_with_confirmation(dred_context* pDred)
 }
 
 
-dred_tab* dred_find_control_tab(dred_control* pControl)
+dred_tab* dred_find_control_tab(dred_element* pControl)
 {
-    dred_context* pDred = dred_control_get_context(pControl);
+    dred_context* pDred = drgui_get_context(pControl);
     if (pDred == NULL) {
         return NULL;
     }
@@ -1083,7 +1083,7 @@ bool dred_save_focused_file(dred_context* pDred, const char* newFilePath)
         return false;
     }
 
-    dred_control* pFocusedControl = dred_tab_get_control(pFocusedTab);
+    dred_element* pFocusedControl = dred_tab_get_control(pFocusedTab);
     if (pFocusedControl == NULL) {
         return false;
     }
@@ -1136,7 +1136,7 @@ void dred_save_all_open_files(dred_context* pDred)
 
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
+            dred_element* pControl = dred_tab_get_control(pTab);
             if (drgui_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
                 dred__save_editor(pControl, NULL, pTab);
             }
@@ -1152,7 +1152,7 @@ bool dred_save_all_open_files_with_saveas(dred_context* pDred)
 
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
+            dred_element* pControl = dred_tab_get_control(pTab);
             if (drgui_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
                 if (!dred__save_editor(pControl, NULL, pTab)) {
                     char newFileName[DRED_MAX_PATH];
@@ -1252,7 +1252,7 @@ bool dred_are_any_open_files_modified(dred_context* pDred)
 
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
+            dred_element* pControl = dred_tab_get_control(pTab);
             if (pControl != NULL) {
                 if (drgui_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR) && dred_editor_is_modified(pControl)) {
                     return true;
@@ -2107,7 +2107,7 @@ void dred_unfocus_command_bar(dred_context* pDred)
 }
 
 
-void dred_update_info_bar(dred_context* pDred, dred_control* pControl)
+void dred_update_info_bar(dred_context* pDred, dred_element* pControl)
 {
     if (pDred == NULL) {
         return;
@@ -2205,7 +2205,7 @@ void dred_show_line_numbers(dred_context* pDred)
 
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
+            dred_element* pControl = dred_tab_get_control(pTab);
             if (drgui_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
                 dred_text_editor_show_line_numbers(pControl);
             }
@@ -2223,7 +2223,7 @@ void dred_hide_line_numbers(dred_context* pDred)
 
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
+            dred_element* pControl = dred_tab_get_control(pTab);
             if (drgui_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
                 dred_text_editor_hide_line_numbers(pControl);
             }
@@ -2255,7 +2255,7 @@ void dred_enable_word_wrap(dred_context* pDred)
 
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
+            dred_element* pControl = dred_tab_get_control(pTab);
             if (drgui_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
                 dred_text_editor_enable_word_wrap(pControl);
             }
@@ -2273,7 +2273,7 @@ void dred_disable_word_wrap(dred_context* pDred)
 
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
+            dred_element* pControl = dred_tab_get_control(pTab);
             if (drgui_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
                 dred_text_editor_disable_word_wrap(pControl);
             }
@@ -2301,7 +2301,7 @@ void dred_show_command_bar(dred_context* pDred)
         return;
     }
 
-    dred_control_show(pDred->pCmdBar);
+    drgui_show(pDred->pCmdBar);
     dred_update_main_window_layout(pDred);
 }
 
@@ -2311,7 +2311,7 @@ void dred_hide_command_bar(dred_context* pDred)
         return;
     }
 
-    dred_control_hide(pDred->pCmdBar);
+    drgui_hide(pDred->pCmdBar);
     dred_update_main_window_layout(pDred);
 }
 
@@ -2363,7 +2363,7 @@ void dred_set_text_editor_scale(dred_context* pDred, float scale)
     // Every open text editors needs to be updated.
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
+            dred_element* pControl = dred_tab_get_control(pTab);
             if (drgui_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
                 dred_text_editor_set_text_scale(pControl, pDred->config.textEditorScale);
             }
@@ -2593,7 +2593,7 @@ void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab, dred_tab* pOldAc
     }
 
     if (dred_tab_get_tabgroup(pTab) == dred_get_focused_tabgroup(pDred)) {
-        dred_control* pControl = dred_tab_get_control(pTab);
+        dred_element* pControl = dred_tab_get_control(pTab);
         if (pControl == NULL) {
             return;
         }

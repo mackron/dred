@@ -7,9 +7,9 @@
 //////////////////////////////////////////////////////////////////
 
 // Helper for creating the root GUI element of a window.
-dred_control* dred_platform__create_root_gui_element(dred_context* pDred, dred_window* pWindow)
+dred_element* dred_platform__create_root_gui_element(dred_context* pDred, dred_window* pWindow)
 {
-    dred_control* pRootGUIElement = drgui_create_element(pDred, NULL, "RootGUIElement", sizeof(pWindow));
+    dred_element* pRootGUIElement = drgui_create_element(pDred, NULL, "RootGUIElement", sizeof(pWindow));
     if (pRootGUIElement == NULL) {
         return NULL;
     }

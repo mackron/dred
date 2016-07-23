@@ -1,7 +1,7 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
 #define DRED_CONTROL_TYPE_SCROLLBAR   "dred.common.scrollbar"
-typedef dred_control dred_scrollbar;
+typedef dred_element dred_scrollbar;
 
 typedef enum
 {

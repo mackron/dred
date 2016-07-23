@@ -2,7 +2,7 @@
 
 #define DRED_CONTROL_TYPE_EDITOR  "dred.editor"
 
-typedef dred_control dred_editor;
+typedef dred_element dred_editor;
 
 typedef bool (* dred_editor_on_save_proc)(dred_editor* pEditor, dred_file file, const char* filePath);
 typedef bool (* dred_editor_on_reload_proc)(dred_editor* pEditor);
@@ -11,7 +11,7 @@ typedef void (* dred_editor_on_unmodified_proc)(dred_editor* pEditor);
 
 
 // dred_editor_create()
-dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, const char* type, float sizeX, float sizeY, const char* filePathAbsolute, size_t extraDataSize);
+dred_editor* dred_editor_create(dred_context* pDred, dred_element* pParent, const char* type, float sizeX, float sizeY, const char* filePathAbsolute, size_t extraDataSize);
 
 // dred_editor_delete()
 void dred_editor_delete(dred_editor* pEditor);

@@ -2,14 +2,14 @@
 
 #define DRED_CONTROL_TYPE_TEXTBOX  "dred.textbox"
 
-typedef dred_control dred_textbox;
+typedef dred_element dred_textbox;
 
 typedef void (* dred_textbox_on_cursor_move_proc)(dred_textbox* pTextBox);
 typedef void (* dred_textbox_on_undo_point_changed_proc)(dred_textbox* pTextBox, unsigned int iUndoPoint);
 
 
 // Creates a new text box control.
-dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent);
+dred_textbox* dred_textbox_create(dred_context* pDred, dred_element* pParent);
 
 // Deletes the given text box control.
 void dred_textbox_delete(dred_textbox* pTextBox);

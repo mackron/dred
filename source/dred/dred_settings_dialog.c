@@ -38,7 +38,7 @@ dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred)
     unsigned int windowSizeX;
     unsigned int windowSizeY;
     dred_window_get_client_size(pDialog->pWindow, &windowSizeX, &windowSizeY);
-    dred_control_set_size(pDialog->pSettingsEditor, (float)windowSizeX, (float)windowSizeY);
+    drgui_set_size(pDialog->pSettingsEditor, (float)windowSizeX, (float)windowSizeY);
 
 
     return pDialog;

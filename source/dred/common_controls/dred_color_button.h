@@ -4,10 +4,10 @@
 
 #define DRED_CONTROL_TYPE_COLOR_BUTTON   "dred.common.colorbutton"
 
-typedef dred_control dred_colorbutton;
+typedef dred_element dred_colorbutton;
 typedef void (* dred_colorbutton_on_color_changed_proc)(dred_colorbutton* pButton, dred_color color);
 
-dred_colorbutton* dred_colorbutton_create(dred_context* pDred, dred_control* pParent, const char* text, dred_color color);
+dred_colorbutton* dred_colorbutton_create(dred_context* pDred, dred_element* pParent, const char* text, dred_color color);
 void dred_colorbutton_delete(dred_colorbutton* pButton);
 
 void dred_colorbutton_set_text(dred_colorbutton* pButton, const char* text);

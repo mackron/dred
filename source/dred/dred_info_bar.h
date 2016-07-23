@@ -4,16 +4,16 @@
 
 #define DRED_CONTROL_TYPE_INFO_BAR   "dred.infobar"
 
-typedef dred_control dred_info_bar;
+typedef dred_element dred_info_bar;
 
 // dred_info_bar_create()
-dred_info_bar* dred_info_bar_create(dred_context* pDred, dred_control* pParent);
+dred_info_bar* dred_info_bar_create(dred_context* pDred, dred_element* pParent);
 
 // dred_info_bar_delete()
 void dred_info_bar_delete(dred_info_bar* pInfoBar);
 
 // Updates the info bar based on the given control.
-void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl);
+void dred_info_bar_update(dred_info_bar* pInfoBar, dred_element* pControl);
 
 // Refreshes the styling of the info bar.
 void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar);

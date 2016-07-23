@@ -39,7 +39,7 @@ void dred_text_editor__on_size(dred_text_editor* pTextEditor, float newWidth, fl
     }
 
     // The text box should take up the entire area of the editor.
-    dred_control_set_size(pTextBox, newWidth, newHeight);
+    drgui_set_size(pTextBox, newWidth, newHeight);
 }
 
 void dred_text_editor__on_capture_keyboard(dred_text_editor* pTextEditor, dred_element* pPrevCapturedElement)
@@ -52,13 +52,13 @@ void dred_text_editor__on_capture_keyboard(dred_text_editor* pTextEditor, dred_e
         return;
     }
 
-    dred_capture_keyboard(dred_control_get_context(pTextBox), pTextBox);
+    dred_capture_keyboard(drgui_get_context(pTextBox), pTextBox);
 }
 
 void dred_text_editor_textbox__on_key_down(dred_textbox* pTextBox, dred_key key, int stateFlags)
 {
     if (key == DRED_GUI_ESCAPE) {
-        dred_focus_command_bar(dred_control_get_context(pTextBox));
+        dred_focus_command_bar(drgui_get_context(pTextBox));
     } else {
         dred_textbox_on_key_down(pTextBox, key, stateFlags);
     }
@@ -66,12 +66,12 @@ void dred_text_editor_textbox__on_key_down(dred_textbox* pTextBox, dred_key key,
 
 void dred_text_editor_textbox__on_mouse_wheel(dred_textbox* pTextBox, int delta, int mousePosX, int mousePosY, int stateFlags)
 {
-    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
+    dred_text_editor* pTextEditor = drgui_get_parent(pTextBox);
     if (pTextEditor == NULL) {
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(pTextEditor);
+    dred_context* pDred = drgui_get_context(pTextEditor);
     assert(pDred != NULL);
 
     if (stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) {
@@ -98,16 +98,16 @@ void dred_text_editor_textbox__on_mouse_wheel(dred_textbox* pTextBox, int delta,
 
 void dred_text_editor_textbox__on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
-    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
+    dred_text_editor* pTextEditor = drgui_get_parent(pTextBox);
     if (pTextEditor == NULL) {
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(pTextEditor);
+    dred_context* pDred = drgui_get_context(pTextEditor);
     assert(pDred != NULL);
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_RIGHT) {
-        dred_control_show_popup_menu(pTextBox, pDred->menuLibrary.pPopupMenu_TextEditor, mousePosX, mousePosY);
+        drgui_show_popup_menu(pTextBox, pDred->menuLibrary.pPopupMenu_TextEditor, mousePosX, mousePosY);
     } else {
         dred_textbox_on_mouse_button_up(pTextBox, mouseButton, mousePosX, mousePosY, stateFlags);
     }
@@ -115,22 +115,22 @@ void dred_text_editor_textbox__on_mouse_button_up(dred_textbox* pTextBox, int mo
 
 void dred_text_editor_textbox__on_cursor_move(dred_textbox* pTextBox)
 {
-    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
+    dred_text_editor* pTextEditor = drgui_get_parent(pTextBox);
     if (pTextEditor == NULL) {
         return;
     }
 
-    dred_update_info_bar(dred_control_get_context(pTextEditor), pTextEditor);
+    dred_update_info_bar(drgui_get_context(pTextEditor), pTextEditor);
 }
 
 void dred_text_editor_textbox__on_capture_keyboard(dred_textbox* pTextBox, dred_element* pPrevCapturedElement)
 {
-    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
+    dred_text_editor* pTextEditor = drgui_get_parent(pTextBox);
     if (pTextEditor == NULL) {
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(pTextBox);
+    dred_context* pDred = drgui_get_context(pTextBox);
     assert(pDred != NULL);
 
     if (pDred->config.enableAutoReload) {
@@ -144,7 +144,7 @@ void dred_text_editor_textbox__on_capture_keyboard(dred_textbox* pTextBox, dred_
 
 void dred_text_editor_textbox__on_undo_point_changed(dred_textbox* pTextBox, unsigned int iUndoPoint)
 {
-    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
+    dred_text_editor* pTextEditor = drgui_get_parent(pTextBox);
     if (pTextEditor == NULL) {
         return;
     }
@@ -183,7 +183,7 @@ bool dred_text_editor__on_save(dred_text_editor* pTextEditor, dred_file file, co
         data->iBaseUndoPoint = dred_textbox_get_undo_points_remaining_count(pTextBox);
 
         // Syntax highlighting needs to be updated based on the file extension.
-        dred_text_editor_set_highlighter(pTextEditor, dred_get_language_by_file_path(dred_control_get_context(pTextEditor), filePath));
+        dred_text_editor_set_highlighter(pTextEditor, dred_get_language_by_file_path(drgui_get_context(pTextEditor), filePath));
     }
 
     return result;
@@ -214,7 +214,7 @@ bool dred_text_editor__on_reload(dred_text_editor* pTextEditor)
     return true;
 }
 
-dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pParent, float sizeX, float sizeY, const char* filePathAbsolute)
+dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_element* pParent, float sizeX, float sizeY, const char* filePathAbsolute)
 {
     dred_text_editor* pTextEditor = dred_editor_create(pDred, pParent, DRED_CONTROL_TYPE_TEXT_EDITOR, sizeX, sizeY, filePathAbsolute, sizeof(dred_text_editor_data));
     if (pTextEditor == NULL) {
@@ -230,7 +230,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
         return NULL;
     }
 
-    dred_control_set_size(data->pTextBox, sizeX, sizeY);
+    drgui_set_size(data->pTextBox, sizeX, sizeY);
 
     data->textScale = 1;
     dred_text_editor_set_highlighter(pTextEditor, dred_get_language_by_file_path(pDred, filePathAbsolute));
@@ -250,14 +250,14 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 
 
     // Events.
-    dred_control_set_on_size(pTextEditor, dred_text_editor__on_size);
-    dred_control_set_on_capture_keyboard(pTextEditor, dred_text_editor__on_capture_keyboard);
+    drgui_set_on_size(pTextEditor, dred_text_editor__on_size);
+    drgui_set_on_capture_keyboard(pTextEditor, dred_text_editor__on_capture_keyboard);
     dred_editor_set_on_save(pTextEditor, dred_text_editor__on_save);
     dred_editor_set_on_reload(pTextEditor, dred_text_editor__on_reload);
-    dred_control_set_on_mouse_button_up(data->pTextBox, dred_text_editor_textbox__on_mouse_button_up);
-    dred_control_set_on_mouse_wheel(data->pTextBox, dred_text_editor_textbox__on_mouse_wheel);
-    dred_control_set_on_key_down(data->pTextBox, dred_text_editor_textbox__on_key_down);
-    dred_control_set_on_capture_keyboard(data->pTextBox, dred_text_editor_textbox__on_capture_keyboard);
+    drgui_set_on_mouse_button_up(data->pTextBox, dred_text_editor_textbox__on_mouse_button_up);
+    drgui_set_on_mouse_wheel(data->pTextBox, dred_text_editor_textbox__on_mouse_wheel);
+    drgui_set_on_key_down(data->pTextBox, dred_text_editor_textbox__on_key_down);
+    drgui_set_on_capture_keyboard(data->pTextBox, dred_text_editor_textbox__on_capture_keyboard);
     dred_textbox_set_on_cursor_move(data->pTextBox, dred_text_editor_textbox__on_cursor_move);
     dred_textbox_set_on_undo_point_changed(data->pTextBox, dred_text_editor_textbox__on_undo_point_changed);
 
@@ -346,7 +346,7 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
     dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
     assert(data != NULL);
 
-    dred_context* pDred = dred_control_get_context(pTextEditor);
+    dred_context* pDred = drgui_get_context(pTextEditor);
     assert(pDred != NULL);
 
     drgui_begin_dirty(pTextEditor);
@@ -431,7 +431,7 @@ void dred_text_editor_set_highlighter(dred_text_editor* pTextEditor, const char*
     dred_text_editor_data* data = (dred_text_editor_data*)dred_editor_get_extra_data(pTextEditor);
     assert(data != NULL);
 
-    dred_context* pDred = dred_control_get_context(pTextEditor);
+    dred_context* pDred = drgui_get_context(pTextEditor);
     assert(pDred != NULL);
 
     if (lang == NULL) {
@@ -575,7 +575,7 @@ void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, float textSc
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(pTextEditor);
+    dred_context* pDred = drgui_get_context(pTextEditor);
     assert(pDred != NULL);
 
     data->textScale = dr_clamp(textScale, 0.1f, 4.0f);

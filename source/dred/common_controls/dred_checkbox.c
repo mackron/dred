@@ -47,7 +47,7 @@ void dred_checkbox__on_paint(dred_checkbox* pCheckbox, dred_rect rect, void* pPa
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(pCheckbox);
+    dred_context* pDred = drgui_get_context(pCheckbox);
     if (pDred == NULL) {
         return;
     }
@@ -124,7 +124,7 @@ void dred_checkbox__on_mouse_move(dred_checkbox* pCheckbox, int mousePosX, int m
     }
 
     if (drgui_has_mouse_capture(pCheckbox)) {
-        pData->isMouseOver = (mousePosX >= 0 && mousePosX < dred_control_get_width(pCheckbox)) && (mousePosY >= 0 && mousePosY < dred_control_get_height(pCheckbox));
+        pData->isMouseOver = (mousePosX >= 0 && mousePosX < drgui_get_width(pCheckbox)) && (mousePosY >= 0 && mousePosY < drgui_get_height(pCheckbox));
         drgui_dirty(pCheckbox, drgui_get_local_rect(pCheckbox));
     }
 }
@@ -189,7 +189,7 @@ void dred_checkbox__refresh_layout(dred_checkbox* pCheckbox)
         dred_rect boxRect = dred_checkbox__get_box_rect(pCheckbox);
         float boxWidth = (boxRect.right - boxRect.left);
 
-        dred_control_set_size(pCheckbox, textWidth + boxWidth + pData->padding, textHeight);
+        drgui_set_size(pCheckbox, textWidth + boxWidth + pData->padding, textHeight);
     }
 
 
@@ -197,7 +197,7 @@ void dred_checkbox__refresh_layout(dred_checkbox* pCheckbox)
     drgui_dirty(pCheckbox, drgui_get_local_rect(pCheckbox));
 }
 
-dred_checkbox* dred_checkbox_create(dred_context* pDred, dred_control* pParent, const char* text, bool checked)
+dred_checkbox* dred_checkbox_create(dred_context* pDred, dred_element* pParent, const char* text, bool checked)
 {
     dred_checkbox* pCheckbox = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_BUTTON, sizeof(dred_checkbox_data));
     if (pCheckbox == NULL) {
@@ -300,7 +300,7 @@ void dred_checkbox_set_font(dred_checkbox* pCheckbox, dred_font* pFont)
     dred_font_release_subfont(pData->pFont, pData->pSubFont);
 
     pData->pFont = pFont;
-    pData->pSubFont = dred_font_acquire_subfont(pData->pFont, dred_control_get_context(pCheckbox)->uiScale);
+    pData->pSubFont = dred_font_acquire_subfont(pData->pFont, drgui_get_context(pCheckbox)->uiScale);
 
     dred_checkbox__refresh_layout(pCheckbox);
 }
@@ -396,7 +396,7 @@ void dred_checkbox_set_checked(dred_checkbox* pCheckbox, bool checked, bool bloc
 
     if (!blockEvent) {
         if (pData->varBinding[0] != '\0') {
-            dred_config_set(&dred_control_get_context(pCheckbox)->config, pData->varBinding, checked ? "true" : "false");
+            dred_config_set(&drgui_get_context(pCheckbox)->config, pData->varBinding, checked ? "true" : "false");
         }
 
         if (pData->onCheckChanged) {

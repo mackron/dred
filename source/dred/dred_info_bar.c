@@ -18,7 +18,7 @@ typedef struct
 
 dred_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
 {
-    dred_context* pDred = dred_control_get_context(pInfoBar);
+    dred_context* pDred = drgui_get_context(pInfoBar);
     assert(pDred != NULL);
 
     if (dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
@@ -30,7 +30,7 @@ dred_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
 
 dred_color dred_info_bar__get_text_color(dred_info_bar* pInfoBar)
 {
-    dred_context* pDred = dred_control_get_context(pInfoBar);
+    dred_context* pDred = drgui_get_context(pInfoBar);
     assert(pDred != NULL);
 
     if (dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
@@ -51,7 +51,7 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar
 {
     (void)data;
 
-    dred_context* pDred = dred_control_get_context(pInfoBar);
+    dred_context* pDred = drgui_get_context(pInfoBar);
     assert(pDred != NULL);
 
     drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
@@ -76,8 +76,8 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar
         float totalWidth = lineStrWidth + padding + colStrWidth + paddingRight;
 
         
-        float textPosX = dred_control_get_width(pInfoBar) - totalWidth;
-        float textPosY = (dred_control_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
+        float textPosX = drgui_get_width(pInfoBar) - totalWidth;
+        float textPosY = (drgui_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
         drgui_draw_text(pInfoBar, pFont, data->lineStr, (int)strlen(data->lineStr), textPosX, textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
 
         textPosX += lineStrWidth + padding;
@@ -91,7 +91,7 @@ void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_ba
 {
     (void)data;
 
-    dred_context* pDred = dred_control_get_context(pInfoBar);
+    dred_context* pDred = drgui_get_context(pInfoBar);
     assert(pDred != NULL);
 
     drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
@@ -113,8 +113,8 @@ void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_ba
         float totalWidth = zoomStrWidth + paddingRight;
 
         
-        float textPosX = dred_control_get_width(pInfoBar) - totalWidth;
-        float textPosY = (dred_control_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
+        float textPosX = drgui_get_width(pInfoBar) - totalWidth;
+        float textPosY = (drgui_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
         drgui_draw_text(pInfoBar, pFont, data->zoomStr, (int)strlen(data->zoomStr), textPosX, textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
 
         dred_font_release_subfont(pDred->config.pUIFont, pFont);
@@ -138,7 +138,7 @@ void dred_info_bar__on_paint(dred_info_bar* pInfoBar, dred_rect rect, void* pPai
     }
 }
 
-dred_info_bar* dred_info_bar_create(dred_context* pDred, dred_control* pParent)
+dred_info_bar* dred_info_bar_create(dred_context* pDred, dred_element* pParent)
 {
     dred_info_bar* pInfoBar = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_INFO_BAR, sizeof(dred_info_bar_data));
     if (pInfoBar == NULL) {
@@ -177,7 +177,7 @@ void dred_info_bar_delete(dred_info_bar* pInfoBar)
     drgui_delete_element(pInfoBar);
 }
 
-void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
+void dred_info_bar_update(dred_info_bar* pInfoBar, dred_element* pControl)
 {
     dred_info_bar_data* data = (dred_info_bar_data*)drgui_get_extra_data(pInfoBar);
     if (data == NULL) {
@@ -207,7 +207,7 @@ void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar)
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(pInfoBar);
+    dred_context* pDred = drgui_get_context(pInfoBar);
     assert(pDred != NULL);
 
     dred_gui_font* pNewFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);

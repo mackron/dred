@@ -965,10 +965,7 @@ void drgui_delete_element(dred_element* pElement);
 
 
 // Retrieves the dred context that owns the given control.
-dred_context* dred_control_get_context(dred_element* pControl);
-
-// dred_control_get_parent()
-dred_element* dred_control_get_parent(dred_element* pControl);
+dred_context* drgui_get_context(dred_element* pControl);
 
 
 /// Retrieves the size of the extra data of the given element, in bytes.
@@ -1064,7 +1061,7 @@ void drgui_set_cursor(dred_element* pElement, dred_cursor_type cursor);
 dred_cursor_type drgui_get_cursor(dred_element* pElement);
 
 // Helper function for showing a popup menu relative to the given control.
-void dred_control_show_popup_menu(dred_element* pElement, dred_menu* pMenu, int relativePosX, int relativePosY);
+void drgui_show_popup_menu(dred_element* pElement, dred_menu* pMenu, int relativePosX, int relativePosY);
 
 
 //// Events ////

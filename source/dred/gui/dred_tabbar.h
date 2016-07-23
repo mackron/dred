@@ -1,7 +1,7 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
 #define DRED_CONTROL_TYPE_TABBAR   "dred.common.tabbar"
-typedef dred_control dred_tabbar;
+typedef dred_element dred_tabbar;
 
 #define DRED_GUI_MAX_TAB_TEXT_LENGTH   256
 

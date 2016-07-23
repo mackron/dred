@@ -27,7 +27,7 @@ void dred_button__on_paint(dred_button* pButton, dred_rect rect, void* pPaintDat
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(pButton);
+    dred_context* pDred = drgui_get_context(pButton);
     if (pDred == NULL) {
         return;
     }
@@ -99,7 +99,7 @@ void dred_button__on_mouse_move(dred_button* pButton, int mousePosX, int mousePo
     }
 
     if (drgui_has_mouse_capture(pButton)) {
-        pData->isMouseOver = (mousePosX >= 0 && mousePosX < dred_control_get_width(pButton)) && (mousePosY >= 0 && mousePosY < dred_control_get_height(pButton));
+        pData->isMouseOver = (mousePosX >= 0 && mousePosX < drgui_get_width(pButton)) && (mousePosY >= 0 && mousePosY < drgui_get_height(pButton));
         drgui_dirty(pButton, drgui_get_local_rect(pButton));
     }
 }
@@ -164,7 +164,7 @@ void dred_button__refresh_layout(dred_button* pButton)
         float textHeight;
         drgui_measure_string(pData->pSubFont, pData->text, strlen(pData->text), &textWidth, &textHeight);
 
-        dred_control_set_size(pButton, textWidth + (pData->paddingHorz*2), textHeight + (pData->paddingVert*2));
+        drgui_set_size(pButton, textWidth + (pData->paddingHorz*2), textHeight + (pData->paddingVert*2));
     }
 
 
@@ -172,7 +172,7 @@ void dred_button__refresh_layout(dred_button* pButton)
     drgui_dirty(pButton, drgui_get_local_rect(pButton));
 }
 
-dred_button* dred_button_create(dred_context* pDred, dred_control* pParent, const char* text)
+dred_button* dred_button_create(dred_context* pDred, dred_element* pParent, const char* text)
 {
     dred_button* pButton = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_BUTTON, sizeof(dred_button_data));
     if (pButton == NULL) {
@@ -273,7 +273,7 @@ void dred_button_set_font(dred_button* pButton, dred_font* pFont)
     dred_font_release_subfont(pData->pFont, pData->pSubFont);
 
     pData->pFont = pFont;
-    pData->pSubFont = dred_font_acquire_subfont(pData->pFont, dred_control_get_context(pButton)->uiScale);
+    pData->pSubFont = dred_font_acquire_subfont(pData->pFont, drgui_get_context(pButton)->uiScale);
 
     dred_button__refresh_layout(pButton);
 }

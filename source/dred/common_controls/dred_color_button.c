@@ -45,7 +45,7 @@ void dred_colorbutton__on_paint(dred_colorbutton* pButton, dred_rect rect, void*
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(pButton);
+    dred_context* pDred = drgui_get_context(pButton);
     if (pDred == NULL) {
         return;
     }
@@ -118,7 +118,7 @@ void dred_colorbutton__on_mouse_move(dred_colorbutton* pButton, int mousePosX, i
     }
 
     if (drgui_has_mouse_capture(pButton)) {
-        pData->isMouseOver = (mousePosX >= 0 && mousePosX < dred_control_get_width(pButton)) && (mousePosY >= 0 && mousePosY < dred_control_get_height(pButton));
+        pData->isMouseOver = (mousePosX >= 0 && mousePosX < drgui_get_width(pButton)) && (mousePosY >= 0 && mousePosY < drgui_get_height(pButton));
         drgui_dirty(pButton, drgui_get_local_rect(pButton));
     }
 }
@@ -192,7 +192,7 @@ void dred_colorbutton__refresh_layout(dred_colorbutton* pButton)
         dred_rect boxRect = dred_colorbutton__get_box_rect(pButton);
         float boxWidth = (boxRect.right - boxRect.left);
 
-        dred_control_set_size(pButton, textWidth + boxWidth + pData->padding, textHeight);
+        drgui_set_size(pButton, textWidth + boxWidth + pData->padding, textHeight);
     }
 
 
@@ -200,7 +200,7 @@ void dred_colorbutton__refresh_layout(dred_colorbutton* pButton)
     drgui_dirty(pButton, drgui_get_local_rect(pButton));
 }
 
-dred_colorbutton* dred_colorbutton_create(dred_context* pDred, dred_control* pParent, const char* text, dred_color color)
+dred_colorbutton* dred_colorbutton_create(dred_context* pDred, dred_element* pParent, const char* text, dred_color color)
 {
     dred_colorbutton* pButton = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_BUTTON, sizeof(dred_colorbutton_data));
     if (pButton == NULL) {
@@ -301,7 +301,7 @@ void dred_colorbutton_set_font(dred_colorbutton* pButton, dred_font* pFont)
     dred_font_release_subfont(pData->pFont, pData->pSubFont);
 
     pData->pFont = pFont;
-    pData->pSubFont = dred_font_acquire_subfont(pData->pFont, dred_control_get_context(pButton)->uiScale);
+    pData->pSubFont = dred_font_acquire_subfont(pData->pFont, drgui_get_context(pButton)->uiScale);
 
     dred_colorbutton__refresh_layout(pButton);
 }
@@ -374,7 +374,7 @@ void dred_colorbutton_set_color(dred_colorbutton* pButton, dred_color color, boo
     if (pData->varBinding[0] != '\0') {
         char colorStr[256];
         snprintf(colorStr, sizeof(colorStr), "%d %d %d %d", color.r, color.g, color.b, color.a);
-        dred_config_set(&dred_control_get_context(pButton)->config, pData->varBinding, colorStr);
+        dred_config_set(&drgui_get_context(pButton)->config, pData->varBinding, colorStr);
     }
 
     if (pData->onColorChanged) {

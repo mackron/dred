@@ -14,19 +14,19 @@ typedef struct
     bool isReadOnly;
 } dred_editor_data;
 
-dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, const char* type, float sizeX, float sizeY, const char* filePathAbsolute, size_t extraDataSize)
+dred_editor* dred_editor_create(dred_context* pDred, dred_element* pParent, const char* type, float sizeX, float sizeY, const char* filePathAbsolute, size_t extraDataSize)
 {
     if (!dred_is_control_type_of_type(type, DRED_CONTROL_TYPE_EDITOR)) {
         dred_errorf(pDred, "[DEVELOPER ERROR] Attempting to create an editor that is not of an editor type (%s).", type);
         return NULL;
     }
 
-    dred_control* pEditor = drgui_create_element(pDred, pParent, type, sizeof(dred_editor_data) + extraDataSize);
+    dred_element* pEditor = drgui_create_element(pDred, pParent, type, sizeof(dred_editor_data) + extraDataSize);
     if (pEditor == NULL) {
         return NULL;
     }
 
-    dred_control_set_size(pEditor, sizeX, sizeY);
+    drgui_set_size(pEditor, sizeX, sizeY);
 
     dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     assert(data != NULL);
@@ -111,7 +111,7 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
     }
 
     if (data->isReadOnly && (newFilePath == NULL || newFilePath[0] == '\0')) {
-        dred_errorf(dred_control_get_context(pEditor), "File is read only.");
+        dred_errorf(drgui_get_context(pEditor), "File is read only.");
         return false;
     }
 

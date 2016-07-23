@@ -36,7 +36,7 @@ typedef struct
     dred_scrollbar* pHorzScrollbar;
 
     /// The line numbers element.
-    dred_control* pLineNumbers;
+    dred_element* pLineNumbers;
 
 
     /// The color of the border.
@@ -130,16 +130,16 @@ dred_rect dred_textbox__get_scrollbar_dead_space_rect(dred_textbox* pTextBox);
 
 
 /// Called when a mouse button is pressed on the line numbers element.
-void dred_textbox__on_mouse_move_line_numbers(dred_control* pLineNumbers, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textbox__on_mouse_move_line_numbers(dred_element* pLineNumbers, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when a mouse button is pressed on the line numbers element.
-void dred_textbox__on_mouse_button_down_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textbox__on_mouse_button_down_line_numbers(dred_element* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when a mouse button is pressed on the line numbers element.
-void dred_textbox__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textbox__on_mouse_button_up_line_numbers(dred_element* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the line numbers element needs to be drawn.
-void dred_textbox__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect relativeRect, void* pPaintData);
+void dred_textbox__on_paint_line_numbers(dred_element* pLineNumbers, dred_rect relativeRect, void* pPaintData);
 
 /// Refreshes the line number of the given text editor.
 void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox);
@@ -391,7 +391,7 @@ bool dred_textbox__insert_tab(dred_textbox* pTextBox, size_t iChar)
     dred_textbox_data* pTB = (dred_textbox_data*)drgui_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
-    dred_context* pDred = dred_control_get_context(pTextBox);
+    dred_context* pDred = drgui_get_context(pTextBox);
     assert(pDred != NULL);
 
     drte_engine__begin_dirty(pTB->pTL);
@@ -443,7 +443,7 @@ bool dred_textbox__insert_tab_at_cursor(dred_textbox* pTextBox, size_t iCursor)
 }
 
 
-dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
+dred_textbox* dred_textbox_create(dred_context* pDred, dred_element* pParent)
 {
     dred_textbox* pTextBox = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_TEXTBOX, sizeof(dred_textbox_data));
     if (pTextBox == NULL) {
@@ -2243,7 +2243,7 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
             drte_engine_insert_character_at_cursors(pTB->pTL, utf32);
 
             if (utf32 == '\n') {
-                dred_context* pDred = dred_control_get_context(pTextBox);
+                dred_context* pDred = drgui_get_context(pTextBox);
                 if (pDred->config.textEditorEnableAutoIndent) {
                     for (size_t iCursor = 0; iCursor < pTB->pTL->cursorCount; ++iCursor) {
                         size_t iCursorChar = pTB->pTL->pCursors[iCursor].iCharAbs;
@@ -2781,7 +2781,7 @@ dred_rect dred_textbox__get_scrollbar_dead_space_rect(dred_textbox* pTextBox)
 }
 
 
-void dred_textbox__on_mouse_move_line_numbers(dred_control* pLineNumbers, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textbox__on_mouse_move_line_numbers(dred_element* pLineNumbers, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
 
@@ -2847,7 +2847,7 @@ void dred_textbox__on_mouse_move_line_numbers(dred_control* pLineNumbers, int re
     }
 }
 
-void dred_textbox__on_mouse_button_down_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textbox__on_mouse_button_down_line_numbers(dred_element* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
     (void)stateFlags;
@@ -2899,7 +2899,7 @@ void dred_textbox__on_mouse_button_down_line_numbers(dred_control* pLineNumbers,
     }
 }
 
-void dred_textbox__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textbox__on_mouse_button_up_line_numbers(dred_element* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
     (void)relativeMousePosY;
@@ -2942,7 +2942,7 @@ void dred_textbox__on_paint_text_line_numbers(drte_engine* pEngine, drte_style_t
     drgui_draw_text(pTB->pLineNumbers, pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
 }
 
-void dred_textbox__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect relativeRect, void* pPaintData)
+void dred_textbox__on_paint_line_numbers(dred_element* pLineNumbers, dred_rect relativeRect, void* pPaintData)
 {
     (void)relativeRect;
 

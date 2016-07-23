@@ -1459,18 +1459,13 @@ void drgui_delete_element(dred_element* pElement)
 }
 
 
-dred_context* dred_control_get_context(dred_element* pControl)
+dred_context* drgui_get_context(dred_element* pControl)
 {
     if (pControl == NULL || pControl->pContext == NULL) {
         return NULL;
     }
 
     return pControl->pContext->pDred;
-}
-
-dred_element* dred_control_get_parent(dred_element* pControl)
-{
-    return pControl->pParent;
 }
 
 
@@ -1808,7 +1803,7 @@ dred_cursor_type drgui_get_cursor(dred_element* pElement)
     return pElement->cursor;
 }
 
-void dred_control_show_popup_menu(dred_element* pElement, dred_menu* pMenu, int relativePosX, int relativePosY)
+void drgui_show_popup_menu(dred_element* pElement, dred_menu* pMenu, int relativePosX, int relativePosY)
 {
     if (pElement == NULL || pMenu == NULL) {
         return;

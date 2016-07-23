@@ -119,7 +119,7 @@ void dred_save_dredprivate(dred_context* pDred);
 
 
 // Gives the given control the keyboard capture.
-void dred_capture_keyboard(dred_context* pDred, dred_control* pControl);
+void dred_capture_keyboard(dred_context* pDred, dred_element* pControl);
 
 // Releases the keyboard capture.
 void dred_release_keyboard(dred_context* pDred);
@@ -189,7 +189,7 @@ bool dred_close_all_tabs_with_confirmation(dred_context* pDred);
 
 
 // Finds the tab associated with the given control, usually an editor.
-dred_tab* dred_find_control_tab(dred_control* pControl);
+dred_tab* dred_find_control_tab(dred_element* pControl);
 
 
 // Saves the currently focused file.
@@ -288,7 +288,7 @@ void dred_unfocus_command_bar(dred_context* pDred);
 
 
 // Updates the info bar based on the given control.
-void dred_update_info_bar(dred_context* pDred, dred_control* pControl);
+void dred_update_info_bar(dred_context* pDred, dred_element* pControl);
 
 
 // Shows the menu bar.
