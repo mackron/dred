@@ -163,7 +163,7 @@ void dred_checkbox__on_mouse_button_up(dred_checkbox* pCheckbox, int mouseButton
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
         if (drgui_has_mouse_capture(pCheckbox)) {
-            drgui_release_mouse(pCheckbox->pContext);
+            drgui_release_mouse(pCheckbox->pGUI);
             dred_checkbox_toggle(pCheckbox);
         }
     }

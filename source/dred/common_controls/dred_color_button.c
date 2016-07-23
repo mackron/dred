@@ -160,7 +160,7 @@ void dred_colorbutton__on_mouse_button_up(dred_colorbutton* pButton, int mouseBu
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
         if (drgui_has_mouse_capture(pButton)) {
-            drgui_release_mouse(pButton->pContext);
+            drgui_release_mouse(pButton->pGUI);
             
             // Show a color picker.
             dred_color newColor;

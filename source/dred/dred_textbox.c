@@ -588,7 +588,7 @@ void dred_textbox_delete(dred_textbox* pTextBox)
 
     // Keyboard focus needs to be released first. If we don't do this we'll not free delete the internal timer.
     if (drgui_has_keyboard_capture(pTextBox)) {
-        drgui_release_keyboard(pTextBox->pContext);
+        drgui_release_keyboard(pTextBox->pGUI);
     }
 
     if (pTB->pTL) {
@@ -1714,7 +1714,7 @@ void dred_textbox_on_mouse_move(dred_textbox* pTextBox, int relativeMousePosX, i
         return;
     }
 
-    if (drgui_get_element_with_mouse_capture(pTextBox->pContext) == pTextBox)
+    if (drgui_get_element_with_mouse_capture(pTextBox->pGUI) == pTextBox)
     {
         float offsetX;
         float offsetY;
@@ -1824,7 +1824,7 @@ void dred_textbox_on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, in
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
-        if (drgui_get_element_with_mouse_capture(pTextBox->pContext) == pTextBox)
+        if (drgui_get_element_with_mouse_capture(pTextBox->pGUI) == pTextBox)
         {
             // When we first pressed the mouse we may have started a new selection. If we never ended up selecting anything we'll want to
             // cancel that selection.
@@ -1837,7 +1837,7 @@ void dred_textbox_on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, in
             }
 
             // Releasing the mouse will leave selectionmode.
-            drgui_release_mouse(pTextBox->pContext);
+            drgui_release_mouse(pTextBox->pGUI);
         }
     }
 }
@@ -2793,7 +2793,7 @@ void dred_textbox__on_mouse_move_line_numbers(dred_control* pLineNumbers, int re
 
     if ((stateFlags & DRED_GUI_MOUSE_BUTTON_LEFT_DOWN) != 0)
     {
-        if (drgui_get_element_with_mouse_capture(pLineNumbers->pContext) == pLineNumbers)
+        if (drgui_get_element_with_mouse_capture(pLineNumbers->pGUI) == pLineNumbers)
         {
             // We just move the cursor around based on the line number we've moved over.
 
@@ -2907,7 +2907,7 @@ void dred_textbox__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, i
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
         if (drgui_has_mouse_capture(pLineNumbers)) {
-            drgui_release_mouse(pLineNumbers->pContext);
+            drgui_release_mouse(pLineNumbers->pGUI);
         }
     }
 }

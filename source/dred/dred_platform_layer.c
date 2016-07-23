@@ -3391,7 +3391,7 @@ void dred_window_on_key_down(dred_window* pWindow, dred_key key, unsigned int st
     }
 
     if (pWindow->pRootGUIControl) {
-        drgui_post_inbound_event_key_down(pWindow->pRootGUIControl->pContext, key, stateFlags);
+        drgui_post_inbound_event_key_down(pWindow->pRootGUIControl->pGUI, key, stateFlags);
     }
 }
 
@@ -3402,7 +3402,7 @@ void dred_window_on_key_up(dred_window* pWindow, dred_key key, unsigned int stat
     }
 
     if (pWindow->pRootGUIControl) {
-        drgui_post_inbound_event_key_up(pWindow->pRootGUIControl->pContext, key, stateFlags);
+        drgui_post_inbound_event_key_up(pWindow->pRootGUIControl->pGUI, key, stateFlags);
     }
 }
 
@@ -3413,7 +3413,7 @@ void dred_window_on_printable_key_down(dred_window* pWindow, unsigned int charac
     }
 
     if (pWindow->pRootGUIControl) {
-        drgui_post_inbound_event_printable_key_down(pWindow->pRootGUIControl->pContext, character, stateFlags);
+        drgui_post_inbound_event_printable_key_down(pWindow->pRootGUIControl->pGUI, character, stateFlags);
     }
 }
 

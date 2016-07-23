@@ -351,7 +351,7 @@ typedef void (* dred_gui_on_capture_keyboard_proc)     (dred_control* pControl, 
 typedef void (* dred_gui_on_release_keyboard_proc)     (dred_control* pControl, dred_control* pNewCapturedControl);
 typedef void (* dred_gui_on_change_cursor_proc)        (dred_control* pControl, dred_cursor_type cursor);
 typedef void (* dred_gui_on_delete_element_proc)       (dred_control* pControl);
-typedef void (* dred_gui_on_log)                       (dred_gui* pContext, const char* message);
+typedef void (* dred_gui_on_log)                       (dred_gui* pGUI, const char* message);
 
 typedef void (* dred_gui_draw_begin_proc)                   (void* pPaintData);
 typedef void (* dred_gui_draw_end_proc)                     (void* pPaintData);
@@ -581,7 +581,7 @@ struct dred_gui_painting_callbacks
 struct dred_gui_image
 {
     /// A pointer to the context that owns this image.
-    dred_gui* pContext;
+    dred_gui* pGUI;
 
     /// The resource handle that is passed around to the callback functions.
     dred_gui_resource hResource;
@@ -590,7 +590,7 @@ struct dred_gui_image
 struct dred_gui_font
 {
     /// A pointer to the context that owns this font.
-    dred_gui* pContext;
+    dred_gui* pGUI;
 
     /// The font family.
     char family[DRED_MAX_FONT_FAMILY_LENGTH];
@@ -619,7 +619,7 @@ struct dred_gui_font
 struct dred_control
 {
     /// A pointer to the context that owns this element. This should never be null for valid elements.
-    dred_gui* pContext;
+    dred_gui* pGUI;
 
 
     /// A pointer to the parent element. This can be null in which case this element is the parent.
@@ -877,16 +877,16 @@ void drgui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelContr
 void drgui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
 
 /// Posts a key down inbound event.
-void drgui_post_inbound_event_key_down(dred_gui* pContext, dred_key key, int stateFlags);
+void drgui_post_inbound_event_key_down(dred_gui* pGUI, dred_key key, int stateFlags);
 
 /// Posts a key up inbound event.
-void drgui_post_inbound_event_key_up(dred_gui* pContext, dred_key key, int stateFlags);
+void drgui_post_inbound_event_key_up(dred_gui* pGUI, dred_key key, int stateFlags);
 
 /// Posts a printable key down inbound event.
 ///
 /// @remarks
 ///     The \c character argument should be a UTF-32 code point.
-void drgui_post_inbound_event_printable_key_down(dred_gui* pContext, unsigned int character, int stateFlags);
+void drgui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int character, int stateFlags);
 
 
 /// Registers the global on_dirty event callback.
@@ -894,7 +894,7 @@ void drgui_post_inbound_event_printable_key_down(dred_gui* pContext, unsigned in
 /// @remarks
 ///     This is called whenever a region of an element is marked as dirty and allows an application to mark the region of the
 ///     container window as dirty to trigger an operating system level repaint of the window.
-void drgui_set_global_on_dirty(dred_gui* pContext, dred_gui_on_dirty_proc onDirty);
+void drgui_set_global_on_dirty(dred_gui* pGUI, dred_gui_on_dirty_proc onDirty);
 
 /// Registers the global on_capture_mouse event callback.
 ///
@@ -904,7 +904,7 @@ void drgui_set_global_on_dirty(dred_gui* pContext, dred_gui_on_dirty_proc onDirt
 ///     @par
 ///     The advantage of using a global event callback is that it can be set once at the context level rather than many times
 ///     at the element level.
-void drgui_set_global_on_capture_mouse(dred_gui* pContext, dred_gui_on_capture_mouse_proc onCaptureMouse);
+void drgui_set_global_on_capture_mouse(dred_gui* pGUI, dred_gui_on_capture_mouse_proc onCaptureMouse);
 
 /// Registers the global on_release_mouse event callback.
 ///
@@ -914,7 +914,7 @@ void drgui_set_global_on_capture_mouse(dred_gui* pContext, dred_gui_on_capture_m
 ///     @par
 ///     The advantage of using a global event callback is that it can be set once at the context level rather than many times
 ///     at the element level.
-void drgui_set_global_on_release_mouse(dred_gui* pContext, dred_gui_on_release_mouse_proc onReleaseMouse);
+void drgui_set_global_on_release_mouse(dred_gui* pGUI, dred_gui_on_release_mouse_proc onReleaseMouse);
 
 /// Registers the global on_capture_keyboard event callback.
 ///
@@ -924,7 +924,7 @@ void drgui_set_global_on_release_mouse(dred_gui* pContext, dred_gui_on_release_m
 ///     @par
 ///     The advantage of using a global event callback is that it can be set once at the context level rather than many times
 ///     at the element level.
-void drgui_set_global_on_capture_keyboard(dred_gui* pContext, dred_gui_on_capture_keyboard_proc onCaptureKeyboard);
+void drgui_set_global_on_capture_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onCaptureKeyboard);
 
 /// Registers the global on_release_keyboard event callback.
 ///
@@ -934,20 +934,20 @@ void drgui_set_global_on_capture_keyboard(dred_gui* pContext, dred_gui_on_captur
 ///     @par
 ///     The advantage of using a global event callback is that it can be set once at the context level rather than many times
 ///     at the element level.
-void drgui_set_global_on_release_keyboard(dred_gui* pContext, dred_gui_on_capture_keyboard_proc onReleaseKeyboard);
+void drgui_set_global_on_release_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onReleaseKeyboard);
 
 /// Sets the global on_change_cursor event callback.
 ///
 /// @remarks
 ///     This is called whenever the operating system needs to change the cursor.
-void drgui_set_global_on_change_cursor(dred_gui* pContext, dred_gui_on_change_cursor_proc onChangeCursor);
+void drgui_set_global_on_change_cursor(dred_gui* pGUI, dred_gui_on_change_cursor_proc onChangeCursor);
 
 /// Sets the function to call when an element is deleted.
-void drgui_set_on_delete_element(dred_gui* pContext, dred_gui_on_delete_element_proc onDeleteControl);
+void drgui_set_on_delete_element(dred_gui* pGUI, dred_gui_on_delete_element_proc onDeleteControl);
 
 
 /// Registers the callback to call when a log message is posted.
-void drgui_set_on_log(dred_gui* pContext, dred_gui_on_log onLog);
+void drgui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog);
 
 
 
@@ -1021,13 +1021,13 @@ bool drgui_is_clipping_enabled(const dred_control* pControl);
 void drgui_capture_mouse(dred_control* pControl);
 
 /// Releases the mouse capture.
-void drgui_release_mouse(dred_gui* pContext);
+void drgui_release_mouse(dred_gui* pGUI);
 
 /// Releases the mouse capture without posting the global-scoped event. Should only be used in very specific cases, usually in combination with awkward interop with the window system.
-void drgui_release_mouse_no_global_notify(dred_gui* pContext);
+void drgui_release_mouse_no_global_notify(dred_gui* pGUI);
 
 /// Retrieves a pointer to the element with the mouse capture.
-dred_control* drgui_get_element_with_mouse_capture(dred_gui* pContext);
+dred_control* drgui_get_element_with_mouse_capture(dred_gui* pGUI);
 
 /// Determines whether or not the given element has the mouse capture.
 bool drgui_has_mouse_capture(dred_control* pControl);
@@ -1040,13 +1040,13 @@ bool drgui_has_mouse_capture(dred_control* pControl);
 void drgui_capture_keyboard(dred_control* pControl);
 
 /// Releases the keyboard capture.
-void drgui_release_keyboard(dred_gui* pContext);
+void drgui_release_keyboard(dred_gui* pGUI);
 
 /// Releases the keyboard capture without posting the global-scoped event. Should only be used in very specific cases, usually in combination with awkward interop with the window system.
-void drgui_release_keyboard_no_global_notify(dred_gui* pContext);
+void drgui_release_keyboard_no_global_notify(dred_gui* pGUI);
 
 /// Retrieves a pointer to the element with the keyboard capture.
-dred_control* drgui_get_element_with_keyboard_capture(dred_gui* pContext);
+dred_control* drgui_get_element_with_keyboard_capture(dred_gui* pGUI);
 
 /// Determines whether or not the given element has the keyboard capture.
 bool drgui_has_keyboard_capture(dred_control* pControl);
@@ -1249,7 +1249,7 @@ dred_rect drgui_get_local_rect(const dred_control* pControl);
 /// @remarks
 ///     This can only be called once, so it should always be done after initialization. This will fail if called
 ///     more than once.
-bool drgui_register_painting_callbacks(dred_gui* pContext, void* pPaintingContext, dred_gui_painting_callbacks callbacks);
+bool drgui_register_painting_callbacks(dred_gui* pGUI, void* pPaintingContext, dred_gui_painting_callbacks callbacks);
 
 
 /// Performs a recursive traversal of all visible elements in the given rectangle.
@@ -1267,13 +1267,13 @@ bool drgui_iterate_visible_elements(dred_control* pParentControl, dred_rect rela
 
 
 /// Disable's automatic dirtying of elements.
-void drgui_disable_auto_dirty(dred_gui* pContext);
+void drgui_disable_auto_dirty(dred_gui* pGUI);
 
 /// Enable's automatic dirtying of elements.
-void drgui_enable_auto_dirty(dred_gui* pContext);
+void drgui_enable_auto_dirty(dred_gui* pGUI);
 
 /// Determines whether or not automatic dirtying is enabled.
-bool drgui_is_auto_dirty_enabled(dred_gui* pContext);
+bool drgui_is_auto_dirty_enabled(dred_gui* pGUI);
 
 
 /// Begins accumulating a dirty rectangle.
@@ -1340,7 +1340,7 @@ void drgui_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_d
 
 
 /// Creates a font resource.
-dred_gui_font* drgui_create_font(dred_gui* pContext, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags);
+dred_gui_font* drgui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags);
 
 /// Deletes a font resource.
 void drgui_delete_font(dred_gui_font* pFont);
@@ -1375,7 +1375,7 @@ bool drgui_get_text_cursor_position_from_char(dred_gui_font* pFont, const char* 
 ///     If stride is set to 0, it is assumed to be tightly packed.
 ///     @par
 ///     Use drgui_map_image_data() and drgui_unmap_image_data() to update or retrieve image data.
-dred_gui_image* drgui_create_image(dred_gui* pContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pData);
+dred_gui_image* drgui_create_image(dred_gui* pGUI, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pData);
 
 /// Deletes the given image.
 void drgui_delete_image(dred_gui_image* pImage);
@@ -1384,7 +1384,7 @@ void drgui_delete_image(dred_gui_image* pImage);
 void drgui_get_image_size(dred_gui_image* pImage, unsigned int* pWidthOut, unsigned int* pHeightOut);
 
 /// Retrieves the optimal image format for the given context.
-dred_gui_image_format drgui_get_optimal_image_format(dred_gui* pContext);
+dred_gui_image_format drgui_get_optimal_image_format(dred_gui* pGUI);
 
 /// Retrieves a pointer to a buffer representing the given image's data.
 ///
@@ -1522,6 +1522,6 @@ bool dred_gui_init_dr_2d(dred_gui* pGUI, dred_context* pDred, dr2d_context* pDra
 ///
 /// @remarks
 ///     The user data of each callback is assumed to be a pointer to an easydraw_surface object.
-void drgui_register_dr_2d_callbacks(dred_gui* pContext, dr2d_context* pDrawingContext);
+void drgui_register_dr_2d_callbacks(dred_gui* pGUI, dr2d_context* pDrawingContext);
 
 #endif
