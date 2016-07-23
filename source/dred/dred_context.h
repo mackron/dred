@@ -12,7 +12,8 @@ struct dred_context
     dr2d_context* pDrawingContext;
 
     // The main GUI context.
-    dred_gui* pGUI;
+    dred_gui gui;
+    dred_gui* pGUI; // <-- This is always set to &gui and exists for convenience.
 
 
     // The font library. This just manages fonts to make it easier to avoid loading duplicate fonts.

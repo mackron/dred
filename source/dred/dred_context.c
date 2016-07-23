@@ -225,7 +225,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     }
 
     memset(pDred, 0, sizeof(*pDred));
-
+    pDred->pGUI = &pDred->gui;
 
     pDred->cmdline = cmdline;
 
@@ -263,8 +263,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
     // The GUI.
-    pDred->pGUI = drgui_create_context_dr_2d(pDred, pDred->pDrawingContext);
-    if (pDred->pGUI == NULL) {
+    if (!dred_gui_init_dr_2d(pDred->pGUI, pDred, pDred->pDrawingContext)) {
         goto on_error;
     }
 
@@ -479,7 +478,7 @@ void dred_uninit(dred_context* pDred)
     dred_font_library_uninit(&pDred->fontLibrary);
 
     if (pDred->pGUI) {
-        drgui_delete_context(pDred->pGUI);
+        dred_gui_uninit(pDred->pGUI);
     }
 
     if (pDred->pDrawingContext) {

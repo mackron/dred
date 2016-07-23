@@ -843,11 +843,11 @@ struct dred_gui
 //
 /////////////////////////////////////////////////////////////////
 
-/// Creates a context.
-dred_gui* drgui_create_context(dred_context* pDred);
+// Initializes a GUI context.
+bool dred_gui_init(dred_gui* pGUI, dred_context* pDred);
 
 /// Deletes a context and everything that it created.
-void drgui_delete_context(dred_gui* pContext);
+void dred_gui_uninit(dred_gui* pGUI);
 
 
 
@@ -1516,7 +1516,7 @@ bool dred_rect_has_volume(dred_rect rect);
 ///
 /// @remarks
 ///     This is equivalent to drgui_create_context() followed by drgui_register_dr_2d_callbacks().
-dred_gui* drgui_create_context_dr_2d(dred_context* pDred, dr2d_context* pDrawingContext);
+bool dred_gui_init_dr_2d(dred_gui* pGUI, dred_context* pDred, dr2d_context* pDrawingContext);
 
 /// Registers the drawing callbacks for use with easy_draw.
 ///

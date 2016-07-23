@@ -385,8 +385,6 @@ void drgui_delete_context_for_real(dred_gui* pContext)
 
     // All elements marked as dead need to be deleted.
     drgui_delete_elements_marked_as_dead(pContext);
-
-    free(pContext);
 }
 
 void drgui_delete_element_for_real(dred_control* pControlToDelete)
@@ -948,52 +946,52 @@ void drgui_log(dred_gui* pContext, const char* message)
 //
 /////////////////////////////////////////////////////////////////
 
-dred_gui* drgui_create_context(dred_context* pDred)
+bool dred_gui_init(dred_gui* pGUI, dred_context* pDred)
 {
-    dred_gui* pContext = (dred_gui*)calloc(1, sizeof(dred_gui));
-    if (pContext == NULL) {
-        return NULL;
+    if (pGUI == NULL || pDred == NULL) {
+        return false;
     }
 
-    pContext->pDred = pDred;
-    pContext->currentCursor = dred_cursor_default;
+    memset(pGUI, 0, sizeof(*pGUI));
+    pGUI->pDred = pDred;
+    pGUI->currentCursor = dred_cursor_default;
     
-    return pContext;
+    return true;
 }
 
-void drgui_delete_context(dred_gui* pContext)
+void dred_gui_uninit(dred_gui* pGUI)
 {
-    if (pContext == NULL) {
+    if (pGUI == NULL) {
         return;
     }
 
 
     // Make sure the mouse capture is released.
-    if (pContext->pControlWithMouseCapture != NULL)
+    if (pGUI->pControlWithMouseCapture != NULL)
     {
-        drgui_log(pContext, "WARNING: Deleting the GUI context while an element still has the mouse capture.");
-        drgui_release_mouse(pContext);
+        drgui_log(pGUI, "WARNING: Deleting the GUI context while an element still has the mouse capture.");
+        drgui_release_mouse(pGUI);
     }
 
     // Make sure the keyboard capture is released.
-    if (pContext->pControlWithKeyboardCapture != NULL)
+    if (pGUI->pControlWithKeyboardCapture != NULL)
     {
-        drgui_log(pContext, "WARNING: Deleting the GUI context while an element still has the keyboard capture.");
-        drgui_release_keyboard(pContext);
+        drgui_log(pGUI, "WARNING: Deleting the GUI context while an element still has the keyboard capture.");
+        drgui_release_keyboard(pGUI);
     }
 
 
-    if (drgui_is_handling_inbound_event(pContext))
+    if (drgui_is_handling_inbound_event(pGUI))
     {
         // An inbound event is still being processed - we don't want to delete the context straight away because we can't
         // trust external event handlers to not try to access the context later on. To do this we just set the flag that
         // the context is deleted. It will then be deleted for real at the end of the inbound event handler.
-        drgui_mark_context_as_dead(pContext);
+        drgui_mark_context_as_dead(pGUI);
     }
     else
     {
         // An inbound event is not being processed, so delete the context straight away.
-        drgui_delete_context_for_real(pContext);
+        drgui_delete_context_for_real(pGUI);
     }
 }
 
@@ -3442,14 +3440,14 @@ dred_gui_image_format drgui_get_optimal_image_format_dr_2d(void* pPaintingContex
 void* drgui_map_image_data_dr_2d(dred_gui_resource image, unsigned int accessFlags);
 void drgui_unmap_image_data_dr_2d(dred_gui_resource image);
 
-dred_gui* drgui_create_context_dr_2d(dred_context* pDred, dr2d_context* pDrawingContext)
+bool dred_gui_init_dr_2d(dred_gui* pGUI, dred_context* pDred, dr2d_context* pDrawingContext)
 {
-    dred_gui* pContext = drgui_create_context(pDred);
-    if (pContext != NULL) {
-        drgui_register_dr_2d_callbacks(pContext, pDrawingContext);
+    if (!dred_gui_init(pGUI, pDred)) {
+        return false;
     }
 
-    return pContext;
+    drgui_register_dr_2d_callbacks(pGUI, pDrawingContext);
+    return true;
 }
 
 void drgui_register_dr_2d_callbacks(dred_gui* pContext, dr2d_context* pDrawingContext)
