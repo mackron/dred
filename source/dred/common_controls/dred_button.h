@@ -2,10 +2,10 @@
 
 #define DRED_CONTROL_TYPE_BUTTON   "dred.common.button"
 
-typedef dred_element dred_button;
+typedef dred_control dred_button;
 typedef void (* dred_button_on_pressed_proc)(dred_button* pButton);
 
-dred_button* dred_button_create(dred_context* pDred, dred_element* pParent, const char* text);
+dred_button* dred_button_create(dred_context* pDred, dred_control* pParent, const char* text);
 void dred_button_delete(dred_button* pButton);
 
 void dred_button_set_text(dred_button* pButton, const char* text);

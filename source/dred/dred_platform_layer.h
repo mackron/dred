@@ -95,7 +95,7 @@ struct dred_window
     dred_menu* pMenu;
 
     // The window's top level GUI element.
-    dred_element* pRootGUIElement;
+    dred_control* pRootGUIElement;
 
     // The surface we'll be drawing to when drawing the GUI.
     dr2d_surface* pDrawingSurface;
@@ -124,7 +124,7 @@ struct dred_window
 
     // A pointer to the GUI element that belongs to this window that should be given the keyboard capture when this window
     // receives focus.
-    dred_element* pElementWithKeyboardCapture;
+    dred_control* pControlWithKeyboardCapture;
 
     // The flags to pass to the onHide event handler.
     unsigned int onHideFlags;
@@ -275,7 +275,7 @@ void dred_window__stock_event__hide_on_close(dred_window* pWindow);
 
 
 // Helper function for retrieving the window that owns the given GUI element.
-dred_window* dred_get_element_window(dred_element* pElement);
+dred_window* dred_get_element_window(dred_control* pControl);
 
 
 

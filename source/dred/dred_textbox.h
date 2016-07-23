@@ -2,14 +2,14 @@
 
 #define DRED_CONTROL_TYPE_TEXTBOX  "dred.textbox"
 
-typedef dred_element dred_textbox;
+typedef dred_control dred_textbox;
 
 typedef void (* dred_textbox_on_cursor_move_proc)(dred_textbox* pTextBox);
 typedef void (* dred_textbox_on_undo_point_changed_proc)(dred_textbox* pTextBox, unsigned int iUndoPoint);
 
 
 // Creates a new text box control.
-dred_textbox* dred_textbox_create(dred_context* pDred, dred_element* pParent);
+dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent);
 
 // Deletes the given text box control.
 void dred_textbox_delete(dred_textbox* pTextBox);
@@ -222,10 +222,10 @@ void dred_textbox_disable_horizontal_scrollbar(dred_textbox* pTextBox);
 void dred_textbox_enable_horizontal_scrollbar(dred_textbox* pTextBox);
 
 // Retrieves the vertical scrollbar.
-dred_element* dred_textbox_get_vertical_scrollbar(dred_textbox* pTextBox);
+dred_control* dred_textbox_get_vertical_scrollbar(dred_textbox* pTextBox);
 
 // Retrieves the horizontal scrollbar.
-dred_element* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox);
+dred_control* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox);
 
 // Sets the size of both the vertical and horizontal scrollbars.
 void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, float size);
@@ -299,10 +299,10 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
 void dred_textbox_on_paint(dred_textbox* pTextBox, dred_rect relativeRect, void* pPaintData);
 
 // on_capture_keyboard
-void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, dred_element* pPrevCapturedElement);
+void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedElement);
 
 // on_release_keyboard
-void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, dred_element* pNewCapturedElement);
+void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, dred_control* pNewCapturedElement);
 
 // on_capture_mouse
 void dred_textbox_on_capture_mouse(dred_textbox* pTextBox);

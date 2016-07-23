@@ -172,7 +172,7 @@ void dred_button__refresh_layout(dred_button* pButton)
     drgui_dirty(pButton, drgui_get_local_rect(pButton));
 }
 
-dred_button* dred_button_create(dred_context* pDred, dred_element* pParent, const char* text)
+dred_button* dred_button_create(dred_context* pDred, dred_control* pParent, const char* text)
 {
     dred_button* pButton = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_BUTTON, sizeof(dred_button_data));
     if (pButton == NULL) {

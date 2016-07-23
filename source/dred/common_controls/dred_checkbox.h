@@ -4,10 +4,10 @@
 
 #define DRED_CONTROL_TYPE_CHECKBOX   "dred.common.checkbox"
 
-typedef dred_element dred_checkbox;
+typedef dred_control dred_checkbox;
 typedef void (* dred_checkbox_on_checked_changed_proc)(dred_checkbox* pCheckbox);
 
-dred_checkbox* dred_checkbox_create(dred_context* pDred, dred_element* pParent, const char* text, bool checked);
+dred_checkbox* dred_checkbox_create(dred_context* pDred, dred_control* pParent, const char* text, bool checked);
 void dred_checkbox_delete(dred_checkbox* pCheckbox);
 
 void dred_checkbox_set_text(dred_checkbox* pCheckbox, const char* text);

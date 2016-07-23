@@ -42,7 +42,7 @@ void dred_text_editor__on_size(dred_text_editor* pTextEditor, float newWidth, fl
     drgui_set_size(pTextBox, newWidth, newHeight);
 }
 
-void dred_text_editor__on_capture_keyboard(dred_text_editor* pTextEditor, dred_element* pPrevCapturedElement)
+void dred_text_editor__on_capture_keyboard(dred_text_editor* pTextEditor, dred_control* pPrevCapturedElement)
 {
     (void)pPrevCapturedElement;
     
@@ -123,7 +123,7 @@ void dred_text_editor_textbox__on_cursor_move(dred_textbox* pTextBox)
     dred_update_info_bar(drgui_get_context(pTextEditor), pTextEditor);
 }
 
-void dred_text_editor_textbox__on_capture_keyboard(dred_textbox* pTextBox, dred_element* pPrevCapturedElement)
+void dred_text_editor_textbox__on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedElement)
 {
     dred_text_editor* pTextEditor = drgui_get_parent(pTextBox);
     if (pTextEditor == NULL) {
@@ -214,7 +214,7 @@ bool dred_text_editor__on_reload(dred_text_editor* pTextEditor)
     return true;
 }
 
-dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_element* pParent, float sizeX, float sizeY, const char* filePathAbsolute)
+dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pParent, float sizeX, float sizeY, const char* filePathAbsolute)
 {
     dred_text_editor* pTextEditor = dred_editor_create(pDred, pParent, DRED_CONTROL_TYPE_TEXT_EDITOR, sizeX, sizeY, filePathAbsolute, sizeof(dred_text_editor_data));
     if (pTextEditor == NULL) {

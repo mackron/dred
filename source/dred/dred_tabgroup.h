@@ -2,10 +2,10 @@
 
 #define DRED_CONTROL_TYPE_TABGROUP  "dred.tabgroup"
 
-typedef dred_element dred_tabgroup;
+typedef dred_control dred_tabgroup;
 
 // dred_tabgroup_create()
-dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_element* pParent);
+dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent);
 
 // dred_tabgroup_delete()
 void dred_tabgroup_delete(dred_tabgroup* pTabGroup);
@@ -60,12 +60,12 @@ dred_tab* dred_tabgroup_prev_tab(dred_tabgroup* pTabGroup, dred_tab* pTab);
 // pControl [in] A pointer to the control that will be associated with the tab.
 //
 // pControl will be re-parented upon being added to the group.
-dred_tab* dred_tabgroup_append_tab(dred_tabgroup* pTabGroup, const char* text, dred_element* pControl);
+dred_tab* dred_tabgroup_append_tab(dred_tabgroup* pTabGroup, const char* text, dred_control* pControl);
 
 // pControl [in] A pointer to the control that will be associated with the tab.
 //
 // pControl will be re-parented upon being added to the group.
-dred_tab* dred_tabgroup_prepend_tab(dred_tabgroup* pTabGroup, const char* text, dred_element* pControl);
+dred_tab* dred_tabgroup_prepend_tab(dred_tabgroup* pTabGroup, const char* text, dred_control* pControl);
 
 
 // Deletes the given tab from the tab group.

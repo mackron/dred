@@ -82,7 +82,7 @@ void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
-void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, dred_element* pPrevCapturedElement)
+void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, dred_control* pPrevCapturedElement)
 {
     (void)pPrevCapturedElement;
 
@@ -134,7 +134,7 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, dred_rect rect, void* pPaintDat
     drgui_draw_text(pCmdBar, pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, pDred->config.cmdbarTextColor, bgcolor, pPaintData);
 }
 
-void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, dred_element* pPrevCapturedElement)
+void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedElement)
 {
     (void)pPrevCapturedElement;
 
@@ -168,7 +168,7 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, dred_element* p
     dred_textbox_on_capture_keyboard(pTextBox, pPrevCapturedElement);
 }
 
-void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, dred_element* pNextCapturedElement)
+void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, dred_control* pNextCapturedElement)
 {
     (void)pNextCapturedElement;
 
@@ -348,7 +348,7 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
-dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_element* pParent)
+dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
 {
     dred_cmdbar* pCmdBar = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_CMDBAR, sizeof(dred_cmdbar_data));
     if (pCmdBar == NULL) {
@@ -479,7 +479,7 @@ void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar)
     }
 }
 
-void dred_cmdbar_update_info_bar(dred_cmdbar* pCmdBar, dred_element* pControl)
+void dred_cmdbar_update_info_bar(dred_cmdbar* pCmdBar, dred_control* pControl)
 {
     dred_cmdbar_data* data = (dred_cmdbar_data*)drgui_get_extra_data(pCmdBar);
     if (data == NULL) {

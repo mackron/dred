@@ -2,11 +2,11 @@
 
 typedef struct
 {
-    dred_element* pControl;
+    dred_control* pControl;
 } dred_tab_data;
 
 
-void dred_tab__init(dred_tab* pTab, dred_element* pControl)
+void dred_tab__init(dred_tab* pTab, dred_control* pControl)
 {
     dred_tab_data* data = (dred_tab_data*)drgui_tab_get_extra_data(pTab);
     assert(data != NULL);
@@ -14,7 +14,7 @@ void dred_tab__init(dred_tab* pTab, dred_element* pControl)
     data->pControl = pControl;
 }
 
-dred_tab* dred_tab_create_and_append(dred_element* pTabBar, const char* text, dred_element* pControl)
+dred_tab* dred_tab_create_and_append(dred_control* pTabBar, const char* text, dred_control* pControl)
 {
     drgui_tab* pTab = dred_tabbar_create_and_append_tab(pTabBar, text, sizeof(dred_tab_data), NULL);
     if (pTab == NULL) {
@@ -25,7 +25,7 @@ dred_tab* dred_tab_create_and_append(dred_element* pTabBar, const char* text, dr
     return pTab;
 }
 
-dred_tab* dred_tab_create_and_prepend(dred_element* pTabBar, const char* text, dred_element* pControl)
+dred_tab* dred_tab_create_and_prepend(dred_control* pTabBar, const char* text, dred_control* pControl)
 {
     drgui_tab* pTab = dred_tabbar_create_and_prepend_tab(pTabBar, text, sizeof(dred_tab_data), NULL);
     if (pTab == NULL) {
@@ -52,7 +52,7 @@ const char* dred_tab_get_text(dred_tab* pTab)
     return drgui_tab_get_text(pTab);
 }
 
-void dred_tab_set_control(dred_tab* pTab, dred_element* pControl)
+void dred_tab_set_control(dred_tab* pTab, dred_control* pControl)
 {
     dred_tab_data* data = (dred_tab_data*)drgui_tab_get_extra_data(pTab);
     if (data == NULL) {
@@ -62,7 +62,7 @@ void dred_tab_set_control(dred_tab* pTab, dred_element* pControl)
     data->pControl = pControl;
 }
 
-dred_element* dred_tab_get_control(dred_tab* pTab)
+dred_control* dred_tab_get_control(dred_tab* pTab)
 {
     dred_tab_data* data = (dred_tab_data*)drgui_tab_get_extra_data(pTab);
     if (data == NULL) {
@@ -73,7 +73,7 @@ dred_element* dred_tab_get_control(dred_tab* pTab)
 }
 
 
-dred_element* dred_tab_get_tabgroup(dred_tab* pTab)
+dred_control* dred_tab_get_tabgroup(dred_tab* pTab)
 {
     dred_tab_data* data = (dred_tab_data*)drgui_tab_get_extra_data(pTab);
     if (data == NULL) {

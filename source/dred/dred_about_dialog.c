@@ -30,9 +30,9 @@ static const struct {
   "\0\0\377\0\0\0\377\0\0\0\377\0\0\0\377\0\0\0\377",
 };
 
-void dred_about_dialog__on_size(dred_element* pElement, float newWidth, float newHeight)
+void dred_about_dialog__on_size(dred_control* pControl, float newWidth, float newHeight)
 {
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow == NULL) {
         return;
     }
@@ -47,11 +47,11 @@ void dred_about_dialog__on_size(dred_element* pElement, float newWidth, float ne
     drgui_set_relative_position(pDialog->pCloseButton, newWidth - drgui_get_width(pDialog->pCloseButton) - 8*pDred->uiScale, newHeight - drgui_get_height(pDialog->pCloseButton) - 8*pDred->uiScale);
 }
 
-void dred_about_dialog__on_paint(dred_element* pElement, dred_rect rect, void* pPaintData)
+void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* pPaintData)
 {
     (void)rect;
 
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow == NULL) {
         return;
     }
@@ -61,9 +61,9 @@ void dred_about_dialog__on_paint(dred_element* pElement, dred_rect rect, void* p
 
     float uiScale = (float)pWindow->pDred->uiScale;
 
-    dred_rect dialogRect = drgui_get_local_rect(pElement);
+    dred_rect dialogRect = drgui_get_local_rect(pControl);
 
-    drgui_draw_rect(pElement, dialogRect, drgui_rgb(255, 255, 255), pPaintData);
+    drgui_draw_rect(pControl, dialogRect, drgui_rgb(255, 255, 255), pPaintData);
 
     unsigned int logoWidth;
     unsigned int logoHeight;
@@ -87,7 +87,7 @@ void dred_about_dialog__on_paint(dred_element* pElement, dred_rect rect, void* p
     args.options = DRED_GUI_IMAGE_ALIGN_CENTER;
     args.foregroundTint = drgui_rgb(255, 255, 255);
     args.backgroundColor = drgui_rgb(255, 255, 255);
-    drgui_draw_image(pElement, pDialog->pLogo, &args, pPaintData);
+    drgui_draw_image(pControl, pDialog->pLogo, &args, pPaintData);
 
     
 
@@ -102,7 +102,7 @@ void dred_about_dialog__on_paint(dred_element* pElement, dred_rect rect, void* p
 
     float linkWidth;
     drgui_measure_string(pFont, linkStr, strlen(linkStr), &linkWidth, NULL);
-    drgui_draw_text(pElement, pFont, linkStr, (int)strlen(linkStr), ((dialogRect.right - dialogRect.left) - linkWidth) / 2, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    drgui_draw_text(pControl, pFont, linkStr, (int)strlen(linkStr), ((dialogRect.right - dialogRect.left) - linkWidth) / 2, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
 
 
     const char* versionStr = "dred version " DRED_VERSION_STRING;
@@ -112,21 +112,21 @@ void dred_about_dialog__on_paint(dred_element* pElement, dred_rect rect, void* p
     penPosX = (8*uiScale);
     penPosY = bannerRect.bottom;
 
-    drgui_draw_rect(pElement, drgui_make_rect(0, bannerRect.bottom, dialogRect.right, penPosY + (1 * uiScale)), drgui_rgb(200, 200, 200), pPaintData);
+    drgui_draw_rect(pControl, drgui_make_rect(0, bannerRect.bottom, dialogRect.right, penPosY + (1 * uiScale)), drgui_rgb(200, 200, 200), pPaintData);
     penPosY += (9*uiScale);
 
-    drgui_draw_text(pElement, pFont, versionStr, (int)strlen(versionStr), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    drgui_draw_text(pControl, pFont, versionStr, (int)strlen(versionStr), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
     penPosY += fontMetrics.lineHeight;
 
-    drgui_draw_text(pElement, pFont, copyrightStr, (int)strlen(copyrightStr), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    drgui_draw_text(pControl, pFont, copyrightStr, (int)strlen(copyrightStr), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
     penPosY += fontMetrics.lineHeight;
     
     penPosY += (9*uiScale);
-    drgui_draw_rect(pElement, drgui_make_rect(0, penPosY, dialogRect.right, penPosY + (1 * uiScale)), drgui_rgb(200, 200, 200), pPaintData);
+    drgui_draw_rect(pControl, drgui_make_rect(0, penPosY, dialogRect.right, penPosY + (1 * uiScale)), drgui_rgb(200, 200, 200), pPaintData);
     penPosY += 9*uiScale;
 
     const char* creditsTitle = "The following libraries are used internally by dred:";
-    drgui_draw_text(pElement, pFont, creditsTitle, (int)strlen(creditsTitle), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    drgui_draw_text(pControl, pFont, creditsTitle, (int)strlen(creditsTitle), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
     penPosY += 4*uiScale + fontMetrics.lineHeight;
 
     static const char* credits[] = {
@@ -138,7 +138,7 @@ void dred_about_dialog__on_paint(dred_element* pElement, dred_rect rect, void* p
     size_t creditsCount = sizeof(credits) / sizeof(credits[0]);
 
     for (size_t iCredit = 0; iCredit < creditsCount; ++iCredit) {
-        drgui_draw_text(pElement, pFont, credits[iCredit], (int)strlen(credits[iCredit]), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+        drgui_draw_text(pControl, pFont, credits[iCredit], (int)strlen(credits[iCredit]), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
         penPosY += fontMetrics.lineHeight;
     }
 }

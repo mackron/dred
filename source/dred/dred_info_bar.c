@@ -138,7 +138,7 @@ void dred_info_bar__on_paint(dred_info_bar* pInfoBar, dred_rect rect, void* pPai
     }
 }
 
-dred_info_bar* dred_info_bar_create(dred_context* pDred, dred_element* pParent)
+dred_info_bar* dred_info_bar_create(dred_context* pDred, dred_control* pParent)
 {
     dred_info_bar* pInfoBar = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_INFO_BAR, sizeof(dred_info_bar_data));
     if (pInfoBar == NULL) {
@@ -177,7 +177,7 @@ void dred_info_bar_delete(dred_info_bar* pInfoBar)
     drgui_delete_element(pInfoBar);
 }
 
-void dred_info_bar_update(dred_info_bar* pInfoBar, dred_element* pControl)
+void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
 {
     dred_info_bar_data* data = (dred_info_bar_data*)drgui_get_extra_data(pInfoBar);
     if (data == NULL) {

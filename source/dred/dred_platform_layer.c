@@ -7,9 +7,9 @@
 //////////////////////////////////////////////////////////////////
 
 // Helper for creating the root GUI element of a window.
-dred_element* dred_platform__create_root_gui_element(dred_context* pDred, dred_window* pWindow)
+dred_control* dred_platform__create_root_gui_element(dred_context* pDred, dred_window* pWindow)
 {
-    dred_element* pRootGUIElement = drgui_create_element(pDred, NULL, "RootGUIElement", sizeof(pWindow));
+    dred_control* pRootGUIElement = drgui_create_element(pDred, NULL, "RootGUIElement", sizeof(pWindow));
     if (pRootGUIElement == NULL) {
         return NULL;
     }
@@ -1424,38 +1424,38 @@ void dred_clipboard_free_text__win32(char* text)
 
 //// WIN32 <-> GUI BINDING ////
 
-static void dred_platform__on_global_capture_mouse__win32(dred_element* pElement)
+static void dred_platform__on_global_capture_mouse__win32(dred_control* pControl)
 {
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL) {
         SetCapture(pWindow->hWnd);
     }
 }
 
-static void dred_platform__on_global_release_mouse__win32(dred_element* pElement)
+static void dred_platform__on_global_release_mouse__win32(dred_control* pControl)
 {
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL) {
         ReleaseCapture();
     }
 }
 
-static void dred_platform__on_global_capture_keyboard__win32(dred_element* pElement, dred_element* pPrevCapturedElement)
+static void dred_platform__on_global_capture_keyboard__win32(dred_control* pControl, dred_control* pPrevCapturedElement)
 {
     (void)pPrevCapturedElement;
 
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL) {
-        pWindow->pElementWithKeyboardCapture = pElement;
+        pWindow->pControlWithKeyboardCapture = pControl;
         SetFocus(pWindow->hWnd);
     }
 }
 
-static void dred_platform__on_global_release_keyboard__win32(dred_element* pElement, dred_element* pNewCapturedElement)
+static void dred_platform__on_global_release_keyboard__win32(dred_control* pControl, dred_control* pNewCapturedElement)
 {
     (void)pNewCapturedElement;
 
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL) {
         dred_window* pNewWindow = dred_get_element_window(pNewCapturedElement);
         if (pWindow != pNewWindow) {
@@ -1464,13 +1464,13 @@ static void dred_platform__on_global_release_keyboard__win32(dred_element* pElem
     }
 }
 
-static void dred_platform__on_global_dirty__win32(dred_element* pElement, dred_rect relativeRect)
+static void dred_platform__on_global_dirty__win32(dred_control* pControl, dred_rect relativeRect)
 {
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL)
     {
         dred_rect absoluteRect = relativeRect;
-        drgui_make_rect_absolute(pElement, &absoluteRect);
+        drgui_make_rect_absolute(pControl, &absoluteRect);
 
 
         RECT rect;
@@ -2800,39 +2800,39 @@ void dred_clipboard_free_text__gtk(char* text)
 
 //// GTK <-> GUI BINDING ////
 
-static void dred_platform__on_global_capture_mouse__gtk(dred_element* pElement)
+static void dred_platform__on_global_capture_mouse__gtk(dred_control* pControl)
 {
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL) {
         gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
             gtk_widget_get_window(pWindow->pGTKClientArea), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
     }
 }
 
-static void dred_platform__on_global_release_mouse__gtk(dred_element* pElement)
+static void dred_platform__on_global_release_mouse__gtk(dred_control* pControl)
 {
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL) {
         gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
     }
 }
 
-static void dred_platform__on_global_capture_keyboard__gtk(dred_element* pElement, dred_element* pPrevCapturedElement)
+static void dred_platform__on_global_capture_keyboard__gtk(dred_control* pControl, dred_control* pPrevCapturedElement)
 {
     (void)pPrevCapturedElement;
 
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL) {
-        pWindow->pElementWithKeyboardCapture = pElement;
+        pWindow->pControlWithKeyboardCapture = pControl;
         gtk_widget_grab_focus(GTK_WIDGET(pWindow->pGTKWindow));
     }
 }
 
-static void dred_platform__on_global_release_keyboard__gtk(dred_element* pElement, dred_element* pNewCapturedElement)
+static void dred_platform__on_global_release_keyboard__gtk(dred_control* pControl, dred_control* pNewCapturedElement)
 {
     (void)pNewCapturedElement;
 
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL) {
         dred_window* pNewWindow = dred_get_element_window(pNewCapturedElement);
         if (pWindow != pNewWindow) {
@@ -2841,13 +2841,13 @@ static void dred_platform__on_global_release_keyboard__gtk(dred_element* pElemen
     }
 }
 
-static void dred_platform__on_global_dirty__gtk(dred_element* pElement, dred_rect relativeRect)
+static void dred_platform__on_global_dirty__gtk(dred_control* pControl, dred_rect relativeRect)
 {
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow != NULL && pWindow->pGTKWindow != NULL)
     {
         dred_rect absoluteRect = relativeRect;
-        drgui_make_rect_absolute(pElement, &absoluteRect);
+        drgui_make_rect_absolute(pControl, &absoluteRect);
 
         if (dred_rect_has_volume(absoluteRect)) {
             gtk_widget_queue_draw_area(pWindow->pGTKClientArea,
@@ -2872,9 +2872,9 @@ static void dred_platform__on_global_dirty__gtk(dred_element* pElement, dred_rec
 //
 //////////////////////////////////////////////////////////////////
 
-static void dred_platform__on_global_change_cursor(dred_element* pElement, dred_cursor_type cursor)
+static void dred_platform__on_global_change_cursor(dred_control* pControl, dred_cursor_type cursor)
 {
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow == NULL) {
         return;
     }
@@ -2895,15 +2895,15 @@ static void dred_platform__on_global_change_cursor(dred_element* pElement, dred_
     }
 }
 
-void dred_platform__on_delete_gui_element(dred_element* pElement)
+void dred_platform__on_delete_gui_element(dred_control* pControl)
 {
-    dred_window* pWindow = dred_get_element_window(pElement);
+    dred_window* pWindow = dred_get_element_window(pControl);
     if (pWindow == NULL) {
         return;
     }
 
-    if (pWindow->pElementWithKeyboardCapture == pElement) {
-        pWindow->pElementWithKeyboardCapture = NULL;
+    if (pWindow->pControlWithKeyboardCapture == pControl) {
+        pWindow->pControlWithKeyboardCapture = NULL;
     }
 }
 
@@ -3424,8 +3424,8 @@ void dred_window_on_focus(dred_window* pWindow)
     }
 
     // Make sure the GUI element is given the keyboard capture if it hasn't already got it.
-    if (!drgui_has_keyboard_capture(pWindow->pElementWithKeyboardCapture)) {
-        drgui_capture_keyboard(pWindow->pElementWithKeyboardCapture);
+    if (!drgui_has_keyboard_capture(pWindow->pControlWithKeyboardCapture)) {
+        drgui_capture_keyboard(pWindow->pControlWithKeyboardCapture);
     }
 }
 
@@ -3436,7 +3436,7 @@ void dred_window_on_unfocus(dred_window* pWindow)
     }
 
     // Make sure the GUI element is released of the keyboard capture, but don't clear the variable.
-    if (drgui_has_keyboard_capture(pWindow->pElementWithKeyboardCapture)) {
+    if (drgui_has_keyboard_capture(pWindow->pControlWithKeyboardCapture)) {
         drgui_release_keyboard(pWindow->pDred->pGUI);
     }
 }
@@ -3449,13 +3449,13 @@ void dred_window__stock_event__hide_on_close(dred_window* pWindow)
 }
 
 
-dred_window* dred_get_element_window(dred_element* pElement)
+dred_window* dred_get_element_window(dred_control* pControl)
 {
-    if (pElement == NULL) {
+    if (pControl == NULL) {
         return NULL;
     }
 
-    dred_element* pRootGUIElement = drgui_find_top_level_element(pElement);
+    dred_control* pRootGUIElement = drgui_find_top_level_element(pControl);
     if (pRootGUIElement == NULL) {
         return NULL;
     }

@@ -197,7 +197,7 @@ void dred_checkbox__refresh_layout(dred_checkbox* pCheckbox)
     drgui_dirty(pCheckbox, drgui_get_local_rect(pCheckbox));
 }
 
-dred_checkbox* dred_checkbox_create(dred_context* pDred, dred_element* pParent, const char* text, bool checked)
+dred_checkbox* dred_checkbox_create(dred_context* pDred, dred_control* pParent, const char* text, bool checked)
 {
     dred_checkbox* pCheckbox = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_BUTTON, sizeof(dred_checkbox_data));
     if (pCheckbox == NULL) {

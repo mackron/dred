@@ -200,7 +200,7 @@ void dred_colorbutton__refresh_layout(dred_colorbutton* pButton)
     drgui_dirty(pButton, drgui_get_local_rect(pButton));
 }
 
-dred_colorbutton* dred_colorbutton_create(dred_context* pDred, dred_element* pParent, const char* text, dred_color color)
+dred_colorbutton* dred_colorbutton_create(dred_context* pDred, dred_control* pParent, const char* text, dred_color color)
 {
     dred_colorbutton* pButton = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_BUTTON, sizeof(dred_colorbutton_data));
     if (pButton == NULL) {

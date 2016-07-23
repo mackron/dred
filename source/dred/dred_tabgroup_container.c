@@ -17,7 +17,7 @@ void dred_tabgroup_container__on_size(dred_tabgroup_container* pContainer, float
     }
 }
 
-dred_tabgroup_container* dred_tabgroup_container_create(dred_context* pDred, dred_element* pParent)
+dred_tabgroup_container* dred_tabgroup_container_create(dred_context* pDred, dred_control* pParent)
 {
     dred_tabgroup* pContainer = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_TABGROUP_CONTAINER, sizeof(dred_tabgroup_container_data));
     if (pContainer == NULL) {

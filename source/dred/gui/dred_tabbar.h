@@ -1,7 +1,7 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
 #define DRED_CONTROL_TYPE_TABBAR   "dred.common.tabbar"
-typedef dred_element dred_tabbar;
+typedef dred_control dred_tabbar;
 
 #define DRED_GUI_MAX_TAB_TEXT_LENGTH   256
 
@@ -30,7 +30,7 @@ typedef void (* dred_tabbar_on_tab_mouse_button_up_proc)(dred_tabbar* pTabBar, d
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Creates a new tab bar control.
-dred_tabbar* dred_tabbar_create(dred_context* pDred, dred_element* pParent, dred_tabbar_orientation orientation, size_t extraDataSize, const void* pExtraData);
+dred_tabbar* dred_tabbar_create(dred_context* pDred, dred_control* pParent, dred_tabbar_orientation orientation, size_t extraDataSize, const void* pExtraData);
 
 /// Deletes the given tab bar control.
 void dred_tabbar_delete(dred_tabbar* pTabBar);
@@ -235,7 +235,7 @@ drgui_tab* dred_tabbar_create_and_prepend_tab(dred_tabbar* pTabBar, const char* 
 void drgui_tab_delete(drgui_tab* pTab);
 
 /// Retrieves the tab bar GUI element that owns the given item.
-dred_element* drgui_tab_get_tab_bar_element(drgui_tab* pTab);
+dred_control* drgui_tab_get_tab_bar_element(drgui_tab* pTab);
 
 /// Retrieves the size of the extra data associated with the given tree-view item.
 size_t drgui_tab_get_extra_data_size(drgui_tab* pTab);

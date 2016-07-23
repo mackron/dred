@@ -7,12 +7,12 @@
 typedef struct
 {
     char title[64];
-    dred_element* pGUIElement;
+    dred_control* pGUIElement;
 } dred_settings_editor_page;
 
 typedef struct
 {
-    dred_element* pCloseButton;
+    dred_control* pCloseButton;
 
     // General
     dred_checkbox* pCBShowTabBar;
@@ -20,10 +20,10 @@ typedef struct
     dred_checkbox* pCBAutoHideCmdBar;
 
     // Theme
-    dred_element* pFontButton;
-    dred_element* pTextColorButton;
-    dred_element* pBGColorButton;
-    dred_element* pLineColorButton;
+    dred_control* pFontButton;
+    dred_control* pTextColorButton;
+    dred_control* pBGColorButton;
+    dred_control* pLineColorButton;
 
     // Text Editor
     dred_checkbox* pCBTabsToSpaces;
@@ -176,7 +176,7 @@ void dred_settings_editor__on_size(dred_settings_editor* pSettingsEditor, float 
     
 }
 
-void dred_settings_editor__on_capture_keyboard(dred_settings_editor* pSettingsEditor, dred_element* pPrevCapturedElement)
+void dred_settings_editor__on_capture_keyboard(dred_settings_editor* pSettingsEditor, dred_control* pPrevCapturedElement)
 {
     (void)pSettingsEditor;
     (void)pPrevCapturedElement;
@@ -334,7 +334,7 @@ void dred_settings__btn_choose_font__on_pressed(dred_button* pButton)
 }
 
 
-void dred_settings_editor_page__on_mouse_enter(dred_element* pPageElement)
+void dred_settings_editor_page__on_mouse_enter(dred_control* pPageElement)
 {
     dred_settings_editor* pSettingsEditor = drgui_get_parent(pPageElement);
 
@@ -348,13 +348,13 @@ void dred_settings_editor_page__on_mouse_enter(dred_element* pPageElement)
     }
 }
 
-void dred_settings_editor_page__on_paint(dred_element* pPageElement, dred_rect rect, void* pPaintData)
+void dred_settings_editor_page__on_paint(dred_control* pPageElement, dred_rect rect, void* pPaintData)
 {
     (void)rect;
     drgui_draw_rect(pPageElement, drgui_get_local_rect(pPageElement), drgui_rgb(255, 255, 255), pPaintData);
 }
 
-bool dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_element* pParent, const char* title)
+bool dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_control* pParent, const char* title)
 {
     assert(pPage != NULL);
     assert(pDred != NULL);
@@ -526,7 +526,7 @@ bool dred_settings_editor__init_page__text_editor(dred_settings_editor* pSetting
 }
 
 
-dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_element* pParent, const char* filePathAbsolute)
+dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_control* pParent, const char* filePathAbsolute)
 {
     dred_settings_editor* pSettingsEditor = dred_editor_create(pDred, pParent, DRED_CONTROL_TYPE_SETTINGS_EDITOR, 0, 0, filePathAbsolute, sizeof(dred_settings_editor_data));
     if (pSettingsEditor == NULL) {
