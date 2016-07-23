@@ -552,7 +552,7 @@ void dred_scrollbar_on_mouse_leave(dred_scrollbar* pScrollbar)
     }
 
     if (needsRedraw) {
-        drgui_dirty(pScrollbar, dred_scrollbar_get_thumb_rect(pScrollbar));
+        dred_control_dirty(pScrollbar, dred_scrollbar_get_thumb_rect(pScrollbar));
     }
 }
 
@@ -599,7 +599,7 @@ void dred_scrollbar_on_mouse_move(dred_scrollbar* pScrollbar, int relativeMouseP
             pSB->thumbHovered = dred_rect_contains_point(thumbRect, (float)relativeMousePosX, (float)relativeMousePosY);
 
             if (wasThumbHovered != pSB->thumbHovered) {
-                drgui_dirty(pScrollbar, thumbRect);
+                dred_control_dirty(pScrollbar, thumbRect);
             }
         }
     }
@@ -630,7 +630,7 @@ void dred_scrollbar_on_mouse_button_down(dred_scrollbar* pScrollbar, int button,
                     pSB->thumbClickPosY = (float)relativeMousePosY;
                     dred_scrollbar_make_relative_to_thumb(pScrollbar, &pSB->thumbClickPosX, &pSB->thumbClickPosY);
 
-                    drgui_dirty(pScrollbar, dred_scrollbar_get_thumb_rect(pScrollbar));
+                    dred_control_dirty(pScrollbar, dred_scrollbar_get_thumb_rect(pScrollbar));
                 }
             }
             else
@@ -664,7 +664,7 @@ void dred_scrollbar_on_mouse_button_up(dred_scrollbar* pScrollbar, int button, i
             dred_gui_release_mouse(pScrollbar->pGUI);
             pSB->thumbPressed = false;
 
-            drgui_dirty(pScrollbar, dred_scrollbar_get_thumb_rect(pScrollbar));
+            dred_control_dirty(pScrollbar, dred_scrollbar_get_thumb_rect(pScrollbar));
         }
     }
 }
@@ -699,10 +699,10 @@ void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, dred_rect relativeClipp
         // The thumb is visible.
 
         // Track. We draw this in 4 seperate pieces so we can avoid overdraw with the thumb.
-        drgui_draw_rect(pScrollbar, drgui_make_rect(0, 0, dred_control_get_width(pScrollbar), thumbRect.top), pSB->trackColor, pPaintData);  // Top
-        drgui_draw_rect(pScrollbar, drgui_make_rect(0, thumbRect.bottom, dred_control_get_width(pScrollbar), dred_control_get_height(pScrollbar)), pSB->trackColor, pPaintData);  // Bottom
-        drgui_draw_rect(pScrollbar, drgui_make_rect(0, thumbRect.top, thumbRect.left, thumbRect.bottom), pSB->trackColor, pPaintData);  // Left
-        drgui_draw_rect(pScrollbar, drgui_make_rect(thumbRect.right, thumbRect.top, dred_control_get_width(pScrollbar), thumbRect.bottom), pSB->trackColor, pPaintData); // Right
+        dred_control_draw_rect(pScrollbar, drgui_make_rect(0, 0, dred_control_get_width(pScrollbar), thumbRect.top), pSB->trackColor, pPaintData);  // Top
+        dred_control_draw_rect(pScrollbar, drgui_make_rect(0, thumbRect.bottom, dred_control_get_width(pScrollbar), dred_control_get_height(pScrollbar)), pSB->trackColor, pPaintData);  // Bottom
+        dred_control_draw_rect(pScrollbar, drgui_make_rect(0, thumbRect.top, thumbRect.left, thumbRect.bottom), pSB->trackColor, pPaintData);  // Left
+        dred_control_draw_rect(pScrollbar, drgui_make_rect(thumbRect.right, thumbRect.top, dred_control_get_width(pScrollbar), thumbRect.bottom), pSB->trackColor, pPaintData); // Right
 
         // Thumb.
         dred_color thumbColor;
@@ -714,12 +714,12 @@ void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, dred_rect relativeClipp
             thumbColor = pSB->thumbColor;
         }
 
-        drgui_draw_rect(pScrollbar, thumbRect, thumbColor, pPaintData);
+        dred_control_draw_rect(pScrollbar, thumbRect, thumbColor, pPaintData);
     }
     else
     {
         // The thumb is not visible - just draw the track as one quad.
-        drgui_draw_rect(pScrollbar, dred_control_get_local_rect(pScrollbar), pSB->trackColor, pPaintData);
+        dred_control_draw_rect(pScrollbar, dred_control_get_local_rect(pScrollbar), pSB->trackColor, pPaintData);
     }
 }
 
@@ -738,7 +738,7 @@ DRED_GUI_PRIVATE void dred_scrollbar_refresh_thumb(dred_scrollbar* pScrollbar)
     dred_rect newThumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
     if (!dred_rect_equal(oldThumbRect, newThumbRect))
     {
-        drgui_dirty(pScrollbar, dred_rect_union(oldThumbRect, newThumbRect));
+        dred_control_dirty(pScrollbar, dred_rect_union(oldThumbRect, newThumbRect));
     }
 }
 

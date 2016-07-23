@@ -81,7 +81,7 @@ void dred_tabgroup__on_paint(dred_tabgroup* pTabGroup, dred_rect rect, void* pPa
         dred_rect bodyRect = dred_control_get_local_rect(pTabGroup);
         bodyRect.top += dred_control_get_height(dred_tabgroup__get_tabbar(pTabGroup));
 
-        drgui_draw_rect(pTabGroup, bodyRect, pDred->config.tabgroupBGColor, pPaintData);
+        dred_control_draw_rect(pTabGroup, bodyRect, pDred->config.tabgroupBGColor, pPaintData);
     }
 }
 
@@ -249,7 +249,7 @@ void dred_tabgroup_refresh_styling(dred_tabgroup* pTabGroup)
     dred_tabgroup__refresh_layout(pTabGroup, dred_control_get_width(pTabGroup), dred_control_get_height(pTabGroup));
 
     // Redraw.
-    drgui_dirty(pTabGroup, dred_control_get_local_rect(pTabGroup));
+    dred_control_dirty(pTabGroup, dred_control_get_local_rect(pTabGroup));
 }
 
 void dred_tabgroup_get_body_size(dred_tabgroup* pTabGroup, float* pSizeXOut, float* pSizeYOut)

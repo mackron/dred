@@ -5,7 +5,7 @@ void dred_image__delete_subimage_by_index(dred_image* pImage, size_t index)
     assert(pImage != NULL);
     assert(pImage->subimageCount > index);
 
-    drgui_delete_image(pImage->pSubImages[index].pGUIImage);
+    dred_gui_delete_image(pImage->pSubImages[index].pGUIImage);
 
     if (index+1 < pImage->subimageCount) {
         memmove(pImage->pSubImages + index, pImage->pSubImages + (index+1), (pImage->subimageCount - (index+1)) * sizeof(*pImage->pSubImages));
@@ -43,7 +43,7 @@ dred_image* dred_image_create(dred_context* pDred, unsigned int id, const dred_i
     {
         pImage->pSubImages[pImage->subimageCount].scale = pDesc[iSubImage].scale;
         pImage->pSubImages[pImage->subimageCount].referenceCount = 1;
-        pImage->pSubImages[pImage->subimageCount].pGUIImage = drgui_create_image(pDred->pGUI, pDesc[iSubImage].width, pDesc[iSubImage].height, pDesc[iSubImage].format, 0, pDesc[iSubImage].pImageData);
+        pImage->pSubImages[pImage->subimageCount].pGUIImage = dred_gui_create_image(pDred->pGUI, pDesc[iSubImage].width, pDesc[iSubImage].height, pDesc[iSubImage].format, 0, pDesc[iSubImage].pImageData);
         if (pImage->pSubImages[pImage->subimageCount].pGUIImage == NULL) {
             continue;   // Skip this sub-image if it was not successfully created.
         }
@@ -67,7 +67,7 @@ void dred_image_delete(dred_image* pImage)
     }
 
     for (size_t i = 0; i < pImage->subimageCount; ++i) {
-        drgui_delete_image(pImage->pSubImages[i].pGUIImage);
+        dred_gui_delete_image(pImage->pSubImages[i].pGUIImage);
     }
 
     free(pImage->pSubImages);

@@ -31,7 +31,7 @@
 //   level element, but dr_gui will determine the exact child element that the mouse moved on and thus should receive the
 //   relevant outbound mouse-move event.
 // - There are some special events that are handled differently to normal events. The best example is the paint events. The
-//   paint event is only called from drgui_draw().
+//   paint event is only called from dred_control_draw().
 // - Key press/release events are only ever posted to the element that has the keyboard capture/focus which is set with
 //   dred_gui_capture_keyboard(). Thus, when posting an inbound key event, a top-level element is not required when posting
 //   those events. The relevant context is still required, however.
@@ -72,25 +72,25 @@
 // Drawing/Painting
 // - Drawing is one of the more complex parts of the GUI because it can be a bit unintuitive regarding exactly when an element
 //   is drawn and when a drawing function is allowed to be called.
-// - To draw an element, call drgui_draw(). This takes a pointer to the element to draw and the rectangle region that should
+// - To draw an element, call dred_control_draw(). This takes a pointer to the element to draw and the rectangle region that should
 //   be redrawn. Any children that fall inside the specified rectangle region will be redrawn as well. You do not want to call
-//   drgui_draw() on a parent element and then again on it's children because dr_gui will do that automatically.
-// - drgui_draw() does not draw anything directly, but rather calls painting callback routines which is where the actual
+//   dred_control_draw() on a parent element and then again on it's children because dr_gui will do that automatically.
+// - dred_control_draw() does not draw anything directly, but rather calls painting callback routines which is where the actual
 //   drawing takes place.
 // - Sometimes an application will need to be told when a region of an element is dirty and needs redrawing. An example is
 //   event-driven, non real-time applications such as normal desktop applications. To mark an element as dirty, you call the
-//   drgui_dirty() function which takes the element that is dirty, and the rectangle region that needs to be redrawn. This
+//   dred_control_dirty() function which takes the element that is dirty, and the rectangle region that needs to be redrawn. This
 //   does not redraw the element immediately, but instead posts an on_dirty event for the application. Marking regions as dirty
 //   is not strictly required, but you should prefer it for event-driven applications that require painting operations to be
 //   performed at specific times (such as inside Win32's WM_PAINT messages).
 // - Some operations will cause a region of an element to become dirty - such as when it is resized. dr_gui will
 //   automatically mark the relevant regions as dirty which in turn will cause a paint message to be posted. If this is not
-//   required, it can be disabled with drgui_disable_auto_dirty(). You may want to disable automatic dirtying if you are
+//   required, it can be disabled with dred_gui_disable_auto_dirty(). You may want to disable automatic dirtying if you are
 //   running a real-time application like a game which would redraw the entire GUI every frame anyway and thus not require
 //   handling of the paint message.
 // - Real-time application guidelines (games, etc.):
-//   - drgui_disable_auto_dirty()
-//   - drgui_draw(pTopLevelControl, 0, 0, viewportWidth, viewportHeight) at the end of every frame after your main loop.
+//   - dred_gui_disable_auto_dirty()
+//   - dred_control_draw(pTopLevelControl, 0, 0, viewportWidth, viewportHeight) at the end of every frame after your main loop.
 //
 
 
@@ -109,7 +109,7 @@
 //
 // Basic Drawing:
 //
-// drgui_draw(pTopLevelControl, 0, 0, dred_control_get_width(pTopLevelControl), dred_control_get_height(pTopLevelControl));
+// dred_control_draw(pTopLevelControl, 0, 0, dred_control_get_width(pTopLevelControl), dred_control_get_height(pTopLevelControl));
 //
 // -------------------------
 //
@@ -139,7 +139,7 @@
 //             {
 //                 RECT rect;
 //                 if (GetUpdateRect(hWnd, &rect, FALSE)) {
-//                     drgui_draw(pTopLevelControl, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+//                     dred_control_draw(pTopLevelControl, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
 //                 }
 //
 //                 break;
@@ -1251,7 +1251,7 @@ dred_rect dred_control_get_local_rect(const dred_control* pControl);
 /// @remarks
 ///     This can only be called once, so it should always be done after initialization. This will fail if called
 ///     more than once.
-bool drgui_register_painting_callbacks(dred_gui* pGUI, void* pPaintingContext, dred_gui_painting_callbacks callbacks);
+bool dred_gui_register_painting_callbacks(dred_gui* pGUI, void* pPaintingContext, dred_gui_painting_callbacks callbacks);
 
 
 /// Performs a recursive traversal of all visible elements in the given rectangle.
@@ -1265,32 +1265,32 @@ bool drgui_register_painting_callbacks(dred_gui* pGUI, void* pPaintingContext, d
 ///     @par
 ///     The iteration callback function takes a pointer to a rectangle structure that represents the visible portion of the
 ///     element. This pointer can be modified by the callback to create an adjusted rectangle which can be used for clipping.
-bool drgui_iterate_visible_elements(dred_control* pParentControl, dred_rect relativeRect, dred_gui_visible_iteration_proc callback, void* pUserData);
+bool dred_control_iterate_visible_elements(dred_control* pParentControl, dred_rect relativeRect, dred_gui_visible_iteration_proc callback, void* pUserData);
 
 
 /// Disable's automatic dirtying of elements.
-void drgui_disable_auto_dirty(dred_gui* pGUI);
+void dred_gui_disable_auto_dirty(dred_gui* pGUI);
 
 /// Enable's automatic dirtying of elements.
-void drgui_enable_auto_dirty(dred_gui* pGUI);
+void dred_gui_enable_auto_dirty(dred_gui* pGUI);
 
 /// Determines whether or not automatic dirtying is enabled.
-bool drgui_is_auto_dirty_enabled(dred_gui* pGUI);
+bool dred_gui_is_auto_dirty_enabled(dred_gui* pGUI);
 
 
 /// Begins accumulating a dirty rectangle.
 ///
 /// Returns a pointer to the top level element that was made dirty.
-dred_control* drgui_begin_dirty(dred_control* pControl);
+dred_control* dred_control_begin_dirty(dred_control* pControl);
 
 /// Ends accumulating a dirty rectangle, and requests a redraw from the backend if the counter reaches zero.
-void drgui_end_dirty(dred_control* pControl);
+void dred_control_end_dirty(dred_control* pControl);
 
 /// Marks a region of the given element as dirty.
 ///
 /// @remarks
 ///     This will not redraw the element immediately, but instead post a paint event.
-void drgui_dirty(dred_control* pControl, dred_rect relativeRect);
+void dred_control_dirty(dred_control* pControl, dred_rect relativeRect);
 
 
 /// Draws the given element.
@@ -1302,31 +1302,31 @@ void drgui_dirty(dred_control* pControl, dred_rect relativeRect);
 ///     This will call painting event handlers which will give the application time to do custom drawing.
 ///     @par
 ///     When using easy_draw to do drawing, pPaintData must be set to a pointer to the relevant easydraw_surface object.
-void drgui_draw(dred_control* pControl, dred_rect relativeRect, void* pPaintData);
+void dred_control_draw(dred_control* pControl, dred_rect relativeRect, void* pPaintData);
 
 /// Retrieves the current clipping rectangle.
-void drgui_get_clip(dred_control* pControl, dred_rect* pRelativeRect, void* pPaintData);
+void dred_control_get_clip(dred_control* pControl, dred_rect* pRelativeRect, void* pPaintData);
 
 /// Sets the clipping rectangle to apply to all future draw operations on this element.
-void drgui_set_clip(dred_control* pControl, dred_rect relativeRect, void* pPaintData);
+void dred_control_set_clip(dred_control* pControl, dred_rect relativeRect, void* pPaintData);
 
 /// Draws a rectangle on the given element.
-void drgui_draw_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, void* pPaintData);
+void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, void* pPaintData);
 
 /// Draws the outline of a rectangle on the given element.
-void drgui_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float outlineWidth, void* pPaintData);
+void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float outlineWidth, void* pPaintData);
 
 /// Draws a filled rectangle with an outline on the given element.
-void drgui_draw_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, void* pPaintData);
+void dred_control_draw_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, void* pPaintData);
 
 /// Draws a rectangle with rounded corners on the given element.
-void drgui_draw_round_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, void* pPaintData);
+void dred_control_draw_round_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, void* pPaintData);
 
 /// Draws the outline of a rectangle with rounded corners on the given element.
-void drgui_draw_round_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, void* pPaintData);
+void dred_control_draw_round_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, void* pPaintData);
 
 /// Draws a filled rectangle and it's outline with rounded corners on the given element.
-void drgui_draw_round_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData);
+void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData);
 
 /// Draws a run of text on the given element.
 ///
@@ -1335,39 +1335,39 @@ void drgui_draw_round_rect_with_outline(dred_control* pControl, dred_rect relati
 ///     calls to this function.
 ///     @par
 ///     \c textSizeInBytes can be -1 in which case the text string is treated as null terminated.
-void drgui_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData);
+void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData);
 
 /// Draws an image.
-void drgui_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_draw_image_args* pArgs, void* pPaintData);
+void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_draw_image_args* pArgs, void* pPaintData);
 
 
 /// Creates a font resource.
-dred_gui_font* drgui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags);
+dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags);
 
 /// Deletes a font resource.
-void drgui_delete_font(dred_gui_font* pFont);
+void dred_gui_delete_font(dred_gui_font* pFont);
 
 /// Retrieves the metrics of the given font.
-bool drgui_get_font_metrics(dred_gui_font* pFont, dred_gui_font_metrics* pMetricsOut);
+bool dred_gui_get_font_metrics(dred_gui_font* pFont, dred_gui_font_metrics* pMetricsOut);
 
 /// Retrieves the metrics of the glyph for the given character when rendered with the given font.
-bool drgui_get_glyph_metrics(dred_gui_font* pFont, unsigned int utf32, dred_glyph_metrics* pMetricsOut);
+bool dred_gui_get_glyph_metrics(dred_gui_font* pFont, unsigned int utf32, dred_glyph_metrics* pMetricsOut);
 
 /// Retrieves the dimensions of the given string when drawn with the given font.
 ///
 /// @remarks
 ///     When the length of the text is 0, the width will be set to 0 and the height will be set to the line height.
-bool drgui_measure_string(dred_gui_font* pFont, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut);
+bool dred_gui_measure_string(dred_gui_font* pFont, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut);
 
 /// Retrieves the position to place a text cursor based on the given point for the given string when drawn with the given font.
-bool drgui_get_text_cursor_position_from_point(dred_gui_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+bool dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
 
 /// Retrieves the position to palce a text cursor based on the character at the given index for the given string when drawn with the given font.
-bool drgui_get_text_cursor_position_from_char(dred_gui_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+bool dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 
 
-/// Creates an image that can be passed to drgui_draw_image().
+/// Creates an image that can be passed to dred_control_draw_image().
 ///
 /// @remarks
 ///     The dimensions and format of an image are immutable. If these need to change, then the image needs to be deleted and re-created.
@@ -1376,30 +1376,30 @@ bool drgui_get_text_cursor_position_from_char(dred_gui_font* pFont, const char* 
 ///     @par
 ///     If stride is set to 0, it is assumed to be tightly packed.
 ///     @par
-///     Use drgui_map_image_data() and drgui_unmap_image_data() to update or retrieve image data.
-dred_gui_image* drgui_create_image(dred_gui* pGUI, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pData);
+///     Use dred_gui_map_image_data() and dred_gui_unmap_image_data() to update or retrieve image data.
+dred_gui_image* dred_gui_create_image(dred_gui* pGUI, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pData);
 
 /// Deletes the given image.
-void drgui_delete_image(dred_gui_image* pImage);
+void dred_gui_delete_image(dred_gui_image* pImage);
 
 /// Retrieves the size of the given image.
-void drgui_get_image_size(dred_gui_image* pImage, unsigned int* pWidthOut, unsigned int* pHeightOut);
+void dred_gui_get_image_size(dred_gui_image* pImage, unsigned int* pWidthOut, unsigned int* pHeightOut);
 
 /// Retrieves the optimal image format for the given context.
-dred_gui_image_format drgui_get_optimal_image_format(dred_gui* pGUI);
+dred_gui_image_format dred_gui_get_optimal_image_format(dred_gui* pGUI);
 
 /// Retrieves a pointer to a buffer representing the given image's data.
 ///
-/// Call drgui_unmap_image_data() when you are done with this function.
+/// Call dred_gui_unmap_image_data() when you are done with this function.
 ///
 /// Use this function to access an image's data. The returned pointer does not necessarilly point to the image's actual data, so when
-/// writing to this pointer, nothing is actually updated until drgui_unmap_image_data() is called.
+/// writing to this pointer, nothing is actually updated until dred_gui_unmap_image_data() is called.
 ///
 /// The returned data will contain the image data at the time of the mapping.
-void* drgui_map_image_data(dred_gui_image* pImage, unsigned int accessFlags);
+void* dred_gui_map_image_data(dred_gui_image* pImage, unsigned int accessFlags);
 
 /// Unmaps the given image data.
-void drgui_unmap_image_data(dred_gui_image* pImage);
+void dred_gui_unmap_image_data(dred_gui_image* pImage);
 
 
 
@@ -1421,7 +1421,7 @@ bool drgui_pass_through_hit_test(dred_control* pControl, float mousePosX, float 
 //// Painting ////
 
 /// Draws a border around the given element.
-void drgui_draw_border(dred_control* pControl, float borderWidth, dred_color color, void* pUserData);
+void dred_control_draw_border(dred_control* pControl, float borderWidth, dred_color color, void* pUserData);
 
 
 

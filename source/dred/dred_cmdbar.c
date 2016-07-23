@@ -111,10 +111,10 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, dred_rect rect, void* pPaintDat
 
     float scaledPaddingX = pDred->config.cmdbarPaddingX*pDred->uiScale;
     float scaledPaddingY = pDred->config.cmdbarPaddingY*pDred->uiScale;
-    drgui_draw_rect(pCmdBar, drgui_make_rect(0,                                0,                                 scaledPaddingX,                   localRect.bottom), bgcolor, pPaintData); // Left
-    drgui_draw_rect(pCmdBar, drgui_make_rect(localRect.right - scaledPaddingX, 0,                                 localRect.right,                  localRect.bottom), bgcolor, pPaintData); // Right
-    drgui_draw_rect(pCmdBar, drgui_make_rect(scaledPaddingX,                   0,                                 localRect.right - scaledPaddingX, scaledPaddingY),   bgcolor, pPaintData); // Top
-    drgui_draw_rect(pCmdBar, drgui_make_rect(scaledPaddingX,                   localRect.bottom - scaledPaddingY, localRect.right - scaledPaddingX, localRect.bottom), bgcolor, pPaintData); // Bottom
+    dred_control_draw_rect(pCmdBar, drgui_make_rect(0,                                0,                                 scaledPaddingX,                   localRect.bottom), bgcolor, pPaintData); // Left
+    dred_control_draw_rect(pCmdBar, drgui_make_rect(localRect.right - scaledPaddingX, 0,                                 localRect.right,                  localRect.bottom), bgcolor, pPaintData); // Right
+    dred_control_draw_rect(pCmdBar, drgui_make_rect(scaledPaddingX,                   0,                                 localRect.right - scaledPaddingX, scaledPaddingY),   bgcolor, pPaintData); // Top
+    dred_control_draw_rect(pCmdBar, drgui_make_rect(scaledPaddingX,                   localRect.bottom - scaledPaddingY, localRect.right - scaledPaddingX, localRect.bottom), bgcolor, pPaintData); // Bottom
 
 
     // Message.
@@ -122,16 +122,16 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, dred_rect rect, void* pPaintDat
     dred_rect mrect;
     dred_rect rrect;
     dred_cmdbar__get_segment_rects(pCmdBar, &lrect, &mrect, &rrect);
-    drgui_draw_rect(pCmdBar, mrect, bgcolor, pPaintData);
+    dred_control_draw_rect(pCmdBar, mrect, bgcolor, pPaintData);
 
     dred_gui_font* pMessageFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
 
     dred_gui_font_metrics messageFontMetrics;
-    drgui_get_font_metrics(pMessageFont, &messageFontMetrics);
+    dred_gui_get_font_metrics(pMessageFont, &messageFontMetrics);
 
     float messageLeft = mrect.left + (4*pDred->uiScale);
     float messageTop  = (((mrect.bottom - mrect.top) - messageFontMetrics.lineHeight) / 2) + scaledPaddingY;
-    drgui_draw_text(pCmdBar, pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, pDred->config.cmdbarTextColor, bgcolor, pPaintData);
+    dred_control_draw_text(pCmdBar, pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, pDred->config.cmdbarTextColor, bgcolor, pPaintData);
 }
 
 void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedControl)
@@ -161,7 +161,7 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, dred_control* p
     // Hide any message that's showing.
     dred_cmdbar_set_message(pCmdBar, "");
 
-    drgui_dirty(pCmdBar, dred_control_get_local_rect(pCmdBar));
+    dred_control_dirty(pCmdBar, dred_control_get_local_rect(pCmdBar));
 
 
     // Fall through to the default handler.
@@ -198,7 +198,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, dred_control* p
         dred_hide_command_bar(pDred);
     }
 
-    drgui_dirty(pCmdBar, dred_control_get_local_rect(pCmdBar));
+    dred_control_dirty(pCmdBar, dred_control_get_local_rect(pCmdBar));
 
 
     // Fall through to the default handler.
@@ -325,12 +325,12 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
 
 
     dred_gui_font_metrics fontMetricsTB;
-    drgui_get_font_metrics(dred_textbox_get_font(data->pTextBox), &fontMetricsTB);
+    dred_gui_get_font_metrics(dred_textbox_get_font(data->pTextBox), &fontMetricsTB);
 
     dred_gui_font* pMessageFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
 
     dred_gui_font_metrics fontMetricsMsg;
-    drgui_get_font_metrics(pMessageFont, &fontMetricsMsg);
+    dred_gui_get_font_metrics(pMessageFont, &fontMetricsMsg);
 
     float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(data->pTextBox)*2;
     float messageHeight = (float)fontMetricsMsg.lineHeight;
@@ -464,7 +464,7 @@ void dred_cmdbar_set_message(dred_cmdbar* pCmdBar, const char* text)
     }
 
     strncpy_s(data->message, sizeof(data->message), text, _TRUNCATE);
-    drgui_dirty(pCmdBar, dred_control_get_local_rect(pCmdBar));    // <-- Can optimize this to only draw the message region.
+    dred_control_dirty(pCmdBar, dred_control_get_local_rect(pCmdBar));    // <-- Can optimize this to only draw the message region.
 }
 
 void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar)
@@ -524,5 +524,5 @@ void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
     dred_cmdbar__update_size(pCmdBar);
 
     // Redraw.
-    drgui_dirty(pCmdBar, dred_control_get_local_rect(pCmdBar));
+    dred_control_dirty(pCmdBar, dred_control_get_local_rect(pCmdBar));
 }

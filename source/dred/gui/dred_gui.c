@@ -547,8 +547,8 @@ void drgui_begin_auto_dirty(dred_control* pControl)
     assert(pControl           != NULL);
     assert(pControl->pGUI != NULL);
 
-    if (drgui_is_auto_dirty_enabled(pControl->pGUI)) {
-        drgui_begin_dirty(pControl);
+    if (dred_gui_is_auto_dirty_enabled(pControl->pGUI)) {
+        dred_control_begin_dirty(pControl);
     }
 }
 
@@ -559,8 +559,8 @@ void drgui_end_auto_dirty(dred_control* pControl)
     dred_gui* pGUI = pControl->pGUI;
     assert(pGUI != NULL);
 
-    if (drgui_is_auto_dirty_enabled(pGUI)) {
-        drgui_end_dirty(pControl);
+    if (dred_gui_is_auto_dirty_enabled(pGUI)) {
+        dred_control_end_dirty(pControl);
     }
 }
 
@@ -569,8 +569,8 @@ void drgui_auto_dirty(dred_control* pControl, dred_rect relativeRect)
     assert(pControl != NULL);
     assert(pControl->pGUI != NULL);
 
-    if (drgui_is_auto_dirty_enabled(pControl->pGUI)) {
-        drgui_dirty(pControl, relativeRect);
+    if (dred_gui_is_auto_dirty_enabled(pControl->pGUI)) {
+        dred_control_dirty(pControl, relativeRect);
     }
 }
 
@@ -1445,7 +1445,7 @@ void dred_control_delete(dred_control* pControl)
 
     // The parent needs to be redrawn.
     if (pParent) {
-        drgui_dirty(pParent, relativeRect);
+        dred_control_dirty(pParent, relativeRect);
     }
 
 
@@ -2037,7 +2037,7 @@ dred_control* dred_gui_find_control_under_point(dred_control* pTopLevelControl, 
     data.pControlUnderPoint = NULL;
     data.absolutePosX = absolutePosX;
     data.absolutePosY = absolutePosY;
-    drgui_iterate_visible_elements(pTopLevelControl, dred_control_get_absolute_rect(pTopLevelControl), dred_gui_find_control_under_point_iterator, &data);
+    dred_control_iterate_visible_elements(pTopLevelControl, dred_control_get_absolute_rect(pTopLevelControl), dred_gui_find_control_under_point_iterator, &data);
 
     return data.pControlUnderPoint;
 }
@@ -2477,7 +2477,7 @@ dred_rect dred_control_get_local_rect(const dred_control* pControl)
 
 //// Painting ////
 
-bool drgui_register_painting_callbacks(dred_gui* pGUI, void* pPaintingContext, dred_gui_painting_callbacks callbacks)
+bool dred_gui_register_painting_callbacks(dred_gui* pGUI, void* pPaintingContext, dred_gui_painting_callbacks callbacks)
 {
     if (pGUI == NULL) {
         return false;
@@ -2496,7 +2496,7 @@ bool drgui_register_painting_callbacks(dred_gui* pGUI, void* pPaintingContext, d
 }
 
 
-bool drgui_iterate_visible_elements(dred_control* pParentControl, dred_rect relativeRect, dred_gui_visible_iteration_proc callback, void* pUserData)
+bool dred_control_iterate_visible_elements(dred_control* pParentControl, dred_rect relativeRect, dred_gui_visible_iteration_proc callback, void* pUserData)
 {
     if (pParentControl == NULL) {
         return false;
@@ -2538,7 +2538,7 @@ bool drgui_iterate_visible_elements(dred_control* pParentControl, dred_rect rela
         childRect.right  -= childRelativePosX;
         childRect.bottom -= childRelativePosY;
 
-        if (!drgui_iterate_visible_elements(pChild, childRect, callback, pUserData)) {
+        if (!dred_control_iterate_visible_elements(pChild, childRect, callback, pUserData)) {
             return false;
         }
     }
@@ -2547,21 +2547,21 @@ bool drgui_iterate_visible_elements(dred_control* pParentControl, dred_rect rela
     return true;
 }
 
-void drgui_disable_auto_dirty(dred_gui* pGUI)
+void dred_gui_disable_auto_dirty(dred_gui* pGUI)
 {
     if (pGUI != NULL) {
         pGUI->flags |= IS_AUTO_DIRTY_DISABLED;
     }
 }
 
-void drgui_enable_auto_dirty(dred_gui* pGUI)
+void dred_gui_enable_auto_dirty(dred_gui* pGUI)
 {
     if (pGUI != NULL) {
         pGUI->flags &= ~IS_AUTO_DIRTY_DISABLED;
     }
 }
 
-bool drgui_is_auto_dirty_enabled(dred_gui* pGUI)
+bool dred_gui_is_auto_dirty_enabled(dred_gui* pGUI)
 {
     if (pGUI != NULL) {
         return (pGUI->flags & IS_AUTO_DIRTY_DISABLED) == 0;
@@ -2571,7 +2571,7 @@ bool drgui_is_auto_dirty_enabled(dred_gui* pGUI)
 }
 
 
-dred_control* drgui_begin_dirty(dred_control* pControl)
+dred_control* dred_control_begin_dirty(dred_control* pControl)
 {
     if (pControl == NULL) {
         return NULL;
@@ -2613,7 +2613,7 @@ dred_control* drgui_begin_dirty(dred_control* pControl)
     return pTopLevelControl;
 }
 
-void drgui_end_dirty(dred_control* pControl)
+void dred_control_end_dirty(dred_control* pControl)
 {
     if (pControl == NULL) {
         return;
@@ -2637,7 +2637,7 @@ void drgui_end_dirty(dred_control* pControl)
     }
 }
 
-void drgui_dirty(dred_control* pControl, dred_rect relativeRect)
+void dred_control_dirty(dred_control* pControl, dred_rect relativeRect)
 {
     if (pControl == NULL) {
         return;
@@ -2646,17 +2646,17 @@ void drgui_dirty(dred_control* pControl, dred_rect relativeRect)
     //dred_gui* pGUI = pControl->pGUI;
     //assert(pGUI != NULL);
 
-    dred_control* pTopLevelControl = drgui_begin_dirty(pControl);
+    dred_control* pTopLevelControl = dred_control_begin_dirty(pControl);
     if (pTopLevelControl == NULL) {
         return;
     }
     
     pTopLevelControl->dirtyRect = dred_rect_union(pTopLevelControl->dirtyRect, drgui_make_rect_absolute(pControl, &relativeRect));
-    drgui_end_dirty(pControl);
+    dred_control_end_dirty(pControl);
 }
 
 
-bool drgui_draw_iteration_callback(dred_control* pControl, dred_rect* pRelativeRect, void* pUserData)
+bool dred_control_draw_iteration_callback(dred_control* pControl, dred_rect* pRelativeRect, void* pUserData)
 {
     assert(pControl      != NULL);
     assert(pRelativeRect != NULL);
@@ -2664,19 +2664,19 @@ bool drgui_draw_iteration_callback(dred_control* pControl, dred_rect* pRelativeR
     if (pControl->onPaint != NULL)
     {
         // We want to set the initial clipping rectangle before drawing.
-        drgui_set_clip(pControl, *pRelativeRect, pUserData);
+        dred_control_set_clip(pControl, *pRelativeRect, pUserData);
 
         // We now call the painting function, but only after setting the clipping rectangle.
         pControl->onPaint(pControl, *pRelativeRect, pUserData);
 
         // The on_paint event handler may have adjusted the clipping rectangle so we need to ensure it's restored.
-        drgui_set_clip(pControl, *pRelativeRect, pUserData);
+        dred_control_set_clip(pControl, *pRelativeRect, pUserData);
     }
 
     return true;
 }
 
-void drgui_draw(dred_control* pControl, dred_rect relativeRect, void* pPaintData)
+void dred_control_draw(dred_control* pControl, dred_rect relativeRect, void* pPaintData)
 {
     if (pControl == NULL) {
         return;
@@ -2692,12 +2692,12 @@ void drgui_draw(dred_control* pControl, dred_rect relativeRect, void* pPaintData
 
     pGUI->paintingCallbacks.drawBegin(pPaintData);
     {
-        drgui_iterate_visible_elements(pControl, relativeRect, drgui_draw_iteration_callback, pPaintData);
+        dred_control_iterate_visible_elements(pControl, relativeRect, dred_control_draw_iteration_callback, pPaintData);
     }
     pGUI->paintingCallbacks.drawEnd(pPaintData);
 }
 
-void drgui_get_clip(dred_control* pControl, dred_rect* pRelativeRect, void* pPaintData)
+void dred_control_get_clip(dred_control* pControl, dred_rect* pRelativeRect, void* pPaintData)
 {
     if (pControl == NULL || pControl->pGUI == NULL) {
         return;
@@ -2709,7 +2709,7 @@ void drgui_get_clip(dred_control* pControl, dred_rect* pRelativeRect, void* pPai
     drgui_make_rect_relative(pControl, pRelativeRect);
 }
 
-void drgui_set_clip(dred_control* pControl, dred_rect relativeRect, void* pPaintData)
+void dred_control_set_clip(dred_control* pControl, dred_rect relativeRect, void* pPaintData)
 {
     if (pControl == NULL || pControl->pGUI == NULL) {
         return;
@@ -2731,7 +2731,7 @@ void drgui_set_clip(dred_control* pControl, dred_rect relativeRect, void* pPaint
     pControl->pGUI->paintingCallbacks.setClip(absoluteRect, pPaintData);
 }
 
-void drgui_draw_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, void* pPaintData)
+void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, void* pPaintData)
 {
     if (pControl == NULL) {
         return;
@@ -2745,7 +2745,7 @@ void drgui_draw_rect(dred_control* pControl, dred_rect relativeRect, dred_color 
     pControl->pGUI->paintingCallbacks.drawRect(absoluteRect, color, pPaintData);
 }
 
-void drgui_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float outlineWidth, void* pPaintData)
+void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float outlineWidth, void* pPaintData)
 {
     if (pControl == NULL) {
         return;
@@ -2759,7 +2759,7 @@ void drgui_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dre
     pControl->pGUI->paintingCallbacks.drawRectOutline(absoluteRect, color, outlineWidth, pPaintData);
 }
 
-void drgui_draw_rect_with_outline(dred_control * pControl, dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, void * pPaintData)
+void dred_control_draw_rect_with_outline(dred_control * pControl, dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, void * pPaintData)
 {
     if (pControl == NULL) {
         return;
@@ -2773,7 +2773,7 @@ void drgui_draw_rect_with_outline(dred_control * pControl, dred_rect relativeRec
     pControl->pGUI->paintingCallbacks.drawRectWithOutline(absoluteRect, color, outlineWidth, outlineColor, pPaintData);
 }
 
-void drgui_draw_round_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, void* pPaintData)
+void dred_control_draw_round_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, void* pPaintData)
 {
     if (pControl == NULL) {
         return;
@@ -2787,7 +2787,7 @@ void drgui_draw_round_rect(dred_control* pControl, dred_rect relativeRect, dred_
     pControl->pGUI->paintingCallbacks.drawRoundRect(absoluteRect, color, radius, pPaintData);
 }
 
-void drgui_draw_round_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, void* pPaintData)
+void dred_control_draw_round_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, void* pPaintData)
 {
     if (pControl == NULL) {
         return;
@@ -2801,7 +2801,7 @@ void drgui_draw_round_rect_outline(dred_control* pControl, dred_rect relativeRec
     pControl->pGUI->paintingCallbacks.drawRoundRectOutline(absoluteRect, color, radius, outlineWidth, pPaintData);
 }
 
-void drgui_draw_round_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData)
+void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData)
 {
     if (pControl == NULL) {
         return;
@@ -2815,7 +2815,7 @@ void drgui_draw_round_rect_with_outline(dred_control* pControl, dred_rect relati
     pControl->pGUI->paintingCallbacks.drawRoundRectWithOutline(absoluteRect, color, radius, outlineWidth, outlineColor, pPaintData);
 }
 
-void drgui_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData)
+void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData)
 {
     if (pControl == NULL || pFont == NULL) {
         return;
@@ -2830,7 +2830,7 @@ void drgui_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* t
     pControl->pGUI->paintingCallbacks.drawText(pFont->internalFont, text, textLengthInBytes, absolutePosX, absolutePosY, color, backgroundColor, pPaintData);
 }
 
-void drgui_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_draw_image_args* pArgs, void* pPaintData)
+void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_draw_image_args* pArgs, void* pPaintData)
 {
     if (pControl == NULL || pImage == NULL || pArgs == NULL) {
         return;
@@ -2904,7 +2904,7 @@ void drgui_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_d
 }
 
 
-dred_gui_font* drgui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags)
+dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags)
 {
     if (pGUI == NULL) {
         return NULL;
@@ -2941,7 +2941,7 @@ dred_gui_font* drgui_create_font(dred_gui* pGUI, const char* family, unsigned in
     return pFont;
 }
 
-void drgui_delete_font(dred_gui_font* pFont)
+void dred_gui_delete_font(dred_gui_font* pFont)
 {
     if (pFont == NULL) {
         return;
@@ -2957,7 +2957,7 @@ void drgui_delete_font(dred_gui_font* pFont)
     free(pFont);
 }
 
-bool drgui_get_font_metrics(dred_gui_font* pFont, dred_gui_font_metrics* pMetricsOut)
+bool dred_gui_get_font_metrics(dred_gui_font* pFont, dred_gui_font_metrics* pMetricsOut)
 {
     if (pFont == NULL || pMetricsOut == NULL) {
         return false;
@@ -2972,7 +2972,7 @@ bool drgui_get_font_metrics(dred_gui_font* pFont, dred_gui_font_metrics* pMetric
     return pFont->pGUI->paintingCallbacks.getFontMetrics(pFont->internalFont, pMetricsOut);
 }
 
-bool drgui_get_glyph_metrics(dred_gui_font* pFont, unsigned int utf32, dred_glyph_metrics* pMetricsOut)
+bool dred_gui_get_glyph_metrics(dred_gui_font* pFont, unsigned int utf32, dred_glyph_metrics* pMetricsOut)
 {
     if (pFont == NULL || pMetricsOut == NULL) {
         return false;
@@ -2987,7 +2987,7 @@ bool drgui_get_glyph_metrics(dred_gui_font* pFont, unsigned int utf32, dred_glyp
     return pFont->pGUI->paintingCallbacks.getGlyphMetrics(pFont->internalFont, utf32, pMetricsOut);
 }
 
-bool drgui_measure_string(dred_gui_font* pFont, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut)
+bool dred_gui_measure_string(dred_gui_font* pFont, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut)
 {
     if (pFont == NULL) {
         return false;
@@ -2996,7 +2996,7 @@ bool drgui_measure_string(dred_gui_font* pFont, const char* text, size_t textLen
     if (text == NULL || textLengthInBytes == 0)
     {
         dred_gui_font_metrics metrics;
-        if (!drgui_get_font_metrics(pFont, &metrics)) {
+        if (!dred_gui_get_font_metrics(pFont, &metrics)) {
             return false;
         }
 
@@ -3021,7 +3021,7 @@ bool drgui_measure_string(dred_gui_font* pFont, const char* text, size_t textLen
     return pFont->pGUI->paintingCallbacks.measureString(pFont->internalFont, text, textLengthInBytes, pWidthOut, pHeightOut);
 }
 
-bool drgui_get_text_cursor_position_from_point(dred_gui_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+bool dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     if (pFont == NULL) {
         return false;
@@ -3036,7 +3036,7 @@ bool drgui_get_text_cursor_position_from_point(dred_gui_font* pFont, const char*
     return false;
 }
 
-bool drgui_get_text_cursor_position_from_char(dred_gui_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+bool dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
     if (pFont == NULL) {
         return false;
@@ -3053,7 +3053,7 @@ bool drgui_get_text_cursor_position_from_char(dred_gui_font* pFont, const char* 
 
 
 
-dred_gui_image* drgui_create_image(dred_gui* pGUI, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pData)
+dred_gui_image* dred_gui_create_image(dred_gui* pGUI, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pData)
 {
     if (pGUI == NULL) {
         return NULL;
@@ -3087,7 +3087,7 @@ dred_gui_image* drgui_create_image(dred_gui* pGUI, unsigned int width, unsigned 
     return pImage;
 }
 
-void drgui_delete_image(dred_gui_image* pImage)
+void dred_gui_delete_image(dred_gui_image* pImage)
 {
     if (pImage == NULL) {
         return;
@@ -3104,7 +3104,7 @@ void drgui_delete_image(dred_gui_image* pImage)
     free(pImage);
 }
 
-void drgui_get_image_size(dred_gui_image* pImage, unsigned int* pWidthOut, unsigned int* pHeightOut)
+void dred_gui_get_image_size(dred_gui_image* pImage, unsigned int* pWidthOut, unsigned int* pHeightOut)
 {
     if (pWidthOut) *pWidthOut = 0;
     if (pHeightOut) *pHeightOut = 0;
@@ -3122,7 +3122,7 @@ void drgui_get_image_size(dred_gui_image* pImage, unsigned int* pWidthOut, unsig
     pImage->pGUI->paintingCallbacks.getImageSize(pImage->hResource, pWidthOut, pHeightOut);
 }
 
-dred_gui_image_format drgui_get_optimal_image_format(dred_gui* pGUI)
+dred_gui_image_format dred_gui_get_optimal_image_format(dred_gui* pGUI)
 {
     if (pGUI == NULL || pGUI->paintingCallbacks.getOptimalImageFormat == NULL) {
         return dred_gui_image_format_rgba8;
@@ -3131,7 +3131,7 @@ dred_gui_image_format drgui_get_optimal_image_format(dred_gui* pGUI)
     return pGUI->paintingCallbacks.getOptimalImageFormat(pGUI->pPaintingContext);
 }
 
-void* drgui_map_image_data(dred_gui_image* pImage, unsigned int accessFlags)
+void* dred_gui_map_image_data(dred_gui_image* pImage, unsigned int accessFlags)
 {
     if (pImage == NULL) {
         return NULL;
@@ -3144,7 +3144,7 @@ void* drgui_map_image_data(dred_gui_image* pImage, unsigned int accessFlags)
     return pImage->pGUI->paintingCallbacks.mapImageData(pImage->hResource, accessFlags);
 }
 
-void drgui_unmap_image_data(dred_gui_image* pImage)
+void dred_gui_unmap_image_data(dred_gui_image* pImage)
 {
     if (pImage == NULL) {
         return;
@@ -3187,9 +3187,9 @@ bool drgui_pass_through_hit_test(dred_control* pControl, float mousePosX, float 
 
 //// Painting ////
 
-void drgui_draw_border(dred_control* pControl, float borderWidth, dred_color color, void* pUserData)
+void dred_control_draw_border(dred_control* pControl, float borderWidth, dred_color color, void* pUserData)
 {
-    drgui_draw_rect_outline(pControl, dred_control_get_local_rect(pControl), color, borderWidth, pUserData);
+    dred_control_draw_rect_outline(pControl, dred_control_get_local_rect(pControl), color, borderWidth, pUserData);
 }
 
 
@@ -3411,34 +3411,34 @@ bool dred_rect_has_volume(dred_rect rect)
 /////////////////////////////////////////////////////////////////
 #ifndef DRED_GUI_NO_DR_2D
 
-void drgui_draw_begin_dr_2d(void* pPaintData);
-void drgui_draw_end_dr_2d(void* pPaintData);
-void drgui_set_clip_dr_2d(dred_rect rect, void* pPaintData);
-void drgui_get_clip_dr_2d(dred_rect* pRectOut, void* pPaintData);
-void drgui_draw_rect_dr_2d(dred_rect rect, dred_color color, void* pPaintData);
-void drgui_draw_rect_outline_dr_2d(dred_rect, dred_color, float, void*);
-void drgui_draw_rect_with_outline_dr_2d(dred_rect, dred_color, float, dred_color, void*);
-void drgui_draw_round_rect_dr_2d(dred_rect, dred_color, float, void*);
-void drgui_draw_round_rect_outline_dr_2d(dred_rect, dred_color, float, float, void*);
-void drgui_draw_round_rect_with_outline_dr_2d(dred_rect, dred_color, float, float, dred_color, void*);
-void drgui_draw_text_dr_2d(dred_gui_resource, const char*, int, float, float, dred_color, dred_color, void*);
-void drgui_draw_image_dr_2d(dred_gui_resource image, dred_gui_draw_image_args* pArgs, void* pPaintData);
+void dred_control_draw_begin_dr_2d(void* pPaintData);
+void dred_control_draw_end_dr_2d(void* pPaintData);
+void dred_control_set_clip_dr_2d(dred_rect rect, void* pPaintData);
+void dred_control_get_clip_dr_2d(dred_rect* pRectOut, void* pPaintData);
+void dred_control_draw_rect_dr_2d(dred_rect rect, dred_color color, void* pPaintData);
+void dred_control_draw_rect_outline_dr_2d(dred_rect, dred_color, float, void*);
+void dred_control_draw_rect_with_outline_dr_2d(dred_rect, dred_color, float, dred_color, void*);
+void dred_control_draw_round_rect_dr_2d(dred_rect, dred_color, float, void*);
+void dred_control_draw_round_rect_outline_dr_2d(dred_rect, dred_color, float, float, void*);
+void dred_control_draw_round_rect_with_outline_dr_2d(dred_rect, dred_color, float, float, dred_color, void*);
+void dred_control_draw_text_dr_2d(dred_gui_resource, const char*, int, float, float, dred_color, dred_color, void*);
+void dred_control_draw_image_dr_2d(dred_gui_resource image, dred_gui_draw_image_args* pArgs, void* pPaintData);
 
-dred_gui_resource drgui_create_font_dr_2d(void*, const char*, unsigned int, dred_gui_font_weight, dred_gui_font_slant, float, unsigned int flags);
-void drgui_delete_font_dr_2d(dred_gui_resource);
+dred_gui_resource dred_gui_create_font_dr_2d(void*, const char*, unsigned int, dred_gui_font_weight, dred_gui_font_slant, float, unsigned int flags);
+void dred_gui_delete_font_dr_2d(dred_gui_resource);
 unsigned int drgui_get_font_size_dr_2d(dred_gui_resource hFont);
-bool drgui_get_font_metrics_dr_2d(dred_gui_resource, dred_gui_font_metrics*);
-bool drgui_get_glyph_metrics_dr_2d(dred_gui_resource, unsigned int, dred_glyph_metrics*);
-bool drgui_measure_string_dr_2d(dred_gui_resource, const char*, size_t, float*, float*);
-bool drgui_get_text_cursor_position_from_point_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-bool drgui_get_text_cursor_position_from_char_dr_2d(dred_gui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+bool dred_gui_get_font_metrics_dr_2d(dred_gui_resource, dred_gui_font_metrics*);
+bool dred_gui_get_glyph_metrics_dr_2d(dred_gui_resource, unsigned int, dred_glyph_metrics*);
+bool dred_gui_measure_string_dr_2d(dred_gui_resource, const char*, size_t, float*, float*);
+bool dred_gui_get_text_cursor_position_from_point_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+bool dred_gui_get_text_cursor_position_from_char_dr_2d(dred_gui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
-dred_gui_resource drgui_create_image_dr_2d(void* pPaintingContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pImageData);
-void drgui_delete_image_dr_2d(dred_gui_resource image);
-void drgui_get_image_size_dr_2d(dred_gui_resource image, unsigned int* pWidthOut, unsigned int* pHeightOut);
-dred_gui_image_format drgui_get_optimal_image_format_dr_2d(void* pPaintingContext);
-void* drgui_map_image_data_dr_2d(dred_gui_resource image, unsigned int accessFlags);
-void drgui_unmap_image_data_dr_2d(dred_gui_resource image);
+dred_gui_resource dred_gui_create_image_dr_2d(void* pPaintingContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pImageData);
+void dred_gui_delete_image_dr_2d(dred_gui_resource image);
+void dred_gui_get_image_size_dr_2d(dred_gui_resource image, unsigned int* pWidthOut, unsigned int* pHeightOut);
+dred_gui_image_format dred_gui_get_optimal_image_format_dr_2d(void* pPaintingContext);
+void* dred_gui_map_image_data_dr_2d(dred_gui_resource image, unsigned int accessFlags);
+void dred_gui_unmap_image_data_dr_2d(dred_gui_resource image);
 
 bool dred_gui_init_dr_2d(dred_gui* pGUI, dred_context* pDred, dr2d_context* pDrawingContext)
 {
@@ -3453,41 +3453,41 @@ bool dred_gui_init_dr_2d(dred_gui* pGUI, dred_context* pDred, dr2d_context* pDra
 void drgui_register_dr_2d_callbacks(dred_gui* pGUI, dr2d_context* pDrawingContext)
 {
     dred_gui_painting_callbacks callbacks;
-    callbacks.drawBegin                      = drgui_draw_begin_dr_2d;
-    callbacks.drawEnd                        = drgui_draw_end_dr_2d;
-    callbacks.setClip                        = drgui_set_clip_dr_2d;
-    callbacks.getClip                        = drgui_get_clip_dr_2d;
-    callbacks.drawRect                       = drgui_draw_rect_dr_2d;
-    callbacks.drawRectOutline                = drgui_draw_rect_outline_dr_2d;
-    callbacks.drawRectWithOutline            = drgui_draw_rect_with_outline_dr_2d;
-    callbacks.drawRoundRect                  = drgui_draw_round_rect_dr_2d;
-    callbacks.drawRoundRectOutline           = drgui_draw_round_rect_outline_dr_2d;
-    callbacks.drawRoundRectWithOutline       = drgui_draw_round_rect_with_outline_dr_2d;
-    callbacks.drawText                       = drgui_draw_text_dr_2d;
-    callbacks.drawImage                      = drgui_draw_image_dr_2d;
+    callbacks.drawBegin                      = dred_control_draw_begin_dr_2d;
+    callbacks.drawEnd                        = dred_control_draw_end_dr_2d;
+    callbacks.setClip                        = dred_control_set_clip_dr_2d;
+    callbacks.getClip                        = dred_control_get_clip_dr_2d;
+    callbacks.drawRect                       = dred_control_draw_rect_dr_2d;
+    callbacks.drawRectOutline                = dred_control_draw_rect_outline_dr_2d;
+    callbacks.drawRectWithOutline            = dred_control_draw_rect_with_outline_dr_2d;
+    callbacks.drawRoundRect                  = dred_control_draw_round_rect_dr_2d;
+    callbacks.drawRoundRectOutline           = dred_control_draw_round_rect_outline_dr_2d;
+    callbacks.drawRoundRectWithOutline       = dred_control_draw_round_rect_with_outline_dr_2d;
+    callbacks.drawText                       = dred_control_draw_text_dr_2d;
+    callbacks.drawImage                      = dred_control_draw_image_dr_2d;
 
-    callbacks.createFont                     = drgui_create_font_dr_2d;
-    callbacks.deleteFont                     = drgui_delete_font_dr_2d;
+    callbacks.createFont                     = dred_gui_create_font_dr_2d;
+    callbacks.deleteFont                     = dred_gui_delete_font_dr_2d;
     callbacks.getFontSize                    = drgui_get_font_size_dr_2d;
-    callbacks.getFontMetrics                 = drgui_get_font_metrics_dr_2d;
-    callbacks.getGlyphMetrics                = drgui_get_glyph_metrics_dr_2d;
-    callbacks.measureString                  = drgui_measure_string_dr_2d;
+    callbacks.getFontMetrics                 = dred_gui_get_font_metrics_dr_2d;
+    callbacks.getGlyphMetrics                = dred_gui_get_glyph_metrics_dr_2d;
+    callbacks.measureString                  = dred_gui_measure_string_dr_2d;
 
-    callbacks.createImage                    = drgui_create_image_dr_2d;
-    callbacks.deleteImage                    = drgui_delete_image_dr_2d;
-    callbacks.getImageSize                   = drgui_get_image_size_dr_2d;
-    callbacks.getOptimalImageFormat          = drgui_get_optimal_image_format_dr_2d;
-    callbacks.mapImageData                   = drgui_map_image_data_dr_2d;
-    callbacks.unmapImageData                 = drgui_unmap_image_data_dr_2d;
+    callbacks.createImage                    = dred_gui_create_image_dr_2d;
+    callbacks.deleteImage                    = dred_gui_delete_image_dr_2d;
+    callbacks.getImageSize                   = dred_gui_get_image_size_dr_2d;
+    callbacks.getOptimalImageFormat          = dred_gui_get_optimal_image_format_dr_2d;
+    callbacks.mapImageData                   = dred_gui_map_image_data_dr_2d;
+    callbacks.unmapImageData                 = dred_gui_unmap_image_data_dr_2d;
 
-    callbacks.getTextCursorPositionFromPoint = drgui_get_text_cursor_position_from_point_dr_2d;
-    callbacks.getTextCursorPositionFromChar  = drgui_get_text_cursor_position_from_char_dr_2d;
+    callbacks.getTextCursorPositionFromPoint = dred_gui_get_text_cursor_position_from_point_dr_2d;
+    callbacks.getTextCursorPositionFromChar  = dred_gui_get_text_cursor_position_from_char_dr_2d;
 
-    drgui_register_painting_callbacks(pGUI, pDrawingContext, callbacks);
+    dred_gui_register_painting_callbacks(pGUI, pDrawingContext, callbacks);
 }
 
 
-void drgui_draw_begin_dr_2d(void* pPaintData)
+void dred_control_draw_begin_dr_2d(void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);
@@ -3495,7 +3495,7 @@ void drgui_draw_begin_dr_2d(void* pPaintData)
     dr2d_begin_draw(pSurface);
 }
 
-void drgui_draw_end_dr_2d(void* pPaintData)
+void dred_control_draw_end_dr_2d(void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);
@@ -3503,7 +3503,7 @@ void drgui_draw_end_dr_2d(void* pPaintData)
     dr2d_end_draw(pSurface);
 }
 
-void drgui_set_clip_dr_2d(dred_rect rect, void* pPaintData)
+void dred_control_set_clip_dr_2d(dred_rect rect, void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);
@@ -3511,7 +3511,7 @@ void drgui_set_clip_dr_2d(dred_rect rect, void* pPaintData)
     dr2d_set_clip(pSurface, rect.left, rect.top, rect.right, rect.bottom);
 }
 
-void drgui_get_clip_dr_2d(dred_rect* pRectOut, void* pPaintData)
+void dred_control_get_clip_dr_2d(dred_rect* pRectOut, void* pPaintData)
 {
     assert(pRectOut != NULL);
 
@@ -3521,7 +3521,7 @@ void drgui_get_clip_dr_2d(dred_rect* pRectOut, void* pPaintData)
     dr2d_get_clip(pSurface, &pRectOut->left, &pRectOut->top, &pRectOut->right, &pRectOut->bottom);
 }
 
-void drgui_draw_rect_dr_2d(dred_rect rect, dred_color color, void* pPaintData)
+void dred_control_draw_rect_dr_2d(dred_rect rect, dred_color color, void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);
@@ -3529,7 +3529,7 @@ void drgui_draw_rect_dr_2d(dred_rect rect, dred_color color, void* pPaintData)
     dr2d_draw_rect(pSurface, rect.left, rect.top, rect.right, rect.bottom, dr2d_rgba(color.r, color.g, color.b, color.a));
 }
 
-void drgui_draw_rect_outline_dr_2d(dred_rect rect, dred_color color, float outlineWidth, void* pPaintData)
+void dred_control_draw_rect_outline_dr_2d(dred_rect rect, dred_color color, float outlineWidth, void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);
@@ -3537,7 +3537,7 @@ void drgui_draw_rect_outline_dr_2d(dred_rect rect, dred_color color, float outli
     dr2d_draw_rect_outline(pSurface, rect.left, rect.top, rect.right, rect.bottom, dr2d_rgba(color.r, color.g, color.b, color.a), outlineWidth);
 }
 
-void drgui_draw_rect_with_outline_dr_2d(dred_rect rect, dred_color color, float outlineWidth, dred_color outlineColor, void* pPaintData)
+void dred_control_draw_rect_with_outline_dr_2d(dred_rect rect, dred_color color, float outlineWidth, dred_color outlineColor, void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);
@@ -3545,7 +3545,7 @@ void drgui_draw_rect_with_outline_dr_2d(dred_rect rect, dred_color color, float 
     dr2d_draw_rect_with_outline(pSurface, rect.left, rect.top, rect.right, rect.bottom, dr2d_rgba(color.r, color.g, color.b, color.a), outlineWidth, dr2d_rgba(outlineColor.r, outlineColor.g, outlineColor.b, outlineColor.a));
 }
 
-void drgui_draw_round_rect_dr_2d(dred_rect rect, dred_color color, float radius, void* pPaintData)
+void dred_control_draw_round_rect_dr_2d(dred_rect rect, dred_color color, float radius, void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);
@@ -3553,7 +3553,7 @@ void drgui_draw_round_rect_dr_2d(dred_rect rect, dred_color color, float radius,
     dr2d_draw_round_rect(pSurface, rect.left, rect.top, rect.right, rect.bottom, dr2d_rgba(color.r, color.g, color.b, color.a), radius);
 }
 
-void drgui_draw_round_rect_outline_dr_2d(dred_rect rect, dred_color color, float radius, float outlineWidth, void* pPaintData)
+void dred_control_draw_round_rect_outline_dr_2d(dred_rect rect, dred_color color, float radius, float outlineWidth, void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);
@@ -3561,7 +3561,7 @@ void drgui_draw_round_rect_outline_dr_2d(dred_rect rect, dred_color color, float
     dr2d_draw_round_rect_outline(pSurface, rect.left, rect.top, rect.right, rect.bottom, dr2d_rgba(color.r, color.g, color.b, color.a), radius, outlineWidth);
 }
 
-void drgui_draw_round_rect_with_outline_dr_2d(dred_rect rect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData)
+void dred_control_draw_round_rect_with_outline_dr_2d(dred_rect rect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);
@@ -3569,7 +3569,7 @@ void drgui_draw_round_rect_with_outline_dr_2d(dred_rect rect, dred_color color, 
     dr2d_draw_round_rect_with_outline(pSurface, rect.left, rect.top, rect.right, rect.bottom, dr2d_rgba(color.r, color.g, color.b, color.a), radius, outlineWidth, dr2d_rgba(outlineColor.r, outlineColor.g, outlineColor.b, outlineColor.a));
 }
 
-void drgui_draw_text_dr_2d(dred_gui_resource font, const char* text, int textSizeInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData)
+void dred_control_draw_text_dr_2d(dred_gui_resource font, const char* text, int textSizeInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);
@@ -3577,7 +3577,7 @@ void drgui_draw_text_dr_2d(dred_gui_resource font, const char* text, int textSiz
     dr2d_draw_text(pSurface, (dr2d_font*)font, text, textSizeInBytes, posX, posY, dr2d_rgba(color.r, color.g, color.b, color.a), dr2d_rgba(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a));
 }
 
-void drgui_draw_image_dr_2d(dred_gui_resource image, dred_gui_draw_image_args* pArgs, void* pPaintData)
+void dred_control_draw_image_dr_2d(dred_gui_resource image, dred_gui_draw_image_args* pArgs, void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);
@@ -3598,12 +3598,12 @@ void drgui_draw_image_dr_2d(dred_gui_resource image, dred_gui_draw_image_args* p
 }
 
 
-dred_gui_resource drgui_create_font_dr_2d(void* pPaintingContext, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags)
+dred_gui_resource dred_gui_create_font_dr_2d(void* pPaintingContext, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags)
 {
     return dr2d_create_font((dr2d_context*)pPaintingContext, family, size, (dr2d_font_weight)weight, (dr2d_font_slant)slant, rotation, flags);
 }
 
-void drgui_delete_font_dr_2d(dred_gui_resource font)
+void dred_gui_delete_font_dr_2d(dred_gui_resource font)
 {
     dr2d_delete_font((dr2d_font*)font);
 }
@@ -3613,7 +3613,7 @@ unsigned int drgui_get_font_size_dr_2d(dred_gui_resource font)
     return dr2d_get_font_size((dr2d_font*)font);
 }
 
-bool drgui_get_font_metrics_dr_2d(dred_gui_resource font, dred_gui_font_metrics* pMetricsOut)
+bool dred_gui_get_font_metrics_dr_2d(dred_gui_resource font, dred_gui_font_metrics* pMetricsOut)
 {
     assert(pMetricsOut != NULL);
 
@@ -3630,7 +3630,7 @@ bool drgui_get_font_metrics_dr_2d(dred_gui_resource font, dred_gui_font_metrics*
     return true;
 }
 
-bool drgui_get_glyph_metrics_dr_2d(dred_gui_resource font, unsigned int utf32, dred_glyph_metrics* pMetricsOut)
+bool dred_gui_get_glyph_metrics_dr_2d(dred_gui_resource font, unsigned int utf32, dred_glyph_metrics* pMetricsOut)
 {
     assert(pMetricsOut != NULL);
 
@@ -3649,23 +3649,23 @@ bool drgui_get_glyph_metrics_dr_2d(dred_gui_resource font, unsigned int utf32, d
     return true;
 }
 
-bool drgui_measure_string_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
+bool dred_gui_measure_string_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
 {
     return dr2d_measure_string((dr2d_font*)font, text, textSizeInBytes, pWidthOut, pHeightOut);
 }
 
-bool drgui_get_text_cursor_position_from_point_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+bool dred_gui_get_text_cursor_position_from_point_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     return dr2d_get_text_cursor_position_from_point((dr2d_font*)font, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
 }
 
-bool drgui_get_text_cursor_position_from_char_dr_2d(dred_gui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+bool dred_gui_get_text_cursor_position_from_char_dr_2d(dred_gui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
     return dr2d_get_text_cursor_position_from_char((dr2d_font*)font, text, characterIndex, pTextCursorPosXOut);
 }
 
 
-dred_gui_resource drgui_create_image_dr_2d(void* pPaintingContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pImageData)
+dred_gui_resource dred_gui_create_image_dr_2d(void* pPaintingContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pImageData)
 {
     dr2d_image_format dr2dFormat;
     switch (format)
@@ -3678,27 +3678,27 @@ dred_gui_resource drgui_create_image_dr_2d(void* pPaintingContext, unsigned int 
     return dr2d_create_image((dr2d_context*)pPaintingContext, width, height, dr2dFormat, stride, pImageData);
 }
 
-void drgui_delete_image_dr_2d(dred_gui_resource image)
+void dred_gui_delete_image_dr_2d(dred_gui_resource image)
 {
     dr2d_delete_image((dr2d_image*)image);
 }
 
-void drgui_get_image_size_dr_2d(dred_gui_resource image, unsigned int* pWidthOut, unsigned int* pHeightOut)
+void dred_gui_get_image_size_dr_2d(dred_gui_resource image, unsigned int* pWidthOut, unsigned int* pHeightOut)
 {
     dr2d_get_image_size((dr2d_image*)image, pWidthOut, pHeightOut);
 }
 
-dred_gui_image_format drgui_get_optimal_image_format_dr_2d(void* pPaintingContext)
+dred_gui_image_format dred_gui_get_optimal_image_format_dr_2d(void* pPaintingContext)
 {
     return (dred_gui_image_format)dr2d_get_optimal_image_format((dr2d_context*)pPaintingContext);
 }
 
-void* drgui_map_image_data_dr_2d(dred_gui_resource image, unsigned int accessFlags)
+void* dred_gui_map_image_data_dr_2d(dred_gui_resource image, unsigned int accessFlags)
 {
     return dr2d_map_image_data((dr2d_image*)image, accessFlags);
 }
 
-void drgui_unmap_image_data_dr_2d(dred_gui_resource image)
+void dred_gui_unmap_image_data_dr_2d(dred_gui_resource image)
 {
     dr2d_unmap_image_data((dr2d_image*)image);
 }

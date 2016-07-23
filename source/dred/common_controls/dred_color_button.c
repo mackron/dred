@@ -29,7 +29,7 @@ dred_rect dred_colorbutton__get_box_rect(dred_colorbutton* pButton)
     assert(pData != NULL);
     
     dred_gui_font_metrics metrics;
-    drgui_get_font_metrics(pData->pSubFont, &metrics);
+    dred_gui_get_font_metrics(pData->pSubFont, &metrics);
 
     float posX = 0;
     float posY = (dred_control_get_height(pButton) - metrics.lineHeight) / 2;
@@ -64,24 +64,24 @@ void dred_colorbutton__on_paint(dred_colorbutton* pButton, dred_rect rect, void*
     dred_rect bgrect = dred_control_get_local_rect(pButton);
     dred_rect boxRect = dred_colorbutton__get_box_rect(pButton);
 
-    drgui_draw_rect_outline(pButton, boxRect, pData->boxBorderColor, pData->borderWidth, pPaintData);
-    drgui_draw_rect(pButton, drgui_grow_rect(boxRect, -pData->borderWidth), pData->color, pPaintData);
+    dred_control_draw_rect_outline(pButton, boxRect, pData->boxBorderColor, pData->borderWidth, pPaintData);
+    dred_control_draw_rect(pButton, drgui_grow_rect(boxRect, -pData->borderWidth), pData->color, pPaintData);
 
 
     // The text is positioned to the right of the box, and centered vertically.
     float textWidth;
     float textHeight;
-    drgui_measure_string(pData->pSubFont, pData->text, strlen(pData->text), &textWidth, &textHeight);
+    dred_gui_measure_string(pData->pSubFont, pData->text, strlen(pData->text), &textWidth, &textHeight);
 
     float textPosX = boxRect.right + pData->padding;
     float textPosY = roundf(dred_control_get_height(pButton) - textHeight) / 2;
-    drgui_draw_text(pButton, pData->pSubFont, pData->text, (int)strlen(pData->text), textPosX, textPosY, pData->textColor, bgColor, pPaintData);
+    dred_control_draw_text(pButton, pData->pSubFont, pData->text, (int)strlen(pData->text), textPosX, textPosY, pData->textColor, bgColor, pPaintData);
 
     // Background
-    drgui_draw_rect(pButton, drgui_make_rect(boxRect.right, boxRect.top, boxRect.right + pData->padding, boxRect.bottom), bgColor, pPaintData);    // Padding bettween colorbutton and text.
-    drgui_draw_rect(pButton, drgui_make_rect(bgrect.left, bgrect.top, bgrect.right, boxRect.top), bgColor, pPaintData);
-    drgui_draw_rect(pButton, drgui_make_rect(bgrect.left, boxRect.bottom, bgrect.right, bgrect.bottom), bgColor, pPaintData);
-    drgui_draw_rect(pButton, drgui_make_rect(textPosX + textWidth, boxRect.top, bgrect.right, boxRect.bottom), bgColor, pPaintData);
+    dred_control_draw_rect(pButton, drgui_make_rect(boxRect.right, boxRect.top, boxRect.right + pData->padding, boxRect.bottom), bgColor, pPaintData);    // Padding bettween colorbutton and text.
+    dred_control_draw_rect(pButton, drgui_make_rect(bgrect.left, bgrect.top, bgrect.right, boxRect.top), bgColor, pPaintData);
+    dred_control_draw_rect(pButton, drgui_make_rect(bgrect.left, boxRect.bottom, bgrect.right, bgrect.bottom), bgColor, pPaintData);
+    dred_control_draw_rect(pButton, drgui_make_rect(textPosX + textWidth, boxRect.top, bgrect.right, boxRect.bottom), bgColor, pPaintData);
 }
 
 void dred_colorbutton__on_mouse_enter(dred_colorbutton* pButton)
@@ -93,7 +93,7 @@ void dred_colorbutton__on_mouse_enter(dred_colorbutton* pButton)
 
     pData->isMouseOver = true;
 
-    drgui_dirty(pButton, dred_control_get_local_rect(pButton));
+    dred_control_dirty(pButton, dred_control_get_local_rect(pButton));
 }
 
 void dred_colorbutton__on_mouse_leave(dred_colorbutton* pButton)
@@ -105,7 +105,7 @@ void dred_colorbutton__on_mouse_leave(dred_colorbutton* pButton)
 
     pData->isMouseOver = false;
 
-    drgui_dirty(pButton, dred_control_get_local_rect(pButton));
+    dred_control_dirty(pButton, dred_control_get_local_rect(pButton));
 }
 
 void dred_colorbutton__on_mouse_move(dred_colorbutton* pButton, int mousePosX, int mousePosY, int stateFlags)
@@ -119,7 +119,7 @@ void dred_colorbutton__on_mouse_move(dred_colorbutton* pButton, int mousePosX, i
 
     if (dred_control_has_mouse_capture(pButton)) {
         pData->isMouseOver = (mousePosX >= 0 && mousePosX < dred_control_get_width(pButton)) && (mousePosY >= 0 && mousePosY < dred_control_get_height(pButton));
-        drgui_dirty(pButton, dred_control_get_local_rect(pButton));
+        dred_control_dirty(pButton, dred_control_get_local_rect(pButton));
     }
 }
 
@@ -139,7 +139,7 @@ void dred_colorbutton__on_mouse_button_down(dred_colorbutton* pButton, int mouse
             dred_gui_capture_mouse(pButton);
 
             // Redraw to show the pressed state.
-            drgui_dirty(pButton, dred_control_get_local_rect(pButton));
+            dred_control_dirty(pButton, dred_control_get_local_rect(pButton));
         }
     }
 }
@@ -166,7 +166,7 @@ void dred_colorbutton__on_mouse_button_up(dred_colorbutton* pButton, int mouseBu
             dred_color newColor;
             if (dred_show_color_picker_dialog(pOwnerWindow->pDred, pOwnerWindow, pData->color, &newColor)) {
                 dred_colorbutton_set_color(pButton, newColor, false);
-                drgui_dirty(pButton, dred_control_get_local_rect(pButton));
+                dred_control_dirty(pButton, dred_control_get_local_rect(pButton));
             }
         }
     }
@@ -174,7 +174,7 @@ void dred_colorbutton__on_mouse_button_up(dred_colorbutton* pButton, int mouseBu
 
 void dred_colorbutton__on_release_mouse(dred_colorbutton* pButton)
 {
-    drgui_dirty(pButton, dred_control_get_local_rect(pButton));
+    dred_control_dirty(pButton, dred_control_get_local_rect(pButton));
 }
 
 void dred_colorbutton__refresh_layout(dred_colorbutton* pButton)
@@ -187,7 +187,7 @@ void dred_colorbutton__refresh_layout(dred_colorbutton* pButton)
     if (pData->isAutoSizeEnabled) {
         float textWidth;
         float textHeight;
-        drgui_measure_string(pData->pSubFont, pData->text, strlen(pData->text), &textWidth, &textHeight);
+        dred_gui_measure_string(pData->pSubFont, pData->text, strlen(pData->text), &textWidth, &textHeight);
 
         dred_rect boxRect = dred_colorbutton__get_box_rect(pButton);
         float boxWidth = (boxRect.right - boxRect.left);
@@ -197,7 +197,7 @@ void dred_colorbutton__refresh_layout(dred_colorbutton* pButton)
 
 
     // Redraw.
-    drgui_dirty(pButton, dred_control_get_local_rect(pButton));
+    dred_control_dirty(pButton, dred_control_get_local_rect(pButton));
 }
 
 dred_colorbutton* dred_colorbutton_create(dred_context* pDred, dred_control* pParent, const char* text, dred_color color)
@@ -259,7 +259,7 @@ void dred_colorbutton_set_text(dred_colorbutton* pButton, const char* text)
 
 
     // Redraw.
-    drgui_dirty(pButton, dred_control_get_local_rect(pButton));
+    dred_control_dirty(pButton, dred_control_get_local_rect(pButton));
 }
 
 void dred_colorbutton_enable_auto_size(dred_colorbutton* pButton)
@@ -316,7 +316,7 @@ void dred_colorbutton_set_background_color(dred_colorbutton* pButton, dred_color
     pData->bgColor = color;
 
     // Redraw.
-    drgui_dirty(pButton, dred_control_get_local_rect(pButton));
+    dred_control_dirty(pButton, dred_control_get_local_rect(pButton));
 }
 
 void dred_colorbutton_set_border_color(dred_colorbutton* pButton, dred_color color)
@@ -329,7 +329,7 @@ void dred_colorbutton_set_border_color(dred_colorbutton* pButton, dred_color col
     pData->boxBorderColor = color;
 
     // Redraw.
-    drgui_dirty(pButton, dred_control_get_local_rect(pButton));
+    dred_control_dirty(pButton, dred_control_get_local_rect(pButton));
 }
 
 void dred_colorbutton_set_border_width(dred_colorbutton* pButton, float width)
@@ -342,7 +342,7 @@ void dred_colorbutton_set_border_width(dred_colorbutton* pButton, float width)
     pData->borderWidth = width;
 
     // Redraw.
-    drgui_dirty(pButton, dred_control_get_local_rect(pButton));
+    dred_control_dirty(pButton, dred_control_get_local_rect(pButton));
 }
 
 void dred_colorbutton_set_padding(dred_colorbutton* pButton, float padding)

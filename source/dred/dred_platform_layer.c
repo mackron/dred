@@ -550,7 +550,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
         {
             RECT rect;
             if (GetUpdateRect(hWnd, &rect, FALSE)) {
-                drgui_draw(pWindow->pRootGUIControl, drgui_make_rect((float)rect.left, (float)rect.top, (float)rect.right, (float)rect.bottom), pWindow->pDrawingSurface);
+                dred_control_draw(pWindow->pRootGUIControl, drgui_make_rect((float)rect.left, (float)rect.top, (float)rect.right, (float)rect.bottom), pWindow->pDrawingSurface);
             }
         } break;
 
@@ -1738,7 +1738,7 @@ static void dred_gtk_cb__on_paint(GtkWidget* pGTKWindow, cairo_t* pCairoContext,
         return;
     }
 
-    // NOTE: Because we are using dr_2d to draw the GUI, the last argument to drgui_draw() must be a pointer
+    // NOTE: Because we are using dr_2d to draw the GUI, the last argument to dred_control_draw() must be a pointer
     //       to the relevant dr2d_surface object.
 
     double clipLeft;
@@ -1752,7 +1752,7 @@ static void dred_gtk_cb__on_paint(GtkWidget* pGTKWindow, cairo_t* pCairoContext,
     drawRect.top    = (float)clipTop;
     drawRect.right  = (float)clipRight;
     drawRect.bottom = (float)clipBottom;
-    drgui_draw(pWindow->pRootGUIControl, drawRect, pWindow->pDrawingSurface);
+    dred_control_draw(pWindow->pRootGUIControl, drawRect, pWindow->pDrawingSurface);
 
     // At this point the GUI has been drawn, however nothing has been drawn to the window yet. To do this we will
     // use cairo directly with a cairo_set_source_surface() / cairo_paint() pair. We can get a pointer to dr_2d's

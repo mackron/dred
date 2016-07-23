@@ -34,7 +34,7 @@ dred_gui_font* dred_font__create_subfont(dred_font* pFont, unsigned int scaledSi
 
     assert(pFont->subfontCount < pFont->subfontBufferSize);
 
-    dred_gui_font* pGUIFont = drgui_create_font(pFont->pDred->pGUI, pFont->desc.family, scaledSize, pFont->desc.weight, pFont->desc.slant, 0, 0);
+    dred_gui_font* pGUIFont = dred_gui_create_font(pFont->pDred->pGUI, pFont->desc.family, scaledSize, pFont->desc.weight, pFont->desc.slant, 0, 0);
     if (pGUIFont == NULL) {
         return NULL;
     }
@@ -53,7 +53,7 @@ void dred_font__delete_subfont_by_index(dred_font* pFont, size_t index)
     assert(pFont != NULL);
     assert(pFont->subfontCount > index);
 
-    drgui_delete_font(pFont->pSubFonts[index].pGUIFont);
+    dred_gui_delete_font(pFont->pSubFonts[index].pGUIFont);
 
     if (index+1 < pFont->subfontCount) {
         memmove(pFont->pSubFonts + index, pFont->pSubFonts + (index+1), (pFont->subfontCount - (index+1)) * sizeof(*pFont->pSubFonts));
@@ -204,7 +204,7 @@ bool dred_font_get_metrics(dred_font* pFont, float scale, dred_gui_font_metrics*
         return false;
     }
 
-    bool result = drgui_get_font_metrics(pSubFont, pMetricsOut);
+    bool result = dred_gui_get_font_metrics(pSubFont, pMetricsOut);
     
     dred_font_release_subfont(pFont, pSubFont);
     return result;
@@ -221,7 +221,7 @@ bool dred_font_measure_string(dred_font* pFont, float scale, const char* text, s
         return false;
     }
 
-    bool result = drgui_measure_string(pSubFont, text, textLength, pWidthOut, pHeightOut);
+    bool result = dred_gui_measure_string(pSubFont, text, textLength, pWidthOut, pHeightOut);
     
     dred_font_release_subfont(pFont, pSubFont);
     return result;

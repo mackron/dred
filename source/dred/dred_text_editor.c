@@ -24,7 +24,7 @@ dred_textbox* dred_text_editor__get_textbox(dred_text_editor* pTextEditor)
 void dred_text_editor__register_style(dred_text_editor* pTextEditor, dred_text_style* pStyle)
 {
     dred_gui_font_metrics fontMetrics;
-    drgui_get_font_metrics(pStyle->pFont, &fontMetrics);
+    dred_gui_get_font_metrics(pStyle->pFont, &fontMetrics);
 
     drte_font_metrics drteFontMetrics = drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth);
     drte_engine_register_style_token(dred_textbox_get_engine(dred_text_editor__get_textbox(pTextEditor)), (drte_style_token)pStyle, drteFontMetrics);
@@ -349,7 +349,7 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
     dred_context* pDred = dred_control_get_gui(pTextEditor);
     assert(pDred != NULL);
 
-    drgui_begin_dirty(pTextEditor);
+    dred_control_begin_dirty(pTextEditor);
     {
         // Highlighting.
         data->highlighter.styles.common.comment.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->config.textEditorScale);
@@ -416,7 +416,7 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
 
         dred_text_editor_set_text_scale(pTextEditor, pDred->config.textEditorScale);
     }
-    drgui_end_dirty(pTextEditor);
+    dred_control_end_dirty(pTextEditor);
 }
 
 void dred_text_editor_set_highlighter(dred_text_editor* pTextEditor, const char* lang)

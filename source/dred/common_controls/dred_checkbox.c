@@ -31,7 +31,7 @@ dred_rect dred_checkbox__get_box_rect(dred_checkbox* pCheckbox)
     assert(pData != NULL);
     
     dred_gui_font_metrics metrics;
-    drgui_get_font_metrics(pData->pSubFont, &metrics);
+    dred_gui_get_font_metrics(pData->pSubFont, &metrics);
 
     float posX = 0;
     float posY = (dred_control_get_height(pCheckbox) - metrics.lineHeight) / 2;
@@ -66,28 +66,28 @@ void dred_checkbox__on_paint(dred_checkbox* pCheckbox, dred_rect rect, void* pPa
     dred_rect bgrect = dred_control_get_local_rect(pCheckbox);
     dred_rect boxRect = dred_checkbox__get_box_rect(pCheckbox);
 
-    drgui_draw_rect_outline(pCheckbox, boxRect, pData->boxBorderColor, pData->borderWidth, pPaintData);
-    drgui_draw_rect(pCheckbox, drgui_grow_rect(boxRect, -pData->borderWidth), boxBGColor, pPaintData);
+    dred_control_draw_rect_outline(pCheckbox, boxRect, pData->boxBorderColor, pData->borderWidth, pPaintData);
+    dred_control_draw_rect(pCheckbox, drgui_grow_rect(boxRect, -pData->borderWidth), boxBGColor, pPaintData);
 
     if (pData->isChecked) {
-        drgui_draw_rect(pCheckbox, drgui_grow_rect(boxRect, -pData->borderWidth - 2), pData->checkColor, pPaintData);
+        dred_control_draw_rect(pCheckbox, drgui_grow_rect(boxRect, -pData->borderWidth - 2), pData->checkColor, pPaintData);
     }
 
 
     // The text is positioned to the right of the box, and centered vertically.
     float textWidth;
     float textHeight;
-    drgui_measure_string(pData->pSubFont, pData->text, strlen(pData->text), &textWidth, &textHeight);
+    dred_gui_measure_string(pData->pSubFont, pData->text, strlen(pData->text), &textWidth, &textHeight);
 
     float textPosX = boxRect.right + pData->padding;
     float textPosY = roundf(dred_control_get_height(pCheckbox) - textHeight) / 2;
-    drgui_draw_text(pCheckbox, pData->pSubFont, pData->text, (int)strlen(pData->text), textPosX, textPosY, pData->textColor, pData->bgColor, pPaintData);
+    dred_control_draw_text(pCheckbox, pData->pSubFont, pData->text, (int)strlen(pData->text), textPosX, textPosY, pData->textColor, pData->bgColor, pPaintData);
 
     // Background
-    drgui_draw_rect(pCheckbox, drgui_make_rect(boxRect.right, boxRect.top, boxRect.right + pData->padding, boxRect.bottom), pData->bgColor, pPaintData);    // Padding bettween checkbox and text.
-    drgui_draw_rect(pCheckbox, drgui_make_rect(bgrect.left, bgrect.top, bgrect.right, boxRect.top), pData->bgColor, pPaintData);
-    drgui_draw_rect(pCheckbox, drgui_make_rect(bgrect.left, boxRect.bottom, bgrect.right, bgrect.bottom), pData->bgColor, pPaintData);
-    drgui_draw_rect(pCheckbox, drgui_make_rect(textPosX + textWidth, boxRect.top, bgrect.right, boxRect.bottom), pData->bgColor, pPaintData);
+    dred_control_draw_rect(pCheckbox, drgui_make_rect(boxRect.right, boxRect.top, boxRect.right + pData->padding, boxRect.bottom), pData->bgColor, pPaintData);    // Padding bettween checkbox and text.
+    dred_control_draw_rect(pCheckbox, drgui_make_rect(bgrect.left, bgrect.top, bgrect.right, boxRect.top), pData->bgColor, pPaintData);
+    dred_control_draw_rect(pCheckbox, drgui_make_rect(bgrect.left, boxRect.bottom, bgrect.right, bgrect.bottom), pData->bgColor, pPaintData);
+    dred_control_draw_rect(pCheckbox, drgui_make_rect(textPosX + textWidth, boxRect.top, bgrect.right, boxRect.bottom), pData->bgColor, pPaintData);
 }
 
 void dred_checkbox__on_mouse_enter(dred_checkbox* pCheckbox)
@@ -99,7 +99,7 @@ void dred_checkbox__on_mouse_enter(dred_checkbox* pCheckbox)
 
     pData->isMouseOver = true;
 
-    drgui_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
+    dred_control_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
 }
 
 void dred_checkbox__on_mouse_leave(dred_checkbox* pCheckbox)
@@ -111,7 +111,7 @@ void dred_checkbox__on_mouse_leave(dred_checkbox* pCheckbox)
 
     pData->isMouseOver = false;
 
-    drgui_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
+    dred_control_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
 }
 
 void dred_checkbox__on_mouse_move(dred_checkbox* pCheckbox, int mousePosX, int mousePosY, int stateFlags)
@@ -125,7 +125,7 @@ void dred_checkbox__on_mouse_move(dred_checkbox* pCheckbox, int mousePosX, int m
 
     if (dred_control_has_mouse_capture(pCheckbox)) {
         pData->isMouseOver = (mousePosX >= 0 && mousePosX < dred_control_get_width(pCheckbox)) && (mousePosY >= 0 && mousePosY < dred_control_get_height(pCheckbox));
-        drgui_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
+        dred_control_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
     }
 }
 
@@ -145,7 +145,7 @@ void dred_checkbox__on_mouse_button_down(dred_checkbox* pCheckbox, int mouseButt
             dred_gui_capture_mouse(pCheckbox);
 
             // Redraw to show the pressed state.
-            drgui_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
+            dred_control_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
         }
     }
 }
@@ -171,7 +171,7 @@ void dred_checkbox__on_mouse_button_up(dred_checkbox* pCheckbox, int mouseButton
 
 void dred_checkbox__on_release_mouse(dred_checkbox* pCheckbox)
 {
-    drgui_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
+    dred_control_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
 }
 
 void dred_checkbox__refresh_layout(dred_checkbox* pCheckbox)
@@ -184,7 +184,7 @@ void dred_checkbox__refresh_layout(dred_checkbox* pCheckbox)
     if (pData->isAutoSizeEnabled) {
         float textWidth;
         float textHeight;
-        drgui_measure_string(pData->pSubFont, pData->text, strlen(pData->text), &textWidth, &textHeight);
+        dred_gui_measure_string(pData->pSubFont, pData->text, strlen(pData->text), &textWidth, &textHeight);
 
         dred_rect boxRect = dred_checkbox__get_box_rect(pCheckbox);
         float boxWidth = (boxRect.right - boxRect.left);
@@ -194,7 +194,7 @@ void dred_checkbox__refresh_layout(dred_checkbox* pCheckbox)
 
 
     // Redraw.
-    drgui_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
+    dred_control_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
 }
 
 dred_checkbox* dred_checkbox_create(dred_context* pDred, dred_control* pParent, const char* text, bool checked)
@@ -258,7 +258,7 @@ void dred_checkbox_set_text(dred_checkbox* pCheckbox, const char* text)
 
 
     // Redraw.
-    drgui_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
+    dred_control_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
 }
 
 void dred_checkbox_enable_auto_size(dred_checkbox* pCheckbox)
@@ -315,7 +315,7 @@ void dred_checkbox_set_background_color(dred_checkbox* pCheckbox, dred_color col
     pData->bgColor = color;
 
     // Redraw.
-    drgui_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
+    dred_control_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
 }
 
 void dred_checkbox_set_border_color(dred_checkbox* pCheckbox, dred_color color)
@@ -328,7 +328,7 @@ void dred_checkbox_set_border_color(dred_checkbox* pCheckbox, dred_color color)
     pData->boxBorderColor = color;
 
     // Redraw.
-    drgui_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
+    dred_control_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
 }
 
 void dred_checkbox_set_border_width(dred_checkbox* pCheckbox, float width)
@@ -341,7 +341,7 @@ void dred_checkbox_set_border_width(dred_checkbox* pCheckbox, float width)
     pData->borderWidth = width;
 
     // Redraw.
-    drgui_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
+    dred_control_dirty(pCheckbox, dred_control_get_local_rect(pCheckbox));
 }
 
 void dred_checkbox_set_padding(dred_checkbox* pCheckbox, float padding)
@@ -404,7 +404,7 @@ void dred_checkbox_set_checked(dred_checkbox* pCheckbox, bool checked, bool bloc
         }
     }
 
-    drgui_dirty(pCheckbox, dred_checkbox__get_box_rect(pCheckbox));
+    dred_control_dirty(pCheckbox, dred_checkbox__get_box_rect(pCheckbox));
 }
 
 bool dred_is_checked(dred_checkbox* pCheckbox)

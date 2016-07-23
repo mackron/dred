@@ -185,7 +185,7 @@ void dred_textbox__on_vscroll(dred_scrollbar* pSBControl, int scrollPos)
     dred_textbox__refresh_scrollbars(pTextBox);
 
     // The line numbers need to be redrawn.
-    drgui_dirty(pTB->pLineNumbers, dred_control_get_local_rect(pTB->pLineNumbers));
+    dred_control_dirty(pTB->pLineNumbers, dred_control_get_local_rect(pTB->pLineNumbers));
 }
 
 void dred_textbox__on_hscroll(dred_scrollbar* pSBControl, int scrollPos)
@@ -205,7 +205,7 @@ void dred_textbox__refresh_style(dred_control* pTextBox)
     assert(pTB != NULL);
 
     dred_gui_font_metrics fontMetrics;
-    drgui_get_font_metrics(pTB->defaultStyle.pFont, &fontMetrics);
+    dred_gui_get_font_metrics(pTB->defaultStyle.pFont, &fontMetrics);
 
     // Default.
     drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->defaultStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
@@ -227,19 +227,19 @@ void dred_textbox__refresh_style(dred_control* pTextBox)
 void dred_textbox_engine__on_measure_string_proc(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut)
 {
     (void)pEngine;
-    drgui_measure_string(((dred_text_style*)styleToken)->pFont, text, textLength, pWidthOut, pHeightOut);
+    dred_gui_measure_string(((dred_text_style*)styleToken)->pFont, text, textLength, pWidthOut, pHeightOut);
 }
 
 void dred_textbox_engine__on_get_cursor_position_from_point(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     (void)pEngine;
-    drgui_get_text_cursor_position_from_point(((dred_text_style*)styleToken)->pFont, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
+    dred_gui_get_text_cursor_position_from_point(((dred_text_style*)styleToken)->pFont, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
 }
 
 void dred_textbox_engine__on_get_cursor_position_from_char(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
     (void)pEngine;
-    drgui_get_text_cursor_position_from_char(((dred_text_style*)styleToken)->pFont, text, characterIndex, pTextCursorPosXOut);
+    dred_gui_get_text_cursor_position_from_char(((dred_text_style*)styleToken)->pFont, text, characterIndex, pTextCursorPosXOut);
 }
 
 
@@ -633,7 +633,7 @@ void dred_textbox_set_font(dred_textbox* pTextBox, dred_gui_font* pFont)
         return;
     }
 
-    drgui_begin_dirty(pTextBox);
+    dred_control_begin_dirty(pTextBox);
     {
         //drte_engine_set_default_font(pTB->pTL, pFont);
         pTB->defaultStyle.pFont = pFont;
@@ -649,7 +649,7 @@ void dred_textbox_set_font(dred_textbox* pTextBox, dred_gui_font* pFont)
         dred_textbox__on_vscroll(pTB->pVertScrollbar, dred_scrollbar_get_scroll_position(pTB->pVertScrollbar));
         dred_textbox__refresh_scrollbars(pTextBox);
     }
-    drgui_end_dirty(pTextBox);
+    dred_control_end_dirty(pTextBox);
 }
 
 dred_gui_font* dred_textbox_get_font(dred_textbox* pTextBox)
@@ -2323,7 +2323,7 @@ void dred_textbox_engine__on_paint_rect(drte_engine* pTL, drte_style_token style
     float offsetY;
     dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
-    drgui_draw_rect(pTextBox, drgui_offset_rect(drte_rect_to_drgui(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
+    dred_control_draw_rect(pTextBox, drgui_offset_rect(drte_rect_to_drgui(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
 }
 
 void dred_textbox_engine__on_paint_text(drte_engine* pTL, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
@@ -2337,7 +2337,7 @@ void dred_textbox_engine__on_paint_text(drte_engine* pTL, drte_style_token style
     float offsetY;
     dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
-    drgui_draw_text(pTextBox, pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
+    dred_control_draw_text(pTextBox, pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
 }
 
 void dred_textbox_engine__on_dirty(drte_engine* pTL, drte_rect rect)
@@ -2356,7 +2356,7 @@ void dred_textbox_engine__on_dirty(drte_engine* pTL, drte_rect rect)
     float offsetY;
     dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
-    drgui_dirty(pTextBox, drgui_offset_rect(drte_rect_to_drgui(rect), offsetX, offsetY));
+    dred_control_dirty(pTextBox, drgui_offset_rect(drte_rect_to_drgui(rect), offsetX, offsetY));
 }
 
 void dred_textbox_engine__on_cursor_move(drte_engine* pTL)
@@ -2419,7 +2419,7 @@ void dred_textbox_engine__on_text_changed(drte_engine* pTL)
 
     // The line numbers need to be redrawn.
     // TODO: This can probably be optimized a bit so that it is only redrawn if a line was inserted or deleted.
-    drgui_dirty(pTB->pLineNumbers, dred_control_get_local_rect(pTB->pLineNumbers));
+    dred_control_dirty(pTB->pLineNumbers, dred_control_get_local_rect(pTB->pLineNumbers));
 }
 
 void dred_textbox_engine__on_undo_point_changed(drte_engine* pTL, unsigned int iUndoPoint)
@@ -2512,18 +2512,18 @@ void dred_textbox_on_paint(dred_textbox* pTextBox, dred_rect relativeRect, void*
     dred_rect textRect = dred_textbox__get_text_rect(pTextBox);
 
     // The dead space between the scrollbars should always be drawn with the default background color.
-    //drgui_draw_rect(pTextBox, dred_textbox__get_scrollbar_dead_space_rect(pTextBox), pTB->defaultStyle.bgColor, pPaintData);
+    //dred_control_draw_rect(pTextBox, dred_textbox__get_scrollbar_dead_space_rect(pTextBox), pTB->defaultStyle.bgColor, pPaintData);
 
     // Border.
     dred_rect borderRect = dred_control_get_local_rect(pTextBox);
-    drgui_draw_rect_outline(pTextBox, borderRect, pTB->borderColor, pTB->borderWidth, pPaintData);
+    dred_control_draw_rect_outline(pTextBox, borderRect, pTB->borderColor, pTB->borderWidth, pPaintData);
 
     // Padding.
     dred_rect paddingRect = drgui_grow_rect(textRect, pTB->padding);
-    drgui_draw_rect_outline(pTextBox, paddingRect, pTB->defaultStyle.bgColor, pTB->padding, pPaintData);
+    dred_control_draw_rect_outline(pTextBox, paddingRect, pTB->defaultStyle.bgColor, pTB->padding, pPaintData);
 
     // Text.
-    drgui_set_clip(pTextBox, drgui_clamp_rect(textRect, relativeRect), pPaintData);
+    dred_control_set_clip(pTextBox, drgui_clamp_rect(textRect, relativeRect), pPaintData);
     drte_engine_paint(pTB->pTL, dred_rect_to_drte(drgui_offset_rect(drgui_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top)), pPaintData);
 }
 
@@ -2923,7 +2923,7 @@ void dred_textbox__on_paint_rect_line_numbers(drte_engine* pEngine, drte_style_t
     float offsetX = pTB->padding;
     float offsetY = pTB->padding;
 
-    drgui_draw_rect(pTB->pLineNumbers, drgui_offset_rect(drte_rect_to_drgui(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
+    dred_control_draw_rect(pTB->pLineNumbers, drgui_offset_rect(drte_rect_to_drgui(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
 }
 
 void dred_textbox__on_paint_text_line_numbers(drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
@@ -2939,7 +2939,7 @@ void dred_textbox__on_paint_text_line_numbers(drte_engine* pEngine, drte_style_t
     float offsetX = pTB->padding;
     float offsetY = pTB->padding;
 
-    drgui_draw_text(pTB->pLineNumbers, pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
+    dred_control_draw_text(pTB->pLineNumbers, pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
 }
 
 void dred_textbox__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect relativeRect, void* pPaintData)
@@ -2957,13 +2957,13 @@ void dred_textbox__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect r
 
     drte_engine_paint_line_numbers(pTB->pTL, lineNumbersWidth, lineNumbersHeight, dred_textbox__on_paint_text_line_numbers, dred_textbox__on_paint_rect_line_numbers, pPaintData);
 
-    drgui_draw_rect_outline(pLineNumbers, dred_control_get_local_rect(pLineNumbers), pTB->lineNumbersStyle.bgColor, pTB->padding, pPaintData);
+    dred_control_draw_rect_outline(pLineNumbers, dred_control_get_local_rect(pLineNumbers), pTB->lineNumbersStyle.bgColor, pTB->padding, pPaintData);
 
     // Right padding.
     dred_rect rightPaddingRect = dred_control_get_local_rect(pLineNumbers);
     rightPaddingRect.right -= pTB->padding;
     rightPaddingRect.left   = rightPaddingRect.right - pTB->lineNumbersPaddingRight;
-    drgui_draw_rect(pLineNumbers, rightPaddingRect, pTB->lineNumbersStyle.bgColor, pPaintData);
+    dred_control_draw_rect(pLineNumbers, rightPaddingRect, pTB->lineNumbersStyle.bgColor, pPaintData);
 }
 
 void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox)
@@ -2972,7 +2972,7 @@ void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox)
     assert(pTB != NULL);
 
     dred_rect lineNumbersRectOld = dred_control_get_local_rect(pTB->pLineNumbers);
-    drgui_begin_dirty(pTB->pLineNumbers);
+    dred_control_begin_dirty(pTB->pLineNumbers);
     
     float lineNumbersWidth = 0;
     if (dred_control_is_visible(pTB->pLineNumbers)) {
@@ -2991,6 +2991,6 @@ void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox)
 
 
     // Force a redraw just to be sure everything is in a valid state.
-    drgui_dirty(pTextBox, dred_rect_union(lineNumbersRectOld, dred_control_get_local_rect(pTB->pLineNumbers)));
-    drgui_end_dirty(pTB->pLineNumbers);
+    dred_control_dirty(pTextBox, dred_rect_union(lineNumbersRectOld, dred_control_get_local_rect(pTB->pLineNumbers)));
+    dred_control_end_dirty(pTB->pLineNumbers);
 }

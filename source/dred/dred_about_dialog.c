@@ -63,11 +63,11 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
 
     dred_rect dialogRect = dred_control_get_local_rect(pControl);
 
-    drgui_draw_rect(pControl, dialogRect, drgui_rgb(255, 255, 255), pPaintData);
+    dred_control_draw_rect(pControl, dialogRect, drgui_rgb(255, 255, 255), pPaintData);
 
     unsigned int logoWidth;
     unsigned int logoHeight;
-    drgui_get_image_size(pDialog->pLogo, &logoWidth, &logoHeight);
+    dred_gui_get_image_size(pDialog->pLogo, &logoWidth, &logoHeight);
 
     dred_rect bannerRect = dialogRect;
     bannerRect.bottom = (logoHeight*10 + 80.0f) * uiScale;
@@ -87,13 +87,13 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
     args.options = DRED_GUI_IMAGE_ALIGN_CENTER;
     args.foregroundTint = drgui_rgb(255, 255, 255);
     args.backgroundColor = drgui_rgb(255, 255, 255);
-    drgui_draw_image(pControl, pDialog->pLogo, &args, pPaintData);
+    dred_control_draw_image(pControl, pDialog->pLogo, &args, pPaintData);
 
     
 
     dred_gui_font* pFont = dred_font_acquire_subfont(pWindow->pDred->config.pUIFont, uiScale);
     dred_gui_font_metrics fontMetrics;
-    drgui_get_font_metrics(pFont, &fontMetrics);
+    dred_gui_get_font_metrics(pFont, &fontMetrics);
 
     float penPosX = 0;
     float penPosY = bannerRect.bottom - (fontMetrics.lineHeight*2.0f);
@@ -101,8 +101,8 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
     const char* linkStr = "https://www.drsoftware.com.au";
 
     float linkWidth;
-    drgui_measure_string(pFont, linkStr, strlen(linkStr), &linkWidth, NULL);
-    drgui_draw_text(pControl, pFont, linkStr, (int)strlen(linkStr), ((dialogRect.right - dialogRect.left) - linkWidth) / 2, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    dred_gui_measure_string(pFont, linkStr, strlen(linkStr), &linkWidth, NULL);
+    dred_control_draw_text(pControl, pFont, linkStr, (int)strlen(linkStr), ((dialogRect.right - dialogRect.left) - linkWidth) / 2, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
 
 
     const char* versionStr = "dred version " DRED_VERSION_STRING;
@@ -112,21 +112,21 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
     penPosX = (8*uiScale);
     penPosY = bannerRect.bottom;
 
-    drgui_draw_rect(pControl, drgui_make_rect(0, bannerRect.bottom, dialogRect.right, penPosY + (1 * uiScale)), drgui_rgb(200, 200, 200), pPaintData);
+    dred_control_draw_rect(pControl, drgui_make_rect(0, bannerRect.bottom, dialogRect.right, penPosY + (1 * uiScale)), drgui_rgb(200, 200, 200), pPaintData);
     penPosY += (9*uiScale);
 
-    drgui_draw_text(pControl, pFont, versionStr, (int)strlen(versionStr), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    dred_control_draw_text(pControl, pFont, versionStr, (int)strlen(versionStr), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
     penPosY += fontMetrics.lineHeight;
 
-    drgui_draw_text(pControl, pFont, copyrightStr, (int)strlen(copyrightStr), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    dred_control_draw_text(pControl, pFont, copyrightStr, (int)strlen(copyrightStr), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
     penPosY += fontMetrics.lineHeight;
     
     penPosY += (9*uiScale);
-    drgui_draw_rect(pControl, drgui_make_rect(0, penPosY, dialogRect.right, penPosY + (1 * uiScale)), drgui_rgb(200, 200, 200), pPaintData);
+    dred_control_draw_rect(pControl, drgui_make_rect(0, penPosY, dialogRect.right, penPosY + (1 * uiScale)), drgui_rgb(200, 200, 200), pPaintData);
     penPosY += 9*uiScale;
 
     const char* creditsTitle = "The following libraries are used internally by dred:";
-    drgui_draw_text(pControl, pFont, creditsTitle, (int)strlen(creditsTitle), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+    dred_control_draw_text(pControl, pFont, creditsTitle, (int)strlen(creditsTitle), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
     penPosY += 4*uiScale + fontMetrics.lineHeight;
 
     static const char* credits[] = {
@@ -138,7 +138,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
     size_t creditsCount = sizeof(credits) / sizeof(credits[0]);
 
     for (size_t iCredit = 0; iCredit < creditsCount; ++iCredit) {
-        drgui_draw_text(pControl, pFont, credits[iCredit], (int)strlen(credits[iCredit]), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
+        dred_control_draw_text(pControl, pFont, credits[iCredit], (int)strlen(credits[iCredit]), penPosX, penPosY, drgui_rgb(0, 0, 0), drgui_rgb(255, 255, 255), pPaintData);
         penPosY += fontMetrics.lineHeight;
     }
 }
@@ -207,7 +207,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     
 
 
-    pDialog->pLogo = drgui_create_image(pDred->pGUI, g_LogoBannerImage.width, g_LogoBannerImage.height, dred_gui_image_format_rgba8, g_LogoBannerImage.width*4, g_LogoBannerImage.pixel_data);
+    pDialog->pLogo = dred_gui_create_image(pDred->pGUI, g_LogoBannerImage.width, g_LogoBannerImage.height, dred_gui_image_format_rgba8, g_LogoBannerImage.width*4, g_LogoBannerImage.pixel_data);
 
 
     dred_window_get_client_size(pDialog->pWindow, &windowWidth, &windowHeight);
@@ -230,7 +230,7 @@ void dred_about_dialog_delete(dred_about_dialog* pDialog)
     dred_button_delete(pDialog->pCloseButton);
     pDialog->pCloseButton = NULL;
 
-    drgui_delete_image(pDialog->pLogo);
+    dred_gui_delete_image(pDialog->pLogo);
     pDialog->pLogo = NULL;
 
     dred_window_delete(pDialog->pWindow);
