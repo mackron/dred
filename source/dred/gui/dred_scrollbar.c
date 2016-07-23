@@ -623,7 +623,7 @@ void dred_scrollbar_on_mouse_button_down(dred_scrollbar* pScrollbar, int button,
             {
                 if (!pSB->thumbPressed)
                 {
-                    drgui_capture_mouse(pScrollbar);
+                    dred_gui_capture_mouse(pScrollbar);
                     pSB->thumbPressed = true;
 
                     pSB->thumbClickPosX = (float)relativeMousePosX;
@@ -659,9 +659,9 @@ void dred_scrollbar_on_mouse_button_up(dred_scrollbar* pScrollbar, int button, i
 
     if (button == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
-        if (pSB->thumbPressed && drgui_get_element_with_mouse_capture(pScrollbar->pGUI) == pScrollbar)
+        if (pSB->thumbPressed && dred_gui_get_element_with_mouse_capture(pScrollbar->pGUI) == pScrollbar)
         {
-            drgui_release_mouse(pScrollbar->pGUI);
+            dred_gui_release_mouse(pScrollbar->pGUI);
             pSB->thumbPressed = false;
 
             drgui_dirty(pScrollbar, dred_scrollbar_get_thumb_rect(pScrollbar));

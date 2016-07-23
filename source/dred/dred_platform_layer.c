@@ -3424,8 +3424,8 @@ void dred_window_on_focus(dred_window* pWindow)
     }
 
     // Make sure the GUI element is given the keyboard capture if it hasn't already got it.
-    if (!drgui_has_keyboard_capture(pWindow->pControlWithKeyboardCapture)) {
-        drgui_capture_keyboard(pWindow->pControlWithKeyboardCapture);
+    if (!dred_control_has_keyboard_capture(pWindow->pControlWithKeyboardCapture)) {
+        dred_gui_capture_keyboard(pWindow->pControlWithKeyboardCapture);
     }
 }
 
@@ -3436,8 +3436,8 @@ void dred_window_on_unfocus(dred_window* pWindow)
     }
 
     // Make sure the GUI element is released of the keyboard capture, but don't clear the variable.
-    if (drgui_has_keyboard_capture(pWindow->pControlWithKeyboardCapture)) {
-        drgui_release_keyboard(pWindow->pDred->pGUI);
+    if (dred_control_has_keyboard_capture(pWindow->pControlWithKeyboardCapture)) {
+        dred_gui_release_keyboard(pWindow->pDred->pGUI);
     }
 }
 

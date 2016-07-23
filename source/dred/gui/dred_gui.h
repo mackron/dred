@@ -33,7 +33,7 @@
 // - There are some special events that are handled differently to normal events. The best example is the paint events. The
 //   paint event is only called from drgui_draw().
 // - Key press/release events are only ever posted to the element that has the keyboard capture/focus which is set with
-//   drgui_capture_keyboard(). Thus, when posting an inbound key event, a top-level element is not required when posting
+//   dred_gui_capture_keyboard(). Thus, when posting an inbound key event, a top-level element is not required when posting
 //   those events. The relevant context is still required, however.
 //
 // Global Outbound Event Handling
@@ -1018,45 +1018,47 @@ bool dred_control_is_clipping_enabled(const dred_control* pControl);
 ///
 /// @remarks
 ///     Release the mouse capture with drgui_release_mosue().
-void drgui_capture_mouse(dred_control* pControl);
+void dred_gui_capture_mouse(dred_control* pControl);
+void dred_control_capture_mouse(dred_control* pControl) { dred_gui_capture_mouse(pControl); }
 
 /// Releases the mouse capture.
-void drgui_release_mouse(dred_gui* pGUI);
+void dred_gui_release_mouse(dred_gui* pGUI);
 
 /// Releases the mouse capture without posting the global-scoped event. Should only be used in very specific cases, usually in combination with awkward interop with the window system.
-void drgui_release_mouse_no_global_notify(dred_gui* pGUI);
+void dred_gui_release_mouse_no_global_notify(dred_gui* pGUI);
 
 /// Retrieves a pointer to the element with the mouse capture.
-dred_control* drgui_get_element_with_mouse_capture(dred_gui* pGUI);
+dred_control* dred_gui_get_element_with_mouse_capture(dred_gui* pGUI);
 
 /// Determines whether or not the given element has the mouse capture.
-bool drgui_has_mouse_capture(dred_control* pControl);
+bool dred_control_has_mouse_capture(dred_control* pControl);
 
 
 /// Sets the element that should receive all future keyboard related events.
 ///
 /// @remarks
-///     Releases the keyboard capture with drgui_release_keyboard().
-void drgui_capture_keyboard(dred_control* pControl);
+///     Releases the keyboard capture with dred_gui_release_keyboard().
+void dred_gui_capture_keyboard(dred_control* pControl);
+void dred_control_capture_keyboard(dred_control* pControl) { dred_gui_capture_keyboard(pControl); }
 
 /// Releases the keyboard capture.
-void drgui_release_keyboard(dred_gui* pGUI);
+void dred_gui_release_keyboard(dred_gui* pGUI);
 
 /// Releases the keyboard capture without posting the global-scoped event. Should only be used in very specific cases, usually in combination with awkward interop with the window system.
-void drgui_release_keyboard_no_global_notify(dred_gui* pGUI);
+void dred_gui_release_keyboard_no_global_notify(dred_gui* pGUI);
 
 /// Retrieves a pointer to the element with the keyboard capture.
-dred_control* drgui_get_element_with_keyboard_capture(dred_gui* pGUI);
+dred_control* dred_gui_get_element_with_keyboard_capture(dred_gui* pGUI);
 
 /// Determines whether or not the given element has the keyboard capture.
-bool drgui_has_keyboard_capture(dred_control* pControl);
+bool dred_control_has_keyboard_capture(dred_control* pControl);
 
 
 /// Sets the cursor to use when the mouse enters the given GUI element.
-void drgui_set_cursor(dred_control* pControl, dred_cursor_type cursor);
+void dred_control_set_cursor(dred_control* pControl, dred_cursor_type cursor);
 
 /// Retrieves the cursor to use when the mouse enters the given GUI element.
-dred_cursor_type drgui_get_cursor(dred_control* pControl);
+dred_cursor_type dred_control_get_cursor(dred_control* pControl);
 
 // Helper function for showing a popup menu relative to the given control.
 void dred_control_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int relativePosX, int relativePosY);

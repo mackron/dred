@@ -450,7 +450,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
         return NULL;
     }
 
-    drgui_set_cursor(pTextBox, dred_cursor_text);
+    dred_control_set_cursor(pTextBox, dred_cursor_text);
     drgui_set_on_size(pTextBox, dred_textbox_on_size);
     drgui_set_on_mouse_move(pTextBox, dred_textbox_on_mouse_move);
     drgui_set_on_mouse_button_down(pTextBox, dred_textbox_on_mouse_button_down);
@@ -587,8 +587,8 @@ void dred_textbox_delete(dred_textbox* pTextBox)
     }
 
     // Keyboard focus needs to be released first. If we don't do this we'll not free delete the internal timer.
-    if (drgui_has_keyboard_capture(pTextBox)) {
-        drgui_release_keyboard(pTextBox->pGUI);
+    if (dred_control_has_keyboard_capture(pTextBox)) {
+        dred_gui_release_keyboard(pTextBox->pGUI);
     }
 
     if (pTB->pTL) {
@@ -1714,7 +1714,7 @@ void dred_textbox_on_mouse_move(dred_textbox* pTextBox, int relativeMousePosX, i
         return;
     }
 
-    if (drgui_get_element_with_mouse_capture(pTextBox->pGUI) == pTextBox)
+    if (dred_gui_get_element_with_mouse_capture(pTextBox->pGUI) == pTextBox)
     {
         float offsetX;
         float offsetY;
@@ -1762,7 +1762,7 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
     }
 
     // Focus the text editor.
-    drgui_capture_keyboard(pTextBox);
+    dred_gui_capture_keyboard(pTextBox);
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
@@ -1803,7 +1803,7 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
 
 
         // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
-        drgui_capture_mouse(pTextBox);
+        dred_gui_capture_mouse(pTextBox);
     }
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_RIGHT)
@@ -1824,7 +1824,7 @@ void dred_textbox_on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, in
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
-        if (drgui_get_element_with_mouse_capture(pTextBox->pGUI) == pTextBox)
+        if (dred_gui_get_element_with_mouse_capture(pTextBox->pGUI) == pTextBox)
         {
             // When we first pressed the mouse we may have started a new selection. If we never ended up selecting anything we'll want to
             // cancel that selection.
@@ -1837,7 +1837,7 @@ void dred_textbox_on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, in
             }
 
             // Releasing the mouse will leave selectionmode.
-            drgui_release_mouse(pTextBox->pGUI);
+            dred_gui_release_mouse(pTextBox->pGUI);
         }
     }
 }
@@ -2793,7 +2793,7 @@ void dred_textbox__on_mouse_move_line_numbers(dred_control* pLineNumbers, int re
 
     if ((stateFlags & DRED_GUI_MOUSE_BUTTON_LEFT_DOWN) != 0)
     {
-        if (drgui_get_element_with_mouse_capture(pLineNumbers->pGUI) == pLineNumbers)
+        if (dred_gui_get_element_with_mouse_capture(pLineNumbers->pGUI) == pLineNumbers)
         {
             // We just move the cursor around based on the line number we've moved over.
 
@@ -2860,7 +2860,7 @@ void dred_textbox__on_mouse_button_down_line_numbers(dred_control* pLineNumbers,
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
-        drgui_capture_mouse(pLineNumbers);
+        dred_gui_capture_mouse(pLineNumbers);
 
         // If the shift key is down and we already have a selection, this is equivalent to a mouse drag.
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
@@ -2906,8 +2906,8 @@ void dred_textbox__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, i
     (void)stateFlags;
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
-        if (drgui_has_mouse_capture(pLineNumbers)) {
-            drgui_release_mouse(pLineNumbers->pGUI);
+        if (dred_control_has_mouse_capture(pLineNumbers)) {
+            dred_gui_release_mouse(pLineNumbers->pGUI);
         }
     }
 }

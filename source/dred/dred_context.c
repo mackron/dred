@@ -741,7 +741,7 @@ void dred_capture_keyboard(dred_context* pDred, dred_control* pControl)
         return;
     }
 
-    drgui_capture_keyboard(pControl);
+    dred_gui_capture_keyboard(pControl);
 }
 
 void dred_release_keyboard(dred_context* pDred)
@@ -750,7 +750,7 @@ void dred_release_keyboard(dred_context* pDred)
         return;
     }
 
-    drgui_release_keyboard(pDred->pGUI);
+    dred_gui_release_keyboard(pDred->pGUI);
 }
 
 
@@ -817,7 +817,7 @@ dred_control* dred_get_element_with_keyboard_capture(dred_context* pDred)
         return NULL;
     }
 
-    dred_control* pControl = drgui_get_element_with_keyboard_capture(pDred->pGUI);
+    dred_control* pControl = dred_gui_get_element_with_keyboard_capture(pDred->pGUI);
     if (pControl == NULL) {
         pControl = pDred->pMainWindow->pControlWithKeyboardCapture;
     }

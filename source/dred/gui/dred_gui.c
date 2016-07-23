@@ -970,14 +970,14 @@ void dred_gui_uninit(dred_gui* pGUI)
     if (pGUI->pControlWithMouseCapture != NULL)
     {
         drgui_log(pGUI, "WARNING: Deleting the GUI context while an element still has the mouse capture.");
-        drgui_release_mouse(pGUI);
+        dred_gui_release_mouse(pGUI);
     }
 
     // Make sure the keyboard capture is released.
     if (pGUI->pControlWithKeyboardCapture != NULL)
     {
         drgui_log(pGUI, "WARNING: Deleting the GUI context while an element still has the keyboard capture.");
-        drgui_release_keyboard(pGUI);
+        dred_gui_release_keyboard(pGUI);
     }
 
 
@@ -1384,14 +1384,14 @@ void dred_control_delete(dred_control* pControl)
     if (pGUI->pControlWithMouseCapture == pControl)
     {
         drgui_log(pGUI, "WARNING: Deleting an element while it still has the mouse capture.");
-        drgui_release_mouse(pGUI);
+        dred_gui_release_mouse(pGUI);
     }
 
     // If this element has the keyboard capture it needs to be released.
     if (pGUI->pControlWithKeyboardCapture == pControl)
     {
         drgui_log(pGUI, "WARNING: Deleting an element while it still has the keyboard capture.");
-        drgui_release_keyboard(pGUI);
+        dred_gui_release_keyboard(pGUI);
     }
 
     // Is this element in the middle of being marked as dirty?
@@ -1588,7 +1588,7 @@ bool dred_control_is_clipping_enabled(const dred_control* pControl)
 
 
 
-void drgui_capture_mouse(dred_control* pControl)
+void dred_gui_capture_mouse(dred_control* pControl)
 {
     if (pControl == NULL) {
         return;
@@ -1603,7 +1603,7 @@ void drgui_capture_mouse(dred_control* pControl)
     {
         // Release the previous capture first.
         if (pControl->pGUI->pControlWithMouseCapture != NULL) {
-            drgui_release_mouse(pControl->pGUI);
+            dred_gui_release_mouse(pControl->pGUI);
         }
 
         assert(pControl->pGUI->pControlWithMouseCapture == NULL);
@@ -1619,7 +1619,7 @@ void drgui_capture_mouse(dred_control* pControl)
     }
 }
 
-void drgui_release_mouse(dred_gui* pGUI)
+void dred_gui_release_mouse(dred_gui* pGUI)
 {
     if (pGUI == NULL) {
         return;
@@ -1640,7 +1640,7 @@ void drgui_release_mouse(dred_gui* pGUI)
     drgui_update_mouse_enter_and_leave_state(pGUI, drgui_find_element_under_point(pGUI->pLastMouseMoveTopLevelControl, pGUI->lastMouseMovePosX, pGUI->lastMouseMovePosY));
 }
 
-void drgui_release_mouse_no_global_notify(dred_gui* pGUI)
+void dred_gui_release_mouse_no_global_notify(dred_gui* pGUI)
 {
     if (pGUI == NULL) {
         return;
@@ -1648,11 +1648,11 @@ void drgui_release_mouse_no_global_notify(dred_gui* pGUI)
 
     dred_gui_on_release_mouse_proc prevProc = pGUI->onGlobalReleaseMouse;
     pGUI->onGlobalReleaseMouse = NULL;
-    drgui_release_mouse(pGUI);
+    dred_gui_release_mouse(pGUI);
     pGUI->onGlobalReleaseMouse = prevProc;
 }
 
-dred_control* drgui_get_element_with_mouse_capture(dred_gui* pGUI)
+dred_control* dred_gui_get_element_with_mouse_capture(dred_gui* pGUI)
 {
     if (pGUI == NULL) {
         return NULL;
@@ -1661,17 +1661,17 @@ dred_control* drgui_get_element_with_mouse_capture(dred_gui* pGUI)
     return pGUI->pControlWithMouseCapture;
 }
 
-bool drgui_has_mouse_capture(dred_control* pControl)
+bool dred_control_has_mouse_capture(dred_control* pControl)
 {
     if (pControl == NULL) {
         return false;
     }
 
-    return drgui_get_element_with_mouse_capture(pControl->pGUI) == pControl;
+    return dred_gui_get_element_with_mouse_capture(pControl->pGUI) == pControl;
 }
 
 
-DRED_GUI_PRIVATE void drgui_release_keyboard_private(dred_gui* pGUI, dred_control* pNewCapturedControl)
+DRED_GUI_PRIVATE void dred_gui_release_keyboard_private(dred_gui* pGUI, dred_control* pNewCapturedControl)
 {
     assert(pGUI != NULL);
 
@@ -1693,11 +1693,11 @@ DRED_GUI_PRIVATE void drgui_release_keyboard_private(dred_gui* pGUI, dred_contro
     pGUI->flags &= ~IS_RELEASING_KEYBOARD;
 
     // Explicitly capture the keyboard.
-    drgui_capture_keyboard(pGUI->pControlWantingKeyboardCapture);
+    dred_gui_capture_keyboard(pGUI->pControlWantingKeyboardCapture);
     pGUI->pControlWantingKeyboardCapture = NULL;
 }
 
-void drgui_capture_keyboard(dred_control* pControl)
+void dred_gui_capture_keyboard(dred_control* pControl)
 {
     if (pControl == NULL) {
         return;
@@ -1719,7 +1719,7 @@ void drgui_capture_keyboard(dred_control* pControl)
         // Release the previous capture first.
         dred_control* pPrevControlWithKeyboardCapture = pControl->pGUI->pControlWithKeyboardCapture;
         if (pPrevControlWithKeyboardCapture != NULL) {
-            drgui_release_keyboard_private(pControl->pGUI, pControl);
+            dred_gui_release_keyboard_private(pControl->pGUI, pControl);
         }
 
         assert(pControl->pGUI->pControlWithKeyboardCapture == NULL);
@@ -1739,16 +1739,16 @@ void drgui_capture_keyboard(dred_control* pControl)
     }
 }
 
-void drgui_release_keyboard(dred_gui* pGUI)
+void dred_gui_release_keyboard(dred_gui* pGUI)
 {
     if (pGUI == NULL) {
         return;
     }
 
-    drgui_release_keyboard_private(pGUI, NULL);
+    dred_gui_release_keyboard_private(pGUI, NULL);
 }
 
-void drgui_release_keyboard_no_global_notify(dred_gui* pGUI)
+void dred_gui_release_keyboard_no_global_notify(dred_gui* pGUI)
 {
     if (pGUI == NULL) {
         return;
@@ -1756,11 +1756,11 @@ void drgui_release_keyboard_no_global_notify(dred_gui* pGUI)
 
     dred_gui_on_release_keyboard_proc prevProc = pGUI->onGlobalReleaseKeyboard;
     pGUI->onGlobalReleaseKeyboard = NULL;
-    drgui_release_keyboard(pGUI);
+    dred_gui_release_keyboard(pGUI);
     pGUI->onGlobalReleaseKeyboard = prevProc;
 }
 
-dred_control* drgui_get_element_with_keyboard_capture(dred_gui* pGUI)
+dred_control* dred_gui_get_element_with_keyboard_capture(dred_gui* pGUI)
 {
     if (pGUI == NULL) {
         return NULL;
@@ -1769,17 +1769,17 @@ dred_control* drgui_get_element_with_keyboard_capture(dred_gui* pGUI)
     return pGUI->pControlWithKeyboardCapture;
 }
 
-bool drgui_has_keyboard_capture(dred_control* pControl)
+bool dred_control_has_keyboard_capture(dred_control* pControl)
 {
     if (pControl == NULL) {
         return false;
     }
 
-    return drgui_get_element_with_keyboard_capture(pControl->pGUI) == pControl;
+    return dred_gui_get_element_with_keyboard_capture(pControl->pGUI) == pControl;
 }
 
 
-void drgui_set_cursor(dred_control* pControl, dred_cursor_type cursor)
+void dred_control_set_cursor(dred_control* pControl, dred_cursor_type cursor)
 {
     if (pControl == NULL) {
         return;
@@ -1792,7 +1792,7 @@ void drgui_set_cursor(dred_control* pControl, dred_cursor_type cursor)
     }
 }
 
-dred_cursor_type drgui_get_cursor(dred_control* pControl)
+dred_cursor_type dred_control_get_cursor(dred_control* pControl)
 {
     if (pControl == NULL) {
         return dred_cursor_none;

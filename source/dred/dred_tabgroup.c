@@ -119,7 +119,7 @@ void dred_tabbar__on_tab_deactivated(dred_control* pTabBar, drgui_tab* pTab, drg
     }
 
     dred_control_hide(pControl);
-    if (drgui_has_keyboard_capture(pControl)) {
+    if (dred_control_has_keyboard_capture(pControl)) {
         dred_release_keyboard(dred_control_get_gui(pControl));
     }
 

@@ -89,7 +89,7 @@ void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, dred_control* pPrevC
     dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
     assert(data != NULL);
 
-    drgui_capture_keyboard(data->pTextBox);
+    dred_gui_capture_keyboard(data->pTextBox);
 }
 
 void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, dred_rect rect, void* pPaintData)
@@ -448,7 +448,7 @@ bool dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
         return false;
     }
 
-    return drgui_has_keyboard_capture(data->pTextBox);
+    return dred_control_has_keyboard_capture(data->pTextBox);
 }
 
 

@@ -34,7 +34,7 @@ void dred_button__on_paint(dred_button* pButton, dred_rect rect, void* pPaintDat
 
 
     dred_color bgColor = pData->bgColor;
-    if (drgui_has_mouse_capture(pButton)) {
+    if (dred_control_has_mouse_capture(pButton)) {
         bgColor = pData->bgColorHovered;
         if (pData->isMouseOver) {
             bgColor = pData->bgColorPressed;
@@ -98,7 +98,7 @@ void dred_button__on_mouse_move(dred_button* pButton, int mousePosX, int mousePo
         return;
     }
 
-    if (drgui_has_mouse_capture(pButton)) {
+    if (dred_control_has_mouse_capture(pButton)) {
         pData->isMouseOver = (mousePosX >= 0 && mousePosX < drgui_get_width(pButton)) && (mousePosY >= 0 && mousePosY < drgui_get_height(pButton));
         drgui_dirty(pButton, drgui_get_local_rect(pButton));
     }
@@ -116,8 +116,8 @@ void dred_button__on_mouse_button_down(dred_button* pButton, int mouseButton, in
     }
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
-        if (!drgui_has_mouse_capture(pButton)) {
-            drgui_capture_mouse(pButton);
+        if (!dred_control_has_mouse_capture(pButton)) {
+            dred_gui_capture_mouse(pButton);
 
             // Redraw to show the pressed state.
             drgui_dirty(pButton, drgui_get_local_rect(pButton));
@@ -137,8 +137,8 @@ void dred_button__on_mouse_button_up(dred_button* pButton, int mouseButton, int 
     }
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
-        if (drgui_has_mouse_capture(pButton)) {
-            drgui_release_mouse(pButton->pGUI);
+        if (dred_control_has_mouse_capture(pButton)) {
+            dred_gui_release_mouse(pButton->pGUI);
 
             if (pData->onPressed && drgui_is_element_under_mouse(pButton)) {
                 pData->onPressed(pButton);
