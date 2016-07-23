@@ -140,7 +140,7 @@ void dred_button__on_mouse_button_up(dred_button* pButton, int mouseButton, int 
         if (dred_control_has_mouse_capture(pButton)) {
             dred_gui_release_mouse(pButton->pGUI);
 
-            if (pData->onPressed && drgui_is_element_under_mouse(pButton)) {
+            if (pData->onPressed && dred_control_is_under_mouse(pButton)) {
                 pData->onPressed(pButton);
             }
         }

@@ -1038,7 +1038,7 @@ void dred_gui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int 
 
 
         // The first thing we need to do is find the new element that's sitting under the mouse.
-        dred_control* pNewControlUnderMouse = drgui_find_element_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
+        dred_control* pNewControlUnderMouse = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
 
         // Now that we know which element is sitting under the mouse we need to check if the mouse has entered into a new element.
         drgui_update_mouse_enter_and_leave_state(pTopLevelControl->pGUI, pNewControlUnderMouse);
@@ -1079,7 +1079,7 @@ void dred_gui_post_inbound_event_mouse_button_down(dred_control* pTopLevelContro
             if (pEventReceiver == NULL)
             {
                 // We'll get here if this message is posted without a prior mouse move event.
-                pEventReceiver = drgui_find_element_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
+                pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
             }
         }
 
@@ -1113,7 +1113,7 @@ void dred_gui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl,
             if (pEventReceiver == NULL)
             {
                 // We'll get here if this message is posted without a prior mouse move event.
-                pEventReceiver = drgui_find_element_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
+                pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
             }
         }
 
@@ -1147,7 +1147,7 @@ void dred_gui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelCo
             if (pEventReceiver == NULL)
             {
                 // We'll get here if this message is posted without a prior mouse move event.
-                pEventReceiver = drgui_find_element_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
+                pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
             }
         }
 
@@ -1181,7 +1181,7 @@ void dred_gui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int
             if (pEventReceiver == NULL)
             {
                 // We'll get here if this message is posted without a prior mouse move event.
-                pEventReceiver = drgui_find_element_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
+                pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
             }
         }
 
@@ -1421,7 +1421,7 @@ void dred_control_delete(dred_control* pControl)
     if (needsMouseUpdate)
     {
         pControl->onHitTest = drgui_pass_through_hit_test;        // <-- This ensures we don't include this element when searching for the new element under the mouse.
-        drgui_update_mouse_enter_and_leave_state(pGUI, drgui_find_element_under_point(pGUI->pLastMouseMoveTopLevelControl, pGUI->lastMouseMovePosX, pGUI->lastMouseMovePosY));
+        drgui_update_mouse_enter_and_leave_state(pGUI, dred_gui_find_control_under_point(pGUI->pLastMouseMoveTopLevelControl, pGUI->lastMouseMovePosX, pGUI->lastMouseMovePosY));
     }
 
 
@@ -1637,7 +1637,7 @@ void dred_gui_release_mouse(dred_gui* pGUI)
 
 
     // After releasing the mouse the cursor may be sitting on top of a different element - we want to recheck that.
-    drgui_update_mouse_enter_and_leave_state(pGUI, drgui_find_element_under_point(pGUI->pLastMouseMoveTopLevelControl, pGUI->lastMouseMovePosX, pGUI->lastMouseMovePosY));
+    drgui_update_mouse_enter_and_leave_state(pGUI, dred_gui_find_control_under_point(pGUI->pLastMouseMoveTopLevelControl, pGUI->lastMouseMovePosX, pGUI->lastMouseMovePosY));
 }
 
 void dred_gui_release_mouse_no_global_notify(dred_gui* pGUI)
@@ -1787,7 +1787,7 @@ void dred_control_set_cursor(dred_control* pControl, dred_cursor_type cursor)
 
     pControl->cursor = cursor;
 
-    if (drgui_is_element_under_mouse(pControl) && pControl->pGUI->currentCursor != cursor) {
+    if (dred_control_is_under_mouse(pControl) && pControl->pGUI->currentCursor != cursor) {
         drgui__change_cursor(pControl, cursor);
     }
 }
@@ -1956,7 +1956,7 @@ void dred_control_set_on_release_keyboard(dred_control* pControl, dred_gui_on_re
 
 
 
-bool drgui_is_point_inside_element_bounds(const dred_control* pControl, float absolutePosX, float absolutePosY)
+bool dred_control_is_point_inside_bounds(const dred_control* pControl, float absolutePosX, float absolutePosY)
 {
     if (absolutePosX < pControl->absolutePosX ||
         absolutePosX < pControl->absolutePosY)
@@ -1973,9 +1973,9 @@ bool drgui_is_point_inside_element_bounds(const dred_control* pControl, float ab
     return true;
 }
 
-bool drgui_is_point_inside_element(dred_control* pControl, float absolutePosX, float absolutePosY)
+bool dred_control_is_point_inside(dred_control* pControl, float absolutePosX, float absolutePosY)
 {
-    if (drgui_is_point_inside_element_bounds(pControl, absolutePosX, absolutePosY))
+    if (dred_control_is_point_inside_bounds(pControl, absolutePosX, absolutePosY))
     {
         // It is valid for onHitTest to be null, in which case we use the default hit test which assumes the element is just a rectangle
         // equal to the size of it's bounds. It's equivalent to onHitTest always returning true.
@@ -1997,14 +1997,14 @@ typedef struct
     dred_control* pControlUnderPoint;
     float absolutePosX;
     float absolutePosY;
-}drgui_find_element_under_point_data;
+}dred_gui_find_control_under_point_data;
 
-bool drgui_find_element_under_point_iterator(dred_control* pControl, dred_rect* pRelativeVisibleRect, void* pUserData)
+bool dred_gui_find_control_under_point_iterator(dred_control* pControl, dred_rect* pRelativeVisibleRect, void* pUserData)
 {
     assert(pControl             != NULL);
     assert(pRelativeVisibleRect != NULL);
 
-    drgui_find_element_under_point_data* pData = (drgui_find_element_under_point_data*)pUserData;
+    dred_gui_find_control_under_point_data* pData = (dred_gui_find_control_under_point_data*)pUserData;
     assert(pData != NULL);
 
     float relativePosX = pData->absolutePosX;
@@ -2027,28 +2027,28 @@ bool drgui_find_element_under_point_iterator(dred_control* pControl, dred_rect* 
     return true;
 }
 
-dred_control* drgui_find_element_under_point(dred_control* pTopLevelControl, float absolutePosX, float absolutePosY)
+dred_control* dred_gui_find_control_under_point(dred_control* pTopLevelControl, float absolutePosX, float absolutePosY)
 {
     if (pTopLevelControl == NULL) {
         return NULL;
     }
 
-    drgui_find_element_under_point_data data;
+    dred_gui_find_control_under_point_data data;
     data.pControlUnderPoint = NULL;
     data.absolutePosX = absolutePosX;
     data.absolutePosY = absolutePosY;
-    drgui_iterate_visible_elements(pTopLevelControl, drgui_get_absolute_rect(pTopLevelControl), drgui_find_element_under_point_iterator, &data);
+    drgui_iterate_visible_elements(pTopLevelControl, drgui_get_absolute_rect(pTopLevelControl), dred_gui_find_control_under_point_iterator, &data);
 
     return data.pControlUnderPoint;
 }
 
-bool drgui_is_element_under_mouse(dred_control* pControl)
+bool dred_control_is_under_mouse(dred_control* pControl)
 {
     if (pControl == NULL) {
         return false;
     }
 
-    return drgui_find_element_under_point(pControl->pGUI->pLastMouseMoveTopLevelControl, pControl->pGUI->lastMouseMovePosX, pControl->pGUI->lastMouseMovePosY) == pControl;
+    return dred_gui_find_control_under_point(pControl->pGUI->pLastMouseMoveTopLevelControl, pControl->pGUI->lastMouseMovePosX, pControl->pGUI->lastMouseMovePosY) == pControl;
 }
 
 

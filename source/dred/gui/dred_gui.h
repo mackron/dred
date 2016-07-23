@@ -1131,20 +1131,20 @@ void dred_control_set_on_release_keyboard(dred_control* pControl, dred_gui_on_re
 ///
 /// @remarks
 ///     This only checks if the point is inside the bounds of the element and does not take hit testing into account. This difference
-///     with this one and drgui_is_point_inside_element() is that the latter will use hit testing.
-bool drgui_is_point_inside_element_bounds(const dred_control* pControl, float absolutePosX, float absolutePosY);
+///     with this one and dred_control_is_point_inside() is that the latter will use hit testing.
+bool dred_control_is_point_inside_bounds(const dred_control* pControl, float absolutePosX, float absolutePosY);
 
 /// Determines whether or not the given point is inside the given element.
 ///
 /// @remarks
 ///     This will use hit testing to determine whether or not the point is inside the element.
-bool drgui_is_point_inside_element(dred_control* pControl, float absolutePosX, float absolutePosY);
+bool dred_control_is_point_inside(dred_control* pControl, float absolutePosX, float absolutePosY);
 
 /// Finds the element under the given point taking mouse pass-through and hit testing into account.
-dred_control* drgui_find_element_under_point(dred_control* pTopLevelControl, float absolutePosX, float absolutePosY);
+dred_control* dred_gui_find_control_under_point(dred_control* pTopLevelControl, float absolutePosX, float absolutePosY);
 
 /// Determines whether or not the given element is currently sitting directly under the mouse.
-bool drgui_is_element_under_mouse(dred_control* pTopLevelControl);
+bool dred_control_is_under_mouse(dred_control* pTopLevelControl);
 
 
 
