@@ -75,7 +75,7 @@ dred_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSett
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
 
-    dred_context* pDred = drgui_get_context(pSettingsEditor);
+    dred_context* pDred = dred_control_get_gui(pSettingsEditor);
     assert(pData != NULL);
 
     float posX = pData->sidePanelWidth;
@@ -122,10 +122,10 @@ void dred_settings_editor__select_page_by_index(dred_settings_editor* pSettingsE
     int oldPageIndex = pData->selectedPageIndex;
     if (newPageIndex != oldPageIndex) {
         if (oldPageIndex != -1) {
-            drgui_hide(pData->pages[oldPageIndex].pGUIControl);
+            dred_control_hide(pData->pages[oldPageIndex].pGUIControl);
         }
         if (newPageIndex != -1) {
-            drgui_show(pData->pages[newPageIndex].pGUIControl);
+            dred_control_show(pData->pages[newPageIndex].pGUIControl);
         }
 
         pData->selectedPageIndex = newPageIndex;
@@ -139,7 +139,7 @@ void dred_settings_editor__refresh_layout(dred_settings_editor* pSettingsEditor)
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
 
-    dred_context* pDred = drgui_get_context(pSettingsEditor);
+    dred_context* pDred = dred_control_get_gui(pSettingsEditor);
     assert(pData != NULL);
 
     float posX = pData->sidePanelWidth;
@@ -165,7 +165,7 @@ void dred_settings_editor__on_size(dred_settings_editor* pSettingsEditor, float 
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
 
-    dred_context* pDred = drgui_get_context(pSettingsEditor);
+    dred_context* pDred = dred_control_get_gui(pSettingsEditor);
 
     dred_settings_editor__refresh_layout(pSettingsEditor);
 
@@ -228,7 +228,7 @@ void dred_settings_editor__on_paint(dred_settings_editor* pSettingsEditor, dred_
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
 
-    dred_context* pDred = drgui_get_context(pSettingsEditor);
+    dred_context* pDred = dred_control_get_gui(pSettingsEditor);
     assert(pDred != NULL);
 
     dred_rect sideRect = dred_settings_editor__get_side_panel_rect(pSettingsEditor);
@@ -310,7 +310,7 @@ void dred_settings_editor__on_paint(dred_settings_editor* pSettingsEditor, dred_
 
 void dred_settings__btn_close__on_pressed(dred_button* pButton)
 {
-    dred_settings_dialog_hide(drgui_get_context(pButton)->pSettingsDialog);
+    dred_settings_dialog_hide(dred_control_get_gui(pButton)->pSettingsDialog);
 }
 
 void dred_settings__btn_choose_font__on_pressed(dred_button* pButton)
@@ -362,12 +362,12 @@ bool dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_cont
     assert(title != NULL);
 
     strcpy_s(pPage->title, sizeof(pPage->title), title);
-    pPage->pGUIControl = drgui_create_element(pDred, pParent, "dred.settings.page", 0);
+    pPage->pGUIControl = dred_control_create(pDred, pParent, "dred.settings.page", 0);
     if (pPage->pGUIControl == NULL) {
         return false;
     }
 
-    drgui_hide(pPage->pGUIControl);
+    dred_control_hide(pPage->pGUIControl);
     drgui_set_on_mouse_enter(pPage->pGUIControl, dred_settings_editor_page__on_mouse_enter);
     drgui_set_on_paint(pPage->pGUIControl, dred_settings_editor_page__on_paint);
 
@@ -379,7 +379,7 @@ bool dred_settings_editor__init_page__general(dred_settings_editor* pSettingsEdi
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
 
-    dred_context* pDred = drgui_get_context(pSettingsEditor);
+    dred_context* pDred = dred_control_get_gui(pSettingsEditor);
     assert(pData != NULL);
 
     dred_settings_editor_page* pPage = &pData->pages[DRED_SETTINGS_EDITOR_PAGE_GENERAL];
@@ -420,7 +420,7 @@ bool dred_settings_editor__init_page__theme(dred_settings_editor* pSettingsEdito
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
 
-    dred_context* pDred = drgui_get_context(pSettingsEditor);
+    dred_context* pDred = dred_control_get_gui(pSettingsEditor);
     assert(pData != NULL);
 
     dred_settings_editor_page* pPage = &pData->pages[DRED_SETTINGS_EDITOR_PAGE_THEME];
@@ -495,7 +495,7 @@ bool dred_settings_editor__init_page__text_editor(dred_settings_editor* pSetting
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
 
-    dred_context* pDred = drgui_get_context(pSettingsEditor);
+    dred_context* pDred = dred_control_get_gui(pSettingsEditor);
     assert(pData != NULL);
 
     dred_settings_editor_page* pPage = &pData->pages[DRED_SETTINGS_EDITOR_PAGE_TEXT_EDITOR];
@@ -581,7 +581,7 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_cont
 
 void dred_settings_editor_delete(dred_settings_editor* pSettingsEditor)
 {
-    dred_context* pDred = drgui_get_context(pSettingsEditor);
+    dred_context* pDred = dred_control_get_gui(pSettingsEditor);
     if (pDred == NULL) {
         return;
     }
@@ -602,7 +602,7 @@ void dred_settings_editor_refresh_styling(dred_settings_editor* pSettingsEditor)
         return;
     }
 
-    dred_context* pDred = drgui_get_context(pSettingsEditor);
+    dred_context* pDred = dred_control_get_gui(pSettingsEditor);
     if (pDred == NULL) {
         return;
     }

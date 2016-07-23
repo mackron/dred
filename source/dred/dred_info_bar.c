@@ -18,7 +18,7 @@ typedef struct
 
 dred_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
 {
-    dred_context* pDred = drgui_get_context(pInfoBar);
+    dred_context* pDred = dred_control_get_gui(pInfoBar);
     assert(pDred != NULL);
 
     if (dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
@@ -30,7 +30,7 @@ dred_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
 
 dred_color dred_info_bar__get_text_color(dred_info_bar* pInfoBar)
 {
-    dred_context* pDred = drgui_get_context(pInfoBar);
+    dred_context* pDred = dred_control_get_gui(pInfoBar);
     assert(pDred != NULL);
 
     if (dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
@@ -51,7 +51,7 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar
 {
     (void)data;
 
-    dred_context* pDred = drgui_get_context(pInfoBar);
+    dred_context* pDred = dred_control_get_gui(pInfoBar);
     assert(pDred != NULL);
 
     drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
@@ -91,7 +91,7 @@ void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_ba
 {
     (void)data;
 
-    dred_context* pDred = drgui_get_context(pInfoBar);
+    dred_context* pDred = dred_control_get_gui(pInfoBar);
     assert(pDred != NULL);
 
     drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
@@ -126,7 +126,7 @@ void dred_info_bar__on_paint(dred_info_bar* pInfoBar, dred_rect rect, void* pPai
 {
     (void)rect;
 
-    dred_info_bar_data* data = (dred_info_bar_data*)drgui_get_extra_data(pInfoBar);
+    dred_info_bar_data* data = (dred_info_bar_data*)dred_control_get_extra_data(pInfoBar);
     assert(data != NULL);
 
     if (data->type == DRED_INFO_BAR_TYPE_NONE) {
@@ -140,17 +140,17 @@ void dred_info_bar__on_paint(dred_info_bar* pInfoBar, dred_rect rect, void* pPai
 
 dred_info_bar* dred_info_bar_create(dred_context* pDred, dred_control* pParent)
 {
-    dred_info_bar* pInfoBar = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_INFO_BAR, sizeof(dred_info_bar_data));
+    dred_info_bar* pInfoBar = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_INFO_BAR, sizeof(dred_info_bar_data));
     if (pInfoBar == NULL) {
         return NULL;
     }
 
-    dred_info_bar_data* data = (dred_info_bar_data*)drgui_get_extra_data(pInfoBar);
+    dred_info_bar_data* data = (dred_info_bar_data*)dred_control_get_extra_data(pInfoBar);
     assert(data != NULL);
 
     data->pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
     if (data->pFont == NULL) {
-        drgui_delete_element(pInfoBar);
+        dred_control_delete(pInfoBar);
         return NULL;
     }
 
@@ -174,12 +174,12 @@ dred_info_bar* dred_info_bar_create(dred_context* pDred, dred_control* pParent)
 
 void dred_info_bar_delete(dred_info_bar* pInfoBar)
 {
-    drgui_delete_element(pInfoBar);
+    dred_control_delete(pInfoBar);
 }
 
 void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
 {
-    dred_info_bar_data* data = (dred_info_bar_data*)drgui_get_extra_data(pInfoBar);
+    dred_info_bar_data* data = (dred_info_bar_data*)dred_control_get_extra_data(pInfoBar);
     if (data == NULL) {
         return;
     }
@@ -187,7 +187,7 @@ void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
     data->type = DRED_INFO_BAR_TYPE_NONE;
 
     if (pControl != NULL) {
-        if (drgui_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR) || drgui_is_of_type(pControl, DRED_CONTROL_TYPE_TEXTBOX))
+        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR) || dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXTBOX))
         {
             data->type = DRED_INFO_BAR_TYPE_TEXT_EDITOR;
             snprintf(data->lineStr, sizeof(data->lineStr), "Ln %d", (int)dred_text_editor_get_cursor_line(pControl) + 1);
@@ -202,12 +202,12 @@ void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
 
 void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar)
 {
-    dred_info_bar_data* data = (dred_info_bar_data*)drgui_get_extra_data(pInfoBar);
+    dred_info_bar_data* data = (dred_info_bar_data*)dred_control_get_extra_data(pInfoBar);
     if (data == NULL) {
         return;
     }
 
-    dred_context* pDred = drgui_get_context(pInfoBar);
+    dred_context* pDred = dred_control_get_gui(pInfoBar);
     assert(pDred != NULL);
 
     dred_gui_font* pNewFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);

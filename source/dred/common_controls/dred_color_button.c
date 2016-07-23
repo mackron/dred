@@ -25,7 +25,7 @@ dred_rect dred_colorbutton__get_box_rect(dred_colorbutton* pButton)
     // The size of the box is based on the size of the font.
     assert(pButton != NULL);
 
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     assert(pData != NULL);
     
     dred_gui_font_metrics metrics;
@@ -40,12 +40,12 @@ void dred_colorbutton__on_paint(dred_colorbutton* pButton, dred_rect rect, void*
 {
     (void)rect;
 
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
 
-    dred_context* pDred = drgui_get_context(pButton);
+    dred_context* pDred = dred_control_get_gui(pButton);
     if (pDred == NULL) {
         return;
     }
@@ -86,7 +86,7 @@ void dred_colorbutton__on_paint(dred_colorbutton* pButton, dred_rect rect, void*
 
 void dred_colorbutton__on_mouse_enter(dred_colorbutton* pButton)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -98,7 +98,7 @@ void dred_colorbutton__on_mouse_enter(dred_colorbutton* pButton)
 
 void dred_colorbutton__on_mouse_leave(dred_colorbutton* pButton)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -112,7 +112,7 @@ void dred_colorbutton__on_mouse_move(dred_colorbutton* pButton, int mousePosX, i
 {
     (void)stateFlags;
 
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -129,7 +129,7 @@ void dred_colorbutton__on_mouse_button_down(dred_colorbutton* pButton, int mouse
     (void)mousePosY;
     (void)stateFlags;
 
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -153,7 +153,7 @@ void dred_colorbutton__on_mouse_button_up(dred_colorbutton* pButton, int mouseBu
     dred_window* pOwnerWindow = dred_get_element_window(pButton);
     assert(pOwnerWindow != NULL);
 
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -179,7 +179,7 @@ void dred_colorbutton__on_release_mouse(dred_colorbutton* pButton)
 
 void dred_colorbutton__refresh_layout(dred_colorbutton* pButton)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -202,12 +202,12 @@ void dred_colorbutton__refresh_layout(dred_colorbutton* pButton)
 
 dred_colorbutton* dred_colorbutton_create(dred_context* pDred, dred_control* pParent, const char* text, dred_color color)
 {
-    dred_colorbutton* pButton = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_BUTTON, sizeof(dred_colorbutton_data));
+    dred_colorbutton* pButton = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_BUTTON, sizeof(dred_colorbutton_data));
     if (pButton == NULL) {
         return NULL;
     }
 
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     assert(pData != NULL);
 
     strncpy_s(pData->text, sizeof(pData->text), text, _TRUNCATE);
@@ -239,18 +239,18 @@ dred_colorbutton* dred_colorbutton_create(dred_context* pDred, dred_control* pPa
 
 void dred_colorbutton_delete(dred_colorbutton* pButton)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData != NULL) {
         dred_font_release_subfont(pData->pFont, pData->pSubFont);
     }
 
-    drgui_delete_element(pButton);
+    dred_control_delete(pButton);
 }
 
 
 void dred_colorbutton_set_text(dred_colorbutton* pButton, const char* text)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -264,7 +264,7 @@ void dred_colorbutton_set_text(dred_colorbutton* pButton, const char* text)
 
 void dred_colorbutton_enable_auto_size(dred_colorbutton* pButton)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -276,7 +276,7 @@ void dred_colorbutton_enable_auto_size(dred_colorbutton* pButton)
 
 void dred_colorbutton_disable_auto_size(dred_colorbutton* pButton)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -289,7 +289,7 @@ void dred_colorbutton_disable_auto_size(dred_colorbutton* pButton)
 
 void dred_colorbutton_set_font(dred_colorbutton* pButton, dred_font* pFont)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -301,14 +301,14 @@ void dred_colorbutton_set_font(dred_colorbutton* pButton, dred_font* pFont)
     dred_font_release_subfont(pData->pFont, pData->pSubFont);
 
     pData->pFont = pFont;
-    pData->pSubFont = dred_font_acquire_subfont(pData->pFont, drgui_get_context(pButton)->uiScale);
+    pData->pSubFont = dred_font_acquire_subfont(pData->pFont, dred_control_get_gui(pButton)->uiScale);
 
     dred_colorbutton__refresh_layout(pButton);
 }
 
 void dred_colorbutton_set_background_color(dred_colorbutton* pButton, dred_color color)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -321,7 +321,7 @@ void dred_colorbutton_set_background_color(dred_colorbutton* pButton, dred_color
 
 void dred_colorbutton_set_border_color(dred_colorbutton* pButton, dred_color color)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -334,7 +334,7 @@ void dred_colorbutton_set_border_color(dred_colorbutton* pButton, dred_color col
 
 void dred_colorbutton_set_border_width(dred_colorbutton* pButton, float width)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -347,7 +347,7 @@ void dred_colorbutton_set_border_width(dred_colorbutton* pButton, float width)
 
 void dred_colorbutton_set_padding(dred_colorbutton* pButton, float padding)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -360,7 +360,7 @@ void dred_colorbutton_set_padding(dred_colorbutton* pButton, float padding)
 
 void dred_colorbutton_set_color(dred_colorbutton* pButton, dred_color color, bool blockEvent)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -374,7 +374,7 @@ void dred_colorbutton_set_color(dred_colorbutton* pButton, dred_color color, boo
     if (pData->varBinding[0] != '\0') {
         char colorStr[256];
         snprintf(colorStr, sizeof(colorStr), "%d %d %d %d", color.r, color.g, color.b, color.a);
-        dred_config_set(&drgui_get_context(pButton)->config, pData->varBinding, colorStr);
+        dred_config_set(&dred_control_get_gui(pButton)->config, pData->varBinding, colorStr);
     }
 
     if (pData->onColorChanged) {
@@ -384,7 +384,7 @@ void dred_colorbutton_set_color(dred_colorbutton* pButton, dred_color color, boo
 
 dred_color dred_colorbutton_get_color(dred_colorbutton* pButton)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return drgui_rgb(0, 0, 0);
     }
@@ -395,7 +395,7 @@ dred_color dred_colorbutton_get_color(dred_colorbutton* pButton)
 
 void dred_colorbutton_set_bind_to_config_var(dred_colorbutton* pButton, const char* varName)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -409,7 +409,7 @@ void dred_colorbutton_set_bind_to_config_var(dred_colorbutton* pButton, const ch
 
 void dred_colorbutton_set_on_color_changed(dred_colorbutton* pButton, dred_colorbutton_on_color_changed_proc proc)
 {
-    dred_colorbutton_data* pData = (dred_colorbutton_data*)drgui_get_extra_data(pButton);
+    dred_colorbutton_data* pData = (dred_colorbutton_data*)dred_control_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }

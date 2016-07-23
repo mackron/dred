@@ -9,12 +9,12 @@
 // Helper for creating the root GUI element of a window.
 dred_control* dred_platform__create_root_gui_element(dred_context* pDred, dred_window* pWindow)
 {
-    dred_control* pRootGUIControl = drgui_create_element(pDred, NULL, "RootGUIControl", sizeof(pWindow));
+    dred_control* pRootGUIControl = dred_control_create(pDred, NULL, "RootGUIControl", sizeof(pWindow));
     if (pRootGUIControl == NULL) {
         return NULL;
     }
 
-    memcpy(drgui_get_extra_data(pRootGUIControl), &pWindow, sizeof(pWindow));
+    memcpy(dred_control_get_extra_data(pRootGUIControl), &pWindow, sizeof(pWindow));
     return pRootGUIControl;
 }
 
@@ -730,7 +730,7 @@ void dred_window_delete__win32(dred_window* pWindow)
     }
 
     if (pWindow->pRootGUIControl) {
-        drgui_delete_element(pWindow->pRootGUIControl);
+        dred_control_delete(pWindow->pRootGUIControl);
         pWindow->pRootGUIControl = NULL;
     }
 
@@ -2224,7 +2224,7 @@ void dred_window_delete__gtk(dred_window* pWindow)
         dred_gtk__delete_accels(pWindow->pAccels, pWindow->accelCount);
     }
 
-    drgui_delete_element(pWindow->pRootGUIControl);
+    dred_control_delete(pWindow->pRootGUIControl);
     dr2d_delete_surface(pWindow->pDrawingSurface);
 
     gtk_widget_destroy(pWindow->pGTKClientArea);
@@ -3460,11 +3460,11 @@ dred_window* dred_get_element_window(dred_control* pControl)
         return NULL;
     }
 
-    if (!drgui_is_of_type(pRootGUIControl, "RootGUIControl")) {
+    if (!dred_control_is_of_type(pRootGUIControl, "RootGUIControl")) {
         return NULL;
     }
 
-    dred_window** ppWindow = drgui_get_extra_data(pRootGUIControl);
+    dred_window** ppWindow = dred_control_get_extra_data(pRootGUIControl);
     if (ppWindow == NULL) {
         return NULL;
     }

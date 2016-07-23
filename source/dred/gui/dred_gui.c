@@ -147,7 +147,7 @@ void drgui_mark_element_as_dead(dred_control* pControl);
 bool drgui_is_element_marked_as_dead(const dred_control* pControl);
 
 /// Deletes every element that has been marked as dead.
-void drgui_delete_elements_marked_as_dead(dred_gui* pGUI);
+void dred_control_deletes_marked_as_dead(dred_gui* pGUI);
 
 
 /// Marks the given context as deleted.
@@ -167,7 +167,7 @@ void drgui_delete_context_for_real(dred_gui* pGUI);
 ///
 /// Sometimes an element will not be deleted straight away but instead just marked as dead. We use this to delete
 /// the given element for real.
-void drgui_delete_element_for_real(dred_control* pControl);
+void dred_control_delete_for_real(dred_control* pControl);
 
 
 /// Orphans the given element without triggering a redraw of the parent nor the child.
@@ -270,7 +270,7 @@ void drgui_end_inbound_event(dred_gui* pGUI)
     // an appropriate place for cleaning up dead elements.
     if (!drgui_is_handling_inbound_event(pGUI))
     {
-        drgui_delete_elements_marked_as_dead(pGUI);
+        dred_control_deletes_marked_as_dead(pGUI);
 
         // If the context has been marked for deletion than we will need to delete that too.
         if (drgui_is_context_marked_as_dead(pGUI))
@@ -348,7 +348,7 @@ bool drgui_is_element_marked_as_dead(const dred_control* pControl)
     return (pControl->flags & IS_CONTROL_DEAD) != 0;
 }
 
-void drgui_delete_elements_marked_as_dead(dred_gui* pGUI)
+void dred_control_deletes_marked_as_dead(dred_gui* pGUI)
 {
     assert(pGUI != NULL);
 
@@ -357,7 +357,7 @@ void drgui_delete_elements_marked_as_dead(dred_gui* pGUI)
         dred_control* pDeadControl = pGUI->pFirstDeadControl;
         pGUI->pFirstDeadControl = pGUI->pFirstDeadControl->pNextDeadControl;
 
-        drgui_delete_element_for_real(pDeadControl);
+        dred_control_delete_for_real(pDeadControl);
     }
 }
 
@@ -384,10 +384,10 @@ void drgui_delete_context_for_real(dred_gui* pGUI)
     assert(pGUI != NULL);
 
     // All elements marked as dead need to be deleted.
-    drgui_delete_elements_marked_as_dead(pGUI);
+    dred_control_deletes_marked_as_dead(pGUI);
 }
 
-void drgui_delete_element_for_real(dred_control* pControlToDelete)
+void dred_control_delete_for_real(dred_control* pControlToDelete)
 {
     assert(pControlToDelete != NULL);
 
@@ -1306,7 +1306,7 @@ void drgui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog)
 /////////////////////////////////////////////////////////////////
 // Controls
 
-dred_control* drgui_create_element(dred_context* pDred, dred_control* pParent, const char* type, size_t extraDataSize)
+dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, const char* type, size_t extraDataSize)
 {
     if (pDred == NULL) {
         return NULL;
@@ -1333,11 +1333,11 @@ dred_control* drgui_create_element(dred_context* pDred, dred_control* pParent, c
         pControl->absolutePosY = pParent->absolutePosY;
     }
 
-    drgui_set_type(pControl, type);
+    dred_control_set_type(pControl, type);
     return pControl;
 }
 
-void drgui_delete_element(dred_control* pControl)
+void dred_control_delete(dred_control* pControl)
 {
     if (pControl == NULL) {
         return;
@@ -1439,7 +1439,7 @@ void drgui_delete_element(dred_control* pControl)
 
     // Children need to be deleted before deleting the element itself.
     while (pControl->pLastChild != NULL) {
-        drgui_delete_element(pControl->pLastChild);
+        dred_control_delete(pControl->pLastChild);
     }
 
 
@@ -1452,12 +1452,12 @@ void drgui_delete_element(dred_control* pControl)
     // Finally, we to decided whether or not the element should be deleted for real straight away or not. If the element is being
     // deleted within an event handler it should be delayed because the event handlers may try referencing it afterwards.
     if (!drgui_is_handling_inbound_event(pGUI)) {
-        drgui_delete_element_for_real(pControl);
+        dred_control_delete_for_real(pControl);
     }
 }
 
 
-dred_context* drgui_get_context(dred_control* pControl)
+dred_context* dred_control_get_gui(dred_control* pControl)
 {
     if (pControl == NULL || pControl->pGUI == NULL) {
         return NULL;
@@ -1467,7 +1467,7 @@ dred_context* drgui_get_context(dred_control* pControl)
 }
 
 
-size_t drgui_get_extra_data_size(dred_control* pControl)
+size_t dred_control_get_extra_data_size(dred_control* pControl)
 {
     if (pControl != NULL) {
         return pControl->extraDataSize;
@@ -1476,7 +1476,7 @@ size_t drgui_get_extra_data_size(dred_control* pControl)
     return 0;
 }
 
-void* drgui_get_extra_data(dred_control* pControl)
+void* dred_control_get_extra_data(dred_control* pControl)
 {
     if (pControl != NULL) {
         return pControl->pExtraData;
@@ -1486,7 +1486,7 @@ void* drgui_get_extra_data(dred_control* pControl)
 }
 
 
-bool drgui_set_type(dred_control* pControl, const char* type)
+bool dred_control_set_type(dred_control* pControl, const char* type)
 {
     if (pControl == NULL) {
         return false;
@@ -1495,7 +1495,7 @@ bool drgui_set_type(dred_control* pControl, const char* type)
     return drgui__strcpy_s(pControl->type, sizeof(pControl->type), (type == NULL) ? "" : type) == 0;
 }
 
-const char* drgui_get_type(dred_control* pControl)
+const char* dred_control_get_type(dred_control* pControl)
 {
     if (pControl == NULL) {
         return NULL;
@@ -1504,7 +1504,7 @@ const char* drgui_get_type(dred_control* pControl)
     return pControl->type;
 }
 
-bool drgui_is_of_type(dred_control* pControl, const char* type)
+bool dred_control_is_of_type(dred_control* pControl, const char* type)
 {
     if (pControl == NULL || type == NULL) {
         return false;
@@ -1523,7 +1523,7 @@ bool dred_is_control_type_of_type(const char* type, const char* base)
 }
 
 
-void drgui_hide(dred_control* pControl)
+void dred_control_hide(dred_control* pControl)
 {
     if (pControl != NULL) {
         pControl->flags |= IS_CONTROL_HIDDEN;
@@ -1531,7 +1531,7 @@ void drgui_hide(dred_control* pControl)
     }
 }
 
-void drgui_show(dred_control* pControl)
+void dred_control_show(dred_control* pControl)
 {
     if (pControl != NULL) {
         pControl->flags &= ~IS_CONTROL_HIDDEN;
@@ -1539,7 +1539,7 @@ void drgui_show(dred_control* pControl)
     }
 }
 
-bool drgui_is_visible(const dred_control* pControl)
+bool dred_control_is_visible(const dred_control* pControl)
 {
     if (pControl != NULL) {
         return (pControl->flags & IS_CONTROL_HIDDEN) == 0;
@@ -1548,14 +1548,14 @@ bool drgui_is_visible(const dred_control* pControl)
     return false;
 }
 
-bool drgui_is_visible_recursive(const dred_control* pControl)
+bool dred_control_is_visible_recursive(const dred_control* pControl)
 {
-    if (drgui_is_visible(pControl))
+    if (dred_control_is_visible(pControl))
     {
         assert(pControl->pParent != NULL);
 
         if (pControl->pParent != NULL) {
-            return drgui_is_visible(pControl->pParent);
+            return dred_control_is_visible(pControl->pParent);
         }
     }
 
@@ -1563,21 +1563,21 @@ bool drgui_is_visible_recursive(const dred_control* pControl)
 }
 
 
-void drgui_disable_clipping(dred_control* pControl)
+void dred_control_disable_clipping(dred_control* pControl)
 {
     if (pControl != NULL) {
         pControl->flags |= IS_CONTROL_CLIPPING_DISABLED;
     }
 }
 
-void drgui_enable_clipping(dred_control* pControl)
+void dred_control_enable_clipping(dred_control* pControl)
 {
     if (pControl != NULL) {
         pControl->flags &= ~IS_CONTROL_CLIPPING_DISABLED;
     }
 }
 
-bool drgui_is_clipping_enabled(const dred_control* pControl)
+bool dred_control_is_clipping_enabled(const dred_control* pControl)
 {
     if (pControl != NULL) {
         return (pControl->flags & IS_CONTROL_CLIPPING_DISABLED) == 0;
@@ -1801,7 +1801,7 @@ dred_cursor_type drgui_get_cursor(dred_control* pControl)
     return pControl->cursor;
 }
 
-void drgui_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int relativePosX, int relativePosY)
+void dred_control_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int relativePosX, int relativePosY)
 {
     if (pControl == NULL || pMenu == NULL) {
         return;
@@ -2507,7 +2507,7 @@ bool drgui_iterate_visible_elements(dred_control* pParentControl, dred_rect rela
     }
 
 
-    if (!drgui_is_visible(pParentControl)) {
+    if (!dred_control_is_visible(pParentControl)) {
         return true;
     }
 
@@ -2526,7 +2526,7 @@ bool drgui_iterate_visible_elements(dred_control* pParentControl, dred_rect rela
         float childRelativePosY = drgui_get_relative_position_y(pChild);
 
         dred_rect childRect;
-        if (drgui_is_clipping_enabled(pChild)) {
+        if (dred_control_is_clipping_enabled(pChild)) {
             childRect = clampedRelativeRect;
         } else {
             childRect = relativeRect;

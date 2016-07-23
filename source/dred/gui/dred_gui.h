@@ -956,62 +956,62 @@ void drgui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog);
 // Controls
 
 /// Creates an element.
-dred_control* drgui_create_element(dred_context* pDred, dred_control* pParent, const char* type, size_t extraDataSize);
+dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, const char* type, size_t extraDataSize);
 
 /// Deletes and element.
-void drgui_delete_element(dred_control* pControl);
+void dred_control_delete(dred_control* pControl);
 
 
 // Retrieves the dred context that owns the given control.
-dred_context* drgui_get_context(dred_control* pControl);
+dred_context* dred_control_get_gui(dred_control* pControl);
 
 
 /// Retrieves the size of the extra data of the given element, in bytes.
-size_t drgui_get_extra_data_size(dred_control* pControl);
+size_t dred_control_get_extra_data_size(dred_control* pControl);
 
 /// Retrieves a pointer to the extra data of the given element.
-void* drgui_get_extra_data(dred_control* pControl);
+void* dred_control_get_extra_data(dred_control* pControl);
 
 
 /// Sets the type of the element.
 ///
 /// The type name cannot be more than 63 characters in length.
-bool drgui_set_type(dred_control* pControl, const char* type);
+bool dred_control_set_type(dred_control* pControl, const char* type);
 
 /// Retrieves the type fo the element.
-const char* drgui_get_type(dred_control* pControl);
+const char* dred_control_get_type(dred_control* pControl);
 
 /// Determines whether or not the given element is of the given type.
-bool drgui_is_of_type(dred_control* pControl, const char* type);
+bool dred_control_is_of_type(dred_control* pControl, const char* type);
 bool dred_is_control_type_of_type(const char* type, const char* base);
 
 
 /// Hides the given element.
-void drgui_hide(dred_control *pControl);
+void dred_control_hide(dred_control *pControl);
 
 /// Shows the given element.
-void drgui_show(dred_control* pControl);
+void dred_control_show(dred_control* pControl);
 
 /// Determines whether or not the element is marked as visible.
 ///
 /// @remarks
 ///     This is a direct accessor for the internal visible flag of the element and is not recursive. Thus, if this element is
-///     marked as visible, but it's parent is invisible, it will still return true. Use drgui_is_visible_recursive() to do
+///     marked as visible, but it's parent is invisible, it will still return true. Use dred_control_is_visible_recursive() to do
 ///     a recursive visibility check.
-bool drgui_is_visible(const dred_control* pControl);
+bool dred_control_is_visible(const dred_control* pControl);
 
 /// Recursively determines whether or not the element is marked as visible.
-bool drgui_is_visible_recursive(const dred_control* pControl);
+bool dred_control_is_visible_recursive(const dred_control* pControl);
 
 
 /// Disables clipping against the parent for the given element.
-void drgui_disable_clipping(dred_control* pControl);
+void dred_control_disable_clipping(dred_control* pControl);
 
 /// Enables clipping against the parent for the given element.
-void drgui_enable_clipping(dred_control* pControl);
+void dred_control_enable_clipping(dred_control* pControl);
 
 /// Determines whether or not clipping is enabled for the given element.
-bool drgui_is_clipping_enabled(const dred_control* pControl);
+bool dred_control_is_clipping_enabled(const dred_control* pControl);
 
 
 /// Sets the element that should receive all future mouse related events.
@@ -1059,7 +1059,7 @@ void drgui_set_cursor(dred_control* pControl, dred_cursor_type cursor);
 dred_cursor_type drgui_get_cursor(dred_control* pControl);
 
 // Helper function for showing a popup menu relative to the given control.
-void drgui_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int relativePosX, int relativePosY);
+void dred_control_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int relativePosX, int relativePosY);
 
 
 //// Events ////
