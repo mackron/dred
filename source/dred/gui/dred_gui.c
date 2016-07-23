@@ -28,75 +28,6 @@
 #define IS_CONTROL_CLIPPING_DISABLED        (1U << 1)
 #define IS_CONTROL_DEAD                     (1U << 31)
 
-
-static int drgui__strcpy_s(char* dst, size_t dstSizeInBytes, const char* src)
-{
-#ifdef _MSC_VER
-    return strcpy_s(dst, dstSizeInBytes, src);
-#else
-    if (dst == 0) {
-        return EINVAL;
-    }
-    if (dstSizeInBytes == 0) {
-        return ERANGE;
-    }
-    if (src == 0) {
-        dst[0] = '\0';
-        return EINVAL;
-    }
-
-    size_t i;
-    for (i = 0; i < dstSizeInBytes && src[i] != '\0'; ++i) {
-        dst[i] = src[i];
-    }
-
-    if (i < dstSizeInBytes) {
-        dst[i] = '\0';
-        return 0;
-    }
-
-    dst[0] = '\0';
-    return ERANGE;
-#endif
-}
-
-int drgui__strncpy_s(char* dst, size_t dstSizeInBytes, const char* src, size_t count)
-{
-#ifdef _MSC_VER
-    return strncpy_s(dst, dstSizeInBytes, src, count);
-#else
-    if (dst == 0) {
-        return EINVAL;
-    }
-    if (dstSizeInBytes == 0) {
-        return EINVAL;
-    }
-    if (src == 0) {
-        dst[0] = '\0';
-        return EINVAL;
-    }
-
-    size_t maxcount = count;
-    if (count == ((size_t)-1) || count >= dstSizeInBytes) {        // -1 = _TRUNCATE
-        maxcount = dstSizeInBytes - 1;
-    }
-
-    size_t i;
-    for (i = 0; i < maxcount && src[i] != '\0'; ++i) {
-        dst[i] = src[i];
-    }
-
-    if (src[i] == '\0' || i == count || count == ((size_t)-1)) {
-        dst[i] = '\0';
-        return 0;
-    }
-
-    dst[0] = '\0';
-    return ERANGE;
-#endif
-}
-
-
 /// Increments the inbound event counter
 ///
 /// @remarks
@@ -1492,7 +1423,7 @@ bool dred_control_set_type(dred_control* pControl, const char* type)
         return false;
     }
 
-    return drgui__strcpy_s(pControl->type, sizeof(pControl->type), (type == NULL) ? "" : type) == 0;
+    return strcpy_s(pControl->type, sizeof(pControl->type), (type == NULL) ? "" : type) == 0;
 }
 
 const char* dred_control_get_type(dred_control* pControl)
@@ -2935,7 +2866,7 @@ dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned
     pFont->internalFont = internalFont;
 
     if (family != NULL) {
-        drgui__strcpy_s(pFont->family, sizeof(pFont->family), family);
+        strcpy_s(pFont->family, sizeof(pFont->family), family);
     }
 
     return pFont;

@@ -1262,7 +1262,7 @@ DRED_GUI_PRIVATE drgui_tab* tb_create_tab(dred_tabbar* pTabBar, const char* text
     }
 
     if (text != NULL) {
-        drgui__strncpy_s(pTab->text, sizeof(pTab->text), text, (size_t)-1); // -1 = _TRUNCATE
+        strncpy_s(pTab->text, sizeof(pTab->text), text, (size_t)-1); // -1 = _TRUNCATE
     }
 
     return pTab;
@@ -1335,7 +1335,7 @@ void drgui_tab_set_text(drgui_tab* pTab, const char* text)
     }
 
     if (text != NULL) {
-        drgui__strncpy_s(pTab->text, sizeof(pTab->text), text, (size_t)-1); // -1 = _TRUNCATE
+        strncpy_s(pTab->text, sizeof(pTab->text), text, (size_t)-1); // -1 = _TRUNCATE
     } else {
         pTab->text[0] = '\0';
     }
