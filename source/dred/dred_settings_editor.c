@@ -336,7 +336,7 @@ void dred_settings__btn_choose_font__on_pressed(dred_button* pButton)
 
 void dred_settings_editor_page__on_mouse_enter(dred_control* pPageControl)
 {
-    dred_settings_editor* pSettingsEditor = drgui_get_parent(pPageControl);
+    dred_settings_editor* pSettingsEditor = dred_control_get_parent(pPageControl);
 
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);

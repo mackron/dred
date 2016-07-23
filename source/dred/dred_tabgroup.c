@@ -89,7 +89,7 @@ void dred_tabgroup__on_paint(dred_tabgroup* pTabGroup, dred_rect rect, void* pPa
 void dred_tabbar__on_tab_activated(dred_control* pTabBar, drgui_tab* pTab, drgui_tab* pOldActiveTab)
 {
     // The tab group is the parent of the tab bar.
-    dred_tabgroup* pTabGroup = drgui_get_parent(pTabBar);
+    dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
     if (pTabGroup == NULL) {
         return;
     }
@@ -108,7 +108,7 @@ void dred_tabbar__on_tab_activated(dred_control* pTabBar, drgui_tab* pTab, drgui
 void dred_tabbar__on_tab_deactivated(dred_control* pTabBar, drgui_tab* pTab, drgui_tab* pNewActiveTab)
 {
     // The tab group is the parent of the tab bar.
-    dred_tabgroup* pTabGroup = drgui_get_parent(pTabBar);
+    dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
     if (pTabGroup == NULL) {
         return;
     }
@@ -128,7 +128,7 @@ void dred_tabbar__on_tab_deactivated(dred_control* pTabBar, drgui_tab* pTab, drg
 
 void dred_tabbar__on_tab_close(dred_control* pTabBar, drgui_tab* pTab)
 {
-    dred_tabgroup* pTabGroup = drgui_get_parent(pTabBar);
+    dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
     if (pTabGroup == NULL) {
         return;
     }
@@ -141,7 +141,7 @@ void dred_tabbar__on_tab_mouse_button_up(dred_control* pTabBar, drgui_tab* pTab,
     (void)pTab;
     (void)stateFlags;
 
-    dred_tabgroup* pTabGroup = drgui_get_parent(pTabBar);
+    dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
     if (pTabGroup == NULL) {
         return;
     }
@@ -360,7 +360,7 @@ void dred_tabgroup__init_tab(dred_tabgroup* pTabGroup, dred_tab* pTab, dred_cont
     // The control needs to be re-parented the tab group. Also, the tab will not be active at this point, so make sure the
     // control is hidden.
     dred_control_hide(pControl);
-    drgui_append(pControl, pTabGroup);
+    dred_control_append(pControl, pTabGroup);
 
     // Make sure the control is given the correct initial layout.
     dred_tabgroup__refresh_control_layout(pTabGroup, pControl);

@@ -3455,7 +3455,7 @@ dred_window* dred_get_element_window(dred_control* pControl)
         return NULL;
     }
 
-    dred_control* pRootGUIControl = drgui_find_top_level_element(pControl);
+    dred_control* pRootGUIControl = dred_control_find_top_level_control(pControl);
     if (pRootGUIControl == NULL) {
         return NULL;
     }

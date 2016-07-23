@@ -138,7 +138,7 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, dred_control* p
 {
     (void)pPrevCapturedControl;
 
-    dred_cmdbar* pCmdBar = drgui_get_parent(pTextBox);
+    dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
     dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
@@ -172,7 +172,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, dred_control* p
 {
     (void)pNextCapturedControl;
 
-    dred_cmdbar* pCmdBar = drgui_get_parent(pTextBox);
+    dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
     dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
@@ -182,7 +182,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, dred_control* p
     assert(pDred != NULL);
 
     // If the element being captured is the inner text box, just ignore it and pretend that we're not actually losing focus.
-    if (drgui_is_descendant(pNextCapturedControl, dred_cmdbar__get_textbox(pCmdBar))) {
+    if (dred_control_is_descendant(pNextCapturedControl, dred_cmdbar__get_textbox(pCmdBar))) {
         return;
     }
 
@@ -210,7 +210,7 @@ void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, dred_key key, int state
     (void)stateFlags;
 
     // The parent is the command bar.
-    dred_cmdbar* pCmdBar = drgui_get_parent(pTextBox);
+    dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
     dred_cmdbar_data* pData = dred_control_get_extra_data(pCmdBar);
@@ -272,7 +272,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
     (void)stateFlags;
 
     // The parent is the command bar.
-    dred_cmdbar* pCmdBar = drgui_get_parent(pTextBox);
+    dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
     dred_cmdbar_data* pData = dred_control_get_extra_data(pCmdBar);

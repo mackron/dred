@@ -124,7 +124,7 @@
 //     rect.top    = absoluteRect.top;
 //     rect.right  = absoluteRect.right;
 //     rect.height = absoluteRect.bottom;
-//     InvalidateRect((HWND)drgui_get_user_data(drgui_find_top_level_element(pControl)), &rect, FALSE);
+//     InvalidateRect((HWND)drgui_get_user_data(dred_control_find_top_level_control(pControl)), &rect, FALSE);
 // }
 //
 // ...
@@ -1151,52 +1151,52 @@ bool dred_control_is_under_mouse(dred_control* pTopLevelControl);
 //// Hierarchy ////
 
 // Retrieves the parent of the given element.
-dred_control* drgui_get_parent(dred_control* pChildControl);
+dred_control* dred_control_get_parent(dred_control* pChildControl);
 
 /// Detaches the given element from it's parent.
-void drgui_detach(dred_control* pChildControl);
+void dred_control_detach(dred_control* pChildControl);
 
 /// Attaches the given element as a child of the given parent element, and appends it to the end of the children list.
-void drgui_append(dred_control* pChildControl, dred_control* pParentControl);
+void dred_control_append(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Attaches the given element as a child of the given parent element, and prepends it to the end of the children list.
-void drgui_prepend(dred_control* pChildControl, dred_control* pParentControl);
+void dred_control_prepend(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Appends the given element to the given sibling.
-void drgui_append_sibling(dred_control* pControlToAppend, dred_control* pControlToAppendTo);
+void dred_control_append_sibling(dred_control* pControlToAppend, dred_control* pControlToAppendTo);
 
 /// Prepends the given element to the given sibling.
-void drgui_prepend_sibling(dred_control* pControlToPrepend, dred_control* pControlToPrependTo);
+void dred_control_prepend_sibling(dred_control* pControlToPrepend, dred_control* pControlToPrependTo);
 
 /// Retrieves a pointer to the given element's top-level ancestor.
 ///
 /// @remarks
 ///     If pControl is the top level element, the return value will be pControl.
-dred_control* drgui_find_top_level_element(dred_control* pControl);
+dred_control* dred_control_find_top_level_control(dred_control* pControl);
 
 /// Determines whether or not the given element is the parent of the other.
 ///
 /// @remarks
-///     This is not recursive. Use drgui_is_ancestor() to do a recursive traversal.
-bool drgui_is_parent(dred_control* pParentControl, dred_control* pChildControl);
+///     This is not recursive. Use dred_control_is_ancestor() to do a recursive traversal.
+bool dred_control_is_parent(dred_control* pParentControl, dred_control* pChildControl);
 
 /// Determines whether or not the given element is a child of the other.
 ///
 /// @remarks
-///     This is not recursive. Use drgui_is_descendant() to do a recursive traversal.
-bool drgui_is_child(dred_control* pChildControl, dred_control* pParentControl);
+///     This is not recursive. Use dred_control_is_descendant() to do a recursive traversal.
+bool dred_control_is_child(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Determines whether or not the given element is an ancestor of the other.
-bool drgui_is_ancestor(dred_control* pAncestorControl, dred_control* pChildControl);
+bool dred_control_is_ancestor(dred_control* pAncestorControl, dred_control* pChildControl);
 
 /// Determines whether or not the given element is a descendant of the other.
-bool drgui_is_descendant(dred_control* pChildControl, dred_control* pAncestorControl);
+bool dred_control_is_descendant(dred_control* pChildControl, dred_control* pAncestorControl);
 
 /// Determines whether or not the given element is itself or a descendant.
-bool drgui_is_self_or_ancestor(dred_control* pAncestorControl, dred_control* pChildControl);
+bool dred_control_is_self_or_ancestor(dred_control* pAncestorControl, dred_control* pChildControl);
 
 /// Determines whether or not the given element is itself or a descendant.
-bool drgui_is_self_or_descendant(dred_control* pChildControl, dred_control* pAncestorControl);
+bool dred_control_is_self_or_descendant(dred_control* pChildControl, dred_control* pAncestorControl);
 
 
 

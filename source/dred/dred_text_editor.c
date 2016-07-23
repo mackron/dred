@@ -66,7 +66,7 @@ void dred_text_editor_textbox__on_key_down(dred_textbox* pTextBox, dred_key key,
 
 void dred_text_editor_textbox__on_mouse_wheel(dred_textbox* pTextBox, int delta, int mousePosX, int mousePosY, int stateFlags)
 {
-    dred_text_editor* pTextEditor = drgui_get_parent(pTextBox);
+    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
     if (pTextEditor == NULL) {
         return;
     }
@@ -98,7 +98,7 @@ void dred_text_editor_textbox__on_mouse_wheel(dred_textbox* pTextBox, int delta,
 
 void dred_text_editor_textbox__on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
-    dred_text_editor* pTextEditor = drgui_get_parent(pTextBox);
+    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
     if (pTextEditor == NULL) {
         return;
     }
@@ -115,7 +115,7 @@ void dred_text_editor_textbox__on_mouse_button_up(dred_textbox* pTextBox, int mo
 
 void dred_text_editor_textbox__on_cursor_move(dred_textbox* pTextBox)
 {
-    dred_text_editor* pTextEditor = drgui_get_parent(pTextBox);
+    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
     if (pTextEditor == NULL) {
         return;
     }
@@ -125,7 +125,7 @@ void dred_text_editor_textbox__on_cursor_move(dred_textbox* pTextBox)
 
 void dred_text_editor_textbox__on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedControl)
 {
-    dred_text_editor* pTextEditor = drgui_get_parent(pTextBox);
+    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
     if (pTextEditor == NULL) {
         return;
     }
@@ -144,7 +144,7 @@ void dred_text_editor_textbox__on_capture_keyboard(dred_textbox* pTextBox, dred_
 
 void dred_text_editor_textbox__on_undo_point_changed(dred_textbox* pTextBox, unsigned int iUndoPoint)
 {
-    dred_text_editor* pTextEditor = drgui_get_parent(pTextBox);
+    dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
     if (pTextEditor == NULL) {
         return;
     }

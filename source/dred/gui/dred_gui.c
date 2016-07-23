@@ -171,31 +171,31 @@ void dred_control_delete_for_real(dred_control* pControl);
 
 
 /// Orphans the given element without triggering a redraw of the parent nor the child.
-void drgui_detach_without_redraw(dred_control* pChildControl);
+void dred_control_detach_without_redraw(dred_control* pChildControl);
 
 /// Appends the given element without first detaching it from the old parent, nor does it post a redraw.
-void drgui_append_without_detach_or_redraw(dred_control* pChildControl, dred_control* pParentControl);
+void dred_control_append_without_detach_or_redraw(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Appends the given element without first detaching it from the old parent.
-void drgui_append_without_detach(dred_control* pChildControl, dred_control* pParentControl);
+void dred_control_append_without_detach(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Prepends the given element without first detaching it from the old parent, nor does it post a redraw.
-void drgui_prepend_without_detach_or_redraw(dred_control* pChildControl, dred_control* pParentControl);
+void dred_control_prepend_without_detach_or_redraw(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Prepends the given element without first detaching it from the old parent.
-void drgui_prepend_without_detach(dred_control* pChildControl, dred_control* pParentControl);
+void dred_control_prepend_without_detach(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Appends an element to another as it's sibling, but does not detach it from the previous parent nor trigger a redraw.
-void drgui_append_sibling_without_detach_or_redraw(dred_control* pControlToAppend, dred_control* pControlToAppendTo);
+void dred_control_append_sibling_without_detach_or_redraw(dred_control* pControlToAppend, dred_control* pControlToAppendTo);
 
 /// Appends an element to another as it's sibling, but does not detach it from the previous parent.
-void drgui_append_sibling_without_detach(dred_control* pControlToAppend, dred_control* pControlToAppendTo);
+void dred_control_append_sibling_without_detach(dred_control* pControlToAppend, dred_control* pControlToAppendTo);
 
 /// Prepends an element to another as it's sibling, but does not detach it from the previous parent nor trigger a redraw.
-void drgui_prepend_sibling_without_detach_or_redraw(dred_control* pControlToPrepend, dred_control* pControlToPrependTo);
+void dred_control_prepend_sibling_without_detach_or_redraw(dred_control* pControlToPrepend, dred_control* pControlToPrependTo);
 
 /// Prepends an element to another as it's sibling, but does not detach it from the previous parent.
-void drgui_prepend_sibling_without_detach(dred_control* pControlToPrepend, dred_control* pControlToPrependTo);
+void dred_control_prepend_sibling_without_detach(dred_control* pControlToPrepend, dred_control* pControlToPrependTo);
 
 
 /// Begins accumulating an invalidation rectangle.
@@ -417,7 +417,7 @@ void dred_control_delete_for_real(dred_control* pControlToDelete)
 }
 
 
-void drgui_detach_without_redraw(dred_control* pControl)
+void dred_control_detach_without_redraw(dred_control* pControl)
 {
     if (pControl->pParent != NULL) {
         if (pControl->pParent->pFirstChild == pControl) {
@@ -443,7 +443,7 @@ void drgui_detach_without_redraw(dred_control* pControl)
     pControl->pNextSibling = NULL;
 }
 
-void drgui_append_without_detach_or_redraw(dred_control* pChildControl, dred_control* pParentControl)
+void dred_control_append_without_detach_or_redraw(dred_control* pChildControl, dred_control* pParentControl)
 {
     pChildControl->pParent = pParentControl;
     if (pChildControl->pParent != NULL) {
@@ -460,13 +460,13 @@ void drgui_append_without_detach_or_redraw(dred_control* pChildControl, dred_con
     }
 }
 
-void drgui_append_without_detach(dred_control* pChildControl, dred_control* pParentControl)
+void dred_control_append_without_detach(dred_control* pChildControl, dred_control* pParentControl)
 {
-    drgui_append_without_detach_or_redraw(pChildControl, pParentControl);
+    dred_control_append_without_detach_or_redraw(pChildControl, pParentControl);
     drgui_auto_dirty(pChildControl, drgui_make_rect(0, 0, pChildControl->width, pChildControl->height));
 }
 
-void drgui_prepend_without_detach_or_redraw(dred_control* pChildControl, dred_control* pParentControl)
+void dred_control_prepend_without_detach_or_redraw(dred_control* pChildControl, dred_control* pParentControl)
 {
     pChildControl->pParent = pParentControl;
     if (pChildControl->pParent != NULL) {
@@ -483,13 +483,13 @@ void drgui_prepend_without_detach_or_redraw(dred_control* pChildControl, dred_co
     }
 }
 
-void drgui_prepend_without_detach(dred_control* pChildControl, dred_control* pParentControl)
+void dred_control_prepend_without_detach(dred_control* pChildControl, dred_control* pParentControl)
 {
-    drgui_prepend_without_detach_or_redraw(pChildControl, pParentControl);
+    dred_control_prepend_without_detach_or_redraw(pChildControl, pParentControl);
     drgui_auto_dirty(pChildControl, drgui_make_rect(0, 0, pChildControl->width, pChildControl->height));
 }
 
-void drgui_append_sibling_without_detach_or_redraw(dred_control* pControlToAppend, dred_control* pControlToAppendTo)
+void dred_control_append_sibling_without_detach_or_redraw(dred_control* pControlToAppend, dred_control* pControlToAppendTo)
 {
     assert(pControlToAppend   != NULL);
     assert(pControlToAppendTo != NULL);
@@ -509,13 +509,13 @@ void drgui_append_sibling_without_detach_or_redraw(dred_control* pControlToAppen
     }
 }
 
-void drgui_append_sibling_without_detach(dred_control* pControlToAppend, dred_control* pControlToAppendTo)
+void dred_control_append_sibling_without_detach(dred_control* pControlToAppend, dred_control* pControlToAppendTo)
 {
-    drgui_append_sibling_without_detach_or_redraw(pControlToAppend, pControlToAppendTo);
+    dred_control_append_sibling_without_detach_or_redraw(pControlToAppend, pControlToAppendTo);
     drgui_auto_dirty(pControlToAppend, drgui_make_rect(0, 0, pControlToAppend->width, pControlToAppend->height));
 }
 
-void drgui_prepend_sibling_without_detach_or_redraw(dred_control* pControlToPrepend, dred_control* pControlToPrependTo)
+void dred_control_prepend_sibling_without_detach_or_redraw(dred_control* pControlToPrepend, dred_control* pControlToPrependTo)
 {
     assert(pControlToPrepend   != NULL);
     assert(pControlToPrependTo != NULL);
@@ -535,9 +535,9 @@ void drgui_prepend_sibling_without_detach_or_redraw(dred_control* pControlToPrep
     }
 }
 
-void drgui_prepend_sibling_without_detach(dred_control* pControlToPrepend, dred_control* pControlToPrependTo)
+void dred_control_prepend_sibling_without_detach(dred_control* pControlToPrepend, dred_control* pControlToPrependTo)
 {
-    drgui_prepend_sibling_without_detach_or_redraw(pControlToPrepend, pControlToPrependTo);
+    dred_control_prepend_sibling_without_detach_or_redraw(pControlToPrepend, pControlToPrependTo);
     drgui_auto_dirty(pControlToPrepend, drgui_make_rect(0, 0, pControlToPrepend->width, pControlToPrepend->height));
 }
 
@@ -615,7 +615,7 @@ DRED_GUI_PRIVATE void drgui_post_on_mouse_leave_recursive(dred_gui* pGUI, dred_c
     dred_control* pOldAncestor = pOldControlUnderMouse;
     while (pOldAncestor != NULL)
     {
-        bool isOldControlUnderMouse = pNewControlUnderMouse == pOldAncestor || drgui_is_ancestor(pOldAncestor, pNewControlUnderMouse);
+        bool isOldControlUnderMouse = pNewControlUnderMouse == pOldAncestor || dred_control_is_ancestor(pOldAncestor, pNewControlUnderMouse);
         if (!isOldControlUnderMouse)
         {
             drgui_post_outbound_event_mouse_leave(pOldAncestor);
@@ -636,7 +636,7 @@ DRED_GUI_PRIVATE void drgui_post_on_mouse_enter_recursive(dred_gui* pGUI, dred_c
         drgui_post_on_mouse_enter_recursive(pGUI, pNewControlUnderMouse->pParent, pOldControlUnderMouse);
     }
 
-    bool wasNewControlUnderMouse = pOldControlUnderMouse == pNewControlUnderMouse || drgui_is_ancestor(pNewControlUnderMouse, pOldControlUnderMouse);
+    bool wasNewControlUnderMouse = pOldControlUnderMouse == pNewControlUnderMouse || dred_control_is_ancestor(pNewControlUnderMouse, pOldControlUnderMouse);
     if (!wasNewControlUnderMouse)
     {
         drgui_post_outbound_event_mouse_enter(pNewControlUnderMouse);
@@ -1324,7 +1324,7 @@ dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, co
     pControl->extraDataSize = extraDataSize;
 
     // Add to the the hierarchy.
-    drgui_append_without_detach_or_redraw(pControl, pControl->pParent);
+    dred_control_append_without_detach_or_redraw(pControl, pControl->pParent);
 
 
     // Have the element positioned at 0,0 relative to the parent by default.
@@ -1435,7 +1435,7 @@ void dred_control_delete(dred_control* pControl)
 
 
     // Orphan the element first.
-    drgui_detach_without_redraw(pControl);
+    dred_control_detach_without_redraw(pControl);
 
     // Children need to be deleted before deleting the element itself.
     while (pControl->pLastChild != NULL) {
@@ -2055,7 +2055,7 @@ bool dred_control_is_under_mouse(dred_control* pControl)
 
 //// Hierarchy ////
 
-dred_control* drgui_get_parent(dred_control* pChildControl)
+dred_control* dred_control_get_parent(dred_control* pChildControl)
 {
     if (pChildControl == NULL) {
         return NULL;
@@ -2064,7 +2064,7 @@ dred_control* drgui_get_parent(dred_control* pChildControl)
     return pChildControl->pParent;
 }
 
-void drgui_detach(dred_control* pChildControl)
+void dred_control_detach(dred_control* pChildControl)
 {
     if (pChildControl == NULL) {
         return;
@@ -2074,7 +2074,7 @@ void drgui_detach(dred_control* pChildControl)
 
 
     // We orphan the element using the private API. This will not mark the parent element as dirty so we need to do that afterwards.
-    drgui_detach_without_redraw(pChildControl);
+    dred_control_detach_without_redraw(pChildControl);
 
     // The region of the old parent needs to be redrawn.
     if (pOldParent != NULL) {
@@ -2082,7 +2082,7 @@ void drgui_detach(dred_control* pChildControl)
     }
 }
 
-void drgui_append(dred_control* pChildControl, dred_control* pParentControl)
+void dred_control_append(dred_control* pChildControl, dred_control* pParentControl)
 {
     if (pChildControl == NULL) {
         return;
@@ -2090,90 +2090,90 @@ void drgui_append(dred_control* pChildControl, dred_control* pParentControl)
 
     // We first need to orphan the element. If the parent element is the new parent is the same as the old one, as in we
     // are just moving the child element to the end of the children list, we want to delay the repaint until the end. To
-    // do this we use drgui_detach_without_redraw() because that will not trigger a redraw.
+    // do this we use dred_control_detach_without_redraw() because that will not trigger a redraw.
     if (pChildControl->pParent != pParentControl) {
-        drgui_detach(pChildControl);
+        dred_control_detach(pChildControl);
     } else {
-        drgui_detach_without_redraw(pChildControl);
+        dred_control_detach_without_redraw(pChildControl);
     }
 
 
     // Now we attach it to the end of the new parent.
     if (pParentControl != NULL) {
-        drgui_append_without_detach(pChildControl, pParentControl);
+        dred_control_append_without_detach(pChildControl, pParentControl);
     }
 }
 
-void drgui_prepend(dred_control* pChildControl, dred_control* pParentControl)
+void dred_control_prepend(dred_control* pChildControl, dred_control* pParentControl)
 {
     if (pChildControl == NULL) {
         return;
     }
 
-    // See comment in drgui_append() for explanation on this.
+    // See comment in dred_control_append() for explanation on this.
     if (pChildControl->pParent != pParentControl) {
-        drgui_detach(pChildControl);
+        dred_control_detach(pChildControl);
     } else {
-        drgui_detach_without_redraw(pChildControl);
+        dred_control_detach_without_redraw(pChildControl);
     }
 
 
     // Now we need to attach the element to the beginning of the parent.
     if (pParentControl != NULL) {
-        drgui_prepend_without_detach(pChildControl, pParentControl);
+        dred_control_prepend_without_detach(pChildControl, pParentControl);
     }
 }
 
-void drgui_append_sibling(dred_control* pControlToAppend, dred_control* pControlToAppendTo)
+void dred_control_append_sibling(dred_control* pControlToAppend, dred_control* pControlToAppendTo)
 {
     if (pControlToAppend == NULL || pControlToAppendTo == NULL) {
         return;
     }
 
-    // See comment in drgui_append() for explanation on this.
+    // See comment in dred_control_append() for explanation on this.
     if (pControlToAppend->pParent != pControlToAppendTo->pParent) {
-        drgui_detach(pControlToAppend);
+        dred_control_detach(pControlToAppend);
     } else {
-        drgui_detach_without_redraw(pControlToAppend);
+        dred_control_detach_without_redraw(pControlToAppend);
     }
 
 
     // Now we need to attach the element such that it comes just after pControlToAppendTo
-    drgui_append_sibling_without_detach(pControlToAppend, pControlToAppendTo);
+    dred_control_append_sibling_without_detach(pControlToAppend, pControlToAppendTo);
 }
 
-void drgui_prepend_sibling(dred_control* pControlToPrepend, dred_control* pControlToPrependTo)
+void dred_control_prepend_sibling(dred_control* pControlToPrepend, dred_control* pControlToPrependTo)
 {
     if (pControlToPrepend == NULL || pControlToPrependTo == NULL) {
         return;
     }
 
-    // See comment in drgui_append() for explanation on this.
+    // See comment in dred_control_append() for explanation on this.
     if (pControlToPrepend->pParent != pControlToPrependTo->pParent) {
-        drgui_detach(pControlToPrepend);
+        dred_control_detach(pControlToPrepend);
     } else {
-        drgui_detach_without_redraw(pControlToPrepend);
+        dred_control_detach_without_redraw(pControlToPrepend);
     }
 
 
     // Now we need to attach the element such that it comes just after pControlToPrependTo
-    drgui_prepend_sibling_without_detach(pControlToPrepend, pControlToPrependTo);
+    dred_control_prepend_sibling_without_detach(pControlToPrepend, pControlToPrependTo);
 }
 
-dred_control* drgui_find_top_level_element(dred_control* pControl)
+dred_control* dred_control_find_top_level_control(dred_control* pControl)
 {
     if (pControl == NULL) {
         return NULL;
     }
 
     if (pControl->pParent != NULL) {
-        return drgui_find_top_level_element(pControl->pParent);
+        return dred_control_find_top_level_control(pControl->pParent);
     }
 
     return pControl;
 }
 
-bool drgui_is_parent(dred_control* pParentControl, dred_control* pChildControl)
+bool dred_control_is_parent(dred_control* pParentControl, dred_control* pChildControl)
 {
     if (pParentControl == NULL || pChildControl == NULL) {
         return false;
@@ -2182,12 +2182,12 @@ bool drgui_is_parent(dred_control* pParentControl, dred_control* pChildControl)
     return pParentControl == pChildControl->pParent;
 }
 
-bool drgui_is_child(dred_control* pChildControl, dred_control* pParentControl)
+bool dred_control_is_child(dred_control* pChildControl, dred_control* pParentControl)
 {
-    return drgui_is_parent(pParentControl, pChildControl);
+    return dred_control_is_parent(pParentControl, pChildControl);
 }
 
-bool drgui_is_ancestor(dred_control* pAncestorControl, dred_control* pChildControl)
+bool dred_control_is_ancestor(dred_control* pAncestorControl, dred_control* pChildControl)
 {
     if (pAncestorControl == NULL || pChildControl == NULL) {
         return false;
@@ -2207,19 +2207,19 @@ bool drgui_is_ancestor(dred_control* pAncestorControl, dred_control* pChildContr
     return false;
 }
 
-bool drgui_is_descendant(dred_control* pChildControl, dred_control* pAncestorControl)
+bool dred_control_is_descendant(dred_control* pChildControl, dred_control* pAncestorControl)
 {
-    return drgui_is_ancestor(pAncestorControl, pChildControl);
+    return dred_control_is_ancestor(pAncestorControl, pChildControl);
 }
 
-bool drgui_is_self_or_ancestor(dred_control* pAncestorControl, dred_control* pChildControl)
+bool dred_control_is_self_or_ancestor(dred_control* pAncestorControl, dred_control* pChildControl)
 {
-    return pAncestorControl == pChildControl || drgui_is_ancestor(pAncestorControl, pChildControl);
+    return pAncestorControl == pChildControl || dred_control_is_ancestor(pAncestorControl, pChildControl);
 }
 
-bool drgui_is_self_or_descendant(dred_control* pChildControl, dred_control* pAncestorControl)
+bool dred_control_is_self_or_descendant(dred_control* pChildControl, dred_control* pAncestorControl)
 {
-    return pChildControl == pAncestorControl || drgui_is_descendant(pChildControl, pAncestorControl);
+    return pChildControl == pAncestorControl || dred_control_is_descendant(pChildControl, pAncestorControl);
 }
 
 
@@ -2580,7 +2580,7 @@ dred_control* drgui_begin_dirty(dred_control* pControl)
     dred_gui* pGUI = pControl->pGUI;
     assert(pGUI != NULL);
 
-    dred_control* pTopLevelControl = drgui_find_top_level_element(pControl);
+    dred_control* pTopLevelControl = dred_control_find_top_level_control(pControl);
     assert(pTopLevelControl != NULL);
 
     // The element needs to be added to the list of dirty elements if it doesn't exist already.

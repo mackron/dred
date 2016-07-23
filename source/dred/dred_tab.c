@@ -81,5 +81,5 @@ dred_control* dred_tab_get_tabgroup(dred_tab* pTab)
     }
 
     // The tab group is the parent of the tab bar.
-    return drgui_get_parent(pTab->pTabBar);
+    return dred_control_get_parent(pTab->pTabBar);
 }
