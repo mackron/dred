@@ -461,7 +461,7 @@ bool dred_command__goto(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (drgui_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char param[256];
         if (dr_next_token(value, param, sizeof(param)) != NULL) {
             // If the last character is a %, we use a ratio based goto.
@@ -486,7 +486,7 @@ bool dred_command__find(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (drgui_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char query[1024];
         if (dr_next_token(value, query, sizeof(query)) != NULL) {
             if (!dred_text_editor_find_and_select_next(pFocusedEditor, query)) {
@@ -508,7 +508,7 @@ bool dred_command__replace(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (drgui_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char query[1024];
         value = dr_next_token(value, query, sizeof(query));
         if (value != NULL) {
@@ -535,7 +535,7 @@ bool dred_command__replace_all(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (drgui_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char query[1024];
         value = dr_next_token(value, query, sizeof(query));
         if (value != NULL) {
@@ -590,7 +590,7 @@ bool dred_command__zoom(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (drgui_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         dred_set_text_editor_scale(pDred, (float)atof(value));
     }
 
@@ -606,7 +606,7 @@ bool dred_command__unindent(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (drgui_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         dred_text_editor_unindent_selected_blocks(pFocusedEditor);
     }
 
@@ -622,7 +622,7 @@ bool dred_command__insert_date(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (drgui_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char dateStr[256];
         dr_datetime_short(dr_now(), dateStr, sizeof(dateStr));
 

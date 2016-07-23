@@ -1,45 +1,5 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-typedef struct
-{
-    int unused;
-} dred_control_data;
-
-dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, const char* type, size_t extraDataSize)
-{
-    dred_element* pControl = drgui_create_element(pDred, pParent, type, sizeof(dred_control_data) + extraDataSize);
-    if (pControl == NULL) {
-        return NULL;
-    }
-
-    dred_control_data* data = (dred_control_data*)drgui_get_extra_data(pControl);
-    assert(data != NULL);
-
-    return pControl;
-}
-
-void dred_control_delete(dred_control* pControl)
-{
-    if (pControl == NULL) {
-        return;
-    }
-
-    drgui_delete_element(pControl);
-}
-
-
-
-void* dred_control_get_extra_data(dred_control* pControl)
-{
-    return (void*)((uint8_t*)drgui_get_extra_data(pControl) + sizeof(dred_control_data));
-}
-
-size_t dred_control_get_extra_data_size(dred_control* pControl)
-{
-    return drgui_get_extra_data_size(pControl) - sizeof(dred_control_data);
-}
-
-
 
 void dred_control_hide(dred_control* pControl)
 {
@@ -295,11 +255,3 @@ void dred_control_set_on_release_keyboard(dred_control* pControl, drgui_on_relea
     drgui_set_on_release_keyboard(pControl, callback);
 }
 
-
-
-//// Misc stuff relating to controls ////
-
-bool dred_control_is_of_type(dred_control* pControl, const char* type)
-{
-    return drgui_is_of_type(pControl, type);
-}

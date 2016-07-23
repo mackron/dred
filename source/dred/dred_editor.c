@@ -21,21 +21,21 @@ dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, cons
         return NULL;
     }
 
-    dred_control* pEditor = dred_control_create(pDred, pParent, type, sizeof(dred_editor_data) + extraDataSize);
+    dred_control* pEditor = drgui_create_element(pDred, pParent, type, sizeof(dred_editor_data) + extraDataSize);
     if (pEditor == NULL) {
         return NULL;
     }
 
     dred_control_set_size(pEditor, sizeX, sizeY);
 
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     assert(data != NULL);
 
-    memset(data, 0, dred_control_get_extra_data_size(pEditor));
+    memset(data, 0, drgui_get_extra_data_size(pEditor));
 
     if (filePathAbsolute != NULL && filePathAbsolute[0] != '\0') {
         if (drpath_clean(filePathAbsolute, data->filePathAbsolute, sizeof(data->filePathAbsolute)) == 0) {
-            dred_control_delete(pEditor);
+            drgui_delete_element(pEditor);
             dred_errorf(pDred, "File path is too long: %s\n", filePathAbsolute);
             return NULL;
         }
@@ -50,24 +50,24 @@ dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, cons
 
 void dred_editor_delete(dred_editor* pEditor)
 {
-    dred_control_delete(pEditor);
+    drgui_delete_element(pEditor);
 }
 
 
 void* dred_editor_get_extra_data(dred_editor* pEditor)
 {
-    return (void*)((uint8_t*)dred_control_get_extra_data(pEditor) + sizeof(dred_editor_data));
+    return (void*)((uint8_t*)drgui_get_extra_data(pEditor) + sizeof(dred_editor_data));
 }
 
 size_t dred_editor_get_extra_data_size(dred_editor* pEditor)
 {
-    return dred_control_get_extra_data_size(pEditor) - sizeof(dred_editor_data);
+    return drgui_get_extra_data_size(pEditor) - sizeof(dred_editor_data);
 }
 
 
 const char* dred_editor_get_file_path(dred_editor* pEditor)
 {
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return "";
     }
@@ -81,7 +81,7 @@ bool dred_editor_set_file_path(dred_editor* pEditor, const char* newFilePath)
         return false;
     }
 
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return false;
     }
@@ -101,7 +101,7 @@ bool dred_editor_set_file_path(dred_editor* pEditor, const char* newFilePath)
 
 bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
 {
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return false;
     }
@@ -164,7 +164,7 @@ bool dred_editor_save(dred_editor* pEditor, const char* newFilePath)
 
 bool dred_editor_reload(dred_editor* pEditor)
 {
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return false;
     }
@@ -188,7 +188,7 @@ bool dred_editor_reload(dred_editor* pEditor)
 
 bool dred_editor_check_if_dirty_and_reload(dred_editor* pEditor)
 {
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return false;
     }
@@ -204,7 +204,7 @@ bool dred_editor_check_if_dirty_and_reload(dred_editor* pEditor)
 
 void dred_editor_mark_as_modified(dred_editor* pEditor)
 {
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return;
     }
@@ -221,7 +221,7 @@ void dred_editor_mark_as_modified(dred_editor* pEditor)
 
 void dred_editor_unmark_as_modified(dred_editor* pEditor)
 {
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return;
     }
@@ -238,7 +238,7 @@ void dred_editor_unmark_as_modified(dred_editor* pEditor)
 
 bool dred_editor_is_modified(dred_editor* pEditor)
 {
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return false;
     }
@@ -249,7 +249,7 @@ bool dred_editor_is_modified(dred_editor* pEditor)
 
 void dred_editor_update_file_last_modified_time(dred_editor* pEditor)
 {
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return;
     }
@@ -259,7 +259,7 @@ void dred_editor_update_file_last_modified_time(dred_editor* pEditor)
 
 bool dred_editor_is_read_only(dred_editor* pEditor)
 {
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return false;
     }
@@ -271,7 +271,7 @@ bool dred_editor_is_read_only(dred_editor* pEditor)
 
 void dred_editor_set_on_save(dred_editor* pEditor, dred_editor_on_save_proc proc)
 {
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return;
     }
@@ -281,7 +281,7 @@ void dred_editor_set_on_save(dred_editor* pEditor, dred_editor_on_save_proc proc
 
 void dred_editor_set_on_reload(dred_editor* pEditor, dred_editor_on_reload_proc proc)
 {
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return;
     }
@@ -291,7 +291,7 @@ void dred_editor_set_on_reload(dred_editor* pEditor, dred_editor_on_reload_proc 
 
 void dred_editor_set_on_modified(dred_editor* pEditor, dred_editor_on_modified_proc proc)
 {
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return;
     }
@@ -301,7 +301,7 @@ void dred_editor_set_on_modified(dred_editor* pEditor, dred_editor_on_modified_p
 
 void dred_editor_set_on_unmodified(dred_editor* pEditor, dred_editor_on_unmodified_proc proc)
 {
-    dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
+    dred_editor_data* data = (dred_editor_data*)drgui_get_extra_data(pEditor);
     if (data == NULL) {
         return;
     }

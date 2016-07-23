@@ -12,7 +12,7 @@ typedef struct
 
 dred_textbox* dred_cmdbar__get_textbox(dred_cmdbar* pCmdBar)
 {
-    dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = drgui_get_extra_data(pCmdBar);
     assert(data != NULL);
 
     return data->pTextBox;
@@ -57,7 +57,7 @@ void dred_cmdbar__get_segment_rects(dred_cmdbar* pCmdBar, dred_rect* pLRect, dre
 
 void dred_cmdbar__update_layouts_of_inner_controls(dred_cmdbar* pCmdBar)
 {
-    dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = drgui_get_extra_data(pCmdBar);
     assert(data != NULL);
 
     // Controls need to be resized based on their rectangles.
@@ -86,7 +86,7 @@ void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, dred_element* pPrevC
 {
     (void)pPrevCapturedElement;
 
-    dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = drgui_get_extra_data(pCmdBar);
     assert(data != NULL);
 
     drgui_capture_keyboard(data->pTextBox);
@@ -96,7 +96,7 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, dred_rect rect, void* pPaintDat
 {
     (void)rect;
 
-    dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = drgui_get_extra_data(pCmdBar);
     assert(data != NULL);
 
     dred_context* pDred = dred_control_get_context(pCmdBar);
@@ -141,7 +141,7 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, dred_element* p
     dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
-    dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = drgui_get_extra_data(pCmdBar);
     assert(data != NULL);
 
     dred_context* pDred = dred_control_get_context(pCmdBar);
@@ -175,7 +175,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, dred_element* p
     dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
-    dred_cmdbar_data* data = dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = drgui_get_extra_data(pCmdBar);
     assert(data != NULL);
 
     dred_context* pDred = dred_control_get_context(pCmdBar);
@@ -213,7 +213,7 @@ void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, dred_key key, int state
     dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
-    dred_cmdbar_data* pData = dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* pData = drgui_get_extra_data(pCmdBar);
     assert(pData != NULL);
 
     dred_context* pDred = dred_control_get_context(pCmdBar);
@@ -275,7 +275,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
     dred_cmdbar* pCmdBar = dred_control_get_parent(pTextBox);
     assert(pCmdBar != NULL);
 
-    dred_cmdbar_data* pData = dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* pData = drgui_get_extra_data(pCmdBar);
     assert(pData != NULL);
 
     dred_context* pDred = dred_control_get_context(pCmdBar);
@@ -317,7 +317,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_textbox* pTextBox, uint32_t utf3
 
 void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
 {
-    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = (dred_cmdbar_data*)drgui_get_extra_data(pCmdBar);
     assert(data != NULL);
 
     dred_context* pDred = dred_control_get_context(pCmdBar);
@@ -350,19 +350,19 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
 
 dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
 {
-    dred_cmdbar* pCmdBar = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_CMDBAR, sizeof(dred_cmdbar_data));
+    dred_cmdbar* pCmdBar = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_CMDBAR, sizeof(dred_cmdbar_data));
     if (pCmdBar == NULL) {
         return NULL;
     }
 
-    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = (dred_cmdbar_data*)drgui_get_extra_data(pCmdBar);
     assert(data != NULL);
 
     data->pDred = pDred;
 
     data->pTextBox = dred_textbox_create(pDred, pCmdBar);
     if (data->pTextBox == NULL) {
-        dred_control_delete(data->pTextBox);
+        drgui_delete_element(data->pTextBox);
         return NULL;
     }
 
@@ -399,19 +399,19 @@ void dred_cmdbar_delete(dred_cmdbar* pCmdBar)
         return;
     }
 
-    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = (dred_cmdbar_data*)drgui_get_extra_data(pCmdBar);
     if (data != NULL) {
         dred_textbox_delete(data->pTextBox);
         free(data->workingCommand);
     }
 
-    dred_control_delete(pCmdBar);
+    drgui_delete_element(pCmdBar);
 }
 
 
 void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text)
 {
-    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = (dred_cmdbar_data*)drgui_get_extra_data(pCmdBar);
     if (data == NULL) {
         return;
     }
@@ -427,7 +427,7 @@ void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text)
 
 bool dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigned int iPrevCommand)
 {
-    dred_cmdbar_data* pData = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* pData = (dred_cmdbar_data*)drgui_get_extra_data(pCmdBar);
     if (pData == NULL) {
         return false;
     }
@@ -443,7 +443,7 @@ bool dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigned int
 
 bool dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
 {
-    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = (dred_cmdbar_data*)drgui_get_extra_data(pCmdBar);
     if (data == NULL) {
         return false;
     }
@@ -454,7 +454,7 @@ bool dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
 
 void dred_cmdbar_set_message(dred_cmdbar* pCmdBar, const char* text)
 {
-    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = (dred_cmdbar_data*)drgui_get_extra_data(pCmdBar);
     if (data == NULL) {
         return;
     }
@@ -469,7 +469,7 @@ void dred_cmdbar_set_message(dred_cmdbar* pCmdBar, const char* text)
 
 void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar)
 {
-    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = (dred_cmdbar_data*)drgui_get_extra_data(pCmdBar);
     if (data == NULL) {
         return;
     }
@@ -481,7 +481,7 @@ void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar)
 
 void dred_cmdbar_update_info_bar(dred_cmdbar* pCmdBar, dred_control* pControl)
 {
-    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = (dred_cmdbar_data*)drgui_get_extra_data(pCmdBar);
     if (data == NULL) {
         return;
     }
@@ -491,7 +491,7 @@ void dred_cmdbar_update_info_bar(dred_cmdbar* pCmdBar, dred_control* pControl)
 
 void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
 {
-    dred_cmdbar_data* data = (dred_cmdbar_data*)dred_control_get_extra_data(pCmdBar);
+    dred_cmdbar_data* data = (dred_cmdbar_data*)drgui_get_extra_data(pCmdBar);
     if (data == NULL) {
         return;
     }

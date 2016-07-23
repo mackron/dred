@@ -362,7 +362,7 @@ bool dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_cont
     assert(title != NULL);
 
     strcpy_s(pPage->title, sizeof(pPage->title), title);
-    pPage->pGUIElement = dred_control_create(pDred, pParent, "dred.settings.page", 0);
+    pPage->pGUIElement = drgui_create_element(pDred, pParent, "dred.settings.page", 0);
     if (pPage->pGUIElement == NULL) {
         return false;
     }

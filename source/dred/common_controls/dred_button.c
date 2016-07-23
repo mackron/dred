@@ -22,7 +22,7 @@ void dred_button__on_paint(dred_button* pButton, dred_rect rect, void* pPaintDat
 {
     (void)rect;
 
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -67,7 +67,7 @@ void dred_button__on_paint(dred_button* pButton, dred_rect rect, void* pPaintDat
 
 void dred_button__on_mouse_enter(dred_button* pButton)
 {
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -79,7 +79,7 @@ void dred_button__on_mouse_enter(dred_button* pButton)
 
 void dred_button__on_mouse_leave(dred_button* pButton)
 {
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -93,7 +93,7 @@ void dred_button__on_mouse_move(dred_button* pButton, int mousePosX, int mousePo
 {
     (void)stateFlags;
 
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -110,7 +110,7 @@ void dred_button__on_mouse_button_down(dred_button* pButton, int mouseButton, in
     (void)mousePosY;
     (void)stateFlags;
 
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -131,7 +131,7 @@ void dred_button__on_mouse_button_up(dred_button* pButton, int mouseButton, int 
     (void)mousePosY;
     (void)stateFlags;
 
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -154,7 +154,7 @@ void dred_button__on_release_mouse(dred_button* pButton)
 
 void dred_button__refresh_layout(dred_button* pButton)
 {
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -174,12 +174,12 @@ void dred_button__refresh_layout(dred_button* pButton)
 
 dred_button* dred_button_create(dred_context* pDred, dred_control* pParent, const char* text)
 {
-    dred_button* pButton = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_BUTTON, sizeof(dred_button_data));
+    dred_button* pButton = drgui_create_element(pDred, pParent, DRED_CONTROL_TYPE_BUTTON, sizeof(dred_button_data));
     if (pButton == NULL) {
         return NULL;
     }
 
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     assert(pData != NULL);
 
     strncpy_s(pData->text, sizeof(pData->text), text, _TRUNCATE);
@@ -211,18 +211,18 @@ dred_button* dred_button_create(dred_context* pDred, dred_control* pParent, cons
 
 void dred_button_delete(dred_button* pButton)
 {
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData != NULL) {
         dred_font_release_subfont(pData->pFont, pData->pSubFont);
     }
 
-    dred_control_delete(pButton);
+    drgui_delete_element(pButton);
 }
 
 
 void dred_button_set_text(dred_button* pButton, const char* text)
 {
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -236,7 +236,7 @@ void dred_button_set_text(dred_button* pButton, const char* text)
 
 void dred_button_enable_auto_size(dred_button* pButton)
 {
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -248,7 +248,7 @@ void dred_button_enable_auto_size(dred_button* pButton)
 
 void dred_button_disable_auto_size(dred_button* pButton)
 {
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -261,7 +261,7 @@ void dred_button_disable_auto_size(dred_button* pButton)
 
 void dred_button_set_font(dred_button* pButton, dred_font* pFont)
 {
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -280,7 +280,7 @@ void dred_button_set_font(dred_button* pButton, dred_font* pFont)
 
 void dred_button_set_background_color(dred_button* pButton, dred_color color)
 {
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -293,7 +293,7 @@ void dred_button_set_background_color(dred_button* pButton, dred_color color)
 
 void dred_button_set_border_color(dred_button* pButton, dred_color color)
 {
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -306,7 +306,7 @@ void dred_button_set_border_color(dred_button* pButton, dred_color color)
 
 void dred_button_set_border_width(dred_button* pButton, float width)
 {
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -319,7 +319,7 @@ void dred_button_set_border_width(dred_button* pButton, float width)
 
 void dred_button_set_padding(dred_button* pButton, float paddingHorz, float paddingVert)
 {
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }
@@ -333,7 +333,7 @@ void dred_button_set_padding(dred_button* pButton, float paddingHorz, float padd
 
 void dred_button_set_on_pressed(dred_button* pButton, dred_button_on_pressed_proc proc)
 {
-    dred_button_data* pData = (dred_button_data*)dred_control_get_extra_data(pButton);
+    dred_button_data* pData = (dred_button_data*)drgui_get_extra_data(pButton);
     if (pData == NULL) {
         return;
     }

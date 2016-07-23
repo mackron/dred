@@ -8,20 +8,6 @@
 typedef dred_element dred_control;
 
 
-// dred_control_create()
-dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, const char* type, size_t extraDataSize);
-
-// dred_control_delete()
-void dred_control_delete(dred_control* pControl);
-
-
-// dred_control_get_extra_data()
-void* dred_control_get_extra_data(dred_control* pControl);
-
-// dred_control_get_extra_data_size()
-size_t dred_control_get_extra_data_size(dred_control* pControl);
-
-
 // Hides the given element.
 void dred_control_hide(dred_control* pControl);
 
@@ -112,11 +98,3 @@ void dred_control_set_on_capture_mouse(dred_control* pControl, drgui_on_capture_
 void dred_control_set_on_release_mouse(dred_control* pControl, drgui_on_release_mouse_proc callback);
 void dred_control_set_on_capture_keyboard(dred_control* pControl, drgui_on_capture_keyboard_proc callback);
 void dred_control_set_on_release_keyboard(dred_control* pControl, drgui_on_release_keyboard_proc callback);
-
-
-
-
-//// Misc stuff relating to controls ////
-
-// Determines whether or not the given control is of the given type.
-bool dred_control_is_of_type(dred_control* pControl, const char* type);
