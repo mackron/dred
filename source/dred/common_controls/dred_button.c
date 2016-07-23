@@ -48,7 +48,7 @@ void dred_button__on_paint(dred_button* pButton, dred_rect rect, void* pPaintDat
     dred_control_draw_rect_outline(pButton, dred_control_get_local_rect(pButton), pData->borderColor, pData->borderWidth, pPaintData);
 
     // Text and background. The text is centered.
-    dred_rect bgrect = drgui_grow_rect(dred_control_get_local_rect(pButton), -pData->borderWidth);
+    dred_rect bgrect = dred_grow_rect(dred_control_get_local_rect(pButton), -pData->borderWidth);
 
     float textWidth;
     float textHeight;
@@ -59,10 +59,10 @@ void dred_button__on_paint(dred_button* pButton, dred_rect rect, void* pPaintDat
     dred_control_draw_text(pButton, pData->pSubFont, pData->text, (int)strlen(pData->text), textPosX, textPosY, pData->textColor, bgColor, pPaintData);
     
     // Make sure the background does not overdraw the text.
-    dred_control_draw_rect(pButton, drgui_make_rect(bgrect.left, bgrect.top, textPosX, bgrect.bottom), bgColor, pPaintData);
-    dred_control_draw_rect(pButton, drgui_make_rect(textPosX + textWidth, bgrect.top, bgrect.right, bgrect.bottom), bgColor, pPaintData);
-    dred_control_draw_rect(pButton, drgui_make_rect(textPosX, bgrect.top, textPosX + textWidth, textPosY), bgColor, pPaintData);
-    dred_control_draw_rect(pButton, drgui_make_rect(textPosX, textPosY + textHeight, textPosX + textWidth, bgrect.bottom), bgColor, pPaintData);
+    dred_control_draw_rect(pButton, dred_make_rect(bgrect.left, bgrect.top, textPosX, bgrect.bottom), bgColor, pPaintData);
+    dred_control_draw_rect(pButton, dred_make_rect(textPosX + textWidth, bgrect.top, bgrect.right, bgrect.bottom), bgColor, pPaintData);
+    dred_control_draw_rect(pButton, dred_make_rect(textPosX, bgrect.top, textPosX + textWidth, textPosY), bgColor, pPaintData);
+    dred_control_draw_rect(pButton, dred_make_rect(textPosX, textPosY + textHeight, textPosX + textWidth, bgrect.bottom), bgColor, pPaintData);
 }
 
 void dred_button__on_mouse_enter(dred_button* pButton)
@@ -185,11 +185,11 @@ dred_button* dred_button_create(dred_context* pDred, dred_control* pParent, cons
     strncpy_s(pData->text, sizeof(pData->text), text, _TRUNCATE);
     pData->pFont = pDred->config.pUIFont;
     pData->pSubFont = dred_font_acquire_subfont(pData->pFont, pDred->uiScale);
-    pData->textColor = drgui_rgb(32, 32, 32);
-    pData->bgColor = drgui_rgb(224, 224, 224);
-    pData->bgColorHovered = drgui_rgb(224, 240, 255);
-    pData->bgColorPressed = drgui_rgb(200, 224, 240);
-    pData->borderColor = drgui_rgb(32, 64, 160);
+    pData->textColor = dred_rgb(32, 32, 32);
+    pData->bgColor = dred_rgb(224, 224, 224);
+    pData->bgColorHovered = dred_rgb(224, 240, 255);
+    pData->bgColorPressed = dred_rgb(200, 224, 240);
+    pData->borderColor = dred_rgb(32, 64, 160);
     pData->borderWidth = 1;
     pData->paddingHorz = 16;
     pData->paddingVert = 4;

@@ -196,7 +196,7 @@ dred_color dred_parse_color(const char* color)
             g = (uint8_t)((hexvals[2] << 4) | hexvals[3]);
             b = (uint8_t)((hexvals[4] << 4) | hexvals[5]);
 
-            return drgui_rgb(r, g, b);
+            return dred_rgb(r, g, b);
         } else {
             // R G B style (0 .. 255 per component)
             uint8_t r = 0;
@@ -219,9 +219,9 @@ dred_color dred_parse_color(const char* color)
                 b = (uint8_t)atoi(c);
             }
 
-            return drgui_rgb(r, g, b);
+            return dred_rgb(r, g, b);
         }
     }
 
-    return drgui_rgb(0, 0, 0);
+    return dred_rgb(0, 0, 0);
 }

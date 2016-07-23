@@ -463,7 +463,7 @@ void dred_control_append_without_detach_or_redraw(dred_control* pChildControl, d
 void dred_control_append_without_detach(dred_control* pChildControl, dred_control* pParentControl)
 {
     dred_control_append_without_detach_or_redraw(pChildControl, pParentControl);
-    drgui_auto_dirty(pChildControl, drgui_make_rect(0, 0, pChildControl->width, pChildControl->height));
+    drgui_auto_dirty(pChildControl, dred_make_rect(0, 0, pChildControl->width, pChildControl->height));
 }
 
 void dred_control_prepend_without_detach_or_redraw(dred_control* pChildControl, dred_control* pParentControl)
@@ -486,7 +486,7 @@ void dred_control_prepend_without_detach_or_redraw(dred_control* pChildControl, 
 void dred_control_prepend_without_detach(dred_control* pChildControl, dred_control* pParentControl)
 {
     dred_control_prepend_without_detach_or_redraw(pChildControl, pParentControl);
-    drgui_auto_dirty(pChildControl, drgui_make_rect(0, 0, pChildControl->width, pChildControl->height));
+    drgui_auto_dirty(pChildControl, dred_make_rect(0, 0, pChildControl->width, pChildControl->height));
 }
 
 void dred_control_append_sibling_without_detach_or_redraw(dred_control* pControlToAppend, dred_control* pControlToAppendTo)
@@ -512,7 +512,7 @@ void dred_control_append_sibling_without_detach_or_redraw(dred_control* pControl
 void dred_control_append_sibling_without_detach(dred_control* pControlToAppend, dred_control* pControlToAppendTo)
 {
     dred_control_append_sibling_without_detach_or_redraw(pControlToAppend, pControlToAppendTo);
-    drgui_auto_dirty(pControlToAppend, drgui_make_rect(0, 0, pControlToAppend->width, pControlToAppend->height));
+    drgui_auto_dirty(pControlToAppend, dred_make_rect(0, 0, pControlToAppend->width, pControlToAppend->height));
 }
 
 void dred_control_prepend_sibling_without_detach_or_redraw(dred_control* pControlToPrepend, dred_control* pControlToPrependTo)
@@ -538,7 +538,7 @@ void dred_control_prepend_sibling_without_detach_or_redraw(dred_control* pContro
 void dred_control_prepend_sibling_without_detach(dred_control* pControlToPrepend, dred_control* pControlToPrependTo)
 {
     dred_control_prepend_sibling_without_detach_or_redraw(pControlToPrepend, pControlToPrependTo);
-    drgui_auto_dirty(pControlToPrepend, drgui_make_rect(0, 0, pControlToPrepend->width, pControlToPrepend->height));
+    drgui_auto_dirty(pControlToPrepend, dred_make_rect(0, 0, pControlToPrepend->width, pControlToPrepend->height));
 }
 
 
@@ -1054,7 +1054,7 @@ void dred_gui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int 
         {
             float relativeMousePosX = (float)mousePosX;
             float relativeMousePosY = (float)mousePosY;
-            drgui_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+            dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
 
             drgui_post_outbound_event_mouse_move(pEventReceiver, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
         }
@@ -1088,7 +1088,7 @@ void dred_gui_post_inbound_event_mouse_button_down(dred_control* pTopLevelContro
         {
             float relativeMousePosX = (float)mousePosX;
             float relativeMousePosY = (float)mousePosY;
-            drgui_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+            dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
 
             drgui_post_outbound_event_mouse_button_down(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
         }
@@ -1122,7 +1122,7 @@ void dred_gui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl,
         {
             float relativeMousePosX = (float)mousePosX;
             float relativeMousePosY = (float)mousePosY;
-            drgui_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+            dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
 
             drgui_post_outbound_event_mouse_button_up(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
         }
@@ -1156,7 +1156,7 @@ void dred_gui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelCo
         {
             float relativeMousePosX = (float)mousePosX;
             float relativeMousePosY = (float)mousePosY;
-            drgui_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+            dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
 
             drgui_post_outbound_event_mouse_button_dblclick(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
         }
@@ -1190,7 +1190,7 @@ void dred_gui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int
         {
             float relativeMousePosX = (float)mousePosX;
             float relativeMousePosY = (float)mousePosY;
-            drgui_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+            dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
 
             drgui_post_outbound_event_mouse_wheel(pEventReceiver, delta, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
         }
@@ -1320,7 +1320,7 @@ dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, co
     pControl->pGUI = pDred->pGUI;
     pControl->pParent = pParent;
     pControl->cursor = dred_cursor_default;
-    pControl->dirtyRect = drgui_make_inside_out_rect();
+    pControl->dirtyRect = dred_make_inside_out_rect();
     pControl->extraDataSize = extraDataSize;
 
     // Add to the the hierarchy.
@@ -2009,7 +2009,7 @@ bool dred_gui_find_control_under_point_iterator(dred_control* pControl, dred_rec
 
     float relativePosX = pData->absolutePosX;
     float relativePosY = pData->absolutePosY;
-    drgui_make_point_relative(pControl, &relativePosX, &relativePosY);
+    dred_make_point_relative(pControl, &relativePosX, &relativePosY);
 
     if (dred_rect_contains_point(*pRelativeVisibleRect, relativePosX, relativePosY))
     {
@@ -2512,7 +2512,7 @@ bool dred_control_iterate_visible_elements(dred_control* pParentControl, dred_re
     }
 
     dred_rect clampedRelativeRect = relativeRect;
-    if (drgui_clamp_rect_to_element(pParentControl, &clampedRelativeRect))
+    if (dred_clamp_rect_to_element(pParentControl, &clampedRelativeRect))
     {
         // We'll only get here if some part of the rectangle was inside the element.
         if (!callback(pParentControl, &clampedRelativeRect, pUserData)) {
@@ -2630,7 +2630,7 @@ void dred_control_end_dirty(dred_control* pControl)
     {
         for (size_t i = 0; i < pGUI->dirtyControlCount; ++i) {
             drgui_post_outbound_event_dirty_global(pGUI->ppDirtyControls[i], pGUI->ppDirtyControls[i]->dirtyRect);
-            pGUI->ppDirtyControls[i]->dirtyRect = drgui_make_inside_out_rect();
+            pGUI->ppDirtyControls[i]->dirtyRect = dred_make_inside_out_rect();
         }
 
         pGUI->dirtyControlCount = 0;
@@ -2651,7 +2651,7 @@ void dred_control_dirty(dred_control* pControl, dred_rect relativeRect)
         return;
     }
     
-    pTopLevelControl->dirtyRect = dred_rect_union(pTopLevelControl->dirtyRect, drgui_make_rect_absolute(pControl, &relativeRect));
+    pTopLevelControl->dirtyRect = dred_rect_union(pTopLevelControl->dirtyRect, dred_make_rect_absolute(pControl, &relativeRect));
     dred_control_end_dirty(pControl);
 }
 
@@ -2706,7 +2706,7 @@ void dred_control_get_clip(dred_control* pControl, dred_rect* pRelativeRect, voi
     pControl->pGUI->paintingCallbacks.getClip(pRelativeRect, pPaintData);
 
     // The clip returned by the drawing callback will be absolute so we'll need to convert that to relative.
-    drgui_make_rect_relative(pControl, pRelativeRect);
+    dred_make_rect_relative(pControl, pRelativeRect);
 }
 
 void dred_control_set_clip(dred_control* pControl, dred_rect relativeRect, void* pPaintData)
@@ -2726,7 +2726,7 @@ void dred_control_set_clip(dred_control* pControl, dred_rect relativeRect, void*
     }
 
     dred_rect absoluteRect = relativeRect;
-    drgui_make_rect_absolute(pControl, &absoluteRect);
+    dred_make_rect_absolute(pControl, &absoluteRect);
 
     pControl->pGUI->paintingCallbacks.setClip(absoluteRect, pPaintData);
 }
@@ -2740,7 +2740,7 @@ void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dred
     assert(pControl->pGUI != NULL);
 
     dred_rect absoluteRect = relativeRect;
-    drgui_make_rect_absolute(pControl, &absoluteRect);
+    dred_make_rect_absolute(pControl, &absoluteRect);
 
     pControl->pGUI->paintingCallbacks.drawRect(absoluteRect, color, pPaintData);
 }
@@ -2754,7 +2754,7 @@ void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRe
     assert(pControl->pGUI != NULL);
 
     dred_rect absoluteRect = relativeRect;
-    drgui_make_rect_absolute(pControl, &absoluteRect);
+    dred_make_rect_absolute(pControl, &absoluteRect);
 
     pControl->pGUI->paintingCallbacks.drawRectOutline(absoluteRect, color, outlineWidth, pPaintData);
 }
@@ -2768,7 +2768,7 @@ void dred_control_draw_rect_with_outline(dred_control * pControl, dred_rect rela
     assert(pControl->pGUI != NULL);
 
     dred_rect absoluteRect = relativeRect;
-    drgui_make_rect_absolute(pControl, &absoluteRect);
+    dred_make_rect_absolute(pControl, &absoluteRect);
 
     pControl->pGUI->paintingCallbacks.drawRectWithOutline(absoluteRect, color, outlineWidth, outlineColor, pPaintData);
 }
@@ -2782,7 +2782,7 @@ void dred_control_draw_round_rect(dred_control* pControl, dred_rect relativeRect
     assert(pControl->pGUI != NULL);
 
     dred_rect absoluteRect = relativeRect;
-    drgui_make_rect_absolute(pControl, &absoluteRect);
+    dred_make_rect_absolute(pControl, &absoluteRect);
 
     pControl->pGUI->paintingCallbacks.drawRoundRect(absoluteRect, color, radius, pPaintData);
 }
@@ -2796,7 +2796,7 @@ void dred_control_draw_round_rect_outline(dred_control* pControl, dred_rect rela
     assert(pControl->pGUI != NULL);
 
     dred_rect absoluteRect = relativeRect;
-    drgui_make_rect_absolute(pControl, &absoluteRect);
+    dred_make_rect_absolute(pControl, &absoluteRect);
 
     pControl->pGUI->paintingCallbacks.drawRoundRectOutline(absoluteRect, color, radius, outlineWidth, pPaintData);
 }
@@ -2810,7 +2810,7 @@ void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect
     assert(pControl->pGUI != NULL);
 
     dred_rect absoluteRect = relativeRect;
-    drgui_make_rect_absolute(pControl, &absoluteRect);
+    dred_make_rect_absolute(pControl, &absoluteRect);
 
     pControl->pGUI->paintingCallbacks.drawRoundRectWithOutline(absoluteRect, color, radius, outlineWidth, outlineColor, pPaintData);
 }
@@ -2825,7 +2825,7 @@ void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const 
 
     float absolutePosX = posX;
     float absolutePosY = posY;
-    drgui_make_point_absolute(pControl, &absolutePosX, &absolutePosY);
+    dred_make_point_absolute(pControl, &absolutePosX, &absolutePosY);
 
     pControl->pGUI->paintingCallbacks.drawText(pFont->internalFont, text, textLengthInBytes, absolutePosX, absolutePosY, color, backgroundColor, pPaintData);
 }
@@ -2838,8 +2838,8 @@ void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dre
 
     assert(pControl->pGUI != NULL);
 
-    drgui_make_point_absolute(pControl, &pArgs->dstX, &pArgs->dstY);
-    drgui_make_point_absolute(pControl, &pArgs->dstBoundsX, &pArgs->dstBoundsY);
+    dred_make_point_absolute(pControl, &pArgs->dstX, &pArgs->dstY);
+    dred_make_point_absolute(pControl, &pArgs->dstBoundsX, &pArgs->dstBoundsY);
 
     if ((pArgs->options & DRED_GUI_IMAGE_ALIGN_CENTER) != 0)
     {
@@ -2858,7 +2858,7 @@ void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dre
             pArgs->dstY < pArgs->dstBoundsY || pArgs->dstY + pArgs->dstHeight > pArgs->dstBoundsY + pArgs->dstBoundsHeight)
         {
             restoreClip = true;
-            pControl->pGUI->paintingCallbacks.setClip(drgui_make_rect(pArgs->dstBoundsX, pArgs->dstBoundsY, pArgs->dstBoundsX + pArgs->dstBoundsWidth, pArgs->dstBoundsY + pArgs->dstBoundsHeight), pPaintData);
+            pControl->pGUI->paintingCallbacks.setClip(dred_make_rect(pArgs->dstBoundsX, pArgs->dstBoundsY, pArgs->dstBoundsX + pArgs->dstBoundsWidth, pArgs->dstBoundsY + pArgs->dstBoundsHeight), pPaintData);
         }
     }
 
@@ -2877,22 +2877,22 @@ void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dre
 
         // Left.
         if (boundsLeft < imageLeft) {
-            pControl->pGUI->paintingCallbacks.drawRect(drgui_make_rect(boundsLeft, boundsTop, imageLeft, boundsBottom), pArgs->boundsColor, pPaintData);
+            pControl->pGUI->paintingCallbacks.drawRect(dred_make_rect(boundsLeft, boundsTop, imageLeft, boundsBottom), pArgs->boundsColor, pPaintData);
         }
 
         // Right.
         if (boundsRight > imageRight) {
-            pControl->pGUI->paintingCallbacks.drawRect(drgui_make_rect(imageRight, boundsTop, boundsRight, boundsBottom), pArgs->boundsColor, pPaintData);
+            pControl->pGUI->paintingCallbacks.drawRect(dred_make_rect(imageRight, boundsTop, boundsRight, boundsBottom), pArgs->boundsColor, pPaintData);
         }
 
         // Top.
         if (boundsTop < imageTop) {
-            pControl->pGUI->paintingCallbacks.drawRect(drgui_make_rect(imageLeft, boundsTop, imageRight, imageTop), pArgs->boundsColor, pPaintData);
+            pControl->pGUI->paintingCallbacks.drawRect(dred_make_rect(imageLeft, boundsTop, imageRight, imageTop), pArgs->boundsColor, pPaintData);
         }
 
         // Bottom.
         if (boundsBottom > imageBottom) {
-            pControl->pGUI->paintingCallbacks.drawRect(drgui_make_rect(imageLeft, imageBottom, imageRight, boundsBottom), pArgs->boundsColor, pPaintData);
+            pControl->pGUI->paintingCallbacks.drawRect(dred_make_rect(imageLeft, imageBottom, imageRight, boundsBottom), pArgs->boundsColor, pPaintData);
         }
     }
 
@@ -3200,7 +3200,7 @@ void dred_control_draw_border(dred_control* pControl, float borderWidth, dred_co
 //
 /////////////////////////////////////////////////////////////////
 
-dred_color drgui_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+dred_color dred_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     dred_color color;
     color.r = r;
@@ -3211,7 +3211,7 @@ dred_color drgui_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
     return color;
 }
 
-dred_color drgui_rgb(uint8_t r, uint8_t g, uint8_t b)
+dred_color dred_rgb(uint8_t r, uint8_t g, uint8_t b)
 {
     dred_color color;
     color.r = r;
@@ -3222,7 +3222,7 @@ dred_color drgui_rgb(uint8_t r, uint8_t g, uint8_t b)
     return color;
 }
 
-dred_rect drgui_clamp_rect(dred_rect rect, dred_rect other)
+dred_rect dred_clamp_rect(dred_rect rect, dred_rect other)
 {
     dred_rect result;
     result.left   = (rect.left   >= other.left)   ? rect.left   : other.left;
@@ -3233,7 +3233,7 @@ dred_rect drgui_clamp_rect(dred_rect rect, dred_rect other)
     return result;
 }
 
-bool drgui_clamp_rect_to_element(const dred_control* pControl, dred_rect* pRelativeRect)
+bool dred_clamp_rect_to_element(const dred_control* pControl, dred_rect* pRelativeRect)
 {
     if (pControl == NULL || pRelativeRect == NULL) {
         return false;
@@ -3258,10 +3258,10 @@ bool drgui_clamp_rect_to_element(const dred_control* pControl, dred_rect* pRelat
     return (pRelativeRect->right - pRelativeRect->left > 0) && (pRelativeRect->bottom - pRelativeRect->top > 0);
 }
 
-dred_rect drgui_make_rect_relative(const dred_control* pControl, dred_rect* pRect)
+dred_rect dred_make_rect_relative(const dred_control* pControl, dred_rect* pRect)
 {
     if (pControl == NULL || pRect == NULL) {
-        return drgui_make_rect(0, 0, 0, 0);
+        return dred_make_rect(0, 0, 0, 0);
     }
 
     pRect->left   -= pControl->absolutePosX;
@@ -3272,10 +3272,10 @@ dred_rect drgui_make_rect_relative(const dred_control* pControl, dred_rect* pRec
     return *pRect;
 }
 
-dred_rect drgui_make_rect_absolute(const dred_control * pControl, dred_rect * pRect)
+dred_rect dred_make_rect_absolute(const dred_control * pControl, dred_rect * pRect)
 {
     if (pControl == NULL || pRect == NULL) {
-        return drgui_make_rect(0, 0, 0, 0);
+        return dred_make_rect(0, 0, 0, 0);
     }
 
     pRect->left   += pControl->absolutePosX;
@@ -3286,7 +3286,7 @@ dred_rect drgui_make_rect_absolute(const dred_control * pControl, dred_rect * pR
     return *pRect;
 }
 
-void drgui_make_point_relative(const dred_control* pControl, float* positionX, float* positionY)
+void dred_make_point_relative(const dred_control* pControl, float* positionX, float* positionY)
 {
     if (pControl != NULL)
     {
@@ -3300,7 +3300,7 @@ void drgui_make_point_relative(const dred_control* pControl, float* positionX, f
     }
 }
 
-void drgui_make_point_absolute(const dred_control* pControl, float* positionX, float* positionY)
+void dred_make_point_absolute(const dred_control* pControl, float* positionX, float* positionY)
 {
     if (pControl != NULL)
     {
@@ -3314,7 +3314,7 @@ void drgui_make_point_absolute(const dred_control* pControl, float* positionX, f
     }
 }
 
-dred_rect drgui_make_rect(float left, float top, float right, float bottom)
+dred_rect dred_make_rect(float left, float top, float right, float bottom)
 {
     dred_rect rect;
     rect.left   = left;
@@ -3325,7 +3325,7 @@ dred_rect drgui_make_rect(float left, float top, float right, float bottom)
     return rect;
 }
 
-dred_rect drgui_make_inside_out_rect()
+dred_rect dred_make_inside_out_rect()
 {
     dred_rect rect;
     rect.left   =  FLT_MAX;
@@ -3336,7 +3336,7 @@ dred_rect drgui_make_inside_out_rect()
     return rect;
 }
 
-dred_rect drgui_grow_rect(dred_rect rect, float amount)
+dred_rect dred_grow_rect(dred_rect rect, float amount)
 {
     dred_rect result = rect;
     result.left   -= amount;
@@ -3347,7 +3347,7 @@ dred_rect drgui_grow_rect(dred_rect rect, float amount)
     return result;
 }
 
-dred_rect drgui_scale_rect(dred_rect rect, float scaleX, float scaleY)
+dred_rect dred_scale_rect(dred_rect rect, float scaleX, float scaleY)
 {
     dred_rect result = rect;
     result.left   *= scaleX;
@@ -3358,9 +3358,9 @@ dred_rect drgui_scale_rect(dred_rect rect, float scaleX, float scaleY)
     return result;
 }
 
-dred_rect drgui_offset_rect(dred_rect rect, float offsetX, float offsetY)
+dred_rect dred_offset_rect(dred_rect rect, float offsetX, float offsetY)
 {
-    return drgui_make_rect(rect.left + offsetX, rect.top + offsetY, rect.right + offsetX, rect.bottom + offsetY);
+    return dred_make_rect(rect.left + offsetX, rect.top + offsetY, rect.right + offsetX, rect.bottom + offsetY);
 }
 
 dred_rect dred_rect_union(dred_rect rect0, dred_rect rect1)
@@ -3446,11 +3446,11 @@ bool dred_gui_init_dr_2d(dred_gui* pGUI, dred_context* pDred, dr2d_context* pDra
         return false;
     }
 
-    drgui_register_dr_2d_callbacks(pGUI, pDrawingContext);
+    dred_gui_register_dr_2d_callbacks(pGUI, pDrawingContext);
     return true;
 }
 
-void drgui_register_dr_2d_callbacks(dred_gui* pGUI, dr2d_context* pDrawingContext)
+void dred_gui_register_dr_2d_callbacks(dred_gui* pGUI, dr2d_context* pDrawingContext)
 {
     dred_gui_painting_callbacks callbacks;
     callbacks.drawBegin                      = dred_control_draw_begin_dr_2d;

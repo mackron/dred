@@ -130,10 +130,10 @@ dred_scrollbar* dred_scrollbar_create(dred_context* pDred, dred_control* pParent
     pSB->scrollPos         = 0;
     pSB->autoHideThumb     = true;
     pSB->mouseWheelScale   = 1;
-    pSB->trackColor        = drgui_rgb(80, 80, 80);
-    pSB->thumbColor        = drgui_rgb(112, 112, 112);
-    pSB->thumbColorHovered = drgui_rgb(144, 144, 144);
-    pSB->thumbColorPressed = drgui_rgb(180, 180, 180);
+    pSB->trackColor        = dred_rgb(80, 80, 80);
+    pSB->thumbColor        = dred_rgb(112, 112, 112);
+    pSB->thumbColorHovered = dred_rgb(144, 144, 144);
+    pSB->thumbColorPressed = dred_rgb(180, 180, 180);
     pSB->onScroll          = NULL;
 
     pSB->thumbSize         = DRED_GUI_MIN_SCROLLBAR_THUMB_SIZE;
@@ -490,7 +490,7 @@ dred_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar)
 {
     dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     if (pSB == NULL) {
-        return drgui_make_rect(0, 0, 0, 0);
+        return dred_make_rect(0, 0, 0, 0);
     }
 
     dred_rect rect = {0, 0, 0, 0};
@@ -699,10 +699,10 @@ void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, dred_rect relativeClipp
         // The thumb is visible.
 
         // Track. We draw this in 4 seperate pieces so we can avoid overdraw with the thumb.
-        dred_control_draw_rect(pScrollbar, drgui_make_rect(0, 0, dred_control_get_width(pScrollbar), thumbRect.top), pSB->trackColor, pPaintData);  // Top
-        dred_control_draw_rect(pScrollbar, drgui_make_rect(0, thumbRect.bottom, dred_control_get_width(pScrollbar), dred_control_get_height(pScrollbar)), pSB->trackColor, pPaintData);  // Bottom
-        dred_control_draw_rect(pScrollbar, drgui_make_rect(0, thumbRect.top, thumbRect.left, thumbRect.bottom), pSB->trackColor, pPaintData);  // Left
-        dred_control_draw_rect(pScrollbar, drgui_make_rect(thumbRect.right, thumbRect.top, dred_control_get_width(pScrollbar), thumbRect.bottom), pSB->trackColor, pPaintData); // Right
+        dred_control_draw_rect(pScrollbar, dred_make_rect(0, 0, dred_control_get_width(pScrollbar), thumbRect.top), pSB->trackColor, pPaintData);  // Top
+        dred_control_draw_rect(pScrollbar, dred_make_rect(0, thumbRect.bottom, dred_control_get_width(pScrollbar), dred_control_get_height(pScrollbar)), pSB->trackColor, pPaintData);  // Bottom
+        dred_control_draw_rect(pScrollbar, dred_make_rect(0, thumbRect.top, thumbRect.left, thumbRect.bottom), pSB->trackColor, pPaintData);  // Left
+        dred_control_draw_rect(pScrollbar, dred_make_rect(thumbRect.right, thumbRect.top, dred_control_get_width(pScrollbar), thumbRect.bottom), pSB->trackColor, pPaintData); // Right
 
         // Thumb.
         dred_color thumbColor;

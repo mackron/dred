@@ -35,7 +35,7 @@ dred_rect dred_checkbox__get_box_rect(dred_checkbox* pCheckbox)
 
     float posX = 0;
     float posY = (dred_control_get_height(pCheckbox) - metrics.lineHeight) / 2;
-    return drgui_make_rect(posX, posY, posX + metrics.lineHeight, posY + metrics.lineHeight);
+    return dred_make_rect(posX, posY, posX + metrics.lineHeight, posY + metrics.lineHeight);
 }
 
 void dred_checkbox__on_paint(dred_checkbox* pCheckbox, dred_rect rect, void* pPaintData)
@@ -67,10 +67,10 @@ void dred_checkbox__on_paint(dred_checkbox* pCheckbox, dred_rect rect, void* pPa
     dred_rect boxRect = dred_checkbox__get_box_rect(pCheckbox);
 
     dred_control_draw_rect_outline(pCheckbox, boxRect, pData->boxBorderColor, pData->borderWidth, pPaintData);
-    dred_control_draw_rect(pCheckbox, drgui_grow_rect(boxRect, -pData->borderWidth), boxBGColor, pPaintData);
+    dred_control_draw_rect(pCheckbox, dred_grow_rect(boxRect, -pData->borderWidth), boxBGColor, pPaintData);
 
     if (pData->isChecked) {
-        dred_control_draw_rect(pCheckbox, drgui_grow_rect(boxRect, -pData->borderWidth - 2), pData->checkColor, pPaintData);
+        dred_control_draw_rect(pCheckbox, dred_grow_rect(boxRect, -pData->borderWidth - 2), pData->checkColor, pPaintData);
     }
 
 
@@ -84,10 +84,10 @@ void dred_checkbox__on_paint(dred_checkbox* pCheckbox, dred_rect rect, void* pPa
     dred_control_draw_text(pCheckbox, pData->pSubFont, pData->text, (int)strlen(pData->text), textPosX, textPosY, pData->textColor, pData->bgColor, pPaintData);
 
     // Background
-    dred_control_draw_rect(pCheckbox, drgui_make_rect(boxRect.right, boxRect.top, boxRect.right + pData->padding, boxRect.bottom), pData->bgColor, pPaintData);    // Padding bettween checkbox and text.
-    dred_control_draw_rect(pCheckbox, drgui_make_rect(bgrect.left, bgrect.top, bgrect.right, boxRect.top), pData->bgColor, pPaintData);
-    dred_control_draw_rect(pCheckbox, drgui_make_rect(bgrect.left, boxRect.bottom, bgrect.right, bgrect.bottom), pData->bgColor, pPaintData);
-    dred_control_draw_rect(pCheckbox, drgui_make_rect(textPosX + textWidth, boxRect.top, bgrect.right, boxRect.bottom), pData->bgColor, pPaintData);
+    dred_control_draw_rect(pCheckbox, dred_make_rect(boxRect.right, boxRect.top, boxRect.right + pData->padding, boxRect.bottom), pData->bgColor, pPaintData);    // Padding bettween checkbox and text.
+    dred_control_draw_rect(pCheckbox, dred_make_rect(bgrect.left, bgrect.top, bgrect.right, boxRect.top), pData->bgColor, pPaintData);
+    dred_control_draw_rect(pCheckbox, dred_make_rect(bgrect.left, boxRect.bottom, bgrect.right, bgrect.bottom), pData->bgColor, pPaintData);
+    dred_control_draw_rect(pCheckbox, dred_make_rect(textPosX + textWidth, boxRect.top, bgrect.right, boxRect.bottom), pData->bgColor, pPaintData);
 }
 
 void dred_checkbox__on_mouse_enter(dred_checkbox* pCheckbox)
@@ -210,13 +210,13 @@ dred_checkbox* dred_checkbox_create(dred_context* pDred, dred_control* pParent, 
     strncpy_s(pData->text, sizeof(pData->text), text, _TRUNCATE);
     pData->pFont = pDred->config.pUIFont;
     pData->pSubFont = dred_font_acquire_subfont(pData->pFont, pDred->uiScale);
-    pData->textColor = drgui_rgb(0, 0, 0);
-    pData->bgColor = drgui_rgb(255, 255, 255);
-    pData->boxBGColor = drgui_rgb(224, 224, 224);
-    pData->boxBGColorHovered = drgui_rgb(224, 240, 255);
-    pData->boxBGColorPressed = drgui_rgb(200, 224, 240);
-    pData->boxBorderColor = drgui_rgb(32, 64, 160);
-    pData->checkColor = drgui_rgb(64, 128, 64);
+    pData->textColor = dred_rgb(0, 0, 0);
+    pData->bgColor = dred_rgb(255, 255, 255);
+    pData->boxBGColor = dred_rgb(224, 224, 224);
+    pData->boxBGColorHovered = dred_rgb(224, 240, 255);
+    pData->boxBGColorPressed = dred_rgb(200, 224, 240);
+    pData->boxBorderColor = dred_rgb(32, 64, 160);
+    pData->checkColor = dred_rgb(64, 128, 64);
     pData->borderWidth = 1;
     pData->padding = 4;
     pData->isAutoSizeEnabled = true;

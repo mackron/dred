@@ -29,7 +29,7 @@ dred_rect dred_cmdbar__get_inner_rect(dred_cmdbar* pCmdBar)
 
     float scaledPaddingX = pDred->config.cmdbarPaddingX*pDred->uiScale;
     float scaledPaddingY = pDred->config.cmdbarPaddingY*pDred->uiScale;
-    return drgui_make_rect(scaledPaddingX, scaledPaddingY, cmdbarWidth - scaledPaddingX, cmdbarHeight - scaledPaddingY);
+    return dred_make_rect(scaledPaddingX, scaledPaddingY, cmdbarWidth - scaledPaddingX, cmdbarHeight - scaledPaddingY);
 }
 
 void dred_cmdbar__get_inner_size(dred_cmdbar* pCmdBar, float* pWidthOut, float* pHeightOut)
@@ -45,9 +45,9 @@ void dred_cmdbar__get_segment_rects(dred_cmdbar* pCmdBar, dred_rect* pLRect, dre
     dred_rect innerRect = dred_cmdbar__get_inner_rect(pCmdBar);
 
     float segWidth = (innerRect.right - innerRect.left) / 3;
-    dred_rect lrect = drgui_make_rect(innerRect.left, innerRect.top, innerRect.left + segWidth, innerRect.bottom);
-    dred_rect mrect = drgui_make_rect(lrect.right, innerRect.top, lrect.right + segWidth, innerRect.bottom);
-    dred_rect rrect = drgui_make_rect(mrect.right, innerRect.top, innerRect.right, innerRect.bottom);
+    dred_rect lrect = dred_make_rect(innerRect.left, innerRect.top, innerRect.left + segWidth, innerRect.bottom);
+    dred_rect mrect = dred_make_rect(lrect.right, innerRect.top, lrect.right + segWidth, innerRect.bottom);
+    dred_rect rrect = dred_make_rect(mrect.right, innerRect.top, innerRect.right, innerRect.bottom);
 
     if (pLRect) *pLRect = lrect;
     if (pMRect) *pMRect = mrect;
@@ -111,10 +111,10 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, dred_rect rect, void* pPaintDat
 
     float scaledPaddingX = pDred->config.cmdbarPaddingX*pDred->uiScale;
     float scaledPaddingY = pDred->config.cmdbarPaddingY*pDred->uiScale;
-    dred_control_draw_rect(pCmdBar, drgui_make_rect(0,                                0,                                 scaledPaddingX,                   localRect.bottom), bgcolor, pPaintData); // Left
-    dred_control_draw_rect(pCmdBar, drgui_make_rect(localRect.right - scaledPaddingX, 0,                                 localRect.right,                  localRect.bottom), bgcolor, pPaintData); // Right
-    dred_control_draw_rect(pCmdBar, drgui_make_rect(scaledPaddingX,                   0,                                 localRect.right - scaledPaddingX, scaledPaddingY),   bgcolor, pPaintData); // Top
-    dred_control_draw_rect(pCmdBar, drgui_make_rect(scaledPaddingX,                   localRect.bottom - scaledPaddingY, localRect.right - scaledPaddingX, localRect.bottom), bgcolor, pPaintData); // Bottom
+    dred_control_draw_rect(pCmdBar, dred_make_rect(0,                                0,                                 scaledPaddingX,                   localRect.bottom), bgcolor, pPaintData); // Left
+    dred_control_draw_rect(pCmdBar, dred_make_rect(localRect.right - scaledPaddingX, 0,                                 localRect.right,                  localRect.bottom), bgcolor, pPaintData); // Right
+    dred_control_draw_rect(pCmdBar, dred_make_rect(scaledPaddingX,                   0,                                 localRect.right - scaledPaddingX, scaledPaddingY),   bgcolor, pPaintData); // Top
+    dred_control_draw_rect(pCmdBar, dred_make_rect(scaledPaddingX,                   localRect.bottom - scaledPaddingY, localRect.right - scaledPaddingX, localRect.bottom), bgcolor, pPaintData); // Bottom
 
 
     // Message.

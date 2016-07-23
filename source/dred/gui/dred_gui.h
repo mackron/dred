@@ -117,7 +117,7 @@
 //
 // void my_global_on_dirty_win32(dred_control* pControl, dred_rect relativeRect) {
 //     dred_rect absoluteRect = relativeRect;
-//     drgui_make_rect_absolute(pControl, &absoluteRect);
+//     dred_make_rect_absolute(pControl, &absoluteRect);
 //
 //     RECT rect;
 //     rect.left   = absoluteRect.left;
@@ -1239,7 +1239,7 @@ dred_rect dred_control_get_relative_rect(const dred_control* pControl);
 /// Retrieves the local rectangle for the given element.
 ///
 /// @remarks
-///     The local rectangle is equivalent to drgui_make_rect(0, 0, dred_control_get_width(pControl), dred_control_get_height(pControl));
+///     The local rectangle is equivalent to dred_make_rect(0, 0, dred_control_get_width(pControl), dred_control_get_height(pControl));
 dred_rect dred_control_get_local_rect(const dred_control* pControl);
 
 
@@ -1432,38 +1432,38 @@ void dred_control_draw_border(dred_control* pControl, float borderWidth, dred_co
 /////////////////////////////////////////////////////////////////
 
 /// Creates a color object from a set of RGBA color components.
-dred_color drgui_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+dred_color dred_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
 /// Creates a color object from a set of RGB color components.
-dred_color drgui_rgb(uint8_t r, uint8_t g, uint8_t b);
+dred_color dred_rgb(uint8_t r, uint8_t g, uint8_t b);
 
 /// Clamps the given rectangle to another.
-dred_rect drgui_clamp_rect(dred_rect rect, dred_rect other);
+dred_rect dred_clamp_rect(dred_rect rect, dred_rect other);
 
 /// Clamps the given rectangle to the given element and returns whether or not any of it is contained within the element's rectangle.
-bool drgui_clamp_rect_to_element(const dred_control* pControl, dred_rect* pRelativeRect);
+bool dred_clamp_rect_to_element(const dred_control* pControl, dred_rect* pRelativeRect);
 
 /// Converts the given rectangle from absolute to relative to the given element.
-dred_rect drgui_make_rect_relative(const dred_control* pControl, dred_rect* pRect);
+dred_rect dred_make_rect_relative(const dred_control* pControl, dred_rect* pRect);
 
 /// Converts the given rectangle from relative to absolute based on the given element.
-dred_rect drgui_make_rect_absolute(const dred_control* pControl, dred_rect* pRect);
+dred_rect dred_make_rect_absolute(const dred_control* pControl, dred_rect* pRect);
 
 /// Converts the given point from absolute to relative to the given element.
-void drgui_make_point_relative(const dred_control* pControl, float* positionX, float* positionY);
+void dred_make_point_relative(const dred_control* pControl, float* positionX, float* positionY);
 
 /// Converts the given point from relative to absolute based on the given element.
-void drgui_make_point_absolute(const dred_control* pControl, float* positionX, float* positionY);
+void dred_make_point_absolute(const dred_control* pControl, float* positionX, float* positionY);
 
 /// Creates a dred_rect object.
-dred_rect drgui_make_rect(float left, float top, float right, float bottom);
+dred_rect dred_make_rect(float left, float top, float right, float bottom);
 
 /// Creates an inside-out rectangle.
 ///
 /// @remarks
 ///     An inside our rectangle is a negative-dimension rectangle with each edge at the extreme edges. The left edge will be at the
 ///     right-most side and the right edge will be at the left-most side. The same applies for the top and bottom edges.
-dred_rect drgui_make_inside_out_rect();
+dred_rect dred_make_inside_out_rect();
 
 /// Expands the given rectangle on all sides by the given amount.
 ///
@@ -1472,7 +1472,7 @@ dred_rect drgui_make_inside_out_rect();
 ///     @par
 ///     The growth amount can be negative, in which case it will be shrunk. Note that this does not do any checking to ensure the rectangle
 ///     contains positive dimensions after a shrink.
-dred_rect drgui_grow_rect(dred_rect rect, float amount);
+dred_rect dred_grow_rect(dred_rect rect, float amount);
 
 /// Scales the given rectangle.
 ///
@@ -1482,10 +1482,10 @@ dred_rect drgui_grow_rect(dred_rect rect, float amount);
 /// @remarks
 ///     This will modify the <left> and <top> properties which means the rectangle will change position. To adjust only the size, scale the
 ///     rectangle manually.
-dred_rect drgui_scale_rect(dred_rect rect, float scaleX, float scaleY);
+dred_rect dred_scale_rect(dred_rect rect, float scaleX, float scaleY);
 
 /// Offsets the given rectangle.
-dred_rect drgui_offset_rect(dred_rect rect, float offsetX, float offsetY);
+dred_rect dred_offset_rect(dred_rect rect, float offsetX, float offsetY);
 
 /// Creates a rectangle that contains both of the given rectangles.
 dred_rect dred_rect_union(dred_rect rect0, dred_rect rect1);
@@ -1517,13 +1517,13 @@ bool dred_rect_has_volume(dred_rect rect);
 /// A covenience function for creating a new context and registering the easy_draw painting callbacks.
 ///
 /// @remarks
-///     This is equivalent to drgui_create_context() followed by drgui_register_dr_2d_callbacks().
+///     This is equivalent to drgui_create_context() followed by dred_gui_register_dr_2d_callbacks().
 bool dred_gui_init_dr_2d(dred_gui* pGUI, dred_context* pDred, dr2d_context* pDrawingContext);
 
 /// Registers the drawing callbacks for use with easy_draw.
 ///
 /// @remarks
 ///     The user data of each callback is assumed to be a pointer to an easydraw_surface object.
-void drgui_register_dr_2d_callbacks(dred_gui* pGUI, dr2d_context* pDrawingContext);
+void dred_gui_register_dr_2d_callbacks(dred_gui* pGUI, dr2d_context* pDrawingContext);
 
 #endif

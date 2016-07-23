@@ -550,7 +550,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
         {
             RECT rect;
             if (GetUpdateRect(hWnd, &rect, FALSE)) {
-                dred_control_draw(pWindow->pRootGUIControl, drgui_make_rect((float)rect.left, (float)rect.top, (float)rect.right, (float)rect.bottom), pWindow->pDrawingSurface);
+                dred_control_draw(pWindow->pRootGUIControl, dred_make_rect((float)rect.left, (float)rect.top, (float)rect.right, (float)rect.bottom), pWindow->pDrawingSurface);
             }
         } break;
 
@@ -1470,7 +1470,7 @@ static void dred_platform__on_global_dirty__win32(dred_control* pControl, dred_r
     if (pWindow != NULL)
     {
         dred_rect absoluteRect = relativeRect;
-        drgui_make_rect_absolute(pControl, &absoluteRect);
+        dred_make_rect_absolute(pControl, &absoluteRect);
 
 
         RECT rect;
@@ -2847,7 +2847,7 @@ static void dred_platform__on_global_dirty__gtk(dred_control* pControl, dred_rec
     if (pWindow != NULL && pWindow->pGTKWindow != NULL)
     {
         dred_rect absoluteRect = relativeRect;
-        drgui_make_rect_absolute(pControl, &absoluteRect);
+        dred_make_rect_absolute(pControl, &absoluteRect);
 
         if (dred_rect_has_volume(absoluteRect)) {
             gtk_widget_queue_draw_area(pWindow->pGTKClientArea,

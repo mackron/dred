@@ -67,7 +67,7 @@ dred_rect dred_settings_editor__get_side_panel_rect(dred_settings_editor* pSetti
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
 
-    return drgui_make_rect(0, 0, pData->sidePanelWidth, dred_control_get_height(pSettingsEditor));
+    return dred_make_rect(0, 0, pData->sidePanelWidth, dred_control_get_height(pSettingsEditor));
 }
 
 dred_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSettingsEditor)
@@ -81,7 +81,7 @@ dred_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSett
     float posX = pData->sidePanelWidth;
     float posY = dred_control_get_height(pSettingsEditor) - (dred_control_get_height(pData->pCloseButton)) - (8*pDred->uiScale * 2);
 
-    return drgui_make_rect(posX, posY, dred_control_get_width(pSettingsEditor), dred_control_get_height(pSettingsEditor));
+    return dred_make_rect(posX, posY, dred_control_get_width(pSettingsEditor), dred_control_get_height(pSettingsEditor));
 }
 
 int dred_settings_editor__get_side_panel_btn_index_under_point(dred_settings_editor* pSettingsEditor, float posX, float posY)
@@ -247,7 +247,7 @@ void dred_settings_editor__on_paint(dred_settings_editor* pSettingsEditor, dred_
 
     int sideButtonsCount = (int)(sizeof(pData->pages) / sizeof(pData->pages[0]));
     for (int i = 0; i < sideButtonsCount; ++i) {
-        dred_color bgColor = drgui_rgb(255, 255, 255); //drgui_rgb(128, 32, 32);
+        dred_color bgColor = dred_rgb(255, 255, 255); //dred_rgb(128, 32, 32);
         dred_color borderColor = bgColor;
         if (pData->selectedPageIndex == i) {
             selectedBtnPosY = penPosY;
@@ -266,14 +266,14 @@ void dred_settings_editor__on_paint(dred_settings_editor* pSettingsEditor, dred_
         dred_control_draw_text(pSettingsEditor, pData->pFont, pData->pages[i].title, (int)strlen(pData->pages[i].title), textPosX, textPosY, pData->sidePanelBtnTextColor, bgColor, pPaintData);
 
         // Border.
-        dred_control_draw_rect(pSettingsEditor, drgui_make_rect(penPosX, penPosY, pData->sidePanelWidth - borderWidth, penPosY + borderWidth), borderColor, pPaintData);
-        dred_control_draw_rect(pSettingsEditor, drgui_make_rect(penPosX, penPosY + btnHeight - borderWidth, pData->sidePanelWidth - borderWidth, penPosY + btnHeight), borderColor, pPaintData);
+        dred_control_draw_rect(pSettingsEditor, dred_make_rect(penPosX, penPosY, pData->sidePanelWidth - borderWidth, penPosY + borderWidth), borderColor, pPaintData);
+        dred_control_draw_rect(pSettingsEditor, dred_make_rect(penPosX, penPosY + btnHeight - borderWidth, pData->sidePanelWidth - borderWidth, penPosY + btnHeight), borderColor, pPaintData);
 
         // Background.
-        dred_control_draw_rect(pSettingsEditor, drgui_make_rect(0, penPosY + borderWidth, textPosX, penPosY + btnHeight - borderWidth), bgColor, pPaintData);
-        dred_control_draw_rect(pSettingsEditor, drgui_make_rect(textPosX + textSizeX, penPosY + borderWidth, pData->sidePanelWidth - borderWidth, penPosY + btnHeight - borderWidth), bgColor, pPaintData);
-        dred_control_draw_rect(pSettingsEditor, drgui_make_rect(textPosX, penPosY + borderWidth, textPosX + textSizeX, textPosY), bgColor, pPaintData);
-        dred_control_draw_rect(pSettingsEditor, drgui_make_rect(textPosX, textPosY + textSizeY, textPosX + textSizeX, penPosY + btnHeight - borderWidth), bgColor, pPaintData);
+        dred_control_draw_rect(pSettingsEditor, dred_make_rect(0, penPosY + borderWidth, textPosX, penPosY + btnHeight - borderWidth), bgColor, pPaintData);
+        dred_control_draw_rect(pSettingsEditor, dred_make_rect(textPosX + textSizeX, penPosY + borderWidth, pData->sidePanelWidth - borderWidth, penPosY + btnHeight - borderWidth), bgColor, pPaintData);
+        dred_control_draw_rect(pSettingsEditor, dred_make_rect(textPosX, penPosY + borderWidth, textPosX + textSizeX, textPosY), bgColor, pPaintData);
+        dred_control_draw_rect(pSettingsEditor, dred_make_rect(textPosX, textPosY + textSizeY, textPosX + textSizeX, penPosY + btnHeight - borderWidth), bgColor, pPaintData);
 
         penPosY += btnHeight;
     }
@@ -283,28 +283,28 @@ void dred_settings_editor__on_paint(dred_settings_editor* pSettingsEditor, dred_
         float gapPosY0 = selectedBtnPosY + (1*pDred->uiScale);
         float gapPosY1 = selectedBtnPosY - (1*pDred->uiScale) + btnHeight;
 
-        dred_rect sideBorderRect0 = drgui_make_rect(sideRect.right - borderWidth, sideRect.top, sideRect.right, gapPosY0);
-        dred_rect sideBorderRect1 = drgui_make_rect(sideRect.right - borderWidth, gapPosY0, sideRect.right, gapPosY1);
-        dred_rect sideBorderRect2 = drgui_make_rect(sideRect.right - borderWidth, gapPosY1, sideRect.right, sideRect.bottom);
+        dred_rect sideBorderRect0 = dred_make_rect(sideRect.right - borderWidth, sideRect.top, sideRect.right, gapPosY0);
+        dred_rect sideBorderRect1 = dred_make_rect(sideRect.right - borderWidth, gapPosY0, sideRect.right, gapPosY1);
+        dred_rect sideBorderRect2 = dred_make_rect(sideRect.right - borderWidth, gapPosY1, sideRect.right, sideRect.bottom);
 
         dred_control_draw_rect(pSettingsEditor, sideBorderRect0, pData->sidePanelBtnBorderColor, pPaintData);
-        dred_control_draw_rect(pSettingsEditor, sideBorderRect1, drgui_rgb(255, 255, 255), pPaintData);
+        dred_control_draw_rect(pSettingsEditor, sideBorderRect1, dred_rgb(255, 255, 255), pPaintData);
         dred_control_draw_rect(pSettingsEditor, sideBorderRect2, pData->sidePanelBtnBorderColor, pPaintData);
     } else {
-        dred_rect sideBorderRect0 = drgui_make_rect(sideRect.right - borderWidth, sideRect.top, sideRect.right, sideRect.bottom);
+        dred_rect sideBorderRect0 = dred_make_rect(sideRect.right - borderWidth, sideRect.top, sideRect.right, sideRect.bottom);
         dred_control_draw_rect(pSettingsEditor, sideBorderRect0, pData->sidePanelBtnBorderColor, pPaintData);
     }
 
     // Top of side panel.
-    dred_control_draw_rect(pSettingsEditor, drgui_make_rect(0, 0, sideRect.right - borderWidth, pData->sidePanelBtnOffsetY), drgui_rgb(255, 255, 255), pPaintData);
+    dred_control_draw_rect(pSettingsEditor, dred_make_rect(0, 0, sideRect.right - borderWidth, pData->sidePanelBtnOffsetY), dred_rgb(255, 255, 255), pPaintData);
 
     // Bottom of side panel.
-    dred_control_draw_rect(pSettingsEditor, drgui_make_rect(0, penPosY, sideRect.right - borderWidth, sideRect.bottom), drgui_rgb(255, 255, 255), pPaintData);
+    dred_control_draw_rect(pSettingsEditor, dred_make_rect(0, penPosY, sideRect.right - borderWidth, sideRect.bottom), dred_rgb(255, 255, 255), pPaintData);
 
 
     // Action area.
     dred_rect actionRect = dred_settings_editor__get_action_area_rect(pSettingsEditor);
-    dred_control_draw_rect(pSettingsEditor, actionRect, drgui_rgb(255, 255, 255), pPaintData);
+    dred_control_draw_rect(pSettingsEditor, actionRect, dred_rgb(255, 255, 255), pPaintData);
 }
 
 
@@ -351,7 +351,7 @@ void dred_settings_editor_page__on_mouse_enter(dred_control* pPageControl)
 void dred_settings_editor_page__on_paint(dred_control* pPageControl, dred_rect rect, void* pPaintData)
 {
     (void)rect;
-    dred_control_draw_rect(pPageControl, dred_control_get_local_rect(pPageControl), drgui_rgb(255, 255, 255), pPaintData);
+    dred_control_draw_rect(pPageControl, dred_control_get_local_rect(pPageControl), dred_rgb(255, 255, 255), pPaintData);
 }
 
 bool dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_control* pParent, const char* title)
@@ -540,9 +540,9 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_cont
     pData->sidePanelWidth = 200*pDred->uiScale;
     pData->sidePanelBtnOffsetY = 8.0f*pDred->uiScale;
     pData->sidePanelBtnPaddingYRatio = 0.75f;
-    pData->sidePanelBtnTextColor = drgui_rgb(0, 0, 0);
-    pData->sidePanelBtnBorderColor = drgui_rgb(160, 160, 160);
-    pData->sidePanelBtnGBColorHovered = drgui_rgb(200, 224, 255);
+    pData->sidePanelBtnTextColor = dred_rgb(0, 0, 0);
+    pData->sidePanelBtnBorderColor = dred_rgb(160, 160, 160);
+    pData->sidePanelBtnGBColorHovered = dred_rgb(200, 224, 255);
     pData->selectedPageIndex = -1;
     pData->hoveredPageIndex = -1;
 

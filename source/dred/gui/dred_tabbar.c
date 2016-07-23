@@ -163,19 +163,19 @@ dred_tabbar* dred_tabbar_create(dred_context* pDred, dred_control* pParent, dred
     pTB->pTabWithCloseButtonPressed  = NULL;
 
     pTB->pFont                       = NULL;
-    pTB->tabTextColor                = drgui_rgb(224, 224, 224);
-    pTB->tabTextColorActivated       = drgui_rgb(224, 224, 224);
-    pTB->tabTextColorHovered         = drgui_rgb(224, 224, 224);
-    pTB->tabBackgroundColor          = drgui_rgb(58, 58, 58);
-    pTB->tabBackgroundColorHovered   = drgui_rgb(16, 92, 160);
-    pTB->tabBackbroundColorActivated = drgui_rgb(32, 128, 192); //drgui_rgb(80, 80, 80);
+    pTB->tabTextColor                = dred_rgb(224, 224, 224);
+    pTB->tabTextColorActivated       = dred_rgb(224, 224, 224);
+    pTB->tabTextColorHovered         = dred_rgb(224, 224, 224);
+    pTB->tabBackgroundColor          = dred_rgb(58, 58, 58);
+    pTB->tabBackgroundColorHovered   = dred_rgb(16, 92, 160);
+    pTB->tabBackbroundColorActivated = dred_rgb(32, 128, 192); //dred_rgb(80, 80, 80);
     pTB->tabPadding                  = 4;
     pTB->pCloseButtonImage           = NULL;
     pTB->closeButtonPaddingLeft      = 6;
     pTB->closeButtonColorDefault     = pTB->tabBackgroundColor;
-    pTB->closeButtonColorTabHovered  = drgui_rgb(192, 192, 192);
-    pTB->closeButtonColorHovered     = drgui_rgb(255, 96, 96);
-    pTB->closeButtonColorPressed     = drgui_rgb(192, 32, 32);
+    pTB->closeButtonColorTabHovered  = dred_rgb(192, 192, 192);
+    pTB->closeButtonColorHovered     = dred_rgb(255, 96, 96);
+    pTB->closeButtonColorPressed     = dred_rgb(192, 32, 32);
     pTB->isAutoSizeEnabled           = false;
     pTB->isShowingCloseButton        = false;
     pTB->isCloseOnMiddleClickEnabled = false;
@@ -299,7 +299,7 @@ dred_color dred_tabbar_get_text_color(dred_tabbar* pTabBar)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
-        return drgui_rgb(0, 0, 0);
+        return dred_rgb(0, 0, 0);
     }
 
     return pTB->tabTextColor;
@@ -440,7 +440,7 @@ dred_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
-        return drgui_rgb(0, 0, 0);
+        return dred_rgb(0, 0, 0);
     }
 
     return pTB->tabBackgroundColor;
@@ -464,7 +464,7 @@ dred_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
-        return drgui_rgb(0, 0, 0);
+        return dred_rgb(0, 0, 0);
     }
 
     return pTB->tabBackgroundColorHovered;
@@ -488,7 +488,7 @@ dred_color dred_tabbar_get_tab_background_color_actived(dred_tabbar* pTabBar)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
-        return drgui_rgb(0, 0, 0);
+        return dred_rgb(0, 0, 0);
     }
 
     return pTB->tabBackbroundColorActivated;
@@ -1026,9 +1026,9 @@ void dred_tabbar_on_paint(dred_tabbar* pTabBar, dred_rect relativeClippingRect, 
         // After painting the tab, there may be a region of the background that was not drawn by the tab painting callback. We'll need to
         // draw that here.
         if (pTB->orientation == dred_tabbar_orientation_top || pTB->orientation == dred_tabbar_orientation_bottom) {
-            dred_control_draw_rect(pTabBar, drgui_make_rect(runningPosX, runningPosY + tabHeight, tabbarWidth, tabbarHeight), pTB->tabBackgroundColor, pPaintData);
+            dred_control_draw_rect(pTabBar, dred_make_rect(runningPosX, runningPosY + tabHeight, tabbarWidth, tabbarHeight), pTB->tabBackgroundColor, pPaintData);
         } else {
-            dred_control_draw_rect(pTabBar, drgui_make_rect(runningPosX + tabWidth, runningPosY, tabbarWidth, runningPosY + tabHeight), pTB->tabBackgroundColor, pPaintData);
+            dred_control_draw_rect(pTabBar, dred_make_rect(runningPosX + tabWidth, runningPosY, tabbarWidth, runningPosY + tabHeight), pTB->tabBackgroundColor, pPaintData);
         }
 
 
@@ -1042,7 +1042,7 @@ void dred_tabbar_on_paint(dred_tabbar* pTabBar, dred_rect relativeClippingRect, 
 
 
     // Background. We just draw a quad around the region that is not covered by items.
-    dred_control_draw_rect(pTabBar, drgui_make_rect(runningPosX, runningPosY, tabbarWidth, tabbarHeight), pTB->tabBackgroundColor, pPaintData);
+    dred_control_draw_rect(pTabBar, dred_make_rect(runningPosX, runningPosY, tabbarWidth, tabbarHeight), pTB->tabBackgroundColor, pPaintData);
 }
 
 
@@ -1111,7 +1111,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drg
         }
     }
 
-    dred_control_draw_rect_outline(pTabBar, drgui_make_rect(offsetX, offsetY, offsetX + width, offsetY + height), bgcolor, pTB->tabPadding, pPaintData);
+    dred_control_draw_rect_outline(pTabBar, dred_make_rect(offsetX, offsetY, offsetX + width, offsetY + height), bgcolor, pTB->tabPadding, pPaintData);
 
 
     // Text.
@@ -1159,7 +1159,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drg
 
 
         /// Space between the text and the padding.
-        dred_control_draw_rect(pTabBar, drgui_make_rect(textPosX + textWidth, textPosY, closeButtonPosX, textPosY + textHeight), bgcolor, pPaintData);
+        dred_control_draw_rect(pTabBar, dred_make_rect(textPosX + textWidth, textPosY, closeButtonPosX, textPosY + textHeight), bgcolor, pPaintData);
     }
 }
 
