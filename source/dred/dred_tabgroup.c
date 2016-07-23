@@ -187,8 +187,8 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
 
 
     // Events.
-    drgui_set_on_size(pTabGroup, dred_tabgroup__on_size);
-    drgui_set_on_paint(pTabGroup, dred_tabgroup__on_paint);
+    dred_control_set_on_size(pTabGroup, dred_tabgroup__on_size);
+    dred_control_set_on_paint(pTabGroup, dred_tabgroup__on_paint);
 
 
     if (!pDred->config.showTabBar) {

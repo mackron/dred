@@ -31,7 +31,7 @@ dred_tabgroup_container* dred_tabgroup_container_create(dred_context* pDred, dre
 
 
     // Events.
-    drgui_set_on_size(pContainer, dred_tabgroup_container__on_size);
+    dred_control_set_on_size(pContainer, dred_tabgroup_container__on_size);
 
     return pContainer;
 }

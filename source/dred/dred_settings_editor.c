@@ -368,8 +368,8 @@ bool dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_cont
     }
 
     dred_control_hide(pPage->pGUIControl);
-    drgui_set_on_mouse_enter(pPage->pGUIControl, dred_settings_editor_page__on_mouse_enter);
-    drgui_set_on_paint(pPage->pGUIControl, dred_settings_editor_page__on_paint);
+    dred_control_set_on_mouse_enter(pPage->pGUIControl, dred_settings_editor_page__on_mouse_enter);
+    dred_control_set_on_paint(pPage->pGUIControl, dred_settings_editor_page__on_paint);
 
     return true;
 }
@@ -564,12 +564,12 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_cont
 
 
     // Events.
-    drgui_set_on_size(pSettingsEditor, dred_settings_editor__on_size);
-    drgui_set_on_capture_keyboard(pSettingsEditor, dred_settings_editor__on_capture_keyboard);
-    drgui_set_on_mouse_button_down(pSettingsEditor, dred_settings_editor__on_mouse_button_down);
-    drgui_set_on_mouse_move(pSettingsEditor, dred_settings_editor__on_mouse_move);
-    drgui_set_on_mouse_leave(pSettingsEditor, dred_settings_editor__on_mouse_leave);
-    drgui_set_on_paint(pSettingsEditor, dred_settings_editor__on_paint);
+    dred_control_set_on_size(pSettingsEditor, dred_settings_editor__on_size);
+    dred_control_set_on_capture_keyboard(pSettingsEditor, dred_settings_editor__on_capture_keyboard);
+    dred_control_set_on_mouse_button_down(pSettingsEditor, dred_settings_editor__on_mouse_button_down);
+    dred_control_set_on_mouse_move(pSettingsEditor, dred_settings_editor__on_mouse_move);
+    dred_control_set_on_mouse_leave(pSettingsEditor, dred_settings_editor__on_mouse_leave);
+    dred_control_set_on_paint(pSettingsEditor, dred_settings_editor__on_paint);
 
 
     // Select the General tab by default.

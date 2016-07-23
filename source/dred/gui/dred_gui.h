@@ -1067,61 +1067,61 @@ void dred_control_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int 
 //// Events ////
 
 /// Registers the on_move event callback.
-void drgui_set_on_move(dred_control* pControl, dred_gui_on_move_proc callback);
+void dred_control_set_on_move(dred_control* pControl, dred_gui_on_move_proc callback);
 
 /// Registers the on_size event callback.
-void drgui_set_on_size(dred_control* pControl, dred_gui_on_size_proc callback);
+void dred_control_set_on_size(dred_control* pControl, dred_gui_on_size_proc callback);
 
 /// Registers the on_mouse_enter event callback.
-void drgui_set_on_mouse_enter(dred_control* pControl, dred_gui_on_mouse_enter_proc callback);
+void dred_control_set_on_mouse_enter(dred_control* pControl, dred_gui_on_mouse_enter_proc callback);
 
 /// Registers the on_mouse_leave event callback.
-void drgui_set_on_mouse_leave(dred_control* pControl, dred_gui_on_mouse_leave_proc callback);
+void dred_control_set_on_mouse_leave(dred_control* pControl, dred_gui_on_mouse_leave_proc callback);
 
 /// Registers the on_mouse_move event callback.
-void drgui_set_on_mouse_move(dred_control* pControl, dred_gui_on_mouse_move_proc callback);
+void dred_control_set_on_mouse_move(dred_control* pControl, dred_gui_on_mouse_move_proc callback);
 
 /// Registers the on_mouse_button_down event callback.
-void drgui_set_on_mouse_button_down(dred_control* pControl, dred_gui_on_mouse_button_down_proc callback);
+void dred_control_set_on_mouse_button_down(dred_control* pControl, dred_gui_on_mouse_button_down_proc callback);
 
 /// Registers the on_mouse_button_up event callback.
-void drgui_set_on_mouse_button_up(dred_control* pControl, dred_gui_on_mouse_button_up_proc callback);
+void dred_control_set_on_mouse_button_up(dred_control* pControl, dred_gui_on_mouse_button_up_proc callback);
 
 /// Registers the on_mouse_button_down event callback.
-void drgui_set_on_mouse_button_dblclick(dred_control* pControl, dred_gui_on_mouse_button_dblclick_proc callback);
+void dred_control_set_on_mouse_button_dblclick(dred_control* pControl, dred_gui_on_mouse_button_dblclick_proc callback);
 
 /// Registers the on_mouse_wheel event callback.
-void drgui_set_on_mouse_wheel(dred_control* pControl, dred_gui_on_mouse_wheel_proc callback);
+void dred_control_set_on_mouse_wheel(dred_control* pControl, dred_gui_on_mouse_wheel_proc callback);
 
 /// Registers the on_key_down event callback.
-void drgui_set_on_key_down(dred_control* pControl, dred_gui_on_key_down_proc callback);
+void dred_control_set_on_key_down(dred_control* pControl, dred_gui_on_key_down_proc callback);
 
 /// Registers the on_key_up event callback.
-void drgui_set_on_key_up(dred_control* pControl, dred_gui_on_key_up_proc callback);
+void dred_control_set_on_key_up(dred_control* pControl, dred_gui_on_key_up_proc callback);
 
 /// Registers the on_printable_key_down event callback.
-void drgui_set_on_printable_key_down(dred_control* pControl, dred_gui_on_printable_key_down_proc callback);
+void dred_control_set_on_printable_key_down(dred_control* pControl, dred_gui_on_printable_key_down_proc callback);
 
 /// Registers the on_paint event callback.
-void drgui_set_on_paint(dred_control* pControl, dred_gui_on_paint_proc callback);
+void dred_control_set_on_paint(dred_control* pControl, dred_gui_on_paint_proc callback);
 
 /// Registers the on_dirty event callback.
-void drgui_set_on_dirty(dred_control* pControl, dred_gui_on_dirty_proc callback);
+void dred_control_set_on_dirty(dred_control* pControl, dred_gui_on_dirty_proc callback);
 
 /// Registers the on_hittest event callback.
-void drgui_set_on_hittest(dred_control* pControl, dred_gui_on_hittest_proc callback);
+void dred_control_set_on_hittest(dred_control* pControl, dred_gui_on_hittest_proc callback);
 
 /// Registers the on_capture_mouse event callback.
-void drgui_set_on_capture_mouse(dred_control* pControl, dred_gui_on_capture_mouse_proc callback);
+void dred_control_set_on_capture_mouse(dred_control* pControl, dred_gui_on_capture_mouse_proc callback);
 
 /// Registers the on_release_mouse event callback.
-void drgui_set_on_release_mouse(dred_control* pControl, dred_gui_on_release_mouse_proc callback);
+void dred_control_set_on_release_mouse(dred_control* pControl, dred_gui_on_release_mouse_proc callback);
 
 /// Registers the on_capture_keyboard event callback.
-void drgui_set_on_capture_keyboard(dred_control* pControl, dred_gui_on_capture_keyboard_proc callback);
+void dred_control_set_on_capture_keyboard(dred_control* pControl, dred_gui_on_capture_keyboard_proc callback);
 
 /// Registers the on_release_keyboard event callback.
-void drgui_set_on_release_keyboard(dred_control* pControl, dred_gui_on_release_keyboard_proc callback);
+void dred_control_set_on_release_keyboard(dred_control* pControl, dred_gui_on_release_keyboard_proc callback);
 
 
 

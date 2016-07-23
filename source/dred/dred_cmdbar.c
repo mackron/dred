@@ -370,15 +370,15 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
     dred_textbox_disable_vertical_scrollbar(data->pTextBox);
 
     // Events.
-    drgui_set_on_size(pCmdBar, dred_cmdbar__on_size);
-    drgui_set_on_capture_keyboard(pCmdBar, dred_cmdbar__on_capture_keyboard);
-    drgui_set_on_paint(pCmdBar, dred_cmdbar__on_paint);
+    dred_control_set_on_size(pCmdBar, dred_cmdbar__on_size);
+    dred_control_set_on_capture_keyboard(pCmdBar, dred_cmdbar__on_capture_keyboard);
+    dred_control_set_on_paint(pCmdBar, dred_cmdbar__on_paint);
 
     // Text box event overrides.
-    drgui_set_on_capture_keyboard(data->pTextBox, dred_cmdbar_tb__on_capture_keyboard);
-    drgui_set_on_release_keyboard(data->pTextBox, dred_cmdbar_tb__on_release_keyboard);
-    drgui_set_on_key_down(data->pTextBox, dred_cmdbar_tb__on_key_down);
-    drgui_set_on_printable_key_down(data->pTextBox, dred_cmdbar_tb__on_printable_key_down);
+    dred_control_set_on_capture_keyboard(data->pTextBox, dred_cmdbar_tb__on_capture_keyboard);
+    dred_control_set_on_release_keyboard(data->pTextBox, dred_cmdbar_tb__on_release_keyboard);
+    dred_control_set_on_key_down(data->pTextBox, dred_cmdbar_tb__on_key_down);
+    dred_control_set_on_printable_key_down(data->pTextBox, dred_cmdbar_tb__on_printable_key_down);
 
 
     strcpy_s(data->message, sizeof(data->message), "");

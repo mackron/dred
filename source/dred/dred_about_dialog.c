@@ -202,8 +202,8 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     pDialog->pWindow->pUserData = pDialog;
     pDialog->pWindow->onClose = dred_about_dialog__on_window_close;
     //pDialog->pWindow->onKeyDown = dred_about_dialog__on_key_down;
-    drgui_set_on_size(pDialog->pWindow->pRootGUIControl, dred_about_dialog__on_size);
-    drgui_set_on_paint(pDialog->pWindow->pRootGUIControl, dred_about_dialog__on_paint);
+    dred_control_set_on_size(pDialog->pWindow->pRootGUIControl, dred_about_dialog__on_size);
+    dred_control_set_on_paint(pDialog->pWindow->pRootGUIControl, dred_about_dialog__on_paint);
     
 
 

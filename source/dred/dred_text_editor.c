@@ -250,14 +250,14 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 
 
     // Events.
-    drgui_set_on_size(pTextEditor, dred_text_editor__on_size);
-    drgui_set_on_capture_keyboard(pTextEditor, dred_text_editor__on_capture_keyboard);
+    dred_control_set_on_size(pTextEditor, dred_text_editor__on_size);
+    dred_control_set_on_capture_keyboard(pTextEditor, dred_text_editor__on_capture_keyboard);
     dred_editor_set_on_save(pTextEditor, dred_text_editor__on_save);
     dred_editor_set_on_reload(pTextEditor, dred_text_editor__on_reload);
-    drgui_set_on_mouse_button_up(data->pTextBox, dred_text_editor_textbox__on_mouse_button_up);
-    drgui_set_on_mouse_wheel(data->pTextBox, dred_text_editor_textbox__on_mouse_wheel);
-    drgui_set_on_key_down(data->pTextBox, dred_text_editor_textbox__on_key_down);
-    drgui_set_on_capture_keyboard(data->pTextBox, dred_text_editor_textbox__on_capture_keyboard);
+    dred_control_set_on_mouse_button_up(data->pTextBox, dred_text_editor_textbox__on_mouse_button_up);
+    dred_control_set_on_mouse_wheel(data->pTextBox, dred_text_editor_textbox__on_mouse_wheel);
+    dred_control_set_on_key_down(data->pTextBox, dred_text_editor_textbox__on_key_down);
+    dred_control_set_on_capture_keyboard(data->pTextBox, dred_text_editor_textbox__on_capture_keyboard);
     dred_textbox_set_on_cursor_move(data->pTextBox, dred_text_editor_textbox__on_cursor_move);
     dred_textbox_set_on_undo_point_changed(data->pTextBox, dred_text_editor_textbox__on_undo_point_changed);
 

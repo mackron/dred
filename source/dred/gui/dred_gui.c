@@ -1821,133 +1821,133 @@ void dred_control_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int 
 
 //// Events ////
 
-void drgui_set_on_move(dred_control * pControl, dred_gui_on_move_proc callback)
+void dred_control_set_on_move(dred_control * pControl, dred_gui_on_move_proc callback)
 {
     if (pControl != NULL) {
         pControl->onMove = callback;
     }
 }
 
-void drgui_set_on_size(dred_control * pControl, dred_gui_on_size_proc callback)
+void dred_control_set_on_size(dred_control * pControl, dred_gui_on_size_proc callback)
 {
     if (pControl != NULL) {
         pControl->onSize = callback;
     }
 }
 
-void drgui_set_on_mouse_enter(dred_control* pControl, dred_gui_on_mouse_enter_proc callback)
+void dred_control_set_on_mouse_enter(dred_control* pControl, dred_gui_on_mouse_enter_proc callback)
 {
     if (pControl != NULL) {
         pControl->onMouseEnter = callback;
     }
 }
 
-void drgui_set_on_mouse_leave(dred_control* pControl, dred_gui_on_mouse_leave_proc callback)
+void dred_control_set_on_mouse_leave(dred_control* pControl, dred_gui_on_mouse_leave_proc callback)
 {
     if (pControl != NULL) {
         pControl->onMouseLeave = callback;
     }
 }
 
-void drgui_set_on_mouse_move(dred_control* pControl, dred_gui_on_mouse_move_proc callback)
+void dred_control_set_on_mouse_move(dred_control* pControl, dred_gui_on_mouse_move_proc callback)
 {
     if (pControl != NULL) {
         pControl->onMouseMove = callback;
     }
 }
 
-void drgui_set_on_mouse_button_down(dred_control* pControl, dred_gui_on_mouse_button_down_proc callback)
+void dred_control_set_on_mouse_button_down(dred_control* pControl, dred_gui_on_mouse_button_down_proc callback)
 {
     if (pControl != NULL) {
         pControl->onMouseButtonDown = callback;
     }
 }
 
-void drgui_set_on_mouse_button_up(dred_control* pControl, dred_gui_on_mouse_button_up_proc callback)
+void dred_control_set_on_mouse_button_up(dred_control* pControl, dred_gui_on_mouse_button_up_proc callback)
 {
     if (pControl != NULL) {
         pControl->onMouseButtonUp = callback;
     }
 }
 
-void drgui_set_on_mouse_button_dblclick(dred_control* pControl, dred_gui_on_mouse_button_dblclick_proc callback)
+void dred_control_set_on_mouse_button_dblclick(dred_control* pControl, dred_gui_on_mouse_button_dblclick_proc callback)
 {
     if (pControl != NULL) {
         pControl->onMouseButtonDblClick = callback;
     }
 }
 
-void drgui_set_on_mouse_wheel(dred_control* pControl, dred_gui_on_mouse_wheel_proc callback)
+void dred_control_set_on_mouse_wheel(dred_control* pControl, dred_gui_on_mouse_wheel_proc callback)
 {
     if (pControl != NULL) {
         pControl->onMouseWheel = callback;
     }
 }
 
-void drgui_set_on_key_down(dred_control* pControl, dred_gui_on_key_down_proc callback)
+void dred_control_set_on_key_down(dred_control* pControl, dred_gui_on_key_down_proc callback)
 {
     if (pControl != NULL) {
         pControl->onKeyDown = callback;
     }
 }
 
-void drgui_set_on_key_up(dred_control* pControl, dred_gui_on_key_up_proc callback)
+void dred_control_set_on_key_up(dred_control* pControl, dred_gui_on_key_up_proc callback)
 {
     if (pControl != NULL) {
         pControl->onKeyUp = callback;
     }
 }
 
-void drgui_set_on_printable_key_down(dred_control* pControl, dred_gui_on_printable_key_down_proc callback)
+void dred_control_set_on_printable_key_down(dred_control* pControl, dred_gui_on_printable_key_down_proc callback)
 {
     if (pControl != NULL) {
         pControl->onPrintableKeyDown = callback;
     }
 }
 
-void drgui_set_on_paint(dred_control* pControl, dred_gui_on_paint_proc callback)
+void dred_control_set_on_paint(dred_control* pControl, dred_gui_on_paint_proc callback)
 {
     if (pControl != NULL) {
         pControl->onPaint = callback;
     }
 }
 
-void drgui_set_on_dirty(dred_control * pControl, dred_gui_on_dirty_proc callback)
+void dred_control_set_on_dirty(dred_control * pControl, dred_gui_on_dirty_proc callback)
 {
     if (pControl != NULL) {
         pControl->onDirty = callback;
     }
 }
 
-void drgui_set_on_hittest(dred_control* pControl, dred_gui_on_hittest_proc callback)
+void dred_control_set_on_hittest(dred_control* pControl, dred_gui_on_hittest_proc callback)
 {
     if (pControl != NULL) {
         pControl->onHitTest = callback;
     }
 }
 
-void drgui_set_on_capture_mouse(dred_control* pControl, dred_gui_on_capture_mouse_proc callback)
+void dred_control_set_on_capture_mouse(dred_control* pControl, dred_gui_on_capture_mouse_proc callback)
 {
     if (pControl != NULL) {
         pControl->onCaptureMouse = callback;
     }
 }
 
-void drgui_set_on_release_mouse(dred_control* pControl, dred_gui_on_release_mouse_proc callback)
+void dred_control_set_on_release_mouse(dred_control* pControl, dred_gui_on_release_mouse_proc callback)
 {
     if (pControl != NULL) {
         pControl->onReleaseMouse = callback;
     }
 }
 
-void drgui_set_on_capture_keyboard(dred_control* pControl, dred_gui_on_capture_keyboard_proc callback)
+void dred_control_set_on_capture_keyboard(dred_control* pControl, dred_gui_on_capture_keyboard_proc callback)
 {
     if (pControl != NULL) {
         pControl->onCaptureKeyboard = callback;
     }
 }
 
-void drgui_set_on_release_keyboard(dred_control* pControl, dred_gui_on_release_keyboard_proc callback)
+void dred_control_set_on_release_keyboard(dred_control* pControl, dred_gui_on_release_keyboard_proc callback)
 {
     if (pControl != NULL) {
         pControl->onReleaseKeyboard = callback;

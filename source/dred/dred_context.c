@@ -362,7 +362,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
     pDred->pMainWindow->onMove = dred_window_cb__on_main_window_move;
-    drgui_set_on_size(pDred->pMainWindow->pRootGUIControl, dred_window_cb__on_main_window_size);
+    dred_control_set_on_size(pDred->pMainWindow->pRootGUIControl, dred_window_cb__on_main_window_size);
 
     // Ensure the accelerators are bound. This needs to be done after loading the initial configs.
     dred_window_bind_accelerators(pDred->pMainWindow, &pDred->shortcutTable.acceleratorTable);

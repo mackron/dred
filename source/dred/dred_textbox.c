@@ -451,19 +451,19 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     }
 
     dred_control_set_cursor(pTextBox, dred_cursor_text);
-    drgui_set_on_size(pTextBox, dred_textbox_on_size);
-    drgui_set_on_mouse_move(pTextBox, dred_textbox_on_mouse_move);
-    drgui_set_on_mouse_button_down(pTextBox, dred_textbox_on_mouse_button_down);
-    drgui_set_on_mouse_button_up(pTextBox, dred_textbox_on_mouse_button_up);
-    drgui_set_on_mouse_button_dblclick(pTextBox, dred_textbox_on_mouse_button_dblclick);
-    drgui_set_on_mouse_wheel(pTextBox, dred_textbox_on_mouse_wheel);
-    drgui_set_on_key_down(pTextBox, dred_textbox_on_key_down);
-    drgui_set_on_printable_key_down(pTextBox, dred_textbox_on_printable_key_down);
-    drgui_set_on_paint(pTextBox, dred_textbox_on_paint);
-    drgui_set_on_capture_keyboard(pTextBox, dred_textbox_on_capture_keyboard);
-    drgui_set_on_release_keyboard(pTextBox, dred_textbox_on_release_keyboard);
-    drgui_set_on_capture_mouse(pTextBox, dred_textbox_on_capture_mouse);
-    drgui_set_on_release_mouse(pTextBox, dred_textbox_on_release_mouse);
+    dred_control_set_on_size(pTextBox, dred_textbox_on_size);
+    dred_control_set_on_mouse_move(pTextBox, dred_textbox_on_mouse_move);
+    dred_control_set_on_mouse_button_down(pTextBox, dred_textbox_on_mouse_button_down);
+    dred_control_set_on_mouse_button_up(pTextBox, dred_textbox_on_mouse_button_up);
+    dred_control_set_on_mouse_button_dblclick(pTextBox, dred_textbox_on_mouse_button_dblclick);
+    dred_control_set_on_mouse_wheel(pTextBox, dred_textbox_on_mouse_wheel);
+    dred_control_set_on_key_down(pTextBox, dred_textbox_on_key_down);
+    dred_control_set_on_printable_key_down(pTextBox, dred_textbox_on_printable_key_down);
+    dred_control_set_on_paint(pTextBox, dred_textbox_on_paint);
+    dred_control_set_on_capture_keyboard(pTextBox, dred_textbox_on_capture_keyboard);
+    dred_control_set_on_release_keyboard(pTextBox, dred_textbox_on_release_keyboard);
+    dred_control_set_on_capture_mouse(pTextBox, dred_textbox_on_capture_mouse);
+    dred_control_set_on_release_mouse(pTextBox, dred_textbox_on_release_mouse);
 
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
@@ -478,10 +478,10 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     pTB->pLineNumbers = dred_control_create(pDred, pTextBox, "dred.common.linenumbers", sizeof(pTextBox));
     memcpy(dred_control_get_extra_data(pTB->pLineNumbers), &pTextBox, sizeof(pTextBox));
     dred_control_hide(pTB->pLineNumbers);
-    drgui_set_on_mouse_move(pTB->pLineNumbers, dred_textbox__on_mouse_move_line_numbers);
-    drgui_set_on_mouse_button_down(pTB->pLineNumbers, dred_textbox__on_mouse_button_down_line_numbers);
-    drgui_set_on_mouse_button_up(pTB->pLineNumbers, dred_textbox__on_mouse_button_up_line_numbers);
-    drgui_set_on_paint(pTB->pLineNumbers, dred_textbox__on_paint_line_numbers);
+    dred_control_set_on_mouse_move(pTB->pLineNumbers, dred_textbox__on_mouse_move_line_numbers);
+    dred_control_set_on_mouse_button_down(pTB->pLineNumbers, dred_textbox__on_mouse_button_down_line_numbers);
+    dred_control_set_on_mouse_button_up(pTB->pLineNumbers, dred_textbox__on_mouse_button_up_line_numbers);
+    dred_control_set_on_paint(pTB->pLineNumbers, dred_textbox__on_paint_line_numbers);
 
     pTB->pTL = drte_engine_create(pTextBox);
     if (pTB->pTL == NULL) {

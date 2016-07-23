@@ -195,11 +195,11 @@ dred_tabbar* dred_tabbar_create(dred_context* pDred, dred_control* pParent, dred
 
 
     // Event handlers.
-    drgui_set_on_mouse_leave(pTabBar, dred_tabbar_on_mouse_leave);
-    drgui_set_on_mouse_move(pTabBar, dred_tabbar_on_mouse_move);
-    drgui_set_on_mouse_button_down(pTabBar, dred_tabbar_on_mouse_button_down);
-    drgui_set_on_mouse_button_up(pTabBar, dred_tabbar_on_mouse_button_up);
-    drgui_set_on_paint(pTabBar, dred_tabbar_on_paint);
+    dred_control_set_on_mouse_leave(pTabBar, dred_tabbar_on_mouse_leave);
+    dred_control_set_on_mouse_move(pTabBar, dred_tabbar_on_mouse_move);
+    dred_control_set_on_mouse_button_down(pTabBar, dred_tabbar_on_mouse_button_down);
+    dred_control_set_on_mouse_button_up(pTabBar, dred_tabbar_on_mouse_button_up);
+    dred_control_set_on_paint(pTabBar, dred_tabbar_on_paint);
 
     return pTabBar;
 }

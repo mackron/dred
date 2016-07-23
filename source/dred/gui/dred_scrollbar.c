@@ -151,13 +151,13 @@ dred_scrollbar* dred_scrollbar_create(dred_context* pDred, dred_control* pParent
 
 
     // Default event handlers.
-    drgui_set_on_size(pScrollbar, dred_scrollbar_on_size);
-    drgui_set_on_mouse_leave(pScrollbar, dred_scrollbar_on_mouse_leave);
-    drgui_set_on_mouse_move(pScrollbar, dred_scrollbar_on_mouse_move);
-    drgui_set_on_mouse_button_down(pScrollbar, dred_scrollbar_on_mouse_button_down);
-    drgui_set_on_mouse_button_up(pScrollbar, dred_scrollbar_on_mouse_button_up);
-    drgui_set_on_mouse_wheel(pScrollbar, dred_scrollbar_on_mouse_wheel);
-    drgui_set_on_paint(pScrollbar, dred_scrollbar_on_paint);
+    dred_control_set_on_size(pScrollbar, dred_scrollbar_on_size);
+    dred_control_set_on_mouse_leave(pScrollbar, dred_scrollbar_on_mouse_leave);
+    dred_control_set_on_mouse_move(pScrollbar, dred_scrollbar_on_mouse_move);
+    dred_control_set_on_mouse_button_down(pScrollbar, dred_scrollbar_on_mouse_button_down);
+    dred_control_set_on_mouse_button_up(pScrollbar, dred_scrollbar_on_mouse_button_up);
+    dred_control_set_on_mouse_wheel(pScrollbar, dred_scrollbar_on_mouse_wheel);
+    dred_control_set_on_paint(pScrollbar, dred_scrollbar_on_paint);
 
 
     return pScrollbar;
