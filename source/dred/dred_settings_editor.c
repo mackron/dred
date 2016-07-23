@@ -7,7 +7,7 @@
 typedef struct
 {
     char title[64];
-    drgui_element* pGUIElement;
+    dred_element* pGUIElement;
 } dred_settings_editor_page;
 
 typedef struct
@@ -176,7 +176,7 @@ void dred_settings_editor__on_size(dred_settings_editor* pSettingsEditor, float 
     
 }
 
-void dred_settings_editor__on_capture_keyboard(dred_settings_editor* pSettingsEditor, drgui_element* pPrevCapturedElement)
+void dred_settings_editor__on_capture_keyboard(dred_settings_editor* pSettingsEditor, dred_element* pPrevCapturedElement)
 {
     (void)pSettingsEditor;
     (void)pPrevCapturedElement;
@@ -334,7 +334,7 @@ void dred_settings__btn_choose_font__on_pressed(dred_button* pButton)
 }
 
 
-void dred_settings_editor_page__on_mouse_enter(drgui_element* pPageElement)
+void dred_settings_editor_page__on_mouse_enter(dred_element* pPageElement)
 {
     dred_settings_editor* pSettingsEditor = drgui_get_parent(pPageElement);
 
@@ -348,7 +348,7 @@ void dred_settings_editor_page__on_mouse_enter(drgui_element* pPageElement)
     }
 }
 
-void dred_settings_editor_page__on_paint(drgui_element* pPageElement, dred_rect rect, void* pPaintData)
+void dred_settings_editor_page__on_paint(dred_element* pPageElement, dred_rect rect, void* pPaintData)
 {
     (void)rect;
     drgui_draw_rect(pPageElement, drgui_get_local_rect(pPageElement), drgui_rgb(255, 255, 255), pPaintData);

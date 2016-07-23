@@ -222,10 +222,10 @@ void dred_textbox_disable_horizontal_scrollbar(dred_textbox* pTextBox);
 void dred_textbox_enable_horizontal_scrollbar(dred_textbox* pTextBox);
 
 // Retrieves the vertical scrollbar.
-drgui_element* dred_textbox_get_vertical_scrollbar(dred_textbox* pTextBox);
+dred_element* dred_textbox_get_vertical_scrollbar(dred_textbox* pTextBox);
 
 // Retrieves the horizontal scrollbar.
-drgui_element* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox);
+dred_element* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox);
 
 // Sets the size of both the vertical and horizontal scrollbars.
 void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, float size);
@@ -287,10 +287,10 @@ void dred_textbox_on_mouse_button_dblclick(dred_textbox* pTextBox, int mouseButt
 void dred_textbox_on_mouse_wheel(dred_textbox* pTextBox, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 // on_key_down.
-void dred_textbox_on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags);
+void dred_textbox_on_key_down(dred_textbox* pTextBox, dred_key key, int stateFlags);
 
 // on_key_up.
-void dred_textbox_on_key_up(dred_textbox* pTextBox, drgui_key key, int stateFlags);
+void dred_textbox_on_key_up(dred_textbox* pTextBox, dred_key key, int stateFlags);
 
 // on_printable_key_down.
 void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf32, int stateFlags);
@@ -299,10 +299,10 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
 void dred_textbox_on_paint(dred_textbox* pTextBox, dred_rect relativeRect, void* pPaintData);
 
 // on_capture_keyboard
-void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement);
+void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, dred_element* pPrevCapturedElement);
 
 // on_release_keyboard
-void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, drgui_element* pNewCapturedElement);
+void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, dred_element* pNewCapturedElement);
 
 // on_capture_mouse
 void dred_textbox_on_capture_mouse(dred_textbox* pTextBox);

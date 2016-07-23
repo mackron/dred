@@ -82,7 +82,7 @@ void dred_cmdbar__on_size(dred_cmdbar* pCmdBar, float newWidth, float newHeight)
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
-void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, drgui_element* pPrevCapturedElement)
+void dred_cmdbar__on_capture_keyboard(dred_cmdbar* pCmdBar, dred_element* pPrevCapturedElement)
 {
     (void)pPrevCapturedElement;
 
@@ -134,7 +134,7 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, dred_rect rect, void* pPaintDat
     drgui_draw_text(pCmdBar, pMessageFont, data->message, (int)strlen(data->message), messageLeft, messageTop, pDred->config.cmdbarTextColor, bgcolor, pPaintData);
 }
 
-void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement)
+void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, dred_element* pPrevCapturedElement)
 {
     (void)pPrevCapturedElement;
 
@@ -168,7 +168,7 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* 
     dred_textbox_on_capture_keyboard(pTextBox, pPrevCapturedElement);
 }
 
-void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, drgui_element* pNextCapturedElement)
+void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, dred_element* pNextCapturedElement)
 {
     (void)pNextCapturedElement;
 
@@ -205,7 +205,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, drgui_element* 
     dred_textbox_on_release_keyboard(pTextBox, pNextCapturedElement);
 }
 
-void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)
+void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, dred_key key, int stateFlags)
 {
     (void)stateFlags;
 
@@ -223,12 +223,12 @@ void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, drgui_key key, int stat
 
     switch (key)
     {
-        case DRGUI_ESCAPE:
+        case DRED_GUI_ESCAPE:
         {
             dred_unfocus_command_bar(pDred);
         } break;
 
-        case DRGUI_ARROW_UP:
+        case DRED_GUI_ARROW_UP:
         {
             if (pData->iPrevCommand == 0) {
                 // The working command needs to be saved so it can be restored later if the user pressed the down key.
@@ -247,7 +247,7 @@ void dred_cmdbar_tb__on_key_down(dred_textbox* pTextBox, drgui_key key, int stat
             }
         } break;
 
-        case DRGUI_ARROW_DOWN:
+        case DRED_GUI_ARROW_DOWN:
         {
             if (pData->iPrevCommand > 0) {
                 if (dred_cmdbar_set_text_to_previous_command(pCmdBar, pData->iPrevCommand - 1)) {

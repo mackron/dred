@@ -115,7 +115,7 @@ void dred_button__on_mouse_button_down(dred_button* pButton, int mouseButton, in
         return;
     }
 
-    if (mouseButton == DRGUI_MOUSE_BUTTON_LEFT) {
+    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
         if (!drgui_has_mouse_capture(pButton)) {
             drgui_capture_mouse(pButton);
 
@@ -136,7 +136,7 @@ void dred_button__on_mouse_button_up(dred_button* pButton, int mouseButton, int 
         return;
     }
 
-    if (mouseButton == DRGUI_MOUSE_BUTTON_LEFT) {
+    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
         if (drgui_has_mouse_capture(pButton)) {
             drgui_release_mouse(pButton->pContext);
 

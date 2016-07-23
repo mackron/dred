@@ -12,7 +12,7 @@ struct dred_context
     dr2d_context* pDrawingContext;
 
     // The main GUI context.
-    drgui_context* pGUI;
+    dred_gui* pGUI;
 
 
     // The font library. This just manages fonts to make it easier to avoid loading duplicate fonts.
@@ -148,7 +148,7 @@ dred_tab* dred_get_focused_tab(dred_context* pDred);
 dred_editor* dred_get_focused_editor(dred_context* pDred);
 
 // Retrieves the element with the keyboard capture, if any.
-drgui_element* dred_get_element_with_keyboard_capture(dred_context* pDred);
+dred_element* dred_get_element_with_keyboard_capture(dred_context* pDred);
 
 
 // Retrieves the control type of the editor to use for a file with the extension of the given file path.

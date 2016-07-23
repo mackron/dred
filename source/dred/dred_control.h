@@ -3,9 +3,9 @@
 // Controls are the base GUI element used in dred. Whenever a GUI element is required, it'll be based
 // off this object.
 //
-// A dred_control is a drgui_element with dred-specific functionality.
+// A dred_control is a dred_element with dred-specific functionality.
 
-typedef drgui_element dred_control;
+typedef dred_element dred_control;
 
 
 // dred_control_create()

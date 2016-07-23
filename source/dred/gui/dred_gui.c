@@ -7,8 +7,8 @@
 #include <float.h>
 #include <math.h>
 
-#ifndef DRGUI_PRIVATE
-#define DRGUI_PRIVATE static
+#ifndef DRED_GUI_PRIVATE
+#define DRED_GUI_PRIVATE static
 #endif
 
 /////////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ int drgui__strncpy_s(char* dst, size_t dstSizeInBytes, const char* src, size_t c
 ///     processing and an element is deleted, we want to delay it's deletion until the end of the event processing.
 ///     @par
 ///     Use drgui_end_inbound_event() to decrement the counter.
-void drgui_begin_inbound_event(drgui_context* pContext);
+void drgui_begin_inbound_event(dred_gui* pContext);
 
 /// Decrements the inbound event counter.
 ///
@@ -113,14 +113,14 @@ void drgui_begin_inbound_event(drgui_context* pContext);
 ///     This is called from every drgui_post_inbound_event_*() function.
 ///     @par
 ///     When the internal counter reaches zero, deleted elements will be garbage collected.
-void drgui_end_inbound_event(drgui_context* pContext);
+void drgui_end_inbound_event(dred_gui* pContext);
 
 /// Determines whether or not inbound events are being processed.
 ///
 /// @remarks
 ///     This is used to determine whether or not an element can be deleted immediately or should be garbage collected
 ///     at the end of event processing.
-bool drgui_is_handling_inbound_event(const drgui_context* pContext);
+bool drgui_is_handling_inbound_event(const dred_gui* pContext);
 
 
 /// Increments the outbound event counter.
@@ -131,133 +131,133 @@ bool drgui_is_handling_inbound_event(const drgui_context* pContext);
 ///     @par
 ///     This will return false if the given element has been marked as dead, or if there is some other reason it should
 ///     not be receiving events.
-bool drgui_begin_outbound_event(drgui_element* pElement);
+bool drgui_begin_outbound_event(dred_element* pElement);
 
 /// Decrements the outbound event counter.
-void drgui_end_outbound_event(drgui_element* pElement);
+void drgui_end_outbound_event(dred_element* pElement);
 
 /// Determines whether or not and outbound event is being processed.
-bool drgui_is_handling_outbound_event(drgui_context* pContext);
+bool drgui_is_handling_outbound_event(dred_gui* pContext);
 
 
 /// Marks the given element as dead.
-void drgui_mark_element_as_dead(drgui_element* pElement);
+void drgui_mark_element_as_dead(dred_element* pElement);
 
 /// Determines whether or not the given element is marked as dead.
-bool drgui_is_element_marked_as_dead(const drgui_element* pElement);
+bool drgui_is_element_marked_as_dead(const dred_element* pElement);
 
 /// Deletes every element that has been marked as dead.
-void drgui_delete_elements_marked_as_dead(drgui_context* pContext);
+void drgui_delete_elements_marked_as_dead(dred_gui* pContext);
 
 
 /// Marks the given context as deleted.
-void drgui_mark_context_as_dead(drgui_context* pContext);
+void drgui_mark_context_as_dead(dred_gui* pContext);
 
 /// Determines whether or not the given context is marked as dead.
-bool drgui_is_context_marked_as_dead(const drgui_context* pContext);
+bool drgui_is_context_marked_as_dead(const dred_gui* pContext);
 
 
 /// Deletes the given context for real.
 ///
 /// If a context is deleted during the processing of an inbound event it will not be deleting immediately - this
 /// will delete the context for real.
-void drgui_delete_context_for_real(drgui_context* pContext);
+void drgui_delete_context_for_real(dred_gui* pContext);
 
 /// Deletes the given element for real.
 ///
 /// Sometimes an element will not be deleted straight away but instead just marked as dead. We use this to delete
 /// the given element for real.
-void drgui_delete_element_for_real(drgui_element* pElement);
+void drgui_delete_element_for_real(dred_element* pElement);
 
 
 /// Orphans the given element without triggering a redraw of the parent nor the child.
-void drgui_detach_without_redraw(drgui_element* pChildElement);
+void drgui_detach_without_redraw(dred_element* pChildElement);
 
 /// Appends the given element without first detaching it from the old parent, nor does it post a redraw.
-void drgui_append_without_detach_or_redraw(drgui_element* pChildElement, drgui_element* pParentElement);
+void drgui_append_without_detach_or_redraw(dred_element* pChildElement, dred_element* pParentElement);
 
 /// Appends the given element without first detaching it from the old parent.
-void drgui_append_without_detach(drgui_element* pChildElement, drgui_element* pParentElement);
+void drgui_append_without_detach(dred_element* pChildElement, dred_element* pParentElement);
 
 /// Prepends the given element without first detaching it from the old parent, nor does it post a redraw.
-void drgui_prepend_without_detach_or_redraw(drgui_element* pChildElement, drgui_element* pParentElement);
+void drgui_prepend_without_detach_or_redraw(dred_element* pChildElement, dred_element* pParentElement);
 
 /// Prepends the given element without first detaching it from the old parent.
-void drgui_prepend_without_detach(drgui_element* pChildElement, drgui_element* pParentElement);
+void drgui_prepend_without_detach(dred_element* pChildElement, dred_element* pParentElement);
 
 /// Appends an element to another as it's sibling, but does not detach it from the previous parent nor trigger a redraw.
-void drgui_append_sibling_without_detach_or_redraw(drgui_element* pElementToAppend, drgui_element* pElementToAppendTo);
+void drgui_append_sibling_without_detach_or_redraw(dred_element* pElementToAppend, dred_element* pElementToAppendTo);
 
 /// Appends an element to another as it's sibling, but does not detach it from the previous parent.
-void drgui_append_sibling_without_detach(drgui_element* pElementToAppend, drgui_element* pElementToAppendTo);
+void drgui_append_sibling_without_detach(dred_element* pElementToAppend, dred_element* pElementToAppendTo);
 
 /// Prepends an element to another as it's sibling, but does not detach it from the previous parent nor trigger a redraw.
-void drgui_prepend_sibling_without_detach_or_redraw(drgui_element* pElementToPrepend, drgui_element* pElementToPrependTo);
+void drgui_prepend_sibling_without_detach_or_redraw(dred_element* pElementToPrepend, dred_element* pElementToPrependTo);
 
 /// Prepends an element to another as it's sibling, but does not detach it from the previous parent.
-void drgui_prepend_sibling_without_detach(drgui_element* pElementToPrepend, drgui_element* pElementToPrependTo);
+void drgui_prepend_sibling_without_detach(dred_element* pElementToPrepend, dred_element* pElementToPrependTo);
 
 
 /// Begins accumulating an invalidation rectangle.
-void drgui_begin_auto_dirty(drgui_element* pElement);
+void drgui_begin_auto_dirty(dred_element* pElement);
 
 /// Ends accumulating the invalidation rectangle and posts on_dirty is auto-dirty is enabled.
-void drgui_end_auto_dirty(drgui_element* pElement);
+void drgui_end_auto_dirty(dred_element* pElement);
 
 /// Marks the given region of the given top level element as dirty, but only if automatic dirtying is enabled.
 ///
 /// @remarks
 ///     This is equivalent to drgui_begin_auto_dirty() immediately followed by drgui_end_auto_dirty().
-void drgui_auto_dirty(drgui_element* pTopLevelElement, dred_rect rect);
+void drgui_auto_dirty(dred_element* pTopLevelElement, dred_rect rect);
 
 
 /// Recursively applies the given offset to the absolute positions of the children of the given element.
 ///
 /// @remarks
 ///     This is called when the absolute position of an element is changed.
-void drgui_apply_offset_to_children_recursive(drgui_element* pParentElement, float offsetX, float offsetY);
+void drgui_apply_offset_to_children_recursive(dred_element* pParentElement, float offsetX, float offsetY);
 
 
 /// The function to call when the mouse may have entered into a new element.
-void drgui_update_mouse_enter_and_leave_state(drgui_context* pContext, drgui_element* pNewElementUnderMouse);
+void drgui_update_mouse_enter_and_leave_state(dred_gui* pContext, dred_element* pNewElementUnderMouse);
 
 
 /// Functions for posting outbound events.
-void drgui_post_outbound_event_move(drgui_element* pElement, float newRelativePosX, float newRelativePosY);
-void drgui_post_outbound_event_size(drgui_element* pElement, float newWidth, float newHeight);
-void drgui_post_outbound_event_mouse_enter(drgui_element* pElement);
-void drgui_post_outbound_event_mouse_leave(drgui_element* pElement);
-void drgui_post_outbound_event_mouse_move(drgui_element* pElement, int relativeMousePosX, int relativeMousePosY, int stateFlags);
-void drgui_post_outbound_event_mouse_button_down(drgui_element* pElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
-void drgui_post_outbound_event_mouse_button_up(drgui_element* pElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
-void drgui_post_outbound_event_mouse_button_dblclick(drgui_element* pElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
-void drgui_post_outbound_event_mouse_wheel(drgui_element* pElement, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
-void drgui_post_outbound_event_key_down(drgui_element* pElement, drgui_key key, int stateFlags);
-void drgui_post_outbound_event_key_up(drgui_element* pElement, drgui_key key, int stateFlags);
-void drgui_post_outbound_event_printable_key_down(drgui_element* pElement, unsigned int character, int stateFlags);
-void drgui_post_outbound_event_dirty(drgui_element* pElement, dred_rect relativeRect);
-void drgui_post_outbound_event_dirty_global(drgui_element* pElement, dred_rect relativeRect);
-void drgui_post_outbound_event_capture_mouse(drgui_element* pElement);
-void drgui_post_outbound_event_capture_mouse_global(drgui_element* pElement);
-void drgui_post_outbound_event_release_mouse(drgui_element* pElement);
-void drgui_post_outbound_event_release_mouse_global(drgui_element* pElement);
-void drgui_post_outbound_event_capture_keyboard(drgui_element* pElement, drgui_element* pPrevCapturedElement);
-void drgui_post_outbound_event_capture_keyboard_global(drgui_element* pElement, drgui_element* pPrevCapturedElement);
-void drgui_post_outbound_event_release_keyboard(drgui_element* pElement, drgui_element* pNewCapturedElement);
-void drgui_post_outbound_event_release_keyboard_global(drgui_element* pElement, drgui_element* pNewCapturedElement);
+void drgui_post_outbound_event_move(dred_element* pElement, float newRelativePosX, float newRelativePosY);
+void drgui_post_outbound_event_size(dred_element* pElement, float newWidth, float newHeight);
+void drgui_post_outbound_event_mouse_enter(dred_element* pElement);
+void drgui_post_outbound_event_mouse_leave(dred_element* pElement);
+void drgui_post_outbound_event_mouse_move(dred_element* pElement, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void drgui_post_outbound_event_mouse_button_down(dred_element* pElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void drgui_post_outbound_event_mouse_button_up(dred_element* pElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void drgui_post_outbound_event_mouse_button_dblclick(dred_element* pElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void drgui_post_outbound_event_mouse_wheel(dred_element* pElement, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void drgui_post_outbound_event_key_down(dred_element* pElement, dred_key key, int stateFlags);
+void drgui_post_outbound_event_key_up(dred_element* pElement, dred_key key, int stateFlags);
+void drgui_post_outbound_event_printable_key_down(dred_element* pElement, unsigned int character, int stateFlags);
+void drgui_post_outbound_event_dirty(dred_element* pElement, dred_rect relativeRect);
+void drgui_post_outbound_event_dirty_global(dred_element* pElement, dred_rect relativeRect);
+void drgui_post_outbound_event_capture_mouse(dred_element* pElement);
+void drgui_post_outbound_event_capture_mouse_global(dred_element* pElement);
+void drgui_post_outbound_event_release_mouse(dred_element* pElement);
+void drgui_post_outbound_event_release_mouse_global(dred_element* pElement);
+void drgui_post_outbound_event_capture_keyboard(dred_element* pElement, dred_element* pPrevCapturedElement);
+void drgui_post_outbound_event_capture_keyboard_global(dred_element* pElement, dred_element* pPrevCapturedElement);
+void drgui_post_outbound_event_release_keyboard(dred_element* pElement, dred_element* pNewCapturedElement);
+void drgui_post_outbound_event_release_keyboard_global(dred_element* pElement, dred_element* pNewCapturedElement);
 
 /// Posts a log message.
-void drgui_log(drgui_context* pContext, const char* message);
+void drgui_log(dred_gui* pContext, const char* message);
 
 
-void drgui_begin_inbound_event(drgui_context* pContext)
+void drgui_begin_inbound_event(dred_gui* pContext)
 {
     assert(pContext != NULL);
 
     pContext->inboundEventCounter += 1;
 }
 
-void drgui_end_inbound_event(drgui_context* pContext)
+void drgui_end_inbound_event(dred_gui* pContext)
 {
     assert(pContext != NULL);
     assert(pContext->inboundEventCounter > 0);
@@ -280,7 +280,7 @@ void drgui_end_inbound_event(drgui_context* pContext)
     }
 }
 
-bool drgui_is_handling_inbound_event(const drgui_context* pContext)
+bool drgui_is_handling_inbound_event(const dred_gui* pContext)
 {
     assert(pContext != NULL);
 
@@ -289,7 +289,7 @@ bool drgui_is_handling_inbound_event(const drgui_context* pContext)
 
 
 
-bool drgui_begin_outbound_event(drgui_element* pElement)
+bool drgui_begin_outbound_event(dred_element* pElement)
 {
     assert(pElement != NULL);
     assert(pElement->pContext != NULL);
@@ -308,7 +308,7 @@ bool drgui_begin_outbound_event(drgui_element* pElement)
     return true;
 }
 
-void drgui_end_outbound_event(drgui_element* pElement)
+void drgui_end_outbound_event(dred_element* pElement)
 {
     assert(pElement != NULL);
     assert(pElement->pContext != NULL);
@@ -317,14 +317,14 @@ void drgui_end_outbound_event(drgui_element* pElement)
     pElement->pContext->outboundEventLockCounter -= 1;
 }
 
-bool drgui_is_handling_outbound_event(drgui_context* pContext)
+bool drgui_is_handling_outbound_event(dred_gui* pContext)
 {
     assert(pContext != NULL);
     return pContext->outboundEventLockCounter > 0;
 }
 
 
-void drgui_mark_element_as_dead(drgui_element* pElement)
+void drgui_mark_element_as_dead(dred_element* pElement)
 {
     assert(pElement != NULL);
     assert(pElement->pContext != NULL);
@@ -339,7 +339,7 @@ void drgui_mark_element_as_dead(drgui_element* pElement)
     pElement->pContext->pFirstDeadElement = pElement;
 }
 
-bool drgui_is_element_marked_as_dead(const drgui_element* pElement)
+bool drgui_is_element_marked_as_dead(const dred_element* pElement)
 {
     if (pElement == NULL) {
         return false;
@@ -348,13 +348,13 @@ bool drgui_is_element_marked_as_dead(const drgui_element* pElement)
     return (pElement->flags & IS_ELEMENT_DEAD) != 0;
 }
 
-void drgui_delete_elements_marked_as_dead(drgui_context* pContext)
+void drgui_delete_elements_marked_as_dead(dred_gui* pContext)
 {
     assert(pContext != NULL);
 
     while (pContext->pFirstDeadElement != NULL)
     {
-        drgui_element* pDeadElement = pContext->pFirstDeadElement;
+        dred_element* pDeadElement = pContext->pFirstDeadElement;
         pContext->pFirstDeadElement = pContext->pFirstDeadElement->pNextDeadElement;
 
         drgui_delete_element_for_real(pDeadElement);
@@ -362,7 +362,7 @@ void drgui_delete_elements_marked_as_dead(drgui_context* pContext)
 }
 
 
-void drgui_mark_context_as_dead(drgui_context* pContext)
+void drgui_mark_context_as_dead(dred_gui* pContext)
 {
     assert(pContext != NULL);
     assert(!drgui_is_context_marked_as_dead(pContext));
@@ -370,7 +370,7 @@ void drgui_mark_context_as_dead(drgui_context* pContext)
     pContext->flags |= IS_CONTEXT_DEAD;
 }
 
-bool drgui_is_context_marked_as_dead(const drgui_context* pContext)
+bool drgui_is_context_marked_as_dead(const dred_gui* pContext)
 {
     assert(pContext != NULL);
 
@@ -379,7 +379,7 @@ bool drgui_is_context_marked_as_dead(const drgui_context* pContext)
 
 
 
-void drgui_delete_context_for_real(drgui_context* pContext)
+void drgui_delete_context_for_real(dred_gui* pContext)
 {
     assert(pContext != NULL);
 
@@ -389,18 +389,18 @@ void drgui_delete_context_for_real(drgui_context* pContext)
     free(pContext);
 }
 
-void drgui_delete_element_for_real(drgui_element* pElementToDelete)
+void drgui_delete_element_for_real(dred_element* pElementToDelete)
 {
     assert(pElementToDelete != NULL);
 
-    drgui_context* pContext = pElementToDelete->pContext;
+    dred_gui* pContext = pElementToDelete->pContext;
 
     // If the element is marked as dead
     if (drgui_is_element_marked_as_dead(pElementToDelete)) {
         if (pContext->pFirstDeadElement == pElementToDelete) {
             pContext->pFirstDeadElement = pContext->pFirstDeadElement->pNextDeadElement;
         } else {
-            drgui_element* pPrevDeadElement = pContext->pFirstDeadElement;
+            dred_element* pPrevDeadElement = pContext->pFirstDeadElement;
             while (pPrevDeadElement != NULL) {
                 if (pPrevDeadElement->pNextDeadElement == pElementToDelete) {
                     break;
@@ -419,7 +419,7 @@ void drgui_delete_element_for_real(drgui_element* pElementToDelete)
 }
 
 
-void drgui_detach_without_redraw(drgui_element* pElement)
+void drgui_detach_without_redraw(dred_element* pElement)
 {
     if (pElement->pParent != NULL) {
         if (pElement->pParent->pFirstChild == pElement) {
@@ -445,7 +445,7 @@ void drgui_detach_without_redraw(drgui_element* pElement)
     pElement->pNextSibling = NULL;
 }
 
-void drgui_append_without_detach_or_redraw(drgui_element* pChildElement, drgui_element* pParentElement)
+void drgui_append_without_detach_or_redraw(dred_element* pChildElement, dred_element* pParentElement)
 {
     pChildElement->pParent = pParentElement;
     if (pChildElement->pParent != NULL) {
@@ -462,13 +462,13 @@ void drgui_append_without_detach_or_redraw(drgui_element* pChildElement, drgui_e
     }
 }
 
-void drgui_append_without_detach(drgui_element* pChildElement, drgui_element* pParentElement)
+void drgui_append_without_detach(dred_element* pChildElement, dred_element* pParentElement)
 {
     drgui_append_without_detach_or_redraw(pChildElement, pParentElement);
     drgui_auto_dirty(pChildElement, drgui_make_rect(0, 0, pChildElement->width, pChildElement->height));
 }
 
-void drgui_prepend_without_detach_or_redraw(drgui_element* pChildElement, drgui_element* pParentElement)
+void drgui_prepend_without_detach_or_redraw(dred_element* pChildElement, dred_element* pParentElement)
 {
     pChildElement->pParent = pParentElement;
     if (pChildElement->pParent != NULL) {
@@ -485,13 +485,13 @@ void drgui_prepend_without_detach_or_redraw(drgui_element* pChildElement, drgui_
     }
 }
 
-void drgui_prepend_without_detach(drgui_element* pChildElement, drgui_element* pParentElement)
+void drgui_prepend_without_detach(dred_element* pChildElement, dred_element* pParentElement)
 {
     drgui_prepend_without_detach_or_redraw(pChildElement, pParentElement);
     drgui_auto_dirty(pChildElement, drgui_make_rect(0, 0, pChildElement->width, pChildElement->height));
 }
 
-void drgui_append_sibling_without_detach_or_redraw(drgui_element* pElementToAppend, drgui_element* pElementToAppendTo)
+void drgui_append_sibling_without_detach_or_redraw(dred_element* pElementToAppend, dred_element* pElementToAppendTo)
 {
     assert(pElementToAppend   != NULL);
     assert(pElementToAppendTo != NULL);
@@ -511,13 +511,13 @@ void drgui_append_sibling_without_detach_or_redraw(drgui_element* pElementToAppe
     }
 }
 
-void drgui_append_sibling_without_detach(drgui_element* pElementToAppend, drgui_element* pElementToAppendTo)
+void drgui_append_sibling_without_detach(dred_element* pElementToAppend, dred_element* pElementToAppendTo)
 {
     drgui_append_sibling_without_detach_or_redraw(pElementToAppend, pElementToAppendTo);
     drgui_auto_dirty(pElementToAppend, drgui_make_rect(0, 0, pElementToAppend->width, pElementToAppend->height));
 }
 
-void drgui_prepend_sibling_without_detach_or_redraw(drgui_element* pElementToPrepend, drgui_element* pElementToPrependTo)
+void drgui_prepend_sibling_without_detach_or_redraw(dred_element* pElementToPrepend, dred_element* pElementToPrependTo)
 {
     assert(pElementToPrepend   != NULL);
     assert(pElementToPrependTo != NULL);
@@ -537,14 +537,14 @@ void drgui_prepend_sibling_without_detach_or_redraw(drgui_element* pElementToPre
     }
 }
 
-void drgui_prepend_sibling_without_detach(drgui_element* pElementToPrepend, drgui_element* pElementToPrependTo)
+void drgui_prepend_sibling_without_detach(dred_element* pElementToPrepend, dred_element* pElementToPrependTo)
 {
     drgui_prepend_sibling_without_detach_or_redraw(pElementToPrepend, pElementToPrependTo);
     drgui_auto_dirty(pElementToPrepend, drgui_make_rect(0, 0, pElementToPrepend->width, pElementToPrepend->height));
 }
 
 
-void drgui_begin_auto_dirty(drgui_element* pElement)
+void drgui_begin_auto_dirty(dred_element* pElement)
 {
     assert(pElement           != NULL);
     assert(pElement->pContext != NULL);
@@ -554,11 +554,11 @@ void drgui_begin_auto_dirty(drgui_element* pElement)
     }
 }
 
-void drgui_end_auto_dirty(drgui_element* pElement)
+void drgui_end_auto_dirty(dred_element* pElement)
 {
     assert(pElement != NULL);
 
-    drgui_context* pContext = pElement->pContext;
+    dred_gui* pContext = pElement->pContext;
     assert(pContext != NULL);
 
     if (drgui_is_auto_dirty_enabled(pContext)) {
@@ -566,7 +566,7 @@ void drgui_end_auto_dirty(drgui_element* pElement)
     }
 }
 
-void drgui_auto_dirty(drgui_element* pElement, dred_rect relativeRect)
+void drgui_auto_dirty(dred_element* pElement, dred_rect relativeRect)
 {
     assert(pElement != NULL);
     assert(pElement->pContext != NULL);
@@ -577,7 +577,7 @@ void drgui_auto_dirty(drgui_element* pElement, dred_rect relativeRect)
 }
 
 
-void drgui__change_cursor(drgui_element* pElement, drgui_cursor_type cursor)
+void drgui__change_cursor(dred_element* pElement, dred_cursor_type cursor)
 {
     if (pElement == NULL || pElement->pContext == NULL) {
         return;
@@ -592,11 +592,11 @@ void drgui__change_cursor(drgui_element* pElement, drgui_cursor_type cursor)
 
 
 
-void drgui_apply_offset_to_children_recursive(drgui_element* pParentElement, float offsetX, float offsetY)
+void drgui_apply_offset_to_children_recursive(dred_element* pParentElement, float offsetX, float offsetY)
 {
     assert(pParentElement != NULL);
 
-    for (drgui_element* pChild = pParentElement->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling)
+    for (dred_element* pChild = pParentElement->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling)
     {
         drgui_begin_auto_dirty(pParentElement);
         {
@@ -610,11 +610,11 @@ void drgui_apply_offset_to_children_recursive(drgui_element* pParentElement, flo
     }
 }
 
-DRGUI_PRIVATE void drgui_post_on_mouse_leave_recursive(drgui_context* pContext, drgui_element* pNewElementUnderMouse, drgui_element* pOldElementUnderMouse)
+DRED_GUI_PRIVATE void drgui_post_on_mouse_leave_recursive(dred_gui* pContext, dred_element* pNewElementUnderMouse, dred_element* pOldElementUnderMouse)
 {
     (void)pContext;
 
-    drgui_element* pOldAncestor = pOldElementUnderMouse;
+    dred_element* pOldAncestor = pOldElementUnderMouse;
     while (pOldAncestor != NULL)
     {
         bool isOldElementUnderMouse = pNewElementUnderMouse == pOldAncestor || drgui_is_ancestor(pOldAncestor, pNewElementUnderMouse);
@@ -627,7 +627,7 @@ DRGUI_PRIVATE void drgui_post_on_mouse_leave_recursive(drgui_context* pContext, 
     }
 }
 
-DRGUI_PRIVATE void drgui_post_on_mouse_enter_recursive(drgui_context* pContext, drgui_element* pNewElementUnderMouse, drgui_element* pOldElementUnderMouse)
+DRED_GUI_PRIVATE void drgui_post_on_mouse_enter_recursive(dred_gui* pContext, dred_element* pNewElementUnderMouse, dred_element* pOldElementUnderMouse)
 {
     if (pNewElementUnderMouse == NULL) {
         return;
@@ -645,13 +645,13 @@ DRGUI_PRIVATE void drgui_post_on_mouse_enter_recursive(drgui_context* pContext, 
     }
 }
 
-void drgui_update_mouse_enter_and_leave_state(drgui_context* pContext, drgui_element* pNewElementUnderMouse)
+void drgui_update_mouse_enter_and_leave_state(dred_gui* pContext, dred_element* pNewElementUnderMouse)
 {
     if (pContext == NULL) {
         return;
     }
 
-    drgui_element* pOldElementUnderMouse = pContext->pElementUnderMouse;
+    dred_element* pOldElementUnderMouse = pContext->pElementUnderMouse;
     if (pOldElementUnderMouse != pNewElementUnderMouse)
     {
         // We don't change the enter and leave state if an element is capturing the mouse.
@@ -659,7 +659,7 @@ void drgui_update_mouse_enter_and_leave_state(drgui_context* pContext, drgui_ele
         {
             pContext->pElementUnderMouse = pNewElementUnderMouse;
 
-            drgui_cursor_type newCursor = drgui_cursor_default;
+            dred_cursor_type newCursor = dred_cursor_default;
             if (pNewElementUnderMouse != NULL) {
                 newCursor = pNewElementUnderMouse->cursor;
             }
@@ -684,7 +684,7 @@ void drgui_update_mouse_enter_and_leave_state(drgui_context* pContext, drgui_ele
 }
 
 
-void drgui_post_outbound_event_move(drgui_element* pElement, float newRelativePosX, float newRelativePosY)
+void drgui_post_outbound_event_move(dred_element* pElement, float newRelativePosX, float newRelativePosY)
 {
     if (drgui_begin_outbound_event(pElement))
     {
@@ -696,7 +696,7 @@ void drgui_post_outbound_event_move(drgui_element* pElement, float newRelativePo
     }
 }
 
-void drgui_post_outbound_event_size(drgui_element* pElement, float newWidth, float newHeight)
+void drgui_post_outbound_event_size(dred_element* pElement, float newWidth, float newHeight)
 {
     if (drgui_begin_outbound_event(pElement))
     {
@@ -708,7 +708,7 @@ void drgui_post_outbound_event_size(drgui_element* pElement, float newWidth, flo
     }
 }
 
-void drgui_post_outbound_event_mouse_enter(drgui_element* pElement)
+void drgui_post_outbound_event_mouse_enter(dred_element* pElement)
 {
     if (drgui_begin_outbound_event(pElement))
     {
@@ -720,7 +720,7 @@ void drgui_post_outbound_event_mouse_enter(drgui_element* pElement)
     }
 }
 
-void drgui_post_outbound_event_mouse_leave(drgui_element* pElement)
+void drgui_post_outbound_event_mouse_leave(dred_element* pElement)
 {
     if (drgui_begin_outbound_event(pElement))
     {
@@ -732,7 +732,7 @@ void drgui_post_outbound_event_mouse_leave(drgui_element* pElement)
     }
 }
 
-void drgui_post_outbound_event_mouse_move(drgui_element* pElement, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void drgui_post_outbound_event_mouse_move(dred_element* pElement, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     if (drgui_begin_outbound_event(pElement))
 {
@@ -744,7 +744,7 @@ void drgui_post_outbound_event_mouse_move(drgui_element* pElement, int relativeM
     }
 }
 
-void drgui_post_outbound_event_mouse_button_down(drgui_element* pElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void drgui_post_outbound_event_mouse_button_down(dred_element* pElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     if (drgui_begin_outbound_event(pElement))
     {
@@ -756,7 +756,7 @@ void drgui_post_outbound_event_mouse_button_down(drgui_element* pElement, int mo
     }
 }
 
-void drgui_post_outbound_event_mouse_button_up(drgui_element* pElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void drgui_post_outbound_event_mouse_button_up(dred_element* pElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     if (drgui_begin_outbound_event(pElement))
     {
@@ -768,7 +768,7 @@ void drgui_post_outbound_event_mouse_button_up(drgui_element* pElement, int mous
     }
 }
 
-void drgui_post_outbound_event_mouse_button_dblclick(drgui_element* pElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void drgui_post_outbound_event_mouse_button_dblclick(dred_element* pElement, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     if (drgui_begin_outbound_event(pElement))
     {
@@ -780,7 +780,7 @@ void drgui_post_outbound_event_mouse_button_dblclick(drgui_element* pElement, in
     }
 }
 
-void drgui_post_outbound_event_mouse_wheel(drgui_element* pElement, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void drgui_post_outbound_event_mouse_wheel(dred_element* pElement, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     if (drgui_begin_outbound_event(pElement))
     {
@@ -792,7 +792,7 @@ void drgui_post_outbound_event_mouse_wheel(drgui_element* pElement, int delta, i
     }
 }
 
-void drgui_post_outbound_event_key_down(drgui_element* pElement, drgui_key key, int stateFlags)
+void drgui_post_outbound_event_key_down(dred_element* pElement, dred_key key, int stateFlags)
 {
     if (drgui_begin_outbound_event(pElement))
     {
@@ -804,7 +804,7 @@ void drgui_post_outbound_event_key_down(drgui_element* pElement, drgui_key key, 
     }
 }
 
-void drgui_post_outbound_event_key_up(drgui_element* pElement, drgui_key key, int stateFlags)
+void drgui_post_outbound_event_key_up(dred_element* pElement, dred_key key, int stateFlags)
 {
     if (drgui_begin_outbound_event(pElement))
     {
@@ -816,7 +816,7 @@ void drgui_post_outbound_event_key_up(drgui_element* pElement, drgui_key key, in
     }
 }
 
-void drgui_post_outbound_event_printable_key_down(drgui_element* pElement, unsigned int character, int stateFlags)
+void drgui_post_outbound_event_printable_key_down(dred_element* pElement, unsigned int character, int stateFlags)
 {
     if (drgui_begin_outbound_event(pElement))
     {
@@ -829,7 +829,7 @@ void drgui_post_outbound_event_printable_key_down(drgui_element* pElement, unsig
 }
 
 
-void drgui_post_outbound_event_dirty(drgui_element* pElement, dred_rect relativeRect)
+void drgui_post_outbound_event_dirty(dred_element* pElement, dred_rect relativeRect)
 {
     if (pElement != NULL)
     {
@@ -839,7 +839,7 @@ void drgui_post_outbound_event_dirty(drgui_element* pElement, dred_rect relative
     }
 }
 
-void drgui_post_outbound_event_dirty_global(drgui_element* pElement, dred_rect relativeRect)
+void drgui_post_outbound_event_dirty_global(dred_element* pElement, dred_rect relativeRect)
 {
     if (pElement != NULL && pElement->pContext != NULL)
     {
@@ -849,7 +849,7 @@ void drgui_post_outbound_event_dirty_global(drgui_element* pElement, dred_rect r
     }
 }
 
-void drgui_post_outbound_event_capture_mouse(drgui_element* pElement)
+void drgui_post_outbound_event_capture_mouse(dred_element* pElement)
 {
     if (pElement != NULL)
     {
@@ -859,7 +859,7 @@ void drgui_post_outbound_event_capture_mouse(drgui_element* pElement)
     }
 }
 
-void drgui_post_outbound_event_capture_mouse_global(drgui_element* pElement)
+void drgui_post_outbound_event_capture_mouse_global(dred_element* pElement)
 {
     if (pElement != NULL && pElement->pContext != NULL)
     {
@@ -869,7 +869,7 @@ void drgui_post_outbound_event_capture_mouse_global(drgui_element* pElement)
     }
 }
 
-void drgui_post_outbound_event_release_mouse(drgui_element* pElement)
+void drgui_post_outbound_event_release_mouse(dred_element* pElement)
 {
     if (pElement != NULL)
     {
@@ -879,7 +879,7 @@ void drgui_post_outbound_event_release_mouse(drgui_element* pElement)
     }
 }
 
-void drgui_post_outbound_event_release_mouse_global(drgui_element* pElement)
+void drgui_post_outbound_event_release_mouse_global(dred_element* pElement)
 {
     if (pElement != NULL && pElement->pContext != NULL)
     {
@@ -890,7 +890,7 @@ void drgui_post_outbound_event_release_mouse_global(drgui_element* pElement)
 }
 
 
-void drgui_post_outbound_event_capture_keyboard(drgui_element* pElement, drgui_element* pPrevCapturedElement)
+void drgui_post_outbound_event_capture_keyboard(dred_element* pElement, dred_element* pPrevCapturedElement)
 {
     if (pElement != NULL)
     {
@@ -900,7 +900,7 @@ void drgui_post_outbound_event_capture_keyboard(drgui_element* pElement, drgui_e
     }
 }
 
-void drgui_post_outbound_event_capture_keyboard_global(drgui_element* pElement, drgui_element* pPrevCapturedElement)
+void drgui_post_outbound_event_capture_keyboard_global(dred_element* pElement, dred_element* pPrevCapturedElement)
 {
     if (pElement != NULL && pElement->pContext != NULL)
     {
@@ -910,7 +910,7 @@ void drgui_post_outbound_event_capture_keyboard_global(drgui_element* pElement, 
     }
 }
 
-void drgui_post_outbound_event_release_keyboard(drgui_element* pElement, drgui_element* pNewCapturedElement)
+void drgui_post_outbound_event_release_keyboard(dred_element* pElement, dred_element* pNewCapturedElement)
 {
     if (pElement != NULL)
     {
@@ -920,7 +920,7 @@ void drgui_post_outbound_event_release_keyboard(drgui_element* pElement, drgui_e
     }
 }
 
-void drgui_post_outbound_event_release_keyboard_global(drgui_element* pElement, drgui_element* pNewCapturedElement)
+void drgui_post_outbound_event_release_keyboard_global(dred_element* pElement, dred_element* pNewCapturedElement)
 {
     if (pElement != NULL && pElement->pContext != NULL)
     {
@@ -931,7 +931,7 @@ void drgui_post_outbound_event_release_keyboard_global(drgui_element* pElement, 
 }
 
 
-void drgui_log(drgui_context* pContext, const char* message)
+void drgui_log(dred_gui* pContext, const char* message)
 {
     if (pContext != NULL)
     {
@@ -948,17 +948,17 @@ void drgui_log(drgui_context* pContext, const char* message)
 //
 /////////////////////////////////////////////////////////////////
 
-drgui_context* drgui_create_context()
+dred_gui* drgui_create_context()
 {
-    drgui_context* pContext = (drgui_context*)calloc(1, sizeof(drgui_context));
+    dred_gui* pContext = (dred_gui*)calloc(1, sizeof(dred_gui));
     if (pContext != NULL) {
-        pContext->currentCursor = drgui_cursor_default;
+        pContext->currentCursor = dred_cursor_default;
     }
 
     return pContext;
 }
 
-void drgui_delete_context(drgui_context* pContext)
+void drgui_delete_context(dred_gui* pContext)
 {
     if (pContext == NULL) {
         return;
@@ -999,13 +999,13 @@ void drgui_delete_context(drgui_context* pContext)
 /////////////////////////////////////////////////////////////////
 // Events
 
-void drgui_post_inbound_event_mouse_leave(drgui_element* pTopLevelElement)
+void drgui_post_inbound_event_mouse_leave(dred_element* pTopLevelElement)
 {
     if (pTopLevelElement == NULL) {
         return;
     }
 
-    drgui_context* pContext = pTopLevelElement->pContext;
+    dred_gui* pContext = pTopLevelElement->pContext;
     if (pContext == NULL) {
         return;
     }
@@ -1018,7 +1018,7 @@ void drgui_post_inbound_event_mouse_leave(drgui_element* pTopLevelElement)
     drgui_end_inbound_event(pContext);
 }
 
-void drgui_post_inbound_event_mouse_move(drgui_element* pTopLevelElement, int mousePosX, int mousePosY, int stateFlags)
+void drgui_post_inbound_event_mouse_move(dred_element* pTopLevelElement, int mousePosX, int mousePosY, int stateFlags)
 {
     if (pTopLevelElement == NULL || pTopLevelElement->pContext == NULL) {
         return;
@@ -1037,13 +1037,13 @@ void drgui_post_inbound_event_mouse_move(drgui_element* pTopLevelElement, int mo
 
 
         // The first thing we need to do is find the new element that's sitting under the mouse.
-        drgui_element* pNewElementUnderMouse = drgui_find_element_under_point(pTopLevelElement, (float)mousePosX, (float)mousePosY);
+        dred_element* pNewElementUnderMouse = drgui_find_element_under_point(pTopLevelElement, (float)mousePosX, (float)mousePosY);
 
         // Now that we know which element is sitting under the mouse we need to check if the mouse has entered into a new element.
         drgui_update_mouse_enter_and_leave_state(pTopLevelElement->pContext, pNewElementUnderMouse);
 
 
-        drgui_element* pEventReceiver = pTopLevelElement->pContext->pElementWithMouseCapture;
+        dred_element* pEventReceiver = pTopLevelElement->pContext->pElementWithMouseCapture;
         if (pEventReceiver == NULL)
         {
             pEventReceiver = pNewElementUnderMouse;
@@ -1061,16 +1061,16 @@ void drgui_post_inbound_event_mouse_move(drgui_element* pTopLevelElement, int mo
     drgui_end_inbound_event(pTopLevelElement->pContext);
 }
 
-void drgui_post_inbound_event_mouse_button_down(drgui_element* pTopLevelElement, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+void drgui_post_inbound_event_mouse_button_down(dred_element* pTopLevelElement, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
     if (pTopLevelElement == NULL || pTopLevelElement->pContext == NULL) {
         return;
     }
 
-    drgui_context* pContext = pTopLevelElement->pContext;
+    dred_gui* pContext = pTopLevelElement->pContext;
     drgui_begin_inbound_event(pContext);
     {
-        drgui_element* pEventReceiver = pContext->pElementWithMouseCapture;
+        dred_element* pEventReceiver = pContext->pElementWithMouseCapture;
         if (pEventReceiver == NULL)
         {
             pEventReceiver = pContext->pElementUnderMouse;
@@ -1095,16 +1095,16 @@ void drgui_post_inbound_event_mouse_button_down(drgui_element* pTopLevelElement,
     drgui_end_inbound_event(pContext);
 }
 
-void drgui_post_inbound_event_mouse_button_up(drgui_element* pTopLevelElement, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+void drgui_post_inbound_event_mouse_button_up(dred_element* pTopLevelElement, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
     if (pTopLevelElement == NULL || pTopLevelElement->pContext == NULL) {
         return;
     }
 
-    drgui_context* pContext = pTopLevelElement->pContext;
+    dred_gui* pContext = pTopLevelElement->pContext;
     drgui_begin_inbound_event(pContext);
     {
-        drgui_element* pEventReceiver = pContext->pElementWithMouseCapture;
+        dred_element* pEventReceiver = pContext->pElementWithMouseCapture;
         if (pEventReceiver == NULL)
         {
             pEventReceiver = pContext->pElementUnderMouse;
@@ -1129,16 +1129,16 @@ void drgui_post_inbound_event_mouse_button_up(drgui_element* pTopLevelElement, i
     drgui_end_inbound_event(pContext);
 }
 
-void drgui_post_inbound_event_mouse_button_dblclick(drgui_element* pTopLevelElement, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+void drgui_post_inbound_event_mouse_button_dblclick(dred_element* pTopLevelElement, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
     if (pTopLevelElement == NULL || pTopLevelElement->pContext == NULL) {
         return;
     }
 
-    drgui_context* pContext = pTopLevelElement->pContext;
+    dred_gui* pContext = pTopLevelElement->pContext;
     drgui_begin_inbound_event(pContext);
     {
-        drgui_element* pEventReceiver = pContext->pElementWithMouseCapture;
+        dred_element* pEventReceiver = pContext->pElementWithMouseCapture;
         if (pEventReceiver == NULL)
         {
             pEventReceiver = pContext->pElementUnderMouse;
@@ -1163,16 +1163,16 @@ void drgui_post_inbound_event_mouse_button_dblclick(drgui_element* pTopLevelElem
     drgui_end_inbound_event(pContext);
 }
 
-void drgui_post_inbound_event_mouse_wheel(drgui_element* pTopLevelElement, int delta, int mousePosX, int mousePosY, int stateFlags)
+void drgui_post_inbound_event_mouse_wheel(dred_element* pTopLevelElement, int delta, int mousePosX, int mousePosY, int stateFlags)
 {
     if (pTopLevelElement == NULL || pTopLevelElement->pContext == NULL) {
         return;
     }
 
-    drgui_context* pContext = pTopLevelElement->pContext;
+    dred_gui* pContext = pTopLevelElement->pContext;
     drgui_begin_inbound_event(pContext);
     {
-        drgui_element* pEventReceiver = pContext->pElementWithMouseCapture;
+        dred_element* pEventReceiver = pContext->pElementWithMouseCapture;
         if (pEventReceiver == NULL)
         {
             pEventReceiver = pContext->pElementUnderMouse;
@@ -1197,7 +1197,7 @@ void drgui_post_inbound_event_mouse_wheel(drgui_element* pTopLevelElement, int d
     drgui_end_inbound_event(pContext);
 }
 
-void drgui_post_inbound_event_key_down(drgui_context* pContext, drgui_key key, int stateFlags)
+void drgui_post_inbound_event_key_down(dred_gui* pContext, dred_key key, int stateFlags)
 {
     if (pContext == NULL) {
         return;
@@ -1212,7 +1212,7 @@ void drgui_post_inbound_event_key_down(drgui_context* pContext, drgui_key key, i
     drgui_end_inbound_event(pContext);
 }
 
-void drgui_post_inbound_event_key_up(drgui_context* pContext, drgui_key key, int stateFlags)
+void drgui_post_inbound_event_key_up(dred_gui* pContext, dred_key key, int stateFlags)
 {
     if (pContext == NULL) {
         return;
@@ -1227,7 +1227,7 @@ void drgui_post_inbound_event_key_up(drgui_context* pContext, drgui_key key, int
     drgui_end_inbound_event(pContext);
 }
 
-void drgui_post_inbound_event_printable_key_down(drgui_context* pContext, unsigned int character, int stateFlags)
+void drgui_post_inbound_event_printable_key_down(dred_gui* pContext, unsigned int character, int stateFlags)
 {
     if (pContext == NULL) {
         return;
@@ -1244,56 +1244,56 @@ void drgui_post_inbound_event_printable_key_down(drgui_context* pContext, unsign
 
 
 
-void drgui_set_global_on_dirty(drgui_context * pContext, drgui_on_dirty_proc onDirty)
+void drgui_set_global_on_dirty(dred_gui * pContext, drgui_on_dirty_proc onDirty)
 {
     if (pContext != NULL) {
         pContext->onGlobalDirty = onDirty;
     }
 }
 
-void drgui_set_global_on_capture_mouse(drgui_context* pContext, drgui_on_capture_mouse_proc onCaptureMouse)
+void drgui_set_global_on_capture_mouse(dred_gui* pContext, drgui_on_capture_mouse_proc onCaptureMouse)
 {
     if (pContext != NULL) {
         pContext->onGlobalCaptureMouse = onCaptureMouse;
     }
 }
 
-void drgui_set_global_on_release_mouse(drgui_context* pContext, drgui_on_release_mouse_proc onReleaseMouse)
+void drgui_set_global_on_release_mouse(dred_gui* pContext, drgui_on_release_mouse_proc onReleaseMouse)
 {
     if (pContext != NULL) {
         pContext->onGlobalReleaseMouse = onReleaseMouse;
     }
 }
 
-void drgui_set_global_on_capture_keyboard(drgui_context* pContext, drgui_on_capture_keyboard_proc onCaptureKeyboard)
+void drgui_set_global_on_capture_keyboard(dred_gui* pContext, drgui_on_capture_keyboard_proc onCaptureKeyboard)
 {
     if (pContext != NULL) {
         pContext->onGlobalCaptureKeyboard = onCaptureKeyboard;
     }
 }
 
-void drgui_set_global_on_release_keyboard(drgui_context* pContext, drgui_on_capture_keyboard_proc onReleaseKeyboard)
+void drgui_set_global_on_release_keyboard(dred_gui* pContext, drgui_on_capture_keyboard_proc onReleaseKeyboard)
 {
     if (pContext != NULL) {
         pContext->onGlobalReleaseKeyboard = onReleaseKeyboard;
     }
 }
 
-void drgui_set_global_on_change_cursor(drgui_context* pContext, drgui_on_change_cursor_proc onChangeCursor)
+void drgui_set_global_on_change_cursor(dred_gui* pContext, drgui_on_change_cursor_proc onChangeCursor)
 {
     if (pContext != NULL) {
         pContext->onChangeCursor = onChangeCursor;
     }
 }
 
-void drgui_set_on_delete_element(drgui_context* pContext, drgui_on_delete_element_proc onDeleteElement)
+void drgui_set_on_delete_element(dred_gui* pContext, drgui_on_delete_element_proc onDeleteElement)
 {
     if (pContext != NULL) {
         pContext->onDeleteElement = onDeleteElement;
     }
 }
 
-void drgui_set_on_log(drgui_context* pContext, drgui_on_log onLog)
+void drgui_set_on_log(dred_gui* pContext, drgui_on_log onLog)
 {
     if (pContext != NULL) {
         pContext->onLog = onLog;
@@ -1305,15 +1305,15 @@ void drgui_set_on_log(drgui_context* pContext, drgui_on_log onLog)
 /////////////////////////////////////////////////////////////////
 // Elements
 
-drgui_element* drgui_create_element(drgui_context* pContext, drgui_element* pParent, size_t extraDataSize, const void* pExtraData)
+dred_element* drgui_create_element(dred_gui* pContext, dred_element* pParent, size_t extraDataSize, const void* pExtraData)
 {
     if (pContext != NULL)
     {
-        drgui_element* pElement = (drgui_element*)calloc(1, sizeof(drgui_element) + extraDataSize);
+        dred_element* pElement = (dred_element*)calloc(1, sizeof(dred_element) + extraDataSize);
         if (pElement != NULL) {
             pElement->pContext = pContext;
             pElement->pParent = pParent;
-            pElement->cursor = drgui_cursor_default;
+            pElement->cursor = dred_cursor_default;
             pElement->dirtyRect = drgui_make_inside_out_rect();
 
             pElement->extraDataSize = extraDataSize;
@@ -1339,13 +1339,13 @@ drgui_element* drgui_create_element(drgui_context* pContext, drgui_element* pPar
     return NULL;
 }
 
-void drgui_delete_element(drgui_element* pElement)
+void drgui_delete_element(dred_element* pElement)
 {
     if (pElement == NULL) {
         return;
     }
 
-    drgui_context* pContext = pElement->pContext;
+    dred_gui* pContext = pElement->pContext;
     if (pContext == NULL) {
         return;
     }
@@ -1432,7 +1432,7 @@ void drgui_delete_element(drgui_element* pElement)
     pElement->onPaint = NULL;
 
     // The parent needs to be redraw after detaching.
-    drgui_element* pParent = pElement->pParent;
+    dred_element* pParent = pElement->pParent;
     dred_rect relativeRect = drgui_get_relative_rect(pElement);
 
 
@@ -1459,7 +1459,7 @@ void drgui_delete_element(drgui_element* pElement)
 }
 
 
-size_t drgui_get_extra_data_size(drgui_element* pElement)
+size_t drgui_get_extra_data_size(dred_element* pElement)
 {
     if (pElement != NULL) {
         return pElement->extraDataSize;
@@ -1468,7 +1468,7 @@ size_t drgui_get_extra_data_size(drgui_element* pElement)
     return 0;
 }
 
-void* drgui_get_extra_data(drgui_element* pElement)
+void* drgui_get_extra_data(dred_element* pElement)
 {
     if (pElement != NULL) {
         return pElement->pExtraData;
@@ -1478,7 +1478,7 @@ void* drgui_get_extra_data(drgui_element* pElement)
 }
 
 
-bool drgui_set_type(drgui_element* pElement, const char* type)
+bool drgui_set_type(dred_element* pElement, const char* type)
 {
     if (pElement == NULL) {
         return false;
@@ -1487,7 +1487,7 @@ bool drgui_set_type(drgui_element* pElement, const char* type)
     return drgui__strcpy_s(pElement->type, sizeof(pElement->type), (type == NULL) ? "" : type) == 0;
 }
 
-const char* drgui_get_type(drgui_element* pElement)
+const char* drgui_get_type(dred_element* pElement)
 {
     if (pElement == NULL) {
         return NULL;
@@ -1496,7 +1496,7 @@ const char* drgui_get_type(drgui_element* pElement)
     return pElement->type;
 }
 
-bool drgui_is_of_type(drgui_element* pElement, const char* type)
+bool drgui_is_of_type(dred_element* pElement, const char* type)
 {
     if (pElement == NULL || type == NULL) {
         return false;
@@ -1506,7 +1506,7 @@ bool drgui_is_of_type(drgui_element* pElement, const char* type)
 }
 
 
-void drgui_hide(drgui_element* pElement)
+void drgui_hide(dred_element* pElement)
 {
     if (pElement != NULL) {
         pElement->flags |= IS_ELEMENT_HIDDEN;
@@ -1514,7 +1514,7 @@ void drgui_hide(drgui_element* pElement)
     }
 }
 
-void drgui_show(drgui_element* pElement)
+void drgui_show(dred_element* pElement)
 {
     if (pElement != NULL) {
         pElement->flags &= ~IS_ELEMENT_HIDDEN;
@@ -1522,7 +1522,7 @@ void drgui_show(drgui_element* pElement)
     }
 }
 
-bool drgui_is_visible(const drgui_element* pElement)
+bool drgui_is_visible(const dred_element* pElement)
 {
     if (pElement != NULL) {
         return (pElement->flags & IS_ELEMENT_HIDDEN) == 0;
@@ -1531,7 +1531,7 @@ bool drgui_is_visible(const drgui_element* pElement)
     return false;
 }
 
-bool drgui_is_visible_recursive(const drgui_element* pElement)
+bool drgui_is_visible_recursive(const dred_element* pElement)
 {
     if (drgui_is_visible(pElement))
     {
@@ -1546,21 +1546,21 @@ bool drgui_is_visible_recursive(const drgui_element* pElement)
 }
 
 
-void drgui_disable_clipping(drgui_element* pElement)
+void drgui_disable_clipping(dred_element* pElement)
 {
     if (pElement != NULL) {
         pElement->flags |= IS_ELEMENT_CLIPPING_DISABLED;
     }
 }
 
-void drgui_enable_clipping(drgui_element* pElement)
+void drgui_enable_clipping(dred_element* pElement)
 {
     if (pElement != NULL) {
         pElement->flags &= ~IS_ELEMENT_CLIPPING_DISABLED;
     }
 }
 
-bool drgui_is_clipping_enabled(const drgui_element* pElement)
+bool drgui_is_clipping_enabled(const dred_element* pElement)
 {
     if (pElement != NULL) {
         return (pElement->flags & IS_ELEMENT_CLIPPING_DISABLED) == 0;
@@ -1571,7 +1571,7 @@ bool drgui_is_clipping_enabled(const drgui_element* pElement)
 
 
 
-void drgui_capture_mouse(drgui_element* pElement)
+void drgui_capture_mouse(dred_element* pElement)
 {
     if (pElement == NULL) {
         return;
@@ -1602,7 +1602,7 @@ void drgui_capture_mouse(drgui_element* pElement)
     }
 }
 
-void drgui_release_mouse(drgui_context* pContext)
+void drgui_release_mouse(dred_gui* pContext)
 {
     if (pContext == NULL) {
         return;
@@ -1623,7 +1623,7 @@ void drgui_release_mouse(drgui_context* pContext)
     drgui_update_mouse_enter_and_leave_state(pContext, drgui_find_element_under_point(pContext->pLastMouseMoveTopLevelElement, pContext->lastMouseMovePosX, pContext->lastMouseMovePosY));
 }
 
-void drgui_release_mouse_no_global_notify(drgui_context* pContext)
+void drgui_release_mouse_no_global_notify(dred_gui* pContext)
 {
     if (pContext == NULL) {
         return;
@@ -1635,7 +1635,7 @@ void drgui_release_mouse_no_global_notify(drgui_context* pContext)
     pContext->onGlobalReleaseMouse = prevProc;
 }
 
-drgui_element* drgui_get_element_with_mouse_capture(drgui_context* pContext)
+dred_element* drgui_get_element_with_mouse_capture(dred_gui* pContext)
 {
     if (pContext == NULL) {
         return NULL;
@@ -1644,7 +1644,7 @@ drgui_element* drgui_get_element_with_mouse_capture(drgui_context* pContext)
     return pContext->pElementWithMouseCapture;
 }
 
-bool drgui_has_mouse_capture(drgui_element* pElement)
+bool drgui_has_mouse_capture(dred_element* pElement)
 {
     if (pElement == NULL) {
         return false;
@@ -1654,7 +1654,7 @@ bool drgui_has_mouse_capture(drgui_element* pElement)
 }
 
 
-DRGUI_PRIVATE void drgui_release_keyboard_private(drgui_context* pContext, drgui_element* pNewCapturedElement)
+DRED_GUI_PRIVATE void drgui_release_keyboard_private(dred_gui* pContext, dred_element* pNewCapturedElement)
 {
     assert(pContext != NULL);
 
@@ -1665,7 +1665,7 @@ DRGUI_PRIVATE void drgui_release_keyboard_private(drgui_context* pContext, drgui
 
     pContext->flags |= IS_RELEASING_KEYBOARD;
     {
-        drgui_element* pPrevCapturedElement = pContext->pElementWithKeyboardCapture;
+        dred_element* pPrevCapturedElement = pContext->pElementWithKeyboardCapture;
         pContext->pElementWithKeyboardCapture = NULL;
 
         if (!drgui_is_element_marked_as_dead(pPrevCapturedElement)) {   // <-- There's a chace the element is releaseing the keyboard due to being deleted. Don't want to post an event in this case.
@@ -1680,7 +1680,7 @@ DRGUI_PRIVATE void drgui_release_keyboard_private(drgui_context* pContext, drgui
     pContext->pElementWantingKeyboardCapture = NULL;
 }
 
-void drgui_capture_keyboard(drgui_element* pElement)
+void drgui_capture_keyboard(dred_element* pElement)
 {
     if (pElement == NULL) {
         return;
@@ -1700,7 +1700,7 @@ void drgui_capture_keyboard(drgui_element* pElement)
     if (pElement->pContext->pElementWithKeyboardCapture != pElement)
     {
         // Release the previous capture first.
-        drgui_element* pPrevElementWithKeyboardCapture = pElement->pContext->pElementWithKeyboardCapture;
+        dred_element* pPrevElementWithKeyboardCapture = pElement->pContext->pElementWithKeyboardCapture;
         if (pPrevElementWithKeyboardCapture != NULL) {
             drgui_release_keyboard_private(pElement->pContext, pElement);
         }
@@ -1722,7 +1722,7 @@ void drgui_capture_keyboard(drgui_element* pElement)
     }
 }
 
-void drgui_release_keyboard(drgui_context* pContext)
+void drgui_release_keyboard(dred_gui* pContext)
 {
     if (pContext == NULL) {
         return;
@@ -1731,7 +1731,7 @@ void drgui_release_keyboard(drgui_context* pContext)
     drgui_release_keyboard_private(pContext, NULL);
 }
 
-void drgui_release_keyboard_no_global_notify(drgui_context* pContext)
+void drgui_release_keyboard_no_global_notify(dred_gui* pContext)
 {
     if (pContext == NULL) {
         return;
@@ -1743,7 +1743,7 @@ void drgui_release_keyboard_no_global_notify(drgui_context* pContext)
     pContext->onGlobalReleaseKeyboard = prevProc;
 }
 
-drgui_element* drgui_get_element_with_keyboard_capture(drgui_context* pContext)
+dred_element* drgui_get_element_with_keyboard_capture(dred_gui* pContext)
 {
     if (pContext == NULL) {
         return NULL;
@@ -1752,7 +1752,7 @@ drgui_element* drgui_get_element_with_keyboard_capture(drgui_context* pContext)
     return pContext->pElementWithKeyboardCapture;
 }
 
-bool drgui_has_keyboard_capture(drgui_element* pElement)
+bool drgui_has_keyboard_capture(dred_element* pElement)
 {
     if (pElement == NULL) {
         return false;
@@ -1762,7 +1762,7 @@ bool drgui_has_keyboard_capture(drgui_element* pElement)
 }
 
 
-void drgui_set_cursor(drgui_element* pElement, drgui_cursor_type cursor)
+void drgui_set_cursor(dred_element* pElement, dred_cursor_type cursor)
 {
     if (pElement == NULL) {
         return;
@@ -1775,10 +1775,10 @@ void drgui_set_cursor(drgui_element* pElement, drgui_cursor_type cursor)
     }
 }
 
-drgui_cursor_type drgui_get_cursor(drgui_element* pElement)
+dred_cursor_type drgui_get_cursor(dred_element* pElement)
 {
     if (pElement == NULL) {
-        return drgui_cursor_none;
+        return dred_cursor_none;
     }
 
     return pElement->cursor;
@@ -1788,133 +1788,133 @@ drgui_cursor_type drgui_get_cursor(drgui_element* pElement)
 
 //// Events ////
 
-void drgui_set_on_move(drgui_element * pElement, drgui_on_move_proc callback)
+void drgui_set_on_move(dred_element * pElement, drgui_on_move_proc callback)
 {
     if (pElement != NULL) {
         pElement->onMove = callback;
     }
 }
 
-void drgui_set_on_size(drgui_element * pElement, drgui_on_size_proc callback)
+void drgui_set_on_size(dred_element * pElement, drgui_on_size_proc callback)
 {
     if (pElement != NULL) {
         pElement->onSize = callback;
     }
 }
 
-void drgui_set_on_mouse_enter(drgui_element* pElement, drgui_on_mouse_enter_proc callback)
+void drgui_set_on_mouse_enter(dred_element* pElement, drgui_on_mouse_enter_proc callback)
 {
     if (pElement != NULL) {
         pElement->onMouseEnter = callback;
     }
 }
 
-void drgui_set_on_mouse_leave(drgui_element* pElement, drgui_on_mouse_leave_proc callback)
+void drgui_set_on_mouse_leave(dred_element* pElement, drgui_on_mouse_leave_proc callback)
 {
     if (pElement != NULL) {
         pElement->onMouseLeave = callback;
     }
 }
 
-void drgui_set_on_mouse_move(drgui_element* pElement, drgui_on_mouse_move_proc callback)
+void drgui_set_on_mouse_move(dred_element* pElement, drgui_on_mouse_move_proc callback)
 {
     if (pElement != NULL) {
         pElement->onMouseMove = callback;
     }
 }
 
-void drgui_set_on_mouse_button_down(drgui_element* pElement, drgui_on_mouse_button_down_proc callback)
+void drgui_set_on_mouse_button_down(dred_element* pElement, drgui_on_mouse_button_down_proc callback)
 {
     if (pElement != NULL) {
         pElement->onMouseButtonDown = callback;
     }
 }
 
-void drgui_set_on_mouse_button_up(drgui_element* pElement, drgui_on_mouse_button_up_proc callback)
+void drgui_set_on_mouse_button_up(dred_element* pElement, drgui_on_mouse_button_up_proc callback)
 {
     if (pElement != NULL) {
         pElement->onMouseButtonUp = callback;
     }
 }
 
-void drgui_set_on_mouse_button_dblclick(drgui_element* pElement, drgui_on_mouse_button_dblclick_proc callback)
+void drgui_set_on_mouse_button_dblclick(dred_element* pElement, drgui_on_mouse_button_dblclick_proc callback)
 {
     if (pElement != NULL) {
         pElement->onMouseButtonDblClick = callback;
     }
 }
 
-void drgui_set_on_mouse_wheel(drgui_element* pElement, drgui_on_mouse_wheel_proc callback)
+void drgui_set_on_mouse_wheel(dred_element* pElement, drgui_on_mouse_wheel_proc callback)
 {
     if (pElement != NULL) {
         pElement->onMouseWheel = callback;
     }
 }
 
-void drgui_set_on_key_down(drgui_element* pElement, drgui_on_key_down_proc callback)
+void drgui_set_on_key_down(dred_element* pElement, drgui_on_key_down_proc callback)
 {
     if (pElement != NULL) {
         pElement->onKeyDown = callback;
     }
 }
 
-void drgui_set_on_key_up(drgui_element* pElement, drgui_on_key_up_proc callback)
+void drgui_set_on_key_up(dred_element* pElement, drgui_on_key_up_proc callback)
 {
     if (pElement != NULL) {
         pElement->onKeyUp = callback;
     }
 }
 
-void drgui_set_on_printable_key_down(drgui_element* pElement, drgui_on_printable_key_down_proc callback)
+void drgui_set_on_printable_key_down(dred_element* pElement, drgui_on_printable_key_down_proc callback)
 {
     if (pElement != NULL) {
         pElement->onPrintableKeyDown = callback;
     }
 }
 
-void drgui_set_on_paint(drgui_element* pElement, drgui_on_paint_proc callback)
+void drgui_set_on_paint(dred_element* pElement, drgui_on_paint_proc callback)
 {
     if (pElement != NULL) {
         pElement->onPaint = callback;
     }
 }
 
-void drgui_set_on_dirty(drgui_element * pElement, drgui_on_dirty_proc callback)
+void drgui_set_on_dirty(dred_element * pElement, drgui_on_dirty_proc callback)
 {
     if (pElement != NULL) {
         pElement->onDirty = callback;
     }
 }
 
-void drgui_set_on_hittest(drgui_element* pElement, drgui_on_hittest_proc callback)
+void drgui_set_on_hittest(dred_element* pElement, drgui_on_hittest_proc callback)
 {
     if (pElement != NULL) {
         pElement->onHitTest = callback;
     }
 }
 
-void drgui_set_on_capture_mouse(drgui_element* pElement, drgui_on_capture_mouse_proc callback)
+void drgui_set_on_capture_mouse(dred_element* pElement, drgui_on_capture_mouse_proc callback)
 {
     if (pElement != NULL) {
         pElement->onCaptureMouse = callback;
     }
 }
 
-void drgui_set_on_release_mouse(drgui_element* pElement, drgui_on_release_mouse_proc callback)
+void drgui_set_on_release_mouse(dred_element* pElement, drgui_on_release_mouse_proc callback)
 {
     if (pElement != NULL) {
         pElement->onReleaseMouse = callback;
     }
 }
 
-void drgui_set_on_capture_keyboard(drgui_element* pElement, drgui_on_capture_keyboard_proc callback)
+void drgui_set_on_capture_keyboard(dred_element* pElement, drgui_on_capture_keyboard_proc callback)
 {
     if (pElement != NULL) {
         pElement->onCaptureKeyboard = callback;
     }
 }
 
-void drgui_set_on_release_keyboard(drgui_element* pElement, drgui_on_release_keyboard_proc callback)
+void drgui_set_on_release_keyboard(dred_element* pElement, drgui_on_release_keyboard_proc callback)
 {
     if (pElement != NULL) {
         pElement->onReleaseKeyboard = callback;
@@ -1923,7 +1923,7 @@ void drgui_set_on_release_keyboard(drgui_element* pElement, drgui_on_release_key
 
 
 
-bool drgui_is_point_inside_element_bounds(const drgui_element* pElement, float absolutePosX, float absolutePosY)
+bool drgui_is_point_inside_element_bounds(const dred_element* pElement, float absolutePosX, float absolutePosY)
 {
     if (absolutePosX < pElement->absolutePosX ||
         absolutePosX < pElement->absolutePosY)
@@ -1940,7 +1940,7 @@ bool drgui_is_point_inside_element_bounds(const drgui_element* pElement, float a
     return true;
 }
 
-bool drgui_is_point_inside_element(drgui_element* pElement, float absolutePosX, float absolutePosY)
+bool drgui_is_point_inside_element(dred_element* pElement, float absolutePosX, float absolutePosY)
 {
     if (drgui_is_point_inside_element_bounds(pElement, absolutePosX, absolutePosY))
     {
@@ -1961,12 +1961,12 @@ bool drgui_is_point_inside_element(drgui_element* pElement, float absolutePosX, 
 
 typedef struct
 {
-    drgui_element* pElementUnderPoint;
+    dred_element* pElementUnderPoint;
     float absolutePosX;
     float absolutePosY;
 }drgui_find_element_under_point_data;
 
-bool drgui_find_element_under_point_iterator(drgui_element* pElement, dred_rect* pRelativeVisibleRect, void* pUserData)
+bool drgui_find_element_under_point_iterator(dred_element* pElement, dred_rect* pRelativeVisibleRect, void* pUserData)
 {
     assert(pElement             != NULL);
     assert(pRelativeVisibleRect != NULL);
@@ -1994,7 +1994,7 @@ bool drgui_find_element_under_point_iterator(drgui_element* pElement, dred_rect*
     return true;
 }
 
-drgui_element* drgui_find_element_under_point(drgui_element* pTopLevelElement, float absolutePosX, float absolutePosY)
+dred_element* drgui_find_element_under_point(dred_element* pTopLevelElement, float absolutePosX, float absolutePosY)
 {
     if (pTopLevelElement == NULL) {
         return NULL;
@@ -2009,7 +2009,7 @@ drgui_element* drgui_find_element_under_point(drgui_element* pTopLevelElement, f
     return data.pElementUnderPoint;
 }
 
-bool drgui_is_element_under_mouse(drgui_element* pElement)
+bool drgui_is_element_under_mouse(dred_element* pElement)
 {
     if (pElement == NULL) {
         return false;
@@ -2022,7 +2022,7 @@ bool drgui_is_element_under_mouse(drgui_element* pElement)
 
 //// Hierarchy ////
 
-drgui_element* drgui_get_parent(drgui_element* pChildElement)
+dred_element* drgui_get_parent(dred_element* pChildElement)
 {
     if (pChildElement == NULL) {
         return NULL;
@@ -2031,13 +2031,13 @@ drgui_element* drgui_get_parent(drgui_element* pChildElement)
     return pChildElement->pParent;
 }
 
-void drgui_detach(drgui_element* pChildElement)
+void drgui_detach(dred_element* pChildElement)
 {
     if (pChildElement == NULL) {
         return;
     }
 
-    drgui_element* pOldParent = pChildElement->pParent;
+    dred_element* pOldParent = pChildElement->pParent;
 
 
     // We orphan the element using the private API. This will not mark the parent element as dirty so we need to do that afterwards.
@@ -2049,7 +2049,7 @@ void drgui_detach(drgui_element* pChildElement)
     }
 }
 
-void drgui_append(drgui_element* pChildElement, drgui_element* pParentElement)
+void drgui_append(dred_element* pChildElement, dred_element* pParentElement)
 {
     if (pChildElement == NULL) {
         return;
@@ -2071,7 +2071,7 @@ void drgui_append(drgui_element* pChildElement, drgui_element* pParentElement)
     }
 }
 
-void drgui_prepend(drgui_element* pChildElement, drgui_element* pParentElement)
+void drgui_prepend(dred_element* pChildElement, dred_element* pParentElement)
 {
     if (pChildElement == NULL) {
         return;
@@ -2091,7 +2091,7 @@ void drgui_prepend(drgui_element* pChildElement, drgui_element* pParentElement)
     }
 }
 
-void drgui_append_sibling(drgui_element* pElementToAppend, drgui_element* pElementToAppendTo)
+void drgui_append_sibling(dred_element* pElementToAppend, dred_element* pElementToAppendTo)
 {
     if (pElementToAppend == NULL || pElementToAppendTo == NULL) {
         return;
@@ -2109,7 +2109,7 @@ void drgui_append_sibling(drgui_element* pElementToAppend, drgui_element* pEleme
     drgui_append_sibling_without_detach(pElementToAppend, pElementToAppendTo);
 }
 
-void drgui_prepend_sibling(drgui_element* pElementToPrepend, drgui_element* pElementToPrependTo)
+void drgui_prepend_sibling(dred_element* pElementToPrepend, dred_element* pElementToPrependTo)
 {
     if (pElementToPrepend == NULL || pElementToPrependTo == NULL) {
         return;
@@ -2127,7 +2127,7 @@ void drgui_prepend_sibling(drgui_element* pElementToPrepend, drgui_element* pEle
     drgui_prepend_sibling_without_detach(pElementToPrepend, pElementToPrependTo);
 }
 
-drgui_element* drgui_find_top_level_element(drgui_element* pElement)
+dred_element* drgui_find_top_level_element(dred_element* pElement)
 {
     if (pElement == NULL) {
         return NULL;
@@ -2140,7 +2140,7 @@ drgui_element* drgui_find_top_level_element(drgui_element* pElement)
     return pElement;
 }
 
-bool drgui_is_parent(drgui_element* pParentElement, drgui_element* pChildElement)
+bool drgui_is_parent(dred_element* pParentElement, dred_element* pChildElement)
 {
     if (pParentElement == NULL || pChildElement == NULL) {
         return false;
@@ -2149,18 +2149,18 @@ bool drgui_is_parent(drgui_element* pParentElement, drgui_element* pChildElement
     return pParentElement == pChildElement->pParent;
 }
 
-bool drgui_is_child(drgui_element* pChildElement, drgui_element* pParentElement)
+bool drgui_is_child(dred_element* pChildElement, dred_element* pParentElement)
 {
     return drgui_is_parent(pParentElement, pChildElement);
 }
 
-bool drgui_is_ancestor(drgui_element* pAncestorElement, drgui_element* pChildElement)
+bool drgui_is_ancestor(dred_element* pAncestorElement, dred_element* pChildElement)
 {
     if (pAncestorElement == NULL || pChildElement == NULL) {
         return false;
     }
 
-    drgui_element* pParent = pChildElement->pParent;
+    dred_element* pParent = pChildElement->pParent;
     while (pParent != NULL)
     {
         if (pParent == pAncestorElement) {
@@ -2174,17 +2174,17 @@ bool drgui_is_ancestor(drgui_element* pAncestorElement, drgui_element* pChildEle
     return false;
 }
 
-bool drgui_is_descendant(drgui_element* pChildElement, drgui_element* pAncestorElement)
+bool drgui_is_descendant(dred_element* pChildElement, dred_element* pAncestorElement)
 {
     return drgui_is_ancestor(pAncestorElement, pChildElement);
 }
 
-bool drgui_is_self_or_ancestor(drgui_element* pAncestorElement, drgui_element* pChildElement)
+bool drgui_is_self_or_ancestor(dred_element* pAncestorElement, dred_element* pChildElement)
 {
     return pAncestorElement == pChildElement || drgui_is_ancestor(pAncestorElement, pChildElement);
 }
 
-bool drgui_is_self_or_descendant(drgui_element* pChildElement, drgui_element* pAncestorElement)
+bool drgui_is_self_or_descendant(dred_element* pChildElement, dred_element* pAncestorElement)
 {
     return pChildElement == pAncestorElement || drgui_is_descendant(pChildElement, pAncestorElement);
 }
@@ -2193,7 +2193,7 @@ bool drgui_is_self_or_descendant(drgui_element* pChildElement, drgui_element* pA
 
 //// Layout ////
 
-void drgui_set_absolute_position(drgui_element* pElement, float positionX, float positionY)
+void drgui_set_absolute_position(dred_element* pElement, float positionX, float positionY)
 {
     if (pElement != NULL)
     {
@@ -2229,7 +2229,7 @@ void drgui_set_absolute_position(drgui_element* pElement, float positionX, float
     }
 }
 
-void drgui_get_absolute_position(const drgui_element* pElement, float * positionXOut, float * positionYOut)
+void drgui_get_absolute_position(const dred_element* pElement, float * positionXOut, float * positionYOut)
 {
     if (pElement != NULL)
     {
@@ -2243,7 +2243,7 @@ void drgui_get_absolute_position(const drgui_element* pElement, float * position
     }
 }
 
-float drgui_get_absolute_position_x(const drgui_element* pElement)
+float drgui_get_absolute_position_x(const dred_element* pElement)
 {
     if (pElement != NULL) {
         return pElement->absolutePosX;
@@ -2252,7 +2252,7 @@ float drgui_get_absolute_position_x(const drgui_element* pElement)
     return 0.0f;
 }
 
-float drgui_get_absolute_position_y(const drgui_element* pElement)
+float drgui_get_absolute_position_y(const dred_element* pElement)
 {
     if (pElement != NULL) {
         return pElement->absolutePosY;
@@ -2262,7 +2262,7 @@ float drgui_get_absolute_position_y(const drgui_element* pElement)
 }
 
 
-void drgui_set_relative_position(drgui_element* pElement, float relativePosX, float relativePosY)
+void drgui_set_relative_position(dred_element* pElement, float relativePosX, float relativePosY)
 {
     if (pElement != NULL) {
         if (pElement->pParent != NULL) {
@@ -2273,7 +2273,7 @@ void drgui_set_relative_position(drgui_element* pElement, float relativePosX, fl
     }
 }
 
-void drgui_get_relative_position(const drgui_element* pElement, float* positionXOut, float* positionYOut)
+void drgui_get_relative_position(const dred_element* pElement, float* positionXOut, float* positionYOut)
 {
     if (pElement != NULL)
     {
@@ -2300,7 +2300,7 @@ void drgui_get_relative_position(const drgui_element* pElement, float* positionX
     }
 }
 
-float drgui_get_relative_position_x(const drgui_element* pElement)
+float drgui_get_relative_position_x(const dred_element* pElement)
 {
     if (pElement != NULL) {
         if (pElement->pParent != NULL) {
@@ -2313,7 +2313,7 @@ float drgui_get_relative_position_x(const drgui_element* pElement)
     return 0;
 }
 
-float drgui_get_relative_position_y(const drgui_element* pElement)
+float drgui_get_relative_position_y(const dred_element* pElement)
 {
     if (pElement != NULL) {
         if (pElement->pParent != NULL) {
@@ -2327,7 +2327,7 @@ float drgui_get_relative_position_y(const drgui_element* pElement)
 }
 
 
-void drgui_set_size(drgui_element* pElement, float width, float height)
+void drgui_set_size(dred_element* pElement, float width, float height)
 {
     if (pElement != NULL)
     {
@@ -2348,7 +2348,7 @@ void drgui_set_size(drgui_element* pElement, float width, float height)
     }
 }
 
-void drgui_get_size(const drgui_element* pElement, float* widthOut, float* heightOut)
+void drgui_get_size(const dred_element* pElement, float* widthOut, float* heightOut)
 {
     if (pElement != NULL) {
         if (widthOut) *widthOut = pElement->width;
@@ -2359,7 +2359,7 @@ void drgui_get_size(const drgui_element* pElement, float* widthOut, float* heigh
     }
 }
 
-float drgui_get_width(const drgui_element * pElement)
+float drgui_get_width(const dred_element * pElement)
 {
     if (pElement != NULL) {
         return pElement->width;
@@ -2368,7 +2368,7 @@ float drgui_get_width(const drgui_element * pElement)
     return 0;
 }
 
-float drgui_get_height(const drgui_element * pElement)
+float drgui_get_height(const dred_element * pElement)
 {
     if (pElement != NULL) {
         return pElement->height;
@@ -2378,7 +2378,7 @@ float drgui_get_height(const drgui_element * pElement)
 }
 
 
-dred_rect drgui_get_absolute_rect(const drgui_element* pElement)
+dred_rect drgui_get_absolute_rect(const dred_element* pElement)
 {
     dred_rect rect;
     if (pElement != NULL)
@@ -2399,7 +2399,7 @@ dred_rect drgui_get_absolute_rect(const drgui_element* pElement)
     return rect;
 }
 
-dred_rect drgui_get_relative_rect(const drgui_element* pElement)
+dred_rect drgui_get_relative_rect(const dred_element* pElement)
 {
     dred_rect rect;
     if (pElement != NULL)
@@ -2420,7 +2420,7 @@ dred_rect drgui_get_relative_rect(const drgui_element* pElement)
     return rect;
 }
 
-dred_rect drgui_get_local_rect(const drgui_element* pElement)
+dred_rect drgui_get_local_rect(const dred_element* pElement)
 {
     dred_rect rect;
     rect.left = 0;
@@ -2444,7 +2444,7 @@ dred_rect drgui_get_local_rect(const drgui_element* pElement)
 
 //// Painting ////
 
-bool drgui_register_painting_callbacks(drgui_context* pContext, void* pPaintingContext, dred_gui_painting_callbacks callbacks)
+bool drgui_register_painting_callbacks(dred_gui* pContext, void* pPaintingContext, dred_gui_painting_callbacks callbacks)
 {
     if (pContext == NULL) {
         return false;
@@ -2463,7 +2463,7 @@ bool drgui_register_painting_callbacks(drgui_context* pContext, void* pPaintingC
 }
 
 
-bool drgui_iterate_visible_elements(drgui_element* pParentElement, dred_rect relativeRect, drgui_visible_iteration_proc callback, void* pUserData)
+bool drgui_iterate_visible_elements(dred_element* pParentElement, dred_rect relativeRect, drgui_visible_iteration_proc callback, void* pUserData)
 {
     if (pParentElement == NULL) {
         return false;
@@ -2487,7 +2487,7 @@ bool drgui_iterate_visible_elements(drgui_element* pParentElement, dred_rect rel
         }
     }
 
-    for (drgui_element* pChild = pParentElement->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling)
+    for (dred_element* pChild = pParentElement->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling)
     {
         float childRelativePosX = drgui_get_relative_position_x(pChild);
         float childRelativePosY = drgui_get_relative_position_y(pChild);
@@ -2514,21 +2514,21 @@ bool drgui_iterate_visible_elements(drgui_element* pParentElement, dred_rect rel
     return true;
 }
 
-void drgui_disable_auto_dirty(drgui_context* pContext)
+void drgui_disable_auto_dirty(dred_gui* pContext)
 {
     if (pContext != NULL) {
         pContext->flags |= IS_AUTO_DIRTY_DISABLED;
     }
 }
 
-void drgui_enable_auto_dirty(drgui_context* pContext)
+void drgui_enable_auto_dirty(dred_gui* pContext)
 {
     if (pContext != NULL) {
         pContext->flags &= ~IS_AUTO_DIRTY_DISABLED;
     }
 }
 
-bool drgui_is_auto_dirty_enabled(drgui_context* pContext)
+bool drgui_is_auto_dirty_enabled(dred_gui* pContext)
 {
     if (pContext != NULL) {
         return (pContext->flags & IS_AUTO_DIRTY_DISABLED) == 0;
@@ -2538,16 +2538,16 @@ bool drgui_is_auto_dirty_enabled(drgui_context* pContext)
 }
 
 
-drgui_element* drgui_begin_dirty(drgui_element* pElement)
+dred_element* drgui_begin_dirty(dred_element* pElement)
 {
     if (pElement == NULL) {
         return NULL;
     }
 
-    drgui_context* pContext = pElement->pContext;
+    dred_gui* pContext = pElement->pContext;
     assert(pContext != NULL);
 
-    drgui_element* pTopLevelElement = drgui_find_top_level_element(pElement);
+    dred_element* pTopLevelElement = drgui_find_top_level_element(pElement);
     assert(pTopLevelElement != NULL);
 
     // The element needs to be added to the list of dirty elements if it doesn't exist already.
@@ -2562,7 +2562,7 @@ drgui_element* drgui_begin_dirty(drgui_element* pElement)
     if (!isAlreadyDirty) {
         if (pContext->dirtyElementCount == pContext->dirtyElementBufferSize) {
             size_t newBufferSize = pContext->dirtyElementBufferSize == 0 ? 1 : pContext->dirtyElementBufferSize*2;
-            drgui_element** ppNewDirtyElements = (drgui_element**)realloc(pContext->ppDirtyElements, newBufferSize * sizeof(*ppNewDirtyElements));
+            dred_element** ppNewDirtyElements = (dred_element**)realloc(pContext->ppDirtyElements, newBufferSize * sizeof(*ppNewDirtyElements));
             if (ppNewDirtyElements == NULL) {
                 return NULL;
             }
@@ -2580,13 +2580,13 @@ drgui_element* drgui_begin_dirty(drgui_element* pElement)
     return pTopLevelElement;
 }
 
-void drgui_end_dirty(drgui_element* pElement)
+void drgui_end_dirty(dred_element* pElement)
 {
     if (pElement == NULL) {
         return;
     }
 
-    drgui_context* pContext = pElement->pContext;
+    dred_gui* pContext = pElement->pContext;
     assert(pContext != NULL);
 
     assert(pContext->dirtyElementCount > 0);
@@ -2604,16 +2604,16 @@ void drgui_end_dirty(drgui_element* pElement)
     }
 }
 
-void drgui_dirty(drgui_element* pElement, dred_rect relativeRect)
+void drgui_dirty(dred_element* pElement, dred_rect relativeRect)
 {
     if (pElement == NULL) {
         return;
     }
 
-    //drgui_context* pContext = pElement->pContext;
+    //dred_gui* pContext = pElement->pContext;
     //assert(pContext != NULL);
 
-    drgui_element* pTopLevelElement = drgui_begin_dirty(pElement);
+    dred_element* pTopLevelElement = drgui_begin_dirty(pElement);
     if (pTopLevelElement == NULL) {
         return;
     }
@@ -2623,7 +2623,7 @@ void drgui_dirty(drgui_element* pElement, dred_rect relativeRect)
 }
 
 
-bool drgui_draw_iteration_callback(drgui_element* pElement, dred_rect* pRelativeRect, void* pUserData)
+bool drgui_draw_iteration_callback(dred_element* pElement, dred_rect* pRelativeRect, void* pUserData)
 {
     assert(pElement      != NULL);
     assert(pRelativeRect != NULL);
@@ -2643,13 +2643,13 @@ bool drgui_draw_iteration_callback(drgui_element* pElement, dred_rect* pRelative
     return true;
 }
 
-void drgui_draw(drgui_element* pElement, dred_rect relativeRect, void* pPaintData)
+void drgui_draw(dred_element* pElement, dred_rect relativeRect, void* pPaintData)
 {
     if (pElement == NULL) {
         return;
     }
 
-    drgui_context* pContext = pElement->pContext;
+    dred_gui* pContext = pElement->pContext;
     if (pContext == NULL) {
         return;
     }
@@ -2664,7 +2664,7 @@ void drgui_draw(drgui_element* pElement, dred_rect relativeRect, void* pPaintDat
     pContext->paintingCallbacks.drawEnd(pPaintData);
 }
 
-void drgui_get_clip(drgui_element* pElement, dred_rect* pRelativeRect, void* pPaintData)
+void drgui_get_clip(dred_element* pElement, dred_rect* pRelativeRect, void* pPaintData)
 {
     if (pElement == NULL || pElement->pContext == NULL) {
         return;
@@ -2676,7 +2676,7 @@ void drgui_get_clip(drgui_element* pElement, dred_rect* pRelativeRect, void* pPa
     drgui_make_rect_relative(pElement, pRelativeRect);
 }
 
-void drgui_set_clip(drgui_element* pElement, dred_rect relativeRect, void* pPaintData)
+void drgui_set_clip(dred_element* pElement, dred_rect relativeRect, void* pPaintData)
 {
     if (pElement == NULL || pElement->pContext == NULL) {
         return;
@@ -2698,7 +2698,7 @@ void drgui_set_clip(drgui_element* pElement, dred_rect relativeRect, void* pPain
     pElement->pContext->paintingCallbacks.setClip(absoluteRect, pPaintData);
 }
 
-void drgui_draw_rect(drgui_element* pElement, dred_rect relativeRect, dred_color color, void* pPaintData)
+void drgui_draw_rect(dred_element* pElement, dred_rect relativeRect, dred_color color, void* pPaintData)
 {
     if (pElement == NULL) {
         return;
@@ -2712,7 +2712,7 @@ void drgui_draw_rect(drgui_element* pElement, dred_rect relativeRect, dred_color
     pElement->pContext->paintingCallbacks.drawRect(absoluteRect, color, pPaintData);
 }
 
-void drgui_draw_rect_outline(drgui_element* pElement, dred_rect relativeRect, dred_color color, float outlineWidth, void* pPaintData)
+void drgui_draw_rect_outline(dred_element* pElement, dred_rect relativeRect, dred_color color, float outlineWidth, void* pPaintData)
 {
     if (pElement == NULL) {
         return;
@@ -2726,7 +2726,7 @@ void drgui_draw_rect_outline(drgui_element* pElement, dred_rect relativeRect, dr
     pElement->pContext->paintingCallbacks.drawRectOutline(absoluteRect, color, outlineWidth, pPaintData);
 }
 
-void drgui_draw_rect_with_outline(drgui_element * pElement, dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, void * pPaintData)
+void drgui_draw_rect_with_outline(dred_element * pElement, dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, void * pPaintData)
 {
     if (pElement == NULL) {
         return;
@@ -2740,7 +2740,7 @@ void drgui_draw_rect_with_outline(drgui_element * pElement, dred_rect relativeRe
     pElement->pContext->paintingCallbacks.drawRectWithOutline(absoluteRect, color, outlineWidth, outlineColor, pPaintData);
 }
 
-void drgui_draw_round_rect(drgui_element* pElement, dred_rect relativeRect, dred_color color, float radius, void* pPaintData)
+void drgui_draw_round_rect(dred_element* pElement, dred_rect relativeRect, dred_color color, float radius, void* pPaintData)
 {
     if (pElement == NULL) {
         return;
@@ -2754,7 +2754,7 @@ void drgui_draw_round_rect(drgui_element* pElement, dred_rect relativeRect, dred
     pElement->pContext->paintingCallbacks.drawRoundRect(absoluteRect, color, radius, pPaintData);
 }
 
-void drgui_draw_round_rect_outline(drgui_element* pElement, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, void* pPaintData)
+void drgui_draw_round_rect_outline(dred_element* pElement, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, void* pPaintData)
 {
     if (pElement == NULL) {
         return;
@@ -2768,7 +2768,7 @@ void drgui_draw_round_rect_outline(drgui_element* pElement, dred_rect relativeRe
     pElement->pContext->paintingCallbacks.drawRoundRectOutline(absoluteRect, color, radius, outlineWidth, pPaintData);
 }
 
-void drgui_draw_round_rect_with_outline(drgui_element* pElement, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData)
+void drgui_draw_round_rect_with_outline(dred_element* pElement, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData)
 {
     if (pElement == NULL) {
         return;
@@ -2782,7 +2782,7 @@ void drgui_draw_round_rect_with_outline(drgui_element* pElement, dred_rect relat
     pElement->pContext->paintingCallbacks.drawRoundRectWithOutline(absoluteRect, color, radius, outlineWidth, outlineColor, pPaintData);
 }
 
-void drgui_draw_text(drgui_element* pElement, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData)
+void drgui_draw_text(dred_element* pElement, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData)
 {
     if (pElement == NULL || pFont == NULL) {
         return;
@@ -2797,7 +2797,7 @@ void drgui_draw_text(drgui_element* pElement, dred_gui_font* pFont, const char* 
     pElement->pContext->paintingCallbacks.drawText(pFont->internalFont, text, textLengthInBytes, absolutePosX, absolutePosY, color, backgroundColor, pPaintData);
 }
 
-void drgui_draw_image(drgui_element* pElement, dred_gui_image* pImage, drgui_draw_image_args* pArgs, void* pPaintData)
+void drgui_draw_image(dred_element* pElement, dred_gui_image* pImage, drgui_draw_image_args* pArgs, void* pPaintData)
 {
     if (pElement == NULL || pImage == NULL || pArgs == NULL) {
         return;
@@ -2808,7 +2808,7 @@ void drgui_draw_image(drgui_element* pElement, dred_gui_image* pImage, drgui_dra
     drgui_make_point_absolute(pElement, &pArgs->dstX, &pArgs->dstY);
     drgui_make_point_absolute(pElement, &pArgs->dstBoundsX, &pArgs->dstBoundsY);
 
-    if ((pArgs->options & DRGUI_IMAGE_ALIGN_CENTER) != 0)
+    if ((pArgs->options & DRED_GUI_IMAGE_ALIGN_CENTER) != 0)
     {
         pArgs->dstX = pArgs->dstBoundsX + (pArgs->dstBoundsWidth  - pArgs->dstWidth)  / 2;
         pArgs->dstY = pArgs->dstBoundsY + (pArgs->dstBoundsHeight - pArgs->dstHeight) / 2;
@@ -2818,7 +2818,7 @@ void drgui_draw_image(drgui_element* pElement, dred_gui_image* pImage, drgui_dra
     pElement->pContext->paintingCallbacks.getClip(&prevClip, pPaintData);
 
     bool restoreClip = false;
-    if ((pArgs->options & DRGUI_IMAGE_CLIP_BOUNDS) != 0)
+    if ((pArgs->options & DRED_GUI_IMAGE_CLIP_BOUNDS) != 0)
     {
         // We only need to clip if part of the destination rectangle falls outside of the bounds.
         if (pArgs->dstX < pArgs->dstBoundsX || pArgs->dstX + pArgs->dstWidth  > pArgs->dstBoundsX + pArgs->dstBoundsWidth ||
@@ -2829,7 +2829,7 @@ void drgui_draw_image(drgui_element* pElement, dred_gui_image* pImage, drgui_dra
         }
     }
 
-    if ((pArgs->options & DRGUI_IMAGE_DRAW_BOUNDS) != 0)
+    if ((pArgs->options & DRED_GUI_IMAGE_DRAW_BOUNDS) != 0)
     {
         // The bounds is the area sitting around the outside of the destination rectangle.
         const float boundsLeft   = pArgs->dstBoundsX;
@@ -2871,7 +2871,7 @@ void drgui_draw_image(drgui_element* pElement, dred_gui_image* pImage, drgui_dra
 }
 
 
-dred_gui_font* drgui_create_font(drgui_context* pContext, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags)
+dred_gui_font* drgui_create_font(dred_gui* pContext, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags)
 {
     if (pContext == NULL) {
         return NULL;
@@ -2882,7 +2882,7 @@ dred_gui_font* drgui_create_font(drgui_context* pContext, const char* family, un
     }
 
 
-    drgui_resource internalFont = pContext->paintingCallbacks.createFont(pContext->pPaintingContext, family, size, weight, slant, rotation, flags);
+    dred_gui_resource internalFont = pContext->paintingCallbacks.createFont(pContext->pPaintingContext, family, size, weight, slant, rotation, flags);
     if (internalFont == NULL) {
         return NULL;
     }
@@ -3020,7 +3020,7 @@ bool drgui_get_text_cursor_position_from_char(dred_gui_font* pFont, const char* 
 
 
 
-dred_gui_image* drgui_create_image(drgui_context* pContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pData)
+dred_gui_image* drgui_create_image(dred_gui* pContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pData)
 {
     if (pContext == NULL) {
         return NULL;
@@ -3037,7 +3037,7 @@ dred_gui_image* drgui_create_image(drgui_context* pContext, unsigned int width, 
     }
 
 
-    drgui_resource internalImage = pContext->paintingCallbacks.createImage(pContext->pPaintingContext, width, height, format, stride, pData);
+    dred_gui_resource internalImage = pContext->paintingCallbacks.createImage(pContext->pPaintingContext, width, height, format, stride, pData);
     if (internalImage == NULL) {
         return NULL;
     }
@@ -3089,7 +3089,7 @@ void drgui_get_image_size(dred_gui_image* pImage, unsigned int* pWidthOut, unsig
     pImage->pContext->paintingCallbacks.getImageSize(pImage->hResource, pWidthOut, pHeightOut);
 }
 
-dred_gui_image_format drgui_get_optimal_image_format(drgui_context* pContext)
+dred_gui_image_format drgui_get_optimal_image_format(dred_gui* pContext)
 {
     if (pContext == NULL || pContext->paintingCallbacks.getOptimalImageFormat == NULL) {
         return dred_gui_image_format_rgba8;
@@ -3134,14 +3134,14 @@ void drgui_unmap_image_data(dred_gui_image* pImage)
 
 //// Hit Testing and Layout ////
 
-void drgui_on_size_fit_children_to_parent(drgui_element* pElement, float newWidth, float newHeight)
+void drgui_on_size_fit_children_to_parent(dred_element* pElement, float newWidth, float newHeight)
 {
-    for (drgui_element* pChild = pElement->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
+    for (dred_element* pChild = pElement->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
         drgui_set_size(pChild, newWidth, newHeight);
     }
 }
 
-bool drgui_pass_through_hit_test(drgui_element* pElement, float mousePosX, float mousePosY)
+bool drgui_pass_through_hit_test(dred_element* pElement, float mousePosX, float mousePosY)
 {
     (void)pElement;
     (void)mousePosX;
@@ -3154,7 +3154,7 @@ bool drgui_pass_through_hit_test(drgui_element* pElement, float mousePosX, float
 
 //// Painting ////
 
-void drgui_draw_border(drgui_element* pElement, float borderWidth, dred_color color, void* pUserData)
+void drgui_draw_border(dred_element* pElement, float borderWidth, dred_color color, void* pUserData)
 {
     drgui_draw_rect_outline(pElement, drgui_get_local_rect(pElement), color, borderWidth, pUserData);
 }
@@ -3200,7 +3200,7 @@ dred_rect drgui_clamp_rect(dred_rect rect, dred_rect other)
     return result;
 }
 
-bool drgui_clamp_rect_to_element(const drgui_element* pElement, dred_rect* pRelativeRect)
+bool drgui_clamp_rect_to_element(const dred_element* pElement, dred_rect* pRelativeRect)
 {
     if (pElement == NULL || pRelativeRect == NULL) {
         return false;
@@ -3225,7 +3225,7 @@ bool drgui_clamp_rect_to_element(const drgui_element* pElement, dred_rect* pRela
     return (pRelativeRect->right - pRelativeRect->left > 0) && (pRelativeRect->bottom - pRelativeRect->top > 0);
 }
 
-dred_rect drgui_make_rect_relative(const drgui_element* pElement, dred_rect* pRect)
+dred_rect drgui_make_rect_relative(const dred_element* pElement, dred_rect* pRect)
 {
     if (pElement == NULL || pRect == NULL) {
         return drgui_make_rect(0, 0, 0, 0);
@@ -3239,7 +3239,7 @@ dred_rect drgui_make_rect_relative(const drgui_element* pElement, dred_rect* pRe
     return *pRect;
 }
 
-dred_rect drgui_make_rect_absolute(const drgui_element * pElement, dred_rect * pRect)
+dred_rect drgui_make_rect_absolute(const dred_element * pElement, dred_rect * pRect)
 {
     if (pElement == NULL || pRect == NULL) {
         return drgui_make_rect(0, 0, 0, 0);
@@ -3253,7 +3253,7 @@ dred_rect drgui_make_rect_absolute(const drgui_element * pElement, dred_rect * p
     return *pRect;
 }
 
-void drgui_make_point_relative(const drgui_element* pElement, float* positionX, float* positionY)
+void drgui_make_point_relative(const dred_element* pElement, float* positionX, float* positionY)
 {
     if (pElement != NULL)
     {
@@ -3267,7 +3267,7 @@ void drgui_make_point_relative(const drgui_element* pElement, float* positionX, 
     }
 }
 
-void drgui_make_point_absolute(const drgui_element* pElement, float* positionX, float* positionY)
+void drgui_make_point_absolute(const dred_element* pElement, float* positionX, float* positionY)
 {
     if (pElement != NULL)
     {
@@ -3376,7 +3376,7 @@ bool dred_rect_has_volume(dred_rect rect)
 // EASY_DRAW-SPECIFIC API
 //
 /////////////////////////////////////////////////////////////////
-#ifndef DRGUI_NO_DR_2D
+#ifndef DRED_GUI_NO_DR_2D
 
 void drgui_draw_begin_dr_2d(void* pPaintData);
 void drgui_draw_end_dr_2d(void* pPaintData);
@@ -3388,28 +3388,28 @@ void drgui_draw_rect_with_outline_dr_2d(dred_rect, dred_color, float, dred_color
 void drgui_draw_round_rect_dr_2d(dred_rect, dred_color, float, void*);
 void drgui_draw_round_rect_outline_dr_2d(dred_rect, dred_color, float, float, void*);
 void drgui_draw_round_rect_with_outline_dr_2d(dred_rect, dred_color, float, float, dred_color, void*);
-void drgui_draw_text_dr_2d(drgui_resource, const char*, int, float, float, dred_color, dred_color, void*);
-void drgui_draw_image_dr_2d(drgui_resource image, drgui_draw_image_args* pArgs, void* pPaintData);
+void drgui_draw_text_dr_2d(dred_gui_resource, const char*, int, float, float, dred_color, dred_color, void*);
+void drgui_draw_image_dr_2d(dred_gui_resource image, drgui_draw_image_args* pArgs, void* pPaintData);
 
-drgui_resource drgui_create_font_dr_2d(void*, const char*, unsigned int, dred_gui_font_weight, dred_gui_font_slant, float, unsigned int flags);
-void drgui_delete_font_dr_2d(drgui_resource);
-unsigned int drgui_get_font_size_dr_2d(drgui_resource hFont);
-bool drgui_get_font_metrics_dr_2d(drgui_resource, dred_gui_font_metrics*);
-bool drgui_get_glyph_metrics_dr_2d(drgui_resource, unsigned int, dred_glyph_metrics*);
-bool drgui_measure_string_dr_2d(drgui_resource, const char*, size_t, float*, float*);
-bool drgui_get_text_cursor_position_from_point_dr_2d(drgui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-bool drgui_get_text_cursor_position_from_char_dr_2d(drgui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+dred_gui_resource drgui_create_font_dr_2d(void*, const char*, unsigned int, dred_gui_font_weight, dred_gui_font_slant, float, unsigned int flags);
+void drgui_delete_font_dr_2d(dred_gui_resource);
+unsigned int drgui_get_font_size_dr_2d(dred_gui_resource hFont);
+bool drgui_get_font_metrics_dr_2d(dred_gui_resource, dred_gui_font_metrics*);
+bool drgui_get_glyph_metrics_dr_2d(dred_gui_resource, unsigned int, dred_glyph_metrics*);
+bool drgui_measure_string_dr_2d(dred_gui_resource, const char*, size_t, float*, float*);
+bool drgui_get_text_cursor_position_from_point_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+bool drgui_get_text_cursor_position_from_char_dr_2d(dred_gui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
-drgui_resource drgui_create_image_dr_2d(void* pPaintingContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pImageData);
-void drgui_delete_image_dr_2d(drgui_resource image);
-void drgui_get_image_size_dr_2d(drgui_resource image, unsigned int* pWidthOut, unsigned int* pHeightOut);
+dred_gui_resource drgui_create_image_dr_2d(void* pPaintingContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pImageData);
+void drgui_delete_image_dr_2d(dred_gui_resource image);
+void drgui_get_image_size_dr_2d(dred_gui_resource image, unsigned int* pWidthOut, unsigned int* pHeightOut);
 dred_gui_image_format drgui_get_optimal_image_format_dr_2d(void* pPaintingContext);
-void* drgui_map_image_data_dr_2d(drgui_resource image, unsigned int accessFlags);
-void drgui_unmap_image_data_dr_2d(drgui_resource image);
+void* drgui_map_image_data_dr_2d(dred_gui_resource image, unsigned int accessFlags);
+void drgui_unmap_image_data_dr_2d(dred_gui_resource image);
 
-drgui_context* drgui_create_context_dr_2d(dr2d_context* pDrawingContext)
+dred_gui* drgui_create_context_dr_2d(dr2d_context* pDrawingContext)
 {
-    drgui_context* pContext = drgui_create_context();
+    dred_gui* pContext = drgui_create_context();
     if (pContext != NULL) {
         drgui_register_dr_2d_callbacks(pContext, pDrawingContext);
     }
@@ -3417,7 +3417,7 @@ drgui_context* drgui_create_context_dr_2d(dr2d_context* pDrawingContext)
     return pContext;
 }
 
-void drgui_register_dr_2d_callbacks(drgui_context* pContext, dr2d_context* pDrawingContext)
+void drgui_register_dr_2d_callbacks(dred_gui* pContext, dr2d_context* pDrawingContext)
 {
     dred_gui_painting_callbacks callbacks;
     callbacks.drawBegin                      = drgui_draw_begin_dr_2d;
@@ -3536,7 +3536,7 @@ void drgui_draw_round_rect_with_outline_dr_2d(dred_rect rect, dred_color color, 
     dr2d_draw_round_rect_with_outline(pSurface, rect.left, rect.top, rect.right, rect.bottom, dr2d_rgba(color.r, color.g, color.b, color.a), radius, outlineWidth, dr2d_rgba(outlineColor.r, outlineColor.g, outlineColor.b, outlineColor.a));
 }
 
-void drgui_draw_text_dr_2d(drgui_resource font, const char* text, int textSizeInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData)
+void drgui_draw_text_dr_2d(dred_gui_resource font, const char* text, int textSizeInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);
@@ -3544,7 +3544,7 @@ void drgui_draw_text_dr_2d(drgui_resource font, const char* text, int textSizeIn
     dr2d_draw_text(pSurface, (dr2d_font*)font, text, textSizeInBytes, posX, posY, dr2d_rgba(color.r, color.g, color.b, color.a), dr2d_rgba(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a));
 }
 
-void drgui_draw_image_dr_2d(drgui_resource image, drgui_draw_image_args* pArgs, void* pPaintData)
+void drgui_draw_image_dr_2d(dred_gui_resource image, drgui_draw_image_args* pArgs, void* pPaintData)
 {
     dr2d_surface* pSurface = (dr2d_surface*)pPaintData;
     assert(pSurface != NULL);
@@ -3565,22 +3565,22 @@ void drgui_draw_image_dr_2d(drgui_resource image, drgui_draw_image_args* pArgs, 
 }
 
 
-drgui_resource drgui_create_font_dr_2d(void* pPaintingContext, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags)
+dred_gui_resource drgui_create_font_dr_2d(void* pPaintingContext, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags)
 {
     return dr2d_create_font((dr2d_context*)pPaintingContext, family, size, (dr2d_font_weight)weight, (dr2d_font_slant)slant, rotation, flags);
 }
 
-void drgui_delete_font_dr_2d(drgui_resource font)
+void drgui_delete_font_dr_2d(dred_gui_resource font)
 {
     dr2d_delete_font((dr2d_font*)font);
 }
 
-unsigned int drgui_get_font_size_dr_2d(drgui_resource font)
+unsigned int drgui_get_font_size_dr_2d(dred_gui_resource font)
 {
     return dr2d_get_font_size((dr2d_font*)font);
 }
 
-bool drgui_get_font_metrics_dr_2d(drgui_resource font, dred_gui_font_metrics* pMetricsOut)
+bool drgui_get_font_metrics_dr_2d(dred_gui_resource font, dred_gui_font_metrics* pMetricsOut)
 {
     assert(pMetricsOut != NULL);
 
@@ -3597,7 +3597,7 @@ bool drgui_get_font_metrics_dr_2d(drgui_resource font, dred_gui_font_metrics* pM
     return true;
 }
 
-bool drgui_get_glyph_metrics_dr_2d(drgui_resource font, unsigned int utf32, dred_glyph_metrics* pMetricsOut)
+bool drgui_get_glyph_metrics_dr_2d(dred_gui_resource font, unsigned int utf32, dred_glyph_metrics* pMetricsOut)
 {
     assert(pMetricsOut != NULL);
 
@@ -3616,23 +3616,23 @@ bool drgui_get_glyph_metrics_dr_2d(drgui_resource font, unsigned int utf32, dred
     return true;
 }
 
-bool drgui_measure_string_dr_2d(drgui_resource font, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
+bool drgui_measure_string_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
 {
     return dr2d_measure_string((dr2d_font*)font, text, textSizeInBytes, pWidthOut, pHeightOut);
 }
 
-bool drgui_get_text_cursor_position_from_point_dr_2d(drgui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+bool drgui_get_text_cursor_position_from_point_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     return dr2d_get_text_cursor_position_from_point((dr2d_font*)font, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
 }
 
-bool drgui_get_text_cursor_position_from_char_dr_2d(drgui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+bool drgui_get_text_cursor_position_from_char_dr_2d(dred_gui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
     return dr2d_get_text_cursor_position_from_char((dr2d_font*)font, text, characterIndex, pTextCursorPosXOut);
 }
 
 
-drgui_resource drgui_create_image_dr_2d(void* pPaintingContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pImageData)
+dred_gui_resource drgui_create_image_dr_2d(void* pPaintingContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pImageData)
 {
     dr2d_image_format dr2dFormat;
     switch (format)
@@ -3645,12 +3645,12 @@ drgui_resource drgui_create_image_dr_2d(void* pPaintingContext, unsigned int wid
     return dr2d_create_image((dr2d_context*)pPaintingContext, width, height, dr2dFormat, stride, pImageData);
 }
 
-void drgui_delete_image_dr_2d(drgui_resource image)
+void drgui_delete_image_dr_2d(dred_gui_resource image)
 {
     dr2d_delete_image((dr2d_image*)image);
 }
 
-void drgui_get_image_size_dr_2d(drgui_resource image, unsigned int* pWidthOut, unsigned int* pHeightOut)
+void drgui_get_image_size_dr_2d(dred_gui_resource image, unsigned int* pWidthOut, unsigned int* pHeightOut)
 {
     dr2d_get_image_size((dr2d_image*)image, pWidthOut, pHeightOut);
 }
@@ -3660,14 +3660,14 @@ dred_gui_image_format drgui_get_optimal_image_format_dr_2d(void* pPaintingContex
     return (dred_gui_image_format)dr2d_get_optimal_image_format((dr2d_context*)pPaintingContext);
 }
 
-void* drgui_map_image_data_dr_2d(drgui_resource image, unsigned int accessFlags)
+void* drgui_map_image_data_dr_2d(dred_gui_resource image, unsigned int accessFlags)
 {
     return dr2d_map_image_data((dr2d_image*)image, accessFlags);
 }
 
-void drgui_unmap_image_data_dr_2d(drgui_resource image)
+void drgui_unmap_image_data_dr_2d(dred_gui_resource image)
 {
     dr2d_unmap_image_data((dr2d_image*)image);
 }
 
-#endif  //DRGUI_NO_DR_2D
+#endif  //DRED_GUI_NO_DR_2D

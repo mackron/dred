@@ -2,12 +2,12 @@
 
 typedef struct
 {
-    drgui_element* pTabBar;
+    dred_element* pTabBar;
     dred_tabgroup* pNextTabGroup;
     dred_tabgroup* pPrevTabGroup;
 } dred_tabgroup_data;
 
-drgui_element* dred_tabgroup__get_tabbar(dred_tabgroup* pTabGroup)
+dred_element* dred_tabgroup__get_tabbar(dred_tabgroup* pTabGroup)
 {
     dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
     if (data == NULL) {
@@ -19,7 +19,7 @@ drgui_element* dred_tabgroup__get_tabbar(dred_tabgroup* pTabGroup)
 
 float dred_tabgroup__get_tabbar_height(dred_tabgroup* pTabGroup)
 {
-    drgui_element* pTabBar = dred_tabgroup__get_tabbar(pTabGroup);
+    dred_element* pTabBar = dred_tabgroup__get_tabbar(pTabGroup);
     if (pTabBar == NULL) {
         return 0;
     }
@@ -86,7 +86,7 @@ void dred_tabgroup__on_paint(dred_tabgroup* pTabGroup, dred_rect rect, void* pPa
 }
 
 
-void dred_tabbar__on_tab_activated(drgui_element* pTabBar, drgui_tab* pTab, drgui_tab* pOldActiveTab)
+void dred_tabbar__on_tab_activated(dred_element* pTabBar, drgui_tab* pTab, drgui_tab* pOldActiveTab)
 {
     // The tab group is the parent of the tab bar.
     dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
@@ -105,7 +105,7 @@ void dred_tabbar__on_tab_activated(drgui_element* pTabBar, drgui_tab* pTab, drgu
     dred_on_tab_activated(dred_control_get_context(pTabGroup), pTab, pOldActiveTab);
 }
 
-void dred_tabbar__on_tab_deactivated(drgui_element* pTabBar, drgui_tab* pTab, drgui_tab* pNewActiveTab)
+void dred_tabbar__on_tab_deactivated(dred_element* pTabBar, drgui_tab* pTab, drgui_tab* pNewActiveTab)
 {
     // The tab group is the parent of the tab bar.
     dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
@@ -126,7 +126,7 @@ void dred_tabbar__on_tab_deactivated(drgui_element* pTabBar, drgui_tab* pTab, dr
     dred_on_tab_deactivated(dred_control_get_context(pTabGroup), pTab, pNewActiveTab);
 }
 
-void dred_tabbar__on_tab_close(drgui_element* pTabBar, drgui_tab* pTab)
+void dred_tabbar__on_tab_close(dred_element* pTabBar, drgui_tab* pTab)
 {
     dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
     if (pTabGroup == NULL) {
@@ -136,7 +136,7 @@ void dred_tabbar__on_tab_close(drgui_element* pTabBar, drgui_tab* pTab)
     dred_close_tab_with_confirmation(dred_control_get_context(pTabGroup), (dred_tab*)pTab);
 }
 
-void dred_tabbar__on_tab_mouse_button_up(drgui_element* pTabBar, drgui_tab* pTab, int mouseButton, int mouseRelativePosX, int mouseRelativePosY, int stateFlags)
+void dred_tabbar__on_tab_mouse_button_up(dred_element* pTabBar, drgui_tab* pTab, int mouseButton, int mouseRelativePosX, int mouseRelativePosY, int stateFlags)
 {
     (void)pTab;
     (void)stateFlags;
@@ -151,7 +151,7 @@ void dred_tabbar__on_tab_mouse_button_up(drgui_element* pTabBar, drgui_tab* pTab
         return;
     }
 
-    if (mouseButton == DRGUI_MOUSE_BUTTON_RIGHT) {
+    if (mouseButton == DRED_GUI_MOUSE_BUTTON_RIGHT) {
         dred_control_show_popup_menu(pTabGroup, pDred->menuLibrary.pPopupMenu_Tab, mouseRelativePosX, mouseRelativePosY);
     }
 }

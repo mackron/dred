@@ -102,7 +102,7 @@ dred_accelerator dred_accelerator_none()
     return result;
 }
 
-dred_accelerator dred_accelerator_create(drgui_key key, uint32_t modifiers)
+dred_accelerator dred_accelerator_create(dred_key key, uint32_t modifiers)
 {
     dred_accelerator result;
     result.key = key;
@@ -162,17 +162,17 @@ dred_accelerator dred_accelerator_parse(const char* accelStr)
     char token[256];
     while ((accelStr = dred_accelerator__next_token(accelStr, token, sizeof(token))) != NULL) {
         if (_stricmp(token, "ctrl") == 0) {
-            accelerator.modifiers |= DRGUI_KEY_STATE_CTRL_DOWN;
+            accelerator.modifiers |= DRED_GUI_KEY_STATE_CTRL_DOWN;
             prevAccelStr = accelStr;
             continue;
         }
         if (_stricmp(token, "alt") == 0) {
-            accelerator.modifiers |= DRGUI_KEY_STATE_ALT_DOWN;
+            accelerator.modifiers |= DRED_GUI_KEY_STATE_ALT_DOWN;
             prevAccelStr = accelStr;
             continue;
         }
         if (_stricmp(token, "shift") == 0) {
-            accelerator.modifiers |= DRGUI_KEY_STATE_SHIFT_DOWN;
+            accelerator.modifiers |= DRED_GUI_KEY_STATE_SHIFT_DOWN;
             prevAccelStr = accelStr;
             continue;
         }
@@ -182,7 +182,7 @@ dred_accelerator dred_accelerator_parse(const char* accelStr)
             prevAccelStr += 1;
         }
 
-        accelerator.key = drgui_key_parse(prevAccelStr);
+        accelerator.key = dred_key_parse(prevAccelStr);
 
         // Shortcuts should use the capitalized version of the key. If we don't do this it won't work on Win32.
         if (accelerator.key >= 32 && accelerator.key <= 126) {
@@ -218,7 +218,7 @@ size_t dred_accelerator_to_string(dred_accelerator accelerator, char* strOut, si
         characterStr[characterLength++] = 'A';
         characterStr[characterLength++] = 'B';
     } else {
-        characterLength += drgui_key_to_string(accelerator.key, characterStr + characterLength, sizeof(characterStr) - characterLength);
+        characterLength += dred_key_to_string(accelerator.key, characterStr + characterLength, sizeof(characterStr) - characterLength);
     }
     
 

@@ -7,7 +7,7 @@ typedef struct
 
 dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, const char* type, size_t extraDataSize)
 {
-    drgui_element* pControl = drgui_create_element(pDred->pGUI, pParent, sizeof(dred_control_data) + extraDataSize, NULL);
+    dred_element* pControl = drgui_create_element(pDred->pGUI, pParent, sizeof(dred_control_data) + extraDataSize, NULL);
     if (pControl == NULL) {
         return NULL;
     }

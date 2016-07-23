@@ -14,7 +14,7 @@ typedef void (* dred_scrollbar_on_scroll_proc)(dred_scrollbar* pScrollbar, int s
 
 
 /// Creates a scrollbar element.
-dred_scrollbar* dred_scrollbar_create(dred_context* pDred, drgui_element* pParent, dred_scrollbar_orientation orientation, size_t extraDataSize, const void* pExtraData);
+dred_scrollbar* dred_scrollbar_create(dred_context* pDred, dred_element* pParent, dred_scrollbar_orientation orientation, size_t extraDataSize, const void* pExtraData);
 
 /// Deletes the given scrollbar element.
 void dred_scrollbar_delete(dred_scrollbar* pScrollbar);

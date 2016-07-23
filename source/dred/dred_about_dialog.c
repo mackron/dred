@@ -30,7 +30,7 @@ static const struct {
   "\0\0\377\0\0\0\377\0\0\0\377\0\0\0\377\0\0\0\377",
 };
 
-void dred_about_dialog__on_size(drgui_element* pElement, float newWidth, float newHeight)
+void dred_about_dialog__on_size(dred_element* pElement, float newWidth, float newHeight)
 {
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow == NULL) {
@@ -47,7 +47,7 @@ void dred_about_dialog__on_size(drgui_element* pElement, float newWidth, float n
     dred_control_set_relative_position(pDialog->pCloseButton, newWidth - dred_control_get_width(pDialog->pCloseButton) - 8*pDred->uiScale, newHeight - dred_control_get_height(pDialog->pCloseButton) - 8*pDred->uiScale);
 }
 
-void dred_about_dialog__on_paint(drgui_element* pElement, dred_rect rect, void* pPaintData)
+void dred_about_dialog__on_paint(dred_element* pElement, dred_rect rect, void* pPaintData)
 {
     (void)rect;
 
@@ -84,7 +84,7 @@ void dred_about_dialog__on_paint(drgui_element* pElement, dred_rect rect, void* 
     args.dstBoundsY = bannerRect.top;
     args.dstBoundsWidth = bannerRect.right - bannerRect.left;
     args.dstBoundsHeight = bannerRect.bottom - bannerRect.top;
-    args.options = DRGUI_IMAGE_ALIGN_CENTER;
+    args.options = DRED_GUI_IMAGE_ALIGN_CENTER;
     args.foregroundTint = drgui_rgb(255, 255, 255);
     args.backgroundColor = drgui_rgb(255, 255, 255);
     drgui_draw_image(pElement, pDialog->pLogo, &args, pPaintData);
@@ -157,14 +157,14 @@ void dred_about_dialog__on_window_close(dred_window* pWindow)
     pDred->pAboutDialog = NULL;
 }
 
-/*void dred_about_dialog__on_key_down(dred_window* pWindow, drgui_key key, unsigned int stateFlags)
+/*void dred_about_dialog__on_key_down(dred_window* pWindow, dred_key key, unsigned int stateFlags)
 {
     (void)stateFlags;
 
     dred_about_dialog* pDialog = (dred_about_dialog*)pWindow->pUserData;
     assert(pDialog != NULL);
 
-    if (key == DRGUI_ESCAPE) {
+    if (key == DRED_GUI_ESCAPE) {
         dred_about_dialog__on_window_close(pWindow);
     }
 }*/

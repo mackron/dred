@@ -49,69 +49,69 @@ bool dred_is_win32_mouse_button_key_code(WPARAM wParam)
     return wParam == VK_LBUTTON || wParam == VK_RBUTTON || wParam == VK_MBUTTON || wParam == VK_XBUTTON1 || wParam == VK_XBUTTON2;
 }
 
-drgui_key dred_win32_to_drgui_key(WPARAM wParam)
+dred_key dred_win32_to_dred_key(WPARAM wParam)
 {
     switch (wParam)
     {
-    case VK_BACK:   return DRGUI_BACKSPACE;
-    case VK_SHIFT:  return DRGUI_SHIFT;
-    case VK_ESCAPE: return DRGUI_ESCAPE;
-    case VK_PRIOR:  return DRGUI_PAGE_UP;
-    case VK_NEXT:   return DRGUI_PAGE_DOWN;
-    case VK_END:    return DRGUI_END;
-    case VK_HOME:   return DRGUI_HOME;
-    case VK_LEFT:   return DRGUI_ARROW_LEFT;
-    case VK_UP:     return DRGUI_ARROW_UP;
-    case VK_RIGHT:  return DRGUI_ARROW_RIGHT;
-    case VK_DOWN:   return DRGUI_ARROW_DOWN;
-    case VK_DELETE: return DRGUI_DELETE;
-    case VK_F1:     return DRGUI_F1;
-    case VK_F2:     return DRGUI_F2;
-    case VK_F3:     return DRGUI_F3;
-    case VK_F4:     return DRGUI_F4;
-    case VK_F5:     return DRGUI_F5;
-    case VK_F6:     return DRGUI_F6;
-    case VK_F7:     return DRGUI_F7;
-    case VK_F8:     return DRGUI_F8;
-    case VK_F9:     return DRGUI_F9;
-    case VK_F10:    return DRGUI_F10;
-    case VK_F11:    return DRGUI_F11;
-    case VK_F12:    return DRGUI_F12;
+    case VK_BACK:   return DRED_GUI_BACKSPACE;
+    case VK_SHIFT:  return DRED_GUI_SHIFT;
+    case VK_ESCAPE: return DRED_GUI_ESCAPE;
+    case VK_PRIOR:  return DRED_GUI_PAGE_UP;
+    case VK_NEXT:   return DRED_GUI_PAGE_DOWN;
+    case VK_END:    return DRED_GUI_END;
+    case VK_HOME:   return DRED_GUI_HOME;
+    case VK_LEFT:   return DRED_GUI_ARROW_LEFT;
+    case VK_UP:     return DRED_GUI_ARROW_UP;
+    case VK_RIGHT:  return DRED_GUI_ARROW_RIGHT;
+    case VK_DOWN:   return DRED_GUI_ARROW_DOWN;
+    case VK_DELETE: return DRED_GUI_DELETE;
+    case VK_F1:     return DRED_GUI_F1;
+    case VK_F2:     return DRED_GUI_F2;
+    case VK_F3:     return DRED_GUI_F3;
+    case VK_F4:     return DRED_GUI_F4;
+    case VK_F5:     return DRED_GUI_F5;
+    case VK_F6:     return DRED_GUI_F6;
+    case VK_F7:     return DRED_GUI_F7;
+    case VK_F8:     return DRED_GUI_F8;
+    case VK_F9:     return DRED_GUI_F9;
+    case VK_F10:    return DRED_GUI_F10;
+    case VK_F11:    return DRED_GUI_F11;
+    case VK_F12:    return DRED_GUI_F12;
 
     default: break;
     }
 
-    return (drgui_key)wParam;
+    return (dred_key)wParam;
 }
 
-WORD dred_drgui_key_to_win32(drgui_key key)
+WORD dred_dred_key_to_win32(dred_key key)
 {
     switch (key)
     {
-    case DRGUI_BACKSPACE:   return VK_BACK;
-    case DRGUI_SHIFT:       return VK_SHIFT;
-    case DRGUI_ESCAPE:      return VK_ESCAPE;
-    case DRGUI_PAGE_UP:     return VK_PRIOR;
-    case DRGUI_PAGE_DOWN:   return VK_NEXT;
-    case DRGUI_END:         return VK_END;
-    case DRGUI_HOME:        return VK_HOME;
-    case DRGUI_ARROW_LEFT:  return VK_LEFT;
-    case DRGUI_ARROW_UP:    return VK_UP;
-    case DRGUI_ARROW_RIGHT: return VK_RIGHT;
-    case DRGUI_ARROW_DOWN:  return VK_DOWN;
-    case DRGUI_DELETE:      return VK_DELETE;
-    case DRGUI_F1:          return VK_F1;
-    case DRGUI_F2:          return VK_F2;
-    case DRGUI_F3:          return VK_F3;
-    case DRGUI_F4:          return VK_F4;
-    case DRGUI_F5:          return VK_F5;
-    case DRGUI_F6:          return VK_F6;
-    case DRGUI_F7:          return VK_F7;
-    case DRGUI_F8:          return VK_F8;
-    case DRGUI_F9:          return VK_F9;
-    case DRGUI_F10:         return VK_F10;
-    case DRGUI_F11:         return VK_F11;
-    case DRGUI_F12:         return VK_F12;
+    case DRED_GUI_BACKSPACE:   return VK_BACK;
+    case DRED_GUI_SHIFT:       return VK_SHIFT;
+    case DRED_GUI_ESCAPE:      return VK_ESCAPE;
+    case DRED_GUI_PAGE_UP:     return VK_PRIOR;
+    case DRED_GUI_PAGE_DOWN:   return VK_NEXT;
+    case DRED_GUI_END:         return VK_END;
+    case DRED_GUI_HOME:        return VK_HOME;
+    case DRED_GUI_ARROW_LEFT:  return VK_LEFT;
+    case DRED_GUI_ARROW_UP:    return VK_UP;
+    case DRED_GUI_ARROW_RIGHT: return VK_RIGHT;
+    case DRED_GUI_ARROW_DOWN:  return VK_DOWN;
+    case DRED_GUI_DELETE:      return VK_DELETE;
+    case DRED_GUI_F1:          return VK_F1;
+    case DRED_GUI_F2:          return VK_F2;
+    case DRED_GUI_F3:          return VK_F3;
+    case DRED_GUI_F4:          return VK_F4;
+    case DRED_GUI_F5:          return VK_F5;
+    case DRED_GUI_F6:          return VK_F6;
+    case DRED_GUI_F7:          return VK_F7;
+    case DRED_GUI_F8:          return VK_F8;
+    case DRED_GUI_F9:          return VK_F9;
+    case DRED_GUI_F10:         return VK_F10;
+    case DRED_GUI_F11:         return VK_F11;
+    case DRED_GUI_F12:         return VK_F12;
 
     default: break;
     }
@@ -185,10 +185,10 @@ int dred_win32_get_mouse_event_state_flags(WPARAM wParam)
 }
 
 
-ACCEL dred_win32_to_ACCEL(drgui_key key, uint32_t modifiers, WORD cmd)
+ACCEL dred_win32_to_ACCEL(dred_key key, uint32_t modifiers, WORD cmd)
 {
     ACCEL a;
-    a.key = dred_drgui_key_to_win32(key);
+    a.key = dred_dred_key_to_win32(key);
     a.cmd = cmd;
 
     a.fVirt = FVIRTKEY;
@@ -283,7 +283,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_down(pWindow, DRGUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
         } break;
         case WM_NCLBUTTONUP:
         {
@@ -292,7 +292,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_up(pWindow, DRGUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam));
+            dred_window_on_mouse_button_up(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam));
 
         } break;
         case WM_NCLBUTTONDBLCLK:
@@ -302,23 +302,23 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_down(pWindow, DRGUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
-            dred_window_on_mouse_button_dblclick(pWindow, DRGUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
+            dred_window_on_mouse_button_dblclick(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
 
         } break;
 
         case WM_LBUTTONDOWN:
         {
-            dred_window_on_mouse_button_down(pWindow, DRGUI_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
         } break;
         case WM_LBUTTONUP:
         {
-            dred_window_on_mouse_button_up(pWindow, DRGUI_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam));
+            dred_window_on_mouse_button_up(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam));
         } break;
         case WM_LBUTTONDBLCLK:
         {
-            dred_window_on_mouse_button_down(pWindow, DRGUI_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
-            dred_window_on_mouse_button_dblclick(pWindow, DRGUI_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
+            dred_window_on_mouse_button_dblclick(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
         } break;
 
 
@@ -329,7 +329,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_down(pWindow, DRGUI_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
         } break;
         case WM_NCRBUTTONUP:
         {
@@ -338,7 +338,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_up(pWindow, DRGUI_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam));
+            dred_window_on_mouse_button_up(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam));
         } break;
         case WM_NCRBUTTONDBLCLK:
         {
@@ -347,22 +347,22 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_down(pWindow, DRGUI_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
-            dred_window_on_mouse_button_dblclick(pWindow, DRGUI_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
+            dred_window_on_mouse_button_dblclick(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
         } break;
 
         case WM_RBUTTONDOWN:
         {
-            dred_window_on_mouse_button_down(pWindow, DRGUI_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
         } break;
         case WM_RBUTTONUP:
         {
-            dred_window_on_mouse_button_up(pWindow, DRGUI_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam));
+            dred_window_on_mouse_button_up(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam));
         } break;
         case WM_RBUTTONDBLCLK:
         {
-            dred_window_on_mouse_button_down(pWindow, DRGUI_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
-            dred_window_on_mouse_button_dblclick(pWindow, DRGUI_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
+            dred_window_on_mouse_button_dblclick(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
         } break;
 
 
@@ -373,7 +373,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_down(pWindow, DRGUI_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
         } break;
         case WM_NCMBUTTONUP:
         {
@@ -382,7 +382,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_up(pWindow, DRGUI_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam));
+            dred_window_on_mouse_button_up(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam));
         } break;
         case WM_NCMBUTTONDBLCLK:
         {
@@ -391,22 +391,22 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_down(pWindow, DRGUI_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
-            dred_window_on_mouse_button_dblclick(pWindow, DRGUI_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
+            dred_window_on_mouse_button_dblclick(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
         } break;
 
         case WM_MBUTTONDOWN:
         {
-            dred_window_on_mouse_button_down(pWindow, DRGUI_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
         } break;
         case WM_MBUTTONUP:
         {
-            dred_window_on_mouse_button_up(pWindow, DRGUI_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam));
+            dred_window_on_mouse_button_up(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam));
         } break;
         case WM_MBUTTONDBLCLK:
         {
-            dred_window_on_mouse_button_down(pWindow, DRGUI_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
-            dred_window_on_mouse_button_dblclick(pWindow, DRGUI_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
+            dred_window_on_mouse_button_dblclick(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
         } break;
 
         case WM_MOUSEWHEEL:
@@ -431,7 +431,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
                     stateFlags |= DRED_KEY_STATE_AUTO_REPEATED;
                 }
 
-                dred_window_on_key_down(pWindow, dred_win32_to_drgui_key(wParam), stateFlags);
+                dred_window_on_key_down(pWindow, dred_win32_to_dred_key(wParam), stateFlags);
             }
         } break;
 
@@ -440,7 +440,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             if (!dred_is_win32_mouse_button_key_code(wParam))
             {
                 int stateFlags = dred_win32_get_modifier_key_state_flags();
-                dred_window_on_key_up(pWindow, dred_win32_to_drgui_key(wParam), stateFlags);
+                dred_window_on_key_up(pWindow, dred_win32_to_dred_key(wParam), stateFlags);
             }
         } break;
 
@@ -1424,7 +1424,7 @@ void dred_clipboard_free_text__win32(char* text)
 
 //// WIN32 <-> GUI BINDING ////
 
-static void dred_platform__on_global_capture_mouse__win32(drgui_element* pElement)
+static void dred_platform__on_global_capture_mouse__win32(dred_element* pElement)
 {
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow != NULL) {
@@ -1432,7 +1432,7 @@ static void dred_platform__on_global_capture_mouse__win32(drgui_element* pElemen
     }
 }
 
-static void dred_platform__on_global_release_mouse__win32(drgui_element* pElement)
+static void dred_platform__on_global_release_mouse__win32(dred_element* pElement)
 {
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow != NULL) {
@@ -1440,7 +1440,7 @@ static void dred_platform__on_global_release_mouse__win32(drgui_element* pElemen
     }
 }
 
-static void dred_platform__on_global_capture_keyboard__win32(drgui_element* pElement, drgui_element* pPrevCapturedElement)
+static void dred_platform__on_global_capture_keyboard__win32(dred_element* pElement, dred_element* pPrevCapturedElement)
 {
     (void)pPrevCapturedElement;
 
@@ -1451,7 +1451,7 @@ static void dred_platform__on_global_capture_keyboard__win32(drgui_element* pEle
     }
 }
 
-static void dred_platform__on_global_release_keyboard__win32(drgui_element* pElement, drgui_element* pNewCapturedElement)
+static void dred_platform__on_global_release_keyboard__win32(dred_element* pElement, dred_element* pNewCapturedElement)
 {
     (void)pNewCapturedElement;
 
@@ -1464,7 +1464,7 @@ static void dred_platform__on_global_release_keyboard__win32(drgui_element* pEle
     }
 }
 
-static void dred_platform__on_global_dirty__win32(drgui_element* pElement, dred_rect relativeRect)
+static void dred_platform__on_global_dirty__win32(dred_element* pElement, dred_rect relativeRect)
 {
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow != NULL)
@@ -1507,35 +1507,35 @@ GdkCursor* g_GTKCursor_Cross = NULL;
 GdkCursor* g_GTKCursor_DoubleArrowH = NULL;
 GdkCursor* g_GTKCursor_DoubleArrowV = NULL;
 
-static drgui_key dred_gtk_to_drgui_key(guint keyval)
+static dred_key dred_gtk_to_dred_key(guint keyval)
 {
     switch (keyval)
     {
-    case GDK_KEY_BackSpace: return DRGUI_BACKSPACE;
-    case GDK_KEY_Shift_L:   return DRGUI_SHIFT;
-    case GDK_KEY_Shift_R:   return DRGUI_SHIFT;
-    case GDK_KEY_Escape:    return DRGUI_ESCAPE;
-    case GDK_KEY_Page_Up:   return DRGUI_PAGE_UP;
-    case GDK_KEY_Page_Down: return DRGUI_PAGE_DOWN;
-    case GDK_KEY_End:       return DRGUI_END;
-    case GDK_KEY_Home:      return DRGUI_HOME;
-    case GDK_KEY_Left:      return DRGUI_ARROW_LEFT;
-    case GDK_KEY_Up:        return DRGUI_ARROW_UP;
-    case GDK_KEY_Right:     return DRGUI_ARROW_RIGHT;
-    case GDK_KEY_Down:      return DRGUI_ARROW_DOWN;
-    case GDK_KEY_Delete:    return DRGUI_DELETE;
-    case GDK_KEY_F1:        return DRGUI_F1;
-    case GDK_KEY_F2:        return DRGUI_F2;
-    case GDK_KEY_F3:        return DRGUI_F3;
-    case GDK_KEY_F4:        return DRGUI_F4;
-    case GDK_KEY_F5:        return DRGUI_F5;
-    case GDK_KEY_F6:        return DRGUI_F6;
-    case GDK_KEY_F7:        return DRGUI_F7;
-    case GDK_KEY_F8:        return DRGUI_F8;
-    case GDK_KEY_F9:        return DRGUI_F9;
-    case GDK_KEY_F10:       return DRGUI_F10;
-    case GDK_KEY_F11:       return DRGUI_F11;
-    case GDK_KEY_F12:       return DRGUI_F12;
+    case GDK_KEY_BackSpace: return DRED_GUI_BACKSPACE;
+    case GDK_KEY_Shift_L:   return DRED_GUI_SHIFT;
+    case GDK_KEY_Shift_R:   return DRED_GUI_SHIFT;
+    case GDK_KEY_Escape:    return DRED_GUI_ESCAPE;
+    case GDK_KEY_Page_Up:   return DRED_GUI_PAGE_UP;
+    case GDK_KEY_Page_Down: return DRED_GUI_PAGE_DOWN;
+    case GDK_KEY_End:       return DRED_GUI_END;
+    case GDK_KEY_Home:      return DRED_GUI_HOME;
+    case GDK_KEY_Left:      return DRED_GUI_ARROW_LEFT;
+    case GDK_KEY_Up:        return DRED_GUI_ARROW_UP;
+    case GDK_KEY_Right:     return DRED_GUI_ARROW_RIGHT;
+    case GDK_KEY_Down:      return DRED_GUI_ARROW_DOWN;
+    case GDK_KEY_Delete:    return DRED_GUI_DELETE;
+    case GDK_KEY_F1:        return DRED_GUI_F1;
+    case GDK_KEY_F2:        return DRED_GUI_F2;
+    case GDK_KEY_F3:        return DRED_GUI_F3;
+    case GDK_KEY_F4:        return DRED_GUI_F4;
+    case GDK_KEY_F5:        return DRED_GUI_F5;
+    case GDK_KEY_F6:        return DRED_GUI_F6;
+    case GDK_KEY_F7:        return DRED_GUI_F7;
+    case GDK_KEY_F8:        return DRED_GUI_F8;
+    case GDK_KEY_F9:        return DRED_GUI_F9;
+    case GDK_KEY_F10:       return DRED_GUI_F10;
+    case GDK_KEY_F11:       return DRED_GUI_F11;
+    case GDK_KEY_F12:       return DRED_GUI_F12;
 
     default: break;
     }
@@ -1544,38 +1544,38 @@ static drgui_key dred_gtk_to_drgui_key(guint keyval)
         return '\t';
     }
 
-    return (drgui_key)keyval;
+    return (dred_key)keyval;
 }
 
-guint dred_drgui_key_to_gtk(drgui_key key)
+guint dred_dred_key_to_gtk(dred_key key)
 {
     switch (key)
     {
-    case DRGUI_BACKSPACE:   return GDK_KEY_BackSpace;
-    case DRGUI_SHIFT:       return GDK_KEY_Shift_L;
-    //case DRGUI_SHIFT:       return GDK_KEY_Shift_R;
-    case DRGUI_ESCAPE:      return GDK_KEY_Escape;
-    case DRGUI_PAGE_UP:     return GDK_KEY_Page_Up;
-    case DRGUI_PAGE_DOWN:   return GDK_KEY_Page_Down;
-    case DRGUI_END:         return GDK_KEY_End;
-    case DRGUI_HOME:        return GDK_KEY_Begin;
-    case DRGUI_ARROW_LEFT:  return GDK_KEY_Left;
-    case DRGUI_ARROW_UP:    return GDK_KEY_Up;
-    case DRGUI_ARROW_RIGHT: return GDK_KEY_Right;
-    case DRGUI_ARROW_DOWN:  return GDK_KEY_Down;
-    case DRGUI_DELETE:      return GDK_KEY_Delete;
-    case DRGUI_F1:          return GDK_KEY_F1;
-    case DRGUI_F2:          return GDK_KEY_F2;
-    case DRGUI_F3:          return GDK_KEY_F3;
-    case DRGUI_F4:          return GDK_KEY_F4;
-    case DRGUI_F5:          return GDK_KEY_F5;
-    case DRGUI_F6:          return GDK_KEY_F6;
-    case DRGUI_F7:          return GDK_KEY_F7;
-    case DRGUI_F8:          return GDK_KEY_F8;
-    case DRGUI_F9:          return GDK_KEY_F9;
-    case DRGUI_F10:         return GDK_KEY_F10;
-    case DRGUI_F11:         return GDK_KEY_F11;
-    case DRGUI_F12:         return GDK_KEY_F12;
+    case DRED_GUI_BACKSPACE:   return GDK_KEY_BackSpace;
+    case DRED_GUI_SHIFT:       return GDK_KEY_Shift_L;
+    //case DRED_GUI_SHIFT:       return GDK_KEY_Shift_R;
+    case DRED_GUI_ESCAPE:      return GDK_KEY_Escape;
+    case DRED_GUI_PAGE_UP:     return GDK_KEY_Page_Up;
+    case DRED_GUI_PAGE_DOWN:   return GDK_KEY_Page_Down;
+    case DRED_GUI_END:         return GDK_KEY_End;
+    case DRED_GUI_HOME:        return GDK_KEY_Begin;
+    case DRED_GUI_ARROW_LEFT:  return GDK_KEY_Left;
+    case DRED_GUI_ARROW_UP:    return GDK_KEY_Up;
+    case DRED_GUI_ARROW_RIGHT: return GDK_KEY_Right;
+    case DRED_GUI_ARROW_DOWN:  return GDK_KEY_Down;
+    case DRED_GUI_DELETE:      return GDK_KEY_Delete;
+    case DRED_GUI_F1:          return GDK_KEY_F1;
+    case DRED_GUI_F2:          return GDK_KEY_F2;
+    case DRED_GUI_F3:          return GDK_KEY_F3;
+    case DRED_GUI_F4:          return GDK_KEY_F4;
+    case DRED_GUI_F5:          return GDK_KEY_F5;
+    case DRED_GUI_F6:          return GDK_KEY_F6;
+    case DRED_GUI_F7:          return GDK_KEY_F7;
+    case DRED_GUI_F8:          return GDK_KEY_F8;
+    case DRED_GUI_F9:          return GDK_KEY_F9;
+    case DRED_GUI_F10:         return GDK_KEY_F10;
+    case DRED_GUI_F11:         return GDK_KEY_F11;
+    case DRED_GUI_F12:         return GDK_KEY_F12;
 
     default: break;
     }
@@ -1639,9 +1639,9 @@ guint dred_accelerator_modifiers_to_gtk(uint32_t modifiers)
 static int dred_from_gtk_mouse_button(guint buttonGTK)
 {
     switch (buttonGTK) {
-        case 1: return DRGUI_MOUSE_BUTTON_LEFT;
-        case 2: return DRGUI_MOUSE_BUTTON_MIDDLE;
-        case 3: return DRGUI_MOUSE_BUTTON_RIGHT;
+        case 1: return DRED_GUI_MOUSE_BUTTON_LEFT;
+        case 2: return DRED_GUI_MOUSE_BUTTON_MIDDLE;
+        case 3: return DRED_GUI_MOUSE_BUTTON_RIGHT;
         default: return (int)buttonGTK;
     }
 }
@@ -1954,7 +1954,7 @@ static gboolean dred_gtk_cb__on_key_down(GtkWidget* pGTKWindow, GdkEventKey* pEv
         }
     }
 
-    dred_window_on_key_down(pWindow, dred_gtk_to_drgui_key(pEvent->keyval), stateFlags);
+    dred_window_on_key_down(pWindow, dred_gtk_to_dred_key(pEvent->keyval), stateFlags);
 
     guint32 utf32 = gdk_keyval_to_unicode(pEvent->keyval);
     if (utf32 == 0) {
@@ -1981,7 +1981,7 @@ static gboolean dred_gtk_cb__on_key_up(GtkWidget* pGTKWindow, GdkEventKey* pEven
         return true;
     }
 
-    dred_window_on_key_up(pWindow, dred_gtk_to_drgui_key(pEvent->keyval), dred_gtk_get_modifier_state_flags(pEvent->state));
+    dred_window_on_key_up(pWindow, dred_gtk_to_dred_key(pEvent->keyval), dred_gtk_get_modifier_state_flags(pEvent->state));
     return false;
 }
 
@@ -2069,7 +2069,7 @@ GtkAccelGroup* dred_gtk__create_accels(dred_accelerator_table* pAcceleratorTable
         pAccel->pWindow = pWindow;
         pAccel->pMenu = pMenu;
 
-        guint keyGTK = dred_drgui_key_to_gtk(pAcceleratorTable->pAccelerators[i].key);
+        guint keyGTK = dred_dred_key_to_gtk(pAcceleratorTable->pAccelerators[i].key);
         GdkModifierType modifiersGTK = dred_accelerator_modifiers_to_gtk(pAcceleratorTable->pAccelerators[i].modifiers);
         if (keyGTK > 0) {
             gtk_accel_group_connect(pGTKAccelGroup, keyGTK, modifiersGTK, 0, pAccel->pClosure);
@@ -2610,13 +2610,13 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
         if (pMenu->pGTKAccelGroup) {
             dred_accelerator accel0 = shortcut.accelerators[0];
             dred_accelerator accel1 = shortcut.accelerators[1];
-            //gtk_widget_add_accelerator(pGTKMenuItem, "activate", pMenu->pGTKAccelGroup, dred_drgui_key_to_gtk(accel0.key), dred_accelerator_modifiers_to_gtk(accel0.modifiers), GTK_ACCEL_VISIBLE);
+            //gtk_widget_add_accelerator(pGTKMenuItem, "activate", pMenu->pGTKAccelGroup, dred_dred_key_to_gtk(accel0.key), dred_accelerator_modifiers_to_gtk(accel0.modifiers), GTK_ACCEL_VISIBLE);
 
             if (accel0.key != 0) {
                 // TODO: Think about how we'll present multi-key shortcuts. For now we are just not presenting them at all which is not ideal.
                 if (accel1.key == 0) {
                     GtkWidget* pGTKAccelLabel = gtk_bin_get_child(GTK_BIN(pGTKMenuItem));
-                    gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), dred_drgui_key_to_gtk(accel0.key), dred_accelerator_modifiers_to_gtk(accel0.modifiers));
+                    gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), dred_dred_key_to_gtk(accel0.key), dred_accelerator_modifiers_to_gtk(accel0.modifiers));
                 }
             }
         }
@@ -2800,7 +2800,7 @@ void dred_clipboard_free_text__gtk(char* text)
 
 //// GTK <-> GUI BINDING ////
 
-static void dred_platform__on_global_capture_mouse__gtk(drgui_element* pElement)
+static void dred_platform__on_global_capture_mouse__gtk(dred_element* pElement)
 {
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow != NULL) {
@@ -2809,7 +2809,7 @@ static void dred_platform__on_global_capture_mouse__gtk(drgui_element* pElement)
     }
 }
 
-static void dred_platform__on_global_release_mouse__gtk(drgui_element* pElement)
+static void dred_platform__on_global_release_mouse__gtk(dred_element* pElement)
 {
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow != NULL) {
@@ -2817,7 +2817,7 @@ static void dred_platform__on_global_release_mouse__gtk(drgui_element* pElement)
     }
 }
 
-static void dred_platform__on_global_capture_keyboard__gtk(drgui_element* pElement, drgui_element* pPrevCapturedElement)
+static void dred_platform__on_global_capture_keyboard__gtk(dred_element* pElement, dred_element* pPrevCapturedElement)
 {
     (void)pPrevCapturedElement;
 
@@ -2828,7 +2828,7 @@ static void dred_platform__on_global_capture_keyboard__gtk(drgui_element* pEleme
     }
 }
 
-static void dred_platform__on_global_release_keyboard__gtk(drgui_element* pElement, drgui_element* pNewCapturedElement)
+static void dred_platform__on_global_release_keyboard__gtk(dred_element* pElement, dred_element* pNewCapturedElement)
 {
     (void)pNewCapturedElement;
 
@@ -2841,7 +2841,7 @@ static void dred_platform__on_global_release_keyboard__gtk(drgui_element* pEleme
     }
 }
 
-static void dred_platform__on_global_dirty__gtk(drgui_element* pElement, dred_rect relativeRect)
+static void dred_platform__on_global_dirty__gtk(dred_element* pElement, dred_rect relativeRect)
 {
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow != NULL && pWindow->pGTKWindow != NULL)
@@ -2872,7 +2872,7 @@ static void dred_platform__on_global_dirty__gtk(drgui_element* pElement, dred_re
 //
 //////////////////////////////////////////////////////////////////
 
-static void dred_platform__on_global_change_cursor(drgui_element* pElement, drgui_cursor_type cursor)
+static void dred_platform__on_global_change_cursor(dred_element* pElement, dred_cursor_type cursor)
 {
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow == NULL) {
@@ -2881,13 +2881,13 @@ static void dred_platform__on_global_change_cursor(drgui_element* pElement, drgu
 
     switch (cursor)
     {
-    case drgui_cursor_none:    dred_window_set_cursor(pWindow, dred_cursor_type_none);           break;
-    case drgui_cursor_text:    dred_window_set_cursor(pWindow, dred_cursor_type_text);           break;
-    case drgui_cursor_cross:   dred_window_set_cursor(pWindow, dred_cursor_type_cross);          break;
-    case drgui_cursor_size_ns: dred_window_set_cursor(pWindow, dred_cursor_type_double_arrow_h); break;
-    case drgui_cursor_size_we: dred_window_set_cursor(pWindow, dred_cursor_type_double_arrow_v); break;
+    case dred_cursor_none:    dred_window_set_cursor(pWindow, dred_cursor_type_none);           break;
+    case dred_cursor_text:    dred_window_set_cursor(pWindow, dred_cursor_type_text);           break;
+    case dred_cursor_cross:   dred_window_set_cursor(pWindow, dred_cursor_type_cross);          break;
+    case dred_cursor_size_ns: dred_window_set_cursor(pWindow, dred_cursor_type_double_arrow_h); break;
+    case dred_cursor_size_we: dred_window_set_cursor(pWindow, dred_cursor_type_double_arrow_v); break;
 
-    case drgui_cursor_default:
+    case dred_cursor_default:
     default:
         {
             dred_window_set_cursor(pWindow, dred_cursor_type_default);
@@ -2895,7 +2895,7 @@ static void dred_platform__on_global_change_cursor(drgui_element* pElement, drgu
     }
 }
 
-void dred_platform__on_delete_gui_element(drgui_element* pElement)
+void dred_platform__on_delete_gui_element(dred_element* pElement)
 {
     dred_window* pWindow = dred_get_element_window(pElement);
     if (pWindow == NULL) {
@@ -2952,7 +2952,7 @@ void dred_platform_post_quit_message(int resultCode)
 #endif
 }
 
-void dred_platform_bind_gui(drgui_context* pGUI)
+void dred_platform_bind_gui(dred_gui* pGUI)
 {
 #ifdef DRED_WIN32
     drgui_set_global_on_capture_mouse(pGUI, dred_platform__on_global_capture_mouse__win32);
@@ -3384,7 +3384,7 @@ void dred_window_on_mouse_wheel(dred_window* pWindow, int delta, int mousePosX, 
     drgui_post_inbound_event_mouse_wheel(pWindow->pRootGUIElement, delta, mousePosX, mousePosY, stateFlags);
 }
 
-void dred_window_on_key_down(dred_window* pWindow, drgui_key key, unsigned int stateFlags)
+void dred_window_on_key_down(dred_window* pWindow, dred_key key, unsigned int stateFlags)
 {
     if (pWindow->onKeyDown) {
         pWindow->onKeyDown(pWindow, key, stateFlags);
@@ -3395,7 +3395,7 @@ void dred_window_on_key_down(dred_window* pWindow, drgui_key key, unsigned int s
     }
 }
 
-void dred_window_on_key_up(dred_window* pWindow, drgui_key key, unsigned int stateFlags)
+void dred_window_on_key_up(dred_window* pWindow, dred_key key, unsigned int stateFlags)
 {
     if (pWindow->onKeyUp) {
         pWindow->onKeyUp(pWindow, key, stateFlags);
@@ -3449,13 +3449,13 @@ void dred_window__stock_event__hide_on_close(dred_window* pWindow)
 }
 
 
-dred_window* dred_get_element_window(drgui_element* pElement)
+dred_window* dred_get_element_window(dred_element* pElement)
 {
     if (pElement == NULL) {
         return NULL;
     }
 
-    drgui_element* pRootGUIElement = drgui_find_top_level_element(pElement);
+    dred_element* pRootGUIElement = drgui_find_top_level_element(pElement);
     if (pRootGUIElement == NULL) {
         return NULL;
     }

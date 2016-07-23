@@ -152,7 +152,7 @@ void dred_window_cb__on_main_window_move(dred_window* pWindow, int posX, int pos
     pWindow->pDred->config.windowPosY = posY;
 }
 
-void dred_window_cb__on_main_window_size(drgui_element* pElement, float width, float height)
+void dred_window_cb__on_main_window_size(dred_element* pElement, float width, float height)
 {
     (void)height;
 
@@ -307,7 +307,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_REPLACE,    dred_shortcut_create_single(dred_accelerator_create('F', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "cmdbar replace-all ");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_NEXT_TAB,   dred_shortcut_create_single(dred_accelerator_create('\t', DRED_KEY_STATE_CTRL_DOWN)), "next-tab");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_PREV_TAB,   dred_shortcut_create_single(dred_accelerator_create('\t', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "prev-tab");
-    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_RELOAD,     dred_shortcut_create_single(dred_accelerator_create(DRGUI_F5, 0)), "reload");
+    dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_RELOAD,     dred_shortcut_create_single(dred_accelerator_create(DRED_GUI_F5, 0)), "reload");
 
 
     // Before loading configs we want to make sure any stock themes and settings are present.
@@ -812,13 +812,13 @@ dred_editor* dred_get_focused_editor(dred_context* pDred)
     return pControl;
 }
 
-drgui_element* dred_get_element_with_keyboard_capture(dred_context* pDred)
+dred_element* dred_get_element_with_keyboard_capture(dred_context* pDred)
 {
     if (pDred == NULL) {
         return NULL;
     }
 
-    drgui_element* pElement = drgui_get_element_with_keyboard_capture(pDred->pGUI);
+    dred_element* pElement = drgui_get_element_with_keyboard_capture(pDred->pGUI);
     if (pElement == NULL) {
         pElement = pDred->pMainWindow->pElementWithKeyboardCapture;
     }

@@ -119,7 +119,7 @@ struct drgui_tab
 
 
     /// The tab bar's text.
-    char text[DRGUI_MAX_TAB_TEXT_LENGTH];
+    char text[DRED_GUI_MAX_TAB_TEXT_LENGTH];
 
 
     /// The size of the extra data.
@@ -137,15 +137,15 @@ struct drgui_tab
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Default implementation of the item measure event.
-DRGUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut);
+DRED_GUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut);
 
 /// Paints the given menu item.
-DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
+DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
 
 /// Finds the tab sitting under the given point, if any.
-DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, bool* pIsOverCloseButtonOut);
+DRED_GUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, bool* pIsOverCloseButtonOut);
 
-dred_tabbar* dred_tabbar_create(dred_context* pDred, drgui_element* pParent, dred_tabbar_orientation orientation, size_t extraDataSize, const void* pExtraData)
+dred_tabbar* dred_tabbar_create(dred_context* pDred, dred_element* pParent, dred_tabbar_orientation orientation, size_t extraDataSize, const void* pExtraData)
 {
     dred_tabbar* pTabBar = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_TABBAR, sizeof(dred_tabbar_data) + extraDataSize);
     if (pTabBar == NULL) {
@@ -922,7 +922,7 @@ void dred_tabbar_on_mouse_button_down(dred_tabbar* pTabBar, int mouseButton, int
         return;
     }
 
-    if (mouseButton == DRGUI_MOUSE_BUTTON_LEFT || mouseButton == DRGUI_MOUSE_BUTTON_RIGHT)
+    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT || mouseButton == DRED_GUI_MOUSE_BUTTON_RIGHT)
     {
         bool isOverCloseButton = false;
 
@@ -933,7 +933,7 @@ void dred_tabbar_on_mouse_button_down(dred_tabbar* pTabBar, int mouseButton, int
             dred_tabbar_activate_tab(pTabBar, pNewActiveTab);
         }
 
-        if (isOverCloseButton && mouseButton == DRGUI_MOUSE_BUTTON_LEFT) {
+        if (isOverCloseButton && mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
             pTB->pTabWithCloseButtonPressed = pNewActiveTab;
 
             if (drgui_is_auto_dirty_enabled(pTabBar->pContext)) {
@@ -941,7 +941,7 @@ void dred_tabbar_on_mouse_button_down(dred_tabbar* pTabBar, int mouseButton, int
             }
         }
     }
-    else if (mouseButton == DRGUI_MOUSE_BUTTON_MIDDLE)
+    else if (mouseButton == DRED_GUI_MOUSE_BUTTON_MIDDLE)
     {
         if (pTB->isCloseOnMiddleClickEnabled)
         {
@@ -968,7 +968,7 @@ void dred_tabbar_on_mouse_button_up(dred_tabbar* pTabBar, int mouseButton, int r
     bool releasedOverCloseButton = false;
     drgui_tab* pTabUnderMouse = dred_tabbar_find_tab_under_point(pTabBar, (float)relativeMousePosX, (float)relativeMousePosY, &releasedOverCloseButton);
 
-    if (pTB->pTabWithCloseButtonPressed != NULL && mouseButton == DRGUI_MOUSE_BUTTON_LEFT)
+    if (pTB->pTabWithCloseButtonPressed != NULL && mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
         if (releasedOverCloseButton && pTabUnderMouse == pTB->pTabWithCloseButtonPressed) {
             if (pTB->onTabClose) {
@@ -1046,7 +1046,7 @@ void dred_tabbar_on_paint(dred_tabbar* pTabBar, dred_rect relativeClippingRect, 
 }
 
 
-DRGUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut)
+DRED_GUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -1078,7 +1078,7 @@ DRGUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, drgu
     }
 }
 
-DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData)
+DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData)
 {
     (void)relativeClippingRect;
 
@@ -1154,7 +1154,7 @@ DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_
         args.foregroundTint  = closeButtonColor;
         args.backgroundColor = bgcolor;
         args.boundsColor     = bgcolor;
-        args.options         = DRGUI_IMAGE_DRAW_BACKGROUND | DRGUI_IMAGE_DRAW_BOUNDS | DRGUI_IMAGE_CLIP_BOUNDS | DRGUI_IMAGE_ALIGN_CENTER;
+        args.options         = DRED_GUI_IMAGE_DRAW_BACKGROUND | DRED_GUI_IMAGE_DRAW_BOUNDS | DRED_GUI_IMAGE_CLIP_BOUNDS | DRED_GUI_IMAGE_ALIGN_CENTER;
         drgui_draw_image(pTabBar, pTB->pCloseButtonImage, &args, pPaintData);
 
 
@@ -1163,7 +1163,7 @@ DRGUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, drgui_
     }
 }
 
-DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, bool* pIsOverCloseButtonOut)
+DRED_GUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, bool* pIsOverCloseButtonOut)
 {
     dred_tabbar_data* pTB = (dred_tabbar_data*)dred_control_get_extra_data(pTabBar);
     if (pTB == NULL) {
@@ -1226,21 +1226,21 @@ DRGUI_PRIVATE drgui_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, 
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Appends the given tab to the given tab bar.
-DRGUI_PRIVATE void tab_append(drgui_tab* pTab, dred_tabbar* pTabBar);
+DRED_GUI_PRIVATE void tab_append(drgui_tab* pTab, dred_tabbar* pTabBar);
 
 /// Prepends the given tab to the given tab bar.
-DRGUI_PRIVATE void tab_prepend(drgui_tab* pTab, dred_tabbar* pTabBar);
+DRED_GUI_PRIVATE void tab_prepend(drgui_tab* pTab, dred_tabbar* pTabBar);
 
 /// Detaches the given tab bar from it's tab bar element's hierarchy.
 ///
 /// @remarks
 ///     This does not deactivate the tab or what - it only detaches the tab from the hierarchy.
-DRGUI_PRIVATE void tab_detach_from_hierarchy(drgui_tab* pTab);
+DRED_GUI_PRIVATE void tab_detach_from_hierarchy(drgui_tab* pTab);
 
 /// Detaches the given tab bar from it's tab bar element.
-DRGUI_PRIVATE void tab_detach(drgui_tab* pTab);
+DRED_GUI_PRIVATE void tab_detach(drgui_tab* pTab);
 
-DRGUI_PRIVATE drgui_tab* tb_create_tab(dred_tabbar* pTabBar, const char* text, size_t extraDataSize, const void* pExtraData)
+DRED_GUI_PRIVATE drgui_tab* tb_create_tab(dred_tabbar* pTabBar, const char* text, size_t extraDataSize, const void* pExtraData)
 {
     if (pTabBar == NULL) {
         return NULL;
@@ -1300,7 +1300,7 @@ void drgui_tab_delete(drgui_tab* pTab)
     free(pTab);
 }
 
-drgui_element* drgui_tab_get_tab_bar_element(drgui_tab* pTab)
+dred_element* drgui_tab_get_tab_bar_element(drgui_tab* pTab)
 {
     if (pTab == NULL) {
         return NULL;
@@ -1406,7 +1406,7 @@ void drgui_tab_move_into_view(drgui_tab* pTab)
 
 
 
-DRGUI_PRIVATE void tab_append(drgui_tab* pTab, dred_tabbar* pTabBar)
+DRED_GUI_PRIVATE void tab_append(drgui_tab* pTab, dred_tabbar* pTabBar)
 {
     if (pTab == NULL || pTabBar == NULL) {
         return;
@@ -1444,7 +1444,7 @@ DRGUI_PRIVATE void tab_append(drgui_tab* pTab, dred_tabbar* pTabBar)
     }
 }
 
-DRGUI_PRIVATE void tab_prepend(drgui_tab* pTab, dred_tabbar* pTabBar)
+DRED_GUI_PRIVATE void tab_prepend(drgui_tab* pTab, dred_tabbar* pTabBar)
 {
     if (pTab == NULL || pTabBar == NULL) {
         return;
@@ -1482,7 +1482,7 @@ DRGUI_PRIVATE void tab_prepend(drgui_tab* pTab, dred_tabbar* pTabBar)
     }
 }
 
-DRGUI_PRIVATE void tab_detach_from_hierarchy(drgui_tab* pTab)
+DRED_GUI_PRIVATE void tab_detach_from_hierarchy(drgui_tab* pTab)
 {
     if (pTab == NULL) {
         return;
@@ -1520,7 +1520,7 @@ DRGUI_PRIVATE void tab_detach_from_hierarchy(drgui_tab* pTab)
     pTab->pTabBar = NULL;
 }
 
-DRGUI_PRIVATE void tab_detach(drgui_tab* pTab)
+DRED_GUI_PRIVATE void tab_detach(drgui_tab* pTab)
 {
     if (pTab == NULL) {
         return;

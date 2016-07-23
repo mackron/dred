@@ -42,7 +42,7 @@ void dred_text_editor__on_size(dred_text_editor* pTextEditor, float newWidth, fl
     dred_control_set_size(pTextBox, newWidth, newHeight);
 }
 
-void dred_text_editor__on_capture_keyboard(dred_text_editor* pTextEditor, drgui_element* pPrevCapturedElement)
+void dred_text_editor__on_capture_keyboard(dred_text_editor* pTextEditor, dred_element* pPrevCapturedElement)
 {
     (void)pPrevCapturedElement;
     
@@ -55,9 +55,9 @@ void dred_text_editor__on_capture_keyboard(dred_text_editor* pTextEditor, drgui_
     dred_capture_keyboard(dred_control_get_context(pTextBox), pTextBox);
 }
 
-void dred_text_editor_textbox__on_key_down(dred_textbox* pTextBox, drgui_key key, int stateFlags)
+void dred_text_editor_textbox__on_key_down(dred_textbox* pTextBox, dred_key key, int stateFlags)
 {
-    if (key == DRGUI_ESCAPE) {
+    if (key == DRED_GUI_ESCAPE) {
         dred_focus_command_bar(dred_control_get_context(pTextBox));
     } else {
         dred_textbox_on_key_down(pTextBox, key, stateFlags);
@@ -74,7 +74,7 @@ void dred_text_editor_textbox__on_mouse_wheel(dred_textbox* pTextBox, int delta,
     dred_context* pDred = dred_control_get_context(pTextEditor);
     assert(pDred != NULL);
 
-    if (stateFlags & DRGUI_KEY_STATE_CTRL_DOWN) {
+    if (stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) {
         // When setting the scale, we actually do it application-wide, not just local to the current text editor.
         float oldTextScale = dred_get_text_editor_scale(pDred);
         float newTextScale;
@@ -106,7 +106,7 @@ void dred_text_editor_textbox__on_mouse_button_up(dred_textbox* pTextBox, int mo
     dred_context* pDred = dred_control_get_context(pTextEditor);
     assert(pDred != NULL);
 
-    if (mouseButton == DRGUI_MOUSE_BUTTON_RIGHT) {
+    if (mouseButton == DRED_GUI_MOUSE_BUTTON_RIGHT) {
         dred_control_show_popup_menu(pTextBox, pDred->menuLibrary.pPopupMenu_TextEditor, mousePosX, mousePosY);
     } else {
         dred_textbox_on_mouse_button_up(pTextBox, mouseButton, mousePosX, mousePosY, stateFlags);
@@ -123,7 +123,7 @@ void dred_text_editor_textbox__on_cursor_move(dred_textbox* pTextBox)
     dred_update_info_bar(dred_control_get_context(pTextEditor), pTextEditor);
 }
 
-void dred_text_editor_textbox__on_capture_keyboard(dred_textbox* pTextBox, drgui_element* pPrevCapturedElement)
+void dred_text_editor_textbox__on_capture_keyboard(dred_textbox* pTextBox, dred_element* pPrevCapturedElement)
 {
     dred_text_editor* pTextEditor = dred_control_get_parent(pTextBox);
     if (pTextEditor == NULL) {

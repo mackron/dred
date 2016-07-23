@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-#define DRGUI_MIN_SCROLLBAR_THUMB_SIZE    16
+#define DRED_GUI_MIN_SCROLLBAR_THUMB_SIZE    16
 
 typedef struct
 {
@@ -73,43 +73,43 @@ typedef struct
 
 
 /// Refreshes the given scrollbar's thumb layout and redraws it.
-DRGUI_PRIVATE void dred_scrollbar_refresh_thumb(dred_scrollbar* pScrollbar);
+DRED_GUI_PRIVATE void dred_scrollbar_refresh_thumb(dred_scrollbar* pScrollbar);
 
 /// Calculates the size of the thumb. This does not change the state of the thumb.
-DRGUI_PRIVATE float dred_scrollbar_calculate_thumb_size(dred_scrollbar* pScrollbar);
+DRED_GUI_PRIVATE float dred_scrollbar_calculate_thumb_size(dred_scrollbar* pScrollbar);
 
 /// Calculates the position of the thumb. This does not change the state of the thumb.
-DRGUI_PRIVATE float dred_scrollbar_calculate_thumb_position(dred_scrollbar* pScrollbar);
+DRED_GUI_PRIVATE float dred_scrollbar_calculate_thumb_position(dred_scrollbar* pScrollbar);
 
 /// Retrieves the size of the given scrollbar's track. For vertical alignments, it's the height of the element, otherwise it's the width.
-DRGUI_PRIVATE float dred_scrollbar_get_track_size(dred_scrollbar* pScrollbar);
+DRED_GUI_PRIVATE float dred_scrollbar_get_track_size(dred_scrollbar* pScrollbar);
 
 /// Makes the given point that's relative to the given scrollbar relative to it's thumb.
-DRGUI_PRIVATE void dred_scrollbar_make_relative_to_thumb(dred_scrollbar* pScrollbar, float* pPosX, float* pPosY);
+DRED_GUI_PRIVATE void dred_scrollbar_make_relative_to_thumb(dred_scrollbar* pScrollbar, float* pPosX, float* pPosY);
 
 /// Calculates the scroll position based on the current position of the thumb. This is used for scrolling while dragging the thumb.
-DRGUI_PRIVATE int dred_scrollbar_calculate_scroll_pos_from_thumb_pos(dred_scrollbar* pScrollbar, float thumbPosr);
+DRED_GUI_PRIVATE int dred_scrollbar_calculate_scroll_pos_from_thumb_pos(dred_scrollbar* pScrollbar, float thumbPosr);
 
 /// Simple clamp function.
-DRGUI_PRIVATE float dred_scrollbar_clampf(float n, float lower, float upper)
+DRED_GUI_PRIVATE float dred_scrollbar_clampf(float n, float lower, float upper)
 {
     return n <= lower ? lower : n >= upper ? upper : n;
 }
 
 /// Simple clamp function.
-DRGUI_PRIVATE int dred_scrollbar_clampi(int n, int lower, int upper)
+DRED_GUI_PRIVATE int dred_scrollbar_clampi(int n, int lower, int upper)
 {
     return n <= lower ? lower : n >= upper ? upper : n;
 }
 
 /// Simple max function.
-DRGUI_PRIVATE int dred_scrollbar_maxi(int x, int y)
+DRED_GUI_PRIVATE int dred_scrollbar_maxi(int x, int y)
 {
     return (x > y) ? x : y;
 }
 
 
-dred_scrollbar* dred_scrollbar_create(dred_context* pDred, drgui_element* pParent, dred_scrollbar_orientation orientation, size_t extraDataSize, const void* pExtraData)
+dred_scrollbar* dred_scrollbar_create(dred_context* pDred, dred_element* pParent, dred_scrollbar_orientation orientation, size_t extraDataSize, const void* pExtraData)
 {
     if (orientation == dred_scrollbar_orientation_none) {
         return NULL;
@@ -136,7 +136,7 @@ dred_scrollbar* dred_scrollbar_create(dred_context* pDred, drgui_element* pParen
     pSB->thumbColorPressed = drgui_rgb(180, 180, 180);
     pSB->onScroll          = NULL;
 
-    pSB->thumbSize         = DRGUI_MIN_SCROLLBAR_THUMB_SIZE;
+    pSB->thumbSize         = DRED_GUI_MIN_SCROLLBAR_THUMB_SIZE;
     pSB->thumbPos          = 0;
     pSB->thumbPadding      = 2;
     pSB->thumbHovered      = false;
@@ -614,7 +614,7 @@ void dred_scrollbar_on_mouse_button_down(dred_scrollbar* pScrollbar, int button,
         return;
     }
 
-    if (button == DRGUI_MOUSE_BUTTON_LEFT)
+    if (button == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
         if (dred_scrollbar_is_thumb_visible(pScrollbar))
         {
@@ -657,7 +657,7 @@ void dred_scrollbar_on_mouse_button_up(dred_scrollbar* pScrollbar, int button, i
         return;
     }
 
-    if (button == DRGUI_MOUSE_BUTTON_LEFT)
+    if (button == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
         if (pSB->thumbPressed && drgui_get_element_with_mouse_capture(pScrollbar->pContext) == pScrollbar)
         {
@@ -725,7 +725,7 @@ void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, dred_rect relativeClipp
 
 
 
-DRGUI_PRIVATE void dred_scrollbar_refresh_thumb(dred_scrollbar* pScrollbar)
+DRED_GUI_PRIVATE void dred_scrollbar_refresh_thumb(dred_scrollbar* pScrollbar)
 {
     dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     assert(pSB != NULL);
@@ -742,7 +742,7 @@ DRGUI_PRIVATE void dred_scrollbar_refresh_thumb(dred_scrollbar* pScrollbar)
     }
 }
 
-DRGUI_PRIVATE float dred_scrollbar_calculate_thumb_size(dred_scrollbar* pScrollbar)
+DRED_GUI_PRIVATE float dred_scrollbar_calculate_thumb_size(dred_scrollbar* pScrollbar)
 {
     const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     assert(pSB != NULL);
@@ -750,17 +750,17 @@ DRGUI_PRIVATE float dred_scrollbar_calculate_thumb_size(dred_scrollbar* pScrollb
     float trackSize = dred_scrollbar_get_track_size(pScrollbar);
     float range = (float)(pSB->rangeMax - pSB->rangeMin + 1);
 
-    float thumbSize = DRGUI_MIN_SCROLLBAR_THUMB_SIZE;
+    float thumbSize = DRED_GUI_MIN_SCROLLBAR_THUMB_SIZE;
     if (range > 0)
     {
         thumbSize = roundf((trackSize / range) * pSB->pageSize);
-        thumbSize = dred_scrollbar_clampf(thumbSize, DRGUI_MIN_SCROLLBAR_THUMB_SIZE, trackSize);
+        thumbSize = dred_scrollbar_clampf(thumbSize, DRED_GUI_MIN_SCROLLBAR_THUMB_SIZE, trackSize);
     }
 
     return thumbSize;
 }
 
-DRGUI_PRIVATE float dred_scrollbar_calculate_thumb_position(dred_scrollbar* pScrollbar)
+DRED_GUI_PRIVATE float dred_scrollbar_calculate_thumb_position(dred_scrollbar* pScrollbar)
 {
     const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     assert(pSB != NULL);
@@ -779,7 +779,7 @@ DRGUI_PRIVATE float dred_scrollbar_calculate_thumb_position(dred_scrollbar* pScr
     return thumbPos;
 }
 
-DRGUI_PRIVATE float dred_scrollbar_get_track_size(dred_scrollbar* pScrollbar)
+DRED_GUI_PRIVATE float dred_scrollbar_get_track_size(dred_scrollbar* pScrollbar)
 {
     const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     assert(pSB != NULL);
@@ -791,7 +791,7 @@ DRGUI_PRIVATE float dred_scrollbar_get_track_size(dred_scrollbar* pScrollbar)
     }
 }
 
-DRGUI_PRIVATE void dred_scrollbar_make_relative_to_thumb(dred_scrollbar* pScrollbar, float* pPosX, float* pPosY)
+DRED_GUI_PRIVATE void dred_scrollbar_make_relative_to_thumb(dred_scrollbar* pScrollbar, float* pPosX, float* pPosY)
 {
     dred_rect thumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
 
@@ -804,7 +804,7 @@ DRGUI_PRIVATE void dred_scrollbar_make_relative_to_thumb(dred_scrollbar* pScroll
     }
 }
 
-DRGUI_PRIVATE int dred_scrollbar_calculate_scroll_pos_from_thumb_pos(dred_scrollbar* pScrollbar, float thumbPos)
+DRED_GUI_PRIVATE int dred_scrollbar_calculate_scroll_pos_from_thumb_pos(dred_scrollbar* pScrollbar, float thumbPos)
 {
     const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
     assert(pSB != NULL);
