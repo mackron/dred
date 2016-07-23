@@ -143,7 +143,7 @@ void get_config_var_default_value(unsigned int type, char* valueOut, size_t valu
         return;
     }
     if (type == CONFIG_VAR_TYPE_COLOR) {
-        strcpy_s(valueOut, valueOutSize, "drgui_rgb(0, 0, 0)");
+        strcpy_s(valueOut, valueOutSize, "dred_rgb(0, 0, 0)");
         return;
     }
 }
@@ -192,7 +192,7 @@ void parse_config_var_value(unsigned int type, const char* valueIn, char* valueO
             a[0] = '2'; a[1] = '5'; a[2] = '5'; a[3] = '\0';
         }
 
-        snprintf(valueOut, valueOutSize, "drgui_rgba(%s, %s, %s, %s)", r, g, b, a);
+        snprintf(valueOut, valueOutSize, "dred_rgba(%s, %s, %s, %s)", r, g, b, a);
         return;
     }
 
