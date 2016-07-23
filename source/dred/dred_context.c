@@ -263,7 +263,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
     // The GUI.
-    pDred->pGUI = drgui_create_context_dr_2d(pDred->pDrawingContext);
+    pDred->pGUI = drgui_create_context_dr_2d(pDred, pDred->pDrawingContext);
     if (pDred->pGUI == NULL) {
         goto on_error;
     }

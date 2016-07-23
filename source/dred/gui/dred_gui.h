@@ -742,6 +742,10 @@ struct dred_element
 
 struct dred_gui
 {
+    // The dred context that owns the GUI system.
+    dred_context* pDred;
+
+
     /// The paiting context.
     void* pPaintingContext;
 
@@ -842,7 +846,7 @@ struct dred_gui
 /////////////////////////////////////////////////////////////////
 
 /// Creates a context.
-dred_gui* drgui_create_context();
+dred_gui* drgui_create_context(dred_context* pDred);
 
 /// Deletes a context and everything that it created.
 void drgui_delete_context(dred_gui* pContext);
@@ -954,10 +958,17 @@ void drgui_set_on_log(dred_gui* pContext, drgui_on_log onLog);
 // Elements
 
 /// Creates an element.
-dred_element* drgui_create_element(dred_gui* pContext, dred_element* pParent, size_t extraDataSize, const void* pExtraData);
+dred_element* drgui_create_element(dred_context* pDred, dred_element* pParent, const char* type, size_t extraDataSize);
 
 /// Deletes and element.
 void drgui_delete_element(dred_element* pElement);
+
+
+// Retrieves the dred context that owns the given control.
+dred_context* dred_control_get_context(dred_element* pControl);
+
+// dred_control_get_parent()
+dred_element* dred_control_get_parent(dred_element* pControl);
 
 
 /// Retrieves the size of the extra data of the given element, in bytes.
@@ -977,6 +988,7 @@ const char* drgui_get_type(dred_element* pElement);
 
 /// Determines whether or not the given element is of the given type.
 bool drgui_is_of_type(dred_element* pElement, const char* type);
+bool dred_is_control_type_of_type(const char* type, const char* base);
 
 
 /// Hides the given element.
@@ -1050,6 +1062,9 @@ void drgui_set_cursor(dred_element* pElement, dred_cursor_type cursor);
 
 /// Retrieves the cursor to use when the mouse enters the given GUI element.
 dred_cursor_type drgui_get_cursor(dred_element* pElement);
+
+// Helper function for showing a popup menu relative to the given control.
+void dred_control_show_popup_menu(dred_element* pElement, dred_menu* pMenu, int relativePosX, int relativePosY);
 
 
 //// Events ////
@@ -1506,7 +1521,7 @@ bool dred_rect_has_volume(dred_rect rect);
 ///
 /// @remarks
 ///     This is equivalent to drgui_create_context() followed by drgui_register_dr_2d_callbacks().
-dred_gui* drgui_create_context_dr_2d(dr2d_context* pDrawingContext);
+dred_gui* drgui_create_context_dr_2d(dred_context* pDred, dr2d_context* pDrawingContext);
 
 /// Registers the drawing callbacks for use with easy_draw.
 ///

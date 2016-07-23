@@ -2,12 +2,12 @@
 
 typedef struct
 {
-    dred_context* pDred;
+    int unused;
 } dred_control_data;
 
 dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, const char* type, size_t extraDataSize)
 {
-    dred_element* pControl = drgui_create_element(pDred->pGUI, pParent, sizeof(dred_control_data) + extraDataSize, NULL);
+    dred_element* pControl = drgui_create_element(pDred, pParent, type, sizeof(dred_control_data) + extraDataSize);
     if (pControl == NULL) {
         return NULL;
     }
@@ -15,10 +15,6 @@ dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, co
     dred_control_data* data = (dred_control_data*)drgui_get_extra_data(pControl);
     assert(data != NULL);
 
-    data->pDred = pDred;
-
-
-    drgui_set_type(pControl, type);
     return pControl;
 }
 
@@ -31,19 +27,6 @@ void dred_control_delete(dred_control* pControl)
     drgui_delete_element(pControl);
 }
 
-
-dred_context* dred_control_get_context(dred_control* pControl)
-{
-    dred_control_data* data = (dred_control_data*)drgui_get_extra_data(pControl);
-    assert(data != NULL);
-
-    return data->pDred;
-}
-
-dred_control* dred_control_get_parent(dred_control* pControl)
-{
-    return pControl->pParent;
-}
 
 
 void* dred_control_get_extra_data(dred_control* pControl)
@@ -319,29 +302,4 @@ void dred_control_set_on_release_keyboard(dred_control* pControl, drgui_on_relea
 bool dred_control_is_of_type(dred_control* pControl, const char* type)
 {
     return drgui_is_of_type(pControl, type);
-}
-
-bool dred_is_control_type_of_type(const char* type, const char* base)
-{
-    if (type == NULL || base == NULL) {
-        return false;
-    }
-
-    return strncmp(type, base, strlen(base)) == 0;
-}
-
-void dred_control_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int relativePosX, int relativePosY)
-{
-    if (pControl == NULL || pMenu == NULL) {
-        return;
-    }
-
-    dred_window* pWindow = dred_get_element_window(pControl);
-    if (pWindow == NULL) {
-        return;
-    }
-
-    int mousePosXWindow = relativePosX + (int)drgui_get_absolute_position_x(pControl);
-    int mousePosYWindow = relativePosY + (int)drgui_get_absolute_position_y(pControl);
-    dred_window_show_popup_menu(pWindow, pMenu, mousePosXWindow, mousePosYWindow);
 }

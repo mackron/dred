@@ -948,13 +948,16 @@ void drgui_log(dred_gui* pContext, const char* message)
 //
 /////////////////////////////////////////////////////////////////
 
-dred_gui* drgui_create_context()
+dred_gui* drgui_create_context(dred_context* pDred)
 {
     dred_gui* pContext = (dred_gui*)calloc(1, sizeof(dred_gui));
-    if (pContext != NULL) {
-        pContext->currentCursor = dred_cursor_default;
+    if (pContext == NULL) {
+        return NULL;
     }
 
+    pContext->pDred = pDred;
+    pContext->currentCursor = dred_cursor_default;
+    
     return pContext;
 }
 
@@ -1305,38 +1308,35 @@ void drgui_set_on_log(dred_gui* pContext, drgui_on_log onLog)
 /////////////////////////////////////////////////////////////////
 // Elements
 
-dred_element* drgui_create_element(dred_gui* pContext, dred_element* pParent, size_t extraDataSize, const void* pExtraData)
+dred_element* drgui_create_element(dred_context* pDred, dred_element* pParent, const char* type, size_t extraDataSize)
 {
-    if (pContext != NULL)
-    {
-        dred_element* pElement = (dred_element*)calloc(1, sizeof(dred_element) + extraDataSize);
-        if (pElement != NULL) {
-            pElement->pContext = pContext;
-            pElement->pParent = pParent;
-            pElement->cursor = dred_cursor_default;
-            pElement->dirtyRect = drgui_make_inside_out_rect();
-
-            pElement->extraDataSize = extraDataSize;
-            if (pExtraData != NULL) {
-                memcpy(pElement->pExtraData, pExtraData, extraDataSize);
-            }
-
-            // Add to the the hierarchy.
-            drgui_append_without_detach_or_redraw(pElement, pElement->pParent);
-
-
-            // Have the element positioned at 0,0 relative to the parent by default.
-            if (pParent != NULL) {
-                pElement->absolutePosX = pParent->absolutePosX;
-                pElement->absolutePosY = pParent->absolutePosY;
-            }
-
-
-            return pElement;
-        }
+    if (pDred == NULL) {
+        return NULL;
     }
 
-    return NULL;
+    dred_element* pElement = (dred_element*)calloc(1, sizeof(dred_element) + extraDataSize);
+    if (pElement == NULL) {
+        return NULL;
+    }
+
+    pElement->pContext = pDred->pGUI;
+    pElement->pParent = pParent;
+    pElement->cursor = dred_cursor_default;
+    pElement->dirtyRect = drgui_make_inside_out_rect();
+    pElement->extraDataSize = extraDataSize;
+
+    // Add to the the hierarchy.
+    drgui_append_without_detach_or_redraw(pElement, pElement->pParent);
+
+
+    // Have the element positioned at 0,0 relative to the parent by default.
+    if (pParent != NULL) {
+        pElement->absolutePosX = pParent->absolutePosX;
+        pElement->absolutePosY = pParent->absolutePosY;
+    }
+
+    drgui_set_type(pElement, type);
+    return pElement;
 }
 
 void drgui_delete_element(dred_element* pElement)
@@ -1459,6 +1459,21 @@ void drgui_delete_element(dred_element* pElement)
 }
 
 
+dred_context* dred_control_get_context(dred_element* pControl)
+{
+    if (pControl == NULL || pControl->pContext == NULL) {
+        return NULL;
+    }
+
+    return pControl->pContext->pDred;
+}
+
+dred_element* dred_control_get_parent(dred_element* pControl)
+{
+    return pControl->pParent;
+}
+
+
 size_t drgui_get_extra_data_size(dred_element* pElement)
 {
     if (pElement != NULL) {
@@ -1501,8 +1516,17 @@ bool drgui_is_of_type(dred_element* pElement, const char* type)
     if (pElement == NULL || type == NULL) {
         return false;
     }
+    
+    return dred_is_control_type_of_type(pElement->type, type);
+}
 
-    return strncmp(pElement->type, type, strlen(type)) == 0;
+bool dred_is_control_type_of_type(const char* type, const char* base)
+{
+    if (type == NULL || base == NULL) {
+        return false;
+    }
+
+    return strncmp(type, base, strlen(base)) == 0;
 }
 
 
@@ -1782,6 +1806,22 @@ dred_cursor_type drgui_get_cursor(dred_element* pElement)
     }
 
     return pElement->cursor;
+}
+
+void dred_control_show_popup_menu(dred_element* pElement, dred_menu* pMenu, int relativePosX, int relativePosY)
+{
+    if (pElement == NULL || pMenu == NULL) {
+        return;
+    }
+
+    dred_window* pWindow = dred_get_element_window(pElement);
+    if (pWindow == NULL) {
+        return;
+    }
+
+    int mousePosXWindow = relativePosX + (int)drgui_get_absolute_position_x(pElement);
+    int mousePosYWindow = relativePosY + (int)drgui_get_absolute_position_y(pElement);
+    dred_window_show_popup_menu(pWindow, pMenu, mousePosXWindow, mousePosYWindow);
 }
 
 
@@ -3407,9 +3447,9 @@ dred_gui_image_format drgui_get_optimal_image_format_dr_2d(void* pPaintingContex
 void* drgui_map_image_data_dr_2d(dred_gui_resource image, unsigned int accessFlags);
 void drgui_unmap_image_data_dr_2d(dred_gui_resource image);
 
-dred_gui* drgui_create_context_dr_2d(dr2d_context* pDrawingContext)
+dred_gui* drgui_create_context_dr_2d(dred_context* pDred, dr2d_context* pDrawingContext)
 {
-    dred_gui* pContext = drgui_create_context();
+    dred_gui* pContext = drgui_create_context(pDred);
     if (pContext != NULL) {
         drgui_register_dr_2d_callbacks(pContext, pDrawingContext);
     }

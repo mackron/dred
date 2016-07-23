@@ -15,13 +15,6 @@ dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, co
 void dred_control_delete(dred_control* pControl);
 
 
-// dred_control_get_context()
-dred_context* dred_control_get_context(dred_control* pControl);
-
-// dred_control_get_parent()
-dred_control* dred_control_get_parent(dred_control* pControl);
-
-
 // dred_control_get_extra_data()
 void* dred_control_get_extra_data(dred_control* pControl);
 
@@ -127,9 +120,3 @@ void dred_control_set_on_release_keyboard(dred_control* pControl, drgui_on_relea
 
 // Determines whether or not the given control is of the given type.
 bool dred_control_is_of_type(dred_control* pControl, const char* type);
-
-// Checks if the given type string is of the other type.
-bool dred_is_control_type_of_type(const char* type, const char* base);
-
-// Helper function for showing a popup menu relative to the given control.
-void dred_control_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int relativePosX, int relativePosY);
