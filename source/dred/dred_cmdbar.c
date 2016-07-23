@@ -25,7 +25,7 @@ dred_rect dred_cmdbar__get_inner_rect(dred_cmdbar* pCmdBar)
 
     float cmdbarWidth;
     float cmdbarHeight;
-    drgui_get_size(pCmdBar, &cmdbarWidth, &cmdbarHeight);
+    dred_control_get_size(pCmdBar, &cmdbarWidth, &cmdbarHeight);
 
     float scaledPaddingX = pDred->config.cmdbarPaddingX*pDred->uiScale;
     float scaledPaddingY = pDred->config.cmdbarPaddingY*pDred->uiScale;
@@ -66,11 +66,11 @@ void dred_cmdbar__update_layouts_of_inner_controls(dred_cmdbar* pCmdBar)
     dred_rect rrect;
     dred_cmdbar__get_segment_rects(pCmdBar, &lrect, &mrect, &rrect);
 
-    drgui_set_relative_position(data->pTextBox, lrect.left, lrect.top);
-    drgui_set_size(data->pTextBox, lrect.right - lrect.left, lrect.bottom - lrect.top);
+    dred_control_set_relative_position(data->pTextBox, lrect.left, lrect.top);
+    dred_control_set_size(data->pTextBox, lrect.right - lrect.left, lrect.bottom - lrect.top);
     
-    drgui_set_relative_position(data->pInfoBar, rrect.left, rrect.top);
-    drgui_set_size(data->pInfoBar, rrect.right - rrect.left, rrect.bottom - rrect.top);
+    dred_control_set_relative_position(data->pInfoBar, rrect.left, rrect.top);
+    dred_control_set_size(data->pInfoBar, rrect.right - rrect.left, rrect.bottom - rrect.top);
 }
 
 
@@ -102,7 +102,7 @@ void dred_cmdbar__on_paint(dred_cmdbar* pCmdBar, dred_rect rect, void* pPaintDat
     dred_context* pDred = dred_control_get_gui(pCmdBar);
     assert(pDred != NULL);
 
-    dred_rect localRect = drgui_get_local_rect(pCmdBar);
+    dred_rect localRect = dred_control_get_local_rect(pCmdBar);
 
     dred_color bgcolor = pDred->config.cmdbarBGColor;
     if (dred_cmdbar_has_keyboard_focus(pCmdBar)) {
@@ -161,7 +161,7 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_textbox* pTextBox, dred_control* p
     // Hide any message that's showing.
     dred_cmdbar_set_message(pCmdBar, "");
 
-    drgui_dirty(pCmdBar, drgui_get_local_rect(pCmdBar));
+    drgui_dirty(pCmdBar, dred_control_get_local_rect(pCmdBar));
 
 
     // Fall through to the default handler.
@@ -198,7 +198,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_textbox* pTextBox, dred_control* p
         dred_hide_command_bar(pDred);
     }
 
-    drgui_dirty(pCmdBar, drgui_get_local_rect(pCmdBar));
+    drgui_dirty(pCmdBar, dred_control_get_local_rect(pCmdBar));
 
 
     // Fall through to the default handler.
@@ -334,14 +334,14 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
 
     float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(data->pTextBox)*2;
     float messageHeight = (float)fontMetricsMsg.lineHeight;
-    float infobarHeight = (float)drgui_get_height(data->pInfoBar);
+    float infobarHeight = (float)dred_control_get_height(data->pInfoBar);
 
     float cmdbarHeight = dr_max(textboxHeight, dr_max(messageHeight, infobarHeight)) + (pDred->config.cmdbarPaddingY*pDred->uiScale*2);
     float cmdbarWidth = 0;
     if (pCmdBar->pParent != NULL) {
-        cmdbarWidth = drgui_get_width(pCmdBar->pParent);
+        cmdbarWidth = dred_control_get_width(pCmdBar->pParent);
     }
-    drgui_set_size(pCmdBar, cmdbarWidth, cmdbarHeight);
+    dred_control_set_size(pCmdBar, cmdbarWidth, cmdbarHeight);
 
 
     // A change in size will require the inner controls to have their layouts updated for centering and whatnot.
@@ -464,7 +464,7 @@ void dred_cmdbar_set_message(dred_cmdbar* pCmdBar, const char* text)
     }
 
     strncpy_s(data->message, sizeof(data->message), text, _TRUNCATE);
-    drgui_dirty(pCmdBar, drgui_get_local_rect(pCmdBar));    // <-- Can optimize this to only draw the message region.
+    drgui_dirty(pCmdBar, dred_control_get_local_rect(pCmdBar));    // <-- Can optimize this to only draw the message region.
 }
 
 void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar)
@@ -524,5 +524,5 @@ void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
     dred_cmdbar__update_size(pCmdBar);
 
     // Redraw.
-    drgui_dirty(pCmdBar, drgui_get_local_rect(pCmdBar));
+    drgui_dirty(pCmdBar, dred_control_get_local_rect(pCmdBar));
 }

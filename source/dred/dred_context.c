@@ -6,7 +6,7 @@ float dred__get_cmd_bar_height(dred_context* pDred)
         return 0;
     }
 
-    return drgui_get_height(pDred->pCmdBar);
+    return dred_control_get_height(pDred->pCmdBar);
 }
 
 void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabgroup_container* pContainer, float parentWidth, float parentHeight)
@@ -15,7 +15,7 @@ void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabg
         return;
     }
 
-    drgui_set_size(pContainer, parentWidth, parentHeight - dred__get_cmd_bar_height(pDred));
+    dred_control_set_size(pContainer, parentWidth, parentHeight - dred__get_cmd_bar_height(pDred));
 }
 
 void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float parentWidth, float parentHeight)
@@ -26,8 +26,8 @@ void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float
         return;
     }
 
-    drgui_set_size(pCmdBar, parentWidth, drgui_get_height(pCmdBar));
-    drgui_set_relative_position(pCmdBar, 0, parentHeight - dred__get_cmd_bar_height(pDred));
+    dred_control_set_size(pCmdBar, parentWidth, dred_control_get_height(pCmdBar));
+    dred_control_set_relative_position(pCmdBar, 0, parentHeight - dred__get_cmd_bar_height(pDred));
 }
 
 void dred__update_main_window_layout(dred_window* pWindow, float windowWidth, float windowHeight)

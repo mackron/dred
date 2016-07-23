@@ -24,7 +24,7 @@ float dred_tabgroup__get_tabbar_height(dred_tabgroup* pTabGroup)
         return 0;
     }
 
-    return (dred_control_is_visible(pTabBar)) ? drgui_get_height(pTabBar) : 0;
+    return (dred_control_is_visible(pTabBar)) ? dred_control_get_height(pTabBar) : 0;
 }
 
 void dred_tabgroup__resize_and_reposition_control(dred_control *pControl, float parentWidth, float parentHeight, float tabbarHeight)
@@ -34,15 +34,15 @@ void dred_tabgroup__resize_and_reposition_control(dred_control *pControl, float 
     float controlWidth  = parentWidth;
     float controlHeight = parentHeight - controlPosY;
 
-    drgui_set_relative_position(pControl, controlPosX, controlPosY);
-    drgui_set_size(pControl, controlWidth, controlHeight);
+    dred_control_set_relative_position(pControl, controlPosX, controlPosY);
+    dred_control_set_size(pControl, controlWidth, controlHeight);
 }
 
 void dred_tabgroup__refresh_control_layout(dred_tabgroup* pTabGroup, dred_control* pControl)
 {
     float parentWidth;
     float parentHeight;
-    drgui_get_size(pTabGroup, &parentWidth, &parentHeight);
+    dred_control_get_size(pTabGroup, &parentWidth, &parentHeight);
 
     dred_tabgroup__resize_and_reposition_control(pControl, parentWidth, parentHeight, dred_tabgroup__get_tabbar_height(pTabGroup));
 }
@@ -52,7 +52,7 @@ void dred_tabgroup__refresh_layout(dred_tabgroup* pTabGroup, float newWidth, flo
     dred_tabgroup_data* data = (dred_tabgroup_data*)dred_control_get_extra_data(pTabGroup);
     assert(data != NULL);
 
-    drgui_set_size(data->pTabBar, newWidth, drgui_get_height(data->pTabBar));
+    dred_control_set_size(data->pTabBar, newWidth, dred_control_get_height(data->pTabBar));
 
     float tabbarHeight = dred_tabgroup__get_tabbar_height(pTabGroup);
     for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
@@ -78,8 +78,8 @@ void dred_tabgroup__on_paint(dred_tabgroup* pTabGroup, dred_rect rect, void* pPa
     if (dred_tabgroup_get_active_tab(pTabGroup) == NULL)
     {
         // There is no active tab. Draw a blank background.
-        dred_rect bodyRect = drgui_get_local_rect(pTabGroup);
-        bodyRect.top += drgui_get_height(dred_tabgroup__get_tabbar(pTabGroup));
+        dred_rect bodyRect = dred_control_get_local_rect(pTabGroup);
+        bodyRect.top += dred_control_get_height(dred_tabgroup__get_tabbar(pTabGroup));
 
         drgui_draw_rect(pTabGroup, bodyRect, pDred->config.tabgroupBGColor, pPaintData);
     }
@@ -246,10 +246,10 @@ void dred_tabgroup_refresh_styling(dred_tabgroup* pTabGroup)
 
 
     // The size of some elements may have changed, so update the layout also.
-    dred_tabgroup__refresh_layout(pTabGroup, drgui_get_width(pTabGroup), drgui_get_height(pTabGroup));
+    dred_tabgroup__refresh_layout(pTabGroup, dred_control_get_width(pTabGroup), dred_control_get_height(pTabGroup));
 
     // Redraw.
-    drgui_dirty(pTabGroup, drgui_get_local_rect(pTabGroup));
+    drgui_dirty(pTabGroup, dred_control_get_local_rect(pTabGroup));
 }
 
 void dred_tabgroup_get_body_size(dred_tabgroup* pTabGroup, float* pSizeXOut, float* pSizeYOut)
@@ -263,7 +263,7 @@ void dred_tabgroup_get_body_size(dred_tabgroup* pTabGroup, float* pSizeXOut, flo
 
     float parentSizeX;
     float parentSizeY;
-    drgui_get_size(pTabGroup, &parentSizeX, &parentSizeY);
+    dred_control_get_size(pTabGroup, &parentSizeX, &parentSizeY);
 
     if (pSizeXOut) *pSizeXOut = parentSizeX;
     if (pSizeYOut) *pSizeYOut = parentSizeY - dred_tabgroup__get_tabbar_height(pTabGroup);
@@ -417,7 +417,7 @@ void dred_tabgroup_hide_tabbar(dred_tabgroup* pTabGroup)
     }
 
     dred_control_hide(data->pTabBar);
-    dred_tabgroup__refresh_layout(pTabGroup, drgui_get_width(pTabGroup), drgui_get_height(pTabGroup));
+    dred_tabgroup__refresh_layout(pTabGroup, dred_control_get_width(pTabGroup), dred_control_get_height(pTabGroup));
 }
 
 void dred_tabgroup_show_tabbar(dred_tabgroup* pTabGroup)
@@ -428,7 +428,7 @@ void dred_tabgroup_show_tabbar(dred_tabgroup* pTabGroup)
     }
 
     dred_control_show(data->pTabBar);
-    dred_tabgroup__refresh_layout(pTabGroup, drgui_get_width(pTabGroup), drgui_get_height(pTabGroup));
+    dred_tabgroup__refresh_layout(pTabGroup, dred_control_get_width(pTabGroup), dred_control_get_height(pTabGroup));
 }
 
 bool dred_tabgroup_is_showing_tabbar(dred_tabgroup* pTabGroup)

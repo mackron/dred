@@ -67,7 +67,7 @@ dred_rect dred_settings_editor__get_side_panel_rect(dred_settings_editor* pSetti
     dred_settings_editor_data* pData = (dred_settings_editor_data*)dred_editor_get_extra_data(pSettingsEditor);
     assert(pData != NULL);
 
-    return drgui_make_rect(0, 0, pData->sidePanelWidth, drgui_get_height(pSettingsEditor));
+    return drgui_make_rect(0, 0, pData->sidePanelWidth, dred_control_get_height(pSettingsEditor));
 }
 
 dred_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSettingsEditor)
@@ -79,9 +79,9 @@ dred_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSett
     assert(pData != NULL);
 
     float posX = pData->sidePanelWidth;
-    float posY = drgui_get_height(pSettingsEditor) - (drgui_get_height(pData->pCloseButton)) - (8*pDred->uiScale * 2);
+    float posY = dred_control_get_height(pSettingsEditor) - (dred_control_get_height(pData->pCloseButton)) - (8*pDred->uiScale * 2);
 
-    return drgui_make_rect(posX, posY, drgui_get_width(pSettingsEditor), drgui_get_height(pSettingsEditor));
+    return drgui_make_rect(posX, posY, dred_control_get_width(pSettingsEditor), dred_control_get_height(pSettingsEditor));
 }
 
 int dred_settings_editor__get_side_panel_btn_index_under_point(dred_settings_editor* pSettingsEditor, float posX, float posY)
@@ -144,14 +144,14 @@ void dred_settings_editor__refresh_layout(dred_settings_editor* pSettingsEditor)
 
     float posX = pData->sidePanelWidth;
     float posY = 0;
-    float sizeX = drgui_get_width(pSettingsEditor) - posX;
-    float sizeY = drgui_get_height(pSettingsEditor) - (drgui_get_height(pData->pCloseButton)) - (8*pDred->uiScale * 2);
+    float sizeX = dred_control_get_width(pSettingsEditor) - posX;
+    float sizeY = dred_control_get_height(pSettingsEditor) - (dred_control_get_height(pData->pCloseButton)) - (8*pDred->uiScale * 2);
 
     // Every page needs to be resized. Every page will be the same size.
     int sideButtonsCount = (int)(sizeof(pData->pages) / sizeof(pData->pages[0]));
     for (int i = 0; i < sideButtonsCount; ++i) {
-        drgui_set_relative_position(pData->pages[i].pGUIControl, posX, posY);
-        drgui_set_size(pData->pages[i].pGUIControl, sizeX, sizeY);
+        dred_control_set_relative_position(pData->pages[i].pGUIControl, posX, posY);
+        dred_control_set_size(pData->pages[i].pGUIControl, sizeX, sizeY);
     }
 }
 
@@ -169,9 +169,9 @@ void dred_settings_editor__on_size(dred_settings_editor* pSettingsEditor, float 
 
     dred_settings_editor__refresh_layout(pSettingsEditor);
 
-    drgui_set_relative_position(pData->pCloseButton,
-        drgui_get_width(pSettingsEditor) - drgui_get_width(pData->pCloseButton) - 8*pDred->uiScale,
-        drgui_get_height(pSettingsEditor) - drgui_get_height(pData->pCloseButton) - 8*pDred->uiScale);
+    dred_control_set_relative_position(pData->pCloseButton,
+        dred_control_get_width(pSettingsEditor) - dred_control_get_width(pData->pCloseButton) - 8*pDred->uiScale,
+        dred_control_get_height(pSettingsEditor) - dred_control_get_height(pData->pCloseButton) - 8*pDred->uiScale);
 
     
 }
@@ -351,7 +351,7 @@ void dred_settings_editor_page__on_mouse_enter(dred_control* pPageControl)
 void dred_settings_editor_page__on_paint(dred_control* pPageControl, dred_rect rect, void* pPaintData)
 {
     (void)rect;
-    drgui_draw_rect(pPageControl, drgui_get_local_rect(pPageControl), drgui_rgb(255, 255, 255), pPaintData);
+    drgui_draw_rect(pPageControl, dred_control_get_local_rect(pPageControl), drgui_rgb(255, 255, 255), pPaintData);
 }
 
 bool dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_control* pParent, const char* title)
@@ -397,20 +397,20 @@ bool dred_settings_editor__init_page__general(dred_settings_editor* pSettingsEdi
     pData->pCBShowTabBar = dred_checkbox_create(pDred, pPage->pGUIControl, "Show Tab Bar", pDred->config.showTabBar);
     dred_checkbox_set_bind_to_config_var(pData->pCBShowTabBar, "show-tab-bar");
     dred_checkbox_set_padding(pData->pCBShowTabBar, 4*pDred->uiScale);
-    drgui_set_relative_position(pData->pCBShowTabBar, penPosX, penPosY);
-    penPosY += drgui_get_height(pData->pCBShowTabBar) + (6*pDred->uiScale);
+    dred_control_set_relative_position(pData->pCBShowTabBar, penPosX, penPosY);
+    penPosY += dred_control_get_height(pData->pCBShowTabBar) + (6*pDred->uiScale);
 
     pData->pCBShowMenuBar = dred_checkbox_create(pDred, pPage->pGUIControl, "Show Menu Bar", pDred->config.showMenuBar);
     dred_checkbox_set_bind_to_config_var(pData->pCBShowMenuBar, "show-menu-bar");
     dred_checkbox_set_padding(pData->pCBShowMenuBar, 4*pDred->uiScale);
-    drgui_set_relative_position(pData->pCBShowMenuBar, penPosX, penPosY);
-    penPosY += drgui_get_height(pData->pCBShowMenuBar) + (6*pDred->uiScale);
+    dred_control_set_relative_position(pData->pCBShowMenuBar, penPosX, penPosY);
+    penPosY += dred_control_get_height(pData->pCBShowMenuBar) + (6*pDred->uiScale);
 
     pData->pCBShowMenuBar = dred_checkbox_create(pDred, pPage->pGUIControl, "Auto-hide Command Bar", pDred->config.autoHideCmdBar);
     dred_checkbox_set_bind_to_config_var(pData->pCBShowMenuBar, "auto-hide-cmd-bar");
     dred_checkbox_set_padding(pData->pCBShowMenuBar, 4*pDred->uiScale);
-    drgui_set_relative_position(pData->pCBShowMenuBar, penPosX, penPosY);
-    penPosY += drgui_get_height(pData->pCBShowMenuBar) + (6*pDred->uiScale);
+    dred_control_set_relative_position(pData->pCBShowMenuBar, penPosX, penPosY);
+    penPosY += dred_control_get_height(pData->pCBShowMenuBar) + (6*pDred->uiScale);
 
     return true;
 }
@@ -443,9 +443,9 @@ bool dred_settings_editor__init_page__theme(dred_settings_editor* pSettingsEdito
 
     dred_button_set_on_pressed(pData->pFontButton, dred_settings__btn_choose_font__on_pressed);
     dred_button_set_padding(pData->pFontButton, 16*pDred->uiScale, 6*pDred->uiScale);
-    drgui_set_relative_position(pData->pFontButton, penPosX, penPosY);
+    dred_control_set_relative_position(pData->pFontButton, penPosX, penPosY);
 
-    penPosY += drgui_get_height(pData->pFontButton) + (6*pDred->uiScale);
+    penPosY += dred_control_get_height(pData->pFontButton) + (6*pDred->uiScale);
 
 
     pData->pTextColorButton = dred_colorbutton_create(pDred, pPage->pGUIControl, "Text color", pDred->config.textEditorTextColor);
@@ -456,9 +456,9 @@ bool dred_settings_editor__init_page__theme(dred_settings_editor* pSettingsEdito
 
     dred_colorbutton_set_bind_to_config_var(pData->pTextColorButton, "texteditor-text-color");
     dred_colorbutton_set_padding(pData->pTextColorButton, 4*pDred->uiScale);
-    drgui_set_relative_position(pData->pTextColorButton, penPosX, penPosY);
+    dred_control_set_relative_position(pData->pTextColorButton, penPosX, penPosY);
 
-    penPosY += drgui_get_height(pData->pTextColorButton) + (6*pDred->uiScale);
+    penPosY += dred_control_get_height(pData->pTextColorButton) + (6*pDred->uiScale);
 
 
 
@@ -470,9 +470,9 @@ bool dred_settings_editor__init_page__theme(dred_settings_editor* pSettingsEdito
 
     dred_colorbutton_set_bind_to_config_var(pData->pBGColorButton, "texteditor-bg-color");
     dred_colorbutton_set_padding(pData->pBGColorButton, 4*pDred->uiScale);
-    drgui_set_relative_position(pData->pBGColorButton, penPosX, penPosY);
+    dred_control_set_relative_position(pData->pBGColorButton, penPosX, penPosY);
 
-    penPosY += drgui_get_height(pData->pTextColorButton) + (6*pDred->uiScale);
+    penPosY += dred_control_get_height(pData->pTextColorButton) + (6*pDred->uiScale);
 
 
     pData->pLineColorButton = dred_colorbutton_create(pDred, pPage->pGUIControl, "Active line color", pDred->config.textEditorActiveLineColor);
@@ -483,9 +483,9 @@ bool dred_settings_editor__init_page__theme(dred_settings_editor* pSettingsEdito
 
     dred_colorbutton_set_bind_to_config_var(pData->pLineColorButton, "texteditor-active-line-color");
     dred_colorbutton_set_padding(pData->pLineColorButton, 4*pDred->uiScale);
-    drgui_set_relative_position(pData->pLineColorButton, penPosX, penPosY);
+    dred_control_set_relative_position(pData->pLineColorButton, penPosX, penPosY);
 
-    penPosY += drgui_get_height(pData->pTextColorButton) + (6*pDred->uiScale);
+    penPosY += dred_control_get_height(pData->pTextColorButton) + (6*pDred->uiScale);
 
     return true;
 }
@@ -513,14 +513,14 @@ bool dred_settings_editor__init_page__text_editor(dred_settings_editor* pSetting
     pData->pCBTabsToSpaces = dred_checkbox_create(pDred, pPage->pGUIControl, "Convert tabs to spaces", pDred->config.textEditorTabsToSpacesEnabled);
     dred_checkbox_set_bind_to_config_var(pData->pCBTabsToSpaces, "texteditor-enable-tabs-to-spaces");
     dred_checkbox_set_padding(pData->pCBTabsToSpaces, 4*pDred->uiScale);
-    drgui_set_relative_position(pData->pCBTabsToSpaces, penPosX, penPosY);
-    penPosY += drgui_get_height(pData->pCBTabsToSpaces) + (6*pDred->uiScale);
+    dred_control_set_relative_position(pData->pCBTabsToSpaces, penPosX, penPosY);
+    penPosY += dred_control_get_height(pData->pCBTabsToSpaces) + (6*pDred->uiScale);
 
     pData->pCBShowLineNumbers = dred_checkbox_create(pDred, pPage->pGUIControl, "Show line numbers", pDred->config.textEditorShowLineNumbers);
     dred_checkbox_set_bind_to_config_var(pData->pCBShowLineNumbers, "texteditor-show-line-numbers");
     dred_checkbox_set_padding(pData->pCBShowLineNumbers, 4*pDred->uiScale);
-    drgui_set_relative_position(pData->pCBShowLineNumbers, penPosX, penPosY);
-    penPosY += drgui_get_height(pData->pCBShowLineNumbers) + (6*pDred->uiScale);
+    dred_control_set_relative_position(pData->pCBShowLineNumbers, penPosX, penPosY);
+    penPosY += dred_control_get_height(pData->pCBShowLineNumbers) + (6*pDred->uiScale);
     
     return true;
 }
@@ -558,9 +558,9 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_cont
 
     dred_button_set_on_pressed(pData->pCloseButton, dred_settings__btn_close__on_pressed);
     dred_button_set_padding(pData->pCloseButton, 32*pDred->uiScale, 6*pDred->uiScale);
-    drgui_set_relative_position(pData->pCloseButton,
-        drgui_get_width(pSettingsEditor) - drgui_get_width(pData->pCloseButton) - 8*pDred->uiScale,
-        drgui_get_height(pSettingsEditor) - drgui_get_height(pData->pCloseButton) - 8*pDred->uiScale);
+    dred_control_set_relative_position(pData->pCloseButton,
+        dred_control_get_width(pSettingsEditor) - dred_control_get_width(pData->pCloseButton) - 8*pDred->uiScale,
+        dred_control_get_height(pSettingsEditor) - dred_control_get_height(pData->pCloseButton) - 8*pDred->uiScale);
 
 
     // Events.
@@ -609,5 +609,5 @@ void dred_settings_editor_refresh_styling(dred_settings_editor* pSettingsEditor)
 
     pData->pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
 
-    drgui_dirty(pSettingsEditor, drgui_get_local_rect(pSettingsEditor));
+    drgui_dirty(pSettingsEditor, dred_control_get_local_rect(pSettingsEditor));
 }

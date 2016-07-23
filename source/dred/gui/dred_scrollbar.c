@@ -501,7 +501,7 @@ dred_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar)
     {
         // Vertical.
         rect.left   = pSB->thumbPadding;
-        rect.right  = drgui_get_width(pScrollbar) - pSB->thumbPadding;
+        rect.right  = dred_control_get_width(pScrollbar) - pSB->thumbPadding;
         rect.top    = pSB->thumbPadding + pSB->thumbPos;
         rect.bottom = rect.top + pSB->thumbSize;
     }
@@ -511,7 +511,7 @@ dred_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar)
         rect.left   = pSB->thumbPadding + pSB->thumbPos;
         rect.right  = rect.left + pSB->thumbSize;
         rect.top    = pSB->thumbPadding;
-        rect.bottom = drgui_get_height(pScrollbar) - pSB->thumbPadding;
+        rect.bottom = dred_control_get_height(pScrollbar) - pSB->thumbPadding;
     }
 
     return rect;
@@ -699,10 +699,10 @@ void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, dred_rect relativeClipp
         // The thumb is visible.
 
         // Track. We draw this in 4 seperate pieces so we can avoid overdraw with the thumb.
-        drgui_draw_rect(pScrollbar, drgui_make_rect(0, 0, drgui_get_width(pScrollbar), thumbRect.top), pSB->trackColor, pPaintData);  // Top
-        drgui_draw_rect(pScrollbar, drgui_make_rect(0, thumbRect.bottom, drgui_get_width(pScrollbar), drgui_get_height(pScrollbar)), pSB->trackColor, pPaintData);  // Bottom
+        drgui_draw_rect(pScrollbar, drgui_make_rect(0, 0, dred_control_get_width(pScrollbar), thumbRect.top), pSB->trackColor, pPaintData);  // Top
+        drgui_draw_rect(pScrollbar, drgui_make_rect(0, thumbRect.bottom, dred_control_get_width(pScrollbar), dred_control_get_height(pScrollbar)), pSB->trackColor, pPaintData);  // Bottom
         drgui_draw_rect(pScrollbar, drgui_make_rect(0, thumbRect.top, thumbRect.left, thumbRect.bottom), pSB->trackColor, pPaintData);  // Left
-        drgui_draw_rect(pScrollbar, drgui_make_rect(thumbRect.right, thumbRect.top, drgui_get_width(pScrollbar), thumbRect.bottom), pSB->trackColor, pPaintData); // Right
+        drgui_draw_rect(pScrollbar, drgui_make_rect(thumbRect.right, thumbRect.top, dred_control_get_width(pScrollbar), thumbRect.bottom), pSB->trackColor, pPaintData); // Right
 
         // Thumb.
         dred_color thumbColor;
@@ -719,7 +719,7 @@ void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, dred_rect relativeClipp
     else
     {
         // The thumb is not visible - just draw the track as one quad.
-        drgui_draw_rect(pScrollbar, drgui_get_local_rect(pScrollbar), pSB->trackColor, pPaintData);
+        drgui_draw_rect(pScrollbar, dred_control_get_local_rect(pScrollbar), pSB->trackColor, pPaintData);
     }
 }
 
@@ -785,9 +785,9 @@ DRED_GUI_PRIVATE float dred_scrollbar_get_track_size(dred_scrollbar* pScrollbar)
     assert(pSB != NULL);
 
     if (pSB->orientation == dred_scrollbar_orientation_vertical) {
-        return drgui_get_height(pScrollbar) - (pSB->thumbPadding*2);
+        return dred_control_get_height(pScrollbar) - (pSB->thumbPadding*2);
     } else {
-        return drgui_get_width(pScrollbar) - (pSB->thumbPadding*2);
+        return dred_control_get_width(pScrollbar) - (pSB->thumbPadding*2);
     }
 }
 

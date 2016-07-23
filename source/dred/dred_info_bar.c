@@ -44,7 +44,7 @@ void dred_info_bar__on_paint__none(dred_info_bar* pInfoBar, dred_info_bar_data* 
 {
     (void)data;
 
-    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
+    drgui_draw_rect(pInfoBar, dred_control_get_local_rect(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
 }
 
 void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar_data* data, void* pPaintData)
@@ -54,7 +54,7 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar
     dred_context* pDred = dred_control_get_gui(pInfoBar);
     assert(pDred != NULL);
 
-    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
+    drgui_draw_rect(pInfoBar, dred_control_get_local_rect(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
 
 
     float padding = 32*pDred->uiScale;
@@ -76,8 +76,8 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dred_info_bar
         float totalWidth = lineStrWidth + padding + colStrWidth + paddingRight;
 
         
-        float textPosX = drgui_get_width(pInfoBar) - totalWidth;
-        float textPosY = (drgui_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
+        float textPosX = dred_control_get_width(pInfoBar) - totalWidth;
+        float textPosY = (dred_control_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
         drgui_draw_text(pInfoBar, pFont, data->lineStr, (int)strlen(data->lineStr), textPosX, textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
 
         textPosX += lineStrWidth + padding;
@@ -94,7 +94,7 @@ void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_ba
     dred_context* pDred = dred_control_get_gui(pInfoBar);
     assert(pDred != NULL);
 
-    drgui_draw_rect(pInfoBar, drgui_get_local_rect(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
+    drgui_draw_rect(pInfoBar, dred_control_get_local_rect(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
 
 
     //float padding = 32*pDred->uiScale;
@@ -113,8 +113,8 @@ void dred_info_bar__on_paint__image_editor(dred_info_bar* pInfoBar, dred_info_ba
         float totalWidth = zoomStrWidth + paddingRight;
 
         
-        float textPosX = drgui_get_width(pInfoBar) - totalWidth;
-        float textPosY = (drgui_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
+        float textPosX = dred_control_get_width(pInfoBar) - totalWidth;
+        float textPosY = (dred_control_get_height(pInfoBar) - fontMetrics.lineHeight) / 2;
         drgui_draw_text(pInfoBar, pFont, data->zoomStr, (int)strlen(data->zoomStr), textPosX, textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pPaintData);
 
         dred_font_release_subfont(pDred->config.pUIFont, pFont);
@@ -163,7 +163,7 @@ dred_info_bar* dred_info_bar_create(dred_context* pDred, dred_control* pParent)
     // The height of the command bar is based on the size of the font.
     dred_gui_font_metrics fontMetrics;
     drgui_get_font_metrics(data->pFont, &fontMetrics);
-    drgui_set_size(pInfoBar, 0, (float)fontMetrics.lineHeight);
+    dred_control_set_size(pInfoBar, 0, (float)fontMetrics.lineHeight);
 
 
     // Events.
@@ -197,7 +197,7 @@ void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
 
 
     // The bar needs to be redrawn.
-    drgui_dirty(pInfoBar, drgui_get_local_rect(pInfoBar));
+    drgui_dirty(pInfoBar, dred_control_get_local_rect(pInfoBar));
 }
 
 void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar)
@@ -217,8 +217,8 @@ void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar)
         // The height of the command bar is based on the size of the font.
         dred_gui_font_metrics fontMetrics;
         drgui_get_font_metrics(data->pFont, &fontMetrics);
-        drgui_set_size(pInfoBar, drgui_get_width(pInfoBar), (float)fontMetrics.lineHeight);
+        dred_control_set_size(pInfoBar, dred_control_get_width(pInfoBar), (float)fontMetrics.lineHeight);
     }
 
-    drgui_dirty(pInfoBar, drgui_get_local_rect(pInfoBar));
+    drgui_dirty(pInfoBar, dred_control_get_local_rect(pInfoBar));
 }

@@ -266,7 +266,7 @@ void dred_tabbar_set_font(dred_tabbar* pTabBar, dred_gui_font* pFont)
     }
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -291,7 +291,7 @@ void dred_tabbar_set_text_color(dred_tabbar* pTabBar, dred_color color)
     pTB->tabTextColor = color;
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -315,7 +315,7 @@ void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, dred_color color)
     pTB->tabTextColorActivated = color;
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -329,7 +329,7 @@ void dred_tabbar_set_text_color_hovered(dred_tabbar* pTabBar, dred_color color)
     pTB->tabTextColorHovered = color;
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -344,7 +344,7 @@ void dred_tabbar_set_close_button_image(dred_tabbar* pTabBar, dred_gui_image* pI
     pTB->pCloseButtonImage = pImage;
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -368,7 +368,7 @@ void dred_tabbar_set_close_button_color(dred_tabbar* pTabBar, dred_color color)
     pTB->closeButtonColorDefault = color;
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -383,7 +383,7 @@ void dred_tabbar_set_tab_padding(dred_tabbar* pTabBar, float padding)
     pTB->tabPadding = padding;
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -407,7 +407,7 @@ void dred_tabbar_set_close_button_left_padding(dred_tabbar* pTabBar, float paddi
     pTB->closeButtonPaddingLeft = padding;
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -432,7 +432,7 @@ void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, dred_color color
     pTB->tabBackgroundColor = color;
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -456,7 +456,7 @@ void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, dred_col
     pTB->tabBackgroundColorHovered = color;
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -480,7 +480,7 @@ void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, dred_colo
     pTB->tabBackbroundColorActivated = color;
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -619,9 +619,9 @@ void dred_tabbar_resize_by_tabs(dred_tabbar* pTabBar)
 
 
     if (pTB->orientation == dred_tabbar_orientation_top || pTB->orientation == dred_tabbar_orientation_bottom) {
-        drgui_set_size(pTabBar, drgui_get_width(pTabBar), maxHeight);
+        dred_control_set_size(pTabBar, dred_control_get_width(pTabBar), maxHeight);
     } else {
-        drgui_set_size(pTabBar, maxWidth, drgui_get_height(pTabBar));
+        dred_control_set_size(pTabBar, maxWidth, dred_control_get_height(pTabBar));
     }
 }
 
@@ -716,7 +716,7 @@ void dred_tabbar_activate_tab(dred_tabbar* pTabBar, drgui_tab* pTab)
 
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -782,7 +782,7 @@ bool dred_tabbar_is_tab_in_view(dred_tabbar* pTabBar, drgui_tab* pTabIn)
 
     float tabbarWidth  = 0;
     float tabbarHeight = 0;
-    drgui_get_size(pTabBar, &tabbarWidth, &tabbarHeight);
+    dred_control_get_size(pTabBar, &tabbarWidth, &tabbarHeight);
 
 
     // Each tab.
@@ -820,7 +820,7 @@ void dred_tabbar_show_close_buttons(dred_tabbar* pTabBar)
     pTB->isShowingCloseButton = true;
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -834,7 +834,7 @@ void dred_tabbar_hide_close_buttons(dred_tabbar* pTabBar)
     pTB->isShowingCloseButton = false;
 
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -883,7 +883,7 @@ void dred_tabbar_on_mouse_leave(dred_tabbar* pTabBar)
         pTB->isCloseButtonHovered = false;
 
         if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-            drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+            drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
         }
     }
 }
@@ -908,7 +908,7 @@ void dred_tabbar_on_mouse_move(dred_tabbar* pTabBar, int relativeMousePosX, int 
         pTB->isCloseButtonHovered = isCloseButtonHovered;
 
         if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-            drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+            drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
         }
     }
 }
@@ -937,7 +937,7 @@ void dred_tabbar_on_mouse_button_down(dred_tabbar* pTabBar, int mouseButton, int
             pTB->pTabWithCloseButtonPressed = pNewActiveTab;
 
             if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-                drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+                drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
             }
         }
     }
@@ -980,7 +980,7 @@ void dred_tabbar_on_mouse_button_up(dred_tabbar* pTabBar, int mouseButton, int r
         pTB->pTabWithCloseButtonPressed = NULL;
 
         if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-            drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+            drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
         }
     }
     else
@@ -1003,7 +1003,7 @@ void dred_tabbar_on_paint(dred_tabbar* pTabBar, dred_rect relativeClippingRect, 
 
     float tabbarWidth  = 0;
     float tabbarHeight = 0;
-    drgui_get_size(pTabBar, &tabbarWidth, &tabbarHeight);
+    dred_control_get_size(pTabBar, &tabbarWidth, &tabbarHeight);
 
 
     // Each tab.
@@ -1342,7 +1342,7 @@ void drgui_tab_set_text(drgui_tab* pTab, const char* text)
 
     // The content of the menu has changed so we'll need to schedule a redraw.
     if (drgui_is_auto_dirty_enabled(pTab->pTabBar->pGUI)) {
-        drgui_dirty(pTab->pTabBar, drgui_get_local_rect(pTab->pTabBar));
+        drgui_dirty(pTab->pTabBar, dred_control_get_local_rect(pTab->pTabBar));
     }
 }
 
@@ -1440,7 +1440,7 @@ DRED_GUI_PRIVATE void tab_append(drgui_tab* pTab, dred_tabbar* pTabBar)
 
     // The content of the menu has changed so we'll need to schedule a redraw.
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -1478,7 +1478,7 @@ DRED_GUI_PRIVATE void tab_prepend(drgui_tab* pTab, dred_tabbar* pTabBar)
 
     // The content of the menu has changed so we'll need to schedule a redraw.
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }
 
@@ -1557,6 +1557,6 @@ DRED_GUI_PRIVATE void tab_detach(drgui_tab* pTab)
 
     // The content of the menu has changed so we'll need to schedule a redraw.
     if (drgui_is_auto_dirty_enabled(pTabBar->pGUI)) {
-        drgui_dirty(pTabBar, drgui_get_local_rect(pTabBar));
+        drgui_dirty(pTabBar, dred_control_get_local_rect(pTabBar));
     }
 }

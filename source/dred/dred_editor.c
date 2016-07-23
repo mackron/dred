@@ -26,7 +26,7 @@ dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, cons
         return NULL;
     }
 
-    drgui_set_size(pEditor, sizeX, sizeY);
+    dred_control_set_size(pEditor, sizeX, sizeY);
 
     dred_editor_data* data = (dred_editor_data*)dred_control_get_extra_data(pEditor);
     assert(data != NULL);

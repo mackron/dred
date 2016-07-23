@@ -682,7 +682,7 @@ dred_window* dred_window_create__win32__internal(dred_context* pDred, HWND hWnd)
     unsigned int windowWidth;
     unsigned int windowHeight;
     dred_window_get_client_size(pWindow, &windowWidth, &windowHeight);
-    drgui_set_size(pWindow->pRootGUIControl, (float)windowWidth, (float)windowHeight);
+    dred_control_set_size(pWindow->pRootGUIControl, (float)windowWidth, (float)windowHeight);
 
 
     // The dred window needs to be linked to the Win32 window handle so it can be accessed from the event handler.
@@ -3313,7 +3313,7 @@ void dred_window_on_size(dred_window* pWindow, unsigned int newWidth, unsigned i
     }
 
     // Always resize the root GUI element so that it's the exact same size as the window.
-    drgui_set_size(pWindow->pRootGUIControl, (float)newWidth, (float)newHeight);
+    dred_control_set_size(pWindow->pRootGUIControl, (float)newWidth, (float)newHeight);
 }
 
 void dred_window_on_move(dred_window* pWindow, int newPosX, int newPosY)

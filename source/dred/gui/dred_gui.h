@@ -109,7 +109,7 @@
 //
 // Basic Drawing:
 //
-// drgui_draw(pTopLevelControl, 0, 0, drgui_get_width(pTopLevelControl), drgui_get_height(pTopLevelControl));
+// drgui_draw(pTopLevelControl, 0, 0, dred_control_get_width(pTopLevelControl), dred_control_get_height(pTopLevelControl));
 //
 // -------------------------
 //
@@ -1203,44 +1203,44 @@ bool dred_control_is_self_or_descendant(dred_control* pChildControl, dred_contro
 //// Layout ////
 
 /// Sets the absolute position of the given element.
-void drgui_set_absolute_position(dred_control* pControl, float positionX, float positionY);
+void dred_control_set_absolute_position(dred_control* pControl, float positionX, float positionY);
 
 /// Retrieves the absolute position of the given element.
-void drgui_get_absolute_position(const dred_control* pControl, float* positionXOut, float* positionYOut);
-float drgui_get_absolute_position_x(const dred_control* pControl);
-float drgui_get_absolute_position_y(const dred_control* pControl);
+void dred_control_get_absolute_position(const dred_control* pControl, float* positionXOut, float* positionYOut);
+float dred_control_get_absolute_position_x(const dred_control* pControl);
+float dred_control_get_absolute_position_y(const dred_control* pControl);
 
 
 /// Sets the relative position of the given element.
-void drgui_set_relative_position(dred_control* pControl, float relativePosX, float relativePosY);
+void dred_control_set_relative_position(dred_control* pControl, float relativePosX, float relativePosY);
 
 /// Retrieves the relative position of the given element.
-void drgui_get_relative_position(const dred_control* pControl, float* relativePosXOut, float* relativePosYOut);
-float drgui_get_relative_position_x(const dred_control* pControl);
-float drgui_get_relative_position_y(const dred_control* pControl);
+void dred_control_get_relative_position(const dred_control* pControl, float* relativePosXOut, float* relativePosYOut);
+float dred_control_get_relative_position_x(const dred_control* pControl);
+float dred_control_get_relative_position_y(const dred_control* pControl);
 
 
 /// Sets the size of the given element.
-void drgui_set_size(dred_control* pControl, float width, float height);
+void dred_control_set_size(dred_control* pControl, float width, float height);
 
 /// Retrieves the size of the given element.
-void drgui_get_size(const dred_control* pControl, float* widthOut, float* heightOut);
-float drgui_get_width(const dred_control* pControl);
-float drgui_get_height(const dred_control* pControl);
+void dred_control_get_size(const dred_control* pControl, float* widthOut, float* heightOut);
+float dred_control_get_width(const dred_control* pControl);
+float dred_control_get_height(const dred_control* pControl);
 
 
 
 /// Retrieves the absolute rectangle for the given element.
-dred_rect drgui_get_absolute_rect(const dred_control* pControl);
+dred_rect dred_control_get_absolute_rect(const dred_control* pControl);
 
 /// Retrieves the relative rectangle for the given element.
-dred_rect drgui_get_relative_rect(const dred_control* pControl);
+dred_rect dred_control_get_relative_rect(const dred_control* pControl);
 
 /// Retrieves the local rectangle for the given element.
 ///
 /// @remarks
-///     The local rectangle is equivalent to drgui_make_rect(0, 0, drgui_get_width(pControl), drgui_get_height(pControl));
-dred_rect drgui_get_local_rect(const dred_control* pControl);
+///     The local rectangle is equivalent to drgui_make_rect(0, 0, dred_control_get_width(pControl), dred_control_get_height(pControl));
+dred_rect dred_control_get_local_rect(const dred_control* pControl);
 
 
 

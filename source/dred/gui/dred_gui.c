@@ -598,7 +598,7 @@ void drgui_apply_offset_to_children_recursive(dred_control* pParentControl, floa
     {
         drgui_begin_auto_dirty(pParentControl);
         {
-            drgui_auto_dirty(pParentControl, drgui_get_local_rect(pParentControl));
+            drgui_auto_dirty(pParentControl, dred_control_get_local_rect(pParentControl));
             pChild->absolutePosX += offsetX;
             pChild->absolutePosY += offsetY;
 
@@ -1431,7 +1431,7 @@ void dred_control_delete(dred_control* pControl)
 
     // The parent needs to be redraw after detaching.
     dred_control* pParent = pControl->pParent;
-    dred_rect relativeRect = drgui_get_relative_rect(pControl);
+    dred_rect relativeRect = dred_control_get_relative_rect(pControl);
 
 
     // Orphan the element first.
@@ -1527,7 +1527,7 @@ void dred_control_hide(dred_control* pControl)
 {
     if (pControl != NULL) {
         pControl->flags |= IS_CONTROL_HIDDEN;
-        drgui_auto_dirty(pControl, drgui_get_local_rect(pControl));
+        drgui_auto_dirty(pControl, dred_control_get_local_rect(pControl));
     }
 }
 
@@ -1535,7 +1535,7 @@ void dred_control_show(dred_control* pControl)
 {
     if (pControl != NULL) {
         pControl->flags &= ~IS_CONTROL_HIDDEN;
-        drgui_auto_dirty(pControl, drgui_get_local_rect(pControl));
+        drgui_auto_dirty(pControl, dred_control_get_local_rect(pControl));
     }
 }
 
@@ -1812,8 +1812,8 @@ void dred_control_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int 
         return;
     }
 
-    int mousePosXWindow = relativePosX + (int)drgui_get_absolute_position_x(pControl);
-    int mousePosYWindow = relativePosY + (int)drgui_get_absolute_position_y(pControl);
+    int mousePosXWindow = relativePosX + (int)dred_control_get_absolute_position_x(pControl);
+    int mousePosYWindow = relativePosY + (int)dred_control_get_absolute_position_y(pControl);
     dred_window_show_popup_menu(pWindow, pMenu, mousePosXWindow, mousePosYWindow);
 }
 
@@ -2037,7 +2037,7 @@ dred_control* dred_gui_find_control_under_point(dred_control* pTopLevelControl, 
     data.pControlUnderPoint = NULL;
     data.absolutePosX = absolutePosX;
     data.absolutePosY = absolutePosY;
-    drgui_iterate_visible_elements(pTopLevelControl, drgui_get_absolute_rect(pTopLevelControl), dred_gui_find_control_under_point_iterator, &data);
+    drgui_iterate_visible_elements(pTopLevelControl, dred_control_get_absolute_rect(pTopLevelControl), dred_gui_find_control_under_point_iterator, &data);
 
     return data.pControlUnderPoint;
 }
@@ -2078,7 +2078,7 @@ void dred_control_detach(dred_control* pChildControl)
 
     // The region of the old parent needs to be redrawn.
     if (pOldParent != NULL) {
-        drgui_auto_dirty(pOldParent, drgui_get_relative_rect(pOldParent));
+        drgui_auto_dirty(pOldParent, dred_control_get_relative_rect(pOldParent));
     }
 }
 
@@ -2226,29 +2226,29 @@ bool dred_control_is_self_or_descendant(dred_control* pChildControl, dred_contro
 
 //// Layout ////
 
-void drgui_set_absolute_position(dred_control* pControl, float positionX, float positionY)
+void dred_control_set_absolute_position(dred_control* pControl, float positionX, float positionY)
 {
     if (pControl != NULL)
     {
         if (pControl->absolutePosX != positionX || pControl->absolutePosY != positionY)
         {
-            float oldRelativePosX = drgui_get_relative_position_x(pControl);
-            float oldRelativePosY = drgui_get_relative_position_y(pControl);
+            float oldRelativePosX = dred_control_get_relative_position_x(pControl);
+            float oldRelativePosY = dred_control_get_relative_position_y(pControl);
 
             drgui_begin_auto_dirty(pControl);
             {
-                drgui_auto_dirty(pControl, drgui_get_local_rect(pControl));     // <-- Previous rectangle.
+                drgui_auto_dirty(pControl, dred_control_get_local_rect(pControl));     // <-- Previous rectangle.
 
                 float offsetX = positionX - pControl->absolutePosX;
                 float offsetY = positionY - pControl->absolutePosY;
 
                 pControl->absolutePosX = positionX;
                 pControl->absolutePosY = positionY;
-                drgui_auto_dirty(pControl, drgui_get_local_rect(pControl));     // <-- New rectangle.
+                drgui_auto_dirty(pControl, dred_control_get_local_rect(pControl));     // <-- New rectangle.
 
 
-                float newRelativePosX = drgui_get_relative_position_x(pControl);
-                float newRelativePosY = drgui_get_relative_position_y(pControl);
+                float newRelativePosX = dred_control_get_relative_position_x(pControl);
+                float newRelativePosY = dred_control_get_relative_position_y(pControl);
 
                 if (newRelativePosX != oldRelativePosX || newRelativePosY != oldRelativePosY) {
                     drgui_post_outbound_event_move(pControl, newRelativePosX, newRelativePosY);
@@ -2262,7 +2262,7 @@ void drgui_set_absolute_position(dred_control* pControl, float positionX, float 
     }
 }
 
-void drgui_get_absolute_position(const dred_control* pControl, float * positionXOut, float * positionYOut)
+void dred_control_get_absolute_position(const dred_control* pControl, float * positionXOut, float * positionYOut)
 {
     if (pControl != NULL)
     {
@@ -2276,7 +2276,7 @@ void drgui_get_absolute_position(const dred_control* pControl, float * positionX
     }
 }
 
-float drgui_get_absolute_position_x(const dred_control* pControl)
+float dred_control_get_absolute_position_x(const dred_control* pControl)
 {
     if (pControl != NULL) {
         return pControl->absolutePosX;
@@ -2285,7 +2285,7 @@ float drgui_get_absolute_position_x(const dred_control* pControl)
     return 0.0f;
 }
 
-float drgui_get_absolute_position_y(const dred_control* pControl)
+float dred_control_get_absolute_position_y(const dred_control* pControl)
 {
     if (pControl != NULL) {
         return pControl->absolutePosY;
@@ -2295,18 +2295,18 @@ float drgui_get_absolute_position_y(const dred_control* pControl)
 }
 
 
-void drgui_set_relative_position(dred_control* pControl, float relativePosX, float relativePosY)
+void dred_control_set_relative_position(dred_control* pControl, float relativePosX, float relativePosY)
 {
     if (pControl != NULL) {
         if (pControl->pParent != NULL) {
-            drgui_set_absolute_position(pControl, pControl->pParent->absolutePosX + relativePosX, pControl->pParent->absolutePosY + relativePosY);
+            dred_control_set_absolute_position(pControl, pControl->pParent->absolutePosX + relativePosX, pControl->pParent->absolutePosY + relativePosY);
         } else {
-            drgui_set_absolute_position(pControl, relativePosX, relativePosY);
+            dred_control_set_absolute_position(pControl, relativePosX, relativePosY);
         }
     }
 }
 
-void drgui_get_relative_position(const dred_control* pControl, float* positionXOut, float* positionYOut)
+void dred_control_get_relative_position(const dred_control* pControl, float* positionXOut, float* positionYOut)
 {
     if (pControl != NULL)
     {
@@ -2333,7 +2333,7 @@ void drgui_get_relative_position(const dred_control* pControl, float* positionXO
     }
 }
 
-float drgui_get_relative_position_x(const dred_control* pControl)
+float dred_control_get_relative_position_x(const dred_control* pControl)
 {
     if (pControl != NULL) {
         if (pControl->pParent != NULL) {
@@ -2346,7 +2346,7 @@ float drgui_get_relative_position_x(const dred_control* pControl)
     return 0;
 }
 
-float drgui_get_relative_position_y(const dred_control* pControl)
+float dred_control_get_relative_position_y(const dred_control* pControl)
 {
     if (pControl != NULL) {
         if (pControl->pParent != NULL) {
@@ -2360,7 +2360,7 @@ float drgui_get_relative_position_y(const dred_control* pControl)
 }
 
 
-void drgui_set_size(dred_control* pControl, float width, float height)
+void dred_control_set_size(dred_control* pControl, float width, float height)
 {
     if (pControl != NULL)
     {
@@ -2368,11 +2368,11 @@ void drgui_set_size(dred_control* pControl, float width, float height)
         {
             drgui_begin_auto_dirty(pControl);
             {
-                drgui_auto_dirty(pControl, drgui_get_local_rect(pControl));     // <-- Previous rectangle.
+                drgui_auto_dirty(pControl, dred_control_get_local_rect(pControl));     // <-- Previous rectangle.
 
                 pControl->width  = width;
                 pControl->height = height;
-                drgui_auto_dirty(pControl, drgui_get_local_rect(pControl));     // <-- New rectangle.
+                drgui_auto_dirty(pControl, dred_control_get_local_rect(pControl));     // <-- New rectangle.
 
                 drgui_post_outbound_event_size(pControl, width, height);
             }
@@ -2381,7 +2381,7 @@ void drgui_set_size(dred_control* pControl, float width, float height)
     }
 }
 
-void drgui_get_size(const dred_control* pControl, float* widthOut, float* heightOut)
+void dred_control_get_size(const dred_control* pControl, float* widthOut, float* heightOut)
 {
     if (pControl != NULL) {
         if (widthOut) *widthOut = pControl->width;
@@ -2392,7 +2392,7 @@ void drgui_get_size(const dred_control* pControl, float* widthOut, float* height
     }
 }
 
-float drgui_get_width(const dred_control * pControl)
+float dred_control_get_width(const dred_control * pControl)
 {
     if (pControl != NULL) {
         return pControl->width;
@@ -2401,7 +2401,7 @@ float drgui_get_width(const dred_control * pControl)
     return 0;
 }
 
-float drgui_get_height(const dred_control * pControl)
+float dred_control_get_height(const dred_control * pControl)
 {
     if (pControl != NULL) {
         return pControl->height;
@@ -2411,7 +2411,7 @@ float drgui_get_height(const dred_control * pControl)
 }
 
 
-dred_rect drgui_get_absolute_rect(const dred_control* pControl)
+dred_rect dred_control_get_absolute_rect(const dred_control* pControl)
 {
     dred_rect rect;
     if (pControl != NULL)
@@ -2432,13 +2432,13 @@ dred_rect drgui_get_absolute_rect(const dred_control* pControl)
     return rect;
 }
 
-dred_rect drgui_get_relative_rect(const dred_control* pControl)
+dred_rect dred_control_get_relative_rect(const dred_control* pControl)
 {
     dred_rect rect;
     if (pControl != NULL)
     {
-        rect.left   = drgui_get_relative_position_x(pControl);
-        rect.top    = drgui_get_relative_position_y(pControl);
+        rect.left   = dred_control_get_relative_position_x(pControl);
+        rect.top    = dred_control_get_relative_position_y(pControl);
         rect.right  = rect.left + pControl->width;
         rect.bottom = rect.top  + pControl->height;
     }
@@ -2453,7 +2453,7 @@ dred_rect drgui_get_relative_rect(const dred_control* pControl)
     return rect;
 }
 
-dred_rect drgui_get_local_rect(const dred_control* pControl)
+dred_rect dred_control_get_local_rect(const dred_control* pControl)
 {
     dred_rect rect;
     rect.left = 0;
@@ -2522,8 +2522,8 @@ bool drgui_iterate_visible_elements(dred_control* pParentControl, dred_rect rela
 
     for (dred_control* pChild = pParentControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling)
     {
-        float childRelativePosX = drgui_get_relative_position_x(pChild);
-        float childRelativePosY = drgui_get_relative_position_y(pChild);
+        float childRelativePosX = dred_control_get_relative_position_x(pChild);
+        float childRelativePosY = dred_control_get_relative_position_y(pChild);
 
         dred_rect childRect;
         if (dred_control_is_clipping_enabled(pChild)) {
@@ -3170,7 +3170,7 @@ void drgui_unmap_image_data(dred_gui_image* pImage)
 void drgui_on_size_fit_children_to_parent(dred_control* pControl, float newWidth, float newHeight)
 {
     for (dred_control* pChild = pControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
-        drgui_set_size(pChild, newWidth, newHeight);
+        dred_control_set_size(pChild, newWidth, newHeight);
     }
 }
 
@@ -3189,7 +3189,7 @@ bool drgui_pass_through_hit_test(dred_control* pControl, float mousePosX, float 
 
 void drgui_draw_border(dred_control* pControl, float borderWidth, dred_color color, void* pUserData)
 {
-    drgui_draw_rect_outline(pControl, drgui_get_local_rect(pControl), color, borderWidth, pUserData);
+    drgui_draw_rect_outline(pControl, dred_control_get_local_rect(pControl), color, borderWidth, pUserData);
 }
 
 

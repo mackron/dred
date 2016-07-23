@@ -185,7 +185,7 @@ void dred_textbox__on_vscroll(dred_scrollbar* pSBControl, int scrollPos)
     dred_textbox__refresh_scrollbars(pTextBox);
 
     // The line numbers need to be redrawn.
-    drgui_dirty(pTB->pLineNumbers, drgui_get_local_rect(pTB->pLineNumbers));
+    drgui_dirty(pTB->pLineNumbers, dred_control_get_local_rect(pTB->pLineNumbers));
 }
 
 void dred_textbox__on_hscroll(dred_scrollbar* pSBControl, int scrollPos)
@@ -2419,7 +2419,7 @@ void dred_textbox_engine__on_text_changed(drte_engine* pTL)
 
     // The line numbers need to be redrawn.
     // TODO: This can probably be optimized a bit so that it is only redrawn if a line was inserted or deleted.
-    drgui_dirty(pTB->pLineNumbers, drgui_get_local_rect(pTB->pLineNumbers));
+    drgui_dirty(pTB->pLineNumbers, dred_control_get_local_rect(pTB->pLineNumbers));
 }
 
 void dred_textbox_engine__on_undo_point_changed(drte_engine* pTL, unsigned int iUndoPoint)
@@ -2515,7 +2515,7 @@ void dred_textbox_on_paint(dred_textbox* pTextBox, dred_rect relativeRect, void*
     //drgui_draw_rect(pTextBox, dred_textbox__get_scrollbar_dead_space_rect(pTextBox), pTB->defaultStyle.bgColor, pPaintData);
 
     // Border.
-    dred_rect borderRect = drgui_get_local_rect(pTextBox);
+    dred_rect borderRect = dred_control_get_local_rect(pTextBox);
     drgui_draw_rect_outline(pTextBox, borderRect, pTB->borderColor, pTB->borderWidth, pPaintData);
 
     // Padding.
@@ -2601,7 +2601,7 @@ void dred_textbox__get_text_offset(dred_textbox* pTextBox, float* pOffsetXOut, f
     {
         float lineNumbersWidth = 0;
         if (dred_control_is_visible(pTB->pLineNumbers)) {
-            lineNumbersWidth = drgui_get_width(pTB->pLineNumbers);
+            lineNumbersWidth = dred_control_get_width(pTB->pLineNumbers);
         }
 
         offsetX = pTB->borderWidth + pTB->padding + lineNumbersWidth;
@@ -2627,21 +2627,21 @@ void dred_textbox__calculate_text_engine_container_size(dred_textbox* pTextBox, 
     {
         float horzScrollbarSize = 0;
         if (dred_control_is_visible(pTB->pHorzScrollbar)) {
-            horzScrollbarSize = drgui_get_height(pTB->pHorzScrollbar);
+            horzScrollbarSize = dred_control_get_height(pTB->pHorzScrollbar);
         }
 
         float vertScrollbarSize = 0;
         if (dred_control_is_visible(pTB->pVertScrollbar)) {
-            vertScrollbarSize = drgui_get_width(pTB->pVertScrollbar);
+            vertScrollbarSize = dred_control_get_width(pTB->pVertScrollbar);
         }
 
         float lineNumbersWidth = 0;
         if (dred_control_is_visible(pTB->pLineNumbers)) {
-            lineNumbersWidth = drgui_get_width(pTB->pLineNumbers);
+            lineNumbersWidth = dred_control_get_width(pTB->pLineNumbers);
         }
 
-        width  = drgui_get_width(pTextBox)  - (pTB->borderWidth + pTB->padding)*2 - vertScrollbarSize - lineNumbersWidth;
-        height = drgui_get_height(pTextBox) - (pTB->borderWidth + pTB->padding)*2 - horzScrollbarSize;
+        width  = dred_control_get_width(pTextBox)  - (pTB->borderWidth + pTB->padding)*2 - vertScrollbarSize - lineNumbersWidth;
+        height = dred_control_get_height(pTextBox) - (pTB->borderWidth + pTB->padding)*2 - horzScrollbarSize;
     }
 
     if (pWidthOut != NULL) {
@@ -2749,11 +2749,11 @@ void dred_textbox__refresh_scrollbar_layouts(dred_textbox* pTextBox)
     float scrollbarSizeH = (dred_scrollbar_is_thumb_visible(pTB->pHorzScrollbar) && pTB->isHorzScrollbarEnabled) ? pTB->horzScrollbarSize : 0;
     float scrollbarSizeV = (dred_scrollbar_is_thumb_visible(pTB->pVertScrollbar) && pTB->isVertScrollbarEnabled) ? pTB->vertScrollbarSize : 0;
 
-    drgui_set_size(pTB->pVertScrollbar, scrollbarSizeV, drgui_get_height(pTextBox) /*- scrollbarSizeH*/ - (offsetTop + offsetBottom));
-    drgui_set_size(pTB->pHorzScrollbar, drgui_get_width(pTextBox) - scrollbarSizeV - (offsetLeft + offsetRight), scrollbarSizeH);
+    dred_control_set_size(pTB->pVertScrollbar, scrollbarSizeV, dred_control_get_height(pTextBox) /*- scrollbarSizeH*/ - (offsetTop + offsetBottom));
+    dred_control_set_size(pTB->pHorzScrollbar, dred_control_get_width(pTextBox) - scrollbarSizeV - (offsetLeft + offsetRight), scrollbarSizeH);
 
-    drgui_set_relative_position(pTB->pVertScrollbar, drgui_get_width(pTextBox) - scrollbarSizeV - offsetRight, offsetTop);
-    drgui_set_relative_position(pTB->pHorzScrollbar, offsetLeft, drgui_get_height(pTextBox) - scrollbarSizeH - offsetBottom);
+    dred_control_set_relative_position(pTB->pVertScrollbar, dred_control_get_width(pTextBox) - scrollbarSizeV - offsetRight, offsetTop);
+    dred_control_set_relative_position(pTB->pHorzScrollbar, offsetLeft, dred_control_get_height(pTextBox) - scrollbarSizeH - offsetBottom);
 
 
     // A change in the layout of the horizontal scrollbar will affect the layout of the line numbers.
@@ -2770,14 +2770,14 @@ dred_rect dred_textbox__get_scrollbar_dead_space_rect(dred_textbox* pTextBox)
     float offsetRight  = pTB->borderWidth;
     float offsetBottom = pTB->borderWidth;
 
-    float scrollbarSizeH = (dred_control_is_visible(pTB->pHorzScrollbar) && pTB->isHorzScrollbarEnabled) ? drgui_get_width(pTB->pHorzScrollbar) : 0;
-    float scrollbarSizeV = (dred_control_is_visible(pTB->pVertScrollbar) && pTB->isHorzScrollbarEnabled) ? drgui_get_height(pTB->pVertScrollbar) : 0;
+    float scrollbarSizeH = (dred_control_is_visible(pTB->pHorzScrollbar) && pTB->isHorzScrollbarEnabled) ? dred_control_get_width(pTB->pHorzScrollbar) : 0;
+    float scrollbarSizeV = (dred_control_is_visible(pTB->pVertScrollbar) && pTB->isHorzScrollbarEnabled) ? dred_control_get_height(pTB->pVertScrollbar) : 0;
 
     if (scrollbarSizeH == 0 && scrollbarSizeV == 0) {
         return drgui_make_rect(0, 0, 0, 0);
     }
 
-    return drgui_make_rect(scrollbarSizeH + offsetLeft, scrollbarSizeV + offsetTop, drgui_get_width(pTextBox) - offsetRight, drgui_get_height(pTextBox) - offsetBottom);
+    return drgui_make_rect(scrollbarSizeH + offsetLeft, scrollbarSizeV + offsetTop, dred_control_get_width(pTextBox) - offsetRight, dred_control_get_height(pTextBox) - offsetBottom);
 }
 
 
@@ -2952,15 +2952,15 @@ void dred_textbox__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect r
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
-    float lineNumbersWidth  = drgui_get_width(pLineNumbers) - (pTB->padding*2) - pTB->lineNumbersPaddingRight;
-    float lineNumbersHeight = drgui_get_height(pLineNumbers) - (pTB->padding*2);
+    float lineNumbersWidth  = dred_control_get_width(pLineNumbers) - (pTB->padding*2) - pTB->lineNumbersPaddingRight;
+    float lineNumbersHeight = dred_control_get_height(pLineNumbers) - (pTB->padding*2);
 
     drte_engine_paint_line_numbers(pTB->pTL, lineNumbersWidth, lineNumbersHeight, dred_textbox__on_paint_text_line_numbers, dred_textbox__on_paint_rect_line_numbers, pPaintData);
 
-    drgui_draw_rect_outline(pLineNumbers, drgui_get_local_rect(pLineNumbers), pTB->lineNumbersStyle.bgColor, pTB->padding, pPaintData);
+    drgui_draw_rect_outline(pLineNumbers, dred_control_get_local_rect(pLineNumbers), pTB->lineNumbersStyle.bgColor, pTB->padding, pPaintData);
 
     // Right padding.
-    dred_rect rightPaddingRect = drgui_get_local_rect(pLineNumbers);
+    dred_rect rightPaddingRect = dred_control_get_local_rect(pLineNumbers);
     rightPaddingRect.right -= pTB->padding;
     rightPaddingRect.left   = rightPaddingRect.right - pTB->lineNumbersPaddingRight;
     drgui_draw_rect(pLineNumbers, rightPaddingRect, pTB->lineNumbersStyle.bgColor, pPaintData);
@@ -2971,7 +2971,7 @@ void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox)
     dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
     assert(pTB != NULL);
 
-    dred_rect lineNumbersRectOld = drgui_get_local_rect(pTB->pLineNumbers);
+    dred_rect lineNumbersRectOld = dred_control_get_local_rect(pTB->pLineNumbers);
     drgui_begin_dirty(pTB->pLineNumbers);
     
     float lineNumbersWidth = 0;
@@ -2979,8 +2979,8 @@ void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox)
         lineNumbersWidth = pTB->lineNumbersWidth;
     }
 
-    float scrollbarHeight = dred_control_is_visible(pTB->pHorzScrollbar) ? drgui_get_height(pTB->pHorzScrollbar) : 0;
-    drgui_set_size(pTB->pLineNumbers, lineNumbersWidth, drgui_get_height(pTextBox) - scrollbarHeight);
+    float scrollbarHeight = dred_control_is_visible(pTB->pHorzScrollbar) ? dred_control_get_height(pTB->pHorzScrollbar) : 0;
+    dred_control_set_size(pTB->pLineNumbers, lineNumbersWidth, dred_control_get_height(pTextBox) - scrollbarHeight);
 
 
     // The size of the text container may have changed.
@@ -2991,6 +2991,6 @@ void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox)
 
 
     // Force a redraw just to be sure everything is in a valid state.
-    drgui_dirty(pTextBox, dred_rect_union(lineNumbersRectOld, drgui_get_local_rect(pTB->pLineNumbers)));
+    drgui_dirty(pTextBox, dred_rect_union(lineNumbersRectOld, dred_control_get_local_rect(pTB->pLineNumbers)));
     drgui_end_dirty(pTB->pLineNumbers);
 }

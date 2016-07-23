@@ -39,7 +39,7 @@ void dred_text_editor__on_size(dred_text_editor* pTextEditor, float newWidth, fl
     }
 
     // The text box should take up the entire area of the editor.
-    drgui_set_size(pTextBox, newWidth, newHeight);
+    dred_control_set_size(pTextBox, newWidth, newHeight);
 }
 
 void dred_text_editor__on_capture_keyboard(dred_text_editor* pTextEditor, dred_control* pPrevCapturedControl)
@@ -230,7 +230,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
         return NULL;
     }
 
-    drgui_set_size(data->pTextBox, sizeX, sizeY);
+    dred_control_set_size(data->pTextBox, sizeX, sizeY);
 
     data->textScale = 1;
     dred_text_editor_set_highlighter(pTextEditor, dred_get_language_by_file_path(pDred, filePathAbsolute));

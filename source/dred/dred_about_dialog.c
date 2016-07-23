@@ -44,7 +44,7 @@ void dred_about_dialog__on_size(dred_control* pControl, float newWidth, float ne
     assert(pDialog != NULL);
 
     // The close button needs to be repositioned.
-    drgui_set_relative_position(pDialog->pCloseButton, newWidth - drgui_get_width(pDialog->pCloseButton) - 8*pDred->uiScale, newHeight - drgui_get_height(pDialog->pCloseButton) - 8*pDred->uiScale);
+    dred_control_set_relative_position(pDialog->pCloseButton, newWidth - dred_control_get_width(pDialog->pCloseButton) - 8*pDred->uiScale, newHeight - dred_control_get_height(pDialog->pCloseButton) - 8*pDred->uiScale);
 }
 
 void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* pPaintData)
@@ -61,7 +61,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
 
     float uiScale = (float)pWindow->pDred->uiScale;
 
-    dred_rect dialogRect = drgui_get_local_rect(pControl);
+    dred_rect dialogRect = dred_control_get_local_rect(pControl);
 
     drgui_draw_rect(pControl, dialogRect, drgui_rgb(255, 255, 255), pPaintData);
 
@@ -216,7 +216,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     pDialog->pCloseButton = dred_button_create(pDred, pDialog->pWindow->pRootGUIControl, "Close");
     dred_button_set_on_pressed(pDialog->pCloseButton, dred_about_dialog__btn_close__on_pressed);
     dred_button_set_padding(pDialog->pCloseButton, 32*pDred->uiScale, 6*pDred->uiScale);
-    drgui_set_relative_position(pDialog->pCloseButton, windowWidth - drgui_get_width(pDialog->pCloseButton) - 8*pDred->uiScale, windowHeight - drgui_get_height(pDialog->pCloseButton) - 8*pDred->uiScale);
+    dred_control_set_relative_position(pDialog->pCloseButton, windowWidth - dred_control_get_width(pDialog->pCloseButton) - 8*pDred->uiScale, windowHeight - dred_control_get_height(pDialog->pCloseButton) - 8*pDred->uiScale);
 
     return pDialog;
 }
