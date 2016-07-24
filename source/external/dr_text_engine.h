@@ -4054,7 +4054,7 @@ bool drte_engine_get_start_of_next_word_from_character(drte_engine* pEngine, siz
         return false;
     }
 
-    while (pEngine->text[iChar] != '\0') {
+    while (pEngine->text[iChar] != '\0' && pEngine->text[iChar] != '\n' && !(pEngine->text[iChar] == '\r' && pEngine->text[iChar+1])) {
         uint32_t c = pEngine->text[iChar];
         if (!dr_is_whitespace(c)) {
             break;
@@ -4089,9 +4089,8 @@ bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iCha
             drte_engine_get_start_of_word_containing_character(pEngine, iChar, &iChar);
         } else if (dr_is_whitespace(c) && dr_is_whitespace(cprev)) {
             size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, iChar));
-            iChar -= 1;
-            while (iChar > 0) {
-                if (!dr_is_whitespace(pEngine->text[iChar-1]) || iChar == iLineCharBeg) {
+            while (iChar > 0 && iChar > iLineCharBeg) {
+                if (!dr_is_whitespace(pEngine->text[iChar-1])) {
                     break;
                 }
                 iChar -= 1;
