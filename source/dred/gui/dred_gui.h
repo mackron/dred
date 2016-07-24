@@ -169,6 +169,12 @@ typedef unsigned int dred_key;
 
 typedef void* dred_gui_resource;
 
+
+// Casts a pointer to any structure to a dred_control*. Note that this will only work if the dred_control object
+// is at the first byte of the structure.
+#define DRED_CONTROL(a) ((dred_control*)(a))
+
+
 /// Common system cursors.
 typedef enum
 {
