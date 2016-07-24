@@ -13,14 +13,14 @@ typedef enum
     dred_tabbar_orientation_right
 } dred_tabbar_orientation;
 
-typedef struct drgui_tab drgui_tab;
+typedef struct dred_tab dred_tab;
 
-typedef void (* dred_tabbar_on_measure_tab_proc)        (dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut);
-typedef void (* dred_tabbar_on_paint_tab_proc)          (dred_tabbar* pTabBar, drgui_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
-typedef void (* dred_tabbar_on_tab_activated_proc)      (dred_tabbar* pTabBar, drgui_tab* pTab, drgui_tab* pOldActiveTab);
-typedef void (* dred_tabbar_on_tab_deactivated_proc)    (dred_tabbar* pTabBar, drgui_tab* pTab, drgui_tab* pNewActiveTab);
-typedef void (* dred_tabbar_on_tab_close_proc)          (dred_tabbar* pTabBar, drgui_tab* pTab);
-typedef void (* dred_tabbar_on_tab_mouse_button_up_proc)(dred_tabbar* pTabBar, drgui_tab* pTab, int mouseButton, int mouseRelativePosX, int mouseRelativePosY, int stateFlags);
+typedef void (* dred_tabbar_on_measure_tab_proc)        (dred_tabbar* pTabBar, dred_tab* pTab, float* pWidthOut, float* pHeightOut);
+typedef void (* dred_tabbar_on_paint_tab_proc)          (dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
+typedef void (* dred_tabbar_on_tab_activated_proc)      (dred_tabbar* pTabBar, dred_tab* pTab, dred_tab* pOldActiveTab);
+typedef void (* dred_tabbar_on_tab_deactivated_proc)    (dred_tabbar* pTabBar, dred_tab* pTab, dred_tab* pNewActiveTab);
+typedef void (* dred_tabbar_on_tab_close_proc)          (dred_tabbar* pTabBar, dred_tab* pTab);
+typedef void (* dred_tabbar_on_tab_mouse_button_up_proc)(dred_tabbar* pTabBar, dred_tab* pTab, int mouseButton, int mouseRelativePosX, int mouseRelativePosY, int stateFlags);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -124,10 +124,10 @@ void dred_tabbar_set_on_tab_mouse_button_up(dred_tabbar* pTabBar, dred_tabbar_on
 
 
 /// Measures the given tab.
-void dred_tabbar_measure_tab(dred_tabbar* pTabBar, drgui_tab* pTab, float* pWidthOut, float* pHeightOut);
+void dred_tabbar_measure_tab(dred_tabbar* pTabBar, dred_tab* pTab, float* pWidthOut, float* pHeightOut);
 
 /// Paints the given tab.
-void dred_tabbar_paint_tab(dred_tabbar* pTabBar, drgui_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
+void dred_tabbar_paint_tab(dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
 
 
 /// Sets the width or height of the tab bar to that of it's tabs based on it's orientation.
@@ -156,20 +156,20 @@ bool dred_tabbar_is_auto_size_enabled(dred_tabbar* pTabBar);
 
 
 // Retrieves a pointer to the first tab in the given tab bar.
-drgui_tab* dred_tabbar_get_first_tab(dred_tabbar* pTabBar);
+dred_tab* dred_tabbar_get_first_tab(dred_tabbar* pTabBar);
 
 // Retrieves a pointer to the last tab in the given tab bar.
-drgui_tab* dred_tabbar_get_last_tab(dred_tabbar* pTabBar);
+dred_tab* dred_tabbar_get_last_tab(dred_tabbar* pTabBar);
 
 // Retrieves a pointer to the next tab in the given tab bar.
-drgui_tab* dred_tabbar_get_next_tab(dred_tabbar* pTabBar, drgui_tab* pTab);
+dred_tab* dred_tabbar_get_next_tab(dred_tabbar* pTabBar, dred_tab* pTab);
 
 // Retrieves a pointer to the previous tab in the given tab bar.
-drgui_tab* dred_tabbar_get_prev_tab(dred_tabbar* pTabBar, drgui_tab* pTab);
+dred_tab* dred_tabbar_get_prev_tab(dred_tabbar* pTabBar, dred_tab* pTab);
 
 
 /// Activates the given tab.
-void dred_tabbar_activate_tab(dred_tabbar* pTabBar, drgui_tab* pTab);
+void dred_tabbar_activate_tab(dred_tabbar* pTabBar, dred_tab* pTab);
 
 // Activates the tab to the right of the currently active tab, looping back to the start if necessary.
 void dred_tabbar_activate_next_tab(dred_tabbar* pTabBar);
@@ -178,11 +178,11 @@ void dred_tabbar_activate_next_tab(dred_tabbar* pTabBar);
 void dred_tabbar_activate_prev_tab(dred_tabbar* pTabBar);
 
 /// Retrieves a pointer to the currently active tab.
-drgui_tab* dred_tabbar_get_active_tab(dred_tabbar* pTabBar);
+dred_tab* dred_tabbar_get_active_tab(dred_tabbar* pTabBar);
 
 
 /// Determines whether or not the given tab is in view.
-bool dred_tabbar_is_tab_in_view(dred_tabbar* pTabBar, drgui_tab* pTab);
+bool dred_tabbar_is_tab_in_view(dred_tabbar* pTabBar, dred_tab* pTab);
 
 
 /// Shows the close buttons on each tab.
@@ -226,55 +226,55 @@ void dred_tabbar_on_paint(dred_tabbar* pTabBar, dred_rect relativeClippingRect, 
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Creates and appends a tab
-drgui_tab* dred_tabbar_create_and_append_tab(dred_tabbar* pTabBar, const char* text, dred_control* pControl, size_t extraDataSize, const void* pExtraData);
+dred_tab* dred_tabbar_create_and_append_tab(dred_tabbar* pTabBar, const char* text, dred_control* pControl);
 
 /// Creates and prepends a tab.
-drgui_tab* dred_tabbar_create_and_prepend_tab(dred_tabbar* pTabBar, const char* text, dred_control* pControl,  size_t extraDataSize, const void* pExtraData);
+dred_tab* dred_tabbar_create_and_prepend_tab(dred_tabbar* pTabBar, const char* text, dred_control* pControl);
 
 /// Recursively deletes a tree view item.
-void drgui_tab_delete(drgui_tab* pTab);
+void dred_tab_delete(dred_tab* pTab);
 
 /// Retrieves the tab bar GUI element that owns the given item.
-dred_control* drgui_tab_get_tab_bar_element(drgui_tab* pTab);
+dred_control* dred_tab_get_tab_bar_element(dred_tab* pTab);
 
 /// Retrieves the size of the extra data associated with the given tree-view item.
-size_t drgui_tab_get_extra_data_size(drgui_tab* pTab);
+size_t dred_tab_get_extra_data_size(dred_tab* pTab);
 
 /// Retrieves a pointer to the extra data associated with the given tree-view item.
-void* drgui_tab_get_extra_data(drgui_tab* pTab);
+void* dred_tab_get_extra_data(dred_tab* pTab);
 
 
 /// Sets the text of the given tab bar item.
-void drgui_tab_set_text(drgui_tab* pTab, const char* text);
+void dred_tab_set_text(dred_tab* pTab, const char* text);
 
 /// Retrieves the text of the given tab bar item.
-const char* drgui_tab_get_text(drgui_tab* pTab);
+const char* dred_tab_get_text(dred_tab* pTab);
 
 // Sets the control associated with the given tab.
-void dred_tab_set_control(drgui_tab* pTab, dred_control* pControl);
+void dred_tab_set_control(dred_tab* pTab, dred_control* pControl);
 
 // Retrieves the control associated with the given tab.
-dred_control* dred_tab_get_control(drgui_tab* pTab);
+dred_control* dred_tab_get_control(dred_tab* pTab);
 
 
 /// Retrieves a pointer to the next tab in the tab bar.
-drgui_tab* drgui_tab_get_next_tab(drgui_tab* pTab);
+dred_tab* dred_tab_get_next_tab(dred_tab* pTab);
 
 /// Retrieves a pointer to the previous tab in the tab bar.
-drgui_tab* drgui_tab_get_prev_tab(drgui_tab* pTab);
+dred_tab* dred_tab_get_prev_tab(dred_tab* pTab);
 
 
 /// Moves the given tab to the front of the tab bar that owns it.
-void drgui_tab_move_to_front(drgui_tab* pTab);
+void dred_tab_move_to_front(dred_tab* pTab);
 
 /// Determines whether or not the given tab is in view.
-bool drgui_tab_is_in_view(drgui_tab* pTab);
+bool dred_tab_is_in_view(dred_tab* pTab);
 
 /// Moves the given tab into view, if it's not already.
 ///
 /// If the tab is out of view, it will be repositioned to the front of the tab bar.
-void drgui_tab_move_into_view(drgui_tab* pTab);
+void dred_tab_move_into_view(dred_tab* pTab);
 
 
 // Retrieves the tab group the tab is attached to.
-dred_control* dred_tab_get_tabgroup(drgui_tab* pTab);
+dred_control* dred_tab_get_tabgroup(dred_tab* pTab);

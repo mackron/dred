@@ -86,7 +86,7 @@ void dred_tabgroup__on_paint(dred_tabgroup* pTabGroup, dred_rect rect, void* pPa
 }
 
 
-void dred_tabbar__on_tab_activated(dred_control* pTabBar, drgui_tab* pTab, drgui_tab* pOldActiveTab)
+void dred_tabbar__on_tab_activated(dred_control* pTabBar, dred_tab* pTab, dred_tab* pOldActiveTab)
 {
     // The tab group is the parent of the tab bar.
     dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
@@ -105,7 +105,7 @@ void dred_tabbar__on_tab_activated(dred_control* pTabBar, drgui_tab* pTab, drgui
     dred_on_tab_activated(dred_control_get_gui(pTabGroup), pTab, pOldActiveTab);
 }
 
-void dred_tabbar__on_tab_deactivated(dred_control* pTabBar, drgui_tab* pTab, drgui_tab* pNewActiveTab)
+void dred_tabbar__on_tab_deactivated(dred_control* pTabBar, dred_tab* pTab, dred_tab* pNewActiveTab)
 {
     // The tab group is the parent of the tab bar.
     dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
@@ -126,7 +126,7 @@ void dred_tabbar__on_tab_deactivated(dred_control* pTabBar, drgui_tab* pTab, drg
     dred_on_tab_deactivated(dred_control_get_gui(pTabGroup), pTab, pNewActiveTab);
 }
 
-void dred_tabbar__on_tab_close(dred_control* pTabBar, drgui_tab* pTab)
+void dred_tabbar__on_tab_close(dred_control* pTabBar, dred_tab* pTab)
 {
     dred_tabgroup* pTabGroup = dred_control_get_parent(pTabBar);
     if (pTabGroup == NULL) {
@@ -136,7 +136,7 @@ void dred_tabbar__on_tab_close(dred_control* pTabBar, drgui_tab* pTab)
     dred_close_tab_with_confirmation(dred_control_get_gui(pTabGroup), (dred_tab*)pTab);
 }
 
-void dred_tabbar__on_tab_mouse_button_up(dred_control* pTabBar, drgui_tab* pTab, int mouseButton, int mouseRelativePosX, int mouseRelativePosY, int stateFlags)
+void dred_tabbar__on_tab_mouse_button_up(dred_control* pTabBar, dred_tab* pTab, int mouseButton, int mouseRelativePosX, int mouseRelativePosY, int stateFlags)
 {
     (void)pTab;
     (void)stateFlags;
@@ -368,7 +368,7 @@ void dred_tabgroup__init_tab(dred_tabgroup* pTabGroup, dred_tab* pTab, dred_cont
 
 dred_tab* dred_tabgroup_append_tab(dred_tabgroup* pTabGroup, const char* text, dred_control* pControl)
 {
-    dred_tab* pTab = dred_tab_create_and_append(dred_tabgroup__get_tabbar(pTabGroup), text, pControl);
+    dred_tab* pTab = dred_tabbar_create_and_append_tab(dred_tabgroup__get_tabbar(pTabGroup), text, pControl);
     if (pTab == NULL) {
         return NULL;
     }
@@ -379,7 +379,7 @@ dred_tab* dred_tabgroup_append_tab(dred_tabgroup* pTabGroup, const char* text, d
 
 dred_tab* dred_tabgroup_prepend_tab(dred_tabgroup* pTabGroup, const char* text, dred_control* pControl)
 {
-    dred_tab* pTab = dred_tab_create_and_prepend(dred_tabgroup__get_tabbar(pTabGroup), text, pControl);
+    dred_tab* pTab = dred_tabbar_create_and_prepend_tab(dred_tabgroup__get_tabbar(pTabGroup), text, pControl);
     if (pTab == NULL) {
         return NULL;
     }
