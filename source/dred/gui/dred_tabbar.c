@@ -1229,21 +1229,21 @@ DRED_GUI_PRIVATE dred_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Appends the given tab to the given tab bar.
-DRED_GUI_PRIVATE void tab_append(dred_tab* pTab, dred_tabbar* pTabBar);
+DRED_GUI_PRIVATE void dred_tab_append(dred_tab* pTab, dred_tabbar* pTabBar);
 
 /// Prepends the given tab to the given tab bar.
-DRED_GUI_PRIVATE void tab_prepend(dred_tab* pTab, dred_tabbar* pTabBar);
+DRED_GUI_PRIVATE void dred_tab_prepend(dred_tab* pTab, dred_tabbar* pTabBar);
 
 /// Detaches the given tab bar from it's tab bar element's hierarchy.
 ///
 /// @remarks
 ///     This does not deactivate the tab or what - it only detaches the tab from the hierarchy.
-DRED_GUI_PRIVATE void tab_detach_from_hierarchy(dred_tab* pTab);
+DRED_GUI_PRIVATE void dred_tab_detach_from_hierarchy(dred_tab* pTab);
 
 /// Detaches the given tab bar from it's tab bar element.
-DRED_GUI_PRIVATE void tab_detach(dred_tab* pTab);
+DRED_GUI_PRIVATE void dred_tab_detach(dred_tab* pTab);
 
-DRED_GUI_PRIVATE dred_tab* tb_create_tab(dred_tabbar* pTabBar, const char* text, dred_control* pControl)
+DRED_GUI_PRIVATE dred_tab* dred_tabbar_create_tab_internal(dred_tabbar* pTabBar, const char* text, dred_control* pControl)
 {
     if (pTabBar == NULL) {
         return NULL;
@@ -1269,24 +1269,24 @@ DRED_GUI_PRIVATE dred_tab* tb_create_tab(dred_tabbar* pTabBar, const char* text,
 
 dred_tab* dred_tabbar_create_and_append_tab(dred_tabbar* pTabBar, const char* text, dred_control* pControl)
 {
-    dred_tab* pTab = (dred_tab*)tb_create_tab(pTabBar, text, pControl);
+    dred_tab* pTab = (dred_tab*)dred_tabbar_create_tab_internal(pTabBar, text, pControl);
     if (pTab == NULL) {
         return NULL;
     }
 
-    tab_append(pTab, pTabBar);
+    dred_tab_append(pTab, pTabBar);
 
     return pTab;
 }
 
 dred_tab* dred_tabbar_create_and_prepend_tab(dred_tabbar* pTabBar, const char* text, dred_control* pControl)
 {
-    dred_tab* pTab = (dred_tab*)tb_create_tab(pTabBar, text, pControl);
+    dred_tab* pTab = (dred_tab*)dred_tabbar_create_tab_internal(pTabBar, text, pControl);
     if (pTab == NULL) {
         return NULL;
     }
 
-    tab_prepend(pTab, pTabBar);
+    dred_tab_prepend(pTab, pTabBar);
 
     return pTab;
 }
@@ -1297,7 +1297,7 @@ void dred_tab_delete(dred_tab* pTab)
         return;
     }
 
-    tab_detach(pTab);
+    dred_tab_detach(pTab);
     free(pTab);
 }
 
@@ -1403,8 +1403,8 @@ void dred_tab_move_to_front(dred_tab* pTab)
 
     dred_tabbar* pTabBar = pTab->pTabBar;
 
-    tab_detach_from_hierarchy(pTab);
-    tab_prepend(pTab, pTabBar);
+    dred_tab_detach_from_hierarchy(pTab);
+    dred_tab_prepend(pTab, pTabBar);
 }
 
 bool dred_tab_is_in_view(dred_tab* pTab)
@@ -1437,7 +1437,7 @@ dred_control* dred_tab_get_tabgroup(dred_tab* pTab)
 
 
 
-DRED_GUI_PRIVATE void tab_append(dred_tab* pTab, dred_tabbar* pTabBar)
+DRED_GUI_PRIVATE void dred_tab_append(dred_tab* pTab, dred_tabbar* pTabBar)
 {
     if (pTab == NULL || pTabBar == NULL) {
         return;
@@ -1475,7 +1475,7 @@ DRED_GUI_PRIVATE void tab_append(dred_tab* pTab, dred_tabbar* pTabBar)
     }
 }
 
-DRED_GUI_PRIVATE void tab_prepend(dred_tab* pTab, dred_tabbar* pTabBar)
+DRED_GUI_PRIVATE void dred_tab_prepend(dred_tab* pTab, dred_tabbar* pTabBar)
 {
     if (pTab == NULL || pTabBar == NULL) {
         return;
@@ -1513,7 +1513,7 @@ DRED_GUI_PRIVATE void tab_prepend(dred_tab* pTab, dred_tabbar* pTabBar)
     }
 }
 
-DRED_GUI_PRIVATE void tab_detach_from_hierarchy(dred_tab* pTab)
+DRED_GUI_PRIVATE void dred_tab_detach_from_hierarchy(dred_tab* pTab)
 {
     if (pTab == NULL) {
         return;
@@ -1551,7 +1551,7 @@ DRED_GUI_PRIVATE void tab_detach_from_hierarchy(dred_tab* pTab)
     pTab->pTabBar = NULL;
 }
 
-DRED_GUI_PRIVATE void tab_detach(dred_tab* pTab)
+DRED_GUI_PRIVATE void dred_tab_detach(dred_tab* pTab)
 {
     if (pTab == NULL) {
         return;
@@ -1579,7 +1579,7 @@ DRED_GUI_PRIVATE void tab_detach(dred_tab* pTab)
     }
 
 
-    tab_detach_from_hierarchy(pTab);
+    dred_tab_detach_from_hierarchy(pTab);
 
 
     if (pTB->isAutoSizeEnabled) {
