@@ -4082,6 +4082,8 @@ bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iCha
         uint32_t cprev = pEngine->text[iChar-1];
 
         if (c == '\0') {
+            if (pWordBegOut) *pWordBegOut = pEngine->textLength;
+            if (pWordEndOut) *pWordEndOut = pEngine->textLength;
             return false;
         }
 
@@ -4127,9 +4129,7 @@ void drte_engine_select_word_under_cursor(drte_engine* pEngine, size_t cursorInd
 
     size_t iWordBeg;
     size_t iWordEnd;
-    if (!drte_engine_get_word_under_cursor(pEngine, cursorIndex, &iWordBeg, &iWordEnd)) {
-        return;
-    }
+    drte_engine_get_word_under_cursor(pEngine, cursorIndex, &iWordBeg, &iWordEnd);
 
     drte_engine_select(pEngine, iWordBeg, iWordEnd);
 }
