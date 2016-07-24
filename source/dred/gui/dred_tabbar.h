@@ -226,10 +226,10 @@ void dred_tabbar_on_paint(dred_tabbar* pTabBar, dred_rect relativeClippingRect, 
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Creates and appends a tab
-drgui_tab* dred_tabbar_create_and_append_tab(dred_tabbar* pTabBar, const char* text, size_t extraDataSize, const void* pExtraData);
+drgui_tab* dred_tabbar_create_and_append_tab(dred_tabbar* pTabBar, const char* text, dred_control* pControl, size_t extraDataSize, const void* pExtraData);
 
 /// Creates and prepends a tab.
-drgui_tab* dred_tabbar_create_and_prepend_tab(dred_tabbar* pTabBar, const char* text, size_t extraDataSize, const void* pExtraData);
+drgui_tab* dred_tabbar_create_and_prepend_tab(dred_tabbar* pTabBar, const char* text, dred_control* pControl,  size_t extraDataSize, const void* pExtraData);
 
 /// Recursively deletes a tree view item.
 void drgui_tab_delete(drgui_tab* pTab);
@@ -250,6 +250,12 @@ void drgui_tab_set_text(drgui_tab* pTab, const char* text);
 /// Retrieves the text of the given tab bar item.
 const char* drgui_tab_get_text(drgui_tab* pTab);
 
+// Sets the control associated with the given tab.
+void dred_tab_set_control(drgui_tab* pTab, dred_control* pControl);
+
+// Retrieves the control associated with the given tab.
+dred_control* dred_tab_get_control(drgui_tab* pTab);
+
 
 /// Retrieves a pointer to the next tab in the tab bar.
 drgui_tab* drgui_tab_get_next_tab(drgui_tab* pTab);
@@ -268,3 +274,7 @@ bool drgui_tab_is_in_view(drgui_tab* pTab);
 ///
 /// If the tab is out of view, it will be repositioned to the front of the tab bar.
 void drgui_tab_move_into_view(drgui_tab* pTab);
+
+
+// Retrieves the tab group the tab is attached to.
+dred_control* dred_tab_get_tabgroup(drgui_tab* pTab);

@@ -17,13 +17,3 @@ void dred_tab_set_text(dred_tab* pTab, const char* text);
 
 // Retrieves the text of the given tab.
 const char* dred_tab_get_text(dred_tab* pTab);
-
-// Sets the control associated with the given tab.
-void dred_tab_set_control(dred_tab* pTab, dred_control* pControl);
-
-// Retrieves the control associated with the given tab.
-dred_control* dred_tab_get_control(dred_tab* pTab);
-
-
-// Retrieves the tab group the tab is attached to.
-dred_control* dred_tab_get_tabgroup(dred_tab* pTab);

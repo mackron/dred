@@ -121,6 +121,9 @@ struct drgui_tab
     /// The tab bar's text.
     char text[DRED_GUI_MAX_TAB_TEXT_LENGTH];
 
+    // The control that's associated with the tab. When the tab is activated, this control is made visible.
+    dred_control* pControl;
+
 
     /// The size of the extra data.
     size_t extraDataSize;
@@ -1268,24 +1271,28 @@ DRED_GUI_PRIVATE drgui_tab* tb_create_tab(dred_tabbar* pTabBar, const char* text
     return pTab;
 }
 
-drgui_tab* dred_tabbar_create_and_append_tab(dred_tabbar* pTabBar, const char* text, size_t extraDataSize, const void* pExtraData)
+drgui_tab* dred_tabbar_create_and_append_tab(dred_tabbar* pTabBar, const char* text, dred_control* pControl, size_t extraDataSize, const void* pExtraData)
 {
     drgui_tab* pTab = (drgui_tab*)tb_create_tab(pTabBar, text, extraDataSize, pExtraData);
-    if (pTab != NULL)
-    {
-        tab_append(pTab, pTabBar);
+    if (pTab == NULL) {
+        return NULL;
     }
+
+    pTab->pControl = pControl;
+    tab_append(pTab, pTabBar);
 
     return pTab;
 }
 
-drgui_tab* dred_tabbar_create_and_prepend_tab(dred_tabbar* pTabBar, const char* text, size_t extraDataSize, const void* pExtraData)
+drgui_tab* dred_tabbar_create_and_prepend_tab(dred_tabbar* pTabBar, const char* text, dred_control* pControl, size_t extraDataSize, const void* pExtraData)
 {
     drgui_tab* pTab = (drgui_tab*)tb_create_tab(pTabBar, text, extraDataSize, pExtraData);
-    if (pTab != NULL)
-    {
-        tab_prepend(pTab, pTabBar);
+    if (pTab == NULL) {
+        return NULL;
     }
+
+    pTab->pControl = pControl;
+    tab_prepend(pTab, pTabBar);
 
     return pTab;
 }
@@ -1356,6 +1363,25 @@ const char* drgui_tab_get_text(drgui_tab* pTab)
 }
 
 
+void dred_tab_set_control(drgui_tab* pTab, dred_control* pControl)
+{
+    if (pTab == NULL) {
+        return;
+    }
+
+    pTab->pControl = pControl;
+}
+
+dred_control* dred_tab_get_control(drgui_tab* pTab)
+{
+    if (pTab == NULL) {
+        return NULL;
+    }
+
+    return pTab->pControl;
+}
+
+
 drgui_tab* drgui_tab_get_next_tab(drgui_tab* pTab)
 {
     if (pTab == NULL) {
@@ -1401,6 +1427,17 @@ void drgui_tab_move_into_view(drgui_tab* pTab)
     if (!drgui_tab_is_in_view(pTab)) {
         drgui_tab_move_to_front(pTab);
     }
+}
+
+
+dred_control* dred_tab_get_tabgroup(drgui_tab* pTab)
+{
+    if (pTab == NULL) {
+        return NULL;
+    }
+
+    // The tab group is the parent of the tab bar.
+    return dred_control_get_parent(pTab->pTabBar);
 }
 
 
