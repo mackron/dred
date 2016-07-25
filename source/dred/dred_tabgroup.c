@@ -147,6 +147,9 @@ bool dred_tabgroup_init(dred_tabgroup* pTabGroup, dred_context* pDred, dred_cont
         return false;
     }
 
+    memset(pTabGroup, 0, sizeof(*pTabGroup));
+
+
     if (!dred_control_init(DRED_CONTROL(pTabGroup), pDred, pParent, DRED_CONTROL_TYPE_TABGROUP)) {
         return false;
     }

@@ -35,7 +35,7 @@ void dred__update_main_window_layout(dred_window* pWindow, float windowWidth, fl
     dred_context* pDred = pWindow->pDred;
     assert(pDred != NULL);
 
-    dred__update_main_tab_group_container_layout(pDred, pDred->pMainTabgroupContainer, windowWidth, windowHeight);
+    dred__update_main_tab_group_container_layout(pDred, pDred->pMainTabGroupContainer, windowWidth, windowHeight);
     dred__update_cmdbar_layout(pDred, pDred->pCmdBar, windowWidth, windowHeight);
 }
 
@@ -370,14 +370,14 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
     // The main tab group container.
-    pDred->pMainTabgroupContainer = dred_tabgroup_container_create(pDred, pDred->pMainWindow->pRootGUIControl);
-    if (pDred->pMainTabgroupContainer == NULL) {
+    pDred->pMainTabGroupContainer = &pDred->mainTabGroupContainer;
+    if (!dred_tabgroup_container_init(pDred->pMainTabGroupContainer, pDred, pDred->pMainWindow->pRootGUIControl)) {
         printf("Failed to create main tab group container.\n");
         goto on_error;
     }
 
     pDred->pMainTabGroup = &pDred->mainTabGroup;
-    if (!dred_tabgroup_init(pDred->pMainTabGroup, pDred, DRED_CONTROL(pDred->pMainTabgroupContainer))) {
+    if (!dred_tabgroup_init(pDred->pMainTabGroup, pDred, DRED_CONTROL(pDred->pMainTabGroupContainer))) {
         printf("Failed to create main tab group.\n");
         goto on_error;
     }
@@ -465,8 +465,8 @@ void dred_uninit(dred_context* pDred)
         dred_tabgroup_uninit(pDred->pMainTabGroup);
     }
 
-    if (pDred->pMainTabgroupContainer) {
-        dred_tabgroup_container_delete(pDred->pMainTabgroupContainer);
+    if (pDred->pMainTabGroupContainer) {
+        dred_tabgroup_container_uninit(pDred->pMainTabGroupContainer);
     }
 
     if (pDred->pMainWindow) {

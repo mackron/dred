@@ -370,7 +370,8 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
 
 
     // The info bar.
-    pCmdBar->pInfoBar = dred_info_bar_create(pDred, DRED_CONTROL(pCmdBar));
+    pCmdBar->pInfoBar = &pCmdBar->infoBar;
+    dred_info_bar_init(pCmdBar->pInfoBar, pDred, DRED_CONTROL(pCmdBar));
 
 
 

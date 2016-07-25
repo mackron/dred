@@ -48,7 +48,8 @@ struct dred_context
 
 
     // The main tab group container. This is the root container where all other sub-containers will be placed.
-    dred_tabgroup_container* pMainTabgroupContainer;
+    dred_tabgroup_container mainTabGroupContainer;
+    dred_tabgroup_container* pMainTabGroupContainer;
 
     // The main tab group. This is actually temporary until support for multiple tab groups (splitting) is implemented.
     dred_tabgroup mainTabGroup;

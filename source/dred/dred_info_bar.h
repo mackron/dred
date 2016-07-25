@@ -20,10 +20,10 @@ struct dred_info_bar
 };
 
 // dred_info_bar_create()
-dred_info_bar* dred_info_bar_create(dred_context* pDred, dred_control* pParent);
+bool dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_control* pParent);
 
 // dred_info_bar_delete()
-void dred_info_bar_delete(dred_info_bar* pInfoBar);
+void dred_info_bar_uninit(dred_info_bar* pInfoBar);
 
 // Updates the info bar based on the given control.
 void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl);
