@@ -32,8 +32,8 @@ struct dred_colorbutton
 };
 
 
-dred_colorbutton* dred_colorbutton_create(dred_context* pDred, dred_control* pParent, const char* text, dred_color color);
-void dred_colorbutton_delete(dred_colorbutton* pButton);
+bool dred_colorbutton_init(dred_colorbutton* pButton, dred_context* pDred, dred_control* pParent, const char* text, dred_color color);
+void dred_colorbutton_uninit(dred_colorbutton* pButton);
 
 void dred_colorbutton_set_text(dred_colorbutton* pButton, const char* text);
 void dred_colorbutton_enable_auto_size(dred_colorbutton* pButton);

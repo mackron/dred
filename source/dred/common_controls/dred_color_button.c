@@ -178,16 +178,15 @@ void dred_colorbutton__refresh_layout(dred_colorbutton* pButton)
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
 
-dred_colorbutton* dred_colorbutton_create(dred_context* pDred, dred_control* pParent, const char* text, dred_color color)
+bool dred_colorbutton_init(dred_colorbutton* pButton, dred_context* pDred, dred_control* pParent, const char* text, dred_color color)
 {
-    dred_colorbutton* pButton = (dred_colorbutton*)calloc(1, sizeof(*pButton));
     if (pButton == NULL) {
-        return NULL;
+        return false;
     }
 
+    memset(pButton, 0, sizeof(*pButton));
     if (!dred_control_init(DRED_CONTROL(pButton), pDred, pParent, DRED_CONTROL_TYPE_COLOR_BUTTON)) {
-        free(pButton);
-        return NULL;
+        return false;
     }
 
     strncpy_s(pButton->text, sizeof(pButton->text), text, _TRUNCATE);
@@ -214,17 +213,17 @@ dred_colorbutton* dred_colorbutton_create(dred_context* pDred, dred_control* pPa
 
     dred_colorbutton__refresh_layout(pButton);
 
-    return pButton;
+    return true;
 }
 
-void dred_colorbutton_delete(dred_colorbutton* pButton)
+void dred_colorbutton_uninit(dred_colorbutton* pButton)
 {
-    if (pButton != NULL) {
-        dred_font_release_subfont(pButton->pFont, pButton->pSubFont);
+    if (pButton == NULL) {
+        return;
     }
 
+    dred_font_release_subfont(pButton->pFont, pButton->pSubFont);
     dred_control_uninit(DRED_CONTROL(pButton));
-    free(pButton);
 }
 
 
