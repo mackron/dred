@@ -68,7 +68,7 @@ void dred_textbox__refresh_horizontal_scrollbar(dred_textbox* pTextBox);
 
 void dred_textbox__on_vscroll(dred_scrollbar* pSBControl, int scrollPos)
 {
-    dred_textbox* pTextBox = *(dred_textbox**)dred_scrollbar_get_extra_data(pSBControl);
+    dred_textbox* pTextBox = (dred_textbox*)DRED_CONTROL(pSBControl)->pUserData;
     assert(pTextBox != NULL);
 
     drte_engine_set_inner_offset_y(pTextBox->pTL, -drte_engine_get_line_pos_y(pTextBox->pTL, scrollPos));
@@ -80,7 +80,7 @@ void dred_textbox__on_vscroll(dred_scrollbar* pSBControl, int scrollPos)
 
 void dred_textbox__on_hscroll(dred_scrollbar* pSBControl, int scrollPos)
 {
-    dred_textbox* pTextBox = *(dred_textbox**)dred_scrollbar_get_extra_data(pSBControl);
+    dred_textbox* pTextBox = (dred_textbox*)DRED_CONTROL(pSBControl)->pUserData;
     assert(pTextBox != NULL);
 
     drte_engine_set_inner_offset_x(pTextBox->pTL, (float)-scrollPos);
@@ -347,11 +347,15 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     dred_control_set_on_capture_mouse(DRED_CONTROL(pTextBox), dred_textbox_on_capture_mouse);
     dred_control_set_on_release_mouse(DRED_CONTROL(pTextBox), dred_textbox_on_release_mouse);
 
-    pTextBox->pVertScrollbar = dred_scrollbar_create(pDred, DRED_CONTROL(pTextBox), dred_scrollbar_orientation_vertical, sizeof(pTextBox), &pTextBox);
+    pTextBox->pVertScrollbar = &pTextBox->vertScrollbar;
+    dred_scrollbar_init(pTextBox->pVertScrollbar, pDred, DRED_CONTROL(pTextBox), dred_scrollbar_orientation_vertical);
+    DRED_CONTROL(pTextBox->pVertScrollbar)->pUserData = pTextBox;
     dred_scrollbar_set_on_scroll(pTextBox->pVertScrollbar, dred_textbox__on_vscroll);
     dred_scrollbar_set_mouse_wheel_scele(pTextBox->pVertScrollbar, 3);
 
-    pTextBox->pHorzScrollbar = dred_scrollbar_create(pDred, DRED_CONTROL(pTextBox), dred_scrollbar_orientation_horizontal, sizeof(pTextBox), &pTextBox);
+    pTextBox->pHorzScrollbar = &pTextBox->horzScrollbar;
+    dred_scrollbar_init(pTextBox->pHorzScrollbar, pDred, DRED_CONTROL(pTextBox), dred_scrollbar_orientation_horizontal);
+    DRED_CONTROL(pTextBox->pHorzScrollbar)->pUserData = pTextBox;
     dred_scrollbar_set_on_scroll(pTextBox->pHorzScrollbar, dred_textbox__on_hscroll);
 
     pTextBox->pLineNumbers = &pTextBox->lineNumbers;
@@ -480,12 +484,12 @@ void dred_textbox_delete(dred_textbox* pTextBox)
     }
 
     if (pTextBox->pHorzScrollbar) {
-        dred_scrollbar_delete(pTextBox->pHorzScrollbar);
+        dred_scrollbar_uninit(pTextBox->pHorzScrollbar);
         pTextBox->pHorzScrollbar = NULL;
     }
 
     if (pTextBox->pVertScrollbar) {
-        dred_scrollbar_delete(pTextBox->pVertScrollbar);
+        dred_scrollbar_uninit(pTextBox->pVertScrollbar);
         pTextBox->pVertScrollbar = NULL;
     }
 

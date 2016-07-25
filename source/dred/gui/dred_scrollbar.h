@@ -77,28 +77,14 @@ struct dred_scrollbar
 
     /// The relative position of the mouse on the y axis at the time the thumb was pressed with the mouse.
     float thumbClickPosY;
-
-
-    /// The size of the extra data.
-    size_t extraDataSize;
-
-    /// A pointer to the extra data.
-    char pExtraData[1];
 };
 
 
 /// Creates a scrollbar element.
-dred_scrollbar* dred_scrollbar_create(dred_context* pDred, dred_control* pParent, dred_scrollbar_orientation orientation, size_t extraDataSize, const void* pExtraData);
+bool dred_scrollbar_init(dred_scrollbar* pScrollbar, dred_context* pDred, dred_control* pParent, dred_scrollbar_orientation orientation);
 
 /// Deletes the given scrollbar element.
-void dred_scrollbar_delete(dred_scrollbar* pScrollbar);
-
-
-/// Retrieves the size of the extra data associated with the scrollbar.
-size_t dred_scrollbar_get_extra_data_size(dred_scrollbar* pScrollbar);
-
-/// Retrieves a pointer to the extra data associated with the scrollbar.
-void* dred_scrollbar_get_extra_data(dred_scrollbar* pScrollbar);
+void dred_scrollbar_uninit(dred_scrollbar* pScrollbar);
 
 
 /// Retrieves the orientation of the given scrollbar.

@@ -42,9 +42,11 @@ struct dred_textbox
 
 
     /// The vertical scrollbar.
+    dred_scrollbar vertScrollbar;
     dred_scrollbar* pVertScrollbar;
 
     /// The horizontal scrollbar.
+    dred_scrollbar horzScrollbar;
     dred_scrollbar* pHorzScrollbar;
 
     /// The line numbers element.

@@ -39,20 +39,14 @@ DRED_GUI_PRIVATE int dred_scrollbar_maxi(int x, int y)
 }
 
 
-dred_scrollbar* dred_scrollbar_create(dred_context* pDred, dred_control* pParent, dred_scrollbar_orientation orientation, size_t extraDataSize, const void* pExtraData)
+bool dred_scrollbar_init(dred_scrollbar* pScrollbar, dred_context* pDred, dred_control* pParent, dred_scrollbar_orientation orientation)
 {
-    if (orientation == dred_scrollbar_orientation_none) {
-        return NULL;
-    }
-
-    dred_scrollbar* pScrollbar = (dred_scrollbar*)calloc(1, sizeof(*pScrollbar) + extraDataSize);
-    if (pScrollbar == NULL) {
-        return NULL;
+    if (pScrollbar == NULL || orientation == dred_scrollbar_orientation_none) {
+        return false;
     }
 
     if (!dred_control_init(DRED_CONTROL(pScrollbar), pDred, pParent, DRED_CONTROL_TYPE_SCROLLBAR)) {
-        free(pScrollbar);
-        return NULL;
+        return false;
     }
 
     pScrollbar->orientation       = orientation;
@@ -76,11 +70,6 @@ dred_scrollbar* dred_scrollbar_create(dred_context* pDred, dred_control* pParent
     pScrollbar->thumbClickPosX    = 0;
     pScrollbar->thumbClickPosY    = 0;
 
-    pScrollbar->extraDataSize = extraDataSize;
-    if (pExtraData != NULL) {
-        memcpy(pScrollbar->pExtraData, pExtraData, extraDataSize);
-    }
-
 
     // Default event handlers.
     dred_control_set_on_size(DRED_CONTROL(pScrollbar), dred_scrollbar_on_size);
@@ -92,35 +81,16 @@ dred_scrollbar* dred_scrollbar_create(dred_context* pDred, dred_control* pParent
     dred_control_set_on_paint(DRED_CONTROL(pScrollbar), dred_scrollbar_on_paint);
 
 
-    return pScrollbar;
+    return true;
 }
 
-void dred_scrollbar_delete(dred_scrollbar* pScrollbar)
+void dred_scrollbar_uninit(dred_scrollbar* pScrollbar)
 {
     if (pScrollbar == NULL) {
         return;
     }
 
     dred_control_uninit(DRED_CONTROL(pScrollbar));
-}
-
-
-size_t dred_scrollbar_get_extra_data_size(dred_scrollbar* pScrollbar)
-{
-    if (pScrollbar == NULL) {
-        return 0;
-    }
-
-    return pScrollbar->extraDataSize;
-}
-
-void* dred_scrollbar_get_extra_data(dred_scrollbar* pScrollbar)
-{
-    if (pScrollbar == NULL) {
-        return NULL;
-    }
-
-    return pScrollbar->pExtraData;
 }
 
 
