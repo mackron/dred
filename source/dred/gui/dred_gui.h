@@ -266,6 +266,13 @@ struct dred_rect
     float bottom;
 };
 
+typedef struct
+{
+    dred_color bgColor;
+    dred_color fgColor;
+    dred_gui_font* pFont;
+} dred_text_style;
+
 
 #define DRED_GUI_IMAGE_DRAW_BACKGROUND     (1 << 0)
 #define DRED_GUI_IMAGE_HINT_NO_ALPHA       (1 << 1)

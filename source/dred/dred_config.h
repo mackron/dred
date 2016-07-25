@@ -186,13 +186,6 @@
 
 typedef struct
 {
-    dred_color bgColor;
-    dred_color fgColor;
-    dred_gui_font* pFont;
-} dred_text_style;
-
-typedef struct
-{
     // The main context that owns this config. This is set to the context that initialized the config object.
     dred_context* pDred;
 
