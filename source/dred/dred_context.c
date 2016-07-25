@@ -376,8 +376,8 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
         goto on_error;
     }
 
-    pDred->pMainTabGroup = dred_tabgroup_create(pDred, DRED_CONTROL(pDred->pMainTabgroupContainer));
-    if (pDred->pMainTabGroup == NULL) {
+    pDred->pMainTabGroup = &pDred->mainTabGroup;
+    if (!dred_tabgroup_init(pDred->pMainTabGroup, pDred, DRED_CONTROL(pDred->pMainTabgroupContainer))) {
         printf("Failed to create main tab group.\n");
         goto on_error;
     }
@@ -462,7 +462,7 @@ void dred_uninit(dred_context* pDred)
     }
 
     if (pDred->pMainTabGroup) {
-        dred_tabgroup_delete(pDred->pMainTabGroup);
+        dred_tabgroup_uninit(pDred->pMainTabGroup);
     }
 
     if (pDred->pMainTabgroupContainer) {

@@ -141,23 +141,20 @@ void dred_tabbar__on_tab_mouse_button_up(dred_tabbar* pTabBar, dred_tab* pTab, i
 }
 
 
-dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
+bool dred_tabgroup_init(dred_tabgroup* pTabGroup, dred_context* pDred, dred_control* pParent)
 {
-    dred_tabgroup* pTabGroup = (dred_tabgroup*)calloc(1, sizeof(*pTabGroup));
     if (pTabGroup == NULL) {
-        return NULL;
+        return false;
     }
 
     if (!dred_control_init(DRED_CONTROL(pTabGroup), pDred, pParent, DRED_CONTROL_TYPE_TABGROUP)) {
-        free(pTabGroup);
-        return NULL;
+        return false;
     }
 
     pTabGroup->pTabBar = &pTabGroup->tabBar;
     if (!dred_tabbar_init(pTabGroup->pTabBar, pDred, DRED_CONTROL(pTabGroup), dred_tabbar_orientation_top)) {
         dred_control_uninit(DRED_CONTROL(pTabGroup));
-        free(pTabGroup);
-        return NULL;
+        return false;
     }
 
     pTabGroup->pNextTabGroup = NULL;
@@ -182,10 +179,10 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
         dred_tabgroup_hide_tabbar(pTabGroup);
     }
 
-    return pTabGroup;
+    return true;
 }
 
-void dred_tabgroup_delete(dred_tabgroup* pTabGroup)
+void dred_tabgroup_uninit(dred_tabgroup* pTabGroup)
 {
     if (pTabGroup == NULL) {
         return;
@@ -193,7 +190,6 @@ void dred_tabgroup_delete(dred_tabgroup* pTabGroup)
 
     dred_tabbar_uninit(pTabGroup->pTabBar);
     dred_control_uninit(DRED_CONTROL(pTabGroup));
-    free(pTabGroup);
 }
 
 

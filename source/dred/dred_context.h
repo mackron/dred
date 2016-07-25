@@ -51,6 +51,7 @@ struct dred_context
     dred_tabgroup_container* pMainTabgroupContainer;
 
     // The main tab group. This is actually temporary until support for multiple tab groups (splitting) is implemented.
+    dred_tabgroup mainTabGroup;
     dred_tabgroup* pMainTabGroup;
 
     // The command bar. This is is the control that runs along the bottom of the main window.

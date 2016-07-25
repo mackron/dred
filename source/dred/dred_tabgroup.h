@@ -18,10 +18,10 @@ struct dred_tabgroup
 };
 
 // dred_tabgroup_create()
-dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent);
+bool dred_tabgroup_init(dred_tabgroup* pTabGroup, dred_context* pDred, dred_control* pParent);
 
 // dred_tabgroup_delete()
-void dred_tabgroup_delete(dred_tabgroup* pTabGroup);
+void dred_tabgroup_uninit(dred_tabgroup* pTabGroup);
 
 
 // Refreshes the styling of the tab group.
