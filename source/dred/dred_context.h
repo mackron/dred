@@ -56,6 +56,7 @@ struct dred_context
     dred_tabgroup* pMainTabGroup;
 
     // The command bar. This is is the control that runs along the bottom of the main window.
+    dred_cmdbar cmdBar;
     dred_cmdbar* pCmdBar;
 
 

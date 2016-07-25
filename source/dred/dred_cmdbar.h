@@ -23,10 +23,10 @@ struct dred_cmdbar
 
 
 // dred_cmdbar_create()
-dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent);
+bool dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_control* pParent);
 
 // dred_cmdbar_delete()
-void dred_cmdbar_delete(dred_cmdbar* pCmdBar);
+void dred_cmdbar_uninit(dred_cmdbar* pCmdBar);
 
 // Sets the text in the text box of the given command bar.
 //

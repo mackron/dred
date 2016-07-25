@@ -329,16 +329,15 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
-dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
+bool dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_control* pParent)
 {
-    dred_cmdbar* pCmdBar = (dred_cmdbar*)calloc(1, sizeof(*pCmdBar));
     if (pCmdBar == NULL) {
-        return NULL;
+        return false;
     }
 
+    memset(pCmdBar, 0, sizeof(*pCmdBar));
     if (!dred_control_init(DRED_CONTROL(pCmdBar), pDred, pParent, DRED_CONTROL_TYPE_CMDBAR)) {
-        free(pCmdBar);
-        return NULL;
+        return false;
     }
 
 
@@ -347,8 +346,7 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
     pCmdBar->pTextBox = dred_textbox_create(pDred, DRED_CONTROL(pCmdBar));
     if (pCmdBar->pTextBox == NULL) {
         dred_control_uninit(DRED_CONTROL(pCmdBar));
-        free(pCmdBar);
-        return NULL;
+        return false;
     }
 
     dred_textbox_disable_horizontal_scrollbar(pCmdBar->pTextBox);
@@ -376,10 +374,10 @@ dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent)
 
 
     dred_cmdbar_refresh_styling(pCmdBar);
-    return pCmdBar;
+    return true;
 }
 
-void dred_cmdbar_delete(dred_cmdbar* pCmdBar)
+void dred_cmdbar_uninit(dred_cmdbar* pCmdBar)
 {
     if (pCmdBar == NULL) {
         return;

@@ -384,8 +384,8 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
     // The command bar. Ensure this is given a valid initial size.
-    pDred->pCmdBar = dred_cmdbar_create(pDred, pDred->pMainWindow->pRootGUIControl);
-    if (pDred->pCmdBar == NULL) {
+    pDred->pCmdBar = &pDred->cmdBar;
+    if (!dred_cmdbar_init(pDred->pCmdBar, pDred, pDred->pMainWindow->pRootGUIControl)) {
         printf("Failed to create command bar.\n");
         goto on_error;
     }
@@ -458,7 +458,7 @@ void dred_uninit(dred_context* pDred)
 
 
     if (pDred->pCmdBar) {
-        dred_cmdbar_delete(pDred->pCmdBar);
+        dred_cmdbar_uninit(pDred->pCmdBar);
     }
 
     if (pDred->pMainTabGroup) {
