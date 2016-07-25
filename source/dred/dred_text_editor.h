@@ -2,7 +2,20 @@
 
 #define DRED_CONTROL_TYPE_TEXT_EDITOR  "dred.editor.text"
 
-typedef dred_editor dred_text_editor;
+typedef struct dred_text_editor dred_text_editor;
+#define DRED_TEXT_EDITOR(a) ((dred_text_editor*)(a))
+
+struct dred_text_editor
+{
+    // The base editor.
+    dred_editor editor;
+
+    dred_textbox* pTextBox;
+    unsigned int iBaseUndoPoint;    // Used to determine whether or no the file has been modified.
+    float textScale;
+
+    dred_highlighter highlighter;
+};
 
 
 // dred_text_editor_create()

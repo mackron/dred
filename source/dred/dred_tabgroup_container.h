@@ -2,7 +2,8 @@
 
 #define DRED_CONTROL_TYPE_TABGROUP_CONTAINER  "dred.tabgroup_container"
 
-typedef dred_control dred_tabgroup_container;
+typedef struct dred_tabgroup_container dred_tabgroup_container;
+#define DRED_TABGROUP_CONTAINER(a) ((dred_tabgroup_container*)(a))
 
 typedef enum
 {
@@ -10,6 +11,15 @@ typedef enum
     dred_tabgroup_split_axis_vertical,
     dred_tabgroup_split_axis_horizontal
 } dred_tabgroup_split_axis;
+
+struct dred_tabgroup_container
+{
+    // The base control.
+    dred_control control;
+
+    dred_tabgroup_split_axis splitAxis;
+};
+
 
 // dred_tabgroup_container_create()
 dred_tabgroup_container* dred_tabgroup_container_create(dred_context* pDred, dred_control* pParent);

@@ -2,7 +2,18 @@
 
 #define DRED_CONTROL_TYPE_TABGROUP  "dred.tabgroup"
 
-typedef dred_control dred_tabgroup;
+typedef struct dred_tabgroup dred_tabgroup;
+#define DRED_TABGROUP(a) ((dred_tabgroup*)(a))
+
+struct dred_tabgroup
+{
+    // The base control.
+    dred_control control;
+
+    dred_tabbar* pTabBar;
+    dred_tabgroup* pNextTabGroup;
+    dred_tabgroup* pPrevTabGroup;
+};
 
 // dred_tabgroup_create()
 dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent);

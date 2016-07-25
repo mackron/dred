@@ -95,7 +95,8 @@ struct dred_window
     dred_menu* pMenu;
 
     // The window's top level GUI element.
-    dred_control* pRootGUIControl;
+    dred_control rootGUIControl;
+    dred_control* pRootGUIControl;  // <-- Always set to &rootGUIControl, and exists only for convenience.
 
     // The surface we'll be drawing to when drawing the GUI.
     dr2d_surface* pDrawingSurface;
@@ -275,7 +276,7 @@ void dred_window__stock_event__hide_on_close(dred_window* pWindow);
 
 
 // Helper function for retrieving the window that owns the given GUI element.
-dred_window* dred_get_element_window(dred_control* pControl);
+dred_window* dred_get_control_window(dred_control* pControl);
 
 
 

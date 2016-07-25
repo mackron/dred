@@ -4,7 +4,22 @@
 
 #define DRED_CONTROL_TYPE_CMDBAR   "dred.cmdbar"
 
-typedef dred_control dred_cmdbar;
+typedef struct dred_cmdbar dred_cmdbar;
+#define DRED_CMDBAR(a) ((dred_cmdbar*)(a))
+
+struct dred_cmdbar
+{
+    // The base control.
+    dred_control control;
+
+    dred_context* pDred;    // TODO: Remove this.
+    dred_textbox* pTextBox;
+    char message[256];
+    dred_info_bar* pInfoBar;
+    unsigned int iPrevCommand;
+    char* workingCommand;
+};
+
 
 // dred_cmdbar_create()
 dred_cmdbar* dred_cmdbar_create(dred_context* pDred, dred_control* pParent);

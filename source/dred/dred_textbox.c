@@ -1,112 +1,5 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-// A cursor in a textbox is tied to either 1 or 0 selection regions. When a cursor is not associated with a selection, the
-// index of the selection region is set to -1.
-typedef struct
-{
-    size_t iEngineCursor;        // <-- Always >= 0.
-    size_t iEngineSelection;     // <-- Set to -1 if the cursor is not associated with a selection.
-} dred_textbox_cursor;
-
-typedef struct
-{
-    /// The text engine.
-    drte_engine* pTL;
-
-    // The default style for use by the text engine.
-    dred_text_style defaultStyle;
-
-    // The style to apply to selected text. Only the background color is used.
-    dred_text_style selectionStyle;
-
-    // The style to apply to active lines.
-    dred_text_style activeLineStyle;
-
-    // The style to apply to the cursor.
-    dred_text_style cursorStyle;
-
-    // The style to apply to line numbers.
-    dred_text_style lineNumbersStyle;
-
-
-    /// The vertical scrollbar.
-    dred_scrollbar* pVertScrollbar;
-
-    /// The horizontal scrollbar.
-    dred_scrollbar* pHorzScrollbar;
-
-    /// The line numbers element.
-    dred_control* pLineNumbers;
-
-
-    /// The color of the border.
-    dred_color borderColor;
-
-    /// The width of the border.
-    float borderWidth;
-
-    /// The amount of padding to apply the left and right of the text.
-    float padding;
-
-    // The width of the line numbers.
-    float lineNumbersWidth;
-
-    /// The padding to the right of the line numbers.
-    float lineNumbersPaddingRight;
-
-
-    /// The desired width of the vertical scrollbar.
-    float vertScrollbarSize;
-
-    /// The desired height of the horizontal scrollbar.
-    float horzScrollbarSize;
-
-    /// Whether or not the vertical scrollbar is enabled.
-    bool isVertScrollbarEnabled;
-
-    /// Whether or not the horizontal scrollbar is enabled.
-    bool isHorzScrollbarEnabled;
-
-    // Whether or not an extra page is added to the scroll range so that the user can scroll past the last line. When set to true,
-    // the user can scroll until the last line is sitting at the top of the text box. When disabled the user can scroll until the
-    // last line is sitting at the bottom.
-    bool isExcessScrollingEnabled;
-
-    // Whether or not tabs to spaces is enabled.
-    bool isTabsToSpacesEnabled;
-
-
-    // The number of active cursors.
-    size_t cursorCount;
-
-    // The buffer containing the active cursors.
-    dred_textbox_cursor* pCursors;
-
-
-    /// When selecting lines by clicking and dragging on the line numbers, keeps track of the line to anchor the selection to.
-    size_t iLineSelectAnchor;
-
-
-    // Whether or not we are doing word based mouse-drag selection.
-    bool isDoingWordSelect;
-
-    // The word to act as the achor when doing word based selection.
-    drte_region wordSelectionAnchor;
-
-
-    /// The function to call when the text cursor/caret moves.
-    dred_textbox_on_cursor_move_proc onCursorMove;
-
-    /// The function to call when the undo point changes.
-    dred_textbox_on_undo_point_changed_proc onUndoPointChanged;
-
-
-    // The timer for stepping the cursor.
-    dred_timer* pTimer;
-
-} dred_textbox_data;
-
-
 /// Retrieves the offset to draw the text in the text box.
 void dred_textbox__get_text_offset(dred_textbox* pTextBox, float* pOffsetXOut, float* pOffsetYOut);
 
@@ -175,52 +68,45 @@ void dred_textbox__refresh_horizontal_scrollbar(dred_textbox* pTextBox);
 
 void dred_textbox__on_vscroll(dred_scrollbar* pSBControl, int scrollPos)
 {
-    dred_textbox* pTextBox = *(dred_control**)dred_scrollbar_get_extra_data(pSBControl);
+    dred_textbox* pTextBox = *(dred_textbox**)dred_scrollbar_get_extra_data(pSBControl);
     assert(pTextBox != NULL);
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
-
-    drte_engine_set_inner_offset_y(pTB->pTL, -drte_engine_get_line_pos_y(pTB->pTL, scrollPos));
+    drte_engine_set_inner_offset_y(pTextBox->pTL, -drte_engine_get_line_pos_y(pTextBox->pTL, scrollPos));
     dred_textbox__refresh_scrollbars(pTextBox);
 
     // The line numbers need to be redrawn.
-    dred_control_dirty(pTB->pLineNumbers, dred_control_get_local_rect(pTB->pLineNumbers));
+    dred_control_dirty(pTextBox->pLineNumbers, dred_control_get_local_rect(pTextBox->pLineNumbers));
 }
 
 void dred_textbox__on_hscroll(dred_scrollbar* pSBControl, int scrollPos)
 {
-    dred_textbox* pTextBox = *(dred_control**)dred_scrollbar_get_extra_data(pSBControl);
+    dred_textbox* pTextBox = *(dred_textbox**)dred_scrollbar_get_extra_data(pSBControl);
     assert(pTextBox != NULL);
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
-
-    drte_engine_set_inner_offset_x(pTB->pTL, (float)-scrollPos);
+    drte_engine_set_inner_offset_x(pTextBox->pTL, (float)-scrollPos);
 }
 
-void dred_textbox__refresh_style(dred_control* pTextBox)
+void dred_textbox__refresh_style(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
     dred_gui_font_metrics fontMetrics;
-    dred_gui_get_font_metrics(pTB->defaultStyle.pFont, &fontMetrics);
+    dred_gui_get_font_metrics(pTextBox->defaultStyle.pFont, &fontMetrics);
 
     // Default.
-    drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->defaultStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
+    drte_engine_register_style_token(pTextBox->pTL, (drte_style_token)&pTextBox->defaultStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
 
     // Selection.
-    drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->selectionStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
+    drte_engine_register_style_token(pTextBox->pTL, (drte_style_token)&pTextBox->selectionStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
 
     // Active line.
-    drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->activeLineStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
+    drte_engine_register_style_token(pTextBox->pTL, (drte_style_token)&pTextBox->activeLineStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
 
     // Cursor.
-    drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->cursorStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
+    drte_engine_register_style_token(pTextBox->pTL, (drte_style_token)&pTextBox->cursorStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
 
     // Line numbers.
-    drte_engine_register_style_token(pTB->pTL, (drte_style_token)&pTB->lineNumbersStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
+    drte_engine_register_style_token(pTextBox->pTL, (drte_style_token)&pTextBox->lineNumbersStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
 }
 
 
@@ -246,50 +132,47 @@ void dred_textbox_engine__on_get_cursor_position_from_char(drte_engine* pEngine,
 void dred_textbox__clear_all_cursors(dred_textbox* pTextBox)
 {
     // The last cursor is _not_ cleared.
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
     // Engine.
-    drte_engine__begin_dirty(pTB->pTL);
-    while (pTB->pTL->cursorCount > 1) {
-        drte_engine_remove_cursor(pTB->pTL, pTB->pTL->cursorCount-2);
+    drte_engine__begin_dirty(pTextBox->pTL);
+    while (pTextBox->pTL->cursorCount > 1) {
+        drte_engine_remove_cursor(pTextBox->pTL, pTextBox->pTL->cursorCount-2);
     }
-    drte_engine__end_dirty(pTB->pTL);
+    drte_engine__end_dirty(pTextBox->pTL);
 
 
     // Local list.
-    if (pTB->cursorCount > 1) {
-        pTB->pCursors[0] = pTB->pCursors[pTB->cursorCount-1];
-        pTB->pCursors[0].iEngineSelection = (size_t)-1;
-        pTB->cursorCount = 1;
+    if (pTextBox->cursorCount > 1) {
+        pTextBox->pCursors[0] = pTextBox->pCursors[pTextBox->cursorCount-1];
+        pTextBox->pCursors[0].iEngineSelection = (size_t)-1;
+        pTextBox->cursorCount = 1;
     }
 }
 
 void dred_textbox__remove_cursor(dred_textbox* pTextBox, size_t iCursor)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
     // Remove from the engine.
-    drte_engine_remove_cursor(pTB->pTL, iCursor);
+    drte_engine_remove_cursor(pTextBox->pTL, iCursor);
 
     // Remove from the local list.
-    for (size_t i = iCursor; i < pTB->cursorCount-1; ++i) {
-        pTB->pCursors[i] = pTB->pCursors[i+1];
+    for (size_t i = iCursor; i < pTextBox->cursorCount-1; ++i) {
+        pTextBox->pCursors[i] = pTextBox->pCursors[i+1];
     }
-    pTB->cursorCount -= 1;
+    pTextBox->cursorCount -= 1;
 }
 
 void dred_textbox__insert_cursor(dred_textbox* pTextBox, size_t iChar)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
     // If we are trying to insert a cursor on top of an existing cursor we need to just move the existing one to the end of the list,
     // thus making it the current cursor. We don't want cursors to be sitting on top of each other.
     size_t iExistingCursor = (size_t)-1;
-    for (size_t iCursor = 0; iCursor < pTB->pTL->cursorCount; ++iCursor) {
-        if (pTB->pTL->pCursors[iCursor].iCharAbs == iChar) {
+    for (size_t iCursor = 0; iCursor < pTextBox->pTL->cursorCount; ++iCursor) {
+        if (pTextBox->pTL->pCursors[iCursor].iCharAbs == iChar) {
             iExistingCursor = iCursor;
             break;
         }
@@ -297,31 +180,30 @@ void dred_textbox__insert_cursor(dred_textbox* pTextBox, size_t iChar)
 
     size_t iEngineSelection = (size_t)-1;
     if (iExistingCursor != (size_t)-1) {
-        iEngineSelection = pTB->pCursors[iExistingCursor].iEngineSelection;
+        iEngineSelection = pTextBox->pCursors[iExistingCursor].iEngineSelection;
         dred_textbox__remove_cursor(pTextBox, iExistingCursor);
     }
 
-    size_t iEngineCursor = drte_engine_insert_cursor(pTB->pTL, iChar);
+    size_t iEngineCursor = drte_engine_insert_cursor(pTextBox->pTL, iChar);
 
-    dred_textbox_cursor* pNewCursors = (dred_textbox_cursor*)realloc(pTB->pCursors, (pTB->cursorCount+1) * sizeof(*pNewCursors));
+    dred_textbox_cursor* pNewCursors = (dred_textbox_cursor*)realloc(pTextBox->pCursors, (pTextBox->cursorCount+1) * sizeof(*pNewCursors));
     if (pNewCursors == NULL) {
         return;
     }
 
-    pTB->pCursors = pNewCursors;
-    pTB->pCursors[pTB->cursorCount].iEngineSelection = iEngineSelection;
-    pTB->pCursors[pTB->cursorCount].iEngineCursor = iEngineCursor;
-    pTB->cursorCount += 1;
+    pTextBox->pCursors = pNewCursors;
+    pTextBox->pCursors[pTextBox->cursorCount].iEngineSelection = iEngineSelection;
+    pTextBox->pCursors[pTextBox->cursorCount].iEngineCursor = iEngineCursor;
+    pTextBox->cursorCount += 1;
 }
 
 bool dred_textbox__get_cursor_selection(dred_textbox* pTextBox, size_t iCursor, size_t* iSelectionOut)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
-    for (size_t iSelection = 0; iSelection < pTB->pTL->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pTB->pTL->pSelections[iSelection]);
-        if (selection.iCharBeg == pTB->pTL->pCursors[iCursor].iCharAbs || selection.iCharEnd == pTB->pTL->pCursors[iCursor].iCharAbs) {
+    for (size_t iSelection = 0; iSelection < pTextBox->pTL->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTextBox->pTL->pSelections[iSelection]);
+        if (selection.iCharBeg == pTextBox->pTL->pCursors[iCursor].iCharAbs || selection.iCharEnd == pTextBox->pTL->pCursors[iCursor].iCharAbs) {
             if (iSelectionOut) *iSelectionOut = iSelection;
             return true;
         }
@@ -332,28 +214,26 @@ bool dred_textbox__get_cursor_selection(dred_textbox* pTextBox, size_t iCursor, 
 
 bool dred_textbox__is_cursor_on_selection(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
-    return dred_textbox__get_cursor_selection(pTextBox, drte_engine_get_last_cursor(pTB->pTL), NULL);
+    return dred_textbox__get_cursor_selection(pTextBox, drte_engine_get_last_cursor(pTextBox->pTL), NULL);
 }
 
 bool dred_textbox__move_cursor_to_start_of_selection(dred_textbox* pTextBox, size_t* iSelectionOut)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
-    if (pTB->pTL->cursorCount == 0) {
+    if (pTextBox->pTL->cursorCount == 0) {
         return false;
     }
 
     // We need to find the selection region that the last cursor is sitting at the end of. If there isn't one, we just return false.
-    size_t iCursor = drte_engine_get_last_cursor(pTB->pTL);
-    for (size_t iSelection = 0; iSelection < pTB->pTL->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pTB->pTL->pSelections[iSelection]);
-        if (selection.iCharEnd == pTB->pTL->pCursors[iCursor].iCharAbs) {
+    size_t iCursor = drte_engine_get_last_cursor(pTextBox->pTL);
+    for (size_t iSelection = 0; iSelection < pTextBox->pTL->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTextBox->pTL->pSelections[iSelection]);
+        if (selection.iCharEnd == pTextBox->pTL->pCursors[iCursor].iCharAbs) {
             // It's on this selection.
-            drte_engine_move_cursor_to_character(pTB->pTL, iCursor, selection.iCharBeg);
+            drte_engine_move_cursor_to_character(pTextBox->pTL, iCursor, selection.iCharBeg);
             if (iSelectionOut) *iSelectionOut = iSelection;
             return true;
         }
@@ -364,20 +244,19 @@ bool dred_textbox__move_cursor_to_start_of_selection(dred_textbox* pTextBox, siz
 
 bool dred_textbox__move_cursor_to_end_of_selection(dred_textbox* pTextBox, size_t* iSelectionOut)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
-    if (pTB->pTL->cursorCount == 0) {
+    if (pTextBox->pTL->cursorCount == 0) {
         return false;
     }
 
     // We need to find the selection region that the last cursor is sitting at the end of. If there isn't one, we just return false.
-    size_t iCursor = drte_engine_get_last_cursor(pTB->pTL);
-    for (size_t iSelection = 0; iSelection < pTB->pTL->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pTB->pTL->pSelections[iSelection]);
-        if (selection.iCharBeg == pTB->pTL->pCursors[iCursor].iCharAbs) {
+    size_t iCursor = drte_engine_get_last_cursor(pTextBox->pTL);
+    for (size_t iSelection = 0; iSelection < pTextBox->pTL->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTextBox->pTL->pSelections[iSelection]);
+        if (selection.iCharBeg == pTextBox->pTL->pCursors[iCursor].iCharAbs) {
             // It's on this selection.
-            drte_engine_move_cursor_to_character(pTB->pTL, iCursor, selection.iCharEnd);
+            drte_engine_move_cursor_to_character(pTextBox->pTL, iCursor, selection.iCharEnd);
             if (iSelectionOut) *iSelectionOut = iSelection;
             return true;
         }
@@ -388,190 +267,190 @@ bool dred_textbox__move_cursor_to_end_of_selection(dred_textbox* pTextBox, size_
 
 bool dred_textbox__insert_tab(dred_textbox* pTextBox, size_t iChar)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
-    dred_context* pDred = dred_control_get_gui(pTextBox);
+    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextBox));
     assert(pDred != NULL);
 
-    drte_engine__begin_dirty(pTB->pTL);
+    drte_engine__begin_dirty(pTextBox->pTL);
 
     bool wasTextChanged = false;
     size_t insertedCharacterCount;
     if (pDred->config.textEditorTabsToSpacesEnabled) {
-        insertedCharacterCount = drte_engine_get_spaces_to_next_column_from_character(pTB->pTL, iChar);
+        insertedCharacterCount = drte_engine_get_spaces_to_next_column_from_character(pTextBox->pTL, iChar);
         for (size_t i = 0; i < insertedCharacterCount; ++i) {
-            wasTextChanged = drte_engine_insert_character(pTB->pTL, iChar, ' ') || wasTextChanged;
+            wasTextChanged = drte_engine_insert_character(pTextBox->pTL, iChar, ' ') || wasTextChanged;
         }
     } else {
         insertedCharacterCount = 1;
-        wasTextChanged = drte_engine_insert_character(pTB->pTL, iChar, '\t') || wasTextChanged;
+        wasTextChanged = drte_engine_insert_character(pTextBox->pTL, iChar, '\t') || wasTextChanged;
     }
 
     
     // Any cursor whose character position comes after this cursor needs to be moved.
-    for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
-        if (pTB->pTL->pCursors[iCursor2].iCharAbs >= iChar) {
-            drte_engine_move_cursor_to_character(pTB->pTL, iCursor2, pTB->pTL->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
+    for (size_t iCursor2 = 0; iCursor2 < pTextBox->pTL->cursorCount; ++iCursor2) {
+        if (pTextBox->pTL->pCursors[iCursor2].iCharAbs >= iChar) {
+            drte_engine_move_cursor_to_character(pTextBox->pTL, iCursor2, pTextBox->pTL->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
         }
     }
 
     // As with cursors, selections need to be updated too.
-    for (size_t iSelection = 0; iSelection < pTB->pTL->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pTB->pTL->pSelections[iSelection]);
+    for (size_t iSelection = 0; iSelection < pTextBox->pTL->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTextBox->pTL->pSelections[iSelection]);
         if (selection.iCharBeg > iChar) {
-            pTB->pTL->pSelections[iSelection].iCharBeg += insertedCharacterCount;
-            pTB->pTL->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+            pTextBox->pTL->pSelections[iSelection].iCharBeg += insertedCharacterCount;
+            pTextBox->pTL->pSelections[iSelection].iCharEnd += insertedCharacterCount;
         } else {
             if (selection.iCharEnd > iChar) {
-                pTB->pTL->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+                pTextBox->pTL->pSelections[iSelection].iCharEnd += insertedCharacterCount;
             }
         }
     }
 
 
-    drte_engine__end_dirty(pTB->pTL);
+    drte_engine__end_dirty(pTextBox->pTL);
     return wasTextChanged;
 }
 
 bool dred_textbox__insert_tab_at_cursor(dred_textbox* pTextBox, size_t iCursor)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
-    return dred_textbox__insert_tab(pTextBox, pTB->pTL->pCursors[iCursor].iCharAbs);
+    return dred_textbox__insert_tab(pTextBox, pTextBox->pTL->pCursors[iCursor].iCharAbs);
 }
 
 
 dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
 {
-    dred_textbox* pTextBox = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_TEXTBOX, sizeof(dred_textbox_data));
+    dred_textbox* pTextBox = (dred_textbox*)calloc(1, sizeof(*pTextBox));
     if (pTextBox == NULL) {
         return NULL;
     }
 
-    dred_control_set_cursor(pTextBox, dred_cursor_text);
-    dred_control_set_on_size(pTextBox, dred_textbox_on_size);
-    dred_control_set_on_mouse_move(pTextBox, dred_textbox_on_mouse_move);
-    dred_control_set_on_mouse_button_down(pTextBox, dred_textbox_on_mouse_button_down);
-    dred_control_set_on_mouse_button_up(pTextBox, dred_textbox_on_mouse_button_up);
-    dred_control_set_on_mouse_button_dblclick(pTextBox, dred_textbox_on_mouse_button_dblclick);
-    dred_control_set_on_mouse_wheel(pTextBox, dred_textbox_on_mouse_wheel);
-    dred_control_set_on_key_down(pTextBox, dred_textbox_on_key_down);
-    dred_control_set_on_printable_key_down(pTextBox, dred_textbox_on_printable_key_down);
-    dred_control_set_on_paint(pTextBox, dred_textbox_on_paint);
-    dred_control_set_on_capture_keyboard(pTextBox, dred_textbox_on_capture_keyboard);
-    dred_control_set_on_release_keyboard(pTextBox, dred_textbox_on_release_keyboard);
-    dred_control_set_on_capture_mouse(pTextBox, dred_textbox_on_capture_mouse);
-    dred_control_set_on_release_mouse(pTextBox, dred_textbox_on_release_mouse);
+    if (!dred_control_init(DRED_CONTROL(pTextBox), pDred, pParent, DRED_CONTROL_TYPE_TEXTBOX)) {
+        free(pTextBox);
+        return NULL;
+    }
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    dred_control_set_cursor(DRED_CONTROL(pTextBox), dred_cursor_text);
+    dred_control_set_on_size(DRED_CONTROL(pTextBox), dred_textbox_on_size);
+    dred_control_set_on_mouse_move(DRED_CONTROL(pTextBox), dred_textbox_on_mouse_move);
+    dred_control_set_on_mouse_button_down(DRED_CONTROL(pTextBox), dred_textbox_on_mouse_button_down);
+    dred_control_set_on_mouse_button_up(DRED_CONTROL(pTextBox), dred_textbox_on_mouse_button_up);
+    dred_control_set_on_mouse_button_dblclick(DRED_CONTROL(pTextBox), dred_textbox_on_mouse_button_dblclick);
+    dred_control_set_on_mouse_wheel(DRED_CONTROL(pTextBox), dred_textbox_on_mouse_wheel);
+    dred_control_set_on_key_down(DRED_CONTROL(pTextBox), dred_textbox_on_key_down);
+    dred_control_set_on_printable_key_down(DRED_CONTROL(pTextBox), dred_textbox_on_printable_key_down);
+    dred_control_set_on_paint(DRED_CONTROL(pTextBox), dred_textbox_on_paint);
+    dred_control_set_on_capture_keyboard(DRED_CONTROL(pTextBox), dred_textbox_on_capture_keyboard);
+    dred_control_set_on_release_keyboard(DRED_CONTROL(pTextBox), dred_textbox_on_release_keyboard);
+    dred_control_set_on_capture_mouse(DRED_CONTROL(pTextBox), dred_textbox_on_capture_mouse);
+    dred_control_set_on_release_mouse(DRED_CONTROL(pTextBox), dred_textbox_on_release_mouse);
 
-    pTB->pVertScrollbar = dred_scrollbar_create(pDred, pTextBox, dred_scrollbar_orientation_vertical, sizeof(pTextBox), &pTextBox);
-    dred_scrollbar_set_on_scroll(pTB->pVertScrollbar, dred_textbox__on_vscroll);
-    dred_scrollbar_set_mouse_wheel_scele(pTB->pVertScrollbar, 3);
+    pTextBox->pVertScrollbar = dred_scrollbar_create(pDred, DRED_CONTROL(pTextBox), dred_scrollbar_orientation_vertical, sizeof(pTextBox), &pTextBox);
+    dred_scrollbar_set_on_scroll(pTextBox->pVertScrollbar, dred_textbox__on_vscroll);
+    dred_scrollbar_set_mouse_wheel_scele(pTextBox->pVertScrollbar, 3);
 
-    pTB->pHorzScrollbar = dred_scrollbar_create(pDred, pTextBox, dred_scrollbar_orientation_horizontal, sizeof(pTextBox), &pTextBox);
-    dred_scrollbar_set_on_scroll(pTB->pHorzScrollbar, dred_textbox__on_hscroll);
+    pTextBox->pHorzScrollbar = dred_scrollbar_create(pDred, DRED_CONTROL(pTextBox), dred_scrollbar_orientation_horizontal, sizeof(pTextBox), &pTextBox);
+    dred_scrollbar_set_on_scroll(pTextBox->pHorzScrollbar, dred_textbox__on_hscroll);
 
-    pTB->pLineNumbers = dred_control_create(pDred, pTextBox, "dred.common.linenumbers", sizeof(pTextBox));
-    memcpy(dred_control_get_extra_data(pTB->pLineNumbers), &pTextBox, sizeof(pTextBox));
-    dred_control_hide(pTB->pLineNumbers);
-    dred_control_set_on_mouse_move(pTB->pLineNumbers, dred_textbox__on_mouse_move_line_numbers);
-    dred_control_set_on_mouse_button_down(pTB->pLineNumbers, dred_textbox__on_mouse_button_down_line_numbers);
-    dred_control_set_on_mouse_button_up(pTB->pLineNumbers, dred_textbox__on_mouse_button_up_line_numbers);
-    dred_control_set_on_paint(pTB->pLineNumbers, dred_textbox__on_paint_line_numbers);
+    pTextBox->pLineNumbers = &pTextBox->lineNumbers;
+    dred_control_init(pTextBox->pLineNumbers, pDred, DRED_CONTROL(pTextBox), "dred.common.linenumbers");
+    dred_control_hide(pTextBox->pLineNumbers);
+    dred_control_set_on_mouse_move(pTextBox->pLineNumbers, dred_textbox__on_mouse_move_line_numbers);
+    dred_control_set_on_mouse_button_down(pTextBox->pLineNumbers, dred_textbox__on_mouse_button_down_line_numbers);
+    dred_control_set_on_mouse_button_up(pTextBox->pLineNumbers, dred_textbox__on_mouse_button_up_line_numbers);
+    dred_control_set_on_paint(pTextBox->pLineNumbers, dred_textbox__on_paint_line_numbers);
 
-    pTB->pTL = drte_engine_create(pTextBox);
-    if (pTB->pTL == NULL) {
-        dred_control_delete(pTextBox);
+    pTextBox->pTL = drte_engine_create(pTextBox);
+    if (pTextBox->pTL == NULL) {
+        dred_control_uninit(DRED_CONTROL(pTextBox));
         return NULL;
     }
 
     dred_textbox__insert_cursor(pTextBox, 0);
 
 
-    pTB->pTL->onMeasureString = dred_textbox_engine__on_measure_string_proc;
-    pTB->pTL->onGetCursorPositionFromPoint = dred_textbox_engine__on_get_cursor_position_from_point;
-    pTB->pTL->onGetCursorPositionFromChar = dred_textbox_engine__on_get_cursor_position_from_char;
+    pTextBox->pTL->onMeasureString = dred_textbox_engine__on_measure_string_proc;
+    pTextBox->pTL->onGetCursorPositionFromPoint = dred_textbox_engine__on_get_cursor_position_from_point;
+    pTextBox->pTL->onGetCursorPositionFromChar = dred_textbox_engine__on_get_cursor_position_from_char;
 
 
-    pTB->defaultStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
-    pTB->defaultStyle.bgColor = dred_rgb(64, 64, 64);
-    pTB->defaultStyle.fgColor = dred_rgb(0, 0, 0);
+    pTextBox->defaultStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTextBox->defaultStyle.bgColor = dred_rgb(64, 64, 64);
+    pTextBox->defaultStyle.fgColor = dred_rgb(0, 0, 0);
 
-    pTB->selectionStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
-    pTB->selectionStyle.bgColor = dred_rgb(64, 128, 192);
-    pTB->selectionStyle.fgColor = dred_rgb(0, 0, 0);
+    pTextBox->selectionStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTextBox->selectionStyle.bgColor = dred_rgb(64, 128, 192);
+    pTextBox->selectionStyle.fgColor = dred_rgb(0, 0, 0);
 
-    pTB->activeLineStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
-    pTB->activeLineStyle.bgColor = dred_rgb(64, 64, 64);
-    pTB->activeLineStyle.fgColor = dred_rgb(0, 0, 0);
+    pTextBox->activeLineStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTextBox->activeLineStyle.bgColor = dred_rgb(64, 64, 64);
+    pTextBox->activeLineStyle.fgColor = dred_rgb(0, 0, 0);
 
-    pTB->cursorStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
-    pTB->cursorStyle.bgColor = dred_rgb(0, 0, 0);
-    pTB->cursorStyle.fgColor = dred_rgb(0, 0, 0);
+    pTextBox->cursorStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTextBox->cursorStyle.bgColor = dred_rgb(0, 0, 0);
+    pTextBox->cursorStyle.fgColor = dred_rgb(0, 0, 0);
 
-    pTB->lineNumbersStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
-    pTB->lineNumbersStyle.bgColor = dred_rgb(64, 64, 64);
-    pTB->lineNumbersStyle.fgColor = dred_rgb(80, 160, 192);
+    pTextBox->lineNumbersStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTextBox->lineNumbersStyle.bgColor = dred_rgb(64, 64, 64);
+    pTextBox->lineNumbersStyle.fgColor = dred_rgb(80, 160, 192);
 
 
     // Test styling.
-    /*pTB->testStyle0.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
-    pTB->testStyle0.bgColor = dred_rgb(64, 64, 64);
-    pTB->testStyle0.fgColor = dred_rgb(64, 160, 255);
+    /*pTextBox->testStyle0.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTextBox->testStyle0.bgColor = dred_rgb(64, 64, 64);
+    pTextBox->testStyle0.fgColor = dred_rgb(64, 160, 255);
 
-    pTB->testStyle1.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
-    pTB->testStyle1.bgColor = dred_rgb(64, 64, 64);
-    pTB->testStyle1.fgColor = dred_rgb(64, 192, 92);*/
+    pTextBox->testStyle1.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTextBox->testStyle1.bgColor = dred_rgb(64, 64, 64);
+    pTextBox->testStyle1.fgColor = dred_rgb(64, 192, 92);*/
 
 
     // Register the styles with the text engine.
     dred_textbox__refresh_style(pTextBox);
 
 
-    //drte_engine_set_highlighter(pTB->pTL, dred_textbox_engine__on_get_next_highlight, pTextBox);
+    //drte_engine_set_highlighter(pTextBox->pTL, dred_textbox_engine__on_get_next_highlight, pTextBox);
     
 
 
-    drte_engine_set_default_style(pTB->pTL, (drte_style_token)&pTB->defaultStyle);
-    drte_engine_set_selection_style(pTB->pTL, (drte_style_token)&pTB->selectionStyle);
-    drte_engine_set_active_line_style(pTB->pTL, (drte_style_token)&pTB->activeLineStyle);
-    drte_engine_set_cursor_style(pTB->pTL, (drte_style_token)&pTB->cursorStyle);
-    drte_engine_set_line_numbers_style(pTB->pTL, (drte_style_token)&pTB->lineNumbersStyle);
+    drte_engine_set_default_style(pTextBox->pTL, (drte_style_token)&pTextBox->defaultStyle);
+    drte_engine_set_selection_style(pTextBox->pTL, (drte_style_token)&pTextBox->selectionStyle);
+    drte_engine_set_active_line_style(pTextBox->pTL, (drte_style_token)&pTextBox->activeLineStyle);
+    drte_engine_set_cursor_style(pTextBox->pTL, (drte_style_token)&pTextBox->cursorStyle);
+    drte_engine_set_line_numbers_style(pTextBox->pTL, (drte_style_token)&pTextBox->lineNumbersStyle);
 
 
-    drte_engine_set_on_paint_rect(pTB->pTL, dred_textbox_engine__on_paint_rect);
-    drte_engine_set_on_paint_text(pTB->pTL, dred_textbox_engine__on_paint_text);
-    drte_engine_set_on_dirty(pTB->pTL, dred_textbox_engine__on_dirty);
-    drte_engine_set_on_cursor_move(pTB->pTL, dred_textbox_engine__on_cursor_move);
-    drte_engine_set_on_text_changed(pTB->pTL, dred_textbox_engine__on_text_changed);
-    drte_engine_set_on_undo_point_changed(pTB->pTL, dred_textbox_engine__on_undo_point_changed);
-    pTB->pTL->onGetUndoState = dred_textbox_engine__on_get_undo_state;
-    pTB->pTL->onApplyUndoState = dred_textbox_engine__on_apply_undo_state;
+    drte_engine_set_on_paint_rect(pTextBox->pTL, dred_textbox_engine__on_paint_rect);
+    drte_engine_set_on_paint_text(pTextBox->pTL, dred_textbox_engine__on_paint_text);
+    drte_engine_set_on_dirty(pTextBox->pTL, dred_textbox_engine__on_dirty);
+    drte_engine_set_on_cursor_move(pTextBox->pTL, dred_textbox_engine__on_cursor_move);
+    drte_engine_set_on_text_changed(pTextBox->pTL, dred_textbox_engine__on_text_changed);
+    drte_engine_set_on_undo_point_changed(pTextBox->pTL, dred_textbox_engine__on_undo_point_changed);
+    pTextBox->pTL->onGetUndoState = dred_textbox_engine__on_get_undo_state;
+    pTextBox->pTL->onApplyUndoState = dred_textbox_engine__on_apply_undo_state;
 
-    //drte_engine_set_default_text_color(pTB->pTL, dred_rgb(0, 0, 0));
-    //drte_engine_set_cursor_color(pTB->pTL, dred_rgb(0, 0, 0));
-    //drte_engine_set_default_bg_color(pTB->pTL, dred_rgb(64, 64, 64));
-    //drte_engine_set_active_line_bg_color(pTB->pTL, dred_rgb(64, 64, 64));
+    //drte_engine_set_default_text_color(pTextBox->pTL, dred_rgb(0, 0, 0));
+    //drte_engine_set_cursor_color(pTextBox->pTL, dred_rgb(0, 0, 0));
+    //drte_engine_set_default_bg_color(pTextBox->pTL, dred_rgb(64, 64, 64));
+    //drte_engine_set_active_line_bg_color(pTextBox->pTL, dred_rgb(64, 64, 64));
 
-    pTB->borderColor = dred_rgb(0, 0, 0);
-    pTB->borderWidth = 0;
-    pTB->padding     = 2;
-    pTB->lineNumbersWidth = 64;
-    pTB->lineNumbersPaddingRight = 16;
-    //pTB->lineNumbersColor = dred_rgb(80, 160, 192);
-    //pTB->lineNumbersBackgroundColor = pTB->defaultStyle.bgColor;
-    pTB->vertScrollbarSize = 16;
-    pTB->horzScrollbarSize = 16;
-    pTB->isVertScrollbarEnabled = true;
-    pTB->isHorzScrollbarEnabled = true;
-    pTB->isExcessScrollingEnabled = true;
-    pTB->iLineSelectAnchor = 0;
-    pTB->onCursorMove = NULL;
-    pTB->onUndoPointChanged = NULL;
+    pTextBox->borderColor = dred_rgb(0, 0, 0);
+    pTextBox->borderWidth = 0;
+    pTextBox->padding     = 2;
+    pTextBox->lineNumbersWidth = 64;
+    pTextBox->lineNumbersPaddingRight = 16;
+    //pTextBox->lineNumbersColor = dred_rgb(80, 160, 192);
+    //pTextBox->lineNumbersBackgroundColor = pTextBox->defaultStyle.bgColor;
+    pTextBox->vertScrollbarSize = 16;
+    pTextBox->horzScrollbarSize = 16;
+    pTextBox->isVertScrollbarEnabled = true;
+    pTextBox->isHorzScrollbarEnabled = true;
+    pTextBox->isExcessScrollingEnabled = true;
+    pTextBox->iLineSelectAnchor = 0;
+    pTextBox->onCursorMove = NULL;
+    pTextBox->onUndoPointChanged = NULL;
 
 
     // TESTING
@@ -581,64 +460,61 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
 
 void dred_textbox_delete(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
     // Keyboard focus needs to be released first. If we don't do this we'll not free delete the internal timer.
-    if (dred_control_has_keyboard_capture(pTextBox)) {
-        dred_gui_release_keyboard(pTextBox->pGUI);
+    if (dred_control_has_keyboard_capture(DRED_CONTROL(pTextBox))) {
+        dred_gui_release_keyboard(dred_control_get_gui(DRED_CONTROL(pTextBox)));
     }
 
-    if (pTB->pTL) {
-        drte_engine_delete(pTB->pTL);
-        pTB->pTL = NULL;
+    if (pTextBox->pTL) {
+        drte_engine_delete(pTextBox->pTL);
+        pTextBox->pTL = NULL;
     }
 
-    if (pTB->pLineNumbers) {
-        dred_control_delete(pTB->pLineNumbers);
-        pTB->pLineNumbers = NULL;
+    if (pTextBox->pLineNumbers) {
+        dred_control_uninit(pTextBox->pLineNumbers);
+        pTextBox->pLineNumbers = NULL;
     }
 
-    if (pTB->pHorzScrollbar) {
-        dred_scrollbar_delete(pTB->pHorzScrollbar);
-        pTB->pHorzScrollbar = NULL;
+    if (pTextBox->pHorzScrollbar) {
+        dred_scrollbar_delete(pTextBox->pHorzScrollbar);
+        pTextBox->pHorzScrollbar = NULL;
     }
 
-    if (pTB->pVertScrollbar) {
-        dred_scrollbar_delete(pTB->pVertScrollbar);
-        pTB->pVertScrollbar = NULL;
+    if (pTextBox->pVertScrollbar) {
+        dred_scrollbar_delete(pTextBox->pVertScrollbar);
+        pTextBox->pVertScrollbar = NULL;
     }
 
-    dred_control_delete(pTextBox);
+    dred_control_uninit(DRED_CONTROL(pTextBox));
 }
 
 
 drte_engine* dred_textbox_get_engine(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return NULL;
     }
 
-    return pTB->pTL;
+    return pTextBox->pTL;
 }
 
 
 void dred_textbox_set_font(dred_textbox* pTextBox, dred_gui_font* pFont)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    dred_control_begin_dirty(pTextBox);
+    dred_control_begin_dirty(DRED_CONTROL(pTextBox));
     {
-        //drte_engine_set_default_font(pTB->pTL, pFont);
-        pTB->defaultStyle.pFont = pFont;
-        pTB->lineNumbersStyle.pFont = pFont;
-        //pTB->testStyle0.pFont = pFont;
+        //drte_engine_set_default_font(pTextBox->pTL, pFont);
+        pTextBox->defaultStyle.pFont = pFont;
+        pTextBox->lineNumbersStyle.pFont = pFont;
+        //pTextBox->testStyle0.pFont = pFont;
 
         dred_textbox__refresh_style(pTextBox);
 
@@ -646,297 +522,270 @@ void dred_textbox_set_font(dred_textbox* pTextBox, dred_gui_font* pFont)
         dred_textbox__refresh_line_numbers(pTextBox);
 
         // Emulate a scroll to ensure the scroll position is pinned to a line.
-        dred_textbox__on_vscroll(pTB->pVertScrollbar, dred_scrollbar_get_scroll_position(pTB->pVertScrollbar));
+        dred_textbox__on_vscroll(pTextBox->pVertScrollbar, dred_scrollbar_get_scroll_position(pTextBox->pVertScrollbar));
         dred_textbox__refresh_scrollbars(pTextBox);
     }
-    dred_control_end_dirty(pTextBox);
+    dred_control_end_dirty(DRED_CONTROL(pTextBox));
 }
 
 dred_gui_font* dred_textbox_get_font(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return NULL;
     }
 
-    return pTB->defaultStyle.pFont;
+    return pTextBox->defaultStyle.pFont;
 }
 
 void dred_textbox_set_text_color(dred_textbox* pTextBox, dred_color color)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->defaultStyle.fgColor = color;
+    pTextBox->defaultStyle.fgColor = color;
     dred_textbox__refresh_style(pTextBox);
 }
 
 void dred_textbox_set_background_color(dred_textbox* pTextBox, dred_color color)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->defaultStyle.bgColor = color;
+    pTextBox->defaultStyle.bgColor = color;
     dred_textbox__refresh_style(pTextBox);
 }
 
 void dred_textbox_set_selection_background_color(dred_textbox* pTextBox, dred_color color)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->selectionStyle.bgColor = color;
+    pTextBox->selectionStyle.bgColor = color;
     dred_textbox__refresh_style(pTextBox);
 }
 
 dred_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return dred_rgb(0, 0, 0);
     }
 
-    return pTB->selectionStyle.bgColor;
+    return pTextBox->selectionStyle.bgColor;
 }
 
 void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, dred_color color)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->activeLineStyle.bgColor = color;
+    pTextBox->activeLineStyle.bgColor = color;
     dred_textbox__refresh_style(pTextBox);
-    //drte_engine_set_active_line_bg_color(pTB->pTL, color);
+    //drte_engine_set_active_line_bg_color(pTextBox->pTL, color);
 }
 
 void dred_textbox_set_cursor_width(dred_textbox* pTextBox, float cursorWidth)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_set_cursor_width(pTB->pTL, cursorWidth);
+    drte_engine_set_cursor_width(pTextBox->pTL, cursorWidth);
 }
 
 float dred_textbox_get_cursor_width(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
-    return drte_engine_get_cursor_width(pTB->pTL);
+    return drte_engine_get_cursor_width(pTextBox->pTL);
 }
 
 void dred_textbox_set_cursor_color(dred_textbox* pTextBox, dred_color color)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->cursorStyle.bgColor = color;
+    pTextBox->cursorStyle.bgColor = color;
     dred_textbox__refresh_style(pTextBox);
-    //drte_engine_set_cursor_color(pTB->pTL, color);
+    //drte_engine_set_cursor_color(pTextBox->pTL, color);
 }
 
 void dred_textbox_set_border_color(dred_textbox* pTextBox, dred_color color)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->borderColor = color;
+    pTextBox->borderColor = color;
 }
 
 void dred_textbox_set_border_width(dred_textbox* pTextBox, float borderWidth)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->borderWidth = borderWidth;
+    pTextBox->borderWidth = borderWidth;
 }
 
 void dred_textbox_set_padding(dred_textbox* pTextBox, float padding)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->padding = padding;
+    pTextBox->padding = padding;
 }
 
 float dred_textbox_get_padding_vert(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
-    return pTB->padding;
+    return pTextBox->padding;
 }
 
 float dred_textbox_get_padding_horz(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
-    return pTB->padding;
+    return pTextBox->padding;
 }
 
 void dred_textbox_set_line_numbers_width(dred_textbox* pTextBox, float lineNumbersWidth)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->lineNumbersWidth = lineNumbersWidth;
+    pTextBox->lineNumbersWidth = lineNumbersWidth;
 }
 
 float dred_textbox_get_line_numbers_width(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
-    return pTB->lineNumbersWidth;
+    return pTextBox->lineNumbersWidth;
 }
 
 void dred_textbox_set_line_numbers_padding(dred_textbox* pTextBox, float lineNumbersPadding)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->lineNumbersPaddingRight = lineNumbersPadding;
+    pTextBox->lineNumbersPaddingRight = lineNumbersPadding;
 }
 
 float dred_textbox_get_line_numbers_padding(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
-    return pTB->lineNumbersPaddingRight;
+    return pTextBox->lineNumbersPaddingRight;
 }
 
 void dred_textbox_set_line_numbers_color(dred_textbox* pTextBox, dred_color color)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    //pTB->lineNumbersColor = color;
-    pTB->lineNumbersStyle.fgColor = color;
+    //pTextBox->lineNumbersColor = color;
+    pTextBox->lineNumbersStyle.fgColor = color;
     dred_textbox__refresh_style(pTextBox);
     dred_textbox__refresh_line_numbers(pTextBox);
 }
 
 dred_color dred_textbox_get_line_numbers_color(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return dred_rgb(0, 0, 0);
     }
 
-    return pTB->lineNumbersStyle.fgColor;
+    return pTextBox->lineNumbersStyle.fgColor;
 }
 
 void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, dred_color color)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
     
-    pTB->lineNumbersStyle.bgColor = color;
+    pTextBox->lineNumbersStyle.bgColor = color;
     dred_textbox__refresh_style(pTextBox);
     dred_textbox__refresh_line_numbers(pTextBox);
 }
 
 dred_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return dred_rgb(0, 0, 0);
     }
 
-    return pTB->lineNumbersStyle.bgColor;
+    return pTextBox->lineNumbersStyle.bgColor;
 }
 
 void dred_textbox_set_scrollbar_track_color(dred_textbox* pTextBox, dred_color color)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    dred_scrollbar_set_track_color(pTB->pHorzScrollbar, color);
-    dred_scrollbar_set_track_color(pTB->pVertScrollbar, color);
+    dred_scrollbar_set_track_color(pTextBox->pHorzScrollbar, color);
+    dred_scrollbar_set_track_color(pTextBox->pVertScrollbar, color);
 }
 
 void dred_textbox_set_scrollbar_thumb_color(dred_textbox* pTextBox, dred_color color)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    dred_scrollbar_set_default_thumb_color(pTB->pHorzScrollbar, color);
-    dred_scrollbar_set_default_thumb_color(pTB->pVertScrollbar, color);
+    dred_scrollbar_set_default_thumb_color(pTextBox->pHorzScrollbar, color);
+    dred_scrollbar_set_default_thumb_color(pTextBox->pVertScrollbar, color);
 }
 
 void dred_textbox_set_scrollbar_thumb_color_hovered(dred_textbox* pTextBox, dred_color color)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    dred_scrollbar_set_hovered_thumb_color(pTB->pHorzScrollbar, color);
-    dred_scrollbar_set_hovered_thumb_color(pTB->pVertScrollbar, color);
+    dred_scrollbar_set_hovered_thumb_color(pTextBox->pHorzScrollbar, color);
+    dred_scrollbar_set_hovered_thumb_color(pTextBox->pVertScrollbar, color);
 }
 
 void dred_textbox_set_scrollbar_thumb_color_pressed(dred_textbox* pTextBox, dred_color color)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    dred_scrollbar_set_pressed_thumb_color(pTB->pHorzScrollbar, color);
-    dred_scrollbar_set_pressed_thumb_color(pTB->pVertScrollbar, color);
+    dred_scrollbar_set_pressed_thumb_color(pTextBox->pHorzScrollbar, color);
+    dred_scrollbar_set_pressed_thumb_color(pTextBox->pVertScrollbar, color);
 }
 
 
 void dred_textbox_enable_word_wrap(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_enable_word_wrap(pTB->pTL);
+    drte_engine_enable_word_wrap(pTextBox->pTL);
 
     // Line numbers need to be redrawn.
     dred_textbox__refresh_line_numbers(pTextBox);
@@ -944,12 +793,11 @@ void dred_textbox_enable_word_wrap(dred_textbox* pTextBox)
 
 void dred_textbox_disable_word_wrap(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_disable_word_wrap(pTB->pTL);
+    drte_engine_disable_word_wrap(pTextBox->pTL);
 
     // Line numbers need to be redrawn.
     dred_textbox__refresh_line_numbers(pTextBox);
@@ -957,20 +805,18 @@ void dred_textbox_disable_word_wrap(dred_textbox* pTextBox)
 
 bool dred_textbox_is_word_wrap_enabled(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;
     }
 
-    return drte_engine_is_word_wrap_enabled(pTB->pTL);
+    return drte_engine_is_word_wrap_enabled(pTextBox->pTL);
 }
 
 
 
 void dred_textbox_set_text(dred_textbox* pTextBox, const char* text)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
@@ -978,194 +824,181 @@ void dred_textbox_set_text(dred_textbox* pTextBox, const char* text)
     // The cursors and selection regions need to be cancelled here to ensure they don't reference invalid regions due to a
     // change in text. This should not have any major usability issues, but it can be tweaked if need be.
     dred_textbox__clear_all_cursors(pTextBox);
-    drte_engine_deselect_all(pTB->pTL);    
-    size_t iCursorChar = drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+    drte_engine_deselect_all(pTextBox->pTL);    
+    size_t iCursorChar = drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
 
 
     // Set the text.
-    drte_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTextBox->pTL);
     {
-        drte_engine_set_text(pTB->pTL, text);
+        drte_engine_set_text(pTextBox->pTL, text);
     }
-    drte_engine_commit_undo_point(pTB->pTL);
+    drte_engine_commit_undo_point(pTextBox->pTL);
 
 
     // Restore cursors.
-    drte_engine_move_cursor_to_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iCursorChar);
+    drte_engine_move_cursor_to_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), iCursorChar);
 }
 
 size_t dred_textbox_get_text(dred_textbox* pTextBox, char* pTextOut, size_t textOutSize)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
-    return drte_engine_get_text(pTB->pTL, pTextOut, textOutSize);
+    return drte_engine_get_text(pTextBox->pTL, pTextOut, textOutSize);
 }
 
 void dred_textbox_step(dred_textbox* pTextBox, unsigned int milliseconds)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_step(pTB->pTL, milliseconds);
+    drte_engine_step(pTextBox->pTL, milliseconds);
 }
 
 void dred_textbox_set_cursor_blink_rate(dred_textbox* pTextBox, unsigned int blinkRateInMilliseconds)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_set_cursor_blink_rate(pTB->pTL, blinkRateInMilliseconds);
+    drte_engine_set_cursor_blink_rate(pTextBox->pTL, blinkRateInMilliseconds);
 }
 
 void dred_textbox_move_cursor_to_end_of_text(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_move_cursor_to_end_of_text(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+    drte_engine_move_cursor_to_end_of_text(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
 }
 
 void dred_textbox_move_cursor_to_start_of_line_by_index(dred_textbox* pTextBox, size_t iLine)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iLine);
+    drte_engine_move_cursor_to_start_of_line_by_index(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), iLine);
 }
 
 
 bool dred_textbox_is_anything_selected(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;
     }
 
-    return drte_engine_is_anything_selected(pTB->pTL);
+    return drte_engine_is_anything_selected(pTextBox->pTL);
 }
 
 void dred_textbox_select_all(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_select_all(pTB->pTL);
+    drte_engine_select_all(pTextBox->pTL);
 }
 
 void dred_textbox_deselect_all(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_deselect_all(pTB->pTL);
+    drte_engine_deselect_all(pTextBox->pTL);
     dred_textbox__clear_all_cursors(pTextBox);
 }
 
 size_t dred_textbox_get_selected_text(dred_textbox* pTextBox, char* textOut, size_t textOutLength)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
-    return drte_engine_get_selected_text(pTB->pTL, textOut, textOutLength);
+    return drte_engine_get_selected_text(pTextBox->pTL, textOut, textOutLength);
 }
 
 bool dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;
     }
 
     bool wasTextChanged = false;
-    drte_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTextBox->pTL);
     {
-        wasTextChanged = drte_engine_delete_character_to_right_of_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+        wasTextChanged = drte_engine_delete_character_to_right_of_cursor(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
     }
-    if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTextBox->pTL); }
 
     return wasTextChanged;
 }
 
 bool dred_textbox_delete_selected_text_no_undo(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;
     }
 
-    bool wasTextChanged = drte_engine_delete_selected_text(pTB->pTL, true);  // <-- "true" means to update the positions of cursors to compensate.
-    drte_engine_deselect_all(pTB->pTL);
+    bool wasTextChanged = drte_engine_delete_selected_text(pTextBox->pTL, true);  // <-- "true" means to update the positions of cursors to compensate.
+    drte_engine_deselect_all(pTextBox->pTL);
 
     return wasTextChanged;
 }
 
 bool dred_textbox_delete_selected_text(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;
     }
 
     bool wasTextChanged = false;
-    drte_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTextBox->pTL);
     {
         wasTextChanged = dred_textbox_delete_selected_text_no_undo(pTextBox);
     }
-    if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTextBox->pTL); }
 
     return wasTextChanged;
 }
 
 bool dred_textbox_insert_text_at_cursors_no_undo(dred_textbox* pTextBox, const char* text)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;
     }
 
     size_t insertedCharacterCount = strlen(text);
 
     bool wasTextChanged = false;
-    for (size_t iCursor = 0; iCursor < pTB->cursorCount; ++iCursor) {
-        size_t iChar = drte_engine_get_cursor_character(pTB->pTL, iCursor);
+    for (size_t iCursor = 0; iCursor < pTextBox->cursorCount; ++iCursor) {
+        size_t iChar = drte_engine_get_cursor_character(pTextBox->pTL, iCursor);
 
-        wasTextChanged = drte_engine_insert_text_at_cursor(pTB->pTL, iCursor, text) || wasTextChanged;
+        wasTextChanged = drte_engine_insert_text_at_cursor(pTextBox->pTL, iCursor, text) || wasTextChanged;
             
         // Cursors and selections after this cursor need to be updated.
-        for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
+        for (size_t iCursor2 = 0; iCursor2 < pTextBox->pTL->cursorCount; ++iCursor2) {
             if (iCursor != iCursor2) {
-                if (pTB->pTL->pCursors[iCursor2].iCharAbs >= iChar) {
-                    drte_engine_move_cursor_to_character(pTB->pTL, iCursor2, pTB->pTL->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
+                if (pTextBox->pTL->pCursors[iCursor2].iCharAbs >= iChar) {
+                    drte_engine_move_cursor_to_character(pTextBox->pTL, iCursor2, pTextBox->pTL->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
                 }
             }
         }
 
         // As with cursors, selections need to be updated too.
-        for (size_t iSelection = 0; iSelection < pTB->pTL->selectionCount; ++iSelection) {
-            drte_region selection = drte_region_normalize(pTB->pTL->pSelections[iSelection]);
+        for (size_t iSelection = 0; iSelection < pTextBox->pTL->selectionCount; ++iSelection) {
+            drte_region selection = drte_region_normalize(pTextBox->pTL->pSelections[iSelection]);
             if (selection.iCharBeg > iChar) {
-                pTB->pTL->pSelections[iSelection].iCharBeg += insertedCharacterCount;
-                pTB->pTL->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+                pTextBox->pTL->pSelections[iSelection].iCharBeg += insertedCharacterCount;
+                pTextBox->pTL->pSelections[iSelection].iCharEnd += insertedCharacterCount;
             } else {
                 if (selection.iCharEnd > iChar) {
-                    pTB->pTL->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+                    pTextBox->pTL->pSelections[iSelection].iCharEnd += insertedCharacterCount;
                 }
             }
         }
@@ -1176,42 +1009,40 @@ bool dred_textbox_insert_text_at_cursors_no_undo(dred_textbox* pTextBox, const c
 
 bool dred_textbox_insert_text_at_cursors(dred_textbox* pTextBox, const char* text)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;
     }
 
     bool wasTextChanged = false;
-    drte_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTextBox->pTL);
     {
         wasTextChanged = dred_textbox_insert_text_at_cursors_no_undo(pTextBox, text) || wasTextChanged;
     }
-    if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTextBox->pTL); }
 
     return wasTextChanged;
 }
 
 bool dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;
     }
 
-    drte_engine__begin_dirty(pTB->pTL);
+    drte_engine__begin_dirty(pTextBox->pTL);
 
     bool wasTextChanged = false;
-    drte_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTextBox->pTL);
     {
-        for (size_t iSelection = 0; iSelection < pTB->pTL->selectionCount; ++iSelection) {
-            size_t iLineBeg = drte_engine_get_selection_first_line(pTB->pTL, iSelection);
-            size_t iLineEnd = drte_engine_get_selection_last_line(pTB->pTL, iSelection);
+        for (size_t iSelection = 0; iSelection < pTextBox->pTL->selectionCount; ++iSelection) {
+            size_t iLineBeg = drte_engine_get_selection_first_line(pTextBox->pTL, iSelection);
+            size_t iLineEnd = drte_engine_get_selection_last_line(pTextBox->pTL, iSelection);
             if (iLineBeg != iLineEnd) {
                 for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
-                    size_t iLineChar = drte_engine_get_line_first_character(pTB->pTL, NULL, iLine);
+                    size_t iLineChar = drte_engine_get_line_first_character(pTextBox->pTL, NULL, iLine);
                     size_t iLineCharNonWS = iLineChar;
                     for (;;) {
-                        uint32_t c = drte_engine_get_utf32(pTB->pTL, iLineCharNonWS);
+                        uint32_t c = drte_engine_get_utf32(pTextBox->pTL, iLineCharNonWS);
                         if (c == '\0' || c == '\n' || !dr_is_whitespace(c)) {
                             break;
                         }
@@ -1221,17 +1052,17 @@ bool dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox)
 
                     if (iLineCharNonWS > iLineChar) {
                         size_t charactersRemovedCount = 0;
-                        uint32_t c = drte_engine_get_utf32(pTB->pTL, iLineChar);
+                        uint32_t c = drte_engine_get_utf32(pTextBox->pTL, iLineChar);
                         if (c == '\t') {
                             charactersRemovedCount = 1;
                         } else {
                             charactersRemovedCount = 0; //(iLineCharNonWS - iLineChar);
                             for (size_t iChar = iLineChar; iChar < iLineCharNonWS; ++iChar) {
-                                if (charactersRemovedCount >= drte_engine_get_tab_size(pTB->pTL)) {
+                                if (charactersRemovedCount >= drte_engine_get_tab_size(pTextBox->pTL)) {
                                     break;
                                 }
 
-                                c = drte_engine_get_utf32(pTB->pTL, iChar);
+                                c = drte_engine_get_utf32(pTextBox->pTL, iChar);
                                 if (c == '\t') {
                                     break;
                                 }
@@ -1240,23 +1071,23 @@ bool dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox)
                             }
                         }
 
-                        wasTextChanged = drte_engine_delete_text(pTB->pTL, iLineChar, iLineChar + charactersRemovedCount) || wasTextChanged;
+                        wasTextChanged = drte_engine_delete_text(pTextBox->pTL, iLineChar, iLineChar + charactersRemovedCount) || wasTextChanged;
 
                         // Cursors and selections need to be updated.
-                        for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
-                            if (pTB->pTL->pCursors[iCursor2].iCharAbs >= iLineChar) {
-                                drte_engine_move_cursor_to_character(pTB->pTL, iCursor2, pTB->pTL->pCursors[iCursor2].iCharAbs - charactersRemovedCount);
+                        for (size_t iCursor2 = 0; iCursor2 < pTextBox->pTL->cursorCount; ++iCursor2) {
+                            if (pTextBox->pTL->pCursors[iCursor2].iCharAbs >= iLineChar) {
+                                drte_engine_move_cursor_to_character(pTextBox->pTL, iCursor2, pTextBox->pTL->pCursors[iCursor2].iCharAbs - charactersRemovedCount);
                             }
                         }
 
-                        for (size_t iSelection2 = 0; iSelection2 < pTB->pTL->selectionCount; ++iSelection2) {
-                            drte_region selection = drte_region_normalize(pTB->pTL->pSelections[iSelection2]);
+                        for (size_t iSelection2 = 0; iSelection2 < pTextBox->pTL->selectionCount; ++iSelection2) {
+                            drte_region selection = drte_region_normalize(pTextBox->pTL->pSelections[iSelection2]);
                             if (selection.iCharBeg > iLineChar + charactersRemovedCount) {
-                                pTB->pTL->pSelections[iSelection2].iCharBeg -= charactersRemovedCount;
-                                pTB->pTL->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
+                                pTextBox->pTL->pSelections[iSelection2].iCharBeg -= charactersRemovedCount;
+                                pTextBox->pTL->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
                             } else {
                                 if (selection.iCharEnd > iLineChar) {
-                                    pTB->pTL->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
+                                    pTextBox->pTL->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
                                 }
                             }
                         }
@@ -1265,108 +1096,99 @@ bool dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox)
             }
         }
     }
-    if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTextBox->pTL); }
 
-    drte_engine__end_dirty(pTB->pTL);
+    drte_engine__end_dirty(pTextBox->pTL);
 
     return wasTextChanged;
 }
 
 bool dred_textbox_undo(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;
     }
 
-    return drte_engine_undo(pTB->pTL);
+    return drte_engine_undo(pTextBox->pTL);
 }
 
 bool dred_textbox_redo(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;
     }
 
-    return drte_engine_redo(pTB->pTL);
+    return drte_engine_redo(pTextBox->pTL);
 }
 
 unsigned int dred_textbox_get_undo_points_remaining_count(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;
     }
 
-    return drte_engine_get_undo_points_remaining_count(pTB->pTL);
+    return drte_engine_get_undo_points_remaining_count(pTextBox->pTL);
 }
 
 unsigned int dred_textbox_get_redo_points_remaining_count(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;
     }
 
-    return drte_engine_get_redo_points_remaining_count(pTB->pTL);
+    return drte_engine_get_redo_points_remaining_count(pTextBox->pTL);
 }
 
 void dred_textbox_clear_undo_stack(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_clear_undo_stack(pTB->pTL);
+    drte_engine_clear_undo_stack(pTextBox->pTL);
 }
 
 
 size_t dred_textbox_get_cursor_line(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
-    return drte_engine_get_cursor_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+    return drte_engine_get_cursor_line(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
 }
 
 size_t dred_textbox_get_cursor_column(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
-    return drte_engine_get_cursor_column(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+    return drte_engine_get_cursor_column(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
 }
 
 size_t dred_textbox_get_line_count(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
-    return drte_engine_get_line_count(pTB->pTL);
+    return drte_engine_get_line_count(pTextBox->pTL);
 }
 
 
 bool dred_textbox_find_and_select_next(dred_textbox* pTextBox, const char* text)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
     size_t selectionStart;
     size_t selectionEnd;
-    if (drte_engine_find_next(pTB->pTL, text, &selectionStart, &selectionEnd))
+    if (drte_engine_find_next(pTextBox->pTL, text, &selectionStart, &selectionEnd))
     {
-        drte_engine_select(pTB->pTL, selectionStart, selectionEnd);
-        drte_engine_move_cursor_to_end_of_selection(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+        drte_engine_select(pTextBox->pTL, selectionStart, selectionEnd);
+        drte_engine_move_cursor_to_end_of_selection(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
 
         return true;
     }
@@ -1376,77 +1198,75 @@ bool dred_textbox_find_and_select_next(dred_textbox* pTextBox, const char* text)
 
 bool dred_textbox_find_and_replace_next(dred_textbox* pTextBox, const char* text, const char* replacement)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
     bool wasTextChanged = false;
-    drte_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTextBox->pTL);
     {
         size_t selectionStart;
         size_t selectionEnd;
-        if (drte_engine_find_next(pTB->pTL, text, &selectionStart, &selectionEnd))
+        if (drte_engine_find_next(pTextBox->pTL, text, &selectionStart, &selectionEnd))
         {
-            drte_engine_select(pTB->pTL, selectionStart, selectionEnd);
-            drte_engine_move_cursor_to_end_of_selection(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+            drte_engine_select(pTextBox->pTL, selectionStart, selectionEnd);
+            drte_engine_move_cursor_to_end_of_selection(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
 
             wasTextChanged = dred_textbox_delete_selected_text_no_undo(pTextBox) || wasTextChanged;
-            wasTextChanged = drte_engine_insert_text_at_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), replacement) || wasTextChanged;
+            wasTextChanged = drte_engine_insert_text_at_cursor(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), replacement) || wasTextChanged;
         }
     }
-    if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTextBox->pTL); }
 
     return wasTextChanged;
 }
 
 bool dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text, const char* replacement)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
-    size_t originalCursorLine = drte_engine_get_cursor_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
-    size_t originalCursorPos = drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)) - drte_engine_get_line_first_character(pTB->pTL, NULL, originalCursorLine);
-    int originalScrollPosX = dred_scrollbar_get_scroll_position(pTB->pHorzScrollbar);
-    int originalScrollPosY = dred_scrollbar_get_scroll_position(pTB->pVertScrollbar);
+    size_t originalCursorLine = drte_engine_get_cursor_line(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
+    size_t originalCursorPos = drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)) - drte_engine_get_line_first_character(pTextBox->pTL, NULL, originalCursorLine);
+    int originalScrollPosX = dred_scrollbar_get_scroll_position(pTextBox->pHorzScrollbar);
+    int originalScrollPosY = dred_scrollbar_get_scroll_position(pTextBox->pVertScrollbar);
 
     bool wasTextChanged = false;
-    drte_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTextBox->pTL);
     {
         // It's important that we don't replace the replacement text. To handle this, we just move the cursor to the top of the text and find
         // and replace every occurance without looping.
-        drte_engine_move_cursor_to_start_of_text(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+        drte_engine_move_cursor_to_start_of_text(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
 
         size_t selectionStart;
         size_t selectionEnd;
-        while (drte_engine_find_next_no_loop(pTB->pTL, text, &selectionStart, &selectionEnd))
+        while (drte_engine_find_next_no_loop(pTextBox->pTL, text, &selectionStart, &selectionEnd))
         {
-            drte_engine_select(pTB->pTL, selectionStart, selectionEnd);
-            drte_engine_move_cursor_to_end_of_selection(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+            drte_engine_select(pTextBox->pTL, selectionStart, selectionEnd);
+            drte_engine_move_cursor_to_end_of_selection(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
 
             wasTextChanged = dred_textbox_delete_selected_text_no_undo(pTextBox) || wasTextChanged;
-            wasTextChanged = drte_engine_insert_text_at_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), replacement) || wasTextChanged;
+            wasTextChanged = drte_engine_insert_text_at_cursor(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), replacement) || wasTextChanged;
         }
 
         // The cursor may have moved so we'll need to restore it.
         size_t lineCharStart;
         size_t lineCharEnd;
-        drte_engine_get_line_character_range(pTB->pTL, NULL, originalCursorLine, &lineCharStart, &lineCharEnd);
+        drte_engine_get_line_character_range(pTextBox->pTL, NULL, originalCursorLine, &lineCharStart, &lineCharEnd);
 
         size_t newCursorPos = lineCharStart + originalCursorPos;
         if (newCursorPos > lineCharEnd) {
             newCursorPos = lineCharEnd;
         }
-        drte_engine_move_cursor_to_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), newCursorPos);
+        drte_engine_move_cursor_to_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), newCursorPos);
     }
-    if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTextBox->pTL); }
 
 
     // The scroll positions may have moved so we'll need to restore them.
-    dred_scrollbar_scroll_to(pTB->pHorzScrollbar, originalScrollPosX);
-    dred_scrollbar_scroll_to(pTB->pVertScrollbar, originalScrollPosY);
+    dred_scrollbar_scroll_to(pTextBox->pHorzScrollbar, originalScrollPosX);
+    dred_scrollbar_scroll_to(pTextBox->pVertScrollbar, originalScrollPosY);
 
     return wasTextChanged;
 }
@@ -1454,132 +1274,121 @@ bool dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text,
 
 void dred_textbox_show_line_numbers(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    dred_control_show(pTB->pLineNumbers);
+    dred_control_show(pTextBox->pLineNumbers);
     dred_textbox__refresh_line_numbers(pTextBox);
 }
 
 void dred_textbox_hide_line_numbers(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    dred_control_hide(pTB->pLineNumbers);
+    dred_control_hide(pTextBox->pLineNumbers);
     dred_textbox__refresh_line_numbers(pTextBox);
 }
 
 
 void dred_textbox_disable_vertical_scrollbar(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    if (pTB->isVertScrollbarEnabled) {
-        pTB->isVertScrollbarEnabled = false;
+    if (pTextBox->isVertScrollbarEnabled) {
+        pTextBox->isVertScrollbarEnabled = false;
         dred_textbox__refresh_scrollbars(pTextBox);
     }
 }
 
 void dred_textbox_enable_vertical_scrollbar(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    if (!pTB->isVertScrollbarEnabled) {
-        pTB->isVertScrollbarEnabled = true;
+    if (!pTextBox->isVertScrollbarEnabled) {
+        pTextBox->isVertScrollbarEnabled = true;
         dred_textbox__refresh_scrollbars(pTextBox);
     }
 }
 
 void dred_textbox_disable_horizontal_scrollbar(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    if (pTB->isHorzScrollbarEnabled) {
-        pTB->isHorzScrollbarEnabled = false;
+    if (pTextBox->isHorzScrollbarEnabled) {
+        pTextBox->isHorzScrollbarEnabled = false;
         dred_textbox__refresh_scrollbars(pTextBox);
     }
 }
 
 void dred_textbox_enable_horizontal_scrollbar(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    if (!pTB->isHorzScrollbarEnabled) {
-        pTB->isHorzScrollbarEnabled = true;
+    if (!pTextBox->isHorzScrollbarEnabled) {
+        pTextBox->isHorzScrollbarEnabled = true;
         dred_textbox__refresh_scrollbars(pTextBox);
     }
 }
 
-dred_control* dred_textbox_get_vertical_scrollbar(dred_textbox* pTextBox)
+dred_scrollbar* dred_textbox_get_vertical_scrollbar(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return NULL;
     }
 
-    return pTB->pVertScrollbar;
+    return pTextBox->pVertScrollbar;
 }
 
-dred_control* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox)
+dred_scrollbar* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return NULL;
     }
 
-    return pTB->pHorzScrollbar;
+    return pTextBox->pHorzScrollbar;
 }
 
 void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, float size)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->horzScrollbarSize = size;
-    pTB->vertScrollbarSize = size;
+    pTextBox->horzScrollbarSize = size;
+    pTextBox->vertScrollbarSize = size;
 
     dred_textbox__refresh_scrollbars(pTextBox);
 }
 
 void dred_textbox_enable_excess_scrolling(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->isExcessScrollingEnabled = true;
+    pTextBox->isExcessScrollingEnabled = true;
 
     dred_textbox__refresh_scrollbars(pTextBox);
 }
 
 void dred_textbox_disable_excess_scrolling(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->isExcessScrollingEnabled = false;
+    pTextBox->isExcessScrollingEnabled = false;
 
     dred_textbox__refresh_scrollbars(pTextBox);
 }
@@ -1587,105 +1396,96 @@ void dred_textbox_disable_excess_scrolling(dred_textbox* pTextBox)
 
 void dred_textbox_set_tab_size_in_spaces(dred_textbox* pTextBox, unsigned int tabSizeInSpaces)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_set_tab_size(pTB->pTL, tabSizeInSpaces);
+    drte_engine_set_tab_size(pTextBox->pTL, tabSizeInSpaces);
 }
 
 unsigned int dred_textbox_get_tab_size_in_spaces(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
-    return drte_engine_get_tab_size(pTB->pTL);
+    return drte_engine_get_tab_size(pTextBox->pTL);
 }
 
 
 void dred_textbox_enable_tabs_to_spaces(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->isTabsToSpacesEnabled = true;
+    pTextBox->isTabsToSpacesEnabled = true;
 }
 
 void dred_textbox_disable_tabs_to_spaces(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->isTabsToSpacesEnabled = false;
+    pTextBox->isTabsToSpacesEnabled = false;
 }
 
 bool dred_textbox_is_tabs_to_spaces_enabled(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;;
     }
 
-    return pTB->isTabsToSpacesEnabled;
+    return pTextBox->isTabsToSpacesEnabled;
 }
 
 
 bool dred_textbox_prepare_undo_point(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;;
     }
 
-    return drte_engine_prepare_undo_point(pTB->pTL);
+    return drte_engine_prepare_undo_point(pTextBox->pTL);
 }
 
 bool dred_textbox_commit_undo_point(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return false;;
     }
 
-    return drte_engine_commit_undo_point(pTB->pTL);
+    return drte_engine_commit_undo_point(pTextBox->pTL);
 }
 
 
 void dred_textbox_set_on_cursor_move(dred_textbox* pTextBox, dred_textbox_on_cursor_move_proc proc)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->onCursorMove = proc;
+    pTextBox->onCursorMove = proc;
 }
 
 void dred_textbox_set_on_undo_point_changed(dred_textbox* pTextBox, dred_textbox_on_undo_point_changed_proc proc)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    pTB->onUndoPointChanged = proc;
+    pTextBox->onUndoPointChanged = proc;
 }
 
 
-void dred_textbox_on_size(dred_textbox* pTextBox, float newWidth, float newHeight)
+void dred_textbox_on_size(dred_control* pControl, float newWidth, float newHeight)
 {
     (void)newWidth;
     (void)newHeight;
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
+    if (pTextBox == NULL) {
         return;
     }
 
@@ -1695,7 +1495,7 @@ void dred_textbox_on_size(dred_textbox* pTextBox, float newWidth, float newHeigh
     dred_textbox__calculate_text_engine_container_size(pTextBox, &containerWidth, &containerHeight);
 
     if (containerWidth != newWidth || containerHeight != newHeight) {
-        drte_engine_set_container_size(pTB->pTL, containerWidth, containerHeight);
+        drte_engine_set_container_size(pTextBox->pTL, containerWidth, containerHeight);
 
         // Scrollbars need to be refreshed first.
         dred_textbox__refresh_scrollbars(pTextBox);
@@ -1705,76 +1505,76 @@ void dred_textbox_on_size(dred_textbox* pTextBox, float newWidth, float newHeigh
     }
 }
 
-void dred_textbox_on_mouse_move(dred_textbox* pTextBox, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textbox_on_mouse_move(dred_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)stateFlags;
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
+    if (pTextBox == NULL) {
         return;
     }
 
-    if (dred_gui_get_element_with_mouse_capture(pTextBox->pGUI) == pTextBox)
+    if (dred_gui_get_element_with_mouse_capture(dred_control_get_gui(pControl)) == pControl)
     {
         float offsetX;
         float offsetY;
         dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
-        drte_engine__begin_dirty(pTB->pTL);
+        drte_engine__begin_dirty(pTextBox->pTL);
         {
-            size_t iPrevCursorChar = drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+            size_t iPrevCursorChar = drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
 
-            if (pTB->isDoingWordSelect) {
+            if (pTextBox->isDoingWordSelect) {
                 size_t iWordCharBeg;
                 size_t iWordCharEnd;
-                if (drte_engine_get_word_under_point(pTB->pTL, relativeMousePosX - offsetX, relativeMousePosY - offsetY, &iWordCharBeg, &iWordCharEnd)) {
-                    if (iWordCharEnd < pTB->wordSelectionAnchor.iCharEnd) {
-                        pTB->pTL->pSelections[pTB->pTL->selectionCount-1].iCharBeg = pTB->wordSelectionAnchor.iCharEnd;
-                        pTB->pTL->pSelections[pTB->pTL->selectionCount-1].iCharEnd = iWordCharBeg;
+                if (drte_engine_get_word_under_point(pTextBox->pTL, relativeMousePosX - offsetX, relativeMousePosY - offsetY, &iWordCharBeg, &iWordCharEnd)) {
+                    if (iWordCharEnd < pTextBox->wordSelectionAnchor.iCharEnd) {
+                        pTextBox->pTL->pSelections[pTextBox->pTL->selectionCount-1].iCharBeg = pTextBox->wordSelectionAnchor.iCharEnd;
+                        pTextBox->pTL->pSelections[pTextBox->pTL->selectionCount-1].iCharEnd = iWordCharBeg;
                     } else {
-                        pTB->pTL->pSelections[pTB->pTL->selectionCount-1].iCharBeg = pTB->wordSelectionAnchor.iCharBeg;
-                        pTB->pTL->pSelections[pTB->pTL->selectionCount-1].iCharEnd = iWordCharEnd;
+                        pTextBox->pTL->pSelections[pTextBox->pTL->selectionCount-1].iCharBeg = pTextBox->wordSelectionAnchor.iCharBeg;
+                        pTextBox->pTL->pSelections[pTextBox->pTL->selectionCount-1].iCharEnd = iWordCharEnd;
                     }
 
-                    drte_engine_move_cursor_to_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), pTB->pTL->pSelections[pTB->pTL->selectionCount-1].iCharEnd);
+                    drte_engine_move_cursor_to_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), pTextBox->pTL->pSelections[pTextBox->pTL->selectionCount-1].iCharEnd);
                 } else {
                     // There is no word under the point, so just fall back to standard character selection for this case.
-                    drte_engine_move_cursor_to_point(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
+                    drte_engine_move_cursor_to_point(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
                 }
             } else {
-                drte_engine_move_cursor_to_point(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
+                drte_engine_move_cursor_to_point(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
             }
 
-            size_t iNextCursorChar = drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+            size_t iNextCursorChar = drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
             if (iPrevCursorChar != iNextCursorChar) {
-                drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                drte_engine_set_selection_end_point(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
             }
         }
-        drte_engine__end_dirty(pTB->pTL);
+        drte_engine__end_dirty(pTextBox->pTL);
     }
 }
 
-void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textbox_on_mouse_button_down(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
+    if (pTextBox == NULL) {
         return;
     }
 
     // Focus the text editor.
-    dred_gui_capture_keyboard(pTextBox);
+    dred_gui_capture_keyboard(pControl);
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
-        pTB->isDoingWordSelect = false;
+        pTextBox->isDoingWordSelect = false;
 
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
-            if (!drte_engine_is_anything_selected(pTB->pTL)) {
-                drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+            if (!drte_engine_is_anything_selected(pTextBox->pTL)) {
+                drte_engine_begin_selection(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
             }
         } else {
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
-                drte_engine_deselect_all(pTB->pTL);
+                drte_engine_deselect_all(pTextBox->pTL);
                 dred_textbox__clear_all_cursors(pTextBox);
             }
         }
@@ -1785,25 +1585,25 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
         dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
         size_t iLine;
-        size_t iChar = drte_engine_get_character_by_point_relative_to_container(pTB->pTL, NULL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY, &iLine);
+        size_t iChar = drte_engine_get_character_by_point_relative_to_container(pTextBox->pTL, NULL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY, &iLine);
 
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
-            drte_engine_set_selection_end_point(pTB->pTL, iChar);
+            drte_engine_set_selection_end_point(pTextBox->pTL, iChar);
         } else {
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
                 dred_textbox__insert_cursor(pTextBox, iChar);
             }
 
-            drte_engine_begin_selection(pTB->pTL, iChar);
+            drte_engine_begin_selection(pTextBox->pTL, iChar);
         }
         
 
-        drte_engine_move_cursor_to_character_and_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iChar, iLine);
-        drte_engine__update_cursor_sticky_position(pTB->pTL, &pTB->pTL->pCursors[drte_engine_get_last_cursor(pTB->pTL)]);
+        drte_engine_move_cursor_to_character_and_line(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), iChar, iLine);
+        drte_engine__update_cursor_sticky_position(pTextBox->pTL, &pTextBox->pTL->pCursors[drte_engine_get_last_cursor(pTextBox->pTL)]);
 
 
         // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
-        dred_gui_capture_mouse(pTextBox);
+        dred_gui_capture_mouse(pControl);
     }
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_RIGHT)
@@ -1811,46 +1611,46 @@ void dred_textbox_on_mouse_button_down(dred_textbox* pTextBox, int mouseButton, 
     }
 }
 
-void dred_textbox_on_mouse_button_up(dred_textbox* pTextBox, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textbox_on_mouse_button_up(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
     (void)relativeMousePosY;
     (void)stateFlags;
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
+    if (pTextBox == NULL) {
         return;
     }
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
-        if (dred_gui_get_element_with_mouse_capture(pTextBox->pGUI) == pTextBox)
+        if (dred_gui_get_element_with_mouse_capture(pControl->pGUI) == pControl)
         {
             // When we first pressed the mouse we may have started a new selection. If we never ended up selecting anything we'll want to
             // cancel that selection.
             size_t iCharBeg;
             size_t iCharEnd;
-            if (drte_engine_get_last_selection(pTB->pTL, &iCharBeg, &iCharEnd)) {
+            if (drte_engine_get_last_selection(pTextBox->pTL, &iCharBeg, &iCharEnd)) {
                 if (iCharBeg == iCharEnd) {
-                    drte_engine_cancel_last_selection(pTB->pTL);
+                    drte_engine_cancel_last_selection(pTextBox->pTL);
                 }
             }
 
             // Releasing the mouse will leave selectionmode.
-            dred_gui_release_mouse(pTextBox->pGUI);
+            dred_gui_release_mouse(pControl->pGUI);
         }
     }
 }
 
-void dred_textbox_on_mouse_button_dblclick(dred_textbox* pTextBox, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textbox_on_mouse_button_dblclick(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)mouseButton;
     (void)relativeMousePosX;
     (void)relativeMousePosY;
     (void)stateFlags;
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
+    if (pTextBox == NULL) {
         return;
     }
 
@@ -1858,50 +1658,50 @@ void dred_textbox_on_mouse_button_dblclick(dred_textbox* pTextBox, int mouseButt
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) == 0) {
             // If the control key is not being held down make sure other selection regions are cleared.
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
-                drte_engine_deselect_all(pTB->pTL);
+                drte_engine_deselect_all(pTextBox->pTL);
             }
             
-            drte_engine_select_word_under_cursor(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+            drte_engine_select_word_under_cursor(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
 
-            if (pTB->pTL->selectionCount > 0) {
+            if (pTextBox->pTL->selectionCount > 0) {
                 
             }
 
             size_t iCharBeg;
             size_t iCharEnd;
-            if (drte_engine_get_last_selection(pTB->pTL, &iCharBeg, &iCharEnd)) {
-                drte_engine_move_cursor_to_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iCharEnd);
+            if (drte_engine_get_last_selection(pTextBox->pTL, &iCharBeg, &iCharEnd)) {
+                drte_engine_move_cursor_to_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), iCharEnd);
 
-                pTB->isDoingWordSelect = true;
-                pTB->wordSelectionAnchor.iCharBeg = iCharBeg;
-                pTB->wordSelectionAnchor.iCharEnd = iCharEnd;
+                pTextBox->isDoingWordSelect = true;
+                pTextBox->wordSelectionAnchor.iCharBeg = iCharBeg;
+                pTextBox->wordSelectionAnchor.iCharEnd = iCharEnd;
             }
         }
     }
 }
 
-void dred_textbox_on_mouse_wheel(dred_textbox* pTextBox, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textbox_on_mouse_wheel(dred_control* pControl, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
     (void)relativeMousePosY;
     (void)stateFlags;
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
+    if (pTextBox == NULL) {
         return;
     }
 
-    dred_scrollbar_scroll(pTB->pVertScrollbar, -delta * dred_scrollbar_get_mouse_wheel_scale(pTB->pVertScrollbar));
+    dred_scrollbar_scroll(pTextBox->pVertScrollbar, -delta * dred_scrollbar_get_mouse_wheel_scale(pTextBox->pVertScrollbar));
 }
 
-void dred_textbox_on_key_down(dred_textbox* pTextBox, dred_key key, int stateFlags)
+void dred_textbox_on_key_down(dred_control* pControl, dred_key key, int stateFlags)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine__begin_dirty(pTB->pTL);
+    drte_engine__begin_dirty(pTextBox->pTL);
 
     bool isShiftDown = (stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0;
     bool isCtrlDown  = (stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0;
@@ -1911,57 +1711,57 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, dred_key key, int stateFla
         case DRED_GUI_BACKSPACE:
         {
             bool wasTextChanged = false;
-            drte_engine_prepare_undo_point(pTB->pTL);
+            drte_engine_prepare_undo_point(pTextBox->pTL);
             {
-                if (drte_engine_is_anything_selected(pTB->pTL)) {
+                if (drte_engine_is_anything_selected(pTextBox->pTL)) {
                     wasTextChanged = dred_textbox_delete_selected_text_no_undo(pTextBox);
-                    drte_engine_remove_overlapping_cursors(pTB->pTL);
+                    drte_engine_remove_overlapping_cursors(pTextBox->pTL);
                 } else {
-                    wasTextChanged = drte_engine_delete_character_to_left_of_cursors(pTB->pTL, pTB->pTL->cursorCount > 1);  // <-- Last argument controls whether or not new lines should block deletion.
+                    wasTextChanged = drte_engine_delete_character_to_left_of_cursors(pTextBox->pTL, pTextBox->pTL->cursorCount > 1);  // <-- Last argument controls whether or not new lines should block deletion.
                 }
             }
-            if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
+            if (wasTextChanged) { drte_engine_commit_undo_point(pTextBox->pTL); }
         } break;
 
         case DRED_GUI_DELETE:
         {
             bool wasTextChanged = false;
-            drte_engine_prepare_undo_point(pTB->pTL);
+            drte_engine_prepare_undo_point(pTextBox->pTL);
             {
-                if (drte_engine_is_anything_selected(pTB->pTL)) {
+                if (drte_engine_is_anything_selected(pTextBox->pTL)) {
                     wasTextChanged = dred_textbox_delete_selected_text_no_undo(pTextBox);
-                    drte_engine_remove_overlapping_cursors(pTB->pTL);
+                    drte_engine_remove_overlapping_cursors(pTextBox->pTL);
                 } else {
-                    wasTextChanged = drte_engine_delete_character_to_right_of_cursors(pTB->pTL, pTB->pTL->cursorCount > 1); // <-- Last argument controls whether or not new lines should block deletion.
+                    wasTextChanged = drte_engine_delete_character_to_right_of_cursors(pTextBox->pTL, pTextBox->pTL->cursorCount > 1); // <-- Last argument controls whether or not new lines should block deletion.
                 }
             }
-            if (wasTextChanged) { drte_engine_commit_undo_point(pTB->pTL); }
+            if (wasTextChanged) { drte_engine_commit_undo_point(pTextBox->pTL); }
         } break;
 
 
         case DRED_GUI_ARROW_LEFT:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
+            if (drte_engine_is_anything_selected(pTextBox->pTL) && !isShiftDown) {
                 dred_textbox__move_cursor_to_start_of_selection(pTextBox, NULL);
                 dred_textbox_deselect_all(pTextBox);
             } else {
-                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
-                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                if ((!drte_engine_is_anything_selected(pTextBox->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
                 }
 
                 if (isCtrlDown) {
-                    drte_engine_move_cursor_to_start_of_word(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                    drte_engine_move_cursor_to_start_of_word(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
                 } else {
-                    drte_engine_move_cursor_left(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                    drte_engine_move_cursor_left(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
                 }
 
                 if (isShiftDown) {
-                    drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                    drte_engine_set_selection_end_point(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
 
                     size_t iSelCharBeg;
                     size_t iSelCharEnd;
-                    if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                        drte_engine_cancel_last_selection(pTB->pTL);
+                    if (drte_engine_get_last_selection(pTextBox->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                        drte_engine_cancel_last_selection(pTextBox->pTL);
                     }
                 }
             }
@@ -1969,27 +1769,27 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, dred_key key, int stateFla
 
         case DRED_GUI_ARROW_RIGHT:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
+            if (drte_engine_is_anything_selected(pTextBox->pTL) && !isShiftDown) {
                 dred_textbox__move_cursor_to_end_of_selection(pTextBox, NULL);
                 dred_textbox_deselect_all(pTextBox);
             } else {
-                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
-                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                if ((!drte_engine_is_anything_selected(pTextBox->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
                 }
 
                 if (isCtrlDown) {
-                    drte_engine_move_cursor_to_start_of_next_word(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                    drte_engine_move_cursor_to_start_of_next_word(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
                 } else {
-                    drte_engine_move_cursor_right(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                    drte_engine_move_cursor_right(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
                 }
 
                 if (isShiftDown) {
-                    drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                    drte_engine_set_selection_end_point(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
 
                     size_t iSelCharBeg;
                     size_t iSelCharEnd;
-                    if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                        drte_engine_cancel_last_selection(pTB->pTL);
+                    if (drte_engine_get_last_selection(pTextBox->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                        drte_engine_cancel_last_selection(pTextBox->pTL);
                     }
                 }
             }
@@ -1997,46 +1797,46 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, dred_key key, int stateFla
 
         case DRED_GUI_ARROW_UP:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
+            if (drte_engine_is_anything_selected(pTextBox->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
             } else {
-                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
-                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                if ((!drte_engine_is_anything_selected(pTextBox->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
                 }
             }
 
-            drte_engine_move_cursor_up(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+            drte_engine_move_cursor_up(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
 
             if (isShiftDown) {
-                drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                drte_engine_set_selection_end_point(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
 
                 size_t iSelCharBeg;
                 size_t iSelCharEnd;
-                if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                    drte_engine_cancel_last_selection(pTB->pTL);
+                if (drte_engine_get_last_selection(pTextBox->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_engine_cancel_last_selection(pTextBox->pTL);
                 }
             }
         } break;
 
         case DRED_GUI_ARROW_DOWN:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
+            if (drte_engine_is_anything_selected(pTextBox->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
             } else {
-                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
-                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                if ((!drte_engine_is_anything_selected(pTextBox->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
                 }
             }
 
-            drte_engine_move_cursor_down(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+            drte_engine_move_cursor_down(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
 
             if (isShiftDown) {
-                drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                drte_engine_set_selection_end_point(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
 
                 size_t iSelCharBeg;
                 size_t iSelCharEnd;
-                if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                    drte_engine_cancel_last_selection(pTB->pTL);
+                if (drte_engine_get_last_selection(pTextBox->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_engine_cancel_last_selection(pTextBox->pTL);
                 }
             }
         } break;
@@ -2044,126 +1844,126 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, dred_key key, int stateFla
 
         case DRED_GUI_END:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
+            if (drte_engine_is_anything_selected(pTextBox->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
             } else {
-                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
-                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                if ((!drte_engine_is_anything_selected(pTextBox->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
                 }
             }
 
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
-                drte_engine_move_cursor_to_end_of_text(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                drte_engine_move_cursor_to_end_of_text(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
             } else {
-                if (drte_engine_is_cursor_at_end_of_wrapped_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL))) {
-                    drte_engine_move_cursor_to_end_of_unwrapped_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                if (drte_engine_is_cursor_at_end_of_wrapped_line(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL))) {
+                    drte_engine_move_cursor_to_end_of_unwrapped_line(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
                 } else {
-                    drte_engine_move_cursor_to_end_of_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                    drte_engine_move_cursor_to_end_of_line(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
                 }
             }
 
             if (isShiftDown) {
-                drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                drte_engine_set_selection_end_point(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
 
                 size_t iSelCharBeg;
                 size_t iSelCharEnd;
-                if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                    drte_engine_cancel_last_selection(pTB->pTL);
+                if (drte_engine_get_last_selection(pTextBox->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_engine_cancel_last_selection(pTextBox->pTL);
                 }
             }
 
-            drte_engine__update_cursor_sticky_position(pTB->pTL, &pTB->pTL->pCursors[drte_engine_get_last_cursor(pTB->pTL)]);
+            drte_engine__update_cursor_sticky_position(pTextBox->pTL, &pTextBox->pTL->pCursors[drte_engine_get_last_cursor(pTextBox->pTL)]);
         } break;
 
         case DRED_GUI_HOME:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
+            if (drte_engine_is_anything_selected(pTextBox->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
             } else {
-                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
-                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                if ((!drte_engine_is_anything_selected(pTextBox->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
                 }
             }
 
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
-                drte_engine_move_cursor_to_start_of_text(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                drte_engine_move_cursor_to_start_of_text(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
             } else {
-                if (drte_engine_is_cursor_at_start_of_wrapped_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL))) {
-                    drte_engine_move_cursor_to_start_of_unwrapped_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                if (drte_engine_is_cursor_at_start_of_wrapped_line(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL))) {
+                    drte_engine_move_cursor_to_start_of_unwrapped_line(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
                 } else {
-                    drte_engine_move_cursor_to_start_of_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+                    drte_engine_move_cursor_to_start_of_line(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
                 }
             }
 
             if (isShiftDown) {
-                drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                drte_engine_set_selection_end_point(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
 
                 size_t iSelCharBeg;
                 size_t iSelCharEnd;
-                if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                    drte_engine_cancel_last_selection(pTB->pTL);
+                if (drte_engine_get_last_selection(pTextBox->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_engine_cancel_last_selection(pTextBox->pTL);
                 }
             }
 
-            drte_engine__update_cursor_sticky_position(pTB->pTL, &pTB->pTL->pCursors[drte_engine_get_last_cursor(pTB->pTL)]);
+            drte_engine__update_cursor_sticky_position(pTextBox->pTL, &pTextBox->pTL->pCursors[drte_engine_get_last_cursor(pTextBox->pTL)]);
         } break;
 
         case DRED_GUI_PAGE_UP:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
+            if (drte_engine_is_anything_selected(pTextBox->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
             } else {
-                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
-                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                if ((!drte_engine_is_anything_selected(pTextBox->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
                 }
             }
 
-            int scrollOffset = dred_scrollbar_get_page_size(pTB->pVertScrollbar);
+            int scrollOffset = dred_scrollbar_get_page_size(pTextBox->pVertScrollbar);
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
-                dred_scrollbar_scroll(pTB->pVertScrollbar, -scrollOffset);
+                dred_scrollbar_scroll(pTextBox->pVertScrollbar, -scrollOffset);
             }
 
-            drte_engine_move_cursor_y(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), -dred_scrollbar_get_page_size(pTB->pVertScrollbar));
+            drte_engine_move_cursor_y(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), -dred_scrollbar_get_page_size(pTextBox->pVertScrollbar));
 
             if (isShiftDown) {
-                drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                drte_engine_set_selection_end_point(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
 
                 size_t iSelCharBeg;
                 size_t iSelCharEnd;
-                if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                    drte_engine_cancel_last_selection(pTB->pTL);
+                if (drte_engine_get_last_selection(pTextBox->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_engine_cancel_last_selection(pTextBox->pTL);
                 }
             }
         } break;
 
         case DRED_GUI_PAGE_DOWN:
         {
-            if (drte_engine_is_anything_selected(pTB->pTL) && !isShiftDown) {
+            if (drte_engine_is_anything_selected(pTextBox->pTL) && !isShiftDown) {
                 dred_textbox_deselect_all(pTextBox);
             } else {
-                if ((!drte_engine_is_anything_selected(pTB->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
-                    drte_engine_begin_selection(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                if ((!drte_engine_is_anything_selected(pTextBox->pTL) || !dred_textbox__is_cursor_on_selection(pTextBox)) && isShiftDown) {
+                    drte_engine_begin_selection(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
                 }
             }
 
-            int scrollOffset = dred_scrollbar_get_page_size(pTB->pVertScrollbar);
-            if (scrollOffset > (int)(drte_engine_get_line_count(pTB->pTL) - drte_engine_get_cursor_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)))) {
+            int scrollOffset = dred_scrollbar_get_page_size(pTextBox->pVertScrollbar);
+            if (scrollOffset > (int)(drte_engine_get_line_count(pTextBox->pTL) - drte_engine_get_cursor_line(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)))) {
                 scrollOffset = 0;
             }
 
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
-                dred_scrollbar_scroll(pTB->pVertScrollbar, scrollOffset);
+                dred_scrollbar_scroll(pTextBox->pVertScrollbar, scrollOffset);
             }
 
-            drte_engine_move_cursor_y(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), dred_scrollbar_get_page_size(pTB->pVertScrollbar));
+            drte_engine_move_cursor_y(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), dred_scrollbar_get_page_size(pTextBox->pVertScrollbar));
 
             if (isShiftDown) {
-                drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+                drte_engine_set_selection_end_point(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
 
                 size_t iSelCharBeg;
                 size_t iSelCharEnd;
-                if (drte_engine_get_last_selection(pTB->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                    drte_engine_cancel_last_selection(pTB->pTL);
+                if (drte_engine_get_last_selection(pTextBox->pTL, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_engine_cancel_last_selection(pTextBox->pTL);
                 }
             }
 
@@ -2172,28 +1972,28 @@ void dred_textbox_on_key_down(dred_textbox* pTextBox, dred_key key, int stateFla
         default: break;
     }
 
-    drte_engine__end_dirty(pTB->pTL);
+    drte_engine__end_dirty(pTextBox->pTL);
 }
 
-void dred_textbox_on_key_up(dred_textbox* pTextBox, dred_key key, int stateFlags)
+void dred_textbox_on_key_up(dred_control* pControl, dred_key key, int stateFlags)
 {
-    (void)pTextBox;
+    (void)pControl;
     (void)key;
     (void)stateFlags;
 }
 
-void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf32, int stateFlags)
+void dred_textbox_on_printable_key_down(dred_control* pControl, unsigned int utf32, int stateFlags)
 {
     (void)stateFlags;
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_prepare_undo_point(pTB->pTL);
+    drte_engine_prepare_undo_point(pTextBox->pTL);
     {
-        drte_engine__begin_dirty(pTB->pTL);
+        drte_engine__begin_dirty(pTextBox->pTL);
         if (utf32 == '\t') {
             // The tab key is a complex case because it can be handled differently depending on the configuration:
             //   - If multiple lines are selected, they need to be block-indented
@@ -2201,35 +2001,35 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
             //   - If tabs-to-spaces is enabled, tabs need to be converted to spaces.
             //
             // The tab key is handled for each cursor.
-            for (size_t iCursor = 0; iCursor < pTB->cursorCount; ++iCursor) {
+            for (size_t iCursor = 0; iCursor < pTextBox->cursorCount; ++iCursor) {
                 bool isDoingBlockIndent = false;
 
                 size_t iSelection;
                 bool isSomethingSelected = dred_textbox__get_cursor_selection(pTextBox, iCursor, &iSelection);
                 if (isSomethingSelected) {
-                    isDoingBlockIndent = drte_engine_get_selection_first_line(pTB->pTL, iSelection) != drte_engine_get_selection_last_line(pTB->pTL, iSelection);
+                    isDoingBlockIndent = drte_engine_get_selection_first_line(pTextBox->pTL, iSelection) != drte_engine_get_selection_last_line(pTextBox->pTL, iSelection);
                 }
 
                 if (isDoingBlockIndent) {
                     // A block indent is done by simply inserting a tab at the beginning of each selected line.
-                    size_t iLineBeg = drte_engine_get_selection_first_line(pTB->pTL, iSelection);
-                    size_t iLineEnd = drte_engine_get_selection_last_line(pTB->pTL, iSelection);
+                    size_t iLineBeg = drte_engine_get_selection_first_line(pTextBox->pTL, iSelection);
+                    size_t iLineEnd = drte_engine_get_selection_last_line(pTextBox->pTL, iSelection);
 
                     for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
-                        dred_textbox__insert_tab(pTextBox, drte_engine_get_line_first_character(pTB->pTL, NULL, iLine));
+                        dred_textbox__insert_tab(pTextBox, drte_engine_get_line_first_character(pTextBox->pTL, NULL, iLine));
                     }
                 } else {
                     // We're not doing a block indent so we just insert a tab at the cursor like normal.
                     if (isSomethingSelected) {
-                        drte_engine_delete_selection_text(pTB->pTL, iSelection, true);
-                        drte_engine_cancel_selection(pTB->pTL, iSelection);
+                        drte_engine_delete_selection_text(pTextBox->pTL, iSelection, true);
+                        drte_engine_cancel_selection(pTextBox->pTL, iSelection);
                     }
 
                     dred_textbox__insert_tab_at_cursor(pTextBox, iCursor);
                 }
             }
         } else {
-            if (drte_engine_is_anything_selected(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTextBox->pTL)) {
                 dred_textbox_delete_selected_text_no_undo(pTextBox);
             }
 
@@ -2240,18 +2040,18 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
 
             // TODO: Check if the character is a line feed, and if so convert it to the standard line endings.
 
-            drte_engine_insert_character_at_cursors(pTB->pTL, utf32);
+            drte_engine_insert_character_at_cursors(pTextBox->pTL, utf32);
 
             if (utf32 == '\n') {
-                dred_context* pDred = dred_control_get_gui(pTextBox);
+                dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextBox));
                 if (pDred->config.textEditorEnableAutoIndent) {
-                    for (size_t iCursor = 0; iCursor < pTB->pTL->cursorCount; ++iCursor) {
-                        size_t iCursorChar = pTB->pTL->pCursors[iCursor].iCharAbs;
-                        size_t iCursorLine = drte_engine_get_character_line(pTB->pTL, NULL, iCursorChar);
+                    for (size_t iCursor = 0; iCursor < pTextBox->pTL->cursorCount; ++iCursor) {
+                        size_t iCursorChar = pTextBox->pTL->pCursors[iCursor].iCharAbs;
+                        size_t iCursorLine = drte_engine_get_character_line(pTextBox->pTL, NULL, iCursorChar);
                         if (iCursorLine > 0) {
                             size_t iPrevLineCharBeg;
                             size_t iPrevLineCharEnd;
-                            drte_engine_get_line_character_range(pTB->pTL, NULL, iCursorLine-1, &iPrevLineCharBeg, &iPrevLineCharEnd);
+                            drte_engine_get_line_character_range(pTextBox->pTL, NULL, iCursorLine-1, &iPrevLineCharBeg, &iPrevLineCharEnd);
 
                             size_t indentationCount = 0;
                             for (;;) {
@@ -2260,7 +2060,7 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
                                 }
 
                                 // TODO: Use a character iterator for this.
-                                uint32_t c = drte_engine_get_utf32(pTB->pTL, iPrevLineCharBeg);
+                                uint32_t c = drte_engine_get_utf32(pTextBox->pTL, iPrevLineCharBeg);
                                 if (c == '\0') {
                                     break;
                                 }
@@ -2281,7 +2081,7 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
 
                             size_t extraTabCount    = indentationCount / pDred->config.textEditorTabSizeInSpaces;
                             size_t extraSpacesCount = indentationCount - (extraTabCount * pDred->config.textEditorTabSizeInSpaces);
-                            if (pTB->isTabsToSpacesEnabled) {
+                            if (pTextBox->isTabsToSpacesEnabled) {
                                 extraSpacesCount = extraTabCount * pDred->config.textEditorTabSizeInSpaces;
                                 extraTabCount = 0;
                             }
@@ -2289,17 +2089,17 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
                             size_t extraCharactersCount = extraTabCount + extraSpacesCount;
 
                             for (size_t i = 0; i < extraTabCount; ++i) {
-                                drte_engine_insert_character_at_cursor(pTB->pTL, iCursor, '\t');
+                                drte_engine_insert_character_at_cursor(pTextBox->pTL, iCursor, '\t');
                             }
                             for (size_t i = 0; i < extraSpacesCount; ++i) {
-                                drte_engine_insert_character_at_cursor(pTB->pTL, iCursor, ' ');
+                                drte_engine_insert_character_at_cursor(pTextBox->pTL, iCursor, ' ');
                             }
 
                             // Any cursor whose character position comes after this cursor needs to be moved.
-                            for (size_t iCursor2 = 0; iCursor2 < pTB->pTL->cursorCount; ++iCursor2) {
+                            for (size_t iCursor2 = 0; iCursor2 < pTextBox->pTL->cursorCount; ++iCursor2) {
                                 if (iCursor2 != iCursor) {
-                                    if (pTB->pTL->pCursors[iCursor2].iCharAbs > iCursorChar) {
-                                        drte_engine_move_cursor_to_character(pTB->pTL, iCursor2, pTB->pTL->pCursors[iCursor2].iCharAbs + extraCharactersCount);
+                                    if (pTextBox->pTL->pCursors[iCursor2].iCharAbs > iCursorChar) {
+                                        drte_engine_move_cursor_to_character(pTextBox->pTL, iCursor2, pTextBox->pTL->pCursors[iCursor2].iCharAbs + extraCharactersCount);
                                     }
                                 }
                             }
@@ -2308,9 +2108,9 @@ void dred_textbox_on_printable_key_down(dred_textbox* pTextBox, unsigned int utf
                 }
             }
         }
-        drte_engine__end_dirty(pTB->pTL);
+        drte_engine__end_dirty(pTextBox->pTL);
     }
-    drte_engine_commit_undo_point(pTB->pTL);
+    drte_engine_commit_undo_point(pTextBox->pTL);
 }
 
 
@@ -2323,7 +2123,7 @@ void dred_textbox_engine__on_paint_rect(drte_engine* pTL, drte_style_token style
     float offsetY;
     dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
-    dred_control_draw_rect(pTextBox, dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
+    dred_control_draw_rect(DRED_CONTROL(pTextBox), dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
 }
 
 void dred_textbox_engine__on_paint_text(drte_engine* pTL, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
@@ -2337,7 +2137,7 @@ void dred_textbox_engine__on_paint_text(drte_engine* pTL, drte_style_token style
     float offsetY;
     dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
-    dred_control_draw_text(pTextBox, pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
+    dred_control_draw_text(DRED_CONTROL(pTextBox), pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
 }
 
 void dred_textbox_engine__on_dirty(drte_engine* pTL, drte_rect rect)
@@ -2347,8 +2147,7 @@ void dred_textbox_engine__on_dirty(drte_engine* pTL, drte_rect rect)
         return;
     }
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
@@ -2356,7 +2155,7 @@ void dred_textbox_engine__on_dirty(drte_engine* pTL, drte_rect rect)
     float offsetY;
     dred_textbox__get_text_offset(pTextBox, &offsetX, &offsetY);
 
-    dred_control_dirty(pTextBox, dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY));
+    dred_control_dirty(DRED_CONTROL(pTextBox), dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY));
 }
 
 void dred_textbox_engine__on_cursor_move(drte_engine* pTL)
@@ -2367,38 +2166,37 @@ void dred_textbox_engine__on_cursor_move(drte_engine* pTL)
         return;
     }
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
     // If the cursor is above or below the container, we need to scroll vertically.
-    int iLine = (int)drte_engine_get_cursor_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
-    if (iLine < dred_scrollbar_get_scroll_position(pTB->pVertScrollbar)) {
-        dred_scrollbar_scroll_to(pTB->pVertScrollbar, iLine);
+    int iLine = (int)drte_engine_get_cursor_line(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
+    if (iLine < dred_scrollbar_get_scroll_position(pTextBox->pVertScrollbar)) {
+        dred_scrollbar_scroll_to(pTextBox->pVertScrollbar, iLine);
     }
 
-    int iBottomLine = dred_scrollbar_get_scroll_position(pTB->pVertScrollbar) + dred_scrollbar_get_page_size(pTB->pVertScrollbar) - 1;
+    int iBottomLine = dred_scrollbar_get_scroll_position(pTextBox->pVertScrollbar) + dred_scrollbar_get_page_size(pTextBox->pVertScrollbar) - 1;
     if (iLine >= iBottomLine) {
-        dred_scrollbar_scroll_to(pTB->pVertScrollbar, iLine - (dred_scrollbar_get_page_size(pTB->pVertScrollbar) - 1) + 1);
+        dred_scrollbar_scroll_to(pTextBox->pVertScrollbar, iLine - (dred_scrollbar_get_page_size(pTextBox->pVertScrollbar) - 1) + 1);
     }
 
 
     // If the cursor is to the left or right of the container we need to scroll horizontally.
     float cursorPosX;
     float cursorPosY;
-    drte_engine_get_cursor_position(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), &cursorPosX, &cursorPosY);
+    drte_engine_get_cursor_position(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), &cursorPosX, &cursorPosY);
 
     if (cursorPosX < 0) {
-        dred_scrollbar_scroll_to(pTB->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTB->pTL)) - 100);
+        dred_scrollbar_scroll_to(pTextBox->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTextBox->pTL)) - 100);
     }
-    if (cursorPosX >= drte_engine_get_container_width(pTB->pTL)) {
-        dred_scrollbar_scroll_to(pTB->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTB->pTL) - drte_engine_get_container_width(pTB->pTL)) + 100);
+    if (cursorPosX >= drte_engine_get_container_width(pTextBox->pTL)) {
+        dred_scrollbar_scroll_to(pTextBox->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTextBox->pTL) - drte_engine_get_container_width(pTextBox->pTL)) + 100);
     }
 
 
-    if (pTB->onCursorMove) {
-        pTB->onCursorMove(pTextBox);
+    if (pTextBox->onCursorMove) {
+        pTextBox->onCursorMove(pTextBox);
     }
 }
 
@@ -2409,8 +2207,7 @@ void dred_textbox_engine__on_text_changed(drte_engine* pTL)
         return;
     }
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
@@ -2419,7 +2216,7 @@ void dred_textbox_engine__on_text_changed(drte_engine* pTL)
 
     // The line numbers need to be redrawn.
     // TODO: This can probably be optimized a bit so that it is only redrawn if a line was inserted or deleted.
-    dred_control_dirty(pTB->pLineNumbers, dred_control_get_local_rect(pTB->pLineNumbers));
+    dred_control_dirty(pTextBox->pLineNumbers, dred_control_get_local_rect(pTextBox->pLineNumbers));
 }
 
 void dred_textbox_engine__on_undo_point_changed(drte_engine* pTL, unsigned int iUndoPoint)
@@ -2429,13 +2226,12 @@ void dred_textbox_engine__on_undo_point_changed(drte_engine* pTL, unsigned int i
         return;
     }
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
-    if (pTB->onUndoPointChanged) {
-        pTB->onUndoPointChanged(pTextBox, iUndoPoint);
+    if (pTextBox->onUndoPointChanged) {
+        pTextBox->onUndoPointChanged(pTextBox, iUndoPoint);
     }
 }
 
@@ -2448,21 +2244,20 @@ size_t dred_textbox_engine__on_get_undo_state(drte_engine* pTL, void* pDataOut)
         return 0;
     }
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return 0;
     }
 
     if (pDataOut != NULL) {
-        *((size_t*)pDataOut) = pTB->cursorCount;
+        *((size_t*)pDataOut) = pTextBox->cursorCount;
 
-        dred_textbox_cursor* pCursorOut = (dred_textbox_cursor*)((uint8_t*)pDataOut + sizeof(pTB->cursorCount));
-        for (size_t i = 0; i < pTB->cursorCount; ++i) {
-            pCursorOut[i] = pTB->pCursors[i];
+        dred_textbox_cursor* pCursorOut = (dred_textbox_cursor*)((uint8_t*)pDataOut + sizeof(pTextBox->cursorCount));
+        for (size_t i = 0; i < pTextBox->cursorCount; ++i) {
+            pCursorOut[i] = pTextBox->pCursors[i];
         }
     }
 
-    return sizeof(pTB->cursorCount) + (sizeof(*pTB->pCursors) * pTB->cursorCount);
+    return sizeof(pTextBox->cursorCount) + (sizeof(*pTextBox->pCursors) * pTextBox->cursorCount);
 }
 
 void dred_textbox_engine__on_apply_undo_state(drte_engine* pTL, size_t dataSize, const void* pData)
@@ -2477,54 +2272,53 @@ void dred_textbox_engine__on_apply_undo_state(drte_engine* pTL, size_t dataSize,
         return;
     }
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return;
     }
 
     
     size_t cursorCount = *((const size_t*)pData);
-    const dred_textbox_cursor* pCursors = (const dred_textbox_cursor*)((const uint8_t*)pData + sizeof(pTB->cursorCount));
+    const dred_textbox_cursor* pCursors = (const dred_textbox_cursor*)((const uint8_t*)pData + sizeof(pTextBox->cursorCount));
 
-    if (cursorCount > pTB->cursorCount) {
-        dred_textbox_cursor* pNewCursors = (dred_textbox_cursor*)realloc(pTB->pCursors, cursorCount * sizeof(*pTB->pCursors));
+    if (cursorCount > pTextBox->cursorCount) {
+        dred_textbox_cursor* pNewCursors = (dred_textbox_cursor*)realloc(pTextBox->pCursors, cursorCount * sizeof(*pTextBox->pCursors));
         if (pNewCursors == NULL) {
             return;
         }
 
-        pTB->pCursors = pNewCursors;
+        pTextBox->pCursors = pNewCursors;
     }
 
-    memcpy(pTB->pCursors, pCursors, cursorCount * sizeof(*pTB->pCursors));
-    pTB->cursorCount = cursorCount;
+    memcpy(pTextBox->pCursors, pCursors, cursorCount * sizeof(*pTextBox->pCursors));
+    pTextBox->cursorCount = cursorCount;
 }
 
 
 
 
-void dred_textbox_on_paint(dred_textbox* pTextBox, dred_rect relativeRect, void* pPaintData)
+void dred_textbox_on_paint(dred_control* pControl, dred_rect relativeRect, void* pPaintData)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
+    if (pTextBox == NULL) {
         return;
     }
 
     dred_rect textRect = dred_textbox__get_text_rect(pTextBox);
 
     // The dead space between the scrollbars should always be drawn with the default background color.
-    //dred_control_draw_rect(pTextBox, dred_textbox__get_scrollbar_dead_space_rect(pTextBox), pTB->defaultStyle.bgColor, pPaintData);
+    //dred_control_draw_rect(pTextBox, dred_textbox__get_scrollbar_dead_space_rect(pTextBox), pTextBox->defaultStyle.bgColor, pPaintData);
 
     // Border.
-    dred_rect borderRect = dred_control_get_local_rect(pTextBox);
-    dred_control_draw_rect_outline(pTextBox, borderRect, pTB->borderColor, pTB->borderWidth, pPaintData);
+    dred_rect borderRect = dred_control_get_local_rect(pControl);
+    dred_control_draw_rect_outline(pControl, borderRect, pTextBox->borderColor, pTextBox->borderWidth, pPaintData);
 
     // Padding.
-    dred_rect paddingRect = dred_grow_rect(textRect, pTB->padding);
-    dred_control_draw_rect_outline(pTextBox, paddingRect, pTB->defaultStyle.bgColor, pTB->padding, pPaintData);
+    dred_rect paddingRect = dred_grow_rect(textRect, pTextBox->padding);
+    dred_control_draw_rect_outline(pControl, paddingRect, pTextBox->defaultStyle.bgColor, pTextBox->padding, pPaintData);
 
     // Text.
-    dred_control_set_clip(pTextBox, dred_clamp_rect(textRect, relativeRect), pPaintData);
-    drte_engine_paint(pTB->pTL, dred_rect_to_drte(dred_offset_rect(dred_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top)), pPaintData);
+    dred_control_set_clip(pControl, dred_clamp_rect(textRect, relativeRect), pPaintData);
+    drte_engine_paint(pTextBox->pTL, dred_rect_to_drte(dred_offset_rect(dred_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top)), pPaintData);
 }
 
 void dred_textbox__on_timer(dred_timer* pTimer, void* pUserData)
@@ -2537,52 +2331,50 @@ void dred_textbox__on_timer(dred_timer* pTimer, void* pUserData)
     dred_textbox_step(pTextBox, 100);
 }
 
-void dred_textbox_on_capture_keyboard(dred_textbox* pTextBox, dred_control* pPrevCapturedControl)
+void dred_textbox_on_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
 {
     (void)pPrevCapturedControl;
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_show_cursor(pTB->pTL);
+    drte_engine_show_cursor(pTextBox->pTL);
 
-    if (pTB->pTimer == NULL) {
-        pTB->pTimer = dred_timer_create(100, dred_textbox__on_timer, pTextBox);
+    if (pTextBox->pTimer == NULL) {
+        pTextBox->pTimer = dred_timer_create(100, dred_textbox__on_timer, pTextBox);
     }
 }
 
-void dred_textbox_on_release_keyboard(dred_textbox* pTextBox, dred_control* pNewCapturedControl)
+void dred_textbox_on_release_keyboard(dred_control* pControl, dred_control* pNewCapturedControl)
 {
     (void)pNewCapturedControl;
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
+    if (pTextBox == NULL) {
         return;
     }
 
-    drte_engine_hide_cursor(pTB->pTL);
+    drte_engine_hide_cursor(pTextBox->pTL);
 
-    if (pTB->pTimer != NULL) {
-        dred_timer_delete(pTB->pTimer);
-        pTB->pTimer = NULL;
+    if (pTextBox->pTimer != NULL) {
+        dred_timer_delete(pTextBox->pTimer);
+        pTextBox->pTimer = NULL;
     }
 }
 
-void dred_textbox_on_capture_mouse(dred_textbox* pTextBox)
+void dred_textbox_on_capture_mouse(dred_control* pControl)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pControl == NULL) {
         return;
     }
 
 }
 
-void dred_textbox_on_release_mouse(dred_textbox* pTextBox)
+void dred_textbox_on_release_mouse(dred_control* pControl)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pControl == NULL) {
         return;
     }
 
@@ -2596,16 +2388,15 @@ void dred_textbox__get_text_offset(dred_textbox* pTextBox, float* pOffsetXOut, f
     float offsetX = 0;
     float offsetY = 0;
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB != NULL)
+    if (pTextBox != NULL)
     {
         float lineNumbersWidth = 0;
-        if (dred_control_is_visible(pTB->pLineNumbers)) {
-            lineNumbersWidth = dred_control_get_width(pTB->pLineNumbers);
+        if (dred_control_is_visible(pTextBox->pLineNumbers)) {
+            lineNumbersWidth = dred_control_get_width(pTextBox->pLineNumbers);
         }
 
-        offsetX = pTB->borderWidth + pTB->padding + lineNumbersWidth;
-        offsetY = pTB->borderWidth + pTB->padding;
+        offsetX = pTextBox->borderWidth + pTextBox->padding + lineNumbersWidth;
+        offsetY = pTextBox->borderWidth + pTextBox->padding;
     }
 
 
@@ -2622,26 +2413,25 @@ void dred_textbox__calculate_text_engine_container_size(dred_textbox* pTextBox, 
     float width  = 0;
     float height = 0;
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB != NULL)
+    if (pTextBox != NULL)
     {
         float horzScrollbarSize = 0;
-        if (dred_control_is_visible(pTB->pHorzScrollbar)) {
-            horzScrollbarSize = dred_control_get_height(pTB->pHorzScrollbar);
+        if (dred_control_is_visible(DRED_CONTROL(pTextBox->pHorzScrollbar))) {
+            horzScrollbarSize = dred_control_get_height(DRED_CONTROL(pTextBox->pHorzScrollbar));
         }
 
         float vertScrollbarSize = 0;
-        if (dred_control_is_visible(pTB->pVertScrollbar)) {
-            vertScrollbarSize = dred_control_get_width(pTB->pVertScrollbar);
+        if (dred_control_is_visible(DRED_CONTROL(pTextBox->pVertScrollbar))) {
+            vertScrollbarSize = dred_control_get_width(DRED_CONTROL(pTextBox->pVertScrollbar));
         }
 
         float lineNumbersWidth = 0;
-        if (dred_control_is_visible(pTB->pLineNumbers)) {
-            lineNumbersWidth = dred_control_get_width(pTB->pLineNumbers);
+        if (dred_control_is_visible(pTextBox->pLineNumbers)) {
+            lineNumbersWidth = dred_control_get_width(pTextBox->pLineNumbers);
         }
 
-        width  = dred_control_get_width(pTextBox)  - (pTB->borderWidth + pTB->padding)*2 - vertScrollbarSize - lineNumbersWidth;
-        height = dred_control_get_height(pTextBox) - (pTB->borderWidth + pTB->padding)*2 - horzScrollbarSize;
+        width  = dred_control_get_width(DRED_CONTROL(pTextBox))  - (pTextBox->borderWidth + pTextBox->padding)*2 - vertScrollbarSize - lineNumbersWidth;
+        height = dred_control_get_height(DRED_CONTROL(pTextBox)) - (pTextBox->borderWidth + pTextBox->padding)*2 - horzScrollbarSize;
     }
 
     if (pWidthOut != NULL) {
@@ -2654,8 +2444,7 @@ void dred_textbox__calculate_text_engine_container_size(dred_textbox* pTextBox, 
 
 dred_rect dred_textbox__get_text_rect(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    if (pTB == NULL) {
+    if (pTextBox == NULL) {
         return dred_make_rect(0, 0, 0, 0);
     }
 
@@ -2684,22 +2473,21 @@ void dred_textbox__refresh_scrollbars(dred_textbox* pTextBox)
 
 void dred_textbox__refresh_horizontal_scrollbar(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
-    float textWidth = drte_engine_get_visible_line_width(pTB->pTL);
+    float textWidth = drte_engine_get_visible_line_width(pTextBox->pTL);
     float containerWidth;
-    drte_engine_get_container_size(pTB->pTL, &containerWidth, NULL);
-    dred_scrollbar_set_range_and_page_size(pTB->pHorzScrollbar, 0, (int)(textWidth + (containerWidth/4)), (int)containerWidth);
+    drte_engine_get_container_size(pTextBox->pTL, &containerWidth, NULL);
+    dred_scrollbar_set_range_and_page_size(pTextBox->pHorzScrollbar, 0, (int)(textWidth + (containerWidth/4)), (int)containerWidth);
 
-    if (dred_scrollbar_is_thumb_visible(pTB->pHorzScrollbar)) {
-        if (!dred_control_is_visible(pTB->pHorzScrollbar)) {
-            dred_control_show(pTB->pHorzScrollbar);
+    if (dred_scrollbar_is_thumb_visible(pTextBox->pHorzScrollbar)) {
+        if (!dred_control_is_visible(DRED_CONTROL(pTextBox->pHorzScrollbar))) {
+            dred_control_show(DRED_CONTROL(pTextBox->pHorzScrollbar));
             dred_textbox__refresh_line_numbers(pTextBox);
         }
     } else {
-        if (dred_control_is_visible(pTB->pHorzScrollbar)) {
-            dred_control_hide(pTB->pHorzScrollbar);
+        if (dred_control_is_visible(DRED_CONTROL(pTextBox->pHorzScrollbar))) {
+            dred_control_hide(DRED_CONTROL(pTextBox->pHorzScrollbar));
             dred_textbox__refresh_line_numbers(pTextBox);
         }
     }
@@ -2707,27 +2495,26 @@ void dred_textbox__refresh_horizontal_scrollbar(dred_textbox* pTextBox)
 
 void dred_textbox__refresh_scrollbar_ranges(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
     // The vertical scrollbar is based on the line count.
-    size_t lineCount = drte_engine_get_line_count(pTB->pTL);
-    size_t pageSize  = drte_engine_get_visible_line_count(pTB->pTL);//drte_engine_get_visible_line_count_starting_at(pTB->pTL, dred_scrollbar_get_scroll_position(pTB->pVertScrollbar));
+    size_t lineCount = drte_engine_get_line_count(pTextBox->pTL);
+    size_t pageSize  = drte_engine_get_visible_line_count(pTextBox->pTL);//drte_engine_get_visible_line_count_starting_at(pTextBox->pTL, dred_scrollbar_get_scroll_position(pTextBox->pVertScrollbar));
 
     size_t extraScroll = 0;
-    if (pTB->isExcessScrollingEnabled) {
-        extraScroll = drte_engine_get_visible_line_count(pTB->pTL) - 1 - 1;  // -1 to make the range 0 based. -1 to ensure at least one line is visible.
+    if (pTextBox->isExcessScrollingEnabled) {
+        extraScroll = drte_engine_get_visible_line_count(pTextBox->pTL) - 1 - 1;  // -1 to make the range 0 based. -1 to ensure at least one line is visible.
     }
 
-    dred_scrollbar_set_range_and_page_size(pTB->pVertScrollbar, 0, (int)(lineCount + extraScroll), (int)pageSize);
+    dred_scrollbar_set_range_and_page_size(pTextBox->pVertScrollbar, 0, (int)(lineCount + extraScroll), (int)pageSize);
 
-    if (dred_scrollbar_is_thumb_visible(pTB->pVertScrollbar)) {
-        if (!dred_control_is_visible(pTB->pVertScrollbar)) {
-            dred_control_show(pTB->pVertScrollbar);
+    if (dred_scrollbar_is_thumb_visible(pTextBox->pVertScrollbar)) {
+        if (!dred_control_is_visible(DRED_CONTROL(pTextBox->pVertScrollbar))) {
+            dred_control_show(DRED_CONTROL(pTextBox->pVertScrollbar));
         }
     } else {
-        if (dred_control_is_visible(pTB->pVertScrollbar)) {
-            dred_control_hide(pTB->pVertScrollbar);
+        if (dred_control_is_visible(DRED_CONTROL(pTextBox->pVertScrollbar))) {
+            dred_control_hide(DRED_CONTROL(pTextBox->pVertScrollbar));
         }
     }
 
@@ -2738,22 +2525,21 @@ void dred_textbox__refresh_scrollbar_ranges(dred_textbox* pTextBox)
 
 void dred_textbox__refresh_scrollbar_layouts(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
-    float offsetLeft   = pTB->borderWidth;
-    float offsetTop    = pTB->borderWidth;
-    float offsetRight  = pTB->borderWidth;
-    float offsetBottom = pTB->borderWidth;
+    float offsetLeft   = pTextBox->borderWidth;
+    float offsetTop    = pTextBox->borderWidth;
+    float offsetRight  = pTextBox->borderWidth;
+    float offsetBottom = pTextBox->borderWidth;
 
-    float scrollbarSizeH = (dred_scrollbar_is_thumb_visible(pTB->pHorzScrollbar) && pTB->isHorzScrollbarEnabled) ? pTB->horzScrollbarSize : 0;
-    float scrollbarSizeV = (dred_scrollbar_is_thumb_visible(pTB->pVertScrollbar) && pTB->isVertScrollbarEnabled) ? pTB->vertScrollbarSize : 0;
+    float scrollbarSizeH = (dred_scrollbar_is_thumb_visible(pTextBox->pHorzScrollbar) && pTextBox->isHorzScrollbarEnabled) ? pTextBox->horzScrollbarSize : 0;
+    float scrollbarSizeV = (dred_scrollbar_is_thumb_visible(pTextBox->pVertScrollbar) && pTextBox->isVertScrollbarEnabled) ? pTextBox->vertScrollbarSize : 0;
 
-    dred_control_set_size(pTB->pVertScrollbar, scrollbarSizeV, dred_control_get_height(pTextBox) /*- scrollbarSizeH*/ - (offsetTop + offsetBottom));
-    dred_control_set_size(pTB->pHorzScrollbar, dred_control_get_width(pTextBox) - scrollbarSizeV - (offsetLeft + offsetRight), scrollbarSizeH);
+    dred_control_set_size(DRED_CONTROL(pTextBox->pVertScrollbar), scrollbarSizeV, dred_control_get_height(DRED_CONTROL(pTextBox)) /*- scrollbarSizeH*/ - (offsetTop + offsetBottom));
+    dred_control_set_size(DRED_CONTROL(pTextBox->pHorzScrollbar), dred_control_get_width(DRED_CONTROL(pTextBox)) - scrollbarSizeV - (offsetLeft + offsetRight), scrollbarSizeH);
 
-    dred_control_set_relative_position(pTB->pVertScrollbar, dred_control_get_width(pTextBox) - scrollbarSizeV - offsetRight, offsetTop);
-    dred_control_set_relative_position(pTB->pHorzScrollbar, offsetLeft, dred_control_get_height(pTextBox) - scrollbarSizeH - offsetBottom);
+    dred_control_set_relative_position(DRED_CONTROL(pTextBox->pVertScrollbar), dred_control_get_width(DRED_CONTROL(pTextBox)) - scrollbarSizeV - offsetRight, offsetTop);
+    dred_control_set_relative_position(DRED_CONTROL(pTextBox->pHorzScrollbar), offsetLeft, dred_control_get_height(DRED_CONTROL(pTextBox)) - scrollbarSizeH - offsetBottom);
 
 
     // A change in the layout of the horizontal scrollbar will affect the layout of the line numbers.
@@ -2762,22 +2548,21 @@ void dred_textbox__refresh_scrollbar_layouts(dred_textbox* pTextBox)
 
 dred_rect dred_textbox__get_scrollbar_dead_space_rect(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
-    float offsetLeft   = pTB->borderWidth;
-    float offsetTop    = pTB->borderWidth;
-    float offsetRight  = pTB->borderWidth;
-    float offsetBottom = pTB->borderWidth;
+    float offsetLeft   = pTextBox->borderWidth;
+    float offsetTop    = pTextBox->borderWidth;
+    float offsetRight  = pTextBox->borderWidth;
+    float offsetBottom = pTextBox->borderWidth;
 
-    float scrollbarSizeH = (dred_control_is_visible(pTB->pHorzScrollbar) && pTB->isHorzScrollbarEnabled) ? dred_control_get_width(pTB->pHorzScrollbar) : 0;
-    float scrollbarSizeV = (dred_control_is_visible(pTB->pVertScrollbar) && pTB->isHorzScrollbarEnabled) ? dred_control_get_height(pTB->pVertScrollbar) : 0;
+    float scrollbarSizeH = (dred_control_is_visible(DRED_CONTROL(pTextBox->pHorzScrollbar)) && pTextBox->isHorzScrollbarEnabled) ? dred_control_get_width(DRED_CONTROL(pTextBox->pHorzScrollbar)) : 0;
+    float scrollbarSizeV = (dred_control_is_visible(DRED_CONTROL(pTextBox->pVertScrollbar)) && pTextBox->isHorzScrollbarEnabled) ? dred_control_get_height(DRED_CONTROL(pTextBox->pVertScrollbar)) : 0;
 
     if (scrollbarSizeH == 0 && scrollbarSizeV == 0) {
         return dred_make_rect(0, 0, 0, 0);
     }
 
-    return dred_make_rect(scrollbarSizeH + offsetLeft, scrollbarSizeV + offsetTop, dred_control_get_width(pTextBox) - offsetRight, dred_control_get_height(pTextBox) - offsetBottom);
+    return dred_make_rect(scrollbarSizeH + offsetLeft, scrollbarSizeV + offsetTop, dred_control_get_width(DRED_CONTROL(pTextBox)) - offsetRight, dred_control_get_height(DRED_CONTROL(pTextBox)) - offsetBottom);
 }
 
 
@@ -2785,11 +2570,8 @@ void dred_textbox__on_mouse_move_line_numbers(dred_control* pLineNumbers, int re
 {
     (void)relativeMousePosX;
 
-    dred_textbox* pTextBox = *(dred_control**)dred_control_get_extra_data(pLineNumbers);
+    dred_textbox* pTextBox = DRED_TEXTBOX(dred_control_get_parent(pLineNumbers));
     assert(pTextBox != NULL);
-
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
 
     if ((stateFlags & DRED_GUI_MOUSE_BUTTON_LEFT_DOWN) != 0)
     {
@@ -2798,13 +2580,13 @@ void dred_textbox__on_mouse_move_line_numbers(dred_control* pLineNumbers, int re
             // We just move the cursor around based on the line number we've moved over.
 
             //float offsetX = pTextEditorData->padding;
-            float offsetY = pTB->padding + pTB->pTL->innerOffsetY;
-            size_t iLine = drte_engine_get_line_at_pos_y(pTB->pTL, NULL, relativeMousePosY - offsetY);
-            size_t iAnchorLine = pTB->iLineSelectAnchor;
-            size_t lineCount = drte_engine_get_line_count(pTB->pTL);
+            float offsetY = pTextBox->padding + pTextBox->pTL->innerOffsetY;
+            size_t iLine = drte_engine_get_line_at_pos_y(pTextBox->pTL, NULL, relativeMousePosY - offsetY);
+            size_t iAnchorLine = pTextBox->iLineSelectAnchor;
+            size_t lineCount = drte_engine_get_line_count(pTextBox->pTL);
 
-            size_t iSelectionFirstLine = drte_engine_get_selection_first_line(pTB->pTL, pTB->pTL->selectionCount-1);
-            size_t iSelectionLastLine = drte_engine_get_selection_last_line(pTB->pTL, pTB->pTL->selectionCount-1);
+            size_t iSelectionFirstLine = drte_engine_get_selection_first_line(pTextBox->pTL, pTextBox->pTL->selectionCount-1);
+            size_t iSelectionLastLine = drte_engine_get_selection_last_line(pTextBox->pTL, pTextBox->pTL->selectionCount-1);
             if (iSelectionLastLine != iSelectionFirstLine) {
                 iSelectionLastLine -= 1;
             }
@@ -2820,29 +2602,29 @@ void dred_textbox__on_mouse_move_line_numbers(dred_control* pLineNumbers, int re
             // of the first line.
             if (movingUp) {
                 if (iAnchorLine + 1 < lineCount) {
-                    drte_engine_move_selection_anchor_to_start_of_line(pTB->pTL, iAnchorLine + 1);
+                    drte_engine_move_selection_anchor_to_start_of_line(pTextBox->pTL, iAnchorLine + 1);
                 } else {
-                    drte_engine_move_selection_anchor_to_end_of_line(pTB->pTL, iAnchorLine);
+                    drte_engine_move_selection_anchor_to_end_of_line(pTextBox->pTL, iAnchorLine);
                 }
             } else {
-                drte_engine_move_selection_anchor_to_start_of_line(pTB->pTL, iAnchorLine);
+                drte_engine_move_selection_anchor_to_start_of_line(pTextBox->pTL, iAnchorLine);
             }
 
 
             // If we're moving up we want the cursor to be placed at the start of the selection range. Otherwise we want to place the cursor
             // at the end of the selection range.
             if (movingUp) {
-                drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iLine);
+                drte_engine_move_cursor_to_start_of_line_by_index(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), iLine);
             } else {
                 if (iLine + 1 < lineCount) {
-                    drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iLine + 1);
+                    drte_engine_move_cursor_to_start_of_line_by_index(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), iLine + 1);
                 } else {
-                    drte_engine_move_cursor_to_end_of_line_by_index(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iLine);
+                    drte_engine_move_cursor_to_end_of_line_by_index(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), iLine);
                 }
             }
 
 
-            drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+            drte_engine_set_selection_end_point(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
         }
     }
 }
@@ -2852,11 +2634,8 @@ void dred_textbox__on_mouse_button_down_line_numbers(dred_control* pLineNumbers,
     (void)relativeMousePosX;
     (void)stateFlags;
 
-    dred_textbox* pTextBox = *(dred_control**)dred_control_get_extra_data(pLineNumbers);
+    dred_textbox* pTextBox = DRED_TEXTBOX(dred_control_get_parent(pLineNumbers));
     assert(pTextBox != NULL);
-
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
@@ -2864,7 +2643,7 @@ void dred_textbox__on_mouse_button_down_line_numbers(dred_control* pLineNumbers,
 
         // If the shift key is down and we already have a selection, this is equivalent to a mouse drag.
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
-            if (drte_engine_is_anything_selected(pTB->pTL)) {
+            if (drte_engine_is_anything_selected(pTextBox->pTL)) {
                 dred_textbox__on_mouse_move_line_numbers(pLineNumbers, relativeMousePosX, relativeMousePosY, stateFlags | DRED_GUI_MOUSE_BUTTON_LEFT_DOWN);
                 return;
             }
@@ -2872,13 +2651,13 @@ void dred_textbox__on_mouse_button_down_line_numbers(dred_control* pLineNumbers,
 
 
         //float offsetX = pTextEditorData->padding;
-        float offsetY = pTB->padding + pTB->pTL->innerOffsetY;
-        size_t iClickedLine = drte_engine_get_line_at_pos_y(pTB->pTL, NULL, relativeMousePosY - offsetY);
+        float offsetY = pTextBox->padding + pTextBox->pTL->innerOffsetY;
+        size_t iClickedLine = drte_engine_get_line_at_pos_y(pTextBox->pTL, NULL, relativeMousePosY - offsetY);
 
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
-            pTB->iLineSelectAnchor = drte_engine_get_cursor_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+            pTextBox->iLineSelectAnchor = drte_engine_get_cursor_line(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
         } else {
-            pTB->iLineSelectAnchor = iClickedLine;
+            pTextBox->iLineSelectAnchor = iClickedLine;
         }
         
 
@@ -2886,16 +2665,16 @@ void dred_textbox__on_mouse_button_down_line_numbers(dred_control* pLineNumbers,
             dred_textbox_deselect_all(pTextBox);
         }
 
-        drte_engine_begin_selection(pTB->pTL, drte_engine_get_line_first_character(pTB->pTL, NULL, pTB->iLineSelectAnchor));
+        drte_engine_begin_selection(pTextBox->pTL, drte_engine_get_line_first_character(pTextBox->pTL, NULL, pTextBox->iLineSelectAnchor));
 
 
-        if (iClickedLine + 1 < drte_engine_get_line_count(pTB->pTL)) {
-            drte_engine_move_cursor_to_start_of_line_by_index(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL), iClickedLine + 1);
+        if (iClickedLine + 1 < drte_engine_get_line_count(pTextBox->pTL)) {
+            drte_engine_move_cursor_to_start_of_line_by_index(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL), iClickedLine + 1);
         } else {
-            drte_engine_move_cursor_to_end_of_line(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL));
+            drte_engine_move_cursor_to_end_of_line(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL));
         }
 
-        drte_engine_set_selection_end_point(pTB->pTL, drte_engine_get_cursor_character(pTB->pTL, drte_engine_get_last_cursor(pTB->pTL)));
+        drte_engine_set_selection_end_point(pTextBox->pTL, drte_engine_get_cursor_character(pTextBox->pTL, drte_engine_get_last_cursor(pTextBox->pTL)));
     }
 }
 
@@ -2917,13 +2696,12 @@ void dred_textbox__on_paint_rect_line_numbers(drte_engine* pEngine, drte_style_t
     dred_textbox* pTextBox = (dred_textbox*)pEngine->pUserData;
     dred_text_style* pStyle = (dred_text_style*)styleToken;
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
-    float offsetX = pTB->padding;
-    float offsetY = pTB->padding;
+    float offsetX = pTextBox->padding;
+    float offsetY = pTextBox->padding;
 
-    dred_control_draw_rect(pTB->pLineNumbers, dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
+    dred_control_draw_rect(pTextBox->pLineNumbers, dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
 }
 
 void dred_textbox__on_paint_text_line_numbers(drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
@@ -2933,64 +2711,59 @@ void dred_textbox__on_paint_text_line_numbers(drte_engine* pEngine, drte_style_t
     dred_text_style* pStyleFG = (dred_text_style*)styleTokenFG;
     dred_text_style* pStyleBG = (dred_text_style*)styleTokenBG;
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
-    float offsetX = pTB->padding;
-    float offsetY = pTB->padding;
+    float offsetX = pTextBox->padding;
+    float offsetY = pTextBox->padding;
 
-    dred_control_draw_text(pTB->pLineNumbers, pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
+    dred_control_draw_text(pTextBox->pLineNumbers, pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
 }
 
 void dred_textbox__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect relativeRect, void* pPaintData)
 {
     (void)relativeRect;
 
-    dred_textbox* pTextBox = *((dred_control**)dred_control_get_extra_data(pLineNumbers));
+    dred_textbox* pTextBox = DRED_TEXTBOX(dred_control_get_parent(pLineNumbers));
     assert(pTextBox != NULL);
 
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    float lineNumbersWidth  = dred_control_get_width(pLineNumbers) - (pTextBox->padding*2) - pTextBox->lineNumbersPaddingRight;
+    float lineNumbersHeight = dred_control_get_height(pLineNumbers) - (pTextBox->padding*2);
 
-    float lineNumbersWidth  = dred_control_get_width(pLineNumbers) - (pTB->padding*2) - pTB->lineNumbersPaddingRight;
-    float lineNumbersHeight = dred_control_get_height(pLineNumbers) - (pTB->padding*2);
+    drte_engine_paint_line_numbers(pTextBox->pTL, lineNumbersWidth, lineNumbersHeight, dred_textbox__on_paint_text_line_numbers, dred_textbox__on_paint_rect_line_numbers, pPaintData);
 
-    drte_engine_paint_line_numbers(pTB->pTL, lineNumbersWidth, lineNumbersHeight, dred_textbox__on_paint_text_line_numbers, dred_textbox__on_paint_rect_line_numbers, pPaintData);
-
-    dred_control_draw_rect_outline(pLineNumbers, dred_control_get_local_rect(pLineNumbers), pTB->lineNumbersStyle.bgColor, pTB->padding, pPaintData);
+    dred_control_draw_rect_outline(pLineNumbers, dred_control_get_local_rect(pLineNumbers), pTextBox->lineNumbersStyle.bgColor, pTextBox->padding, pPaintData);
 
     // Right padding.
     dred_rect rightPaddingRect = dred_control_get_local_rect(pLineNumbers);
-    rightPaddingRect.right -= pTB->padding;
-    rightPaddingRect.left   = rightPaddingRect.right - pTB->lineNumbersPaddingRight;
-    dred_control_draw_rect(pLineNumbers, rightPaddingRect, pTB->lineNumbersStyle.bgColor, pPaintData);
+    rightPaddingRect.right -= pTextBox->padding;
+    rightPaddingRect.left   = rightPaddingRect.right - pTextBox->lineNumbersPaddingRight;
+    dred_control_draw_rect(pLineNumbers, rightPaddingRect, pTextBox->lineNumbersStyle.bgColor, pPaintData);
 }
 
 void dred_textbox__refresh_line_numbers(dred_textbox* pTextBox)
 {
-    dred_textbox_data* pTB = (dred_textbox_data*)dred_control_get_extra_data(pTextBox);
-    assert(pTB != NULL);
+    assert(pTextBox != NULL);
 
-    dred_rect lineNumbersRectOld = dred_control_get_local_rect(pTB->pLineNumbers);
-    dred_control_begin_dirty(pTB->pLineNumbers);
+    dred_rect lineNumbersRectOld = dred_control_get_local_rect(pTextBox->pLineNumbers);
+    dred_control_begin_dirty(pTextBox->pLineNumbers);
     
     float lineNumbersWidth = 0;
-    if (dred_control_is_visible(pTB->pLineNumbers)) {
-        lineNumbersWidth = pTB->lineNumbersWidth;
+    if (dred_control_is_visible(pTextBox->pLineNumbers)) {
+        lineNumbersWidth = pTextBox->lineNumbersWidth;
     }
 
-    float scrollbarHeight = dred_control_is_visible(pTB->pHorzScrollbar) ? dred_control_get_height(pTB->pHorzScrollbar) : 0;
-    dred_control_set_size(pTB->pLineNumbers, lineNumbersWidth, dred_control_get_height(pTextBox) - scrollbarHeight);
+    float scrollbarHeight = dred_control_is_visible(DRED_CONTROL(pTextBox->pHorzScrollbar)) ? dred_control_get_height(DRED_CONTROL(pTextBox->pHorzScrollbar)) : 0;
+    dred_control_set_size(pTextBox->pLineNumbers, lineNumbersWidth, dred_control_get_height(DRED_CONTROL(pTextBox)) - scrollbarHeight);
 
 
     // The size of the text container may have changed.
     float textEditorWidth;
     float textEditorHeight;
     dred_textbox__calculate_text_engine_container_size(pTextBox, &textEditorWidth, &textEditorHeight);
-    drte_engine_set_container_size(pTB->pTL, textEditorWidth, textEditorHeight);
+    drte_engine_set_container_size(pTextBox->pTL, textEditorWidth, textEditorHeight);
 
 
     // Force a redraw just to be sure everything is in a valid state.
-    dred_control_dirty(pTextBox, dred_rect_union(lineNumbersRectOld, dred_control_get_local_rect(pTB->pLineNumbers)));
-    dred_control_end_dirty(pTB->pLineNumbers);
+    dred_control_dirty(DRED_CONTROL(pTextBox), dred_rect_union(lineNumbersRectOld, dred_control_get_local_rect(pTextBox->pLineNumbers)));
+    dred_control_end_dirty(pTextBox->pLineNumbers);
 }

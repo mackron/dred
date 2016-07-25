@@ -2,76 +2,6 @@
 
 #define DRED_GUI_MIN_SCROLLBAR_THUMB_SIZE    16
 
-typedef struct
-{
-    /// The orientation.
-    dred_scrollbar_orientation orientation;
-
-    /// The minimum scroll range.
-    int rangeMin;
-
-    /// The maximum scroll range.
-    int rangeMax;
-
-    /// The page size.
-    int pageSize;
-
-    /// The current scroll position.
-    int scrollPos;
-
-    /// Whether or not to auto-hide the thumb.
-    bool autoHideThumb;
-
-    /// The mouse wheel scale.
-    int mouseWheelScale;
-
-    /// The color of the track.
-    dred_color trackColor;
-
-    /// The color of the thumb while not hovered or pressed.
-    dred_color thumbColor;
-
-    /// The color of the thumb while hovered.
-    dred_color thumbColorHovered;
-
-    /// The color of the thumb while pressed.
-    dred_color thumbColorPressed;
-
-    /// The function to call when the scroll position changes.
-    dred_scrollbar_on_scroll_proc onScroll;
-
-
-    /// The current size of the thumb.
-    float thumbSize;
-
-    /// The current position of the thumb.
-    float thumbPos;
-
-    /// The amount of padding between the edge of the scrollbar and the thumb.
-    float thumbPadding;
-
-    /// Whether or not we are hovered over the thumb.
-    bool thumbHovered;
-
-    /// Whether or not the thumb is pressed.
-    bool thumbPressed;
-
-    /// The relative position of the mouse on the x axis at the time the thumb was pressed with the mouse.
-    float thumbClickPosX;
-
-    /// The relative position of the mouse on the y axis at the time the thumb was pressed with the mouse.
-    float thumbClickPosY;
-
-
-    /// The size of the extra data.
-    size_t extraDataSize;
-
-    /// A pointer to the extra data.
-    char pExtraData[1];
-
-} dred_scrollbar_data;
-
-
 /// Refreshes the given scrollbar's thumb layout and redraws it.
 DRED_GUI_PRIVATE void dred_scrollbar_refresh_thumb(dred_scrollbar* pScrollbar);
 
@@ -115,49 +45,51 @@ dred_scrollbar* dred_scrollbar_create(dred_context* pDred, dred_control* pParent
         return NULL;
     }
 
-    dred_scrollbar* pScrollbar = dred_control_create(pDred, pParent, DRED_CONTROL_TYPE_SCROLLBAR, sizeof(dred_scrollbar_data) + extraDataSize);
+    dred_scrollbar* pScrollbar = (dred_scrollbar*)calloc(1, sizeof(*pScrollbar) + extraDataSize);
     if (pScrollbar == NULL) {
         return NULL;
     }
 
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    assert(pSB != NULL);
+    if (!dred_control_init(DRED_CONTROL(pScrollbar), pDred, pParent, DRED_CONTROL_TYPE_SCROLLBAR)) {
+        free(pScrollbar);
+        return NULL;
+    }
 
-    pSB->orientation       = orientation;
-    pSB->rangeMin          = 0;
-    pSB->rangeMax          = 0;
-    pSB->pageSize          = 0;
-    pSB->scrollPos         = 0;
-    pSB->autoHideThumb     = true;
-    pSB->mouseWheelScale   = 1;
-    pSB->trackColor        = dred_rgb(80, 80, 80);
-    pSB->thumbColor        = dred_rgb(112, 112, 112);
-    pSB->thumbColorHovered = dred_rgb(144, 144, 144);
-    pSB->thumbColorPressed = dred_rgb(180, 180, 180);
-    pSB->onScroll          = NULL;
+    pScrollbar->orientation       = orientation;
+    pScrollbar->rangeMin          = 0;
+    pScrollbar->rangeMax          = 0;
+    pScrollbar->pageSize          = 0;
+    pScrollbar->scrollPos         = 0;
+    pScrollbar->autoHideThumb     = true;
+    pScrollbar->mouseWheelScale   = 1;
+    pScrollbar->trackColor        = dred_rgb(80, 80, 80);
+    pScrollbar->thumbColor        = dred_rgb(112, 112, 112);
+    pScrollbar->thumbColorHovered = dred_rgb(144, 144, 144);
+    pScrollbar->thumbColorPressed = dred_rgb(180, 180, 180);
+    pScrollbar->onScroll          = NULL;
 
-    pSB->thumbSize         = DRED_GUI_MIN_SCROLLBAR_THUMB_SIZE;
-    pSB->thumbPos          = 0;
-    pSB->thumbPadding      = 2;
-    pSB->thumbHovered      = false;
-    pSB->thumbPressed      = false;
-    pSB->thumbClickPosX    = 0;
-    pSB->thumbClickPosY    = 0;
+    pScrollbar->thumbSize         = DRED_GUI_MIN_SCROLLBAR_THUMB_SIZE;
+    pScrollbar->thumbPos          = 0;
+    pScrollbar->thumbPadding      = 2;
+    pScrollbar->thumbHovered      = false;
+    pScrollbar->thumbPressed      = false;
+    pScrollbar->thumbClickPosX    = 0;
+    pScrollbar->thumbClickPosY    = 0;
 
-    pSB->extraDataSize = extraDataSize;
+    pScrollbar->extraDataSize = extraDataSize;
     if (pExtraData != NULL) {
-        memcpy(pSB->pExtraData, pExtraData, extraDataSize);
+        memcpy(pScrollbar->pExtraData, pExtraData, extraDataSize);
     }
 
 
     // Default event handlers.
-    dred_control_set_on_size(pScrollbar, dred_scrollbar_on_size);
-    dred_control_set_on_mouse_leave(pScrollbar, dred_scrollbar_on_mouse_leave);
-    dred_control_set_on_mouse_move(pScrollbar, dred_scrollbar_on_mouse_move);
-    dred_control_set_on_mouse_button_down(pScrollbar, dred_scrollbar_on_mouse_button_down);
-    dred_control_set_on_mouse_button_up(pScrollbar, dred_scrollbar_on_mouse_button_up);
-    dred_control_set_on_mouse_wheel(pScrollbar, dred_scrollbar_on_mouse_wheel);
-    dred_control_set_on_paint(pScrollbar, dred_scrollbar_on_paint);
+    dred_control_set_on_size(DRED_CONTROL(pScrollbar), dred_scrollbar_on_size);
+    dred_control_set_on_mouse_leave(DRED_CONTROL(pScrollbar), dred_scrollbar_on_mouse_leave);
+    dred_control_set_on_mouse_move(DRED_CONTROL(pScrollbar), dred_scrollbar_on_mouse_move);
+    dred_control_set_on_mouse_button_down(DRED_CONTROL(pScrollbar), dred_scrollbar_on_mouse_button_down);
+    dred_control_set_on_mouse_button_up(DRED_CONTROL(pScrollbar), dred_scrollbar_on_mouse_button_up);
+    dred_control_set_on_mouse_wheel(DRED_CONTROL(pScrollbar), dred_scrollbar_on_mouse_wheel);
+    dred_control_set_on_paint(DRED_CONTROL(pScrollbar), dred_scrollbar_on_paint);
 
 
     return pScrollbar;
@@ -169,51 +101,47 @@ void dred_scrollbar_delete(dred_scrollbar* pScrollbar)
         return;
     }
 
-    dred_control_delete(pScrollbar);
+    dred_control_uninit(DRED_CONTROL(pScrollbar));
 }
 
 
 size_t dred_scrollbar_get_extra_data_size(dred_scrollbar* pScrollbar)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return 0;
     }
 
-    return pSB->extraDataSize;
+    return pScrollbar->extraDataSize;
 }
 
 void* dred_scrollbar_get_extra_data(dred_scrollbar* pScrollbar)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return NULL;
     }
 
-    return pSB->pExtraData;
+    return pScrollbar->pExtraData;
 }
 
 
 dred_scrollbar_orientation dred_scrollbar_get_orientation(dred_scrollbar* pScrollbar)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return dred_scrollbar_orientation_none;
     }
 
-    return pSB->orientation;
+    return pScrollbar->orientation;
 }
 
 
 void dred_scrollbar_set_range(dred_scrollbar* pScrollbar, int rangeMin, int rangeMax)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    pSB->rangeMin = rangeMin;
-    pSB->rangeMax = rangeMax;
+    pScrollbar->rangeMin = rangeMin;
+    pScrollbar->rangeMax = rangeMax;
 
 
     // Make sure the scroll position is still valid.
@@ -225,29 +153,27 @@ void dred_scrollbar_set_range(dred_scrollbar* pScrollbar, int rangeMin, int rang
 
 void dred_scrollbar_get_range(dred_scrollbar* pScrollbar, int* pRangeMinOut, int* pRangeMaxOut)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
     if (pRangeMinOut != NULL) {
-        *pRangeMinOut = pSB->rangeMin;
+        *pRangeMinOut = pScrollbar->rangeMin;
     }
 
     if (pRangeMaxOut != NULL) {
-        *pRangeMaxOut = pSB->rangeMax;
+        *pRangeMaxOut = pScrollbar->rangeMax;
     }
 }
 
 
 void dred_scrollbar_set_page_size(dred_scrollbar* pScrollbar, int pageSize)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    pSB->pageSize = pageSize;
+    pScrollbar->pageSize = pageSize;
 
 
     // Make sure the scroll position is still valid.
@@ -259,25 +185,23 @@ void dred_scrollbar_set_page_size(dred_scrollbar* pScrollbar, int pageSize)
 
 int dred_scrollbar_get_page_size(dred_scrollbar* pScrollbar)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return 0;
     }
 
-    return pSB->pageSize;
+    return pScrollbar->pageSize;
 }
 
 
 void dred_scrollbar_set_range_and_page_size(dred_scrollbar* pScrollbar, int rangeMin, int rangeMax, int pageSize)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    pSB->rangeMin = rangeMin;
-    pSB->rangeMax = rangeMax;
-    pSB->pageSize = pageSize;
+    pScrollbar->rangeMin = rangeMin;
+    pScrollbar->rangeMax = rangeMax;
+    pScrollbar->pageSize = pageSize;
 
 
     // Make sure the scroll position is still valid.
@@ -290,15 +214,14 @@ void dred_scrollbar_set_range_and_page_size(dred_scrollbar* pScrollbar, int rang
 
 void dred_scrollbar_set_scroll_position(dred_scrollbar* pScrollbar, int position)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    int newScrollPos = dred_scrollbar_clampi(position, pSB->rangeMin, dred_scrollbar_maxi(0, pSB->rangeMax - pSB->pageSize + 1));
-    if (newScrollPos != pSB->scrollPos)
+    int newScrollPos = dred_scrollbar_clampi(position, pScrollbar->rangeMin, dred_scrollbar_maxi(0, pScrollbar->rangeMax - pScrollbar->pageSize + 1));
+    if (newScrollPos != pScrollbar->scrollPos)
     {
-        pSB->scrollPos = newScrollPos;
+        pScrollbar->scrollPos = newScrollPos;
 
         // The position of the thumb has changed, so refresh it.
         dred_scrollbar_refresh_thumb(pScrollbar);
@@ -307,39 +230,36 @@ void dred_scrollbar_set_scroll_position(dred_scrollbar* pScrollbar, int position
 
 int dred_scrollbar_get_scroll_position(dred_scrollbar* pScrollbar)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return 0;
     }
 
-    return pSB->scrollPos;
+    return pScrollbar->scrollPos;
 }
 
 
 void dred_scrollbar_scroll(dred_scrollbar* pScrollbar, int offset)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    dred_scrollbar_scroll_to(pScrollbar, pSB->scrollPos + offset);
+    dred_scrollbar_scroll_to(pScrollbar, pScrollbar->scrollPos + offset);
 }
 
 void dred_scrollbar_scroll_to(dred_scrollbar* pScrollbar, int newScrollPos)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    int oldScrollPos = pSB->scrollPos;
+    int oldScrollPos = pScrollbar->scrollPos;
     dred_scrollbar_set_scroll_position(pScrollbar, newScrollPos);
 
-    if (oldScrollPos != pSB->scrollPos)
+    if (oldScrollPos != pScrollbar->scrollPos)
     {
-        if (pSB->onScroll) {
-            pSB->onScroll(pScrollbar, pSB->scrollPos);
+        if (pScrollbar->onScroll) {
+            pScrollbar->onScroll(pScrollbar, pScrollbar->scrollPos);
         }
     }
 }
@@ -347,14 +267,13 @@ void dred_scrollbar_scroll_to(dred_scrollbar* pScrollbar, int newScrollPos)
 
 void dred_scrollbar_enable_thumb_auto_hide(dred_scrollbar* pScrollbar)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    if (pSB->autoHideThumb != true)
+    if (pScrollbar->autoHideThumb != true)
     {
-        pSB->autoHideThumb = true;
+        pScrollbar->autoHideThumb = true;
 
         // The thumb needs to be refreshed in order to show the correct state.
         dred_scrollbar_refresh_thumb(pScrollbar);
@@ -363,14 +282,13 @@ void dred_scrollbar_enable_thumb_auto_hide(dred_scrollbar* pScrollbar)
 
 void dred_scrollbar_disable_thumb_auto_hide(dred_scrollbar* pScrollbar)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    if (pSB->autoHideThumb != false)
+    if (pScrollbar->autoHideThumb != false)
     {
-        pSB->autoHideThumb = false;
+        pScrollbar->autoHideThumb = false;
 
         // The thumb needs to be refreshed in order to show the correct state.
         dred_scrollbar_refresh_thumb(pScrollbar);
@@ -379,211 +297,200 @@ void dred_scrollbar_disable_thumb_auto_hide(dred_scrollbar* pScrollbar)
 
 bool dred_scrollbar_is_thumb_auto_hide_enabled(dred_scrollbar* pScrollbar)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return false;
     }
 
-    return pSB->autoHideThumb;
+    return pScrollbar->autoHideThumb;
 }
 
 bool dred_scrollbar_is_thumb_visible(dred_scrollbar* pScrollbar)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return false;
     }
 
     // Always visible if auto-hiding is disabled.
-    if (!pSB->autoHideThumb) {
+    if (!pScrollbar->autoHideThumb) {
         return true;
     }
 
-    return pSB->pageSize < (pSB->rangeMax - pSB->rangeMin + 1) && pSB->pageSize > 0;
+    return pScrollbar->pageSize < (pScrollbar->rangeMax - pScrollbar->rangeMin + 1) && pScrollbar->pageSize > 0;
 }
 
 
 void dred_scrollbar_set_mouse_wheel_scele(dred_scrollbar* pScrollbar, int scale)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    pSB->mouseWheelScale = scale;
+    pScrollbar->mouseWheelScale = scale;
 }
 
 int dred_scrollbar_get_mouse_wheel_scale(dred_scrollbar* pScrollbar)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return 1;
     }
 
-    return pSB->mouseWheelScale;
+    return pScrollbar->mouseWheelScale;
 }
 
 
 void dred_scrollbar_set_track_color(dred_scrollbar* pScrollbar, dred_color color)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    pSB->trackColor = color;
+    pScrollbar->trackColor = color;
 }
 
 void dred_scrollbar_set_default_thumb_color(dred_scrollbar* pScrollbar, dred_color color)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    pSB->thumbColor = color;
+    pScrollbar->thumbColor = color;
 }
 
 void dred_scrollbar_set_hovered_thumb_color(dred_scrollbar* pScrollbar, dred_color color)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    pSB->thumbColorHovered = color;
+    pScrollbar->thumbColorHovered = color;
 }
 
 void dred_scrollbar_set_pressed_thumb_color(dred_scrollbar* pScrollbar, dred_color color)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    pSB->thumbColorPressed = color;
+    pScrollbar->thumbColorPressed = color;
 }
 
 
 void dred_scrollbar_set_on_scroll(dred_scrollbar* pScrollbar, dred_scrollbar_on_scroll_proc onScroll)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return;
     }
 
-    pSB->onScroll = onScroll;
+    pScrollbar->onScroll = onScroll;
 }
 
 dred_scrollbar_on_scroll_proc dred_scrollbar_get_on_scroll(dred_scrollbar* pScrollbar)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return NULL;
     }
 
-    return pSB->onScroll;
+    return pScrollbar->onScroll;
 }
 
 
 dred_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    if (pScrollbar == NULL) {
         return dred_make_rect(0, 0, 0, 0);
     }
 
     dred_rect rect = {0, 0, 0, 0};
-    rect.left = pSB->thumbPadding;
-    rect.top  = pSB->thumbPadding;
+    rect.left = pScrollbar->thumbPadding;
+    rect.top  = pScrollbar->thumbPadding;
 
-    if (pSB->orientation == dred_scrollbar_orientation_vertical)
+    if (pScrollbar->orientation == dred_scrollbar_orientation_vertical)
     {
         // Vertical.
-        rect.left   = pSB->thumbPadding;
-        rect.right  = dred_control_get_width(pScrollbar) - pSB->thumbPadding;
-        rect.top    = pSB->thumbPadding + pSB->thumbPos;
-        rect.bottom = rect.top + pSB->thumbSize;
+        rect.left   = pScrollbar->thumbPadding;
+        rect.right  = dred_control_get_width(DRED_CONTROL(pScrollbar)) - pScrollbar->thumbPadding;
+        rect.top    = pScrollbar->thumbPadding + pScrollbar->thumbPos;
+        rect.bottom = rect.top + pScrollbar->thumbSize;
     }
     else
     {
         // Horizontal.
-        rect.left   = pSB->thumbPadding + pSB->thumbPos;
-        rect.right  = rect.left + pSB->thumbSize;
-        rect.top    = pSB->thumbPadding;
-        rect.bottom = dred_control_get_height(pScrollbar) - pSB->thumbPadding;
+        rect.left   = pScrollbar->thumbPadding + pScrollbar->thumbPos;
+        rect.right  = rect.left + pScrollbar->thumbSize;
+        rect.top    = pScrollbar->thumbPadding;
+        rect.bottom = dred_control_get_height(DRED_CONTROL(pScrollbar)) - pScrollbar->thumbPadding;
     }
 
     return rect;
 }
 
 
-void dred_scrollbar_on_size(dred_scrollbar* pScrollbar, float newWidth, float newHeight)
+void dred_scrollbar_on_size(dred_control* pControl, float newWidth, float newHeight)
 {
     (void)newWidth;
     (void)newHeight;
 
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    dred_scrollbar* pScrollbar = DRED_SCROLLBAR(pControl);
+    if (pScrollbar == NULL) {
         return;
     }
 
     dred_scrollbar_refresh_thumb(pScrollbar);
 }
 
-void dred_scrollbar_on_mouse_leave(dred_scrollbar* pScrollbar)
+void dred_scrollbar_on_mouse_leave(dred_control* pControl)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    dred_scrollbar* pScrollbar = DRED_SCROLLBAR(pControl);
+    if (pScrollbar == NULL) {
         return;
     }
 
     bool needsRedraw = false;
-    if (pSB->thumbHovered)
+    if (pScrollbar->thumbHovered)
     {
         needsRedraw = true;
-        pSB->thumbHovered = false;
+        pScrollbar->thumbHovered = false;
     }
 
-    if (pSB->thumbPressed)
+    if (pScrollbar->thumbPressed)
     {
         needsRedraw = true;
-        pSB->thumbPressed = false;
+        pScrollbar->thumbPressed = false;
     }
 
     if (needsRedraw) {
-        dred_control_dirty(pScrollbar, dred_scrollbar_get_thumb_rect(pScrollbar));
+        dred_control_dirty(DRED_CONTROL(pScrollbar), dred_scrollbar_get_thumb_rect(pScrollbar));
     }
 }
 
-void dred_scrollbar_on_mouse_move(dred_scrollbar* pScrollbar, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_scrollbar_on_mouse_move(dred_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)stateFlags;
 
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    dred_scrollbar* pScrollbar = DRED_SCROLLBAR(pControl);
+    if (pScrollbar == NULL) {
         return;
     }
 
-    if (pSB->thumbPressed)
+    if (pScrollbar->thumbPressed)
     {
         // The thumb is pressed. Drag it.
         float thumbRelativeMousePosX = (float)relativeMousePosX;
         float thumbRelativeMousePosY = (float)relativeMousePosY;
         dred_scrollbar_make_relative_to_thumb(pScrollbar, &thumbRelativeMousePosX, &thumbRelativeMousePosY);
 
-        float dragOffsetX = thumbRelativeMousePosX - pSB->thumbClickPosX;
-        float dragOffsetY = thumbRelativeMousePosY - pSB->thumbClickPosY;
+        float dragOffsetX = thumbRelativeMousePosX - pScrollbar->thumbClickPosX;
+        float dragOffsetY = thumbRelativeMousePosY - pScrollbar->thumbClickPosY;
 
-        float destTrackPos = pSB->thumbPos;
-        if (pSB->orientation == dred_scrollbar_orientation_vertical) {
+        float destTrackPos = pScrollbar->thumbPos;
+        if (pScrollbar->orientation == dred_scrollbar_orientation_vertical) {
             destTrackPos += dragOffsetY;
         } else {
             destTrackPos += dragOffsetX;
         }
 
         int destScrollPos = dred_scrollbar_calculate_scroll_pos_from_thumb_pos(pScrollbar, destTrackPos);
-        if (destScrollPos != pSB->scrollPos)
+        if (destScrollPos != pScrollbar->scrollPos)
         {
             dred_scrollbar_scroll_to(pScrollbar, destScrollPos);
         }
@@ -593,24 +500,24 @@ void dred_scrollbar_on_mouse_move(dred_scrollbar* pScrollbar, int relativeMouseP
         // The thumb is not pressed. We just need to check if the hovered state has change and redraw if required.
         if (dred_scrollbar_is_thumb_visible(pScrollbar))
         {
-            bool wasThumbHovered = pSB->thumbHovered;
+            bool wasThumbHovered = pScrollbar->thumbHovered;
 
             dred_rect thumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
-            pSB->thumbHovered = dred_rect_contains_point(thumbRect, (float)relativeMousePosX, (float)relativeMousePosY);
+            pScrollbar->thumbHovered = dred_rect_contains_point(thumbRect, (float)relativeMousePosX, (float)relativeMousePosY);
 
-            if (wasThumbHovered != pSB->thumbHovered) {
-                dred_control_dirty(pScrollbar, thumbRect);
+            if (wasThumbHovered != pScrollbar->thumbHovered) {
+                dred_control_dirty(DRED_CONTROL(pScrollbar), thumbRect);
             }
         }
     }
 }
 
-void dred_scrollbar_on_mouse_button_down(dred_scrollbar* pScrollbar, int button, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_scrollbar_on_mouse_button_down(dred_control* pControl, int button, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)stateFlags;
 
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    dred_scrollbar* pScrollbar = DRED_SCROLLBAR(pControl);
+    if (pScrollbar == NULL) {
         return;
     }
 
@@ -621,16 +528,16 @@ void dred_scrollbar_on_mouse_button_down(dred_scrollbar* pScrollbar, int button,
             dred_rect thumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
             if (dred_rect_contains_point(thumbRect, (float)relativeMousePosX, (float)relativeMousePosY))
             {
-                if (!pSB->thumbPressed)
+                if (!pScrollbar->thumbPressed)
                 {
-                    dred_gui_capture_mouse(pScrollbar);
-                    pSB->thumbPressed = true;
+                    dred_gui_capture_mouse(DRED_CONTROL(pScrollbar));
+                    pScrollbar->thumbPressed = true;
 
-                    pSB->thumbClickPosX = (float)relativeMousePosX;
-                    pSB->thumbClickPosY = (float)relativeMousePosY;
-                    dred_scrollbar_make_relative_to_thumb(pScrollbar, &pSB->thumbClickPosX, &pSB->thumbClickPosY);
+                    pScrollbar->thumbClickPosX = (float)relativeMousePosX;
+                    pScrollbar->thumbClickPosY = (float)relativeMousePosY;
+                    dred_scrollbar_make_relative_to_thumb(pScrollbar, &pScrollbar->thumbClickPosX, &pScrollbar->thumbClickPosY);
 
-                    dred_control_dirty(pScrollbar, dred_scrollbar_get_thumb_rect(pScrollbar));
+                    dred_control_dirty(DRED_CONTROL(pScrollbar), dred_scrollbar_get_thumb_rect(pScrollbar));
                 }
             }
             else
@@ -646,49 +553,49 @@ void dred_scrollbar_on_mouse_button_down(dred_scrollbar* pScrollbar, int button,
     }
 }
 
-void dred_scrollbar_on_mouse_button_up(dred_scrollbar* pScrollbar, int button, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_scrollbar_on_mouse_button_up(dred_control* pControl, int button, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
     (void)relativeMousePosY;
     (void)stateFlags;
 
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    dred_scrollbar* pScrollbar = DRED_SCROLLBAR(pControl);
+    if (pScrollbar == NULL) {
         return;
     }
 
     if (button == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
-        if (pSB->thumbPressed && dred_gui_get_element_with_mouse_capture(pScrollbar->pGUI) == pScrollbar)
+        if (pScrollbar->thumbPressed && dred_gui_get_element_with_mouse_capture(dred_control_get_gui(pControl)) == pControl)
         {
-            dred_gui_release_mouse(pScrollbar->pGUI);
-            pSB->thumbPressed = false;
+            dred_gui_release_mouse(dred_control_get_gui(pControl));
+            pScrollbar->thumbPressed = false;
 
-            dred_control_dirty(pScrollbar, dred_scrollbar_get_thumb_rect(pScrollbar));
+            dred_control_dirty(pControl, dred_scrollbar_get_thumb_rect(pScrollbar));
         }
     }
 }
 
-void dred_scrollbar_on_mouse_wheel(dred_scrollbar* pScrollbar, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_scrollbar_on_mouse_wheel(dred_control* pControl, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
     (void)relativeMousePosY;
     (void)stateFlags;
 
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    dred_scrollbar* pScrollbar = DRED_SCROLLBAR(pControl);
+    if (pScrollbar == NULL) {
         return;
     }
 
     dred_scrollbar_scroll(pScrollbar, -delta * dred_scrollbar_get_mouse_wheel_scale(pScrollbar));
 }
 
-void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, dred_rect relativeClippingRect, void* pPaintData)
+void dred_scrollbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect, void* pPaintData)
 {
     (void)relativeClippingRect;
 
-    const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    if (pSB == NULL) {
+    dred_scrollbar* pScrollbar = DRED_SCROLLBAR(pControl);
+    if (pScrollbar == NULL) {
         return;
     }
 
@@ -699,27 +606,27 @@ void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, dred_rect relativeClipp
         // The thumb is visible.
 
         // Track. We draw this in 4 seperate pieces so we can avoid overdraw with the thumb.
-        dred_control_draw_rect(pScrollbar, dred_make_rect(0, 0, dred_control_get_width(pScrollbar), thumbRect.top), pSB->trackColor, pPaintData);  // Top
-        dred_control_draw_rect(pScrollbar, dred_make_rect(0, thumbRect.bottom, dred_control_get_width(pScrollbar), dred_control_get_height(pScrollbar)), pSB->trackColor, pPaintData);  // Bottom
-        dred_control_draw_rect(pScrollbar, dred_make_rect(0, thumbRect.top, thumbRect.left, thumbRect.bottom), pSB->trackColor, pPaintData);  // Left
-        dred_control_draw_rect(pScrollbar, dred_make_rect(thumbRect.right, thumbRect.top, dred_control_get_width(pScrollbar), thumbRect.bottom), pSB->trackColor, pPaintData); // Right
+        dred_control_draw_rect(pControl, dred_make_rect(0, 0, dred_control_get_width(pControl), thumbRect.top), pScrollbar->trackColor, pPaintData);  // Top
+        dred_control_draw_rect(pControl, dred_make_rect(0, thumbRect.bottom, dred_control_get_width(pControl), dred_control_get_height(pControl)), pScrollbar->trackColor, pPaintData);  // Bottom
+        dred_control_draw_rect(pControl, dred_make_rect(0, thumbRect.top, thumbRect.left, thumbRect.bottom), pScrollbar->trackColor, pPaintData);  // Left
+        dred_control_draw_rect(pControl, dred_make_rect(thumbRect.right, thumbRect.top, dred_control_get_width(pControl), thumbRect.bottom), pScrollbar->trackColor, pPaintData); // Right
 
         // Thumb.
         dred_color thumbColor;
-        if (pSB->thumbPressed) {
-            thumbColor = pSB->thumbColorPressed;
-        } else if (pSB->thumbHovered) {
-            thumbColor = pSB->thumbColorHovered;
+        if (pScrollbar->thumbPressed) {
+            thumbColor = pScrollbar->thumbColorPressed;
+        } else if (pScrollbar->thumbHovered) {
+            thumbColor = pScrollbar->thumbColorHovered;
         } else {
-            thumbColor = pSB->thumbColor;
+            thumbColor = pScrollbar->thumbColor;
         }
 
-        dred_control_draw_rect(pScrollbar, thumbRect, thumbColor, pPaintData);
+        dred_control_draw_rect(pControl, thumbRect, thumbColor, pPaintData);
     }
     else
     {
         // The thumb is not visible - just draw the track as one quad.
-        dred_control_draw_rect(pScrollbar, dred_control_get_local_rect(pScrollbar), pSB->trackColor, pPaintData);
+        dred_control_draw_rect(pControl, dred_control_get_local_rect(pControl), pScrollbar->trackColor, pPaintData);
     }
 }
 
@@ -727,33 +634,31 @@ void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, dred_rect relativeClipp
 
 DRED_GUI_PRIVATE void dred_scrollbar_refresh_thumb(dred_scrollbar* pScrollbar)
 {
-    dred_scrollbar_data* pSB = (dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    assert(pSB != NULL);
+    assert(pScrollbar != NULL);
 
     dred_rect oldThumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
 
-    pSB->thumbSize = dred_scrollbar_calculate_thumb_size(pScrollbar);
-    pSB->thumbPos  = dred_scrollbar_calculate_thumb_position(pScrollbar);
+    pScrollbar->thumbSize = dred_scrollbar_calculate_thumb_size(pScrollbar);
+    pScrollbar->thumbPos  = dred_scrollbar_calculate_thumb_position(pScrollbar);
 
     dred_rect newThumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
     if (!dred_rect_equal(oldThumbRect, newThumbRect))
     {
-        dred_control_dirty(pScrollbar, dred_rect_union(oldThumbRect, newThumbRect));
+        dred_control_dirty(DRED_CONTROL(pScrollbar), dred_rect_union(oldThumbRect, newThumbRect));
     }
 }
 
 DRED_GUI_PRIVATE float dred_scrollbar_calculate_thumb_size(dred_scrollbar* pScrollbar)
 {
-    const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    assert(pSB != NULL);
+    assert(pScrollbar != NULL);
 
     float trackSize = dred_scrollbar_get_track_size(pScrollbar);
-    float range = (float)(pSB->rangeMax - pSB->rangeMin + 1);
+    float range = (float)(pScrollbar->rangeMax - pScrollbar->rangeMin + 1);
 
     float thumbSize = DRED_GUI_MIN_SCROLLBAR_THUMB_SIZE;
     if (range > 0)
     {
-        thumbSize = roundf((trackSize / range) * pSB->pageSize);
+        thumbSize = roundf((trackSize / range) * pScrollbar->pageSize);
         thumbSize = dred_scrollbar_clampf(thumbSize, DRED_GUI_MIN_SCROLLBAR_THUMB_SIZE, trackSize);
     }
 
@@ -762,17 +667,16 @@ DRED_GUI_PRIVATE float dred_scrollbar_calculate_thumb_size(dred_scrollbar* pScro
 
 DRED_GUI_PRIVATE float dred_scrollbar_calculate_thumb_position(dred_scrollbar* pScrollbar)
 {
-    const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    assert(pSB != NULL);
+    assert(pScrollbar != NULL);
 
     float trackSize = dred_scrollbar_get_track_size(pScrollbar);
     float thumbSize = dred_scrollbar_calculate_thumb_size(pScrollbar);
-    float range = (float)(pSB->rangeMax - pSB->rangeMin + 1);
+    float range = (float)(pScrollbar->rangeMax - pScrollbar->rangeMin + 1);
 
     float thumbPos = 0;
-    if (range > pSB->pageSize)
+    if (range > pScrollbar->pageSize)
     {
-        thumbPos = roundf((trackSize / range) * pSB->scrollPos);
+        thumbPos = roundf((trackSize / range) * pScrollbar->scrollPos);
         thumbPos = dred_scrollbar_clampf(thumbPos, 0, trackSize - thumbSize);
     }
 
@@ -781,13 +685,12 @@ DRED_GUI_PRIVATE float dred_scrollbar_calculate_thumb_position(dred_scrollbar* p
 
 DRED_GUI_PRIVATE float dred_scrollbar_get_track_size(dred_scrollbar* pScrollbar)
 {
-    const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    assert(pSB != NULL);
+    assert(pScrollbar != NULL);
 
-    if (pSB->orientation == dred_scrollbar_orientation_vertical) {
-        return dred_control_get_height(pScrollbar) - (pSB->thumbPadding*2);
+    if (pScrollbar->orientation == dred_scrollbar_orientation_vertical) {
+        return dred_control_get_height(DRED_CONTROL(pScrollbar)) - (pScrollbar->thumbPadding*2);
     } else {
-        return dred_control_get_width(pScrollbar) - (pSB->thumbPadding*2);
+        return dred_control_get_width(DRED_CONTROL(pScrollbar)) - (pScrollbar->thumbPadding*2);
     }
 }
 
@@ -806,11 +709,10 @@ DRED_GUI_PRIVATE void dred_scrollbar_make_relative_to_thumb(dred_scrollbar* pScr
 
 DRED_GUI_PRIVATE int dred_scrollbar_calculate_scroll_pos_from_thumb_pos(dred_scrollbar* pScrollbar, float thumbPos)
 {
-    const dred_scrollbar_data* pSB = (const dred_scrollbar_data*)dred_control_get_extra_data(pScrollbar);
-    assert(pSB != NULL);
+    assert(pScrollbar != NULL);
 
     float trackSize = dred_scrollbar_get_track_size(pScrollbar);
-    float range     = (float)(pSB->rangeMax - pSB->rangeMin + 1);
+    float range     = (float)(pScrollbar->rangeMax - pScrollbar->rangeMin + 1);
 
     return (int)roundf(thumbPos / (trackSize / range));
 }

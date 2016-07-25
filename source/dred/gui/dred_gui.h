@@ -737,11 +737,8 @@ struct dred_control
     dred_gui_on_release_keyboard_proc onReleaseKeyboard;
 
 
-    /// The size of the extra data.
-    size_t extraDataSize;
-
-    /// A pointer to the extra data.
-    uint8_t pExtraData[1];
+    // Application-defined data.
+    void* pUserData;
 };
 
 struct dred_gui
@@ -962,21 +959,18 @@ void dred_gui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog);
 // Controls
 
 /// Creates an element.
-dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, const char* type, size_t extraDataSize);
+bool dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, const char* type);
 
 /// Deletes and element.
-void dred_control_delete(dred_control* pControl);
+void dred_control_uninit(dred_control* pControl);
 
 
 // Retrieves the dred context that owns the given control.
-dred_context* dred_control_get_gui(dred_control* pControl);
+dred_context* dred_control_get_context(dred_control* pControl);
 
+// Retrieves the GUI context that owns the given control.
+dred_gui* dred_control_get_gui(dred_control* pControl);
 
-/// Retrieves the size of the extra data of the given element, in bytes.
-size_t dred_control_get_extra_data_size(dred_control* pControl);
-
-/// Retrieves a pointer to the extra data of the given element.
-void* dred_control_get_extra_data(dred_control* pControl);
 
 
 /// Sets the type of the element.

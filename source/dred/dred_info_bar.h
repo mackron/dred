@@ -4,7 +4,20 @@
 
 #define DRED_CONTROL_TYPE_INFO_BAR   "dred.infobar"
 
-typedef dred_control dred_info_bar;
+typedef struct dred_info_bar dred_info_bar;
+#define DRED_INFO_BAR(a) ((dred_info_bar*)(a))
+
+struct dred_info_bar
+{
+    // The base control.
+    dred_control control;
+
+    dred_gui_font* pFont;
+    int type;
+    char lineStr[32];
+    char colStr[32];
+    char zoomStr[32];
+};
 
 // dred_info_bar_create()
 dred_info_bar* dred_info_bar_create(dred_context* pDred, dred_control* pParent);

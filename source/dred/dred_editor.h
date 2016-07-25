@@ -2,26 +2,38 @@
 
 #define DRED_CONTROL_TYPE_EDITOR  "dred.editor"
 
-typedef dred_control dred_editor;
+typedef struct dred_editor dred_editor;
+#define DRED_EDITOR(a) ((dred_editor*)(a))
 
 typedef bool (* dred_editor_on_save_proc)(dred_editor* pEditor, dred_file file, const char* filePath);
 typedef bool (* dred_editor_on_reload_proc)(dred_editor* pEditor);
 typedef void (* dred_editor_on_modified_proc)(dred_editor* pEditor);
 typedef void (* dred_editor_on_unmodified_proc)(dred_editor* pEditor);
 
+struct dred_editor
+{
+    // The base control.
+    dred_control control;
+
+    char filePathAbsolute[DRED_MAX_PATH];
+    uint64_t fileLastModifiedTime;
+    dred_editor_on_save_proc onSave;
+    dred_editor_on_reload_proc onReload;
+    dred_editor_on_modified_proc onModified;
+    dred_editor_on_unmodified_proc onUnmodified;
+    bool isModified;
+    bool isReadOnly;
+
+    size_t extraDataSize;
+    uint8_t pExtraData[1];
+};
+
 
 // dred_editor_create()
-dred_editor* dred_editor_create(dred_context* pDred, dred_control* pParent, const char* type, float sizeX, float sizeY, const char* filePathAbsolute, size_t extraDataSize);
+bool dred_editor_init(dred_editor* pEditor, dred_context* pDred, dred_control* pParent, const char* type, float sizeX, float sizeY, const char* filePathAbsolute);
 
 // dred_editor_delete()
-void dred_editor_delete(dred_editor* pEditor);
-
-
-// dred_editor_get_data()
-void* dred_editor_get_extra_data(dred_editor* pEditor);
-
-// dred_editor_get_data_size()
-size_t dred_editor_get_extra_data_size(dred_editor* pEditor);
+void dred_editor_uninit(dred_editor* pEditor);
 
 
 // Retrieves the absolute path of the file the editor is tied to.

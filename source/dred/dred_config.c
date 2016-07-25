@@ -358,7 +358,7 @@ void dred_config_on_set__texteditor_generic_refresh(dred_context* pDred)
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
             dred_control* pControl = dred_tab_get_control(pTab);
             if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                dred_text_editor_refresh_styling(pControl);
+                dred_text_editor_refresh_styling(DRED_TEXT_EDITOR(pControl));
             }
         }
     }
@@ -371,9 +371,9 @@ void dred_config_on_set__texteditor_word_wrap(dred_context* pDred)
             dred_control* pControl = dred_tab_get_control(pTab);
             if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
                 if (pDred->config.textEditorEnableWordWrap) {
-                    dred_text_editor_enable_word_wrap(pControl);
+                    dred_text_editor_enable_word_wrap(DRED_TEXT_EDITOR(pControl));
                 } else {
-                    dred_text_editor_disable_word_wrap(pControl);
+                    dred_text_editor_disable_word_wrap(DRED_TEXT_EDITOR(pControl));
                 }
             }
         }
@@ -387,7 +387,7 @@ void dred_config_on_set__cpp_syntax_color(dred_context* pDred)
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
             dred_control* pControl = dred_tab_get_control(pTab);
             if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                dred_text_editor_refresh_styling(pControl);
+                dred_text_editor_refresh_styling(DRED_TEXT_EDITOR(pControl));
             }
         }
     }

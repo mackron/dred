@@ -1,7 +1,9 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
 #define DRED_CONTROL_TYPE_SCROLLBAR   "dred.common.scrollbar"
-typedef dred_control dred_scrollbar;
+
+typedef struct dred_scrollbar dred_scrollbar;
+#define DRED_SCROLLBAR(a) ((dred_scrollbar*)(a))
 
 typedef enum
 {
@@ -11,6 +13,78 @@ typedef enum
 } dred_scrollbar_orientation;
 
 typedef void (* dred_scrollbar_on_scroll_proc)(dred_scrollbar* pScrollbar, int scrollPos);
+
+struct dred_scrollbar
+{
+    // The base control.
+    dred_control control;
+
+
+    /// The orientation.
+    dred_scrollbar_orientation orientation;
+
+    /// The minimum scroll range.
+    int rangeMin;
+
+    /// The maximum scroll range.
+    int rangeMax;
+
+    /// The page size.
+    int pageSize;
+
+    /// The current scroll position.
+    int scrollPos;
+
+    /// Whether or not to auto-hide the thumb.
+    bool autoHideThumb;
+
+    /// The mouse wheel scale.
+    int mouseWheelScale;
+
+    /// The color of the track.
+    dred_color trackColor;
+
+    /// The color of the thumb while not hovered or pressed.
+    dred_color thumbColor;
+
+    /// The color of the thumb while hovered.
+    dred_color thumbColorHovered;
+
+    /// The color of the thumb while pressed.
+    dred_color thumbColorPressed;
+
+    /// The function to call when the scroll position changes.
+    dred_scrollbar_on_scroll_proc onScroll;
+
+
+    /// The current size of the thumb.
+    float thumbSize;
+
+    /// The current position of the thumb.
+    float thumbPos;
+
+    /// The amount of padding between the edge of the scrollbar and the thumb.
+    float thumbPadding;
+
+    /// Whether or not we are hovered over the thumb.
+    bool thumbHovered;
+
+    /// Whether or not the thumb is pressed.
+    bool thumbPressed;
+
+    /// The relative position of the mouse on the x axis at the time the thumb was pressed with the mouse.
+    float thumbClickPosX;
+
+    /// The relative position of the mouse on the y axis at the time the thumb was pressed with the mouse.
+    float thumbClickPosY;
+
+
+    /// The size of the extra data.
+    size_t extraDataSize;
+
+    /// A pointer to the extra data.
+    char pExtraData[1];
+};
 
 
 /// Creates a scrollbar element.
@@ -130,22 +204,22 @@ dred_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar);
 
 
 /// Called when the size event needs to be processed for the given scrollbar.
-void dred_scrollbar_on_size(dred_scrollbar* pScrollbar, float newWidth, float newHeight);
+void dred_scrollbar_on_size(dred_control* pControl, float newWidth, float newHeight);
 
 /// Called when the mouse leave event needs to be processed for the given scrollbar.
-void dred_scrollbar_on_mouse_leave(dred_scrollbar* pScrollbar);
+void dred_scrollbar_on_mouse_leave(dred_control* pControl);
 
 /// Called when the mouse move event needs to be processed for the given scrollbar.
-void dred_scrollbar_on_mouse_move(dred_scrollbar* pScrollbar, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_scrollbar_on_mouse_move(dred_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the mouse button down event needs to be processed for the given scrollbar.
-void dred_scrollbar_on_mouse_button_down(dred_scrollbar* pScrollbar, int button, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_scrollbar_on_mouse_button_down(dred_control* pControl, int button, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the mouse button up event needs to be processed for the given scrollbar.
-void dred_scrollbar_on_mouse_button_up(dred_scrollbar* pScrollbar, int button, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_scrollbar_on_mouse_button_up(dred_control* pControl, int button, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the mouse wheel event needs to be processed for the given scrollbar.
-void dred_scrollbar_on_mouse_wheel(dred_scrollbar* pScrollbar, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_scrollbar_on_mouse_wheel(dred_control* pControl, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the paint event needs to be processed.
-void dred_scrollbar_on_paint(dred_scrollbar* pScrollbar, dred_rect relativeClippingRect, void* pPaintData);
+void dred_scrollbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect, void* pPaintData);

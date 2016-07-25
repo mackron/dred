@@ -334,7 +334,7 @@ bool dred_command__undo(dred_context* pDred, const char* value)
     }
 
     if (pFocusedControl != NULL && dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_undo(pFocusedControl);
+        dred_textbox_undo(DRED_TEXTBOX(pFocusedControl));
         return true;
     }
 
@@ -351,7 +351,7 @@ bool dred_command__redo(dred_context* pDred, const char* value)
     }
 
     if (pFocusedControl != NULL && dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_redo(pFocusedControl);
+        dred_textbox_redo(DRED_TEXTBOX(pFocusedControl));
         return true;
     }
 
@@ -375,13 +375,13 @@ bool dred_command__copy(dred_context* pDred, const char* value)
     }
 
     if (pFocusedControl != NULL && dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
-        size_t selectedTextLength = dred_textbox_get_selected_text(pFocusedControl, NULL, 0);
+        size_t selectedTextLength = dred_textbox_get_selected_text(DRED_TEXTBOX(pFocusedControl), NULL, 0);
         char* selectedText = (char*)malloc(selectedTextLength + 1);
         if (selectedText == NULL) {
             return false;
         }
 
-        selectedTextLength = dred_textbox_get_selected_text(pFocusedControl, selectedText, selectedTextLength + 1);
+        selectedTextLength = dred_textbox_get_selected_text(DRED_TEXTBOX(pFocusedControl), selectedText, selectedTextLength + 1);
         dred_clipboard_set_text(selectedText, selectedTextLength);
         return true;
     }
@@ -405,12 +405,12 @@ bool dred_command__paste(dred_context* pDred, const char* value)
         }
 
         bool wasTextChanged = false;
-        dred_textbox_prepare_undo_point(pFocusedControl);
+        dred_textbox_prepare_undo_point(DRED_TEXTBOX(pFocusedControl));
         {
-            wasTextChanged = dred_textbox_delete_selected_text_no_undo(pFocusedControl) || wasTextChanged;
-            wasTextChanged = dred_textbox_insert_text_at_cursors_no_undo(pFocusedControl, clipboardText) || wasTextChanged;
+            wasTextChanged = dred_textbox_delete_selected_text_no_undo(DRED_TEXTBOX(pFocusedControl)) || wasTextChanged;
+            wasTextChanged = dred_textbox_insert_text_at_cursors_no_undo(DRED_TEXTBOX(pFocusedControl), clipboardText) || wasTextChanged;
         }
-        if (wasTextChanged) { dred_textbox_commit_undo_point(pFocusedControl); }
+        if (wasTextChanged) { dred_textbox_commit_undo_point(DRED_TEXTBOX(pFocusedControl)); }
 
         dred_clipboard_free_text(clipboardText);
         return true;
@@ -429,7 +429,7 @@ bool dred_command__delete(dred_context* pDred, const char* value)
     }
 
     if (pFocusedControl != NULL && dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_delete_selected_text(pFocusedControl);
+        dred_textbox_delete_selected_text(DRED_TEXTBOX(pFocusedControl));
         return true;
     }
 
@@ -446,7 +446,7 @@ bool dred_command__select_all(dred_context* pDred, const char* value)
     }
 
     if (pFocusedControl != NULL && dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_select_all(pFocusedControl);
+        dred_textbox_select_all(DRED_TEXTBOX(pFocusedControl));
         return true;
     }
 
@@ -461,15 +461,15 @@ bool dred_command__goto(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char param[256];
         if (dr_next_token(value, param, sizeof(param)) != NULL) {
             // If the last character is a %, we use a ratio based goto.
             if (param[strlen(param) - 1] == '%') {
                 param[strlen(param) - 1] = '\0';
-                dred_text_editor_goto_ratio(pFocusedEditor, (unsigned int)abs(atoi(param)));
+                dred_text_editor_goto_ratio(DRED_TEXT_EDITOR(pFocusedEditor), (unsigned int)abs(atoi(param)));
             } else {
-                dred_text_editor_goto_line(pFocusedEditor, (unsigned int)abs(atoi(param)));
+                dred_text_editor_goto_line(DRED_TEXT_EDITOR(pFocusedEditor), (unsigned int)abs(atoi(param)));
             }
 
             return true;
@@ -486,10 +486,10 @@ bool dred_command__find(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char query[1024];
         if (dr_next_token(value, query, sizeof(query)) != NULL) {
-            if (!dred_text_editor_find_and_select_next(pFocusedEditor, query)) {
+            if (!dred_text_editor_find_and_select_next(DRED_TEXT_EDITOR(pFocusedEditor), query)) {
                 dred_cmdbar_set_message(pDred->pCmdBar, "No results found.");
                 return false;
             }
@@ -508,14 +508,14 @@ bool dred_command__replace(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char query[1024];
         value = dr_next_token(value, query, sizeof(query));
         if (value != NULL) {
             char replacement[1024];
             value = dr_next_token(value, replacement, sizeof(replacement));
             if (value != NULL) {
-                if (!dred_text_editor_find_and_replace_next(pFocusedEditor, query, replacement)) {
+                if (!dred_text_editor_find_and_replace_next(DRED_TEXT_EDITOR(pFocusedEditor), query, replacement)) {
                     dred_cmdbar_set_message(pDred->pCmdBar, "No results found.");
                     return false;
                 }
@@ -535,14 +535,14 @@ bool dred_command__replace_all(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char query[1024];
         value = dr_next_token(value, query, sizeof(query));
         if (value != NULL) {
             char replacement[1024];
             value = dr_next_token(value, replacement, sizeof(replacement));
             if (value != NULL) {
-                if (!dred_text_editor_find_and_replace_all(pFocusedEditor, query, replacement)) {
+                if (!dred_text_editor_find_and_replace_all(DRED_TEXT_EDITOR(pFocusedEditor), query, replacement)) {
                     dred_cmdbar_set_message(pDred->pCmdBar, "No results found.");
                     return false;
                 }
@@ -590,7 +590,7 @@ bool dred_command__zoom(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         dred_set_text_editor_scale(pDred, (float)atof(value));
     }
 
@@ -606,8 +606,8 @@ bool dred_command__unindent(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-        dred_text_editor_unindent_selected_blocks(pFocusedEditor);
+    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+        dred_text_editor_unindent_selected_blocks(DRED_TEXT_EDITOR(pFocusedEditor));
     }
 
     return true;
@@ -622,11 +622,11 @@ bool dred_command__insert_date(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedEditor, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char dateStr[256];
         dr_datetime_short(dr_now(), dateStr, sizeof(dateStr));
 
-        dred_text_editor_insert_text_at_cursors(pFocusedEditor, dateStr);
+        dred_text_editor_insert_text_at_cursors(DRED_TEXT_EDITOR(pFocusedEditor), dateStr);
     }
 
     return true;

@@ -4,8 +4,33 @@
 
 #define DRED_CONTROL_TYPE_COLOR_BUTTON   "dred.common.colorbutton"
 
-typedef dred_control dred_colorbutton;
+typedef struct dred_colorbutton dred_colorbutton;
+#define DRED_COLOR_BUTTON(a) ((dred_colorbutton*)(a))
+
 typedef void (* dred_colorbutton_on_color_changed_proc)(dred_colorbutton* pButton, dred_color color);
+
+struct dred_colorbutton
+{
+    // The base control.
+    dred_control control;
+
+    char text[64];
+    dred_font* pFont;
+    dred_gui_font* pSubFont;
+    dred_color textColor;
+    dred_color bgColor;
+    dred_color bgColorHovered;
+    dred_color bgColorPressed;
+    dred_color boxBorderColor;
+    dred_color color;
+    float borderWidth;
+    float padding;
+    bool isMouseOver;
+    bool isAutoSizeEnabled;
+    char varBinding[128];
+    dred_colorbutton_on_color_changed_proc onColorChanged;
+};
+
 
 dred_colorbutton* dred_colorbutton_create(dred_context* pDred, dred_control* pParent, const char* text, dred_color color);
 void dred_colorbutton_delete(dred_colorbutton* pButton);

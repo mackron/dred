@@ -7,15 +7,14 @@
 //////////////////////////////////////////////////////////////////
 
 // Helper for creating the root GUI element of a window.
-dred_control* dred_platform__create_root_gui_element(dred_context* pDred, dred_window* pWindow)
+bool dred_platform__init_root_gui_element(dred_control* pControl, dred_context* pDred, dred_window* pWindow)
 {
-    dred_control* pRootGUIControl = dred_control_create(pDred, NULL, "RootGUIControl", sizeof(pWindow));
-    if (pRootGUIControl == NULL) {
-        return NULL;
+    if (!dred_control_init(pControl, pDred, NULL, "RootGUIControl")) {
+        return false;
     }
 
-    memcpy(dred_control_get_extra_data(pRootGUIControl), &pWindow, sizeof(pWindow));
-    return pRootGUIControl;
+    pControl->pUserData = pWindow;
+    return true;
 }
 
 
@@ -673,8 +672,8 @@ dred_window* dred_window_create__win32__internal(dred_context* pDred, HWND hWnd)
         goto on_error;
     }
 
-    pWindow->pRootGUIControl = dred_platform__create_root_gui_element(pDred, pWindow);
-    if (pWindow->pRootGUIControl == NULL) {
+    pWindow->pRootGUIControl = &pWindow->rootGUIControl;
+    if (!dred_platform__init_root_gui_element(pWindow->pRootGUIControl, pDred, pWindow)) {
         goto on_error;
     }
 
@@ -730,7 +729,7 @@ void dred_window_delete__win32(dred_window* pWindow)
     }
 
     if (pWindow->pRootGUIControl) {
-        dred_control_delete(pWindow->pRootGUIControl);
+        dred_control_uninit(pWindow->pRootGUIControl);
         pWindow->pRootGUIControl = NULL;
     }
 
@@ -1426,7 +1425,7 @@ void dred_clipboard_free_text__win32(char* text)
 
 static void dred_platform__on_global_capture_mouse__win32(dred_control* pControl)
 {
-    dred_window* pWindow = dred_get_element_window(pControl);
+    dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
         SetCapture(pWindow->hWnd);
     }
@@ -1434,7 +1433,7 @@ static void dred_platform__on_global_capture_mouse__win32(dred_control* pControl
 
 static void dred_platform__on_global_release_mouse__win32(dred_control* pControl)
 {
-    dred_window* pWindow = dred_get_element_window(pControl);
+    dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
         ReleaseCapture();
     }
@@ -1444,7 +1443,7 @@ static void dred_platform__on_global_capture_keyboard__win32(dred_control* pCont
 {
     (void)pPrevCapturedControl;
 
-    dred_window* pWindow = dred_get_element_window(pControl);
+    dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
         pWindow->pControlWithKeyboardCapture = pControl;
         SetFocus(pWindow->hWnd);
@@ -1455,9 +1454,9 @@ static void dred_platform__on_global_release_keyboard__win32(dred_control* pCont
 {
     (void)pNewCapturedControl;
 
-    dred_window* pWindow = dred_get_element_window(pControl);
+    dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
-        dred_window* pNewWindow = dred_get_element_window(pNewCapturedControl);
+        dred_window* pNewWindow = dred_get_control_window(pNewCapturedControl);
         if (pWindow != pNewWindow) {
             SetFocus(NULL);
         }
@@ -1466,7 +1465,7 @@ static void dred_platform__on_global_release_keyboard__win32(dred_control* pCont
 
 static void dred_platform__on_global_dirty__win32(dred_control* pControl, dred_rect relativeRect)
 {
-    dred_window* pWindow = dred_get_element_window(pControl);
+    dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL)
     {
         dred_rect absoluteRect = relativeRect;
@@ -2802,7 +2801,7 @@ void dred_clipboard_free_text__gtk(char* text)
 
 static void dred_platform__on_global_capture_mouse__gtk(dred_control* pControl)
 {
-    dred_window* pWindow = dred_get_element_window(pControl);
+    dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
         gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
             gtk_widget_get_window(pWindow->pGTKClientArea), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
@@ -2811,7 +2810,7 @@ static void dred_platform__on_global_capture_mouse__gtk(dred_control* pControl)
 
 static void dred_platform__on_global_release_mouse__gtk(dred_control* pControl)
 {
-    dred_window* pWindow = dred_get_element_window(pControl);
+    dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
         gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
     }
@@ -2821,7 +2820,7 @@ static void dred_platform__on_global_capture_keyboard__gtk(dred_control* pContro
 {
     (void)pPrevCapturedControl;
 
-    dred_window* pWindow = dred_get_element_window(pControl);
+    dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
         pWindow->pControlWithKeyboardCapture = pControl;
         gtk_widget_grab_focus(GTK_WIDGET(pWindow->pGTKWindow));
@@ -2832,9 +2831,9 @@ static void dred_platform__on_global_release_keyboard__gtk(dred_control* pContro
 {
     (void)pNewCapturedControl;
 
-    dred_window* pWindow = dred_get_element_window(pControl);
+    dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
-        dred_window* pNewWindow = dred_get_element_window(pNewCapturedControl);
+        dred_window* pNewWindow = dred_get_control_window(pNewCapturedControl);
         if (pWindow != pNewWindow) {
             //gtk_widget_grab_focus(NULL);
         }
@@ -2843,7 +2842,7 @@ static void dred_platform__on_global_release_keyboard__gtk(dred_control* pContro
 
 static void dred_platform__on_global_dirty__gtk(dred_control* pControl, dred_rect relativeRect)
 {
-    dred_window* pWindow = dred_get_element_window(pControl);
+    dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL && pWindow->pGTKWindow != NULL)
     {
         dred_rect absoluteRect = relativeRect;
@@ -2874,7 +2873,7 @@ static void dred_platform__on_global_dirty__gtk(dred_control* pControl, dred_rec
 
 static void dred_platform__on_global_change_cursor(dred_control* pControl, dred_cursor_type cursor)
 {
-    dred_window* pWindow = dred_get_element_window(pControl);
+    dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow == NULL) {
         return;
     }
@@ -2897,7 +2896,7 @@ static void dred_platform__on_global_change_cursor(dred_control* pControl, dred_
 
 void dred_platform__on_delete_gui_element(dred_control* pControl)
 {
-    dred_window* pWindow = dred_get_element_window(pControl);
+    dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow == NULL) {
         return;
     }
@@ -3449,7 +3448,7 @@ void dred_window__stock_event__hide_on_close(dred_window* pWindow)
 }
 
 
-dred_window* dred_get_element_window(dred_control* pControl)
+dred_window* dred_get_control_window(dred_control* pControl)
 {
     if (pControl == NULL) {
         return NULL;
@@ -3464,12 +3463,7 @@ dred_window* dred_get_element_window(dred_control* pControl)
         return NULL;
     }
 
-    dred_window** ppWindow = dred_control_get_extra_data(pRootGUIControl);
-    if (ppWindow == NULL) {
-        return NULL;
-    }
-
-    return *ppWindow;
+    return (dred_window*)pRootGUIControl->pUserData;
 }
 
 

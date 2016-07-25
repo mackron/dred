@@ -2,8 +2,31 @@
 
 #define DRED_CONTROL_TYPE_BUTTON   "dred.common.button"
 
-typedef dred_control dred_button;
+typedef struct dred_button dred_button;
+#define DRED_BUTTON(a) ((dred_button*)(a))
+
 typedef void (* dred_button_on_pressed_proc)(dred_button* pButton);
+
+struct dred_button
+{
+    // The base control.
+    dred_control control;
+
+    char text[64];
+    dred_font* pFont;
+    dred_gui_font* pSubFont;
+    dred_color textColor;
+    dred_color bgColor;
+    dred_color bgColorHovered;
+    dred_color bgColorPressed;
+    dred_color borderColor;
+    float borderWidth;
+    float paddingHorz;
+    float paddingVert;
+    bool isMouseOver;
+    bool isAutoSizeEnabled;
+    dred_button_on_pressed_proc onPressed;
+};
 
 dred_button* dred_button_create(dred_context* pDred, dred_control* pParent, const char* text);
 void dred_button_delete(dred_button* pButton);

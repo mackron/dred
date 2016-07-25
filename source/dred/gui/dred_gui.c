@@ -344,7 +344,7 @@ void dred_control__delete_for_real(dred_control* pControlToDelete)
         }
     }
 
-    free(pControlToDelete);
+    //free(pControlToDelete);
 }
 
 
@@ -1237,22 +1237,17 @@ void dred_gui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog)
 /////////////////////////////////////////////////////////////////
 // Controls
 
-dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, const char* type, size_t extraDataSize)
+bool dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, const char* type)
 {
-    if (pDred == NULL) {
-        return NULL;
+    if (pControl == NULL || pDred == NULL) {
+        return false;
     }
 
-    dred_control* pControl = (dred_control*)calloc(1, sizeof(dred_control) + extraDataSize);
-    if (pControl == NULL) {
-        return NULL;
-    }
-
+    memset(pControl, 0, sizeof(*pControl));
     pControl->pGUI = pDred->pGUI;
     pControl->pParent = pParent;
     pControl->cursor = dred_cursor_default;
     pControl->dirtyRect = dred_make_inside_out_rect();
-    pControl->extraDataSize = extraDataSize;
 
     // Add to the the hierarchy.
     dred_control__append_without_detach_or_redraw(pControl, pControl->pParent);
@@ -1265,10 +1260,10 @@ dred_control* dred_control_create(dred_context* pDred, dred_control* pParent, co
     }
 
     dred_control_set_type(pControl, type);
-    return pControl;
+    return true;
 }
 
-void dred_control_delete(dred_control* pControl)
+void dred_control_uninit(dred_control* pControl)
 {
     if (pControl == NULL) {
         return;
@@ -1370,7 +1365,7 @@ void dred_control_delete(dred_control* pControl)
 
     // Children need to be deleted before deleting the element itself.
     while (pControl->pLastChild != NULL) {
-        dred_control_delete(pControl->pLastChild);
+        dred_control_uninit(pControl->pLastChild);
     }
 
 
@@ -1388,7 +1383,7 @@ void dred_control_delete(dred_control* pControl)
 }
 
 
-dred_context* dred_control_get_gui(dred_control* pControl)
+dred_context* dred_control_get_context(dred_control* pControl)
 {
     if (pControl == NULL || pControl->pGUI == NULL) {
         return NULL;
@@ -1397,23 +1392,14 @@ dred_context* dred_control_get_gui(dred_control* pControl)
     return pControl->pGUI->pDred;
 }
 
-
-size_t dred_control_get_extra_data_size(dred_control* pControl)
+dred_gui* dred_control_get_gui(dred_control* pControl)
 {
-    if (pControl != NULL) {
-        return pControl->extraDataSize;
+    dred_context* pDred = dred_control_get_context(pControl);
+    if (pDred == NULL) {
+        return NULL;
     }
 
-    return 0;
-}
-
-void* dred_control_get_extra_data(dred_control* pControl)
-{
-    if (pControl != NULL) {
-        return pControl->pExtraData;
-    }
-
-    return NULL;
+    return pDred->pGUI;
 }
 
 
@@ -1738,7 +1724,7 @@ void dred_control_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int 
         return;
     }
 
-    dred_window* pWindow = dred_get_element_window(pControl);
+    dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow == NULL) {
         return;
     }

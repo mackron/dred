@@ -1,7 +1,9 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
 #define DRED_CONTROL_TYPE_TABBAR   "dred.common.tabbar"
-typedef dred_control dred_tabbar;
+
+typedef struct dred_tabbar dred_tabbar;
+#define DRED_TABBAR(a) ((dred_tabbar*)(a));
 
 #define DRED_GUI_MAX_TAB_TEXT_LENGTH   256
 
@@ -21,6 +23,116 @@ typedef void (* dred_tabbar_on_tab_activated_proc)      (dred_tabbar* pTabBar, d
 typedef void (* dred_tabbar_on_tab_deactivated_proc)    (dred_tabbar* pTabBar, dred_tab* pTab, dred_tab* pNewActiveTab);
 typedef void (* dred_tabbar_on_tab_close_proc)          (dred_tabbar* pTabBar, dred_tab* pTab);
 typedef void (* dred_tabbar_on_tab_mouse_button_up_proc)(dred_tabbar* pTabBar, dred_tab* pTab, int mouseButton, int mouseRelativePosX, int mouseRelativePosY, int stateFlags);
+
+
+struct dred_tabbar
+{
+    // The base control.
+    dred_control control;
+
+
+    /// The orientation.
+    dred_tabbar_orientation orientation;
+
+
+    /// A pointer to the first tab.
+    dred_tab* pFirstTab;
+
+    /// A pointer to the last tab.
+    dred_tab* pLastTab;
+
+
+    /// A pointer to the hovered tab.
+    dred_tab* pHoveredTab;
+
+    /// A pointer to the active tab.
+    dred_tab* pActiveTab;
+
+    /// The tab whose close button is currently pressed, if any.
+    dred_tab* pTabWithCloseButtonPressed;
+
+
+    /// The default font to use for tab bar items.
+    dred_gui_font* pFont;
+
+    /// The default color to use for tab bar item text.
+    dred_color tabTextColor;
+
+    /// The default color to use for tab bar item text while active.
+    dred_color tabTextColorActivated;
+
+    /// The default color to use for tab bar item text while hovered.
+    dred_color tabTextColorHovered;
+
+    /// The default background color of tab bar items.
+    dred_color tabBackgroundColor;
+
+    /// The background color of tab bar items while hovered.
+    dred_color tabBackgroundColorHovered;
+
+    /// The background color of tab bar items while selected.
+    dred_color tabBackbroundColorActivated;
+
+    /// The padding to apply to the text of tabs.
+    float tabPadding;
+
+    /// The image to use for the close button.
+    dred_gui_image* pCloseButtonImage;
+
+    /// The padding to the left of the close button.
+    float closeButtonPaddingLeft;
+
+    /// The default color of the close button.
+    dred_color closeButtonColorDefault;
+
+    /// The color of the close button when the tab is hovered, but not the close button itself.
+    dred_color closeButtonColorTabHovered;
+
+    /// The color of the close button when it is hovered.
+    dred_color closeButtonColorHovered;
+
+    /// The color of the close button when it is pressed.
+    dred_color closeButtonColorPressed;
+
+
+    /// Whether or not auto-sizing is enabled. Disabled by default.
+    bool isAutoSizeEnabled;
+
+    /// Whether or not the close buttons are being shown.
+    bool isShowingCloseButton;
+
+    /// Whether or not close-on-middle-click is enabled.
+    bool isCloseOnMiddleClickEnabled;
+
+    /// Whether or not the close button is hovered.
+    bool isCloseButtonHovered;
+
+
+    /// The function to call when a tab needs to be measured.
+    dred_tabbar_on_measure_tab_proc onMeasureTab;
+
+    /// The function to call when a tab needs to be painted.
+    dred_tabbar_on_paint_tab_proc onPaintTab;
+
+    /// The function to call when a tab is activated.
+    dred_tabbar_on_tab_activated_proc onTabActivated;
+
+    /// The function to call when a tab is deactivated.
+    dred_tabbar_on_tab_deactivated_proc onTabDeactivated;
+
+    /// The function to call when a tab is closed via the close button.
+    dred_tabbar_on_tab_close_proc onTabClose;
+
+    // The function to call when a mouse button is released while over a tab.
+    dred_tabbar_on_tab_mouse_button_up_proc onTabMouseButtonUp;
+
+
+    /// The size of the extra data.
+    size_t extraDataSize;
+
+    /// A pointer to the extra data.
+    char pExtraData[1];
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -202,19 +314,19 @@ bool dred_tabbar_is_close_on_middle_click_enabled(dred_tabbar* pTabBar);
 
 
 /// Called when the mouse leave event needs to be processed for the given tab bar control.
-void dred_tabbar_on_mouse_leave(dred_tabbar* pTabBar);
+void dred_tabbar_on_mouse_leave(dred_control* pControl);
 
 /// Called when the mouse move event needs to be processed for the given tab bar control.
-void dred_tabbar_on_mouse_move(dred_tabbar* pTabBar, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_tabbar_on_mouse_move(dred_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the mouse button down event needs to be processed for the given tab bar control.
-void dred_tabbar_on_mouse_button_down(dred_tabbar* pTabBar, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_tabbar_on_mouse_button_down(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the mouse button up event needs to be processed for the given tab bar control.
-void dred_tabbar_on_mouse_button_up(dred_tabbar* pTabBar, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_tabbar_on_mouse_button_up(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the paint event needs to be processed for the given tab control.
-void dred_tabbar_on_paint(dred_tabbar* pTabBar, dred_rect relativeClippingRect, void* pPaintData);
+void dred_tabbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect, void* pPaintData);
 
 
 
@@ -235,7 +347,7 @@ dred_tab* dred_tabbar_create_and_prepend_tab(dred_tabbar* pTabBar, const char* t
 void dred_tab_delete(dred_tab* pTab);
 
 /// Retrieves the tab bar GUI element that owns the given item.
-dred_control* dred_tab_get_tab_bar_element(dred_tab* pTab);
+dred_tabbar* dred_tab_get_tab_bar(dred_tab* pTab);
 
 /// Retrieves the size of the extra data associated with the given tree-view item.
 size_t dred_tab_get_extra_data_size(dred_tab* pTab);
@@ -277,4 +389,4 @@ void dred_tab_move_into_view(dred_tab* pTab);
 
 
 // Retrieves the tab group the tab is attached to.
-dred_control* dred_tab_get_tabgroup(dred_tab* pTab);
+dred_tabgroup* dred_tab_get_tabgroup(dred_tab* pTab);
