@@ -19,7 +19,7 @@ dred_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSett
     assert(pSettingsEditor != NULL);
 
     float posX = pSettingsEditor->sidePanelWidth;
-    float posY = dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - (dred_control_get_height(DRED_CONTROL(pSettingsEditor->pCloseButton))) - (8*pDred->uiScale * 2);
+    float posY = dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - (dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton))) - (8*pDred->uiScale * 2);
 
     return dred_make_rect(posX, posY, dred_control_get_width(DRED_CONTROL(pSettingsEditor)), dred_control_get_height(DRED_CONTROL(pSettingsEditor)));
 }
@@ -82,7 +82,7 @@ void dred_settings_editor__refresh_layout(dred_settings_editor* pSettingsEditor)
     float posX = pSettingsEditor->sidePanelWidth;
     float posY = 0;
     float sizeX = dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - posX;
-    float sizeY = dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - (dred_control_get_height(DRED_CONTROL(pSettingsEditor->pCloseButton))) - (8*pDred->uiScale * 2);
+    float sizeY = dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - (dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton))) - (8*pDred->uiScale * 2);
 
     // Every page needs to be resized. Every page will be the same size.
     int sideButtonsCount = (int)(sizeof(pSettingsEditor->pages) / sizeof(pSettingsEditor->pages[0]));
@@ -106,9 +106,9 @@ void dred_settings_editor__on_size(dred_control* pControl, float newWidth, float
 
     dred_settings_editor__refresh_layout(pSettingsEditor);
 
-    dred_control_set_relative_position(DRED_CONTROL(pSettingsEditor->pCloseButton),
-        dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - dred_control_get_width(DRED_CONTROL(pSettingsEditor->pCloseButton)) - 8*pDred->uiScale,
-        dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(pSettingsEditor->pCloseButton)) - 8*pDred->uiScale);
+    dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->closeButton),
+        dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - dred_control_get_width(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*pDred->uiScale,
+        dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*pDred->uiScale);
 
     
 }
@@ -332,23 +332,23 @@ bool dred_settings_editor__init_page__general(dred_settings_editor* pSettingsEdi
     float penPosX = 8*pDred->uiScale;
     float penPosY = 8*pDred->uiScale;
 
-    pSettingsEditor->pCBShowTabBar = dred_checkbox_create(pDred, pPage->pGUIControl, "Show Tab Bar", pDred->config.showTabBar);
-    dred_checkbox_set_bind_to_config_var(pSettingsEditor->pCBShowTabBar, "show-tab-bar");
-    dred_checkbox_set_padding(pSettingsEditor->pCBShowTabBar, 4*pDred->uiScale);
-    dred_control_set_relative_position(DRED_CONTROL(pSettingsEditor->pCBShowTabBar), penPosX, penPosY);
-    penPosY += dred_control_get_height(DRED_CONTROL(pSettingsEditor->pCBShowTabBar)) + (6*pDred->uiScale);
+    dred_checkbox_init(&pSettingsEditor->cbShowTabBar, pDred, pPage->pGUIControl, "Show Tab Bar", pDred->config.showTabBar);
+    dred_checkbox_set_bind_to_config_var(&pSettingsEditor->cbShowTabBar, "show-tab-bar");
+    dred_checkbox_set_padding(&pSettingsEditor->cbShowTabBar, 4*pDred->uiScale);
+    dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowTabBar), penPosX, penPosY);
+    penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowTabBar)) + (6*pDred->uiScale);
 
-    pSettingsEditor->pCBShowMenuBar = dred_checkbox_create(pDred, pPage->pGUIControl, "Show Menu Bar", pDred->config.showMenuBar);
-    dred_checkbox_set_bind_to_config_var(pSettingsEditor->pCBShowMenuBar, "show-menu-bar");
-    dred_checkbox_set_padding(pSettingsEditor->pCBShowMenuBar, 4*pDred->uiScale);
-    dred_control_set_relative_position(DRED_CONTROL(pSettingsEditor->pCBShowMenuBar), penPosX, penPosY);
-    penPosY += dred_control_get_height(DRED_CONTROL(pSettingsEditor->pCBShowMenuBar)) + (6*pDred->uiScale);
+    dred_checkbox_init(&pSettingsEditor->cbShowMenuBar, pDred, pPage->pGUIControl, "Show Menu Bar", pDred->config.showMenuBar);
+    dred_checkbox_set_bind_to_config_var(&pSettingsEditor->cbShowMenuBar, "show-menu-bar");
+    dred_checkbox_set_padding(&pSettingsEditor->cbShowMenuBar, 4*pDred->uiScale);
+    dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowMenuBar), penPosX, penPosY);
+    penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowMenuBar)) + (6*pDred->uiScale);
 
-    pSettingsEditor->pCBShowMenuBar = dred_checkbox_create(pDred, pPage->pGUIControl, "Auto-hide Command Bar", pDred->config.autoHideCmdBar);
-    dred_checkbox_set_bind_to_config_var(pSettingsEditor->pCBShowMenuBar, "auto-hide-cmd-bar");
-    dred_checkbox_set_padding(pSettingsEditor->pCBShowMenuBar, 4*pDred->uiScale);
-    dred_control_set_relative_position(DRED_CONTROL(pSettingsEditor->pCBShowMenuBar), penPosX, penPosY);
-    penPosY += dred_control_get_height(DRED_CONTROL(pSettingsEditor->pCBShowMenuBar)) + (6*pDred->uiScale);
+    dred_checkbox_init(&pSettingsEditor->cbAutoHideCmdBar, pDred, pPage->pGUIControl, "Auto-hide Command Bar", pDred->config.autoHideCmdBar);
+    dred_checkbox_set_bind_to_config_var(&pSettingsEditor->cbAutoHideCmdBar, "auto-hide-cmd-bar");
+    dred_checkbox_set_padding(&pSettingsEditor->cbAutoHideCmdBar, 4*pDred->uiScale);
+    dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar), penPosX, penPosY);
+    penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar)) + (6*pDred->uiScale);
 
     return true;
 }
@@ -372,17 +372,16 @@ bool dred_settings_editor__init_page__theme(dred_settings_editor* pSettingsEdito
     float penPosX = 8*pDred->uiScale;
     float penPosY = 8*pDred->uiScale;
 
-    pSettingsEditor->pFontButton = dred_button_create(pDred, pPage->pGUIControl, "Choose Font...");
-    if (pSettingsEditor->pFontButton == NULL) {
+    if (!dred_button_init(&pSettingsEditor->fontButton, pDred, pPage->pGUIControl, "Choose Font...")) {
         dred_control_uninit(pPage->pGUIControl);
         return false;
     }
 
-    dred_button_set_on_pressed(pSettingsEditor->pFontButton, dred_settings__btn_choose_font__on_pressed);
-    dred_button_set_padding(pSettingsEditor->pFontButton, 16*pDred->uiScale, 6*pDred->uiScale);
-    dred_control_set_relative_position(DRED_CONTROL(pSettingsEditor->pFontButton), penPosX, penPosY);
+    dred_button_set_on_pressed(&pSettingsEditor->fontButton, dred_settings__btn_choose_font__on_pressed);
+    dred_button_set_padding(&pSettingsEditor->fontButton, 16*pDred->uiScale, 6*pDred->uiScale);
+    dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->fontButton), penPosX, penPosY);
 
-    penPosY += dred_control_get_height(DRED_CONTROL(pSettingsEditor->pFontButton)) + (6*pDred->uiScale);
+    penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->fontButton)) + (6*pDred->uiScale);
 
 
     pSettingsEditor->pTextColorButton = dred_colorbutton_create(pDred, pPage->pGUIControl, "Text color", pDred->config.textEditorTextColor);
@@ -446,17 +445,17 @@ bool dred_settings_editor__init_page__text_editor(dred_settings_editor* pSetting
     float penPosX = 8*pDred->uiScale;
     float penPosY = 8*pDred->uiScale;
 
-    pSettingsEditor->pCBTabsToSpaces = dred_checkbox_create(pDred, pPage->pGUIControl, "Convert tabs to spaces", pDred->config.textEditorTabsToSpacesEnabled);
-    dred_checkbox_set_bind_to_config_var(pSettingsEditor->pCBTabsToSpaces, "texteditor-enable-tabs-to-spaces");
-    dred_checkbox_set_padding(pSettingsEditor->pCBTabsToSpaces, 4*pDred->uiScale);
-    dred_control_set_relative_position(DRED_CONTROL(pSettingsEditor->pCBTabsToSpaces), penPosX, penPosY);
-    penPosY += dred_control_get_height(DRED_CONTROL(pSettingsEditor->pCBTabsToSpaces)) + (6*pDred->uiScale);
+    dred_checkbox_init(&pSettingsEditor->cbTabsToSpaces, pDred, pPage->pGUIControl, "Convert tabs to spaces", pDred->config.textEditorTabsToSpacesEnabled);
+    dred_checkbox_set_bind_to_config_var(&pSettingsEditor->cbTabsToSpaces, "texteditor-enable-tabs-to-spaces");
+    dred_checkbox_set_padding(&pSettingsEditor->cbTabsToSpaces, 4*pDred->uiScale);
+    dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbTabsToSpaces), penPosX, penPosY);
+    penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbTabsToSpaces)) + (6*pDred->uiScale);
 
-    pSettingsEditor->pCBShowLineNumbers = dred_checkbox_create(pDred, pPage->pGUIControl, "Show line numbers", pDred->config.textEditorShowLineNumbers);
-    dred_checkbox_set_bind_to_config_var(pSettingsEditor->pCBShowLineNumbers, "texteditor-show-line-numbers");
-    dred_checkbox_set_padding(pSettingsEditor->pCBShowLineNumbers, 4*pDred->uiScale);
-    dred_control_set_relative_position(DRED_CONTROL(pSettingsEditor->pCBShowLineNumbers), penPosX, penPosY);
-    penPosY += dred_control_get_height(DRED_CONTROL(pSettingsEditor->pCBShowLineNumbers)) + (6*pDred->uiScale);
+    dred_checkbox_init(&pSettingsEditor->cbShowLineNumbers, pDred, pPage->pGUIControl, "Show line numbers", pDred->config.textEditorShowLineNumbers);
+    dred_checkbox_set_bind_to_config_var(&pSettingsEditor->cbShowLineNumbers, "texteditor-show-line-numbers");
+    dred_checkbox_set_padding(&pSettingsEditor->cbShowLineNumbers, 4*pDred->uiScale);
+    dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers), penPosX, penPosY);
+    penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers)) + (6*pDred->uiScale);
     
     return true;
 }
@@ -488,17 +487,16 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_cont
     dred_settings_editor__init_page__theme(pSettingsEditor);
     dred_settings_editor__init_page__text_editor(pSettingsEditor);
 
-    pSettingsEditor->pCloseButton = dred_button_create(pDred, DRED_CONTROL(pSettingsEditor), "Close");
-    if (pSettingsEditor->pCloseButton == NULL) {
+    if (!dred_button_init(&pSettingsEditor->closeButton, pDred, DRED_CONTROL(pSettingsEditor), "Close")) {
         dred_editor_uninit(DRED_EDITOR(pSettingsEditor));
         return NULL;
     }
 
-    dred_button_set_on_pressed(pSettingsEditor->pCloseButton, dred_settings__btn_close__on_pressed);
-    dred_button_set_padding(pSettingsEditor->pCloseButton, 32*pDred->uiScale, 6*pDred->uiScale);
-    dred_control_set_relative_position(DRED_CONTROL(pSettingsEditor->pCloseButton),
-        dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - dred_control_get_width(DRED_CONTROL(pSettingsEditor->pCloseButton)) - 8*pDred->uiScale,
-        dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(pSettingsEditor->pCloseButton)) - 8*pDred->uiScale);
+    dred_button_set_on_pressed(&pSettingsEditor->closeButton, dred_settings__btn_close__on_pressed);
+    dred_button_set_padding(&pSettingsEditor->closeButton, 32*pDred->uiScale, 6*pDred->uiScale);
+    dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->closeButton),
+        dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - dred_control_get_width(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*pDred->uiScale,
+        dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*pDred->uiScale);
 
 
     // Events.

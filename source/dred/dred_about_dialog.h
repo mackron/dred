@@ -4,7 +4,7 @@ typedef struct
 {
     dred_window* pWindow;
     dred_gui_image* pLogo;
-    dred_button* pCloseButton;
+    dred_button closeButton;
     bool isShowing;
 } dred_about_dialog;
 

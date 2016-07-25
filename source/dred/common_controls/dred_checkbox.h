@@ -7,7 +7,7 @@
 typedef struct dred_checkbox dred_checkbox;
 #define DRED_CHECKBOX(a) ((dred_checkbox*)(a))
 
-typedef void (* dred_checkbox_on_checked_changed_proc)(dred_checkbox* pData);
+typedef void (* dred_checkbox_on_checked_changed_proc)(dred_checkbox* pCheckbox);
 
 struct dred_checkbox
 {
@@ -33,24 +33,24 @@ struct dred_checkbox
     dred_checkbox_on_checked_changed_proc onCheckChanged;
 };
 
-dred_checkbox* dred_checkbox_create(dred_context* pDred, dred_control* pParent, const char* text, bool checked);
-void dred_checkbox_delete(dred_checkbox* pData);
+bool dred_checkbox_init(dred_checkbox* pCheckbox, dred_context* pDred, dred_control* pParent, const char* text, bool checked);
+void dred_checkbox_uninit(dred_checkbox* pCheckbox);
 
-void dred_checkbox_set_text(dred_checkbox* pData, const char* text);
-void dred_checkbox_enable_auto_size(dred_checkbox* pData);
-void dred_checkbox_disable_auto_size(dred_checkbox* pData);
+void dred_checkbox_set_text(dred_checkbox* pCheckbox, const char* text);
+void dred_checkbox_enable_auto_size(dred_checkbox* pCheckbox);
+void dred_checkbox_disable_auto_size(dred_checkbox* pCheckbox);
 
-void dred_checkbox_set_font(dred_checkbox* pData, dred_font* pFont);
-void dred_checkbox_set_background_color(dred_checkbox* pData, dred_color color);
-void dred_checkbox_set_border_color(dred_checkbox* pData, dred_color color);
-void dred_checkbox_set_border_width(dred_checkbox* pData, float width);
-void dred_checkbox_set_padding(dred_checkbox* pData, float padding);
+void dred_checkbox_set_font(dred_checkbox* pCheckbox, dred_font* pFont);
+void dred_checkbox_set_background_color(dred_checkbox* pCheckbox, dred_color color);
+void dred_checkbox_set_border_color(dred_checkbox* pCheckbox, dred_color color);
+void dred_checkbox_set_border_width(dred_checkbox* pCheckbox, float width);
+void dred_checkbox_set_padding(dred_checkbox* pCheckbox, float padding);
 
-void dred_checkbox_check(dred_checkbox* pData);
-void dred_checkbox_uncheck(dred_checkbox* pData);
-void dred_checkbox_toggle(dred_checkbox* pData);
-void dred_checkbox_set_checked(dred_checkbox* pData, bool checked, bool blockEvent);
-bool dred_is_checked(dred_checkbox* pData);
+void dred_checkbox_check(dred_checkbox* pCheckbox);
+void dred_checkbox_uncheck(dred_checkbox* pCheckbox);
+void dred_checkbox_toggle(dred_checkbox* pCheckbox);
+void dred_checkbox_set_checked(dred_checkbox* pCheckbox, bool checked, bool blockEvent);
+bool dred_is_checked(dred_checkbox* pCheckbox);
 
-void dred_checkbox_set_bind_to_config_var(dred_checkbox* pData, const char* varName);
-void dred_checkbox_set_on_checked_changed(dred_checkbox* pData, dred_checkbox_on_checked_changed_proc proc);
+void dred_checkbox_set_bind_to_config_var(dred_checkbox* pCheckbox, const char* varName);
+void dred_checkbox_set_on_checked_changed(dred_checkbox* pCheckbox, dred_checkbox_on_checked_changed_proc proc);

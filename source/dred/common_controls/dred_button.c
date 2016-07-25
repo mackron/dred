@@ -146,18 +146,16 @@ void dred_button__refresh_layout(dred_button* pButton)
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
 
-dred_button* dred_button_create(dred_context* pDred, dred_control* pParent, const char* text)
+bool dred_button_init(dred_button* pButton, dred_context* pDred, dred_control* pParent, const char* text)
 {
-    dred_button* pButton = (dred_button*)calloc(1, sizeof(*pButton));
     if (pButton == NULL) {
-        return NULL;
+        return false;
     }
 
+    memset(pButton, 0, sizeof(*pButton));
     if (!dred_control_init(DRED_CONTROL(pButton), pDred, pParent, DRED_CONTROL_TYPE_BUTTON)) {
-        free(pButton);
-        return NULL;
+        return false;
     }
-
 
     strncpy_s(pButton->text, sizeof(pButton->text), text, _TRUNCATE);
     pButton->pFont = pDred->config.pUIFont;
@@ -183,10 +181,10 @@ dred_button* dred_button_create(dred_context* pDred, dred_control* pParent, cons
 
     dred_button__refresh_layout(pButton);
 
-    return pButton;
+    return true;
 }
 
-void dred_button_delete(dred_button* pButton)
+void dred_button_uninit(dred_button* pButton)
 {
     dred_font_release_subfont(pButton->pFont, pButton->pSubFont);
     dred_control_uninit(DRED_CONTROL(pButton));

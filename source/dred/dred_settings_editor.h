@@ -18,22 +18,22 @@ struct dred_settings_editor
     dred_editor editor;
 
 
-    dred_button* pCloseButton;
+    dred_button closeButton;
 
     // General
-    dred_checkbox* pCBShowTabBar;
-    dred_checkbox* pCBShowMenuBar;
-    dred_checkbox* pCBAutoHideCmdBar;
+    dred_checkbox cbShowTabBar;
+    dred_checkbox cbShowMenuBar;
+    dred_checkbox cbAutoHideCmdBar;
 
     // Theme
-    dred_button* pFontButton;
+    dred_button fontButton;
     dred_colorbutton* pTextColorButton;
     dred_colorbutton* pBGColorButton;
     dred_colorbutton* pLineColorButton;
 
     // Text Editor
-    dred_checkbox* pCBTabsToSpaces;
-    dred_checkbox* pCBShowLineNumbers;
+    dred_checkbox cbTabsToSpaces;
+    dred_checkbox cbShowLineNumbers;
     
 
     // The font to use for everything.

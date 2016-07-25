@@ -28,8 +28,8 @@ struct dred_button
     dred_button_on_pressed_proc onPressed;
 };
 
-dred_button* dred_button_create(dred_context* pDred, dred_control* pParent, const char* text);
-void dred_button_delete(dred_button* pButton);
+bool dred_button_init(dred_button* pButton, dred_context* pDred, dred_control* pParent, const char* text);
+void dred_button_uninit(dred_button* pButton);
 
 void dred_button_set_text(dred_button* pButton, const char* text);
 void dred_button_enable_auto_size(dred_button* pButton);
