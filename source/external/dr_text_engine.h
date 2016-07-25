@@ -340,6 +340,7 @@ struct drte_engine
 
     // The offset in the main undo buffer of the first byte of the current undo point.
     size_t currentUndoDataOffset;
+    size_t currentRedoDataOffset;
 
 
     /// The counter used to determine when an onDirty event needs to be posted.
@@ -4464,8 +4465,7 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
 
     // The undo buffer needs to be trimmed.
     if (drte_engine_get_redo_points_remaining_count(pEngine) > 0) {
-        drte_stack_buffer_set_stack_ptr(&pEngine->undoBuffer, drte_engine__get_next_undo_data_offset(pEngine));
-        pEngine->currentUndoDataOffset = drte_stack_buffer_get_stack_ptr(&pEngine->undoBuffer);
+        drte_stack_buffer_set_stack_ptr(&pEngine->undoBuffer, pEngine->currentRedoDataOffset);
     }
 
     pEngine->undoStackCount = pEngine->iUndoState;
@@ -4473,9 +4473,7 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
 
     // The data to push onto the stack is done in 3 main parts. The first part is the header which stores the size and offsets of each major section. The
     // second part is the prepared data. The third part is the state at the time of comitting.
-    size_t prevUndoDataOffset = pEngine->currentUndoDataOffset;
-    size_t nextUndoDataOffset = 0;
-
+    
     // Header.
     size_t headerSize =
         sizeof(size_t) +    // Prev undo data offset.
@@ -4511,7 +4509,9 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
         return false;
     }
 
-    nextUndoDataOffset = drte_stack_buffer_get_stack_ptr(&pEngine->undoBuffer);
+
+    size_t prevUndoDataOffset = pEngine->currentUndoDataOffset;
+    size_t nextUndoDataOffset = drte_stack_buffer_get_stack_ptr(&pEngine->undoBuffer);
 
 
     // The header needs to be written last.
@@ -4522,6 +4522,7 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
     *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, headerOffset + sizeof(size_t)*4)) = headerSize + pEngine->preparedUndoTextChangesOffset;
 
     pEngine->currentUndoDataOffset = headerOffset;
+    pEngine->currentRedoDataOffset = headerOffset;
 
     drte_stack_buffer_set_stack_ptr(&pEngine->preparedUndoState, 0);
     pEngine->hasPreparedUndoState = false;
@@ -4558,6 +4559,7 @@ bool drte_engine_undo(drte_engine* pEngine)
         }
 
 
+        pEngine->currentRedoDataOffset = pEngine->currentUndoDataOffset;
         pEngine->currentUndoDataOffset = drte_engine__get_prev_undo_data_offset(pEngine);
         return true;
     }
@@ -4572,7 +4574,7 @@ bool drte_engine_redo(drte_engine* pEngine)
     }
 
     if (drte_engine_get_redo_points_remaining_count(pEngine) > 0) {
-        const void* pUndoDataPtr = drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, pEngine->currentUndoDataOffset /*drte_engine__get_next_undo_data_offset(pEngine)*/);
+        const void* pUndoDataPtr = drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, pEngine->currentRedoDataOffset);
         if (pUndoDataPtr == NULL) {
             return false;
         }
@@ -4584,8 +4586,9 @@ bool drte_engine_redo(drte_engine* pEngine)
             pEngine->onUndoPointChanged(pEngine, pEngine->iUndoState);
         }
 
+        pEngine->currentUndoDataOffset = pEngine->currentRedoDataOffset;
         if (drte_engine_get_redo_points_remaining_count(pEngine) > 0) {
-            pEngine->currentUndoDataOffset = drte_engine__get_next_undo_data_offset(pEngine);
+            pEngine->currentRedoDataOffset = drte_engine__get_next_undo_data_offset(pEngine);
         }
 
         return true;
