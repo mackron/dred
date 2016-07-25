@@ -232,6 +232,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     pTextEditor->pTextBox = &pTextEditor->textBox;
     if (!dred_textbox_init(pTextEditor->pTextBox, pDred, DRED_CONTROL(pTextEditor))) {
         dred_editor_uninit(DRED_EDITOR(pTextEditor));
+        free(pTextEditor);
         return NULL;
     }
 
@@ -245,6 +246,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
         if (pFileData == NULL) {
             dred_textbox_uninit(pTextEditor->pTextBox);
             dred_editor_uninit(DRED_EDITOR(pTextEditor));
+            free(pTextEditor);
             return NULL;
         }
 
