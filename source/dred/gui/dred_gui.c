@@ -19,87 +19,12 @@
 
 
 // Context Flags
-#define IS_CONTEXT_DEAD                     (1U << 0)
 #define IS_AUTO_DIRTY_DISABLED              (1U << 1)
 #define IS_RELEASING_KEYBOARD               (1U << 2)
 
 // Control Flags
 #define IS_CONTROL_HIDDEN                   (1U << 0)
 #define IS_CONTROL_CLIPPING_DISABLED        (1U << 1)
-#define IS_CONTROL_DEAD                     (1U << 31)
-
-/// Increments the inbound event counter
-///
-/// @remarks
-///     This is called from every dred_gui_post_inbound_event_*() function and is used to keep track of whether or
-///     not an inbound event is being processed. We need to track this because if we are in the middle of event
-///     processing and an element is deleted, we want to delay it's deletion until the end of the event processing.
-///     @par
-///     Use dred_gui__end_inbound_event() to decrement the counter.
-void dred_gui__begin_inbound_event(dred_gui* pGUI);
-
-/// Decrements the inbound event counter.
-///
-/// @remarks
-///     This is called from every dred_gui_post_inbound_event_*() function.
-///     @par
-///     When the internal counter reaches zero, deleted elements will be garbage collected.
-void dred_gui__end_inbound_event(dred_gui* pGUI);
-
-/// Determines whether or not inbound events are being processed.
-///
-/// @remarks
-///     This is used to determine whether or not an element can be deleted immediately or should be garbage collected
-///     at the end of event processing.
-bool dred_gui__is_handling_inbound_event(const dred_gui* pGUI);
-
-
-/// Increments the outbound event counter.
-///
-/// @remarks
-///     This will validate that the given element is allowed to have an event posted. When false is returned, nothing
-///     will have been locked and the outbound event should be cancelled.
-///     @par
-///     This will return false if the given element has been marked as dead, or if there is some other reason it should
-///     not be receiving events.
-bool dred_control__begin_outbound_event(dred_control* pControl);
-
-/// Decrements the outbound event counter.
-void dred_control__end_outbound_event(dred_control* pControl);
-
-/// Determines whether or not and outbound event is being processed.
-bool dred_gui__is_handling_outbound_event(dred_gui* pGUI);
-
-
-/// Marks the given element as dead.
-void dred_control__mark_as_dead(dred_control* pControl);
-
-/// Determines whether or not the given element is marked as dead.
-bool dred_control__is_marked_as_dead(const dred_control* pControl);
-
-/// Deletes every element that has been marked as dead.
-void dred_gui__delete_controls_marked_as_dead(dred_gui* pGUI);
-
-
-/// Marks the given context as deleted.
-void dred_gui__mark_context_as_dead(dred_gui* pGUI);    // TODO: Check if this is still needed, and the API below.
-
-/// Determines whether or not the given context is marked as dead.
-bool dred_gui__is_context_marked_as_dead(const dred_gui* pGUI);
-
-/// Deletes the given context for real.
-///
-/// If a context is deleted during the processing of an inbound event it will not be deleting immediately - this
-/// will delete the context for real.
-void dred_gui__delete_context_for_real(dred_gui* pGUI); // TODO: Check if this API is still needed.
-
-
-/// Deletes the given element for real.
-///
-/// Sometimes an element will not be deleted straight away but instead just marked as dead. We use this to delete
-/// the given element for real.
-void dred_control__delete_for_real(dred_control* pControl);
-
 
 /// Orphans the given element without triggering a redraw of the parent nor the child.
 void dred_control__detach_without_redraw(dred_control* pChildControl);
@@ -179,173 +104,6 @@ void dred_control__post_outbound_event_release_keyboard_global(dred_control* pCo
 
 /// Posts a log message.
 void dred_gui__log(dred_gui* pGUI, const char* message);
-
-
-void dred_gui__begin_inbound_event(dred_gui* pGUI)
-{
-    assert(pGUI != NULL);
-
-    pGUI->inboundEventCounter += 1;
-}
-
-void dred_gui__end_inbound_event(dred_gui* pGUI)
-{
-    assert(pGUI != NULL);
-    assert(pGUI->inboundEventCounter > 0);
-
-    pGUI->inboundEventCounter -= 1;
-
-
-    // Here is where we want to clean up any elements that are marked as dead. When events are being handled elements are not deleted
-    // immediately but instead only marked for deletion. This function will be called at the end of event processing which makes it
-    // an appropriate place for cleaning up dead elements.
-    if (!dred_gui__is_handling_inbound_event(pGUI))
-    {
-        dred_gui__delete_controls_marked_as_dead(pGUI);
-
-        // If the context has been marked for deletion than we will need to delete that too.
-        if (dred_gui__is_context_marked_as_dead(pGUI))
-        {
-            dred_gui__delete_context_for_real(pGUI);
-        }
-    }
-}
-
-bool dred_gui__is_handling_inbound_event(const dred_gui* pGUI)
-{
-    assert(pGUI != NULL);
-
-    return pGUI->inboundEventCounter > 0;
-}
-
-
-
-bool dred_control__begin_outbound_event(dred_control* pControl)
-{
-    assert(pControl != NULL);
-    assert(pControl->pGUI != NULL);
-
-
-    // We want to cancel the outbound event if the element is marked as dead.
-    if (dred_control__is_marked_as_dead(pControl)) {
-        dred_gui__log(pControl->pGUI, "WARNING: Attemping to post an event to an element that is marked for deletion.");
-        return false;
-    }
-
-
-    // At this point everything should be fine so we just increment the count (which should never go above 1) and return true.
-    pControl->pGUI->outboundEventLockCounter += 1;
-
-    return true;
-}
-
-void dred_control__end_outbound_event(dred_control* pControl)
-{
-    assert(pControl != NULL);
-    assert(pControl->pGUI != NULL);
-    assert(pControl->pGUI->outboundEventLockCounter > 0);
-
-    pControl->pGUI->outboundEventLockCounter -= 1;
-}
-
-bool dred_gui__is_handling_outbound_event(dred_gui* pGUI)
-{
-    assert(pGUI != NULL);
-    return pGUI->outboundEventLockCounter > 0;
-}
-
-
-void dred_control__mark_as_dead(dred_control* pControl)
-{
-    assert(pControl != NULL);
-    assert(pControl->pGUI != NULL);
-
-    pControl->flags |= IS_CONTROL_DEAD;
-
-
-    if (pControl->pGUI->pFirstDeadControl != NULL) {
-        pControl->pNextDeadControl = pControl->pGUI->pFirstDeadControl;
-    }
-
-    pControl->pGUI->pFirstDeadControl = pControl;
-}
-
-bool dred_control__is_marked_as_dead(const dred_control* pControl)
-{
-    if (pControl == NULL) {
-        return false;
-    }
-
-    return (pControl->flags & IS_CONTROL_DEAD) != 0;
-}
-
-void dred_gui__delete_controls_marked_as_dead(dred_gui* pGUI)
-{
-    assert(pGUI != NULL);
-
-    while (pGUI->pFirstDeadControl != NULL)
-    {
-        dred_control* pDeadControl = pGUI->pFirstDeadControl;
-        pGUI->pFirstDeadControl = pGUI->pFirstDeadControl->pNextDeadControl;
-
-        dred_control__delete_for_real(pDeadControl);
-    }
-}
-
-
-void dred_gui__mark_context_as_dead(dred_gui* pGUI)
-{
-    assert(pGUI != NULL);
-    assert(!dred_gui__is_context_marked_as_dead(pGUI));
-
-    pGUI->flags |= IS_CONTEXT_DEAD;
-}
-
-bool dred_gui__is_context_marked_as_dead(const dred_gui* pGUI)
-{
-    assert(pGUI != NULL);
-
-    return (pGUI->flags & IS_CONTEXT_DEAD) != 0;
-}
-
-
-
-void dred_gui__delete_context_for_real(dred_gui* pGUI)
-{
-    assert(pGUI != NULL);
-
-    // All elements marked as dead need to be deleted.
-    dred_gui__delete_controls_marked_as_dead(pGUI);
-}
-
-void dred_control__delete_for_real(dred_control* pControlToDelete)
-{
-    assert(pControlToDelete != NULL);
-
-    dred_gui* pGUI = pControlToDelete->pGUI;
-
-    // If the element is marked as dead
-    if (dred_control__is_marked_as_dead(pControlToDelete)) {
-        if (pGUI->pFirstDeadControl == pControlToDelete) {
-            pGUI->pFirstDeadControl = pGUI->pFirstDeadControl->pNextDeadControl;
-        } else {
-            dred_control* pPrevDeadControl = pGUI->pFirstDeadControl;
-            while (pPrevDeadControl != NULL) {
-                if (pPrevDeadControl->pNextDeadControl == pControlToDelete) {
-                    break;
-                }
-
-                pPrevDeadControl = pPrevDeadControl->pNextDeadControl;
-            }
-
-            if (pPrevDeadControl != NULL) {
-                pControlToDelete->pNextDeadControl = pControlToDelete->pNextDeadControl;
-            }
-        }
-    }
-
-    //free(pControlToDelete);
-}
 
 
 void dred_control__detach_without_redraw(dred_control* pControl)
@@ -615,258 +373,165 @@ void dred_gui__update_mouse_enter_and_leave_state(dred_gui* pGUI, dred_control* 
 
 void dred_control__post_outbound_event_move(dred_control* pControl, float newRelativePosX, float newRelativePosY)
 {
-    if (dred_control__begin_outbound_event(pControl))
-    {
-        if (pControl->onMove) {
-            pControl->onMove(pControl, newRelativePosX, newRelativePosY);
-        }
-
-        dred_control__end_outbound_event(pControl);
+    if (pControl->onMove) {
+        pControl->onMove(pControl, newRelativePosX, newRelativePosY);
     }
 }
 
 void dred_control__post_outbound_event_size(dred_control* pControl, float newWidth, float newHeight)
 {
-    if (dred_control__begin_outbound_event(pControl))
-    {
-        if (pControl->onSize) {
-            pControl->onSize(pControl, newWidth, newHeight);
-        }
-
-        dred_control__end_outbound_event(pControl);
+    if (pControl->onSize) {
+        pControl->onSize(pControl, newWidth, newHeight);
     }
 }
 
 void dred_control__post_outbound_event_mouse_enter(dred_control* pControl)
 {
-    if (dred_control__begin_outbound_event(pControl))
-    {
-        if (pControl->onMouseEnter) {
-            pControl->onMouseEnter(pControl);
-        }
-
-        dred_control__end_outbound_event(pControl);
+    if (pControl->onMouseEnter) {
+        pControl->onMouseEnter(pControl);
     }
 }
 
 void dred_control__post_outbound_event_mouse_leave(dred_control* pControl)
 {
-    if (dred_control__begin_outbound_event(pControl))
-    {
-        if (pControl->onMouseLeave) {
-            pControl->onMouseLeave(pControl);
-        }
-
-        dred_control__end_outbound_event(pControl);
+    if (pControl->onMouseLeave) {
+        pControl->onMouseLeave(pControl);
     }
 }
 
 void dred_control__post_outbound_event_mouse_move(dred_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
-    if (dred_control__begin_outbound_event(pControl))
-{
-        if (pControl->onMouseMove) {
-            pControl->onMouseMove(pControl, relativeMousePosX, relativeMousePosY, stateFlags);
-        }
-
-        dred_control__end_outbound_event(pControl);
+    if (pControl->onMouseMove) {
+        pControl->onMouseMove(pControl, relativeMousePosX, relativeMousePosY, stateFlags);
     }
 }
 
 void dred_control__post_outbound_event_mouse_button_down(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
-    if (dred_control__begin_outbound_event(pControl))
-    {
-        if (pControl->onMouseButtonDown) {
-            pControl->onMouseButtonDown(pControl, mouseButton, relativeMousePosX, relativeMousePosY, stateFlags);
-        }
-
-        dred_control__end_outbound_event(pControl);
+    if (pControl->onMouseButtonDown) {
+        pControl->onMouseButtonDown(pControl, mouseButton, relativeMousePosX, relativeMousePosY, stateFlags);
     }
 }
 
 void dred_control__post_outbound_event_mouse_button_up(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
-    if (dred_control__begin_outbound_event(pControl))
-    {
-        if (pControl->onMouseButtonUp) {
-            pControl->onMouseButtonUp(pControl, mouseButton, relativeMousePosX, relativeMousePosY, stateFlags);
-        }
-
-        dred_control__end_outbound_event(pControl);
+    if (pControl->onMouseButtonUp) {
+        pControl->onMouseButtonUp(pControl, mouseButton, relativeMousePosX, relativeMousePosY, stateFlags);
     }
 }
 
 void dred_control__post_outbound_event_mouse_button_dblclick(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
-    if (dred_control__begin_outbound_event(pControl))
-    {
-        if (pControl->onMouseButtonDblClick) {
-            pControl->onMouseButtonDblClick(pControl, mouseButton, relativeMousePosX, relativeMousePosY, stateFlags);
-        }
-
-        dred_control__end_outbound_event(pControl);
+    if (pControl->onMouseButtonDblClick) {
+        pControl->onMouseButtonDblClick(pControl, mouseButton, relativeMousePosX, relativeMousePosY, stateFlags);
     }
 }
 
 void dred_control__post_outbound_event_mouse_wheel(dred_control* pControl, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
-    if (dred_control__begin_outbound_event(pControl))
-    {
-        if (pControl->onMouseWheel) {
-            pControl->onMouseWheel(pControl, delta, relativeMousePosX, relativeMousePosY, stateFlags);
-        }
-
-        dred_control__end_outbound_event(pControl);
+    if (pControl->onMouseWheel) {
+        pControl->onMouseWheel(pControl, delta, relativeMousePosX, relativeMousePosY, stateFlags);
     }
 }
 
 void dred_control__post_outbound_event_key_down(dred_control* pControl, dred_key key, int stateFlags)
 {
-    if (dred_control__begin_outbound_event(pControl))
-    {
-        if (pControl->onKeyDown) {
-            pControl->onKeyDown(pControl, key, stateFlags);
-        }
-
-        dred_control__end_outbound_event(pControl);
+    if (pControl->onKeyDown) {
+        pControl->onKeyDown(pControl, key, stateFlags);
     }
 }
 
 void dred_control__post_outbound_event_key_up(dred_control* pControl, dred_key key, int stateFlags)
 {
-    if (dred_control__begin_outbound_event(pControl))
-    {
-        if (pControl->onKeyUp) {
-            pControl->onKeyUp(pControl, key, stateFlags);
-        }
-
-        dred_control__end_outbound_event(pControl);
+    if (pControl->onKeyUp) {
+        pControl->onKeyUp(pControl, key, stateFlags);
     }
 }
 
 void dred_control__post_outbound_event_printable_key_down(dred_control* pControl, unsigned int character, int stateFlags)
 {
-    if (dred_control__begin_outbound_event(pControl))
-    {
-        if (pControl->onPrintableKeyDown) {
-            pControl->onPrintableKeyDown(pControl, character, stateFlags);
-        }
-
-        dred_control__end_outbound_event(pControl);
+    if (pControl->onPrintableKeyDown) {
+        pControl->onPrintableKeyDown(pControl, character, stateFlags);
     }
 }
 
 
 void dred_control__post_outbound_event_dirty(dred_control* pControl, dred_rect relativeRect)
 {
-    if (pControl != NULL)
-    {
-        if (pControl->onDirty) {
-            pControl->onDirty(pControl, relativeRect);
-        }
+    if (pControl->onDirty) {
+        pControl->onDirty(pControl, relativeRect);
     }
 }
 
 void dred_control__post_outbound_event_dirty_global(dred_control* pControl, dred_rect relativeRect)
 {
-    if (pControl != NULL && pControl->pGUI != NULL)
-    {
-        if (pControl->pGUI->onGlobalDirty) {
-            pControl->pGUI->onGlobalDirty(pControl, relativeRect);
-        }
+    if (pControl->pGUI->onGlobalDirty) {
+        pControl->pGUI->onGlobalDirty(pControl, relativeRect);
     }
 }
 
 void dred_control__post_outbound_event_capture_mouse(dred_control* pControl)
 {
-    if (pControl != NULL)
-    {
-        if (pControl->onCaptureMouse) {
-            pControl->onCaptureMouse(pControl);
-        }
+    if (pControl->onCaptureMouse) {
+        pControl->onCaptureMouse(pControl);
     }
 }
 
 void dred_control__post_outbound_event_capture_mouse_global(dred_control* pControl)
 {
-    if (pControl != NULL && pControl->pGUI != NULL)
-    {
-        if (pControl->pGUI->onGlobalCaptureMouse) {
-            pControl->pGUI->onGlobalCaptureMouse(pControl);
-        }
+    if (pControl->pGUI->onGlobalCaptureMouse) {
+        pControl->pGUI->onGlobalCaptureMouse(pControl);
     }
 }
 
 void dred_control__post_outbound_event_release_mouse(dred_control* pControl)
 {
-    if (pControl != NULL)
-    {
-        if (pControl->onReleaseMouse) {
-            pControl->onReleaseMouse(pControl);
-        }
+    if (pControl->onReleaseMouse) {
+        pControl->onReleaseMouse(pControl);
     }
 }
 
 void dred_control__post_outbound_event_release_mouse_global(dred_control* pControl)
 {
-    if (pControl != NULL && pControl->pGUI != NULL)
-    {
-        if (pControl->pGUI->onGlobalReleaseMouse) {
-            pControl->pGUI->onGlobalReleaseMouse(pControl);
-        }
+    if (pControl->pGUI->onGlobalReleaseMouse) {
+        pControl->pGUI->onGlobalReleaseMouse(pControl);
     }
 }
 
 
 void dred_control__post_outbound_event_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
 {
-    if (pControl != NULL)
-    {
-        if (pControl->onCaptureKeyboard) {
-            pControl->onCaptureKeyboard(pControl, pPrevCapturedControl);
-        }
+    if (pControl->onCaptureKeyboard) {
+        pControl->onCaptureKeyboard(pControl, pPrevCapturedControl);
     }
 }
 
 void dred_control__post_outbound_event_capture_keyboard_global(dred_control* pControl, dred_control* pPrevCapturedControl)
 {
-    if (pControl != NULL && pControl->pGUI != NULL)
-    {
-        if (pControl->pGUI->onGlobalCaptureKeyboard) {
-            pControl->pGUI->onGlobalCaptureKeyboard(pControl, pPrevCapturedControl);
-        }
+    if (pControl->pGUI->onGlobalCaptureKeyboard) {
+        pControl->pGUI->onGlobalCaptureKeyboard(pControl, pPrevCapturedControl);
     }
 }
 
 void dred_control__post_outbound_event_release_keyboard(dred_control* pControl, dred_control* pNewCapturedControl)
 {
-    if (pControl != NULL)
-    {
-        if (pControl->onReleaseKeyboard) {
-            pControl->onReleaseKeyboard(pControl, pNewCapturedControl);
-        }
+    if (pControl->onReleaseKeyboard) {
+        pControl->onReleaseKeyboard(pControl, pNewCapturedControl);
     }
 }
 
 void dred_control__post_outbound_event_release_keyboard_global(dred_control* pControl, dred_control* pNewCapturedControl)
 {
-    if (pControl != NULL && pControl->pGUI != NULL)
-    {
-        if (pControl->pGUI->onGlobalReleaseKeyboard) {
-            pControl->pGUI->onGlobalReleaseKeyboard(pControl, pNewCapturedControl);
-        }
+    if (pControl->pGUI->onGlobalReleaseKeyboard) {
+        pControl->pGUI->onGlobalReleaseKeyboard(pControl, pNewCapturedControl);
     }
 }
 
 
 void dred_gui__log(dred_gui* pGUI, const char* message)
 {
-    if (pGUI != NULL)
-    {
-        if (pGUI->onLog) {
-            pGUI->onLog(pGUI, message);
-        }
+    if (pGUI->onLog) {
+        pGUI->onLog(pGUI, message);
     }
 }
 
@@ -910,20 +575,6 @@ void dred_gui_uninit(dred_gui* pGUI)
         dred_gui__log(pGUI, "WARNING: Deleting the GUI context while an element still has the keyboard capture.");
         dred_gui_release_keyboard(pGUI);
     }
-
-
-    if (dred_gui__is_handling_inbound_event(pGUI))
-    {
-        // An inbound event is still being processed - we don't want to delete the context straight away because we can't
-        // trust external event handlers to not try to access the context later on. To do this we just set the flag that
-        // the context is deleted. It will then be deleted for real at the end of the inbound event handler.
-        dred_gui__mark_context_as_dead(pGUI);
-    }
-    else
-    {
-        // An inbound event is not being processed, so delete the context straight away.
-        dred_gui__delete_context_for_real(pGUI);
-    }
 }
 
 
@@ -942,12 +593,8 @@ void dred_gui_post_inbound_event_mouse_leave(dred_control* pTopLevelControl)
         return;
     }
 
-    dred_gui__begin_inbound_event(pGUI);
-    {
-        // We assume that was previously under the mouse was either pTopLevelControl itself or one of it's descendants.
-        dred_gui__update_mouse_enter_and_leave_state(pGUI, NULL);
-    }
-    dred_gui__end_inbound_event(pGUI);
+    // We assume that the control that was previously under the mouse was either pTopLevelControl itself or one of it's descendants.
+    dred_gui__update_mouse_enter_and_leave_state(pGUI, NULL);
 }
 
 void dred_gui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int mousePosX, int mousePosY, int stateFlags)
@@ -957,40 +604,36 @@ void dred_gui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int 
     }
 
 
-    dred_gui__begin_inbound_event(pTopLevelControl->pGUI);
+    // A pointer to the top level element that was passed in from the last inbound mouse move event.
+    pTopLevelControl->pGUI->pLastMouseMoveTopLevelControl = pTopLevelControl;
+
+    // The position of the mouse that was passed in from the last inbound mouse move event.
+    pTopLevelControl->pGUI->lastMouseMovePosX = (float)mousePosX;
+    pTopLevelControl->pGUI->lastMouseMovePosY = (float)mousePosY;
+
+
+
+    // The first thing we need to do is find the new element that's sitting under the mouse.
+    dred_control* pNewControlUnderMouse = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
+
+    // Now that we know which element is sitting under the mouse we need to check if the mouse has entered into a new element.
+    dred_gui__update_mouse_enter_and_leave_state(pTopLevelControl->pGUI, pNewControlUnderMouse);
+
+
+    dred_control* pEventReceiver = pTopLevelControl->pGUI->pControlWithMouseCapture;
+    if (pEventReceiver == NULL)
     {
-        /// A pointer to the top level element that was passed in from the last inbound mouse move event.
-        pTopLevelControl->pGUI->pLastMouseMoveTopLevelControl = pTopLevelControl;
-
-        /// The position of the mouse that was passed in from the last inbound mouse move event.
-        pTopLevelControl->pGUI->lastMouseMovePosX = (float)mousePosX;
-        pTopLevelControl->pGUI->lastMouseMovePosY = (float)mousePosY;
-
-
-
-        // The first thing we need to do is find the new element that's sitting under the mouse.
-        dred_control* pNewControlUnderMouse = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
-
-        // Now that we know which element is sitting under the mouse we need to check if the mouse has entered into a new element.
-        dred_gui__update_mouse_enter_and_leave_state(pTopLevelControl->pGUI, pNewControlUnderMouse);
-
-
-        dred_control* pEventReceiver = pTopLevelControl->pGUI->pControlWithMouseCapture;
-        if (pEventReceiver == NULL)
-        {
-            pEventReceiver = pNewControlUnderMouse;
-        }
-
-        if (pEventReceiver != NULL)
-        {
-            float relativeMousePosX = (float)mousePosX;
-            float relativeMousePosY = (float)mousePosY;
-            dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
-
-            dred_control__post_outbound_event_mouse_move(pEventReceiver, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
-        }
+        pEventReceiver = pNewControlUnderMouse;
     }
-    dred_gui__end_inbound_event(pTopLevelControl->pGUI);
+
+    if (pEventReceiver != NULL)
+    {
+        float relativeMousePosX = (float)mousePosX;
+        float relativeMousePosY = (float)mousePosY;
+        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+
+        dred_control__post_outbound_event_mouse_move(pEventReceiver, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+    }
 }
 
 void dred_gui_post_inbound_event_mouse_button_down(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
@@ -1000,31 +643,23 @@ void dred_gui_post_inbound_event_mouse_button_down(dred_control* pTopLevelContro
     }
 
     dred_gui* pGUI = pTopLevelControl->pGUI;
-    dred_gui__begin_inbound_event(pGUI);
-    {
-        dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
-        if (pEventReceiver == NULL)
-        {
-            pEventReceiver = pGUI->pControlUnderMouse;
 
-            if (pEventReceiver == NULL)
-            {
-                // We'll get here if this message is posted without a prior mouse move event.
-                pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
-            }
-        }
-
-
-        if (pEventReceiver != NULL)
-        {
-            float relativeMousePosX = (float)mousePosX;
-            float relativeMousePosY = (float)mousePosY;
-            dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
-
-            dred_control__post_outbound_event_mouse_button_down(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+    dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
+    if (pEventReceiver == NULL) {
+        pEventReceiver = pGUI->pControlUnderMouse;
+        if (pEventReceiver == NULL) {
+            // We'll get here if this message is posted without a prior mouse move event.
+            pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
         }
     }
-    dred_gui__end_inbound_event(pGUI);
+
+    if (pEventReceiver != NULL) {
+        float relativeMousePosX = (float)mousePosX;
+        float relativeMousePosY = (float)mousePosY;
+        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+
+        dred_control__post_outbound_event_mouse_button_down(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+    }
 }
 
 void dred_gui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
@@ -1034,31 +669,23 @@ void dred_gui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl,
     }
 
     dred_gui* pGUI = pTopLevelControl->pGUI;
-    dred_gui__begin_inbound_event(pGUI);
-    {
-        dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
-        if (pEventReceiver == NULL)
-        {
-            pEventReceiver = pGUI->pControlUnderMouse;
-
-            if (pEventReceiver == NULL)
-            {
-                // We'll get here if this message is posted without a prior mouse move event.
-                pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
-            }
-        }
-
-
-        if (pEventReceiver != NULL)
-        {
-            float relativeMousePosX = (float)mousePosX;
-            float relativeMousePosY = (float)mousePosY;
-            dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
-
-            dred_control__post_outbound_event_mouse_button_up(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+    
+    dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
+    if (pEventReceiver == NULL) {
+        pEventReceiver = pGUI->pControlUnderMouse;
+        if (pEventReceiver == NULL) {
+            // We'll get here if this message is posted without a prior mouse move event.
+            pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
         }
     }
-    dred_gui__end_inbound_event(pGUI);
+
+    if (pEventReceiver != NULL) {
+        float relativeMousePosX = (float)mousePosX;
+        float relativeMousePosY = (float)mousePosY;
+        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+
+        dred_control__post_outbound_event_mouse_button_up(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+    }
 }
 
 void dred_gui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
@@ -1068,31 +695,23 @@ void dred_gui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelCo
     }
 
     dred_gui* pGUI = pTopLevelControl->pGUI;
-    dred_gui__begin_inbound_event(pGUI);
-    {
-        dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
-        if (pEventReceiver == NULL)
-        {
-            pEventReceiver = pGUI->pControlUnderMouse;
-
-            if (pEventReceiver == NULL)
-            {
-                // We'll get here if this message is posted without a prior mouse move event.
-                pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
-            }
-        }
-
-
-        if (pEventReceiver != NULL)
-        {
-            float relativeMousePosX = (float)mousePosX;
-            float relativeMousePosY = (float)mousePosY;
-            dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
-
-            dred_control__post_outbound_event_mouse_button_dblclick(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+    
+    dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
+    if (pEventReceiver == NULL) {
+        pEventReceiver = pGUI->pControlUnderMouse;
+        if (pEventReceiver == NULL) {
+            // We'll get here if this message is posted without a prior mouse move event.
+            pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
         }
     }
-    dred_gui__end_inbound_event(pGUI);
+
+    if (pEventReceiver != NULL) {
+        float relativeMousePosX = (float)mousePosX;
+        float relativeMousePosY = (float)mousePosY;
+        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+
+        dred_control__post_outbound_event_mouse_button_dblclick(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+    }
 }
 
 void dred_gui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int delta, int mousePosX, int mousePosY, int stateFlags)
@@ -1102,31 +721,23 @@ void dred_gui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int
     }
 
     dred_gui* pGUI = pTopLevelControl->pGUI;
-    dred_gui__begin_inbound_event(pGUI);
-    {
-        dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
-        if (pEventReceiver == NULL)
-        {
-            pEventReceiver = pGUI->pControlUnderMouse;
-
-            if (pEventReceiver == NULL)
-            {
-                // We'll get here if this message is posted without a prior mouse move event.
-                pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
-            }
-        }
-
-
-        if (pEventReceiver != NULL)
-        {
-            float relativeMousePosX = (float)mousePosX;
-            float relativeMousePosY = (float)mousePosY;
-            dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
-
-            dred_control__post_outbound_event_mouse_wheel(pEventReceiver, delta, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+    
+    dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
+    if (pEventReceiver == NULL) {
+        pEventReceiver = pGUI->pControlUnderMouse;
+        if (pEventReceiver == NULL) {
+            // We'll get here if this message is posted without a prior mouse move event.
+            pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
         }
     }
-    dred_gui__end_inbound_event(pGUI);
+
+    if (pEventReceiver != NULL) {
+        float relativeMousePosX = (float)mousePosX;
+        float relativeMousePosY = (float)mousePosY;
+        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+
+        dred_control__post_outbound_event_mouse_wheel(pEventReceiver, delta, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+    }
 }
 
 void dred_gui_post_inbound_event_key_down(dred_gui* pGUI, dred_key key, int stateFlags)
@@ -1135,13 +746,9 @@ void dred_gui_post_inbound_event_key_down(dred_gui* pGUI, dred_key key, int stat
         return;
     }
 
-    dred_gui__begin_inbound_event(pGUI);
-    {
-        if (pGUI->pControlWithKeyboardCapture != NULL) {
-            dred_control__post_outbound_event_key_down(pGUI->pControlWithKeyboardCapture, key, stateFlags);
-        }
+    if (pGUI->pControlWithKeyboardCapture != NULL) {
+        dred_control__post_outbound_event_key_down(pGUI->pControlWithKeyboardCapture, key, stateFlags);
     }
-    dred_gui__end_inbound_event(pGUI);
 }
 
 void dred_gui_post_inbound_event_key_up(dred_gui* pGUI, dred_key key, int stateFlags)
@@ -1150,13 +757,9 @@ void dred_gui_post_inbound_event_key_up(dred_gui* pGUI, dred_key key, int stateF
         return;
     }
 
-    dred_gui__begin_inbound_event(pGUI);
-    {
-        if (pGUI->pControlWithKeyboardCapture != NULL) {
-            dred_control__post_outbound_event_key_up(pGUI->pControlWithKeyboardCapture, key, stateFlags);
-        }
+    if (pGUI->pControlWithKeyboardCapture != NULL) {
+        dred_control__post_outbound_event_key_up(pGUI->pControlWithKeyboardCapture, key, stateFlags);
     }
-    dred_gui__end_inbound_event(pGUI);
 }
 
 void dred_gui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int character, int stateFlags)
@@ -1165,13 +768,9 @@ void dred_gui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int
         return;
     }
 
-    dred_gui__begin_inbound_event(pGUI);
-    {
-        if (pGUI->pControlWithKeyboardCapture != NULL) {
-            dred_control__post_outbound_event_printable_key_down(pGUI->pControlWithKeyboardCapture, character, stateFlags);
-        }
+    if (pGUI->pControlWithKeyboardCapture != NULL) {
+        dred_control__post_outbound_event_printable_key_down(pGUI->pControlWithKeyboardCapture, character, stateFlags);
     }
-    dred_gui__end_inbound_event(pGUI);
 }
 
 
@@ -1274,13 +873,6 @@ void dred_control_uninit(dred_control* pControl)
         return;
     }
 
-    if (dred_control__is_marked_as_dead(pControl)) {
-        dred_gui__log(pGUI, "WARNING: Attempting to delete an element that is already marked for deletion.");
-        return;
-    }
-
-    dred_control__mark_as_dead(pControl);
-
 
     // Notify the application that the element is being deleted. Do this at the top so the event handler can access things like the hierarchy and
     // whatnot in case it needs it.
@@ -1291,14 +883,12 @@ void dred_control_uninit(dred_control* pControl)
 
     // If this was element is marked as the one that was last under the mouse it needs to be unset.
     bool needsMouseUpdate = false;
-    if (pGUI->pControlUnderMouse == pControl)
-    {
+    if (pGUI->pControlUnderMouse == pControl) {
         pGUI->pControlUnderMouse = NULL;
         needsMouseUpdate = true;
     }
 
-    if (pGUI->pLastMouseMoveTopLevelControl == pControl)
-    {
+    if (pGUI->pLastMouseMoveTopLevelControl == pControl) {
         pGUI->pLastMouseMoveTopLevelControl = NULL;
         pGUI->lastMouseMovePosX = 0;
         pGUI->lastMouseMovePosY = 0;
@@ -1307,17 +897,15 @@ void dred_control_uninit(dred_control* pControl)
 
 
     // If this element has the mouse capture it needs to be released.
-    if (pGUI->pControlWithMouseCapture == pControl)
-    {
+    if (pGUI->pControlWithMouseCapture == pControl) {
         dred_gui__log(pGUI, "WARNING: Deleting an element while it still has the mouse capture.");
-        dred_gui_release_mouse(pGUI);
+        dred_gui_release_mouse_no_local_notify(pGUI);
     }
 
     // If this element has the keyboard capture it needs to be released.
-    if (pGUI->pControlWithKeyboardCapture == pControl)
-    {
+    if (pGUI->pControlWithKeyboardCapture == pControl) {
         dred_gui__log(pGUI, "WARNING: Deleting an element while it still has the keyboard capture.");
-        dred_gui_release_keyboard(pGUI);
+        dred_gui_release_keyboard_no_local_notify(pGUI);
     }
 
     // Is this element in the middle of being marked as dirty?
@@ -1333,19 +921,10 @@ void dred_control_uninit(dred_control* pControl)
         }
     }
 
-#if 0
-    if (pGUI->pDirtyTopLevelControl == pControl)
-    {
-        dred_gui__log(pGUI, "WARNING: Deleting an element while it is being marked as dirty.");
-        pGUI->pDirtyTopLevelControl = NULL;
-    }
-#endif
-
 
 
     // Deleting this element may have resulted in the mouse entering a new element. Here is where we do a mouse enter/leave update.
-    if (needsMouseUpdate)
-    {
+    if (needsMouseUpdate) {
         pControl->onHitTest = dred_control_pass_through_hit_test;        // <-- This ensures we don't include this element when searching for the new element under the mouse.
         dred_gui__update_mouse_enter_and_leave_state(pGUI, dred_gui_find_control_under_point(pGUI->pLastMouseMoveTopLevelControl, pGUI->lastMouseMovePosX, pGUI->lastMouseMovePosY));
     }
@@ -1372,13 +951,6 @@ void dred_control_uninit(dred_control* pControl)
     // The parent needs to be redrawn.
     if (pParent) {
         dred_control_dirty(pParent, relativeRect);
-    }
-
-
-    // Finally, we to decided whether or not the element should be deleted for real straight away or not. If the element is being
-    // deleted within an event handler it should be delayed because the event handlers may try referencing it afterwards.
-    if (!dred_gui__is_handling_inbound_event(pGUI)) {
-        dred_control__delete_for_real(pControl);
     }
 }
 
@@ -1538,16 +1110,14 @@ void dred_gui_capture_mouse(dred_control* pControl)
 
 void dred_gui_release_mouse(dred_gui* pGUI)
 {
-    if (pGUI == NULL) {
+    if (pGUI == NULL || pGUI->pControlWithMouseCapture == NULL) {
         return;
     }
 
 
     // Events need to be posted before setting the internal pointer.
-    if (!dred_control__is_marked_as_dead(pGUI->pControlWithMouseCapture)) {   // <-- There's a chace the element is releaseing the keyboard due to being deleted. Don't want to post an event in this case.
-        dred_control__post_outbound_event_release_mouse(pGUI->pControlWithMouseCapture);
-        dred_control__post_outbound_event_release_mouse_global(pGUI->pControlWithMouseCapture);
-    }
+    dred_control__post_outbound_event_release_mouse(pGUI->pControlWithMouseCapture);
+    dred_control__post_outbound_event_release_mouse_global(pGUI->pControlWithMouseCapture);
 
     // We want to set the internal pointer to NULL after posting the events since that is when it has truly released the mouse.
     pGUI->pControlWithMouseCapture = NULL;
@@ -1555,6 +1125,23 @@ void dred_gui_release_mouse(dred_gui* pGUI)
 
     // After releasing the mouse the cursor may be sitting on top of a different element - we want to recheck that.
     dred_gui__update_mouse_enter_and_leave_state(pGUI, dred_gui_find_control_under_point(pGUI->pLastMouseMoveTopLevelControl, pGUI->lastMouseMovePosX, pGUI->lastMouseMovePosY));
+}
+
+void dred_gui_release_mouse_no_local_notify(dred_gui* pGUI)
+{
+    if (pGUI == NULL) {
+        return;
+    }
+
+    dred_control* pControl = pGUI->pControlWithMouseCapture;
+    if (pControl == NULL) {
+        return;
+    }
+
+    dred_gui_on_release_mouse_proc prevProc = pControl->onReleaseMouse;
+    pControl->onReleaseMouse = NULL;
+    dred_gui_release_mouse(pGUI);
+    pControl->onReleaseMouse = prevProc;
 }
 
 void dred_gui_release_mouse_no_global_notify(dred_gui* pGUI)
@@ -1602,10 +1189,8 @@ DRED_GUI_PRIVATE void dred_gui_release_keyboard_private(dred_gui* pGUI, dred_con
         dred_control* pPrevCapturedControl = pGUI->pControlWithKeyboardCapture;
         pGUI->pControlWithKeyboardCapture = NULL;
 
-        if (!dred_control__is_marked_as_dead(pPrevCapturedControl)) {   // <-- There's a chace the element is releaseing the keyboard due to being deleted. Don't want to post an event in this case.
-            dred_control__post_outbound_event_release_keyboard(pPrevCapturedControl, pNewCapturedControl);
-            dred_control__post_outbound_event_release_keyboard_global(pPrevCapturedControl, pNewCapturedControl);
-        }
+        dred_control__post_outbound_event_release_keyboard(pPrevCapturedControl, pNewCapturedControl);
+        dred_control__post_outbound_event_release_keyboard_global(pPrevCapturedControl, pNewCapturedControl);
     }
     pGUI->flags &= ~IS_RELEASING_KEYBOARD;
 
@@ -1663,6 +1248,23 @@ void dred_gui_release_keyboard(dred_gui* pGUI)
     }
 
     dred_gui_release_keyboard_private(pGUI, NULL);
+}
+
+void dred_gui_release_keyboard_no_local_notify(dred_gui* pGUI)
+{
+    if (pGUI == NULL) {
+        return;
+    }
+
+    dred_control* pControl = pGUI->pControlWithMouseCapture;
+    if (pControl == NULL) {
+        return;
+    }
+
+    dred_gui_on_release_keyboard_proc prevProc = pControl->onReleaseKeyboard;
+    pControl->onReleaseKeyboard = NULL;
+    dred_gui_release_keyboard(pGUI);
+    pControl->onReleaseKeyboard = prevProc;
 }
 
 void dred_gui_release_keyboard_no_global_notify(dred_gui* pGUI)

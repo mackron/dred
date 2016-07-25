@@ -644,13 +644,6 @@ struct dred_control
     dred_control* pPrevSibling;
 
 
-    /// A pointer to the next dead element. When an element is deleted during an event handler it is not deleted straight away but
-    /// rather at the end of the current batch of event processing. Dead elements are stored in a linked list, with this pointer
-    /// acting as the link between items. This will be null if the element is the last in the list, or is not marked as dead. Note
-    /// that this should not be used to check if the element is marked as dead - use the IS_CONTROL_DEAD flag instead.
-    dred_control* pNextDeadControl;
-
-
     /// The type of the element, as a string. This is only every used by the host application, and is intended to be used as way
     /// to selectively perform certain operations on specific types of GUI elements.
     char type[64];
@@ -762,9 +755,6 @@ struct dred_gui
     /// inbound events, and all inbound events are already synchronized so we don't need to use a mutex. This is mainly
     /// used as a way to check for erroneous outbound event generation.
     int outboundEventLockCounter;
-
-    /// A pointer to the first element that has been marked as dead. Controls marked as dead are stored as a linked list.
-    dred_control* pFirstDeadControl;
 
     /// A pointer to the element that is sitting directly under the mouse. This is updated on every inbound mouse move event
     /// and is used for determining when a mouse enter/leave event needs to be posted.
@@ -1024,6 +1014,9 @@ void dred_control_capture_mouse(dred_control* pControl) { dred_gui_capture_mouse
 /// Releases the mouse capture.
 void dred_gui_release_mouse(dred_gui* pGUI);
 
+/// Releases the mouse capture without posting the local-scoped event.
+void dred_gui_release_mouse_no_local_notify(dred_gui* pGUI);
+
 /// Releases the mouse capture without posting the global-scoped event. Should only be used in very specific cases, usually in combination with awkward interop with the window system.
 void dred_gui_release_mouse_no_global_notify(dred_gui* pGUI);
 
@@ -1043,6 +1036,9 @@ void dred_control_capture_keyboard(dred_control* pControl) { dred_gui_capture_ke
 
 /// Releases the keyboard capture.
 void dred_gui_release_keyboard(dred_gui* pGUI);
+
+/// Releases the keyboard capture without posting the global-scoped event.
+void dred_gui_release_keyboard_no_local_notify(dred_gui* pGUI);
 
 /// Releases the keyboard capture without posting the global-scoped event. Should only be used in very specific cases, usually in combination with awkward interop with the window system.
 void dred_gui_release_keyboard_no_global_notify(dred_gui* pGUI);
