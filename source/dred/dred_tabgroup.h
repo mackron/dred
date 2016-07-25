@@ -10,7 +10,9 @@ struct dred_tabgroup
     // The base control.
     dred_control control;
 
+    dred_tabbar tabBar;
     dred_tabbar* pTabBar;
+
     dred_tabgroup* pNextTabGroup;
     dred_tabgroup* pPrevTabGroup;
 };

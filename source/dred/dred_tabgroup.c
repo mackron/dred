@@ -153,8 +153,8 @@ dred_tabgroup* dred_tabgroup_create(dred_context* pDred, dred_control* pParent)
         return NULL;
     }
 
-    pTabGroup->pTabBar = dred_tabbar_create(pDred, DRED_CONTROL(pTabGroup), dred_tabbar_orientation_top, 0, NULL);
-    if (pTabGroup->pTabBar == NULL) {
+    pTabGroup->pTabBar = &pTabGroup->tabBar;
+    if (!dred_tabbar_init(pTabGroup->pTabBar, pDred, DRED_CONTROL(pTabGroup), dred_tabbar_orientation_top)) {
         dred_control_uninit(DRED_CONTROL(pTabGroup));
         free(pTabGroup);
         return NULL;
@@ -191,7 +191,7 @@ void dred_tabgroup_delete(dred_tabgroup* pTabGroup)
         return;
     }
 
-    dred_tabbar_delete(pTabGroup->pTabBar);
+    dred_tabbar_uninit(pTabGroup->pTabBar);
     dred_control_uninit(DRED_CONTROL(pTabGroup));
     free(pTabGroup);
 }

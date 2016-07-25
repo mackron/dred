@@ -142,17 +142,11 @@ struct dred_tabbar
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Creates a new tab bar control.
-dred_tabbar* dred_tabbar_create(dred_context* pDred, dred_control* pParent, dred_tabbar_orientation orientation, size_t extraDataSize, const void* pExtraData);
+bool dred_tabbar_init(dred_tabbar* pTabBar, dred_context* pDred, dred_control* pParent, dred_tabbar_orientation orientation);
 
 /// Deletes the given tab bar control.
-void dred_tabbar_delete(dred_tabbar* pTabBar);
+void dred_tabbar_uninit(dred_tabbar* pTabBar);
 
-
-/// Retrieves the size of the extra data associated with the scrollbar.
-size_t dred_tabbar_get_extra_data_size(dred_tabbar* pTabBar);
-
-/// Retrieves a pointer to the extra data associated with the scrollbar.
-void* dred_tabbar_get_extra_data(dred_tabbar* pTabBar);
 
 /// Retrieves the orientation of the given scrollbar.
 dred_tabbar_orientation dred_tabbar_get_orientation(dred_tabbar* pTabBar);

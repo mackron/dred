@@ -42,16 +42,17 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
 /// Finds the tab sitting under the given point, if any.
 DRED_GUI_PRIVATE dred_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, bool* pIsOverCloseButtonOut);
 
-dred_tabbar* dred_tabbar_create(dred_context* pDred, dred_control* pParent, dred_tabbar_orientation orientation, size_t extraDataSize, const void* pExtraData)
+bool dred_tabbar_init(dred_tabbar* pTabBar, dred_context* pDred, dred_control* pParent, dred_tabbar_orientation orientation)
 {
-    dred_tabbar* pTabBar = (dred_tabbar*)calloc(1, sizeof(*pTabBar) + extraDataSize);
     if (pTabBar == NULL) {
-        return NULL;
+        return false;
     }
 
+    memset(pTabBar, 0, sizeof(*pTabBar));
+
+
     if (!dred_control_init(DRED_CONTROL(pTabBar), pDred, pParent, DRED_CONTROL_TYPE_TABBAR)) {
-        free(pTabBar);
-        return NULL;
+        return false;
     }
 
     pTabBar->orientation                 = orientation;
@@ -86,11 +87,6 @@ dred_tabbar* dred_tabbar_create(dred_context* pDred, dred_control* pParent, dred
     pTabBar->onTabDeactivated            = NULL;
     pTabBar->onTabClose                  = NULL;
 
-    pTabBar->extraDataSize = extraDataSize;
-    if (pExtraData != NULL) {
-        memcpy(pTabBar->pExtraData, pExtraData, extraDataSize);
-    }
-
 
     // Event handlers.
     dred_control_set_on_mouse_leave(DRED_CONTROL(pTabBar), dred_tabbar_on_mouse_leave);
@@ -99,10 +95,10 @@ dred_tabbar* dred_tabbar_create(dred_context* pDred, dred_control* pParent, dred
     dred_control_set_on_mouse_button_up(DRED_CONTROL(pTabBar), dred_tabbar_on_mouse_button_up);
     dred_control_set_on_paint(DRED_CONTROL(pTabBar), dred_tabbar_on_paint);
 
-    return pTabBar;
+    return true;
 }
 
-void dred_tabbar_delete(dred_tabbar* pTabBar)
+void dred_tabbar_uninit(dred_tabbar* pTabBar)
 {
     if (pTabBar == NULL) {
         return;
@@ -116,24 +112,6 @@ void dred_tabbar_delete(dred_tabbar* pTabBar)
     dred_control_uninit(DRED_CONTROL(pTabBar));
 }
 
-
-size_t dred_tabbar_get_extra_data_size(dred_tabbar* pTabBar)
-{
-    if (pTabBar == NULL) {
-        return 0;
-    }
-
-    return pTabBar->extraDataSize;
-}
-
-void* dred_tabbar_get_extra_data(dred_tabbar* pTabBar)
-{
-    if (pTabBar == NULL) {
-        return NULL;
-    }
-
-    return pTabBar->pExtraData;
-}
 
 dred_tabbar_orientation dred_tabbar_get_orientation(dred_tabbar* pTabBar)
 {
