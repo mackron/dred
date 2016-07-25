@@ -1,3 +1,4 @@
 bin/data/
 bin/dred-*
 build/
+source/dred/win32/dred.aps
