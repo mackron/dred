@@ -54,9 +54,6 @@
 #define DR_TEXT_ENGINE_IMPLEMENTATION
 #include "../external/dr_text_engine.h"
 
-#define DR_CPP_IMPLEMENTATION
-#include "../../../../dr_ci/source/lang/dr_cpp.h"
-
 #define GB_STRING_IMPLEMENTATION
 #include "../external/gb_string.h"
 
@@ -142,10 +139,10 @@
 #include "dred_stock_themes.c"
 #include "dred_highlighters.c"
 
-
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif
+
 
 int dred_main(dr_cmdline cmdline)
 {
