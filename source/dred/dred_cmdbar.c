@@ -343,8 +343,8 @@ bool dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_control* p
 
     pCmdBar->pDred = pDred;
 
-    pCmdBar->pTextBox = dred_textbox_create(pDred, DRED_CONTROL(pCmdBar));
-    if (pCmdBar->pTextBox == NULL) {
+    pCmdBar->pTextBox = &pCmdBar->textBox;
+    if (!dred_textbox_init(pCmdBar->pTextBox, pDred, DRED_CONTROL(pCmdBar))) {
         dred_control_uninit(DRED_CONTROL(pCmdBar));
         return false;
     }
@@ -383,7 +383,7 @@ void dred_cmdbar_uninit(dred_cmdbar* pCmdBar)
         return;
     }
 
-    dred_textbox_delete(pCmdBar->pTextBox);
+    dred_textbox_uninit(pCmdBar->pTextBox);
     free(pCmdBar->workingCommand);
 
     dred_control_uninit(DRED_CONTROL(pCmdBar));

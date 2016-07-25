@@ -122,10 +122,10 @@ struct dred_textbox
 
 
 // Creates a new text box control.
-dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent);
+bool dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_control* pParent);
 
 // Deletes the given text box control.
-void dred_textbox_delete(dred_textbox* pTextBox);
+void dred_textbox_uninit(dred_textbox* pTextBox);
 
 
 // Retrieves a pointer to the internal text engine.

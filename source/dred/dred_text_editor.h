@@ -10,7 +10,9 @@ struct dred_text_editor
     // The base editor.
     dred_editor editor;
 
+    dred_textbox textBox;
     dred_textbox* pTextBox;
+
     unsigned int iBaseUndoPoint;    // Used to determine whether or no the file has been modified.
     float textScale;
 

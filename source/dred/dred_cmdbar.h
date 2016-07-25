@@ -13,7 +13,10 @@ struct dred_cmdbar
     dred_control control;
 
     dred_context* pDred;    // TODO: Remove this.
+
+    dred_textbox textBox;
     dred_textbox* pTextBox;
+
     char message[256];
     dred_info_bar infoBar;
     dred_info_bar* pInfoBar;

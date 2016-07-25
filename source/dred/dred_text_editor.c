@@ -229,8 +229,8 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     }
 
 
-    pTextEditor->pTextBox = dred_textbox_create(pDred, DRED_CONTROL(pTextEditor));
-    if (pTextEditor->pTextBox == NULL) {
+    pTextEditor->pTextBox = &pTextEditor->textBox;
+    if (!dred_textbox_init(pTextEditor->pTextBox, pDred, DRED_CONTROL(pTextEditor))) {
         dred_editor_uninit(DRED_EDITOR(pTextEditor));
         return NULL;
     }
@@ -243,7 +243,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     if (filePathAbsolute != NULL && filePathAbsolute[0] != '\0') {
         char* pFileData = dr_open_and_read_text_file(filePathAbsolute, NULL);
         if (pFileData == NULL) {
-            dred_textbox_delete(pTextEditor->pTextBox);
+            dred_textbox_uninit(pTextEditor->pTextBox);
             dred_editor_uninit(DRED_EDITOR(pTextEditor));
             return NULL;
         }
@@ -284,7 +284,8 @@ void dred_text_editor_delete(dred_text_editor* pTextEditor)
         return;
     }
 
-    dred_textbox_delete(pTextEditor->pTextBox);
+    dred_textbox_uninit(pTextEditor->pTextBox);
+
     dred_editor_uninit(DRED_EDITOR(pTextEditor));
     free(pTextEditor);
 }

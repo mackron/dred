@@ -320,16 +320,15 @@ bool dred_textbox__insert_tab_at_cursor(dred_textbox* pTextBox, size_t iCursor)
 }
 
 
-dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
+bool dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_control* pParent)
 {
-    dred_textbox* pTextBox = (dred_textbox*)calloc(1, sizeof(*pTextBox));
     if (pTextBox == NULL) {
-        return NULL;
+        return false;
     }
 
+    memset(pTextBox, 0, sizeof(*pTextBox));
     if (!dred_control_init(DRED_CONTROL(pTextBox), pDred, pParent, DRED_CONTROL_TYPE_TEXTBOX)) {
-        free(pTextBox);
-        return NULL;
+        return false;
     }
 
     dred_control_set_cursor(DRED_CONTROL(pTextBox), dred_cursor_text);
@@ -369,7 +368,7 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     pTextBox->pTL = drte_engine_create(pTextBox);
     if (pTextBox->pTL == NULL) {
         dred_control_uninit(DRED_CONTROL(pTextBox));
-        return NULL;
+        return false;
     }
 
     dred_textbox__insert_cursor(pTextBox, 0);
@@ -456,13 +455,10 @@ dred_textbox* dred_textbox_create(dred_context* pDred, dred_control* pParent)
     pTextBox->onCursorMove = NULL;
     pTextBox->onUndoPointChanged = NULL;
 
-
-    // TESTING
-
-    return pTextBox;
+    return true;
 }
 
-void dred_textbox_delete(dred_textbox* pTextBox)
+void dred_textbox_uninit(dred_textbox* pTextBox)
 {
     if (pTextBox == NULL) {
         return;
