@@ -327,7 +327,7 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
     }
 
     memset(pTextView, 0, sizeof(*pTextView));
-    if (!dred_control_init(DRED_CONTROL(pTextView), pDred, pParent, DRED_CONTROL_TYPE_TEXTBOX)) {
+    if (!dred_control_init(DRED_CONTROL(pTextView), pDred, pParent, DRED_CONTROL_TYPE_TEXTVIEW)) {
         return false;
     }
 

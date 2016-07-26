@@ -333,8 +333,8 @@ bool dred_command__undo(dred_context* pDred, const char* value)
         return true;
     }
 
-    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_undo(DRED_TEXTBOX(pFocusedControl));
+    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
+        dred_textview_undo(DRED_TEXTVIEW(pFocusedControl));
         return true;
     }
 
@@ -350,8 +350,8 @@ bool dred_command__redo(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_redo(DRED_TEXTBOX(pFocusedControl));
+    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
+        dred_textview_redo(DRED_TEXTVIEW(pFocusedControl));
         return true;
     }
 
@@ -374,15 +374,17 @@ bool dred_command__copy(dred_context* pDred, const char* value)
         return true;
     }
 
-    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
-        size_t selectedTextLength = dred_textbox_get_selected_text(DRED_TEXTBOX(pFocusedControl), NULL, 0);
+    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
+        size_t selectedTextLength = dred_textview_get_selected_text(DRED_TEXTVIEW(pFocusedControl), NULL, 0);
         char* selectedText = (char*)malloc(selectedTextLength + 1);
         if (selectedText == NULL) {
             return false;
         }
 
-        selectedTextLength = dred_textbox_get_selected_text(DRED_TEXTBOX(pFocusedControl), selectedText, selectedTextLength + 1);
+        selectedTextLength = dred_textview_get_selected_text(DRED_TEXTVIEW(pFocusedControl), selectedText, selectedTextLength + 1);
         dred_clipboard_set_text(selectedText, selectedTextLength);
+        free(selectedText);
+
         return true;
     }
 
@@ -398,19 +400,19 @@ bool dred_command__paste(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
+    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
         char* clipboardText = dred_clipboard_get_text();
         if (clipboardText == NULL) {
             return false;
         }
 
         bool wasTextChanged = false;
-        dred_textbox_prepare_undo_point(DRED_TEXTBOX(pFocusedControl));
+        dred_textview_prepare_undo_point(DRED_TEXTVIEW(pFocusedControl));
         {
-            wasTextChanged = dred_textbox_delete_selected_text_no_undo(DRED_TEXTBOX(pFocusedControl)) || wasTextChanged;
-            wasTextChanged = dred_textbox_insert_text_at_cursors_no_undo(DRED_TEXTBOX(pFocusedControl), clipboardText) || wasTextChanged;
+            wasTextChanged = dred_textview_delete_selected_text_no_undo(DRED_TEXTVIEW(pFocusedControl)) || wasTextChanged;
+            wasTextChanged = dred_textview_insert_text_at_cursors_no_undo(DRED_TEXTVIEW(pFocusedControl), clipboardText) || wasTextChanged;
         }
-        if (wasTextChanged) { dred_textbox_commit_undo_point(DRED_TEXTBOX(pFocusedControl)); }
+        if (wasTextChanged) { dred_textview_commit_undo_point(DRED_TEXTVIEW(pFocusedControl)); }
 
         dred_clipboard_free_text(clipboardText);
         return true;
@@ -428,8 +430,8 @@ bool dred_command__delete(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_delete_selected_text(DRED_TEXTBOX(pFocusedControl));
+    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
+        dred_textview_delete_selected_text(DRED_TEXTVIEW(pFocusedControl));
         return true;
     }
 
@@ -445,8 +447,8 @@ bool dred_command__select_all(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
-        dred_textbox_select_all(DRED_TEXTBOX(pFocusedControl));
+    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
+        dred_textview_select_all(DRED_TEXTVIEW(pFocusedControl));
         return true;
     }
 
