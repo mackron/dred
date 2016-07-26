@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-#define DRED_CONTROL_TYPE_TEXTBOX  "dred.textbox"
+#define DRED_CONTROL_TYPE_TEXTBOX  "dred.textview.textbox"
 
 typedef struct dred_textbox dred_textbox;
 #define DRED_TEXTBOX(a) ((dred_textbox*)(a))
