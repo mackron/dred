@@ -122,7 +122,7 @@ struct dred_textview
 
 
 // Creates a new text box control.
-bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_control* pParent);
+bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_control* pParent, drte_engine* pTextEngine);
 
 // Deletes the given text box control.
 void dred_textview_uninit(dred_textview* pTextView);

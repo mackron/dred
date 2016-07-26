@@ -365,8 +365,8 @@ bool dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_control
     dred_control_set_on_mouse_button_up(pTextBox->pLineNumbers, dred_textbox__on_mouse_button_up_line_numbers);
     dred_control_set_on_paint(pTextBox->pLineNumbers, dred_textbox__on_paint_line_numbers);
 
-    pTextBox->pTL = drte_engine_create(pTextBox);
-    if (pTextBox->pTL == NULL) {
+    pTextBox->pTL = &pTextBox->textEngine;
+    if (!drte_engine_init(pTextBox->pTL, pTextBox)) {
         dred_control_uninit(DRED_CONTROL(pTextBox));
         return false;
     }
@@ -470,7 +470,7 @@ void dred_textbox_uninit(dred_textbox* pTextBox)
     }
 
     if (pTextBox->pTL) {
-        drte_engine_delete(pTextBox->pTL);
+        drte_engine_uninit(pTextBox->pTL);
         pTextBox->pTL = NULL;
     }
 

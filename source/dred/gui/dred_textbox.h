@@ -23,6 +23,7 @@ struct dred_textbox
 
 
     /// The text engine.
+    drte_engine textEngine;
     drte_engine* pTL;
 
     // The default style for use by the text engine.

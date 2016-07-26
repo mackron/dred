@@ -320,9 +320,9 @@ bool dred_textview__insert_tab_at_cursor(dred_textview* pTextView, size_t iCurso
 }
 
 
-bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_control* pParent)
+bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_control* pParent, drte_engine* pTextEngine)
 {
-    if (pTextView == NULL) {
+    if (pTextView == NULL || pTextEngine == NULL) {
         return false;
     }
 
@@ -330,6 +330,9 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
     if (!dred_control_init(DRED_CONTROL(pTextView), pDred, pParent, DRED_CONTROL_TYPE_TEXTBOX)) {
         return false;
     }
+
+    pTextView->pTextEngine = pTextEngine;
+    dred_textview__insert_cursor(pTextView, 0);
 
     dred_control_set_cursor(DRED_CONTROL(pTextView), dred_cursor_text);
     dred_control_set_on_size(DRED_CONTROL(pTextView), dred_textview_on_size);
@@ -364,14 +367,6 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
     dred_control_set_on_mouse_button_down(pTextView->pLineNumbers, dred_textview__on_mouse_button_down_line_numbers);
     dred_control_set_on_mouse_button_up(pTextView->pLineNumbers, dred_textview__on_mouse_button_up_line_numbers);
     dred_control_set_on_paint(pTextView->pLineNumbers, dred_textview__on_paint_line_numbers);
-
-    pTextView->pTextEngine = drte_engine_create(pTextView);
-    if (pTextView->pTextEngine == NULL) {
-        dred_control_uninit(DRED_CONTROL(pTextView));
-        return false;
-    }
-
-    dred_textview__insert_cursor(pTextView, 0);
 
 
     pTextView->pTextEngine->onMeasureString = dred_textview_engine__on_measure_string_proc;
@@ -467,11 +462,6 @@ void dred_textview_uninit(dred_textview* pTextView)
     // Keyboard focus needs to be released first. If we don't do this we'll not free delete the internal timer.
     if (dred_control_has_keyboard_capture(DRED_CONTROL(pTextView))) {
         dred_gui_release_keyboard(dred_control_get_gui(DRED_CONTROL(pTextView)));
-    }
-
-    if (pTextView->pTextEngine) {
-        drte_engine_delete(pTextView->pTextEngine);
-        pTextView->pTextEngine = NULL;
     }
 
     if (pTextView->pLineNumbers) {

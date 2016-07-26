@@ -1660,7 +1660,7 @@ bool dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindo
 typedef struct
 {
     dred_context* pDred;
-    drte_engine* pTextEngine;
+    drte_engine textEngine;
     dr2d_context* pPaintContext;
     dr2d_surface* pPaintSurface;
     dr2d_font* pFont;
@@ -1686,12 +1686,12 @@ void dred__init_print_font(dred_print_data* pPrintData)
     dr2d_font_metrics fontMetrics;
     dr2d_get_font_metrics(pPrintData->pFont, &fontMetrics);
 
-    drte_engine_register_style_token(pPrintData->pTextEngine, (drte_style_token)pPrintData->pFont, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
-    drte_engine_set_default_style(pPrintData->pTextEngine, (drte_style_token)pPrintData->pFont);
+    drte_engine_register_style_token(&pPrintData->textEngine, (drte_style_token)pPrintData->pFont, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
+    drte_engine_set_default_style(&pPrintData->textEngine, (drte_style_token)pPrintData->pFont);
 
 
     // Should probably move this to somewhere more appropriate.
-    drte_engine_set_container_size(pPrintData->pTextEngine, pPrintData->pageSizeX, pPrintData->pageSizeY);
+    drte_engine_set_container_size(&pPrintData->textEngine, pPrintData->pageSizeX, pPrintData->pageSizeY);
 }
 
 void dred__uninit_print_font(dred_print_data* pPrintData)
@@ -1747,10 +1747,10 @@ void dred__print_page(dred_print_data* pPrintData, size_t iPage)
     dr2d_begin_draw(pPrintData->pPaintSurface);
     {
         // Scroll to the page.
-        drte_engine_set_inner_offset_y(pPrintData->pTextEngine, -(iPage * drte_engine_get_line_height(pPrintData->pTextEngine) * drte_engine_get_line_count_per_page(pPrintData->pTextEngine)));
+        drte_engine_set_inner_offset_y(&pPrintData->textEngine, -(iPage * drte_engine_get_line_height(&pPrintData->textEngine) * drte_engine_get_line_count_per_page(&pPrintData->textEngine)));
 
         // Paint.
-        drte_engine_paint(pPrintData->pTextEngine, drte_make_rect(0, 0, drte_engine_get_container_width(pPrintData->pTextEngine), drte_engine_get_container_height(pPrintData->pTextEngine)), pPrintData);
+        drte_engine_paint(&pPrintData->textEngine, drte_make_rect(0, 0, drte_engine_get_container_width(&pPrintData->textEngine), drte_engine_get_container_height(&pPrintData->textEngine)), pPrintData);
     }
     dr2d_end_draw(pPrintData->pPaintSurface);
 }
@@ -1830,29 +1830,28 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
 
     // When printing a text editor we need to use a different text engine for layout because the dimensions are different
     // and we need to force word wrap.
-    printData.pTextEngine = drte_engine_create(&printData);
-    if (printData.pTextEngine == NULL) {
+    if (!drte_engine_init(&printData.textEngine, &printData)) {
         return false;
     }
 
     // Engine settings.
-    drte_engine_enable_word_wrap(printData.pTextEngine);
-    drte_engine_set_on_paint_text(printData.pTextEngine, dred__on_paint_text_for_printing);
-    drte_engine_set_on_paint_rect(printData.pTextEngine, dred__on_paint_rect_for_printing);
-    printData.pTextEngine->onMeasureString = dred__on_measure_string_for_printing;
-    printData.pTextEngine->onGetCursorPositionFromPoint = dred__on_get_cursor_position_from_point_for_printing;
-    printData.pTextEngine->onGetCursorPositionFromChar = dred__on_get_cursor_position_from_char_for_printing;
+    drte_engine_enable_word_wrap(&printData.textEngine);
+    drte_engine_set_on_paint_text(&printData.textEngine, dred__on_paint_text_for_printing);
+    drte_engine_set_on_paint_rect(&printData.textEngine, dred__on_paint_rect_for_printing);
+    printData.textEngine.onMeasureString = dred__on_measure_string_for_printing;
+    printData.textEngine.onGetCursorPositionFromPoint = dred__on_get_cursor_position_from_point_for_printing;
+    printData.textEngine.onGetCursorPositionFromChar = dred__on_get_cursor_position_from_char_for_printing;
 
     // Set the text.
     size_t textLength = dred_text_editor_get_text(DRED_TEXT_EDITOR(pFocusedEditor), NULL, 0);
     char* text = (char*)malloc(textLength + 1);
     if (text == NULL) {
-        drte_engine_delete(printData.pTextEngine);
+        drte_engine_uninit(&printData.textEngine);
         return false;
     }
 
     dred_text_editor_get_text(DRED_TEXT_EDITOR(pFocusedEditor), text, textLength+1);
-    drte_engine_set_text(printData.pTextEngine, text);
+    drte_engine_set_text(&printData.textEngine, text);
 
 
 
@@ -1899,7 +1898,7 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
 
     dred__init_print_font(&printData);
 
-    size_t pageCount = drte_engine_get_page_count(printData.pTextEngine);
+    size_t pageCount = drte_engine_get_page_count(&printData.textEngine);
 
 
     DOCINFOA di;
