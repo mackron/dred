@@ -333,7 +333,7 @@ bool dred_command__undo(dred_context* pDred, const char* value)
         return true;
     }
 
-    if (pFocusedControl != NULL && dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
+    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
         dred_textbox_undo(DRED_TEXTBOX(pFocusedControl));
         return true;
     }
@@ -350,7 +350,7 @@ bool dred_command__redo(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (pFocusedControl != NULL && dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
+    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
         dred_textbox_redo(DRED_TEXTBOX(pFocusedControl));
         return true;
     }
@@ -374,7 +374,7 @@ bool dred_command__copy(dred_context* pDred, const char* value)
         return true;
     }
 
-    if (pFocusedControl != NULL && dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
+    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
         size_t selectedTextLength = dred_textbox_get_selected_text(DRED_TEXTBOX(pFocusedControl), NULL, 0);
         char* selectedText = (char*)malloc(selectedTextLength + 1);
         if (selectedText == NULL) {
@@ -398,7 +398,7 @@ bool dred_command__paste(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (pFocusedControl != NULL && dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
+    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
         char* clipboardText = dred_clipboard_get_text();
         if (clipboardText == NULL) {
             return false;
@@ -428,7 +428,7 @@ bool dred_command__delete(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (pFocusedControl != NULL && dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
+    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
         dred_textbox_delete_selected_text(DRED_TEXTBOX(pFocusedControl));
         return true;
     }
@@ -445,7 +445,7 @@ bool dred_command__select_all(dred_context* pDred, const char* value)
         return false;
     }
 
-    if (pFocusedControl != NULL && dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
+    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTBOX)) {
         dred_textbox_select_all(DRED_TEXTBOX(pFocusedControl));
         return true;
     }

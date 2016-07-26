@@ -332,6 +332,7 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
     }
 
     pTextView->pTextEngine = pTextEngine;
+    pTextView->pTextEngine->pUserData = pTextView;
     dred_textview__insert_cursor(pTextView, 0);
 
     dred_control_set_cursor(DRED_CONTROL(pTextView), dred_cursor_text);

@@ -10,8 +10,12 @@ struct dred_text_editor
     // The base editor.
     dred_editor editor;
 
-    dred_textbox textBox;
-    dred_textbox* pTextBox;
+    // The text engine.
+    drte_engine engine;
+
+    // The text view controls.
+    dred_textview textView;
+    dred_textview* pTextView;
 
     unsigned int iBaseUndoPoint;    // Used to determine whether or no the file has been modified.
     float textScale;
