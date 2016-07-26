@@ -149,7 +149,7 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dred_control* p
 
 
     // Fall through to the default handler.
-    dred_textbox_on_capture_keyboard(DRED_CONTROL(pTextBox), pPrevCapturedControl);
+    dred_textview_on_capture_keyboard(DRED_CONTROL(pTextBox), pPrevCapturedControl);
 }
 
 void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dred_control* pNextCapturedControl)
@@ -186,7 +186,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dred_control* p
 
 
     // Fall through to the default handler.
-    dred_textbox_on_release_keyboard(DRED_CONTROL(pTextBox), pNextCapturedControl);
+    dred_textview_on_release_keyboard(DRED_CONTROL(pTextBox), pNextCapturedControl);
 }
 
 void dred_cmdbar_tb__on_key_down(dred_control* pControl, dred_key key, int stateFlags)
@@ -246,7 +246,7 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dred_key key, int state
 
         default: 
         {
-            dred_textbox_on_key_down(DRED_CONTROL(pTextBox), key, stateFlags);
+            dred_textview_on_key_down(DRED_CONTROL(pTextBox), key, stateFlags);
         } break;
     }
 }
@@ -295,7 +295,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
     }
     else
     {
-        dred_textbox_on_printable_key_down(DRED_CONTROL(pTextBox), utf32, stateFlags);
+        dred_textview_on_printable_key_down(DRED_CONTROL(pTextBox), utf32, stateFlags);
     }
 }
 

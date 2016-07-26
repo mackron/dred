@@ -5,120 +5,14 @@
 typedef struct dred_textbox dred_textbox;
 #define DRED_TEXTBOX(a) ((dred_textbox*)(a))
 
-typedef void (* dred_textbox_on_cursor_move_proc)(dred_textbox* pTextBox);
-typedef void (* dred_textbox_on_undo_point_changed_proc)(dred_textbox* pTextBox, unsigned int iUndoPoint);
-
-// A cursor in a textbox is tied to either 1 or 0 selection regions. When a cursor is not associated with a selection, the
-// index of the selection region is set to -1.
-typedef struct
-{
-    size_t iEngineCursor;        // <-- Always >= 0.
-    size_t iEngineSelection;     // <-- Set to -1 if the cursor is not associated with a selection.
-} dred_textbox_cursor;
-
 struct dred_textbox
 {
-    // The base control.
-    dred_control control;
+    // A text box control is just a text view control with a text engine.
+    dred_textview view;
 
-
-    /// The text engine.
+    // The text engine.
     drte_engine textEngine;
-    drte_engine* pTL;
-
-    // The default style for use by the text engine.
-    dred_text_style defaultStyle;
-
-    // The style to apply to selected text. Only the background color is used.
-    dred_text_style selectionStyle;
-
-    // The style to apply to active lines.
-    dred_text_style activeLineStyle;
-
-    // The style to apply to the cursor.
-    dred_text_style cursorStyle;
-
-    // The style to apply to line numbers.
-    dred_text_style lineNumbersStyle;
-
-
-    /// The vertical scrollbar.
-    dred_scrollbar vertScrollbar;
-    dred_scrollbar* pVertScrollbar;
-
-    /// The horizontal scrollbar.
-    dred_scrollbar horzScrollbar;
-    dred_scrollbar* pHorzScrollbar;
-
-    /// The line numbers element.
-    dred_control lineNumbers;
-    dred_control* pLineNumbers; // <-- Always equal to &lineNumbers and only used for convenience.
-
-
-    /// The color of the border.
-    dred_color borderColor;
-
-    /// The width of the border.
-    float borderWidth;
-
-    /// The amount of padding to apply the left and right of the text.
-    float padding;
-
-    // The width of the line numbers.
-    float lineNumbersWidth;
-
-    /// The padding to the right of the line numbers.
-    float lineNumbersPaddingRight;
-
-
-    /// The desired width of the vertical scrollbar.
-    float vertScrollbarSize;
-
-    /// The desired height of the horizontal scrollbar.
-    float horzScrollbarSize;
-
-    /// Whether or not the vertical scrollbar is enabled.
-    bool isVertScrollbarEnabled;
-
-    /// Whether or not the horizontal scrollbar is enabled.
-    bool isHorzScrollbarEnabled;
-
-    // Whether or not an extra page is added to the scroll range so that the user can scroll past the last line. When set to true,
-    // the user can scroll until the last line is sitting at the top of the text box. When disabled the user can scroll until the
-    // last line is sitting at the bottom.
-    bool isExcessScrollingEnabled;
-
-    // Whether or not tabs to spaces is enabled.
-    bool isTabsToSpacesEnabled;
-
-
-    // The number of active cursors.
-    size_t cursorCount;
-
-    // The buffer containing the active cursors.
-    dred_textbox_cursor* pCursors;
-
-
-    /// When selecting lines by clicking and dragging on the line numbers, keeps track of the line to anchor the selection to.
-    size_t iLineSelectAnchor;
-
-
-    // Whether or not we are doing word based mouse-drag selection.
-    bool isDoingWordSelect;
-
-    // The word to act as the achor when doing word based selection.
-    drte_region wordSelectionAnchor;
-
-
-    /// The function to call when the text cursor/caret moves.
-    dred_textbox_on_cursor_move_proc onCursorMove;
-
-    /// The function to call when the undo point changes.
-    dred_textbox_on_undo_point_changed_proc onUndoPointChanged;
-
-
-    // The timer for stepping the cursor.
-    dred_timer* pTimer;
+    drte_engine* pTextEngine;
 };
 
 
@@ -372,54 +266,3 @@ bool dred_textbox_prepare_undo_point(dred_textbox* pTextBox);
 
 // Commits an undo point.
 bool dred_textbox_commit_undo_point(dred_textbox* pTextBox);
-
-
-// Sets the function to call when the cursor moves.
-void dred_textbox_set_on_cursor_move(dred_textbox* pTextBox, dred_textbox_on_cursor_move_proc proc);
-
-// Sets the function to call when the undo point changes.
-void dred_textbox_set_on_undo_point_changed(dred_textbox* pTextBox, dred_textbox_on_undo_point_changed_proc proc);
-
-
-
-// on_size.
-void dred_textbox_on_size(dred_control* pControl, float newWidth, float newHeight);
-
-// on_mouse_move.
-void dred_textbox_on_mouse_move(dred_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags);
-
-// on_mouse_button_down.
-void dred_textbox_on_mouse_button_down(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
-
-// on_mouse_button_up.
-void dred_textbox_on_mouse_button_up(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
-
-// on_mouse_button_dblclick.
-void dred_textbox_on_mouse_button_dblclick(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
-
-// on_mouse_wheel
-void dred_textbox_on_mouse_wheel(dred_control* pControl, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
-
-// on_key_down.
-void dred_textbox_on_key_down(dred_control* pControl, dred_key key, int stateFlags);
-
-// on_key_up.
-void dred_textbox_on_key_up(dred_control* pControl, dred_key key, int stateFlags);
-
-// on_printable_key_down.
-void dred_textbox_on_printable_key_down(dred_control* pControl, unsigned int utf32, int stateFlags);
-
-// on_paint.
-void dred_textbox_on_paint(dred_control* pControl, dred_rect relativeRect, void* pPaintData);
-
-// on_capture_keyboard
-void dred_textbox_on_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl);
-
-// on_release_keyboard
-void dred_textbox_on_release_keyboard(dred_control* pControl, dred_control* pNewCapturedControl);
-
-// on_capture_mouse
-void dred_textbox_on_capture_mouse(dred_control* pControl);
-
-// on_release_mouse
-void dred_textbox_on_release_mouse(dred_control* pControl);
