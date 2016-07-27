@@ -29,6 +29,7 @@
 #include <windows.h>
 #endif
 #ifdef __linux__
+#include <sys/file.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -167,6 +168,28 @@ bool dred_parse_cmdline__post_startup_files_to_server(const char* key, const cha
     return true;
 }
 
+bool dred__try_opening_existing_process(dr_cmdline cmdline)
+{
+    drpipe client;
+    if (drpipe_open_named_client(DRED_PIPE_NAME, DR_IPC_WRITE, &client) == dripc_result_success) {
+        printf("CLIENT\n");
+        // If we get here it means there is a server instance already open and we want to use that one instead
+        // of creating a new one. The first thing to do is notify the server that it should be activated.
+        dred_ipc_post_message(client, DRED_IPC_MESSAGE_ACTIVATE, NULL, 0);
+
+        // After activating the server we need to let it know which files to open.
+        dr_parse_cmdline(&cmdline, dred_parse_cmdline__post_startup_files_to_server, client);
+
+        // The server should be notified of the file, so we just need to return now.
+        dred_ipc_post_message(client, DRED_IPC_MESSAGE_TERMINATOR, NULL, 0);
+        drpipe_close(client);
+
+        return true;
+    }
+
+    return false;
+}
+
 int dred_main(dr_cmdline cmdline)
 {
     bool tryUsingExistingInstance = true;
@@ -174,24 +197,54 @@ int dred_main(dr_cmdline cmdline)
         tryUsingExistingInstance = false;
     }
 
+#ifndef _WIN32
+    char lockFileName[256];
+    strcpy_s(lockFileName, sizeof(lockFileName), "/tmp/");
+    strcat_s(lockFileName, sizeof(lockFileName), "dred.lock");
+
+    char pipeFileName[256];
+    drpipe_get_translated_name(DRED_PIPE_NAME, pipeFileName, sizeof(pipeFileName));
+
+    int lockfd = -1;
+#endif
+
     // If an instance of dred is already running, we may want to use that one instead. We can know this by trying
     // to create a client-side pipe.
     if (tryUsingExistingInstance) {
-        drpipe client;
-        if (drpipe_open_named_client(DRED_PIPE_NAME, DR_IPC_WRITE, &client) == dripc_result_success) {
-            printf("CLIENT\n");
-            // If we get here it means there is a server instance already open and we want to use that one instead
-            // of creating a new one. The first thing to do is notify the server that it should be activated.
-            dred_ipc_post_message(client, DRED_IPC_MESSAGE_ACTIVATE, NULL, 0);
-
-            // After activating the server we need to let it know which files to open.
-            dr_parse_cmdline(&cmdline, dred_parse_cmdline__post_startup_files_to_server, client);
-
-            // The server should be notified of the file, so we just need to return now.
-            dred_ipc_post_message(client, DRED_IPC_MESSAGE_TERMINATOR, NULL, 0);
-            drpipe_close(client);
+#ifdef _WIN32
+        if (dred__try_opening_existing_process(cmdline)) {
             return 0;
         }
+#else
+        bool isOtherProcessRunning = false;
+        int fd = open(lockFileName, O_RDONLY, 0666);
+        if (fd != -1) {
+            if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
+                isOtherProcessRunning = true;
+            } else {
+                isOtherProcessRunning = false;
+            }
+
+            close(fd);
+
+            // If the other process isn't running, remove both the lock and pipe files.
+            if (!isOtherProcessRunning) {
+                remove(lockFileName);
+                remove(pipeFileName);
+            }
+        }
+
+        if (isOtherProcessRunning) {
+            if (dred__try_opening_existing_process(cmdline)) {
+                return 0;
+            }
+        } else {
+            lockfd = open(lockFileName, O_WRONLY | O_CREAT, 0666);
+            if (lockfd != -1) {
+                flock(lockfd, LOCK_EX);
+            }
+        }
+#endif
     }
 
     printf("SERVER\n");
@@ -207,6 +260,13 @@ int dred_main(dr_cmdline cmdline)
     }
 
     int result = dred_run(&dred);
+
+#ifndef _WIN32
+    if (lockfd != -1) {
+        close(lockfd);
+        remove(lockFileName);
+    }
+#endif
 
     dred_uninit(&dred);
     dred_platform_uninit();
