@@ -509,9 +509,13 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
     // Create the IPC server pipe last to ensure the context is in a valid when messages are received.
-    if (dred_thread_create(&pDred->threadIPC, dred_ipc_message_proc, pDred)) {
-        printf("CREATED PIPE\n");
+    if (!dr_cmdline_key_exists(&cmdline, "noipc")) {
+        if (dred_thread_create(&pDred->threadIPC, dred_ipc_message_proc, pDred)) {
+            printf("CREATED PIPE\n");
+        }
     }
+
+
 
 
 

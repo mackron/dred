@@ -197,6 +197,11 @@ int dred_main(dr_cmdline cmdline)
         tryUsingExistingInstance = false;
     }
 
+    bool disableIPC = false;
+    if (dr_cmdline_key_exists(&cmdline, "noipc")) {
+        disableIPC = true;
+    }
+
 #ifndef _WIN32
     char lockFileName[256];
     strcpy_s(lockFileName, sizeof(lockFileName), "/tmp/");
@@ -239,9 +244,11 @@ int dred_main(dr_cmdline cmdline)
                 return 0;
             }
         } else {
-            lockfd = open(lockFileName, O_WRONLY | O_CREAT, 0666);
-            if (lockfd != -1) {
-                flock(lockfd, LOCK_EX);
+            if (!disableIPC) {
+                lockfd = open(lockFileName, O_WRONLY | O_CREAT, 0666);
+                if (lockfd != -1) {
+                    flock(lockfd, LOCK_EX);
+                }
             }
         }
 #endif
