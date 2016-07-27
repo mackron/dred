@@ -9,7 +9,7 @@ typedef HANDLE dred_thread;
 typedef HANDLE dred_mutex;
 typedef HANDLE dred_semaphore;
 
-#define DRED_THREAD_PROC_SIGNATURE(name, data) DWORD name(void* data)
+#define DRED_THREAD_PROC_SIGNATURE(name, data) DWORD WINAPI name(void* data)
 #else
 typedef void* (* dred_thread_entry_proc)(void* pData);
 typedef pthread_t dred_thread;

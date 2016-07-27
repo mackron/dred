@@ -924,6 +924,15 @@ void dred_window_hide__win32(dred_window* pWindow)
     ShowWindow(pWindow->hWnd, SW_HIDE);
 }
 
+void dred_window_bring_to_top__win32(dred_window* pWindow)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+    SetForegroundWindow(pWindow->hWnd);
+}
+
 bool dred_window_is_maximized__win32(dred_window* pWindow)
 {
     if (pWindow == NULL) {
@@ -2322,6 +2331,11 @@ void dred_window_hide__gtk(dred_window* pWindow)
     gtk_widget_hide(GTK_WIDGET(pWindow->pGTKWindow));
 }
 
+void dred_window_bring_to_top__gtk(dred_window* pWindow)
+{
+    gtk_widget_grab_focus(GTK_WIDGET(pWindow->pGTKWindow));
+}
+
 bool dred_window_is_maximized__gtk(dred_window* pWindow)
 {
     if (pWindow == NULL) {
@@ -3134,6 +3148,21 @@ void dred_window_hide(dred_window* pWindow, unsigned int flags)
 
 #ifdef DRED_GTK
     dred_window_hide__gtk(pWindow);
+#endif
+}
+
+void dred_window_bring_to_top(dred_window* pWindow)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+#ifdef DRED_WIN32
+    dred_window_bring_to_top__win32(pWindow);
+#endif
+
+#ifdef DRED_GTK
+    dred_window_bring_to_top__gtk(pWindow);
 #endif
 }
 

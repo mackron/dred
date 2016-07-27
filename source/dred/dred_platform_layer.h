@@ -219,6 +219,9 @@ void dred_window_show_maximized(dred_window* pWindow);
 void dred_window_show_sized(dred_window* pWindow, unsigned int width, unsigned int height);
 void dred_window_hide(dred_window* pWindow, unsigned int flags);
 
+// Brings the given window to the top of the z order and activates it.
+void dred_window_bring_to_top(dred_window* pWindow);
+
 // Determines whether or not the window is maximized.
 bool dred_window_is_maximized(dred_window* pWindow);
 

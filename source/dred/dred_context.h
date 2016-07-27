@@ -9,7 +9,11 @@ struct dred_context
     dred_file logFile;
 
     // The named pipe for IPC.
-    drpipe pipeIPC;
+    //drpipe pipeIPC;
+
+    // The IPC thread.
+    dred_thread threadIPC;
+
 
     // The context for the 2D graphics sub-system which will be used for drawing the GUI.
     dr2d_context* pDrawingContext;
@@ -72,6 +76,9 @@ struct dred_context
 
     // Whether or not the context is initialized.
     bool isInitialized;
+
+    // Whether or not the context is closing. This is used to terminate loops.
+    bool isClosing;
 
     // Whether or not the application is running in silent mode.
     bool isTerminalOutputDisabled;

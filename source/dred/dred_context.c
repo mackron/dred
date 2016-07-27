@@ -216,6 +216,68 @@ void dred_create_config_file_if_not_exists(const char* fileName, const char* con
 }
 
 
+DRED_THREAD_PROC_SIGNATURE(dred_ipc_message_proc, pData)
+{
+    dred_context* pDred = (dred_context*)pData;
+    assert(pDred != NULL);
+
+#if 0
+    while (pDred->pipeIPC != NULL) {
+        if (drpipe_connect(pDred->pipeIPC) != dripc_result_success) {
+            return 0;
+        }
+
+        
+    }
+#endif
+
+    while (!pDred->isClosing) {
+        drpipe server;
+        if (drpipe_open_named_server(DRED_PIPE_NAME, DR_IPC_READ, &server) != dripc_result_success) {
+            return 0;
+        }
+
+        if (drpipe_connect(server) != dripc_result_success) {
+            return 0;
+        }
+
+        // We may have connected a temporary client during the shutdown procedure in order to return from the call above. Here is where we close.
+        if (pDred->isClosing) {
+            return 0;
+        }
+
+
+        void* pMsgData;
+        dred_ipc_message_header header;
+        while (dred_ipc_read_message(server, &header, &pMsgData)) {
+            switch (header.message)
+            {
+                case DRED_IPC_MESSAGE_ACTIVATE:
+                {
+                    dred_window_bring_to_top(pDred->pMainWindow);
+                } break;
+
+                case DRED_IPC_MESSAGE_OPEN:
+                {
+                    dred_open_file(pDred, (const char*)pMsgData);
+                } break;
+
+                default:
+                {
+                    dred_warningf(pDred, "Received unknown IPC message: %d\n", header.message);
+                } break;
+            }
+
+            free(pMsgData);
+        }
+
+        drpipe_close(server);
+    }
+
+    return 0;
+}
+
+
 bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 {
     // TODO: USE dred_error() AND FAMILY FOR PRINTING CRITICAL ERRORS INSTEAD OF printf()
@@ -434,10 +496,8 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     pDred->config.windowMaximized = showWindowMaximized;
 
 
-    // Create the IPC server pipe last to ensure the context is in a valid when messages are received. It is OK if this
-    // fails, in which case we just silently disable IPC.
-    if (drpipe_open_named_server(DRED_PIPE_NAME, DR_IPC_READ, &pDred->pipeIPC) == dripc_result_success) {
-        // The pipe was created, so now start the thread that waits for and handles messages.
+    // Create the IPC server pipe last to ensure the context is in a valid when messages are received.
+    if (dred_thread_create(&pDred->threadIPC, dred_ipc_message_proc, pDred)) {
         printf("CREATED PIPE\n");
     }
     
@@ -457,14 +517,20 @@ void dred_uninit(dred_context* pDred)
         return;
     }
 
+    pDred->isClosing = true;
+
+
     // Make sure any lingering tabs are forcefully closed. This should be done at a higher level so that the user
     // can be prompted to save any unsaved work or whatnot, but I'm keeping this here for sanity.
     dred_close_all_tabs(pDred);
 
-    if (pDred->pipeIPC) {
-        drpipe_close(pDred->pipeIPC);
-        pDred->pipeIPC = NULL;
-    }
+
+    // The IPC thread may be waiting for a client connection. To break from the loop we'll need to create a temporary
+    // client in order to break from it.
+    drpipe tempClientPipe;
+    drpipe_open_named_client(DRED_PIPE_NAME, DR_IPC_WRITE, &tempClientPipe);
+    dred_thread_wait(&pDred->threadIPC);
+    drpipe_close(tempClientPipe);
 
 
     if (pDred->pAboutDialog) {
