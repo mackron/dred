@@ -92,46 +92,56 @@ bool dred_semaphore_release__win32(dred_semaphore* pSemaphore)
 #ifdef DRED_THREADING_POSIX
 bool dred_thread_create__posix(dred_thread* pThread, dred_thread_entry_proc entryProc, void* pData)
 {
+    return pthread_create(pThread, NULL, entryProc, pData) == 0;
 }
 
 void dred_thread_wait__posix(dred_thread* pThread)
 {
+    pthread_join(*pThread, NULL);
 }
 
 
 
 bool dred_mutex_create__posix(dred_mutex* pMutex)
 {
+    return pthread_mutex_init(pMutex, NULL) == 0;
 }
 
 void dred_mutex_delete__posix(dred_mutex* pMutex)
 {
+    pthread_mutex_destroy(pMutex);
 }
 
 void dred_mutex_lock__posix(dred_mutex* pMutex)
 {
+    pthread_mutex_lock(pMutex);
 }
 
 void dred_mutex_unlock__posix(dred_mutex* pMutex)
 {
+    pthread_mutex_unlock(pMutex);
 }
 
 
 
 bool dred_semaphore_create__posix(dred_semaphore* pSemaphore, int initialValue)
 {
+    return sem_init(pSemaphore, 0, (unsigned int)initialValue) != -1;
 }
 
 void dred_semaphore_delete__posix(dred_semaphore* pSemaphore)
 {
+    sem_close(pSemaphore);
 }
 
 bool dred_semaphore_wait__posix(dred_semaphore* pSemaphore)
 {
+    return sem_wait(pSemaphore) != -1;
 }
 
 bool dred_semaphore_release__posix(dred_semaphore* pSemaphore)
 {
+    return sem_post(pSemaphore) != -1;
 }
 #endif  // Posix
 
@@ -277,7 +287,7 @@ bool dred_semaphore_wait(dred_semaphore* pSemaphore)
 #endif
 
 #ifdef DRED_THREADING_POSIX
-    return dred_semaphore_wait__win32(pSemaphore);
+    return dred_semaphore_wait__posix(pSemaphore);
 #endif
 }
 

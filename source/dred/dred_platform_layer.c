@@ -2112,8 +2112,8 @@ dred_window* dred_window_create__gtk__internal(dred_context* pDred, GtkWidget* p
     pWindow->pGTKWindow = pGTKWindow;
     pWindow->isShowingMenu = true;
 
-    pWindow->pRootGUIControl = dred_platform__create_root_gui_element(pDred, pWindow);
-    if (pWindow->pRootGUIControl == NULL) {
+    pWindow->pRootGUIControl = &pWindow->rootGUIControl;
+    if (!dred_platform__init_root_gui_element(pWindow->pRootGUIControl, pDred, pWindow)) {
         goto on_error;
     }
 
@@ -2232,7 +2232,7 @@ void dred_window_delete__gtk(dred_window* pWindow)
         dred_gtk__delete_accels(pWindow->pAccels, pWindow->accelCount);
     }
 
-    dred_control_delete(pWindow->pRootGUIControl);
+    dred_control_uninit(pWindow->pRootGUIControl);
     dr2d_delete_surface(pWindow->pDrawingSurface);
 
     gtk_widget_destroy(pWindow->pGTKClientArea);
@@ -2333,7 +2333,8 @@ void dred_window_hide__gtk(dred_window* pWindow)
 
 void dred_window_bring_to_top__gtk(dred_window* pWindow)
 {
-    gtk_widget_grab_focus(GTK_WIDGET(pWindow->pGTKWindow));
+    gtk_window_present(GTK_WINDOW(pWindow->pGTKWindow));
+    gdk_flush();
 }
 
 bool dred_window_is_maximized__gtk(dred_window* pWindow)
@@ -2892,6 +2893,9 @@ static void dred_platform__on_global_change_cursor(dred_control* pControl, dred_
         return;
     }
 
+    dred_window_set_cursor(pWindow, cursor);
+
+#if 0
     switch (cursor)
     {
     case dred_cursor_none:    dred_window_set_cursor(pWindow, dred_cursor_type_none);           break;
@@ -2906,6 +2910,7 @@ static void dred_platform__on_global_change_cursor(dred_control* pControl, dred_
             dred_window_set_cursor(pWindow, dred_cursor_type_default);
         } break;
     }
+#endif
 }
 
 void dred_platform__on_delete_gui_element(dred_control* pControl)

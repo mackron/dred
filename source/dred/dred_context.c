@@ -227,7 +227,7 @@ DRED_THREAD_PROC_SIGNATURE(dred_ipc_message_proc, pData)
             return 0;
         }
 
-        
+
     }
 #endif
 
@@ -238,11 +238,13 @@ DRED_THREAD_PROC_SIGNATURE(dred_ipc_message_proc, pData)
         }
 
         if (drpipe_connect(server) != dripc_result_success) {
+            drpipe_close(server);
             return 0;
         }
 
         // We may have connected a temporary client during the shutdown procedure in order to return from the call above. Here is where we close.
         if (pDred->isClosing) {
+            drpipe_close(server);
             return 0;
         }
 
@@ -250,6 +252,7 @@ DRED_THREAD_PROC_SIGNATURE(dred_ipc_message_proc, pData)
         void* pMsgData;
         dred_ipc_message_header header;
         while (dred_ipc_read_message(server, &header, &pMsgData)) {
+            bool foundTerminator = false;
             switch (header.message)
             {
                 case DRED_IPC_MESSAGE_ACTIVATE:
@@ -262,6 +265,11 @@ DRED_THREAD_PROC_SIGNATURE(dred_ipc_message_proc, pData)
                     dred_open_file(pDred, (const char*)pMsgData);
                 } break;
 
+                case DRED_IPC_MESSAGE_TERMINATOR:
+                {
+                    foundTerminator = true;
+                } break;
+
                 default:
                 {
                     dred_warningf(pDred, "Received unknown IPC message: %d\n", header.message);
@@ -269,6 +277,10 @@ DRED_THREAD_PROC_SIGNATURE(dred_ipc_message_proc, pData)
             }
 
             free(pMsgData);
+
+            if (foundTerminator) {
+                break;
+            }
         }
 
         drpipe_close(server);
@@ -500,7 +512,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     if (dred_thread_create(&pDred->threadIPC, dred_ipc_message_proc, pDred)) {
         printf("CREATED PIPE\n");
     }
-    
+
 
 
     pDred->isInitialized = true;
@@ -1861,7 +1873,7 @@ void dred_gtk__on_begin_print(GtkPrintOperation *pPrint, GtkPrintContext *contex
 
     dred__init_print_font(pPrintData);
 
-    gtk_print_operation_set_n_pages(pPrint, drte_engine_get_page_count(pPrintData->pTextEngine));
+    gtk_print_operation_set_n_pages(pPrint, drte_engine_get_page_count(&pPrintData->textEngine));
 }
 
 void dred_gtk__on_end_print(GtkPrintOperation *operation, GtkPrintContext *context, gpointer user_data)

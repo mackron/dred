@@ -286,7 +286,7 @@ bool dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
         wasTextChanged = drte_engine_insert_character(pTextView->pTextEngine, iChar, '\t') || wasTextChanged;
     }
 
-    
+
     // Any cursor whose character position comes after this cursor needs to be moved.
     for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->cursorCount; ++iCursor2) {
         if (pTextView->pTextEngine->pCursors[iCursor2].iCharAbs >= iChar) {
@@ -335,7 +335,7 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
     pTextView->pTextEngine->pUserData = pTextView;
     dred_textview__insert_cursor(pTextView, 0);
 
-    dred_control_set_cursor(DRED_CONTROL(pTextView), dred_cursor_text);
+    dred_control_set_cursor(DRED_CONTROL(pTextView), dred_cursor_type_text);
     dred_control_set_on_size(DRED_CONTROL(pTextView), dred_textview_on_size);
     dred_control_set_on_mouse_move(DRED_CONTROL(pTextView), dred_textview_on_mouse_move);
     dred_control_set_on_mouse_button_down(DRED_CONTROL(pTextView), dred_textview_on_mouse_button_down);
@@ -411,7 +411,7 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
 
 
     //drte_engine_set_highlighter(pTextView->pTextEngine, dred_textview_engine__on_get_next_highlight, pTextView);
-    
+
 
 
     drte_engine_set_default_style(pTextView->pTextEngine, (drte_style_token)&pTextView->defaultStyle);
@@ -714,7 +714,7 @@ void dred_textview_set_line_numbers_background_color(dred_textview* pTextView, d
     if (pTextView == NULL) {
         return;
     }
-    
+
     pTextView->lineNumbersStyle.bgColor = color;
     dred_textview__refresh_style(pTextView);
     dred_textview__refresh_line_numbers(pTextView);
@@ -815,7 +815,7 @@ void dred_textview_set_text(dred_textview* pTextView, const char* text)
     // The cursors and selection regions need to be cancelled here to ensure they don't reference invalid regions due to a
     // change in text. This should not have any major usability issues, but it can be tweaked if need be.
     dred_textview__clear_all_cursors(pTextView);
-    drte_engine_deselect_all(pTextView->pTextEngine);    
+    drte_engine_deselect_all(pTextView->pTextEngine);
     size_t iCursorChar = drte_engine_get_cursor_character(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine));
 
 
@@ -971,7 +971,7 @@ bool dred_textview_insert_text_at_cursors_no_undo(dred_textview* pTextView, cons
         size_t iChar = drte_engine_get_cursor_character(pTextView->pTextEngine, iCursor);
 
         wasTextChanged = drte_engine_insert_text_at_cursor(pTextView->pTextEngine, iCursor, text) || wasTextChanged;
-            
+
         // Cursors and selections after this cursor need to be updated.
         for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->cursorCount; ++iCursor2) {
             if (iCursor != iCursor2) {
@@ -1587,7 +1587,7 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
 
             drte_engine_begin_selection(pTextView->pTextEngine, iChar);
         }
-        
+
 
         drte_engine_move_cursor_to_character_and_line(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine), iChar, iLine);
         drte_engine__update_cursor_sticky_position(pTextView->pTextEngine, &pTextView->pTextEngine->pCursors[drte_engine_get_last_cursor(pTextView->pTextEngine)]);
@@ -1651,11 +1651,11 @@ void dred_textview_on_mouse_button_dblclick(dred_control* pControl, int mouseBut
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
                 drte_engine_deselect_all(pTextView->pTextEngine);
             }
-            
+
             drte_engine_select_word_under_cursor(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine));
 
             if (pTextView->pTextEngine->selectionCount > 0) {
-                
+
             }
 
             size_t iCharBeg;
@@ -2267,7 +2267,7 @@ void dred_textview_engine__on_apply_undo_state(drte_engine* pTextEngine, size_t 
         return;
     }
 
-    
+
     size_t cursorCount = *((const size_t*)pData);
     const dred_textview_cursor* pCursors = (const dred_textview_cursor*)((const uint8_t*)pData + sizeof(pTextView->cursorCount));
 
@@ -2650,7 +2650,7 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
         } else {
             pTextView->iLineSelectAnchor = iClickedLine;
         }
-        
+
 
         if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
             dred_textview_deselect_all(pTextView);
@@ -2737,7 +2737,7 @@ void dred_textview__refresh_line_numbers(dred_textview* pTextView)
 
     dred_rect lineNumbersRectOld = dred_control_get_local_rect(pTextView->pLineNumbers);
     dred_control_begin_dirty(pTextView->pLineNumbers);
-    
+
     float lineNumbersWidth = 0;
     if (dred_control_is_visible(pTextView->pLineNumbers)) {
         lineNumbersWidth = pTextView->lineNumbersWidth;

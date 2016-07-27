@@ -68,7 +68,7 @@
 #endif
 
 
-#define DRED_PIPE_NAME  "dred"
+#define DRED_PIPE_NAME  "dred.pipe"
 
 
 // dred header files.
@@ -186,8 +186,9 @@ int dred_main(dr_cmdline cmdline)
 
             // After activating the server we need to let it know which files to open.
             dr_parse_cmdline(&cmdline, dred_parse_cmdline__post_startup_files_to_server, client);
-            
+
             // The server should be notified of the file, so we just need to return now.
+            dred_ipc_post_message(client, DRED_IPC_MESSAGE_TERMINATOR, NULL, 0);
             drpipe_close(client);
             return 0;
         }

@@ -1,5 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
+#define DRED_IPC_MESSAGE_TERMINATOR 0
 #define DRED_IPC_MESSAGE_ACTIVATE   1
 #define DRED_IPC_MESSAGE_OPEN       2
 

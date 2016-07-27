@@ -346,7 +346,7 @@ void dred_gui__update_mouse_enter_and_leave_state(dred_gui* pGUI, dred_control* 
         {
             pGUI->pControlUnderMouse = pNewControlUnderMouse;
 
-            dred_cursor_type newCursor = dred_cursor_default;
+            dred_cursor_type newCursor = dred_cursor_type_default;
             if (pNewControlUnderMouse != NULL) {
                 newCursor = pNewControlUnderMouse->cursor;
             }
@@ -550,8 +550,8 @@ bool dred_gui_init(dred_gui* pGUI, dred_context* pDred)
 
     memset(pGUI, 0, sizeof(*pGUI));
     pGUI->pDred = pDred;
-    pGUI->currentCursor = dred_cursor_default;
-    
+    pGUI->currentCursor = dred_cursor_type_default;
+
     return true;
 }
 
@@ -669,7 +669,7 @@ void dred_gui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl,
     }
 
     dred_gui* pGUI = pTopLevelControl->pGUI;
-    
+
     dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
     if (pEventReceiver == NULL) {
         pEventReceiver = pGUI->pControlUnderMouse;
@@ -695,7 +695,7 @@ void dred_gui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelCo
     }
 
     dred_gui* pGUI = pTopLevelControl->pGUI;
-    
+
     dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
     if (pEventReceiver == NULL) {
         pEventReceiver = pGUI->pControlUnderMouse;
@@ -721,7 +721,7 @@ void dred_gui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int
     }
 
     dred_gui* pGUI = pTopLevelControl->pGUI;
-    
+
     dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
     if (pEventReceiver == NULL) {
         pEventReceiver = pGUI->pControlUnderMouse;
@@ -845,7 +845,7 @@ bool dred_control_init(dred_control* pControl, dred_context* pDred, dred_control
     memset(pControl, 0, sizeof(*pControl));
     pControl->pGUI = pDred->pGUI;
     pControl->pParent = pParent;
-    pControl->cursor = dred_cursor_default;
+    pControl->cursor = dred_cursor_type_default;
     pControl->dirtyRect = dred_make_inside_out_rect();
 
     // Add to the the hierarchy.
@@ -998,7 +998,7 @@ bool dred_control_is_of_type(dred_control* pControl, const char* type)
     if (pControl == NULL || type == NULL) {
         return false;
     }
-    
+
     return dred_is_control_type_of_type(pControl->type, type);
 }
 
@@ -1314,7 +1314,7 @@ void dred_control_set_cursor(dred_control* pControl, dred_cursor_type cursor)
 dred_cursor_type dred_control_get_cursor(dred_control* pControl)
 {
     if (pControl == NULL) {
-        return dred_cursor_none;
+        return dred_cursor_type_none;
     }
 
     return pControl->cursor;
@@ -2169,7 +2169,7 @@ void dred_control_dirty(dred_control* pControl, dred_rect relativeRect)
     if (pTopLevelControl == NULL) {
         return;
     }
-    
+
     pTopLevelControl->dirtyRect = dred_rect_union(pTopLevelControl->dirtyRect, dred_make_rect_absolute(pControl, &relativeRect));
     dred_control_end_dirty(pControl);
 }

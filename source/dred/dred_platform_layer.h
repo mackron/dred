@@ -63,7 +63,7 @@ typedef void (* dred_window_on_printable_key_down_proc)(dred_window* pWindow, un
 typedef void (* dred_window_on_focus_proc)             (dred_window* pWindow);
 typedef void (* dred_window_on_unfocus_proc)           (dred_window* pWindow);
 
-typedef enum
+/*typedef enum
 {
     dred_cursor_type_none,
     dred_cursor_type_default,
@@ -73,7 +73,7 @@ typedef enum
     dred_cursor_type_cross,
     dred_cursor_type_double_arrow_h,
     dred_cursor_type_double_arrow_v,
-} dred_cursor_type;
+} dred_cursor_type;*/
 
 #ifdef DRED_GTK
 typedef struct

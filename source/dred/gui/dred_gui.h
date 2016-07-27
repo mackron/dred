@@ -178,15 +178,13 @@ typedef void* dred_gui_resource;
 /// Common system cursors.
 typedef enum
 {
-    dred_cursor_none,
-    dred_cursor_default,
-    dred_cursor_arrow = dred_cursor_default,
-    dred_cursor_text,
-    dred_cursor_cross,
-    dred_cursor_size_ns,           // North/South resize arrows.
-    dred_cursor_size_we,           // West/East resize arrows.
-    dred_cursor_size_nesw,         // North/East, South/West resize arrows.
-    dred_cursor_size_nwse          // North/West, South/East resize arrows.
+    dred_cursor_type_none,
+    dred_cursor_type_default,
+    dred_cursor_type_arrow = dred_cursor_type_default,
+    dred_cursor_type_text,
+    dred_cursor_type_cross,
+    dred_cursor_type_double_arrow_h,
+    dred_cursor_type_double_arrow_v,
 } dred_cursor_type;
 
 /// Font weights.
