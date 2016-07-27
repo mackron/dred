@@ -8,6 +8,9 @@ struct dred_context
     // The log file.
     dred_file logFile;
 
+    // The named pipe for IPC.
+    drpipe pipeIPC;
+
     // The context for the 2D graphics sub-system which will be used for drawing the GUI.
     dr2d_context* pDrawingContext;
 

@@ -433,6 +433,16 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     // This is a little hack to ensure the maximized state is saved correctly.
     pDred->config.windowMaximized = showWindowMaximized;
 
+
+    // Create the IPC server pipe last to ensure the context is in a valid when messages are received. It is OK if this
+    // fails, in which case we just silently disable IPC.
+    if (drpipe_open_named_server(DRED_PIPE_NAME, DR_IPC_READ, &pDred->pipeIPC) == dripc_result_success) {
+        // The pipe was created, so now start the thread that waits for and handles messages.
+        printf("CREATED PIPE\n");
+    }
+    
+
+
     pDred->isInitialized = true;
     return true;
 
@@ -450,6 +460,11 @@ void dred_uninit(dred_context* pDred)
     // Make sure any lingering tabs are forcefully closed. This should be done at a higher level so that the user
     // can be prompted to save any unsaved work or whatnot, but I'm keeping this here for sanity.
     dred_close_all_tabs(pDred);
+
+    if (pDred->pipeIPC) {
+        drpipe_close(pDred->pipeIPC);
+        pDred->pipeIPC = NULL;
+    }
 
 
     if (pDred->pAboutDialog) {
