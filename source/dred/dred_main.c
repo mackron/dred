@@ -54,6 +54,9 @@
 #define DR_TEXT_ENGINE_IMPLEMENTATION
 #include "../external/dr_text_engine.h"
 
+#define DR_IPC_IMPLEMENTATION
+#include "../../../dr_ipc/dr_ipc.h"
+
 #define GB_STRING_IMPLEMENTATION
 #include "../external/gb_string.h"
 
