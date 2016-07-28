@@ -242,11 +242,6 @@ DRED_THREAD_PROC_SIGNATURE(dred_ipc_message_proc, pData)
             return 0;
         }
 
-        if (drpipe_connect(server) != dripc_result_success) {
-            drpipe_close(server);
-            return 0;
-        }
-
         // We may have connected a temporary client during the shutdown procedure in order to return from the call above. Here is where we close.
         if (pDred->isClosing) {
             drpipe_close(server);
