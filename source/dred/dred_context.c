@@ -232,8 +232,13 @@ DRED_THREAD_PROC_SIGNATURE(dred_ipc_message_proc, pData)
 #endif
 
     while (!pDred->isClosing) {
+        char pipeName[256];
+        if (!dred_ipc_get_pipe_name(pipeName, sizeof(pipeName))) {
+            break;
+        }
+
         drpipe server;
-        if (drpipe_open_named_server(DRED_PIPE_NAME, DR_IPC_READ, &server) != dripc_result_success) {
+        if (drpipe_open_named_server(pipeName, DR_IPC_READ, &server) != dripc_result_success) {
             return 0;
         }
 
@@ -543,10 +548,13 @@ void dred_uninit(dred_context* pDred)
 
     // The IPC thread may be waiting for a client connection. To break from the loop we'll need to create a temporary
     // client in order to break from it.
-    drpipe tempClientPipe;
-    drpipe_open_named_client(DRED_PIPE_NAME, DR_IPC_WRITE, &tempClientPipe);
-    dred_thread_wait(&pDred->threadIPC);
-    drpipe_close(tempClientPipe);
+    char pipeName[256];
+    if (dred_ipc_get_pipe_name(pipeName, sizeof(pipeName))) {
+        drpipe tempClientPipe;
+        drpipe_open_named_client(pipeName, DR_IPC_WRITE, &tempClientPipe);
+        dred_thread_wait(&pDred->threadIPC);
+        drpipe_close(tempClientPipe);
+    }
 
 
     if (pDred->pAboutDialog) {

@@ -65,3 +65,57 @@ bool dred_ipc_read_message(drpipe serverPipe, dred_ipc_message_header* pHeaderOu
 
     return true;
 }
+
+
+bool dred_ipc_get_pipe_name(char* nameOut, size_t nameOutSize)
+{
+    if (nameOut == NULL || nameOutSize == 0) {
+        return false;
+    }
+
+    if (dr_get_username(nameOut, nameOutSize) == 0) {
+        return false;
+    }
+
+    if (strcat_s(nameOut, nameOutSize, ".") != 0) {
+        return false;
+    }
+    if (strcat_s(nameOut, nameOutSize, "dred.pipe") != 0) {
+        return false;
+    }
+
+    return true;
+}
+
+bool dred_ipc_get_lock_name(char* nameOut, size_t nameOutSize)
+{
+    if (nameOut == NULL || nameOutSize == 0) {
+        return false;
+    }
+
+#ifdef _WIN32
+    nameOut[0] = '\0';
+    return true;
+#else
+    if (strcpy_s(nameOut, nameOutSize, "/tmp/") != 0) {
+        return false;
+    }
+
+    char username[512];
+    if (dr_get_username(username, sizeof(username)) == 0) {
+        return false;
+    }
+
+    if (strcat_s(nameOut, nameOutSize, username) != 0) {
+        return false;
+    }
+    if (strcat_s(nameOut, nameOutSize, ".") != 0) {
+        return false;
+    }
+    if (strcat_s(nameOut, nameOutSize, "dred.lock") != 0) {
+        return false;
+    }
+
+    return true;
+#endif
+}
