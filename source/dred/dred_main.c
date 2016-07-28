@@ -51,7 +51,7 @@
 #include "../../../../dr_libs/dr.h"
 
 #define DR_2D_IMPLEMENTATION
-#include "../../../dr_gui/dr_2d.h"
+#include "../external/dr_2d.h"
 
 #define DR_TEXT_ENGINE_IMPLEMENTATION
 #include "../external/dr_text_engine.h"
