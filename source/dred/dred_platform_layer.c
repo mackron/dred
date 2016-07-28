@@ -33,6 +33,9 @@ HWND g_hTimerWnd = NULL;
 #define GET_X_LPARAM(lp)    ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp)    ((int)(short)HIWORD(lp))
 
+// Custom message IDs.
+#define DRED_WIN32_WM_IPC   (WM_USER + 0)
+
 static void dred_win32_track_mouse_leave_event(HWND hWnd)
 {
     TRACKMOUSEEVENT tme;
@@ -552,6 +555,21 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
                 dred_control_draw(pWindow->pRootGUIControl, dred_make_rect((float)rect.left, (float)rect.top, (float)rect.right, (float)rect.bottom), pWindow->pDrawingSurface);
             }
         } break;
+
+
+
+        // Custom Messages
+        case DRED_WIN32_WM_IPC:
+        {
+            unsigned int messageID = (unsigned int)wParam;
+            void* pMessageData = (void*)lParam;
+
+            dred_on_ipc_message(pWindow->pDred, messageID, pMessageData);
+
+            // A copy of the message data was created when the message was posted from dred_window_send_ipc_message_event(). It needs to be freed here, after handling the event.
+            free(pMessageData);
+        } break;
+
 
         case WM_ERASEBKGND:  return 1;       // Never draw the background of the window - always leave that to dr_gui.
         default: break;
@@ -1099,6 +1117,22 @@ void dred_window_show_popup_menu__win32(dred_window* pWindow, dred_menu* pMenu, 
     }
 
     TrackPopupMenuEx(pMenu->hMenu, flags, screenCoords.x, screenCoords.y, pWindow->hWnd, NULL);
+}
+
+
+void dred_window_send_ipc_message_event__win32(dred_window* pWindow, unsigned int messageID, const void* pMessageData, size_t messageDataSize)
+{
+    void* pCopyOfMessageData = NULL;
+    if (pMessageData != NULL && messageDataSize > 0) {
+        pCopyOfMessageData = malloc(messageDataSize);
+        if (pCopyOfMessageData == NULL) {
+            return;
+        }
+
+        memcpy(pCopyOfMessageData, pMessageData, messageDataSize);
+    }
+
+    SendMessageA(pWindow->hWnd, DRED_WIN32_WM_IPC, (WPARAM)messageID, (LPARAM)pCopyOfMessageData);
 }
 
 

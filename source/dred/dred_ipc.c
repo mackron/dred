@@ -11,7 +11,7 @@ bool dred_ipc_post_message(drpipe clientPipe, uint32_t message, const void* pDat
     dred_ipc_message_header header;
     header.magic = DRED_IPC_MAGIC_NUMBER;
     header.message = message;
-    header.size = dataSize;
+    header.size = (uint32_t)dataSize;
 
     memcpy(pMessageData, &header, sizeof(header));
     
