@@ -62,18 +62,8 @@ typedef void (* dred_window_on_key_up_proc)            (dred_window* pWindow, dr
 typedef void (* dred_window_on_printable_key_down_proc)(dred_window* pWindow, unsigned int character, unsigned int stateFlags);
 typedef void (* dred_window_on_focus_proc)             (dred_window* pWindow);
 typedef void (* dred_window_on_unfocus_proc)           (dred_window* pWindow);
+typedef void (* dred_window_on_ipc_message_proc)       (dred_window* pWindow, unsigned int messageID, const void* pMessageData);
 
-/*typedef enum
-{
-    dred_cursor_type_none,
-    dred_cursor_type_default,
-
-    dred_cursor_type_arrow = dred_cursor_type_default,
-    dred_cursor_type_text,
-    dred_cursor_type_cross,
-    dred_cursor_type_double_arrow_h,
-    dred_cursor_type_double_arrow_v,
-} dred_cursor_type;*/
 
 #ifdef DRED_GTK
 typedef struct
@@ -122,6 +112,7 @@ struct dred_window
     dred_window_on_printable_key_down_proc onPrintableKeyDown;
     dred_window_on_focus_proc onFocus;
     dred_window_on_unfocus_proc onUnfocus;
+    dred_window_on_ipc_message_proc onIPCMessage;
 
     // A pointer to the GUI element that belongs to this window that should be given the keyboard capture when this window
     // receives focus.
@@ -250,6 +241,9 @@ dred_menu_item* dred_window_find_menu_item_by_id(dred_window* pWindow, uint16_t 
 // Shows a popup menu on the given window.
 void dred_window_show_popup_menu(dred_window* pWindow, dred_menu* pMenu, int posX, int posY);
 
+// Sends an IPC message to the event queue for the given window.
+void dred_window_send_ipc_message_event(dred_window* pWindow, unsigned int messageID, const void* pMessageData, size_t messageDataSize);
+
 
 // Event posting.
 void dred_window_on_close(dred_window* pWindow);
@@ -271,6 +265,9 @@ void dred_window_on_key_up(dred_window* pWindow, dred_key key, unsigned int stat
 void dred_window_on_printable_key_down(dred_window* pWindow, unsigned int character, unsigned int stateFlags);
 void dred_window_on_focus(dred_window* pWindow);
 void dred_window_on_unfocus(dred_window* pWindow);
+void dred_window_on_ipc_message(dred_window* pWindow, unsigned int messageID, const void* pMessageData);
+
+
 
 // Stock window events.
 

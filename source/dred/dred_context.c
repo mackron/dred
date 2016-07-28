@@ -260,16 +260,6 @@ DRED_THREAD_PROC_SIGNATURE(dred_ipc_message_proc, pData)
             bool foundTerminator = false;
             switch (header.message)
             {
-                case DRED_IPC_MESSAGE_ACTIVATE:
-                {
-                    dred_window_bring_to_top(pDred->pMainWindow);
-                } break;
-
-                case DRED_IPC_MESSAGE_OPEN:
-                {
-                    dred_open_file(pDred, (const char*)pMsgData);
-                } break;
-
                 case DRED_IPC_MESSAGE_TERMINATOR:
                 {
                     foundTerminator = true;
@@ -277,7 +267,7 @@ DRED_THREAD_PROC_SIGNATURE(dred_ipc_message_proc, pData)
 
                 default:
                 {
-                    dred_warningf(pDred, "Received unknown IPC message: %d\n", header.message);
+                    dred_window_send_ipc_message_event(pDred->pMainWindow, header.message, pMsgData, header.size);
                 } break;
             }
 
@@ -2768,4 +2758,25 @@ void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t accel
 
     // Make sure any queued accelerator is cleared.
     pDred->queuedAccelerator = dred_accelerator_none();
+}
+
+void dred_on_ipc_message(dred_context* pDred, unsigned int messageID, const void* pMessageData)
+{
+    switch (messageID)
+    {
+        case DRED_IPC_MESSAGE_ACTIVATE:
+        {
+            dred_window_bring_to_top(pDred->pMainWindow);
+        } break;
+
+        case DRED_IPC_MESSAGE_OPEN:
+        {
+            dred_open_file(pDred, (const char*)pMessageData);
+        } break;
+
+        default:
+        {
+            dred_warningf(pDred, "Received unknown IPC message: %d\n", messageID);
+        } break;
+    }
 }

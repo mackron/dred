@@ -1665,6 +1665,11 @@ bool dred_platform_init__gtk()
     g_GTKCursor_DoubleArrowH = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_H_DOUBLE_ARROW);
     g_GTKCursor_DoubleArrowV = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_V_DOUBLE_ARROW);
 
+    // Custom signals for IPC messages. When an IPC message is received, it is routed to the main
+    // application loop to ensure it is handled in a single-threaded environment.
+    g_signal_new("dred-ipc-message", G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
+         g_cclosure_marshal_VOID__UINT_POINTER, G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_POINTER);
+
     return true;
 }
 
@@ -2022,6 +2027,19 @@ static gboolean dred_gtk_cb__on_lose_focus(GtkWidget* pGTKWindow, GdkEventFocus*
 }
 
 
+static void dred_gtk_cb__on_ipc_message(GtkWidget* pGTKWindow, guint messageID, gpointer pMessageData, gpointer pUserData)
+{
+    (void)pGTKWindow;
+
+    dred_window* pWindow = pUserData;
+    if (pWindow == NULL) {
+        return;
+    }
+
+    dred_on_ipc_message(pWindow->pDred, messageID, pMessageData);
+}
+
+
 static void dred_gtk_cb__on_menu_item_activate(GtkWidget *pGTKMenuItem, gpointer pUserData)
 {
     (void)pGTKMenuItem;
@@ -2132,6 +2150,7 @@ dred_window* dred_window_create__gtk__internal(dred_context* pDred, GtkWidget* p
     g_signal_connect(pGTKWindow, "key-release-event",    G_CALLBACK(dred_gtk_cb__on_key_up),            pWindow);     // Key up.
     g_signal_connect(pGTKWindow, "focus-in-event",       G_CALLBACK(dred_gtk_cb__on_receive_focus),     pWindow);     // Receive focus.
     g_signal_connect(pGTKWindow, "focus-out-event",      G_CALLBACK(dred_gtk_cb__on_lose_focus),        pWindow);     // Lose focus.
+    g_signal_connect(pGTKWindow, "dred-ipc-message",     G_CALLBACK(dred_gtk_cb__on_ipc_message),       pWindow);     // dred IPC message.
 
     pGTKBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     if (pGTKBox == NULL) {
@@ -2508,6 +2527,41 @@ void dred_window_show_popup_menu__gtk(dred_window* pWindow, dred_menu* pMenu, in
     popupPosX = posX;
     popupPosY = posY;
     gtk_menu_popup(GTK_MENU(pMenu->pGTKMenu), NULL, NULL, dred_gtk_cb__on_menu_position, pWindow, 0, 0);
+}
+
+
+typedef struct
+{
+    dred_window* pWindow;
+    unsigned int messageID;
+    size_t messageDataSize;
+    char pMessageData[1];
+} dred_gtk_ipc_message;
+
+static gboolean dred_window_send_ipc_message_event__gtk__idle_add(dred_gtk_ipc_message* pMessage)
+{
+    g_signal_emit_by_name(pMessage->pWindow->pGTKWindow, "dred-ipc-message", pMessage->messageID, pMessage->pMessageData);
+
+    free(pMessage);
+    return FALSE;
+}
+
+void dred_window_send_ipc_message_event__gtk(dred_window* pWindow, unsigned int messageID, const void* pMessageData, size_t messageDataSize)
+{
+    dred_gtk_ipc_message* pMessage = (dred_gtk_ipc_message*)malloc(sizeof(dred_gtk_ipc_message) + messageDataSize);
+    if (pMessage == NULL) {
+        return;
+    }
+
+    pMessage->pWindow = pWindow;
+    pMessage->messageID = messageID;
+    pMessage->messageDataSize = messageDataSize;
+
+    if (pMessageData != NULL && messageDataSize > 0) {
+        memcpy(pMessage->pMessageData, pMessageData, messageDataSize);
+    }
+
+    g_idle_add((GSourceFunc)dred_window_send_ipc_message_event__gtk__idle_add, pMessage);
 }
 
 
@@ -3296,6 +3350,21 @@ void dred_window_show_popup_menu(dred_window* pWindow, dred_menu* pMenu, int pos
 
 #ifdef DRED_GTK
     dred_window_show_popup_menu__gtk(pWindow, pMenu, posX, posY);
+#endif
+}
+
+void dred_window_send_ipc_message_event(dred_window* pWindow, unsigned int messageID, const void* pMessageData, size_t messageDataSize)
+{
+    if (pWindow == NULL) {
+        return;
+    }
+
+#ifdef DRED_WIN32
+    dred_window_send_ipc_message_event__win32(pWindow, messageID, pMessageData, messageDataSize);
+#endif
+
+#ifdef DRED_GTK
+    dred_window_send_ipc_message_event__gtk(pWindow, messageID, pMessageData, messageDataSize);
 #endif
 }
 
