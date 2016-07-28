@@ -175,7 +175,6 @@ bool dred__try_opening_existing_process(dr_cmdline cmdline)
 
     drpipe client;
     if (drpipe_open_named_client(pipeName, DR_IPC_WRITE, &client) == dripc_result_success) {
-        printf("CLIENT\n");
         // If we get here it means there is a server instance already open and we want to use that one instead
         // of creating a new one. The first thing to do is notify the server that it should be activated.
         dred_ipc_post_message(client, DRED_IPC_MESSAGE_ACTIVATE, NULL, 0);
@@ -258,8 +257,6 @@ int dred_main(dr_cmdline cmdline)
         }
 #endif
     }
-
-    printf("SERVER\n");
 
 
     // The platform needs to be initialized first. In the case of Windows, this will register the window classes
