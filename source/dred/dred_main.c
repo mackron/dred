@@ -149,6 +149,8 @@
 #include "dred_misc.c"
 #include "dred_stock_themes.c"
 #include "dred_highlighters.c"
+#include "cmdline_funcs/dred_file2chex.c"
+#include "cmdline_funcs/dred_main_f.c"
 
 #if defined(_MSC_VER)
     #pragma warning(pop)
@@ -194,6 +196,12 @@ bool dred__try_opening_existing_process(dr_cmdline cmdline)
 
 int dred_main(dr_cmdline cmdline)
 {
+    // Go down a different branch for command-line functions.
+    if (dr_cmdline_key_exists(&cmdline, "f")) {
+        return dred_main_f(cmdline);    // <-- Implemented in cmdline_funcs/dred_main_f.c
+    }
+
+
     bool tryUsingExistingInstance = true;
     if (dr_cmdline_key_exists(&cmdline, "newinstance")) {
         tryUsingExistingInstance = false;
