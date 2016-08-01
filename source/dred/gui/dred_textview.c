@@ -480,6 +480,11 @@ void dred_textview_uninit(dred_textview* pTextView)
         pTextView->pVertScrollbar = NULL;
     }
 
+    if (pTextView->pCursors) {
+        free(pTextView->pCursors);
+        pTextView->pCursors = NULL;
+    }
+
     dred_control_uninit(DRED_CONTROL(pTextView));
 }
 

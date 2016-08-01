@@ -250,6 +250,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
         char* pFileData = dr_open_and_read_text_file(filePathAbsolute, NULL);
         if (pFileData == NULL) {
             dred_textview_uninit(pTextEditor->pTextView);
+            drte_engine_uninit(&pTextEditor->engine);
             dred_editor_uninit(DRED_EDITOR(pTextEditor));
             free(pTextEditor);
             return NULL;
@@ -292,6 +293,7 @@ void dred_text_editor_delete(dred_text_editor* pTextEditor)
     }
 
     dred_textview_uninit(pTextEditor->pTextView);
+    drte_engine_uninit(&pTextEditor->engine);
 
     dred_editor_uninit(DRED_EDITOR(pTextEditor));
     free(pTextEditor);

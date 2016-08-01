@@ -372,7 +372,6 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_PREV_TAB,   dred_shortcut_create_single(dred_accelerator_create('\t', DRED_KEY_STATE_CTRL_DOWN | DRED_KEY_STATE_SHIFT_DOWN)), "prev-tab");
     dred_bind_shortcut(pDred, DRED_SHORTCUT_NAME_RELOAD,     dred_shortcut_create_single(dred_accelerator_create(DRED_GUI_F5, 0)), "reload");
 
-
     // Before loading configs we want to make sure any stock themes and settings are present.
     dred_create_config_file_if_not_exists(".dred", "");
     dred_create_config_file_if_not_exists("dark.dredtheme", g_StockTheme_Dark);
@@ -566,6 +565,8 @@ void dred_uninit(dred_context* pDred)
 
     dred_config_uninit(&pDred->config);
     dred_shortcut_table_uninit(&pDred->shortcutTable);
+
+    dred_image_library_uninit(&pDred->imageLibrary);
     dred_font_library_uninit(&pDred->fontLibrary);
 
     if (pDred->pGUI) {

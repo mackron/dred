@@ -575,6 +575,11 @@ void dred_gui_uninit(dred_gui* pGUI)
         dred_gui__log(pGUI, "WARNING: Deleting the GUI context while an element still has the keyboard capture.");
         dred_gui_release_keyboard(pGUI);
     }
+
+
+    if (pGUI->ppDirtyControls != NULL) {
+        free(pGUI->ppDirtyControls);
+    }
 }
 
 
