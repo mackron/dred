@@ -8,7 +8,7 @@ typedef struct
 } dred_cmdline_func_mapping;
 
 static dred_cmdline_func_mapping g_BuiltInCmdLineFuncs[] = {
-    "file2chex", dred_file2chex
+    {"file2chex", dred_file2chex}
 };
 
 
@@ -19,7 +19,7 @@ int dred_main_f_argv(int argc, char** argv)
     assert(argc > 0);
 
     char* funcName = argv[0];
-    
+
     size_t count = sizeof(g_BuiltInCmdLineFuncs) / sizeof(g_BuiltInCmdLineFuncs[0]);
     for (size_t i = 0; i < count; ++i) {
         if (strcmp(g_BuiltInCmdLineFuncs[i].name, funcName) == 0) {
@@ -59,7 +59,7 @@ int dred_main_f(dr_cmdline cmdline)
             break;
         }
     }
-    
+
     if (f_index == argc) {
         return -3;  // Couldn't find the "-f" argument.
     }
