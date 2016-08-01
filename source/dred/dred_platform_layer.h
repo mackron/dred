@@ -283,6 +283,8 @@ dred_window* dred_get_control_window(dred_control* pControl);
 
 
 //// MENUS ////
+#define DRED_MENU_ITEM_SEPARATOR    (1 << 0)
+#define DRED_MENU_ITEM_CHECK        (1 << 1)
 
 struct dred_menu_item
 {
@@ -307,6 +309,13 @@ struct dred_menu_item
 
     // Menu items in GTK need access to the main context in order to handle the command.
     dred_context* pDred;
+
+    // The options flags that were passed into the creation function for this menu item.
+    unsigned int flags;
+
+    // When a check menu item is checked with gtk_check_menu_item_set_active() it results in the "activate" event getting
+    // fired which is inconsistent with Win32. This variable is used to block events in these situations.
+    bool blockNextActivateSignal;
 #endif
 };
 
@@ -353,10 +362,10 @@ dred_menu_item* dred_menu_find_menu_item_by_id(dred_menu* pMenu, uint16_t id);
 
 
 // Creates a menu item.
-dred_menu_item* dred_menu_item_create_and_append(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, dred_menu* pSubMenu);
+dred_menu_item* dred_menu_item_create_and_append(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, unsigned int options, dred_menu* pSubMenu);
 
 // Helper for creating a menu item that's tied to a shortcut.
-dred_menu_item* dred_menu_item_create_and_append_with_shortcut(dred_menu* pMenu, const char* text, uint16_t id, const char* shortcutName);
+dred_menu_item* dred_menu_item_create_and_append_with_shortcut(dred_menu* pMenu, const char* text, uint16_t id, const char* shortcutName, unsigned int options);
 
 // Creates an appends a separator.
 dred_menu_item* dred_menu_item_create_and_append_separator(dred_menu* pMenu);
@@ -373,6 +382,20 @@ void dred_menu_item_enable(dred_menu_item* pItem);
 
 // Disables the given menu item.
 void dred_menu_item_disable(dred_menu_item* pItem);
+
+
+// Checks the given menu item.
+void dred_menu_item_check(dred_menu_item* pItem);
+
+// Unchecks the given menu item.
+void dred_menu_item_uncheck(dred_menu_item* pItem);
+
+// Sets whether or not the menu item is checked.
+void dred_menu_item_set_checked(dred_menu_item* pItem, bool checked);
+
+// Determines whether or not the given menu item is checked.
+bool dred_menu_item_is_checked(dred_menu_item* pItem);
+
 
 
 //// DPI SCALING ////

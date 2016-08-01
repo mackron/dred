@@ -1182,7 +1182,7 @@ void dred_menu_delete__win32(dred_menu* pMenu)
 }
 
 
-dred_menu_item* dred_menu_item_create_and_append__win32__internal(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, dred_menu* pSubMenu, bool separator)
+dred_menu_item* dred_menu_item_create_and_append__win32__internal(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, unsigned int options, dred_menu* pSubMenu)
 {
     if (pMenu == NULL) {
         return NULL;
@@ -1193,6 +1193,7 @@ dred_menu_item* dred_menu_item_create_and_append__win32__internal(dred_menu* pMe
     }
 
 
+    bool separator = (options & DRED_MENU_ITEM_SEPARATOR) != 0;
     if (separator)
     {
         AppendMenuA(pMenu->hMenu, MF_SEPARATOR, 0, NULL);
@@ -1252,14 +1253,14 @@ dred_menu_item* dred_menu_item_create_and_append__win32__internal(dred_menu* pMe
     return pItem;
 }
 
-dred_menu_item* dred_menu_item_create_and_append__win32(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, dred_menu* pSubMenu)
+dred_menu_item* dred_menu_item_create_and_append__win32(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, unsigned int options, dred_menu* pSubMenu)
 {
-    return dred_menu_item_create_and_append__win32__internal(pMenu, text, id, command, shortcut, pSubMenu, false);
+    return dred_menu_item_create_and_append__win32__internal(pMenu, text, id, command, shortcut, options, pSubMenu);
 }
 
 dred_menu_item* dred_menu_item_create_and_append_separator__win32(dred_menu* pMenu)
 {
-    return dred_menu_item_create_and_append__win32__internal(pMenu, NULL, 0, NULL, dred_shortcut_none(), NULL, true);
+    return dred_menu_item_create_and_append__win32__internal(pMenu, NULL, 0, NULL, dred_shortcut_none(), DRED_MENU_ITEM_SEPARATOR, NULL);
 }
 
 void dred_menu_item_delete__win32(dred_menu_item* pItem)
@@ -1297,6 +1298,28 @@ void dred_menu_item_disable__win32(dred_menu_item* pItem)
     }
 
     EnableMenuItem(pItem->pOwnerMenu->hMenu, (UINT)pItem->index, MF_BYPOSITION | MF_GRAYED);
+}
+
+
+void dred_menu_item_set_checked__win32(dred_menu_item* pItem, bool checked)
+{
+    MENUITEMINFOA mii;
+    ZeroMemory(&mii, sizeof(mii));
+    mii.cbSize = sizeof(mii);
+    mii.fMask = MIIM_STATE;
+    mii.fState = checked ? MFS_CHECKED : MFS_UNCHECKED;
+    SetMenuItemInfoA(pItem->pOwnerMenu->hMenu, (UINT)pItem->index, TRUE, &mii);
+}
+
+bool dred_menu_item_is_checked__win32(dred_menu_item* pItem)
+{
+    MENUITEMINFOA mii;
+    ZeroMemory(&mii, sizeof(mii));
+    mii.cbSize = sizeof(mii);
+    mii.fMask = MIIM_STATE;
+    GetMenuItemInfoA(pItem->pOwnerMenu->hMenu, (UINT)pItem->index, TRUE, &mii);
+
+    return (mii.fState & MIIM_STATE) != 0;
 }
 
 
@@ -2084,6 +2107,10 @@ static void dred_gtk_cb__on_menu_item_activate(GtkWidget *pGTKMenuItem, gpointer
         return;
     }
 
+    if (pItem->blockNextActivateSignal) {
+        return;
+    }
+
     if (pItem->command) {
         dred_exec(pItem->pDred, pItem->command, NULL);
     }
@@ -2663,7 +2690,14 @@ void dred_menu_delete__gtk(dred_menu* pMenu)
 }
 
 
-dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, dred_menu* pSubMenu, bool separator)
+gboolean dred_gtk_cb__on_check_menu_item_toggled(GtkCheckMenuItem *checkmenuitem, gpointer user_data)
+{
+    (void)checkmenuitem;
+    (void)user_data;
+    return false;
+}
+
+dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, unsigned int options, dred_menu* pSubMenu)
 {
     if (pMenu == NULL) {
         return NULL;
@@ -2671,6 +2705,7 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
 
     GtkWidget* pGTKMenuItem = NULL;
 
+    bool separator = (options & DRED_MENU_ITEM_SEPARATOR) != 0;
     if (separator) {
         pGTKMenuItem = gtk_separator_menu_item_new();
         if (pGTKMenuItem == NULL) {
@@ -2699,10 +2734,19 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
             }
         }
 
+        bool isCheckMenu = (options & DRED_MENU_ITEM_CHECK) != 0;
         if (useMnemonic) {
-            pGTKMenuItem = gtk_menu_item_new_with_mnemonic(transformedText);
+            if (isCheckMenu) {
+                pGTKMenuItem = gtk_check_menu_item_new_with_mnemonic(transformedText);
+            } else {
+                pGTKMenuItem = gtk_menu_item_new_with_mnemonic(transformedText);
+            }
         } else {
-            pGTKMenuItem = gtk_menu_item_new_with_label(transformedText);
+            if (isCheckMenu) {
+                pGTKMenuItem = gtk_check_menu_item_new_with_label(transformedText);
+            } else {
+                pGTKMenuItem = gtk_menu_item_new_with_mnemonic(transformedText);
+            }
         }
 
         if (pGTKMenuItem == NULL) {
@@ -2738,6 +2782,7 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
     pItem->pOwnerMenu = pMenu;
     pItem->pGTKMenuItem = pGTKMenuItem;
     pItem->pDred = pMenu->pDred;
+    pItem->flags = options;
 
 
     // Add the item to the list.
@@ -2750,6 +2795,9 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
     pMenu->ppMenuItems = ppNewMenuItems;
     pMenu->ppMenuItems[pMenu->menuItemCount++] = pItem;
 
+    if ((options & DRED_MENU_ITEM_CHECK)) {
+        g_signal_connect(pGTKMenuItem, "toggled", G_CALLBACK(dred_gtk_cb__on_check_menu_item_toggled), pItem);
+    }
 
     g_signal_connect(pGTKMenuItem, "activate", G_CALLBACK(dred_gtk_cb__on_menu_item_activate), pItem);
     gtk_menu_shell_append(GTK_MENU_SHELL(pMenu->pGTKMenu), pGTKMenuItem);
@@ -2762,14 +2810,14 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
     return pItem;
 }
 
-dred_menu_item* dred_menu_item_create_and_append__gtk(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, dred_menu* pSubMenu)
+dred_menu_item* dred_menu_item_create_and_append__gtk(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, unsigned int options, dred_menu* pSubMenu)
 {
-    return dred_menu_item_create_and_append__gtk__internal(pMenu, text, id, command, shortcut, pSubMenu, false);
+    return dred_menu_item_create_and_append__gtk__internal(pMenu, text, id, command, shortcut, options, pSubMenu);
 }
 
 dred_menu_item* dred_menu_item_create_and_append_separator__gtk(dred_menu* pMenu)
 {
-    return dred_menu_item_create_and_append__gtk__internal(pMenu, NULL, 0, NULL, dred_shortcut_none(), NULL, true);
+    return dred_menu_item_create_and_append__gtk__internal(pMenu, NULL, 0, NULL, dred_shortcut_none(), DRED_MENU_ITEM_SEPARATOR, NULL);
 }
 
 void dred_menu_item_delete__gtk(dred_menu_item* pItem)
@@ -2811,6 +2859,32 @@ void dred_menu_item_disable__gtk(dred_menu_item* pItem)
     }
 
     gtk_widget_set_sensitive(pItem->pGTKMenuItem, FALSE);
+}
+
+
+
+void dred_menu_item_set_checked__gtk(dred_menu_item* pItem, bool checked)
+{
+    assert(pItem != NULL);
+    if (!(pItem->flags & DRED_MENU_ITEM_CHECK)) {
+        return;
+    }
+
+    if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(pItem->pGTKMenuItem)) != checked) {
+        pItem->blockNextActivateSignal = true;
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(pItem->pGTKMenuItem), checked);
+        pItem->blockNextActivateSignal = false;
+    }
+}
+
+bool dred_menu_item_is_checked__gtk(dred_menu_item* pItem)
+{
+    assert(pItem != NULL);
+    if (!(pItem->flags & DRED_MENU_ITEM_CHECK)) {
+        return false;
+    }
+
+    return gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(pItem->pGTKMenuItem));
 }
 
 
@@ -3577,6 +3651,13 @@ void dred_window_on_unfocus(dred_window* pWindow)
     }
 }
 
+void dred_window_on_ipc_message(dred_window* pWindow, unsigned int messageID, const void* pMessageData)
+{
+    if (pWindow->onIPCMessage) {
+        pWindow->onIPCMessage(pWindow, messageID, pMessageData);
+    }
+}
+
 
 void dred_window__stock_event__hide_on_close(dred_window* pWindow)
 {
@@ -3657,18 +3738,18 @@ dred_menu_item* dred_menu_find_menu_item_by_id(dred_menu* pMenu, uint16_t id)
 }
 
 
-dred_menu_item* dred_menu_item_create_and_append(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, dred_menu* pSubMenu)
+dred_menu_item* dred_menu_item_create_and_append(dred_menu* pMenu, const char* text, uint16_t id, const char* command, dred_shortcut shortcut, unsigned int options, dred_menu* pSubMenu)
 {
 #ifdef DRED_WIN32
-    return dred_menu_item_create_and_append__win32(pMenu, text, id, command, shortcut, pSubMenu);
+    return dred_menu_item_create_and_append__win32(pMenu, text, id, command, shortcut, options, pSubMenu);
 #endif
 
 #ifdef DRED_GTK
-    return dred_menu_item_create_and_append__gtk(pMenu, text, id, command, shortcut, pSubMenu);
+    return dred_menu_item_create_and_append__gtk(pMenu, text, id, command, shortcut, options, pSubMenu);
 #endif
 }
 
-dred_menu_item* dred_menu_item_create_and_append_with_shortcut(dred_menu* pMenu, const char* text, uint16_t id, const char* shortcutName)
+dred_menu_item* dred_menu_item_create_and_append_with_shortcut(dred_menu* pMenu, const char* text, uint16_t id, const char* shortcutName, unsigned int options)
 {
     size_t shortcutIndex;
     if (!dred_shortcut_table_find_by_name(&pMenu->pDred->shortcutTable, shortcutName, &shortcutIndex)) {
@@ -3685,12 +3766,12 @@ dred_menu_item* dred_menu_item_create_and_append_with_shortcut(dred_menu* pMenu,
         goto on_error;
     }
 
-    return dred_menu_item_create_and_append(pMenu, text, id, commandStr, shortcut, NULL);
+    return dred_menu_item_create_and_append(pMenu, text, id, commandStr, shortcut, options, NULL);
 
 
 on_error:
     dred_warningf(pMenu->pDred, "Failed to create menu item (%s) with shortcut (%s). Menu item will be present, but not functional.", text, shortcutName);
-    return dred_menu_item_create_and_append(pMenu, text, id, "", dred_shortcut_none(), NULL);
+    return dred_menu_item_create_and_append(pMenu, text, id, "", dred_shortcut_none(), options, NULL);
 }
 
 dred_menu_item* dred_menu_item_create_and_append_separator(dred_menu* pMenu)
@@ -3764,6 +3845,47 @@ void dred_menu_item_disable(dred_menu_item* pItem)
 
 #ifdef DRED_GTK
     dred_menu_item_disable__gtk(pItem);
+#endif
+}
+
+
+void dred_menu_item_check(dred_menu_item* pItem)
+{
+    dred_menu_item_set_checked(pItem, true);
+}
+
+void dred_menu_item_uncheck(dred_menu_item* pItem)
+{
+    dred_menu_item_set_checked(pItem, false);
+}
+
+void dred_menu_item_set_checked(dred_menu_item* pItem, bool checked)
+{
+    if (pItem == NULL) {
+        return;
+    }
+
+#ifdef DRED_WIN32
+    dred_menu_item_set_checked__win32(pItem, checked);
+#endif
+
+#ifdef DRED_GTK
+    dred_menu_item_set_checked__gtk(pItem, checked);
+#endif
+}
+
+bool dred_menu_item_is_checked(dred_menu_item* pItem)
+{
+    if (pItem == NULL) {
+        return false;
+    }
+
+#ifdef DRED_WIN32
+    return dred_menu_item_is_checked__win32(pItem);
+#endif
+
+#ifdef DRED_GTK
+    return dred_menu_item_is_checked__gtk(pItem);
 #endif
 }
 

@@ -95,6 +95,9 @@ struct dred_menu_library
     // The Theme menu items.
     dred_menu_item* pThemesItem_Default;
     dred_menu_item* pThemesItem_TextEditor;
+
+
+    dred_menu_item* pMenuItem_WordWrap;
 };
 
 bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred);
