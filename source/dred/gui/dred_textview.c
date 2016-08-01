@@ -2183,11 +2183,13 @@ void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine)
     float cursorPosY;
     drte_engine_get_cursor_position(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine), &cursorPosX, &cursorPosY);
 
+    float cursorWidth = drte_engine_get_cursor_width(pTextView->pTextEngine);
+
     if (cursorPosX < 0) {
-        dred_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTextView->pTextEngine)) - 100);
+        dred_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTextView->pTextEngine)));
     }
     if (cursorPosX >= drte_engine_get_container_width(pTextView->pTextEngine)) {
-        dred_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTextView->pTextEngine) - drte_engine_get_container_width(pTextView->pTextEngine)) + 100);
+        dred_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_engine_get_inner_offset_x(pTextView->pTextEngine) - drte_engine_get_container_width(pTextView->pTextEngine)) + (int)cursorWidth);
     }
 
 
