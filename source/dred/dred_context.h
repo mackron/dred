@@ -8,9 +8,6 @@ struct dred_context
     // The log file.
     dred_file logFile;
 
-    // The named pipe for IPC.
-    //drpipe pipeIPC;
-
     // The IPC thread.
     dred_thread threadIPC;
 
