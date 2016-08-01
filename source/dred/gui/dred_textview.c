@@ -2476,7 +2476,7 @@ void dred_textview__refresh_horizontal_scrollbar(dred_textview* pTextView)
     float textWidth = drte_engine_get_visible_line_width(pTextView->pTextEngine);
     float containerWidth;
     drte_engine_get_container_size(pTextView->pTextEngine, &containerWidth, NULL);
-    dred_scrollbar_set_range_and_page_size(pTextView->pHorzScrollbar, 0, (int)(textWidth + (containerWidth/4)), (int)containerWidth);
+    dred_scrollbar_set_range_and_page_size(pTextView->pHorzScrollbar, 0, (int)textWidth, (int)containerWidth);
 
     if (dred_scrollbar_is_thumb_visible(pTextView->pHorzScrollbar)) {
         if (!dred_control_is_visible(DRED_CONTROL(pTextView->pHorzScrollbar))) {
