@@ -3619,6 +3619,12 @@ dred_menu* dred_menu_create(dred_context* pDred, dred_menu_type type)
 
 void dred_menu_delete(dred_menu* pMenu)
 {
+    if (pMenu == NULL) {
+        return;
+    }
+
+    dred_menu_delete_all_items(pMenu);
+
 #ifdef DRED_WIN32
     dred_menu_delete__win32(pMenu);
 #endif
@@ -3700,6 +3706,16 @@ dred_menu_item* dred_menu_item_create_and_append_separator(dred_menu* pMenu)
 
 void dred_menu_item_delete(dred_menu_item* pItem)
 {
+    if (pItem == NULL) {
+        return;
+    }
+
+    // Delete sub-menus first.
+    if (pItem->pSubMenu != NULL) {
+        dred_menu_delete(pItem->pSubMenu);
+        pItem->pSubMenu = NULL;
+    }
+
 #ifdef DRED_WIN32
     dred_menu_item_delete__win32(pItem);
 #endif

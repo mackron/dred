@@ -558,6 +558,8 @@ void dred_uninit(dred_context* pDred)
         dred_tabgroup_container_uninit(pDred->pMainTabGroupContainer);
     }
 
+    dred_menu_library_uninit(&pDred->menuLibrary);
+
     if (pDred->pMainWindow) {
         dred_window_delete(pDred->pMainWindow);
     }

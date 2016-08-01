@@ -160,11 +160,13 @@ void dred_menu_library_uninit(dred_menu_library* pLibrary)
         return;
     }
 
-    // TODO: Clean up sub-menus. Consider making menus delete their menu items to keep things simple to manage.
+    dred_menu_delete_all_items(pLibrary->pMenu_RecentFiles);
 
-
+    //dred_menu_delete(pLibrary->pMenu_RecentFiles);
+    dred_menu_delete(pLibrary->pPopupMenu_TextEditor);
+    dred_menu_delete(pLibrary->pPopupMenu_Tab);
     dred_menu_delete(pLibrary->pMenu_TextEditor);
-    dred_menu_delete(pLibrary->pMenu_Default);
+    //dred_menu_delete(pLibrary->pMenu_Default);
 }
 
 void dred_menu_library_update_recent_files_menu(dred_menu_library* pLibrary)
