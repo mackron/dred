@@ -2217,8 +2217,7 @@ void dred_show_menu_bar(dred_context* pDred)
         return;
     }
 
-    dred_window_show_menu(pDred->pMainWindow);
-    pDred->config.showMenuBar = true;
+    dred_set_config_variable(pDred, "show-menu-bar", "true");
 }
 
 void dred_hide_menu_bar(dred_context* pDred)
@@ -2227,8 +2226,7 @@ void dred_hide_menu_bar(dred_context* pDred)
         return;
     }
 
-    dred_window_hide_menu(pDred->pMainWindow);
-    pDred->config.showMenuBar = false;
+    dred_set_config_variable(pDred, "show-menu-bar", "false");
 }
 
 void dred_toggle_menu_bar(dred_context* pDred)
