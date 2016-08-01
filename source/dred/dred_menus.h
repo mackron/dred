@@ -97,7 +97,10 @@ struct dred_menu_library
     dred_menu_item* pThemesItem_TextEditor;
 
 
-    dred_menu_item* pMenuItem_WordWrap;
+    dred_menu_item* pMenuItem_ToggleTabBars;
+    dred_menu_item* pMenuItem_ToggleCmdBarAutoHide;
+    dred_menu_item* pMenuItem_ToggleLineNumbers;
+    dred_menu_item* pMenuItem_ToggleWordWrap;
 };
 
 bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred);

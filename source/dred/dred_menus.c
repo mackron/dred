@@ -85,14 +85,17 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append_with_shortcut(pEditMenu, "Select &All", DRED_MENU_ITEM_ID_EDIT_SELECT_ALL, DRED_SHORTCUT_NAME_SELECT_ALL, 0);
 
     dred_menu* pViewMenu = dred_menu_create(pDred, dred_menu_type_popup);
-    dred_menu_item_create_and_append(pViewMenu, "Toggle Tab Bars", DRED_MENU_ITEM_ID_VIEW_TAB_BARS, "toggle-tab-bar", dred_shortcut_none(), 0, NULL);
-    dred_menu_item_create_and_append(pViewMenu, "Toggle Command Bar Auto-Hide", DRED_MENU_ITEM_ID_VIEW_CMD_BAR, "toggle-auto-hide-cmdbar", dred_shortcut_none(), 0, NULL);
+    pLibrary->pMenuItem_ToggleTabBars = dred_menu_item_create_and_append(pViewMenu, "Show Tab Bars", DRED_MENU_ITEM_ID_VIEW_TAB_BARS, "toggle-tab-bar", dred_shortcut_none(),DRED_MENU_ITEM_CHECK, NULL);
+    dred_menu_item_set_checked(pLibrary->pMenuItem_ToggleTabBars, pDred->config.showTabBar);
+    pLibrary->pMenuItem_ToggleCmdBarAutoHide = dred_menu_item_create_and_append(pViewMenu, "Auto-Hide Command Bar", DRED_MENU_ITEM_ID_VIEW_CMD_BAR, "toggle-auto-hide-cmdbar", dred_shortcut_none(), DRED_MENU_ITEM_CHECK, NULL);
+    dred_menu_item_set_checked(pLibrary->pMenuItem_ToggleCmdBarAutoHide, pDred->config.autoHideCmdBar);
     dred_menu_item_create_and_append_separator(pViewMenu);
-    dred_menu_item_create_and_append(pViewMenu, "Toggle &Line Numbers", DRED_MENU_ITEM_ID_VIEW_LINE_NUMBERS, "toggle-line-numbers", dred_shortcut_none(), 0, NULL);
+    pLibrary->pMenuItem_ToggleLineNumbers = dred_menu_item_create_and_append(pViewMenu, "Show &Line Numbers", DRED_MENU_ITEM_ID_VIEW_LINE_NUMBERS, "toggle-line-numbers", dred_shortcut_none(), DRED_MENU_ITEM_CHECK, NULL);
+    dred_menu_item_set_checked(pLibrary->pMenuItem_ToggleLineNumbers, pDred->config.textEditorShowLineNumbers);
     dred_menu_item_create_and_append(pViewMenu, "Reset &Zoom", DRED_MENU_ITEM_ID_VIEW_RESET_ZOOM, "zoom 1", dred_shortcut_none(), 0, NULL);
     dred_menu_item_create_and_append_separator(pViewMenu);
-    pLibrary->pMenuItem_WordWrap = dred_menu_item_create_and_append(pViewMenu, "Word &Wrap", DRED_MENU_ITEM_ID_VIEW_WORD_WRAP, "toggle-word-wrap", dred_shortcut_none(), DRED_MENU_ITEM_CHECK, NULL);
-    dred_menu_item_set_checked(pLibrary->pMenuItem_WordWrap, pDred->config.textEditorEnableWordWrap);
+    pLibrary->pMenuItem_ToggleWordWrap = dred_menu_item_create_and_append(pViewMenu, "Word &Wrap", DRED_MENU_ITEM_ID_VIEW_WORD_WRAP, "toggle-word-wrap", dred_shortcut_none(), DRED_MENU_ITEM_CHECK, NULL);
+    dred_menu_item_set_checked(pLibrary->pMenuItem_ToggleWordWrap, pDred->config.textEditorEnableWordWrap);
 
     dred_menu* pFindMenu = dred_menu_create(pDred, dred_menu_type_popup);
     dred_menu_item_create_and_append_with_shortcut(pFindMenu, "&Find...", DRED_MENU_ITEM_ID_FIND_FIND, DRED_SHORTCUT_NAME_FIND, 0);

@@ -280,10 +280,16 @@ void dred_config_on_set__ui_font(dred_context* pDred)
 void dred_config_on_set__show_tab_bar(dred_context* pDred)
 {
     if (pDred->config.showTabBar) {
-        dred_show_tabbars(pDred);
+        for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+            dred_tabgroup_show_tabbar(pTabGroup);
+        }
     } else {
-        dred_hide_tabbars(pDred);
+        for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+            dred_tabgroup_hide_tabbar(pTabGroup);
+        }
     }
+
+    dred_menu_item_set_checked(pDred->menuLibrary.pMenuItem_ToggleTabBars, pDred->config.showTabBar);
 }
 
 void dred_config_on_set__show_menu_bar(dred_context* pDred)
@@ -298,10 +304,14 @@ void dred_config_on_set__show_menu_bar(dred_context* pDred)
 void dred_config_on_set__auto_hide_cmd_bar(dred_context* pDred)
 {
     if (pDred->config.autoHideCmdBar) {
-        dred_enable_auto_hide_command_bar(pDred);
+        if (!dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
+            dred_hide_command_bar(pDred);
+        }
     } else {
-        dred_disable_auto_hide_command_bar(pDred);
+        dred_show_command_bar(pDred);
     }
+
+    dred_menu_item_set_checked(pDred->menuLibrary.pMenuItem_ToggleCmdBarAutoHide, pDred->config.autoHideCmdBar);
 }
 
 void dred_config_on_set__enable_auto_reload(dred_context* pDred)
@@ -367,6 +377,8 @@ void dred_config_on_set__texteditor_generic_refresh(dred_context* pDred)
             }
         }
     }
+
+    dred_menu_item_set_checked(pDred->menuLibrary.pMenuItem_ToggleLineNumbers, pDred->config.textEditorShowLineNumbers);
 }
 
 void dred_config_on_set__texteditor_word_wrap(dred_context* pDred)
@@ -384,7 +396,7 @@ void dred_config_on_set__texteditor_word_wrap(dred_context* pDred)
         }
     }
 
-    dred_menu_item_set_checked(pDred->menuLibrary.pMenuItem_WordWrap, pDred->config.textEditorEnableWordWrap);
+    dred_menu_item_set_checked(pDred->menuLibrary.pMenuItem_ToggleWordWrap, pDred->config.textEditorEnableWordWrap);
 }
 
 

@@ -2251,11 +2251,7 @@ void dred_show_tabbars(dred_context* pDred)
         return;
     }
 
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-        dred_tabgroup_show_tabbar(pTabGroup);
-    }
-
-    pDred->config.showTabBar = true;
+    dred_set_config_variable(pDred, "show-tab-bar", "true");
 }
 
 void dred_hide_tabbars(dred_context* pDred)
@@ -2264,11 +2260,7 @@ void dred_hide_tabbars(dred_context* pDred)
         return;
     }
 
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-        dred_tabgroup_hide_tabbar(pTabGroup);
-    }
-
-    pDred->config.showTabBar = false;
+    dred_set_config_variable(pDred, "show-tab-bar", "false");
 }
 
 void dred_toggle_tabbars(dred_context* pDred)
@@ -2291,16 +2283,7 @@ void dred_show_line_numbers(dred_context* pDred)
         return;
     }
 
-    pDred->config.textEditorShowLineNumbers = true;
-
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
-        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
-            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                dred_text_editor_show_line_numbers(DRED_TEXT_EDITOR(pControl));
-            }
-        }
-    }
+    dred_set_config_variable(pDred, "texteditor-show-line-numbers", "true");
 }
 
 void dred_hide_line_numbers(dred_context* pDred)
@@ -2309,16 +2292,7 @@ void dred_hide_line_numbers(dred_context* pDred)
         return;
     }
 
-    pDred->config.textEditorShowLineNumbers = false;
-
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
-        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
-            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                dred_text_editor_hide_line_numbers(DRED_TEXT_EDITOR(pControl));
-            }
-        }
-    }
+    dred_set_config_variable(pDred, "texteditor-show-line-numbers", "false");
 }
 
 void dred_toggle_line_numbers(dred_context* pDred)
@@ -2393,11 +2367,7 @@ void dred_enable_auto_hide_command_bar(dred_context* pDred)
         return;
     }
 
-    pDred->config.autoHideCmdBar = true;
-
-    if (!dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
-        dred_hide_command_bar(pDred);
-    }
+    dred_set_config_variable(pDred, "auto-hide-cmd-bar", "true");
 }
 
 void dred_disable_auto_hide_command_bar(dred_context* pDred)
@@ -2406,8 +2376,7 @@ void dred_disable_auto_hide_command_bar(dred_context* pDred)
         return;
     }
 
-    pDred->config.autoHideCmdBar = false;
-    dred_show_command_bar(pDred);
+    dred_set_config_variable(pDred, "auto-hide-cmd-bar", "false");
 }
 
 void dred_toggle_auto_hide_command_bar(dred_context* pDred)
