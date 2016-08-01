@@ -383,6 +383,8 @@ void dred_config_on_set__texteditor_word_wrap(dred_context* pDred)
             }
         }
     }
+
+    dred_menu_item_set_checked(pDred->menuLibrary.pMenuItem_WordWrap, pDred->config.textEditorEnableWordWrap);
 }
 
 

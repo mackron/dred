@@ -365,6 +365,10 @@ void dred_set_text_editor_scale(dred_context* pDred, float scale);
 float dred_get_text_editor_scale(dred_context* pDred);
 
 
+// Sets the value of a config variable.
+void dred_set_config_variable(dred_context* pDred, const char* name, const char* value);
+
+
 // Parses a font string and loads the applicable font.
 dred_font* dred_parse_and_load_font(dred_context* pDred, const char* value);
 

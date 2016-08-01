@@ -2341,16 +2341,7 @@ void dred_enable_word_wrap(dred_context* pDred)
         return;
     }
 
-    pDred->config.textEditorEnableWordWrap = true;
-
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
-        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
-            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                dred_text_editor_enable_word_wrap(DRED_TEXT_EDITOR(pControl));
-            }
-        }
-    }
+    dred_set_config_variable(pDred, "texteditor-enable-word-wrap", "true");
 }
 
 void dred_disable_word_wrap(dred_context* pDred)
@@ -2359,16 +2350,7 @@ void dred_disable_word_wrap(dred_context* pDred)
         return;
     }
 
-    pDred->config.textEditorEnableWordWrap = false;
-
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
-        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
-            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                dred_text_editor_disable_word_wrap(DRED_TEXT_EDITOR(pControl));
-            }
-        }
-    }
+    dred_set_config_variable(pDred, "texteditor-enable-word-wrap", "false");
 }
 
 void dred_toggle_word_wrap(dred_context* pDred)
@@ -2468,6 +2450,15 @@ float dred_get_text_editor_scale(dred_context* pDred)
     }
 
     return pDred->config.textEditorScale;
+}
+
+
+void dred_set_config_variable(dred_context* pDred, const char* name, const char* value)
+{
+    if (pDred == NULL || name == NULL) return;
+    if (value == NULL) value = "";
+
+    dred_config_set(&pDred->config, name, value);
 }
 
 
