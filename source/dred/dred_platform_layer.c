@@ -1188,6 +1188,10 @@ dred_menu_item* dred_menu_item_create_and_append__win32__internal(dred_menu* pMe
         return NULL;
     }
 
+    if (command == NULL) {
+        command = "";
+    }
+
 
     if (separator)
     {
@@ -1222,16 +1226,18 @@ dred_menu_item* dred_menu_item_create_and_append__win32__internal(dred_menu* pMe
     }
 
 
-    dred_menu_item* pItem = (dred_menu_item*)calloc(1, sizeof(*pItem));
+    dred_menu_item* pItem = (dred_menu_item*)calloc(1, sizeof(*pItem) + strlen(command)+1); // +1 for null terminator.
     if (pItem == NULL) {
         return NULL;
     }
 
     pItem->id = id;
     pItem->index = pMenu->menuItemCount;
-    pItem->command = gb_make_string(command);
     pItem->pSubMenu = pSubMenu;
     pItem->pOwnerMenu = pMenu;
+    //pItem->command = gb_make_string(command);
+    pItem->command = (char*)pItem + sizeof(*pItem);
+    strcpy_s(pItem->command, strlen(command)+1, command);
 
 
     // Add the item to the list.
@@ -1275,7 +1281,7 @@ void dred_menu_item_delete__win32(dred_menu_item* pItem)
 
 
     if (pItem->command) {
-        gb_free_string(pItem->command);
+        //gb_free_string(pItem->command);
     }
 
     free(pItem);
