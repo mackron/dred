@@ -782,9 +782,7 @@ void dred_textview_enable_word_wrap(dred_textview* pTextView)
     }
 
     drte_engine_enable_word_wrap(pTextView->pTextEngine);
-
-    // Line numbers need to be redrawn.
-    dred_textview__refresh_line_numbers(pTextView);
+    dred_textview__refresh_scrollbars(pTextView);
 }
 
 void dred_textview_disable_word_wrap(dred_textview* pTextView)
@@ -794,9 +792,7 @@ void dred_textview_disable_word_wrap(dred_textview* pTextView)
     }
 
     drte_engine_disable_word_wrap(pTextView->pTextEngine);
-
-    // Line numbers need to be redrawn.
-    dred_textview__refresh_line_numbers(pTextView);
+    dred_textview__refresh_scrollbars(pTextView);
 }
 
 bool dred_textview_is_word_wrap_enabled(dred_textview* pTextView)
