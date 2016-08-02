@@ -30,6 +30,12 @@
 extern "C" {
 #endif
 
+#ifdef _MSC_VER
+#define DRTE_INLINE static __forceinline
+#else
+#define DRTE_INLINE static inline
+#endif
+
 typedef struct drte_engine drte_engine;
 typedef struct drte_view drte_view;
 typedef uintptr_t drte_style_token;
@@ -271,20 +277,6 @@ struct drte_engine
     // The function to call when application-defined data needs to be applied for undo/redo points.
     drte_engine_on_apply_undo_state_proc onApplyUndoState;
 
-
-#if 0
-    /// The width of the container.
-    float containerWidth;
-
-    /// The height of the container.
-    float containerHeight;
-
-    /// The inner offset of the container.
-    float innerOffsetX;
-
-    /// The inner offset of the container.
-    float innerOffsetY;
-#endif
 
     /// The size of a tab in spaces.
     unsigned int tabSizeInSpaces;
@@ -907,16 +899,18 @@ void drte_view_delete(drte_view* pView);
 void drte_view_set_size(drte_view* pView, float sizeX, float sizeY);
 
 // Retrieves the size of the view.
-float drte_view_get_size_x(drte_view* pView);
-float drte_view_get_size_y(drte_view* pView);
+DRTE_INLINE float drte_view_get_size_x(drte_view* pView) { if (pView == NULL) return 0; return pView->sizeX; }
+DRTE_INLINE float drte_view_get_size_y(drte_view* pView) { if (pView == NULL) return 0; return pView->sizeY; }
 
 
 // Sets the inner offset of the view.
 void drte_view_set_inner_offset(drte_view* pView, float innerOffsetX, float innerOffsetY);
+DRTE_INLINE void drte_view_set_inner_offset_x(drte_view* pView, float innerOffsetX) { if (pView == NULL) return; drte_view_set_inner_offset(pView, innerOffsetX, pView->innerOffsetY); }
+DRTE_INLINE void drte_view_set_inner_offset_y(drte_view* pView, float innerOffsetY) { if (pView == NULL) return; drte_view_set_inner_offset(pView, pView->innerOffsetX, innerOffsetY); }
 
 // Retrieves the size of the view.
-float drte_view_get_inner_offset_x(drte_view* pView);
-float drte_view_get_inner_offset_y(drte_view* pView);
+DRTE_INLINE float drte_view_get_inner_offset_x(drte_view* pView) { if (pView == NULL) return 0; return pView->innerOffsetX; }
+DRTE_INLINE float drte_view_get_inner_offset_y(drte_view* pView) { if (pView == NULL) return 0; return pView->innerOffsetY; }
 
 
 // Begins a batch dirty of the given view.
@@ -962,12 +956,6 @@ bool drte_view_is_word_wrap_enabled(drte_view* pView);
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DR_TEXT_ENGINE_IMPLEMENTATION
 #include <stdlib.h>
-
-#ifdef _MSC_VER
-#define DRTE_INLINE __forceinline
-#else
-#define DRTE_INLINE inline
-#endif
 
 #ifndef DRTE_STACK_BUFFER_ALIGNMENT
 #define DRTE_STACK_BUFFER_ALIGNMENT sizeof(size_t)
@@ -1096,7 +1084,7 @@ int drte__strncpy_s(char* dst, size_t dstSizeInBytes, const char* src, size_t co
 
 //// Rect ////
 
-static DRTE_INLINE drte_rect drte_make_rect(float left, float top, float right, float bottom)
+DRTE_INLINE drte_rect drte_make_rect(float left, float top, float right, float bottom)
 {
     drte_rect rect;
     rect.left   = left;
@@ -1107,7 +1095,7 @@ static DRTE_INLINE drte_rect drte_make_rect(float left, float top, float right, 
     return rect;
 }
 
-static DRTE_INLINE drte_rect drte_make_inside_out_rect()
+DRTE_INLINE drte_rect drte_make_inside_out_rect()
 {
     drte_rect rect;
     rect.left   =  FLT_MAX;
@@ -1118,7 +1106,7 @@ static DRTE_INLINE drte_rect drte_make_inside_out_rect()
     return rect;
 }
 
-static DRTE_INLINE drte_rect drte_rect_union(drte_rect rect0, drte_rect rect1)
+DRTE_INLINE drte_rect drte_rect_union(drte_rect rect0, drte_rect rect1)
 {
     drte_rect result;
     result.left   = (rect0.left   < rect1.left)   ? rect0.left   : rect1.left;
@@ -1129,7 +1117,7 @@ static DRTE_INLINE drte_rect drte_rect_union(drte_rect rect0, drte_rect rect1)
     return result;
 }
 
-static DRTE_INLINE bool drte_rect_has_volume(drte_rect rect)
+DRTE_INLINE bool drte_rect_has_volume(drte_rect rect)
 {
     return rect.right > rect.left && rect.bottom > rect.top;
 }
@@ -5296,7 +5284,7 @@ typedef struct
     } newState;
 } drte_undo_state_info;
 
-static DRTE_INLINE void drte_engine__breakdown_undo_state_info(const uint8_t* pUndoData, drte_undo_state_info* pInfoOut)
+DRTE_INLINE void drte_engine__breakdown_undo_state_info(const uint8_t* pUndoData, drte_undo_state_info* pInfoOut)
 {
     assert(pInfoOut != NULL);
 
@@ -5829,24 +5817,6 @@ void drte_view_set_size(drte_view* pView, float sizeX, float sizeY)
     }
 }
 
-float drte_view_get_size_x(drte_view* pView)
-{
-    if (pView == NULL) {
-        return 0;
-    }
-
-    return pView->sizeX;
-}
-float drte_view_get_size_y(drte_view* pView)
-{
-    if (pView == NULL) {
-        return 0;
-    }
-
-    return pView->sizeY;
-}
-
-
 void drte_view_set_inner_offset(drte_view* pView, float innerOffsetX, float innerOffsetY)
 {
     if (pView == NULL) {
@@ -5857,23 +5827,6 @@ void drte_view_set_inner_offset(drte_view* pView, float innerOffsetX, float inne
     pView->innerOffsetY = innerOffsetY;
 
     drte_view__repaint(pView);
-}
-
-float drte_view_get_inner_offset_x(drte_view* pView)
-{
-    if (pView == NULL) {
-        return 0;
-    }
-
-    return pView->innerOffsetX;
-}
-float drte_view_get_inner_offset_y(drte_view* pView)
-{
-    if (pView == NULL) {
-        return 0;
-    }
-
-    return pView->innerOffsetY;
 }
 
 
