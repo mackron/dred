@@ -1288,8 +1288,7 @@ void drte_engine__begin_dirty(drte_engine* pEngine);
 void drte_engine__end_dirty(drte_engine* pEngine);
 
 
-// Refreshes the line number cache.
-void drte_engine__refresh_line_wrapping(drte_engine* pEngine);
+static void drte_view__refresh_word_wrapping(drte_view* pView);
 
 
 // Finds a style slot index of the given style token. Returns DRTE_INVALID_STYLE_SLOT if it could not be found.
@@ -2439,7 +2438,7 @@ void drte_engine_set_container_size(drte_engine* pEngine, float containerWidth, 
 
     drte_view_set_size(pEngine->pView, containerWidth, containerHeight);
 
-
+#if 1
     bool hasWidthChanged = pEngine->containerWidth != containerWidth;
     bool hasHeightChanged = pEngine->containerHeight != containerHeight;
     if (!hasWidthChanged && !hasHeightChanged) {
@@ -2450,10 +2449,11 @@ void drte_engine_set_container_size(drte_engine* pEngine, float containerWidth, 
     pEngine->containerHeight = containerHeight;
 
     if (pEngine->isWordWrapEnabled && hasWidthChanged) {    // <-- Word wrapping does not need to be refreshed if the width has not changed.
-        drte_engine__refresh_line_wrapping(pEngine);
+        drte_view__refresh_word_wrapping(pEngine->pView);
     } else {
         drte_engine__repaint(pEngine);
     }
+#endif
 }
 
 void drte_engine_get_container_size(drte_engine* pEngine, float* pContainerWidthOut, float* pContainerHeightOut)
@@ -3527,8 +3527,8 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
 
     // Refresh the lines if line wrap is enabled.
     // TODO: Optimize this.
-    if (drte_engine_is_word_wrap_enabled(pEngine)) {
-        drte_engine__refresh_line_wrapping(pEngine);
+    if (drte_view_is_word_wrap_enabled(pEngine->pView)) {
+        drte_view__refresh_word_wrapping(pEngine->pView);
     }
 
 
@@ -3603,8 +3603,8 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
 
         // Refresh the lines if line wrap is enabled.
         // TODO: Optimize this.
-        if (drte_engine_is_word_wrap_enabled(pEngine)) {
-            drte_engine__refresh_line_wrapping(pEngine);
+        if (drte_view_is_word_wrap_enabled(pEngine->pView)) {
+            drte_view__refresh_word_wrapping(pEngine->pView);
         }
 
 
@@ -5243,7 +5243,7 @@ void drte_engine__repaint(drte_engine* pEngine)
 void drte_engine__refresh(drte_engine* pEngine)
 {
     assert(pEngine != NULL);
-    drte_engine__refresh_line_wrapping(pEngine);    // <-- This will redraw for us.
+    drte_view__refresh_word_wrapping(pEngine->pView);    // <-- This will redraw for us.
 }
 
 
@@ -5594,7 +5594,6 @@ void drte_engine__end_dirty(drte_engine* pEngine)
 }
 
 
-static void drte_view__refresh_word_wrapping(drte_view* pView);
 void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
 {
     assert(pEngine != NULL);
