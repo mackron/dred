@@ -26,7 +26,7 @@ struct dred_textview
     drte_engine* pTextEngine;
 
     // The view that's attached to the engine and used for displaying the contents of the text engine.
-    drte_view* pView;
+    //drte_view* pView;
 
 
     // The default style for use by the text engine.

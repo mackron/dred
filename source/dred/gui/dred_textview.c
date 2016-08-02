@@ -335,11 +335,13 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
     pTextView->pTextEngine->pUserData = pTextView;
     dred_textview__insert_cursor(pTextView, 0);
 
+#if 0
     pTextView->pView = drte_view_create(pTextView->pTextEngine);
     if (pTextView->pView == NULL) {
         dred_control_uninit(DRED_CONTROL(pTextView));
         return false;
     }
+#endif
 
     
 
@@ -493,10 +495,12 @@ void dred_textview_uninit(dred_textview* pTextView)
         pTextView->pCursors = NULL;
     }
 
+#if 0
     if (pTextView->pView) {
         drte_view_delete(pTextView->pView);
         pTextView->pView = NULL;
     }
+#endif
 
     dred_control_uninit(DRED_CONTROL(pTextView));
 }
