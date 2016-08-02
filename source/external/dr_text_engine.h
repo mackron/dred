@@ -927,6 +927,9 @@ void drte_view_end_dirty(drte_view* pView);
 // Marks a region of the given view as dirty and triggers a redraw.
 void drte_view_dirty(drte_view* pView, drte_rect rect);
 
+// Paints a region of the given view.
+void drte_view_paint(drte_view* pView, drte_rect rect, void* pUserData);
+
 
 // Retrieves the local rectangle of the given view.
 drte_rect drte_view_get_local_rect(drte_view* pView);
@@ -2510,9 +2513,7 @@ void drte_engine_set_inner_offset_x(drte_engine* pEngine, float innerOffsetX)
         return;
     }
 
-    pEngine->innerOffsetX = innerOffsetX;
-
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+    drte_engine_set_inner_offset(pEngine, innerOffsetX, pEngine->innerOffsetY);
 }
 
 void drte_engine_set_inner_offset_y(drte_engine* pEngine, float innerOffsetY)
@@ -2521,9 +2522,7 @@ void drte_engine_set_inner_offset_y(drte_engine* pEngine, float innerOffsetY)
         return;
     }
 
-    pEngine->innerOffsetY = innerOffsetY;
-
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+    drte_engine_set_inner_offset(pEngine, pEngine->innerOffsetX, innerOffsetY);
 }
 
 void drte_engine_get_inner_offset(drte_engine* pEngine, float* pInnerOffsetX, float* pInnerOffsetY)
@@ -4925,10 +4924,13 @@ void drte_engine_set_on_paint_rect(drte_engine* pEngine, drte_engine_on_paint_re
 
 void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
 {
-    if (pEngine == NULL || pEngine->onPaintText == NULL || pEngine->onPaintRect == NULL) {
+    if (pEngine == NULL/* || pEngine->onPaintText == NULL || pEngine->onPaintRect == NULL*/) {
         return;
     }
 
+    drte_view_paint(pEngine->pView, rect, pPaintData);
+
+#if 0
     if (rect.left < 0) {
         rect.left = 0;
     }
@@ -5069,6 +5071,7 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
         tailRect.bottom = pEngine->containerHeight;
         pEngine->onPaintRect(pEngine, pEngine->pView, pEngine->styles[pEngine->defaultStyleSlot].styleToken, tailRect, pPaintData);
     }
+#endif
 }
 
 
@@ -5927,6 +5930,154 @@ void drte_view_dirty(drte_view* pView, drte_rect rect)
     drte_view_begin_dirty(pView);
     pView->_accumulatedDirtyRect = drte_rect_union(pView->_accumulatedDirtyRect, rect);
     drte_view_end_dirty(pView);
+}
+
+void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
+{
+    if (pView == NULL || pView->pEngine->onPaintText == NULL || pView->pEngine->onPaintRect == NULL) {
+        return;
+    }
+
+    if (rect.left < 0) {
+        rect.left = 0;
+    }
+    if (rect.top < 0) {
+        rect.top = 0;
+    }
+    if (rect.right > pView->pEngine->containerWidth) {
+        rect.right = pView->pEngine->containerWidth;
+    }
+    if (rect.bottom > pView->pEngine->containerHeight) {
+        rect.bottom = pView->pEngine->containerHeight;
+    }
+
+    if (rect.right <= rect.left || rect.bottom <= rect.top) {
+        return;
+    }
+
+    float lineHeight = drte_engine_get_line_height(pView->pEngine);
+
+
+    size_t iLineTop;
+    size_t iLineBottom;
+    drte_engine_get_visible_lines(pView->pEngine, &iLineTop, &iLineBottom);
+
+    float linePosX = pView->pEngine->innerOffsetX;
+    float linePosY = 0;
+
+    drte_segment segment;
+    if (drte_engine__first_segment_on_line(pView->pEngine, pView->pWrappedLines, iLineTop, (size_t)-1, &segment)) {
+        size_t iLine = iLineTop;
+        while (iLine <= iLineBottom) {
+            float lineWidth = 0;
+
+            do
+            {
+                if (linePosX + segment.posX > pView->sizeX) {
+                    // All remaining segments on this line (including this one) is clipped. Go to the next line.
+                    segment.iCharBeg = segment.iLineCharEnd;
+                    segment.iCharEnd = segment.iLineCharEnd;
+                    segment.isAtEndOfLine = true;
+                    break;
+                }
+
+                lineWidth += segment.width;
+
+                // Don't draw segments to the left of the container.
+                if (linePosX + segment.posX + segment.width < 0) {
+                    if (segment.iCharBeg == segment.iLineCharEnd) {
+                        break;
+                    }
+                    continue;
+                }
+
+                uint32_t c = drte_engine_get_utf32(pView->pEngine, segment.iCharBeg);
+                if (c == '\t' || segment.iCharBeg == segment.iLineCharEnd) {
+                    // It's whitespace.
+                    if (segment.iCharBeg == segment.iLineCharEnd) {
+                        // TODO: Only do this if the character is selected.
+                        uint32_t cend = drte_engine_get_utf32(pView->pEngine, segment.iCharBeg);
+                        if (cend == '\r' || cend == '\n') {
+                            segment.width = pView->pEngine->styles[pView->pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
+                            lineWidth += segment.width;
+                        }
+                    }
+
+                    drte_style_token bgStyleToken = drte_engine__get_style_token(pView->pEngine, segment.bgStyleSlot);
+                    if (pView->pEngine->onPaintRect && bgStyleToken != 0) {
+                        pView->pEngine->onPaintRect(pView->pEngine, pView->pEngine->pView, bgStyleToken, drte_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pPaintData);
+                    }
+                } else {
+                    // It's normal text.
+                    // TODO: Gather the text and properly support UTF-8.
+                    const char* text = pView->pEngine->text + segment.iCharBeg;
+                    size_t textLength = segment.iCharEnd - segment.iCharBeg;
+
+                    // TODO: Draw text on the base line to properly handle font's of differing sizes.
+
+                    drte_style_token fgStyleToken = drte_engine__get_style_token(pView->pEngine, segment.fgStyleSlot);
+                    drte_style_token bgStyleToken = drte_engine__get_style_token(pView->pEngine, segment.bgStyleSlot);
+                    if (pView->pEngine->onPaintText && fgStyleToken != 0 && bgStyleToken != 0) {
+                        pView->pEngine->onPaintText(pView->pEngine, pView, fgStyleToken, bgStyleToken, text, textLength, linePosX + segment.posX, linePosY, pPaintData);
+                    }
+                }
+
+                if (segment.iCharBeg == segment.iLineCharEnd) {
+                    break;
+                }
+            } while (drte_engine__next_segment(pView->pEngine, &segment));
+
+
+            // The part after the end of the line needs to be drawn.
+            float lineRight = linePosX + lineWidth;
+            if (lineRight < pView->sizeX) {
+                drte_style_token bgStyleToken = pView->pEngine->styles[pView->pEngine->defaultStyleSlot].styleToken;
+                if (pView->pEngine->cursorCount > 0 && segment.iLine == drte_engine_get_cursor_line(pView->pEngine, pView->pEngine->cursorCount-1)) {
+                    bgStyleToken = pView->pEngine->styles[pView->pEngine->activeLineStyleSlot].styleToken;
+                }
+
+                if (pView->pEngine->onPaintRect && bgStyleToken != 0) {
+                    pView->pEngine->onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(lineRight, linePosY, pView->pEngine->containerWidth, linePosY + lineHeight), pPaintData);
+                }
+            }
+
+            linePosY += lineHeight;
+
+
+            // Go to the first segment of the next line.
+            if (!drte_engine__next_segment(pView->pEngine, &segment)) {
+                break;
+            }
+
+            iLine += 1;
+        }
+    } else {
+        // Couldn't create a segment iterator. Likely means there is no text. Just draw a single blank line.
+        drte_style_token bgStyleToken = pView->pEngine->styles[pView->pEngine->activeLineStyleSlot].styleToken;
+        if (pView->pEngine->onPaintRect && bgStyleToken != 0) {
+            pView->pEngine->onPaintRect(pView->pEngine, pView->pEngine->pView, bgStyleToken, drte_make_rect(linePosX, linePosY, pView->pEngine->containerWidth, linePosY + lineHeight), pPaintData);
+        }
+    }
+
+
+    // Cursors.
+    if (pView->pEngine->isShowingCursor && pView->pEngine->isCursorBlinkOn && pView->pEngine->styles[pView->pEngine->cursorStyleSlot].styleToken != 0) {
+        for (size_t iCursor = 0; iCursor < pView->pEngine->cursorCount; ++iCursor) {
+            pView->pEngine->onPaintRect(pView->pEngine, pView, pView->pEngine->styles[pView->pEngine->cursorStyleSlot].styleToken, drte_engine_get_cursor_rect(pView->pEngine, iCursor), pPaintData);
+        }
+    }
+
+
+    // The rectangle region below the last line.
+    if (linePosY < pView->sizeY && pView->pEngine->styles[pView->pEngine->defaultStyleSlot].styleToken != 0) {
+        // TODO: Only draw the intersection of the bottom rectangle with the invalid rectangle.
+        drte_rect tailRect;
+        tailRect.left = 0;
+        tailRect.top = (iLineBottom + 1) * drte_engine_get_line_height(pView->pEngine) + pView->innerOffsetY;
+        tailRect.right = pView->sizeX;
+        tailRect.bottom = pView->sizeY;
+        pView->pEngine->onPaintRect(pView->pEngine, pView, pView->pEngine->styles[pView->pEngine->defaultStyleSlot].styleToken, tailRect, pPaintData);
+    }
 }
 
 
