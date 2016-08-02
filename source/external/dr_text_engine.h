@@ -237,9 +237,7 @@ struct drte_engine
 
     // The line caches.
     drte_line_cache _unwrappedLines;
-    drte_line_cache _wrappedLines;
     drte_line_cache* pUnwrappedLines;   // Always points to _unwrappedLines. Exists only for consistency with pWrappedLines.
-    drte_line_cache* pWrappedLines;     // Points to _wrappedLines if word wrap is enabled; points to _unwrappedLines when word wrap is disabled.
 
 
 
@@ -1953,7 +1951,6 @@ bool drte_engine_init(drte_engine* pEngine, void* pUserData)
     // Both line caches point to the same underlying structure to save on memory. This is only the case when word wrap is disabled, which is
     // the default behaviour.
     pEngine->pUnwrappedLines = &pEngine->_unwrappedLines;
-    pEngine->pWrappedLines = &pEngine->_unwrappedLines;
 
 
     pEngine->pCursors = NULL;
@@ -1993,7 +1990,6 @@ void drte_engine_uninit(drte_engine* pEngine)
     drte_stack_buffer_uninit(&pEngine->preparedUndoState);
 
     drte_line_cache_uninit(&pEngine->_unwrappedLines);
-    drte_line_cache_uninit(&pEngine->_wrappedLines);
 
     free(pEngine->pSelections);
     free(pEngine->pCursors);
@@ -2435,6 +2431,9 @@ void drte_engine_set_container_size(drte_engine* pEngine, float containerWidth, 
         return;
     }
 
+    drte_view_set_size(pEngine->pView, containerWidth, containerHeight);
+
+
     bool hasWidthChanged = pEngine->containerWidth != containerWidth;
     bool hasHeightChanged = pEngine->containerHeight != containerHeight;
     if (!hasWidthChanged && !hasHeightChanged) {
@@ -2495,6 +2494,9 @@ void drte_engine_set_inner_offset(drte_engine* pEngine, float innerOffsetX, floa
     if (pEngine == NULL) {
         return;
     }
+
+    drte_view_set_inner_offset(pEngine->pView, innerOffsetX, innerOffsetY);
+
 
     pEngine->innerOffsetX = innerOffsetX;
     pEngine->innerOffsetY = innerOffsetY;
@@ -2766,11 +2768,11 @@ void drte_engine_get_cursor_position(drte_engine* pEngine, size_t cursorIndex, f
     // differently to calculate the x position.
     float posX = 0;
     float posY = 0;
-    if (pEngine->pCursors[cursorIndex].iLine != drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs)) {
+    if (pEngine->pCursors[cursorIndex].iLine != drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs)) {
         drte_engine_measure_line(pEngine, pEngine->pCursors[cursorIndex].iLine, &posX, NULL);
         posY = drte_engine_get_line_pos_y(pEngine, pEngine->pCursors[cursorIndex].iLine);
     } else {
-        drte_engine_get_character_position(pEngine, pEngine->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs, &posX, &posY);
+        drte_engine_get_character_position(pEngine, pEngine->pView->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs, &posX, &posY);
     }
 
     if (pPosXOut) *pPosXOut = posX + pEngine->innerOffsetX;
@@ -2797,7 +2799,7 @@ size_t drte_engine_get_cursor_line(drte_engine* pEngine, size_t cursorIndex)
         return 0;
     }
 
-    //return drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs);
+    //return drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs);
     return pEngine->pCursors[cursorIndex].iLine;
 }
 
@@ -2859,18 +2861,18 @@ bool drte_engine_move_cursor_to_point_relative_to_text(drte_engine* pEngine, siz
         return false;
     }
 
-    size_t iLine = drte_engine_get_line_at_pos_y(pEngine, pEngine->pWrappedLines, posYRelativeToText);
+    size_t iLine = drte_engine_get_line_at_pos_y(pEngine, pEngine->pView->pWrappedLines, posYRelativeToText);
     pEngine->pCursors[cursorIndex].iLine = iLine;
 
     // Once we have the line, finding the specific character under the point is done by iterating over each segment and finding the one
     // containing the point on the x axis. Once the segment has been found, we use the backend to get the exact character.
     if (posXRelativeToText < 0) {
-        pEngine->pCursors[cursorIndex].iCharAbs = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, (size_t)iLine);
+        pEngine->pCursors[cursorIndex].iCharAbs = drte_engine_get_line_first_character(pEngine, pEngine->pView->pWrappedLines, (size_t)iLine);
         return true;    // It's to the left of the line, so just pin it to the first character in the line.
     }
 
     drte_segment segment;
-    if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, (size_t)iLine, (size_t)-1, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine, pEngine->pView->pWrappedLines, (size_t)iLine, (size_t)-1, &segment)) {
         do
         {
             if (posXRelativeToText >= segment.posX && posXRelativeToText < segment.posX + segment.width) {
@@ -2938,7 +2940,7 @@ bool drte_engine_move_cursor_left(drte_engine* pEngine, size_t cursorIndex)
 
     // Line boundary.
     if (iPrevLine > 0) {
-        size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, iPrevLine);
+        size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, pEngine->pView->pWrappedLines, iPrevLine);
         if (iLineCharBeg == iPrevChar) {
             drte_engine_move_cursor_to_end_of_line_by_index(pEngine, cursorIndex, iPrevLine-1);
             if (pEngine->pCursors[cursorIndex].iCharAbs == iPrevChar) {
@@ -2952,7 +2954,7 @@ bool drte_engine_move_cursor_left(drte_engine* pEngine, size_t cursorIndex)
     }
 
     if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs || iPrevLine != pEngine->pCursors[cursorIndex].iLine) {
-        pEngine->pCursors[cursorIndex].iLine = drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs);
+        pEngine->pCursors[cursorIndex].iLine = drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs);
         drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
 
         drte_engine__begin_dirty(pEngine);
@@ -2979,7 +2981,7 @@ bool drte_engine_move_cursor_right(drte_engine* pEngine, size_t cursorIndex)
 
     // Line boundary.
     if (iPrevLine+1 < drte_engine_get_line_count(pEngine)) {
-        size_t iLineCharEnd = drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, iPrevLine);
+        size_t iLineCharEnd = drte_engine_get_line_last_character(pEngine, pEngine->pView->pWrappedLines, iPrevLine);
         if (iLineCharEnd == iPrevChar) {
             drte_engine_move_cursor_to_start_of_line_by_index(pEngine, cursorIndex, iPrevLine+1);
         } else {
@@ -2990,7 +2992,7 @@ bool drte_engine_move_cursor_right(drte_engine* pEngine, size_t cursorIndex)
     }
 
     if (iPrevChar != pEngine->pCursors[cursorIndex].iCharAbs || iPrevLine != pEngine->pCursors[cursorIndex].iLine) {
-        pEngine->pCursors[cursorIndex].iLine = drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs);
+        pEngine->pCursors[cursorIndex].iLine = drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs);
         drte_engine__update_cursor_sticky_position(pEngine, &pEngine->pCursors[cursorIndex]);
 
         drte_engine__begin_dirty(pEngine);
@@ -3080,7 +3082,7 @@ bool drte_engine_move_cursor_to_end_of_line_by_index(drte_engine* pEngine, size_
         return false;
     }
 
-    drte_engine_move_cursor_to_character_and_line(pEngine, cursorIndex, drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, iLine), iLine);
+    drte_engine_move_cursor_to_character_and_line(pEngine, cursorIndex, drte_engine_get_line_last_character(pEngine, pEngine->pView->pWrappedLines, iLine), iLine);
     return true;
 }
 
@@ -3090,7 +3092,7 @@ bool drte_engine_move_cursor_to_start_of_line_by_index(drte_engine* pEngine, siz
         return false;
     }
 
-    drte_engine_move_cursor_to_character_and_line(pEngine, cursorIndex, drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, iLine), iLine);
+    drte_engine_move_cursor_to_character_and_line(pEngine, cursorIndex, drte_engine_get_line_first_character(pEngine, pEngine->pView->pWrappedLines, iLine), iLine);
     return true;
 }
 
@@ -3123,7 +3125,7 @@ bool drte_engine_is_cursor_at_end_of_wrapped_line(drte_engine* pEngine, size_t c
     size_t iCursorChar = pEngine->pCursors[cursorIndex].iCharAbs;
     size_t iCursorLine = pEngine->pCursors[cursorIndex].iLine;
 
-    size_t iWrappedLineLastChar = drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, iCursorLine);
+    size_t iWrappedLineLastChar = drte_engine_get_line_last_character(pEngine, pEngine->pView->pWrappedLines, iCursorLine);
     if (iCursorChar == iWrappedLineLastChar) {
         return true;
     }
@@ -3140,7 +3142,7 @@ bool drte_engine_is_cursor_at_start_of_wrapped_line(drte_engine* pEngine, size_t
     size_t iCursorChar = pEngine->pCursors[cursorIndex].iCharAbs;
     size_t iCursorLine = pEngine->pCursors[cursorIndex].iLine;
 
-    size_t iWrappedLineLastChar = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, iCursorLine);
+    size_t iWrappedLineLastChar = drte_engine_get_line_first_character(pEngine, pEngine->pView->pWrappedLines, iCursorLine);
     if (iCursorChar == iWrappedLineLastChar) {
         return true;
     }
@@ -3188,7 +3190,7 @@ void drte_engine_move_cursor_to_end_of_selection(drte_engine* pEngine, size_t cu
 
 void drte_engine_move_cursor_to_character(drte_engine* pEngine, size_t cursorIndex, size_t characterIndex)
 {
-    drte_engine_move_cursor_to_character_and_line(pEngine, cursorIndex, characterIndex, drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, characterIndex));
+    drte_engine_move_cursor_to_character_and_line(pEngine, cursorIndex, characterIndex, drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, characterIndex));
 }
 
 void drte_engine_move_cursor_to_character_and_line(drte_engine* pEngine, size_t cursorIndex, size_t iChar, size_t iLine)
@@ -3316,7 +3318,7 @@ size_t drte_engine_get_spaces_to_next_column_from_character(drte_engine* pEngine
 
     float posX;
     float posY;
-    drte_engine_get_character_position(pEngine, pEngine->pWrappedLines, iChar, &posX, &posY);
+    drte_engine_get_character_position(pEngine, pEngine->pView->pWrappedLines, iChar, &posX, &posY);
 
     float tabColPosX = (posX + tabWidth) - ((size_t)posX % (size_t)tabWidth);
 
@@ -3364,34 +3366,42 @@ void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_
 
 void drte_engine_enable_word_wrap(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->isWordWrapEnabled) {
+    if (pEngine == NULL /*|| pEngine->isWordWrapEnabled*/) {
         return;
     }
 
+    drte_view_enable_word_wrap(pEngine->pView);
+
+#if 0
     // The wrapped line cache will not have been initialized at this point so we need to do that first.
     if (!drte_line_cache_init(&pEngine->_wrappedLines)) {
         return;
     }
 
-    pEngine->pWrappedLines = &pEngine->_wrappedLines;
+    pEngine->pView->pWrappedLines = &pEngine->_wrappedLines;
 
     pEngine->isWordWrapEnabled = true;
     drte_engine__refresh_line_wrapping(pEngine);
+#endif
 }
 
 void drte_engine_disable_word_wrap(drte_engine* pEngine)
 {
-    if (pEngine == NULL || !pEngine->isWordWrapEnabled) {
+    if (pEngine == NULL /*|| !pEngine->isWordWrapEnabled*/) {
         return;
     }
 
-    pEngine->pWrappedLines = &pEngine->_unwrappedLines;
+    drte_view_disable_word_wrap(pEngine->pView);
+
+#if 0
+    pEngine->pView->pWrappedLines = &pEngine->_unwrappedLines;
 
     // We do not need the wrapped line cache.
     drte_line_cache_uninit(&pEngine->_wrappedLines);
 
     pEngine->isWordWrapEnabled = false;
     drte_engine__refresh_line_wrapping(pEngine);
+#endif
 }
 
 bool drte_engine_is_word_wrap_enabled(drte_engine* pEngine)
@@ -3400,7 +3410,8 @@ bool drte_engine_is_word_wrap_enabled(drte_engine* pEngine)
         return false;
     }
 
-    return pEngine->isWordWrapEnabled;
+    return drte_view_is_word_wrap_enabled(pEngine->pView);
+    //return pEngine->isWordWrapEnabled;
 }
 
 
@@ -3718,7 +3729,7 @@ bool drte_engine_delete_character_to_left_of_cursors(drte_engine* pEngine, bool 
             }
 
             if (leaveNewLines) {
-                size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, drte_engine_get_cursor_line(pEngine, iCursor));
+                size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, pEngine->pView->pWrappedLines, drte_engine_get_cursor_line(pEngine, iCursor));
                 if (iCursorChar == iLineCharBeg) {
                     continue;
                 }
@@ -3791,7 +3802,7 @@ bool drte_engine_delete_character_to_right_of_cursors(drte_engine* pEngine, bool
         for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
             size_t iCursorChar = pEngine->pCursors[iCursor].iCharAbs;
             if (leaveNewLines) {
-                size_t iLineCharEnd = drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, drte_engine_get_cursor_line(pEngine, iCursor));
+                size_t iLineCharEnd = drte_engine_get_line_last_character(pEngine, pEngine->pView->pWrappedLines, drte_engine_get_cursor_line(pEngine, iCursor));
                 if (iCursorChar == iLineCharEnd) {
                     continue;
                 }
@@ -4223,7 +4234,7 @@ size_t drte_engine_get_selection_first_line(drte_engine* pEngine, size_t iSelect
         return 0;
     }
 
-    return drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, drte_region_normalize(pEngine->pSelections[iSelection]).iCharBeg);
+    return drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, drte_region_normalize(pEngine->pSelections[iSelection]).iCharBeg);
 }
 
 size_t drte_engine_get_selection_last_line(drte_engine* pEngine, size_t iSelection)
@@ -4232,17 +4243,17 @@ size_t drte_engine_get_selection_last_line(drte_engine* pEngine, size_t iSelecti
         return 0;
     }
 
-    return drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, drte_region_normalize(pEngine->pSelections[iSelection]).iCharEnd);
+    return drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, drte_region_normalize(pEngine->pSelections[iSelection]).iCharEnd);
 }
 
 void drte_engine_move_selection_anchor_to_end_of_line(drte_engine* pEngine, size_t iLine)
 {
-    drte_engine_set_selection_anchor(pEngine, drte_engine_get_line_last_character(pEngine, pEngine->pWrappedLines, iLine));
+    drte_engine_set_selection_anchor(pEngine, drte_engine_get_line_last_character(pEngine, pEngine->pView->pWrappedLines, iLine));
 }
 
 void drte_engine_move_selection_anchor_to_start_of_line(drte_engine* pEngine, size_t iLine)
 {
-    drte_engine_set_selection_anchor(pEngine, drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, iLine));
+    drte_engine_set_selection_anchor(pEngine, drte_engine_get_line_first_character(pEngine, pEngine->pView->pWrappedLines, iLine));
 }
 
 size_t drte_engine_get_selection_anchor_line(drte_engine* pEngine)
@@ -4251,7 +4262,7 @@ size_t drte_engine_get_selection_anchor_line(drte_engine* pEngine)
         return 0;
     }
 
-    return drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pEngine->pSelections[pEngine->selectionCount-1].iCharBeg);
+    return drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, pEngine->pSelections[pEngine->selectionCount-1].iCharBeg);
 }
 
 
@@ -4347,7 +4358,7 @@ bool drte_engine_get_word_under_point(drte_engine* pEngine, float posX, float po
         return false;
     }
 
-    return drte_engine_get_word_containing_character(pEngine, drte_engine_get_character_by_point_relative_to_container(pEngine, pEngine->pWrappedLines, posX, posY, NULL), pWordBegOut, pWordEndOut);
+    return drte_engine_get_word_containing_character(pEngine, drte_engine_get_character_by_point_relative_to_container(pEngine, pEngine->pView->pWrappedLines, posX, posY, NULL), pWordBegOut, pWordEndOut);
 }
 
 
@@ -4701,7 +4712,7 @@ size_t drte_engine_get_line_count(drte_engine* pEngine)
         return 0;
     }
 
-    return drte_line_cache_get_line_count(pEngine->pWrappedLines);
+    return drte_line_cache_get_line_count(pEngine->pView->pWrappedLines);
 }
 
 size_t drte_engine_get_line_count_per_page(drte_engine* pEngine)
@@ -4753,7 +4764,7 @@ float drte_engine_get_visible_line_width(drte_engine* pEngine)
     float maxLineWidth = 0;
 
     drte_segment segment;
-    if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, iLineTop, (size_t)-1, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine, pEngine->pView->pWrappedLines, iLineTop, (size_t)-1, &segment)) {
         size_t iLine = iLineTop;
         while (iLine <= iLineBottom) {
             float lineWidth = 0;
@@ -4798,7 +4809,7 @@ void drte_engine_measure_line(drte_engine* pEngine, size_t iLine, float* pWidthO
         float lineWidth = 0;
 
         drte_segment segment;
-        if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, iLine, (size_t)-1, &segment)) {
+        if (drte_engine__first_segment_on_line(pEngine, pEngine->pView->pWrappedLines, iLine, (size_t)-1, &segment)) {
             do
             {
                 lineWidth += segment.width;
@@ -4820,7 +4831,7 @@ size_t drte_engine_get_line_at_pos_y(drte_engine* pEngine, drte_line_cache* pLin
         return 0;
     }
 
-    if (pLineCache == NULL) pLineCache = pEngine->pWrappedLines;
+    if (pLineCache == NULL) pLineCache = pEngine->pView->pWrappedLines;
 
 
     size_t lineCount = drte_line_cache_get_line_count(pLineCache);
@@ -4845,7 +4856,7 @@ size_t drte_engine_get_line_first_character(drte_engine* pEngine, drte_line_cach
         return 0;
     }
 
-    if (pLineCache == NULL) pLineCache = pEngine->pWrappedLines;
+    if (pLineCache == NULL) pLineCache = pEngine->pView->pWrappedLines;
 
 
     return drte_line_cache_get_line_first_character(pLineCache, iLine);
@@ -4857,7 +4868,7 @@ size_t drte_engine_get_line_last_character(drte_engine* pEngine, drte_line_cache
         return 0;
     }
 
-    if (pLineCache == NULL) pLineCache = pEngine->pWrappedLines;
+    if (pLineCache == NULL) pLineCache = pEngine->pView->pWrappedLines;
 
 
     // The line caches only store the index of the first character of the line. We can quality get the last character of the line
@@ -4946,7 +4957,7 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
     float linePosY = 0;
 
     drte_segment segment;
-    if (drte_engine__first_segment_on_line(pEngine, pEngine->pWrappedLines, iLineTop, (size_t)-1, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine, pEngine->pView->pWrappedLines, iLineTop, (size_t)-1, &segment)) {
         size_t iLine = iLineTop;
         while (iLine <= iLineBottom) {
             float lineWidth = 0;
@@ -5110,7 +5121,7 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
 
         size_t iLineCharBeg;
         size_t iLineCharEnd;
-        drte_engine_get_line_character_range(pEngine, pEngine->pWrappedLines, iLine, &iLineCharBeg, &iLineCharEnd);
+        drte_engine_get_line_character_range(pEngine, pEngine->pView->pWrappedLines, iLine, &iLineCharBeg, &iLineCharEnd);
         if (iLine == 0 || pEngine->text[iLineCharBeg-1] == '\n') {
             lineNumber += 1;
             drawLineNumber = true;
@@ -5251,11 +5262,11 @@ void drte_engine__update_cursor_sticky_position(drte_engine* pEngine, drte_curso
     // differently to calculate the x position.
     float charPosX;
     float charPosY;
-    if (pCursor->iLine != drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, pCursor->iCharAbs)) {
+    if (pCursor->iLine != drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, pCursor->iCharAbs)) {
         drte_engine_measure_line(pEngine, pCursor->iLine, &charPosX, NULL);
         charPosY = drte_engine_get_line_pos_y(pEngine, pCursor->iLine);
     } else {
-        drte_engine_get_character_position(pEngine, pEngine->pWrappedLines, pCursor->iCharAbs, &charPosX, &charPosY);
+        drte_engine_get_character_position(pEngine, pEngine->pView->pWrappedLines, pCursor->iCharAbs, &charPosX, &charPosY);
     }
 
     pCursor->absoluteSickyPosX = charPosX;
@@ -5573,15 +5584,19 @@ void drte_engine__end_dirty(drte_engine* pEngine)
 }
 
 
+static void drte_view__refresh_word_wrapping(drte_view* pView);
 void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
 {
     assert(pEngine != NULL);
 
+    drte_view__refresh_word_wrapping(pEngine->pView);
+
+#if 0
     // When word wrap is enabled we need to recalculate the lines and then repaint. There is no need to do
     // this when word wrap is disabled, but it will need a repaint.
     if (pEngine->isWordWrapEnabled) {
         // Make sure the cache is cleared to begin with.
-        drte_line_cache_clear(pEngine->pWrappedLines);
+        drte_line_cache_clear(pEngine->pView->pWrappedLines);
 
         // Line wrapping is done by simply sub-diving each unwrapped line based on word boundaries.
         size_t lineCount = drte_line_cache_get_line_count(pEngine->pUnwrappedLines);
@@ -5593,7 +5608,7 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
             if (iLineCharBeg < iLineCharEnd) {
                 float runningWidth = 0;
                 while (iLineCharBeg < iLineCharEnd) {
-                    drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);
+                    drte_line_cache_append_line(pEngine->pView->pWrappedLines, iLineCharBeg);
 
                     drte_segment segment;
                     if (!drte_engine__first_segment_on_line(pEngine, pEngine->pUnwrappedLines, iLine, iLineCharBeg, &segment)) {
@@ -5619,7 +5634,7 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
                             }
 
 
-                            size_t iPrevLineChar = pEngine->pWrappedLines->pLines[pEngine->pWrappedLines->count-1];
+                            size_t iPrevLineChar = pEngine->pView->pWrappedLines->pLines[pEngine->pView->pWrappedLines->count-1];
                             if (iWordCharBeg <= iPrevLineChar) {
                                 iWordCharBeg  = segment.iCharBeg + iChar;   // The word itself is longer than the container which means it needs to be split based on the exact character.
                             }
@@ -5639,7 +5654,7 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
                     } while (drte_engine__next_segment_on_line(pEngine, &segment));
                 }
             } else {
-                drte_line_cache_append_line(pEngine->pWrappedLines, iLineCharBeg);  // <-- Empty line.
+                drte_line_cache_append_line(pEngine->pView->pWrappedLines, iLineCharBeg);  // <-- Empty line.
             }
         }
     }
@@ -5654,6 +5669,7 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
         drte_engine__repaint(pEngine);
     }
     drte_engine__end_dirty(pEngine);
+#endif
 }
 
 
@@ -5799,7 +5815,7 @@ void drte_view_delete(drte_view* pView)
         pView->_pPrevView->_pNextView = pView->_pNextView;
     }
 
-
+    drte_line_cache_uninit(&pView->_wrappedLines);
     free(pView);
 }
 
@@ -5810,8 +5826,8 @@ void drte_view_set_size(drte_view* pView, float sizeX, float sizeY)
         return;
     }
 
-    bool sizeXChanged = pView->sizeX == sizeX;
-    bool sizeYChanged = pView->sizeY == sizeY;
+    bool sizeXChanged = pView->sizeX != sizeX;
+    bool sizeYChanged = pView->sizeY != sizeY;
     if (!sizeXChanged && !sizeYChanged) {
         return;
     }
