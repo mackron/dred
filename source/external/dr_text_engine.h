@@ -168,6 +168,15 @@ struct drte_view
     // The inner offset of the view. This is used for doing scrolling.
     float innerOffsetX;
     float innerOffsetY;
+
+    // Boolean flags.
+    unsigned int flags;
+
+    //
+    // Internal
+    //
+    drte_view* _pPrevView;
+    drte_view* _pNextView;
 };
 
 struct drte_engine
@@ -349,6 +358,13 @@ struct drte_engine
     /// The accumulated dirty rectangle. When dirtyCounter hits 0, this is the rectangle that's posted to the onDirty callback.
     drte_rect accumulatedDirtyRect;
 
+
+    // A pointer to the first view. This is a linked list.
+    drte_view* pRootView;
+
+    // A temporary view object that's only used while the new view API is being developed.
+    // TODO: Delete me.
+    drte_view* pView;
 
 
     // Application-defined data.
@@ -896,6 +912,22 @@ float drte_view_get_inner_offset_x(drte_view* pView);
 float drte_view_get_inner_offset_y(drte_view* pView);
 
 
+// Marks a region of the given view as dirty and triggers a redraw.
+void drte_view_dirty(drte_view* pView, drte_rect rect);
+
+// Retrieves the local rectangle of the given view.
+drte_rect drte_view_get_local_rect(drte_view* pView);
+
+
+// Enables word wrap on the given view.
+void drte_view_enable_word_wrap(drte_view* pView);
+
+// Disables word wrap on the given view.
+void drte_view_disable_word_wrap(drte_view* pView);
+
+// Determines whether or not the given view has word wrap enabled.
+bool drte_view_is_word_wrap_enabled(drte_view* pView);
+
 
 #ifdef __cplusplus
 }
@@ -931,8 +963,9 @@ float drte_view_get_inner_offset_y(drte_view* pView);
 
 #define DRTE_INVALID_STYLE_SLOT 255
 
-// Flags for the drte_engine::flags property.
+// Flags for the drte_engine::flags and drte_view::flags properties.
 #define DRTE_USE_EXPLICIT_LINE_HEIGHT   (1 << 0)
+#define DRTE_WORD_WRAP_ENABLED          (1 << 1)
 
 
 
@@ -1925,6 +1958,10 @@ bool drte_engine_init(drte_engine* pEngine, void* pUserData)
 
     drte_stack_buffer_init(&pEngine->preparedUndoState);
     drte_stack_buffer_init(&pEngine->undoBuffer);
+
+
+    // The temporary view.
+    pEngine->pView = drte_view_create(pEngine);
 
     return true;
 }
@@ -5613,6 +5650,18 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+static void drte_view__repaint(drte_view* pView)
+{
+    drte_view_dirty(pView, drte_view_get_local_rect(pView));
+}
+
+static void drte_view__refresh_word_wrapping(drte_view* pView)
+{
+    // TODO: Implement me.
+}
+
+
+
 drte_view* drte_view_create(drte_engine* pEngine)
 {
     if (pEngine == NULL) {
@@ -5625,6 +5674,18 @@ drte_view* drte_view_create(drte_engine* pEngine)
     }
 
     pView->pEngine = pEngine;
+    
+
+    // Attach the view to the start of the list.
+    pView->_pPrevView = NULL;
+    pView->_pNextView = pEngine->pRootView;
+
+    if (pEngine->pRootView != NULL) {
+        pEngine->pRootView->_pPrevView = pView;
+    }
+
+    pEngine->pRootView = pView;
+
 
     return pView;
 }
@@ -5634,6 +5695,19 @@ void drte_view_delete(drte_view* pView)
     if (pView == NULL) {
         return;
     }
+
+    // Remove the view from the list first.
+    if (pView->pEngine->pRootView == pView) {
+        pView->pEngine->pRootView = pView->_pNextView;
+    }
+    
+    if (pView->_pNextView != NULL) {
+        pView->_pNextView->_pPrevView = pView->_pPrevView;
+    }
+    if (pView->_pPrevView != NULL) {
+        pView->_pPrevView->_pNextView = pView->_pNextView;
+    }
+
 
     free(pView);
 }
@@ -5645,8 +5719,20 @@ void drte_view_set_size(drte_view* pView, float sizeX, float sizeY)
         return;
     }
 
+    bool sizeXChanged = pView->sizeX == sizeX;
+    bool sizeYChanged = pView->sizeY == sizeY;
+    if (!sizeXChanged && !sizeYChanged) {
+        return;
+    }
+
     pView->sizeX = sizeX;
     pView->sizeY = sizeY;
+
+    if (sizeXChanged && drte_view_is_word_wrap_enabled(pView)) {
+        drte_view__refresh_word_wrapping(pView);
+    } else {
+        drte_view__repaint(pView);
+    }
 }
 
 float drte_view_get_size_x(drte_view* pView)
@@ -5675,6 +5761,8 @@ void drte_view_set_inner_offset(drte_view* pView, float innerOffsetX, float inne
 
     pView->innerOffsetX = innerOffsetX;
     pView->innerOffsetY = innerOffsetY;
+
+    drte_view__repaint(pView);
 }
 
 float drte_view_get_inner_offset_x(drte_view* pView)
@@ -5692,6 +5780,51 @@ float drte_view_get_inner_offset_y(drte_view* pView)
     }
 
     return pView->innerOffsetY;
+}
+
+
+void drte_view_dirty(drte_view* pView, drte_rect rect)
+{
+    if (pView == NULL) {
+        return;
+    }
+
+    // TODO: Implement me.
+}
+
+drte_rect drte_view_get_local_rect(drte_view* pView)
+{
+    if (pView == NULL) {
+        return drte_make_rect(0, 0, 0, 0);
+    }
+
+    return drte_make_rect(0, 0, pView->sizeX, pView->sizeY);
+}
+
+
+void drte_view_enable_word_wrap(drte_view* pView)
+{
+    if (pView == NULL && !drte_view_is_word_wrap_enabled(pView)) {
+        return;
+    }
+
+    pView->flags |= DRTE_WORD_WRAP_ENABLED;
+    drte_view__refresh_word_wrapping(pView);
+}
+
+void drte_view_disable_word_wrap(drte_view* pView)
+{
+    if (pView == NULL && drte_view_is_word_wrap_enabled(pView)) {
+        return;
+    }
+
+    pView->flags &= ~DRTE_WORD_WRAP_ENABLED;
+    drte_view__refresh_word_wrapping(pView);
+}
+
+bool drte_view_is_word_wrap_enabled(drte_view* pView)
+{
+    return (pView->flags & DRTE_WORD_WRAP_ENABLED) != 0;
 }
 
 

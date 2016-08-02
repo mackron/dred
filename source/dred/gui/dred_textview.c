@@ -335,6 +335,14 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
     pTextView->pTextEngine->pUserData = pTextView;
     dred_textview__insert_cursor(pTextView, 0);
 
+    pTextView->pView = drte_view_create(pTextView->pTextEngine);
+    if (pTextView->pView == NULL) {
+        dred_control_uninit(DRED_CONTROL(pTextView));
+        return false;
+    }
+
+    
+
     dred_control_set_cursor(DRED_CONTROL(pTextView), dred_cursor_type_text);
     dred_control_set_on_size(DRED_CONTROL(pTextView), dred_textview_on_size);
     dred_control_set_on_mouse_move(DRED_CONTROL(pTextView), dred_textview_on_mouse_move);
@@ -483,6 +491,11 @@ void dred_textview_uninit(dred_textview* pTextView)
     if (pTextView->pCursors) {
         free(pTextView->pCursors);
         pTextView->pCursors = NULL;
+    }
+
+    if (pTextView->pView) {
+        drte_view_delete(pTextView->pView);
+        pTextView->pView = NULL;
     }
 
     dred_control_uninit(DRED_CONTROL(pTextView));

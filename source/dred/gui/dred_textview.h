@@ -22,8 +22,12 @@ struct dred_textview
     dred_control control;
 
 
-    /// The text engine.
+    // The text engine.
     drte_engine* pTextEngine;
+
+    // The view that's attached to the engine and used for displaying the contents of the text engine.
+    drte_view* pView;
+
 
     // The default style for use by the text engine.
     dred_text_style defaultStyle;
