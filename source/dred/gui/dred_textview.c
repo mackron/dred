@@ -2595,7 +2595,7 @@ void dred_textview__on_mouse_move_line_numbers(dred_control* pLineNumbers, int r
             // We just move the cursor around based on the line number we've moved over.
 
             //float offsetX = pTextEditorData->padding;
-            float offsetY = pTextView->padding + pTextView->pTextEngine->innerOffsetY;
+            float offsetY = pTextView->padding + pTextView->pTextEngine->pView->innerOffsetY;
             size_t iLine = drte_engine_get_line_at_pos_y(pTextView->pTextEngine, NULL, relativeMousePosY - offsetY);
             size_t iAnchorLine = pTextView->iLineSelectAnchor;
             size_t lineCount = drte_engine_get_line_count(pTextView->pTextEngine);
@@ -2666,7 +2666,7 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
 
 
         //float offsetX = pTextEditorData->padding;
-        float offsetY = pTextView->padding + pTextView->pTextEngine->innerOffsetY;
+        float offsetY = pTextView->padding + pTextView->pTextEngine->pView->innerOffsetY;
         size_t iClickedLine = drte_engine_get_line_at_pos_y(pTextView->pTextEngine, NULL, relativeMousePosY - offsetY);
 
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {

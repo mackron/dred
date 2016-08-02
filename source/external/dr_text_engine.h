@@ -272,6 +272,7 @@ struct drte_engine
     drte_engine_on_apply_undo_state_proc onApplyUndoState;
 
 
+#if 0
     /// The width of the container.
     float containerWidth;
 
@@ -283,7 +284,7 @@ struct drte_engine
 
     /// The inner offset of the container.
     float innerOffsetY;
-
+#endif
 
     /// The size of a tab in spaces.
     unsigned int tabSizeInSpaces;
@@ -2324,8 +2325,8 @@ size_t drte_engine_get_character_by_point_relative_to_container(drte_engine* pEn
         return 0;
     }
 
-    float inputPosXRelativeToText = inputPosXRelativeToContainer - pEngine->innerOffsetX;
-    float inputPosYRelativeToText = inputPosYRelativeToContainer - pEngine->innerOffsetY;
+    float inputPosXRelativeToText = inputPosXRelativeToContainer - pEngine->pView->innerOffsetX;
+    float inputPosYRelativeToText = inputPosYRelativeToContainer - pEngine->pView->innerOffsetY;
     return drte_engine_get_character_by_point(pEngine, pLineCache, inputPosXRelativeToText, inputPosYRelativeToText, piLineOut);
 }
 
@@ -2346,7 +2347,7 @@ void drte_engine_get_visible_lines(drte_engine* pEngine, size_t* pFirstLineOut, 
         return;
     }
 
-    size_t iFirstLine = (size_t)(-pEngine->innerOffsetY / drte_engine_get_line_height(pEngine));
+    size_t iFirstLine = (size_t)(-pEngine->pView->innerOffsetY / drte_engine_get_line_height(pEngine));
 
     if (pFirstLineOut) {
         *pFirstLineOut = iFirstLine;
@@ -2354,7 +2355,7 @@ void drte_engine_get_visible_lines(drte_engine* pEngine, size_t* pFirstLineOut, 
 
     if (pLastLineOut) {
         size_t lineCount = drte_engine_get_line_count(pEngine);
-        size_t iLastLine = iFirstLine + ((size_t)(pEngine->containerHeight / drte_engine_get_line_height(pEngine)));
+        size_t iLastLine = iFirstLine + ((size_t)(pEngine->pView->sizeY / drte_engine_get_line_height(pEngine)));
         if (lineCount == 0) {
             iLastLine = 0;
         } else {
@@ -2437,23 +2438,6 @@ void drte_engine_set_container_size(drte_engine* pEngine, float containerWidth, 
     }
 
     drte_view_set_size(pEngine->pView, containerWidth, containerHeight);
-
-#if 1
-    bool hasWidthChanged = pEngine->containerWidth != containerWidth;
-    bool hasHeightChanged = pEngine->containerHeight != containerHeight;
-    if (!hasWidthChanged && !hasHeightChanged) {
-        return; // That size has not changed.
-    }
-
-    pEngine->containerWidth  = containerWidth;
-    pEngine->containerHeight = containerHeight;
-
-    if (pEngine->isWordWrapEnabled && hasWidthChanged) {    // <-- Word wrapping does not need to be refreshed if the width has not changed.
-        drte_view__refresh_word_wrapping(pEngine->pView);
-    } else {
-        drte_engine__repaint(pEngine);
-    }
-#endif
 }
 
 void drte_engine_get_container_size(drte_engine* pEngine, float* pContainerWidthOut, float* pContainerHeightOut)
@@ -2463,8 +2447,8 @@ void drte_engine_get_container_size(drte_engine* pEngine, float* pContainerWidth
 
     if (pEngine != NULL)
     {
-        containerWidth  = pEngine->containerWidth;
-        containerHeight = pEngine->containerHeight;
+        containerWidth  = pEngine->pView->sizeX;
+        containerHeight = pEngine->pView->sizeY;
     }
 
 
@@ -2482,7 +2466,7 @@ float drte_engine_get_container_width(drte_engine* pEngine)
         return 0;
     }
 
-    return pEngine->containerWidth;
+    return pEngine->pView->sizeX;
 }
 
 float drte_engine_get_container_height(drte_engine* pEngine)
@@ -2491,7 +2475,7 @@ float drte_engine_get_container_height(drte_engine* pEngine)
         return 0;
     }
 
-    return pEngine->containerHeight;
+    return pEngine->pView->sizeY;
 }
 
 
@@ -2502,12 +2486,6 @@ void drte_engine_set_inner_offset(drte_engine* pEngine, float innerOffsetX, floa
     }
 
     drte_view_set_inner_offset(pEngine->pView, innerOffsetX, innerOffsetY);
-
-
-    pEngine->innerOffsetX = innerOffsetX;
-    pEngine->innerOffsetY = innerOffsetY;
-
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
 }
 
 void drte_engine_set_inner_offset_x(drte_engine* pEngine, float innerOffsetX)
@@ -2516,7 +2494,7 @@ void drte_engine_set_inner_offset_x(drte_engine* pEngine, float innerOffsetX)
         return;
     }
 
-    drte_engine_set_inner_offset(pEngine, innerOffsetX, pEngine->innerOffsetY);
+    drte_engine_set_inner_offset(pEngine, innerOffsetX, pEngine->pView->innerOffsetY);
 }
 
 void drte_engine_set_inner_offset_y(drte_engine* pEngine, float innerOffsetY)
@@ -2525,7 +2503,7 @@ void drte_engine_set_inner_offset_y(drte_engine* pEngine, float innerOffsetY)
         return;
     }
 
-    drte_engine_set_inner_offset(pEngine, pEngine->innerOffsetX, innerOffsetY);
+    drte_engine_set_inner_offset(pEngine, pEngine->pView->innerOffsetX, innerOffsetY);
 }
 
 void drte_engine_get_inner_offset(drte_engine* pEngine, float* pInnerOffsetX, float* pInnerOffsetY)
@@ -2535,8 +2513,8 @@ void drte_engine_get_inner_offset(drte_engine* pEngine, float* pInnerOffsetX, fl
 
     if (pEngine != NULL)
     {
-        innerOffsetX = pEngine->innerOffsetX;
-        innerOffsetY = pEngine->innerOffsetY;
+        innerOffsetX = pEngine->pView->innerOffsetX;
+        innerOffsetY = pEngine->pView->innerOffsetY;
     }
 
 
@@ -2554,7 +2532,7 @@ float drte_engine_get_inner_offset_x(drte_engine* pEngine)
         return 0;
     }
 
-    return pEngine->innerOffsetX;
+    return pEngine->pView->innerOffsetX;
 }
 
 float drte_engine_get_inner_offset_y(drte_engine* pEngine)
@@ -2563,7 +2541,7 @@ float drte_engine_get_inner_offset_y(drte_engine* pEngine)
         return 0;
     }
 
-    return pEngine->innerOffsetY;
+    return pEngine->pView->innerOffsetY;
 }
 
 
@@ -2777,8 +2755,8 @@ void drte_engine_get_cursor_position(drte_engine* pEngine, size_t cursorIndex, f
         drte_engine_get_character_position(pEngine, pEngine->pView->pWrappedLines, pEngine->pCursors[cursorIndex].iCharAbs, &posX, &posY);
     }
 
-    if (pPosXOut) *pPosXOut = posX + pEngine->innerOffsetX;
-    if (pPosYOut) *pPosYOut = posY + pEngine->innerOffsetY;
+    if (pPosXOut) *pPosXOut = posX + pEngine->pView->innerOffsetX;
+    if (pPosYOut) *pPosYOut = posY + pEngine->pView->innerOffsetY;
 }
 
 drte_rect drte_engine_get_cursor_rect(drte_engine* pEngine, size_t cursorIndex)
@@ -2839,8 +2817,8 @@ bool drte_engine_move_cursor_to_point(drte_engine* pEngine, size_t cursorIndex, 
     pEngine->pCursors[cursorIndex].iLine = 0;
     pEngine->pCursors[cursorIndex].absoluteSickyPosX = 0;
 
-    float inputPosXRelativeToText = posX - pEngine->innerOffsetX;
-    float inputPosYRelativeToText = posY - pEngine->innerOffsetY;
+    float inputPosXRelativeToText = posX - pEngine->pView->innerOffsetX;
+    float inputPosYRelativeToText = posY - pEngine->pView->innerOffsetY;
     if (!drte_engine_move_cursor_to_point_relative_to_text(pEngine, cursorIndex, inputPosXRelativeToText, inputPosYRelativeToText)) {
         return false;
     }
@@ -4723,7 +4701,7 @@ size_t drte_engine_get_line_count_per_page(drte_engine* pEngine)
         return 1;
     }
 
-    size_t lineCount = (size_t)(pEngine->containerHeight / drte_engine_get_line_height(pEngine));
+    size_t lineCount = (size_t)(pEngine->pView->sizeY / drte_engine_get_line_height(pEngine));
     if (lineCount == 0) {
         lineCount = 1;  // Always at least one line on a page.
     }
@@ -4754,7 +4732,7 @@ size_t drte_engine_get_visible_line_count(drte_engine* pEngine)
         return 0;
     }
 
-    return (size_t)(pEngine->containerHeight / drte_engine_get_line_height(pEngine)) + 1;
+    return (size_t)(pEngine->pView->sizeY / drte_engine_get_line_height(pEngine)) + 1;
 }
 
 float drte_engine_get_visible_line_width(drte_engine* pEngine)
@@ -4940,11 +4918,11 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
     if (rect.top < 0) {
         rect.top = 0;
     }
-    if (rect.right > pEngine->containerWidth) {
-        rect.right = pEngine->containerWidth;
+    if (rect.right > pEngine->pView->sizeX) {
+        rect.right = pEngine->pView->sizeX;
     }
-    if (rect.bottom > pEngine->containerHeight) {
-        rect.bottom = pEngine->containerHeight;
+    if (rect.bottom > pEngine->pView->sizeY) {
+        rect.bottom = pEngine->pView->sizeY;
     }
 
     if (rect.right <= rect.left || rect.bottom <= rect.top) {
@@ -4958,7 +4936,7 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
     size_t iLineBottom;
     drte_engine_get_visible_lines(pEngine, &iLineTop, &iLineBottom);
 
-    float linePosX = pEngine->innerOffsetX;
+    float linePosX = pEngine->pView->innerOffsetX;
     float linePosY = 0;
 
     drte_segment segment;
@@ -4969,7 +4947,7 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
 
             do
             {
-                if (linePosX + segment.posX > pEngine->containerWidth) {
+                if (linePosX + segment.posX > pEngine->pView->sizeX) {
                     // All remaining segments on this line (including this one) is clipped. Go to the next line.
                     segment.iCharBeg = segment.iLineCharEnd;
                     segment.iCharEnd = segment.iLineCharEnd;
@@ -5026,14 +5004,14 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
 
             // The part after the end of the line needs to be drawn.
             float lineRight = linePosX + lineWidth;
-            if (lineRight < pEngine->containerWidth) {
+            if (lineRight < pEngine->pView->sizeX) {
                 drte_style_token bgStyleToken = pEngine->styles[pEngine->defaultStyleSlot].styleToken;
                 if (pEngine->cursorCount > 0 && segment.iLine == drte_engine_get_cursor_line(pEngine, pEngine->cursorCount-1)) {
                     bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
                 }
 
                 if (pEngine->onPaintRect && bgStyleToken != 0) {
-                    pEngine->onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(lineRight, linePosY, pEngine->containerWidth, linePosY + lineHeight), pPaintData);
+                    pEngine->onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(lineRight, linePosY, pEngine->pView->sizeX, linePosY + lineHeight), pPaintData);
                 }
             }
 
@@ -5051,7 +5029,7 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
         // Couldn't create a segment iterator. Likely means there is no text. Just draw a single blank line.
         drte_style_token bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
         if (pEngine->onPaintRect && bgStyleToken != 0) {
-            pEngine->onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(linePosX, linePosY, pEngine->containerWidth, linePosY + lineHeight), pPaintData);
+            pEngine->onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(linePosX, linePosY, pEngine->pView->sizeX, linePosY + lineHeight), pPaintData);
         }
     }
 
@@ -5065,13 +5043,13 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
 
 
     // The rectangle region below the last line.
-    if (linePosY < pEngine->containerHeight && pEngine->styles[pEngine->defaultStyleSlot].styleToken != 0) {
+    if (linePosY < pEngine->pView->sizeY && pEngine->styles[pEngine->defaultStyleSlot].styleToken != 0) {
         // TODO: Only draw the intersection of the bottom rectangle with the invalid rectangle.
         drte_rect tailRect;
         tailRect.left = 0;
-        tailRect.top = (iLineBottom + 1) * drte_engine_get_line_height(pEngine) + pEngine->innerOffsetY;
-        tailRect.right = pEngine->containerWidth;
-        tailRect.bottom = pEngine->containerHeight;
+        tailRect.top = (iLineBottom + 1) * drte_engine_get_line_height(pEngine) + pEngine->pView->innerOffsetY;
+        tailRect.right = pEngine->pView->sizeX;
+        tailRect.bottom = pEngine->pView->sizeY;
         pEngine->onPaintRect(pEngine, pEngine->pView, pEngine->styles[pEngine->defaultStyleSlot].styleToken, tailRect, pPaintData);
     }
 #endif
@@ -5123,7 +5101,7 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
 
     size_t lineNumber = iLineTop;
 
-    float lineTop = pEngine->innerOffsetY + (iLineTop * lineHeight);
+    float lineTop = pEngine->pView->innerOffsetY + (iLineTop * lineHeight);
     for (size_t iLine = iLineTop; iLine <= iLineBottom; ++iLine) {
         float lineBottom = lineTop + lineHeight;
         bool drawLineNumber = false;
@@ -5170,7 +5148,7 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
     }
 
     // The region below the lines.
-    if (lineTop < pEngine->containerHeight && bgStyleToken != 0) {
+    if (lineTop < pEngine->pView->sizeY && bgStyleToken != 0) {
         onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(0, lineTop, lineNumbersWidth, lineNumbersHeight), pPaintData);
     }
 #endif
@@ -5535,7 +5513,7 @@ drte_rect drte_engine__local_rect(drte_engine* pEngine)
         return drte_make_rect(0, 0, 0, 0);
     }
 
-    return drte_make_rect(0, 0, pEngine->containerWidth, pEngine->containerHeight);
+    return drte_make_rect(0, 0, pEngine->pView->sizeX, pEngine->pView->sizeY);
 }
 
 
@@ -5626,12 +5604,12 @@ void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
 
                     do
                     {
-                        if ((runningWidth + segment.width) > pEngine->containerWidth) {
+                        if ((runningWidth + segment.width) > pEngine->pView->sizeX) {
                             float unused = 0;
                             size_t iChar = iLineCharBeg;
                             if (pEngine->onGetCursorPositionFromPoint) {
                                 pEngine->onGetCursorPositionFromPoint(pEngine, drte_engine__get_style_token(pEngine, segment.fgStyleSlot), pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg,
-                                    segment.width, pEngine->containerWidth - runningWidth, &unused, &iChar);
+                                    segment.width, pEngine->pView->sizeX - runningWidth, &unused, &iChar);
                             }
 
                             size_t iWordCharBeg;
@@ -5950,11 +5928,11 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
     if (rect.top < 0) {
         rect.top = 0;
     }
-    if (rect.right > pView->pEngine->containerWidth) {
-        rect.right = pView->pEngine->containerWidth;
+    if (rect.right > pView->pEngine->pView->sizeX) {
+        rect.right = pView->pEngine->pView->sizeX;
     }
-    if (rect.bottom > pView->pEngine->containerHeight) {
-        rect.bottom = pView->pEngine->containerHeight;
+    if (rect.bottom > pView->pEngine->pView->sizeY) {
+        rect.bottom = pView->pEngine->pView->sizeY;
     }
 
     if (rect.right <= rect.left || rect.bottom <= rect.top) {
@@ -5968,7 +5946,7 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
     size_t iLineBottom;
     drte_engine_get_visible_lines(pView->pEngine, &iLineTop, &iLineBottom);
 
-    float linePosX = pView->pEngine->innerOffsetX;
+    float linePosX = pView->pEngine->pView->innerOffsetX;
     float linePosY = 0;
 
     drte_segment segment;
@@ -6043,7 +6021,7 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
                 }
 
                 if (pView->pEngine->onPaintRect && bgStyleToken != 0) {
-                    pView->pEngine->onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(lineRight, linePosY, pView->pEngine->containerWidth, linePosY + lineHeight), pPaintData);
+                    pView->pEngine->onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(lineRight, linePosY, pView->pEngine->pView->sizeX, linePosY + lineHeight), pPaintData);
                 }
             }
 
@@ -6061,7 +6039,7 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
         // Couldn't create a segment iterator. Likely means there is no text. Just draw a single blank line.
         drte_style_token bgStyleToken = pView->pEngine->styles[pView->pEngine->activeLineStyleSlot].styleToken;
         if (pView->pEngine->onPaintRect && bgStyleToken != 0) {
-            pView->pEngine->onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(linePosX, linePosY, pView->pEngine->containerWidth, linePosY + lineHeight), pPaintData);
+            pView->pEngine->onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(linePosX, linePosY, pView->pEngine->pView->sizeX, linePosY + lineHeight), pPaintData);
         }
     }
 
@@ -6103,7 +6081,7 @@ void drte_view_paint_line_numbers(drte_view* pView, float lineNumbersWidth, floa
 
     size_t lineNumber = iLineTop;
 
-    float lineTop = pView->pEngine->innerOffsetY + (iLineTop * lineHeight);
+    float lineTop = pView->pEngine->pView->innerOffsetY + (iLineTop * lineHeight);
     for (size_t iLine = iLineTop; iLine <= iLineBottom; ++iLine) {
         float lineBottom = lineTop + lineHeight;
         bool drawLineNumber = false;
