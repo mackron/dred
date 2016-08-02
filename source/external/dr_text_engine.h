@@ -930,6 +930,9 @@ void drte_view_dirty(drte_view* pView, drte_rect rect);
 // Paints a region of the given view.
 void drte_view_paint(drte_view* pView, drte_rect rect, void* pUserData);
 
+// Paints the line numbers for the given view.
+void drte_view_paint_line_numbers(drte_view* pView, float lineNumbersWidth, float lineNumbersHeight, drte_engine_on_paint_text_proc onPaintText, drte_engine_on_paint_rect_proc onPaintRect, void* pPaintData);
+
 
 // Retrieves the local rectangle of the given view.
 drte_rect drte_view_get_local_rect(drte_view* pView);
@@ -5102,10 +5105,13 @@ void drte_engine_step(drte_engine* pEngine, unsigned int milliseconds)
 
 void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth, float lineNumbersHeight, drte_engine_on_paint_text_proc onPaintText, drte_engine_on_paint_rect_proc onPaintRect, void* pPaintData)
 {
-    if (pEngine == NULL || onPaintText == NULL || onPaintRect == NULL) {
+    if (pEngine == NULL /*|| onPaintText == NULL || onPaintRect == NULL*/) {
         return;
     }
 
+    drte_view_paint_line_numbers(pEngine->pView, lineNumbersWidth, lineNumbersHeight, onPaintText, onPaintRect, pPaintData);
+
+#if 0
     float lineHeight = drte_engine_get_line_height(pEngine);
 
     size_t iLineTop;
@@ -5167,6 +5173,7 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
     if (lineTop < pEngine->containerHeight && bgStyleToken != 0) {
         onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(0, lineTop, lineNumbersWidth, lineNumbersHeight), pPaintData);
     }
+#endif
 }
 
 
@@ -6005,7 +6012,7 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
 
                     drte_style_token bgStyleToken = drte_engine__get_style_token(pView->pEngine, segment.bgStyleSlot);
                     if (pView->pEngine->onPaintRect && bgStyleToken != 0) {
-                        pView->pEngine->onPaintRect(pView->pEngine, pView->pEngine->pView, bgStyleToken, drte_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pPaintData);
+                        pView->pEngine->onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pPaintData);
                     }
                 } else {
                     // It's normal text.
@@ -6055,7 +6062,7 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
         // Couldn't create a segment iterator. Likely means there is no text. Just draw a single blank line.
         drte_style_token bgStyleToken = pView->pEngine->styles[pView->pEngine->activeLineStyleSlot].styleToken;
         if (pView->pEngine->onPaintRect && bgStyleToken != 0) {
-            pView->pEngine->onPaintRect(pView->pEngine, pView->pEngine->pView, bgStyleToken, drte_make_rect(linePosX, linePosY, pView->pEngine->containerWidth, linePosY + lineHeight), pPaintData);
+            pView->pEngine->onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(linePosX, linePosY, pView->pEngine->containerWidth, linePosY + lineHeight), pPaintData);
         }
     }
 
@@ -6077,6 +6084,75 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
         tailRect.right = pView->sizeX;
         tailRect.bottom = pView->sizeY;
         pView->pEngine->onPaintRect(pView->pEngine, pView, pView->pEngine->styles[pView->pEngine->defaultStyleSlot].styleToken, tailRect, pPaintData);
+    }
+}
+
+void drte_view_paint_line_numbers(drte_view* pView, float lineNumbersWidth, float lineNumbersHeight, drte_engine_on_paint_text_proc onPaintText, drte_engine_on_paint_rect_proc onPaintRect, void* pPaintData)
+{
+    if (pView == NULL || onPaintText == NULL || onPaintRect == NULL) {
+        return;
+    }
+
+    float lineHeight = drte_engine_get_line_height(pView->pEngine);
+
+    size_t iLineTop;
+    size_t iLineBottom;
+    drte_engine_get_visible_lines(pView->pEngine, &iLineTop, &iLineBottom);
+
+    drte_style_token fgStyleToken = pView->pEngine->styles[pView->pEngine->lineNumbersStyleSlot].styleToken;
+    drte_style_token bgStyleToken = pView->pEngine->styles[pView->pEngine->lineNumbersStyleSlot].styleToken;
+
+    size_t lineNumber = iLineTop;
+
+    float lineTop = pView->pEngine->innerOffsetY + (iLineTop * lineHeight);
+    for (size_t iLine = iLineTop; iLine <= iLineBottom; ++iLine) {
+        float lineBottom = lineTop + lineHeight;
+        bool drawLineNumber = false;
+
+        size_t iLineCharBeg;
+        size_t iLineCharEnd;
+        drte_engine_get_line_character_range(pView->pEngine, pView->pWrappedLines, iLine, &iLineCharBeg, &iLineCharEnd);
+        if (iLine == 0 || pView->pEngine->text[iLineCharBeg-1] == '\n') {
+            lineNumber += 1;
+            drawLineNumber = true;
+        }
+
+        if (drawLineNumber) {
+            char iLineStr[64];
+            snprintf(iLineStr, sizeof(iLineStr), "%d", (int)lineNumber);   // TODO: drte_string_to_int(). This snprintf() has shown up in profiling so best fix this.
+
+            float textWidth = 0;
+            float textHeight = 0;
+            if (pView->pEngine->onMeasureString && fgStyleToken) {
+                pView->pEngine->onMeasureString(pView->pEngine, fgStyleToken, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
+            }
+
+            float textLeft = lineNumbersWidth - textWidth;
+            float textTop  = lineTop + (lineHeight - textHeight) / 2;
+
+            if (fgStyleToken != 0 && bgStyleToken != 0) {
+                onPaintText(pView->pEngine, pView, fgStyleToken, bgStyleToken, iLineStr, strlen(iLineStr), textLeft, textTop, pPaintData);
+                onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(0, lineTop, textLeft, lineBottom), pPaintData);
+
+                // There could be a region above and below the text. This will happen if the line height of the line numbers is
+                // smaller than the main line height.
+                if (textHeight < lineHeight) {
+                    onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(textLeft, lineTop, lineNumbersWidth, textTop), pPaintData);
+                    onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(textLeft, textTop + textHeight, lineNumbersWidth, lineBottom), pPaintData);
+                }
+            }
+        } else {
+            if (fgStyleToken != 0 && bgStyleToken != 0) {
+                onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(0, lineTop, lineNumbersWidth, lineBottom), pPaintData);
+            }
+        }
+
+        lineTop = lineBottom;
+    }
+
+    // The region below the lines.
+    if (lineTop < pView->sizeY && bgStyleToken != 0) {
+        onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(0, lineTop, lineNumbersWidth, lineNumbersHeight), pPaintData);
     }
 }
 
