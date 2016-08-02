@@ -183,6 +183,8 @@ struct drte_view
     drte_view* _pNextView;
     unsigned int _dirtyCounter;
     drte_rect _accumulatedDirtyRect;
+    drte_line_cache _wrappedLines;
+    drte_line_cache* pWrappedLines;     // Points to _wrappedLines if word wrap is enabled; points to _unwrappedLines when word wrap is disabled.
 };
 
 struct drte_engine
@@ -4141,7 +4143,7 @@ bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iCha
         if (!dr_is_whitespace(c) && !dr_is_whitespace(cprev) && !drte_is_symbol_or_whitespace(c)) {
             drte_engine_get_start_of_word_containing_character(pEngine, iChar, &iChar);
         } else if (dr_is_whitespace(c) && dr_is_whitespace(cprev)) {
-            size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, pEngine->pWrappedLines, drte_engine_get_character_line(pEngine, pEngine->pWrappedLines, iChar));
+            size_t iLineCharBeg = drte_engine_get_line_first_character(pEngine, pEngine->pUnwrappedLines, drte_engine_get_character_line(pEngine, pEngine->pUnwrappedLines, iChar));
             while (iChar > 0 && iChar > iLineCharBeg) {
                 if (!dr_is_whitespace(pEngine->text[iChar-1])) {
                     break;
@@ -5670,7 +5672,83 @@ static void drte_view__repaint(drte_view* pView)
 
 static void drte_view__refresh_word_wrapping(drte_view* pView)
 {
-    // TODO: Implement me.
+    // When word wrap is enabled we need to recalculate the lines and then repaint. There is no need to do
+    // this when word wrap is disabled, but it will need a repaint.
+    if (drte_view_is_word_wrap_enabled(pView)) {
+        // Make sure the cache is cleared to begin with.
+        drte_line_cache_clear(pView->pWrappedLines);
+
+        // Line wrapping is done by simply sub-diving each unwrapped line based on word boundaries.
+        size_t lineCount = drte_line_cache_get_line_count(pView->pEngine->pUnwrappedLines);
+        for (size_t iLine = 0; iLine < lineCount; ++iLine) {
+            size_t iLineCharBeg;
+            size_t iLineCharEnd;
+            drte_engine_get_line_character_range(pView->pEngine, pView->pEngine->pUnwrappedLines, iLine, &iLineCharBeg, &iLineCharEnd);
+
+            if (iLineCharBeg < iLineCharEnd) {
+                float runningWidth = 0;
+                while (iLineCharBeg < iLineCharEnd) {
+                    drte_line_cache_append_line(pView->pWrappedLines, iLineCharBeg);
+
+                    drte_segment segment;
+                    if (!drte_engine__first_segment_on_line(pView->pEngine, pView->pEngine->pUnwrappedLines, iLine, iLineCharBeg, &segment)) {
+                        break;
+                    }
+
+                    do
+                    {
+                        if ((runningWidth + segment.width) > pView->sizeX) {
+                            float unused = 0;
+                            size_t iChar = iLineCharBeg;
+                            if (pView->pEngine->onGetCursorPositionFromPoint) {
+                                pView->pEngine->onGetCursorPositionFromPoint(pView->pEngine, drte_engine__get_style_token(pView->pEngine, segment.fgStyleSlot), pView->pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg,
+                                    segment.width, pView->sizeX - runningWidth, &unused, &iChar);
+                            }
+
+                            size_t iWordCharBeg;
+                            size_t iWordCharEnd;
+                            if (!drte_engine_get_word_containing_character(pView->pEngine, iLineCharBeg + iChar, &iWordCharBeg, &iWordCharEnd)) {
+                                iLineCharBeg = segment.iCharEnd;
+                                runningWidth = 0;
+                                break;
+                            }
+
+
+                            size_t iPrevLineChar = pView->pWrappedLines->pLines[pView->pWrappedLines->count-1];
+                            if (iWordCharBeg <= iPrevLineChar) {
+                                iWordCharBeg  = segment.iCharBeg + iChar;   // The word itself is longer than the container which means it needs to be split based on the exact character.
+                            }
+
+                            // Always make sure wrapping has at least one character.
+                            if (iWordCharBeg == iLineCharBeg) {
+                                iWordCharBeg += 1;
+                            }
+
+                            iLineCharBeg = iWordCharBeg;
+                            runningWidth = 0;
+                            break;
+                        } else {
+                            runningWidth += segment.width;
+                            iLineCharBeg = segment.iCharEnd;
+                        }
+                    } while (drte_engine__next_segment_on_line(pView->pEngine, &segment));
+                }
+            } else {
+                drte_line_cache_append_line(pView->pWrappedLines, iLineCharBeg);  // <-- Empty line.
+            }
+        }
+    }
+
+    // Cursors need to have their sticky positions refreshed.
+    drte_view_begin_dirty(pView);
+    {
+        for (size_t iCursor = 0; iCursor < pView->pEngine->cursorCount; ++iCursor) {
+            drte_engine_move_cursor_to_character(pView->pEngine, iCursor, drte_engine_get_cursor_character(pView->pEngine, iCursor));
+        }
+
+        drte_view__repaint(pView);
+    }
+    drte_view_end_dirty(pView);
 }
 
 
@@ -5852,6 +5930,12 @@ void drte_view_enable_word_wrap(drte_view* pView)
         return;
     }
 
+    // The wrapped line cache will not have been initialized at this point so we need to do that first.
+    if (!drte_line_cache_init(&pView->_wrappedLines)) {
+        return;
+    }
+    pView->pWrappedLines = &pView->_wrappedLines;
+
     pView->flags |= DRTE_WORD_WRAP_ENABLED;
     drte_view__refresh_word_wrapping(pView);
 }
@@ -5861,6 +5945,10 @@ void drte_view_disable_word_wrap(drte_view* pView)
     if (pView == NULL && drte_view_is_word_wrap_enabled(pView)) {
         return;
     }
+
+    // We do not need the wrapped line cache.
+    pView->pWrappedLines = &pView->pEngine->_unwrappedLines;
+    drte_line_cache_uninit(&pView->_wrappedLines);
 
     pView->flags &= ~DRTE_WORD_WRAP_ENABLED;
     drte_view__refresh_word_wrapping(pView);
