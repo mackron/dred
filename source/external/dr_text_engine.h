@@ -82,10 +82,10 @@ typedef void   (* drte_engine_on_get_cursor_position_from_point_proc)(drte_engin
 typedef void   (* drte_engine_on_get_cursor_position_from_char_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 typedef bool   (* drte_engine_on_get_next_highlight_proc)(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData);
 
-typedef void   (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData);
-typedef void   (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_style_token styleToken, drte_rect rect, void* pPaintData);
-typedef void   (* drte_engine_on_cursor_move_proc)       (drte_engine* pEngine);
-typedef void   (* drte_engine_on_dirty_proc)             (drte_engine* pEngine, drte_rect rect);
+typedef void   (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData);
+typedef void   (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_view* pView, drte_style_token styleToken, drte_rect rect, void* pPaintData);
+typedef void   (* drte_engine_on_cursor_move_proc)       (drte_engine* pEngine, drte_view* pView);
+typedef void   (* drte_engine_on_dirty_proc)             (drte_engine* pEngine, drte_view* pView, drte_rect rect);
 typedef void   (* drte_engine_on_text_changed_proc)      (drte_engine* pEngine);
 typedef void   (* drte_engine_on_undo_point_changed_proc)(drte_engine* pEngine, unsigned int iUndoPoint);
 typedef size_t (* drte_engine_on_get_undo_state_proc)    (drte_engine* pEngine, void* pDataOut);
@@ -172,11 +172,17 @@ struct drte_view
     // Boolean flags.
     unsigned int flags;
 
+    // Application defined data.
+    void* pUserData;
+
+
     //
     // Internal
     //
     drte_view* _pPrevView;
     drte_view* _pNextView;
+    unsigned int _dirtyCounter;
+    drte_rect _accumulatedDirtyRect;
 };
 
 struct drte_engine
@@ -912,8 +918,15 @@ float drte_view_get_inner_offset_x(drte_view* pView);
 float drte_view_get_inner_offset_y(drte_view* pView);
 
 
+// Begins a batch dirty of the given view.
+void drte_view_begin_dirty(drte_view* pView);
+
+// Ends a batch dirty of the given view.
+void drte_view_end_dirty(drte_view* pView);
+
 // Marks a region of the given view as dirty and triggers a redraw.
 void drte_view_dirty(drte_view* pView, drte_rect rect);
+
 
 // Retrieves the local rectangle of the given view.
 drte_rect drte_view_get_local_rect(drte_view* pView);
@@ -4970,7 +4983,7 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
 
                     drte_style_token bgStyleToken = drte_engine__get_style_token(pEngine, segment.bgStyleSlot);
                     if (pEngine->onPaintRect && bgStyleToken != 0) {
-                        pEngine->onPaintRect(pEngine, bgStyleToken, drte_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pPaintData);
+                        pEngine->onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(linePosX + segment.posX, linePosY, linePosX + segment.posX + segment.width, linePosY + lineHeight), pPaintData);
                     }
                 } else {
                     // It's normal text.
@@ -4983,7 +4996,7 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
                     drte_style_token fgStyleToken = drte_engine__get_style_token(pEngine, segment.fgStyleSlot);
                     drte_style_token bgStyleToken = drte_engine__get_style_token(pEngine, segment.bgStyleSlot);
                     if (pEngine->onPaintText && fgStyleToken != 0 && bgStyleToken != 0) {
-                        pEngine->onPaintText(pEngine, fgStyleToken, bgStyleToken, text, textLength, linePosX + segment.posX, linePosY, pPaintData);
+                        pEngine->onPaintText(pEngine, pEngine->pView, fgStyleToken, bgStyleToken, text, textLength, linePosX + segment.posX, linePosY, pPaintData);
                     }
                 }
 
@@ -5002,7 +5015,7 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
                 }
 
                 if (pEngine->onPaintRect && bgStyleToken != 0) {
-                    pEngine->onPaintRect(pEngine, bgStyleToken, drte_make_rect(lineRight, linePosY, pEngine->containerWidth, linePosY + lineHeight), pPaintData);
+                    pEngine->onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(lineRight, linePosY, pEngine->containerWidth, linePosY + lineHeight), pPaintData);
                 }
             }
 
@@ -5020,7 +5033,7 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
         // Couldn't create a segment iterator. Likely means there is no text. Just draw a single blank line.
         drte_style_token bgStyleToken = pEngine->styles[pEngine->activeLineStyleSlot].styleToken;
         if (pEngine->onPaintRect && bgStyleToken != 0) {
-            pEngine->onPaintRect(pEngine, bgStyleToken, drte_make_rect(linePosX, linePosY, pEngine->containerWidth, linePosY + lineHeight), pPaintData);
+            pEngine->onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(linePosX, linePosY, pEngine->containerWidth, linePosY + lineHeight), pPaintData);
         }
     }
 
@@ -5028,7 +5041,7 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
     // Cursors.
     if (pEngine->isShowingCursor && pEngine->isCursorBlinkOn && pEngine->styles[pEngine->cursorStyleSlot].styleToken != 0) {
         for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
-            pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->cursorStyleSlot].styleToken, drte_engine_get_cursor_rect(pEngine, iCursor), pPaintData);
+            pEngine->onPaintRect(pEngine, pEngine->pView, pEngine->styles[pEngine->cursorStyleSlot].styleToken, drte_engine_get_cursor_rect(pEngine, iCursor), pPaintData);
         }
     }
 
@@ -5041,7 +5054,7 @@ void drte_engine_paint(drte_engine* pEngine, drte_rect rect, void* pPaintData)
         tailRect.top = (iLineBottom + 1) * drte_engine_get_line_height(pEngine) + pEngine->innerOffsetY;
         tailRect.right = pEngine->containerWidth;
         tailRect.bottom = pEngine->containerHeight;
-        pEngine->onPaintRect(pEngine, pEngine->styles[pEngine->defaultStyleSlot].styleToken, tailRect, pPaintData);
+        pEngine->onPaintRect(pEngine, pEngine->pView, pEngine->styles[pEngine->defaultStyleSlot].styleToken, tailRect, pPaintData);
     }
 }
 
@@ -5115,19 +5128,19 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
             float textTop  = lineTop + (lineHeight - textHeight) / 2;
 
             if (fgStyleToken != 0 && bgStyleToken != 0) {
-                onPaintText(pEngine, fgStyleToken, bgStyleToken, iLineStr, strlen(iLineStr), textLeft, textTop, pPaintData);
-                onPaintRect(pEngine, bgStyleToken, drte_make_rect(0, lineTop, textLeft, lineBottom), pPaintData);
+                onPaintText(pEngine, pEngine->pView, fgStyleToken, bgStyleToken, iLineStr, strlen(iLineStr), textLeft, textTop, pPaintData);
+                onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(0, lineTop, textLeft, lineBottom), pPaintData);
 
                 // There could be a region above and below the text. This will happen if the line height of the line numbers is
                 // smaller than the main line height.
                 if (textHeight < lineHeight) {
-                    onPaintRect(pEngine, bgStyleToken, drte_make_rect(textLeft, lineTop, lineNumbersWidth, textTop), pPaintData);
-                    onPaintRect(pEngine, bgStyleToken, drte_make_rect(textLeft, textTop + textHeight, lineNumbersWidth, lineBottom), pPaintData);
+                    onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(textLeft, lineTop, lineNumbersWidth, textTop), pPaintData);
+                    onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(textLeft, textTop + textHeight, lineNumbersWidth, lineBottom), pPaintData);
                 }
             }
         } else {
             if (fgStyleToken != 0 && bgStyleToken != 0) {
-                onPaintRect(pEngine, bgStyleToken, drte_make_rect(0, lineTop, lineNumbersWidth, lineBottom), pPaintData);
+                onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(0, lineTop, lineNumbersWidth, lineBottom), pPaintData);
             }
         }
 
@@ -5136,7 +5149,7 @@ void drte_engine_paint_line_numbers(drte_engine* pEngine, float lineNumbersWidth
 
     // The region below the lines.
     if (lineTop < pEngine->containerHeight && bgStyleToken != 0) {
-        onPaintRect(pEngine, bgStyleToken, drte_make_rect(0, lineTop, lineNumbersWidth, lineNumbersHeight), pPaintData);
+        onPaintRect(pEngine, pEngine->pView, bgStyleToken, drte_make_rect(0, lineTop, lineNumbersWidth, lineNumbersHeight), pPaintData);
     }
 }
 
@@ -5514,7 +5527,7 @@ void drte_engine__on_cursor_move(drte_engine* pEngine, size_t cursorIndex)
     pEngine->isCursorBlinkOn = true;
 
     if (pEngine->onCursorMove) {
-        pEngine->onCursorMove(pEngine);
+        pEngine->onCursorMove(pEngine, pEngine->pView);
     }
 
     drte_engine__on_dirty(pEngine, drte_engine_get_cursor_rect(pEngine, cursorIndex));
@@ -5550,7 +5563,7 @@ void drte_engine__end_dirty(drte_engine* pEngine)
 
     if (pEngine->dirtyCounter == 0) {
         if (pEngine->onDirty && drte_rect_has_volume(pEngine->accumulatedDirtyRect)) {
-            pEngine->onDirty(pEngine, pEngine->accumulatedDirtyRect);
+            pEngine->onDirty(pEngine, pEngine->pView, pEngine->accumulatedDirtyRect);
         }
 
         pEngine->accumulatedDirtyRect = drte_make_inside_out_rect();
@@ -5783,14 +5796,45 @@ float drte_view_get_inner_offset_y(drte_view* pView)
 }
 
 
+void drte_view_begin_dirty(drte_view* pView)
+{
+    if (pView == NULL) {
+        return;
+    }
+
+    pView->_dirtyCounter += 1;
+}
+
+void drte_view_end_dirty(drte_view* pView)
+{
+    if (pView == NULL) {
+        return;
+    }
+
+    assert(pView->_dirtyCounter > 0);
+
+    pView->_dirtyCounter -= 1;
+
+    if (pView->_dirtyCounter == 0) {
+        if (pView->pEngine->onDirty && drte_rect_has_volume(pView->_accumulatedDirtyRect)) {
+            pView->pEngine->onDirty(pView->pEngine, pView, pView->_accumulatedDirtyRect);
+        }
+
+        pView->_accumulatedDirtyRect = drte_make_inside_out_rect();
+    }
+}
+
 void drte_view_dirty(drte_view* pView, drte_rect rect)
 {
     if (pView == NULL) {
         return;
     }
 
-    // TODO: Implement me.
+    drte_view_begin_dirty(pView);
+    pView->_accumulatedDirtyRect = drte_rect_union(pView->_accumulatedDirtyRect, rect);
+    drte_view_end_dirty(pView);
 }
+
 
 drte_rect drte_view_get_local_rect(drte_view* pView)
 {

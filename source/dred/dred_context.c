@@ -1791,17 +1791,19 @@ void dred__uninit_print_font(dred_print_data* pPrintData)
     dr2d_delete_font(pPrintData->pFont);
 }
 
-void dred__on_paint_rect_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, drte_rect rect, void* pPaintData)
+void dred__on_paint_rect_for_printing(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleToken, drte_rect rect, void* pPaintData)
 {
     (void)pTextEngine;
+    (void)pView;
     (void)styleToken;
     (void)rect;
     (void)pPaintData;
 }
 
-void dred__on_paint_text_for_printing(drte_engine* pTextEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
+void dred__on_paint_text_for_printing(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
 {
     (void)pTextEngine;
+    (void)pView;
     (void)styleTokenFG;
     (void)styleTokenBG;
 

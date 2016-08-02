@@ -39,16 +39,16 @@ void dred_textview__refresh_line_numbers(dred_textview* pTextView);
 
 
 /// on_paint_rect()
-void dred_textview_engine__on_paint_rect(drte_engine* pLayout, drte_style_token styleToken, drte_rect rect, void* pPaintData);
+void dred_textview_engine__on_paint_rect(drte_engine* pLayout, drte_view* pView, drte_style_token styleToken, drte_rect rect, void* pPaintData);
 
 /// on_paint_text()
-void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData);
+void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData);
 
 /// on_dirty()
-void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_rect rect);
+void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_view* pView, drte_rect rect);
 
 /// on_cursor_move()
-void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine);
+void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* pView);
 
 /// on_text_changed()
 void dred_textview_engine__on_text_changed(drte_engine* pTextEngine);
@@ -2119,8 +2119,10 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
 }
 
 
-void dred_textview_engine__on_paint_rect(drte_engine* pTextEngine, drte_style_token styleToken, drte_rect rect, void* pPaintData)
+void dred_textview_engine__on_paint_rect(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleToken, drte_rect rect, void* pPaintData)
 {
+    (void)pView;
+
     dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
     dred_text_style* pStyle = (dred_text_style*)styleToken;
 
@@ -2131,8 +2133,10 @@ void dred_textview_engine__on_paint_rect(drte_engine* pTextEngine, drte_style_to
     dred_control_draw_rect(DRED_CONTROL(pTextView), dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
 }
 
-void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
+void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
 {
+    (void)pView;
+
     dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
 
     dred_text_style* pStyleFG = (dred_text_style*)styleTokenFG;
@@ -2145,8 +2149,10 @@ void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_style_to
     dred_control_draw_text(DRED_CONTROL(pTextView), pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, pPaintData);
 }
 
-void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_rect rect)
+void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_view* pView, drte_rect rect)
 {
+    (void)pView;
+
     dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
     if (pTextView == NULL) {
         return;
@@ -2163,8 +2169,10 @@ void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_rect rect)
     dred_control_dirty(DRED_CONTROL(pTextView), dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY));
 }
 
-void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine)
+void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* pView)
 {
+    (void)pView;
+
     // If the cursor is off the edge of the container we want to scroll it into position.
     dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
     if (pTextView == NULL) {
@@ -2698,8 +2706,10 @@ void dred_textview__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, 
     }
 }
 
-void dred_textview__on_paint_rect_line_numbers(drte_engine* pEngine, drte_style_token styleToken, drte_rect rect, void* pPaintData)
+void dred_textview__on_paint_rect_line_numbers(drte_engine* pEngine, drte_view* pView, drte_style_token styleToken, drte_rect rect, void* pPaintData)
 {
+    (void)pView;
+
     dred_textview* pTextView = (dred_textview*)pEngine->pUserData;
     dred_text_style* pStyle = (dred_text_style*)styleToken;
 
@@ -2711,8 +2721,10 @@ void dred_textview__on_paint_rect_line_numbers(drte_engine* pEngine, drte_style_
     dred_control_draw_rect(pTextView->pLineNumbers, dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY), pStyle->bgColor, pPaintData);
 }
 
-void dred_textview__on_paint_text_line_numbers(drte_engine* pEngine, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
+void dred_textview__on_paint_text_line_numbers(drte_engine* pEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
 {
+    (void)pView;
+
     dred_textview* pTextView = (dred_textview*)pEngine->pUserData;
 
     dred_text_style* pStyleFG = (dred_text_style*)styleTokenFG;
