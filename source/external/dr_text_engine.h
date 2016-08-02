@@ -351,13 +351,6 @@ struct drte_engine
     size_t currentRedoDataOffset;
 
 
-    /// The counter used to determine when an onDirty event needs to be posted.
-    unsigned int dirtyCounter;
-
-    /// The accumulated dirty rectangle. When dirtyCounter hits 0, this is the rectangle that's posted to the onDirty callback.
-    drte_rect accumulatedDirtyRect;
-
-
     // A pointer to the first view. This is a linked list.
     drte_view* pRootView;
 
@@ -1959,7 +1952,6 @@ bool drte_engine_init(drte_engine* pEngine, void* pUserData)
     pEngine->isCursorBlinkOn       = true;
     pEngine->isShowingCursor       = false;
     pEngine->isWordWrapEnabled     = false;
-    pEngine->accumulatedDirtyRect  = drte_make_inside_out_rect();
     pEngine->pUserData             = pUserData;
 
     drte_stack_buffer_init(&pEngine->preparedUndoState);
@@ -5524,20 +5516,12 @@ void drte_engine__on_cursor_move(drte_engine* pEngine, size_t cursorIndex)
 
 void drte_engine__on_dirty(drte_engine* pEngine, drte_rect rect)
 {
-    drte_engine__begin_dirty(pEngine);
-    {
-        pEngine->accumulatedDirtyRect = drte_rect_union(pEngine->accumulatedDirtyRect, rect);
-    }
-    drte_engine__end_dirty(pEngine);
+    drte_view_dirty(pEngine->pView, rect);
 }
 
 void drte_engine__begin_dirty(drte_engine* pEngine)
 {
-    if (pEngine == NULL) {
-        return;
-    }
-
-    pEngine->dirtyCounter += 1;
+    drte_view_begin_dirty(pEngine->pView);
 }
 
 void drte_engine__end_dirty(drte_engine* pEngine)
@@ -5546,107 +5530,8 @@ void drte_engine__end_dirty(drte_engine* pEngine)
         return;
     }
 
-    assert(pEngine->dirtyCounter > 0);
-
-    pEngine->dirtyCounter -= 1;
-
-    if (pEngine->dirtyCounter == 0) {
-        if (pEngine->onDirty && drte_rect_has_volume(pEngine->accumulatedDirtyRect)) {
-            pEngine->onDirty(pEngine, pEngine->pView, pEngine->accumulatedDirtyRect);
-        }
-
-        pEngine->accumulatedDirtyRect = drte_make_inside_out_rect();
-    }
+    drte_view_end_dirty(pEngine->pView);
 }
-
-
-void drte_engine__refresh_line_wrapping(drte_engine* pEngine)
-{
-    assert(pEngine != NULL);
-
-    drte_view__refresh_word_wrapping(pEngine->pView);
-
-#if 0
-    // When word wrap is enabled we need to recalculate the lines and then repaint. There is no need to do
-    // this when word wrap is disabled, but it will need a repaint.
-    if (pEngine->isWordWrapEnabled) {
-        // Make sure the cache is cleared to begin with.
-        drte_line_cache_clear(pEngine->pView->pWrappedLines);
-
-        // Line wrapping is done by simply sub-diving each unwrapped line based on word boundaries.
-        size_t lineCount = drte_line_cache_get_line_count(pEngine->pUnwrappedLines);
-        for (size_t iLine = 0; iLine < lineCount; ++iLine) {
-            size_t iLineCharBeg;
-            size_t iLineCharEnd;
-            drte_engine_get_line_character_range(pEngine, pEngine->pUnwrappedLines, iLine, &iLineCharBeg, &iLineCharEnd);
-
-            if (iLineCharBeg < iLineCharEnd) {
-                float runningWidth = 0;
-                while (iLineCharBeg < iLineCharEnd) {
-                    drte_line_cache_append_line(pEngine->pView->pWrappedLines, iLineCharBeg);
-
-                    drte_segment segment;
-                    if (!drte_engine__first_segment_on_line(pEngine, pEngine->pUnwrappedLines, iLine, iLineCharBeg, &segment)) {
-                        break;
-                    }
-
-                    do
-                    {
-                        if ((runningWidth + segment.width) > pEngine->pView->sizeX) {
-                            float unused = 0;
-                            size_t iChar = iLineCharBeg;
-                            if (pEngine->onGetCursorPositionFromPoint) {
-                                pEngine->onGetCursorPositionFromPoint(pEngine, drte_engine__get_style_token(pEngine, segment.fgStyleSlot), pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg,
-                                    segment.width, pEngine->pView->sizeX - runningWidth, &unused, &iChar);
-                            }
-
-                            size_t iWordCharBeg;
-                            size_t iWordCharEnd;
-                            if (!drte_engine_get_word_containing_character(pEngine, iLineCharBeg + iChar, &iWordCharBeg, &iWordCharEnd)) {
-                                iLineCharBeg = segment.iCharEnd;
-                                runningWidth = 0;
-                                break;
-                            }
-
-
-                            size_t iPrevLineChar = pEngine->pView->pWrappedLines->pLines[pEngine->pView->pWrappedLines->count-1];
-                            if (iWordCharBeg <= iPrevLineChar) {
-                                iWordCharBeg  = segment.iCharBeg + iChar;   // The word itself is longer than the container which means it needs to be split based on the exact character.
-                            }
-
-                            // Always make sure wrapping has at least one character.
-                            if (iWordCharBeg == iLineCharBeg) {
-                                iWordCharBeg += 1;
-                            }
-
-                            iLineCharBeg = iWordCharBeg;
-                            runningWidth = 0;
-                            break;
-                        } else {
-                            runningWidth += segment.width;
-                            iLineCharBeg = segment.iCharEnd;
-                        }
-                    } while (drte_engine__next_segment_on_line(pEngine, &segment));
-                }
-            } else {
-                drte_line_cache_append_line(pEngine->pView->pWrappedLines, iLineCharBeg);  // <-- Empty line.
-            }
-        }
-    }
-
-    // Cursors need to have their sticky positions refreshed.
-    drte_engine__begin_dirty(pEngine);
-    {
-        for (size_t iCursor = 0; iCursor < pEngine->cursorCount; ++iCursor) {
-            drte_engine_move_cursor_to_character(pEngine, iCursor, drte_engine_get_cursor_character(pEngine, iCursor));
-        }
-
-        drte_engine__repaint(pEngine);
-    }
-    drte_engine__end_dirty(pEngine);
-#endif
-}
-
 
 
 
@@ -5756,7 +5641,7 @@ drte_view* drte_view_create(drte_engine* pEngine)
     }
 
     pView->pEngine = pEngine;
-    
+    pView->_accumulatedDirtyRect = drte_make_inside_out_rect();
 
     // Attach the view to the start of the list.
     pView->_pPrevView = NULL;
