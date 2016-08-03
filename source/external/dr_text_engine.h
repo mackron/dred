@@ -14,8 +14,6 @@
 //
 // QUICK NOTES
 // - The text engine is optimized for top/left alignment.
-// - Windows style line endings (\r\n) are converted to \n for the sake of simplicity. Keep this in mind when doing style highlighting which
-//   takes character indices mark the styled region.
 
 
 #ifndef dr_text_engine_h
