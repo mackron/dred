@@ -1975,9 +1975,6 @@ size_t drte_line_cache_find_line_by_character(drte_line_cache* pLineCache, size_
     return drte_line_cache_find_line_by_character__internal(pLineCache, iChar, 0, pLineCache->count-1); // <-- We've already checked the last line so start at the second-last line.
 #endif
 
-
-    // TODO: Make this a binary search.
-
 #if 0
     // Linear search. Simple, but slow.
     size_t lineIndex = 0;
