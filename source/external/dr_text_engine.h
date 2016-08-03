@@ -204,6 +204,7 @@ struct drte_view
     //
     // Internal
     //
+    unsigned int _id;   // <-- This is used for identifying the view when restoring undo/redo state.
     drte_view* _pPrevView;
     drte_view* _pNextView;
     unsigned int _dirtyCounter;
@@ -343,6 +344,9 @@ struct drte_engine
     size_t currentUndoDataOffset;
     size_t currentRedoDataOffset;
 
+
+    // The ID to use for the next view. This is used for identifying views when restoring undo/redo state.
+    unsigned int nextViewID;
 
     // A pointer to the first view. This is a linked list.
     drte_view* pRootView;
@@ -1231,6 +1235,12 @@ void drte_view__update_cursor_sticky_position(drte_view* pView, drte_cursor* pCu
     }
 
     pCursor->absoluteSickyPosX = charPosX;
+}
+
+unsigned int drte_engine__acquire_view_id(drte_engine* pEngine)
+{
+    assert(pEngine != NULL);
+    return pEngine->nextViewID++;   // <-- Make this thread-safe?
 }
 
 
@@ -3469,7 +3479,7 @@ drte_view* drte_view_create(drte_engine* pEngine)
     pView->tabSizeInSpaces = 4;
     pView->cursorWidth = 1;
     
-
+    pView->_id = drte_engine__acquire_view_id(pEngine);
     pView->_accumulatedDirtyRect = drte_make_inside_out_rect();
     pView->pWrappedLines = &pEngine->_unwrappedLines;
 
