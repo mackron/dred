@@ -1594,7 +1594,7 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
         dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
         size_t iLine;
-        size_t iChar = drte_engine_get_character_by_point_relative_to_container(pTextView->pTextEngine, NULL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY, &iLine);
+        size_t iChar = drte_view_get_character_by_point_relative_to_container(pTextView->pTextEngine->pView, NULL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY, &iLine);
 
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
             drte_engine_set_selection_end_point(pTextView->pTextEngine, iChar);

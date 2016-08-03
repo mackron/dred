@@ -426,18 +426,8 @@ void drte_engine_set_line_height(drte_engine* pEngine, float lineHeight);
 float drte_engine_get_line_height(drte_engine* pEngine);
 
 
-// Retrieves the closest character to the given point relative to the text.
-size_t drte_engine_get_character_by_point(drte_engine* pEngine, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piLineOut);
-
-// Retrieves the closest character to the given point relative to the container.
-size_t drte_engine_get_character_by_point_relative_to_container(drte_engine* pEngine, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piLineOut);
-
-
 // Gets the character at the given index as a UTF-32 code point.
 uint32_t drte_engine_get_utf32(drte_engine* pEngine, size_t characterIndex);
-
-// Retrieves the indices of the visible lines.
-void drte_engine_get_visible_lines(drte_engine* pEngine, size_t* pFirstLineOut, size_t* pLastLineOut);
 
 
 /// Sets the given text engine's text.
@@ -2261,27 +2251,6 @@ float drte_engine_get_line_height(drte_engine* pEngine)
 
 
 
-size_t drte_engine_get_character_by_point(drte_engine* pEngine, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piLineOut)
-{
-    if (piLineOut) *piLineOut = 0;
-
-    if (pEngine == NULL) {
-        return 0;
-    }
-
-    return drte_view_get_character_by_point(pEngine->pView, pLineCache, inputPosXRelativeToText, inputPosYRelativeToText, piLineOut);
-}
-
-size_t drte_engine_get_character_by_point_relative_to_container(drte_engine* pEngine, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piLineOut)
-{
-    if (pEngine == NULL) {
-        return 0;
-    }
-
-    return drte_view_get_character_by_point_relative_to_container(pEngine->pView, pLineCache, inputPosXRelativeToContainer, inputPosYRelativeToContainer, piLineOut);
-}
-
-
 uint32_t drte_engine_get_utf32(drte_engine* pEngine, size_t characterIndex)
 {
     if (pEngine == NULL) {
@@ -2290,15 +2259,6 @@ uint32_t drte_engine_get_utf32(drte_engine* pEngine, size_t characterIndex)
 
     // TODO: Handle UTF-8 properly.
     return pEngine->text[characterIndex];
-}
-
-void drte_engine_get_visible_lines(drte_engine* pEngine, size_t* pFirstLineOut, size_t* pLastLineOut)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_view_get_visible_lines(pEngine->pView, pFirstLineOut, pLastLineOut);
 }
 
 
@@ -4264,7 +4224,7 @@ bool drte_engine_get_word_under_point(drte_engine* pEngine, float posX, float po
         return false;
     }
 
-    return drte_engine_get_word_containing_character(pEngine, drte_engine_get_character_by_point_relative_to_container(pEngine, pEngine->pView->pWrappedLines, posX, posY, NULL), pWordBegOut, pWordEndOut);
+    return drte_engine_get_word_containing_character(pEngine, drte_view_get_character_by_point_relative_to_container(pEngine->pView, pEngine->pView->pWrappedLines, posX, posY, NULL), pWordBegOut, pWordEndOut);
 }
 
 
