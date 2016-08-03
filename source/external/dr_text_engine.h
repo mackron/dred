@@ -426,11 +426,6 @@ void drte_engine_set_line_height(drte_engine* pEngine, float lineHeight);
 float drte_engine_get_line_height(drte_engine* pEngine);
 
 
-// Retrieves the position of the character at the given index, relative to the text rectangle.
-//
-// To make the position relative to the container simply add the inner offset to them.
-void drte_engine_get_character_position(drte_engine* pEngine, drte_line_cache* pLineCache, size_t characterIndex, float* pPosXOut, float* pPosYOut);
-
 // Retrieves the closest character to the given point relative to the text.
 size_t drte_engine_get_character_by_point(drte_engine* pEngine, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piLineOut);
 
@@ -1425,6 +1420,210 @@ static bool drte_view__get_next_selection_from_character(drte_view* pView, size_
 
 
 
+//// Line Cache ////
+
+bool drte_line_cache_init(drte_line_cache* pLineCache)
+{
+    if (pLineCache == NULL) {
+        return false;
+    }
+
+    // There's always at least one line.
+    pLineCache->bufferSize = DRTE_PAGE_LINE_COUNT;
+    pLineCache->pLines = (size_t*)calloc(pLineCache->bufferSize, sizeof(*pLineCache->pLines));   // <-- calloc() is important here. It initializes the first line to 0.
+    pLineCache->count = 1;
+
+    return true;
+}
+
+void drte_line_cache_uninit(drte_line_cache* pLineCache)
+{
+    if (pLineCache == NULL) {
+        return;
+    }
+
+    free(pLineCache->pLines);
+
+    // It's important to clear everything to zero in case this is called multiple times after each other which is abolutely possible.
+    pLineCache->pLines = NULL;
+    pLineCache->bufferSize = 0;
+    pLineCache->count = 0;
+}
+
+size_t drte_line_cache_get_line_count(drte_line_cache* pLineCache)
+{
+    if (pLineCache == NULL) {
+        return 0;
+    }
+
+    return pLineCache->count;
+}
+
+
+size_t drte_line_cache_get_line_first_character(drte_line_cache* pLineCache, size_t iLine)
+{
+    if (pLineCache == NULL || iLine >= pLineCache->count) {
+        return 0;
+    }
+
+    return pLineCache->pLines[iLine];
+}
+
+void drte_line_cache_set_line_first_character(drte_line_cache* pLineCache, size_t iLine, size_t iCharBeg)
+{
+    if (pLineCache == NULL || iLine >= pLineCache->count) {
+        return;
+    }
+
+    pLineCache->pLines[iLine] = iCharBeg;
+}
+
+bool drte_line_cache_insert_lines(drte_line_cache* pLineCache, size_t insertLineIndex, size_t lineCount, size_t characterOffset)
+{
+    if (pLineCache == NULL || insertLineIndex > pLineCache->count) {
+        return false;
+    }
+
+    size_t newLineCount = pLineCache->count + lineCount;
+
+    if (newLineCount >= pLineCache->bufferSize) {
+        size_t newLineBufferSize = (pLineCache->bufferSize == 0) ? DRTE_PAGE_LINE_COUNT : dr_round_up(newLineCount, DRTE_PAGE_LINE_COUNT);
+        size_t* pNewLines = (size_t*)realloc(pLineCache->pLines, newLineBufferSize * sizeof(*pNewLines));
+        if (pNewLines == NULL) {
+            return false;   // Ran out of memory?
+        }
+
+        pLineCache->bufferSize = newLineBufferSize;
+        pLineCache->pLines = pNewLines;
+    }
+
+    // All existing lines coming after the line the text was inserted at need to be moved down newLineCount slots. They also need to have their
+    // first character index updated.
+    for (size_t i = pLineCache->count; i > insertLineIndex; --i) {
+        size_t iSrc = i-1;
+        size_t iDst = iSrc + lineCount;
+        pLineCache->pLines[iDst] = pLineCache->pLines[iSrc] + characterOffset;
+    }
+
+    pLineCache->count = newLineCount;
+    return true;
+}
+
+bool drte_line_cache_append_line(drte_line_cache* pLineCache, size_t iLineCharBeg)
+{
+    size_t lineCount = drte_line_cache_get_line_count(pLineCache);
+    if (!drte_line_cache_insert_lines(pLineCache, lineCount, 1, 0)) {
+        return false;
+    }
+
+    drte_line_cache_set_line_first_character(pLineCache, lineCount, iLineCharBeg);
+    return true;
+}
+
+bool drte_line_cache_remove_lines(drte_line_cache* pLineCache, size_t firstLineIndex, size_t lineCount, size_t characterOffset)
+{
+    if (pLineCache == NULL || firstLineIndex >= pLineCache->count) {
+        return false;
+    }
+
+    if (pLineCache->count <= lineCount) {
+        pLineCache->count = 1;
+    } else {
+        for (size_t i = firstLineIndex; i < (pLineCache->count - lineCount); ++i) {
+            size_t iDst = i;
+            size_t iSrc = i + lineCount;
+            pLineCache->pLines[iDst] = pLineCache->pLines[iSrc] - characterOffset;
+        }
+
+        pLineCache->count -= lineCount;
+    }
+
+    return true;
+}
+
+bool drte_line_cache_offset_lines(drte_line_cache* pLineCache, size_t firstLineIndex, size_t characterOffset)
+{
+    if (pLineCache == NULL || firstLineIndex >= pLineCache->count) {
+        return false;
+    }
+
+    for (size_t iLine = firstLineIndex; iLine < pLineCache->count; ++iLine) {
+        pLineCache->pLines[iLine] += characterOffset;
+    }
+
+    return true;
+}
+
+bool drte_line_cache_offset_lines_negative(drte_line_cache* pLineCache, size_t firstLineIndex, size_t characterOffset)
+{
+    if (pLineCache == NULL || firstLineIndex >= pLineCache->count) {
+        return false;
+    }
+
+    for (size_t iLine = firstLineIndex; iLine < pLineCache->count; ++iLine) {
+        pLineCache->pLines[iLine] -= characterOffset;
+    }
+
+    return true;
+}
+
+
+size_t drte_line_cache_find_line_by_character__internal(drte_line_cache* pLineCache, size_t iChar, size_t iLineBeg, size_t iLineEnd)
+{
+    assert(pLineCache != NULL);
+
+    if ((iLineBeg+1 == iLineEnd) || (iChar >= pLineCache->pLines[iLineBeg] && iChar < pLineCache->pLines[iLineBeg+1])) {
+        return iLineBeg;    // It's on iLineBeg.
+    }
+
+    size_t iLineMid = iLineEnd - ((iLineEnd - iLineBeg)/2);
+    if (iChar >= pLineCache->pLines[iLineMid]) {
+        return drte_line_cache_find_line_by_character__internal(pLineCache, iChar, iLineMid, iLineEnd);
+    } else {
+        return drte_line_cache_find_line_by_character__internal(pLineCache, iChar, iLineBeg, iLineMid);
+    }
+}
+
+size_t drte_line_cache_find_line_by_character(drte_line_cache* pLineCache, size_t iChar)
+{
+    if (pLineCache == NULL || pLineCache->count <= 1) {
+        return 0;
+    }
+
+#if 1
+    if (iChar >= pLineCache->pLines[pLineCache->count-1]) {
+        return pLineCache->count-1;
+    }
+
+    return drte_line_cache_find_line_by_character__internal(pLineCache, iChar, 0, pLineCache->count-1); // <-- We've already checked the last line so start at the second-last line.
+#endif
+
+#if 0
+    // Linear search. Simple, but slow.
+    size_t lineIndex = 0;
+    for (size_t iLine = 0; iLine < pLineCache->count; ++iLine) {
+        if (pLineCache->pLines[iLine] > iChar) {
+            break;
+        }
+
+        lineIndex = iLine;
+    }
+
+    return lineIndex;
+#endif
+}
+
+void drte_line_cache_clear(drte_line_cache* pLineCache)
+{
+    if (pLineCache == NULL) {
+        return;
+    }
+
+    pLineCache->count = 0;
+}
+
+
+
 // A drte_segment object is used for iterating over the segments of a chunk of text.
 typedef struct
 {
@@ -1662,8 +1861,8 @@ bool drte_engine__first_segment(drte_view* pView, drte_line_cache* pLineCache, s
 
 
     pSegment->pLineCache = pLineCache;
-    pSegment->iLine = drte_view_get_character_line(pView, pLineCache, iChar);
-    pSegment->iCursorLine = drte_engine_get_cursor_line(pEngine, pEngine->pView->cursorCount-1);
+    pSegment->iLine = drte_line_cache_find_line_by_character(pLineCache, iChar);
+    pSegment->iCursorLine = drte_engine_get_cursor_line(pEngine, pView->cursorCount-1);
     pSegment->iCharBeg = iChar;
     pSegment->iCharEnd = pSegment->iCharBeg;
     pSegment->fgStyleSlot = pEngine->defaultStyleSlot;
@@ -1691,7 +1890,7 @@ bool drte_engine__first_segment_on_line(drte_view* pView, drte_line_cache* pLine
 
     pSegment->pLineCache = pLineCache;
     pSegment->iLine = lineIndex;
-    pSegment->iCursorLine = drte_engine_get_cursor_line(pEngine, pEngine->pView->cursorCount-1);
+    pSegment->iCursorLine = drte_engine_get_cursor_line(pEngine, pView->cursorCount-1);
     pSegment->iCharBeg = iChar;
     pSegment->iCharEnd = iChar;
     pSegment->fgStyleSlot = pEngine->defaultStyleSlot;
@@ -1792,209 +1991,6 @@ bool drte_engine__first_word(drte_engine* pEngine, size_t iCharRangeBeg, size_t 
     return drte_engine__next_word(pEngine, pIterator);
 }
 
-
-
-//// Line Cache ////
-
-bool drte_line_cache_init(drte_line_cache* pLineCache)
-{
-    if (pLineCache == NULL) {
-        return false;
-    }
-
-    // There's always at least one line.
-    pLineCache->bufferSize = DRTE_PAGE_LINE_COUNT;
-    pLineCache->pLines = (size_t*)calloc(pLineCache->bufferSize, sizeof(*pLineCache->pLines));   // <-- calloc() is important here. It initializes the first line to 0.
-    pLineCache->count = 1;
-
-    return true;
-}
-
-void drte_line_cache_uninit(drte_line_cache* pLineCache)
-{
-    if (pLineCache == NULL) {
-        return;
-    }
-
-    free(pLineCache->pLines);
-
-    // It's important to clear everything to zero in case this is called multiple times after each other which is abolutely possible.
-    pLineCache->pLines = NULL;
-    pLineCache->bufferSize = 0;
-    pLineCache->count = 0;
-}
-
-size_t drte_line_cache_get_line_count(drte_line_cache* pLineCache)
-{
-    if (pLineCache == NULL) {
-        return 0;
-    }
-
-    return pLineCache->count;
-}
-
-
-size_t drte_line_cache_get_line_first_character(drte_line_cache* pLineCache, size_t iLine)
-{
-    if (pLineCache == NULL || iLine >= pLineCache->count) {
-        return 0;
-    }
-
-    return pLineCache->pLines[iLine];
-}
-
-void drte_line_cache_set_line_first_character(drte_line_cache* pLineCache, size_t iLine, size_t iCharBeg)
-{
-    if (pLineCache == NULL || iLine >= pLineCache->count) {
-        return;
-    }
-
-    pLineCache->pLines[iLine] = iCharBeg;
-}
-
-bool drte_line_cache_insert_lines(drte_line_cache* pLineCache, size_t insertLineIndex, size_t lineCount, size_t characterOffset)
-{
-    if (pLineCache == NULL || insertLineIndex > pLineCache->count) {
-        return false;
-    }
-
-    size_t newLineCount = pLineCache->count + lineCount;
-
-    if (newLineCount >= pLineCache->bufferSize) {
-        size_t newLineBufferSize = (pLineCache->bufferSize == 0) ? DRTE_PAGE_LINE_COUNT : dr_round_up(newLineCount, DRTE_PAGE_LINE_COUNT);
-        size_t* pNewLines = (size_t*)realloc(pLineCache->pLines, newLineBufferSize * sizeof(*pNewLines));
-        if (pNewLines == NULL) {
-            return false;   // Ran out of memory?
-        }
-
-        pLineCache->bufferSize = newLineBufferSize;
-        pLineCache->pLines = pNewLines;
-    }
-
-    // All existing lines coming after the line the text was inserted at need to be moved down newLineCount slots. They also need to have their
-    // first character index updated.
-    for (size_t i = pLineCache->count; i > insertLineIndex; --i) {
-        size_t iSrc = i-1;
-        size_t iDst = iSrc + lineCount;
-        pLineCache->pLines[iDst] = pLineCache->pLines[iSrc] + characterOffset;
-    }
-
-    pLineCache->count = newLineCount;
-    return true;
-}
-
-bool drte_line_cache_append_line(drte_line_cache* pLineCache, size_t iLineCharBeg)
-{
-    size_t lineCount = drte_line_cache_get_line_count(pLineCache);
-    if (!drte_line_cache_insert_lines(pLineCache, lineCount, 1, 0)) {
-        return false;
-    }
-
-    drte_line_cache_set_line_first_character(pLineCache, lineCount, iLineCharBeg);
-    return true;
-}
-
-bool drte_line_cache_remove_lines(drte_line_cache* pLineCache, size_t firstLineIndex, size_t lineCount, size_t characterOffset)
-{
-    if (pLineCache == NULL || firstLineIndex >= pLineCache->count) {
-        return false;
-    }
-
-    if (pLineCache->count <= lineCount) {
-        pLineCache->count = 1;
-    } else {
-        for (size_t i = firstLineIndex; i < (pLineCache->count - lineCount); ++i) {
-            size_t iDst = i;
-            size_t iSrc = i + lineCount;
-            pLineCache->pLines[iDst] = pLineCache->pLines[iSrc] - characterOffset;
-        }
-
-        pLineCache->count -= lineCount;
-    }
-
-    return true;
-}
-
-bool drte_line_cache_offset_lines(drte_line_cache* pLineCache, size_t firstLineIndex, size_t characterOffset)
-{
-    if (pLineCache == NULL || firstLineIndex >= pLineCache->count) {
-        return false;
-    }
-
-    for (size_t iLine = firstLineIndex; iLine < pLineCache->count; ++iLine) {
-        pLineCache->pLines[iLine] += characterOffset;
-    }
-
-    return true;
-}
-
-bool drte_line_cache_offset_lines_negative(drte_line_cache* pLineCache, size_t firstLineIndex, size_t characterOffset)
-{
-    if (pLineCache == NULL || firstLineIndex >= pLineCache->count) {
-        return false;
-    }
-
-    for (size_t iLine = firstLineIndex; iLine < pLineCache->count; ++iLine) {
-        pLineCache->pLines[iLine] -= characterOffset;
-    }
-
-    return true;
-}
-
-
-size_t drte_line_cache_find_line_by_character__internal(drte_line_cache* pLineCache, size_t iChar, size_t iLineBeg, size_t iLineEnd)
-{
-    assert(pLineCache != NULL);
-
-    if ((iLineBeg+1 == iLineEnd) || (iChar >= pLineCache->pLines[iLineBeg] && iChar < pLineCache->pLines[iLineBeg+1])) {
-        return iLineBeg;    // It's on iLineBeg.
-    }
-
-    size_t iLineMid = iLineEnd - ((iLineEnd - iLineBeg)/2);
-    if (iChar >= pLineCache->pLines[iLineMid]) {
-        return drte_line_cache_find_line_by_character__internal(pLineCache, iChar, iLineMid, iLineEnd);
-    } else {
-        return drte_line_cache_find_line_by_character__internal(pLineCache, iChar, iLineBeg, iLineMid);
-    }
-}
-
-size_t drte_line_cache_find_line_by_character(drte_line_cache* pLineCache, size_t iChar)
-{
-    if (pLineCache == NULL || pLineCache->count <= 1) {
-        return 0;
-    }
-
-#if 1
-    if (iChar >= pLineCache->pLines[pLineCache->count-1]) {
-        return pLineCache->count-1;
-    }
-
-    return drte_line_cache_find_line_by_character__internal(pLineCache, iChar, 0, pLineCache->count-1); // <-- We've already checked the last line so start at the second-last line.
-#endif
-
-#if 0
-    // Linear search. Simple, but slow.
-    size_t lineIndex = 0;
-    for (size_t iLine = 0; iLine < pLineCache->count; ++iLine) {
-        if (pLineCache->pLines[iLine] > iChar) {
-            break;
-        }
-
-        lineIndex = iLine;
-    }
-
-    return lineIndex;
-#endif
-}
-
-void drte_line_cache_clear(drte_line_cache* pLineCache)
-{
-    if (pLineCache == NULL) {
-        return;
-    }
-
-    pLineCache->count = 0;
-}
 
 
 
@@ -2264,17 +2260,6 @@ float drte_engine_get_line_height(drte_engine* pEngine)
 }
 
 
-void drte_engine_get_character_position(drte_engine* pEngine, drte_line_cache* pLineCache, size_t characterIndex, float* pPosXOut, float* pPosYOut)
-{
-    if (pPosXOut) *pPosXOut = 0;
-    if (pPosYOut) *pPosYOut = 0;
-
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_view_get_character_position(pEngine->pView, pLineCache, characterIndex, pPosXOut, pPosYOut);
-}
 
 size_t drte_engine_get_character_by_point(drte_engine* pEngine, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piLineOut)
 {
@@ -3239,7 +3224,7 @@ size_t drte_engine_get_spaces_to_next_column_from_character(drte_engine* pEngine
 
     float posX;
     float posY;
-    drte_engine_get_character_position(pEngine, pEngine->pView->pWrappedLines, iChar, &posX, &posY);
+    drte_view_get_character_position(pEngine->pView, pEngine->pView->pWrappedLines, iChar, &posX, &posY);
 
     float tabColPosX = (posX + tabWidth) - ((size_t)posX % (size_t)tabWidth);
 
@@ -5080,7 +5065,7 @@ void drte_engine__update_cursor_sticky_position(drte_engine* pEngine, drte_curso
         drte_engine_measure_line(pEngine, pCursor->iLine, &charPosX, NULL);
         charPosY = drte_engine_get_line_pos_y(pEngine, pCursor->iLine);
     } else {
-        drte_engine_get_character_position(pEngine, pEngine->pView->pWrappedLines, pCursor->iCharAbs, &charPosX, &charPosY);
+        drte_view_get_character_position(pEngine->pView, pEngine->pView->pWrappedLines, pCursor->iCharAbs, &charPosX, &charPosY);
     }
 
     pCursor->absoluteSickyPosX = charPosX;
