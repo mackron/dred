@@ -2056,7 +2056,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                 if (pDred->config.textEditorEnableAutoIndent) {
                     for (size_t iCursor = 0; iCursor < pTextView->pTextEngine->pView->cursorCount; ++iCursor) {
                         size_t iCursorChar = pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs;
-                        size_t iCursorLine = drte_engine_get_character_line(pTextView->pTextEngine, NULL, iCursorChar);
+                        size_t iCursorLine = drte_view_get_character_line(pTextView->pTextEngine->pView, NULL, iCursorChar);
                         if (iCursorLine > 0) {
                             size_t iPrevLineCharBeg;
                             size_t iPrevLineCharEnd;
