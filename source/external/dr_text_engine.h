@@ -452,51 +452,6 @@ void drte_engine_set_on_text_changed(drte_engine* pEngine, drte_engine_on_text_c
 void drte_engine_set_on_undo_point_changed(drte_engine* pEngine, drte_engine_on_undo_point_changed_proc proc);
 
 
-/// Sets the size of the container.
-void drte_engine_set_container_size(drte_engine* pEngine, float containerWidth, float containerHeight);
-
-/// Retrieves the size of the container.
-void drte_engine_get_container_size(drte_engine* pEngine, float* pContainerWidthOut, float* pContainerHeightOut);
-
-/// Retrieves the width of the container.
-float drte_engine_get_container_width(drte_engine* pEngine);
-
-/// Retrieves the height of the container.
-float drte_engine_get_container_height(drte_engine* pEngine);
-
-
-/// Sets the inner offset of the given text engine.
-void drte_engine_set_inner_offset(drte_engine* pEngine, float innerOffsetX, float innerOffsetY);
-
-/// Sets the inner offset of the given text engine on the x axis.
-void drte_engine_set_inner_offset_x(drte_engine* pEngine, float innerOffsetX);
-
-/// Sets the inner offset of the given text engine on the y axis.
-void drte_engine_set_inner_offset_y(drte_engine* pEngine, float innerOffsetY);
-
-/// Retrieves the inner offset of the given text engine.
-void drte_engine_get_inner_offset(drte_engine* pEngine, float* pInnerOffsetX, float* pInnerOffsetY);
-
-/// Retrieves the inner offset of the given text engine on the x axis.
-float drte_engine_get_inner_offset_x(drte_engine* pEngine);
-
-/// Retrieves the inner offset of the given text engine on the x axis.
-float drte_engine_get_inner_offset_y(drte_engine* pEngine);
-
-
-/// Sets the size of a tab in spaces.
-void drte_engine_set_tab_size(drte_engine* pEngine, unsigned int sizeInSpaces);
-
-/// Retrieves the size of a tab in spaces.
-unsigned int drte_engine_get_tab_size(drte_engine* pEngine);
-
-
-/// Sets the width of the text cursor.
-void drte_engine_set_cursor_width(drte_engine* pEngine, float cursorWidth);
-
-/// Retrieves the width of the text cursor.
-float drte_engine_get_cursor_width(drte_engine* pEngine);
-
 /// Sets the blink rate of the cursor in milliseconds.
 void drte_engine_set_cursor_blink_rate(drte_engine* pEngine, unsigned int blinkRateInMilliseconds);
 
@@ -506,14 +461,7 @@ unsigned int drte_engine_get_cursor_blink_rate(drte_engine* pEngine);
 // Resets the cursors blink state.
 void drte_engine_reset_cursor_blinks(drte_engine* pEngine);
 
-/// Shows the cursor.
-void drte_engine_show_cursor(drte_engine* pEngine);
 
-/// Hides the cursor.
-void drte_engine_hide_cursor(drte_engine* pEngine);
-
-/// Determines whether or not the cursor is visible.
-bool drte_engine_is_showing_cursor(drte_engine* pEngine);
 
 // Inserts a new cursor. Returns the index of the new cursor.
 size_t drte_engine_insert_cursor(drte_engine* pEngine, size_t iChar);
@@ -880,6 +828,7 @@ void drte_view_delete(drte_view* pView);
 void drte_view_set_size(drte_view* pView, float sizeX, float sizeY);
 
 // Retrieves the size of the view.
+void drte_view_get_size(drte_view* pView, float* pSizeXOut, float* pSizeYOut);
 DRTE_INLINE float drte_view_get_size_x(drte_view* pView) { if (pView == NULL) return 0; return pView->sizeX; }
 DRTE_INLINE float drte_view_get_size_y(drte_view* pView) { if (pView == NULL) return 0; return pView->sizeY; }
 
@@ -889,7 +838,8 @@ void drte_view_set_inner_offset(drte_view* pView, float innerOffsetX, float inne
 DRTE_INLINE void drte_view_set_inner_offset_x(drte_view* pView, float innerOffsetX) { if (pView == NULL) return; drte_view_set_inner_offset(pView, innerOffsetX, pView->innerOffsetY); }
 DRTE_INLINE void drte_view_set_inner_offset_y(drte_view* pView, float innerOffsetY) { if (pView == NULL) return; drte_view_set_inner_offset(pView, pView->innerOffsetX, innerOffsetY); }
 
-// Retrieves the size of the view.
+// Retrieves the inner offset of the view.
+void drte_view_get_inner_offset(drte_view* pView, float* pInnerOffsetXOut, float* pInnerOffsetYOut);
 DRTE_INLINE float drte_view_get_inner_offset_x(drte_view* pView) { if (pView == NULL) return 0; return pView->innerOffsetX; }
 DRTE_INLINE float drte_view_get_inner_offset_y(drte_view* pView) { if (pView == NULL) return 0; return pView->innerOffsetY; }
 
@@ -2324,175 +2274,6 @@ void drte_engine_set_on_undo_point_changed(drte_engine* pEngine, drte_engine_on_
 }
 
 
-void drte_engine_set_container_size(drte_engine* pEngine, float containerWidth, float containerHeight)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_view_set_size(pEngine->pView, containerWidth, containerHeight);
-}
-
-void drte_engine_get_container_size(drte_engine* pEngine, float* pContainerWidthOut, float* pContainerHeightOut)
-{
-    float containerWidth  = 0;
-    float containerHeight = 0;
-
-    if (pEngine != NULL)
-    {
-        containerWidth  = pEngine->pView->sizeX;
-        containerHeight = pEngine->pView->sizeY;
-    }
-
-
-    if (pContainerWidthOut) {
-        *pContainerWidthOut = containerWidth;
-    }
-    if (pContainerHeightOut) {
-        *pContainerHeightOut = containerHeight;
-    }
-}
-
-float drte_engine_get_container_width(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return 0;
-    }
-
-    return pEngine->pView->sizeX;
-}
-
-float drte_engine_get_container_height(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return 0;
-    }
-
-    return pEngine->pView->sizeY;
-}
-
-
-void drte_engine_set_inner_offset(drte_engine* pEngine, float innerOffsetX, float innerOffsetY)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_view_set_inner_offset(pEngine->pView, innerOffsetX, innerOffsetY);
-}
-
-void drte_engine_set_inner_offset_x(drte_engine* pEngine, float innerOffsetX)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_engine_set_inner_offset(pEngine, innerOffsetX, pEngine->pView->innerOffsetY);
-}
-
-void drte_engine_set_inner_offset_y(drte_engine* pEngine, float innerOffsetY)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_engine_set_inner_offset(pEngine, pEngine->pView->innerOffsetX, innerOffsetY);
-}
-
-void drte_engine_get_inner_offset(drte_engine* pEngine, float* pInnerOffsetX, float* pInnerOffsetY)
-{
-    float innerOffsetX = 0;
-    float innerOffsetY = 0;
-
-    if (pEngine != NULL)
-    {
-        innerOffsetX = pEngine->pView->innerOffsetX;
-        innerOffsetY = pEngine->pView->innerOffsetY;
-    }
-
-
-    if (pInnerOffsetX) {
-        *pInnerOffsetX = innerOffsetX;
-    }
-    if (pInnerOffsetY) {
-        *pInnerOffsetY = innerOffsetY;
-    }
-}
-
-float drte_engine_get_inner_offset_x(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return 0;
-    }
-
-    return pEngine->pView->innerOffsetX;
-}
-
-float drte_engine_get_inner_offset_y(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return 0;
-    }
-
-    return pEngine->pView->innerOffsetY;
-}
-
-
-void drte_engine_set_tab_size(drte_engine* pEngine, unsigned int sizeInSpaces)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_view_set_tab_size(pEngine->pView, sizeInSpaces);
-}
-
-unsigned int drte_engine_get_tab_size(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return 0;
-    }
-
-    return drte_view_get_tab_size(pEngine->pView);
-}
-
-
-void drte_engine_set_cursor_width(drte_engine* pEngine, float cursorWidth)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_view_set_cursor_width(pEngine->pView, cursorWidth);
-
-#if 0
-    drte_engine__begin_dirty(pEngine);
-    {
-        for (size_t iCursor = 0; iCursor < pEngine->pView->cursorCount; ++iCursor) {
-            drte_engine__on_dirty(pEngine, drte_engine_get_cursor_rect(pEngine, iCursor));
-        }
-
-        pEngine->cursorWidth = cursorWidth;
-        if (pEngine->cursorWidth > 0 && pEngine->cursorWidth < 1) {
-            pEngine->cursorWidth = 1;
-        }
-
-        for (size_t iCursor = 0; iCursor < pEngine->pView->cursorCount; ++iCursor) {
-            drte_engine__on_dirty(pEngine, drte_engine_get_cursor_rect(pEngine, iCursor));
-        }
-    }
-    drte_engine__end_dirty(pEngine);
-#endif
-}
-
-float drte_engine_get_cursor_width(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return 0;
-    }
-
-    return drte_view_get_cursor_width(pEngine->pView);
-}
 
 void drte_engine_set_cursor_blink_rate(drte_engine* pEngine, unsigned int blinkRateInMilliseconds)
 {
@@ -2519,32 +2300,6 @@ void drte_engine_reset_cursor_blinks(drte_engine* pEngine)
     pEngine->isCursorBlinkOn = true;
 }
 
-void drte_engine_show_cursor(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_view_show_cursors(pEngine->pView);
-}
-
-void drte_engine_hide_cursor(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_view_hide_cursors(pEngine->pView);
-}
-
-bool drte_engine_is_showing_cursor(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return false;
-    }
-
-    return drte_view_is_showing_cursors(pEngine->pView);
-}
 
 size_t drte_engine_insert_cursor(drte_engine* pEngine, size_t iChar)
 {
@@ -5512,6 +5267,17 @@ void drte_view_set_size(drte_view* pView, float sizeX, float sizeY)
     }
 }
 
+void drte_view_get_size(drte_view* pView, float* pSizeXOut, float* pSizeYOut)
+{
+    if (pSizeXOut != NULL) *pSizeXOut = 0;
+    if (pSizeYOut != NULL) *pSizeYOut = 0;
+    if (pView == NULL) return;
+
+    if (pSizeXOut != NULL) *pSizeXOut = pView->sizeX;
+    if (pSizeYOut != NULL) *pSizeYOut = pView->sizeY;
+}
+
+
 void drte_view_set_inner_offset(drte_view* pView, float innerOffsetX, float innerOffsetY)
 {
     if (pView == NULL) {
@@ -5522,6 +5288,16 @@ void drte_view_set_inner_offset(drte_view* pView, float innerOffsetX, float inne
     pView->innerOffsetY = innerOffsetY;
 
     drte_view__repaint(pView);
+}
+
+void drte_view_get_inner_offset(drte_view* pView, float* pInnerOffsetXOut, float* pInnerOffsetYOut)
+{
+    if (pInnerOffsetXOut != NULL) *pInnerOffsetXOut = 0;
+    if (pInnerOffsetYOut != NULL) *pInnerOffsetYOut = 0;
+    if (pView == NULL) return;
+
+    if (pInnerOffsetXOut != NULL) *pInnerOffsetXOut = pView->innerOffsetX;
+    if (pInnerOffsetYOut != NULL) *pInnerOffsetYOut = pView->innerOffsetY;
 }
 
 

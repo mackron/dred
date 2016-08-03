@@ -1783,7 +1783,7 @@ void dred__init_print_font(dred_print_data* pPrintData)
 
 
     // Should probably move this to somewhere more appropriate.
-    drte_engine_set_container_size(&pPrintData->textEngine, pPrintData->pageSizeX, pPrintData->pageSizeY);
+    drte_view_set_size(pPrintData->textEngine.pView, pPrintData->pageSizeX, pPrintData->pageSizeY);
 }
 
 void dred__uninit_print_font(dred_print_data* pPrintData)
@@ -1811,7 +1811,7 @@ void dred__on_paint_text_for_printing(drte_engine* pTextEngine, drte_view* pView
     assert(pPrintData != NULL);
 
     // Skip the line if it's partially visible - it'll be drawn on the next page.
-    if (posY + drte_engine_get_line_height(pTextEngine) > drte_engine_get_container_height(pTextEngine)) {
+    if (posY + drte_engine_get_line_height(pTextEngine) > drte_view_get_size_y(pTextEngine->pView)) {
         return;
     }
 
@@ -1841,10 +1841,10 @@ void dred__print_page(dred_print_data* pPrintData, size_t iPage)
     dr2d_begin_draw(pPrintData->pPaintSurface);
     {
         // Scroll to the page.
-        drte_engine_set_inner_offset_y(&pPrintData->textEngine, -(iPage * drte_engine_get_line_height(&pPrintData->textEngine) * drte_engine_get_line_count_per_page(&pPrintData->textEngine)));
+        drte_view_set_inner_offset_y(pPrintData->textEngine.pView, -(iPage * drte_engine_get_line_height(&pPrintData->textEngine) * drte_engine_get_line_count_per_page(&pPrintData->textEngine)));
 
         // Paint.
-        drte_engine_paint(&pPrintData->textEngine, drte_make_rect(0, 0, drte_engine_get_container_width(&pPrintData->textEngine), drte_engine_get_container_height(&pPrintData->textEngine)), pPrintData);
+        drte_engine_paint(&pPrintData->textEngine, drte_make_rect(0, 0, drte_view_get_size_x(pPrintData->textEngine.pView), drte_view_get_size_y(pPrintData->textEngine.pView)), pPrintData);
     }
     dr2d_end_draw(pPrintData->pPaintSurface);
 }
