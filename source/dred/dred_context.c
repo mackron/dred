@@ -1841,10 +1841,10 @@ void dred__print_page(dred_print_data* pPrintData, size_t iPage)
     dr2d_begin_draw(pPrintData->pPaintSurface);
     {
         // Scroll to the page.
-        drte_view_set_inner_offset_y(pPrintData->textEngine.pView, -(iPage * drte_engine_get_line_height(&pPrintData->textEngine) * drte_engine_get_line_count_per_page(&pPrintData->textEngine)));
+        drte_view_set_inner_offset_y(pPrintData->textEngine.pView, -(iPage * drte_engine_get_line_height(&pPrintData->textEngine) * drte_view_get_line_count_per_page(pPrintData->textEngine.pView)));
 
         // Paint.
-        drte_engine_paint(&pPrintData->textEngine, drte_make_rect(0, 0, drte_view_get_size_x(pPrintData->textEngine.pView), drte_view_get_size_y(pPrintData->textEngine.pView)), pPrintData);
+        drte_view_paint(pPrintData->textEngine.pView, drte_make_rect(0, 0, drte_view_get_size_x(pPrintData->textEngine.pView), drte_view_get_size_y(pPrintData->textEngine.pView)), pPrintData);
     }
     dr2d_end_draw(pPrintData->pPaintSurface);
 }
@@ -1929,7 +1929,7 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
     }
 
     // Engine settings.
-    drte_engine_enable_word_wrap(&printData.textEngine);
+    drte_view_enable_word_wrap(printData.textEngine.pView);
     drte_engine_set_on_paint_text(&printData.textEngine, dred__on_paint_text_for_printing);
     drte_engine_set_on_paint_rect(&printData.textEngine, dred__on_paint_rect_for_printing);
     printData.textEngine.onMeasureString = dred__on_measure_string_for_printing;
@@ -1992,7 +1992,7 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
 
     dred__init_print_font(&printData);
 
-    size_t pageCount = drte_engine_get_page_count(&printData.textEngine);
+    size_t pageCount = drte_view_get_page_count(printData.textEngine.pView);
 
 
     DOCINFOA di;

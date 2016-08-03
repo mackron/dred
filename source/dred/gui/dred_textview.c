@@ -71,7 +71,7 @@ void dred_textview__on_vscroll(dred_scrollbar* pSBControl, int scrollPos)
     dred_textview* pTextView = (dred_textview*)DRED_CONTROL(pSBControl)->pUserData;
     assert(pTextView != NULL);
 
-    drte_view_set_inner_offset_y(pTextView->pTextEngine->pView, -drte_engine_get_line_pos_y(pTextView->pTextEngine, scrollPos));
+    drte_view_set_inner_offset_y(pTextView->pTextEngine->pView, -drte_view_get_line_pos_y(pTextView->pTextEngine->pView, scrollPos));
     dred_textview__refresh_scrollbars(pTextView);
 
     // The line numbers need to be redrawn.
@@ -798,7 +798,7 @@ void dred_textview_enable_word_wrap(dred_textview* pTextView)
         return;
     }
 
-    drte_engine_enable_word_wrap(pTextView->pTextEngine);
+    drte_view_enable_word_wrap(pTextView->pTextEngine->pView);
     dred_textview__refresh_scrollbars(pTextView);
 }
 
@@ -808,7 +808,7 @@ void dred_textview_disable_word_wrap(dred_textview* pTextView)
         return;
     }
 
-    drte_engine_disable_word_wrap(pTextView->pTextEngine);
+    drte_view_disable_word_wrap(pTextView->pTextEngine->pView);
     dred_textview__refresh_scrollbars(pTextView);
 }
 
@@ -818,7 +818,7 @@ bool dred_textview_is_word_wrap_enabled(dred_textview* pTextView)
         return false;
     }
 
-    return drte_engine_is_word_wrap_enabled(pTextView->pTextEngine);
+    return drte_view_is_word_wrap_enabled(pTextView->pTextEngine->pView);
 }
 
 
@@ -1048,7 +1048,7 @@ bool dred_textview_unindent_selected_blocks(dred_textview* pTextView)
             size_t iLineEnd = drte_engine_get_selection_last_line(pTextView->pTextEngine, iSelection);
             if (iLineBeg != iLineEnd) {
                 for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
-                    size_t iLineChar = drte_engine_get_line_first_character(pTextView->pTextEngine, NULL, iLine);
+                    size_t iLineChar = drte_view_get_line_first_character(pTextView->pTextEngine->pView, NULL, iLine);
                     size_t iLineCharNonWS = iLineChar;
                     for (;;) {
                         uint32_t c = drte_engine_get_utf32(pTextView->pTextEngine, iLineCharNonWS);
@@ -1182,7 +1182,7 @@ size_t dred_textview_get_line_count(dred_textview* pTextView)
         return 0;
     }
 
-    return drte_engine_get_line_count(pTextView->pTextEngine);
+    return drte_view_get_line_count(pTextView->pTextEngine->pView);
 }
 
 
@@ -1237,7 +1237,7 @@ bool dred_textview_find_and_replace_all(dred_textview* pTextView, const char* te
     }
 
     size_t originalCursorLine = drte_engine_get_cursor_line(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine));
-    size_t originalCursorPos = drte_engine_get_cursor_character(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine)) - drte_engine_get_line_first_character(pTextView->pTextEngine, NULL, originalCursorLine);
+    size_t originalCursorPos = drte_engine_get_cursor_character(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine)) - drte_view_get_line_first_character(pTextView->pTextEngine->pView, NULL, originalCursorLine);
     int originalScrollPosX = dred_scrollbar_get_scroll_position(pTextView->pHorzScrollbar);
     int originalScrollPosY = dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar);
 
@@ -1262,7 +1262,7 @@ bool dred_textview_find_and_replace_all(dred_textview* pTextView, const char* te
         // The cursor may have moved so we'll need to restore it.
         size_t lineCharStart;
         size_t lineCharEnd;
-        drte_engine_get_line_character_range(pTextView->pTextEngine, NULL, originalCursorLine, &lineCharStart, &lineCharEnd);
+        drte_view_get_line_character_range(pTextView->pTextEngine->pView, NULL, originalCursorLine, &lineCharStart, &lineCharEnd);
 
         size_t newCursorPos = lineCharStart + originalCursorPos;
         if (newCursorPos > lineCharEnd) {
@@ -1956,7 +1956,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
             }
 
             int scrollOffset = dred_scrollbar_get_page_size(pTextView->pVertScrollbar);
-            if (scrollOffset > (int)(drte_engine_get_line_count(pTextView->pTextEngine) - drte_engine_get_cursor_line(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine)))) {
+            if (scrollOffset > (int)(drte_view_get_line_count(pTextView->pTextEngine->pView) - drte_engine_get_cursor_line(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine)))) {
                 scrollOffset = 0;
             }
 
@@ -2025,7 +2025,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                     size_t iLineEnd = drte_engine_get_selection_last_line(pTextView->pTextEngine, iSelection);
 
                     for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
-                        dred_textview__insert_tab(pTextView, drte_engine_get_line_first_character(pTextView->pTextEngine, NULL, iLine));
+                        dred_textview__insert_tab(pTextView, drte_view_get_line_first_character(pTextView->pTextEngine->pView, NULL, iLine));
                     }
                 } else {
                     // We're not doing a block indent so we just insert a tab at the cursor like normal.
@@ -2060,7 +2060,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                         if (iCursorLine > 0) {
                             size_t iPrevLineCharBeg;
                             size_t iPrevLineCharEnd;
-                            drte_engine_get_line_character_range(pTextView->pTextEngine, NULL, iCursorLine-1, &iPrevLineCharBeg, &iPrevLineCharEnd);
+                            drte_view_get_line_character_range(pTextView->pTextEngine->pView, NULL, iCursorLine-1, &iPrevLineCharBeg, &iPrevLineCharEnd);
 
                             size_t indentationCount = 0;
                             for (;;) {
@@ -2337,7 +2337,7 @@ void dred_textview_on_paint(dred_control* pControl, dred_rect relativeRect, void
 
     // Text.
     dred_control_set_clip(pControl, dred_clamp_rect(textRect, relativeRect), pPaintData);
-    drte_engine_paint(pTextView->pTextEngine, dred_rect_to_drte(dred_offset_rect(dred_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top)), pPaintData);
+    drte_view_paint(pTextView->pTextEngine->pView, dred_rect_to_drte(dred_offset_rect(dred_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top)), pPaintData);
 }
 
 void dred_textview__on_timer(dred_timer* pTimer, void* pUserData)
@@ -2494,7 +2494,7 @@ void dred_textview__refresh_horizontal_scrollbar(dred_textview* pTextView)
 {
     assert(pTextView != NULL);
 
-    float textWidth = drte_engine_get_visible_line_width(pTextView->pTextEngine);
+    float textWidth = drte_view_get_visible_line_width(pTextView->pTextEngine->pView);
     float containerWidth;
     drte_view_get_size(pTextView->pTextEngine->pView, &containerWidth, NULL);
     dred_scrollbar_set_range_and_page_size(pTextView->pHorzScrollbar, 0, (int)textWidth, (int)containerWidth);
@@ -2517,12 +2517,12 @@ void dred_textview__refresh_scrollbar_ranges(dred_textview* pTextView)
     assert(pTextView != NULL);
 
     // The vertical scrollbar is based on the line count.
-    size_t lineCount = drte_engine_get_line_count(pTextView->pTextEngine);
-    size_t pageSize  = drte_engine_get_visible_line_count(pTextView->pTextEngine);//drte_engine_get_visible_line_count_starting_at(pTextView->pTextEngine, dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar));
+    size_t lineCount = drte_view_get_line_count(pTextView->pTextEngine->pView);
+    size_t pageSize  = drte_view_get_visible_line_count(pTextView->pTextEngine->pView);
 
     size_t extraScroll = 0;
     if (pTextView->isExcessScrollingEnabled) {
-        extraScroll = drte_engine_get_visible_line_count(pTextView->pTextEngine) - 1 - 1;  // -1 to make the range 0 based. -1 to ensure at least one line is visible.
+        extraScroll = drte_view_get_visible_line_count(pTextView->pTextEngine->pView) - 1 - 1;  // -1 to make the range 0 based. -1 to ensure at least one line is visible.
     }
 
     dred_scrollbar_set_range_and_page_size(pTextView->pVertScrollbar, 0, (int)(lineCount + extraScroll), (int)pageSize);
@@ -2600,9 +2600,9 @@ void dred_textview__on_mouse_move_line_numbers(dred_control* pLineNumbers, int r
 
             //float offsetX = pTextEditorData->padding;
             float offsetY = pTextView->padding + pTextView->pTextEngine->pView->innerOffsetY;
-            size_t iLine = drte_engine_get_line_at_pos_y(pTextView->pTextEngine, NULL, relativeMousePosY - offsetY);
+            size_t iLine = drte_view_get_line_at_pos_y(pTextView->pTextEngine->pView, NULL, relativeMousePosY - offsetY);
             size_t iAnchorLine = pTextView->iLineSelectAnchor;
-            size_t lineCount = drte_engine_get_line_count(pTextView->pTextEngine);
+            size_t lineCount = drte_view_get_line_count(pTextView->pTextEngine->pView);
 
             size_t iSelectionFirstLine = drte_engine_get_selection_first_line(pTextView->pTextEngine, pTextView->pTextEngine->pView->selectionCount-1);
             size_t iSelectionLastLine = drte_engine_get_selection_last_line(pTextView->pTextEngine, pTextView->pTextEngine->pView->selectionCount-1);
@@ -2671,7 +2671,7 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
 
         //float offsetX = pTextEditorData->padding;
         float offsetY = pTextView->padding + pTextView->pTextEngine->pView->innerOffsetY;
-        size_t iClickedLine = drte_engine_get_line_at_pos_y(pTextView->pTextEngine, NULL, relativeMousePosY - offsetY);
+        size_t iClickedLine = drte_view_get_line_at_pos_y(pTextView->pTextEngine->pView, NULL, relativeMousePosY - offsetY);
 
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
             pTextView->iLineSelectAnchor = drte_engine_get_cursor_line(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine));
@@ -2684,10 +2684,10 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
             dred_textview_deselect_all(pTextView);
         }
 
-        drte_engine_begin_selection(pTextView->pTextEngine, drte_engine_get_line_first_character(pTextView->pTextEngine, NULL, pTextView->iLineSelectAnchor));
+        drte_engine_begin_selection(pTextView->pTextEngine, drte_view_get_line_first_character(pTextView->pTextEngine->pView, NULL, pTextView->iLineSelectAnchor));
 
 
-        if (iClickedLine + 1 < drte_engine_get_line_count(pTextView->pTextEngine)) {
+        if (iClickedLine + 1 < drte_view_get_line_count(pTextView->pTextEngine->pView)) {
             drte_engine_move_cursor_to_start_of_line_by_index(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine), iClickedLine + 1);
         } else {
             drte_engine_move_cursor_to_end_of_line(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine));
@@ -2752,7 +2752,7 @@ void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect 
     float lineNumbersWidth  = dred_control_get_width(pLineNumbers) - (pTextView->padding*2) - pTextView->lineNumbersPaddingRight;
     float lineNumbersHeight = dred_control_get_height(pLineNumbers) - (pTextView->padding*2);
 
-    drte_engine_paint_line_numbers(pTextView->pTextEngine, lineNumbersWidth, lineNumbersHeight, dred_textview__on_paint_text_line_numbers, dred_textview__on_paint_rect_line_numbers, pPaintData);
+    drte_view_paint_line_numbers(pTextView->pTextEngine->pView, lineNumbersWidth, lineNumbersHeight, dred_textview__on_paint_text_line_numbers, dred_textview__on_paint_rect_line_numbers, pPaintData);
 
     dred_control_draw_rect_outline(pLineNumbers, dred_control_get_local_rect(pLineNumbers), pTextView->lineNumbersStyle.bgColor, pTextView->padding, pPaintData);
 
