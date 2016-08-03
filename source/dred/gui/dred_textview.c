@@ -941,7 +941,7 @@ bool dred_textview_delete_character_to_right_of_cursor(dred_textview* pTextView)
     bool wasTextChanged = false;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
-        wasTextChanged = drte_engine_delete_character_to_right_of_cursor(pTextView->pTextEngine, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+        wasTextChanged = drte_view_delete_character_to_right_of_cursor(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
     }
     if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
 
@@ -954,7 +954,7 @@ bool dred_textview_delete_selected_text_no_undo(dred_textview* pTextView)
         return false;
     }
 
-    bool wasTextChanged = drte_engine_delete_selected_text(pTextView->pTextEngine, true);  // <-- "true" means to update the positions of cursors to compensate.
+    bool wasTextChanged = drte_view_delete_selected_text(pTextView->pTextEngine->pView, true);  // <-- "true" means to update the positions of cursors to compensate.
     drte_view_deselect_all(pTextView->pTextEngine->pView);
 
     return wasTextChanged;
@@ -988,7 +988,7 @@ bool dred_textview_insert_text_at_cursors_no_undo(dred_textview* pTextView, cons
     for (size_t iCursor = 0; iCursor < pTextView->cursorCount; ++iCursor) {
         size_t iChar = drte_view_get_cursor_character(pTextView->pTextEngine->pView, iCursor);
 
-        wasTextChanged = drte_engine_insert_text_at_cursor(pTextView->pTextEngine, iCursor, text) || wasTextChanged;
+        wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pTextEngine->pView, iCursor, text) || wasTextChanged;
 
         // Cursors and selections after this cursor need to be updated.
         for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->pView->cursorCount; ++iCursor2) {
@@ -1222,7 +1222,7 @@ bool dred_textview_find_and_replace_next(dred_textview* pTextView, const char* t
             drte_view_move_cursor_to_end_of_selection(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
 
             wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView) || wasTextChanged;
-            wasTextChanged = drte_engine_insert_text_at_cursor(pTextView->pTextEngine, drte_view_get_last_cursor(pTextView->pTextEngine->pView), replacement) || wasTextChanged;
+            wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), replacement) || wasTextChanged;
         }
     }
     if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
@@ -1256,7 +1256,7 @@ bool dred_textview_find_and_replace_all(dred_textview* pTextView, const char* te
             drte_view_move_cursor_to_end_of_selection(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
 
             wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView) || wasTextChanged;
-            wasTextChanged = drte_engine_insert_text_at_cursor(pTextView->pTextEngine, drte_view_get_last_cursor(pTextView->pTextEngine->pView), replacement) || wasTextChanged;
+            wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), replacement) || wasTextChanged;
         }
 
         // The cursor may have moved so we'll need to restore it.
@@ -1726,7 +1726,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                     wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView);
                     drte_view_remove_overlapping_cursors(pTextView->pTextEngine->pView);
                 } else {
-                    wasTextChanged = drte_engine_delete_character_to_left_of_cursors(pTextView->pTextEngine, pTextView->pTextEngine->pView->cursorCount > 1);  // <-- Last argument controls whether or not new lines should block deletion.
+                    wasTextChanged = drte_view_delete_character_to_left_of_cursors(pTextView->pTextEngine->pView, pTextView->pTextEngine->pView->cursorCount > 1);  // <-- Last argument controls whether or not new lines should block deletion.
                 }
             }
             if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
@@ -1741,7 +1741,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                     wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView);
                     drte_view_remove_overlapping_cursors(pTextView->pTextEngine->pView);
                 } else {
-                    wasTextChanged = drte_engine_delete_character_to_right_of_cursors(pTextView->pTextEngine, pTextView->pTextEngine->pView->cursorCount > 1); // <-- Last argument controls whether or not new lines should block deletion.
+                    wasTextChanged = drte_view_delete_character_to_right_of_cursors(pTextView->pTextEngine->pView, pTextView->pTextEngine->pView->cursorCount > 1); // <-- Last argument controls whether or not new lines should block deletion.
                 }
             }
             if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
@@ -2030,7 +2030,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                 } else {
                     // We're not doing a block indent so we just insert a tab at the cursor like normal.
                     if (isSomethingSelected) {
-                        drte_engine_delete_selection_text(pTextView->pTextEngine, iSelection, true);
+                        drte_view_delete_selection_text(pTextView->pTextEngine->pView, iSelection, true);
                         drte_view_cancel_selection(pTextView->pTextEngine->pView, iSelection);
                     }
 
@@ -2049,7 +2049,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
 
             // TODO: Check if the character is a line feed, and if so convert it to the standard line endings.
 
-            drte_engine_insert_character_at_cursors(pTextView->pTextEngine, utf32);
+            drte_view_insert_character_at_cursors(pTextView->pTextEngine->pView, utf32);
 
             if (utf32 == '\n') {
                 dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextView));
@@ -2098,10 +2098,10 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                             size_t extraCharactersCount = extraTabCount + extraSpacesCount;
 
                             for (size_t i = 0; i < extraTabCount; ++i) {
-                                drte_engine_insert_character_at_cursor(pTextView->pTextEngine, iCursor, '\t');
+                                drte_view_insert_character_at_cursor(pTextView->pTextEngine->pView, iCursor, '\t');
                             }
                             for (size_t i = 0; i < extraSpacesCount; ++i) {
-                                drte_engine_insert_character_at_cursor(pTextView->pTextEngine, iCursor, ' ');
+                                drte_view_insert_character_at_cursor(pTextView->pTextEngine->pView, iCursor, ' ');
                             }
 
                             // Any cursor whose character position comes after this cursor needs to be moved.
