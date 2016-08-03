@@ -1244,10 +1244,6 @@ void drte_engine__repaint(drte_engine* pEngine);
 void drte_engine__refresh(drte_engine* pEngine);
 
 
-/// Helper for calculating the width of a tab.
-float drte_engine__get_tab_width(drte_engine* pEngine);
-
-
 /// Updates the sticky position of the given marker.
 void drte_engine__update_cursor_sticky_position(drte_engine* pEngine, drte_cursor* pCursor);
 
@@ -1278,6 +1274,7 @@ void drte_engine__end_dirty(drte_engine* pEngine);
 
 
 static void drte_view__refresh_word_wrapping(drte_view* pView);
+static float drte_view__get_tab_width_in_pixels(drte_view* pView);
 
 
 // Finds a style slot index of the given style token. Returns DRTE_INVALID_STYLE_SLOT if it could not be found.
@@ -1372,7 +1369,7 @@ float drte_engine__measure_segment(drte_view* pView, drte_segment* pSegment)
         uint32_t c = drte_engine_get_utf32(pEngine, pSegment->iCharBeg);
         if (c == '\t') {
             // It was a tab segment.
-            float tabWidth = drte_engine__get_tab_width(pEngine);
+            float tabWidth = drte_view__get_tab_width_in_pixels(pView);
             size_t tabCount = pSegment->iCharEnd - pSegment->iCharBeg;
             float nextTabPos = (float)((int)(pSegment->posX / tabWidth) + 1) * tabWidth;
             float distanceToNextTab = nextTabPos - pSegment->posX;
@@ -2227,7 +2224,7 @@ void drte_engine_get_character_position(drte_engine* pEngine, drte_line_cache* p
 
                     size_t tabCount = characterIndex - segment.iCharBeg;
                     if (tabCount > 0) {
-                        float tabWidth = drte_engine__get_tab_width(pEngine);
+                        float tabWidth = drte_view__get_tab_width_in_pixels(pEngine->pView);
                         float nextTabPos = (float)((int)(segment.posX / tabWidth) + 1) * tabWidth;
                         posX = nextTabPos + ((tabCount-1) * tabWidth);
                     }
@@ -2278,7 +2275,7 @@ size_t drte_engine_get_character_by_point(drte_engine* pEngine, drte_line_cache*
                 // It's somewhere on this run. If it's a tab segment it needs to be handled slightly differently because of the way tabs
                 // are aligned to tab columns.
                 if (drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\t') {
-                    const float tabWidth = drte_engine__get_tab_width(pEngine);
+                    const float tabWidth = drte_view__get_tab_width_in_pixels(pEngine->pView);
 
                     iChar = segment.iCharBeg;
 
@@ -2859,7 +2856,7 @@ bool drte_engine_move_cursor_to_point_relative_to_text(drte_engine* pEngine, siz
                 // It's somewhere on this run. If it's a tab segment it needs to be handled slightly differently because of the way tabs
                 // are aligned to tab columns.
                 if (drte_engine_get_utf32(pEngine, segment.iCharBeg) == '\t') {
-                    const float tabWidth = drte_engine__get_tab_width(pEngine);
+                    const float tabWidth = drte_view__get_tab_width_in_pixels(pEngine->pView);
 
                     pEngine->pCursors[cursorIndex].iCharAbs = segment.iCharBeg;
 
@@ -3294,7 +3291,7 @@ size_t drte_engine_get_spaces_to_next_column_from_character(drte_engine* pEngine
     }
 
 
-    const float tabWidth = drte_engine__get_tab_width(pEngine);
+    const float tabWidth = drte_view__get_tab_width_in_pixels(pEngine->pView);
 
     float posX;
     float posY;
@@ -5222,20 +5219,6 @@ void drte_engine__refresh(drte_engine* pEngine)
 {
     assert(pEngine != NULL);
     drte_view__refresh_word_wrapping(pEngine->pView);    // <-- This will redraw for us.
-}
-
-
-float drte_engine__get_tab_width(drte_engine* pEngine)
-{
-    float tabWidth = (float)(pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth * pEngine->pView->tabSizeInSpaces);
-    if (tabWidth <= 0) {
-        tabWidth = (float)pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
-        if (tabWidth <= 0) {
-            tabWidth = 4;
-        }
-    }
-
-    return tabWidth;
 }
 
 
