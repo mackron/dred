@@ -178,6 +178,9 @@ struct drte_view
     // Boolean flags.
     unsigned int flags;
 
+    // The size of a tab in spaces.
+    unsigned int tabSizeInSpaces;
+
     // Application defined data.
     void* pUserData;
 
@@ -277,9 +280,6 @@ struct drte_engine
     // The function to call when application-defined data needs to be applied for undo/redo points.
     drte_engine_on_apply_undo_state_proc onApplyUndoState;
 
-
-    /// The size of a tab in spaces.
-    unsigned int tabSizeInSpaces;
 
     /// The width of the text cursor.
     float cursorWidth;
@@ -904,6 +904,13 @@ DRTE_INLINE void drte_view_set_inner_offset_y(drte_view* pView, float innerOffse
 // Retrieves the size of the view.
 DRTE_INLINE float drte_view_get_inner_offset_x(drte_view* pView) { if (pView == NULL) return 0; return pView->innerOffsetX; }
 DRTE_INLINE float drte_view_get_inner_offset_y(drte_view* pView) { if (pView == NULL) return 0; return pView->innerOffsetY; }
+
+
+// Sets the size of a tab in spaces.
+void drte_view_set_tab_size(drte_view* pView, unsigned int sizeInSpaces);
+
+// Retrieves the size of a tab in spaces.
+DRTE_INLINE unsigned int drte_view_get_tab_size(drte_view* pView) { if (pView == NULL) return 0; return pView->tabSizeInSpaces; }
 
 
 // Begins a batch dirty of the given view.
@@ -1945,7 +1952,6 @@ bool drte_engine_init(drte_engine* pEngine, void* pUserData)
     pEngine->pSelections = NULL;
     pEngine->selectionCount = 0;
 
-    pEngine->tabSizeInSpaces       = 4;
     pEngine->cursorWidth           = 1;
     pEngine->cursorBlinkRate       = 500;
     pEngine->timeToNextCursorBlink = pEngine->cursorBlinkRate;
@@ -2531,12 +2537,7 @@ void drte_engine_set_tab_size(drte_engine* pEngine, unsigned int sizeInSpaces)
         return;
     }
 
-    if (pEngine->tabSizeInSpaces != sizeInSpaces)
-    {
-        pEngine->tabSizeInSpaces = sizeInSpaces;
-
-        drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
-    }
+    drte_view_set_tab_size(pEngine->pView, sizeInSpaces);
 }
 
 unsigned int drte_engine_get_tab_size(drte_engine* pEngine)
@@ -2545,7 +2546,7 @@ unsigned int drte_engine_get_tab_size(drte_engine* pEngine)
         return 0;
     }
 
-    return pEngine->tabSizeInSpaces;
+    return drte_view_get_tab_size(pEngine->pView);
 }
 
 
@@ -5207,7 +5208,7 @@ void drte_engine__refresh(drte_engine* pEngine)
 
 float drte_engine__get_tab_width(drte_engine* pEngine)
 {
-    float tabWidth = (float)(pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth * pEngine->tabSizeInSpaces);
+    float tabWidth = (float)(pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth * pEngine->pView->tabSizeInSpaces);
     if (tabWidth <= 0) {
         tabWidth = (float)pEngine->styles[pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
         if (tabWidth <= 0) {
@@ -5541,9 +5542,22 @@ void drte_engine__end_dirty(drte_engine* pEngine)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-static void drte_view__repaint(drte_view* pView)
+DRTE_INLINE void drte_view__repaint(drte_view* pView)
 {
     drte_view_dirty(pView, drte_view_get_local_rect(pView));
+}
+
+static float drte_view__get_tab_width_in_pixels(drte_view* pView)
+{
+    float tabWidth = (float)(pView->pEngine->styles[pView->pEngine->defaultStyleSlot].fontMetrics.spaceWidth * pView->tabSizeInSpaces);
+    if (tabWidth <= 0) {
+        tabWidth = (float)pView->pEngine->styles[pView->pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
+        if (tabWidth <= 0) {
+            tabWidth = 4;
+        }
+    }
+
+    return tabWidth;
 }
 
 static void drte_view__refresh_word_wrapping(drte_view* pView)
@@ -5641,7 +5655,10 @@ drte_view* drte_view_create(drte_engine* pEngine)
     }
 
     pView->pEngine = pEngine;
+    pView->tabSizeInSpaces = 4;
+
     pView->_accumulatedDirtyRect = drte_make_inside_out_rect();
+
 
     // Attach the view to the start of the list.
     pView->_pPrevView = NULL;
@@ -5712,6 +5729,17 @@ void drte_view_set_inner_offset(drte_view* pView, float innerOffsetX, float inne
     pView->innerOffsetY = innerOffsetY;
 
     drte_view__repaint(pView);
+}
+
+
+void drte_view_set_tab_size(drte_view* pView, unsigned int sizeInSpaces)
+{
+    if (pView == NULL || pView->tabSizeInSpaces == sizeInSpaces) {
+        return;
+    }
+
+    pView->tabSizeInSpaces = sizeInSpaces;
+    drte_view__refresh_word_wrapping(pView);
 }
 
 
