@@ -520,9 +520,6 @@ bool drte_engine_delete_selection_text(drte_engine* pEngine, size_t iSelectionTo
 // Retrieves the last character of the word beginning with a character which can be at any position within said word.
 bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordEndOut);
 
-// Retrieves the word under the point relative to the container.
-bool drte_engine_get_word_under_point(drte_engine* pEngine, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut);
-
 
 /// Prepares the next undo/redo point.
 ///
@@ -834,6 +831,9 @@ bool drte_view_is_cursor_at_end_of_selection(drte_view* pView, size_t cursorInde
 
 // Retrieves the word under the given character.
 bool drte_view_get_word_under_cursor(drte_view* pView, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
+
+// Retrieves the word under the point relative to the container.
+bool drte_view_get_word_under_point(drte_view* pView, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut);
 
 
 
@@ -2991,17 +2991,6 @@ bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iCha
 }
 
 
-
-
-
-bool drte_engine_get_word_under_point(drte_engine* pEngine, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut)
-{
-    if (pEngine == NULL) {
-        return false;
-    }
-
-    return drte_engine_get_word_containing_character(pEngine, drte_view_get_character_by_point_relative_to_container(pEngine->pView, pEngine->pView->pWrappedLines, posX, posY, NULL), pWordBegOut, pWordEndOut);
-}
 
 
 bool drte_engine__capture_and_push_undo_state__user_data(drte_engine* pEngine, drte_stack_buffer* pStack)
@@ -5385,6 +5374,15 @@ bool drte_view_get_word_under_cursor(drte_view* pView, size_t cursorIndex, size_
     }
 
     return drte_engine_get_word_containing_character(pView->pEngine, pView->pCursors[cursorIndex].iCharAbs, pWordBegOut, pWordEndOut);
+}
+
+bool drte_view_get_word_under_point(drte_view* pView, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut)
+{
+    if (pView == NULL) {
+        return false;
+    }
+
+    return drte_engine_get_word_containing_character(pView->pEngine, drte_view_get_character_by_point_relative_to_container(pView, pView->pWrappedLines, posX, posY, NULL), pWordBegOut, pWordEndOut);
 }
 
 

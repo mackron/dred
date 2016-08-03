@@ -1536,7 +1536,7 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
             if (pTextView->isDoingWordSelect) {
                 size_t iWordCharBeg;
                 size_t iWordCharEnd;
-                if (drte_engine_get_word_under_point(pTextView->pTextEngine, relativeMousePosX - offsetX, relativeMousePosY - offsetY, &iWordCharBeg, &iWordCharEnd)) {
+                if (drte_view_get_word_under_point(pTextView->pTextEngine->pView, relativeMousePosX - offsetX, relativeMousePosY - offsetY, &iWordCharBeg, &iWordCharEnd)) {
                     if (iWordCharEnd < pTextView->wordSelectionAnchor.iCharEnd) {
                         pTextView->pTextEngine->pView->pSelections[pTextView->pTextEngine->pView->selectionCount-1].iCharBeg = pTextView->wordSelectionAnchor.iCharEnd;
                         pTextView->pTextEngine->pView->pSelections[pTextView->pTextEngine->pView->selectionCount-1].iCharEnd = iWordCharBeg;
