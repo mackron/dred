@@ -1608,7 +1608,7 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
 
 
         drte_engine_move_cursor_to_character_and_line(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine), iChar, iLine);
-        drte_engine__update_cursor_sticky_position(pTextView->pTextEngine, &pTextView->pTextEngine->pView->pCursors[drte_engine_get_last_cursor(pTextView->pTextEngine)]);
+        drte_view__update_cursor_sticky_position(pTextView->pTextEngine->pView, &pTextView->pTextEngine->pView->pCursors[drte_engine_get_last_cursor(pTextView->pTextEngine)]);
 
 
         // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
@@ -1881,7 +1881,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                 }
             }
 
-            drte_engine__update_cursor_sticky_position(pTextView->pTextEngine, &pTextView->pTextEngine->pView->pCursors[drte_engine_get_last_cursor(pTextView->pTextEngine)]);
+            drte_view__update_cursor_sticky_position(pTextView->pTextEngine->pView, &pTextView->pTextEngine->pView->pCursors[drte_engine_get_last_cursor(pTextView->pTextEngine)]);
         } break;
 
         case DRED_GUI_HOME:
@@ -1914,7 +1914,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                 }
             }
 
-            drte_engine__update_cursor_sticky_position(pTextView->pTextEngine, &pTextView->pTextEngine->pView->pCursors[drte_engine_get_last_cursor(pTextView->pTextEngine)]);
+            drte_view__update_cursor_sticky_position(pTextView->pTextEngine->pView, &pTextView->pTextEngine->pView->pCursors[drte_engine_get_last_cursor(pTextView->pTextEngine)]);
         } break;
 
         case DRED_GUI_PAGE_UP:
