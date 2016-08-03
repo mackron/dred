@@ -1197,9 +1197,6 @@ void* drte_stack_buffer_get_data_ptr(drte_stack_buffer* pStack, size_t offset)
 
 
 
-// Performs a full repaint of the entire visible region of the text engine.
-void drte_engine__repaint(drte_engine* pEngine);
-
 // Performs a full refresh of the text engine, including refreshing line wrapping and repaining.
 void drte_engine__refresh(drte_engine* pEngine);
 
@@ -1219,14 +1216,6 @@ drte_rect drte_engine__local_rect(drte_engine* pEngine);
 /// Called when a cursor moves.
 void drte_engine__on_cursor_move(drte_engine* pEngine, drte_view* pView, size_t cursorIndex);
 
-/// Called when the text engine needs to be redrawn.
-void drte_engine__on_dirty(drte_engine* pEngine, drte_rect rect);
-
-/// Increments the counter. The counter is decremented with drte_engine__end_dirty(). Use this for batching redraws.
-void drte_engine__begin_dirty(drte_engine* pEngine);
-
-/// Decrements the dirty counter, and if it hits 0 posts the onDirty callback.
-void drte_engine__end_dirty(drte_engine* pEngine);
 
 
 static void drte_view__refresh_word_wrapping(drte_view* pView);
@@ -2143,7 +2132,9 @@ void drte_engine_set_line_height(drte_engine* pEngine, float lineHeight)
     pEngine->flags |= DRTE_USE_EXPLICIT_LINE_HEIGHT;
     pEngine->lineHeight = lineHeight;
 
-    drte_engine__repaint(pEngine);
+    for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+        drte_view_dirty(pView, drte_view_get_local_rect(pView));
+    }
 }
 
 float drte_engine_get_line_height(drte_engine* pEngine)
@@ -2387,7 +2378,7 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
         if (drte_view_is_word_wrap_enabled(pView)) {
             drte_view__refresh_word_wrapping(pView);    // <-- This will repaint.
         } else {
-            drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+            drte_view_dirty(pView, drte_view_get_local_rect(pView));
         }
     }
 
@@ -2464,7 +2455,7 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
             if (drte_view_is_word_wrap_enabled(pView)) {
                 drte_view__refresh_word_wrapping(pView);    // <-- This will repaint.
             } else {
-                drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+                drte_view_dirty(pView, drte_view_get_local_rect(pView));
             }
         }
         
@@ -2990,11 +2981,13 @@ void drte_engine_step(drte_engine* pEngine, unsigned int milliseconds)
         pEngine->isCursorBlinkOn = !pEngine->isCursorBlinkOn;
         pEngine->timeToNextCursorBlink = pEngine->cursorBlinkRate;
 
-        drte_engine__begin_dirty(pEngine);
-        for (size_t iCursor = 0; iCursor < pEngine->pView->cursorCount; ++iCursor) {
-            drte_engine__on_dirty(pEngine, drte_view_get_cursor_rect(pEngine->pView, iCursor));
+        for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+            drte_view_begin_dirty(pView);
+            for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
+                drte_view_dirty(pView, drte_view_get_cursor_rect(pView, iCursor));
+            }
+            drte_view_end_dirty(pView);
         }
-        drte_engine__end_dirty(pEngine);
     }
     else
     {
@@ -3059,12 +3052,6 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
     return true;
 }
 
-
-void drte_engine__repaint(drte_engine* pEngine)
-{
-    assert(pEngine != NULL);
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
-}
 
 void drte_engine__refresh(drte_engine* pEngine)
 {
@@ -3245,38 +3232,47 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, const void* pUndoDataPt
         return;
     }
 
-    drte_engine__begin_dirty(pEngine);
-    {
-        drte_undo_state_info state;
-        drte_engine__breakdown_undo_state_info(pUndoDataPtr, &state);
-
-        // Text.
-        drte_engine__apply_text_changes_reversed(pEngine, state.textChangeCount, state.pTextChanges);
-
-
-        // Cursors.
-        drte_engine__set_cursors(pEngine, state.oldState.cursorCount, state.oldState.pCursors);
-
-        // Selections.
-        drte_engine__set_selections(pEngine, state.oldState.selectionCount, state.oldState.pSelections);
-
-
-
-        if (pEngine->onTextChanged) {
-            pEngine->onTextChanged(pEngine);
-        }
-
-        for (size_t iCursor = 0; iCursor < pEngine->pView->cursorCount; ++iCursor) {
-            drte_engine__on_cursor_move(pEngine, pEngine->pView, iCursor);
-        }
-
-
-        // Application-defined data.
-        if (pEngine->onApplyUndoState) {
-            pEngine->onApplyUndoState(pEngine, state.oldState.userDataSize, state.oldState.pUserData);
-        }
+    // Begin dirty.
+    for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+        drte_view_begin_dirty(pView);
     }
-    drte_engine__end_dirty(pEngine);
+
+
+    drte_undo_state_info state;
+    drte_engine__breakdown_undo_state_info(pUndoDataPtr, &state);
+
+    // Text.
+    drte_engine__apply_text_changes_reversed(pEngine, state.textChangeCount, state.pTextChanges);
+
+
+    // Cursors.
+    drte_engine__set_cursors(pEngine, state.oldState.cursorCount, state.oldState.pCursors);
+
+    // Selections.
+    drte_engine__set_selections(pEngine, state.oldState.selectionCount, state.oldState.pSelections);
+
+
+
+    if (pEngine->onTextChanged) {
+        pEngine->onTextChanged(pEngine);
+    }
+
+    for (size_t iCursor = 0; iCursor < pEngine->pView->cursorCount; ++iCursor) {
+        drte_engine__on_cursor_move(pEngine, pEngine->pView, iCursor);
+    }
+
+
+    // Application-defined data.
+    if (pEngine->onApplyUndoState) {
+        pEngine->onApplyUndoState(pEngine, state.oldState.userDataSize, state.oldState.pUserData);
+    }
+
+
+
+    // End dirty.
+    for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+        drte_view_end_dirty(pView);
+    }
 }
 
 void drte_engine__apply_redo_state(drte_engine* pEngine, const void* pUndoDataPtr)
@@ -3285,38 +3281,46 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, const void* pUndoDataPt
         return;
     }
 
-    drte_engine__begin_dirty(pEngine);
-    {
-        drte_undo_state_info state;
-        drte_engine__breakdown_undo_state_info(pUndoDataPtr, &state);
-
-        // Text.
-        drte_engine__apply_text_changes(pEngine, state.textChangeCount, state.pTextChanges);
-
-
-        // Cursors.
-        drte_engine__set_cursors(pEngine, state.newState.cursorCount, state.newState.pCursors);
-
-        // Selections.
-        drte_engine__set_selections(pEngine, state.newState.selectionCount, state.newState.pSelections);
-
-
-
-        if (pEngine->onTextChanged) {
-            pEngine->onTextChanged(pEngine);
-        }
-
-        for (size_t iCursor = 0; iCursor < pEngine->pView->cursorCount; ++iCursor) {
-            drte_engine__on_cursor_move(pEngine, pEngine->pView, iCursor);
-        }
-
-
-        // Application-defined data.
-        if (pEngine->onApplyUndoState) {
-            pEngine->onApplyUndoState(pEngine, state.newState.userDataSize, state.newState.pUserData);
-        }
+    // Begin dirty.
+    for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+        drte_view_begin_dirty(pView);
     }
-    drte_engine__end_dirty(pEngine);
+
+
+    drte_undo_state_info state;
+    drte_engine__breakdown_undo_state_info(pUndoDataPtr, &state);
+
+    // Text.
+    drte_engine__apply_text_changes(pEngine, state.textChangeCount, state.pTextChanges);
+
+
+    // Cursors.
+    drte_engine__set_cursors(pEngine, state.newState.cursorCount, state.newState.pCursors);
+
+    // Selections.
+    drte_engine__set_selections(pEngine, state.newState.selectionCount, state.newState.pSelections);
+
+
+
+    if (pEngine->onTextChanged) {
+        pEngine->onTextChanged(pEngine);
+    }
+
+    for (size_t iCursor = 0; iCursor < pEngine->pView->cursorCount; ++iCursor) {
+        drte_engine__on_cursor_move(pEngine, pEngine->pView, iCursor);
+    }
+
+
+    // Application-defined data.
+    if (pEngine->onApplyUndoState) {
+        pEngine->onApplyUndoState(pEngine, state.newState.userDataSize, state.newState.pUserData);
+    }
+
+
+    // End dirty.
+    for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+        drte_view_end_dirty(pView);
+    }
 }
 
 
@@ -3345,25 +3349,6 @@ void drte_engine__on_cursor_move(drte_engine* pEngine, drte_view* pView, size_t 
     }
 
     drte_view_dirty(pView, drte_view_get_cursor_rect(pView, cursorIndex));  // <-- Is this needed?
-}
-
-void drte_engine__on_dirty(drte_engine* pEngine, drte_rect rect)
-{
-    drte_view_dirty(pEngine->pView, rect);
-}
-
-void drte_engine__begin_dirty(drte_engine* pEngine)
-{
-    drte_view_begin_dirty(pEngine->pView);
-}
-
-void drte_engine__end_dirty(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_view_end_dirty(pEngine->pView);
 }
 
 

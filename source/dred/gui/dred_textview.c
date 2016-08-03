@@ -135,11 +135,11 @@ void dred_textview__clear_all_cursors(dred_textview* pTextView)
     assert(pTextView != NULL);
 
     // Engine.
-    drte_engine__begin_dirty(pTextView->pTextEngine);
+    drte_view_begin_dirty(pTextView->pTextEngine->pView);
     while (pTextView->pTextEngine->pView->cursorCount > 1) {
         drte_view_remove_cursor(pTextView->pTextEngine->pView, pTextView->pTextEngine->pView->cursorCount-2);
     }
-    drte_engine__end_dirty(pTextView->pTextEngine);
+    drte_view_end_dirty(pTextView->pTextEngine->pView);
 
 
     // Local list.
@@ -272,7 +272,7 @@ bool dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextView));
     assert(pDred != NULL);
 
-    drte_engine__begin_dirty(pTextView->pTextEngine);
+    drte_view_begin_dirty(pTextView->pTextEngine->pView);
 
     bool wasTextChanged = false;
     size_t insertedCharacterCount;
@@ -308,7 +308,7 @@ bool dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
     }
 
 
-    drte_engine__end_dirty(pTextView->pTextEngine);
+    drte_view_end_dirty(pTextView->pTextEngine->pView);
     return wasTextChanged;
 }
 
@@ -1038,7 +1038,7 @@ bool dred_textview_unindent_selected_blocks(dred_textview* pTextView)
         return false;
     }
 
-    drte_engine__begin_dirty(pTextView->pTextEngine);
+    drte_view_begin_dirty(pTextView->pTextEngine->pView);
 
     bool wasTextChanged = false;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
@@ -1107,7 +1107,7 @@ bool dred_textview_unindent_selected_blocks(dred_textview* pTextView)
     }
     if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
 
-    drte_engine__end_dirty(pTextView->pTextEngine);
+    drte_view_end_dirty(pTextView->pTextEngine->pView);
 
     return wasTextChanged;
 }
@@ -1529,7 +1529,7 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
         float offsetY;
         dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
-        drte_engine__begin_dirty(pTextView->pTextEngine);
+        drte_view_begin_dirty(pTextView->pTextEngine->pView);
         {
             size_t iPrevCursorChar = drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
 
@@ -1559,7 +1559,7 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
                 drte_view_set_selection_end_point(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
             }
         }
-        drte_engine__end_dirty(pTextView->pTextEngine);
+        drte_view_end_dirty(pTextView->pTextEngine->pView);
     }
 }
 
@@ -1710,7 +1710,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
         return;
     }
 
-    drte_engine__begin_dirty(pTextView->pTextEngine);
+    drte_view_begin_dirty(pTextView->pTextEngine->pView);
 
     bool isShiftDown = (stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0;
     bool isCtrlDown  = (stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0;
@@ -1981,7 +1981,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
         default: break;
     }
 
-    drte_engine__end_dirty(pTextView->pTextEngine);
+    drte_view_end_dirty(pTextView->pTextEngine->pView);
 }
 
 void dred_textview_on_key_up(dred_control* pControl, dred_key key, int stateFlags)
@@ -2002,7 +2002,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
 
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
-        drte_engine__begin_dirty(pTextView->pTextEngine);
+        drte_view_begin_dirty(pTextView->pTextEngine->pView);
         if (utf32 == '\t') {
             // The tab key is a complex case because it can be handled differently depending on the configuration:
             //   - If multiple lines are selected, they need to be block-indented
@@ -2117,7 +2117,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                 }
             }
         }
-        drte_engine__end_dirty(pTextView->pTextEngine);
+        drte_view_end_dirty(pTextView->pTextEngine->pView);
     }
     drte_engine_commit_undo_point(pTextView->pTextEngine);
 }
