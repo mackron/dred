@@ -2680,21 +2680,6 @@ bool drte_engine_delete_character_to_right_of_cursors(drte_engine* pEngine, bool
 }
 
 
-int drte_region_qsort(const void* pSelection0, const void* pSelection1)
-{
-    drte_region selection0 = *(const drte_region*)pSelection0;
-    drte_region selection1 = *(const drte_region*)pSelection1;
-
-    if (selection0.iCharBeg < selection1.iCharBeg) {
-        return -1;
-    }
-    if (selection0.iCharBeg > selection1.iCharBeg) {
-        return +1;
-    }
-
-    return 0;
-}
-
 bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors)
 {
     if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
@@ -2711,76 +2696,6 @@ bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors)
     drte_engine__end_dirty(pEngine);
 
     return wasTextChanged;
-
-#if 0
-    // To delete selected text we need to ensure there are no overlaps. Selections are then deleted back to front.
-    drte_region* pSortedSelections = (drte_region*)malloc(pEngine->pView->selectionCount * sizeof(*pSortedSelections));
-    if (pSortedSelections == NULL) {
-        return false;
-    }
-
-    for (size_t iSelection = 0; iSelection < pEngine->pView->selectionCount; ++iSelection) {
-        pSortedSelections[iSelection] = pEngine->pView->pSelections[iSelection];
-    }
-
-    for (size_t iSelection = 0; iSelection < pEngine->pView->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pSortedSelections[iSelection]);
-        for (size_t iSelection2 = iSelection+1; iSelection2 < pEngine->pView->selectionCount; ++iSelection2) {
-            if (iSelection != iSelection2) {
-                drte_region selection2 = drte_region_normalize(pSortedSelections[iSelection2]);
-                if (selection.iCharBeg < selection2.iCharBeg) {
-                    if (selection2.iCharEnd < selection.iCharEnd) {
-                        selection2.iCharEnd = selection.iCharEnd;
-                        pSortedSelections[iSelection2] = selection2;
-                    }
-                    if (selection.iCharEnd > selection2.iCharBeg) {
-                        selection.iCharEnd = selection2.iCharBeg;
-                    }
-                } else {
-                    if (selection.iCharBeg < selection2.iCharEnd) {
-                        selection.iCharBeg = selection2.iCharEnd;
-                        if (selection.iCharEnd < selection.iCharBeg) {
-                            selection.iCharEnd = selection.iCharBeg;
-                        }
-                    }
-                }
-            }
-        }
-
-        pSortedSelections[iSelection] = selection;
-    }
-
-    qsort(pSortedSelections, pEngine->pView->selectionCount, sizeof(*pSortedSelections), drte_region_qsort);
-
-    drte_engine__begin_dirty(pEngine);
-    bool wasTextChanged = false;
-    for (size_t iSelection = pEngine->pView->selectionCount; iSelection > 0; --iSelection) {
-        drte_region selection = pSortedSelections[iSelection-1];
-        if (selection.iCharBeg < selection.iCharEnd) {
-            wasTextChanged = drte_engine_delete_text(pEngine, selection.iCharBeg, selection.iCharEnd) || wasTextChanged;
-            if (wasTextChanged) {
-                if (updateCursors) {
-                    for (size_t iCursor = 0; iCursor < pEngine->pView->cursorCount; ++iCursor) {
-                        size_t iCursorChar = pEngine->pView->pCursors[iCursor].iCharAbs;
-                        if (iCursorChar > selection.iCharBeg) {
-                            if (iCursorChar > selection.iCharEnd) {
-                                iCursorChar -= (selection.iCharEnd - selection.iCharBeg);
-                            } else {
-                                iCursorChar -= (iCursorChar - selection.iCharBeg);
-                            }
-
-                            drte_view_move_cursor_to_character(pEngine->pView, iCursor, iCursorChar);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    drte_engine__end_dirty(pEngine);
-
-    free(pSortedSelections);
-    return wasTextChanged;
-#endif
 }
 
 bool drte_engine_delete_selection_text(drte_engine* pEngine, size_t iSelectionToDelete, bool updateCursorsAndSelection)
