@@ -185,7 +185,6 @@ struct drte_view
     // The width of the text cursor.
     float cursorWidth;
 
-
     // The list of active cursors.
     drte_cursor* pCursors;
 
@@ -205,7 +204,7 @@ struct drte_view
     unsigned int _dirtyCounter;
     drte_rect _accumulatedDirtyRect;
     drte_line_cache _wrappedLines;
-    drte_line_cache* pWrappedLines;     // Points to _wrappedLines if word wrap is enabled; points to _unwrappedLines when word wrap is disabled.
+    drte_line_cache* pWrappedLines;     // Points to _wrappedLines if word wrap is enabled; points to pEngine->_unwrappedLines when word wrap is disabled.
 };
 
 struct drte_engine
@@ -301,9 +300,6 @@ struct drte_engine
 
     /// Whether or not the cursor is showing based on it's blinking state.
     bool isCursorBlinkOn;
-
-    /// Whether or not the cursor is being shown. False by default.
-    bool isShowingCursor;
 
 
     // The list of selection regions.
@@ -526,6 +522,9 @@ void drte_engine_set_cursor_blink_rate(drte_engine* pEngine, unsigned int blinkR
 
 /// Retrieves the blink rate of the cursor in milliseconds.
 unsigned int drte_engine_get_cursor_blink_rate(drte_engine* pEngine);
+
+// Resets the cursors blink state.
+void drte_engine_reset_cursor_blinks(drte_engine* pEngine);
 
 /// Shows the cursor.
 void drte_engine_show_cursor(drte_engine* pEngine);
@@ -928,6 +927,15 @@ void drte_view_set_cursor_width(drte_view* pView, float cursorWidth);
 // Retrieves the width of the text cursor.
 DRTE_INLINE float drte_view_get_cursor_width(drte_view* pView) { if (pView == NULL) return 0; return pView->cursorWidth; }
 
+// Shows the cursor.
+void drte_view_show_cursors(drte_view* pView);
+
+// Hides the cursor.
+void drte_view_hide_cursors(drte_view* pView);
+
+// Determines whether or not the cursor is visible.
+bool drte_view_is_showing_cursors(drte_view* pView);
+
 // Retrieves the position of the cursor, relative to the container.
 void drte_view_get_cursor_position(drte_view* pView, size_t cursorIndex, float* pPosXOut, float* pPosYOut);
 
@@ -1058,6 +1066,7 @@ void drte_view_get_line_character_range(drte_view* pView, drte_line_cache* pLine
 // Flags for the drte_engine::flags and drte_view::flags properties.
 #define DRTE_USE_EXPLICIT_LINE_HEIGHT   (1 << 0)
 #define DRTE_WORD_WRAP_ENABLED          (1 << 1)
+#define DRTE_SHOWING_CURSORS            (1 << 2)
 
 
 
@@ -2052,7 +2061,6 @@ bool drte_engine_init(drte_engine* pEngine, void* pUserData)
     pEngine->cursorBlinkRate       = 500;
     pEngine->timeToNextCursorBlink = pEngine->cursorBlinkRate;
     pEngine->isCursorBlinkOn       = true;
-    pEngine->isShowingCursor       = false;
     pEngine->pUserData             = pUserData;
 
     drte_stack_buffer_init(&pEngine->preparedUndoState);
@@ -2579,25 +2587,20 @@ unsigned int drte_engine_get_cursor_blink_rate(drte_engine* pEngine)
     return pEngine->cursorBlinkRate;
 }
 
+void drte_engine_reset_cursor_blinks(drte_engine* pEngine)
+{
+    if (pEngine == NULL) return;
+    pEngine->timeToNextCursorBlink = pEngine->cursorBlinkRate;
+    pEngine->isCursorBlinkOn = true;
+}
+
 void drte_engine_show_cursor(drte_engine* pEngine)
 {
     if (pEngine == NULL) {
         return;
     }
 
-    if (!pEngine->isShowingCursor)
-    {
-        pEngine->isShowingCursor = true;
-
-        pEngine->timeToNextCursorBlink = pEngine->cursorBlinkRate;
-        pEngine->isCursorBlinkOn = true;
-
-        drte_engine__begin_dirty(pEngine);
-        for (size_t iCursor = 0; iCursor < pEngine->pView->cursorCount; ++iCursor) {
-            drte_engine__on_dirty(pEngine, drte_engine_get_cursor_rect(pEngine, iCursor));
-        }
-        drte_engine__end_dirty(pEngine);
-    }
+    drte_view_show_cursors(pEngine->pView);
 }
 
 void drte_engine_hide_cursor(drte_engine* pEngine)
@@ -2606,16 +2609,7 @@ void drte_engine_hide_cursor(drte_engine* pEngine)
         return;
     }
 
-    if (pEngine->isShowingCursor)
-    {
-        pEngine->isShowingCursor = false;
-
-        drte_engine__begin_dirty(pEngine);
-        for (size_t iCursor = 0; iCursor < pEngine->pView->cursorCount; ++iCursor) {
-            drte_engine__on_dirty(pEngine, drte_engine_get_cursor_rect(pEngine, iCursor));
-        }
-        drte_engine__end_dirty(pEngine);
-    }
+    drte_view_hide_cursors(pEngine->pView);
 }
 
 bool drte_engine_is_showing_cursor(drte_engine* pEngine)
@@ -2624,7 +2618,7 @@ bool drte_engine_is_showing_cursor(drte_engine* pEngine)
         return false;
     }
 
-    return pEngine->isShowingCursor;
+    return drte_view_is_showing_cursors(pEngine->pView);
 }
 
 size_t drte_engine_insert_cursor(drte_engine* pEngine, size_t iChar)
@@ -5642,6 +5636,43 @@ void drte_view_set_cursor_width(drte_view* pView, float cursorWidth)
 }
 
 
+void drte_view_show_cursors(drte_view* pView)
+{
+    if (pView == NULL || drte_view_is_showing_cursors(pView)) {
+        return;
+    }
+
+    pView->flags |= DRTE_SHOWING_CURSORS;
+
+    drte_view_begin_dirty(pView);
+    for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
+        drte_view_dirty(pView, drte_view_get_cursor_rect(pView, iCursor));
+    }
+    drte_view_end_dirty(pView);
+}
+
+void drte_view_hide_cursors(drte_view* pView)
+{
+    if (pView == NULL || !drte_view_is_showing_cursors(pView)) {
+        return;
+    }
+
+    pView->flags &= ~DRTE_SHOWING_CURSORS;
+
+    drte_view_begin_dirty(pView);
+    for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
+        drte_view_dirty(pView, drte_view_get_cursor_rect(pView, iCursor));
+    }
+    drte_view_end_dirty(pView);
+}
+
+bool drte_view_is_showing_cursors(drte_view* pView)
+{
+    if (pView == NULL) return false;
+    return (pView->flags & DRTE_SHOWING_CURSORS) != 0;
+}
+
+
 void drte_view_get_cursor_position(drte_view* pView, size_t cursorIndex, float* pPosXOut, float* pPosYOut)
 {
     if (pPosXOut) *pPosXOut = 0;
@@ -5849,7 +5880,7 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
 
 
     // Cursors.
-    if (pView->pEngine->isShowingCursor && pView->pEngine->isCursorBlinkOn && pView->pEngine->styles[pView->pEngine->cursorStyleSlot].styleToken != 0) {
+    if (drte_view_is_showing_cursors(pView) && pView->pEngine->isCursorBlinkOn && pView->pEngine->styles[pView->pEngine->cursorStyleSlot].styleToken != 0) {
         for (size_t iCursor = 0; iCursor < pView->pEngine->pView->cursorCount; ++iCursor) {
             pView->pEngine->onPaintRect(pView->pEngine, pView, pView->pEngine->styles[pView->pEngine->cursorStyleSlot].styleToken, drte_engine_get_cursor_rect(pView->pEngine, iCursor), pPaintData);
         }
