@@ -553,6 +553,11 @@ drte_view* drte_view_create(drte_engine* pEngine);
 void drte_view_delete(drte_view* pView);
 
 
+// Retrieves a pointer to the neighboring view in the linked list. Use this for iteration.
+DRTE_INLINE drte_view* drte_view_next_view(drte_view* pView) { if (pView == NULL) return NULL; return pView->_pNextView; }
+DRTE_INLINE drte_view* drte_view_prev_view(drte_view* pView) { if (pView == NULL) return NULL; return pView->_pPrevView; }
+
+
 // Sets the size of the container of the view.
 void drte_view_set_size(drte_view* pView, float sizeX, float sizeY);
 
@@ -886,8 +891,6 @@ bool drte_view_delete_character_to_left_of_cursors(drte_view* pView, bool leaveN
 /// @return True if the text within the text engine has changed.
 bool drte_view_delete_character_to_right_of_cursor(drte_view* pView, size_t cursorIndex);
 bool drte_view_delete_character_to_right_of_cursors(drte_view* pView, bool leaveNewLines);
-
-
 
 
 /// Deletes the currently selected text.
@@ -2380,17 +2383,18 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
 
     // Refresh the lines if line wrap is enabled.
     // TODO: Optimize this.
-    if (drte_view_is_word_wrap_enabled(pEngine->pView)) {
-        drte_view__refresh_word_wrapping(pEngine->pView);
+    for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+        if (drte_view_is_word_wrap_enabled(pView)) {
+            drte_view__refresh_word_wrapping(pView);    // <-- This will repaint.
+        } else {
+            drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+        }
     }
-
 
 
     if (pEngine->onTextChanged) {
         pEngine->onTextChanged(pEngine);
     }
-
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
 
     return true;
 }
@@ -2456,16 +2460,18 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
 
         // Refresh the lines if line wrap is enabled.
         // TODO: Optimize this.
-        if (drte_view_is_word_wrap_enabled(pEngine->pView)) {
-            drte_view__refresh_word_wrapping(pEngine->pView);
+        for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+            if (drte_view_is_word_wrap_enabled(pView)) {
+                drte_view__refresh_word_wrapping(pView);    // <-- This will repaint.
+            } else {
+                drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
+            }
         }
-
+        
 
         if (pEngine->onTextChanged) {
             pEngine->onTextChanged(pEngine);
         }
-
-        drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
 
         return true;
     }
