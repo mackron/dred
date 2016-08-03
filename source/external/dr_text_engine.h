@@ -516,69 +516,9 @@ bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors);
 bool drte_engine_delete_selection_text(drte_engine* pEngine, size_t iSelectionToDelete, bool updateCursorsAndSelection);
 
 
-/// Determines whether or not anything is selected in the given text engine.
-bool drte_engine_is_anything_selected(drte_engine* pEngine);
-
-/// Deselects everything in the given text engine.
-void drte_engine_deselect_all(drte_engine* pEngine);
-
-/// Selects everything in the given text engine.
-void drte_engine_select_all(drte_engine* pEngine);
-
-/// Selects the given range of text.
-void drte_engine_select(drte_engine* pEngine, size_t firstCharacter, size_t lastCharacter);
-
-// Selects the word under a cursor.
-void drte_engine_select_word_under_cursor(drte_engine* pEngine, size_t cursorIndex);
-
-/// Retrieves a copy of the selected text.
-///
-/// @remarks
-///     This returns the length of the selected text. Call this once with <textOut> set to NULL to calculate the required size of the
-///     buffer.
-///     @par
-///     If the output buffer is not larger enough, the string will be truncated.
-size_t drte_engine_get_selected_text(drte_engine* pEngine, char* textOut, size_t textOutLength);
-
-/// Retrieves the index of the first line of the current selection.
-size_t drte_engine_get_selection_first_line(drte_engine* pEngine, size_t iSelection);
-
-/// Retrieves the index of the last line of the current selection.
-size_t drte_engine_get_selection_last_line(drte_engine* pEngine, size_t iSelection);
-
-/// Moves the selection anchor to the end of the given line.
-void drte_engine_move_selection_anchor_to_end_of_line(drte_engine* pEngine, size_t iLine);
-
-/// Moves the selection anchor to the start of the given line.
-void drte_engine_move_selection_anchor_to_start_of_line(drte_engine* pEngine, size_t iLine);
-
-/// Retrieves the line the selection anchor is sitting on.
-size_t drte_engine_get_selection_anchor_line(drte_engine* pEngine);
-
-// Begins a new selection region.
-void drte_engine_begin_selection(drte_engine* pEngine, size_t iCharBeg);
-
-// Cancels a selection by it's index.
-void drte_engine_cancel_selection(drte_engine* pEngine, size_t iSelection);
-
-// Cancels the most recent selection.
-void drte_engine_cancel_last_selection(drte_engine* pEngine);
-
-// Sets the anchor of the most recent selection region.
-void drte_engine_set_selection_anchor(drte_engine* pEngine, size_t iCharBeg);
-
-// Sets the end point of the most recent selection region.
-void drte_engine_set_selection_end_point(drte_engine* pEngine, size_t iCharEnd);
-
-// Retrieves the character range of the last selection, if any.
-bool drte_engine_get_last_selection(drte_engine* pEngine, size_t* iCharBegOut, size_t* iCharEndOut);
-
 
 // Retrieves the last character of the word beginning with a character which can be at any position within said word.
 bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordEndOut);
-
-// Retrieves the word under the given character.
-bool drte_engine_get_word_under_cursor(drte_engine* pEngine, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
 
 // Retrieves the word under the point relative to the container.
 bool drte_engine_get_word_under_point(drte_engine* pEngine, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut);
@@ -892,6 +832,67 @@ bool drte_view_is_cursor_at_start_of_selection(drte_view* pView, size_t cursorIn
 /// Determines whether or not the cursor is sitting at the end fo the selection.
 bool drte_view_is_cursor_at_end_of_selection(drte_view* pView, size_t cursorIndex);
 
+// Retrieves the word under the given character.
+bool drte_view_get_word_under_cursor(drte_view* pView, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
+
+
+
+/// Determines whether or not anything is selected in the given text engine.
+bool drte_view_is_anything_selected(drte_view* pView);
+
+/// Deselects everything in the given text engine.
+void drte_view_deselect_all(drte_view* pView);
+
+/// Selects everything in the given text engine.
+void drte_view_select_all(drte_view* pView);
+
+/// Selects the given range of text.
+void drte_view_select(drte_view* pView, size_t firstCharacter, size_t lastCharacter);
+
+// Selects the word under a cursor.
+void drte_view_select_word_under_cursor(drte_view* pView, size_t cursorIndex);
+
+/// Retrieves a copy of the selected text.
+///
+/// @remarks
+///     This returns the length of the selected text. Call this once with <textOut> set to NULL to calculate the required size of the
+///     buffer.
+///     @par
+///     If the output buffer is not larger enough, the string will be truncated.
+size_t drte_view_get_selected_text(drte_view* pView, char* textOut, size_t textOutLength);
+
+/// Retrieves the index of the first line of the current selection.
+size_t drte_view_get_selection_first_line(drte_view* pView, size_t iSelection);
+
+/// Retrieves the index of the last line of the current selection.
+size_t drte_view_get_selection_last_line(drte_view* pView, size_t iSelection);
+
+/// Moves the selection anchor to the end of the given line.
+void drte_view_move_selection_anchor_to_end_of_line(drte_view* pView, size_t iLine);
+
+/// Moves the selection anchor to the start of the given line.
+void drte_view_move_selection_anchor_to_start_of_line(drte_view* pView, size_t iLine);
+
+/// Retrieves the line the selection anchor is sitting on.
+size_t drte_view_get_selection_anchor_line(drte_view* pView);
+
+// Begins a new selection region.
+void drte_view_begin_selection(drte_view* pView, size_t iCharBeg);
+
+// Cancels a selection by it's index.
+void drte_view_cancel_selection(drte_view* pView, size_t iSelection);
+
+// Cancels the most recent selection.
+void drte_view_cancel_last_selection(drte_view* pView);
+
+// Sets the anchor of the most recent selection region.
+void drte_view_set_selection_anchor(drte_view* pView, size_t iCharBeg);
+
+// Sets the end point of the most recent selection region.
+void drte_view_set_selection_end_point(drte_view* pView, size_t iCharEnd);
+
+// Retrieves the character range of the last selection, if any.
+bool drte_view_get_last_selection(drte_view* pView, size_t* iCharBegOut, size_t* iCharEndOut);
 
 
 #ifdef __cplusplus
@@ -2043,7 +2044,9 @@ void drte_engine_set_selection_style(drte_engine* pEngine, drte_style_token styl
 
     pEngine->selectionStyleSlot = styleSlot;
 
-    if (drte_engine_is_anything_selected(pEngine)) {
+
+    // TODO: Do this for all views.
+    if (drte_view_is_anything_selected(pEngine->pView)) {
         drte_engine__refresh(pEngine);
     }
 }
@@ -2854,51 +2857,6 @@ bool drte_engine_delete_selection_text(drte_engine* pEngine, size_t iSelectionTo
 }
 
 
-bool drte_engine_is_anything_selected(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return false;
-    }
-
-    return pEngine->pView->selectionCount > 0;
-}
-
-void drte_engine_deselect_all(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    pEngine->pView->selectionCount = 0;
-
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
-}
-
-void drte_engine_select_all(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    // Deselect everything first to ensure any multi-select stuff is cleared.
-    drte_engine_deselect_all(pEngine);
-
-    drte_engine_select(pEngine, 0, pEngine->textLength);
-}
-
-void drte_engine_select(drte_engine* pEngine, size_t firstCharacter, size_t lastCharacter)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_engine_begin_selection(pEngine, firstCharacter);
-    drte_engine_set_selection_end_point(pEngine, lastCharacter);
-
-    drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
-}
-
-
 bool drte_engine_get_start_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut)
 {
     if (pEngine == NULL) {
@@ -3033,172 +2991,8 @@ bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iCha
 }
 
 
-void drte_engine_select_word_under_cursor(drte_engine* pEngine, size_t cursorIndex)
-{
-    if (pEngine == NULL || pEngine->pView->cursorCount <= cursorIndex) {
-        return;
-    }
-
-    size_t iWordBeg;
-    size_t iWordEnd;
-    drte_engine_get_word_under_cursor(pEngine, cursorIndex, &iWordBeg, &iWordEnd);
-
-    drte_engine_select(pEngine, iWordBeg, iWordEnd);
-}
-
-size_t drte_engine_get_selected_text(drte_engine* pEngine, char* textOut, size_t textOutSize)
-{
-    // Safety.
-    if (textOut != NULL && textOutSize > 0) {
-        textOut[0] = '\0';
-    }
-
-    if (pEngine == NULL || (textOut != NULL && textOutSize == 0)) {
-        return 0;
-    }
-
-    if (!drte_engine_is_anything_selected(pEngine)) {
-        return 0;
-    }
 
 
-    // The selected text is just every selection concatenated together.
-    size_t length = 0;
-    for (size_t iSelection = 0; iSelection < pEngine->pView->selectionCount; ++iSelection) {
-        drte_region region = drte_region_normalize(pEngine->pView->pSelections[iSelection]);
-        if (textOut != NULL) {
-            drte__strncpy_s(textOut+length, textOutSize-length, pEngine->text+region.iCharBeg, (region.iCharEnd - region.iCharBeg));
-        }
-
-        length += (region.iCharEnd - region.iCharBeg);
-    }
-
-    return length;
-}
-
-size_t drte_engine_get_selection_first_line(drte_engine* pEngine, size_t iSelection)
-{
-    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
-        return 0;
-    }
-
-    return drte_view_get_character_line(pEngine->pView, pEngine->pView->pWrappedLines, drte_region_normalize(pEngine->pView->pSelections[iSelection]).iCharBeg);
-}
-
-size_t drte_engine_get_selection_last_line(drte_engine* pEngine, size_t iSelection)
-{
-    if (pEngine == NULL) {
-        return 0;
-    }
-
-    return drte_view_get_character_line(pEngine->pView, pEngine->pView->pWrappedLines, drte_region_normalize(pEngine->pView->pSelections[iSelection]).iCharEnd);
-}
-
-void drte_engine_move_selection_anchor_to_end_of_line(drte_engine* pEngine, size_t iLine)
-{
-    drte_engine_set_selection_anchor(pEngine, drte_view_get_line_last_character(pEngine->pView, pEngine->pView->pWrappedLines, iLine));
-}
-
-void drte_engine_move_selection_anchor_to_start_of_line(drte_engine* pEngine, size_t iLine)
-{
-    drte_engine_set_selection_anchor(pEngine, drte_view_get_line_first_character(pEngine->pView, pEngine->pView->pWrappedLines, iLine));
-}
-
-size_t drte_engine_get_selection_anchor_line(drte_engine* pEngine)
-{
-    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
-        return 0;
-    }
-
-    return drte_view_get_character_line(pEngine->pView, pEngine->pView->pWrappedLines, pEngine->pView->pSelections[pEngine->pView->selectionCount-1].iCharBeg);
-}
-
-
-void drte_engine_begin_selection(drte_engine* pEngine, size_t iCharBeg)
-{
-    if (pEngine == NULL) {
-        return;
-    }
-
-    drte_region* pNewSelections = (drte_region*)realloc(pEngine->pView->pSelections, (pEngine->pView->selectionCount + 1) * sizeof(*pNewSelections));
-    if (pNewSelections == NULL) {
-        return;
-    }
-
-    pEngine->pView->pSelections = pNewSelections;
-    pEngine->pView->pSelections[pEngine->pView->selectionCount].iCharBeg = iCharBeg;
-    pEngine->pView->pSelections[pEngine->pView->selectionCount].iCharEnd = iCharBeg;
-    pEngine->pView->selectionCount += 1;
-}
-
-void drte_engine_cancel_selection(drte_engine* pEngine, size_t iSelection)
-{
-    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
-        return;
-    }
-
-    for (/* Do Nothing */; iSelection < pEngine->pView->selectionCount-1; ++iSelection) {
-        pEngine->pView->pSelections[iSelection] = pEngine->pView->pSelections[iSelection+1];
-    }
-
-    pEngine->pView->selectionCount -= 1;
-}
-
-void drte_engine_cancel_last_selection(drte_engine* pEngine)
-{
-    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
-        return;
-    }
-
-    pEngine->pView->selectionCount -= 1;
-}
-
-void drte_engine_set_selection_anchor(drte_engine* pEngine, size_t iCharBeg)
-{
-    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
-        return;
-    }
-
-    if (pEngine->pView->pSelections[pEngine->pView->selectionCount-1].iCharBeg != iCharBeg) {
-        pEngine->pView->pSelections[pEngine->pView->selectionCount-1].iCharBeg = iCharBeg;
-        drte_engine__repaint(pEngine);
-    }
-}
-
-void drte_engine_set_selection_end_point(drte_engine* pEngine, size_t iCharEnd)
-{
-    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
-        return;
-    }
-
-    if (pEngine->pView->pSelections[pEngine->pView->selectionCount-1].iCharEnd != iCharEnd) {
-        pEngine->pView->pSelections[pEngine->pView->selectionCount-1].iCharEnd = iCharEnd;
-        drte_engine__repaint(pEngine);
-    }
-}
-
-bool drte_engine_get_last_selection(drte_engine* pEngine, size_t* iCharBegOut, size_t* iCharEndOut)
-{
-    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
-        return false;
-    }
-
-    drte_region selection = drte_region_normalize(pEngine->pView->pSelections[pEngine->pView->selectionCount-1]);
-
-    if (iCharBegOut) *iCharBegOut = selection.iCharBeg;
-    if (iCharEndOut) *iCharEndOut = selection.iCharEnd;
-    return true;
-}
-
-
-bool drte_engine_get_word_under_cursor(drte_engine* pEngine, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut)
-{
-    if (pEngine == NULL || pEngine->pView->cursorCount <= cursorIndex) {
-        return false;
-    }
-
-    return drte_engine_get_word_containing_character(pEngine, pEngine->pView->pCursors[cursorIndex].iCharAbs, pWordBegOut, pWordEndOut);
-}
 
 bool drte_engine_get_word_under_point(drte_engine* pEngine, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut)
 {
@@ -5583,6 +5377,222 @@ bool drte_view_is_cursor_at_end_of_selection(drte_view* pView, size_t cursorInde
     drte_region region = drte_region_normalize(pView->pSelections[pView->selectionCount-1]);
     return pView->pCursors[cursorIndex].iCharAbs == region.iCharEnd;
 }
+
+bool drte_view_get_word_under_cursor(drte_view* pView, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut)
+{
+    if (pView == NULL || pView->cursorCount <= cursorIndex) {
+        return false;
+    }
+
+    return drte_engine_get_word_containing_character(pView->pEngine, pView->pCursors[cursorIndex].iCharAbs, pWordBegOut, pWordEndOut);
+}
+
+
+
+
+bool drte_view_is_anything_selected(drte_view* pView)
+{
+    if (pView == NULL) {
+        return false;
+    }
+
+    return pView->selectionCount > 0;
+}
+
+void drte_view_deselect_all(drte_view* pView)
+{
+    if (pView == NULL) {
+        return;
+    }
+
+    pView->selectionCount = 0;
+
+    drte_view_dirty(pView, drte_view_get_local_rect(pView));
+}
+
+void drte_view_select_all(drte_view* pView)
+{
+    if (pView == NULL) {
+        return;
+    }
+
+    // Deselect everything first to ensure any multi-select stuff is cleared.
+    drte_view_deselect_all(pView);
+
+    drte_view_select(pView, 0, pView->pEngine->textLength);
+}
+
+void drte_view_select(drte_view* pView, size_t firstCharacter, size_t lastCharacter)
+{
+    if (pView == NULL) {
+        return;
+    }
+
+    drte_view_begin_selection(pView, firstCharacter);
+    drte_view_set_selection_end_point(pView, lastCharacter);
+
+    drte_view_dirty(pView, drte_view_get_local_rect(pView));
+}
+
+void drte_view_select_word_under_cursor(drte_view* pView, size_t cursorIndex)
+{
+    if (pView == NULL || pView->cursorCount <= cursorIndex) {
+        return;
+    }
+
+    size_t iWordBeg;
+    size_t iWordEnd;
+    drte_view_get_word_under_cursor(pView, cursorIndex, &iWordBeg, &iWordEnd);
+
+    drte_view_select(pView, iWordBeg, iWordEnd);
+}
+
+size_t drte_view_get_selected_text(drte_view* pView, char* textOut, size_t textOutSize)
+{
+    // Safety.
+    if (textOut != NULL && textOutSize > 0) {
+        textOut[0] = '\0';
+    }
+
+    if (pView == NULL || (textOut != NULL && textOutSize == 0)) {
+        return 0;
+    }
+
+    if (!drte_view_is_anything_selected(pView)) {
+        return 0;
+    }
+
+
+    // The selected text is just every selection concatenated together.
+    size_t length = 0;
+    for (size_t iSelection = 0; iSelection < pView->selectionCount; ++iSelection) {
+        drte_region region = drte_region_normalize(pView->pSelections[iSelection]);
+        if (textOut != NULL) {
+            drte__strncpy_s(textOut+length, textOutSize-length, pView->pEngine->text+region.iCharBeg, (region.iCharEnd - region.iCharBeg));
+        }
+
+        length += (region.iCharEnd - region.iCharBeg);
+    }
+
+    return length;
+}
+
+size_t drte_view_get_selection_first_line(drte_view* pView, size_t iSelection)
+{
+    if (pView == NULL || pView->selectionCount == 0) {
+        return 0;
+    }
+
+    return drte_view_get_character_line(pView, pView->pWrappedLines, drte_region_normalize(pView->pSelections[iSelection]).iCharBeg);
+}
+
+size_t drte_view_get_selection_last_line(drte_view* pView, size_t iSelection)
+{
+    if (pView == NULL) {
+        return 0;
+    }
+
+    return drte_view_get_character_line(pView, pView->pWrappedLines, drte_region_normalize(pView->pSelections[iSelection]).iCharEnd);
+}
+
+void drte_view_move_selection_anchor_to_end_of_line(drte_view* pView, size_t iLine)
+{
+    drte_view_set_selection_anchor(pView, drte_view_get_line_last_character(pView, pView->pWrappedLines, iLine));
+}
+
+void drte_view_move_selection_anchor_to_start_of_line(drte_view* pView, size_t iLine)
+{
+    drte_view_set_selection_anchor(pView, drte_view_get_line_first_character(pView, pView->pWrappedLines, iLine));
+}
+
+size_t drte_view_get_selection_anchor_line(drte_view* pView)
+{
+    if (pView == NULL || pView->selectionCount == 0) {
+        return 0;
+    }
+
+    return drte_view_get_character_line(pView, pView->pWrappedLines, pView->pSelections[pView->selectionCount-1].iCharBeg);
+}
+
+
+void drte_view_begin_selection(drte_view* pView, size_t iCharBeg)
+{
+    if (pView == NULL) {
+        return;
+    }
+
+    drte_region* pNewSelections = (drte_region*)realloc(pView->pSelections, (pView->selectionCount + 1) * sizeof(*pNewSelections));
+    if (pNewSelections == NULL) {
+        return;
+    }
+
+    pView->pSelections = pNewSelections;
+    pView->pSelections[pView->selectionCount].iCharBeg = iCharBeg;
+    pView->pSelections[pView->selectionCount].iCharEnd = iCharBeg;
+    pView->selectionCount += 1;
+}
+
+void drte_view_cancel_selection(drte_view* pView, size_t iSelection)
+{
+    if (pView == NULL || pView->selectionCount == 0) {
+        return;
+    }
+
+    for (/* Do Nothing */; iSelection < pView->selectionCount-1; ++iSelection) {
+        pView->pSelections[iSelection] = pView->pSelections[iSelection+1];
+    }
+
+    pView->selectionCount -= 1;
+}
+
+void drte_view_cancel_last_selection(drte_view* pView)
+{
+    if (pView == NULL || pView->selectionCount == 0) {
+        return;
+    }
+
+    pView->selectionCount -= 1;
+}
+
+void drte_view_set_selection_anchor(drte_view* pView, size_t iCharBeg)
+{
+    if (pView == NULL || pView->selectionCount == 0) {
+        return;
+    }
+
+    if (pView->pSelections[pView->selectionCount-1].iCharBeg != iCharBeg) {
+        pView->pSelections[pView->selectionCount-1].iCharBeg = iCharBeg;
+        drte_view__repaint(pView);
+    }
+}
+
+void drte_view_set_selection_end_point(drte_view* pView, size_t iCharEnd)
+{
+    if (pView == NULL || pView->selectionCount == 0) {
+        return;
+    }
+
+    if (pView->pSelections[pView->selectionCount-1].iCharEnd != iCharEnd) {
+        pView->pSelections[pView->selectionCount-1].iCharEnd = iCharEnd;
+        drte_view__repaint(pView);
+    }
+}
+
+bool drte_view_get_last_selection(drte_view* pView, size_t* iCharBegOut, size_t* iCharEndOut)
+{
+    if (pView == NULL || pView->selectionCount == 0) {
+        return false;
+    }
+
+    drte_region selection = drte_region_normalize(pView->pSelections[pView->selectionCount-1]);
+
+    if (iCharBegOut) *iCharBegOut = selection.iCharBeg;
+    if (iCharEndOut) *iCharEndOut = selection.iCharEnd;
+    return true;
+}
+
+
+
 
 
 
