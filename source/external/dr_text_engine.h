@@ -305,10 +305,6 @@ struct drte_engine
     /// Whether or not the cursor is being shown. False by default.
     bool isShowingCursor;
 
-    // Whether or not word wrap is enabled.
-    bool isWordWrapEnabled;
-
-
 
     // The list of selection regions.
     drte_region* pSelections;
@@ -2057,7 +2053,6 @@ bool drte_engine_init(drte_engine* pEngine, void* pUserData)
     pEngine->timeToNextCursorBlink = pEngine->cursorBlinkRate;
     pEngine->isCursorBlinkOn       = true;
     pEngine->isShowingCursor       = false;
-    pEngine->isWordWrapEnabled     = false;
     pEngine->pUserData             = pUserData;
 
     drte_stack_buffer_init(&pEngine->preparedUndoState);
@@ -3308,7 +3303,7 @@ bool drte_engine_is_cursor_at_end_of_selection(drte_engine* pEngine, size_t curs
 
 void drte_engine_set_on_cursor_move(drte_engine* pEngine, drte_engine_on_cursor_move_proc proc)
 {
-    if (pEngine == NULL || pEngine->isWordWrapEnabled) {
+    if (pEngine == NULL) {
         return;
     }
 
