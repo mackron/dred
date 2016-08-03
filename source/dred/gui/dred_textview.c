@@ -136,8 +136,8 @@ void dred_textview__clear_all_cursors(dred_textview* pTextView)
 
     // Engine.
     drte_engine__begin_dirty(pTextView->pTextEngine);
-    while (pTextView->pTextEngine->cursorCount > 1) {
-        drte_engine_remove_cursor(pTextView->pTextEngine, pTextView->pTextEngine->cursorCount-2);
+    while (pTextView->pTextEngine->pView->cursorCount > 1) {
+        drte_engine_remove_cursor(pTextView->pTextEngine, pTextView->pTextEngine->pView->cursorCount-2);
     }
     drte_engine__end_dirty(pTextView->pTextEngine);
 
@@ -171,8 +171,8 @@ void dred_textview__insert_cursor(dred_textview* pTextView, size_t iChar)
     // If we are trying to insert a cursor on top of an existing cursor we need to just move the existing one to the end of the list,
     // thus making it the current cursor. We don't want cursors to be sitting on top of each other.
     size_t iExistingCursor = (size_t)-1;
-    for (size_t iCursor = 0; iCursor < pTextView->pTextEngine->cursorCount; ++iCursor) {
-        if (pTextView->pTextEngine->pCursors[iCursor].iCharAbs == iChar) {
+    for (size_t iCursor = 0; iCursor < pTextView->pTextEngine->pView->cursorCount; ++iCursor) {
+        if (pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs == iChar) {
             iExistingCursor = iCursor;
             break;
         }
@@ -203,7 +203,7 @@ bool dred_textview__get_cursor_selection(dred_textview* pTextView, size_t iCurso
 
     for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->selectionCount; ++iSelection) {
         drte_region selection = drte_region_normalize(pTextView->pTextEngine->pSelections[iSelection]);
-        if (selection.iCharBeg == pTextView->pTextEngine->pCursors[iCursor].iCharAbs || selection.iCharEnd == pTextView->pTextEngine->pCursors[iCursor].iCharAbs) {
+        if (selection.iCharBeg == pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs || selection.iCharEnd == pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs) {
             if (iSelectionOut) *iSelectionOut = iSelection;
             return true;
         }
@@ -223,7 +223,7 @@ bool dred_textview__move_cursor_to_start_of_selection(dred_textview* pTextView, 
 {
     assert(pTextView != NULL);
 
-    if (pTextView->pTextEngine->cursorCount == 0) {
+    if (pTextView->pTextEngine->pView->cursorCount == 0) {
         return false;
     }
 
@@ -231,7 +231,7 @@ bool dred_textview__move_cursor_to_start_of_selection(dred_textview* pTextView, 
     size_t iCursor = drte_engine_get_last_cursor(pTextView->pTextEngine);
     for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->selectionCount; ++iSelection) {
         drte_region selection = drte_region_normalize(pTextView->pTextEngine->pSelections[iSelection]);
-        if (selection.iCharEnd == pTextView->pTextEngine->pCursors[iCursor].iCharAbs) {
+        if (selection.iCharEnd == pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs) {
             // It's on this selection.
             drte_engine_move_cursor_to_character(pTextView->pTextEngine, iCursor, selection.iCharBeg);
             if (iSelectionOut) *iSelectionOut = iSelection;
@@ -246,7 +246,7 @@ bool dred_textview__move_cursor_to_end_of_selection(dred_textview* pTextView, si
 {
     assert(pTextView != NULL);
 
-    if (pTextView->pTextEngine->cursorCount == 0) {
+    if (pTextView->pTextEngine->pView->cursorCount == 0) {
         return false;
     }
 
@@ -254,7 +254,7 @@ bool dred_textview__move_cursor_to_end_of_selection(dred_textview* pTextView, si
     size_t iCursor = drte_engine_get_last_cursor(pTextView->pTextEngine);
     for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->selectionCount; ++iSelection) {
         drte_region selection = drte_region_normalize(pTextView->pTextEngine->pSelections[iSelection]);
-        if (selection.iCharBeg == pTextView->pTextEngine->pCursors[iCursor].iCharAbs) {
+        if (selection.iCharBeg == pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs) {
             // It's on this selection.
             drte_engine_move_cursor_to_character(pTextView->pTextEngine, iCursor, selection.iCharEnd);
             if (iSelectionOut) *iSelectionOut = iSelection;
@@ -288,9 +288,9 @@ bool dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
 
 
     // Any cursor whose character position comes after this cursor needs to be moved.
-    for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->cursorCount; ++iCursor2) {
-        if (pTextView->pTextEngine->pCursors[iCursor2].iCharAbs >= iChar) {
-            drte_engine_move_cursor_to_character(pTextView->pTextEngine, iCursor2, pTextView->pTextEngine->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
+    for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->pView->cursorCount; ++iCursor2) {
+        if (pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs >= iChar) {
+            drte_engine_move_cursor_to_character(pTextView->pTextEngine, iCursor2, pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
         }
     }
 
@@ -316,7 +316,7 @@ bool dred_textview__insert_tab_at_cursor(dred_textview* pTextView, size_t iCurso
 {
     assert(pTextView != NULL);
 
-    return dred_textview__insert_tab(pTextView, pTextView->pTextEngine->pCursors[iCursor].iCharAbs);
+    return dred_textview__insert_tab(pTextView, pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs);
 }
 
 
@@ -991,10 +991,10 @@ bool dred_textview_insert_text_at_cursors_no_undo(dred_textview* pTextView, cons
         wasTextChanged = drte_engine_insert_text_at_cursor(pTextView->pTextEngine, iCursor, text) || wasTextChanged;
 
         // Cursors and selections after this cursor need to be updated.
-        for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->cursorCount; ++iCursor2) {
+        for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->pView->cursorCount; ++iCursor2) {
             if (iCursor != iCursor2) {
-                if (pTextView->pTextEngine->pCursors[iCursor2].iCharAbs >= iChar) {
-                    drte_engine_move_cursor_to_character(pTextView->pTextEngine, iCursor2, pTextView->pTextEngine->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
+                if (pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs >= iChar) {
+                    drte_engine_move_cursor_to_character(pTextView->pTextEngine, iCursor2, pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
                 }
             }
         }
@@ -1083,9 +1083,9 @@ bool dred_textview_unindent_selected_blocks(dred_textview* pTextView)
                         wasTextChanged = drte_engine_delete_text(pTextView->pTextEngine, iLineChar, iLineChar + charactersRemovedCount) || wasTextChanged;
 
                         // Cursors and selections need to be updated.
-                        for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->cursorCount; ++iCursor2) {
-                            if (pTextView->pTextEngine->pCursors[iCursor2].iCharAbs >= iLineChar) {
-                                drte_engine_move_cursor_to_character(pTextView->pTextEngine, iCursor2, pTextView->pTextEngine->pCursors[iCursor2].iCharAbs - charactersRemovedCount);
+                        for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->pView->cursorCount; ++iCursor2) {
+                            if (pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs >= iLineChar) {
+                                drte_engine_move_cursor_to_character(pTextView->pTextEngine, iCursor2, pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs - charactersRemovedCount);
                             }
                         }
 
@@ -1608,7 +1608,7 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
 
 
         drte_engine_move_cursor_to_character_and_line(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine), iChar, iLine);
-        drte_engine__update_cursor_sticky_position(pTextView->pTextEngine, &pTextView->pTextEngine->pCursors[drte_engine_get_last_cursor(pTextView->pTextEngine)]);
+        drte_engine__update_cursor_sticky_position(pTextView->pTextEngine, &pTextView->pTextEngine->pView->pCursors[drte_engine_get_last_cursor(pTextView->pTextEngine)]);
 
 
         // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
@@ -1726,7 +1726,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                     wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView);
                     drte_engine_remove_overlapping_cursors(pTextView->pTextEngine);
                 } else {
-                    wasTextChanged = drte_engine_delete_character_to_left_of_cursors(pTextView->pTextEngine, pTextView->pTextEngine->cursorCount > 1);  // <-- Last argument controls whether or not new lines should block deletion.
+                    wasTextChanged = drte_engine_delete_character_to_left_of_cursors(pTextView->pTextEngine, pTextView->pTextEngine->pView->cursorCount > 1);  // <-- Last argument controls whether or not new lines should block deletion.
                 }
             }
             if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
@@ -1741,7 +1741,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                     wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView);
                     drte_engine_remove_overlapping_cursors(pTextView->pTextEngine);
                 } else {
-                    wasTextChanged = drte_engine_delete_character_to_right_of_cursors(pTextView->pTextEngine, pTextView->pTextEngine->cursorCount > 1); // <-- Last argument controls whether or not new lines should block deletion.
+                    wasTextChanged = drte_engine_delete_character_to_right_of_cursors(pTextView->pTextEngine, pTextView->pTextEngine->pView->cursorCount > 1); // <-- Last argument controls whether or not new lines should block deletion.
                 }
             }
             if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
@@ -1881,7 +1881,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                 }
             }
 
-            drte_engine__update_cursor_sticky_position(pTextView->pTextEngine, &pTextView->pTextEngine->pCursors[drte_engine_get_last_cursor(pTextView->pTextEngine)]);
+            drte_engine__update_cursor_sticky_position(pTextView->pTextEngine, &pTextView->pTextEngine->pView->pCursors[drte_engine_get_last_cursor(pTextView->pTextEngine)]);
         } break;
 
         case DRED_GUI_HOME:
@@ -1914,7 +1914,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                 }
             }
 
-            drte_engine__update_cursor_sticky_position(pTextView->pTextEngine, &pTextView->pTextEngine->pCursors[drte_engine_get_last_cursor(pTextView->pTextEngine)]);
+            drte_engine__update_cursor_sticky_position(pTextView->pTextEngine, &pTextView->pTextEngine->pView->pCursors[drte_engine_get_last_cursor(pTextView->pTextEngine)]);
         } break;
 
         case DRED_GUI_PAGE_UP:
@@ -2054,8 +2054,8 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
             if (utf32 == '\n') {
                 dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextView));
                 if (pDred->config.textEditorEnableAutoIndent) {
-                    for (size_t iCursor = 0; iCursor < pTextView->pTextEngine->cursorCount; ++iCursor) {
-                        size_t iCursorChar = pTextView->pTextEngine->pCursors[iCursor].iCharAbs;
+                    for (size_t iCursor = 0; iCursor < pTextView->pTextEngine->pView->cursorCount; ++iCursor) {
+                        size_t iCursorChar = pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs;
                         size_t iCursorLine = drte_engine_get_character_line(pTextView->pTextEngine, NULL, iCursorChar);
                         if (iCursorLine > 0) {
                             size_t iPrevLineCharBeg;
@@ -2105,10 +2105,10 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                             }
 
                             // Any cursor whose character position comes after this cursor needs to be moved.
-                            for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->cursorCount; ++iCursor2) {
+                            for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->pView->cursorCount; ++iCursor2) {
                                 if (iCursor2 != iCursor) {
-                                    if (pTextView->pTextEngine->pCursors[iCursor2].iCharAbs > iCursorChar) {
-                                        drte_engine_move_cursor_to_character(pTextView->pTextEngine, iCursor2, pTextView->pTextEngine->pCursors[iCursor2].iCharAbs + extraCharactersCount);
+                                    if (pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs > iCursorChar) {
+                                        drte_engine_move_cursor_to_character(pTextView->pTextEngine, iCursor2, pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs + extraCharactersCount);
                                     }
                                 }
                             }
