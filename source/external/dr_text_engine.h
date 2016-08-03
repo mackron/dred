@@ -1358,10 +1358,14 @@ typedef struct
     bool isAtEndOfLine;
 } drte_segment;
 
-float drte_engine__measure_segment(drte_engine* pEngine, drte_segment* pSegment)
+float drte_engine__measure_segment(drte_view* pView, drte_segment* pSegment)
 {
-    assert(pEngine != NULL);
+    assert(pView != NULL);
     assert(pSegment != NULL);
+
+    drte_engine* pEngine = pView->pEngine;
+    assert(pEngine != NULL);
+
 
     float segmentWidth = 0;
     if (pSegment->iCharEnd > pSegment->iCharBeg) {
@@ -1388,10 +1392,13 @@ float drte_engine__measure_segment(drte_engine* pEngine, drte_segment* pSegment)
     return segmentWidth;
 }
 
-bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
+bool drte_engine__next_segment(drte_view* pView, drte_segment* pSegment)
 {
-    assert(pEngine != NULL);
+    assert(pView != NULL);
     assert(pSegment != NULL);
+
+    drte_engine* pEngine = pView->pEngine;
+    assert(pEngine != NULL);
 
     // TODO: Handle UTF-8 properly.
     // TODO: There is LOTS of optimization opportunity in this function.
@@ -1540,28 +1547,34 @@ bool drte_engine__next_segment(drte_engine* pEngine, drte_segment* pSegment)
     pSegment->fgStyleSlot = fgStyleSlot;
     pSegment->bgStyleSlot = bgStyleSlot;
     pSegment->posX += pSegment->width;
-    pSegment->width = drte_engine__measure_segment(pEngine, pSegment);
+    pSegment->width = drte_engine__measure_segment(pView, pSegment);
 
     return true;
 }
 
-bool drte_engine__next_segment_on_line(drte_engine* pEngine, drte_segment* pSegment)
+bool drte_engine__next_segment_on_line(drte_view* pView, drte_segment* pSegment)
 {
-    assert(pEngine != NULL);
+    assert(pView != NULL);
     assert(pSegment != NULL);
 
     if (pSegment->isAtEndOfLine) {
         return false;
     }
 
-    return drte_engine__next_segment(pEngine, pSegment);
+    return drte_engine__next_segment(pView, pSegment);
 }
 
-bool drte_engine__first_segment(drte_engine* pEngine, drte_line_cache* pLineCache, size_t iChar, drte_segment* pSegment)
+bool drte_engine__first_segment(drte_view* pView, drte_line_cache* pLineCache, size_t iChar, drte_segment* pSegment)
 {
-    if (pEngine == NULL || pEngine->textLength == 0 || pSegment == NULL) {
+    if (pView == NULL || pSegment == NULL) {
         return false;
     }
+
+    drte_engine* pEngine = pView->pEngine;
+    if (pEngine == NULL || pEngine->textLength == 0) {
+        return false;
+    }
+
 
     pSegment->pLineCache = pLineCache;
     pSegment->iLine = drte_engine_get_character_line(pEngine, pLineCache, iChar);
@@ -1576,14 +1589,20 @@ bool drte_engine__first_segment(drte_engine* pEngine, drte_line_cache* pLineCach
     pSegment->isAtEndOfLine = false;
     drte_engine_get_line_character_range(pEngine, pSegment->pLineCache, pSegment->iLine, &pSegment->iLineCharBeg, &pSegment->iLineCharEnd);
 
-    return drte_engine__next_segment(pEngine, pSegment);
+    return drte_engine__next_segment(pView, pSegment);
 }
 
-bool drte_engine__first_segment_on_line(drte_engine* pEngine, drte_line_cache* pLineCache, size_t lineIndex, size_t iChar, drte_segment* pSegment)
+bool drte_engine__first_segment_on_line(drte_view* pView, drte_line_cache* pLineCache, size_t lineIndex, size_t iChar, drte_segment* pSegment)
 {
-    if (pEngine == NULL || pEngine->textLength == 0 || pSegment == NULL) {
+    if (pView == NULL || pSegment == NULL) {
         return false;
     }
+
+    drte_engine* pEngine = pView->pEngine;
+    if (pEngine == NULL || pEngine->textLength == 0) {
+        return false;
+    }
+
 
     pSegment->pLineCache = pLineCache;
     pSegment->iLine = lineIndex;
@@ -1605,7 +1624,7 @@ bool drte_engine__first_segment_on_line(drte_engine* pEngine, drte_line_cache* p
     pSegment->iLineCharBeg = pSegment->iCharBeg;
     pSegment->iLineCharEnd = drte_engine_get_line_last_character(pEngine, pLineCache, lineIndex);
 
-    return drte_engine__next_segment(pEngine, pSegment);
+    return drte_engine__next_segment(pView, pSegment);
 }
 
 
@@ -2196,7 +2215,7 @@ void drte_engine_get_character_position(drte_engine* pEngine, drte_line_cache* p
     float posY = lineIndex * drte_engine_get_line_height(pEngine);
 
     drte_segment segment;
-    if (drte_engine__first_segment_on_line(pEngine, pLineCache, lineIndex, (size_t)-1, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine->pView, pLineCache, lineIndex, (size_t)-1, &segment)) {
         do
         {
             if (characterIndex >= segment.iCharBeg && characterIndex < segment.iCharEnd) {
@@ -2224,7 +2243,7 @@ void drte_engine_get_character_position(drte_engine* pEngine, drte_line_cache* p
 
                 break;
             }
-        } while (drte_engine__next_segment_on_line(pEngine, &segment));
+        } while (drte_engine__next_segment_on_line(pEngine->pView, &segment));
     }
 
     if (pPosXOut) *pPosXOut = posX;
@@ -2252,7 +2271,7 @@ size_t drte_engine_get_character_by_point(drte_engine* pEngine, drte_line_cache*
     }
 
     drte_segment segment;
-    if (drte_engine__first_segment_on_line(pEngine, pLineCache, (size_t)iLine, (size_t)-1, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine->pView, pLineCache, (size_t)iLine, (size_t)-1, &segment)) {
         do
         {
             if (inputPosXRelativeToText >= segment.posX && inputPosXRelativeToText < segment.posX + segment.width) {
@@ -2294,7 +2313,7 @@ size_t drte_engine_get_character_by_point(drte_engine* pEngine, drte_line_cache*
 
                 return iChar;
             }
-        } while (drte_engine__next_segment_on_line(pEngine, &segment));
+        } while (drte_engine__next_segment_on_line(pEngine->pView, &segment));
 
         // If we get here it means the position is to the right of the line. Just pin it to the end of the line.
         iChar = segment.iCharBeg;   // <-- segment.iCharBeg should be sitting on a new line or null terminator.
@@ -2833,7 +2852,7 @@ bool drte_engine_move_cursor_to_point_relative_to_text(drte_engine* pEngine, siz
     }
 
     drte_segment segment;
-    if (drte_engine__first_segment_on_line(pEngine, pEngine->pView->pWrappedLines, (size_t)iLine, (size_t)-1, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine->pView, pEngine->pView->pWrappedLines, (size_t)iLine, (size_t)-1, &segment)) {
         do
         {
             if (posXRelativeToText >= segment.posX && posXRelativeToText < segment.posX + segment.width) {
@@ -2875,7 +2894,7 @@ bool drte_engine_move_cursor_to_point_relative_to_text(drte_engine* pEngine, siz
 
                 return true;
             }
-        } while (drte_engine__next_segment_on_line(pEngine, &segment));
+        } while (drte_engine__next_segment_on_line(pEngine->pView, &segment));
 
         // If we get here it means the position is to the right of the line. Just pin it to the end of the line.
         pEngine->pCursors[cursorIndex].iCharAbs = segment.iCharBeg;   // <-- segment.iCharBeg should be sitting on a new line or null terminator.
@@ -4725,7 +4744,7 @@ float drte_engine_get_visible_line_width(drte_engine* pEngine)
     float maxLineWidth = 0;
 
     drte_segment segment;
-    if (drte_engine__first_segment_on_line(pEngine, pEngine->pView->pWrappedLines, iLineTop, (size_t)-1, &segment)) {
+    if (drte_engine__first_segment_on_line(pEngine->pView, pEngine->pView->pWrappedLines, iLineTop, (size_t)-1, &segment)) {
         size_t iLine = iLineTop;
         while (iLine <= iLineBottom) {
             float lineWidth = 0;
@@ -4737,7 +4756,7 @@ float drte_engine_get_visible_line_width(drte_engine* pEngine)
                 if (segment.iCharBeg == segment.iLineCharEnd) {
                     break;
                 }
-            } while (drte_engine__next_segment(pEngine, &segment));
+            } while (drte_engine__next_segment(pEngine->pView, &segment));
 
 
             if (maxLineWidth < lineWidth) {
@@ -4745,7 +4764,7 @@ float drte_engine_get_visible_line_width(drte_engine* pEngine)
             }
 
             // Go to the first segment of the next line.
-            if (!drte_engine__next_segment(pEngine, &segment)) {
+            if (!drte_engine__next_segment(pEngine->pView, &segment)) {
                 break;
             }
 
@@ -4770,11 +4789,11 @@ void drte_engine_measure_line(drte_engine* pEngine, size_t iLine, float* pWidthO
         float lineWidth = 0;
 
         drte_segment segment;
-        if (drte_engine__first_segment_on_line(pEngine, pEngine->pView->pWrappedLines, iLine, (size_t)-1, &segment)) {
+        if (drte_engine__first_segment_on_line(pEngine->pView, pEngine->pView->pWrappedLines, iLine, (size_t)-1, &segment)) {
             do
             {
                 lineWidth += segment.width;
-            } while (drte_engine__next_segment_on_line(pEngine, &segment));
+            } while (drte_engine__next_segment_on_line(pEngine->pView, &segment));
         }
 
         *pWidthOut = lineWidth;
@@ -5581,7 +5600,7 @@ static void drte_view__refresh_word_wrapping(drte_view* pView)
                     drte_line_cache_append_line(pView->pWrappedLines, iLineCharBeg);
 
                     drte_segment segment;
-                    if (!drte_engine__first_segment_on_line(pView->pEngine, pView->pEngine->pUnwrappedLines, iLine, iLineCharBeg, &segment)) {
+                    if (!drte_engine__first_segment_on_line(pView, pView->pEngine->pUnwrappedLines, iLine, iLineCharBeg, &segment)) {
                         break;
                     }
 
@@ -5621,7 +5640,7 @@ static void drte_view__refresh_word_wrapping(drte_view* pView)
                             runningWidth += segment.width;
                             iLineCharBeg = segment.iCharEnd;
                         }
-                    } while (drte_engine__next_segment_on_line(pView->pEngine, &segment));
+                    } while (drte_engine__next_segment_on_line(pView, &segment));
                 }
             } else {
                 drte_line_cache_append_line(pView->pWrappedLines, iLineCharBeg);  // <-- Empty line.
@@ -5816,7 +5835,7 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
     float linePosY = 0;
 
     drte_segment segment;
-    if (drte_engine__first_segment_on_line(pView->pEngine, pView->pWrappedLines, iLineTop, (size_t)-1, &segment)) {
+    if (drte_engine__first_segment_on_line(pView, pView->pWrappedLines, iLineTop, (size_t)-1, &segment)) {
         size_t iLine = iLineTop;
         while (iLine <= iLineBottom) {
             float lineWidth = 0;
@@ -5875,7 +5894,7 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
                 if (segment.iCharBeg == segment.iLineCharEnd) {
                     break;
                 }
-            } while (drte_engine__next_segment(pView->pEngine, &segment));
+            } while (drte_engine__next_segment(pView, &segment));
 
 
             // The part after the end of the line needs to be drawn.
@@ -5895,7 +5914,7 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
 
 
             // Go to the first segment of the next line.
-            if (!drte_engine__next_segment(pView->pEngine, &segment)) {
+            if (!drte_engine__next_segment(pView, &segment)) {
                 break;
             }
 
