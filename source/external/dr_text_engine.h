@@ -190,6 +190,13 @@ struct drte_view
     size_t cursorCount;
 
 
+    // The list of selection regions.
+    drte_region* pSelections;
+
+    // The number of active selection regions. When this is 0, nothing is selected.
+    size_t selectionCount;
+
+
     // Application defined data.
     void* pUserData;
 
@@ -298,13 +305,6 @@ struct drte_engine
 
     /// Whether or not the cursor is showing based on it's blinking state.
     bool isCursorBlinkOn;
-
-
-    // The list of selection regions.
-    drte_region* pSelections;
-
-    // The number of active selection regions. When this is 0, nothing is selected.
-    size_t selectionCount;
 
 
     /// The function to call when a text run needs to be painted.
@@ -1390,11 +1390,10 @@ drte_style_token drte_engine__get_style_token(drte_engine* pEngine, uint8_t styl
     return pEngine->styles[styleSlot].styleToken;
 }
 
-
 // Retrieves the next selection region starting from the given character, including the region the character is sitting in, if any.
-bool drte_engine__get_next_selection_from_character(drte_engine* pEngine, size_t iChar, drte_region* pSelectionOut)
+static bool drte_view__get_next_selection_from_character(drte_view* pView, size_t iChar, drte_region* pSelectionOut)
 {
-    assert(pEngine != NULL);
+    assert(pView != NULL);
     assert(pSelectionOut != NULL);
 
     // Selections can be in any order. Need to first check every single one to determine if any are on top of the character. If so we
@@ -1404,8 +1403,8 @@ bool drte_engine__get_next_selection_from_character(drte_engine* pEngine, size_t
     closestSelection.iCharBeg = (size_t)-1;
     closestSelection.iCharEnd = (size_t)-1;
 
-    for (size_t iSelection = 0; iSelection < pEngine->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pEngine->pSelections[iSelection]);
+    for (size_t iSelection = 0; iSelection < pView->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pView->pSelections[iSelection]);
         if (iChar >= selection.iCharBeg && iChar < selection.iCharEnd) {
             *pSelectionOut = selection;
             return true;
@@ -1426,6 +1425,7 @@ bool drte_engine__get_next_selection_from_character(drte_engine* pEngine, size_t
 
     return foundSelectionAfterChar;
 }
+
 
 
 // A drte_segment object is used for iterating over the segments of a chunk of text.
@@ -1530,7 +1530,7 @@ bool drte_engine__next_segment(drte_view* pView, drte_segment* pSegment)
     bool isAnythingSelected = false;
     bool isInSelection = false;
     drte_region selection;
-    if (drte_engine__get_next_selection_from_character(pEngine, iCharBeg, &selection)) {
+    if (drte_view__get_next_selection_from_character(pView, iCharBeg, &selection)) {
         isInSelection = iCharBeg >= selection.iCharBeg && iCharBeg < selection.iCharEnd;
         isAnythingSelected = true;
     }
@@ -2053,9 +2053,6 @@ bool drte_engine_init(drte_engine* pEngine, void* pUserData)
     // the default behaviour.
     pEngine->pUnwrappedLines = &pEngine->_unwrappedLines;
 
-    pEngine->pSelections = NULL;
-    pEngine->selectionCount = 0;
-
     pEngine->cursorBlinkRate       = 500;
     pEngine->timeToNextCursorBlink = pEngine->cursorBlinkRate;
     pEngine->isCursorBlinkOn       = true;
@@ -2084,7 +2081,7 @@ void drte_engine_uninit(drte_engine* pEngine)
 
     drte_line_cache_uninit(&pEngine->_unwrappedLines);
 
-    free(pEngine->pSelections);
+    free(pEngine->pView->pSelections);
     free(pEngine->pView->pCursors);
 
     free(pEngine->text);
@@ -3111,20 +3108,20 @@ bool drte_engine_move_cursor_to_start_of_text(drte_engine* pEngine, size_t curso
 
 void drte_engine_move_cursor_to_start_of_selection(drte_engine* pEngine, size_t cursorIndex)
 {
-    if (pEngine == NULL || pEngine->text == NULL || pEngine->selectionCount == 0 || pEngine->pView->cursorCount <= cursorIndex) {
+    if (pEngine == NULL || pEngine->text == NULL || pEngine->pView->selectionCount == 0 || pEngine->pView->cursorCount <= cursorIndex) {
         return;
     }
 
-    drte_engine_move_cursor_to_character(pEngine, cursorIndex, drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]).iCharBeg);
+    drte_engine_move_cursor_to_character(pEngine, cursorIndex, drte_region_normalize(pEngine->pView->pSelections[pEngine->pView->selectionCount-1]).iCharBeg);
 }
 
 void drte_engine_move_cursor_to_end_of_selection(drte_engine* pEngine, size_t cursorIndex)
 {
-    if (pEngine == NULL || pEngine->text == NULL || pEngine->selectionCount == 0 || pEngine->pView->cursorCount <= cursorIndex) {
+    if (pEngine == NULL || pEngine->text == NULL || pEngine->pView->selectionCount == 0 || pEngine->pView->cursorCount <= cursorIndex) {
         return;
     }
 
-    drte_engine_move_cursor_to_character(pEngine, cursorIndex, drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]).iCharEnd);
+    drte_engine_move_cursor_to_character(pEngine, cursorIndex, drte_region_normalize(pEngine->pView->pSelections[pEngine->pView->selectionCount-1]).iCharEnd);
 }
 
 void drte_engine_move_cursor_to_character(drte_engine* pEngine, size_t cursorIndex, size_t characterIndex)
@@ -3275,21 +3272,21 @@ size_t drte_engine_get_spaces_to_next_column_from_cursor(drte_engine* pEngine, s
 
 bool drte_engine_is_cursor_at_start_of_selection(drte_engine* pEngine, size_t cursorIndex)
 {
-    if (pEngine == NULL || pEngine->selectionCount == 0 || pEngine->pView->cursorCount <= cursorIndex) {
+    if (pEngine == NULL || pEngine->pView->selectionCount == 0 || pEngine->pView->cursorCount <= cursorIndex) {
         return false;
     }
 
-    drte_region region = drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]);
+    drte_region region = drte_region_normalize(pEngine->pView->pSelections[pEngine->pView->selectionCount-1]);
     return pEngine->pView->pCursors[cursorIndex].iCharAbs == region.iCharBeg;
 }
 
 bool drte_engine_is_cursor_at_end_of_selection(drte_engine* pEngine, size_t cursorIndex)
 {
-    if (pEngine == NULL || pEngine->selectionCount == 0 || pEngine->pView->cursorCount <= cursorIndex) {
+    if (pEngine == NULL || pEngine->pView->selectionCount == 0 || pEngine->pView->cursorCount <= cursorIndex) {
         return false;
     }
 
-    drte_region region = drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]);
+    drte_region region = drte_region_normalize(pEngine->pView->pSelections[pEngine->pView->selectionCount-1]);
     return pEngine->pView->pCursors[cursorIndex].iCharAbs == region.iCharEnd;
 }
 
@@ -3785,14 +3782,14 @@ int drte_region_qsort(const void* pSelection0, const void* pSelection1)
 
 bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors)
 {
-    if (pEngine == NULL || pEngine->selectionCount == 0) {
+    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
         return false;
     }
 
     bool wasTextChanged = false;
     drte_engine__begin_dirty(pEngine);
     {
-        for (size_t iSelection = 0; iSelection < pEngine->selectionCount; ++iSelection) {
+        for (size_t iSelection = 0; iSelection < pEngine->pView->selectionCount; ++iSelection) {
             wasTextChanged = drte_engine_delete_selection_text(pEngine, iSelection, updateCursors) || wasTextChanged;
         }
     }
@@ -3802,18 +3799,18 @@ bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors)
 
 #if 0
     // To delete selected text we need to ensure there are no overlaps. Selections are then deleted back to front.
-    drte_region* pSortedSelections = (drte_region*)malloc(pEngine->selectionCount * sizeof(*pSortedSelections));
+    drte_region* pSortedSelections = (drte_region*)malloc(pEngine->pView->selectionCount * sizeof(*pSortedSelections));
     if (pSortedSelections == NULL) {
         return false;
     }
 
-    for (size_t iSelection = 0; iSelection < pEngine->selectionCount; ++iSelection) {
-        pSortedSelections[iSelection] = pEngine->pSelections[iSelection];
+    for (size_t iSelection = 0; iSelection < pEngine->pView->selectionCount; ++iSelection) {
+        pSortedSelections[iSelection] = pEngine->pView->pSelections[iSelection];
     }
 
-    for (size_t iSelection = 0; iSelection < pEngine->selectionCount; ++iSelection) {
+    for (size_t iSelection = 0; iSelection < pEngine->pView->selectionCount; ++iSelection) {
         drte_region selection = drte_region_normalize(pSortedSelections[iSelection]);
-        for (size_t iSelection2 = iSelection+1; iSelection2 < pEngine->selectionCount; ++iSelection2) {
+        for (size_t iSelection2 = iSelection+1; iSelection2 < pEngine->pView->selectionCount; ++iSelection2) {
             if (iSelection != iSelection2) {
                 drte_region selection2 = drte_region_normalize(pSortedSelections[iSelection2]);
                 if (selection.iCharBeg < selection2.iCharBeg) {
@@ -3838,11 +3835,11 @@ bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors)
         pSortedSelections[iSelection] = selection;
     }
 
-    qsort(pSortedSelections, pEngine->selectionCount, sizeof(*pSortedSelections), drte_region_qsort);
+    qsort(pSortedSelections, pEngine->pView->selectionCount, sizeof(*pSortedSelections), drte_region_qsort);
 
     drte_engine__begin_dirty(pEngine);
     bool wasTextChanged = false;
-    for (size_t iSelection = pEngine->selectionCount; iSelection > 0; --iSelection) {
+    for (size_t iSelection = pEngine->pView->selectionCount; iSelection > 0; --iSelection) {
         drte_region selection = pSortedSelections[iSelection-1];
         if (selection.iCharBeg < selection.iCharEnd) {
             wasTextChanged = drte_engine_delete_text(pEngine, selection.iCharBeg, selection.iCharEnd) || wasTextChanged;
@@ -3873,11 +3870,11 @@ bool drte_engine_delete_selected_text(drte_engine* pEngine, bool updateCursors)
 
 bool drte_engine_delete_selection_text(drte_engine* pEngine, size_t iSelectionToDelete, bool updateCursorsAndSelection)
 {
-    if (pEngine == NULL || pEngine->selectionCount == 0) {
+    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
         return false;
     }
 
-    drte_region selectionToDelete = drte_region_normalize(pEngine->pSelections[iSelectionToDelete]);
+    drte_region selectionToDelete = drte_region_normalize(pEngine->pView->pSelections[iSelectionToDelete]);
     if (selectionToDelete.iCharBeg == selectionToDelete.iCharEnd) {
         return false;   // Nothing is selected.
     }
@@ -3900,8 +3897,8 @@ bool drte_engine_delete_selection_text(drte_engine* pEngine, size_t iSelectionTo
 
             // <---> = selection
             // |---| = selectionToDelete
-            for (size_t iSelection = 0; iSelection < pEngine->selectionCount; ++iSelection) {
-                drte_region selection = drte_region_normalize(pEngine->pSelections[iSelection]);
+            for (size_t iSelection = 0; iSelection < pEngine->pView->selectionCount; ++iSelection) {
+                drte_region selection = drte_region_normalize(pEngine->pView->pSelections[iSelection]);
                 if (selection.iCharBeg < selectionToDelete.iCharBeg) {
                     if (selection.iCharEnd > selectionToDelete.iCharBeg) {
                         if (selection.iCharEnd < selectionToDelete.iCharEnd) {
@@ -3927,12 +3924,12 @@ bool drte_engine_delete_selection_text(drte_engine* pEngine, size_t iSelectionTo
                     }
                 }
 
-                if (pEngine->pSelections[iSelection].iCharBeg < pEngine->pSelections[iSelection].iCharEnd) {
-                    pEngine->pSelections[iSelection].iCharBeg = selection.iCharBeg;
-                    pEngine->pSelections[iSelection].iCharEnd = selection.iCharEnd;
+                if (pEngine->pView->pSelections[iSelection].iCharBeg < pEngine->pView->pSelections[iSelection].iCharEnd) {
+                    pEngine->pView->pSelections[iSelection].iCharBeg = selection.iCharBeg;
+                    pEngine->pView->pSelections[iSelection].iCharEnd = selection.iCharEnd;
                 } else {
-                    pEngine->pSelections[iSelection].iCharBeg = selection.iCharEnd;
-                    pEngine->pSelections[iSelection].iCharEnd = selection.iCharBeg;
+                    pEngine->pView->pSelections[iSelection].iCharBeg = selection.iCharEnd;
+                    pEngine->pView->pSelections[iSelection].iCharEnd = selection.iCharBeg;
                 }
             }
         }
@@ -3951,7 +3948,7 @@ bool drte_engine_is_anything_selected(drte_engine* pEngine)
         return false;
     }
 
-    return pEngine->selectionCount > 0;
+    return pEngine->pView->selectionCount > 0;
 }
 
 void drte_engine_deselect_all(drte_engine* pEngine)
@@ -3960,7 +3957,7 @@ void drte_engine_deselect_all(drte_engine* pEngine)
         return;
     }
 
-    pEngine->selectionCount = 0;
+    pEngine->pView->selectionCount = 0;
 
     drte_engine__on_dirty(pEngine, drte_engine__local_rect(pEngine));
 }
@@ -4155,8 +4152,8 @@ size_t drte_engine_get_selected_text(drte_engine* pEngine, char* textOut, size_t
 
     // The selected text is just every selection concatenated together.
     size_t length = 0;
-    for (size_t iSelection = 0; iSelection < pEngine->selectionCount; ++iSelection) {
-        drte_region region = drte_region_normalize(pEngine->pSelections[iSelection]);
+    for (size_t iSelection = 0; iSelection < pEngine->pView->selectionCount; ++iSelection) {
+        drte_region region = drte_region_normalize(pEngine->pView->pSelections[iSelection]);
         if (textOut != NULL) {
             drte__strncpy_s(textOut+length, textOutSize-length, pEngine->text+region.iCharBeg, (region.iCharEnd - region.iCharBeg));
         }
@@ -4169,11 +4166,11 @@ size_t drte_engine_get_selected_text(drte_engine* pEngine, char* textOut, size_t
 
 size_t drte_engine_get_selection_first_line(drte_engine* pEngine, size_t iSelection)
 {
-    if (pEngine == NULL || pEngine->selectionCount == 0) {
+    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
         return 0;
     }
 
-    return drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, drte_region_normalize(pEngine->pSelections[iSelection]).iCharBeg);
+    return drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, drte_region_normalize(pEngine->pView->pSelections[iSelection]).iCharBeg);
 }
 
 size_t drte_engine_get_selection_last_line(drte_engine* pEngine, size_t iSelection)
@@ -4182,7 +4179,7 @@ size_t drte_engine_get_selection_last_line(drte_engine* pEngine, size_t iSelecti
         return 0;
     }
 
-    return drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, drte_region_normalize(pEngine->pSelections[iSelection]).iCharEnd);
+    return drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, drte_region_normalize(pEngine->pView->pSelections[iSelection]).iCharEnd);
 }
 
 void drte_engine_move_selection_anchor_to_end_of_line(drte_engine* pEngine, size_t iLine)
@@ -4197,11 +4194,11 @@ void drte_engine_move_selection_anchor_to_start_of_line(drte_engine* pEngine, si
 
 size_t drte_engine_get_selection_anchor_line(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->selectionCount == 0) {
+    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
         return 0;
     }
 
-    return drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, pEngine->pSelections[pEngine->selectionCount-1].iCharBeg);
+    return drte_engine_get_character_line(pEngine, pEngine->pView->pWrappedLines, pEngine->pView->pSelections[pEngine->pView->selectionCount-1].iCharBeg);
 }
 
 
@@ -4211,70 +4208,70 @@ void drte_engine_begin_selection(drte_engine* pEngine, size_t iCharBeg)
         return;
     }
 
-    drte_region* pNewSelections = (drte_region*)realloc(pEngine->pSelections, (pEngine->selectionCount + 1) * sizeof(*pNewSelections));
+    drte_region* pNewSelections = (drte_region*)realloc(pEngine->pView->pSelections, (pEngine->pView->selectionCount + 1) * sizeof(*pNewSelections));
     if (pNewSelections == NULL) {
         return;
     }
 
-    pEngine->pSelections = pNewSelections;
-    pEngine->pSelections[pEngine->selectionCount].iCharBeg = iCharBeg;
-    pEngine->pSelections[pEngine->selectionCount].iCharEnd = iCharBeg;
-    pEngine->selectionCount += 1;
+    pEngine->pView->pSelections = pNewSelections;
+    pEngine->pView->pSelections[pEngine->pView->selectionCount].iCharBeg = iCharBeg;
+    pEngine->pView->pSelections[pEngine->pView->selectionCount].iCharEnd = iCharBeg;
+    pEngine->pView->selectionCount += 1;
 }
 
 void drte_engine_cancel_selection(drte_engine* pEngine, size_t iSelection)
 {
-    if (pEngine == NULL || pEngine->selectionCount == 0) {
+    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
         return;
     }
 
-    for (/* Do Nothing */; iSelection < pEngine->selectionCount-1; ++iSelection) {
-        pEngine->pSelections[iSelection] = pEngine->pSelections[iSelection+1];
+    for (/* Do Nothing */; iSelection < pEngine->pView->selectionCount-1; ++iSelection) {
+        pEngine->pView->pSelections[iSelection] = pEngine->pView->pSelections[iSelection+1];
     }
 
-    pEngine->selectionCount -= 1;
+    pEngine->pView->selectionCount -= 1;
 }
 
 void drte_engine_cancel_last_selection(drte_engine* pEngine)
 {
-    if (pEngine == NULL || pEngine->selectionCount == 0) {
+    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
         return;
     }
 
-    pEngine->selectionCount -= 1;
+    pEngine->pView->selectionCount -= 1;
 }
 
 void drte_engine_set_selection_anchor(drte_engine* pEngine, size_t iCharBeg)
 {
-    if (pEngine == NULL || pEngine->selectionCount == 0) {
+    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
         return;
     }
 
-    if (pEngine->pSelections[pEngine->selectionCount-1].iCharBeg != iCharBeg) {
-        pEngine->pSelections[pEngine->selectionCount-1].iCharBeg = iCharBeg;
+    if (pEngine->pView->pSelections[pEngine->pView->selectionCount-1].iCharBeg != iCharBeg) {
+        pEngine->pView->pSelections[pEngine->pView->selectionCount-1].iCharBeg = iCharBeg;
         drte_engine__repaint(pEngine);
     }
 }
 
 void drte_engine_set_selection_end_point(drte_engine* pEngine, size_t iCharEnd)
 {
-    if (pEngine == NULL || pEngine->selectionCount == 0) {
+    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
         return;
     }
 
-    if (pEngine->pSelections[pEngine->selectionCount-1].iCharEnd != iCharEnd) {
-        pEngine->pSelections[pEngine->selectionCount-1].iCharEnd = iCharEnd;
+    if (pEngine->pView->pSelections[pEngine->pView->selectionCount-1].iCharEnd != iCharEnd) {
+        pEngine->pView->pSelections[pEngine->pView->selectionCount-1].iCharEnd = iCharEnd;
         drte_engine__repaint(pEngine);
     }
 }
 
 bool drte_engine_get_last_selection(drte_engine* pEngine, size_t* iCharBegOut, size_t* iCharEndOut)
 {
-    if (pEngine == NULL || pEngine->selectionCount == 0) {
+    if (pEngine == NULL || pEngine->pView->selectionCount == 0) {
         return false;
     }
 
-    drte_region selection = drte_region_normalize(pEngine->pSelections[pEngine->selectionCount-1]);
+    drte_region selection = drte_region_normalize(pEngine->pView->pSelections[pEngine->pView->selectionCount-1]);
 
     if (iCharBegOut) *iCharBegOut = selection.iCharBeg;
     if (iCharEndOut) *iCharEndOut = selection.iCharEnd;
@@ -4353,16 +4350,16 @@ bool drte_engine__capture_and_push_undo_state__selections(drte_engine* pEngine, 
     assert(pStack != NULL);
 
     size_t sizeInBytes =
-        sizeof(pEngine->selectionCount) +
-        sizeof(drte_region) * pEngine->selectionCount;
+        sizeof(pEngine->pView->selectionCount) +
+        sizeof(drte_region) * pEngine->pView->selectionCount;
 
     uint8_t* pData = drte_stack_buffer_alloc(pStack, sizeInBytes);
     if (pData == NULL) {
         return false;
     }
 
-    memcpy(pData, &pEngine->selectionCount, sizeof(pEngine->selectionCount));
-    memcpy(pData + sizeof(pEngine->selectionCount), pEngine->pSelections, sizeof(drte_region) * pEngine->selectionCount);
+    memcpy(pData, &pEngine->pView->selectionCount, sizeof(pEngine->pView->selectionCount));
+    memcpy(pData + sizeof(pEngine->pView->selectionCount), pEngine->pView->pSelections, sizeof(drte_region) * pEngine->pView->selectionCount);
 
     return true;
 }
@@ -5201,17 +5198,17 @@ void drte_engine__set_selections(drte_engine* pEngine, size_t selectionCount, co
     assert(pEngine != NULL);
 
     if (selectionCount > 0) {
-        drte_region* pNewSelections = (drte_region*)realloc(pEngine->pSelections, selectionCount * sizeof(*pNewSelections));
+        drte_region* pNewSelections = (drte_region*)realloc(pEngine->pView->pSelections, selectionCount * sizeof(*pNewSelections));
         if (pNewSelections != NULL) {
-            pEngine->pSelections = pNewSelections;
+            pEngine->pView->pSelections = pNewSelections;
             for (size_t iSelection = 0; iSelection < selectionCount; ++iSelection) {
-                pEngine->pSelections[iSelection] = pSelections[iSelection];
+                pEngine->pView->pSelections[iSelection] = pSelections[iSelection];
             }
 
-            pEngine->selectionCount = selectionCount;
+            pEngine->pView->selectionCount = selectionCount;
         }
     } else {
-        pEngine->selectionCount = 0;
+        pEngine->pView->selectionCount = 0;
     }
 }
 

@@ -201,8 +201,8 @@ bool dred_textview__get_cursor_selection(dred_textview* pTextView, size_t iCurso
 {
     assert(pTextView != NULL);
 
-    for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pTextView->pTextEngine->pSelections[iSelection]);
+    for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->pView->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTextView->pTextEngine->pView->pSelections[iSelection]);
         if (selection.iCharBeg == pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs || selection.iCharEnd == pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs) {
             if (iSelectionOut) *iSelectionOut = iSelection;
             return true;
@@ -229,8 +229,8 @@ bool dred_textview__move_cursor_to_start_of_selection(dred_textview* pTextView, 
 
     // We need to find the selection region that the last cursor is sitting at the end of. If there isn't one, we just return false.
     size_t iCursor = drte_engine_get_last_cursor(pTextView->pTextEngine);
-    for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pTextView->pTextEngine->pSelections[iSelection]);
+    for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->pView->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTextView->pTextEngine->pView->pSelections[iSelection]);
         if (selection.iCharEnd == pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs) {
             // It's on this selection.
             drte_engine_move_cursor_to_character(pTextView->pTextEngine, iCursor, selection.iCharBeg);
@@ -252,8 +252,8 @@ bool dred_textview__move_cursor_to_end_of_selection(dred_textview* pTextView, si
 
     // We need to find the selection region that the last cursor is sitting at the end of. If there isn't one, we just return false.
     size_t iCursor = drte_engine_get_last_cursor(pTextView->pTextEngine);
-    for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pTextView->pTextEngine->pSelections[iSelection]);
+    for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->pView->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTextView->pTextEngine->pView->pSelections[iSelection]);
         if (selection.iCharBeg == pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs) {
             // It's on this selection.
             drte_engine_move_cursor_to_character(pTextView->pTextEngine, iCursor, selection.iCharEnd);
@@ -295,14 +295,14 @@ bool dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
     }
 
     // As with cursors, selections need to be updated too.
-    for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pTextView->pTextEngine->pSelections[iSelection]);
+    for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->pView->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTextView->pTextEngine->pView->pSelections[iSelection]);
         if (selection.iCharBeg > iChar) {
-            pTextView->pTextEngine->pSelections[iSelection].iCharBeg += insertedCharacterCount;
-            pTextView->pTextEngine->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+            pTextView->pTextEngine->pView->pSelections[iSelection].iCharBeg += insertedCharacterCount;
+            pTextView->pTextEngine->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
         } else {
             if (selection.iCharEnd > iChar) {
-                pTextView->pTextEngine->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+                pTextView->pTextEngine->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
             }
         }
     }
@@ -1000,14 +1000,14 @@ bool dred_textview_insert_text_at_cursors_no_undo(dred_textview* pTextView, cons
         }
 
         // As with cursors, selections need to be updated too.
-        for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->selectionCount; ++iSelection) {
-            drte_region selection = drte_region_normalize(pTextView->pTextEngine->pSelections[iSelection]);
+        for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->pView->selectionCount; ++iSelection) {
+            drte_region selection = drte_region_normalize(pTextView->pTextEngine->pView->pSelections[iSelection]);
             if (selection.iCharBeg > iChar) {
-                pTextView->pTextEngine->pSelections[iSelection].iCharBeg += insertedCharacterCount;
-                pTextView->pTextEngine->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+                pTextView->pTextEngine->pView->pSelections[iSelection].iCharBeg += insertedCharacterCount;
+                pTextView->pTextEngine->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
             } else {
                 if (selection.iCharEnd > iChar) {
-                    pTextView->pTextEngine->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+                    pTextView->pTextEngine->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
                 }
             }
         }
@@ -1043,7 +1043,7 @@ bool dred_textview_unindent_selected_blocks(dred_textview* pTextView)
     bool wasTextChanged = false;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
-        for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->selectionCount; ++iSelection) {
+        for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->pView->selectionCount; ++iSelection) {
             size_t iLineBeg = drte_engine_get_selection_first_line(pTextView->pTextEngine, iSelection);
             size_t iLineEnd = drte_engine_get_selection_last_line(pTextView->pTextEngine, iSelection);
             if (iLineBeg != iLineEnd) {
@@ -1089,14 +1089,14 @@ bool dred_textview_unindent_selected_blocks(dred_textview* pTextView)
                             }
                         }
 
-                        for (size_t iSelection2 = 0; iSelection2 < pTextView->pTextEngine->selectionCount; ++iSelection2) {
-                            drte_region selection = drte_region_normalize(pTextView->pTextEngine->pSelections[iSelection2]);
+                        for (size_t iSelection2 = 0; iSelection2 < pTextView->pTextEngine->pView->selectionCount; ++iSelection2) {
+                            drte_region selection = drte_region_normalize(pTextView->pTextEngine->pView->pSelections[iSelection2]);
                             if (selection.iCharBeg > iLineChar + charactersRemovedCount) {
-                                pTextView->pTextEngine->pSelections[iSelection2].iCharBeg -= charactersRemovedCount;
-                                pTextView->pTextEngine->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
+                                pTextView->pTextEngine->pView->pSelections[iSelection2].iCharBeg -= charactersRemovedCount;
+                                pTextView->pTextEngine->pView->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
                             } else {
                                 if (selection.iCharEnd > iLineChar) {
-                                    pTextView->pTextEngine->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
+                                    pTextView->pTextEngine->pView->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
                                 }
                             }
                         }
@@ -1538,14 +1538,14 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
                 size_t iWordCharEnd;
                 if (drte_engine_get_word_under_point(pTextView->pTextEngine, relativeMousePosX - offsetX, relativeMousePosY - offsetY, &iWordCharBeg, &iWordCharEnd)) {
                     if (iWordCharEnd < pTextView->wordSelectionAnchor.iCharEnd) {
-                        pTextView->pTextEngine->pSelections[pTextView->pTextEngine->selectionCount-1].iCharBeg = pTextView->wordSelectionAnchor.iCharEnd;
-                        pTextView->pTextEngine->pSelections[pTextView->pTextEngine->selectionCount-1].iCharEnd = iWordCharBeg;
+                        pTextView->pTextEngine->pView->pSelections[pTextView->pTextEngine->pView->selectionCount-1].iCharBeg = pTextView->wordSelectionAnchor.iCharEnd;
+                        pTextView->pTextEngine->pView->pSelections[pTextView->pTextEngine->pView->selectionCount-1].iCharEnd = iWordCharBeg;
                     } else {
-                        pTextView->pTextEngine->pSelections[pTextView->pTextEngine->selectionCount-1].iCharBeg = pTextView->wordSelectionAnchor.iCharBeg;
-                        pTextView->pTextEngine->pSelections[pTextView->pTextEngine->selectionCount-1].iCharEnd = iWordCharEnd;
+                        pTextView->pTextEngine->pView->pSelections[pTextView->pTextEngine->pView->selectionCount-1].iCharBeg = pTextView->wordSelectionAnchor.iCharBeg;
+                        pTextView->pTextEngine->pView->pSelections[pTextView->pTextEngine->pView->selectionCount-1].iCharEnd = iWordCharEnd;
                     }
 
-                    drte_engine_move_cursor_to_character(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine), pTextView->pTextEngine->pSelections[pTextView->pTextEngine->selectionCount-1].iCharEnd);
+                    drte_engine_move_cursor_to_character(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine), pTextView->pTextEngine->pView->pSelections[pTextView->pTextEngine->pView->selectionCount-1].iCharEnd);
                 } else {
                     // There is no word under the point, so just fall back to standard character selection for this case.
                     drte_engine_move_cursor_to_point(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
@@ -1672,7 +1672,7 @@ void dred_textview_on_mouse_button_dblclick(dred_control* pControl, int mouseBut
 
             drte_engine_select_word_under_cursor(pTextView->pTextEngine, drte_engine_get_last_cursor(pTextView->pTextEngine));
 
-            if (pTextView->pTextEngine->selectionCount > 0) {
+            if (pTextView->pTextEngine->pView->selectionCount > 0) {
 
             }
 
@@ -2604,8 +2604,8 @@ void dred_textview__on_mouse_move_line_numbers(dred_control* pLineNumbers, int r
             size_t iAnchorLine = pTextView->iLineSelectAnchor;
             size_t lineCount = drte_engine_get_line_count(pTextView->pTextEngine);
 
-            size_t iSelectionFirstLine = drte_engine_get_selection_first_line(pTextView->pTextEngine, pTextView->pTextEngine->selectionCount-1);
-            size_t iSelectionLastLine = drte_engine_get_selection_last_line(pTextView->pTextEngine, pTextView->pTextEngine->selectionCount-1);
+            size_t iSelectionFirstLine = drte_engine_get_selection_first_line(pTextView->pTextEngine, pTextView->pTextEngine->pView->selectionCount-1);
+            size_t iSelectionLastLine = drte_engine_get_selection_last_line(pTextView->pTextEngine, pTextView->pTextEngine->pView->selectionCount-1);
             if (iSelectionLastLine != iSelectionFirstLine) {
                 iSelectionLastLine -= 1;
             }
