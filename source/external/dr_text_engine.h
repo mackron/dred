@@ -371,6 +371,16 @@ bool drte_engine_init(drte_engine* pEngine, void* pUserData);
 void drte_engine_uninit(drte_engine* pEngine);
 
 
+// Retrieves a pointer to the first view.
+//
+// Use this with drte_engine_next_view() to iterate over each view.
+DRTE_INLINE drte_view* drte_engine_first_view(drte_engine* pEngine) { if (pEngine == NULL) return NULL; return pEngine->pRootView; }
+
+// Retrieves a pointer to the next view.
+DRTE_INLINE drte_view* drte_engine_next_view(drte_engine* pEngine, drte_view* pView) { (void)pEngine; if (pView == NULL) return; return pView->_pNextView; }
+DRTE_INLINE drte_view* drte_engine_prev_view(drte_engine* pEngine, drte_view* pView) { (void)pEngine; if (pView == NULL) return; return pView->_pPrevView; }
+
+
 
 // Registers a style token.
 //
