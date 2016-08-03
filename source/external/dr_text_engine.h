@@ -514,8 +514,6 @@ unsigned int drte_engine_get_redo_points_remaining_count(drte_engine* pEngine);
 void drte_engine_clear_undo_stack(drte_engine* pEngine);
 
 
-
-
 /// Sets the function to call when a run of text needs to be painted for the given text engine.
 void drte_engine_set_on_paint_text(drte_engine* pEngine, drte_engine_on_paint_text_proc proc);
 
@@ -1200,18 +1198,11 @@ void* drte_stack_buffer_get_data_ptr(drte_stack_buffer* pStack, size_t offset)
 // Performs a full refresh of the text engine, including refreshing line wrapping and repaining.
 void drte_engine__refresh(drte_engine* pEngine);
 
-
-
 /// Applies the given undo state.
 void drte_engine__apply_undo_state(drte_engine* pEngine, const void* pUndoDataPtr);
 
 /// Applies the given undo state as a redo operation.
 void drte_engine__apply_redo_state(drte_engine* pEngine, const void* pUndoDataPtr);
-
-
-/// Retrieves a rectangle relative to the given text engine that's equal to the size of the container.
-drte_rect drte_engine__local_rect(drte_engine* pEngine);
-
 
 /// Called when a cursor moves.
 void drte_engine__on_cursor_move(drte_engine* pEngine, drte_view* pView, size_t cursorIndex);
@@ -3056,7 +3047,10 @@ bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_
 void drte_engine__refresh(drte_engine* pEngine)
 {
     assert(pEngine != NULL);
-    drte_view__refresh_word_wrapping(pEngine->pView);    // <-- This will redraw for us.
+
+    for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+        drte_view__refresh_word_wrapping(pView);
+    }
 }
 
 
