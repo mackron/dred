@@ -1483,12 +1483,15 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
         return;
     }
 
+    float offsetX;
+    float offsetY;
+    dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
+
+    float mousePosXRelativeToTextArea = (float)relativeMousePosX - offsetX;
+    float mousePosYRelativeToTextArea = (float)relativeMousePosY - offsetY;
+
     if (dred_gui_get_element_with_mouse_capture(dred_control_get_gui(pControl)) == pControl)
     {
-        float offsetX;
-        float offsetY;
-        dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
-
         drte_view_begin_dirty(pTextView->pView);
         {
             size_t iPrevCursorChar = drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
@@ -1508,10 +1511,10 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
                     drte_view_move_cursor_to_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), pTextView->pView->pSelections[pTextView->pView->selectionCount-1].iCharEnd);
                 } else {
                     // There is no word under the point, so just fall back to standard character selection for this case.
-                    drte_view_move_cursor_to_point(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
+                    drte_view_move_cursor_to_point(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), mousePosXRelativeToTextArea, mousePosYRelativeToTextArea);
                 }
             } else {
-                drte_view_move_cursor_to_point(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
+                drte_view_move_cursor_to_point(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), mousePosXRelativeToTextArea, mousePosYRelativeToTextArea);
             }
 
             size_t iNextCursorChar = drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
@@ -1525,7 +1528,14 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
     {
         // If we get to this branch it means we are not selecting anything. If we are hovered over a selected piece of text we will want to change
         // the cursor to an arrow for drag-and-drop feedback.
-
+        if (dred_textview_is_drag_and_drop_enabled(pTextView)) {
+            size_t iHoveredSelection;
+            if (drte_view_get_selection_under_point(pTextView->pView, mousePosXRelativeToTextArea, mousePosYRelativeToTextArea, &iHoveredSelection)) {
+                dred_control_set_cursor(DRED_CONTROL(pTextView), dred_cursor_type_arrow);
+            } else {
+                dred_control_set_cursor(DRED_CONTROL(pTextView), dred_cursor_type_text);
+            }
+        }
     }
 }
 
