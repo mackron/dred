@@ -1875,7 +1875,7 @@ void dred_gtk__on_begin_print(GtkPrintOperation *pPrint, GtkPrintContext *contex
 
     dred__init_print_font(pPrintData);
 
-    gtk_print_operation_set_n_pages(pPrint, drte_engine_get_page_count(&pPrintData->textEngine));
+    gtk_print_operation_set_n_pages(pPrint, drte_view_get_page_count(pPrintData->pTextView));
 }
 
 void dred_gtk__on_end_print(GtkPrintOperation *operation, GtkPrintContext *context, gpointer user_data)
