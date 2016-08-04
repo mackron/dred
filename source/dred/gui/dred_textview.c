@@ -321,7 +321,7 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
 
     dred_textview__insert_cursor(pTextView, 0);
 
-    
+
 
     dred_control_set_cursor(DRED_CONTROL(pTextView), dred_cursor_type_text);
     dred_control_set_on_size(DRED_CONTROL(pTextView), dred_textview_on_size);
@@ -2021,7 +2021,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                             size_t extraTabCount    = indentationCount / pDred->config.textEditorTabSizeInSpaces;
                             size_t extraSpacesCount = indentationCount - (extraTabCount * pDred->config.textEditorTabSizeInSpaces);
                             if (pTextView->isTabsToSpacesEnabled) {
-                                extraSpacesCount = extraTabCount * pDred->config.textEditorTabSizeInSpaces;
+                                extraSpacesCount += extraTabCount * pDred->config.textEditorTabSizeInSpaces;
                                 extraTabCount = 0;
                             }
 
