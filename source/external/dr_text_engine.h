@@ -888,10 +888,10 @@ bool drte_view_delete_character_to_right_of_cursors(drte_view* pView, bool leave
 /// Deletes the currently selected text.
 ///
 /// @return True if the text within the text engine has changed.
-bool drte_view_delete_selected_text(drte_view* pView, bool updateCursors);
+bool drte_view_delete_selected_text(drte_view* pView);
 
 // Deletes the text of a specific selection.
-bool drte_view_delete_selection_text(drte_view* pView, size_t iSelectionToDelete, bool updateCursorsAndSelection);
+bool drte_view_delete_selection_text(drte_view* pView, size_t iSelectionToDelete);
 
 
 /// Finds the given string starting from the cursor and then looping back.
@@ -2382,6 +2382,29 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
     }
 
 
+    // Cursors and selections after this cursor need to be updated.
+    for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+        for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
+            if (pView->pCursors[iCursor].iCharAbs >= insertIndex) {
+                drte_view_move_cursor_to_character(pView, iCursor, pView->pCursors[iCursor].iCharAbs + newTextLength);
+            }
+        }
+
+        // As with cursors, selections need to be updated too.
+        for (size_t iSelection = 0; iSelection < pView->selectionCount; ++iSelection) {
+            drte_region selection = drte_region_normalize(pView->pSelections[iSelection]);
+            if (selection.iCharBeg > insertIndex) {
+                pView->pSelections[iSelection].iCharBeg += newTextLength;
+                pView->pSelections[iSelection].iCharEnd += newTextLength;
+            } else {
+                if (selection.iCharEnd >= insertIndex) {
+                    pView->pSelections[iSelection].iCharEnd += newTextLength;
+                }
+            }
+        }
+    }
+
+
     // Refresh the lines if line wrap is enabled.
     // TODO: Optimize this.
     for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
@@ -2439,6 +2462,63 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
     size_t bytesToRemove = iLastChPlus1 - iFirstCh;
     if (bytesToRemove > 0)
     {
+        // Update cursors and selections _before_ deleting the text.
+        size_t iCharBeg = iFirstCh;
+        size_t iCharEnd = iLastChPlus1;
+        for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+            for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
+                size_t iCursorChar = pView->pCursors[iCursor].iCharAbs;
+                if (iCursorChar > iCharBeg && iCursorChar <= iCharEnd) {
+                    drte_view_move_cursor_to_character(pView, iCursor, iCharBeg);
+                } else {
+                    if (iCursorChar >= iCharEnd) {
+                        drte_view_move_cursor_to_character(pView, iCursor, iCursorChar - (iCharEnd - iCharBeg));
+                    }
+                }
+            }
+
+            // <---> = selection
+            // |---| = selectionToDelete
+            for (size_t iSelection = 0; iSelection < pView->selectionCount; ++iSelection) {
+                drte_region selection = drte_region_normalize(pView->pSelections[iSelection]);
+                if (selection.iCharBeg < iCharBeg) {
+                    if (selection.iCharEnd > iCharBeg) {
+                        if (selection.iCharEnd < iCharEnd) {
+                            // <---|--->---|
+                            selection.iCharEnd = iCharBeg;
+                        } else {
+                            // <---|---|--->
+                            selection.iCharEnd -= iCharEnd - iCharBeg;
+                        }
+                    }
+                } else {
+                    if (selection.iCharBeg < iCharEnd) {
+                        if (selection.iCharEnd < iCharEnd) {
+                            // |---<--->---|
+                            selection.iCharBeg = selection.iCharEnd = iCharBeg;
+                        } else {
+                            // |---<---|--->
+                            selection.iCharEnd -= (iCharEnd - selection.iCharBeg);
+                            selection.iCharBeg  = iCharBeg;
+                        }
+                    } else {
+                        selection.iCharBeg -= (iCharEnd - iCharBeg);
+                        selection.iCharEnd -= (iCharEnd - iCharBeg);
+                    }
+                }
+
+                if (pView->pSelections[iSelection].iCharBeg < pView->pSelections[iSelection].iCharEnd) {
+                    pView->pSelections[iSelection].iCharBeg = selection.iCharBeg;
+                    pView->pSelections[iSelection].iCharEnd = selection.iCharEnd;
+                } else {
+                    pView->pSelections[iSelection].iCharBeg = selection.iCharEnd;
+                    pView->pSelections[iSelection].iCharEnd = selection.iCharBeg;
+                }
+            }
+        }
+
+
+
         // Add the change to the prepared state.
         if (pEngine->hasPreparedUndoState) {
             drte_engine__push_text_change_to_prepared_undo_state(pEngine, drte_undo_change_type_delete, iFirstCh, iLastChPlus1, pEngine->text + iFirstCh);
@@ -5231,7 +5311,6 @@ bool drte_view_insert_character_at_cursor(drte_view* pView, size_t cursorIndex, 
     drte_view_begin_dirty(pView);
     {
         drte_engine_insert_character(pView->pEngine, pView->pCursors[cursorIndex].iCharAbs, character);
-        drte_view_move_cursor_to_character(pView, cursorIndex, pView->pCursors[cursorIndex].iCharAbs + 1);
     }
     drte_view_end_dirty(pView);
 
@@ -5257,20 +5336,10 @@ bool drte_view_insert_character_at_cursors(drte_view* pView, unsigned int charac
     drte_view_begin_dirty(pView);
     {
         for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
-            size_t iCursorChar = pView->pCursors[iCursor].iCharAbs;
             if (!drte_view_insert_character_at_cursor(pView, iCursor, character)) {
                 continue;
             } else {
                 wasTextChanged = true;
-            }
-
-            // Any cursor whose character position comes after this cursor needs to be moved.
-            for (size_t iCursor2 = 0; iCursor2 < pView->cursorCount; ++iCursor2) {
-                if (iCursor2 != iCursor) {
-                    if (pView->pCursors[iCursor2].iCharAbs > iCursorChar) {
-                        drte_view_move_cursor_to_character(pView, iCursor2, pView->pCursors[iCursor2].iCharAbs + 1);
-                    }
-                }
             }
         }
     }
@@ -5289,7 +5358,6 @@ bool drte_view_insert_text_at_cursor(drte_view* pView, size_t cursorIndex, const
     {
         size_t cursorPos = pView->pCursors[cursorIndex].iCharAbs;
         drte_engine_insert_text(pView->pEngine, text, cursorPos);
-        drte_view_move_cursor_to_character(pView, cursorIndex, cursorPos + strlen(text));
     }
     drte_view_end_dirty(pView);
 
@@ -5343,16 +5411,7 @@ bool drte_view_delete_character_to_left_of_cursors(drte_view* pView, bool leaveN
                 continue;
             }
 
-
             wasTextChanged = true;
-
-            for (size_t iCursor2 = 0; iCursor2 < pView->cursorCount; ++iCursor2) {
-                if (iCursor2 != iCursor) {
-                    if (pView->pCursors[iCursor2].iCharAbs > iCursorChar && pView->pCursors[iCursor2].iCharAbs > 0) {
-                        drte_view_move_cursor_to_character(pView, iCursor2, pView->pCursors[iCursor2].iCharAbs - 1);
-                    }
-                }
-            }
         }
     }
     drte_view_end_dirty(pView);
@@ -5417,14 +5476,6 @@ bool drte_view_delete_character_to_right_of_cursors(drte_view* pView, bool leave
             }
 
             wasTextChanged = true;
-
-            for (size_t iCursor2 = 0; iCursor2 < pView->cursorCount; ++iCursor2) {
-                if (iCursor2 != iCursor) {
-                    if (pView->pCursors[iCursor2].iCharAbs > iCursorChar && pView->pCursors[iCursor2].iCharAbs > 0) {
-                        drte_view_move_cursor_to_character(pView, iCursor2, pView->pCursors[iCursor2].iCharAbs - 1);
-                    }
-                }
-            }
         }
     }
     drte_view_end_dirty(pView);
@@ -5433,7 +5484,7 @@ bool drte_view_delete_character_to_right_of_cursors(drte_view* pView, bool leave
 }
 
 
-bool drte_view_delete_selected_text(drte_view* pView, bool updateCursors)
+bool drte_view_delete_selected_text(drte_view* pView)
 {
     if (pView == NULL || pView->selectionCount == 0) {
         return false;
@@ -5443,7 +5494,7 @@ bool drte_view_delete_selected_text(drte_view* pView, bool updateCursors)
     drte_view_begin_dirty(pView);
     {
         for (size_t iSelection = 0; iSelection < pView->selectionCount; ++iSelection) {
-            wasTextChanged = drte_view_delete_selection_text(pView, iSelection, updateCursors) || wasTextChanged;
+            wasTextChanged = drte_view_delete_selection_text(pView, iSelection) || wasTextChanged;
         }
     }
     drte_view_end_dirty(pView);
@@ -5451,7 +5502,7 @@ bool drte_view_delete_selected_text(drte_view* pView, bool updateCursors)
     return wasTextChanged;
 }
 
-bool drte_view_delete_selection_text(drte_view* pView, size_t iSelectionToDelete, bool updateCursorsAndSelection)
+bool drte_view_delete_selection_text(drte_view* pView, size_t iSelectionToDelete)
 {
     if (pView == NULL || pView->selectionCount == 0) {
         return false;
@@ -5462,66 +5513,7 @@ bool drte_view_delete_selection_text(drte_view* pView, size_t iSelectionToDelete
         return false;   // Nothing is selected.
     }
 
-    bool wasTextChanged = false;
-    drte_view_begin_dirty(pView);
-    {
-        // Update cursors and selections _before_ deleting the text.
-        if (updateCursorsAndSelection) {
-            for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
-                size_t iCursorChar = pView->pCursors[iCursor].iCharAbs;
-                if (iCursorChar > selectionToDelete.iCharBeg && iCursorChar < selectionToDelete.iCharEnd) {
-                    drte_view_move_cursor_to_character(pView, iCursor, selectionToDelete.iCharBeg);
-                } else {
-                    if (iCursorChar >= selectionToDelete.iCharEnd) {
-                        drte_view_move_cursor_to_character(pView, iCursor, iCursorChar - (selectionToDelete.iCharEnd - selectionToDelete.iCharBeg));
-                    }
-                }
-            }
-
-            // <---> = selection
-            // |---| = selectionToDelete
-            for (size_t iSelection = 0; iSelection < pView->selectionCount; ++iSelection) {
-                drte_region selection = drte_region_normalize(pView->pSelections[iSelection]);
-                if (selection.iCharBeg < selectionToDelete.iCharBeg) {
-                    if (selection.iCharEnd > selectionToDelete.iCharBeg) {
-                        if (selection.iCharEnd < selectionToDelete.iCharEnd) {
-                            // <---|--->---|
-                            selection.iCharEnd = selectionToDelete.iCharBeg;
-                        } else {
-                            // <---|---|--->
-                            selection.iCharEnd -= selectionToDelete.iCharEnd - selectionToDelete.iCharBeg;
-                        }
-                    }
-                } else {
-                    if (selection.iCharBeg < selectionToDelete.iCharEnd) {
-                        if (selection.iCharEnd < selectionToDelete.iCharEnd) {
-                            // |---<--->---|
-                            selection.iCharBeg = selection.iCharEnd = selectionToDelete.iCharBeg;
-                        } else {
-                            // |---<---|--->
-                            selection.iCharBeg = selectionToDelete.iCharBeg;
-                        }
-                    } else {
-                        selection.iCharBeg -= (selectionToDelete.iCharEnd - selectionToDelete.iCharBeg);
-                        selection.iCharEnd -= (selectionToDelete.iCharEnd - selectionToDelete.iCharBeg);
-                    }
-                }
-
-                if (pView->pSelections[iSelection].iCharBeg < pView->pSelections[iSelection].iCharEnd) {
-                    pView->pSelections[iSelection].iCharBeg = selection.iCharBeg;
-                    pView->pSelections[iSelection].iCharEnd = selection.iCharEnd;
-                } else {
-                    pView->pSelections[iSelection].iCharBeg = selection.iCharEnd;
-                    pView->pSelections[iSelection].iCharEnd = selection.iCharBeg;
-                }
-            }
-        }
-
-        wasTextChanged = drte_engine_delete_text(pView->pEngine, selectionToDelete.iCharBeg, selectionToDelete.iCharEnd) || wasTextChanged;
-    }
-    drte_view_end_dirty(pView);
-
-    return wasTextChanged;
+    return drte_engine_delete_text(pView->pEngine, selectionToDelete.iCharBeg, selectionToDelete.iCharEnd);
 }
 
 

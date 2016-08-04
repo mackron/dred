@@ -287,27 +287,6 @@ bool dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
     }
 
 
-    // Any cursor whose character position comes after this cursor needs to be moved.
-    for (size_t iCursor2 = 0; iCursor2 < pTextView->pView->cursorCount; ++iCursor2) {
-        if (pTextView->pView->pCursors[iCursor2].iCharAbs >= iChar) {
-            drte_view_move_cursor_to_character(pTextView->pView, iCursor2, pTextView->pView->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
-        }
-    }
-
-    // As with cursors, selections need to be updated too.
-    for (size_t iSelection = 0; iSelection < pTextView->pView->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pTextView->pView->pSelections[iSelection]);
-        if (selection.iCharBeg > iChar) {
-            pTextView->pView->pSelections[iSelection].iCharBeg += insertedCharacterCount;
-            pTextView->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
-        } else {
-            if (selection.iCharEnd > iChar) {
-                pTextView->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
-            }
-        }
-    }
-
-
     drte_view_end_dirty(pTextView->pView);
     return wasTextChanged;
 }
@@ -494,12 +473,10 @@ void dred_textview_uninit(dred_textview* pTextView)
         pTextView->pCursors = NULL;
     }
 
-#if 0
     if (pTextView->pView) {
         drte_view_delete(pTextView->pView);
         pTextView->pView = NULL;
     }
-#endif
 
     dred_control_uninit(DRED_CONTROL(pTextView));
 }
@@ -953,7 +930,7 @@ bool dred_textview_delete_selected_text_no_undo(dred_textview* pTextView)
         return false;
     }
 
-    bool wasTextChanged = drte_view_delete_selected_text(pTextView->pView, true);  // <-- "true" means to update the positions of cursors to compensate.
+    bool wasTextChanged = drte_view_delete_selected_text(pTextView->pView);
     drte_view_deselect_all(pTextView->pView);
 
     return wasTextChanged;
@@ -981,35 +958,9 @@ bool dred_textview_insert_text_at_cursors_no_undo(dred_textview* pTextView, cons
         return false;
     }
 
-    size_t insertedCharacterCount = strlen(text);
-
     bool wasTextChanged = false;
     for (size_t iCursor = 0; iCursor < pTextView->cursorCount; ++iCursor) {
-        size_t iChar = drte_view_get_cursor_character(pTextView->pView, iCursor);
-
         wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pView, iCursor, text) || wasTextChanged;
-
-        // Cursors and selections after this cursor need to be updated.
-        for (size_t iCursor2 = 0; iCursor2 < pTextView->pView->cursorCount; ++iCursor2) {
-            if (iCursor != iCursor2) {
-                if (pTextView->pView->pCursors[iCursor2].iCharAbs >= iChar) {
-                    drte_view_move_cursor_to_character(pTextView->pView, iCursor2, pTextView->pView->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
-                }
-            }
-        }
-
-        // As with cursors, selections need to be updated too.
-        for (size_t iSelection = 0; iSelection < pTextView->pView->selectionCount; ++iSelection) {
-            drte_region selection = drte_region_normalize(pTextView->pView->pSelections[iSelection]);
-            if (selection.iCharBeg > iChar) {
-                pTextView->pView->pSelections[iSelection].iCharBeg += insertedCharacterCount;
-                pTextView->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
-            } else {
-                if (selection.iCharEnd > iChar) {
-                    pTextView->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
-                }
-            }
-        }
     }
 
     return wasTextChanged;
@@ -1080,25 +1031,6 @@ bool dred_textview_unindent_selected_blocks(dred_textview* pTextView)
                         }
 
                         wasTextChanged = drte_engine_delete_text(pTextView->pTextEngine, iLineChar, iLineChar + charactersRemovedCount) || wasTextChanged;
-
-                        // Cursors and selections need to be updated.
-                        for (size_t iCursor2 = 0; iCursor2 < pTextView->pView->cursorCount; ++iCursor2) {
-                            if (pTextView->pView->pCursors[iCursor2].iCharAbs >= iLineChar) {
-                                drte_view_move_cursor_to_character(pTextView->pView, iCursor2, pTextView->pView->pCursors[iCursor2].iCharAbs - charactersRemovedCount);
-                            }
-                        }
-
-                        for (size_t iSelection2 = 0; iSelection2 < pTextView->pView->selectionCount; ++iSelection2) {
-                            drte_region selection = drte_region_normalize(pTextView->pView->pSelections[iSelection2]);
-                            if (selection.iCharBeg > iLineChar + charactersRemovedCount) {
-                                pTextView->pView->pSelections[iSelection2].iCharBeg -= charactersRemovedCount;
-                                pTextView->pView->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
-                            } else {
-                                if (selection.iCharEnd > iLineChar) {
-                                    pTextView->pView->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -2029,7 +1961,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                 } else {
                     // We're not doing a block indent so we just insert a tab at the cursor like normal.
                     if (isSomethingSelected) {
-                        drte_view_delete_selection_text(pTextView->pView, iSelection, true);
+                        drte_view_delete_selection_text(pTextView->pView, iSelection);
                         drte_view_cancel_selection(pTextView->pView, iSelection);
                     }
 
@@ -2067,7 +1999,6 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                                     break;  // End of line.
                                 }
 
-                                // TODO: Use a character iterator for this.
                                 uint32_t c = drte_engine_get_utf32(pTextView->pTextEngine, iPrevLineCharBeg);
                                 if (c == '\0') {
                                     break;
@@ -2094,22 +2025,11 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                                 extraTabCount = 0;
                             }
 
-                            size_t extraCharactersCount = extraTabCount + extraSpacesCount;
-
                             for (size_t i = 0; i < extraTabCount; ++i) {
                                 drte_view_insert_character_at_cursor(pTextView->pView, iCursor, '\t');
                             }
                             for (size_t i = 0; i < extraSpacesCount; ++i) {
                                 drte_view_insert_character_at_cursor(pTextView->pView, iCursor, ' ');
-                            }
-
-                            // Any cursor whose character position comes after this cursor needs to be moved.
-                            for (size_t iCursor2 = 0; iCursor2 < pTextView->pView->cursorCount; ++iCursor2) {
-                                if (iCursor2 != iCursor) {
-                                    if (pTextView->pView->pCursors[iCursor2].iCharAbs > iCursorChar) {
-                                        drte_view_move_cursor_to_character(pTextView->pView, iCursor2, pTextView->pView->pCursors[iCursor2].iCharAbs + extraCharactersCount);
-                                    }
-                                }
                             }
                         }
                     }
