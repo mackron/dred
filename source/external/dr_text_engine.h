@@ -3995,6 +3995,8 @@ size_t drte_view_get_character_line(drte_view* pView, drte_line_cache* pLineCach
         return 0;
     }
 
+    if (pLineCache == NULL) pLineCache = pView->pWrappedLines;
+
     return drte_line_cache_find_line_by_character(pLineCache, characterIndex);
 }
 
