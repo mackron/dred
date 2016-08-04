@@ -616,10 +616,10 @@ size_t drte_view_get_character_line(drte_view* pView, drte_line_cache* pLineCach
 void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCache, size_t characterIndex, float* pPosXOut, float* pPosYOut);
 
 // Retrieves the closest character to the given point relative to the text.
-size_t drte_view_get_character_by_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piLineOut);
+size_t drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piLineOut);
 
 // Retrieves the closest character to the given point relative to the container.
-size_t drte_view_get_character_by_point_relative_to_container(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piLineOut);
+size_t drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piLineOut);
 
 // Retrieves the indices of the visible lines.
 void drte_view_get_visible_lines(drte_view* pView, size_t* pFirstLineOut, size_t* pLastLineOut);
@@ -859,6 +859,8 @@ void drte_view_set_selection_end_point(drte_view* pView, size_t iCharEnd);
 // Retrieves the character range of the last selection, if any.
 bool drte_view_get_last_selection(drte_view* pView, size_t* iCharBegOut, size_t* iCharEndOut);
 
+// Retrieves the selection region under the given point, if any.
+bool drte_view_get_selection_under_point(drte_view* pView, float posX, float posY, size_t* piSelectionOut);
 
 
 /// Inserts a character at the position of the cursor.
@@ -4050,7 +4052,7 @@ void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCa
     if (pPosYOut) *pPosYOut = posY;
 }
 
-size_t drte_view_get_character_by_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piLineOut)
+size_t drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piLineOut)
 {
     if (piLineOut) *piLineOut = 0;
 
@@ -4124,7 +4126,7 @@ size_t drte_view_get_character_by_point(drte_view* pView, drte_line_cache* pLine
     return 0;
 }
 
-size_t drte_view_get_character_by_point_relative_to_container(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piLineOut)
+size_t drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piLineOut)
 {
     if (pView == NULL) {
         return 0;
@@ -4132,7 +4134,7 @@ size_t drte_view_get_character_by_point_relative_to_container(drte_view* pView, 
 
     float inputPosXRelativeToText = inputPosXRelativeToContainer - pView->innerOffsetX;
     float inputPosYRelativeToText = inputPosYRelativeToContainer - pView->innerOffsetY;
-    return drte_view_get_character_by_point(pView, pLineCache, inputPosXRelativeToText, inputPosYRelativeToText, piLineOut);
+    return drte_view_get_character_under_point_relative_to_text(pView, pLineCache, inputPosXRelativeToText, inputPosYRelativeToText, piLineOut);
 }
 
 void drte_view_get_visible_lines(drte_view* pView, size_t* pFirstLineOut, size_t* pLastLineOut)
@@ -5094,7 +5096,7 @@ bool drte_view_get_word_under_point(drte_view* pView, float posX, float posY, si
         return false;
     }
 
-    return drte_engine_get_word_containing_character(pView->pEngine, drte_view_get_character_by_point_relative_to_container(pView, pView->pWrappedLines, posX, posY, NULL), pWordBegOut, pWordEndOut);
+    return drte_engine_get_word_containing_character(pView->pEngine, drte_view_get_character_under_point(pView, pView->pWrappedLines, posX, posY, NULL), pWordBegOut, pWordEndOut);
 }
 
 
@@ -5299,6 +5301,22 @@ bool drte_view_get_last_selection(drte_view* pView, size_t* iCharBegOut, size_t*
     if (iCharBegOut) *iCharBegOut = selection.iCharBeg;
     if (iCharEndOut) *iCharEndOut = selection.iCharEnd;
     return true;
+}
+
+bool drte_view_get_selection_under_point(drte_view* pView, float posX, float posY, size_t* piSelectionOut)
+{
+    if (pView == NULL) return false;
+
+    size_t iChar = drte_view_get_character_under_point_relative_to_text(pView, pView->pWrappedLines, posX, posY, NULL);
+    for (size_t iSelection = 0; iSelection < pView->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pView->pSelections[iSelection]);
+        if (iChar >= selection.iCharBeg && iChar < selection.iCharEnd) {
+            if (piSelectionOut) *piSelectionOut = iSelection;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 

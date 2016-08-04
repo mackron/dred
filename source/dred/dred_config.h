@@ -172,6 +172,9 @@
 // texteditor-enable-word-wrap textEditorEnableWordWrap bool dred_config_on_set__texteditor_word_wrap true
 //   Whether or not word wrap should be enabled.
 //
+// texteditor-enable-drag-and-drop textEditorEnableDragAndDrop bool dred_config_on_set__texteditor_drag_and_drop true
+//   Whether or not drag-and-drop should be enabled for text editors.
+//
 //
 // cpp-comment-text-color cppCommentTextColor color dred_config_on_set__cpp_syntax_color 64 192 92
 //   The color to use for C/C++ comments.
@@ -287,6 +290,9 @@ void dred_config_on_set__texteditor_generic_refresh(dred_context* pDred);
 
 // texteditor-enable-word-wrap
 void dred_config_on_set__texteditor_word_wrap(dred_context* pDred);
+
+// texteditor-enable-drag-and-drop
+void dred_config_on_set__texteditor_drag_and_drop(dred_context* pDred);
 
 
 // Generic function for setting a syntax color for C/C++.

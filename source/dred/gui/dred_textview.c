@@ -434,7 +434,8 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
     pTextView->horzScrollbarSize = 16;
     pTextView->isVertScrollbarEnabled = true;
     pTextView->isHorzScrollbarEnabled = true;
-    pTextView->isExcessScrollingEnabled = true;
+    pTextView->isExcessScrollingEnabled = pDred->config.textEditorEnableExcessScrolling;
+    pTextView->isDragAndDropEnabled = pDred->config.textEditorEnableDragAndDrop;
     pTextView->iLineSelectAnchor = 0;
     pTextView->onCursorMove = NULL;
     pTextView->onUndoPointChanged = NULL;
@@ -795,6 +796,34 @@ bool dred_textview_is_word_wrap_enabled(dred_textview* pTextView)
     }
 
     return drte_view_is_word_wrap_enabled(pTextView->pView);
+}
+
+
+void dred_textview_enable_drag_and_drop(dred_textview* pTextView)
+{
+    if (pTextView == NULL) {
+        return;
+    }
+
+    pTextView->isDragAndDropEnabled = true;
+}
+
+void dred_textview_disable_drag_and_drop(dred_textview* pTextView)
+{
+    if (pTextView == NULL) {
+        return;
+    }
+
+    pTextView->isDragAndDropEnabled = false;
+}
+
+bool dred_textview_is_drag_and_drop_enabled(dred_textview* pTextView)
+{
+    if (pTextView == NULL) {
+        return false;
+    }
+
+    return pTextView->isDragAndDropEnabled;
 }
 
 
@@ -1492,6 +1521,12 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
         }
         drte_view_end_dirty(pTextView->pView);
     }
+    else
+    {
+        // If we get to this branch it means we are not selecting anything. If we are hovered over a selected piece of text we will want to change
+        // the cursor to an arrow for drag-and-drop feedback.
+
+    }
 }
 
 void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
@@ -1525,7 +1560,7 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
         dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
         size_t iLine;
-        size_t iChar = drte_view_get_character_by_point_relative_to_container(pTextView->pView, NULL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY, &iLine);
+        size_t iChar = drte_view_get_character_under_point(pTextView->pView, NULL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY, &iLine);
 
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
             drte_view_set_selection_end_point(pTextView->pView, iChar);

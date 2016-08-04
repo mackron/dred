@@ -94,6 +94,9 @@ struct dred_textview
     // Whether or not tabs to spaces is enabled.
     bool isTabsToSpacesEnabled;
 
+    // Whether or not drag-and-drop is enabled.
+    bool isDragAndDropEnabled;
+
 
     // The number of active cursors.
     size_t cursorCount;
@@ -226,6 +229,17 @@ void dred_textview_disable_word_wrap(dred_textview* pTextView);
 
 // Determines whether or not word wrap is enabled.
 bool dred_textview_is_word_wrap_enabled(dred_textview* pTextView);
+
+
+// Enables drag-and-drop.
+void dred_textview_enable_drag_and_drop(dred_textview* pTextView);
+
+// Disables drag-and-drop.
+void dred_textview_disable_drag_and_drop(dred_textview* pTextView);
+
+// Determines whether or not drag and drop is enabled.
+bool dred_textview_is_drag_and_drop_enabled(dred_textview* pTextView);
+
 
 
 // Sets the text of the given text box.

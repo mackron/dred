@@ -45,6 +45,16 @@ void dred_text_editor_disable_word_wrap(dred_text_editor* pTextEditor);
 bool dred_text_editor_is_word_wrap_enabled(dred_text_editor* pTextEditor);
 
 
+// Enables drag-and-drop.
+void dred_text_editor_enable_drag_and_drop(dred_text_editor* pTextEditor);
+
+// Disables drag-and-drop.
+void dred_text_editor_disable_drag_and_drop(dred_text_editor* pTextEditor);
+
+// Determines whether or not drag and drop is enabled.
+bool dred_text_editor_is_drag_and_drop_enabled(dred_text_editor* pTextEditor);
+
+
 // Inserts text at every cursor.
 //
 // Returns whether or not the text was changed.

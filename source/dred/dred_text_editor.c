@@ -338,6 +338,34 @@ bool dred_text_editor_is_word_wrap_enabled(dred_text_editor* pTextEditor)
 }
 
 
+void dred_text_editor_enable_drag_and_drop(dred_text_editor* pTextEditor)
+{
+    if (pTextEditor == NULL) {
+        return;
+    }
+
+    dred_textview_enable_drag_and_drop(pTextEditor->pTextView);
+}
+
+void dred_text_editor_disable_drag_and_drop(dred_text_editor* pTextEditor)
+{
+    if (pTextEditor == NULL) {
+        return;
+    }
+
+    dred_textview_disable_drag_and_drop(pTextEditor->pTextView);
+}
+
+bool dred_text_editor_is_drag_and_drop_enabled(dred_text_editor* pTextEditor)
+{
+    if (pTextEditor == NULL) {
+        return false;
+    }
+
+    return dred_textview_is_drag_and_drop_enabled(pTextEditor->pTextView);
+}
+
+
 bool dred_text_editor_insert_text_at_cursors(dred_text_editor* pTextEditor, const char* text)
 {
     if (pTextEditor == NULL) {

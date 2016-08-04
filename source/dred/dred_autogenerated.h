@@ -62,6 +62,7 @@ int textEditorTabSizeInSpaces; \
 float textEditorScale; \
 bool textEditorEnableAutoIndent; \
 bool textEditorEnableWordWrap; \
+bool textEditorEnableDragAndDrop; \
 dred_color cppCommentTextColor; \
 dred_color cppStringTextColor; \
 dred_color cppKeywordTextColor;
