@@ -204,7 +204,7 @@ struct drte_view
     //
     // Internal
     //
-    unsigned int _id;   // <-- This is used for identifying the view when restoring undo/redo state.
+    size_t _id;   // <-- This is used for identifying the view when restoring undo/redo state.
     drte_view* _pPrevView;
     drte_view* _pNextView;
     unsigned int _dirtyCounter;
@@ -346,7 +346,7 @@ struct drte_engine
 
 
     // The ID to use for the next view. This is used for identifying views when restoring undo/redo state.
-    unsigned int nextViewID;
+    size_t nextViewID;
 
     // A pointer to the first view. This is a linked list.
     drte_view* pRootView;
@@ -377,6 +377,8 @@ DRTE_INLINE drte_view* drte_engine_first_view(drte_engine* pEngine) { if (pEngin
 DRTE_INLINE drte_view* drte_engine_next_view(drte_engine* pEngine, drte_view* pView) { (void)pEngine; if (pView == NULL) return NULL; return pView->_pNextView; }
 DRTE_INLINE drte_view* drte_engine_prev_view(drte_engine* pEngine, drte_view* pView) { (void)pEngine; if (pView == NULL) return NULL; return pView->_pPrevView; }
 
+// Counts the number of views. This runs in linear time.
+size_t drte_engine_get_view_count(drte_engine* pEngine);
 
 
 // Registers a style token.
@@ -1237,7 +1239,7 @@ void drte_view__update_cursor_sticky_position(drte_view* pView, drte_cursor* pCu
     pCursor->absoluteSickyPosX = charPosX;
 }
 
-unsigned int drte_engine__acquire_view_id(drte_engine* pEngine)
+size_t drte_engine__acquire_view_id(drte_engine* pEngine)
 {
     assert(pEngine != NULL);
     return pEngine->nextViewID++;   // <-- Make this thread-safe?
@@ -1962,6 +1964,17 @@ void drte_engine_uninit(drte_engine* pEngine)
 }
 
 
+size_t drte_engine_get_view_count(drte_engine* pEngine)
+{
+    size_t count = 0;
+    for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+        count += 1;
+    }
+
+    return count;
+}
+
+
 bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token styleToken, drte_font_metrics fontMetrics)
 {
     if (pEngine == NULL) {
@@ -2634,42 +2647,71 @@ bool drte_engine__capture_and_push_undo_state__user_data(drte_engine* pEngine, d
     return true;
 }
 
-bool drte_engine__capture_and_push_undo_state__cursors(drte_engine* pEngine, drte_stack_buffer* pStack)
+bool drte_engine__capture_and_push_undo_state__cursors(drte_engine* pEngine, drte_stack_buffer* pStack, drte_view* pView)
 {
     assert(pEngine != NULL);
     assert(pStack != NULL);
+    assert(pView != NULL);
 
     size_t sizeInBytes =
-        sizeof(pEngine->pView->cursorCount) +
-        sizeof(drte_cursor) * pEngine->pView->cursorCount;
+        sizeof(pView->cursorCount) +
+        sizeof(drte_cursor) * pView->cursorCount;
 
     uint8_t* pData = drte_stack_buffer_alloc(pStack, sizeInBytes);
     if (pData == NULL) {
         return false;
     }
 
-    memcpy(pData, &pEngine->pView->cursorCount, sizeof(pEngine->pView->cursorCount));
-    memcpy(pData + sizeof(pEngine->pView->cursorCount), pEngine->pView->pCursors, sizeof(drte_cursor) * pEngine->pView->cursorCount);
+    memcpy(pData, &pView->cursorCount, sizeof(pView->cursorCount));
+    memcpy(pData + sizeof(pView->cursorCount), pView->pCursors, sizeof(drte_cursor) * pView->cursorCount);
 
     return true;
 }
 
-bool drte_engine__capture_and_push_undo_state__selections(drte_engine* pEngine, drte_stack_buffer* pStack)
+bool drte_engine__capture_and_push_undo_state__selections(drte_engine* pEngine, drte_stack_buffer* pStack, drte_view* pView)
 {
     assert(pEngine != NULL);
     assert(pStack != NULL);
+    assert(pView != NULL);
 
     size_t sizeInBytes =
-        sizeof(pEngine->pView->selectionCount) +
-        sizeof(drte_region) * pEngine->pView->selectionCount;
+        sizeof(pView->selectionCount) +
+        sizeof(drte_region) * pView->selectionCount;
 
     uint8_t* pData = drte_stack_buffer_alloc(pStack, sizeInBytes);
     if (pData == NULL) {
         return false;
     }
 
-    memcpy(pData, &pEngine->pView->selectionCount, sizeof(pEngine->pView->selectionCount));
-    memcpy(pData + sizeof(pEngine->pView->selectionCount), pEngine->pView->pSelections, sizeof(drte_region) * pEngine->pView->selectionCount);
+    memcpy(pData, &pView->selectionCount, sizeof(pView->selectionCount));
+    memcpy(pData + sizeof(pView->selectionCount), pView->pSelections, sizeof(drte_region) * pView->selectionCount);
+
+    return true;
+}
+
+bool drte_engine__capture_and_push_undo_state__view(drte_engine* pEngine, drte_stack_buffer* pStack, drte_view* pView)
+{
+    if (pEngine == NULL || pStack == NULL || pView == NULL) {
+        return false;
+    }
+
+    size_t sizeInBytes = 
+        sizeof(pView->_id);
+
+    uint8_t* pData = drte_stack_buffer_alloc(pStack, sizeInBytes);
+    if (pData == NULL) {
+        return false;
+    }
+
+    memcpy(pData, &pView->_id, sizeof(pView->_id));
+
+    if (!drte_engine__capture_and_push_undo_state__cursors(pEngine, pStack, pView)) {
+        return false;
+    }
+
+    if (!drte_engine__capture_and_push_undo_state__selections(pEngine, pStack, pView)) {
+        return false;
+    }
 
     return true;
 }
@@ -2687,14 +2729,23 @@ bool drte_engine__capture_and_push_undo_state(drte_engine* pEngine, drte_stack_b
         return false;
     }
 
-    if (!drte_engine__capture_and_push_undo_state__cursors(pEngine, pStack)) {
+
+    // There is state that needs to be captured for each view. We'll need to view count to begin with.
+    size_t *pViewCount = (size_t*)drte_stack_buffer_alloc(pStack, sizeof(size_t));
+    if (pViewCount == NULL) {
         drte_stack_buffer_set_stack_ptr(pStack, oldStackPtr);
         return false;
     }
 
-    if (!drte_engine__capture_and_push_undo_state__selections(pEngine, pStack)) {
-        drte_stack_buffer_set_stack_ptr(pStack, oldStackPtr);
-        return false;
+    *pViewCount = drte_engine_get_view_count(pEngine);
+
+
+    // Each view...
+    for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+        if (!drte_engine__capture_and_push_undo_state__view(pEngine, pStack, pView)) {
+            drte_stack_buffer_set_stack_ptr(pStack, oldStackPtr);
+            return false;
+        }
     }
 
     return true;
@@ -2724,6 +2775,92 @@ size_t drte_engine__get_next_undo_data_offset(drte_engine* pEngine)
     }
 
     return *((size_t*)drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, pEngine->currentUndoDataOffset + sizeof(size_t)));
+}
+
+
+typedef struct drte_undo_state_view_info drte_undo_state_view_info;
+struct drte_undo_state_view_info
+{
+    size_t id;
+    size_t cursorCount;
+    const drte_cursor* pCursors;
+    size_t selectionCount;
+    const drte_region* pSelections;
+};
+
+typedef struct
+{
+    size_t prevUndoDataOffset;
+    size_t nextUndoDataOffset;
+    size_t oldStateLocalOffset;
+    size_t newStateLocalOffset;
+    size_t textChangesOffset;
+
+    size_t textChangeCount;
+    const uint8_t* pTextChanges;
+
+    const uint8_t* pOldState;
+    const uint8_t* pNewState;
+
+    struct
+    {
+        size_t userDataSize;
+        const void* pUserData;
+        size_t viewCount;
+        size_t firstViewOffset;
+    } oldState;
+
+    struct
+    {
+        size_t userDataSize;
+        const void* pUserData;
+        size_t viewCount;
+        size_t firstViewOffset;
+    } newState;
+} drte_undo_state_info;
+
+void drte_engine__breakdown_undo_state_view_info(const uint8_t* pUndoData, drte_undo_state_view_info* pInfoOut, size_t* pBytesReadOut)
+{
+    size_t runningOffset = 0;
+    pInfoOut->id             = *(const size_t*)     (pUndoData + runningOffset); runningOffset += sizeof(size_t);
+    pInfoOut->cursorCount    = *(const size_t*)     (pUndoData + runningOffset); runningOffset += sizeof(size_t);
+    pInfoOut->pCursors       =  (const drte_cursor*)(pUndoData + runningOffset); runningOffset += sizeof(drte_cursor)*pInfoOut->cursorCount;
+    pInfoOut->selectionCount = *(const size_t*)     (pUndoData + runningOffset); runningOffset += sizeof(size_t);
+    pInfoOut->pSelections    =  (const drte_region*)(pUndoData + runningOffset); runningOffset += sizeof(drte_region)*pInfoOut->selectionCount;
+
+    *pBytesReadOut = runningOffset;
+}
+
+DRTE_INLINE void drte_engine__breakdown_undo_state_info(const uint8_t* pUndoData, drte_undo_state_info* pInfoOut)
+{
+    assert(pInfoOut != NULL);
+
+    drte_undo_state_info result;
+    result.prevUndoDataOffset  = *(const size_t*)(pUndoData + sizeof(size_t)*0);
+    result.nextUndoDataOffset  = *(const size_t*)(pUndoData + sizeof(size_t)*1);
+    result.oldStateLocalOffset = *(const size_t*)(pUndoData + sizeof(size_t)*2);
+    result.newStateLocalOffset = *(const size_t*)(pUndoData + sizeof(size_t)*3);
+    result.textChangesOffset   = *(const size_t*)(pUndoData + sizeof(size_t)*4);
+
+    result.textChangeCount = *(const size_t*)(pUndoData + result.textChangesOffset);
+    result.pTextChanges = pUndoData + result.textChangesOffset + sizeof(size_t);
+
+    result.pOldState = pUndoData + result.oldStateLocalOffset;
+    result.pNewState = pUndoData + result.newStateLocalOffset;
+
+    size_t runningOffset = 0;
+    result.oldState.userDataSize = *(const size_t*)(result.pOldState + runningOffset); runningOffset += sizeof(size_t);
+    result.oldState.pUserData = result.pOldState + runningOffset;                      runningOffset += result.oldState.userDataSize;
+    result.oldState.viewCount = *(const size_t*)(result.pOldState + runningOffset);    runningOffset += sizeof(size_t);
+    result.oldState.firstViewOffset = result.oldStateLocalOffset + runningOffset;
+
+    runningOffset = 0;
+    result.newState.userDataSize = *(const size_t*)(result.pNewState + runningOffset); runningOffset += sizeof(size_t);
+    result.newState.pUserData = result.pNewState + runningOffset;                      runningOffset += result.newState.userDataSize;
+    result.newState.viewCount = *(const size_t*)(result.pNewState + runningOffset);    runningOffset += sizeof(size_t);
+    result.newState.firstViewOffset = result.newStateLocalOffset + runningOffset;
+
+    *pInfoOut = result;
 }
 
 
@@ -3065,113 +3202,43 @@ void drte_engine__refresh(drte_engine* pEngine)
 
 
 
-typedef struct
+
+void drte_view__set_cursors(drte_view* pView, size_t cursorCount, const drte_cursor* pCursors)
 {
-    size_t prevUndoDataOffset;
-    size_t nextUndoDataOffset;
-    size_t oldStateLocalOffset;
-    size_t newStateLocalOffset;
-    size_t textChangesOffset;
-
-    size_t textChangeCount;
-    const uint8_t* pTextChanges;
-
-    const uint8_t* pOldState;
-    const uint8_t* pNewState;
-
-    struct
-    {
-        size_t userDataSize;
-        const void* pUserData;
-        size_t cursorCount;
-        const drte_cursor* pCursors;
-        size_t selectionCount;
-        const drte_region* pSelections;
-    } oldState;
-
-    struct
-    {
-        size_t userDataSize;
-        const void* pUserData;
-        size_t cursorCount;
-        const drte_cursor* pCursors;
-        size_t selectionCount;
-        const drte_region* pSelections;
-    } newState;
-} drte_undo_state_info;
-
-DRTE_INLINE void drte_engine__breakdown_undo_state_info(const uint8_t* pUndoData, drte_undo_state_info* pInfoOut)
-{
-    assert(pInfoOut != NULL);
-
-    drte_undo_state_info result;
-    result.prevUndoDataOffset  = *(const size_t*)(pUndoData + sizeof(size_t)*0);
-    result.nextUndoDataOffset  = *(const size_t*)(pUndoData + sizeof(size_t)*1);
-    result.oldStateLocalOffset = *(const size_t*)(pUndoData + sizeof(size_t)*2);
-    result.newStateLocalOffset = *(const size_t*)(pUndoData + sizeof(size_t)*3);
-    result.textChangesOffset   = *(const size_t*)(pUndoData + sizeof(size_t)*4);
-
-    result.textChangeCount = *(const size_t*)(pUndoData + result.textChangesOffset);
-    result.pTextChanges = pUndoData + result.textChangesOffset + sizeof(size_t);
-
-    result.pOldState = pUndoData + result.oldStateLocalOffset;
-    result.pNewState = pUndoData + result.newStateLocalOffset;
-
-    size_t runningOffset = 0;
-    result.oldState.userDataSize = *(const size_t*)(result.pOldState + runningOffset);    runningOffset += sizeof(size_t);
-    result.oldState.pUserData = result.pOldState + runningOffset;                         runningOffset += result.oldState.userDataSize;
-    result.oldState.cursorCount = *(const size_t*)(result.pOldState + runningOffset);     runningOffset += sizeof(size_t);
-    result.oldState.pCursors = (const drte_cursor*)(result.pOldState + runningOffset);    runningOffset += sizeof(drte_cursor)*result.oldState.cursorCount;
-    result.oldState.selectionCount = *(const size_t*)(result.pOldState + runningOffset);  runningOffset += sizeof(size_t);
-    result.oldState.pSelections = (const drte_region*)(result.pOldState + runningOffset); runningOffset += sizeof(drte_region)*result.oldState.selectionCount;
-
-    runningOffset = 0;
-    result.newState.userDataSize = *(const size_t*)(result.pNewState + runningOffset);    runningOffset += sizeof(size_t);
-    result.newState.pUserData = result.pNewState + runningOffset;                         runningOffset += result.newState.userDataSize;
-    result.newState.cursorCount = *(const size_t*)(result.pNewState + runningOffset);     runningOffset += sizeof(size_t);
-    result.newState.pCursors = (const drte_cursor*)(result.pNewState + runningOffset);    runningOffset += sizeof(drte_cursor)*result.newState.cursorCount;
-    result.newState.selectionCount = *(const size_t*)(result.pNewState + runningOffset);  runningOffset += sizeof(size_t);
-    result.newState.pSelections = (const drte_region*)(result.pNewState + runningOffset); runningOffset += sizeof(drte_region)*result.newState.selectionCount;
-
-    *pInfoOut = result;
-}
-
-void drte_engine__set_cursors(drte_engine* pEngine, size_t cursorCount, const drte_cursor* pCursors)
-{
-    assert(pEngine != NULL);
+    assert(pView != NULL);
 
     if (cursorCount > 0) {
-        drte_cursor* pNewCursors = (drte_cursor*)realloc(pEngine->pView->pCursors, cursorCount * sizeof(*pNewCursors));
+        drte_cursor* pNewCursors = (drte_cursor*)realloc(pView->pCursors, cursorCount * sizeof(*pNewCursors));
         if (pNewCursors != NULL) {
-            pEngine->pView->pCursors = pNewCursors;
+            pView->pCursors = pNewCursors;
             for (size_t iCursor = 0; iCursor < cursorCount; ++iCursor) {
-                pEngine->pView->pCursors[iCursor] = pCursors[iCursor];
-                drte_view__update_cursor_sticky_position(pEngine->pView, &pEngine->pView->pCursors[iCursor]);
+                pView->pCursors[iCursor] = pCursors[iCursor];
+                drte_view__update_cursor_sticky_position(pView, &pView->pCursors[iCursor]);
             }
 
-            pEngine->pView->cursorCount = cursorCount;
+            pView->cursorCount = cursorCount;
         }
     } else {
-        pEngine->pView->cursorCount = 0;
+        pView->cursorCount = 0;
     }
 }
 
-void drte_engine__set_selections(drte_engine* pEngine, size_t selectionCount, const drte_region* pSelections)
+void drte_view__set_selections(drte_view* pView, size_t selectionCount, const drte_region* pSelections)
 {
-    assert(pEngine != NULL);
+    assert(pView != NULL);
 
     if (selectionCount > 0) {
-        drte_region* pNewSelections = (drte_region*)realloc(pEngine->pView->pSelections, selectionCount * sizeof(*pNewSelections));
+        drte_region* pNewSelections = (drte_region*)realloc(pView->pSelections, selectionCount * sizeof(*pNewSelections));
         if (pNewSelections != NULL) {
-            pEngine->pView->pSelections = pNewSelections;
+            pView->pSelections = pNewSelections;
             for (size_t iSelection = 0; iSelection < selectionCount; ++iSelection) {
-                pEngine->pView->pSelections[iSelection] = pSelections[iSelection];
+                pView->pSelections[iSelection] = pSelections[iSelection];
             }
 
-            pEngine->pView->selectionCount = selectionCount;
+            pView->selectionCount = selectionCount;
         }
     } else {
-        pEngine->pView->selectionCount = 0;
+        pView->selectionCount = 0;
     }
 }
 
@@ -3249,28 +3316,39 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, const void* pUndoDataPt
     drte_engine__apply_text_changes_reversed(pEngine, state.textChangeCount, state.pTextChanges);
 
 
-    // Cursors.
-    drte_engine__set_cursors(pEngine, state.oldState.cursorCount, state.oldState.pCursors);
+    // For each view with captured state...
+    size_t viewDataOffset = state.oldState.firstViewOffset;
+    for (size_t iView = 0; iView < state.oldState.viewCount; ++iView) {
+        size_t viewDataSize;
+        drte_undo_state_view_info viewData;
+        drte_engine__breakdown_undo_state_view_info((uint8_t*)pUndoDataPtr + viewDataOffset, &viewData, &viewDataSize);
 
-    // Selections.
-    drte_engine__set_selections(pEngine, state.oldState.selectionCount, state.oldState.pSelections);
+        // If the view that owns this captured state still exists it needs to have it's selections and cursors restored. Otherwise we just skip it.
+        for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+            if (pView->_id == viewData.id) {
+                drte_view__set_cursors(pView, viewData.cursorCount, viewData.pCursors);
+                drte_view__set_selections(pView, viewData.selectionCount, viewData.pSelections);
+                
+                for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
+                    drte_engine__on_cursor_move(pEngine, pView, iCursor);
+                }
 
+                break;
+            }
+        }
+
+        viewDataOffset += viewDataSize;
+    }
 
 
     if (pEngine->onTextChanged) {
         pEngine->onTextChanged(pEngine);
     }
 
-    for (size_t iCursor = 0; iCursor < pEngine->pView->cursorCount; ++iCursor) {
-        drte_engine__on_cursor_move(pEngine, pEngine->pView, iCursor);
-    }
-
-
     // Application-defined data.
     if (pEngine->onApplyUndoState) {
         pEngine->onApplyUndoState(pEngine, state.oldState.userDataSize, state.oldState.pUserData);
     }
-
 
 
     // End dirty.
@@ -3297,23 +3375,33 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, const void* pUndoDataPt
     // Text.
     drte_engine__apply_text_changes(pEngine, state.textChangeCount, state.pTextChanges);
 
+    size_t viewDataOffset = state.newState.firstViewOffset;
+    for (size_t iView = 0; iView < state.newState.viewCount; ++iView) {
+        size_t viewDataSize;
+        drte_undo_state_view_info viewData;
+        drte_engine__breakdown_undo_state_view_info((uint8_t*)pUndoDataPtr + viewDataOffset, &viewData, &viewDataSize);
 
-    // Cursors.
-    drte_engine__set_cursors(pEngine, state.newState.cursorCount, state.newState.pCursors);
+        // If the view that owns this captured state still exists it needs to have it's selections and cursors restored. Otherwise we just skip it.
+        for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+            if (pView->_id == viewData.id) {
+                drte_view__set_cursors(pView, viewData.cursorCount, viewData.pCursors);
+                drte_view__set_selections(pView, viewData.selectionCount, viewData.pSelections);
+                
+                for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
+                    drte_engine__on_cursor_move(pEngine, pView, iCursor);
+                }
 
-    // Selections.
-    drte_engine__set_selections(pEngine, state.newState.selectionCount, state.newState.pSelections);
+                break;
+            }
+        }
 
+        viewDataOffset += viewDataSize;
+    }
 
 
     if (pEngine->onTextChanged) {
         pEngine->onTextChanged(pEngine);
     }
-
-    for (size_t iCursor = 0; iCursor < pEngine->pView->cursorCount; ++iCursor) {
-        drte_engine__on_cursor_move(pEngine, pEngine->pView, iCursor);
-    }
-
 
     // Application-defined data.
     if (pEngine->onApplyUndoState) {
