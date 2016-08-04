@@ -71,7 +71,7 @@ void dred_textview__on_vscroll(dred_scrollbar* pSBControl, int scrollPos)
     dred_textview* pTextView = (dred_textview*)DRED_CONTROL(pSBControl)->pUserData;
     assert(pTextView != NULL);
 
-    drte_view_set_inner_offset_y(pTextView->pTextEngine->pView, -drte_view_get_line_pos_y(pTextView->pTextEngine->pView, scrollPos));
+    drte_view_set_inner_offset_y(pTextView->pView, -drte_view_get_line_pos_y(pTextView->pView, scrollPos));
     dred_textview__refresh_scrollbars(pTextView);
 
     // The line numbers need to be redrawn.
@@ -83,7 +83,7 @@ void dred_textview__on_hscroll(dred_scrollbar* pSBControl, int scrollPos)
     dred_textview* pTextView = (dred_textview*)DRED_CONTROL(pSBControl)->pUserData;
     assert(pTextView != NULL);
 
-    drte_view_set_inner_offset_x(pTextView->pTextEngine->pView, (float)-scrollPos);
+    drte_view_set_inner_offset_x(pTextView->pView, (float)-scrollPos);
 }
 
 void dred_textview__refresh_style(dred_textview* pTextView)
@@ -135,11 +135,11 @@ void dred_textview__clear_all_cursors(dred_textview* pTextView)
     assert(pTextView != NULL);
 
     // Engine.
-    drte_view_begin_dirty(pTextView->pTextEngine->pView);
-    while (pTextView->pTextEngine->pView->cursorCount > 1) {
-        drte_view_remove_cursor(pTextView->pTextEngine->pView, pTextView->pTextEngine->pView->cursorCount-2);
+    drte_view_begin_dirty(pTextView->pView);
+    while (pTextView->pView->cursorCount > 1) {
+        drte_view_remove_cursor(pTextView->pView, pTextView->pView->cursorCount-2);
     }
-    drte_view_end_dirty(pTextView->pTextEngine->pView);
+    drte_view_end_dirty(pTextView->pView);
 
 
     // Local list.
@@ -155,7 +155,7 @@ void dred_textview__remove_cursor(dred_textview* pTextView, size_t iCursor)
     assert(pTextView != NULL);
 
     // Remove from the engine.
-    drte_view_remove_cursor(pTextView->pTextEngine->pView, iCursor);
+    drte_view_remove_cursor(pTextView->pView, iCursor);
 
     // Remove from the local list.
     for (size_t i = iCursor; i < pTextView->cursorCount-1; ++i) {
@@ -171,8 +171,8 @@ void dred_textview__insert_cursor(dred_textview* pTextView, size_t iChar)
     // If we are trying to insert a cursor on top of an existing cursor we need to just move the existing one to the end of the list,
     // thus making it the current cursor. We don't want cursors to be sitting on top of each other.
     size_t iExistingCursor = (size_t)-1;
-    for (size_t iCursor = 0; iCursor < pTextView->pTextEngine->pView->cursorCount; ++iCursor) {
-        if (pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs == iChar) {
+    for (size_t iCursor = 0; iCursor < pTextView->pView->cursorCount; ++iCursor) {
+        if (pTextView->pView->pCursors[iCursor].iCharAbs == iChar) {
             iExistingCursor = iCursor;
             break;
         }
@@ -184,7 +184,7 @@ void dred_textview__insert_cursor(dred_textview* pTextView, size_t iChar)
         dred_textview__remove_cursor(pTextView, iExistingCursor);
     }
 
-    size_t iEngineCursor = drte_view_insert_cursor(pTextView->pTextEngine->pView, iChar);
+    size_t iEngineCursor = drte_view_insert_cursor(pTextView->pView, iChar);
 
     dred_textview_cursor* pNewCursors = (dred_textview_cursor*)realloc(pTextView->pCursors, (pTextView->cursorCount+1) * sizeof(*pNewCursors));
     if (pNewCursors == NULL) {
@@ -201,9 +201,9 @@ bool dred_textview__get_cursor_selection(dred_textview* pTextView, size_t iCurso
 {
     assert(pTextView != NULL);
 
-    for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->pView->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pTextView->pTextEngine->pView->pSelections[iSelection]);
-        if (selection.iCharBeg == pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs || selection.iCharEnd == pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs) {
+    for (size_t iSelection = 0; iSelection < pTextView->pView->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTextView->pView->pSelections[iSelection]);
+        if (selection.iCharBeg == pTextView->pView->pCursors[iCursor].iCharAbs || selection.iCharEnd == pTextView->pView->pCursors[iCursor].iCharAbs) {
             if (iSelectionOut) *iSelectionOut = iSelection;
             return true;
         }
@@ -216,24 +216,24 @@ bool dred_textview__is_cursor_on_selection(dred_textview* pTextView)
 {
     assert(pTextView != NULL);
 
-    return dred_textview__get_cursor_selection(pTextView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), NULL);
+    return dred_textview__get_cursor_selection(pTextView, drte_view_get_last_cursor(pTextView->pView), NULL);
 }
 
 bool dred_textview__move_cursor_to_start_of_selection(dred_textview* pTextView, size_t* iSelectionOut)
 {
     assert(pTextView != NULL);
 
-    if (pTextView->pTextEngine->pView->cursorCount == 0) {
+    if (pTextView->pView->cursorCount == 0) {
         return false;
     }
 
     // We need to find the selection region that the last cursor is sitting at the end of. If there isn't one, we just return false.
-    size_t iCursor = drte_view_get_last_cursor(pTextView->pTextEngine->pView);
-    for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->pView->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pTextView->pTextEngine->pView->pSelections[iSelection]);
-        if (selection.iCharEnd == pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs) {
+    size_t iCursor = drte_view_get_last_cursor(pTextView->pView);
+    for (size_t iSelection = 0; iSelection < pTextView->pView->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTextView->pView->pSelections[iSelection]);
+        if (selection.iCharEnd == pTextView->pView->pCursors[iCursor].iCharAbs) {
             // It's on this selection.
-            drte_view_move_cursor_to_character(pTextView->pTextEngine->pView, iCursor, selection.iCharBeg);
+            drte_view_move_cursor_to_character(pTextView->pView, iCursor, selection.iCharBeg);
             if (iSelectionOut) *iSelectionOut = iSelection;
             return true;
         }
@@ -246,17 +246,17 @@ bool dred_textview__move_cursor_to_end_of_selection(dred_textview* pTextView, si
 {
     assert(pTextView != NULL);
 
-    if (pTextView->pTextEngine->pView->cursorCount == 0) {
+    if (pTextView->pView->cursorCount == 0) {
         return false;
     }
 
     // We need to find the selection region that the last cursor is sitting at the end of. If there isn't one, we just return false.
-    size_t iCursor = drte_view_get_last_cursor(pTextView->pTextEngine->pView);
-    for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->pView->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pTextView->pTextEngine->pView->pSelections[iSelection]);
-        if (selection.iCharBeg == pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs) {
+    size_t iCursor = drte_view_get_last_cursor(pTextView->pView);
+    for (size_t iSelection = 0; iSelection < pTextView->pView->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTextView->pView->pSelections[iSelection]);
+        if (selection.iCharBeg == pTextView->pView->pCursors[iCursor].iCharAbs) {
             // It's on this selection.
-            drte_view_move_cursor_to_character(pTextView->pTextEngine->pView, iCursor, selection.iCharEnd);
+            drte_view_move_cursor_to_character(pTextView->pView, iCursor, selection.iCharEnd);
             if (iSelectionOut) *iSelectionOut = iSelection;
             return true;
         }
@@ -272,12 +272,12 @@ bool dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextView));
     assert(pDred != NULL);
 
-    drte_view_begin_dirty(pTextView->pTextEngine->pView);
+    drte_view_begin_dirty(pTextView->pView);
 
     bool wasTextChanged = false;
     size_t insertedCharacterCount;
     if (pDred->config.textEditorTabsToSpacesEnabled) {
-        insertedCharacterCount = drte_view_get_spaces_to_next_column_from_character(pTextView->pTextEngine->pView, iChar);
+        insertedCharacterCount = drte_view_get_spaces_to_next_column_from_character(pTextView->pView, iChar);
         for (size_t i = 0; i < insertedCharacterCount; ++i) {
             wasTextChanged = drte_engine_insert_character(pTextView->pTextEngine, iChar, ' ') || wasTextChanged;
         }
@@ -288,27 +288,27 @@ bool dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
 
 
     // Any cursor whose character position comes after this cursor needs to be moved.
-    for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->pView->cursorCount; ++iCursor2) {
-        if (pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs >= iChar) {
-            drte_view_move_cursor_to_character(pTextView->pTextEngine->pView, iCursor2, pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
+    for (size_t iCursor2 = 0; iCursor2 < pTextView->pView->cursorCount; ++iCursor2) {
+        if (pTextView->pView->pCursors[iCursor2].iCharAbs >= iChar) {
+            drte_view_move_cursor_to_character(pTextView->pView, iCursor2, pTextView->pView->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
         }
     }
 
     // As with cursors, selections need to be updated too.
-    for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->pView->selectionCount; ++iSelection) {
-        drte_region selection = drte_region_normalize(pTextView->pTextEngine->pView->pSelections[iSelection]);
+    for (size_t iSelection = 0; iSelection < pTextView->pView->selectionCount; ++iSelection) {
+        drte_region selection = drte_region_normalize(pTextView->pView->pSelections[iSelection]);
         if (selection.iCharBeg > iChar) {
-            pTextView->pTextEngine->pView->pSelections[iSelection].iCharBeg += insertedCharacterCount;
-            pTextView->pTextEngine->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+            pTextView->pView->pSelections[iSelection].iCharBeg += insertedCharacterCount;
+            pTextView->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
         } else {
             if (selection.iCharEnd > iChar) {
-                pTextView->pTextEngine->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+                pTextView->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
             }
         }
     }
 
 
-    drte_view_end_dirty(pTextView->pTextEngine->pView);
+    drte_view_end_dirty(pTextView->pView);
     return wasTextChanged;
 }
 
@@ -316,7 +316,7 @@ bool dred_textview__insert_tab_at_cursor(dred_textview* pTextView, size_t iCurso
 {
     assert(pTextView != NULL);
 
-    return dred_textview__insert_tab(pTextView, pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs);
+    return dred_textview__insert_tab(pTextView, pTextView->pView->pCursors[iCursor].iCharAbs);
 }
 
 
@@ -333,15 +333,14 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
 
     pTextView->pTextEngine = pTextEngine;
     pTextView->pTextEngine->pUserData = pTextView;
-    dred_textview__insert_cursor(pTextView, 0);
 
-#if 0
     pTextView->pView = drte_view_create(pTextView->pTextEngine);
     if (pTextView->pView == NULL) {
         dred_control_uninit(DRED_CONTROL(pTextView));
         return false;
     }
-#endif
+
+    dred_textview__insert_cursor(pTextView, 0);
 
     
 
@@ -606,7 +605,7 @@ void dred_textview_set_cursor_width(dred_textview* pTextView, float cursorWidth)
         return;
     }
 
-    drte_view_set_cursor_width(pTextView->pTextEngine->pView, cursorWidth);
+    drte_view_set_cursor_width(pTextView->pView, cursorWidth);
 }
 
 float dred_textview_get_cursor_width(dred_textview* pTextView)
@@ -615,7 +614,7 @@ float dred_textview_get_cursor_width(dred_textview* pTextView)
         return 0;
     }
 
-    return drte_view_get_cursor_width(pTextView->pTextEngine->pView);
+    return drte_view_get_cursor_width(pTextView->pView);
 }
 
 void dred_textview_set_cursor_color(dred_textview* pTextView, dred_color color)
@@ -798,7 +797,7 @@ void dred_textview_enable_word_wrap(dred_textview* pTextView)
         return;
     }
 
-    drte_view_enable_word_wrap(pTextView->pTextEngine->pView);
+    drte_view_enable_word_wrap(pTextView->pView);
     dred_textview__refresh_scrollbars(pTextView);
 }
 
@@ -808,7 +807,7 @@ void dred_textview_disable_word_wrap(dred_textview* pTextView)
         return;
     }
 
-    drte_view_disable_word_wrap(pTextView->pTextEngine->pView);
+    drte_view_disable_word_wrap(pTextView->pView);
     dred_textview__refresh_scrollbars(pTextView);
 }
 
@@ -818,7 +817,7 @@ bool dred_textview_is_word_wrap_enabled(dred_textview* pTextView)
         return false;
     }
 
-    return drte_view_is_word_wrap_enabled(pTextView->pTextEngine->pView);
+    return drte_view_is_word_wrap_enabled(pTextView->pView);
 }
 
 
@@ -833,8 +832,8 @@ void dred_textview_set_text(dred_textview* pTextView, const char* text)
     // The cursors and selection regions need to be cancelled here to ensure they don't reference invalid regions due to a
     // change in text. This should not have any major usability issues, but it can be tweaked if need be.
     dred_textview__clear_all_cursors(pTextView);
-    drte_view_deselect_all(pTextView->pTextEngine->pView);
-    size_t iCursorChar = drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+    drte_view_deselect_all(pTextView->pView);
+    size_t iCursorChar = drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 
 
     // Set the text.
@@ -846,7 +845,7 @@ void dred_textview_set_text(dred_textview* pTextView, const char* text)
 
 
     // Restore cursors.
-    drte_view_move_cursor_to_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), iCursorChar);
+    drte_view_move_cursor_to_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iCursorChar);
 }
 
 size_t dred_textview_get_text(dred_textview* pTextView, char* pTextOut, size_t textOutSize)
@@ -882,7 +881,7 @@ void dred_textview_move_cursor_to_end_of_text(dred_textview* pTextView)
         return;
     }
 
-    drte_view_move_cursor_to_end_of_text(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+    drte_view_move_cursor_to_end_of_text(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 }
 
 void dred_textview_move_cursor_to_start_of_line_by_index(dred_textview* pTextView, size_t iLine)
@@ -891,7 +890,7 @@ void dred_textview_move_cursor_to_start_of_line_by_index(dred_textview* pTextVie
         return;
     }
 
-    drte_view_move_cursor_to_start_of_line_by_index(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), iLine);
+    drte_view_move_cursor_to_start_of_line_by_index(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iLine);
 }
 
 
@@ -901,7 +900,7 @@ bool dred_textview_is_anything_selected(dred_textview* pTextView)
         return false;
     }
 
-    return drte_view_is_anything_selected(pTextView->pTextEngine->pView);
+    return drte_view_is_anything_selected(pTextView->pView);
 }
 
 void dred_textview_select_all(dred_textview* pTextView)
@@ -910,7 +909,7 @@ void dred_textview_select_all(dred_textview* pTextView)
         return;
     }
 
-    drte_view_select_all(pTextView->pTextEngine->pView);
+    drte_view_select_all(pTextView->pView);
 }
 
 void dred_textview_deselect_all(dred_textview* pTextView)
@@ -919,7 +918,7 @@ void dred_textview_deselect_all(dred_textview* pTextView)
         return;
     }
 
-    drte_view_deselect_all(pTextView->pTextEngine->pView);
+    drte_view_deselect_all(pTextView->pView);
     dred_textview__clear_all_cursors(pTextView);
 }
 
@@ -929,7 +928,7 @@ size_t dred_textview_get_selected_text(dred_textview* pTextView, char* textOut, 
         return 0;
     }
 
-    return drte_view_get_selected_text(pTextView->pTextEngine->pView, textOut, textOutLength);
+    return drte_view_get_selected_text(pTextView->pView, textOut, textOutLength);
 }
 
 bool dred_textview_delete_character_to_right_of_cursor(dred_textview* pTextView)
@@ -941,7 +940,7 @@ bool dred_textview_delete_character_to_right_of_cursor(dred_textview* pTextView)
     bool wasTextChanged = false;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
-        wasTextChanged = drte_view_delete_character_to_right_of_cursor(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+        wasTextChanged = drte_view_delete_character_to_right_of_cursor(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
     }
     if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
 
@@ -954,8 +953,8 @@ bool dred_textview_delete_selected_text_no_undo(dred_textview* pTextView)
         return false;
     }
 
-    bool wasTextChanged = drte_view_delete_selected_text(pTextView->pTextEngine->pView, true);  // <-- "true" means to update the positions of cursors to compensate.
-    drte_view_deselect_all(pTextView->pTextEngine->pView);
+    bool wasTextChanged = drte_view_delete_selected_text(pTextView->pView, true);  // <-- "true" means to update the positions of cursors to compensate.
+    drte_view_deselect_all(pTextView->pView);
 
     return wasTextChanged;
 }
@@ -986,28 +985,28 @@ bool dred_textview_insert_text_at_cursors_no_undo(dred_textview* pTextView, cons
 
     bool wasTextChanged = false;
     for (size_t iCursor = 0; iCursor < pTextView->cursorCount; ++iCursor) {
-        size_t iChar = drte_view_get_cursor_character(pTextView->pTextEngine->pView, iCursor);
+        size_t iChar = drte_view_get_cursor_character(pTextView->pView, iCursor);
 
-        wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pTextEngine->pView, iCursor, text) || wasTextChanged;
+        wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pView, iCursor, text) || wasTextChanged;
 
         // Cursors and selections after this cursor need to be updated.
-        for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->pView->cursorCount; ++iCursor2) {
+        for (size_t iCursor2 = 0; iCursor2 < pTextView->pView->cursorCount; ++iCursor2) {
             if (iCursor != iCursor2) {
-                if (pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs >= iChar) {
-                    drte_view_move_cursor_to_character(pTextView->pTextEngine->pView, iCursor2, pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
+                if (pTextView->pView->pCursors[iCursor2].iCharAbs >= iChar) {
+                    drte_view_move_cursor_to_character(pTextView->pView, iCursor2, pTextView->pView->pCursors[iCursor2].iCharAbs + insertedCharacterCount);
                 }
             }
         }
 
         // As with cursors, selections need to be updated too.
-        for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->pView->selectionCount; ++iSelection) {
-            drte_region selection = drte_region_normalize(pTextView->pTextEngine->pView->pSelections[iSelection]);
+        for (size_t iSelection = 0; iSelection < pTextView->pView->selectionCount; ++iSelection) {
+            drte_region selection = drte_region_normalize(pTextView->pView->pSelections[iSelection]);
             if (selection.iCharBeg > iChar) {
-                pTextView->pTextEngine->pView->pSelections[iSelection].iCharBeg += insertedCharacterCount;
-                pTextView->pTextEngine->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+                pTextView->pView->pSelections[iSelection].iCharBeg += insertedCharacterCount;
+                pTextView->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
             } else {
                 if (selection.iCharEnd > iChar) {
-                    pTextView->pTextEngine->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
+                    pTextView->pView->pSelections[iSelection].iCharEnd += insertedCharacterCount;
                 }
             }
         }
@@ -1038,17 +1037,17 @@ bool dred_textview_unindent_selected_blocks(dred_textview* pTextView)
         return false;
     }
 
-    drte_view_begin_dirty(pTextView->pTextEngine->pView);
+    drte_view_begin_dirty(pTextView->pView);
 
     bool wasTextChanged = false;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
-        for (size_t iSelection = 0; iSelection < pTextView->pTextEngine->pView->selectionCount; ++iSelection) {
-            size_t iLineBeg = drte_view_get_selection_first_line(pTextView->pTextEngine->pView, iSelection);
-            size_t iLineEnd = drte_view_get_selection_last_line(pTextView->pTextEngine->pView, iSelection);
+        for (size_t iSelection = 0; iSelection < pTextView->pView->selectionCount; ++iSelection) {
+            size_t iLineBeg = drte_view_get_selection_first_line(pTextView->pView, iSelection);
+            size_t iLineEnd = drte_view_get_selection_last_line(pTextView->pView, iSelection);
             if (iLineBeg != iLineEnd) {
                 for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
-                    size_t iLineChar = drte_view_get_line_first_character(pTextView->pTextEngine->pView, NULL, iLine);
+                    size_t iLineChar = drte_view_get_line_first_character(pTextView->pView, NULL, iLine);
                     size_t iLineCharNonWS = iLineChar;
                     for (;;) {
                         uint32_t c = drte_engine_get_utf32(pTextView->pTextEngine, iLineCharNonWS);
@@ -1067,7 +1066,7 @@ bool dred_textview_unindent_selected_blocks(dred_textview* pTextView)
                         } else {
                             charactersRemovedCount = 0; //(iLineCharNonWS - iLineChar);
                             for (size_t iChar = iLineChar; iChar < iLineCharNonWS; ++iChar) {
-                                if (charactersRemovedCount >= drte_view_get_tab_size(pTextView->pTextEngine->pView)) {
+                                if (charactersRemovedCount >= drte_view_get_tab_size(pTextView->pView)) {
                                     break;
                                 }
 
@@ -1083,20 +1082,20 @@ bool dred_textview_unindent_selected_blocks(dred_textview* pTextView)
                         wasTextChanged = drte_engine_delete_text(pTextView->pTextEngine, iLineChar, iLineChar + charactersRemovedCount) || wasTextChanged;
 
                         // Cursors and selections need to be updated.
-                        for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->pView->cursorCount; ++iCursor2) {
-                            if (pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs >= iLineChar) {
-                                drte_view_move_cursor_to_character(pTextView->pTextEngine->pView, iCursor2, pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs - charactersRemovedCount);
+                        for (size_t iCursor2 = 0; iCursor2 < pTextView->pView->cursorCount; ++iCursor2) {
+                            if (pTextView->pView->pCursors[iCursor2].iCharAbs >= iLineChar) {
+                                drte_view_move_cursor_to_character(pTextView->pView, iCursor2, pTextView->pView->pCursors[iCursor2].iCharAbs - charactersRemovedCount);
                             }
                         }
 
-                        for (size_t iSelection2 = 0; iSelection2 < pTextView->pTextEngine->pView->selectionCount; ++iSelection2) {
-                            drte_region selection = drte_region_normalize(pTextView->pTextEngine->pView->pSelections[iSelection2]);
+                        for (size_t iSelection2 = 0; iSelection2 < pTextView->pView->selectionCount; ++iSelection2) {
+                            drte_region selection = drte_region_normalize(pTextView->pView->pSelections[iSelection2]);
                             if (selection.iCharBeg > iLineChar + charactersRemovedCount) {
-                                pTextView->pTextEngine->pView->pSelections[iSelection2].iCharBeg -= charactersRemovedCount;
-                                pTextView->pTextEngine->pView->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
+                                pTextView->pView->pSelections[iSelection2].iCharBeg -= charactersRemovedCount;
+                                pTextView->pView->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
                             } else {
                                 if (selection.iCharEnd > iLineChar) {
-                                    pTextView->pTextEngine->pView->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
+                                    pTextView->pView->pSelections[iSelection2].iCharEnd -= charactersRemovedCount;
                                 }
                             }
                         }
@@ -1107,7 +1106,7 @@ bool dred_textview_unindent_selected_blocks(dred_textview* pTextView)
     }
     if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
 
-    drte_view_end_dirty(pTextView->pTextEngine->pView);
+    drte_view_end_dirty(pTextView->pView);
 
     return wasTextChanged;
 }
@@ -1164,7 +1163,7 @@ size_t dred_textview_get_cursor_line(dred_textview* pTextView)
         return 0;
     }
 
-    return drte_view_get_cursor_line(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+    return drte_view_get_cursor_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 }
 
 size_t dred_textview_get_cursor_column(dred_textview* pTextView)
@@ -1173,7 +1172,7 @@ size_t dred_textview_get_cursor_column(dred_textview* pTextView)
         return 0;
     }
 
-    return drte_view_get_cursor_column(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+    return drte_view_get_cursor_column(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 }
 
 size_t dred_textview_get_line_count(dred_textview* pTextView)
@@ -1182,7 +1181,7 @@ size_t dred_textview_get_line_count(dred_textview* pTextView)
         return 0;
     }
 
-    return drte_view_get_line_count(pTextView->pTextEngine->pView);
+    return drte_view_get_line_count(pTextView->pView);
 }
 
 
@@ -1194,10 +1193,10 @@ bool dred_textview_find_and_select_next(dred_textview* pTextView, const char* te
 
     size_t selectionStart;
     size_t selectionEnd;
-    if (drte_engine_find_next(pTextView->pTextEngine, text, &selectionStart, &selectionEnd))
+    if (drte_view_find_next(pTextView->pView, text, &selectionStart, &selectionEnd))
     {
-        drte_view_select(pTextView->pTextEngine->pView, selectionStart, selectionEnd);
-        drte_view_move_cursor_to_end_of_selection(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+        drte_view_select(pTextView->pView, selectionStart, selectionEnd);
+        drte_view_move_cursor_to_end_of_selection(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 
         return true;
     }
@@ -1216,13 +1215,13 @@ bool dred_textview_find_and_replace_next(dred_textview* pTextView, const char* t
     {
         size_t selectionStart;
         size_t selectionEnd;
-        if (drte_engine_find_next(pTextView->pTextEngine, text, &selectionStart, &selectionEnd))
+        if (drte_view_find_next(pTextView->pView, text, &selectionStart, &selectionEnd))
         {
-            drte_view_select(pTextView->pTextEngine->pView, selectionStart, selectionEnd);
-            drte_view_move_cursor_to_end_of_selection(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+            drte_view_select(pTextView->pView, selectionStart, selectionEnd);
+            drte_view_move_cursor_to_end_of_selection(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 
             wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView) || wasTextChanged;
-            wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), replacement) || wasTextChanged;
+            wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), replacement) || wasTextChanged;
         }
     }
     if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
@@ -1236,8 +1235,8 @@ bool dred_textview_find_and_replace_all(dred_textview* pTextView, const char* te
         return 0;
     }
 
-    size_t originalCursorLine = drte_view_get_cursor_line(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
-    size_t originalCursorPos = drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)) - drte_view_get_line_first_character(pTextView->pTextEngine->pView, NULL, originalCursorLine);
+    size_t originalCursorLine = drte_view_get_cursor_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
+    size_t originalCursorPos = drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)) - drte_view_get_line_first_character(pTextView->pView, NULL, originalCursorLine);
     int originalScrollPosX = dred_scrollbar_get_scroll_position(pTextView->pHorzScrollbar);
     int originalScrollPosY = dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar);
 
@@ -1246,29 +1245,29 @@ bool dred_textview_find_and_replace_all(dred_textview* pTextView, const char* te
     {
         // It's important that we don't replace the replacement text. To handle this, we just move the cursor to the top of the text and find
         // and replace every occurance without looping.
-        drte_view_move_cursor_to_start_of_text(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+        drte_view_move_cursor_to_start_of_text(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 
         size_t selectionStart;
         size_t selectionEnd;
-        while (drte_engine_find_next_no_loop(pTextView->pTextEngine, text, &selectionStart, &selectionEnd))
+        while (drte_view_find_next_no_loop(pTextView->pView, text, &selectionStart, &selectionEnd))
         {
-            drte_view_select(pTextView->pTextEngine->pView, selectionStart, selectionEnd);
-            drte_view_move_cursor_to_end_of_selection(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+            drte_view_select(pTextView->pView, selectionStart, selectionEnd);
+            drte_view_move_cursor_to_end_of_selection(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 
             wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView) || wasTextChanged;
-            wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), replacement) || wasTextChanged;
+            wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), replacement) || wasTextChanged;
         }
 
         // The cursor may have moved so we'll need to restore it.
         size_t lineCharStart;
         size_t lineCharEnd;
-        drte_view_get_line_character_range(pTextView->pTextEngine->pView, NULL, originalCursorLine, &lineCharStart, &lineCharEnd);
+        drte_view_get_line_character_range(pTextView->pView, NULL, originalCursorLine, &lineCharStart, &lineCharEnd);
 
         size_t newCursorPos = lineCharStart + originalCursorPos;
         if (newCursorPos > lineCharEnd) {
             newCursorPos = lineCharEnd;
         }
-        drte_view_move_cursor_to_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), newCursorPos);
+        drte_view_move_cursor_to_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), newCursorPos);
     }
     if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
 
@@ -1409,7 +1408,7 @@ void dred_textview_set_tab_size_in_spaces(dred_textview* pTextView, unsigned int
         return;
     }
 
-    drte_view_set_tab_size(pTextView->pTextEngine->pView, tabSizeInSpaces);
+    drte_view_set_tab_size(pTextView->pView, tabSizeInSpaces);
 }
 
 unsigned int dred_textview_get_tab_size_in_spaces(dred_textview* pTextView)
@@ -1418,7 +1417,7 @@ unsigned int dred_textview_get_tab_size_in_spaces(dred_textview* pTextView)
         return 0;
     }
 
-    return drte_view_get_tab_size(pTextView->pTextEngine->pView);
+    return drte_view_get_tab_size(pTextView->pView);
 }
 
 
@@ -1504,7 +1503,7 @@ void dred_textview_on_size(dred_control* pControl, float newWidth, float newHeig
     dred_textview__calculate_text_engine_container_size(pTextView, &containerWidth, &containerHeight);
 
     if (containerWidth != newWidth || containerHeight != newHeight) {
-        drte_view_set_size(pTextView->pTextEngine->pView, containerWidth, containerHeight);
+        drte_view_set_size(pTextView->pView, containerWidth, containerHeight);
 
         // Scrollbars need to be refreshed first.
         dred_textview__refresh_scrollbars(pTextView);
@@ -1529,37 +1528,37 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
         float offsetY;
         dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
-        drte_view_begin_dirty(pTextView->pTextEngine->pView);
+        drte_view_begin_dirty(pTextView->pView);
         {
-            size_t iPrevCursorChar = drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+            size_t iPrevCursorChar = drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 
             if (pTextView->isDoingWordSelect) {
                 size_t iWordCharBeg;
                 size_t iWordCharEnd;
-                if (drte_view_get_word_under_point(pTextView->pTextEngine->pView, relativeMousePosX - offsetX, relativeMousePosY - offsetY, &iWordCharBeg, &iWordCharEnd)) {
+                if (drte_view_get_word_under_point(pTextView->pView, relativeMousePosX - offsetX, relativeMousePosY - offsetY, &iWordCharBeg, &iWordCharEnd)) {
                     if (iWordCharEnd < pTextView->wordSelectionAnchor.iCharEnd) {
-                        pTextView->pTextEngine->pView->pSelections[pTextView->pTextEngine->pView->selectionCount-1].iCharBeg = pTextView->wordSelectionAnchor.iCharEnd;
-                        pTextView->pTextEngine->pView->pSelections[pTextView->pTextEngine->pView->selectionCount-1].iCharEnd = iWordCharBeg;
+                        pTextView->pView->pSelections[pTextView->pView->selectionCount-1].iCharBeg = pTextView->wordSelectionAnchor.iCharEnd;
+                        pTextView->pView->pSelections[pTextView->pView->selectionCount-1].iCharEnd = iWordCharBeg;
                     } else {
-                        pTextView->pTextEngine->pView->pSelections[pTextView->pTextEngine->pView->selectionCount-1].iCharBeg = pTextView->wordSelectionAnchor.iCharBeg;
-                        pTextView->pTextEngine->pView->pSelections[pTextView->pTextEngine->pView->selectionCount-1].iCharEnd = iWordCharEnd;
+                        pTextView->pView->pSelections[pTextView->pView->selectionCount-1].iCharBeg = pTextView->wordSelectionAnchor.iCharBeg;
+                        pTextView->pView->pSelections[pTextView->pView->selectionCount-1].iCharEnd = iWordCharEnd;
                     }
 
-                    drte_view_move_cursor_to_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), pTextView->pTextEngine->pView->pSelections[pTextView->pTextEngine->pView->selectionCount-1].iCharEnd);
+                    drte_view_move_cursor_to_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), pTextView->pView->pSelections[pTextView->pView->selectionCount-1].iCharEnd);
                 } else {
                     // There is no word under the point, so just fall back to standard character selection for this case.
-                    drte_view_move_cursor_to_point(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
+                    drte_view_move_cursor_to_point(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
                 }
             } else {
-                drte_view_move_cursor_to_point(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
+                drte_view_move_cursor_to_point(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY);
             }
 
-            size_t iNextCursorChar = drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+            size_t iNextCursorChar = drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
             if (iPrevCursorChar != iNextCursorChar) {
-                drte_view_set_selection_end_point(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
             }
         }
-        drte_view_end_dirty(pTextView->pTextEngine->pView);
+        drte_view_end_dirty(pTextView->pView);
     }
 }
 
@@ -1578,12 +1577,12 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
         pTextView->isDoingWordSelect = false;
 
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
-            if (!drte_view_is_anything_selected(pTextView->pTextEngine->pView)) {
-                drte_view_begin_selection(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+            if (!drte_view_is_anything_selected(pTextView->pView)) {
+                drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
             }
         } else {
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
-                drte_view_deselect_all(pTextView->pTextEngine->pView);
+                drte_view_deselect_all(pTextView->pView);
                 dred_textview__clear_all_cursors(pTextView);
             }
         }
@@ -1594,21 +1593,21 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
         dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
         size_t iLine;
-        size_t iChar = drte_view_get_character_by_point_relative_to_container(pTextView->pTextEngine->pView, NULL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY, &iLine);
+        size_t iChar = drte_view_get_character_by_point_relative_to_container(pTextView->pView, NULL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY, &iLine);
 
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
-            drte_view_set_selection_end_point(pTextView->pTextEngine->pView, iChar);
+            drte_view_set_selection_end_point(pTextView->pView, iChar);
         } else {
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
                 dred_textview__insert_cursor(pTextView, iChar);
             }
 
-            drte_view_begin_selection(pTextView->pTextEngine->pView, iChar);
+            drte_view_begin_selection(pTextView->pView, iChar);
         }
 
 
-        drte_view_move_cursor_to_character_and_line(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), iChar, iLine);
-        drte_view__update_cursor_sticky_position(pTextView->pTextEngine->pView, &pTextView->pTextEngine->pView->pCursors[drte_view_get_last_cursor(pTextView->pTextEngine->pView)]);
+        drte_view_move_cursor_to_character_and_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iChar, iLine);
+        drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[drte_view_get_last_cursor(pTextView->pView)]);
 
 
         // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
@@ -1639,9 +1638,9 @@ void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, i
             // cancel that selection.
             size_t iCharBeg;
             size_t iCharEnd;
-            if (drte_view_get_last_selection(pTextView->pTextEngine->pView, &iCharBeg, &iCharEnd)) {
+            if (drte_view_get_last_selection(pTextView->pView, &iCharBeg, &iCharEnd)) {
                 if (iCharBeg == iCharEnd) {
-                    drte_view_cancel_last_selection(pTextView->pTextEngine->pView);
+                    drte_view_cancel_last_selection(pTextView->pView);
                 }
             }
 
@@ -1667,19 +1666,19 @@ void dred_textview_on_mouse_button_dblclick(dred_control* pControl, int mouseBut
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) == 0) {
             // If the control key is not being held down make sure other selection regions are cleared.
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
-                drte_view_deselect_all(pTextView->pTextEngine->pView);
+                drte_view_deselect_all(pTextView->pView);
             }
 
-            drte_view_select_word_under_cursor(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+            drte_view_select_word_under_cursor(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 
-            if (pTextView->pTextEngine->pView->selectionCount > 0) {
+            if (pTextView->pView->selectionCount > 0) {
 
             }
 
             size_t iCharBeg;
             size_t iCharEnd;
-            if (drte_view_get_last_selection(pTextView->pTextEngine->pView, &iCharBeg, &iCharEnd)) {
-                drte_view_move_cursor_to_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), iCharEnd);
+            if (drte_view_get_last_selection(pTextView->pView, &iCharBeg, &iCharEnd)) {
+                drte_view_move_cursor_to_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iCharEnd);
 
                 pTextView->isDoingWordSelect = true;
                 pTextView->wordSelectionAnchor.iCharBeg = iCharBeg;
@@ -1710,7 +1709,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
         return;
     }
 
-    drte_view_begin_dirty(pTextView->pTextEngine->pView);
+    drte_view_begin_dirty(pTextView->pView);
 
     bool isShiftDown = (stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0;
     bool isCtrlDown  = (stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0;
@@ -1722,11 +1721,11 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
             bool wasTextChanged = false;
             drte_engine_prepare_undo_point(pTextView->pTextEngine);
             {
-                if (drte_view_is_anything_selected(pTextView->pTextEngine->pView)) {
+                if (drte_view_is_anything_selected(pTextView->pView)) {
                     wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView);
-                    drte_view_remove_overlapping_cursors(pTextView->pTextEngine->pView);
+                    drte_view_remove_overlapping_cursors(pTextView->pView);
                 } else {
-                    wasTextChanged = drte_view_delete_character_to_left_of_cursors(pTextView->pTextEngine->pView, pTextView->pTextEngine->pView->cursorCount > 1);  // <-- Last argument controls whether or not new lines should block deletion.
+                    wasTextChanged = drte_view_delete_character_to_left_of_cursors(pTextView->pView, pTextView->pView->cursorCount > 1);  // <-- Last argument controls whether or not new lines should block deletion.
                 }
             }
             if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
@@ -1737,11 +1736,11 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
             bool wasTextChanged = false;
             drte_engine_prepare_undo_point(pTextView->pTextEngine);
             {
-                if (drte_view_is_anything_selected(pTextView->pTextEngine->pView)) {
+                if (drte_view_is_anything_selected(pTextView->pView)) {
                     wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView);
-                    drte_view_remove_overlapping_cursors(pTextView->pTextEngine->pView);
+                    drte_view_remove_overlapping_cursors(pTextView->pView);
                 } else {
-                    wasTextChanged = drte_view_delete_character_to_right_of_cursors(pTextView->pTextEngine->pView, pTextView->pTextEngine->pView->cursorCount > 1); // <-- Last argument controls whether or not new lines should block deletion.
+                    wasTextChanged = drte_view_delete_character_to_right_of_cursors(pTextView->pView, pTextView->pView->cursorCount > 1); // <-- Last argument controls whether or not new lines should block deletion.
                 }
             }
             if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
@@ -1750,27 +1749,27 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
 
         case DRED_GUI_ARROW_LEFT:
         {
-            if (drte_view_is_anything_selected(pTextView->pTextEngine->pView) && !isShiftDown) {
+            if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview__move_cursor_to_start_of_selection(pTextView, NULL);
                 dred_textview_deselect_all(pTextView);
             } else {
-                if ((!drte_view_is_anything_selected(pTextView->pTextEngine->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
-                    drte_view_begin_selection(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                if ((!drte_view_is_anything_selected(pTextView->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
+                    drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
                 }
 
                 if (isCtrlDown) {
-                    drte_view_move_cursor_to_start_of_word(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+                    drte_view_move_cursor_to_start_of_word(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
                 } else {
-                    drte_view_move_cursor_left(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+                    drte_view_move_cursor_left(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
                 }
 
                 if (isShiftDown) {
-                    drte_view_set_selection_end_point(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                    drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
 
                     size_t iSelCharBeg;
                     size_t iSelCharEnd;
-                    if (drte_view_get_last_selection(pTextView->pTextEngine->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                        drte_view_cancel_last_selection(pTextView->pTextEngine->pView);
+                    if (drte_view_get_last_selection(pTextView->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                        drte_view_cancel_last_selection(pTextView->pView);
                     }
                 }
             }
@@ -1778,27 +1777,27 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
 
         case DRED_GUI_ARROW_RIGHT:
         {
-            if (drte_view_is_anything_selected(pTextView->pTextEngine->pView) && !isShiftDown) {
+            if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview__move_cursor_to_end_of_selection(pTextView, NULL);
                 dred_textview_deselect_all(pTextView);
             } else {
-                if ((!drte_view_is_anything_selected(pTextView->pTextEngine->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
-                    drte_view_begin_selection(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                if ((!drte_view_is_anything_selected(pTextView->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
+                    drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
                 }
 
                 if (isCtrlDown) {
-                    drte_view_move_cursor_to_start_of_next_word(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+                    drte_view_move_cursor_to_start_of_next_word(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
                 } else {
-                    drte_view_move_cursor_right(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+                    drte_view_move_cursor_right(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
                 }
 
                 if (isShiftDown) {
-                    drte_view_set_selection_end_point(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                    drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
 
                     size_t iSelCharBeg;
                     size_t iSelCharEnd;
-                    if (drte_view_get_last_selection(pTextView->pTextEngine->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                        drte_view_cancel_last_selection(pTextView->pTextEngine->pView);
+                    if (drte_view_get_last_selection(pTextView->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                        drte_view_cancel_last_selection(pTextView->pView);
                     }
                 }
             }
@@ -1806,46 +1805,46 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
 
         case DRED_GUI_ARROW_UP:
         {
-            if (drte_view_is_anything_selected(pTextView->pTextEngine->pView) && !isShiftDown) {
+            if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview_deselect_all(pTextView);
             } else {
-                if ((!drte_view_is_anything_selected(pTextView->pTextEngine->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
-                    drte_view_begin_selection(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                if ((!drte_view_is_anything_selected(pTextView->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
+                    drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
                 }
             }
 
-            drte_view_move_cursor_up(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+            drte_view_move_cursor_up(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 
             if (isShiftDown) {
-                drte_view_set_selection_end_point(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
 
                 size_t iSelCharBeg;
                 size_t iSelCharEnd;
-                if (drte_view_get_last_selection(pTextView->pTextEngine->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                    drte_view_cancel_last_selection(pTextView->pTextEngine->pView);
+                if (drte_view_get_last_selection(pTextView->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_view_cancel_last_selection(pTextView->pView);
                 }
             }
         } break;
 
         case DRED_GUI_ARROW_DOWN:
         {
-            if (drte_view_is_anything_selected(pTextView->pTextEngine->pView) && !isShiftDown) {
+            if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview_deselect_all(pTextView);
             } else {
-                if ((!drte_view_is_anything_selected(pTextView->pTextEngine->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
-                    drte_view_begin_selection(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                if ((!drte_view_is_anything_selected(pTextView->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
+                    drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
                 }
             }
 
-            drte_view_move_cursor_down(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+            drte_view_move_cursor_down(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 
             if (isShiftDown) {
-                drte_view_set_selection_end_point(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
 
                 size_t iSelCharBeg;
                 size_t iSelCharEnd;
-                if (drte_view_get_last_selection(pTextView->pTextEngine->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                    drte_view_cancel_last_selection(pTextView->pTextEngine->pView);
+                if (drte_view_get_last_selection(pTextView->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_view_cancel_last_selection(pTextView->pView);
                 }
             }
         } break;
@@ -1853,77 +1852,77 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
 
         case DRED_GUI_END:
         {
-            if (drte_view_is_anything_selected(pTextView->pTextEngine->pView) && !isShiftDown) {
+            if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview_deselect_all(pTextView);
             } else {
-                if ((!drte_view_is_anything_selected(pTextView->pTextEngine->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
-                    drte_view_begin_selection(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                if ((!drte_view_is_anything_selected(pTextView->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
+                    drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
                 }
             }
 
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
-                drte_view_move_cursor_to_end_of_text(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+                drte_view_move_cursor_to_end_of_text(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
             } else {
-                if (drte_view_is_cursor_at_end_of_wrapped_line(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView))) {
-                    drte_view_move_cursor_to_end_of_unwrapped_line(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+                if (drte_view_is_cursor_at_end_of_wrapped_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView))) {
+                    drte_view_move_cursor_to_end_of_unwrapped_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
                 } else {
-                    drte_view_move_cursor_to_end_of_line(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+                    drte_view_move_cursor_to_end_of_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
                 }
             }
 
             if (isShiftDown) {
-                drte_view_set_selection_end_point(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
 
                 size_t iSelCharBeg;
                 size_t iSelCharEnd;
-                if (drte_view_get_last_selection(pTextView->pTextEngine->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                    drte_view_cancel_last_selection(pTextView->pTextEngine->pView);
+                if (drte_view_get_last_selection(pTextView->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_view_cancel_last_selection(pTextView->pView);
                 }
             }
 
-            drte_view__update_cursor_sticky_position(pTextView->pTextEngine->pView, &pTextView->pTextEngine->pView->pCursors[drte_view_get_last_cursor(pTextView->pTextEngine->pView)]);
+            drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[drte_view_get_last_cursor(pTextView->pView)]);
         } break;
 
         case DRED_GUI_HOME:
         {
-            if (drte_view_is_anything_selected(pTextView->pTextEngine->pView) && !isShiftDown) {
+            if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview_deselect_all(pTextView);
             } else {
-                if ((!drte_view_is_anything_selected(pTextView->pTextEngine->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
-                    drte_view_begin_selection(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                if ((!drte_view_is_anything_selected(pTextView->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
+                    drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
                 }
             }
 
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
-                drte_view_move_cursor_to_start_of_text(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+                drte_view_move_cursor_to_start_of_text(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
             } else {
-                if (drte_view_is_cursor_at_start_of_wrapped_line(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView))) {
-                    drte_view_move_cursor_to_start_of_unwrapped_line(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+                if (drte_view_is_cursor_at_start_of_wrapped_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView))) {
+                    drte_view_move_cursor_to_start_of_unwrapped_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
                 } else {
-                    drte_view_move_cursor_to_start_of_line(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+                    drte_view_move_cursor_to_start_of_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
                 }
             }
 
             if (isShiftDown) {
-                drte_view_set_selection_end_point(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
 
                 size_t iSelCharBeg;
                 size_t iSelCharEnd;
-                if (drte_view_get_last_selection(pTextView->pTextEngine->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                    drte_view_cancel_last_selection(pTextView->pTextEngine->pView);
+                if (drte_view_get_last_selection(pTextView->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_view_cancel_last_selection(pTextView->pView);
                 }
             }
 
-            drte_view__update_cursor_sticky_position(pTextView->pTextEngine->pView, &pTextView->pTextEngine->pView->pCursors[drte_view_get_last_cursor(pTextView->pTextEngine->pView)]);
+            drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[drte_view_get_last_cursor(pTextView->pView)]);
         } break;
 
         case DRED_GUI_PAGE_UP:
         {
-            if (drte_view_is_anything_selected(pTextView->pTextEngine->pView) && !isShiftDown) {
+            if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview_deselect_all(pTextView);
             } else {
-                if ((!drte_view_is_anything_selected(pTextView->pTextEngine->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
-                    drte_view_begin_selection(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                if ((!drte_view_is_anything_selected(pTextView->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
+                    drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
                 }
             }
 
@@ -1932,31 +1931,31 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                 dred_scrollbar_scroll(pTextView->pVertScrollbar, -scrollOffset);
             }
 
-            drte_view_move_cursor_y(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), -dred_scrollbar_get_page_size(pTextView->pVertScrollbar));
+            drte_view_move_cursor_y(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), -dred_scrollbar_get_page_size(pTextView->pVertScrollbar));
 
             if (isShiftDown) {
-                drte_view_set_selection_end_point(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
 
                 size_t iSelCharBeg;
                 size_t iSelCharEnd;
-                if (drte_view_get_last_selection(pTextView->pTextEngine->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                    drte_view_cancel_last_selection(pTextView->pTextEngine->pView);
+                if (drte_view_get_last_selection(pTextView->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_view_cancel_last_selection(pTextView->pView);
                 }
             }
         } break;
 
         case DRED_GUI_PAGE_DOWN:
         {
-            if (drte_view_is_anything_selected(pTextView->pTextEngine->pView) && !isShiftDown) {
+            if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview_deselect_all(pTextView);
             } else {
-                if ((!drte_view_is_anything_selected(pTextView->pTextEngine->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
-                    drte_view_begin_selection(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                if ((!drte_view_is_anything_selected(pTextView->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
+                    drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
                 }
             }
 
             int scrollOffset = dred_scrollbar_get_page_size(pTextView->pVertScrollbar);
-            if (scrollOffset > (int)(drte_view_get_line_count(pTextView->pTextEngine->pView) - drte_view_get_cursor_line(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)))) {
+            if (scrollOffset > (int)(drte_view_get_line_count(pTextView->pView) - drte_view_get_cursor_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)))) {
                 scrollOffset = 0;
             }
 
@@ -1964,15 +1963,15 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                 dred_scrollbar_scroll(pTextView->pVertScrollbar, scrollOffset);
             }
 
-            drte_view_move_cursor_y(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), dred_scrollbar_get_page_size(pTextView->pVertScrollbar));
+            drte_view_move_cursor_y(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), dred_scrollbar_get_page_size(pTextView->pVertScrollbar));
 
             if (isShiftDown) {
-                drte_view_set_selection_end_point(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+                drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
 
                 size_t iSelCharBeg;
                 size_t iSelCharEnd;
-                if (drte_view_get_last_selection(pTextView->pTextEngine->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
-                    drte_view_cancel_last_selection(pTextView->pTextEngine->pView);
+                if (drte_view_get_last_selection(pTextView->pView, &iSelCharBeg, &iSelCharEnd) && iSelCharBeg == iSelCharEnd) {
+                    drte_view_cancel_last_selection(pTextView->pView);
                 }
             }
 
@@ -1981,7 +1980,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
         default: break;
     }
 
-    drte_view_end_dirty(pTextView->pTextEngine->pView);
+    drte_view_end_dirty(pTextView->pView);
 }
 
 void dred_textview_on_key_up(dred_control* pControl, dred_key key, int stateFlags)
@@ -2002,7 +2001,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
 
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
-        drte_view_begin_dirty(pTextView->pTextEngine->pView);
+        drte_view_begin_dirty(pTextView->pView);
         if (utf32 == '\t') {
             // The tab key is a complex case because it can be handled differently depending on the configuration:
             //   - If multiple lines are selected, they need to be block-indented
@@ -2016,29 +2015,29 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                 size_t iSelection;
                 bool isSomethingSelected = dred_textview__get_cursor_selection(pTextView, iCursor, &iSelection);
                 if (isSomethingSelected) {
-                    isDoingBlockIndent = drte_view_get_selection_first_line(pTextView->pTextEngine->pView, iSelection) != drte_view_get_selection_last_line(pTextView->pTextEngine->pView, iSelection);
+                    isDoingBlockIndent = drte_view_get_selection_first_line(pTextView->pView, iSelection) != drte_view_get_selection_last_line(pTextView->pView, iSelection);
                 }
 
                 if (isDoingBlockIndent) {
                     // A block indent is done by simply inserting a tab at the beginning of each selected line.
-                    size_t iLineBeg = drte_view_get_selection_first_line(pTextView->pTextEngine->pView, iSelection);
-                    size_t iLineEnd = drte_view_get_selection_last_line(pTextView->pTextEngine->pView, iSelection);
+                    size_t iLineBeg = drte_view_get_selection_first_line(pTextView->pView, iSelection);
+                    size_t iLineEnd = drte_view_get_selection_last_line(pTextView->pView, iSelection);
 
                     for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
-                        dred_textview__insert_tab(pTextView, drte_view_get_line_first_character(pTextView->pTextEngine->pView, NULL, iLine));
+                        dred_textview__insert_tab(pTextView, drte_view_get_line_first_character(pTextView->pView, NULL, iLine));
                     }
                 } else {
                     // We're not doing a block indent so we just insert a tab at the cursor like normal.
                     if (isSomethingSelected) {
-                        drte_view_delete_selection_text(pTextView->pTextEngine->pView, iSelection, true);
-                        drte_view_cancel_selection(pTextView->pTextEngine->pView, iSelection);
+                        drte_view_delete_selection_text(pTextView->pView, iSelection, true);
+                        drte_view_cancel_selection(pTextView->pView, iSelection);
                     }
 
                     dred_textview__insert_tab_at_cursor(pTextView, iCursor);
                 }
             }
         } else {
-            if (drte_view_is_anything_selected(pTextView->pTextEngine->pView)) {
+            if (drte_view_is_anything_selected(pTextView->pView)) {
                 dred_textview_delete_selected_text_no_undo(pTextView);
             }
 
@@ -2049,18 +2048,18 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
 
             // TODO: Check if the character is a line feed, and if so convert it to the standard line endings.
 
-            drte_view_insert_character_at_cursors(pTextView->pTextEngine->pView, utf32);
+            drte_view_insert_character_at_cursors(pTextView->pView, utf32);
 
             if (utf32 == '\n') {
                 dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextView));
                 if (pDred->config.textEditorEnableAutoIndent) {
-                    for (size_t iCursor = 0; iCursor < pTextView->pTextEngine->pView->cursorCount; ++iCursor) {
-                        size_t iCursorChar = pTextView->pTextEngine->pView->pCursors[iCursor].iCharAbs;
-                        size_t iCursorLine = drte_view_get_character_line(pTextView->pTextEngine->pView, NULL, iCursorChar);
+                    for (size_t iCursor = 0; iCursor < pTextView->pView->cursorCount; ++iCursor) {
+                        size_t iCursorChar = pTextView->pView->pCursors[iCursor].iCharAbs;
+                        size_t iCursorLine = drte_view_get_character_line(pTextView->pView, NULL, iCursorChar);
                         if (iCursorLine > 0) {
                             size_t iPrevLineCharBeg;
                             size_t iPrevLineCharEnd;
-                            drte_view_get_line_character_range(pTextView->pTextEngine->pView, NULL, iCursorLine-1, &iPrevLineCharBeg, &iPrevLineCharEnd);
+                            drte_view_get_line_character_range(pTextView->pView, NULL, iCursorLine-1, &iPrevLineCharBeg, &iPrevLineCharEnd);
 
                             size_t indentationCount = 0;
                             for (;;) {
@@ -2098,17 +2097,17 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                             size_t extraCharactersCount = extraTabCount + extraSpacesCount;
 
                             for (size_t i = 0; i < extraTabCount; ++i) {
-                                drte_view_insert_character_at_cursor(pTextView->pTextEngine->pView, iCursor, '\t');
+                                drte_view_insert_character_at_cursor(pTextView->pView, iCursor, '\t');
                             }
                             for (size_t i = 0; i < extraSpacesCount; ++i) {
-                                drte_view_insert_character_at_cursor(pTextView->pTextEngine->pView, iCursor, ' ');
+                                drte_view_insert_character_at_cursor(pTextView->pView, iCursor, ' ');
                             }
 
                             // Any cursor whose character position comes after this cursor needs to be moved.
-                            for (size_t iCursor2 = 0; iCursor2 < pTextView->pTextEngine->pView->cursorCount; ++iCursor2) {
+                            for (size_t iCursor2 = 0; iCursor2 < pTextView->pView->cursorCount; ++iCursor2) {
                                 if (iCursor2 != iCursor) {
-                                    if (pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs > iCursorChar) {
-                                        drte_view_move_cursor_to_character(pTextView->pTextEngine->pView, iCursor2, pTextView->pTextEngine->pView->pCursors[iCursor2].iCharAbs + extraCharactersCount);
+                                    if (pTextView->pView->pCursors[iCursor2].iCharAbs > iCursorChar) {
+                                        drte_view_move_cursor_to_character(pTextView->pView, iCursor2, pTextView->pView->pCursors[iCursor2].iCharAbs + extraCharactersCount);
                                     }
                                 }
                             }
@@ -2117,7 +2116,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                 }
             }
         }
-        drte_view_end_dirty(pTextView->pTextEngine->pView);
+        drte_view_end_dirty(pTextView->pView);
     }
     drte_engine_commit_undo_point(pTextView->pTextEngine);
 }
@@ -2188,7 +2187,7 @@ void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* p
     }
 
     // If the cursor is above or below the container, we need to scroll vertically.
-    int iLine = (int)drte_view_get_cursor_line(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+    int iLine = (int)drte_view_get_cursor_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
     if (iLine < dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar)) {
         dred_scrollbar_scroll_to(pTextView->pVertScrollbar, iLine);
     }
@@ -2202,15 +2201,15 @@ void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* p
     // If the cursor is to the left or right of the container we need to scroll horizontally.
     float cursorPosX;
     float cursorPosY;
-    drte_view_get_cursor_position(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), &cursorPosX, &cursorPosY);
+    drte_view_get_cursor_position(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), &cursorPosX, &cursorPosY);
 
-    float cursorWidth = drte_view_get_cursor_width(pTextView->pTextEngine->pView);
+    float cursorWidth = drte_view_get_cursor_width(pTextView->pView);
 
     if (cursorPosX < 0) {
-        dred_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_view_get_inner_offset_x(pTextView->pTextEngine->pView)));
+        dred_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_view_get_inner_offset_x(pTextView->pView)));
     }
-    if (cursorPosX >= drte_view_get_size_x(pTextView->pTextEngine->pView)) {
-        dred_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_view_get_inner_offset_x(pTextView->pTextEngine->pView) - drte_view_get_size_x(pTextView->pTextEngine->pView)) + (int)cursorWidth);
+    if (cursorPosX >= drte_view_get_size_x(pTextView->pView)) {
+        dred_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_view_get_inner_offset_x(pTextView->pView) - drte_view_get_size_x(pTextView->pView)) + (int)cursorWidth);
     }
 
 
@@ -2337,7 +2336,7 @@ void dred_textview_on_paint(dred_control* pControl, dred_rect relativeRect, void
 
     // Text.
     dred_control_set_clip(pControl, dred_clamp_rect(textRect, relativeRect), pPaintData);
-    drte_view_paint(pTextView->pTextEngine->pView, dred_rect_to_drte(dred_offset_rect(dred_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top)), pPaintData);
+    drte_view_paint(pTextView->pView, dred_rect_to_drte(dred_offset_rect(dred_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top)), pPaintData);
 }
 
 void dred_textview__on_timer(dred_timer* pTimer, void* pUserData)
@@ -2359,7 +2358,7 @@ void dred_textview_on_capture_keyboard(dred_control* pControl, dred_control* pPr
         return;
     }
 
-    drte_view_show_cursors(pTextView->pTextEngine->pView);
+    drte_view_show_cursors(pTextView->pView);
 
     if (pTextView->pTimer == NULL) {
         pTextView->pTimer = dred_timer_create(100, dred_textview__on_timer, pTextView);
@@ -2375,7 +2374,7 @@ void dred_textview_on_release_keyboard(dred_control* pControl, dred_control* pNe
         return;
     }
 
-    drte_view_hide_cursors(pTextView->pTextEngine->pView);
+    drte_view_hide_cursors(pTextView->pView);
 
     if (pTextView->pTimer != NULL) {
         dred_timer_delete(pTextView->pTimer);
@@ -2494,9 +2493,9 @@ void dred_textview__refresh_horizontal_scrollbar(dred_textview* pTextView)
 {
     assert(pTextView != NULL);
 
-    float textWidth = drte_view_get_visible_line_width(pTextView->pTextEngine->pView);
+    float textWidth = drte_view_get_visible_line_width(pTextView->pView);
     float containerWidth;
-    drte_view_get_size(pTextView->pTextEngine->pView, &containerWidth, NULL);
+    drte_view_get_size(pTextView->pView, &containerWidth, NULL);
     dred_scrollbar_set_range_and_page_size(pTextView->pHorzScrollbar, 0, (int)textWidth, (int)containerWidth);
 
     if (dred_scrollbar_is_thumb_visible(pTextView->pHorzScrollbar)) {
@@ -2517,12 +2516,12 @@ void dred_textview__refresh_scrollbar_ranges(dred_textview* pTextView)
     assert(pTextView != NULL);
 
     // The vertical scrollbar is based on the line count.
-    size_t lineCount = drte_view_get_line_count(pTextView->pTextEngine->pView);
-    size_t pageSize  = drte_view_get_visible_line_count(pTextView->pTextEngine->pView);
+    size_t lineCount = drte_view_get_line_count(pTextView->pView);
+    size_t pageSize  = drte_view_get_visible_line_count(pTextView->pView);
 
     size_t extraScroll = 0;
     if (pTextView->isExcessScrollingEnabled) {
-        extraScroll = drte_view_get_visible_line_count(pTextView->pTextEngine->pView) - 1 - 1;  // -1 to make the range 0 based. -1 to ensure at least one line is visible.
+        extraScroll = drte_view_get_visible_line_count(pTextView->pView) - 1 - 1;  // -1 to make the range 0 based. -1 to ensure at least one line is visible.
     }
 
     dred_scrollbar_set_range_and_page_size(pTextView->pVertScrollbar, 0, (int)(lineCount + extraScroll), (int)pageSize);
@@ -2599,13 +2598,13 @@ void dred_textview__on_mouse_move_line_numbers(dred_control* pLineNumbers, int r
             // We just move the cursor around based on the line number we've moved over.
 
             //float offsetX = pTextEditorData->padding;
-            float offsetY = pTextView->padding + pTextView->pTextEngine->pView->innerOffsetY;
-            size_t iLine = drte_view_get_line_at_pos_y(pTextView->pTextEngine->pView, NULL, relativeMousePosY - offsetY);
+            float offsetY = pTextView->padding + pTextView->pView->innerOffsetY;
+            size_t iLine = drte_view_get_line_at_pos_y(pTextView->pView, NULL, relativeMousePosY - offsetY);
             size_t iAnchorLine = pTextView->iLineSelectAnchor;
-            size_t lineCount = drte_view_get_line_count(pTextView->pTextEngine->pView);
+            size_t lineCount = drte_view_get_line_count(pTextView->pView);
 
-            size_t iSelectionFirstLine = drte_view_get_selection_first_line(pTextView->pTextEngine->pView, pTextView->pTextEngine->pView->selectionCount-1);
-            size_t iSelectionLastLine = drte_view_get_selection_last_line(pTextView->pTextEngine->pView, pTextView->pTextEngine->pView->selectionCount-1);
+            size_t iSelectionFirstLine = drte_view_get_selection_first_line(pTextView->pView, pTextView->pView->selectionCount-1);
+            size_t iSelectionLastLine = drte_view_get_selection_last_line(pTextView->pView, pTextView->pView->selectionCount-1);
             if (iSelectionLastLine != iSelectionFirstLine) {
                 iSelectionLastLine -= 1;
             }
@@ -2621,29 +2620,29 @@ void dred_textview__on_mouse_move_line_numbers(dred_control* pLineNumbers, int r
             // of the first line.
             if (movingUp) {
                 if (iAnchorLine + 1 < lineCount) {
-                    drte_view_move_selection_anchor_to_start_of_line(pTextView->pTextEngine->pView, iAnchorLine + 1);
+                    drte_view_move_selection_anchor_to_start_of_line(pTextView->pView, iAnchorLine + 1);
                 } else {
-                    drte_view_move_selection_anchor_to_end_of_line(pTextView->pTextEngine->pView, iAnchorLine);
+                    drte_view_move_selection_anchor_to_end_of_line(pTextView->pView, iAnchorLine);
                 }
             } else {
-                drte_view_move_selection_anchor_to_start_of_line(pTextView->pTextEngine->pView, iAnchorLine);
+                drte_view_move_selection_anchor_to_start_of_line(pTextView->pView, iAnchorLine);
             }
 
 
             // If we're moving up we want the cursor to be placed at the start of the selection range. Otherwise we want to place the cursor
             // at the end of the selection range.
             if (movingUp) {
-                drte_view_move_cursor_to_start_of_line_by_index(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), iLine);
+                drte_view_move_cursor_to_start_of_line_by_index(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iLine);
             } else {
                 if (iLine + 1 < lineCount) {
-                    drte_view_move_cursor_to_start_of_line_by_index(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), iLine + 1);
+                    drte_view_move_cursor_to_start_of_line_by_index(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iLine + 1);
                 } else {
-                    drte_view_move_cursor_to_end_of_line_by_index(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), iLine);
+                    drte_view_move_cursor_to_end_of_line_by_index(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iLine);
                 }
             }
 
 
-            drte_view_set_selection_end_point(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+            drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
         }
     }
 }
@@ -2662,7 +2661,7 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
 
         // If the shift key is down and we already have a selection, this is equivalent to a mouse drag.
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
-            if (drte_view_is_anything_selected(pTextView->pTextEngine->pView)) {
+            if (drte_view_is_anything_selected(pTextView->pView)) {
                 dred_textview__on_mouse_move_line_numbers(pLineNumbers, relativeMousePosX, relativeMousePosY, stateFlags | DRED_GUI_MOUSE_BUTTON_LEFT_DOWN);
                 return;
             }
@@ -2670,11 +2669,11 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
 
 
         //float offsetX = pTextEditorData->padding;
-        float offsetY = pTextView->padding + pTextView->pTextEngine->pView->innerOffsetY;
-        size_t iClickedLine = drte_view_get_line_at_pos_y(pTextView->pTextEngine->pView, NULL, relativeMousePosY - offsetY);
+        float offsetY = pTextView->padding + pTextView->pView->innerOffsetY;
+        size_t iClickedLine = drte_view_get_line_at_pos_y(pTextView->pView, NULL, relativeMousePosY - offsetY);
 
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
-            pTextView->iLineSelectAnchor = drte_view_get_cursor_line(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+            pTextView->iLineSelectAnchor = drte_view_get_cursor_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
         } else {
             pTextView->iLineSelectAnchor = iClickedLine;
         }
@@ -2684,16 +2683,16 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
             dred_textview_deselect_all(pTextView);
         }
 
-        drte_view_begin_selection(pTextView->pTextEngine->pView, drte_view_get_line_first_character(pTextView->pTextEngine->pView, NULL, pTextView->iLineSelectAnchor));
+        drte_view_begin_selection(pTextView->pView, drte_view_get_line_first_character(pTextView->pView, NULL, pTextView->iLineSelectAnchor));
 
 
-        if (iClickedLine + 1 < drte_view_get_line_count(pTextView->pTextEngine->pView)) {
-            drte_view_move_cursor_to_start_of_line_by_index(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView), iClickedLine + 1);
+        if (iClickedLine + 1 < drte_view_get_line_count(pTextView->pView)) {
+            drte_view_move_cursor_to_start_of_line_by_index(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iClickedLine + 1);
         } else {
-            drte_view_move_cursor_to_end_of_line(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView));
+            drte_view_move_cursor_to_end_of_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
         }
 
-        drte_view_set_selection_end_point(pTextView->pTextEngine->pView, drte_view_get_cursor_character(pTextView->pTextEngine->pView, drte_view_get_last_cursor(pTextView->pTextEngine->pView)));
+        drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
     }
 }
 
@@ -2752,7 +2751,7 @@ void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect 
     float lineNumbersWidth  = dred_control_get_width(pLineNumbers) - (pTextView->padding*2) - pTextView->lineNumbersPaddingRight;
     float lineNumbersHeight = dred_control_get_height(pLineNumbers) - (pTextView->padding*2);
 
-    drte_view_paint_line_numbers(pTextView->pTextEngine->pView, lineNumbersWidth, lineNumbersHeight, dred_textview__on_paint_text_line_numbers, dred_textview__on_paint_rect_line_numbers, pPaintData);
+    drte_view_paint_line_numbers(pTextView->pView, lineNumbersWidth, lineNumbersHeight, dred_textview__on_paint_text_line_numbers, dred_textview__on_paint_rect_line_numbers, pPaintData);
 
     dred_control_draw_rect_outline(pLineNumbers, dred_control_get_local_rect(pLineNumbers), pTextView->lineNumbersStyle.bgColor, pTextView->padding, pPaintData);
 
@@ -2783,7 +2782,7 @@ void dred_textview__refresh_line_numbers(dred_textview* pTextView)
     float textEditorWidth;
     float textEditorHeight;
     dred_textview__calculate_text_engine_container_size(pTextView, &textEditorWidth, &textEditorHeight);
-    drte_view_set_size(pTextView->pTextEngine->pView, textEditorWidth, textEditorHeight);
+    drte_view_set_size(pTextView->pView, textEditorWidth, textEditorHeight);
 
 
     // Force a redraw just to be sure everything is in a valid state.

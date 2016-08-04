@@ -1753,6 +1753,7 @@ typedef struct
 {
     dred_context* pDred;
     drte_engine textEngine;
+    drte_view* pTextView;
     dr2d_context* pPaintContext;
     dr2d_surface* pPaintSurface;
     dr2d_font* pFont;
@@ -1783,7 +1784,7 @@ void dred__init_print_font(dred_print_data* pPrintData)
 
 
     // Should probably move this to somewhere more appropriate.
-    drte_view_set_size(pPrintData->textEngine.pView, pPrintData->pageSizeX, pPrintData->pageSizeY);
+    drte_view_set_size(pPrintData->pTextView, pPrintData->pageSizeX, pPrintData->pageSizeY);
 }
 
 void dred__uninit_print_font(dred_print_data* pPrintData)
@@ -1811,7 +1812,7 @@ void dred__on_paint_text_for_printing(drte_engine* pTextEngine, drte_view* pView
     assert(pPrintData != NULL);
 
     // Skip the line if it's partially visible - it'll be drawn on the next page.
-    if (posY + drte_engine_get_line_height(pTextEngine) > drte_view_get_size_y(pTextEngine->pView)) {
+    if (posY + drte_engine_get_line_height(pTextEngine) > drte_view_get_size_y(pView)) {
         return;
     }
 
@@ -1841,10 +1842,10 @@ void dred__print_page(dred_print_data* pPrintData, size_t iPage)
     dr2d_begin_draw(pPrintData->pPaintSurface);
     {
         // Scroll to the page.
-        drte_view_set_inner_offset_y(pPrintData->textEngine.pView, -(iPage * drte_engine_get_line_height(&pPrintData->textEngine) * drte_view_get_line_count_per_page(pPrintData->textEngine.pView)));
+        drte_view_set_inner_offset_y(pPrintData->pTextView, -(iPage * drte_engine_get_line_height(&pPrintData->textEngine) * drte_view_get_line_count_per_page(pPrintData->pTextView)));
 
         // Paint.
-        drte_view_paint(pPrintData->textEngine.pView, drte_make_rect(0, 0, drte_view_get_size_x(pPrintData->textEngine.pView), drte_view_get_size_y(pPrintData->textEngine.pView)), pPrintData);
+        drte_view_paint(pPrintData->pTextView, drte_make_rect(0, 0, drte_view_get_size_x(pPrintData->pTextView), drte_view_get_size_y(pPrintData->pTextView)), pPrintData);
     }
     dr2d_end_draw(pPrintData->pPaintSurface);
 }
@@ -1928,8 +1929,10 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
         return false;
     }
 
+    printData.pTextView = drte_view_create(&printData.textEngine);
+
     // Engine settings.
-    drte_view_enable_word_wrap(printData.textEngine.pView);
+    drte_view_enable_word_wrap(printData.pTextView);
     drte_engine_set_on_paint_text(&printData.textEngine, dred__on_paint_text_for_printing);
     drte_engine_set_on_paint_rect(&printData.textEngine, dred__on_paint_rect_for_printing);
     printData.textEngine.onMeasureString = dred__on_measure_string_for_printing;
@@ -1992,7 +1995,7 @@ bool dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred
 
     dred__init_print_font(&printData);
 
-    size_t pageCount = drte_view_get_page_count(printData.textEngine.pView);
+    size_t pageCount = drte_view_get_page_count(printData.pTextView);
 
 
     DOCINFOA di;

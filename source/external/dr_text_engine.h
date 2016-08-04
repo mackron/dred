@@ -353,7 +353,7 @@ struct drte_engine
 
     // A temporary view object that's only used while the new view API is being developed.
     // TODO: Delete me.
-    drte_view* pView;
+    //drte_view* pView;
 
 
     // Application-defined data.
@@ -532,14 +532,6 @@ void drte_engine_set_on_paint_rect(drte_engine* pEngine, drte_engine_on_paint_re
 /// @remarks
 ///     This will trigger the on_dirty callback when the cursor switches it's blink states.
 void drte_engine_step(drte_engine* pEngine, unsigned int milliseconds);
-
-
-/// Finds the given string starting from the cursor and then looping back.
-bool drte_engine_find_next(drte_engine* pEngine, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut);
-
-/// Finds the given string starting from the cursor, but does not loop back.
-bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut);
-
 
 
 
@@ -904,6 +896,13 @@ bool drte_view_delete_selected_text(drte_view* pView, bool updateCursors);
 
 // Deletes the text of a specific selection.
 bool drte_view_delete_selection_text(drte_view* pView, size_t iSelectionToDelete, bool updateCursorsAndSelection);
+
+
+/// Finds the given string starting from the cursor and then looping back.
+bool drte_view_find_next(drte_view* pView, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut);
+
+/// Finds the given string starting from the cursor, but does not loop back.
+bool drte_view_find_next_no_loop(drte_view* pView, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut);
 
 
 #ifdef __cplusplus
@@ -1604,7 +1603,7 @@ bool drte_engine__next_segment(drte_view* pView, drte_segment* pSegment)
     size_t iCharBeg = pSegment->iCharEnd;
     size_t iCharEnd = iCharBeg;
 
-    if (pEngine->pView->cursorCount > 0 && pSegment->iLine == pSegment->iCursorLine) {
+    if (pView->cursorCount > 0 && pSegment->iLine == pSegment->iCursorLine) {
         bgStyleSlot = pEngine->activeLineStyleSlot;
     }
 
@@ -1787,12 +1786,12 @@ bool drte_engine__first_segment_on_line(drte_view* pView, drte_line_cache* pLine
     pSegment->isAtEndOfLine = false;
 
     if (iChar == (size_t)-1) {
-        pSegment->iCharBeg = drte_view_get_line_first_character(pEngine->pView, pLineCache, lineIndex);
+        pSegment->iCharBeg = drte_view_get_line_first_character(pView, pLineCache, lineIndex);
         pSegment->iCharEnd = pSegment->iCharBeg;
     }
 
     pSegment->iLineCharBeg = pSegment->iCharBeg;
-    pSegment->iLineCharEnd = drte_view_get_line_last_character(pEngine->pView, pLineCache, lineIndex);
+    pSegment->iLineCharEnd = drte_view_get_line_last_character(pView, pLineCache, lineIndex);
 
     return drte_engine__next_segment(pView, pSegment);
 }
@@ -1939,7 +1938,7 @@ bool drte_engine_init(drte_engine* pEngine, void* pUserData)
 
 
     // The temporary view.
-    pEngine->pView = drte_view_create(pEngine);
+    //pEngine->pView = drte_view_create(pEngine);
 
     return true;
 }
@@ -1950,6 +1949,12 @@ void drte_engine_uninit(drte_engine* pEngine)
         return;
     }
 
+    // All views need to be deleted.
+    while (pEngine->pRootView != NULL) {
+        drte_view_delete(pEngine->pRootView);
+    }
+
+
     drte_engine_clear_undo_stack(pEngine);
 
     drte_stack_buffer_uninit(&pEngine->undoBuffer);
@@ -1957,8 +1962,8 @@ void drte_engine_uninit(drte_engine* pEngine)
 
     drte_line_cache_uninit(&pEngine->_unwrappedLines);
 
-    free(pEngine->pView->pSelections);
-    free(pEngine->pView->pCursors);
+    //free(pEngine->pView->pSelections);
+    //free(pEngine->pView->pCursors);
 
     free(pEngine->text);
 }
@@ -2055,9 +2060,10 @@ void drte_engine_set_selection_style(drte_engine* pEngine, drte_style_token styl
     pEngine->selectionStyleSlot = styleSlot;
 
 
-    // TODO: Do this for all views.
-    if (drte_view_is_anything_selected(pEngine->pView)) {
-        drte_engine__refresh(pEngine);
+    for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
+        if (drte_view_is_anything_selected(pView)) {
+            drte_view__refresh_word_wrapping(pView);    // <-- This will repaint.
+        }
     }
 }
 
@@ -2270,12 +2276,6 @@ void drte_engine_reset_cursor_blinks(drte_engine* pEngine)
     pEngine->isCursorBlinkOn = true;
 }
 
-
-
-bool drte_engine_is_cursor_at_end_of_selection(drte_engine* pEngine, size_t cursorIndex)
-{
-    return drte_view_is_cursor_at_end_of_selection(pEngine->pView, cursorIndex);
-}
 
 
 bool drte_engine_insert_character(drte_engine* pEngine, size_t insertIndex, uint32_t utf32)
@@ -3134,62 +3134,6 @@ void drte_engine_step(drte_engine* pEngine, unsigned int milliseconds)
 }
 
 
-bool drte_engine_find_next(drte_engine* pEngine, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut)
-{
-    if (pEngine == NULL || pEngine->text == NULL || text == NULL || text[0] == '\0') {
-        return false;
-    }
-
-    size_t cursorPos = 0;
-    if (pEngine->pView->cursorCount > 0) {
-        cursorPos = pEngine->pView->pCursors[pEngine->pView->cursorCount-1].iCharAbs;
-    }
-
-    char* nextOccurance = strstr(pEngine->text + cursorPos, text);
-    if (nextOccurance == NULL) {
-        nextOccurance = strstr(pEngine->text, text);
-    }
-
-    if (nextOccurance == NULL) {
-        return false;
-    }
-
-    if (pSelectionStartOut) {
-        *pSelectionStartOut = nextOccurance - pEngine->text;
-    }
-    if (pSelectionEndOut) {
-        *pSelectionEndOut = (nextOccurance - pEngine->text) + strlen(text);
-    }
-
-    return true;
-}
-
-bool drte_engine_find_next_no_loop(drte_engine* pEngine, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut)
-{
-    if (pEngine == NULL || pEngine->text == NULL || text == NULL || text[0] == '\0') {
-        return false;
-    }
-
-    size_t cursorPos = 0;
-    if (pEngine->pView->cursorCount > 0) {
-        cursorPos = pEngine->pView->pCursors[pEngine->pView->cursorCount-1].iCharAbs;
-    }
-
-    char* nextOccurance = strstr(pEngine->text + cursorPos, text);
-    if (nextOccurance == NULL) {
-        return false;
-    }
-
-    if (pSelectionStartOut) {
-        *pSelectionStartOut = nextOccurance - pEngine->text;
-    }
-    if (pSelectionEndOut) {
-        *pSelectionEndOut = (nextOccurance - pEngine->text) + strlen(text);
-    }
-
-    return true;
-}
-
 
 void drte_engine__refresh(drte_engine* pEngine)
 {
@@ -3199,7 +3143,6 @@ void drte_engine__refresh(drte_engine* pEngine)
         drte_view__refresh_word_wrapping(pView);
     }
 }
-
 
 
 
@@ -3415,15 +3358,6 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, const void* pUndoDataPt
     }
 }
 
-
-drte_rect drte_engine__local_rect(drte_engine* pEngine)
-{
-    if (pEngine == NULL) {
-        return drte_make_rect(0, 0, 0, 0);
-    }
-
-    return drte_make_rect(0, 0, pEngine->pView->sizeX, pEngine->pView->sizeY);
-}
 
 
 void drte_engine__on_cursor_move(drte_engine* pEngine, drte_view* pView, size_t cursorIndex)
@@ -3727,11 +3661,11 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
     if (rect.top < 0) {
         rect.top = 0;
     }
-    if (rect.right > pView->pEngine->pView->sizeX) {
-        rect.right = pView->pEngine->pView->sizeX;
+    if (rect.right > pView->sizeX) {
+        rect.right = pView->sizeX;
     }
-    if (rect.bottom > pView->pEngine->pView->sizeY) {
-        rect.bottom = pView->pEngine->pView->sizeY;
+    if (rect.bottom > pView->sizeY) {
+        rect.bottom = pView->sizeY;
     }
 
     if (rect.right <= rect.left || rect.bottom <= rect.top) {
@@ -3745,7 +3679,7 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
     size_t iLineBottom;
     drte_view_get_visible_lines(pView, &iLineTop, &iLineBottom);
 
-    float linePosX = pView->pEngine->pView->innerOffsetX;
+    float linePosX = pView->innerOffsetX;
     float linePosY = 0;
 
     drte_segment segment;
@@ -3815,7 +3749,7 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
             float lineRight = linePosX + lineWidth;
             if (lineRight < pView->sizeX) {
                 drte_style_token bgStyleToken = pView->pEngine->styles[pView->pEngine->defaultStyleSlot].styleToken;
-                if (pView->pEngine->pView->cursorCount > 0 && segment.iLine == drte_view_get_cursor_line(pView, pView->cursorCount-1)) {
+                if (pView->cursorCount > 0 && segment.iLine == drte_view_get_cursor_line(pView, pView->cursorCount-1)) {
                     bgStyleToken = pView->pEngine->styles[pView->pEngine->activeLineStyleSlot].styleToken;
                 }
 
@@ -3838,14 +3772,14 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
         // Couldn't create a segment iterator. Likely means there is no text. Just draw a single blank line.
         drte_style_token bgStyleToken = pView->pEngine->styles[pView->pEngine->activeLineStyleSlot].styleToken;
         if (pView->pEngine->onPaintRect && bgStyleToken != 0) {
-            pView->pEngine->onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(linePosX, linePosY, pView->pEngine->pView->sizeX, linePosY + lineHeight), pPaintData);
+            pView->pEngine->onPaintRect(pView->pEngine, pView, bgStyleToken, drte_make_rect(linePosX, linePosY, pView->sizeX, linePosY + lineHeight), pPaintData);
         }
     }
 
 
     // Cursors.
     if (drte_view_is_showing_cursors(pView) && pView->pEngine->isCursorBlinkOn && pView->pEngine->styles[pView->pEngine->cursorStyleSlot].styleToken != 0) {
-        for (size_t iCursor = 0; iCursor < pView->pEngine->pView->cursorCount; ++iCursor) {
+        for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
             pView->pEngine->onPaintRect(pView->pEngine, pView, pView->pEngine->styles[pView->pEngine->cursorStyleSlot].styleToken, drte_view_get_cursor_rect(pView, iCursor), pPaintData);
         }
     }
@@ -3880,7 +3814,7 @@ void drte_view_paint_line_numbers(drte_view* pView, float lineNumbersWidth, floa
 
     size_t lineNumber = iLineTop;
 
-    float lineTop = pView->pEngine->pView->innerOffsetY + (iLineTop * lineHeight);
+    float lineTop = pView->innerOffsetY + (iLineTop * lineHeight);
     for (size_t iLine = iLineTop; iLine <= iLineBottom; ++iLine) {
         float lineBottom = lineTop + lineHeight;
         bool drawLineNumber = false;
@@ -5593,6 +5527,64 @@ bool drte_view_delete_selection_text(drte_view* pView, size_t iSelectionToDelete
 
     return wasTextChanged;
 }
+
+
+bool drte_view_find_next(drte_view* pView, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut)
+{
+    if (pView == NULL || pView->pEngine == NULL || pView->pEngine->text == NULL || text == NULL || text[0] == '\0') {
+        return false;
+    }
+
+    size_t cursorPos = 0;
+    if (pView->cursorCount > 0) {
+        cursorPos = pView->pCursors[pView->cursorCount-1].iCharAbs;
+    }
+
+    char* nextOccurance = strstr(pView->pEngine->text + cursorPos, text);
+    if (nextOccurance == NULL) {
+        nextOccurance = strstr(pView->pEngine->text, text);
+    }
+
+    if (nextOccurance == NULL) {
+        return false;
+    }
+
+    if (pSelectionStartOut) {
+        *pSelectionStartOut = nextOccurance - pView->pEngine->text;
+    }
+    if (pSelectionEndOut) {
+        *pSelectionEndOut = (nextOccurance - pView->pEngine->text) + strlen(text);
+    }
+
+    return true;
+}
+
+bool drte_view_find_next_no_loop(drte_view* pView, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut)
+{
+    if (pView == NULL || pView->pEngine == NULL || pView->pEngine->text == NULL || text == NULL || text[0] == '\0') {
+        return false;
+    }
+
+    size_t cursorPos = 0;
+    if (pView->cursorCount > 0) {
+        cursorPos = pView->pCursors[pView->cursorCount-1].iCharAbs;
+    }
+
+    char* nextOccurance = strstr(pView->pEngine->text + cursorPos, text);
+    if (nextOccurance == NULL) {
+        return false;
+    }
+
+    if (pSelectionStartOut) {
+        *pSelectionStartOut = nextOccurance - pView->pEngine->text;
+    }
+    if (pSelectionEndOut) {
+        *pSelectionEndOut = (nextOccurance - pView->pEngine->text) + strlen(text);
+    }
+
+    return true;
+}
+
 
 #endif  //DR_TEXT_ENGINE_IMPLEMENTATION
 
