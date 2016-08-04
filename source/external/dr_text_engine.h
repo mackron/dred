@@ -351,10 +351,6 @@ struct drte_engine
     // A pointer to the first view. This is a linked list.
     drte_view* pRootView;
 
-    // A temporary view object that's only used while the new view API is being developed.
-    // TODO: Delete me.
-    //drte_view* pView;
-
 
     // Application-defined data.
     void* pUserData;
