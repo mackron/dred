@@ -616,10 +616,16 @@ size_t drte_view_get_character_line(drte_view* pView, drte_line_cache* pLineCach
 void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCache, size_t characterIndex, float* pPosXOut, float* pPosYOut);
 
 // Retrieves the closest character to the given point relative to the text.
-size_t drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piLineOut);
+//
+// The return value is whether or not the point is actually over a character. If false is returned, piCharOut and piLineOut will
+// be set based on the input position being clamped to the text region.
+bool drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piCharOut, size_t* piLineOut);
 
 // Retrieves the closest character to the given point relative to the container.
-size_t drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piLineOut);
+//
+// The return value is whether or not the point is actually over a character. If false is returned, piCharOut and piLineOut will
+// be set based on the input position being clamped to the text region.
+bool drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piCharOut, size_t* piLineOut);
 
 // Retrieves the indices of the visible lines.
 void drte_view_get_visible_lines(drte_view* pView, size_t* pFirstLineOut, size_t* pLastLineOut);
@@ -4052,12 +4058,13 @@ void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCa
     if (pPosYOut) *pPosYOut = posY;
 }
 
-size_t drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piLineOut)
+bool drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piCharOut, size_t* piLineOut)
 {
+    if (piCharOut) *piCharOut = 0;
     if (piLineOut) *piLineOut = 0;
 
     if (pView == NULL) {
-        return 0;
+        return false;
     }
 
     size_t iLine = drte_view_get_line_at_pos_y(pView, pLineCache, inputPosYRelativeToText);
@@ -4069,7 +4076,9 @@ size_t drte_view_get_character_under_point_relative_to_text(drte_view* pView, dr
     // containing the point on the x axis. Once the segment has been found, we use the backend to get the exact character.
     if (inputPosXRelativeToText < 0) {
         iChar = drte_view_get_line_first_character(pView, pLineCache, (size_t)iLine);   // It's to the left of the line, so just pin it to the first character in the line.
-        return iChar;
+        
+        if (piCharOut) *piCharOut = iChar;
+        return false;   // <-- Return false because it's not actually over a character (it's to the left).
     }
 
     drte_segment segment;
@@ -4113,20 +4122,32 @@ size_t drte_view_get_character_under_point_relative_to_text(drte_view* pView, dr
                     }
                 }
 
-                return iChar;
+                if (piCharOut) *piCharOut = iChar;
+
+                // It's possible that the Y position is not actually over a line. Whether or not we return true or false depends on this.
+                if (inputPosYRelativeToText < 0) {
+                    return false;
+                } else {
+                    if (inputPosYRelativeToText >= (drte_view_get_line_count(pView) * drte_engine_get_line_height(pView->pEngine))) {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         } while (drte_engine__next_segment_on_line(pView, &segment));
 
         // If we get here it means the position is to the right of the line. Just pin it to the end of the line.
         iChar = segment.iCharBeg;   // <-- segment.iCharBeg should be sitting on a new line or null terminator.
 
-        return iChar;
+        if (piCharOut) *piCharOut = iChar;
+        return false;   // <-- Return false because it's not actually over a character (it's to the right)
     }
 
-    return 0;
+    return false;
 }
 
-size_t drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piLineOut)
+bool drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piCharOut, size_t* piLineOut)
 {
     if (pView == NULL) {
         return 0;
@@ -4134,7 +4155,7 @@ size_t drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pL
 
     float inputPosXRelativeToText = inputPosXRelativeToContainer - pView->innerOffsetX;
     float inputPosYRelativeToText = inputPosYRelativeToContainer - pView->innerOffsetY;
-    return drte_view_get_character_under_point_relative_to_text(pView, pLineCache, inputPosXRelativeToText, inputPosYRelativeToText, piLineOut);
+    return drte_view_get_character_under_point_relative_to_text(pView, pLineCache, inputPosXRelativeToText, inputPosYRelativeToText, piCharOut, piLineOut);
 }
 
 void drte_view_get_visible_lines(drte_view* pView, size_t* pFirstLineOut, size_t* pLastLineOut)
@@ -4286,7 +4307,7 @@ size_t drte_view_get_line_at_pos_y(drte_view* pView, drte_line_cache* pLineCache
 
     size_t lineCount = drte_line_cache_get_line_count(pLineCache);
     if (lineCount == 0) {
-        return false;
+        return 0;
     }
 
     intptr_t iLine = (intptr_t)(posY / drte_engine_get_line_height(pView->pEngine));
@@ -5096,7 +5117,12 @@ bool drte_view_get_word_under_point(drte_view* pView, float posX, float posY, si
         return false;
     }
 
-    return drte_engine_get_word_containing_character(pView->pEngine, drte_view_get_character_under_point(pView, pView->pWrappedLines, posX, posY, NULL), pWordBegOut, pWordEndOut);
+    size_t iChar;
+    if (!drte_view_get_character_under_point(pView, pView->pWrappedLines, posX, posY, &iChar, NULL)) {
+        return false;
+    }
+
+    return drte_engine_get_word_containing_character(pView->pEngine, iChar, pWordBegOut, pWordEndOut);
 }
 
 
@@ -5307,7 +5333,11 @@ bool drte_view_get_selection_under_point(drte_view* pView, float posX, float pos
 {
     if (pView == NULL) return false;
 
-    size_t iChar = drte_view_get_character_under_point_relative_to_text(pView, pView->pWrappedLines, posX, posY, NULL);
+    size_t iChar;
+    if (!drte_view_get_character_under_point(pView, pView->pWrappedLines, posX, posY, &iChar, NULL)) {
+        return false;
+    }
+
     for (size_t iSelection = 0; iSelection < pView->selectionCount; ++iSelection) {
         drte_region selection = drte_region_normalize(pView->pSelections[iSelection]);
         if (iChar >= selection.iCharBeg && iChar < selection.iCharEnd) {
