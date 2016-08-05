@@ -97,6 +97,9 @@ struct dred_textview
     // Whether or not drag-and-drop is enabled.
     bool isDragAndDropEnabled;
 
+    // Whether or not the use is about to start drag-and-dropping.
+    bool isWantingToDragAndDrop;
+
 
     // The number of active cursors.
     size_t cursorCount;

@@ -436,6 +436,7 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
     pTextView->isHorzScrollbarEnabled = true;
     pTextView->isExcessScrollingEnabled = pDred->config.textEditorEnableExcessScrolling;
     pTextView->isDragAndDropEnabled = pDred->config.textEditorEnableDragAndDrop;
+    pTextView->isWantingToDragAndDrop = false;
     pTextView->iLineSelectAnchor = 0;
     pTextView->onCursorMove = NULL;
     pTextView->onUndoPointChanged = NULL;
@@ -1531,6 +1532,11 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
         if (dred_textview_is_drag_and_drop_enabled(pTextView)) {
             size_t iHoveredSelection;
             if (drte_view_get_selection_under_point(pTextView->pView, mousePosXRelativeToTextArea, mousePosYRelativeToTextArea, &iHoveredSelection)) {
+                if (pTextView->isWantingToDragAndDrop) {
+                    printf("Begin dragging...\n");
+                    pTextView->isWantingToDragAndDrop = false;
+                }
+
                 dred_control_set_cursor(DRED_CONTROL(pTextView), dred_cursor_type_arrow);
             } else {
                 dred_control_set_cursor(DRED_CONTROL(pTextView), dred_cursor_type_text);
@@ -1551,45 +1557,55 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
-        pTextView->isDoingWordSelect = false;
-
-        if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
-            if (!drte_view_is_anything_selected(pTextView->pView)) {
-                drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
-            }
-        } else {
-            if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
-                drte_view_deselect_all(pTextView->pView);
-                dred_textview__clear_all_cursors(pTextView);
-            }
-        }
-
-
         float offsetX;
         float offsetY;
         dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
-        size_t iLine;
-        size_t iChar;
-        drte_view_get_character_under_point(pTextView->pView, NULL, (float)relativeMousePosX - offsetX, (float)relativeMousePosY - offsetY, &iChar, &iLine);
+        float mousePosXRelativeToTextArea = (float)relativeMousePosX - offsetX;
+        float mousePosYRelativeToTextArea = (float)relativeMousePosY - offsetY;
 
-        if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
-            drte_view_set_selection_end_point(pTextView->pView, iChar);
-        } else {
-            if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
-                dred_textview__insert_cursor(pTextView, iChar);
-            }
-
-            drte_view_begin_selection(pTextView->pView, iChar);
+        size_t iSelection;
+        if (dred_textview_is_drag_and_drop_enabled(pTextView) && drte_view_get_selection_under_point(pTextView->pView, mousePosXRelativeToTextArea, mousePosYRelativeToTextArea, &iSelection)) {
+            pTextView->isWantingToDragAndDrop = true;
         }
 
 
-        drte_view_move_cursor_to_character_and_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iChar, iLine);
-        drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[drte_view_get_last_cursor(pTextView->pView)]);
+        if (!pTextView->isWantingToDragAndDrop) {
+            pTextView->isDoingWordSelect = false;
+
+            if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
+                if (!drte_view_is_anything_selected(pTextView->pView)) {
+                    drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
+                }
+            } else {
+                if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
+                    drte_view_deselect_all(pTextView->pView);
+                    dred_textview__clear_all_cursors(pTextView);
+                }
+            }
+
+            size_t iLine;
+            size_t iChar;
+            drte_view_get_character_under_point(pTextView->pView, NULL, mousePosXRelativeToTextArea, mousePosYRelativeToTextArea, &iChar, &iLine);
+
+            if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
+                drte_view_set_selection_end_point(pTextView->pView, iChar);
+            } else {
+                if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
+                    dred_textview__insert_cursor(pTextView, iChar);
+                }
+
+                drte_view_begin_selection(pTextView->pView, iChar);
+            }
 
 
-        // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
-        dred_gui_capture_mouse(pControl);
+            drte_view_move_cursor_to_character_and_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iChar, iLine);
+            drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[drte_view_get_last_cursor(pTextView->pView)]);
+
+
+            // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
+            dred_gui_capture_mouse(pControl);
+        }
     }
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_RIGHT)
@@ -1625,6 +1641,30 @@ void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, i
             // Releasing the mouse will leave selectionmode.
             dred_gui_release_mouse(pControl->pGUI);
         }
+
+        if (pTextView->isWantingToDragAndDrop) {
+            drte_view_deselect_all(pTextView->pView);
+
+            float offsetX;
+            float offsetY;
+            dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
+
+            float mousePosXRelativeToTextArea = (float)relativeMousePosX - offsetX;
+            float mousePosYRelativeToTextArea = (float)relativeMousePosY - offsetY;
+
+            size_t iLine;
+            size_t iChar;
+            drte_view_get_character_under_point(pTextView->pView, NULL, mousePosXRelativeToTextArea, mousePosYRelativeToTextArea, &iChar, &iLine);
+
+            if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
+                dred_textview__insert_cursor(pTextView, iChar);
+            }
+
+            drte_view_move_cursor_to_character_and_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iChar, iLine);
+            drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[drte_view_get_last_cursor(pTextView->pView)]);
+        }
+
+        pTextView->isWantingToDragAndDrop = false;
     }
 }
 
