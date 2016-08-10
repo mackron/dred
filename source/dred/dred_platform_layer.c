@@ -589,6 +589,9 @@ bool dred_platform_init__win32()
     // We'll be handling DPI ourselves. This should be done at the top.
     dr_win32_make_dpi_aware();
 
+    // For drag and drop.
+    OleInitialize(NULL);
+
     // Need to call this to enable visual styles.
     INITCOMMONCONTROLSEX ctls;
     ctls.dwSize = sizeof(ctls);
@@ -638,6 +641,8 @@ void dred_platform_uninit__win32()
 
     UnregisterClassA(g_WindowClass, NULL);
     UnregisterClassA(g_WindowClassTimer, NULL);
+
+    OleUninitialize();
 }
 
 int dred_platform_run__win32()
