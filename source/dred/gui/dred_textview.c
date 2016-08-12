@@ -1533,7 +1533,8 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
             size_t iHoveredSelection;
             if (drte_view_get_selection_under_point(pTextView->pView, mousePosXRelativeToTextArea, mousePosYRelativeToTextArea, &iHoveredSelection)) {
                 if (pTextView->isWantingToDragAndDrop) {
-                    printf("Begin dragging...\n");
+                    //printf("Begin dragging...\n");
+                    dred_begin_drag_and_drop(dred_data_type_text, "Hello!", strlen("Hello")+1);
                     pTextView->isWantingToDragAndDrop = false;
                 }
 

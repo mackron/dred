@@ -455,3 +455,18 @@ char* dred_clipboard_get_text();
 
 // Frees the text returned by dred_clipboard_get_text().
 void dred_clipboard_free_text(char* text);
+
+
+
+//// Drag and Drop ////
+
+typedef enum
+{
+    dred_data_type_generic,
+    dred_data_type_text
+} dred_data_type;
+
+// Begins a drag and drop operation.
+//
+// This will make a copy of the data.
+bool dred_begin_drag_and_drop(dred_data_type dataType, const void* pData, size_t dataSize);

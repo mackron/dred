@@ -1492,6 +1492,35 @@ void dred_clipboard_free_text__win32(char* text)
 
 
 
+//// Drag and Drop ////
+
+bool dred_begin_drag_and_drop__win32(dred_data_type dataType, const void* pData, size_t dataSize)
+{
+#if 0
+    IDataObjectVtbl dataObject;
+    dataObject.QueryInterface = NULL;
+	dataObject.AddRef = NULL;
+	dataObject.Release = NULL;
+	dataObject.GetData = NULL;
+	dataObject.GetDataHere = NULL;
+	dataObject.QueryGetData = NULL;
+	dataObject.GetCanonicalFormatEtc = NULL;
+	dataObject.SetData = NULL;
+	dataObject.EnumFormatEtc = NULL;
+	dataObject.DAdvise = NULL;
+	dataObject.DUnadvise = NULL;
+	dataObject.EnumDAdvise = NULL;
+    DoDragDrop();
+#endif
+
+    (void)dataType;
+    (void)pData;
+    (void)dataSize;
+    return false;
+}
+
+
+
 //// WIN32 <-> GUI BINDING ////
 
 static void dred_platform__on_global_capture_mouse__win32(dred_control* pControl)
@@ -2979,6 +3008,18 @@ void dred_clipboard_free_text__gtk(char* text)
 
 
 
+//// Drag and Drop ////
+
+bool dred_begin_drag_and_drop__gtk(dred_data_type dataType, const void* pData, size_t dataSize)
+{
+    (void)dataType;
+    (void)pData;
+    (void)dataSize;
+    return false;
+}
+
+
+
 //// GTK <-> GUI BINDING ////
 
 static void dred_platform__on_global_capture_mouse__gtk(dred_control* pControl)
@@ -3982,5 +4023,22 @@ void dred_clipboard_free_text(char* text)
 
 #ifdef DRED_GTK
     dred_clipboard_free_text__gtk(text);
+#endif
+}
+
+
+
+//// Drag and Drop ////
+
+bool dred_begin_drag_and_drop(dred_data_type dataType, const void* pData, size_t dataSize)
+{
+    if (pData == NULL) return false;
+
+#ifdef DRED_WIN32
+    return dred_begin_drag_and_drop__win32(dataType, pData, dataSize);
+#endif
+
+#ifdef DRED_GTK
+    return dred_begin_drag_and_drop__gtk(dataType, pData, dataSize);
 #endif
 }
