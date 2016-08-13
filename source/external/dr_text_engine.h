@@ -946,6 +946,13 @@ bool drte_view_find_next_no_loop(drte_view* pView, const char* text, size_t* pSe
 
 // min
 #define drte_min(a, b) (((a) < (b)) ? (a) : (b))
+#define drte_round_up(x, multiple) ((((x) + ((multiple) - 1)) / (multiple)) * (multiple))
+
+// Determines if the given character is whitespace.
+bool drte_is_whitespace(uint32_t utf32)
+{
+    return utf32 == ' ' || utf32 == '\t' || utf32 == '\n' || utf32 == '\v' || utf32 == '\f' || utf32 == '\r';
+}
 
 // Helper for determining whether or not the given character is a symbol or whitespace.
 bool drte_is_symbol_or_whitespace(uint32_t utf32)
@@ -1136,10 +1143,10 @@ size_t drte_stack_buffer_set_stack_ptr(drte_stack_buffer* pStack, size_t newStac
 
     assert(newStackPtr <= pStack->stackPtr);   // <-- If you trigger this it means you're trying to move the stack pointer beyond the valid area. You cannot use this function to grow the buffer.
 
-    pStack->stackPtr = dr_round_up(newStackPtr, DRTE_STACK_BUFFER_ALIGNMENT);
+    pStack->stackPtr = drte_round_up(newStackPtr, DRTE_STACK_BUFFER_ALIGNMENT);
 
     // Shrink the buffer if we're getting a bit too wasteful.
-    size_t desiredBufferSize = dr_round_up(pStack->stackPtr, DRTE_STACK_BUFFER_BLOCK_SIZE);
+    size_t desiredBufferSize = drte_round_up(pStack->stackPtr, DRTE_STACK_BUFFER_BLOCK_SIZE);
     if (desiredBufferSize == 0) {
         desiredBufferSize = DRTE_STACK_BUFFER_BLOCK_SIZE;
     }
@@ -1162,11 +1169,11 @@ void* drte_stack_buffer_alloc(drte_stack_buffer* pStack, size_t sizeInBytes)
     }
 
     // The allocated size is always aligned.
-    sizeInBytes = dr_round_up(sizeInBytes, DRTE_STACK_BUFFER_ALIGNMENT);
+    sizeInBytes = drte_round_up(sizeInBytes, DRTE_STACK_BUFFER_ALIGNMENT);
 
     size_t newStackPtr = pStack->stackPtr + sizeInBytes;
     if (newStackPtr > pStack->bufferSize) {
-        size_t newBufferSize = (pStack->bufferSize == 0) ? DRTE_STACK_BUFFER_BLOCK_SIZE : dr_round_up(newStackPtr, DRTE_STACK_BUFFER_BLOCK_SIZE);
+        size_t newBufferSize = (pStack->bufferSize == 0) ? DRTE_STACK_BUFFER_BLOCK_SIZE : drte_round_up(newStackPtr, DRTE_STACK_BUFFER_BLOCK_SIZE);
         void* pNewBuffer = realloc(pStack->pBuffer, newBufferSize);
         if (pNewBuffer == NULL) {
             return NULL;
@@ -1376,7 +1383,7 @@ bool drte_line_cache_insert_lines(drte_line_cache* pLineCache, size_t insertLine
     size_t newLineCount = pLineCache->count + lineCount;
 
     if (newLineCount >= pLineCache->bufferSize) {
-        size_t newLineBufferSize = (pLineCache->bufferSize == 0) ? DRTE_PAGE_LINE_COUNT : dr_round_up(newLineCount, DRTE_PAGE_LINE_COUNT);
+        size_t newLineBufferSize = (pLineCache->bufferSize == 0) ? DRTE_PAGE_LINE_COUNT : drte_round_up(newLineCount, DRTE_PAGE_LINE_COUNT);
         size_t* pNewLines = (size_t*)realloc(pLineCache->pLines, newLineBufferSize * sizeof(*pNewLines));
         if (pNewLines == NULL) {
             return false;   // Ran out of memory?
@@ -2579,9 +2586,9 @@ bool drte_engine_get_start_of_word_containing_character(drte_engine* pEngine, si
         iChar -= 1;
 
         // Skip whitespace.
-        if (dr_is_whitespace(pEngine->text[iChar])) {
+        if (drte_is_whitespace(pEngine->text[iChar])) {
             while (iChar > 0) {
-                if (!dr_is_whitespace(pEngine->text[iChar])) {
+                if (!drte_is_whitespace(pEngine->text[iChar])) {
                     break;
                 }
 
@@ -2638,7 +2645,7 @@ bool drte_engine_get_start_of_next_word_from_character(drte_engine* pEngine, siz
 
     while (pEngine->text[iChar] != '\0' && pEngine->text[iChar] != '\n' && !(pEngine->text[iChar] == '\r' && pEngine->text[iChar+1])) {
         uint32_t c = pEngine->text[iChar];
-        if (!dr_is_whitespace(c)) {
+        if (!drte_is_whitespace(c)) {
             break;
         }
 
@@ -2669,12 +2676,12 @@ bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iCha
             return false;
         }
 
-        if (!dr_is_whitespace(c) && !dr_is_whitespace(cprev) && !drte_is_symbol_or_whitespace(c)) {
+        if (!drte_is_whitespace(c) && !drte_is_whitespace(cprev) && !drte_is_symbol_or_whitespace(c)) {
             drte_engine_get_start_of_word_containing_character(pEngine, iChar, &iChar);
-        } else if (dr_is_whitespace(c) && dr_is_whitespace(cprev)) {
+        } else if (drte_is_whitespace(c) && drte_is_whitespace(cprev)) {
             size_t iLineCharBeg = drte_line_cache_get_line_first_character(pEngine->pUnwrappedLines, drte_line_cache_find_line_by_character(pEngine->pUnwrappedLines, iChar));
             while (iChar > 0 && iChar > iLineCharBeg) {
-                if (!dr_is_whitespace(pEngine->text[iChar-1])) {
+                if (!drte_is_whitespace(pEngine->text[iChar-1])) {
                     break;
                 }
                 iChar -= 1;
@@ -3288,7 +3295,7 @@ void drte_engine__apply_text_changes_reversed(drte_engine* pEngine, size_t chang
     size_t sizeInBytes = sizeof(drte_undo_change_type) + sizeof(size_t) + sizeof(size_t) + (iCharEnd - iCharBeg) + 1;
 
     // We need to do the next changes before doing this one. This is how we do it in reverse.
-    drte_engine__apply_text_changes_reversed(pEngine, changeCount - 1, pData + dr_round_up(sizeInBytes, DRTE_STACK_BUFFER_ALIGNMENT));
+    drte_engine__apply_text_changes_reversed(pEngine, changeCount - 1, pData + drte_round_up(sizeInBytes, DRTE_STACK_BUFFER_ALIGNMENT));
 
     // Now we apply the change, remembering to transform inserts into deletes and vice versa.
     if (type == drte_undo_change_type_insert) {
@@ -3320,7 +3327,7 @@ void drte_engine__apply_text_changes(drte_engine* pEngine, size_t changeCount, c
             drte_engine_delete_text(pEngine, iCharBeg, iCharEnd);
         }
 
-        pData += dr_round_up(sizeInBytes, DRTE_STACK_BUFFER_ALIGNMENT);
+        pData += drte_round_up(sizeInBytes, DRTE_STACK_BUFFER_ALIGNMENT);
     }
 }
 
@@ -5001,7 +5008,7 @@ size_t drte_view_move_cursor_to_start_of_next_word(drte_view* pView, size_t curs
     size_t iChar = drte_view_move_cursor_to_end_of_word(pView, cursorIndex);
     while (pView->pEngine->text[iChar] != '\0') {
         uint32_t c = pView->pEngine->text[iChar];
-        if (!dr_is_whitespace(c)) {
+        if (!drte_is_whitespace(c)) {
             break;
         }
 
@@ -5026,9 +5033,9 @@ size_t drte_view_move_cursor_to_start_of_word(drte_view* pView, size_t cursorInd
     iChar -= 1;
 
     // Skip whitespace.
-    if (dr_is_whitespace(pView->pEngine->text[iChar])) {
+    if (drte_is_whitespace(pView->pEngine->text[iChar])) {
         while (iChar > 0) {
-            if (!dr_is_whitespace(pView->pEngine->text[iChar])) {
+            if (!drte_is_whitespace(pView->pEngine->text[iChar])) {
                 break;
             }
 
