@@ -101,6 +101,14 @@ struct dred_textview
     bool isWantingToDragAndDrop;
 
 
+    // Whether or not we are doing a rectangle selection.
+    bool isDoingRectangleSelect;
+
+    // The selection rectangle in pixels.
+    drte_rect selectionRect;
+
+
+
     // The number of active cursors.
     size_t cursorCount;
 

@@ -88,7 +88,7 @@ typedef bool   (* drte_engine_on_get_next_highlight_proc)(drte_engine* pEngine, 
 
 typedef void   (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData);
 typedef void   (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_view* pView, drte_style_token styleToken, drte_rect rect, void* pPaintData);
-typedef void   (* drte_engine_on_cursor_move_proc)       (drte_engine* pEngine, drte_view* pView);
+typedef void   (* drte_engine_on_cursor_move_proc)       (drte_engine* pEngine, drte_view* pView, size_t iCursor);
 typedef void   (* drte_engine_on_dirty_proc)             (drte_engine* pEngine, drte_view* pView, drte_rect rect);
 typedef void   (* drte_engine_on_text_changed_proc)      (drte_engine* pEngine);
 typedef void   (* drte_engine_on_undo_point_changed_proc)(drte_engine* pEngine, unsigned int iUndoPoint);
@@ -702,6 +702,7 @@ drte_rect drte_view_get_cursor_rect(drte_view* pView, size_t cursorIndex);
 
 // Inserts a new cursor. Returns the index of the new cursor.
 size_t drte_view_insert_cursor(drte_view* pView, size_t iChar);
+size_t drte_view_insert_cursor_at_character_and_line(drte_view* pView, size_t iChar, size_t iLine);
 
 // Removes a cursor by it's index.
 void drte_view_remove_cursor(drte_view* pView, size_t cursorIndex);
@@ -1097,6 +1098,23 @@ DRTE_INLINE drte_rect drte_rect_union(drte_rect rect0, drte_rect rect1)
 DRTE_INLINE bool drte_rect_has_volume(drte_rect rect)
 {
     return rect.right > rect.left && rect.bottom > rect.top;
+}
+
+DRTE_INLINE drte_rect drte_rect_make_right_way_out(drte_rect rect)
+{
+    drte_rect result = rect;
+
+    if (rect.right < rect.left) {
+        result.left = rect.right;
+        result.right = rect.left;
+    }
+
+    if (rect.bottom < rect.top) {
+        result.top = rect.bottom;
+        result.bottom = rect.top;
+    }
+
+    return result;
 }
 
 
@@ -3465,7 +3483,7 @@ void drte_engine__on_cursor_move(drte_engine* pEngine, drte_view* pView, size_t 
     pEngine->isCursorBlinkOn = true;
 
     if (pEngine->onCursorMove) {
-        pEngine->onCursorMove(pEngine, pView);
+        pEngine->onCursorMove(pEngine, pView, cursorIndex);
     }
 
     drte_view_dirty(pView, drte_view_get_cursor_rect(pView, cursorIndex));  // <-- Is this needed?
@@ -4524,6 +4542,17 @@ size_t drte_view_insert_cursor(drte_view* pView, size_t iChar)
     drte_view_end_dirty(pView);
 
     return pView->cursorCount - 1;
+}
+
+size_t drte_view_insert_cursor_at_character_and_line(drte_view* pView, size_t iChar, size_t iLine)
+{
+    size_t iCursor = drte_view_insert_cursor(pView, iChar);
+    if (iCursor == (size_t)-1) {
+        return (size_t)-1;
+    }
+
+    pView->pCursors[iCursor].iLine = iLine;
+    return iCursor;
 }
 
 void drte_view_remove_cursor(drte_view* pView, size_t cursorIndex)

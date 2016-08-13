@@ -48,7 +48,7 @@ void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_view* pV
 void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_view* pView, drte_rect rect);
 
 /// on_cursor_move()
-void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* pView);
+void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* pView, size_t iCursor);
 
 /// on_text_changed()
 void dred_textview_engine__on_text_changed(drte_engine* pTextEngine);
@@ -129,7 +129,7 @@ void dred_textview_engine__on_get_cursor_position_from_char(drte_engine* pEngine
 }
 
 
-void dred_textview__clear_all_cursors(dred_textview* pTextView)
+void dred_textview__clear_all_cursors_except_last(dred_textview* pTextView)
 {
     // The last cursor is _not_ cleared.
     assert(pTextView != NULL);
@@ -147,6 +147,27 @@ void dred_textview__clear_all_cursors(dred_textview* pTextView)
         pTextView->pCursors[0] = pTextView->pCursors[pTextView->cursorCount-1];
         pTextView->pCursors[0].iEngineSelection = (size_t)-1;
         pTextView->cursorCount = 1;
+    }
+}
+
+void dred_textview__clear_all_cursors(dred_textview* pTextView)
+{
+    // The last cursor is _not_ cleared.
+    assert(pTextView != NULL);
+
+    // Engine.
+    drte_view_begin_dirty(pTextView->pView);
+    while (pTextView->pView->cursorCount > 0) {
+        drte_view_remove_cursor(pTextView->pView, pTextView->pView->cursorCount-1);
+    }
+    drte_view_end_dirty(pTextView->pView);
+
+
+    // Local list.
+    if (pTextView->cursorCount > 0) {
+        pTextView->pCursors[0] = pTextView->pCursors[pTextView->cursorCount-1];
+        pTextView->pCursors[0].iEngineSelection = (size_t)-1;
+        pTextView->cursorCount = 0;
     }
 }
 
@@ -838,7 +859,7 @@ void dred_textview_set_text(dred_textview* pTextView, const char* text)
 
     // The cursors and selection regions need to be cancelled here to ensure they don't reference invalid regions due to a
     // change in text. This should not have any major usability issues, but it can be tweaked if need be.
-    dred_textview__clear_all_cursors(pTextView);
+    dred_textview__clear_all_cursors_except_last(pTextView);
     drte_view_deselect_all(pTextView->pView);
     size_t iCursorChar = drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 
@@ -926,7 +947,7 @@ void dred_textview_deselect_all(dred_textview* pTextView)
     }
 
     drte_view_deselect_all(pTextView->pView);
-    dred_textview__clear_all_cursors(pTextView);
+    dred_textview__clear_all_cursors_except_last(pTextView);
 }
 
 size_t dred_textview_get_selected_text(dred_textview* pTextView, char* textOut, size_t textOutLength)
@@ -1475,6 +1496,29 @@ void dred_textview_on_size(dred_control* pControl, float newWidth, float newHeig
     }
 }
 
+void dred_textview__select_rectangle(dred_textview* pTextView, drte_rect rect)
+{
+    if (pTextView == NULL) return;
+
+    size_t iLineBeg = drte_view_get_line_at_pos_y(pTextView->pView, pTextView->pView->pWrappedLines, rect.top);
+    size_t iLineEnd = drte_view_get_line_at_pos_y(pTextView->pView, pTextView->pView->pWrappedLines, rect.bottom);  // <-- Inclusive.
+    for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
+        float linePosY = iLine * drte_engine_get_line_height(pTextView->pTextEngine);
+        
+        size_t iCharBeg;
+        drte_view_get_character_under_point_relative_to_text(pTextView->pView, pTextView->pView->pWrappedLines, rect.left,  linePosY, &iCharBeg, NULL);
+
+        size_t iCharEnd;
+        drte_view_get_character_under_point_relative_to_text(pTextView->pView, pTextView->pView->pWrappedLines, rect.right, linePosY, &iCharEnd, NULL);
+
+        drte_view_begin_selection(pTextView->pView, iCharBeg);
+        drte_view_set_selection_end_point(pTextView->pView, iCharEnd);
+
+        // Place a cursor at the end of the selection.
+        drte_view_insert_cursor_at_character_and_line(pTextView->pView, iCharEnd, iLine);
+    }
+}
+
 void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)stateFlags;
@@ -1515,7 +1559,21 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
                     drte_view_move_cursor_to_point(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), mousePosXRelativeToTextArea, mousePosYRelativeToTextArea);
                 }
             } else {
-                drte_view_move_cursor_to_point(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), mousePosXRelativeToTextArea, mousePosYRelativeToTextArea);
+                if (pTextView->isDoingRectangleSelect) {
+                    if ((stateFlags & DRED_GUI_KEY_STATE_ALT_DOWN) != 0) {
+                        // We're doing rectangle selection.
+                        pTextView->selectionRect.right  = mousePosXRelativeToTextArea + pTextView->pView->innerOffsetX;
+                        pTextView->selectionRect.bottom = mousePosYRelativeToTextArea + pTextView->pView->innerOffsetY;
+
+                        drte_view_deselect_all(pTextView->pView);
+                        dred_textview__clear_all_cursors(pTextView);
+                        dred_textview__select_rectangle(pTextView, drte_rect_make_right_way_out(pTextView->selectionRect));
+                    } else {
+                        pTextView->isDoingRectangleSelect = false;  // Mouse movement was detected while the Alt key was not held down. Cancel the rectangle selection.
+                    }
+                } else {
+                    drte_view_move_cursor_to_point(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), mousePosXRelativeToTextArea, mousePosYRelativeToTextArea);
+                }
             }
 
             size_t iNextCursorChar = drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
@@ -1579,9 +1637,9 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
                     drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
                 }
             } else {
-                if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
+                if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0 || (stateFlags & DRED_GUI_KEY_STATE_ALT_DOWN) != 0) {
                     drte_view_deselect_all(pTextView->pView);
-                    dred_textview__clear_all_cursors(pTextView);
+                    dred_textview__clear_all_cursors_except_last(pTextView);
                 }
             }
 
@@ -1592,8 +1650,14 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
             if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
                 drte_view_set_selection_end_point(pTextView->pView, iChar);
             } else {
-                if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
-                    dred_textview__insert_cursor(pTextView, iChar);
+                if ((stateFlags & DRED_GUI_KEY_STATE_ALT_DOWN) != 0) {
+                    pTextView->isDoingRectangleSelect = true;
+                    pTextView->selectionRect.left = pTextView->selectionRect.right = mousePosXRelativeToTextArea + pTextView->pView->innerOffsetX;
+                    pTextView->selectionRect.top = pTextView->selectionRect.bottom = mousePosYRelativeToTextArea + pTextView->pView->innerOffsetY;
+                } else {
+                    if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
+                        dred_textview__insert_cursor(pTextView, iChar);
+                    }
                 }
 
                 drte_view_begin_selection(pTextView->pView, iChar);
@@ -1627,6 +1691,8 @@ void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, i
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
     {
+        pTextView->isDoingRectangleSelect = false;
+
         if (dred_gui_get_element_with_mouse_capture(pControl->pGUI) == pControl)
         {
             // When we first pressed the mouse we may have started a new selection. If we never ended up selecting anything we'll want to
@@ -2251,9 +2317,10 @@ void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_view* pView, 
     dred_control_dirty(DRED_CONTROL(pTextView), dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY));
 }
 
-void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* pView)
+void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* pView, size_t iCursor)
 {
     (void)pView;
+    (void)iCursor;
 
     // If the cursor is off the edge of the container we want to scroll it into position.
     dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
