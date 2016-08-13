@@ -1733,6 +1733,10 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
     bool isShiftDown = (stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0;
     bool isCtrlDown  = (stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0;
 
+    size_t iLastCursor = drte_view_get_last_cursor(pTextView->pView);
+    size_t iCursorLine = drte_view_get_cursor_line(pTextView->pView, iLastCursor);
+    size_t iCursorChar = drte_view_get_cursor_character(pTextView->pView, iLastCursor);
+
     switch (key)
     {
         case DRED_GUI_BACKSPACE:
@@ -1908,22 +1912,35 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                 dred_textview_deselect_all(pTextView);
             } else {
                 if ((!drte_view_is_anything_selected(pTextView->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
-                    drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
+                    drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, iLastCursor));
                 }
             }
 
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
-                drte_view_move_cursor_to_start_of_text(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
+                drte_view_move_cursor_to_start_of_text(pTextView->pView, iLastCursor);
             } else {
-                if (drte_view_is_cursor_at_start_of_wrapped_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView))) {
-                    drte_view_move_cursor_to_start_of_unwrapped_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
+                size_t iNewChar = iCursorChar;
+
+                drte_line_cache* pLineCache;
+                if (drte_view_is_cursor_at_start_of_wrapped_line(pTextView->pView, iLastCursor)) {
+                    pLineCache = pTextView->pTextEngine->pUnwrappedLines;
                 } else {
-                    drte_view_move_cursor_to_start_of_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
+                    pLineCache = pTextView->pView->pWrappedLines;
                 }
+
+                size_t iFirstChar = drte_view_get_line_first_character(pTextView->pView, pLineCache, iCursorLine);
+                size_t iFirstNonWhitespaceChar = drte_view_get_line_first_non_whitespace_character(pTextView->pView, pLineCache, iCursorLine);                    
+                if (iCursorChar == iFirstNonWhitespaceChar) {
+                    iNewChar = iFirstChar;
+                } else {
+                    iNewChar = iFirstNonWhitespaceChar;
+                }
+
+                drte_view_move_cursor_to_character(pTextView->pView, iLastCursor, iNewChar);
             }
 
             if (isShiftDown) {
-                drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
+                drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, iLastCursor));
 
                 size_t iSelCharBeg;
                 size_t iSelCharEnd;
@@ -1932,7 +1949,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                 }
             }
 
-            drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[drte_view_get_last_cursor(pTextView->pView)]);
+            drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[iLastCursor]);
         } break;
 
         case DRED_GUI_PAGE_UP:

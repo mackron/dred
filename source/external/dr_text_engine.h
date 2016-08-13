@@ -671,6 +671,9 @@ size_t drte_view_get_line_first_character(drte_view* pView, drte_line_cache* pLi
 // Retrieves the index of the last character of the line at the given index.
 size_t drte_view_get_line_last_character(drte_view* pView, drte_line_cache* pLineCache, size_t iLine);
 
+// Retrieves the index of the first non-whitespace character of the line at the given index.
+size_t drte_view_get_line_first_non_whitespace_character(drte_view* pView, drte_line_cache* pLineCache, size_t iLine);
+
 // Retrieves teh index of the first and last character of the line at the given index.
 void drte_view_get_line_character_range(drte_view* pView, drte_line_cache* pLineCache, size_t iLine, size_t* pCharStartOut, size_t* pCharEndOut);
 
@@ -4368,6 +4371,21 @@ size_t drte_view_get_line_last_character(drte_view* pView, drte_line_cache* pLin
 
     // It's the last line. Just return the position of the null terminator.
     return drte_line_cache_get_line_first_character(pLineCache, iLine) + strlen(pView->pEngine->text + drte_line_cache_get_line_first_character(pLineCache, iLine));
+}
+
+size_t drte_view_get_line_first_non_whitespace_character(drte_view* pView, drte_line_cache* pLineCache, size_t iLine)
+{
+    size_t iChar = drte_view_get_line_first_character(pView, pLineCache, iLine);
+    for (;;) {
+        uint32_t c = pView->pEngine->text[iChar];
+        if (c == '\0' || c == '\r' || c == '\n' || !drte_is_whitespace(c)) {
+            break;
+        }
+
+        iChar += 1;
+    }
+
+    return iChar;
 }
 
 void drte_view_get_line_character_range(drte_view* pView, drte_line_cache* pLineCache, size_t iLine, size_t* pCharStartOut, size_t* pCharEndOut)
