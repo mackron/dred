@@ -1,3 +1,4 @@
+![dred](http://dred.io/img/logo1_large.png)
 
 dred is a fast, ultra-lightweight text editor. It currently weighs in at less
 than 500KB.
