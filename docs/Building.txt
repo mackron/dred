@@ -1,0 +1,11 @@
+Building
+========
+To compile dred, simply compile the dred_main.c source file.
+
+Options
+=======
+#define DRED_USE_EXTERNAL_REPOS
+    For use internally by developers of dred itself. This option is used to #include external dependencies
+    from their own repositories rather than the "external" directory. The purpose of this option is to 
+    reduce the chance of accidentally editing the wrong file when changes to external dependencies are
+    needed.
