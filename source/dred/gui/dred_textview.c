@@ -1500,9 +1500,18 @@ void dred_textview__select_rectangle(dred_textview* pTextView, drte_rect rect)
 {
     if (pTextView == NULL) return;
 
+    // Disable the onCursorMove callback while we're constructing the sub-selections. It's restored at the end.
+    drte_engine_on_cursor_move_proc prevOnCursorMoveProc = pTextView->pTextEngine->onCursorMove;
+    pTextView->pTextEngine->onCursorMove = NULL;
+
     size_t iLineBeg = drte_view_get_line_at_pos_y(pTextView->pView, pTextView->pView->pWrappedLines, rect.top);
     size_t iLineEnd = drte_view_get_line_at_pos_y(pTextView->pView, pTextView->pView->pWrappedLines, rect.bottom);  // <-- Inclusive.
     for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
+        // Restore the onCursorMove callback for the last cursor.
+        if (iLine == iLineEnd) {
+            pTextView->pTextEngine->onCursorMove = prevOnCursorMoveProc;
+        }
+
         float linePosY = iLine * drte_engine_get_line_height(pTextView->pTextEngine);
         
         size_t iCharBeg;
@@ -1517,6 +1526,8 @@ void dred_textview__select_rectangle(dred_textview* pTextView, drte_rect rect)
         // Place a cursor at the end of the selection.
         drte_view_insert_cursor_at_character_and_line(pTextView->pView, iCharEnd, iLine);
     }
+
+    pTextView->pTextEngine->onCursorMove = prevOnCursorMoveProc;
 }
 
 void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags)
@@ -1562,8 +1573,8 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
                 if (pTextView->isDoingRectangleSelect) {
                     if ((stateFlags & DRED_GUI_KEY_STATE_ALT_DOWN) != 0) {
                         // We're doing rectangle selection.
-                        pTextView->selectionRect.right  = mousePosXRelativeToTextArea + pTextView->pView->innerOffsetX;
-                        pTextView->selectionRect.bottom = mousePosYRelativeToTextArea + pTextView->pView->innerOffsetY;
+                        pTextView->selectionRect.right  = mousePosXRelativeToTextArea - pTextView->pView->innerOffsetX;
+                        pTextView->selectionRect.bottom = mousePosYRelativeToTextArea - pTextView->pView->innerOffsetY;
 
                         drte_view_deselect_all(pTextView->pView);
                         dred_textview__clear_all_cursors(pTextView);
@@ -1652,8 +1663,8 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
             } else {
                 if ((stateFlags & DRED_GUI_KEY_STATE_ALT_DOWN) != 0) {
                     pTextView->isDoingRectangleSelect = true;
-                    pTextView->selectionRect.left = pTextView->selectionRect.right = mousePosXRelativeToTextArea + pTextView->pView->innerOffsetX;
-                    pTextView->selectionRect.top = pTextView->selectionRect.bottom = mousePosYRelativeToTextArea + pTextView->pView->innerOffsetY;
+                    pTextView->selectionRect.left = pTextView->selectionRect.right = mousePosXRelativeToTextArea - pTextView->pView->innerOffsetX;
+                    pTextView->selectionRect.top = pTextView->selectionRect.bottom = mousePosYRelativeToTextArea - pTextView->pView->innerOffsetY;
                 } else {
                     if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
                         dred_textview__insert_cursor(pTextView, iChar);
@@ -2319,8 +2330,10 @@ void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_view* pView, 
 
 void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* pView, size_t iCursor)
 {
-    (void)pView;
-    (void)iCursor;
+    // We only care about the last cursor.
+    if (iCursor != pView->cursorCount-1) {
+        return;
+    }
 
     // If the cursor is off the edge of the container we want to scroll it into position.
     dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
