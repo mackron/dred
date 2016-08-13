@@ -20,12 +20,12 @@ dred_color dred_parse_color(const char* color);
 
 // Type conversion
 
-static DRED_INLINE dred_rect drte_rect_to_dred(drte_rect rect)
+DRED_INLINE dred_rect drte_rect_to_dred(drte_rect rect)
 {
     return dred_make_rect(rect.left, rect.top, rect.right, rect.bottom);
 }
 
-static DRED_INLINE drte_rect dred_rect_to_drte(dred_rect rect)
+DRED_INLINE drte_rect dred_rect_to_drte(dred_rect rect)
 {
     return drte_make_rect(rect.left, rect.top, rect.right, rect.bottom);
 }

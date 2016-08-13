@@ -72,9 +72,9 @@
 
 
 #ifdef _MSC_VER
-#define DRED_INLINE __forceinline
+#define DRED_INLINE static __forceinline
 #else
-#define DRED_INLINE inline
+#define DRED_INLINE static inline
 #endif
 
 
