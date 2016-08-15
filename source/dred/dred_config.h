@@ -172,7 +172,7 @@
 // texteditor-enable-word-wrap textEditorEnableWordWrap bool dred_config_on_set__texteditor_word_wrap true
 //   Whether or not word wrap should be enabled.
 //
-// texteditor-enable-drag-and-drop textEditorEnableDragAndDrop bool dred_config_on_set__texteditor_drag_and_drop true
+// texteditor-enable-drag-and-drop textEditorEnableDragAndDrop bool dred_config_on_set__texteditor_drag_and_drop false
 //   Whether or not drag-and-drop should be enabled for text editors.
 //
 //
