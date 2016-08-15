@@ -1228,9 +1228,11 @@ typedef struct
     /// The buffer used to store wchar strings when converting from char* to wchar_t* strings. We just use a global buffer for
     /// this so we can avoid unnecessary allocations.
     wchar_t* wcharBuffer;
+    char* charBuffer;
 
     /// The size of wcharBuffer (including the null terminator).
     unsigned int wcharBufferLength;
+    unsigned int charBufferLength;
 
     /// The cache of glyph character positions.
     int* pGlyphCache;
@@ -1537,6 +1539,9 @@ bool dr2d_on_create_context_gdi(dr2d_context* pContext, const void* pUserData)
     pGDIData->wcharBuffer       = NULL;
     pGDIData->wcharBufferLength = 0;
 
+    pGDIData->charBuffer = NULL;
+    pGDIData->charBufferLength = 0;
+
     pGDIData->pGlyphCache = NULL;
     pGDIData->glyphCacheSize = 0;
 
@@ -1554,8 +1559,12 @@ void dr2d_on_delete_context_gdi(dr2d_context* pContext)
         pGDIData->glyphCacheSize = 0;
 
         free(pGDIData->wcharBuffer);
-        pGDIData->wcharBuffer       = 0;
+        pGDIData->wcharBuffer = NULL;
         pGDIData->wcharBufferLength = 0;
+
+        free(pGDIData->charBuffer);
+        pGDIData->charBuffer = NULL;
+        pGDIData->charBufferLength = 0;
 
         if (pGDIData->ownsDC) {
             DeleteDC(pGDIData->hDC);
@@ -2420,6 +2429,9 @@ bool dr2d_get_text_cursor_position_from_point_gdi(dr2d_font* pFont, const char* 
                     textCursorPosX = charBoundsRight;
                 }
 
+                // Make sure the character index is in UTF-8 characters.
+                iChar = WideCharToMultiByte(CP_UTF8, 0, textW, (int)iChar, NULL, 0, NULL, FALSE);
+
                 if (pTextCursorPosXOut) {
                     *pTextCursorPosXOut = textCursorPosX;
                 }
@@ -2475,10 +2487,7 @@ bool dr2d_get_text_cursor_position_from_char_gdi(dr2d_font* pFont, const char* t
         {
             if (GetCharacterPlacementW(pGDIContextData->hDC, textW, results.nGlyphs, 0, &results, GCP_USEKERNING) != 0)
             {
-                if (pTextCursorPosXOut) {
-                    *pTextCursorPosXOut = (float)results.lpCaretPos[characterIndex];
-                }
-
+                if (pTextCursorPosXOut) *pTextCursorPosXOut = (float)results.lpCaretPos[characterIndex];
                 successful = true;
             }
         }
@@ -2539,6 +2548,59 @@ fallback:;
     }
 
     return pGDIData->wcharBuffer;
+}
+
+char* dr2d_wchar_to_mb_gdi(dr2d_context* pContext, const wchar_t* text, size_t textSizeInWchars, unsigned int* characterCountOut)
+{
+    if (pContext == NULL || text == NULL) {
+        return NULL;
+    }
+
+    gdi_context_data* pGDIData = (gdi_context_data*)dr2d_get_context_extra_data(pContext);
+    if (pGDIData == NULL) {
+        return NULL;
+    }
+
+    int charCount = 0;
+
+
+    // We first try to copy the string into the already-allocated buffer. If it fails we fall back to the slow path which requires
+    // two conversions.
+    if (pGDIData->charBuffer == NULL) {
+        goto fallback;
+    }
+
+    charCount = WideCharToMultiByte(CP_UTF8, 0, text, (int)textSizeInWchars, pGDIData->charBuffer, pGDIData->charBufferLength, NULL, FALSE);
+    if (charCount != 0) {
+        if (characterCountOut) *characterCountOut = charCount;
+        return pGDIData->charBuffer;
+    }
+
+    
+
+fallback:;
+    charCount = WideCharToMultiByte(CP_UTF8, 0, text, (int)textSizeInWchars, NULL, 0, NULL, FALSE);
+    if (charCount == 0) {
+        return NULL;
+    }
+
+    if (pGDIData->charBufferLength < (unsigned int)charCount + 1) {
+        free(pGDIData->charBuffer);
+        pGDIData->charBuffer       = (char*)malloc(sizeof(char) * (charCount + 1));
+        pGDIData->charBufferLength = charCount + 1;
+    }
+
+    charCount = WideCharToMultiByte(CP_UTF8, 0, text, (int)textSizeInWchars, pGDIData->charBuffer, pGDIData->charBufferLength, NULL, FALSE);
+    if (charCount == 0) {
+        return NULL;
+    }
+
+
+    if (characterCountOut != NULL) {
+        *characterCountOut = charCount;
+    }
+
+    return pGDIData->charBuffer;
 }
 
 #endif  // GDI
