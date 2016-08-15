@@ -1367,7 +1367,7 @@ bool dr2d_get_text_cursor_position_from_point_gdi(dr2d_font* pFont, const char* 
 bool dr2d_get_text_cursor_position_from_char_gdi(dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 /// Converts a char* to a wchar_t* string.
-wchar_t* dr2d_to_wchar_gdi(dr2d_context* pContext, const char* text, size_t textSizeInBytes, unsigned int* characterCountOut);
+wchar_t* dr2d_mb_to_wchar_gdi(dr2d_context* pContext, const char* text, size_t textSizeInBytes, unsigned int* characterCountOut);
 
 /// Converts a UTF-32 character to a UTF-16.
 static int dr2d_utf32_to_utf16(unsigned int utf32, unsigned short utf16[2])
@@ -2003,7 +2003,7 @@ void dr2d_draw_text_gdi(dr2d_surface* pSurface, dr2d_font* pFont, const char* te
         // We actually want to use the W version of TextOut because otherwise unicode doesn't work properly.
 
         unsigned int textWLength;
-        wchar_t* textW = dr2d_to_wchar_gdi(pSurface->pContext, text, textSizeInBytes, &textWLength);
+        wchar_t* textW = dr2d_mb_to_wchar_gdi(pSurface->pContext, text, textSizeInBytes, &textWLength);
         if (textW != NULL)
         {
             SelectObject(hDC, hFontGDI);
@@ -2331,7 +2331,7 @@ bool dr2d_measure_string_gdi(dr2d_font* pFont, const char* text, size_t textSize
     SelectObject(pGDIContextData->hDC, pGDIFontData->hFont);
 
     unsigned int textWLength;
-    wchar_t* textW = dr2d_to_wchar_gdi(pFont->pContext, text, textSizeInBytes, &textWLength);
+    wchar_t* textW = dr2d_mb_to_wchar_gdi(pFont->pContext, text, textSizeInBytes, &textWLength);
     if (textW != NULL)
     {
         SIZE sizeWin32;
@@ -2377,7 +2377,7 @@ bool dr2d_get_text_cursor_position_from_point_gdi(dr2d_font* pFont, const char* 
     results.nGlyphs     = (UINT)textSizeInBytes;
 
     unsigned int textWLength;
-    wchar_t* textW = dr2d_to_wchar_gdi(pFont->pContext, text, textSizeInBytes, &textWLength);
+    wchar_t* textW = dr2d_mb_to_wchar_gdi(pFont->pContext, text, textSizeInBytes, &textWLength);
     if (textW != NULL)
     {
         if (results.nGlyphs > pGDIContextData->glyphCacheSize) {
@@ -2461,7 +2461,7 @@ bool dr2d_get_text_cursor_position_from_char_gdi(dr2d_font* pFont, const char* t
     results.nGlyphs     = (DWORD)(characterIndex + 1);
 
     unsigned int textWLength;
-    wchar_t* textW = dr2d_to_wchar_gdi(pFont->pContext, text, (int)results.nGlyphs, &textWLength);
+    wchar_t* textW = dr2d_mb_to_wchar_gdi(pFont->pContext, text, (int)results.nGlyphs, &textWLength);
     if (textW != NULL)
     {
         if (results.nGlyphs > pGDIContextData->glyphCacheSize) {
@@ -2488,7 +2488,7 @@ bool dr2d_get_text_cursor_position_from_char_gdi(dr2d_font* pFont, const char* t
 }
 
 
-wchar_t* dr2d_to_wchar_gdi(dr2d_context* pContext, const char* text, size_t textSizeInBytes, unsigned int* characterCountOut)
+wchar_t* dr2d_mb_to_wchar_gdi(dr2d_context* pContext, const char* text, size_t textSizeInBytes, unsigned int* characterCountOut)
 {
     if (pContext == NULL || text == NULL) {
         return NULL;
