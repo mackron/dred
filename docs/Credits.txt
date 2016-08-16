@@ -1,0 +1,6 @@
+External Libraries
+==================
+dr_libs     https://github.com/mackron/dr_libs
+dr_ipc      https://github.com/dr-soft/dr_ipc
+gb_string.h https://github.com/gingerBill/gb
+nanosvg     https://github.com/memononen/nanosvg
