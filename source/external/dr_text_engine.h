@@ -2765,6 +2765,8 @@ bool drte_engine__capture_and_push_undo_state__cursors(drte_engine* pEngine, drt
     assert(pStack != NULL);
     assert(pView != NULL);
 
+    (void)pEngine;
+
     size_t sizeInBytes =
         sizeof(pView->cursorCount) +
         sizeof(drte_cursor) * pView->cursorCount;
@@ -2785,6 +2787,8 @@ bool drte_engine__capture_and_push_undo_state__selections(drte_engine* pEngine, 
     assert(pEngine != NULL);
     assert(pStack != NULL);
     assert(pView != NULL);
+
+    (void)pEngine;
 
     size_t sizeInBytes =
         sizeof(pView->selectionCount) +
