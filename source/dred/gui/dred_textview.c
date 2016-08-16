@@ -1914,6 +1914,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
         {
             if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview__move_cursor_to_start_of_selection(pTextView, NULL);
+                drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[iLastCursor]);
                 dred_textview_deselect_all(pTextView);
             } else {
                 if ((!drte_view_is_anything_selected(pTextView->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
@@ -1938,6 +1939,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
         {
             if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview__move_cursor_to_end_of_selection(pTextView, NULL);
+                drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[iLastCursor]);
                 dred_textview_deselect_all(pTextView);
             } else {
                 if ((!drte_view_is_anything_selected(pTextView->pView) || !dred_textview__is_cursor_on_selection(pTextView)) && isShiftDown) {
