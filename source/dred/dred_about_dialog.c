@@ -100,7 +100,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
     float penPosX = 0;
     float penPosY = bannerRect.bottom - (fontMetrics.lineHeight*2.0f);
 
-    const char* linkStr = "https://www.drsoftware.com.au";
+    const char* linkStr = "http://dred.io";
 
     float linkWidth;
     dred_gui_measure_string(pFont, linkStr, strlen(linkStr), &linkWidth, NULL);
