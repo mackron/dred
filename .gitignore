@@ -1,4 +1,5 @@
 bin/data/
 bin/dred-*
 build/
+docs/private/
 source/dred/win32/dred.aps
