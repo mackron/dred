@@ -1845,6 +1845,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
             {
                 if (drte_view_is_anything_selected(pTextView->pView)) {
                     wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView);
+                    drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[iLastCursor]);
                     drte_view_remove_overlapping_cursors(pTextView->pView);
                 } else {
                     drte_view_begin_dirty(pTextView->pView);
@@ -1887,6 +1888,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
             {
                 if (drte_view_is_anything_selected(pTextView->pView)) {
                     wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView);
+                    drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[iLastCursor]);
                     drte_view_remove_overlapping_cursors(pTextView->pView);
                 } else {
                     drte_view_begin_dirty(pTextView->pView);
