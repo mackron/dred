@@ -185,7 +185,7 @@ void dred_textview__remove_cursor(dred_textview* pTextView, size_t iCursor)
     pTextView->cursorCount -= 1;
 }
 
-void dred_textview__insert_cursor(dred_textview* pTextView, size_t iChar)
+void dred_textview__insert_cursor(dred_textview* pTextView, size_t iChar, size_t iLine)
 {
     assert(pTextView != NULL);
 
@@ -205,7 +205,7 @@ void dred_textview__insert_cursor(dred_textview* pTextView, size_t iChar)
         dred_textview__remove_cursor(pTextView, iExistingCursor);
     }
 
-    size_t iEngineCursor = drte_view_insert_cursor(pTextView->pView, iChar);
+    size_t iEngineCursor = drte_view_insert_cursor_at_character_and_line(pTextView->pView, iChar, iLine);
 
     dred_textview_cursor* pNewCursors = (dred_textview_cursor*)realloc(pTextView->pCursors, (pTextView->cursorCount+1) * sizeof(*pNewCursors));
     if (pNewCursors == NULL) {
@@ -340,7 +340,7 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
         return false;
     }
 
-    dred_textview__insert_cursor(pTextView, 0);
+    dred_textview__insert_cursor(pTextView, 0, 0);
 
 
 
@@ -1524,7 +1524,7 @@ void dred_textview__select_rectangle(dred_textview* pTextView, drte_rect rect)
         drte_view_set_selection_end_point(pTextView->pView, iCharEnd);
 
         // Place a cursor at the end of the selection.
-        drte_view_insert_cursor_at_character_and_line(pTextView->pView, iCharEnd, iLine);
+        dred_textview__insert_cursor(pTextView, iCharEnd, iLine);
     }
 
     pTextView->pTextEngine->onCursorMove = prevOnCursorMoveProc;
@@ -1667,7 +1667,7 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
                     pTextView->selectionRect.top = pTextView->selectionRect.bottom = mousePosYRelativeToTextArea - pTextView->pView->innerOffsetY;
                 } else {
                     if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
-                        dred_textview__insert_cursor(pTextView, iChar);
+                        dred_textview__insert_cursor(pTextView, iChar, iLine);
                     }
                 }
 
@@ -1735,7 +1735,7 @@ void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, i
             drte_view_get_character_under_point(pTextView->pView, NULL, mousePosXRelativeToTextArea, mousePosYRelativeToTextArea, &iChar, &iLine);
 
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
-                dred_textview__insert_cursor(pTextView, iChar);
+                dred_textview__insert_cursor(pTextView, iChar, iLine);
             }
 
             drte_view_move_cursor_to_character_and_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iChar, iLine);
