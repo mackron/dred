@@ -1863,9 +1863,9 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                                 }
                             }
 
-                            uint32_t iCharEnd = drte_view_get_cursor_character(pTextView->pView, iCursor);
+                            size_t iCharEnd = drte_view_get_cursor_character(pTextView->pView, iCursor);
                             dred_textview__move_cursor_left(pTextView, iCursor, stateFlags);
-                            uint32_t iCharBeg = drte_view_get_cursor_character(pTextView->pView, iCursor);
+                            size_t iCharBeg = drte_view_get_cursor_character(pTextView->pView, iCursor);
 
                             if (iCharEnd == iCharBeg) {
                                 continue;   // Nothing to delete.
@@ -1892,9 +1892,9 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                     drte_view_begin_dirty(pTextView->pView);
                     {
                         for (size_t iCursor = 0; iCursor < pTextView->pView->cursorCount; ++iCursor) {
-                            uint32_t iCharBeg = drte_view_get_cursor_character(pTextView->pView, iCursor);
+                            size_t iCharBeg = drte_view_get_cursor_character(pTextView->pView, iCursor);
                             dred_textview__move_cursor_right(pTextView, iCursor, stateFlags);
-                            uint32_t iCharEnd = drte_view_get_cursor_character(pTextView->pView, iCursor);
+                            size_t iCharEnd = drte_view_get_cursor_character(pTextView->pView, iCursor);
 
                             if (iCharEnd == iCharBeg) {
                                 continue;   // Nothing to delete.
