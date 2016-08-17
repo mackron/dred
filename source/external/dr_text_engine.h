@@ -487,8 +487,14 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
 bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLastChPlus1);
 
 
+// Retrieves the start of the next word starting from the given character.
+bool drte_engine_get_start_of_next_word_from_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut);
+
 // Retrieves the last character of the word beginning with a character which can be at any position within said word.
 bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordEndOut);
+
+// Retrieves the word containing the given character.
+bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut, size_t* pWordEndOut);
 
 
 /// Prepares the next undo/redo point.
@@ -2633,6 +2639,26 @@ bool drte_engine_get_start_of_word_containing_character(drte_engine* pEngine, si
     return true;
 }
 
+
+bool drte_engine_get_start_of_next_word_from_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut)
+{
+    if (pEngine == NULL) {
+        return false;
+    }
+
+    while (pEngine->text[iChar] != '\0' && pEngine->text[iChar] != '\n' && !(pEngine->text[iChar] == '\r' && pEngine->text[iChar+1])) {
+        uint32_t c = pEngine->text[iChar];
+        if (!drte_is_whitespace(c)) {
+            break;
+        }
+
+        iChar += 1;
+    }
+
+    if (pWordBegOut) *pWordBegOut = iChar;
+    return true;
+}
+
 bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordEndOut)
 {
     if (pEngine == NULL) {
@@ -2658,26 +2684,6 @@ bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size
     return true;
 }
 
-bool drte_engine_get_start_of_next_word_from_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut)
-{
-    if (pEngine == NULL) {
-        return false;
-    }
-
-    while (pEngine->text[iChar] != '\0' && pEngine->text[iChar] != '\n' && !(pEngine->text[iChar] == '\r' && pEngine->text[iChar+1])) {
-        uint32_t c = pEngine->text[iChar];
-        if (!drte_is_whitespace(c)) {
-            break;
-        }
-
-        iChar += 1;
-    }
-
-    if (pWordBegOut) *pWordBegOut = iChar;
-    return true;
-}
-
-// TODO: Make this public.
 bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut, size_t* pWordEndOut)
 {
     if (pEngine == NULL) {
