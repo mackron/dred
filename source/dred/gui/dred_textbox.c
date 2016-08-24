@@ -13,6 +13,8 @@ bool dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_control
         return false;
     }
 
+
+
     if (!dred_textview_init(DRED_TEXTVIEW(pTextBox), pDred, pParent, pTextBox->pTextEngine)) {
         return false;
     }

@@ -51,16 +51,13 @@ void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_view* pView, 
 void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* pView, size_t iCursor);
 
 /// on_text_changed()
-void dred_textview_engine__on_text_changed(drte_engine* pTextEngine);
-
-/// on_undo_point_changed()
-void dred_textview_engine__on_undo_point_changed(drte_engine* pTextEngine, unsigned int iUndoPoint);
+void dred_textview__on_text_changed(dred_textview* pTextView);
 
 // on_get_undo_state()
-size_t dred_textview_engine__on_get_undo_state(drte_engine* pTextEngine, void* pDataOut);
+size_t dred_textview__on_get_undo_state(dred_textview* pTextView, void* pDataOut);
 
 // on_apply_undo_state()
-void dred_textview_engine__on_apply_undo_state(drte_engine* pTextEngine, size_t dataSize, const void* pData);
+void dred_textview__on_apply_undo_state(dred_textview* pTextView, size_t dataSize, const void* pData);
 
 
 // dred_textview__refresh_horizontal_scrollbar()
@@ -332,13 +329,14 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
     }
 
     pTextView->pTextEngine = pTextEngine;
-    pTextView->pTextEngine->pUserData = pTextView;
 
     pTextView->pView = drte_view_create(pTextView->pTextEngine);
     if (pTextView->pView == NULL) {
         dred_control_uninit(DRED_CONTROL(pTextView));
         return false;
     }
+
+    pTextView->pView->pUserData = pTextView;
 
     dred_textview__insert_cursor(pTextView, 0, 0);
 
@@ -429,15 +427,15 @@ bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_cont
     drte_engine_set_cursor_style(pTextView->pTextEngine, (drte_style_token)&pTextView->cursorStyle);
     drte_engine_set_line_numbers_style(pTextView->pTextEngine, (drte_style_token)&pTextView->lineNumbersStyle);
 
-
+    // TODO: These need to be moved out of here.
     drte_engine_set_on_paint_rect(pTextView->pTextEngine, dred_textview_engine__on_paint_rect);
     drte_engine_set_on_paint_text(pTextView->pTextEngine, dred_textview_engine__on_paint_text);
     drte_engine_set_on_dirty(pTextView->pTextEngine, dred_textview_engine__on_dirty);
     drte_engine_set_on_cursor_move(pTextView->pTextEngine, dred_textview_engine__on_cursor_move);
-    drte_engine_set_on_text_changed(pTextView->pTextEngine, dred_textview_engine__on_text_changed);
-    drte_engine_set_on_undo_point_changed(pTextView->pTextEngine, dred_textview_engine__on_undo_point_changed);
-    pTextView->pTextEngine->onGetUndoState = dred_textview_engine__on_get_undo_state;
-    pTextView->pTextEngine->onApplyUndoState = dred_textview_engine__on_apply_undo_state;
+    //drte_engine_set_on_text_changed(pTextView->pTextEngine, dred_textview_engine__on_text_changed);
+    //drte_engine_set_on_undo_point_changed(pTextView->pTextEngine, dred_textview_engine__on_undo_point_changed);
+    //pTextView->pTextEngine->onGetUndoState = dred_textview_engine__on_get_undo_state;
+    //pTextView->pTextEngine->onApplyUndoState = dred_textview_engine__on_apply_undo_state;
 
     //drte_engine_set_default_text_color(pTextView->pTextEngine, dred_rgb(0, 0, 0));
     //drte_engine_set_cursor_color(pTextView->pTextEngine, dred_rgb(0, 0, 0));
@@ -2284,9 +2282,9 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
 
 void dred_textview_engine__on_paint_rect(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleToken, drte_rect rect, void* pPaintData)
 {
-    (void)pView;
+    (void)pTextEngine;
 
-    dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
+    dred_textview* pTextView = (dred_textview*)pView->pUserData;
     dred_text_style* pStyle = (dred_text_style*)styleToken;
 
     float offsetX;
@@ -2298,9 +2296,9 @@ void dred_textview_engine__on_paint_rect(drte_engine* pTextEngine, drte_view* pV
 
 void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
 {
-    (void)pView;
+    (void)pTextEngine;
 
-    dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
+    dred_textview* pTextView = (dred_textview*)pView->pUserData;
 
     dred_text_style* pStyleFG = (dred_text_style*)styleTokenFG;
     dred_text_style* pStyleBG = (dred_text_style*)styleTokenBG;
@@ -2314,13 +2312,9 @@ void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_view* pV
 
 void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_view* pView, drte_rect rect)
 {
-    (void)pView;
+    (void)pTextEngine;
 
-    dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
-    if (pTextView == NULL) {
-        return;
-    }
-
+    dred_textview* pTextView = (dred_textview*)pView->pUserData;
     if (pTextView == NULL) {
         return;
     }
@@ -2334,17 +2328,15 @@ void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_view* pView, 
 
 void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* pView, size_t iCursor)
 {
+    (void)pTextEngine;
+
     // We only care about the last cursor.
     if (iCursor != pView->cursorCount-1) {
         return;
     }
 
     // If the cursor is off the edge of the container we want to scroll it into position.
-    dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
-    if (pTextView == NULL) {
-        return;
-    }
-
+    dred_textview* pTextView = (dred_textview*)pView->pUserData;
     if (pTextView == NULL) {
         return;
     }
@@ -2381,17 +2373,9 @@ void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* p
     }
 }
 
-void dred_textview_engine__on_text_changed(drte_engine* pTextEngine)
+
+void dred_textview__on_text_changed(dred_textview* pTextView)
 {
-    dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
-    if (pTextView == NULL) {
-        return;
-    }
-
-    if (pTextView == NULL) {
-        return;
-    }
-
     // Scrollbars need to be refreshed whenever text is changed.
     dred_textview__refresh_scrollbars(pTextView);
 
@@ -2400,34 +2384,9 @@ void dred_textview_engine__on_text_changed(drte_engine* pTextEngine)
     dred_control_dirty(pTextView->pLineNumbers, dred_control_get_local_rect(pTextView->pLineNumbers));
 }
 
-void dred_textview_engine__on_undo_point_changed(drte_engine* pTextEngine, unsigned int iUndoPoint)
-{
-    dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
-    if (pTextView == NULL) {
-        return;
-    }
-
-    if (pTextView == NULL) {
-        return;
-    }
-
-    if (pTextView->onUndoPointChanged) {
-        pTextView->onUndoPointChanged(pTextView, iUndoPoint);
-    }
-}
-
-size_t dred_textview_engine__on_get_undo_state(drte_engine* pTextEngine, void* pDataOut)
+size_t dred_textview__on_get_undo_state(dred_textview* pTextView, void* pDataOut)
 {
     //printf("Getting Undo State...\n");
-
-    dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
-    if (pTextView == NULL) {
-        return 0;
-    }
-
-    if (pTextView == NULL) {
-        return 0;
-    }
 
     if (pDataOut != NULL) {
         *((size_t*)pDataOut) = pTextView->cursorCount;
@@ -2441,22 +2400,12 @@ size_t dred_textview_engine__on_get_undo_state(drte_engine* pTextEngine, void* p
     return sizeof(pTextView->cursorCount) + (sizeof(*pTextView->pCursors) * pTextView->cursorCount);
 }
 
-void dred_textview_engine__on_apply_undo_state(drte_engine* pTextEngine, size_t dataSize, const void* pData)
+void dred_textview__on_apply_undo_state(dred_textview* pTextView, size_t dataSize, const void* pData)
 {
     //printf("Applying Undo State...\n");
 
     assert(pData != NULL);
     (void)dataSize;
-
-    dred_textview* pTextView = (dred_textview*)pTextEngine->pUserData;
-    if (pTextView == NULL) {
-        return;
-    }
-
-    if (pTextView == NULL) {
-        return;
-    }
-
 
     size_t cursorCount = *((const size_t*)pData);
     const dred_textview_cursor* pCursors = (const dred_textview_cursor*)((const uint8_t*)pData + sizeof(pTextView->cursorCount));
@@ -2473,7 +2422,6 @@ void dred_textview_engine__on_apply_undo_state(drte_engine* pTextEngine, size_t 
     memcpy(pTextView->pCursors, pCursors, cursorCount * sizeof(*pTextView->pCursors));
     pTextView->cursorCount = cursorCount;
 }
-
 
 
 
@@ -2874,9 +2822,9 @@ void dred_textview__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, 
 
 void dred_textview__on_paint_rect_line_numbers(drte_engine* pEngine, drte_view* pView, drte_style_token styleToken, drte_rect rect, void* pPaintData)
 {
-    (void)pView;
+    (void)pEngine;
 
-    dred_textview* pTextView = (dred_textview*)pEngine->pUserData;
+    dred_textview* pTextView = (dred_textview*)pView->pUserData;
     dred_text_style* pStyle = (dred_text_style*)styleToken;
 
     assert(pTextView != NULL);
@@ -2889,9 +2837,9 @@ void dred_textview__on_paint_rect_line_numbers(drte_engine* pEngine, drte_view* 
 
 void dred_textview__on_paint_text_line_numbers(drte_engine* pEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
 {
-    (void)pView;
+    (void)pEngine;
 
-    dred_textview* pTextView = (dred_textview*)pEngine->pUserData;
+    dred_textview* pTextView = (dred_textview*)pView->pUserData;
 
     dred_text_style* pStyleFG = (dred_text_style*)styleTokenFG;
     dred_text_style* pStyleBG = (dred_text_style*)styleTokenBG;
