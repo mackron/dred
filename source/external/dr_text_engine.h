@@ -2591,6 +2591,11 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
             if (drte_view_is_word_wrap_enabled(pView)) {
                 drte_view__refresh_word_wrapping(pView);    // <-- This will repaint.
             } else {
+                // After line each cursor is sitting on may have changed.
+                for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
+                    drte_view_move_cursor_to_character(pView, iCursor, pView->pCursors[iCursor].iCharAbs);
+                }
+
                 drte_view_dirty(pView, drte_view_get_local_rect(pView));
             }
         }
