@@ -1045,42 +1045,41 @@ bool dred_textview_unindent_selected_blocks(dred_textview* pTextView)
         for (size_t iSelection = 0; iSelection < pTextView->pView->selectionCount; ++iSelection) {
             size_t iLineBeg = drte_view_get_selection_first_line(pTextView->pView, iSelection);
             size_t iLineEnd = drte_view_get_selection_last_line(pTextView->pView, iSelection);
-            if (iLineBeg != iLineEnd) {
-                for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
-                    size_t iLineChar = drte_view_get_line_first_character(pTextView->pView, NULL, iLine);
-                    size_t iLineCharNonWS = iLineChar;
-                    for (;;) {
-                        uint32_t c = drte_engine_get_utf32(pTextView->pTextEngine, iLineCharNonWS);
-                        if (c == '\0' || c == '\n' || !dr_is_whitespace(c)) {
-                            break;
-                        }
 
-                        iLineCharNonWS += 1;
+            for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
+                size_t iLineChar = drte_view_get_line_first_character(pTextView->pView, NULL, iLine);
+                size_t iLineCharNonWS = iLineChar;
+                for (;;) {
+                    uint32_t c = drte_engine_get_utf32(pTextView->pTextEngine, iLineCharNonWS);
+                    if (c == '\0' || c == '\n' || !dr_is_whitespace(c)) {
+                        break;
                     }
 
-                    if (iLineCharNonWS > iLineChar) {
-                        size_t charactersRemovedCount = 0;
-                        uint32_t c = drte_engine_get_utf32(pTextView->pTextEngine, iLineChar);
-                        if (c == '\t') {
-                            charactersRemovedCount = 1;
-                        } else {
-                            charactersRemovedCount = 0; //(iLineCharNonWS - iLineChar);
-                            for (size_t iChar = iLineChar; iChar < iLineCharNonWS; ++iChar) {
-                                if (charactersRemovedCount >= drte_view_get_tab_size(pTextView->pView)) {
-                                    break;
-                                }
+                    iLineCharNonWS += 1;
+                }
 
-                                c = drte_engine_get_utf32(pTextView->pTextEngine, iChar);
-                                if (c == '\t') {
-                                    break;
-                                }
-
-                                charactersRemovedCount += 1;
+                if (iLineCharNonWS > iLineChar) {
+                    size_t charactersRemovedCount = 0;
+                    uint32_t c = drte_engine_get_utf32(pTextView->pTextEngine, iLineChar);
+                    if (c == '\t') {
+                        charactersRemovedCount = 1;
+                    } else {
+                        charactersRemovedCount = 0; //(iLineCharNonWS - iLineChar);
+                        for (size_t iChar = iLineChar; iChar < iLineCharNonWS; ++iChar) {
+                            if (charactersRemovedCount >= drte_view_get_tab_size(pTextView->pView)) {
+                                break;
                             }
-                        }
 
-                        wasTextChanged = drte_engine_delete_text(pTextView->pTextEngine, iLineChar, iLineChar + charactersRemovedCount) || wasTextChanged;
+                            c = drte_engine_get_utf32(pTextView->pTextEngine, iChar);
+                            if (c == '\t') {
+                                break;
+                            }
+
+                            charactersRemovedCount += 1;
+                        }
                     }
+
+                    wasTextChanged = drte_engine_delete_text(pTextView->pTextEngine, iLineChar, iLineChar + charactersRemovedCount) || wasTextChanged;
                 }
             }
         }
@@ -2185,7 +2184,8 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                 size_t iSelection;
                 bool isSomethingSelected = dred_textview__get_cursor_selection(pTextView, iCursor, &iSelection);
                 if (isSomethingSelected) {
-                    isDoingBlockIndent = drte_view_get_selection_first_line(pTextView->pView, iSelection) != drte_view_get_selection_last_line(pTextView->pView, iSelection);
+                    //isDoingBlockIndent = drte_view_get_selection_first_line(pTextView->pView, iSelection) != drte_view_get_selection_last_line(pTextView->pView, iSelection);
+                    isDoingBlockIndent = true;
                 }
 
                 if (isDoingBlockIndent) {
