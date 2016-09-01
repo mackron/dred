@@ -146,9 +146,19 @@ void dred_text_editor_textview__on_capture_keyboard(dred_control* pControl, dred
 }
 
 
-void dred_text_editor_textview__on_undo_point_changed(dred_textview* pTextView, unsigned int iUndoPoint)
+void dred_text_editor_engine__on_text_changed(drte_engine* pTextEngine)
 {
-    dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dred_control_get_parent(DRED_CONTROL(pTextView)));
+    dred_text_editor* pTextEditor = pTextEngine->pUserData;
+    assert(pTextEditor != NULL);
+    
+    // TODO: Correctly handle multiple views.
+    dred_textview__on_text_changed(pTextEditor->pTextView);
+}
+
+void dred_text_editor_engine__on_undo_point_changed(drte_engine* pTextEngine, unsigned int iUndoPoint)
+{
+    //dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dred_control_get_parent(DRED_CONTROL(pTextView)));
+    dred_text_editor* pTextEditor = pTextEngine->pUserData;
     if (pTextEditor == NULL) {
         return;
     }
@@ -157,6 +167,34 @@ void dred_text_editor_textview__on_undo_point_changed(dred_textview* pTextView, 
         dred_editor_unmark_as_modified(DRED_EDITOR(pTextEditor));
     } else {
         dred_editor_mark_as_modified(DRED_EDITOR(pTextEditor));
+    }
+}
+
+size_t dred_text_editor_engine__on_get_undo_state(drte_engine* pTextEngine, void* pDataOut)
+{
+    dred_text_editor* pTextEditor = pTextEngine->pUserData;
+    assert(pTextEditor != NULL);
+
+    // TODO: Correctly handle multiple views. Will need to gather all of the data into a single buffer.
+    return dred_textview__on_get_undo_state(pTextEditor->pTextView, pDataOut);
+}
+
+void dred_text_editor_engine__on_apply_undo_state(drte_engine* pTextEngine, size_t dataSize, const void* pData)
+{
+    dred_text_editor* pTextEditor = pTextEngine->pUserData;
+    assert(pTextEditor != NULL);
+
+    // TODO: Correctly handle multiple views.
+    dred_textview__on_apply_undo_state(pTextEditor->pTextView, dataSize, pData);
+}
+
+void dred_text_editor_engine__on_undo_stack_trimmed(drte_engine* pTextEngine)
+{
+    dred_text_editor* pTextEditor = pTextEngine->pUserData;
+    assert(pTextEditor != NULL);
+
+    if (drte_engine_get_undo_points_remaining_count(pTextEngine) < pTextEditor->iBaseUndoPoint) {
+        pTextEditor->iBaseUndoPoint = (unsigned int)-1;
     }
 }
 
@@ -228,10 +266,16 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
         return NULL;
     }
 
-    if (!drte_engine_init(&pTextEditor->engine, NULL)) {
+    if (!drte_engine_init(&pTextEditor->engine, pTextEditor)) {
         free(pTextEditor);
         return NULL;
     }
+
+    drte_engine_set_on_text_changed(&pTextEditor->engine, dred_text_editor_engine__on_text_changed);
+    drte_engine_set_on_undo_point_changed(&pTextEditor->engine, dred_text_editor_engine__on_undo_point_changed);
+    pTextEditor->engine.onUndoStackTrimmed = dred_text_editor_engine__on_undo_stack_trimmed;
+    pTextEditor->engine.onGetUndoState = dred_text_editor_engine__on_get_undo_state;
+    pTextEditor->engine.onApplyUndoState = dred_text_editor_engine__on_apply_undo_state;
 
 
     pTextEditor->pTextView = &pTextEditor->textView;
@@ -272,7 +316,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
     dred_control_set_on_key_down(DRED_CONTROL(pTextEditor->pTextView), dred_text_editor_textview__on_key_down);
     dred_control_set_on_capture_keyboard(DRED_CONTROL(pTextEditor->pTextView), dred_text_editor_textview__on_capture_keyboard);
     dred_textview_set_on_cursor_move(pTextEditor->pTextView, dred_text_editor_textview__on_cursor_move);
-    dred_textview_set_on_undo_point_changed(pTextEditor->pTextView, dred_text_editor_textview__on_undo_point_changed);
+    //dred_textview_set_on_undo_point_changed(pTextEditor->pTextView, dred_text_editor_textview__on_undo_point_changed);
 
     // Initialize the styling.
     dred_text_editor_refresh_styling(pTextEditor);

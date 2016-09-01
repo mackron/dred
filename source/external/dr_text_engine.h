@@ -94,6 +94,7 @@ typedef void   (* drte_engine_on_text_changed_proc)      (drte_engine* pEngine);
 typedef void   (* drte_engine_on_undo_point_changed_proc)(drte_engine* pEngine, unsigned int iUndoPoint);
 typedef size_t (* drte_engine_on_get_undo_state_proc)    (drte_engine* pEngine, void* pDataOut);
 typedef void   (* drte_engine_on_apply_undo_state_proc)  (drte_engine* pEngine, size_t dataSize, const void* pData);
+typedef void   (* drte_engine_on_undo_stack_trimmed_proc)(drte_engine* pEngine);
 
 typedef struct
 {
@@ -296,6 +297,9 @@ struct drte_engine
 
     // The function to call when application-defined data needs to be applied for undo/redo points.
     drte_engine_on_apply_undo_state_proc onApplyUndoState;
+
+    // The function to call when the undo stack has been trimmed.
+    drte_engine_on_undo_stack_trimmed_proc onUndoStackTrimmed;
 
 
     /// The blink rate in milliseconds of the cursor.
@@ -3034,6 +3038,7 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
     // The undo buffer needs to be trimmed.
     if (drte_engine_get_redo_points_remaining_count(pEngine) > 0) {
         drte_stack_buffer_set_stack_ptr(&pEngine->undoBuffer, pEngine->currentRedoDataOffset);
+        if (pEngine->onUndoStackTrimmed) pEngine->onUndoStackTrimmed(pEngine);
     }
 
     pEngine->undoStackCount = pEngine->iUndoState;
