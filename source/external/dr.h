@@ -159,7 +159,7 @@ void dr_strrmchar(char* str, char c);
 /// Finds the first non-whitespace character in the given string.
 const char* dr_first_non_whitespace(const char* str);
 
-static const char* dr_ltrim(const char* str) { return dr_first_non_whitespace(str); }
+static inline const char* dr_ltrim(const char* str) { return dr_first_non_whitespace(str); }
 static const char* dr_rtrim(const char* str);
 
 /// Trims both the leading and trailing whitespace from the given string.
@@ -409,7 +409,7 @@ bool dr_file_exists(const char* filePath);
 //
 // This will return false if the path points to a file.
 bool dr_directory_exists(const char* directoryPath);
-bool dr_is_directory(const char* directoryPath) { return dr_directory_exists(directoryPath); }
+static inline bool dr_is_directory(const char* directoryPath) { return dr_directory_exists(directoryPath); }
 
 // Moves a file.
 //
