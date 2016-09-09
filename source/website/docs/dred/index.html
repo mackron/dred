@@ -1,9 +1,9 @@
 {{ include "dred-header.html" }}
     <div style="background-color:#fff; text-align:center; padding-top:1em;">
         <ul class="footer-links">
-            <li><a href="{{ relative-path "docs/commands.html" }}">Command List</a></li>
+            <li><a href="{{ relative-path "docs/dred/commands.html" }}">Command List</a></li>
             <li>|</li>
-            <li><a href="{{ relative-path "docs/configs.html" }}">Config Variable List</a></li>
+            <li><a href="{{ relative-path "docs/dred/configs.html" }}">Config Variable List</a></li>
         </ul>
         <div style="background-color:#fff; padding:2em; text-align:left;">
             <div style="margin:0 auto; width:66%; margin-bottom:2em;">
@@ -15,12 +15,12 @@
                     <ul>
                         <li>Use the ESC key to activate/deactivate the command bar
                             <ul>
-                                <li>See here for a full list of supported commands: <a href="{{ relative-path "docs/commands.html" }}">Full command list</a></li>
+                                <li>See here for a full list of supported commands: <a href="{{ relative-path "docs/dred/commands.html" }}">Full command list</a></li>
                             </ul>
                         </li>
                         <li>Config files are stored in %APPDATA%/dred on Windows and ~/.config/dred on Linux
                             <ul>
-                                <li>A full list of supported config variables can be found here: <a href="{{ relative-path "docs/configs.html" }}">Config variables</a></li>
+                                <li>A full list of supported config variables can be found here: <a href="{{ relative-path "docs/dred/configs.html" }}">Config variables</a></li>
                                 <li>Config files are implemented as .dred files with each property being a simple key/value pair.</li>
                                 <li>When dred is run, it first loads the config file in the user directory if it exists.</li>
                                 <li>After the main config in the user directory dred will look for a .dred file in the directory dred is run from.</li>
@@ -28,7 +28,7 @@
                                 <li>Commands can be executed from within the config file with the "exec" statement.</li>
                             </ul>
                         </li>
-                        <li>Commands can be assigned to an accelerator (keyboard shortcut) with the <a href="{{ relative-path "docs/commands.html#bind" }}">"bind"</a> command.
+                        <li>Commands can be assigned to an accelerator (keyboard shortcut) with the <a href="{{ relative-path "docs/dred/commands.html#bind" }}">"bind"</a> command.
                             <ul>
                                 <li>Example: <code>bind "Compile" "CTRL+F9" "!gcc %"</code></li>
                             </ul>
