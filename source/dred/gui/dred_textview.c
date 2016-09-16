@@ -1900,6 +1900,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                             }
 
                             wasTextChanged = drte_engine_delete_text(pTextView->pTextEngine, iCharBeg, iCharEnd);
+                            drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[iCursor]);
                         }
                     }
                     drte_view_end_dirty(pTextView->pView);
