@@ -1051,7 +1051,7 @@ bool dred_textview_unindent_selected_blocks(dred_textview* pTextView)
                 size_t iLineCharNonWS = iLineChar;
                 for (;;) {
                     uint32_t c = drte_engine_get_utf32(pTextView->pTextEngine, iLineCharNonWS);
-                    if (c == '\0' || c == '\n' || !dr_is_whitespace(c)) {
+                    if (c == '\0' || c == '\r' || c == '\n' || !dr_is_whitespace(c)) {
                         break;
                     }
 
