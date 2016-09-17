@@ -954,6 +954,7 @@ void dred_window_bring_to_top__win32(dred_window* pWindow)
     }
 
     SetForegroundWindow(pWindow->hWnd);
+    BringWindowToTop(pWindow->hWnd);
 }
 
 bool dred_window_is_maximized__win32(dred_window* pWindow)
