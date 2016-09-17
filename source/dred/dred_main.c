@@ -1,5 +1,26 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
+// BUILDING (WIN32)
+//
+// Libraries:
+// - gdi32
+// - msimg32
+// - comctl32
+// - comdlg32
+// - ole32
+//
+// Notes:
+// - When compiling with MSVC, make sure the [Manifest Tool -> Input and Output -> Embed Manifest] setting is set to "No". Not doing
+//   so will result in a link error about it already being defined (we defined it manually in dred.rc).
+// - Make sure source/dred/win32/dred.rc is included with the VC project and compiled with it.
+
+// BUILDING (LINUX)
+//
+// `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0`
+// -lpthread
+// -lm
+
+
 // These #defines enable us to load large files on Linux platforms. They need to be placed before including any headers.
 #ifndef _WIN32
 #ifndef _LARGEFILE64_SOURCE
