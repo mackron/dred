@@ -953,7 +953,6 @@ void dred_window_bring_to_top__win32(dred_window* pWindow)
         return;
     }
 
-    SetForegroundWindow(pWindow->hWnd);
     BringWindowToTop(pWindow->hWnd);
 }
 
@@ -3340,6 +3339,8 @@ void dred_window_show_maximized(dred_window* pWindow)
 #ifdef DRED_GTK
     dred_window_show_maximized__gtk(pWindow);
 #endif
+
+    pWindow->isMaximized = true;
 }
 
 void dred_window_show_sized(dred_window* pWindow, unsigned int width, unsigned int height)
@@ -3369,6 +3370,12 @@ void dred_window_bring_to_top(dred_window* pWindow)
 {
     if (pWindow == NULL) {
         return;
+    }
+
+    if (dred_window_is_maximized(pWindow)) {
+        dred_window_show_maximized(pWindow);
+    } else {
+        dred_window_show(pWindow);
     }
 
 #ifdef DRED_WIN32
