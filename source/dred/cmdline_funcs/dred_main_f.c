@@ -8,7 +8,8 @@ typedef struct
 } dred_cmdline_func_mapping;
 
 static dred_cmdline_func_mapping g_BuiltInCmdLineFuncs[] = {
-    {"file2chex", dred_file2chex}
+    {"file2chex",    dred_file2chex},
+    {"file2cstring", dred_file2cstring}
 };
 
 

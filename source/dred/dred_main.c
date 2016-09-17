@@ -185,6 +185,7 @@
 #include "dred_highlighters.c"
 #include "dred_codegen.c"
 #include "cmdline_funcs/dred_file2chex.c"
+#include "cmdline_funcs/dred_file2cstring.c"
 #include "cmdline_funcs/dred_main_f.c"
 
 #if defined(_MSC_VER)
