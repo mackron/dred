@@ -1,7 +1,7 @@
 #include "../dred_build_config.h"
 #include "winuser.h"    // <-- Not including this will result in the manifest not getting embedded properly when built with windres (GCC)
 
-CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "dred.exe.manifest"
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "dred.exe.manifest"  // CREATEPROCESS_MANIFEST_RESOURCE = 1. RT_MANIFEST = 24.
 101 ICON    "../../../resources/branding/dred_appicon.ico"
 
 1 VERSIONINFO
