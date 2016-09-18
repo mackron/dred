@@ -509,7 +509,13 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
 
         case WM_SIZE:
         {
-            pWindow->isMaximized = (wParam & SIZE_MAXIMIZED) != 0;
+            // Don't change the maximized state when the window is going from maximized to minimized. The maximized state is used to
+            // determine whether or not the window should be maximized when it's restored from minimized state or brought back into
+            // focus.
+            if ((wParam & SIZE_MINIMIZED) == 0) {
+                pWindow->isMaximized = (wParam & SIZE_MAXIMIZED) != 0;
+            }
+
             dred_window_on_size(pWindow, LOWORD(lParam), HIWORD(lParam));
         } break;
 
@@ -953,6 +959,7 @@ void dred_window_bring_to_top__win32(dred_window* pWindow)
         return;
     }
 
+    SetForegroundWindow(pWindow->hWnd);
     BringWindowToTop(pWindow->hWnd);
 }
 
