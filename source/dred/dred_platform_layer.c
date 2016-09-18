@@ -498,7 +498,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
 
         case WM_MOVE:
         {
-            // WM_MOVE passes it's position in client coordinates, but for dred's purposes the actual window position what we need.
+            // WM_MOVE passes it's position in client coordinates, but for dred's purposes the actual window position is what we need.
             RECT rect;
             GetWindowRect(hWnd, &rect);
             dred_window_on_move(pWindow, rect.left, rect.top);
