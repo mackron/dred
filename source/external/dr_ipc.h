@@ -1,5 +1,5 @@
 // Interprocess communication. Public Domain. See "unlicense" statement at the end of this file.
-// dr_ipc - v0.1a - 04/08/2016
+// dr_ipc - v0.2 - 2016-09-20
 //
 // David Reid - mackron@gmail.com
 
@@ -11,6 +11,9 @@
 //
 // You can then #include this file in other parts of the program as you would with any other header file.
 //
+// On Linux you will need to link to the following:
+//   -lrt (shared memory)
+//
 //
 // --- Pipes ---
 //
@@ -20,7 +23,7 @@
 //
 //   drpipe serverPipe;
 //   dripc_result result = drpipe_open_named_server("my_pipe_name", DR_IPC_READ | DR_IPC_WRITE, &serverPipe);
-//   if (result != dripc_success) {
+//   if (result != dripc_result_success) {
 //       return -1;
 //   }
 //
@@ -29,7 +32,7 @@
 //
 //   drpipe clientPipe;
 //   dripc_result result = drpipe_open_named_client("my_pipe_name", DR_IPC_READ | DR_IPC_WRITE, &clientPipe);
-//   if (result != dripc_success) {
+//   if (result != dripc_result_success) {
 //       return -1;
 //   }
 //
@@ -44,6 +47,66 @@
 // An anonymous pipe can be created with the drpipe_open_anonymous() API.
 // 
 //
+// --- Shared Memory ---
+//
+// Note for Win32: Shared memory requires Administrator rights for it to work. You will want to embed a manifest as
+// detailed here: https://msdn.microsoft.com/en-us/library/bb756929.aspx.
+//
+// Note for Linux: You will need to link to "rt" to use shared memory.
+//
+// To use shared memory, an application must first allocate it with dripc_create_shared_memory(). Afterwards, other
+// applications can connect to this memory with dripc_open_shared_memory().
+//
+// Secondary applications should disconnect from the memory with dripc_close_shared_memory(). The memory can be freed
+// completely with dripc_delete_shared_memory().
+//
+// The aforementioned APIs return a handle representing the memory. A pointer to the underlying memory can be retrieved
+// by mapping the handle with dripc_map_shared_memory(). Unmap the memory with dripc_unmap_shared_memory(). It is an
+// error to map memory if it's already mapped.
+//
+// Example Server Code:
+//
+//   dripc_handle hMem;
+//   dripc_result result = dripc_create_shared_memory("MyGlobalMemory", sharedMemorySizeInBytes, &hMem);
+//   if (result != dripc_result_success) {
+//       return -1;
+//   }
+//
+//   void* pSharedData;
+//   result = dripc_map_shared_memory(hMem, &pSharedData);
+//   if (result != dripc_result_success) {
+//       return -1;
+//   }
+//
+//   memcpy(pSharedData, pMySharedData, mySharedDataSizeInBytes);   // Use the mapped pointer like any other.
+//
+//   ...
+//
+//   dripc_unmap_shared_memory(hMem);
+//   dripc_delete_shared_memory(hMem);
+//
+//
+// Example Client Code:
+//
+//   dripc_handle hMem;
+//   dripc_result result = dripc_open_shared_memory("MyGlobalMemory", &hMem);
+//   if (result != dripc_result_success) {
+//       return -1;
+//   }
+//
+//   void* pSharedData;
+//   result = dripc_map_shared_memory(hMem, &pSharedData);
+//   if (result != dripc_result_success) {
+//       return -1;
+//   }
+//
+//   // Do something with pSharedData...
+//
+//   ...
+//
+//   dripc_unmap_shared_memory(hMem);
+//   dripc_close_shared_memory(hMem);
+//
 //
 //
 // QUICK NOTES
@@ -54,6 +117,7 @@
 #define dr_ipc_h
 
 #include <stddef.h> // For size_t
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,6 +126,8 @@ extern "C" {
 // Each primitive type in dr_ipc is opaque because otherwise it would require exposing system headers like windows.h
 // to the public section of this file.
 typedef void* drpipe;
+typedef struct dripc_handle_impl dripc_handle_impl;
+typedef dripc_handle_impl *dripc_handle;
 
 #define DR_IPC_READ     0x01
 #define DR_IPC_WRITE    0x02
@@ -73,9 +139,11 @@ typedef enum
     dripc_result_success = 0,
     dripc_result_unknown_error,
     dripc_result_invalid_args,
+    dripc_result_out_of_memory,
     dripc_result_name_too_long,
     dripc_result_access_denied,
-    dripc_result_timeout
+    dripc_result_timeout,
+    dripc_result_memory_already_mapped
 } dripc_result;
 
 // Opens a server-side pipe.
@@ -121,6 +189,42 @@ dripc_result drpipe_write(drpipe pipe, const void* pData, size_t bytesToWrite, s
 // Returns the length of the name. If nameOut is NULL the return value is the required size, not including the null terminator.
 size_t drpipe_get_translated_name(const char* name, char* nameOut, size_t nameOutSize);
 
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Shared Memory
+//
+///////////////////////////////////////////////////////////////////////////////
+
+// Allocates a block of shared memory and returns a handle representing it.
+//
+// This should be used by the process that initially allocates the shared memory. Use dripc_open_shared_memory() to
+// allow a secondary process to gain access to the memory.
+dripc_result dripc_create_shared_memory(const char* name, size_t sizeInBytes, dripc_handle* pMemory);
+
+// Connects the running process to a block of shared memory that was previously allocated by another instance.
+dripc_result dripc_open_shared_memory(const char* name, dripc_handle* pMemory);
+
+// Destroys a shared memory object. The opposite of dripc_create_shared_memory().
+void dripc_delete_shared_memory(dripc_handle memory);
+
+// Closes the connection to the shared memory. The opposite of dripc_open_shared_memory(). This does not
+// deallocate the memory.
+void dripc_close_shared_memory(dripc_handle memory);
+
+// Returns a usable pointer to the shared memory.
+//
+// It is an error to map shared memory if it's already mapped.
+dripc_result dripc_map_shared_memory(dripc_handle memory, void** ppDataOut);
+
+// Unmaps the shared memory. 
+void dripc_unmap_shared_memory(dripc_handle memory);
+
+// Determines whether or not the given memory object is currently mapped.
+bool dripc_is_shared_memory_mapped(dripc_handle memory);
+
+
 #ifdef __cplusplus
 }
 #endif
@@ -143,6 +247,7 @@ size_t drpipe_get_translated_name(const char* name, char* nameOut, size_t nameOu
 #define dripc__zero_memory ZeroMemory
 #else
 #define DR_IPC_UNIX
+#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -152,6 +257,92 @@ size_t drpipe_get_translated_name(const char* name, char* nameOut, size_t nameOu
 
 #define dripc__zero_memory(dst, size) memset((dst), 0, (size))
 #endif
+
+typedef enum
+{
+	dripc_handle_type_pipe,
+	dripc_handle_type_shared_memory	
+} dripc_handle_type;
+  
+struct dripc_handle_impl
+{
+	dripc_handle_type type;
+	
+	union
+	{
+		struct
+		{
+#ifdef DR_IPC_WIN32
+			HANDLE win32Handle;
+#endif
+#ifdef DR_IPC_UNIX
+			int fd;
+#endif
+		} pipe;
+	
+		struct
+		{
+#ifdef DR_IPC_WIN32
+			HANDLE win32Handle;
+#endif
+#ifdef DR_IPC_UNIX
+			int fd;
+            size_t mappedDataSize;
+#endif
+			void* pMappedData;
+		} shared_memory;
+	} data;
+
+#ifdef DR_IPC_UNIX
+    // For unix builds we often need to allocate a variable amount of data for storing the names of named objects.
+    char name[1];
+#endif
+};
+
+#ifdef DR_IPC_WIN32
+dripc_result dripc_alloc_handle__win32(dripc_handle_type type, dripc_handle* pHandle)
+{
+    if (pHandle == NULL) return dripc_result_invalid_args;
+
+    dripc_handle handle = (dripc_handle)calloc(1, sizeof(*handle));
+    if (handle == NULL) {
+        return dripc_result_out_of_memory;
+    }
+
+    handle->type = type;
+
+    *pHandle = handle;
+    return dripc_result_success;
+}
+
+void dripc_free_handle__win32(dripc_handle handle)
+{
+    free(handle);
+}
+#endif
+
+#ifdef DR_IPC_UNIX
+dripc_result dripc_alloc_handle__unix(dripc_handle_type type, size_t extraDataSize, dripc_handle* pHandle)
+{
+    if (pHandle == NULL) return dripc_result_invalid_args;
+
+    dripc_handle handle = (dripc_handle)calloc(1, sizeof(*handle) + extraDataSize);
+    if (handle == NULL) {
+        return dripc_result_out_of_memory;
+    }
+
+    handle->type = type;
+
+    *pHandle = handle;
+    return dripc_result_success;
+}
+
+void dripc_free_handle__unix(dripc_handle handle)
+{
+    free(handle);
+}
+#endif
+
 
 #ifdef _MSC_VER
 #define dripc__strcpy_s strcpy_s
@@ -751,15 +942,343 @@ size_t drpipe_get_translated_name(const char* name, char* nameOut, size_t nameOu
 #endif
 }
 
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Shared Memory
+//
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef DR_IPC_WIN32
+char* dripc_alloc_shared_memory_name__win32(const char* name)
+{
+    const char prefix[] = "Global\\";
+    size_t nameLen = strlen(prefix) + strlen(name);
+
+    char* nameOut = (char*)malloc(nameLen+1);   // +1 for null terminator.
+    if (nameOut == NULL) {
+        return NULL;
+    }
+
+    dripc__strcpy_s(nameOut, nameLen+1, prefix);
+    dripc__strcat_s(nameOut, nameLen+1, name);
+
+    return nameOut;
+}
+
+dripc_result dripc_create_shared_memory__win32(const char* name, size_t sizeInBytes, dripc_handle* pMemory)
+{
+    dripc_handle memory;
+    dripc_result result = dripc_alloc_handle__win32(dripc_handle_type_shared_memory, &memory);
+    if (result != dripc_result_success) {
+        return result;
+    }
+
+#if SIZE_MAX == ~0ULL
+    DWORD sizeHi = (sizeInBytes >> 32) & 0xFFFFFFFF;
+    DWORD sizeLo = sizeInBytes & 0xFFFFFFFF;
+#else
+    DWORD sizeHi = 0;
+    DWORD sizeLo = sizeInBytes & 0xFFFFFFFF;
+#endif
+
+    char* nameWin32 = dripc_alloc_shared_memory_name__win32(name);
+    if (nameWin32 == NULL) {
+        dripc_free_handle__win32(memory);
+        return dripc_result_out_of_memory;
+    }
+
+    memory->data.shared_memory.win32Handle = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, sizeHi, sizeLo, nameWin32);
+    if (memory->data.shared_memory.win32Handle == NULL) {
+        free(nameWin32);
+        dripc_free_handle__win32(memory);
+        return dripc_result_from_win32_error(GetLastError());
+    }
+
+    free(nameWin32);
+
+    *pMemory = memory;
+    return dripc_result_success;
+}
+
+dripc_result dripc_open_shared_memory__win32(const char* name, dripc_handle* pMemory)
+{
+    dripc_handle memory;
+    dripc_result result = dripc_alloc_handle__win32(dripc_handle_type_shared_memory, &memory);
+    if (result != dripc_result_success) {
+        return result;
+    }
+
+    char* nameWin32 = dripc_alloc_shared_memory_name__win32(name);
+    if (nameWin32 == NULL) {
+        dripc_free_handle__win32(memory);
+        return dripc_result_out_of_memory;
+    }
+
+    memory->data.shared_memory.win32Handle = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, nameWin32);
+    if (memory->data.shared_memory.win32Handle == NULL) {
+        free(nameWin32);
+        dripc_free_handle__win32(memory);
+        return dripc_result_from_win32_error(GetLastError());
+    }
+
+    free(nameWin32);
+
+    *pMemory = memory;
+    return dripc_result_success;
+}
+
+void dripc_delete_shared_memory__win32(dripc_handle memory)
+{
+    CloseHandle(memory->data.shared_memory.win32Handle);
+    dripc_free_handle__win32(memory);
+}
+
+void dripc_close_shared_memory__win32(dripc_handle memory)
+{
+    CloseHandle(memory->data.shared_memory.win32Handle);
+    dripc_free_handle__win32(memory);
+}
+
+dripc_result dripc_map_shared_memory__win32(dripc_handle memory, void** ppDataOut)
+{
+    memory->data.shared_memory.pMappedData = MapViewOfFile(memory->data.shared_memory.win32Handle, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+    if (memory->data.shared_memory.pMappedData == NULL) {
+        return dripc_result_from_win32_error(GetLastError());
+    }
+
+    *ppDataOut = memory->data.shared_memory.pMappedData;
+    return dripc_result_success;
+}
+
+void dripc_unmap_shared_memory__win32(dripc_handle memory)
+{
+    UnmapViewOfFile(memory->data.shared_memory.pMappedData);
+    memory->data.shared_memory.pMappedData = NULL;
+}
+
+bool dripc_is_shared_memory_mapped__win32(dripc_handle memory)
+{
+    return memory->data.shared_memory.pMappedData != NULL;
+}
+#endif
+
+#ifdef DR_IPC_UNIX
+dripc_result dripc_alloc_handle__unix__shared_memory(const char* name, int oflag, dripc_handle* pMemory)
+{
+    size_t nameLen = strlen(name) + 1;  // +1 because we need to prepend a forward slash.
+
+    dripc_handle memory;
+    dripc_result result = dripc_alloc_handle__unix(dripc_handle_type_shared_memory, nameLen+1, &memory);    // +1 for null terminator.
+    if (result != dripc_result_success) {
+        return result;
+    }
+
+    dripc__strcpy_s(memory->name, nameLen+1, "/");
+    dripc__strcat_s(memory->name, nameLen+1, name);
+
+    memory->data.shared_memory.fd = shm_open(memory->name, oflag, 0666);
+    if (memory->data.shared_memory.fd == -1) {
+        dripc_free_handle__unix(memory);
+        return dripc_result_from_unix_error(errno);
+    }
+
+    *pMemory = memory;
+    return dripc_result_success;
+}
+
+dripc_result dripc_create_shared_memory__unix(const char* name, size_t sizeInBytes, dripc_handle* pMemory)
+{
+    dripc_handle memory;
+    dripc_result result = dripc_alloc_handle__unix__shared_memory(name, O_RDWR | O_CREAT, &memory);    // +1 for null terminator.
+    if (result != dripc_result_success) {
+        return result;
+    }
+
+    if (ftruncate(memory->data.shared_memory.fd, sizeInBytes) == -1) {
+        shm_unlink(memory->name);
+        dripc_free_handle__unix(memory);
+        return dripc_result_from_unix_error(errno);
+    }
+
+    *pMemory = memory;
+    return dripc_result_success;
+}
+
+dripc_result dripc_open_shared_memory__unix(const char* name, dripc_handle* pMemory)
+{
+    dripc_handle memory;
+    dripc_result result = dripc_alloc_handle__unix__shared_memory(name, O_RDWR, &memory);    // +1 for null terminator.
+    if (result != dripc_result_success) {
+        return result;
+    }
+
+    *pMemory = memory;
+    return dripc_result_success;
+}
+
+void dripc_delete_shared_memory__unix(dripc_handle memory)
+{
+    close(memory->data.shared_memory.fd);
+    shm_unlink(memory->name);
+    dripc_free_handle__unix(memory);
+}
+
+void dripc_close_shared_memory__unix(dripc_handle memory)
+{
+    close(memory->data.shared_memory.fd);
+    dripc_free_handle__unix(memory);
+}
+
+dripc_result dripc_map_shared_memory__unix(dripc_handle memory, void** ppDataOut)
+{
+    // We always map the whole buffer, so we'll need to grab it's size first.
+    struct stat sb;
+    if (fstat(memory->data.shared_memory.fd, &sb) == -1) {
+        return dripc_result_from_unix_error(errno);
+    }
+
+    memory->data.shared_memory.mappedDataSize = sb.st_size;
+    memory->data.shared_memory.pMappedData = mmap(NULL, sb.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, memory->data.shared_memory.fd, 0);
+    if (memory->data.shared_memory.pMappedData == MAP_FAILED) {
+        return dripc_result_from_unix_error(errno);
+    }
+
+    *ppDataOut = memory->data.shared_memory.pMappedData;
+    return dripc_result_success;
+}
+
+void dripc_unmap_shared_memory__unix(dripc_handle memory)
+{
+    munmap(memory->data.shared_memory.pMappedData, memory->data.shared_memory.mappedDataSize);
+    memory->data.shared_memory.pMappedData = NULL;
+    memory->data.shared_memory.mappedDataSize = 0;
+}
+
+bool dripc_is_shared_memory_mapped__unix(dripc_handle memory)
+{
+    return memory->data.shared_memory.pMappedData != NULL;
+}
+#endif
+
+dripc_result dripc_create_shared_memory(const char* name, size_t sizeInBytes, dripc_handle* pMemory)
+{
+    if (pMemory == NULL) return dripc_result_invalid_args;
+
+#ifdef DR_IPC_WIN32
+    return dripc_create_shared_memory__win32(name, sizeInBytes, pMemory);
+#endif
+
+#ifdef DR_IPC_UNIX
+    return dripc_create_shared_memory__unix(name, sizeInBytes, pMemory);
+#endif
+}
+
+dripc_result dripc_open_shared_memory(const char* name, dripc_handle* pMemory)
+{
+    if (pMemory == NULL) return dripc_result_invalid_args;
+
+#ifdef DR_IPC_WIN32
+    return dripc_open_shared_memory__win32(name, pMemory);
+#endif
+
+#ifdef DR_IPC_UNIX
+    return dripc_open_shared_memory__unix(name, pMemory);
+#endif
+}
+
+void dripc_delete_shared_memory(dripc_handle memory)
+{
+    if (memory == NULL || memory->type != dripc_handle_type_shared_memory) return;
+
+#ifdef DR_IPC_WIN32
+    dripc_delete_shared_memory__win32(memory);
+#endif
+
+#ifdef DR_IPC_UNIX
+    dripc_delete_shared_memory__unix(memory);
+#endif
+}
+
+void dripc_close_shared_memory(dripc_handle memory)
+{
+    if (memory == NULL || memory->type != dripc_handle_type_shared_memory) return;
+
+#ifdef DR_IPC_WIN32
+    dripc_close_shared_memory__win32(memory);
+#endif
+
+#ifdef DR_IPC_UNIX
+    dripc_close_shared_memory__unix(memory);
+#endif
+}
+
+dripc_result dripc_map_shared_memory(dripc_handle memory, void** ppDataOut)
+{
+    if (memory == NULL || memory->type != dripc_handle_type_shared_memory || ppDataOut == NULL) return dripc_result_invalid_args;
+
+    if (dripc_is_shared_memory_mapped(memory)) {
+        return dripc_result_memory_already_mapped;
+    }
+
+#ifdef DR_IPC_WIN32
+    return dripc_map_shared_memory__win32(memory, ppDataOut);
+#endif
+
+#ifdef DR_IPC_UNIX
+    return dripc_map_shared_memory__unix(memory, ppDataOut);
+#endif
+}
+
+void dripc_unmap_shared_memory(dripc_handle memory)
+{
+    if (memory == NULL || memory->type != dripc_handle_type_shared_memory) return;
+
+    if (!dripc_is_shared_memory_mapped(memory)) {
+        return; // It's not mapped.
+    }
+
+#ifdef DR_IPC_WIN32
+    dripc_unmap_shared_memory__win32(memory);
+#endif
+
+#ifdef DR_IPC_UNIX
+    dripc_unmap_shared_memory__unix(memory);
+#endif
+}
+
+bool dripc_is_shared_memory_mapped(dripc_handle memory)
+{
+    if (memory == NULL || memory->type != dripc_handle_type_shared_memory) return false;
+
+#ifdef DR_IPC_WIN32
+    return dripc_is_shared_memory_mapped__win32(memory);
+#endif
+
+#ifdef DR_IPC_UNIX
+    return dripc_is_shared_memory_mapped__unix(memory);
+#endif
+}
+
+
+
+
 #endif  // DR_IPC_IMPLEMENTATION
 
 
 // REVISION HISTORY
 //
-// v0.1a - 04/08/2016
+// v0.2 - 2016-09-20
+//   - Add support for shared memory.
+//   - Use ISO 8601 format for dates (YYYY-MM-DD).
+//
+// v0.1a - 2016-08-04
 //   - Compilation fixes for *nix builds.
 //
-// v0.1 - 31/07/2016
+// v0.1 - 2016-07-31
 //   - Initial versioned release.
 
 
