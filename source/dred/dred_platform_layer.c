@@ -3336,6 +3336,8 @@ void dred_window_show(dred_window* pWindow)
 
 void dred_window_show_maximized(dred_window* pWindow)
 {
+    if (pWindow == NULL) return;
+
 #ifdef DRED_WIN32
     dred_window_show_maximized__win32(pWindow);
 #endif
