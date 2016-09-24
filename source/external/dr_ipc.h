@@ -553,7 +553,7 @@ dripc_result drpipe_read__win32(drpipe pipe, void* pDataOut, size_t bytesToRead,
         return dripc_result_from_win32_error(GetLastError());
     }
 
-    *pBytesRead = dwBytesRead;
+    if (pBytesRead) *pBytesRead = dwBytesRead;
     return dripc_result_success;
 }
 
@@ -566,7 +566,7 @@ dripc_result drpipe_write__win32(drpipe pipe, const void* pData, size_t bytesToW
         return dripc_result_from_win32_error(GetLastError());
     }
 
-    *pBytesWritten = dwBytesWritten;
+    if (pBytesWritten) *pBytesWritten = dwBytesWritten;
     return dripc_result_success;
 }
 
@@ -749,7 +749,7 @@ dripc_result drpipe_read__unix(drpipe pipe, void* pDataOut, size_t bytesToRead, 
         return dripc_result_from_unix_error(errno);
     }
 
-    *pBytesRead = (size_t)bytesRead;
+    if (pBytesRead) *pBytesRead = (size_t)bytesRead;
     return dripc_result_success;
 }
 
@@ -762,7 +762,7 @@ dripc_result drpipe_write__unix(drpipe pipe, const void* pData, size_t bytesToWr
         return dripc_result_from_unix_error(errno);
     }
 
-    *pBytesWritten = (size_t)bytesWritten;
+    if (pBytesWritten) *pBytesWritten = (size_t)bytesWritten;
     return dripc_result_success;
 }
 
