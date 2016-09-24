@@ -189,7 +189,7 @@ dred_color dred_parse_color(const char* color)
                 // #RGB -> #RRGGBB
                 hexvals[5] = hexvals[2]; hexvals[4] = hexvals[2];
                 hexvals[3] = hexvals[1]; hexvals[2] = hexvals[1];
-                hexvals[1] = hexvals[0]; hexvals[0] = hexvals[0];
+                hexvals[1] = hexvals[0]; /*hexvals[0] = hexvals[0];*/
             }
 
             r = (uint8_t)((hexvals[0] << 4) | hexvals[1]);
