@@ -813,11 +813,6 @@ void dred_window_set_size__win32(dred_window* pWindow, unsigned int newWidth, un
 
 void dred_window_get_size__win32(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut)
 {
-    if (pWindow == NULL) {
-        if (pWidthOut) *pWidthOut = 0;
-        if (pHeightOut) *pHeightOut = 0;
-    }
-
     RECT rect;
     GetClientRect(pWindow->hWnd, &rect);
 
@@ -831,11 +826,6 @@ void dred_window_get_size__win32(dred_window* pWindow, unsigned int* pWidthOut, 
 
 void dred_window_get_client_size__win32(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut)
 {
-    if (pWindow == NULL) {
-        if (pWidthOut) *pWidthOut = 0;
-        if (pHeightOut) *pHeightOut = 0;
-    }
-
     RECT rect;
     GetClientRect(pWindow->hWnd, &rect);
 
@@ -859,11 +849,6 @@ void dred_window_set_position__win32(dred_window* pWindow, int posX, int posY)
 
 void dred_window_get_position__win32(dred_window* pWindow, int* pPosXOut, int* pPosYOut)
 {
-    if (pWindow == NULL) {
-        if (pPosXOut) *pPosXOut = 0;
-        if (pPosYOut) *pPosYOut = 0;
-    }
-
     RECT rect;
     GetWindowRect(pWindow->hWnd, &rect);
 
@@ -3269,6 +3254,10 @@ void dred_window_set_size(dred_window* pWindow, unsigned int newWidth, unsigned 
 
 void dred_window_get_size(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut)
 {
+    if (pWidthOut) *pWidthOut = 0;
+    if (pHeightOut) *pHeightOut = 0;
+    if (pWindow == NULL) return;
+
 #ifdef DRED_WIN32
     dred_window_get_size__win32(pWindow, pWidthOut, pHeightOut);
 #endif
@@ -3292,6 +3281,10 @@ void dred_window_set_position(dred_window* pWindow, int posX, int posY)
 
 void dred_window_get_position(dred_window* pWindow, int* pPosXOut, int* pPosYOut)
 {
+    if (pPosXOut) *pPosXOut = 0;
+    if (pPosYOut) *pPosYOut = 0;
+    if (pWindow == NULL) return;
+
 #ifdef DRED_WIN32
     dred_window_get_position__win32(pWindow, pPosXOut, pPosYOut);
 #endif
@@ -3304,6 +3297,10 @@ void dred_window_get_position(dred_window* pWindow, int* pPosXOut, int* pPosYOut
 
 void dred_window_get_client_size(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut)
 {
+    if (pWidthOut) *pWidthOut = 0;
+    if (pHeightOut) *pHeightOut = 0;
+    if (pWindow == NULL) return;
+
 #ifdef DRED_WIN32
     dred_window_get_client_size__win32(pWindow, pWidthOut, pHeightOut);
 #endif
