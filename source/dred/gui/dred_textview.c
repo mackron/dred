@@ -293,14 +293,12 @@ bool dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
     drte_view_begin_dirty(pTextView->pView);
 
     bool wasTextChanged = false;
-    size_t insertedCharacterCount;
     if (pDred->config.textEditorTabsToSpacesEnabled) {
-        insertedCharacterCount = drte_view_get_spaces_to_next_column_from_character(pTextView->pView, iChar);
+        size_t insertedCharacterCount = drte_view_get_spaces_to_next_column_from_character(pTextView->pView, iChar);
         for (size_t i = 0; i < insertedCharacterCount; ++i) {
             wasTextChanged = drte_engine_insert_character(pTextView->pTextEngine, iChar, ' ') || wasTextChanged;
         }
     } else {
-        insertedCharacterCount = 1;
         wasTextChanged = drte_engine_insert_character(pTextView->pTextEngine, iChar, '\t') || wasTextChanged;
     }
 
@@ -2714,12 +2712,6 @@ void dred_textview__on_mouse_move_line_numbers(dred_control* pLineNumbers, int r
             size_t iLine = drte_view_get_line_at_pos_y(pTextView->pView, NULL, relativeMousePosY - offsetY);
             size_t iAnchorLine = pTextView->iLineSelectAnchor;
             size_t lineCount = drte_view_get_line_count(pTextView->pView);
-
-            size_t iSelectionFirstLine = drte_view_get_selection_first_line(pTextView->pView, pTextView->pView->selectionCount-1);
-            size_t iSelectionLastLine = drte_view_get_selection_last_line(pTextView->pView, pTextView->pView->selectionCount-1);
-            if (iSelectionLastLine != iSelectionFirstLine) {
-                iSelectionLastLine -= 1;
-            }
 
             // If we're moving updwards we want to position the cursor at the start of the line. Otherwise we want to move the cursor to the start
             // of the next line, or the end of the text.
