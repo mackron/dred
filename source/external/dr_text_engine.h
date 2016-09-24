@@ -2398,9 +2398,8 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
             return false;
         }
 
-        size_t iRunningChar;
         for (size_t i = iLine+1; i <= iLine + linesAddedCount; ++i) {
-            iRunningChar = drte_line_cache_get_line_first_character(pEngine->pUnwrappedLines, i-1);
+            size_t iRunningChar = drte_line_cache_get_line_first_character(pEngine->pUnwrappedLines, i-1);
             while (pEngine->text[iRunningChar] != '\0') {
                 if (pEngine->text[iRunningChar] == '\n') {
                     iRunningChar += 1;
