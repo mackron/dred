@@ -172,7 +172,7 @@ bool dred_font_desc_to_string(dred_font_desc* pDesc, char* strOut, size_t strOut
         strcpy_s(slantStr, sizeof(slantStr), "none");
     }
 
-    return snprintf(strOut, strOutSize, "\"%s\" %d %s %s", pDesc->family, pDesc->size, weightStr, slantStr);
+    return snprintf(strOut, strOutSize, "\"%s\" %u %s %s", pDesc->family, pDesc->size, weightStr, slantStr);
 }
 
 bool dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize)
