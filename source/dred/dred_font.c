@@ -80,6 +80,7 @@ dred_font* dred_font_create(dred_context* pDred, dred_font_desc* pDesc)
     pFont->subfontCount = 0;
     pFont->pSubFonts = (dred_subfont*)malloc(pFont->subfontBufferSize * sizeof(*pFont->pSubFonts));
     if (pFont->pSubFonts == NULL) {
+		free(pFont);
         return NULL;
     }
 
