@@ -2404,7 +2404,7 @@ bool dr2d_get_text_cursor_position_from_point_gdi(dr2d_font* pFont, const char* 
                 unsigned int iChar;
                 for (iChar = 0; iChar < results.nGlyphs; ++iChar)
                 {
-                    float charBoundsLeft  = charBoundsLeft = (float)results.lpCaretPos[iChar];
+                    float charBoundsLeft  = (float)results.lpCaretPos[iChar];
                     float charBoundsRight = 0;
                     if (iChar < results.nGlyphs - 1) {
                         charBoundsRight = (float)results.lpCaretPos[iChar + 1];
