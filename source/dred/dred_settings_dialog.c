@@ -33,6 +33,7 @@ dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred)
     if (pDialog->pSettingsEditor == NULL) {
         dred_window_delete(pDialog->pWindow);
         free(pDialog);
+		return NULL;
     }
 
     unsigned int windowSizeX;
