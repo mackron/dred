@@ -522,9 +522,9 @@ dred_key dred_key_parse(const char* str)
             if (str[2] == '\0') {
                 return DRED_GUI_F1;
             } else {
-                if (str[2] == '0' && str[2] == '\0') return DRED_GUI_F10;
-                if (str[2] == '1' && str[2] == '\0') return DRED_GUI_F11;
-                if (str[2] == '2' && str[2] == '\0') return DRED_GUI_F12;
+                if (str[2] == '0' && str[3] == '\0') return DRED_GUI_F10;
+                if (str[2] == '1' && str[3] == '\0') return DRED_GUI_F11;
+                if (str[2] == '2' && str[3] == '\0') return DRED_GUI_F12;
             }
         }
         if (str[1] == '2' && str[2] == '\0') return DRED_GUI_F2;
