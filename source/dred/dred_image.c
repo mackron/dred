@@ -31,6 +31,7 @@ dred_image* dred_image_create(dred_context* pDred, unsigned int id, const dred_i
     pImage->subimageCount = 0;
     pImage->pSubImages = (dred_subimage*)malloc(descCount * sizeof(*pImage->pSubImages));
     if (pImage->pSubImages == NULL) {
+		free(pImage);
         return NULL;
     }
 
