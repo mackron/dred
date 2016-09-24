@@ -2981,6 +2981,8 @@ void dred_gui_register_dr_2d_callbacks(dred_gui* pGUI, dr2d_context* pDrawingCon
     callbacks.drawEnd                        = dred_control_draw_end_dr_2d;
     callbacks.setClip                        = dred_control_set_clip_dr_2d;
     callbacks.getClip                        = dred_control_get_clip_dr_2d;
+	
+	callbacks.drawLine                       = NULL;	// Not yet implemented.
     callbacks.drawRect                       = dred_control_draw_rect_dr_2d;
     callbacks.drawRectOutline                = dred_control_draw_rect_outline_dr_2d;
     callbacks.drawRectWithOutline            = dred_control_draw_rect_with_outline_dr_2d;
