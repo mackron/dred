@@ -2406,11 +2406,6 @@ void dred_window_set_position__gtk(dred_window* pWindow, int posX, int posY)
 
 void dred_window_get_position__gtk(dred_window* pWindow, int* pPosXOut, int* pPosYOut)
 {
-    if (pWindow == NULL) {
-        if (pPosXOut) *pPosXOut = 0;
-        if (pPosYOut) *pPosYOut = 0;
-    }
-
     gtk_window_get_position(GTK_WINDOW(pWindow->pGTKWindow), pPosXOut, pPosYOut);
 }
 
