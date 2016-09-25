@@ -2438,7 +2438,7 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
         // As with cursors, selections need to be updated too.
         for (size_t iSelection = 0; iSelection < pView->selectionCount; ++iSelection) {
             drte_region selection = drte_region_normalize(pView->pSelections[iSelection]);
-            if (selection.iCharBeg > insertIndex) {
+            if (selection.iCharBeg >= insertIndex) {
                 pView->pSelections[iSelection].iCharBeg += newTextLength;
                 pView->pSelections[iSelection].iCharEnd += newTextLength;
             } else {
