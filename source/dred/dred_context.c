@@ -216,7 +216,7 @@ void dred_create_config_file_if_not_exists(const char* fileName, const char* con
 }
 
 
-DRED_THREAD_PROC_SIGNATURE(dred_ipc_message_proc, pData)
+dred_thread_result DRED_THREADCALL dred_ipc_message_proc(void* pData)
 {
     dred_context* pDred = (dred_context*)pData;
     assert(pDred != NULL);
@@ -226,8 +226,6 @@ DRED_THREAD_PROC_SIGNATURE(dred_ipc_message_proc, pData)
         if (drpipe_connect(pDred->pipeIPC) != dripc_result_success) {
             return 0;
         }
-
-
     }
 #endif
 

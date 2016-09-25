@@ -1,23 +1,24 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-// Multithreading is implemented differently depending on the platform. Of note is the entry point which is slightly different. This means
-// every thread entry point needs a simple #ifdef check to use the correct signature. Use DRED_THREAD_PROC_SIGNATURE to help with this.
+// Multithreading is implemented differently depending on the platform. Of note is the entry point which is slightly different. The thread
+// entry point needs to be declared like this:
+//     dred_thread_result DRED_THREADCALL MyThreadEntryProc(void* pData);
 
 #ifdef DRED_WIN32
-typedef DWORD (WINAPI * dred_thread_entry_proc)(void* pData);
+#define DRED_THREADCALL WINAPI
+typedef DWORD dred_thread_result;
 typedef HANDLE dred_thread;
 typedef HANDLE dred_mutex;
 typedef HANDLE dred_semaphore;
-
-#define DRED_THREAD_PROC_SIGNATURE(name, data) DWORD WINAPI name(void* data)
 #else
-typedef void* (* dred_thread_entry_proc)(void* pData);
+#define DRED_THREADCALL
+typedef void* dred_thread_result;
 typedef pthread_t dred_thread;
 typedef pthread_mutex_t dred_mutex;
 typedef sem_t dred_semaphore;
-
-#define DRED_THREAD_PROC_SIGNATURE(name, data) void* name(void* data)
 #endif
+typedef dred_thread_result (DRED_THREADCALL * dred_thread_entry_proc)(void* pData);
+
 
 
 //// Thread ////
