@@ -19,6 +19,7 @@
 // `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0`
 // -lpthread
 // -lm
+// -lrt
 
 
 // These #defines enable us to load large files on Linux platforms. They need to be placed before including any headers.
