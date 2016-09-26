@@ -923,6 +923,64 @@ bool drte_view_find_next(drte_view* pView, const char* text, size_t* pSelectionS
 bool drte_view_find_next_no_loop(drte_view* pView, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut);
 
 
+//// Rectangles ////
+DRTE_INLINE drte_rect drte_make_rect(float left, float top, float right, float bottom)
+{
+    drte_rect rect;
+    rect.left   = left;
+    rect.top    = top;
+    rect.right  = right;
+    rect.bottom = bottom;
+
+    return rect;
+}
+
+DRTE_INLINE drte_rect drte_make_inside_out_rect()
+{
+    drte_rect rect;
+    rect.left   =  FLT_MAX;
+    rect.top    =  FLT_MAX;
+    rect.right  = -FLT_MAX;
+    rect.bottom = -FLT_MAX;
+
+    return rect;
+}
+
+DRTE_INLINE drte_rect drte_rect_union(drte_rect rect0, drte_rect rect1)
+{
+    drte_rect result;
+    result.left   = (rect0.left   < rect1.left)   ? rect0.left   : rect1.left;
+    result.top    = (rect0.top    < rect1.top)    ? rect0.top    : rect1.top;
+    result.right  = (rect0.right  > rect1.right)  ? rect0.right  : rect1.right;
+    result.bottom = (rect0.bottom > rect1.bottom) ? rect0.bottom : rect1.bottom;
+
+    return result;
+}
+
+DRTE_INLINE bool drte_rect_has_volume(drte_rect rect)
+{
+    return rect.right > rect.left && rect.bottom > rect.top;
+}
+
+DRTE_INLINE drte_rect drte_rect_make_right_way_out(drte_rect rect)
+{
+    drte_rect result = rect;
+
+    if (rect.right < rect.left) {
+        result.left = rect.right;
+        result.right = rect.left;
+    }
+
+    if (rect.bottom < rect.top) {
+        result.top = rect.bottom;
+        result.bottom = rect.top;
+    }
+
+    return result;
+}
+
+
+
 #ifdef __cplusplus
 }
 #endif
@@ -1066,65 +1124,6 @@ int drte__strncpy_s(char* dst, size_t dstSizeInBytes, const char* src, size_t co
     dst[0] = '\0';
     return ERANGE;
 #endif
-}
-
-
-
-//// Rect ////
-
-DRTE_INLINE drte_rect drte_make_rect(float left, float top, float right, float bottom)
-{
-    drte_rect rect;
-    rect.left   = left;
-    rect.top    = top;
-    rect.right  = right;
-    rect.bottom = bottom;
-
-    return rect;
-}
-
-DRTE_INLINE drte_rect drte_make_inside_out_rect()
-{
-    drte_rect rect;
-    rect.left   =  FLT_MAX;
-    rect.top    =  FLT_MAX;
-    rect.right  = -FLT_MAX;
-    rect.bottom = -FLT_MAX;
-
-    return rect;
-}
-
-DRTE_INLINE drte_rect drte_rect_union(drte_rect rect0, drte_rect rect1)
-{
-    drte_rect result;
-    result.left   = (rect0.left   < rect1.left)   ? rect0.left   : rect1.left;
-    result.top    = (rect0.top    < rect1.top)    ? rect0.top    : rect1.top;
-    result.right  = (rect0.right  > rect1.right)  ? rect0.right  : rect1.right;
-    result.bottom = (rect0.bottom > rect1.bottom) ? rect0.bottom : rect1.bottom;
-
-    return result;
-}
-
-DRTE_INLINE bool drte_rect_has_volume(drte_rect rect)
-{
-    return rect.right > rect.left && rect.bottom > rect.top;
-}
-
-DRTE_INLINE drte_rect drte_rect_make_right_way_out(drte_rect rect)
-{
-    drte_rect result = rect;
-
-    if (rect.right < rect.left) {
-        result.left = rect.right;
-        result.right = rect.left;
-    }
-
-    if (rect.bottom < rect.top) {
-        result.top = rect.bottom;
-        result.bottom = rect.top;
-    }
-
-    return result;
 }
 
 
