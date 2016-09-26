@@ -33,7 +33,7 @@
 
 // Platform libraries, for simplifying MSVC builds.
 #ifdef _WIN32
-#if defined(_MSC_VER) || defined(__clang__)
+#if defined(_MSC_VER)
 #pragma comment(lib, "msimg32.lib")
 #pragma comment(lib, "comctl32.lib")
 #endif

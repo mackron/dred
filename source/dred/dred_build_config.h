@@ -1,9 +1,9 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
 #define DRED_VERSION_MAJOR          0
-#define DRED_VERSION_MINOR          2
+#define DRED_VERSION_MINOR          3
 #define DRED_VERSION_REVISION       0
-#define DRED_VERSION_STRING         "0.2"
+#define DRED_VERSION_STRING         "0.3"
 #define DRED_PRODUCT_NAME           "dred"
 #define DRED_PRODUCT_DESCRIPTION    "dred"
 #define DRED_COMPANY_NAME           "David Reid"
@@ -29,5 +29,12 @@
 
 // Define these to exclude certain features from the build.
 
+
+// DLL / Shared Object APIs
+#ifdef DRED_PACKAGE
+#define DRED_PACKAGE_API __declspec(dllexport) 
+#else
+#define DRED_PACKAGE_API                        // dred never actually imports any external APIs at link time - it's all done at run-time.
+#endif
 
 // KEEP THIS BLANK LINE AT THE END. NEEDED FOR THE .RC FILE.

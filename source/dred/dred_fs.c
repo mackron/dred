@@ -44,7 +44,7 @@ dred_file dred_file_open(const char* filePath, unsigned int openMode)
         return NULL;
     }
 
-    char* openModeSTD;
+    const char* openModeSTD;
     if (openMode & DRED_FILE_OPEN_MODE_READ) {
         if (openMode & DRED_FILE_OPEN_MODE_WRITE) {
             openModeSTD = "w+b";

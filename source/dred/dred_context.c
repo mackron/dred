@@ -288,6 +288,12 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 {
     // TODO: USE dred_error() AND FAMILY FOR PRINTING CRITICAL ERRORS INSTEAD OF printf()
 
+    int windowPosX;
+    int windowPosY;
+    unsigned int windowWidth;
+    unsigned int windowHeight;
+    bool showWindowMaximized;
+
     if (pDred == NULL) {
         return false;
     }
@@ -416,11 +422,11 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
 
     // The main window.
-    int windowPosX = pDred->config.windowPosX;
-    int windowPosY = pDred->config.windowPosY;
-    unsigned int windowWidth =  (unsigned int)(pDred->config.windowWidth*pDred->dpiScale);
-    unsigned int windowHeight = (unsigned int)(pDred->config.windowHeight*pDred->dpiScale);
-    bool showWindowMaximized = pDred->config.windowMaximized;
+    windowPosX = pDred->config.windowPosX;
+    windowPosY = pDred->config.windowPosY;
+    windowWidth =  (unsigned int)(pDred->config.windowWidth*pDred->dpiScale);
+    windowHeight = (unsigned int)(pDred->config.windowHeight*pDred->dpiScale);
+    showWindowMaximized = pDred->config.windowMaximized;
 
     pDred->pMainWindow = dred_window_create(pDred);
     if (pDred->pMainWindow == NULL) {
@@ -1599,7 +1605,7 @@ bool dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow
         default: break;
         }
 
-        if (pDefaultFontDesc->slant == dr2d_font_slant_italic || pDefaultFontDesc->slant == dr2d_font_slant_oblique) {
+        if (pDefaultFontDesc->slant == (dred_gui_font_slant)dr2d_font_slant_italic || pDefaultFontDesc->slant == (dred_gui_font_slant)dr2d_font_slant_oblique) {
             lf.lfItalic = TRUE;
         }
     }

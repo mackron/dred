@@ -1468,7 +1468,7 @@ char* dred_clipboard_get_text__win32()
     char* textRN = (char*)GlobalLock(hTextMem);
     if (textRN == NULL) {
         CloseClipboard();
-        return false;
+        return 0;
     }
 
     size_t textRNLength = strlen(textRN);
@@ -3849,6 +3849,8 @@ dred_menu_item* dred_menu_item_create_and_append(dred_menu* pMenu, const char* t
 
 dred_menu_item* dred_menu_item_create_and_append_with_shortcut(dred_menu* pMenu, const char* text, uint16_t id, const char* shortcutName, unsigned int options)
 {
+    const char* commandStr;
+
     size_t shortcutIndex;
     if (!dred_shortcut_table_find_by_name(&pMenu->pDred->shortcutTable, shortcutName, &shortcutIndex)) {
         goto on_error;
@@ -3859,7 +3861,7 @@ dred_menu_item* dred_menu_item_create_and_append_with_shortcut(dred_menu* pMenu,
         goto on_error;
     }
 
-    const char* commandStr = dred_shortcut_table_get_command_string_by_index(&pMenu->pDred->shortcutTable, shortcutIndex);
+    commandStr = dred_shortcut_table_get_command_string_by_index(&pMenu->pDred->shortcutTable, shortcutIndex);
     if (commandStr == NULL) {
         goto on_error;
     }
