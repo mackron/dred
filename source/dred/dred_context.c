@@ -182,6 +182,12 @@ dred_file dred__open_log_file()
         return NULL;
     }
 
+    // Make sure the folder exists.
+    char logFolderPath[DRED_MAX_PATH];
+    if (dred_get_log_folder_path(logFolderPath, sizeof(logFolderPath))) {
+        dr_mkdir_recursive(logFolderPath);
+    }
+
     return dred_file_open(logFilePath, DRED_FILE_OPEN_MODE_WRITE);
 }
 
@@ -331,6 +337,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
 
     // The GUI needs to be linked to the window system.
     dred_platform_bind_gui(pDred->pGUI);
+    dred_platform_bind_logging(pDred);
 
 
     // The font library. This needs to be initialized before loading any fonts and configs.

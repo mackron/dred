@@ -682,6 +682,11 @@ void dred_platform_post_quit_message__win32(int resultCode)
     PostQuitMessage(resultCode);
 }
 
+void dred_platform_bind_logging__win32(dred_context* pDred)
+{
+    (void)pDred;
+}
+
 
 
 dred_window* dred_window_create__win32__internal(dred_context* pDred, HWND hWnd)
@@ -945,7 +950,6 @@ void dred_window_bring_to_top__win32(dred_window* pWindow)
     }
 
     SetForegroundWindow(pWindow->hWnd);
-    BringWindowToTop(pWindow->hWnd);
 }
 
 bool dred_window_is_maximized__win32(dred_window* pWindow)
@@ -1773,6 +1777,33 @@ void dred_platform_post_quit_message__gtk(int resultCode)
     gtk_main_quit();
 }
 
+void dred_log_handler__gtk(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
+{
+    dred_context* pDred = user_data;
+    assert(pDred != NULL);
+
+    // Errors.
+    if ((log_level & (G_LOG_FLAG_FATAL | G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL)) != 0) {
+        dred_errorf(pDred, "%s - %s", log_domain, message);
+    }
+
+    // Warnings.
+    if ((log_level & (G_LOG_LEVEL_WARNING)) != 0) {
+        dred_warningf(pDred, "%s - %s", log_domain, message);
+    }
+
+    // Info/Messages
+    if ((log_level & (G_LOG_LEVEL_MESSAGE | G_LOG_LEVEL_INFO)) != 0) {
+        dred_logf(pDred, "%s - %s", log_domain, message);
+    }
+}
+
+void dred_platform_bind_logging__gtk(dred_context* pDred)
+{
+    g_log_set_handler(NULL,   G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL, dred_log_handler__gtk, pDred);
+    g_log_set_handler("GLib", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL, dred_log_handler__gtk, pDred);
+    g_log_set_handler("Gtk",  G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL, dred_log_handler__gtk, pDred);
+}
 
 
 
@@ -3187,6 +3218,18 @@ void dred_platform_bind_gui(dred_gui* pGUI)
     dred_gui_set_on_delete_element(pGUI, dred_platform__on_delete_gui_element);
 }
 
+void dred_platform_bind_logging(dred_context* pDred)
+{
+    if (pDred == NULL) return;
+
+#ifdef DRED_WIN32
+    dred_platform_bind_logging__win32(pDred);
+#endif
+
+#ifdef DRED_GTK
+    dred_platform_bind_logging__gtk(pDred);
+#endif
+}
 
 
 

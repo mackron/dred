@@ -43,6 +43,9 @@ void dred_platform_post_quit_message(int resultCode);
 // Binds the platform-specific global GUI event handlers.
 void dred_platform_bind_gui(dred_gui* pGUI);
 
+// Connects the platform-specific logging system to dred's logging system.
+void dred_platform_bind_logging(dred_context* pDred);
+
 
 //// Windows ////
 typedef void (* dred_window_on_close_proc)             (dred_window* pWindow);
