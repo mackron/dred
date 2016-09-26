@@ -605,6 +605,16 @@ void dred_text_editor_goto_line(dred_text_editor* pTextEditor, size_t lineNumber
 }
 
 
+void dred_text_editor_deselect_all_in_focused_view(dred_text_editor* pTextEditor)
+{
+    if (pTextEditor == NULL) {
+        return;
+    }
+
+    dred_textview_deselect_all(pTextEditor->pTextView);
+}
+
+
 bool dred_text_editor_find_and_select_next(dred_text_editor* pTextEditor, const char* text)
 {
     if (pTextEditor == NULL) {

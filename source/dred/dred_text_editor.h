@@ -93,6 +93,10 @@ void dred_text_editor_goto_ratio(dred_text_editor* pTextEditor, size_t ratio);
 void dred_text_editor_goto_line(dred_text_editor* pTextEditor, size_t lineNumber);
 
 
+// Deslects everything in the focused view.
+void dred_text_editor_deselect_all_in_focused_view(dred_text_editor* pTextEditor);
+
+
 // Finds and selects the next occurance of the given string, starting from the cursor and looping back to the start.
 bool dred_text_editor_find_and_select_next(dred_text_editor* pTextEditor, const char* text);
 

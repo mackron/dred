@@ -491,6 +491,7 @@ bool dred_command__find(dred_context* pDred, const char* value)
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char query[1024];
         if (dr_next_token(value, query, sizeof(query)) != NULL) {
+            dred_text_editor_deselect_all_in_focused_view(DRED_TEXT_EDITOR(pFocusedEditor));
             if (!dred_text_editor_find_and_select_next(DRED_TEXT_EDITOR(pFocusedEditor), query)) {
                 dred_cmdbar_set_message(pDred->pCmdBar, "No results found.");
                 return false;
