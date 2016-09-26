@@ -30,7 +30,7 @@ bool dred_tabgroup_container_init(dred_tabgroup_container* pContainer, dred_cont
     // Events.
     dred_control_set_on_size(DRED_CONTROL(pContainer), dred_tabgroup_container__on_size);
 
-    return pContainer;
+    return true;
 }
 
 void dred_tabgroup_container_uninit(dred_tabgroup_container* pContainer)

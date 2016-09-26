@@ -2784,7 +2784,7 @@ bool drte_engine__capture_and_push_undo_state__cursors(drte_engine* pEngine, drt
         sizeof(pView->cursorCount) +
         sizeof(drte_cursor) * pView->cursorCount;
 
-    uint8_t* pData = drte_stack_buffer_alloc(pStack, sizeInBytes);
+    uint8_t* pData = (uint8_t*)drte_stack_buffer_alloc(pStack, sizeInBytes);
     if (pData == NULL) {
         return false;
     }
@@ -2807,7 +2807,7 @@ bool drte_engine__capture_and_push_undo_state__selections(drte_engine* pEngine, 
         sizeof(pView->selectionCount) +
         sizeof(drte_region) * pView->selectionCount;
 
-    uint8_t* pData = drte_stack_buffer_alloc(pStack, sizeInBytes);
+    uint8_t* pData = (uint8_t*)drte_stack_buffer_alloc(pStack, sizeInBytes);
     if (pData == NULL) {
         return false;
     }
@@ -2827,7 +2827,7 @@ bool drte_engine__capture_and_push_undo_state__view(drte_engine* pEngine, drte_s
     size_t sizeInBytes = 
         sizeof(pView->_id);
 
-    uint8_t* pData = drte_stack_buffer_alloc(pStack, sizeInBytes);
+    uint8_t* pData = (uint8_t*)drte_stack_buffer_alloc(pStack, sizeInBytes);
     if (pData == NULL) {
         return false;
     }
@@ -3383,7 +3383,7 @@ void drte_engine__apply_undo_state(drte_engine* pEngine, const void* pUndoDataPt
 
 
     drte_undo_state_info state;
-    drte_engine__breakdown_undo_state_info(pUndoDataPtr, &state);
+    drte_engine__breakdown_undo_state_info((const uint8_t*)pUndoDataPtr, &state);
 
     // Text.
     drte_engine__apply_text_changes_reversed(pEngine, state.textChangeCount, state.pTextChanges);
@@ -3443,7 +3443,7 @@ void drte_engine__apply_redo_state(drte_engine* pEngine, const void* pUndoDataPt
 
 
     drte_undo_state_info state;
-    drte_engine__breakdown_undo_state_info(pUndoDataPtr, &state);
+    drte_engine__breakdown_undo_state_info((const uint8_t*)pUndoDataPtr, &state);
 
     // Text.
     drte_engine__apply_text_changes(pEngine, state.textChangeCount, state.pTextChanges);

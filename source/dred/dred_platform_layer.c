@@ -1345,7 +1345,7 @@ static VOID CALLBACK dred_timer_proc_win32(HWND hWnd, UINT uMsg, UINT_PTR idEven
 
 dred_timer* dred_timer_create__win32(unsigned int timeoutInMilliseconds, dred_timer_proc callback, void* pUserData)
 {
-    dred_timer* pTimer = malloc(sizeof(*pTimer));
+    dred_timer* pTimer = (dred_timer*)malloc(sizeof(*pTimer));
     if (pTimer == NULL) {
         return NULL;
     }
@@ -1393,7 +1393,7 @@ bool dred_clipboard_set_text__win32(const char* text, size_t textLength)
         return false;
     }
 
-    char* textRN = GlobalLock(hTextMem);
+    char* textRN = (char*)GlobalLock(hTextMem);
     if (textRN == NULL) {
         GlobalFree(hTextMem);
         return false;
@@ -1465,14 +1465,14 @@ char* dred_clipboard_get_text__win32()
         return 0;
     }
 
-    char* textRN = GlobalLock(hTextMem);
+    char* textRN = (char*)GlobalLock(hTextMem);
     if (textRN == NULL) {
         CloseClipboard();
         return false;
     }
 
     size_t textRNLength = strlen(textRN);
-    char* result = malloc(textRNLength + 1);
+    char* result = (char*)malloc(textRNLength + 1);
     strcpy_s(result, textRNLength + 1, textRN);
 
     GlobalUnlock(hTextMem);

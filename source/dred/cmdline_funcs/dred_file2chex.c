@@ -37,7 +37,7 @@ int dred_file2chex(int argc, char** argv)
     }
     fseek(pFile, 0, SEEK_SET);
 
-    unsigned char* pFileData = malloc(fileSize);
+    unsigned char* pFileData = (unsigned char*)malloc(fileSize);
     fread(pFileData, 1, fileSize, pFile);
     fclose(pFile);
 

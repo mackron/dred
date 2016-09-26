@@ -15,7 +15,7 @@ char* dred_codegen_buffer_to_c_array(const unsigned char* buffer, unsigned int s
     totalLen += (size / bytesPerLine + 1) * 4;                           // Indentation.
     totalLen += 2;                                                       // +2 for the "};" at the end.
 
-    char* output = malloc(totalLen);                                     // No need for +1 for the null terminator because the last byte will not have a trailing "," which leaves room.
+    char* output = (char*)malloc(totalLen);                                     // No need for +1 for the null terminator because the last byte will not have a trailing "," which leaves room.
 
     char* runningOutput = output;
     memcpy(runningOutput, header, headerLen);

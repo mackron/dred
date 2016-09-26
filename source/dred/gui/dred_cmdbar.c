@@ -218,7 +218,7 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dred_key key, int state
                 // The working command needs to be saved so it can be restored later if the user pressed the down key.
                 size_t cmdLen = dred_textbox_get_text(pTextBox, NULL, 0);
                 if (cmdLen > 0) {
-                    pCmdBar->workingCommand = malloc(cmdLen + 1);
+                    pCmdBar->workingCommand = (char*)malloc(cmdLen + 1);
                     if (dred_textbox_get_text(pTextBox, pCmdBar->workingCommand, cmdLen + 1) != cmdLen) {
                         free(pCmdBar->workingCommand);
                         pCmdBar->workingCommand = NULL;
@@ -268,7 +268,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
     if (utf32 == '\r' || utf32 == '\n')
     {
         size_t cmdLen = dred_textbox_get_text(pTextBox, NULL, 0);
-        char* cmd = malloc(cmdLen + 1);
+        char* cmd = (char*)malloc(cmdLen + 1);
         if (dred_textbox_get_text(pTextBox, cmd, cmdLen + 1) == cmdLen)
         {
             dred_command command;

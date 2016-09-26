@@ -148,7 +148,7 @@ void dred_text_editor_textview__on_capture_keyboard(dred_control* pControl, dred
 
 void dred_text_editor_engine__on_text_changed(drte_engine* pTextEngine)
 {
-    dred_text_editor* pTextEditor = pTextEngine->pUserData;
+    dred_text_editor* pTextEditor = (dred_text_editor*)pTextEngine->pUserData;
     assert(pTextEditor != NULL);
     
     // TODO: Correctly handle multiple views.
@@ -158,7 +158,7 @@ void dred_text_editor_engine__on_text_changed(drte_engine* pTextEngine)
 void dred_text_editor_engine__on_undo_point_changed(drte_engine* pTextEngine, unsigned int iUndoPoint)
 {
     //dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dred_control_get_parent(DRED_CONTROL(pTextView)));
-    dred_text_editor* pTextEditor = pTextEngine->pUserData;
+    dred_text_editor* pTextEditor = (dred_text_editor*)pTextEngine->pUserData;
     if (pTextEditor == NULL) {
         return;
     }
@@ -172,7 +172,7 @@ void dred_text_editor_engine__on_undo_point_changed(drte_engine* pTextEngine, un
 
 size_t dred_text_editor_engine__on_get_undo_state(drte_engine* pTextEngine, void* pDataOut)
 {
-    dred_text_editor* pTextEditor = pTextEngine->pUserData;
+    dred_text_editor* pTextEditor = (dred_text_editor*)pTextEngine->pUserData;
     assert(pTextEditor != NULL);
 
     // TODO: Correctly handle multiple views. Will need to gather all of the data into a single buffer.
@@ -181,7 +181,7 @@ size_t dred_text_editor_engine__on_get_undo_state(drte_engine* pTextEngine, void
 
 void dred_text_editor_engine__on_apply_undo_state(drte_engine* pTextEngine, size_t dataSize, const void* pData)
 {
-    dred_text_editor* pTextEditor = pTextEngine->pUserData;
+    dred_text_editor* pTextEditor = (dred_text_editor*)pTextEngine->pUserData;
     assert(pTextEditor != NULL);
 
     // TODO: Correctly handle multiple views.
@@ -190,7 +190,7 @@ void dred_text_editor_engine__on_apply_undo_state(drte_engine* pTextEngine, size
 
 void dred_text_editor_engine__on_undo_stack_trimmed(drte_engine* pTextEngine)
 {
-    dred_text_editor* pTextEditor = pTextEngine->pUserData;
+    dred_text_editor* pTextEditor = (dred_text_editor*)pTextEngine->pUserData;
     assert(pTextEditor != NULL);
 
     if (drte_engine_get_undo_points_remaining_count(pTextEngine) < pTextEditor->iBaseUndoPoint) {
@@ -209,7 +209,7 @@ bool dred_text_editor__on_save(dred_editor* pEditor, dred_file file, const char*
     }
 
     size_t textLength = dred_textview_get_text(pTextView, NULL, 0);
-    char* text = malloc(textLength + 1);
+    char* text = (char*)malloc(textLength + 1);
     if (text == NULL) {
         return false;
     }

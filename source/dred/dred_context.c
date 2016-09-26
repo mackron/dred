@@ -1813,7 +1813,7 @@ void dred__on_paint_text_for_printing(drte_engine* pTextEngine, drte_view* pView
     (void)styleTokenFG;
     (void)styleTokenBG;
 
-    dred_print_data* pPrintData = pPaintData;
+    dred_print_data* pPrintData = (dred_print_data*)pPaintData;
     assert(pPrintData != NULL);
 
     // Skip the line if it's partially visible - it'll be drawn on the next page.
@@ -2504,10 +2504,11 @@ dred_font* dred__load_system_font_mono(dred_context* pDred)
     fontDesc.slant = dred_gui_font_slant_none;
 
     // Fall back to Courier New by default for XP.
-    OSVERSIONINFOA version;
+    OSVERSIONINFOEXA version;
     ZeroMemory(&version, sizeof(version));
     version.dwOSVersionInfoSize = sizeof(version);
-    if (GetVersionExA(&version) && version.dwMajorVersion < 6) {
+    version.dwMajorVersion = 6;
+    if (VerifyVersionInfoA(&version, VER_MAJORVERSION, VerSetConditionMask(0, VER_MAJORVERSION, VER_LESS))) {
         strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Courier New");
     }
 #endif
