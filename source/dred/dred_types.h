@@ -15,5 +15,6 @@ typedef struct dred_image dred_image;
 typedef struct dred_image_library dred_image_library;
 typedef struct dred_menu_library dred_menu_library;
 typedef struct dred_command dred_command;
+typedef struct dred_package dred_package;
 
 typedef struct dred_tabgroup dred_tabgroup;

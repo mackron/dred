@@ -67,6 +67,7 @@
 #include "dred_stock_themes.c"
 #include "dred_highlighters.c"
 #include "dred_codegen.c"
+#include "dred_package.c"
 #include "cmdline_funcs/dred_file2chex.c"
 #include "cmdline_funcs/dred_file2cstring.c"
 #include "cmdline_funcs/dred_main_f.c"

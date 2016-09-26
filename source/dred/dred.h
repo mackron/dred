@@ -106,3 +106,4 @@
 #include "dred_misc.h"
 #include "dred_stock_themes.h"
 #include "dred_codegen.h"
+#include "dred_package.h"
