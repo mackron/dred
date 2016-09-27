@@ -130,8 +130,15 @@ void dred_package_library_unload_package(dred_package_library* pLibrary, dred_pa
 {
     if (pLibrary == NULL || pPackage == NULL) return;
 
-    dred_dlclose(pPackage->_dl);
-    free(pPackage);
+    dred_dl dl = pPackage->_dl;
+    if (dl != NULL) {
+        dred_package_delete_proc package_delete = (dred_package_delete_proc)dred_dlsym(dl, "dred_package_delete");
+        if (package_delete) {
+            package_delete(pPackage);
+        }
+
+        dred_dlclose(dl);
+    }
 }
 
 
