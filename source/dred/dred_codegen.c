@@ -66,22 +66,31 @@ char* dred_codegen_buffer_to_c_array(const unsigned char* buffer, unsigned int s
 char* dred_codegen_buffer_to_c_string(const unsigned char* buffer, unsigned int size, const char* variableName)
 {
     if (buffer == NULL) return NULL;
-    if (variableName == NULL) variableName = "MyString";
 
     const char* input = (const char*)buffer;
+    const char* indent = "";
 
-    char* output = gb_make_string("static const char* ");
-    output = gb_append_cstring(output, variableName);
-    output = gb_append_cstring(output, " = {\n");
-    output = gb_append_cstring(output, "    \"");   // <-- Begin the first line with a double-quote.
+    char* output = gb_make_string(""); 
+
+    // Don't include the variable declaration if no variable name was specified.
+    if (variableName != NULL) {
+        indent = "    ";
+        output = gb_make_string("static const char* ");
+        output = gb_append_cstring(output, variableName);
+        output = gb_append_cstring(output, " = {\n");
+    }
+
+    output = gb_append_cstring(gb_append_cstring(output, indent), "\"");   // <-- Begin the first line with a double-quote.
     {
         // At the momement all we're doing is wrapping each line with " ... \n", but later on we'll want to do
         // proper tab formatting and UTF-8 conversion.
         for (unsigned int ichar = 0; ichar < size; ++ichar) {
             switch (input[ichar]) {
-                case '\n': output = gb_append_cstring(output, "\\n"); output = gb_append_cstring(output, "\"\n    \""); break;  // <-- Terminate the line with a double-quote and place the double-quote for the following line.
+                case '\n': output = gb_append_cstring(output, "\\n"); output = gb_append_cstring(output, "\"\n"); output = gb_append_cstring(gb_append_cstring(output, indent), "\""); break;  // <-- Terminate the line with a double-quote and place the double-quote for the following line.
                 case '\r': output = gb_append_cstring(output, "\\r"); break;
                 case '\t': output = gb_append_cstring(output, "\\t"); break;
+                case '\"': output = gb_append_cstring(output, "\\\""); break;
+                case '\\': output = gb_append_cstring(output, "\\\\"); break;
                 default:
                 {
                     // TODO: Check for non-ASCII characters and add support for UTF-8 hex characters.
@@ -91,7 +100,9 @@ char* dred_codegen_buffer_to_c_string(const unsigned char* buffer, unsigned int 
         }
     }
     output = gb_append_cstring(output, "\"");   // <-- End the last line with a double-quote.
-    output = gb_append_cstring(output, "\n};");
+    if (variableName != NULL) {
+        output = gb_append_cstring(output, "\n};");
+    }
 
     // The documentation for this function says to release the returned pointer with free(), however since we
     // used gb_string to construct it. Therefore we need to make a copy of the string before returning.

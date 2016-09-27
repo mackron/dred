@@ -31,8 +31,18 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
 void dred_text_editor_delete(dred_text_editor* pTextEditor);
 
 
+// Sets the text of the editor.
+void dred_text_editor_set_text(dred_text_editor* pTextEditor, const char* text);
+
 // Retrieves a copy of the text.
 size_t dred_text_editor_get_text(dred_text_editor* pTextEditor, char* pTextOut, size_t textOutSize);
+
+// Retrieves the selected text in the currently focused view.
+size_t dred_text_editor_get_selected_text(dred_text_editor* pTextEditor, char* pTextOut, size_t textOutSize);
+
+
+// Retrieves the currently focused view.
+dred_textview* dred_text_editor_get_focused_view(dred_text_editor* pTextEditor);
 
 
 // Enables word wrap.

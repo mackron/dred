@@ -635,6 +635,67 @@ bool dred_command__insert_date(dred_context* pDred, const char* value)
     return true;
 }
 
+bool dred_command__export2cstring(dred_context* pDred, const char* value)
+{
+    (void)value;
+
+    dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
+    if (pFocusedEditor == NULL) {
+        return false;
+    }
+
+    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+        char* pOriginalText = NULL;
+
+        size_t selectedTextSize = dred_text_editor_get_selected_text(DRED_TEXT_EDITOR(pFocusedEditor), NULL, 0);
+        if (selectedTextSize > 0) {
+            pOriginalText = (char*)malloc(selectedTextSize + 1);
+            if (pOriginalText != NULL) {
+                selectedTextSize = dred_text_editor_get_selected_text(DRED_TEXT_EDITOR(pFocusedEditor), pOriginalText, selectedTextSize + 1);
+                if (selectedTextSize == 0) {
+                    free(pOriginalText);
+                    pOriginalText = NULL;
+                }
+            }
+        } else {
+            // Nothing is selected - do the entire file.
+            size_t textSize = dred_text_editor_get_text(DRED_TEXT_EDITOR(pFocusedEditor), NULL, 0);
+            if (textSize > 0) {
+                pOriginalText = (char*)malloc(textSize + 1);
+                if (pOriginalText != NULL) {
+                    textSize = dred_text_editor_get_text(DRED_TEXT_EDITOR(pFocusedEditor), pOriginalText, textSize + 1);
+                    if (textSize == 0) {
+                        free(pOriginalText);
+                        pOriginalText = NULL;
+                    }
+                }
+            } else {
+                pOriginalText = (char*)calloc(1, 1);  // <-- Empty string. A single byte allocated on the heap. Nice. (Just doing it like this to simplify the clean-up logic below.)
+            }
+        }
+
+        if (pOriginalText != NULL) {
+            if (dred_open_new_text_file(pDred)) {
+                dred_editor* pNewEditor = dred_get_focused_editor(pDred);
+                if (pNewEditor != NULL) {
+                    char* cstring = dred_codegen_buffer_to_c_string((const unsigned char*)pOriginalText, strlen(pOriginalText), NULL);
+                    if (cstring != NULL) {
+                        dred_text_editor_set_text(DRED_TEXT_EDITOR(pNewEditor), cstring);
+                    }
+
+                    free(cstring);
+                }
+            }
+
+            free(pOriginalText);
+            return true;
+        }
+    }
+
+    // If we get here it means the focused editor does not support this command. May want to route this to packages, though...
+    return false;
+}
+
 
 
 

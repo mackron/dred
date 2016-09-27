@@ -55,6 +55,7 @@
 // zoom                     dred_command__zoom                      DRED_CMDBAR_RELEASE_KEYBOARD
 // unindent                 dred_command__unindent                  DRED_CMDBAR_RELEASE_KEYBOARD
 // insert-date              dred_command__insert_date               DRED_CMDBAR_RELEASE_KEYBOARD
+// export2cstring           dred_command__export2cstring            DRED_CMDBAR_RELEASE_KEYBOARD
 //
 // END COMMAND LIST
 
@@ -258,6 +259,9 @@ bool dred_command__unindent(dred_context* pDred, const char* value);
 
 // insert-date
 bool dred_command__insert_date(dred_context* pDred, const char* value);
+
+// export2cstring
+bool dred_command__export2cstring(dred_context* pDred, const char* value);
 
 
 
