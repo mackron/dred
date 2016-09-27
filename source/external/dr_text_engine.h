@@ -2612,7 +2612,7 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
 
 bool drte_engine_get_start_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
@@ -2649,7 +2649,7 @@ bool drte_engine_get_start_of_word_containing_character(drte_engine* pEngine, si
 
 bool drte_engine_get_start_of_next_word_from_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
@@ -2668,7 +2668,7 @@ bool drte_engine_get_start_of_next_word_from_character(drte_engine* pEngine, siz
 
 bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordEndOut)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
@@ -2693,7 +2693,7 @@ bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size
 
 bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut, size_t* pWordEndOut)
 {
-    if (pEngine == NULL) {
+    if (pEngine == NULL || pEngine->text == NULL) {
         return false;
     }
 
