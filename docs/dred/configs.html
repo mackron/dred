@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>dred - A fast, lightweight, cross-platform text editor.</title>
+    <meta name="description" content="dred is a fast, lightweight cross-platform text editor.">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="icon" href="../../img/favicon.png">
+    <link rel="stylesheet" type="text/css" href="../../css/main.css" />
+	
+    <style>
+    </style>
+</head>
+
+<body style="margin:0; padding:0">
+    <div style="background-color:#720000; color:#bfa792;">
+        <div style="max-width:75%; width:100%; margin:0 auto;">
+            <table class="header-link-table" style="">
+                <tr>
+                    <td style="padding:0; width:100%; text-align:left;">
+                        <table class="header-link-table" style="">
+                            <tr>
+                                <td style="vertical-align:center; padding-right:2em;"><a href="../../index.html"><img src="../../img/logo1_large_white.png" style="height:24px; min-width:100%;"></a></td>
+                                <td><a href="../../download.html">Downloads</a></td>
+                                <td><a href="../../screenshots.html">Screenshots</a></td>
+                                <td><a href="../../docs/dred">Documentation</a></td>
+                            </tr>
+                        </table>    
+                    </td>
+                    <td style="padding:0; width:25%; text-align:right; vertical-align:center;">
+                        <a style="padding:0;" href="https://twitter.com/drsoft_dred"><img src="../../img/twitter_white.png" style="padding:0; height:32px; width:32px;"></a>
+                    </td>
+                    <td style="padding:0; width:25%; text-align:right; vertical-align:center;">
+                        <a style="padding:0;" href="https://github.com/dr-soft/dred"><img src="../../img/github_white.png" style="padding:0; height:24px; width:24px;"></a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div style="background-color:#fff; text-align:center; padding-top:1em;">
+        <ul class="footer-links">
+            <li><a href="../../docs/dred/commands.html">Command List</a></li>
+            <li>|</li>
+            <li><a href="../../docs/dred/configs.html">Config Variable List</a></li>
+        </ul>
+        <div style="background-color:#fff; margin:0 auto; width:66%; padding:2em; text-align:left;">
+            <h2>Special config commands</h2>
+            <div id="include" class="cfg-title">
+                include [file path]
+                <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+                    <div style="margin-bottom:0.5em;">Includes an external config file.</div>
+                </div>
+            </div>
+            <div id="exec" class="cfg-title">
+                exec [command]
+                <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+                    <div style="margin-bottom:0.5em;">Executes a command.</div>
+                </div>
+            </div>
+            <div id="bind" class="cfg-title">
+                bind [name] [shortcut] [command]
+                <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+                    <div style="margin-bottom:0.5em;">Binds a command to an accelerator (keyboard shortcut).</div>
+                    <div>Example: <code>bind "Compile" "CTRL+F9" "!gcc %"</code></div>
+                </div>
+            </div>
+
+            <h2>Full config variable list list</h2>
+			<div>
+				<div id="show-tab-bar" class="cfg-title">
+    show-tab-bar
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not to show the tab bar.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
+        </table>
+    </div>
+</div>
+<div id="show-menu-bar" class="cfg-title">
+    show-menu-bar
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not to show the menu bar.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
+        </table>
+    </div>
+</div>
+<div id="auto-hide-cmd-bar" class="cfg-title">
+    auto-hide-cmd-bar
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not to show the command bar at all times. If this is set to false it will be shown only when it has keyboard focus.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
+        </table>
+    </div>
+</div>
+<div id="enable-auto-reload" class="cfg-title">
+    enable-auto-reload
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not dirty files will automatically be reloaded. When disabled, reloading requires manual reloading via the "reload" command.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
+        </table>
+    </div>
+</div>
+<div id="use-default-window-pos" class="cfg-title">
+    use-default-window-pos
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Internal use only. Used to determine whether or not the operation system should decide where to place the main window.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
+        </table>
+    </div>
+</div>
+<div id="window-pos-x" class="cfg-title">
+    window-pos-x
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The position of the window on the x axis.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>int</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 0</td></tr>
+        </table>
+    </div>
+</div>
+<div id="window-pos-y" class="cfg-title">
+    window-pos-y
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The position of the window on the y axis.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>int</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 0</td></tr>
+        </table>
+    </div>
+</div>
+<div id="window-width" class="cfg-title">
+    window-width
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The width of the window</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>int</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 1280</td></tr>
+        </table>
+    </div>
+</div>
+<div id="window-height" class="cfg-title">
+    window-height
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The height of the window.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>int</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 720</td></tr>
+        </table>
+    </div>
+</div>
+<div id="window-maximized" class="cfg-title">
+    window-maximized
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not the window is maximized.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
+        </table>
+    </div>
+</div>
+<div id="ui-scale" class="cfg-title">
+    ui-scale
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The scale of the UI. The total scale of UI elements is equal to the DPI scaling multiplied by this value.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>float</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 1</td></tr>
+        </table>
+    </div>
+</div>
+<div id="ui-font" class="cfg-title">
+    ui-font
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The default font to use for general UI elements. This will act as the default font in the event that a font fails to load.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>font</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> system-font-ui</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cmdbar-bg-color" class="cfg-title">
+    cmdbar-bg-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The background color of the command bar.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 64 64 64</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cmdbar-bg-color-active" class="cfg-title">
+    cmdbar-bg-color-active
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The background color of the command bar while it's got the keyboard focus.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 128 51 0</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cmdbar-tb-font" class="cfg-title">
+    cmdbar-tb-font
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The font to use in the text box of the command bar.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>font</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> system-font-mono</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cmdbar-text-color" class="cfg-title">
+    cmdbar-text-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the text in the command bar while in it's default state.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 224 224 224</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cmdbar-text-color-active" class="cfg-title">
+    cmdbar-text-color-active
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the text in the command bar while in it's focused state.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 224 224 224</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cmdbar-padding-horz" class="cfg-title">
+    cmdbar-padding-horz
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The amount of padding to apply to the command bar on the left and right sides.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>float</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 2</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cmdbar-padding-vert" class="cfg-title">
+    cmdbar-padding-vert
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The amount of padding to apply to the command bar on the top and bottom sides.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>float</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 2</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tabgroup-bg-color" class="cfg-title">
+    tabgroup-bg-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The background color of tab groups. This will be shown when there are no tabs open in the group.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 48 48 48</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-bg-color-inactive" class="cfg-title">
+    tab-bg-color-inactive
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The background color of tabs while inactive.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 58 58 58</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-bg-color-active" class="cfg-title">
+    tab-bg-color-active
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The background color of tabs while active.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 16 92 160</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-bg-color-hovered" class="cfg-title">
+    tab-bg-color-hovered
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The background color of tabs while hovered.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 32 128 192</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-font" class="cfg-title">
+    tab-font
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The font to use on tabs.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>font</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> system-font-ui</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-text-color" class="cfg-title">
+    tab-text-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the text on tabs.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 224 224 224</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-text-color-active" class="cfg-title">
+    tab-text-color-active
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the text on tabs while active.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 224 224 224</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-text-color-hovered" class="cfg-title">
+    tab-text-color-hovered
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the text on tabs while hovered.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 224 224 224</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-padding" class="cfg-title">
+    tab-padding
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The amount of padding to apply to all sides of a tab.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>float</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 4</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-show-close-button" class="cfg-title">
+    tab-show-close-button
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not to show the close button on tabs.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-close-button-color" class="cfg-title">
+    tab-close-button-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the close button while inactive.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 58 58 58</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-font" class="cfg-title">
+    texteditor-font
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The font to use in text editors.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>font</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> system-font-mono</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-text-color" class="cfg-title">
+    texteditor-text-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The base color of the text in a text editor. Note that syntax highlighting is independant of this variable.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 224 224 224</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-bg-color" class="cfg-title">
+    texteditor-bg-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The background color to use in text editors.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 48 48 48</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-cursor-color" class="cfg-title">
+    texteditor-cursor-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the caret/cursor in text editors.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 224 224 224</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-cursor-width" class="cfg-title">
+    texteditor-cursor-width
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The thickness of the caret/cursor in text editors.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>float</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 1</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-selection-bg-color" class="cfg-title">
+    texteditor-selection-bg-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The background color to use for selected text.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 64 128 192</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-active-line-color" class="cfg-title">
+    texteditor-active-line-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The background color of the line that the caret is currently sitting on in a text editor.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 40 40 40</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-show-line-numbers" class="cfg-title">
+    texteditor-show-line-numbers
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not to show line numbers.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-line-numbers-color" class="cfg-title">
+    texteditor-line-numbers-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the line numbers text.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 80 160 192</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-line-numbers-bg-color" class="cfg-title">
+    texteditor-line-numbers-bg-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the background of the line numbers.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 48 48 48</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-line-numbers-padding" class="cfg-title">
+    texteditor-line-numbers-padding
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The padding between the line numbers and the text in the text editor.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>float</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 16</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-sb-track-color" class="cfg-title">
+    texteditor-sb-track-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the track of the scroll bars on text editors.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 64 64 64</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-sb-thumb-color" class="cfg-title">
+    texteditor-sb-thumb-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the thumb of the scroll bars on text editors.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 92 92 92</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-sb-thumb-color-hovered" class="cfg-title">
+    texteditor-sb-thumb-color-hovered
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the thumb of the scroll bars on text editors while hovered.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 144 144 144</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-sb-thumb-color-pressed" class="cfg-title">
+    texteditor-sb-thumb-color-pressed
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the thumb of the scroll bars on text editors while pressed.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 180 180 180</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-sb-size" class="cfg-title">
+    texteditor-sb-size
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The thickness of the scrollbars on text editors.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>float</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 16</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-show-scrollbar-horz" class="cfg-title">
+    texteditor-show-scrollbar-horz
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not to show the horizontal scrollbar on text editors.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-show-scrollbar-vert" class="cfg-title">
+    texteditor-show-scrollbar-vert
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not to show the vertical scrollbar on text editors.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-enable-excess-scrolling" class="cfg-title">
+    texteditor-enable-excess-scrolling
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not the text editor can scroll past the last line.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-enable-tabs-to-spaces" class="cfg-title">
+    texteditor-enable-tabs-to-spaces
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not tabs are converted to spaces.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-tab-size-in-spaces" class="cfg-title">
+    texteditor-tab-size-in-spaces
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The size of tabs in spaces.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>int</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 4</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-scale" class="cfg-title">
+    texteditor-scale
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The scale/zoom to use in text editors.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>float</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 1</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-enable-auto-indent" class="cfg-title">
+    texteditor-enable-auto-indent
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not automatic indenting is enabled for when the user creates a new line.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-enable-word-wrap" class="cfg-title">
+    texteditor-enable-word-wrap
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not word wrap should be enabled.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
+        </table>
+    </div>
+</div>
+<div id="texteditor-enable-drag-and-drop" class="cfg-title">
+    texteditor-enable-drag-and-drop
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">Whether or not drag-and-drop should be enabled for text editors.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cpp-comment-text-color" class="cfg-title">
+    cpp-comment-text-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color to use for C/C++ comments.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 64 192 92</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cpp-string-text-color" class="cfg-title">
+    cpp-string-text-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color to use for C/C++ strings.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 192 92 64</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cpp-keyword-text-color" class="cfg-title">
+    cpp-keyword-text-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color to use for C/C++ keywords.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 64 160 255</td></tr>
+        </table>
+    </div>
+</div>
+
+			</div>
+        </div>
+    </div>
+
+    <table style="margin:0 auto; padding:1em 0px; text-align:center;">
+        <tr>
+            <td style="vertical-align:center;"><a style="padding:0;" href="https://twitter.com/drsoft_dred"><img src="../../img/twitter_white.png" style="padding:0; height:32px; width:32px;"></a></td>
+            <td style="vertical-align:center;"><a style="padding:0;" href="https://github.com/dr-soft/dred"><img src="../../img/github_white.png" style="padding:0; height:24px; width:24px;"></a></td>
+        </tr>
+    </table>
+
+    <div style="color:#e0d7cf; font-size:9pt; padding:2em 0px; text-align:center;">
+        Copyright &copy; 2016 David Reid<br/>
+        Developed by David Reid - <a class="footer-link" href="mailto:davidreidsoftware@gmail.com">davidreidsoftware@gmail.com</a>
+    </div>
+
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-81135233-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+</body>
+</html>
