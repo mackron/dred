@@ -8,4 +8,6 @@ char* dred_codegen_buffer_to_c_array(const unsigned char* buffer, unsigned int s
 // Converts the given buffer to a C-style static const char* string.
 //
 // Free the returned pointer with free().
+//
+// If "variableName" is null, the variable declaration will be excluded.
 char* dred_codegen_buffer_to_c_string(const unsigned char* buffer, unsigned int size, const char* variableName);
