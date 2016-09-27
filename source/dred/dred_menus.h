@@ -70,6 +70,10 @@ struct dred_menu_library
     dred_menu* pMenu_RecentFiles;
     size_t recentFileCount;
 
+    // The favourite files menu.
+    dred_menu* pMenu_FavouriteFiles;
+    size_t favouriteFileCount;
+
     // The themes menu.
     dred_menu* pMenu_Themes;
 
@@ -92,6 +96,10 @@ struct dred_menu_library
     dred_menu_item* pOpenRecentItem_Default;
     dred_menu_item* pOpenRecentItem_TextEditor;
 
+    // The Open Favourite menu items. We need to keep track of these so we can dynamically enable and disable them.
+    dred_menu_item* pOpenFavouriteItem_Default;
+    dred_menu_item* pOpenFavouriteItem_TextEditor;
+
     // The Theme menu items.
     dred_menu_item* pThemesItem_Default;
     dred_menu_item* pThemesItem_TextEditor;
@@ -107,4 +115,5 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred);
 void dred_menu_library_uninit(dred_menu_library* pLibrary);
 
 void dred_menu_library_update_recent_files_menu(dred_menu_library* pLibrary);
+void dred_menu_library_update_favourite_files_menu(dred_menu_library* pLibrary);
 void dred_menu_library_update_themes_menu(dred_menu_library* pLibrary);

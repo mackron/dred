@@ -200,6 +200,11 @@ typedef struct
     char* recentFiles[DRED_MAX_RECENT_FILES];
     size_t recentFileCount;
 
+    // Favourite files. Can have any number of these. This is a stretchy_buffer.
+    size_t favouriteFileCount;
+    size_t favouriteFileBufferSize;
+    char** favouriteFiles;
+
     // Recent commands.
     char* recentCommands[DRED_MAX_RECENT_COMMANDS];
     size_t recentCommandsCount;
@@ -234,6 +239,9 @@ void dred_config_set_default(dred_config* pConfig, const char* name);
 
 // Pushes a new recent file to the end of the list.
 void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolutePath);
+
+// Pushes a new favourite file to the end of the list.
+void dred_config_push_favourite_file(dred_config* pConfig, const char* fileAbsolutePath);
 
 // Pushes a new recent command to the end of the list.
 void dred_config_push_recent_cmd(dred_config* pConfig, const char* cmd);

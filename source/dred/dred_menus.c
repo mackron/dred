@@ -13,6 +13,9 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     // Recent files
     pLibrary->pMenu_RecentFiles = dred_menu_create(pDred, dred_menu_type_popup);
 
+    // Favourite files.
+    pLibrary->pMenu_FavouriteFiles = dred_menu_create(pDred, dred_menu_type_popup);
+
     // Themes.
     pLibrary->pMenu_Themes = dred_menu_create(pDred, dred_menu_type_popup);
 
@@ -26,6 +29,7 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append_with_shortcut(pFileMenu_Default, "&New", DRED_MENU_ITEM_ID_FILE_NEW, DRED_SHORTCUT_NAME_NEW, 0);
     dred_menu_item_create_and_append_with_shortcut(pFileMenu_Default, "&Open...", DRED_MENU_ITEM_ID_FILE_OPEN, DRED_SHORTCUT_NAME_OPEN, 0);
     pLibrary->pOpenRecentItem_Default = dred_menu_item_create_and_append(pFileMenu_Default, "Open Recent", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), 0, pLibrary->pMenu_RecentFiles);
+    pLibrary->pOpenFavouriteItem_Default = dred_menu_item_create_and_append(pFileMenu_Default, "Open Favourite", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), 0, pLibrary->pMenu_FavouriteFiles);
     dred_menu_item_create_and_append_separator(pFileMenu_Default);
     dred_menu_item_create_and_append(pFileMenu_Default, "E&xit", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_shortcut_create_single(dred_accelerator_create(DRED_GUI_F4, DRED_KEY_STATE_ALT_DOWN)), 0, NULL);
 
@@ -61,6 +65,7 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_item_create_and_append_with_shortcut(pFileMenu, "&New", DRED_MENU_ITEM_ID_FILE_NEW, DRED_SHORTCUT_NAME_NEW, 0);
     dred_menu_item_create_and_append_with_shortcut(pFileMenu, "&Open...", DRED_MENU_ITEM_ID_FILE_OPEN, DRED_SHORTCUT_NAME_OPEN, 0);
     pLibrary->pOpenRecentItem_TextEditor = dred_menu_item_create_and_append(pFileMenu, "Open Recent", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), 0, pLibrary->pMenu_RecentFiles);
+    pLibrary->pOpenFavouriteItem_TextEditor = dred_menu_item_create_and_append(pFileMenu, "Open Favourite", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), 0, pLibrary->pMenu_FavouriteFiles);
     dred_menu_item_create_and_append_separator(pFileMenu);
     dred_menu_item_create_and_append_with_shortcut(pFileMenu, "&Save", DRED_MENU_ITEM_ID_FILE_SAVE, DRED_SHORTCUT_NAME_SAVE, 0);
     dred_menu_item_create_and_append(pFileMenu, "Save &As...", DRED_MENU_ITEM_ID_FILE_SAVE_AS,  "save-as",  dred_shortcut_none(), 0, NULL);
@@ -153,6 +158,7 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
 
 
     dred_menu_library_update_recent_files_menu(pLibrary);
+    dred_menu_library_update_favourite_files_menu(pLibrary);
     dred_menu_library_update_themes_menu(pLibrary);
 
     return true;
@@ -165,6 +171,7 @@ void dred_menu_library_uninit(dred_menu_library* pLibrary)
     }
 
     dred_menu_delete_all_items(pLibrary->pMenu_RecentFiles);
+    dred_menu_delete_all_items(pLibrary->pMenu_FavouriteFiles);
 
     //dred_menu_delete(pLibrary->pMenu_RecentFiles);
     dred_menu_delete(pLibrary->pPopupMenu_TextEditor);
@@ -200,6 +207,36 @@ void dred_menu_library_update_recent_files_menu(dred_menu_library* pLibrary)
     } else {
         dred_menu_item_disable(pLibrary->pOpenRecentItem_Default);
         dred_menu_item_disable(pLibrary->pOpenRecentItem_TextEditor);
+    }
+}
+
+void dred_menu_library_update_favourite_files_menu(dred_menu_library* pLibrary)
+{
+    if (pLibrary == NULL || pLibrary->pMenu_FavouriteFiles == NULL) {
+        return;
+    }
+
+    pLibrary->favouriteFileCount = 0;
+    dred_menu_delete_all_items(pLibrary->pMenu_FavouriteFiles);
+
+    for (size_t iFavouriteFile = 0; iFavouriteFile < pLibrary->pDred->config.favouriteFileCount; ++iFavouriteFile) {
+        char cmdStr[DRED_MAX_PATH];
+        if (snprintf(cmdStr, sizeof(cmdStr), "open \"%s\"", pLibrary->pDred->config.favouriteFiles[iFavouriteFile]) < 0) {
+            continue;   // Failed to make the command string. Probably because the buffer is too small.
+        }
+
+        dred_menu_item_create_and_append(pLibrary->pMenu_FavouriteFiles, pLibrary->pDred->config.favouriteFiles[iFavouriteFile], (uint16_t)(DRED_MENU_ITEM_ID_RECENT_FILE_0 + iFavouriteFile), cmdStr, dred_shortcut_none(), 0, NULL);
+        pLibrary->recentFileCount += 1;
+    }
+
+
+    // Enable or disable the relevant menu items depending on how many recent files we have.
+    if (pLibrary->recentFileCount > 0) {
+        dred_menu_item_enable(pLibrary->pOpenFavouriteItem_Default);
+        dred_menu_item_enable(pLibrary->pOpenFavouriteItem_TextEditor);
+    } else {
+        dred_menu_item_disable(pLibrary->pOpenFavouriteItem_Default);
+        dred_menu_item_disable(pLibrary->pOpenFavouriteItem_TextEditor);
     }
 }
 
