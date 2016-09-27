@@ -167,7 +167,7 @@ dred_control* dred_get_element_with_keyboard_capture(dred_context* pDred);
 
 
 // Retrieves the control type of the editor to use for a file with the extension of the given file path.
-const char* dred_get_editor_type_by_path(const char* filePath);
+const char* dred_get_editor_type_by_path(dred_context* pDred, const char* filePath);
 
 // Finds the tab of the editor tied to the given absolute path.
 dred_tab* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char* filePathAbsolute);

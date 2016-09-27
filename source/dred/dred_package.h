@@ -4,11 +4,12 @@
 #define DRED_PACKAGE_FEATURE_CMDLINE_FUNCTION   (1 << 1)
 
 // Editor management.
-typedef dred_editor* (* dred_package_create_editor_proc)(dred_package* pPackage, dred_context* pDred, dred_control* pParent, float sizeX, float sizeY, const char* filePathAbsolute);
-typedef void         (* dred_package_delete_editor_proc)(dred_package* pPackage, dred_editor* pEditor);
+typedef const char*  (* dred_package_get_editor_type_by_path)(dred_package* pPackage, dred_context* pDred, const char* filePathAbsolute);
+typedef dred_editor* (* dred_package_create_editor_proc)     (dred_package* pPackage, dred_context* pDred, dred_control* pParent, float sizeX, float sizeY, const char* filePathAbsolute, const char* type);
+typedef bool32       (* dred_package_delete_editor_proc)     (dred_package* pPackage, dred_context* pDred, dred_editor* pEditor);   // <-- Return value is true if the editor was deleted; false if the editor was not created by this package.
 
 // Command line functions.
-typedef bool (* dred_package_try_exec_cmdline_func_proc)(dred_package* pPackage, int argc, char** argv, int* pResult);
+typedef bool32 (* dred_package_try_exec_cmdline_func_proc)(dred_package* pPackage, int argc, char** argv, int* pResult);
 
 struct dred_package
 {
@@ -18,8 +19,9 @@ struct dred_package
     {
         struct
         {
-            dred_package_create_editor_proc onCreateEditor;
-            dred_package_delete_editor_proc onDeleteEditor;
+            dred_package_get_editor_type_by_path getEditorTypeByPath;
+            dred_package_create_editor_proc createEditor;
+            dred_package_delete_editor_proc deleteEditor;
         } editor;
 
         struct

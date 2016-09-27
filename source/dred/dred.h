@@ -65,6 +65,10 @@
 #define DRED_INLINE static inline
 #endif
 
+// Basic types.
+typedef uint8_t  bool8;
+typedef uint32_t bool32;
+
 // dred header files.
 #ifdef __cplusplus
 extern "C" {

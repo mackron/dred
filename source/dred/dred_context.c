@@ -947,12 +947,32 @@ bool dred__save_editor(dred_editor* pEditor, const char* newFilePath, dred_tab* 
     return true;
 }
 
-const char* dred_get_editor_type_by_path(const char* filePath)
+
+#define DRED_FOREACH_PACKAGE(pDred, pPackage) \
+    size_t iPackage = 0; \
+    dred_package* pPackage = NULL; \
+    while ((pPackage = dred_package_library_get_package(pDred->pPackageLibrary, iPackage++)) != NULL)
+
+
+const char* dred_get_editor_type_by_path(dred_context* pDred, const char* filePath)
 {
-    // TODO: Add to this list.
-    // Check for known extensions first as a performance optimization. If that fails we'll want to open the file and inspect it.
+    if (filePath == NULL) return NULL;
+
+    // Check for known extensions first as a performance optimization. If that fails we'll want to open either open the file and inspect it,
+    // or look through extensions.
     if (drpath_extension_equal(filePath, "txt")) {
         return DRED_CONTROL_TYPE_TEXT_EDITOR;
+    }
+
+    // We need to look at packages and determine which one, if any, is able to open the file. If we can't find any, we fall back
+    // to the text or hex editor.
+    DRED_FOREACH_PACKAGE(pDred, pPackage) {
+        if (pPackage->cbs.editor.getEditorTypeByPath) {
+            const char* type = pPackage->cbs.editor.getEditorTypeByPath(pPackage, pDred, filePath);
+            if (type != NULL) {
+                return type;
+            }
+        }
     }
 
     return NULL;
@@ -979,7 +999,7 @@ dred_tab* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char*
 
 bool dred_open_file(dred_context* pDred, const char* filePath)
 {
-    return dred_open_file_by_type(pDred, filePath, dred_get_editor_type_by_path(filePath));
+    return dred_open_file_by_type(pDred, filePath, dred_get_editor_type_by_path(pDred, filePath));
 }
 
 bool dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType)
@@ -1325,12 +1345,25 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTab
     float sizeY;
     dred_tabgroup_get_body_size(pTabGroup, &sizeX, &sizeY);
 
+    // Check for special built-in editors first.
     dred_editor* pEditor = NULL;
     if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         pEditor = DRED_EDITOR(dred_text_editor_create(pDred, DRED_CONTROL(pTabGroup), sizeX, sizeY, filePathAbsolute));
     }
     if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_SETTINGS_EDITOR)) {
         pEditor = DRED_EDITOR(dred_settings_editor_create(pDred, DRED_CONTROL(pTabGroup), filePathAbsolute));
+    }
+
+    // Try loading from external packages if it's an unknown extension.
+    if (pEditor == NULL) {
+        DRED_FOREACH_PACKAGE(pDred, pPackage) {
+            if (pPackage->cbs.editor.createEditor) {
+                pEditor = pPackage->cbs.editor.createEditor(pPackage, pDred, DRED_CONTROL(pTabGroup), sizeX, sizeY, filePathAbsolute, editorType);
+                if (pEditor != NULL) {
+                    break;
+                }
+            }
+        }
     }
 
     // Fall back to a text editor if it's an unknown extension.
@@ -1350,6 +1383,14 @@ void dred_delete_editor_by_type(dred_editor* pEditor)
     if (dred_control_is_of_type(DRED_CONTROL(pEditor), DRED_CONTROL_TYPE_SETTINGS_EDITOR)) {
         dred_settings_editor_delete(DRED_SETTINGS_EDITOR(pEditor));
         return;
+    }
+
+    // If we get here it means it's not a known core editor, so check packages.
+    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pEditor));
+    DRED_FOREACH_PACKAGE(pDred, pPackage) {
+        if (pPackage->cbs.editor.deleteEditor && pPackage->cbs.editor.deleteEditor(pPackage, pDred, pEditor)) {
+            return;
+        }
     }
 }
 
