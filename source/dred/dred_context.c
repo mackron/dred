@@ -813,6 +813,13 @@ void dred_save_dredprivate(dred_context* pDred)
         dred_file_write_string(file, "\"\n");
     }
 
+    // Favourite files.
+    for (size_t i = 0; i < pDred->config.favouriteFileCount; ++i) {
+        dred_file_write_string(file, "favourite-file \"");
+        dred_file_write_string(file, pDred->config.favouriteFiles[i]);
+        dred_file_write_string(file, "\"\n");
+    }
+
     // Recent commands.
     for (size_t i = pDred->config.recentCommandsCount; i > 0; --i) {
         dred_file_write_string(file, "recent-cmd \"");
@@ -2650,6 +2657,29 @@ const char* dred_get_language_by_file_path(dred_context* pDred, const char* file
 }
 
 
+bool dred_add_favourite(dred_context* pDred, const char* absolutePath)
+{
+    if (pDred == NULL || absolutePath == NULL) {
+        return false;
+    }
+
+    dred_config_push_favourite_file(&pDred->config, absolutePath);
+    dred_menu_library_update_favourite_files_menu(&pDred->menuLibrary);
+    return true;
+}
+
+bool dred_remove_favourite(dred_context* pDred, const char* absolutePath)
+{
+    if (pDred == NULL || absolutePath == NULL) {
+        return false;
+    }
+
+    dred_config_remove_favourite_file(&pDred->config, absolutePath);
+    dred_menu_library_update_favourite_files_menu(&pDred->menuLibrary);
+    return true;
+}
+
+
 void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab, dred_tab* pOldActiveTab)
 {
     (void)pOldActiveTab;
@@ -2668,9 +2698,19 @@ void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab, dred_tab* pOldAc
 
         if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
             dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_TextEditor);
-        }
-        else {
+        } else {
             dred_window_set_menu(pDred->pMainWindow, pDred->menuLibrary.pMenu_Default);
+        }
+
+        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
+            dred_editor* pEditor = DRED_EDITOR(pControl);
+            if (pEditor->filePathAbsolute[0] == '\0') {
+                dred_menu_item_disable(pDred->menuLibrary.pMenuItem_AddToFavourites);
+                dred_menu_item_disable(pDred->menuLibrary.pMenuItem_RemoveFromFavourites);
+            } else {
+                dred_menu_item_enable(pDred->menuLibrary.pMenuItem_AddToFavourites);
+                dred_menu_item_enable(pDred->menuLibrary.pMenuItem_RemoveFromFavourites);
+            }
         }
 
         dred_update_info_bar(pDred, pControl);

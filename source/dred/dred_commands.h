@@ -56,6 +56,8 @@
 // unindent                 dred_command__unindent                  DRED_CMDBAR_RELEASE_KEYBOARD
 // insert-date              dred_command__insert_date               DRED_CMDBAR_RELEASE_KEYBOARD
 // export2cstring           dred_command__export2cstring            DRED_CMDBAR_RELEASE_KEYBOARD
+// add-favourite            dred_command__add_favourite             DRED_CMDBAR_RELEASE_KEYBOARD
+// remove-favourite         dred_command__remove_favourite          DRED_CMDBAR_RELEASE_KEYBOARD
 //
 // END COMMAND LIST
 
@@ -197,6 +199,12 @@ bool dred_command__print(dred_context* pDred, const char* value);
 //
 // Reloads the currently focused file.
 bool dred_command__reload(dred_context* pDred, const char* value);
+
+// add-favourite
+bool dred_command__add_favourite(dred_context* pDred, const char* value);
+
+// remove-favourite
+bool dred_command__remove_favourite(dred_context* pDred, const char* value);
 
 
 

@@ -380,6 +380,13 @@ dred_font* dred_parse_and_load_font(dred_context* pDred, const char* value);
 const char* dred_get_language_by_file_path(dred_context* pDred, const char* filePath);
 
 
+// Adds a favourite file.
+bool dred_add_favourite(dred_context* pDred, const char* absolutePath);
+
+// Removes a favourite file.
+bool dred_remove_favourite(dred_context* pDred, const char* absolutePath);
+
+
 // Called when a tab is activated. This is where contextual GUI elements are shown or hidden.
 void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab, dred_tab* pOldActiveTab);
 

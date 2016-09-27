@@ -323,6 +323,44 @@ bool dred_command__reload(dred_context* pDred, const char* value)
     return true;
 }
 
+bool dred_command__add_favourite(dred_context* pDred, const char* value)
+{
+    const char* absolutePath = value;
+    if (absolutePath == NULL || absolutePath[0] == '\0') {
+        dred_editor* pEditor = dred_get_focused_editor(pDred);
+        if (pEditor != NULL) {
+            absolutePath = dred_editor_get_file_path(pEditor);
+        }
+    }
+
+    if (absolutePath == NULL || absolutePath[0] == '\0') {
+        return false;
+    }
+
+    // TODO: If absolutePath is relative, make it absolute based on the current directory.
+
+    return dred_add_favourite(pDred, absolutePath);
+}
+
+bool dred_command__remove_favourite(dred_context* pDred, const char* value)
+{
+    const char* absolutePath = value;
+    if (absolutePath == NULL || absolutePath[0] == '\0') {
+        dred_editor* pEditor = dred_get_focused_editor(pDred);
+        if (pEditor != NULL) {
+            absolutePath = dred_editor_get_file_path(pEditor);
+        }
+    }
+
+    if (absolutePath == NULL || absolutePath[0] == '\0') {
+        return false;
+    }
+
+    // TODO: If absolutePath is relative, make it absolute based on the current directory.
+
+    return dred_remove_favourite(pDred, absolutePath);
+}
+
 
 bool dred_command__undo(dred_context* pDred, const char* value)
 {

@@ -4,7 +4,7 @@
 
 
 // Commands
-#define DRED_COMMAND_COUNT 51
+#define DRED_COMMAND_COUNT 53
 
 const char g_CommandNamePool[] = 
     "!\0"
@@ -57,7 +57,9 @@ const char g_CommandNamePool[] =
     "zoom\0"
     "unindent\0"
     "insert-date\0"
-    "export2cstring\0";
+    "export2cstring\0"
+    "add-favourite\0"
+    "remove-favourite\0";
 
 const char* g_CommandNames[] = {
     g_CommandNamePool + 0,
@@ -111,6 +113,8 @@ const char* g_CommandNames[] = {
     g_CommandNamePool + 462,
     g_CommandNamePool + 471,
     g_CommandNamePool + 483,
+    g_CommandNamePool + 498,
+    g_CommandNamePool + 512,
 };
 
 dred_command g_Commands[] = {
@@ -165,6 +169,8 @@ dred_command g_Commands[] = {
     {dred_command__unindent, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__insert_date, DRED_CMDBAR_RELEASE_KEYBOARD},
     {dred_command__export2cstring, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__add_favourite, DRED_CMDBAR_RELEASE_KEYBOARD},
+    {dred_command__remove_favourite, DRED_CMDBAR_RELEASE_KEYBOARD},
 };
 
 

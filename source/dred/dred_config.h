@@ -243,6 +243,10 @@ void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolute
 // Pushes a new favourite file to the end of the list.
 void dred_config_push_favourite_file(dred_config* pConfig, const char* fileAbsolutePath);
 
+// Removes a favourite file.
+void dred_config_remove_favourite_file_by_index(dred_config* pConfig, size_t index);
+void dred_config_remove_favourite_file(dred_config* pConfig, const char* fileAbsolutePath);
+
 // Pushes a new recent command to the end of the list.
 void dred_config_push_recent_cmd(dred_config* pConfig, const char* cmd);
 

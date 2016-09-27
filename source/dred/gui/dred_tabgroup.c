@@ -136,7 +136,12 @@ void dred_tabbar__on_tab_mouse_button_up(dred_tabbar* pTabBar, dred_tab* pTab, i
     }
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_RIGHT) {
-        dred_control_show_popup_menu(DRED_CONTROL(pTabGroup), pDred->menuLibrary.pPopupMenu_Tab, mouseRelativePosX, mouseRelativePosY);
+        dred_control* pControl = dred_tab_get_control(pTab);
+        if (pControl != NULL) {
+            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
+                dred_control_show_popup_menu(DRED_CONTROL(pTabGroup), pDred->menuLibrary.pPopupMenu_Tab, mouseRelativePosX, mouseRelativePosY);
+            }
+        }
     }
 }
 

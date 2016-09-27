@@ -29,6 +29,10 @@ void dred_config_uninit(dred_config* pConfig)
         gb_free_string(pConfig->recentFiles[i]);
     }
 
+    for (size_t i = 0; i < pConfig->favouriteFileCount; ++i) {
+        gb_free_string(pConfig->favouriteFiles[i]);
+    }
+
     for (size_t i = 0; i < pConfig->recentCommandsCount; ++i) {
         gb_free_string(pConfig->recentCommands[i]);
     }
@@ -121,6 +125,8 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
         if (dr_next_token(value, filePath, sizeof(filePath)) != NULL) {
             dred_config_push_favourite_file(pData->pConfig, filePath);
         }
+
+        return;
     }
 
     if (strcmp(key, "recent-cmd") == 0) {
@@ -261,11 +267,11 @@ void dred_config_push_favourite_file(dred_config* pConfig, const char* fileAbsol
     for (size_t i = 0; i < pConfig->favouriteFileCount; ++i) {
         if (drpath_equal(fileAbsolutePath, pConfig->favouriteFiles[i])) {
             char* existingPath = pConfig->favouriteFiles[i];
-            for (size_t j = i; j > 0; --j) {
-                pConfig->favouriteFiles[j] = pConfig->favouriteFiles[j-1];
+            for (size_t j = i; j < pConfig->favouriteFileCount-1; ++j) {
+                pConfig->favouriteFiles[j] = pConfig->favouriteFiles[j+1];
             }
 
-            pConfig->favouriteFiles[0] = existingPath;
+            pConfig->favouriteFiles[pConfig->favouriteFileCount-1] = existingPath;
             return;
         }
     }
@@ -282,17 +288,36 @@ void dred_config_push_favourite_file(dred_config* pConfig, const char* fileAbsol
         pConfig->favouriteFileBufferSize = newBufferSize;
     }
 
-    // The most recent file is at position 0. Existing items need to be moved up a slot.
-    for (size_t i = pConfig->favouriteFileCount; i > 0; --i) {
-        pConfig->favouriteFiles[i] = pConfig->favouriteFiles[i-1];
-    }
-
     // The path needs to be cleaned for aesthetic just to make it look nicer in the Recent Files menu.
     char filePathClean[DRED_MAX_PATH];
     drpath_clean(fileAbsolutePath, filePathClean, sizeof(filePathClean));
 
-    pConfig->favouriteFiles[0] = gb_make_string(filePathClean);
+    pConfig->favouriteFiles[pConfig->favouriteFileCount] = gb_make_string(filePathClean);
     pConfig->favouriteFileCount += 1;
+}
+
+void dred_config_remove_favourite_file_by_index(dred_config* pConfig, size_t index)
+{
+    if (pConfig == NULL || pConfig->favouriteFileCount == 0 || index >= pConfig->favouriteFileCount) return;
+
+    // Just move everything down a slot.
+    for (size_t i = index; i < pConfig->favouriteFileCount-1; ++i) {
+        pConfig->favouriteFiles[i] = pConfig->favouriteFiles[i+1];
+    }
+
+    pConfig->favouriteFileCount -= 1;
+}
+
+void dred_config_remove_favourite_file(dred_config* pConfig, const char* fileAbsolutePath)
+{
+    if (pConfig == NULL || fileAbsolutePath == NULL) return;
+
+    for (size_t i = 0; i < pConfig->favouriteFileCount; ++i) {
+        if (strcmp(pConfig->favouriteFiles[i], fileAbsolutePath) == 0) {
+            dred_config_remove_favourite_file_by_index(pConfig, i);
+            return;
+        }
+    }
 }
 
 void dred_config_push_recent_cmd(dred_config* pConfig, const char* cmd)

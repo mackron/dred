@@ -545,6 +545,30 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             }
         } break;
 
+        case WM_MENUCOMMAND:
+        {
+            // TODO: Fix errors with menu items. The WM_COMMAND version is completely wrong.
+            //
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms647603(v=vs.85).aspx
+            //
+            // Implement:
+            //   dred_platform_track_menu__win32() - Called whenever a window is created.
+            //   dred_platform_untrack_menu__win32() - Called whenever a window is deleted.
+            //   dred_platform_get_menu_by_HMENU__win32() - Called below.
+            //
+            // Remove the [HIWORD(wParam) == 0] branch in WM_COMMAND.
+            // Test that the main menu still works.
+#if 0
+            size_t itemIndex = (size_t)wParam;
+            dred_menu* pMenu = dred_platform_get_menu_by_HMENU__win32((HMENU)lParam);
+            if (pMenu != NULL && itemIndex < pMenu->menuItemCount) {
+                dred_menu_item* pMenuItem = pMenu->ppMenuItems[itemIndex];
+                assert(pMenuItem != NULL);
+                dred_exec(pWindow->pDred, pMenuItem->command, NULL);
+            }
+#endif
+        } break;
+
 
         case WM_SETCURSOR:
         {
@@ -1165,6 +1189,8 @@ dred_menu* dred_menu_create__win32(dred_context* pDred, dred_menu_type type)
     pMenu->pDred = pDred;
     pMenu->type  = type;
     pMenu->hMenu = hMenu;
+
+    // TODO: Need to track this menu so we can map the dred_menu object to the HMENU handle.
 
     return pMenu;
 }
