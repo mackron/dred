@@ -61,8 +61,20 @@ bool dred__try_opening_existing_process(dr_cmdline cmdline)
     return false;
 }
 
+/*bool dred_load_packages(dred_package_library* pLibrary)
+{
+    if (pLibrary == NULL) return false;
+    return true;
+}*/
+
+
+
 int dred_main(dr_cmdline cmdline)
 {
+    // Packages need to be loaded first.
+    dred_package_library packages;
+    dred_package_library_init(&packages);
+
     // Go down a different branch for command-line functions.
     if (dr_cmdline_key_exists(&cmdline, "f")) {
         return dred_main_f(cmdline);    // <-- Implemented in cmdline_funcs/dred_main_f.c
@@ -139,7 +151,7 @@ int dred_main(dr_cmdline cmdline)
     dred_platform_init();
 
     dred_context dred;
-    if (!dred_init(&dred, cmdline)) {
+    if (!dred_init(&dred, cmdline, &packages)) {
         return -1;
     }
 

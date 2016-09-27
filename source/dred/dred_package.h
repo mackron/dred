@@ -27,4 +27,28 @@ struct dred_package
             dred_package_try_exec_cmdline_func_proc onTryExecCmdLineFunc;
         } cmdlinefunc;
     } cbs;
+
+
+    //
+    // [Internal Use Only]
+    //
+    dred_dl _dl;    // A handle to the .dll or .so library.
 };
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// DLL/SO Entry Points
+//
+///////////////////////////////////////////////////////////////////////////////
+#ifdef __cplusplus
+extern "C" {
+#endif
+typedef dred_package* (* dred_package_create_proc)();
+DRED_PACKAGE_API dred_package* dred_package_create();
+
+typedef void (* dred_package_delete_proc)(dred_package* pPackage);
+DRED_PACKAGE_API void dred_package_delete(dred_package* pPackage);
+#ifdef __cplusplus
+}
+#endif

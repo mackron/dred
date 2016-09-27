@@ -12,6 +12,9 @@ bool dred_get_log_folder_path(char* pathOut, size_t pathOutSize);
 // dred_get_log_path()
 bool dred_get_log_path(char* pathOut, size_t pathOutSize);
 
+// dred_get_packages_folder_path()
+bool dred_get_packages_folder_path(char* pathOut, size_t pathOutSize);
+
 
 //// Basic File IO Wrapper ////
 typedef void* dred_file;

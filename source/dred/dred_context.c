@@ -284,7 +284,7 @@ dred_thread_result DRED_THREADCALL dred_ipc_message_proc(void* pData)
 }
 
 
-bool dred_init(dred_context* pDred, dr_cmdline cmdline)
+bool dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_library* pPackageLibrary)
 {
     // TODO: USE dred_error() AND FAMILY FOR PRINTING CRITICAL ERRORS INSTEAD OF printf()
 
@@ -302,6 +302,7 @@ bool dred_init(dred_context* pDred, dr_cmdline cmdline)
     pDred->pGUI = &pDred->gui;
 
     pDred->cmdline = cmdline;
+    pDred->pPackageLibrary = pPackageLibrary;
 
 
     // Make sure the user's config directory exists.

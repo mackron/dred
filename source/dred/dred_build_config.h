@@ -12,11 +12,44 @@
 #define DRED_WIN32
 #define DRED_EXE_NAME               "dred.exe"
 #endif
-
 #ifdef __linux__
+#define DRED_LINUX
 #define DRED_GTK
 #define DRED_EXE_NAME               "dred"
 #endif
+
+
+#ifdef _WIN32
+#ifdef _WIN64
+#define DRED_64BIT
+#else
+#define DRED_32BIT
+#endif
+#endif
+
+#ifdef __GNUC__
+#ifdef __LP64__
+#define DRED_64BIT
+#else
+#define DRED_32BIT
+#endif
+#endif
+
+#if !defined(DRED_64BIT) && !defined(DRED_32BIT)
+#include <stdint.h>
+#if SIZE_MAX == ~0ULL
+#define DRED_64BIT
+#else
+#define DRED_32BIT
+#endif
+#endif
+
+#ifndef NDEBUG
+#define DRED_DEBUG
+#else
+#define DRED_RELEASE
+#endif
+
 
 #define DRED_MAX_PATH               4096
 

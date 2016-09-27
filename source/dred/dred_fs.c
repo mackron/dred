@@ -36,6 +36,15 @@ bool dred_get_log_path(char* pathOut, size_t pathOutSize)
     return drpath_append(pathOut, pathOutSize, "dred.log");
 }
 
+bool dred_get_packages_folder_path(char* pathOut, size_t pathOutSize)
+{
+    if (!dr_get_executable_directory_path(pathOut, pathOutSize)) {
+        return false;
+    }
+
+    return drpath_append(pathOut, pathOutSize, "packages");
+}
+
 
 
 dred_file dred_file_open(const char* filePath, unsigned int openMode)
