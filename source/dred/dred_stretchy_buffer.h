@@ -214,3 +214,12 @@ static void * stb__raw_sbgrowf(void *arr, int increment, int itemsize)
    }
 }
 #endif // STB_STRETCHY_BUFFER_H_INCLUDED
+
+#ifdef __cplusplus
+template<class T>
+static T * stb__sbgrowf(T * arr, int increment, int itemsize) {
+    return (T*)stb__raw_sbgrowf((void *)arr, increment, itemsize);
+}
+#else
+#define stb__sbgrowf stb__raw_sbgrowf
+#endif

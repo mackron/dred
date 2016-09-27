@@ -117,12 +117,3 @@ extern "C" {
 #endif
 
 #include "dred_stretchy_buffer.h"   // stb_stretchy_buffer with a C++ fix. Remove this once this is addressed upstream.
-#ifdef __cplusplus
-template<class T>
-static T * stb__sbgrowf(T * arr, int increment, int itemsize) {
-    return (T*)stb__raw_sbgrowf((void *)arr, increment, itemsize);
-}
-#else
-#define stb__sbgrowf stb__raw_sbgrowf
-#endif
-
