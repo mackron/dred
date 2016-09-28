@@ -2562,8 +2562,8 @@ dred_font* dred__load_system_font_mono(dred_context* pDred)
     OSVERSIONINFOEXA version;
     ZeroMemory(&version, sizeof(version));
     version.dwOSVersionInfoSize = sizeof(version);
-    version.dwMajorVersion = 6;
-    if (VerifyVersionInfoA(&version, VER_MAJORVERSION, VerSetConditionMask(0, VER_MAJORVERSION, VER_LESS))) {
+    version.dwMajorVersion = 5;
+    if (VerifyVersionInfoA(&version, VER_MAJORVERSION, VerSetConditionMask(0, VER_MAJORVERSION, VER_LESS_EQUAL))) {
         strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Courier New");
     }
 #endif
