@@ -2762,8 +2762,8 @@ bool drte_engine__capture_and_push_undo_state__user_data(drte_engine* pEngine, d
         return false;
     }
 
+    *(size_t*)pPreparedUserData = preparedStateUserDataSize;
     if (preparedStateUserDataSize > 0) {
-        *(size_t*)pPreparedUserData = preparedStateUserDataSize;
         if (pEngine->onGetUndoState(pEngine, (uint8_t*)pPreparedUserData + sizeof(size_t)) != preparedStateUserDataSize) {
             return false;   // Inconsistent data size returned by onGetUndoState().
         }
