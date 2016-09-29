@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-char* dred_codegen_buffer_to_c_array(const unsigned char* buffer, unsigned int size, const char* variableName)
+char* dred_codegen_buffer_to_c_array(const unsigned char* buffer, size_t size, const char* variableName)
 {
     const unsigned int bytesPerLine = 16;
     const char* header = "static const unsigned char ";
@@ -15,7 +15,7 @@ char* dred_codegen_buffer_to_c_array(const unsigned char* buffer, unsigned int s
     totalLen += (size / bytesPerLine + 1) * 4;                           // Indentation.
     totalLen += 2;                                                       // +2 for the "};" at the end.
 
-    char* output = (char*)malloc(totalLen);                                     // No need for +1 for the null terminator because the last byte will not have a trailing "," which leaves room.
+    char* output = (char*)malloc(totalLen);                              // No need for +1 for the null terminator because the last byte will not have a trailing "," which leaves room.
 
     char* runningOutput = output;
     memcpy(runningOutput, header, headerLen);
@@ -63,7 +63,7 @@ char* dred_codegen_buffer_to_c_array(const unsigned char* buffer, unsigned int s
 }
 
 
-char* dred_codegen_buffer_to_c_string(const unsigned char* buffer, unsigned int size, const char* variableName)
+char* dred_codegen_buffer_to_c_string(const unsigned char* buffer, size_t size, const char* variableName)
 {
     if (buffer == NULL) return NULL;
 
