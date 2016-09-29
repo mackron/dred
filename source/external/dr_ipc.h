@@ -1,5 +1,5 @@
 // Interprocess communication. Public Domain. See "unlicense" statement at the end of this file.
-// dr_ipc - v0.2 - 2016-09-20
+// dr_ipc - v0.3 - 2016-09-29
 //
 // David Reid - mackron@gmail.com
 
@@ -117,7 +117,20 @@
 #define dr_ipc_h
 
 #include <stddef.h> // For size_t
-#include <stdbool.h>
+
+#ifndef DR_BOOL_DEFINED
+#define DR_BOOL_DEFINED
+#ifdef _WIN32
+typedef char drBool8;
+typedef int  drBool32;
+#else
+#include <stdint.h>
+typedef int8_t  drBool8;
+typedef int32_t drBool32;
+#endif
+#define DR_TRUE     1
+#define DR_FALSE    0
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -222,7 +235,7 @@ dripc_result dripc_map_shared_memory(dripc_handle memory, void** ppDataOut);
 void dripc_unmap_shared_memory(dripc_handle memory);
 
 // Determines whether or not the given memory object is currently mapped.
-bool dripc_is_shared_memory_mapped(dripc_handle memory);
+drBool32 dripc_is_shared_memory_mapped(dripc_handle memory);
 
 
 #ifdef __cplusplus
@@ -1060,7 +1073,7 @@ void dripc_unmap_shared_memory__win32(dripc_handle memory)
     memory->data.shared_memory.pMappedData = NULL;
 }
 
-bool dripc_is_shared_memory_mapped__win32(dripc_handle memory)
+drBool32 dripc_is_shared_memory_mapped__win32(dripc_handle memory)
 {
     return memory->data.shared_memory.pMappedData != NULL;
 }
@@ -1158,7 +1171,7 @@ void dripc_unmap_shared_memory__unix(dripc_handle memory)
     memory->data.shared_memory.mappedDataSize = 0;
 }
 
-bool dripc_is_shared_memory_mapped__unix(dripc_handle memory)
+drBool32 dripc_is_shared_memory_mapped__unix(dripc_handle memory)
 {
     return memory->data.shared_memory.pMappedData != NULL;
 }
@@ -1250,9 +1263,9 @@ void dripc_unmap_shared_memory(dripc_handle memory)
 #endif
 }
 
-bool dripc_is_shared_memory_mapped(dripc_handle memory)
+drBool32 dripc_is_shared_memory_mapped(dripc_handle memory)
 {
-    if (memory == NULL || memory->type != dripc_handle_type_shared_memory) return false;
+    if (memory == NULL || memory->type != dripc_handle_type_shared_memory) return DR_FALSE;
 
 #ifdef DR_IPC_WIN32
     return dripc_is_shared_memory_mapped__win32(memory);
@@ -1270,6 +1283,9 @@ bool dripc_is_shared_memory_mapped(dripc_handle memory)
 
 
 // REVISION HISTORY
+//
+// v0.3 - 2016-09-29
+//   - API/ABI CHANGE. Use drBool32 instead of the built-in bool type. Rationale is for ABI consistency between C and C++ builds.
 //
 // v0.2 - 2016-09-20
 //   - Add support for shared memory.

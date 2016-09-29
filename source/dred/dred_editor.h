@@ -5,8 +5,8 @@
 typedef struct dred_editor dred_editor;
 #define DRED_EDITOR(a) ((dred_editor*)(a))
 
-typedef bool (* dred_editor_on_save_proc)(dred_editor* pEditor, dred_file file, const char* filePath);
-typedef bool (* dred_editor_on_reload_proc)(dred_editor* pEditor);
+typedef drBool32 (* dred_editor_on_save_proc)(dred_editor* pEditor, dred_file file, const char* filePath);
+typedef drBool32 (* dred_editor_on_reload_proc)(dred_editor* pEditor);
 typedef void (* dred_editor_on_modified_proc)(dred_editor* pEditor);
 typedef void (* dred_editor_on_unmodified_proc)(dred_editor* pEditor);
 
@@ -21,8 +21,8 @@ struct dred_editor
     dred_editor_on_reload_proc onReload;
     dred_editor_on_modified_proc onModified;
     dred_editor_on_unmodified_proc onUnmodified;
-    bool isModified;
-    bool isReadOnly;
+    drBool32 isModified;
+    drBool32 isReadOnly;
 
     size_t extraDataSize;
     uint8_t pExtraData[1];
@@ -30,7 +30,7 @@ struct dred_editor
 
 
 // dred_editor_create()
-bool dred_editor_init(dred_editor* pEditor, dred_context* pDred, dred_control* pParent, const char* type, float sizeX, float sizeY, const char* filePathAbsolute);
+drBool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dred_control* pParent, const char* type, float sizeX, float sizeY, const char* filePathAbsolute);
 
 // dred_editor_delete()
 void dred_editor_uninit(dred_editor* pEditor);
@@ -42,19 +42,19 @@ void dred_editor_uninit(dred_editor* pEditor);
 const char* dred_editor_get_file_path(dred_editor* pEditor);
 
 // Sets the file path of the given editor.
-bool dred_editor_set_file_path(dred_editor* pEditor, const char* newFilePath);
+drBool32 dred_editor_set_file_path(dred_editor* pEditor, const char* newFilePath);
 
 
 // Saves the given editor to the given file.
 //
 // This will change the file association to the new file.
-bool dred_editor_save(dred_editor* pEditor, const char* newFilePath);
+drBool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath);
 
 // Reloads the given editor.
-bool dred_editor_reload(dred_editor* pEditor);
+drBool32 dred_editor_reload(dred_editor* pEditor);
 
 // Checks if the file tied to the given editor is dirty and reloads it if so.
-bool dred_editor_check_if_dirty_and_reload(dred_editor* pEditor);
+drBool32 dred_editor_check_if_dirty_and_reload(dred_editor* pEditor);
 
 
 // Marks the editor as modified.
@@ -64,14 +64,14 @@ void dred_editor_mark_as_modified(dred_editor* pEditor);
 void dred_editor_unmark_as_modified(dred_editor* pEditor);
 
 // Determines whether or not the editor is marked as modified.
-bool dred_editor_is_modified(dred_editor* pEditor);
+drBool32 dred_editor_is_modified(dred_editor* pEditor);
 
 
 // Updates the last modified time of the file.
 void dred_editor_update_file_last_modified_time(dred_editor* pEditor);
 
 // Determines if the editor is read-only.
-bool dred_editor_is_read_only(dred_editor* pEditor);
+drBool32 dred_editor_is_read_only(dred_editor* pEditor);
 
 
 // Events

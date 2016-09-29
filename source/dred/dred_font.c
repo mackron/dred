@@ -161,7 +161,7 @@ void dred_font_release_subfont(dred_font* pFont, dred_gui_font* pSubFont)
     }
 }
 
-bool dred_font_desc_to_string(dred_font_desc* pDesc, char* strOut, size_t strOutSize)
+drBool32 dred_font_desc_to_string(dred_font_desc* pDesc, char* strOut, size_t strOutSize)
 {
     char weightStr[256];
     if (!dred_font_weight_to_string(pDesc->weight, weightStr, sizeof(weightStr))) {
@@ -176,7 +176,7 @@ bool dred_font_desc_to_string(dred_font_desc* pDesc, char* strOut, size_t strOut
     return snprintf(strOut, strOutSize, "\"%s\" %u %s %s", pDesc->family, pDesc->size, weightStr, slantStr) > 0;
 }
 
-bool dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize)
+drBool32 dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize)
 {
     if (pFont == NULL) {
         return strcpy_s(strOut, strOutSize, "system-font-ui") == 0;
@@ -194,35 +194,35 @@ bool dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize)
 }
 
 
-bool dred_font_get_metrics(dred_font* pFont, float scale, dred_gui_font_metrics* pMetricsOut)
+drBool32 dred_font_get_metrics(dred_font* pFont, float scale, dred_gui_font_metrics* pMetricsOut)
 {
     if (pFont == NULL) {
-        return false;   
+        return DR_FALSE;   
     }
 
     dred_gui_font* pSubFont = dred_font_acquire_subfont(pFont, scale);
     if (pSubFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
-    bool result = dred_gui_get_font_metrics(pSubFont, pMetricsOut);
+    drBool32 result = dred_gui_get_font_metrics(pSubFont, pMetricsOut);
     
     dred_font_release_subfont(pFont, pSubFont);
     return result;
 }
 
-bool dred_font_measure_string(dred_font* pFont, float scale, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut)
+drBool32 dred_font_measure_string(dred_font* pFont, float scale, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut)
 {
     if (pFont == NULL) {
-        return false;   
+        return DR_FALSE;   
     }
 
     dred_gui_font* pSubFont = dred_font_acquire_subfont(pFont, scale);
     if (pSubFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
-    bool result = dred_gui_measure_string(pSubFont, text, textLength, pWidthOut, pHeightOut);
+    drBool32 result = dred_gui_measure_string(pSubFont, text, textLength, pWidthOut, pHeightOut);
     
     dred_font_release_subfont(pFont, pSubFont);
     return result;

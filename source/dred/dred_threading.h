@@ -26,7 +26,7 @@ typedef dred_thread_result (DRED_THREADCALL * dred_thread_entry_proc)(void* pDat
 // Starts a new thread.
 //
 // There is no delete function. Threads should be terminated naturally.
-bool dred_thread_create(dred_thread* pThread, dred_thread_entry_proc entryProc, void* pData);
+drBool32 dred_thread_create(dred_thread* pThread, dred_thread_entry_proc entryProc, void* pData);
 
 // Waits for a thread to return.
 void dred_thread_wait(dred_thread* pThread);
@@ -35,7 +35,7 @@ void dred_thread_wait(dred_thread* pThread);
 //// Mutex ////
 
 // Creates a mutex.
-bool dred_mutex_create(dred_mutex* pMutex);
+drBool32 dred_mutex_create(dred_mutex* pMutex);
 
 // Deletes a mutex.
 void dred_mutex_delete(dred_mutex* pMutex);
@@ -50,13 +50,13 @@ void dred_mutex_unlock(dred_mutex* pMutex);
 //// Semaphore ///
 
 // Creates a semaphore.
-bool dred_semaphore_create(dred_semaphore* pSemaphore, int initialValue);
+drBool32 dred_semaphore_create(dred_semaphore* pSemaphore, int initialValue);
 
 // Delets a semaphore.
 void dred_semaphore_delete(dred_semaphore* pSemaphore);
 
 // Waits on the given semaphore object and decrements it's counter by one upon returning.
-bool dred_semaphore_wait(dred_semaphore* pSemaphore);
+drBool32 dred_semaphore_wait(dred_semaphore* pSemaphore);
 
 // Releases the given semaphore and increments it's counter by one upon returning.
-bool dred_semaphore_release(dred_semaphore* pSemaphore);
+drBool32 dred_semaphore_release(dred_semaphore* pSemaphore);

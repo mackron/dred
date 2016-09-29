@@ -81,28 +81,28 @@ struct dred_textview
     float horzScrollbarSize;
 
     /// Whether or not the vertical scrollbar is enabled.
-    bool isVertScrollbarEnabled;
+    drBool32 isVertScrollbarEnabled;
 
     /// Whether or not the horizontal scrollbar is enabled.
-    bool isHorzScrollbarEnabled;
+    drBool32 isHorzScrollbarEnabled;
 
-    // Whether or not an extra page is added to the scroll range so that the user can scroll past the last line. When set to true,
+    // Whether or not an extra page is added to the scroll range so that the user can scroll past the last line. When set to DR_TRUE,
     // the user can scroll until the last line is sitting at the top of the text box. When disabled the user can scroll until the
     // last line is sitting at the bottom.
-    bool isExcessScrollingEnabled;
+    drBool32 isExcessScrollingEnabled;
 
     // Whether or not tabs to spaces is enabled.
-    bool isTabsToSpacesEnabled;
+    drBool32 isTabsToSpacesEnabled;
 
     // Whether or not drag-and-drop is enabled.
-    bool isDragAndDropEnabled;
+    drBool32 isDragAndDropEnabled;
 
     // Whether or not the use is about to start drag-and-dropping.
-    bool isWantingToDragAndDrop;
+    drBool32 isWantingToDragAndDrop;
 
 
     // Whether or not we are doing a rectangle selection.
-    bool isDoingRectangleSelect;
+    drBool32 isDoingRectangleSelect;
 
     // The selection rectangle in pixels.
     drte_rect selectionRect;
@@ -121,7 +121,7 @@ struct dred_textview
 
 
     // Whether or not we are doing word based mouse-drag selection.
-    bool isDoingWordSelect;
+    drBool32 isDoingWordSelect;
 
     // The word to act as the achor when doing word based selection.
     drte_region wordSelectionAnchor;
@@ -140,7 +140,7 @@ struct dred_textview
 
 
 // Creates a new text box control.
-bool dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_control* pParent, drte_engine* pTextEngine);
+drBool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_control* pParent, drte_engine* pTextEngine);
 
 // Deletes the given text box control.
 void dred_textview_uninit(dred_textview* pTextView);
@@ -239,7 +239,7 @@ void dred_textview_enable_word_wrap(dred_textview* pTextView);
 void dred_textview_disable_word_wrap(dred_textview* pTextView);
 
 // Determines whether or not word wrap is enabled.
-bool dred_textview_is_word_wrap_enabled(dred_textview* pTextView);
+drBool32 dred_textview_is_word_wrap_enabled(dred_textview* pTextView);
 
 
 // Enables drag-and-drop.
@@ -249,7 +249,7 @@ void dred_textview_enable_drag_and_drop(dred_textview* pTextView);
 void dred_textview_disable_drag_and_drop(dred_textview* pTextView);
 
 // Determines whether or not drag and drop is enabled.
-bool dred_textview_is_drag_and_drop_enabled(dred_textview* pTextView);
+drBool32 dred_textview_is_drag_and_drop_enabled(dred_textview* pTextView);
 
 
 
@@ -272,7 +272,7 @@ void dred_textview_move_cursor_to_end_of_text(dred_textview* pTextView);
 void dred_textview_move_cursor_to_start_of_line_by_index(dred_textview* pTextView, size_t iLine);
 
 // Determines whether or not anything is selected in the given text box.
-bool dred_textview_is_anything_selected(dred_textview* pTextView);
+drBool32 dred_textview_is_anything_selected(dred_textview* pTextView);
 
 // Selects all of the text inside the text box.
 void dred_textview_select_all(dred_textview* pTextView);
@@ -292,28 +292,28 @@ size_t dred_textview_get_selected_text(dred_textview* pTextView, char* textOut, 
 // Deletes the character to the right of the cursor.
 //
 // @return True if the text within the text engine has changed.
-bool dred_textview_delete_character_to_right_of_cursor(dred_textview* pTextView);
+drBool32 dred_textview_delete_character_to_right_of_cursor(dred_textview* pTextView);
 
 // Deletes the currently selected text.
 //
 // @return True if the text within the text engine has changed.
-bool dred_textview_delete_selected_text_no_undo(dred_textview* pTextView);
-bool dred_textview_delete_selected_text(dred_textview* pTextView);
+drBool32 dred_textview_delete_selected_text_no_undo(dred_textview* pTextView);
+drBool32 dred_textview_delete_selected_text(dred_textview* pTextView);
 
 // Inserts a character at the position of the cursor.
 //
 // @return True if the text within the text engine has changed.
-bool dred_textview_insert_text_at_cursors_no_undo(dred_textview* pTextView, const char* text);
-bool dred_textview_insert_text_at_cursors(dred_textview* pTextView, const char* text);
+drBool32 dred_textview_insert_text_at_cursors_no_undo(dred_textview* pTextView, const char* text);
+drBool32 dred_textview_insert_text_at_cursors(dred_textview* pTextView, const char* text);
 
 // Unindents selected text.
-bool dred_textview_unindent_selected_blocks(dred_textview* pTextView);
+drBool32 dred_textview_unindent_selected_blocks(dred_textview* pTextView);
 
 // Performs an undo operation.
-bool dred_textview_undo(dred_textview* pTextView);
+drBool32 dred_textview_undo(dred_textview* pTextView);
 
 // Performs a redo operation.
-bool dred_textview_redo(dred_textview* pTextView);
+drBool32 dred_textview_redo(dred_textview* pTextView);
 
 // Retrieves the number of undo points remaining.
 unsigned int dred_textview_get_undo_points_remaining_count(dred_textview* pTextView);
@@ -335,13 +335,13 @@ size_t dred_textview_get_line_count(dred_textview* pTextView);
 
 
 // Finds and selects the next occurance of the given string, starting from the cursor and looping back to the start.
-bool dred_textview_find_and_select_next(dred_textview* pTextView, const char* text);
+drBool32 dred_textview_find_and_select_next(dred_textview* pTextView, const char* text);
 
 // Finds the next occurance of the given string and replaces it with another.
-bool dred_textview_find_and_replace_next(dred_textview* pTextView, const char* text, const char* replacement);
+drBool32 dred_textview_find_and_replace_next(dred_textview* pTextView, const char* text, const char* replacement);
 
 // Finds every occurance of the given string and replaces it with another.
-bool dred_textview_find_and_replace_all(dred_textview* pTextView, const char* text, const char* replacement);
+drBool32 dred_textview_find_and_replace_all(dred_textview* pTextView, const char* text, const char* replacement);
 
 
 // Shows the line numbers.
@@ -392,14 +392,14 @@ void dred_textview_enable_tabs_to_spaces(dred_textview* pTextView);
 void dred_textview_disable_tabs_to_spaces(dred_textview* pTextView);
 
 // Determines whether or not the textbox should convert tabs to spaces.
-bool dred_textview_is_tabs_to_spaces_enabled(dred_textview* pTextView);
+drBool32 dred_textview_is_tabs_to_spaces_enabled(dred_textview* pTextView);
 
 
 // Prepares an undo point.
-bool dred_textview_prepare_undo_point(dred_textview* pTextView);
+drBool32 dred_textview_prepare_undo_point(dred_textview* pTextView);
 
 // Commits an undo point.
-bool dred_textview_commit_undo_point(dred_textview* pTextView);
+drBool32 dred_textview_commit_undo_point(dred_textview* pTextView);
 
 
 // Sets the function to call when the cursor moves.

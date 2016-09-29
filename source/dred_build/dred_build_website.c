@@ -79,7 +79,7 @@ void dred_build__generate_website__on_error(drwg_context* pWebgen, const char* m
     printf("%s\n", message);
 }
 
-bool dred_build__generate_website(command_var* pCommandVars, config_var* pConfigVars)
+drBool32 dred_build__generate_website(command_var* pCommandVars, config_var* pConfigVars)
 {
     dred_build_context context;
     context.pCommandVars = pCommandVars;
@@ -87,7 +87,7 @@ bool dred_build__generate_website(command_var* pCommandVars, config_var* pConfig
 
     drwg_context webgen;
     if (!drwg_context_init(&webgen, "../../../source/website", "../../../build/website", dred_build__generate_website__on_error, &context)) {
-        return false;
+        return DR_FALSE;
     }
 
     webgen.onResolveValue = dred_build__generate_website__on_resolve_value;
@@ -97,7 +97,7 @@ bool dred_build__generate_website(command_var* pCommandVars, config_var* pConfig
     // Properties.
     drwg_context_set(&webgen, "dred-version", DRED_VERSION_STRING);
 
-    bool result = drwg_context_generate(&webgen);
+    drBool32 result = drwg_context_generate(&webgen);
 
     drwg_context_uninit(&webgen);
     return result;

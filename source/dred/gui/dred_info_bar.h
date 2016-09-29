@@ -20,7 +20,7 @@ struct dred_info_bar
 };
 
 // dred_info_bar_create()
-bool dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_control* pParent);
+drBool32 dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_control* pParent);
 
 // dred_info_bar_delete()
 void dred_info_bar_uninit(dred_info_bar* pInfoBar);

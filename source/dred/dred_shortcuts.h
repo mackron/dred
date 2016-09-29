@@ -39,17 +39,17 @@ struct dred_shortcut_table
     dred_accelerator_table acceleratorTable;
 };
 
-bool dred_shortcut_table_init(dred_shortcut_table* pTable);
+drBool32 dred_shortcut_table_init(dred_shortcut_table* pTable);
 void dred_shortcut_table_uninit(dred_shortcut_table* pTable);
 
-bool dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name, dred_shortcut shortcut, const char* cmdStr);
-bool dred_shortcut_table_unbind(dred_shortcut_table* pTable, dred_shortcut shortcut);
+drBool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name, dred_shortcut shortcut, const char* cmdStr);
+drBool32 dred_shortcut_table_unbind(dred_shortcut_table* pTable, dred_shortcut shortcut);
 
-bool dred_shortcut_table_find(dred_shortcut_table* pTable, dred_shortcut shortcut, size_t* pIndexOut);
-bool dred_shortcut_table_find_by_name(dred_shortcut_table* pTable, const char* name, size_t* pIndexOut);
+drBool32 dred_shortcut_table_find(dred_shortcut_table* pTable, dred_shortcut shortcut, size_t* pIndexOut);
+drBool32 dred_shortcut_table_find_by_name(dred_shortcut_table* pTable, const char* name, size_t* pIndexOut);
 void dred_shortcut_table_replace(dred_shortcut_table* pTable, size_t shortcutIndex, const char* cmdStr);
 
-bool dred_shortcut_table_get_shortcut_by_index(dred_shortcut_table* pTable, size_t shortcutIndex, dred_shortcut* pShortcutOut);
+drBool32 dred_shortcut_table_get_shortcut_by_index(dred_shortcut_table* pTable, size_t shortcutIndex, dred_shortcut* pShortcutOut);
 const char* dred_shortcut_table_get_command_string_by_index(dred_shortcut_table* pTable, size_t shortcutIndex);
 
 
@@ -59,5 +59,5 @@ dred_shortcut dred_shortcut_create(dred_accelerator accel0, dred_accelerator acc
 dred_shortcut dred_shortcut_create_single(dred_accelerator accel1);
 dred_shortcut dred_shortcut_none();
 dred_shortcut dred_shortcut_parse(const char* shortcutStr);
-bool dred_shortcut_equal(dred_shortcut a, dred_shortcut b);
+drBool32 dred_shortcut_equal(dred_shortcut a, dred_shortcut b);
 size_t dred_shortcut_to_string(dred_shortcut shortcut, char* strOut, size_t strOutSize);

@@ -29,7 +29,7 @@ typedef enum
 
 
 // Initializes the platform layer. Should be the first function to be called.
-bool dred_platform_init();
+drBool32 dred_platform_init();
 
 // Uninitializes the platform layer. Should be the last function to be called.
 void dred_platform_uninit();
@@ -49,8 +49,8 @@ void dred_platform_bind_logging(dred_context* pDred);
 
 //// Windows ////
 typedef void (* dred_window_on_close_proc)             (dred_window* pWindow);
-typedef bool (* dred_window_on_hide_proc)              (dred_window* pWindow, unsigned int flags);
-typedef bool (* dred_window_on_show_proc)              (dred_window* pWindow);
+typedef drBool32 (* dred_window_on_hide_proc)              (dred_window* pWindow, unsigned int flags);
+typedef drBool32 (* dred_window_on_show_proc)              (dred_window* pWindow);
 typedef void (* dred_window_on_activate_proc)          (dred_window* pWindow);
 typedef void (* dred_window_on_deactivate_proc)        (dred_window* pWindow);
 typedef void (* dred_window_on_size_proc)              (dred_window* pWindow, unsigned int newWidth, unsigned int newHeight);
@@ -125,10 +125,10 @@ struct dred_window
     unsigned int onHideFlags;
 
     // Whether or not the menu is being shown.
-    bool isShowingMenu;
+    drBool32 isShowingMenu;
 
     // Whether or not the window is maximized.
-    bool isMaximized;
+    drBool32 isMaximized;
 
     // External user data.
     void* pUserData;
@@ -146,7 +146,7 @@ struct dred_window
     HCURSOR hCursor;
 
     // Keeps track of whether or not the cursor is over this window.
-    bool isCursorOver;
+    drBool32 isCursorOver;
 
     // The high-surrogate from a WM_CHAR message. This is used in order to build a surrogate pair from a couple of WM_CHAR messages. When
     // a WM_CHAR message is received when code point is not a high surrogate, this is set to 0.
@@ -168,7 +168,7 @@ struct dred_window
     GdkCursor* pGTKCursor;
 
     // Keeps track of whether or not the cursor is over this window.
-    bool isCursorOver;
+    drBool32 isCursorOver;
 
     // The position of the inner section of the window. This is set in the configure event handler.
     int absoluteClientPosX;
@@ -217,11 +217,11 @@ void dred_window_hide(dred_window* pWindow, unsigned int flags);
 void dred_window_bring_to_top(dred_window* pWindow);
 
 // Determines whether or not the window is maximized.
-bool dred_window_is_maximized(dred_window* pWindow);
+drBool32 dred_window_is_maximized(dred_window* pWindow);
 
 // Sets the cursor to use with the window.
 void dred_window_set_cursor(dred_window* pWindow, dred_cursor_type cursor);
-bool dred_window_is_cursor_over(dred_window* pWindow);
+drBool32 dred_window_is_cursor_over(dred_window* pWindow);
 
 // Binds the given accelerator table to the given window.
 void dred_window_bind_accelerators(dred_window* pWindow, dred_accelerator_table* pAcceleratorTable);
@@ -236,7 +236,7 @@ void dred_window_hide_menu(dred_window* pWindow);
 void dred_window_show_menu(dred_window* pWindow);
 
 // Determines whether or not the menu is being shown for the given window.
-bool dred_window_is_showing_menu(dred_window* pWindow);
+drBool32 dred_window_is_showing_menu(dred_window* pWindow);
 
 // Finds the menu item with the given id. The search is recursive.
 dred_menu_item* dred_window_find_menu_item_by_id(dred_window* pWindow, uint16_t id);
@@ -250,8 +250,8 @@ void dred_window_send_ipc_message_event(dred_window* pWindow, unsigned int messa
 
 // Event posting.
 void dred_window_on_close(dred_window* pWindow);
-bool dred_window_on_hide(dred_window* pWindow, unsigned int flags);
-bool dred_window_on_show(dred_window* pWindow);
+drBool32 dred_window_on_hide(dred_window* pWindow, unsigned int flags);
+drBool32 dred_window_on_show(dred_window* pWindow);
 void dred_window_on_activate(dred_window* pWindow);
 void dred_window_on_deactivate(dred_window* pWindow);
 void dred_window_on_size(dred_window* pWindow, unsigned int newWidth, unsigned int newHeight);
@@ -318,7 +318,7 @@ struct dred_menu_item
 
     // When a check menu item is checked with gtk_check_menu_item_set_active() it results in the "activate" event getting
     // fired which is inconsistent with Win32. This variable is used to block events in these situations.
-    bool blockNextActivateSignal;
+    drBool32 blockNextActivateSignal;
 #endif
 };
 
@@ -394,10 +394,10 @@ void dred_menu_item_check(dred_menu_item* pItem);
 void dred_menu_item_uncheck(dred_menu_item* pItem);
 
 // Sets whether or not the menu item is checked.
-void dred_menu_item_set_checked(dred_menu_item* pItem, bool checked);
+void dred_menu_item_set_checked(dred_menu_item* pItem, drBool32 checked);
 
 // Determines whether or not the given menu item is checked.
-bool dred_menu_item_is_checked(dred_menu_item* pItem);
+drBool32 dred_menu_item_is_checked(dred_menu_item* pItem);
 
 
 
@@ -449,7 +449,7 @@ void dred_timer_delete(dred_timer* pTimer);
 //// Clipboard ////
 
 // Sets the text on the clipboard.
-bool dred_clipboard_set_text(const char* text, size_t textLength);
+drBool32 dred_clipboard_set_text(const char* text, size_t textLength);
 
 // Retrieves the text on the clipboard.
 //
@@ -472,4 +472,4 @@ typedef enum
 // Begins a drag and drop operation.
 //
 // This will make a copy of the data.
-bool dred_begin_drag_and_drop(dred_data_type dataType, const void* pData, size_t dataSize);
+drBool32 dred_begin_drag_and_drop(dred_data_type dataType, const void* pData, size_t dataSize);

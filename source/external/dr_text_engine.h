@@ -84,7 +84,7 @@ typedef struct
 typedef void   (* drte_engine_on_measure_string_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut);
 typedef void   (* drte_engine_on_get_cursor_position_from_point_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
 typedef void   (* drte_engine_on_get_cursor_position_from_char_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
-typedef bool   (* drte_engine_on_get_next_highlight_proc)(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData);
+typedef drBool32   (* drte_engine_on_get_next_highlight_proc)(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData);
 
 typedef void   (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData);
 typedef void   (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_view* pView, drte_style_token styleToken, drte_rect rect, void* pPaintData);
@@ -309,7 +309,7 @@ struct drte_engine
     unsigned int timeToNextCursorBlink;
 
     /// Whether or not the cursor is showing based on it's blinking state.
-    bool isCursorBlinkOn;
+    drBool32 isCursorBlinkOn;
 
 
     /// The function to call when a text run needs to be painted.
@@ -330,7 +330,7 @@ struct drte_engine
 
 
     // Whether or not there is a prepared undo state.
-    bool hasPreparedUndoState;
+    drBool32 hasPreparedUndoState;
 
     // The number of textual changes in the prepared undo state.
     size_t preparedUndoTextChangeCount;
@@ -362,7 +362,7 @@ struct drte_engine
 
 
 /// Creates a new text engine object.
-bool drte_engine_init(drte_engine* pEngine, void* pUserData);
+drBool32 drte_engine_init(drte_engine* pEngine, void* pUserData);
 
 /// Deletes the given text engine.
 void drte_engine_uninit(drte_engine* pEngine);
@@ -388,7 +388,7 @@ size_t drte_engine_get_view_count(drte_engine* pEngine);
 // The style token can be anything you would like. It's is an integer the size of a pointer, so it is possible to use a direct pointer for tokens.
 //
 // If the underlying style of the token changes, simply call this function again to force a refresh of the text engine.
-bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token styleToken, drte_font_metrics fontMetrics);
+drBool32 drte_engine_register_style_token(drte_engine* pEngine, drte_style_token styleToken, drte_font_metrics fontMetrics);
 
 // Sets the default style to use for text.
 //
@@ -475,46 +475,46 @@ void drte_engine_reset_cursor_blinks(drte_engine* pEngine);
 /// Inserts a character into the given text engine.
 ///
 /// @return True if the text within the text engine has changed.
-bool drte_engine_insert_character(drte_engine* pEngine, size_t insertIndex, uint32_t utf32);
+drBool32 drte_engine_insert_character(drte_engine* pEngine, size_t insertIndex, uint32_t utf32);
 
-// Deletes the character at the given index. Returns true if the text was changed.
-bool drte_engine_delete_character(drte_engine* pEngine, size_t iChar);
+// Deletes the character at the given index. Returns DR_TRUE if the text was changed.
+drBool32 drte_engine_delete_character(drte_engine* pEngine, size_t iChar);
 
 /// Inserts the given string at the given character index.
 ///
 /// @return True if the text within the text engine has changed.
-bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t insertIndex);
+drBool32 drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t insertIndex);
 
 /// Deletes a range of text in the given text engine.
 ///
 /// @return True if the text within the text engine has changed.
-bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLastChPlus1);
+drBool32 drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLastChPlus1);
 
 
 // Retrieves the start of the next word starting from the given character.
-bool drte_engine_get_start_of_next_word_from_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut);
+drBool32 drte_engine_get_start_of_next_word_from_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut);
 
 // Retrieves the last character of the word beginning with a character which can be at any position within said word.
-bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordEndOut);
+drBool32 drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordEndOut);
 
 // Retrieves the word containing the given character.
-bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut, size_t* pWordEndOut);
+drBool32 drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut, size_t* pWordEndOut);
 
 
 /// Prepares the next undo/redo point.
 ///
 /// @remarks
 ///     This captures the state that will be applied when the undo/redo point is undone.
-bool drte_engine_prepare_undo_point(drte_engine* pEngine);
+drBool32 drte_engine_prepare_undo_point(drte_engine* pEngine);
 
 /// Creates a snapshot of the current state of the text engine and pushes it to the top of the undo/redo stack.
-bool drte_engine_commit_undo_point(drte_engine* pEngine);
+drBool32 drte_engine_commit_undo_point(drte_engine* pEngine);
 
 /// Performs an undo operation.
-bool drte_engine_undo(drte_engine* pEngine);
+drBool32 drte_engine_undo(drte_engine* pEngine);
 
 /// Performs a redo operation.
-bool drte_engine_redo(drte_engine* pEngine);
+drBool32 drte_engine_redo(drte_engine* pEngine);
 
 /// Retrieves the number of undo points remaining in the stack.
 unsigned int drte_engine_get_undo_points_remaining_count(drte_engine* pEngine);
@@ -614,7 +614,7 @@ void drte_view_enable_word_wrap(drte_view* pView);
 void drte_view_disable_word_wrap(drte_view* pView);
 
 // Determines whether or not the given view has word wrap enabled.
-bool drte_view_is_word_wrap_enabled(drte_view* pView);
+drBool32 drte_view_is_word_wrap_enabled(drte_view* pView);
 
 
 // Retrieves the index of the line containing the character at the given index.
@@ -627,15 +627,15 @@ void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCa
 
 // Retrieves the closest character to the given point relative to the text.
 //
-// The return value is whether or not the point is actually over a character. If false is returned, piCharOut and piLineOut will
+// The return value is whether or not the point is actually over a character. If DR_FALSE is returned, piCharOut and piLineOut will
 // be set based on the input position being clamped to the text region.
-bool drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piCharOut, size_t* piLineOut);
+drBool32 drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piCharOut, size_t* piLineOut);
 
 // Retrieves the closest character to the given point relative to the container.
 //
-// The return value is whether or not the point is actually over a character. If false is returned, piCharOut and piLineOut will
+// The return value is whether or not the point is actually over a character. If DR_FALSE is returned, piCharOut and piLineOut will
 // be set based on the input position being clamped to the text region.
-bool drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piCharOut, size_t* piLineOut);
+drBool32 drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piCharOut, size_t* piLineOut);
 
 // Retrieves the indices of the visible lines.
 void drte_view_get_visible_lines(drte_view* pView, size_t* pFirstLineOut, size_t* pLastLineOut);
@@ -702,7 +702,7 @@ void drte_view_show_cursors(drte_view* pView);
 void drte_view_hide_cursors(drte_view* pView);
 
 // Determines whether or not the cursor is visible.
-bool drte_view_is_showing_cursors(drte_view* pView);
+drBool32 drte_view_is_showing_cursors(drte_view* pView);
 
 // Retrieves the position of the cursor, relative to the container.
 void drte_view_get_cursor_position(drte_view* pView, size_t cursorIndex, float* pPosXOut, float* pPosYOut);
@@ -733,55 +733,55 @@ size_t drte_view_get_cursor_column(drte_view* pView, size_t cursorIndex);
 size_t drte_view_get_cursor_character(drte_view* pView, size_t cursorIndex);
 
 /// Moves the cursor to the closest character based on the given input position.
-bool drte_view_move_cursor_to_point(drte_view* pView, size_t cursorIndex, float posX, float posY);
+drBool32 drte_view_move_cursor_to_point(drte_view* pView, size_t cursorIndex, float posX, float posY);
 
 /// Moves the cursor to the closest character based on the given input position, relative to the text (not the container).
-bool drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, size_t cursorIndex, float posXRelativeToText, float posYRelativeToText);
+drBool32 drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, size_t cursorIndex, float posXRelativeToText, float posYRelativeToText);
 
 /// Moves the cursor of the given text engine to the left by one character.
-bool drte_view_move_cursor_left(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_move_cursor_left(drte_view* pView, size_t cursorIndex);
 
 /// Moves the cursor of the given text engine to the right by one character.
-bool drte_view_move_cursor_right(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_move_cursor_right(drte_view* pView, size_t cursorIndex);
 
 /// Moves the cursor of the given text engine up one line.
-bool drte_view_move_cursor_up(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_move_cursor_up(drte_view* pView, size_t cursorIndex);
 
 /// Moves the cursor of the given text engine down one line.
-bool drte_view_move_cursor_down(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_move_cursor_down(drte_view* pView, size_t cursorIndex);
 
 /// Moves the cursor up or down the given number of lines.
-bool drte_view_move_cursor_y(drte_view* pView, size_t cursorIndex, int amount);
+drBool32 drte_view_move_cursor_y(drte_view* pView, size_t cursorIndex, int amount);
 
 /// Moves the cursor of the given text engine to the end of the line.
-bool drte_view_move_cursor_to_end_of_line(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_move_cursor_to_end_of_line(drte_view* pView, size_t cursorIndex);
 
 /// Moves the cursor of the given text engine to the start of the line.
-bool drte_view_move_cursor_to_start_of_line(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_move_cursor_to_start_of_line(drte_view* pView, size_t cursorIndex);
 
 /// Moves the cursor of the given text engine to the end of the line at the given index.
-bool drte_view_move_cursor_to_end_of_line_by_index(drte_view* pView, size_t cursorIndex, size_t iLine);
+drBool32 drte_view_move_cursor_to_end_of_line_by_index(drte_view* pView, size_t cursorIndex, size_t iLine);
 
 /// Moves the cursor of the given text engine to the start of the line at the given index.
-bool drte_view_move_cursor_to_start_of_line_by_index(drte_view* pView, size_t cursorIndex, size_t iLine);
+drBool32 drte_view_move_cursor_to_start_of_line_by_index(drte_view* pView, size_t cursorIndex, size_t iLine);
 
 /// Moves the cursor to the end of the unwrapped line it is sitting on.
-bool drte_view_move_cursor_to_end_of_unwrapped_line(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_move_cursor_to_end_of_unwrapped_line(drte_view* pView, size_t cursorIndex);
 
 /// Moves the cursor to the start of the unwrapped line it is sitting on.
-bool drte_view_move_cursor_to_start_of_unwrapped_line(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_move_cursor_to_start_of_unwrapped_line(drte_view* pView, size_t cursorIndex);
 
 /// Determines whether or not the given cursor is at the end of a wrapped line.
-bool drte_view_is_cursor_at_end_of_wrapped_line(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_is_cursor_at_end_of_wrapped_line(drte_view* pView, size_t cursorIndex);
 
 /// Determines whether or not the given cursor is at the start of a wrapped line.
-bool drte_view_is_cursor_at_start_of_wrapped_line(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_is_cursor_at_start_of_wrapped_line(drte_view* pView, size_t cursorIndex);
 
 /// Moves the cursor of the given text engine to the end of the text.
-bool drte_view_move_cursor_to_end_of_text(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_move_cursor_to_end_of_text(drte_view* pView, size_t cursorIndex);
 
 /// Moves the cursor of the given text engine to the end of the text.
-bool drte_view_move_cursor_to_start_of_text(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_move_cursor_to_start_of_text(drte_view* pView, size_t cursorIndex);
 
 /// Moves the cursor to the start of the selected text.
 void drte_view_move_cursor_to_start_of_selection(drte_view* pView, size_t cursorIndex);
@@ -809,21 +809,21 @@ size_t drte_view_get_spaces_to_next_column_from_character(drte_view* pView, size
 size_t drte_view_get_spaces_to_next_column_from_cursor(drte_view* pView, size_t cursorIndex);
 
 /// Determines whether or not the cursor is sitting at the start of the selection.
-bool drte_view_is_cursor_at_start_of_selection(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_is_cursor_at_start_of_selection(drte_view* pView, size_t cursorIndex);
 
 /// Determines whether or not the cursor is sitting at the end fo the selection.
-bool drte_view_is_cursor_at_end_of_selection(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_is_cursor_at_end_of_selection(drte_view* pView, size_t cursorIndex);
 
 // Retrieves the word under the given character.
-bool drte_view_get_word_under_cursor(drte_view* pView, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
+drBool32 drte_view_get_word_under_cursor(drte_view* pView, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
 
 // Retrieves the word under the point relative to the container.
-bool drte_view_get_word_under_point(drte_view* pView, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut);
+drBool32 drte_view_get_word_under_point(drte_view* pView, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut);
 
 
 
 /// Determines whether or not anything is selected in the given text engine.
-bool drte_view_is_anything_selected(drte_view* pView);
+drBool32 drte_view_is_anything_selected(drte_view* pView);
 
 /// Deselects everything in the given text engine.
 void drte_view_deselect_all(drte_view* pView);
@@ -877,50 +877,50 @@ void drte_view_set_selection_anchor(drte_view* pView, size_t iCharBeg);
 void drte_view_set_selection_end_point(drte_view* pView, size_t iCharEnd);
 
 // Retrieves the character range of the last selection, if any.
-bool drte_view_get_last_selection(drte_view* pView, size_t* iCharBegOut, size_t* iCharEndOut);
+drBool32 drte_view_get_last_selection(drte_view* pView, size_t* iCharBegOut, size_t* iCharEndOut);
 
 // Retrieves the selection region under the given point, if any.
-bool drte_view_get_selection_under_point(drte_view* pView, float posX, float posY, size_t* piSelectionOut);
+drBool32 drte_view_get_selection_under_point(drte_view* pView, float posX, float posY, size_t* piSelectionOut);
 
 
 /// Inserts a character at the position of the cursor.
 ///
 /// @return True if the text within the text engine has changed.
-bool drte_view_insert_character_at_cursor(drte_view* pView, size_t cursorIndex, unsigned int character);
-bool drte_view_insert_character_at_cursors(drte_view* pView, unsigned int character);
+drBool32 drte_view_insert_character_at_cursor(drte_view* pView, size_t cursorIndex, unsigned int character);
+drBool32 drte_view_insert_character_at_cursors(drte_view* pView, unsigned int character);
 
 /// Inserts a character at the position of the cursor.
 ///
 /// @return True if the text within the text engine has changed.
-bool drte_view_insert_text_at_cursor(drte_view* pView, size_t cursorIndex, const char* text);
+drBool32 drte_view_insert_text_at_cursor(drte_view* pView, size_t cursorIndex, const char* text);
 
 /// Deletes the character to the left of the cursor.
 ///
 /// @return True if the text within the text engine has changed.
-bool drte_view_delete_character_to_left_of_cursor(drte_view* pView, size_t cursorIndex);
-bool drte_view_delete_character_to_left_of_cursors(drte_view* pView, bool leaveNewLines);
+drBool32 drte_view_delete_character_to_left_of_cursor(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_delete_character_to_left_of_cursors(drte_view* pView, drBool32 leaveNewLines);
 
 /// Deletes the character to the right of the cursor.
 ///
 /// @return True if the text within the text engine has changed.
-bool drte_view_delete_character_to_right_of_cursor(drte_view* pView, size_t cursorIndex);
-bool drte_view_delete_character_to_right_of_cursors(drte_view* pView, bool leaveNewLines);
+drBool32 drte_view_delete_character_to_right_of_cursor(drte_view* pView, size_t cursorIndex);
+drBool32 drte_view_delete_character_to_right_of_cursors(drte_view* pView, drBool32 leaveNewLines);
 
 
 /// Deletes the currently selected text.
 ///
 /// @return True if the text within the text engine has changed.
-bool drte_view_delete_selected_text(drte_view* pView);
+drBool32 drte_view_delete_selected_text(drte_view* pView);
 
 // Deletes the text of a specific selection.
-bool drte_view_delete_selection_text(drte_view* pView, size_t iSelectionToDelete);
+drBool32 drte_view_delete_selection_text(drte_view* pView, size_t iSelectionToDelete);
 
 
 /// Finds the given string starting from the cursor and then looping back.
-bool drte_view_find_next(drte_view* pView, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut);
+drBool32 drte_view_find_next(drte_view* pView, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut);
 
 /// Finds the given string starting from the cursor, but does not loop back.
-bool drte_view_find_next_no_loop(drte_view* pView, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut);
+drBool32 drte_view_find_next_no_loop(drte_view* pView, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut);
 
 
 //// Rectangles ////
@@ -957,7 +957,7 @@ DRTE_INLINE drte_rect drte_rect_union(drte_rect rect0, drte_rect rect1)
     return result;
 }
 
-DRTE_INLINE bool drte_rect_has_volume(drte_rect rect)
+DRTE_INLINE drBool32 drte_rect_has_volume(drte_rect rect)
 {
     return rect.right > rect.left && rect.bottom > rect.top;
 }
@@ -1021,17 +1021,17 @@ DRTE_INLINE drte_rect drte_rect_make_right_way_out(drte_rect rect)
 #define drte_round_up(x, multiple) ((((x) + ((multiple) - 1)) / (multiple)) * (multiple))
 
 // Determines if the given character is whitespace.
-bool drte_is_whitespace(uint32_t utf32)
+drBool32 drte_is_whitespace(uint32_t utf32)
 {
     return utf32 == ' ' || utf32 == '\t' || utf32 == '\n' || utf32 == '\v' || utf32 == '\f' || utf32 == '\r';
 }
 
 // Helper for determining whether or not the given character is a symbol or whitespace.
-bool drte_is_symbol_or_whitespace(uint32_t utf32)
+drBool32 drte_is_symbol_or_whitespace(uint32_t utf32)
 {
     // Special case for underscores. This is a bit of a hack and should probably be moved out of here later.
     if (utf32 == '_') {
-        return false;
+        return DR_FALSE;
     }
 
     return (utf32 < '0') || (utf32 >= ':' && utf32 < 'A') || (utf32 >= '[' && utf32 < 'a') || (utf32 > '{');
@@ -1137,14 +1137,14 @@ int drte__strncpy_s(char* dst, size_t dstSizeInBytes, const char* src, size_t co
 // Data can be popped from the internal buffer with drte_stack_buffer_free() or drte_stack_buffer_set_stack_ptr(). Note that these will
 // ensure the stack pointer is aligned based on DRTE_STACK_BUFFER_ALIGNMENT, so you will want to call drte_stack_buffer_get_stack_ptr()
 // after the fact if you need to access the stack pointer again later.
-bool drte_stack_buffer_init(drte_stack_buffer* pStack)
+drBool32 drte_stack_buffer_init(drte_stack_buffer* pStack)
 {
     if (pStack == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     memset(pStack, 0, sizeof(*pStack));
-    return true;
+    return DR_TRUE;
 }
 
 void drte_stack_buffer_uninit(drte_stack_buffer* pStack)
@@ -1309,14 +1309,14 @@ drte_style_token drte_engine__get_style_token(drte_engine* pEngine, uint8_t styl
 }
 
 // Retrieves the next selection region starting from the given character, including the region the character is sitting in, if any.
-static bool drte_view__get_next_selection_from_character(drte_view* pView, size_t iChar, drte_region* pSelectionOut)
+static drBool32 drte_view__get_next_selection_from_character(drte_view* pView, size_t iChar, drte_region* pSelectionOut)
 {
     assert(pView != NULL);
     assert(pSelectionOut != NULL);
 
     // Selections can be in any order. Need to first check every single one to determine if any are on top of the character. If so we
     // just return the first one. Otherwise we fall through to the next loop which finds the closest selection to the character.
-    bool foundSelectionAfterChar = false;
+    drBool32 foundSelectionAfterChar = DR_FALSE;
     drte_region closestSelection;
     closestSelection.iCharBeg = (size_t)-1;
     closestSelection.iCharEnd = (size_t)-1;
@@ -1325,11 +1325,11 @@ static bool drte_view__get_next_selection_from_character(drte_view* pView, size_
         drte_region selection = drte_region_normalize(pView->pSelections[iSelection]);
         if (iChar >= selection.iCharBeg && iChar < selection.iCharEnd) {
             *pSelectionOut = selection;
-            return true;
+            return DR_TRUE;
         }
 
         if (selection.iCharBeg > iChar) {
-            foundSelectionAfterChar = true;
+            foundSelectionAfterChar = DR_TRUE;
             if (closestSelection.iCharBeg > selection.iCharBeg) {
                 closestSelection = selection;
             }
@@ -1348,10 +1348,10 @@ static bool drte_view__get_next_selection_from_character(drte_view* pView, size_
 
 //// Line Cache ////
 
-bool drte_line_cache_init(drte_line_cache* pLineCache)
+drBool32 drte_line_cache_init(drte_line_cache* pLineCache)
 {
     if (pLineCache == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     // There's always at least one line.
@@ -1359,7 +1359,7 @@ bool drte_line_cache_init(drte_line_cache* pLineCache)
     pLineCache->pLines = (size_t*)calloc(pLineCache->bufferSize, sizeof(*pLineCache->pLines));   // <-- calloc() is important here. It initializes the first line to 0.
     pLineCache->count = 1;
 
-    return true;
+    return DR_TRUE;
 }
 
 void drte_line_cache_uninit(drte_line_cache* pLineCache)
@@ -1404,10 +1404,10 @@ void drte_line_cache_set_line_first_character(drte_line_cache* pLineCache, size_
     pLineCache->pLines[iLine] = iCharBeg;
 }
 
-bool drte_line_cache_insert_lines(drte_line_cache* pLineCache, size_t insertLineIndex, size_t lineCount, size_t characterOffset)
+drBool32 drte_line_cache_insert_lines(drte_line_cache* pLineCache, size_t insertLineIndex, size_t lineCount, size_t characterOffset)
 {
     if (pLineCache == NULL || insertLineIndex > pLineCache->count) {
-        return false;
+        return DR_FALSE;
     }
 
     size_t newLineCount = pLineCache->count + lineCount;
@@ -1416,7 +1416,7 @@ bool drte_line_cache_insert_lines(drte_line_cache* pLineCache, size_t insertLine
         size_t newLineBufferSize = (pLineCache->bufferSize == 0) ? DRTE_PAGE_LINE_COUNT : drte_round_up(newLineCount, DRTE_PAGE_LINE_COUNT);
         size_t* pNewLines = (size_t*)realloc(pLineCache->pLines, newLineBufferSize * sizeof(*pNewLines));
         if (pNewLines == NULL) {
-            return false;   // Ran out of memory?
+            return DR_FALSE;   // Ran out of memory?
         }
 
         pLineCache->bufferSize = newLineBufferSize;
@@ -1432,24 +1432,24 @@ bool drte_line_cache_insert_lines(drte_line_cache* pLineCache, size_t insertLine
     }
 
     pLineCache->count = newLineCount;
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_line_cache_append_line(drte_line_cache* pLineCache, size_t iLineCharBeg)
+drBool32 drte_line_cache_append_line(drte_line_cache* pLineCache, size_t iLineCharBeg)
 {
     size_t lineCount = drte_line_cache_get_line_count(pLineCache);
     if (!drte_line_cache_insert_lines(pLineCache, lineCount, 1, 0)) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_line_cache_set_line_first_character(pLineCache, lineCount, iLineCharBeg);
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_line_cache_remove_lines(drte_line_cache* pLineCache, size_t firstLineIndex, size_t lineCount, size_t characterOffset)
+drBool32 drte_line_cache_remove_lines(drte_line_cache* pLineCache, size_t firstLineIndex, size_t lineCount, size_t characterOffset)
 {
     if (pLineCache == NULL || firstLineIndex >= pLineCache->count) {
-        return false;
+        return DR_FALSE;
     }
 
     if (pLineCache->count <= lineCount) {
@@ -1464,33 +1464,33 @@ bool drte_line_cache_remove_lines(drte_line_cache* pLineCache, size_t firstLineI
         pLineCache->count -= lineCount;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_line_cache_offset_lines(drte_line_cache* pLineCache, size_t firstLineIndex, size_t characterOffset)
+drBool32 drte_line_cache_offset_lines(drte_line_cache* pLineCache, size_t firstLineIndex, size_t characterOffset)
 {
     if (pLineCache == NULL || firstLineIndex >= pLineCache->count) {
-        return false;
+        return DR_FALSE;
     }
 
     for (size_t iLine = firstLineIndex; iLine < pLineCache->count; ++iLine) {
         pLineCache->pLines[iLine] += characterOffset;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_line_cache_offset_lines_negative(drte_line_cache* pLineCache, size_t firstLineIndex, size_t characterOffset)
+drBool32 drte_line_cache_offset_lines_negative(drte_line_cache* pLineCache, size_t firstLineIndex, size_t characterOffset)
 {
     if (pLineCache == NULL || firstLineIndex >= pLineCache->count) {
-        return false;
+        return DR_FALSE;
     }
 
     for (size_t iLine = firstLineIndex; iLine < pLineCache->count; ++iLine) {
         pLineCache->pLines[iLine] -= characterOffset;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
 
@@ -1564,8 +1564,8 @@ typedef struct
     uint8_t bgStyleSlot;
     float posX;
     float width;
-    bool isAtEnd;
-    bool isAtEndOfLine;
+    drBool32 isAtEnd;
+    drBool32 isAtEndOfLine;
 } drte_segment;
 
 float drte_engine__measure_segment(drte_view* pView, drte_segment* pSegment)
@@ -1602,7 +1602,7 @@ float drte_engine__measure_segment(drte_view* pView, drte_segment* pSegment)
     return segmentWidth;
 }
 
-bool drte_engine__next_segment(drte_view* pView, drte_segment* pSegment)
+drBool32 drte_engine__next_segment(drte_view* pView, drte_segment* pSegment)
 {
     assert(pView != NULL);
     assert(pSegment != NULL);
@@ -1624,14 +1624,14 @@ bool drte_engine__next_segment(drte_view* pView, drte_segment* pSegment)
 
 
     if (pSegment->isAtEnd) {
-        return false;
+        return DR_FALSE;
     }
 
     if (pSegment->isAtEndOfLine) {
         pSegment->iLine += 1;
         pSegment->posX = 0;
         pSegment->width = 0;
-        pSegment->isAtEndOfLine = false;
+        pSegment->isAtEndOfLine = DR_FALSE;
         drte_view_get_line_character_range(pView, pSegment->pLineCache, pSegment->iLine, &pSegment->iLineCharBeg, &pSegment->iLineCharEnd);
 
         pSegment->iCharEnd = pSegment->iLineCharBeg;
@@ -1649,12 +1649,12 @@ bool drte_engine__next_segment(drte_view* pView, drte_segment* pSegment)
     }
 
 
-    bool isAnythingSelected = false;
-    bool isInSelection = false;
+    drBool32 isAnythingSelected = DR_FALSE;
+    drBool32 isInSelection = DR_FALSE;
     drte_region selection;
     if (drte_view__get_next_selection_from_character(pView, iCharBeg, &selection)) {
         isInSelection = iCharBeg >= selection.iCharBeg && iCharBeg < selection.iCharEnd;
-        isAnythingSelected = true;
+        isAnythingSelected = DR_TRUE;
     }
 
     if (isInSelection) {
@@ -1666,7 +1666,7 @@ bool drte_engine__next_segment(drte_view* pView, drte_segment* pSegment)
     // Highlight segment.
     drte_style_segment highlightSegment;
     drte_style_token highlightStyleToken;
-    bool isInHighlightSegment = false;
+    drBool32 isInHighlightSegment = DR_FALSE;
     if (pEngine->onGetNextHighlight && pEngine->onGetNextHighlight(pEngine, iCharBeg, &highlightSegment.iCharBeg, &highlightSegment.iCharEnd, &highlightStyleToken, pEngine->pHighlightUserData)) {
         isInHighlightSegment = iCharBeg >= highlightSegment.iCharBeg && iCharBeg < highlightSegment.iCharEnd;
     } else {
@@ -1700,10 +1700,10 @@ bool drte_engine__next_segment(drte_view* pView, drte_segment* pSegment)
 
     char c = pEngine->text[iCharBeg];
     if (c == '\0') {
-        pSegment->isAtEnd = true;
+        pSegment->isAtEnd = DR_TRUE;
     } else {
         if (iCharBeg == pSegment->iLineCharEnd) {
-            pSegment->isAtEndOfLine = true;
+            pSegment->isAtEndOfLine = DR_TRUE;
             iCharEnd += 1;
         } else {
             for (;;) {
@@ -1746,7 +1746,7 @@ bool drte_engine__next_segment(drte_view* pView, drte_segment* pSegment)
     }
 
     if (iCharBeg == iCharEnd) {
-        assert(pSegment->isAtEnd == true);
+        assert(pSegment->isAtEnd == DR_TRUE);
         iCharEnd += 1;
     }
 
@@ -1759,30 +1759,30 @@ bool drte_engine__next_segment(drte_view* pView, drte_segment* pSegment)
     pSegment->posX += pSegment->width;
     pSegment->width = drte_engine__measure_segment(pView, pSegment);
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_engine__next_segment_on_line(drte_view* pView, drte_segment* pSegment)
+drBool32 drte_engine__next_segment_on_line(drte_view* pView, drte_segment* pSegment)
 {
     assert(pView != NULL);
     assert(pSegment != NULL);
 
     if (pSegment->isAtEndOfLine) {
-        return false;
+        return DR_FALSE;
     }
 
     return drte_engine__next_segment(pView, pSegment);
 }
 
-bool drte_engine__first_segment(drte_view* pView, drte_line_cache* pLineCache, size_t iChar, drte_segment* pSegment)
+drBool32 drte_engine__first_segment(drte_view* pView, drte_line_cache* pLineCache, size_t iChar, drte_segment* pSegment)
 {
     if (pView == NULL || pSegment == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_engine* pEngine = pView->pEngine;
     if (pEngine == NULL || pEngine->textLength == 0) {
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -1795,22 +1795,22 @@ bool drte_engine__first_segment(drte_view* pView, drte_line_cache* pLineCache, s
     pSegment->bgStyleSlot = pEngine->defaultStyleSlot;
     pSegment->posX = 0;
     pSegment->width = 0;
-    pSegment->isAtEnd = false;
-    pSegment->isAtEndOfLine = false;
+    pSegment->isAtEnd = DR_FALSE;
+    pSegment->isAtEndOfLine = DR_FALSE;
     drte_view_get_line_character_range(pView, pSegment->pLineCache, pSegment->iLine, &pSegment->iLineCharBeg, &pSegment->iLineCharEnd);
 
     return drte_engine__next_segment(pView, pSegment);
 }
 
-bool drte_engine__first_segment_on_line(drte_view* pView, drte_line_cache* pLineCache, size_t lineIndex, size_t iChar, drte_segment* pSegment)
+drBool32 drte_engine__first_segment_on_line(drte_view* pView, drte_line_cache* pLineCache, size_t lineIndex, size_t iChar, drte_segment* pSegment)
 {
     if (pView == NULL || pSegment == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_engine* pEngine = pView->pEngine;
     if (pEngine == NULL || pEngine->textLength == 0) {
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -1823,8 +1823,8 @@ bool drte_engine__first_segment_on_line(drte_view* pView, drte_line_cache* pLine
     pSegment->bgStyleSlot = pEngine->defaultStyleSlot;
     pSegment->posX = 0;
     pSegment->width = 0;
-    pSegment->isAtEnd = false;
-    pSegment->isAtEndOfLine = false;
+    pSegment->isAtEnd = DR_FALSE;
+    pSegment->isAtEndOfLine = DR_FALSE;
 
     if (iChar == (size_t)-1) {
         pSegment->iCharBeg = drte_view_get_line_first_character(pView, pLineCache, lineIndex);
@@ -1846,25 +1846,25 @@ typedef struct
     size_t iCharRangeEnd;
     size_t iCharBeg;
     size_t iCharEnd;
-    bool isAtEnd;
+    drBool32 isAtEnd;
 } drte_word_iterator;
 
-bool drte_engine__next_word(drte_engine* pEngine, drte_word_iterator* pIterator)
+drBool32 drte_engine__next_word(drte_engine* pEngine, drte_word_iterator* pIterator)
 {
     if (pEngine == NULL || pIterator == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (pIterator->isAtEnd) {
-        return false;
+        return DR_FALSE;
     }
 
     pIterator->iCharBeg = pIterator->iCharEnd;
 
     size_t iCharEnd;
     if (!drte_engine_get_end_of_word_containing_character(pEngine, pIterator->iCharBeg, &iCharEnd)) {
-        pIterator->isAtEnd = true;
-        return false;
+        pIterator->isAtEnd = DR_TRUE;
+        return DR_FALSE;
     }
 
     // Always make sure the last character never goes beyond the end of the range.
@@ -1881,25 +1881,25 @@ bool drte_engine__next_word(drte_engine* pEngine, drte_word_iterator* pIterator)
 
 
     if (pIterator->iCharBeg == pIterator->iCharEnd) {
-        pIterator->isAtEnd = true;
-        return false;
+        pIterator->isAtEnd = DR_TRUE;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_engine__first_word(drte_engine* pEngine, size_t iCharRangeBeg, size_t iCharRangeEnd, drte_word_iterator* pIterator)
+drBool32 drte_engine__first_word(drte_engine* pEngine, size_t iCharRangeBeg, size_t iCharRangeEnd, drte_word_iterator* pIterator)
 {
     if (pEngine == NULL || pEngine->textLength == 0 || pIterator == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (iCharRangeBeg >= iCharRangeEnd) {
-        return false;
+        return DR_FALSE;
     }
 
     if (iCharRangeBeg > pEngine->textLength) {
-        return false;
+        return DR_FALSE;
     }
 
     // Clamp the end character to the last character in the text.
@@ -1912,7 +1912,7 @@ bool drte_engine__first_word(drte_engine* pEngine, size_t iCharRangeBeg, size_t 
     pIterator->iCharRangeEnd = iCharRangeEnd;
     pIterator->iCharBeg = iCharRangeBeg;
     pIterator->iCharEnd = iCharRangeBeg;
-    pIterator->isAtEnd = false;
+    pIterator->isAtEnd = DR_FALSE;
 
     return drte_engine__next_word(pEngine, pIterator);
 }
@@ -1947,10 +1947,10 @@ void drte_engine__push_text_change_to_prepared_undo_state(drte_engine* pEngine, 
 }
 
 
-bool drte_engine_init(drte_engine* pEngine, void* pUserData)
+drBool32 drte_engine_init(drte_engine* pEngine, void* pUserData)
 {
     if (pEngine == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     memset(pEngine, 0, sizeof(*pEngine));
@@ -1971,7 +1971,7 @@ bool drte_engine_init(drte_engine* pEngine, void* pUserData)
 
     pEngine->cursorBlinkRate       = 500;
     pEngine->timeToNextCursorBlink = pEngine->cursorBlinkRate;
-    pEngine->isCursorBlinkOn       = true;
+    pEngine->isCursorBlinkOn       = DR_TRUE;
     pEngine->pUserData             = pUserData;
 
     drte_stack_buffer_init(&pEngine->preparedUndoState);
@@ -1981,7 +1981,7 @@ bool drte_engine_init(drte_engine* pEngine, void* pUserData)
     // The temporary view.
     //pEngine->pView = drte_view_create(pEngine);
 
-    return true;
+    return DR_TRUE;
 }
 
 void drte_engine_uninit(drte_engine* pEngine)
@@ -2021,10 +2021,10 @@ size_t drte_engine_get_view_count(drte_engine* pEngine)
 }
 
 
-bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token styleToken, drte_font_metrics fontMetrics)
+drBool32 drte_engine_register_style_token(drte_engine* pEngine, drte_style_token styleToken, drte_font_metrics fontMetrics)
 {
     if (pEngine == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     // If the token already exists just refresh.
@@ -2042,14 +2042,14 @@ bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token sty
         }
 
         drte_engine__refresh(pEngine);
-        return true;
+        return DR_TRUE;
     }
 
 
     // If we get here it means the style has not previously been registered. We don't need to do any repainting or refreshing here
     // because the style will not actually be used by anything yet.
     if (pEngine->styleCount == 255) {
-        return false;   // Too many styles. The 256'th slot (index 255) is used as the error indicator.
+        return DR_FALSE;   // Too many styles. The 256'th slot (index 255) is used as the error indicator.
     }
 
     // Line heights need to be refreshed if it has not been set explicitly.
@@ -2061,7 +2061,7 @@ bool drte_engine_register_style_token(drte_engine* pEngine, drte_style_token sty
     pEngine->styles[pEngine->styleCount].fontMetrics = fontMetrics;
 
     pEngine->styleCount += 1;
-    return true;
+    return DR_TRUE;
 }
 
 void drte_engine_set_default_style(drte_engine* pEngine, drte_style_token styleToken)
@@ -2314,12 +2314,12 @@ void drte_engine_reset_cursor_blinks(drte_engine* pEngine)
 {
     if (pEngine == NULL) return;
     pEngine->timeToNextCursorBlink = pEngine->cursorBlinkRate;
-    pEngine->isCursorBlinkOn = true;
+    pEngine->isCursorBlinkOn = DR_TRUE;
 }
 
 
 
-bool drte_engine_insert_character(drte_engine* pEngine, size_t insertIndex, uint32_t utf32)
+drBool32 drte_engine_insert_character(drte_engine* pEngine, size_t insertIndex, uint32_t utf32)
 {
     // TODO: Do a proper UTF-32 -> UTF-8 conversion.
     char utf8[16];
@@ -2329,24 +2329,24 @@ bool drte_engine_insert_character(drte_engine* pEngine, size_t insertIndex, uint
     return drte_engine_insert_text(pEngine, utf8, insertIndex);
 }
 
-bool drte_engine_delete_character(drte_engine* pEngine, size_t iChar)
+drBool32 drte_engine_delete_character(drte_engine* pEngine, size_t iChar)
 {
     return drte_engine_delete_text(pEngine, iChar, iChar+1);
 }
 
-bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t insertIndex)
+drBool32 drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t insertIndex)
 {
     if (pEngine == NULL || text == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (insertIndex > pEngine->textLength) {
-        return false;
+        return DR_FALSE;
     }
 
     size_t newTextLength = strlen(text);
     if (newTextLength == 0) {
-        return false;
+        return DR_FALSE;
     }
 
     // We need to get the index of the line that's being inserted so we can know how to update the internal line cache.
@@ -2394,7 +2394,7 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
     // Adjust lines.
     if (linesAddedCount > 0) {
         if (!drte_line_cache_insert_lines(pEngine->pUnwrappedLines, iLine+1, linesAddedCount, newTextLength)) {
-            return false;
+            return DR_FALSE;
         }
 
         for (size_t i = iLine+1; i <= iLine + linesAddedCount; ++i) {
@@ -2464,13 +2464,13 @@ bool drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t inse
         pEngine->onTextChanged(pEngine);
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLastChPlus1)
+drBool32 drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLastChPlus1)
 {
     if (pEngine == NULL || iLastChPlus1 == iFirstCh) {
-        return false;
+        return DR_FALSE;
     }
 
     if (iFirstCh > pEngine->textLength) {
@@ -2575,7 +2575,7 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
 
         if (linesRemovedCount > 0) {
             if (!drte_line_cache_remove_lines(pEngine->pUnwrappedLines, iLine+1, linesRemovedCount, bytesToRemove)) {
-                return false;
+                return DR_FALSE;
             }
         } else {
             // No lines were removed, but we still need to update the character positions of the line cache.
@@ -2603,17 +2603,17 @@ bool drte_engine_delete_text(drte_engine* pEngine, size_t iFirstCh, size_t iLast
             pEngine->onTextChanged(pEngine);
         }
 
-        return true;
+        return DR_TRUE;
     }
 
-    return false;
+    return DR_FALSE;
 }
 
 
-bool drte_engine_get_start_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut)
+drBool32 drte_engine_get_start_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut)
 {
     if (pEngine == NULL || pEngine->text == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (iChar > 0) {
@@ -2643,14 +2643,14 @@ bool drte_engine_get_start_of_word_containing_character(drte_engine* pEngine, si
     }
 
     if (pWordBegOut) *pWordBegOut = iChar;
-    return true;
+    return DR_TRUE;
 }
 
 
-bool drte_engine_get_start_of_next_word_from_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut)
+drBool32 drte_engine_get_start_of_next_word_from_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut)
 {
     if (pEngine == NULL || pEngine->text == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     while (pEngine->text[iChar] != '\0' && pEngine->text[iChar] != '\n' && !(pEngine->text[iChar] == '\r' && pEngine->text[iChar+1])) {
@@ -2663,13 +2663,13 @@ bool drte_engine_get_start_of_next_word_from_character(drte_engine* pEngine, siz
     }
 
     if (pWordBegOut) *pWordBegOut = iChar;
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordEndOut)
+drBool32 drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordEndOut)
 {
     if (pEngine == NULL || pEngine->text == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (!drte_is_symbol_or_whitespace(pEngine->text[iChar])) {
@@ -2688,16 +2688,16 @@ bool drte_engine_get_end_of_word_containing_character(drte_engine* pEngine, size
     }
 
     if (pWordEndOut) *pWordEndOut = iChar;
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut, size_t* pWordEndOut)
+drBool32 drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iChar, size_t* pWordBegOut, size_t* pWordEndOut)
 {
     if (pEngine == NULL || pEngine->text == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
-    bool moveToStartOfNextWord = false;
+    drBool32 moveToStartOfNextWord = DR_FALSE;
 
     // Move to the start of the word if we're not already there.
     if (iChar > 0) {
@@ -2707,7 +2707,7 @@ bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iCha
         if (c == '\0') {
             if (pWordBegOut) *pWordBegOut = pEngine->textLength;
             if (pWordEndOut) *pWordEndOut = pEngine->textLength;
-            return false;
+            return DR_FALSE;
         }
 
         if (!drte_is_whitespace(c) && !drte_is_whitespace(cprev) && !drte_is_symbol_or_whitespace(c)) {
@@ -2721,12 +2721,12 @@ bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iCha
                 iChar -= 1;
             }
 
-            moveToStartOfNextWord = true;
+            moveToStartOfNextWord = DR_TRUE;
         }
     }
 
     size_t iWordCharEnd;
-    bool result;
+    drBool32 result;
     if (moveToStartOfNextWord) {
         result = drte_engine_get_start_of_next_word_from_character(pEngine, iChar, &iWordCharEnd);
     } else {
@@ -2746,7 +2746,7 @@ bool drte_engine_get_word_containing_character(drte_engine* pEngine, size_t iCha
 
 
 
-bool drte_engine__capture_and_push_undo_state__user_data(drte_engine* pEngine, drte_stack_buffer* pStack)
+drBool32 drte_engine__capture_and_push_undo_state__user_data(drte_engine* pEngine, drte_stack_buffer* pStack)
 {
     assert(pEngine != NULL);
     assert(pStack != NULL);
@@ -2759,20 +2759,20 @@ bool drte_engine__capture_and_push_undo_state__user_data(drte_engine* pEngine, d
 
     void* pPreparedUserData = drte_stack_buffer_alloc(pStack, sizeof(size_t) + preparedStateUserDataSize);     // <-- sizeof(size_t) is for storing the size of the user data.
     if (pPreparedUserData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     *(size_t*)pPreparedUserData = preparedStateUserDataSize;
     if (preparedStateUserDataSize > 0) {
         if (pEngine->onGetUndoState(pEngine, (uint8_t*)pPreparedUserData + sizeof(size_t)) != preparedStateUserDataSize) {
-            return false;   // Inconsistent data size returned by onGetUndoState().
+            return DR_FALSE;   // Inconsistent data size returned by onGetUndoState().
         }
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_engine__capture_and_push_undo_state__cursors(drte_engine* pEngine, drte_stack_buffer* pStack, drte_view* pView)
+drBool32 drte_engine__capture_and_push_undo_state__cursors(drte_engine* pEngine, drte_stack_buffer* pStack, drte_view* pView)
 {
     assert(pEngine != NULL);
     assert(pStack != NULL);
@@ -2786,16 +2786,16 @@ bool drte_engine__capture_and_push_undo_state__cursors(drte_engine* pEngine, drt
 
     uint8_t* pData = (uint8_t*)drte_stack_buffer_alloc(pStack, sizeInBytes);
     if (pData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     memcpy(pData, &pView->cursorCount, sizeof(pView->cursorCount));
     memcpy(pData + sizeof(pView->cursorCount), pView->pCursors, sizeof(drte_cursor) * pView->cursorCount);
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_engine__capture_and_push_undo_state__selections(drte_engine* pEngine, drte_stack_buffer* pStack, drte_view* pView)
+drBool32 drte_engine__capture_and_push_undo_state__selections(drte_engine* pEngine, drte_stack_buffer* pStack, drte_view* pView)
 {
     assert(pEngine != NULL);
     assert(pStack != NULL);
@@ -2809,19 +2809,19 @@ bool drte_engine__capture_and_push_undo_state__selections(drte_engine* pEngine, 
 
     uint8_t* pData = (uint8_t*)drte_stack_buffer_alloc(pStack, sizeInBytes);
     if (pData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     memcpy(pData, &pView->selectionCount, sizeof(pView->selectionCount));
     memcpy(pData + sizeof(pView->selectionCount), pView->pSelections, sizeof(drte_region) * pView->selectionCount);
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_engine__capture_and_push_undo_state__view(drte_engine* pEngine, drte_stack_buffer* pStack, drte_view* pView)
+drBool32 drte_engine__capture_and_push_undo_state__view(drte_engine* pEngine, drte_stack_buffer* pStack, drte_view* pView)
 {
     if (pEngine == NULL || pStack == NULL || pView == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     size_t sizeInBytes = 
@@ -2829,33 +2829,33 @@ bool drte_engine__capture_and_push_undo_state__view(drte_engine* pEngine, drte_s
 
     uint8_t* pData = (uint8_t*)drte_stack_buffer_alloc(pStack, sizeInBytes);
     if (pData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     memcpy(pData, &pView->_id, sizeof(pView->_id));
 
     if (!drte_engine__capture_and_push_undo_state__cursors(pEngine, pStack, pView)) {
-        return false;
+        return DR_FALSE;
     }
 
     if (!drte_engine__capture_and_push_undo_state__selections(pEngine, pStack, pView)) {
-        return false;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_engine__capture_and_push_undo_state(drte_engine* pEngine, drte_stack_buffer* pStack)
+drBool32 drte_engine__capture_and_push_undo_state(drte_engine* pEngine, drte_stack_buffer* pStack)
 {
     if (pEngine == NULL || pStack == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     size_t oldStackPtr = drte_stack_buffer_get_stack_ptr(pStack);
 
     if (!drte_engine__capture_and_push_undo_state__user_data(pEngine, pStack)) {
         drte_stack_buffer_set_stack_ptr(pStack, oldStackPtr);
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -2863,7 +2863,7 @@ bool drte_engine__capture_and_push_undo_state(drte_engine* pEngine, drte_stack_b
     size_t *pViewCount = (size_t*)drte_stack_buffer_alloc(pStack, sizeof(size_t));
     if (pViewCount == NULL) {
         drte_stack_buffer_set_stack_ptr(pStack, oldStackPtr);
-        return false;
+        return DR_FALSE;
     }
 
     *pViewCount = drte_engine_get_view_count(pEngine);
@@ -2873,11 +2873,11 @@ bool drte_engine__capture_and_push_undo_state(drte_engine* pEngine, drte_stack_b
     for (drte_view* pView = drte_engine_first_view(pEngine); pView != NULL; pView = drte_view_next_view(pView)) {
         if (!drte_engine__capture_and_push_undo_state__view(pEngine, pStack, pView)) {
             drte_stack_buffer_set_stack_ptr(pStack, oldStackPtr);
-            return false;
+            return DR_FALSE;
         }
     }
 
-    return true;
+    return DR_TRUE;
 }
 
 size_t drte_engine__get_prev_undo_data_offset(drte_engine* pEngine)
@@ -2993,10 +2993,10 @@ DRTE_INLINE void drte_engine__breakdown_undo_state_info(const uint8_t* pUndoData
 }
 
 
-bool drte_engine_prepare_undo_point(drte_engine* pEngine)
+drBool32 drte_engine_prepare_undo_point(drte_engine* pEngine)
 {
     if (pEngine == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     // If we have a previously prepared state we'll need to clear it.
@@ -3008,32 +3008,32 @@ bool drte_engine_prepare_undo_point(drte_engine* pEngine)
     pEngine->preparedUndoTextChangeCount = 0;
     pEngine->hasPreparedUndoState = drte_engine__capture_and_push_undo_state(pEngine, &pEngine->preparedUndoState);
     if (!pEngine->hasPreparedUndoState) {
-        return false;   // <-- An error occured while trying to capture the undo state.
+        return DR_FALSE;   // <-- An error occured while trying to capture the undo state.
     }
 
     // Allocate space for the text change count and initialize to 0 to begin with.
     pEngine->preparedUndoTextChangesOffset = drte_stack_buffer_get_stack_ptr(&pEngine->preparedUndoState);
     void* pTextChangeCount = drte_stack_buffer_alloc(&pEngine->preparedUndoState, sizeof(size_t));
     if (pTextChangeCount == NULL) {
-        pEngine->hasPreparedUndoState = false;
-        return false;
+        pEngine->hasPreparedUndoState = DR_FALSE;
+        return DR_FALSE;
     }
 
     *(size_t*)pTextChangeCount = 0;
 
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_engine_commit_undo_point(drte_engine* pEngine)
+drBool32 drte_engine_commit_undo_point(drte_engine* pEngine)
 {
     if (pEngine == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     // The undo point must have been prepared earlier.
     if (!pEngine->hasPreparedUndoState) {
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -3061,7 +3061,7 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
 
     if (drte_stack_buffer_alloc(&pEngine->undoBuffer, headerSize) == NULL) {
         drte_stack_buffer_set_stack_ptr(&pEngine->undoBuffer, pEngine->currentUndoDataOffset);
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -3071,7 +3071,7 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
 
     if (drte_stack_buffer_alloc(&pEngine->undoBuffer, preparedDataSize) == NULL) {
         drte_stack_buffer_set_stack_ptr(&pEngine->undoBuffer, pEngine->currentUndoDataOffset);
-        return false;
+        return DR_FALSE;
     }
 
     memcpy(drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, preparedDataOffset), drte_stack_buffer_get_data_ptr(&pEngine->preparedUndoState, 0), preparedDataSize);
@@ -3082,7 +3082,7 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
 
     if (!drte_engine__capture_and_push_undo_state(pEngine, &pEngine->undoBuffer)) {
         drte_stack_buffer_set_stack_ptr(&pEngine->undoBuffer, pEngine->currentUndoDataOffset);
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -3101,7 +3101,7 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
     pEngine->currentRedoDataOffset = headerOffset;
 
     drte_stack_buffer_set_stack_ptr(&pEngine->preparedUndoState, 0);
-    pEngine->hasPreparedUndoState = false;
+    pEngine->hasPreparedUndoState = DR_FALSE;
     pEngine->preparedUndoTextChangeCount = 0;
 
 
@@ -3112,19 +3112,19 @@ bool drte_engine_commit_undo_point(drte_engine* pEngine)
         pEngine->onUndoPointChanged(pEngine, pEngine->iUndoState);
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_engine_undo(drte_engine* pEngine)
+drBool32 drte_engine_undo(drte_engine* pEngine)
 {
     if (pEngine == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (drte_engine_get_undo_points_remaining_count(pEngine) > 0) {
         const void* pUndoDataPtr = drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, pEngine->currentUndoDataOffset);
         if (pUndoDataPtr == NULL) {
-            return false;
+            return DR_FALSE;
         }
 
         drte_engine__apply_undo_state(pEngine, pUndoDataPtr);
@@ -3137,22 +3137,22 @@ bool drte_engine_undo(drte_engine* pEngine)
 
         pEngine->currentRedoDataOffset = pEngine->currentUndoDataOffset;
         pEngine->currentUndoDataOffset = drte_engine__get_prev_undo_data_offset(pEngine);
-        return true;
+        return DR_TRUE;
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool drte_engine_redo(drte_engine* pEngine)
+drBool32 drte_engine_redo(drte_engine* pEngine)
 {
     if (pEngine == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (drte_engine_get_redo_points_remaining_count(pEngine) > 0) {
         const void* pUndoDataPtr = drte_stack_buffer_get_data_ptr(&pEngine->undoBuffer, pEngine->currentRedoDataOffset);
         if (pUndoDataPtr == NULL) {
-            return false;
+            return DR_FALSE;
         }
 
         drte_engine__apply_redo_state(pEngine, pUndoDataPtr);
@@ -3167,10 +3167,10 @@ bool drte_engine_redo(drte_engine* pEngine)
             pEngine->currentRedoDataOffset = drte_engine__get_next_undo_data_offset(pEngine);
         }
 
-        return true;
+        return DR_TRUE;
     }
 
-    return false;
+    return DR_FALSE;
 }
 
 unsigned int drte_engine_get_undo_points_remaining_count(drte_engine* pEngine)
@@ -3498,7 +3498,7 @@ void drte_engine__on_cursor_move(drte_engine* pEngine, drte_view* pView, size_t 
 
     // When the cursor moves we want to reset the cursor's blink state.
     pEngine->timeToNextCursorBlink = pEngine->cursorBlinkRate;
-    pEngine->isCursorBlinkOn = true;
+    pEngine->isCursorBlinkOn = DR_TRUE;
 
     if (pEngine->onCursorMove) {
         pEngine->onCursorMove(pEngine, pView, cursorIndex);
@@ -3679,8 +3679,8 @@ void drte_view_set_size(drte_view* pView, float sizeX, float sizeY)
         return;
     }
 
-    bool sizeXChanged = pView->sizeX != sizeX;
-    bool sizeYChanged = pView->sizeY != sizeY;
+    drBool32 sizeXChanged = pView->sizeX != sizeX;
+    drBool32 sizeYChanged = pView->sizeY != sizeY;
     if (!sizeXChanged && !sizeYChanged) {
         return;
     }
@@ -3824,7 +3824,7 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
                     // All remaining segments on this line (including this one) is clipped. Go to the next line.
                     segment.iCharBeg = segment.iLineCharEnd;
                     segment.iCharEnd = segment.iLineCharEnd;
-                    segment.isAtEndOfLine = true;
+                    segment.isAtEndOfLine = DR_TRUE;
                     break;
                 }
 
@@ -3947,14 +3947,14 @@ void drte_view_paint_line_numbers(drte_view* pView, float lineNumbersWidth, floa
     float lineTop = pView->innerOffsetY + (iLineTop * lineHeight);
     for (size_t iLine = iLineTop; iLine <= iLineBottom; ++iLine) {
         float lineBottom = lineTop + lineHeight;
-        bool drawLineNumber = false;
+        drBool32 drawLineNumber = DR_FALSE;
 
         size_t iLineCharBeg;
         size_t iLineCharEnd;
         drte_view_get_line_character_range(pView, pView->pWrappedLines, iLine, &iLineCharBeg, &iLineCharEnd);
         if (iLine == 0 || pView->pEngine->text[iLineCharBeg-1] == '\n') {
             lineNumber += 1;
-            drawLineNumber = true;
+            drawLineNumber = DR_TRUE;
         }
 
         if (drawLineNumber) {
@@ -4037,7 +4037,7 @@ void drte_view_disable_word_wrap(drte_view* pView)
     drte_view__refresh_word_wrapping(pView);
 }
 
-bool drte_view_is_word_wrap_enabled(drte_view* pView)
+drBool32 drte_view_is_word_wrap_enabled(drte_view* pView)
 {
     return (pView->flags & DRTE_WORD_WRAP_ENABLED) != 0;
 }
@@ -4104,13 +4104,13 @@ void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCa
     if (pPosYOut) *pPosYOut = posY;
 }
 
-bool drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piCharOut, size_t* piLineOut)
+drBool32 drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piCharOut, size_t* piLineOut)
 {
     if (piCharOut) *piCharOut = 0;
     if (piLineOut) *piLineOut = 0;
 
     if (pView == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     size_t iLine = drte_view_get_line_at_pos_y(pView, pLineCache, inputPosYRelativeToText);
@@ -4124,7 +4124,7 @@ bool drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte
         iChar = drte_view_get_line_first_character(pView, pLineCache, (size_t)iLine);   // It's to the left of the line, so just pin it to the first character in the line.
         
         if (piCharOut) *piCharOut = iChar;
-        return false;   // <-- Return false because it's not actually over a character (it's to the left).
+        return DR_FALSE;   // <-- Return DR_FALSE because it's not actually over a character (it's to the left).
     }
 
     drte_segment segment;
@@ -4170,16 +4170,16 @@ bool drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte
 
                 if (piCharOut) *piCharOut = iChar;
 
-                // It's possible that the Y position is not actually over a line. Whether or not we return true or false depends on this.
+                // It's possible that the Y position is not actually over a line. Whether or not we return DR_TRUE or DR_FALSE depends on this.
                 if (inputPosYRelativeToText < 0) {
-                    return false;
+                    return DR_FALSE;
                 } else {
                     if (inputPosYRelativeToText >= (drte_view_get_line_count(pView) * drte_engine_get_line_height(pView->pEngine))) {
-                        return false;
+                        return DR_FALSE;
                     }
                 }
 
-                return true;
+                return DR_TRUE;
             }
         } while (drte_engine__next_segment_on_line(pView, &segment));
 
@@ -4187,13 +4187,13 @@ bool drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte
         iChar = segment.iCharBeg;   // <-- segment.iCharBeg should be sitting on a new line or null terminator.
 
         if (piCharOut) *piCharOut = iChar;
-        return false;   // <-- Return false because it's not actually over a character (it's to the right)
+        return DR_FALSE;   // <-- Return DR_FALSE because it's not actually over a character (it's to the right)
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piCharOut, size_t* piLineOut)
+drBool32 drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piCharOut, size_t* piLineOut)
 {
     if (pView == NULL) {
         return 0;
@@ -4492,9 +4492,9 @@ void drte_view_hide_cursors(drte_view* pView)
     drte_view_end_dirty(pView);
 }
 
-bool drte_view_is_showing_cursors(drte_view* pView)
+drBool32 drte_view_is_showing_cursors(drte_view* pView)
 {
-    if (pView == NULL) return false;
+    if (pView == NULL) return DR_FALSE;
     return (pView->flags & DRTE_SHOWING_CURSORS) != 0;
 }
 
@@ -4645,10 +4645,10 @@ size_t drte_view_get_cursor_character(drte_view* pView, size_t cursorIndex)
     return pView->pCursors[cursorIndex].iCharAbs;
 }
 
-bool drte_view_move_cursor_to_point(drte_view* pView, size_t cursorIndex, float posX, float posY)
+drBool32 drte_view_move_cursor_to_point(drte_view* pView, size_t cursorIndex, float posX, float posY)
 {
     if (pView == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     size_t iPrevChar = pView->pCursors[cursorIndex].iCharAbs;
@@ -4660,7 +4660,7 @@ bool drte_view_move_cursor_to_point(drte_view* pView, size_t cursorIndex, float 
     float inputPosXRelativeToText = posX - pView->innerOffsetX;
     float inputPosYRelativeToText = posY - pView->innerOffsetY;
     if (!drte_view_move_cursor_to_point_relative_to_text(pView, cursorIndex, inputPosXRelativeToText, inputPosYRelativeToText)) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_view__update_cursor_sticky_position(pView, &pView->pCursors[cursorIndex]);
@@ -4672,13 +4672,13 @@ bool drte_view_move_cursor_to_point(drte_view* pView, size_t cursorIndex, float 
         drte_view_end_dirty(pView);
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, size_t cursorIndex, float posXRelativeToText, float posYRelativeToText)
+drBool32 drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, size_t cursorIndex, float posXRelativeToText, float posYRelativeToText)
 {
     if (pView == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     size_t iLine = drte_view_get_line_at_pos_y(pView, pView->pWrappedLines, posYRelativeToText);
@@ -4688,7 +4688,7 @@ bool drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, size_t cu
     // containing the point on the x axis. Once the segment has been found, we use the backend to get the exact character.
     if (posXRelativeToText < 0) {
         pView->pCursors[cursorIndex].iCharAbs = drte_view_get_line_first_character(pView, pView->pWrappedLines, (size_t)iLine);
-        return true;    // It's to the left of the line, so just pin it to the first character in the line.
+        return DR_TRUE;    // It's to the left of the line, so just pin it to the first character in the line.
     }
 
     drte_segment segment;
@@ -4732,27 +4732,27 @@ bool drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, size_t cu
                     }
                 }
 
-                return true;
+                return DR_TRUE;
             }
         } while (drte_engine__next_segment_on_line(pView, &segment));
 
         // If we get here it means the position is to the right of the line. Just pin it to the end of the line.
         pView->pCursors[cursorIndex].iCharAbs = segment.iCharBeg;   // <-- segment.iCharBeg should be sitting on a new line or null terminator.
 
-        return true;
+        return DR_TRUE;
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool drte_view_move_cursor_left(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_move_cursor_left(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     if (pView->pCursors[cursorIndex].iCharAbs == 0) {
-        return false;   // Already at the start of the string. Nowhere to go.
+        return DR_FALSE;   // Already at the start of the string. Nowhere to go.
     }
 
     size_t iPrevChar = pView->pCursors[cursorIndex].iCharAbs;
@@ -4783,17 +4783,17 @@ bool drte_view_move_cursor_left(drte_view* pView, size_t cursorIndex)
         drte_view_end_dirty(pView);
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_view_move_cursor_right(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_move_cursor_right(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     if (pView->pCursors[cursorIndex].iCharAbs >= pView->pEngine->textLength) {
-        return false;   // Already at the end. Nowhere to go.
+        return DR_FALSE;   // Already at the end. Nowhere to go.
     }
 
     size_t iPrevChar = pView->pCursors[cursorIndex].iCharAbs;
@@ -4821,38 +4821,38 @@ bool drte_view_move_cursor_right(drte_view* pView, size_t cursorIndex)
         drte_view_end_dirty(pView);
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_view_move_cursor_up(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_move_cursor_up(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     return drte_view_move_cursor_y(pView, cursorIndex, -1);
 }
 
-bool drte_view_move_cursor_down(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_move_cursor_down(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     return drte_view_move_cursor_y(pView, cursorIndex, 1);
 }
 
-bool drte_view_move_cursor_y(drte_view* pView, size_t cursorIndex, int amount)
+drBool32 drte_view_move_cursor_y(drte_view* pView, size_t cursorIndex, int amount)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     size_t iPrevChar = pView->pCursors[cursorIndex].iCharAbs;
 
     size_t lineCount = drte_view_get_line_count(pView);
     if (lineCount == 0) {
-        return false;
+        return DR_FALSE;
     }
 
     // Moving a marker up or down depends on it's sticky position.
@@ -4875,71 +4875,71 @@ bool drte_view_move_cursor_y(drte_view* pView, size_t cursorIndex, int amount)
         drte_view_end_dirty(pView);
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_view_move_cursor_to_end_of_line(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_move_cursor_to_end_of_line(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     return drte_view_move_cursor_to_end_of_line_by_index(pView, cursorIndex, pView->pCursors[cursorIndex].iLine);
 }
 
-bool drte_view_move_cursor_to_start_of_line(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_move_cursor_to_start_of_line(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     return drte_view_move_cursor_to_start_of_line_by_index(pView, cursorIndex, pView->pCursors[cursorIndex].iLine);
 }
 
-bool drte_view_move_cursor_to_end_of_line_by_index(drte_view* pView, size_t cursorIndex, size_t iLine)
+drBool32 drte_view_move_cursor_to_end_of_line_by_index(drte_view* pView, size_t cursorIndex, size_t iLine)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_view_move_cursor_to_character_and_line(pView, cursorIndex, drte_view_get_line_last_character(pView, pView->pWrappedLines, iLine), iLine);
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_view_move_cursor_to_start_of_line_by_index(drte_view* pView, size_t cursorIndex, size_t iLine)
+drBool32 drte_view_move_cursor_to_start_of_line_by_index(drte_view* pView, size_t cursorIndex, size_t iLine)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_view_move_cursor_to_character_and_line(pView, cursorIndex, drte_view_get_line_first_character(pView, pView->pWrappedLines, iLine), iLine);
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_view_move_cursor_to_end_of_unwrapped_line(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_move_cursor_to_end_of_unwrapped_line(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_view_move_cursor_to_character(pView, cursorIndex, drte_view_get_line_last_character(pView, pView->pEngine->pUnwrappedLines, drte_view_get_character_line(pView, pView->pEngine->pUnwrappedLines, pView->pCursors[cursorIndex].iCharAbs)));
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_view_move_cursor_to_start_of_unwrapped_line(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_move_cursor_to_start_of_unwrapped_line(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_view_move_cursor_to_character(pView, cursorIndex, drte_view_get_line_first_character(pView, pView->pEngine->pUnwrappedLines, drte_view_get_character_line(pView, pView->pEngine->pUnwrappedLines, pView->pCursors[cursorIndex].iCharAbs)));
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_view_is_cursor_at_end_of_wrapped_line(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_is_cursor_at_end_of_wrapped_line(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     size_t iCursorChar = pView->pCursors[cursorIndex].iCharAbs;
@@ -4947,16 +4947,16 @@ bool drte_view_is_cursor_at_end_of_wrapped_line(drte_view* pView, size_t cursorI
 
     size_t iWrappedLineLastChar = drte_view_get_line_last_character(pView, pView->pWrappedLines, iCursorLine);
     if (iCursorChar == iWrappedLineLastChar) {
-        return true;
+        return DR_TRUE;
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool drte_view_is_cursor_at_start_of_wrapped_line(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_is_cursor_at_start_of_wrapped_line(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     size_t iCursorChar = pView->pCursors[cursorIndex].iCharAbs;
@@ -4964,30 +4964,30 @@ bool drte_view_is_cursor_at_start_of_wrapped_line(drte_view* pView, size_t curso
 
     size_t iWrappedLineLastChar = drte_view_get_line_first_character(pView, pView->pWrappedLines, iCursorLine);
     if (iCursorChar == iWrappedLineLastChar) {
-        return true;
+        return DR_TRUE;
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool drte_view_move_cursor_to_end_of_text(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_move_cursor_to_end_of_text(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_view_move_cursor_to_character(pView, cursorIndex, pView->pEngine->textLength);
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_view_move_cursor_to_start_of_text(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_move_cursor_to_start_of_text(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_view_move_cursor_to_character(pView, cursorIndex, 0);
-    return true;
+    return DR_TRUE;
 }
 
 void drte_view_move_cursor_to_start_of_selection(drte_view* pView, size_t cursorIndex)
@@ -5154,44 +5154,44 @@ size_t drte_view_get_spaces_to_next_column_from_cursor(drte_view* pView, size_t 
     return drte_view_get_spaces_to_next_column_from_character(pView, drte_view_get_cursor_character(pView, cursorIndex));
 }
 
-bool drte_view_is_cursor_at_start_of_selection(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_is_cursor_at_start_of_selection(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->selectionCount == 0 || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_region region = drte_region_normalize(pView->pSelections[pView->selectionCount-1]);
     return pView->pCursors[cursorIndex].iCharAbs == region.iCharBeg;
 }
 
-bool drte_view_is_cursor_at_end_of_selection(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_is_cursor_at_end_of_selection(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL || pView->selectionCount == 0 || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_region region = drte_region_normalize(pView->pSelections[pView->selectionCount-1]);
     return pView->pCursors[cursorIndex].iCharAbs == region.iCharEnd;
 }
 
-bool drte_view_get_word_under_cursor(drte_view* pView, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut)
+drBool32 drte_view_get_word_under_cursor(drte_view* pView, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut)
 {
     if (pView == NULL || pView->cursorCount <= cursorIndex) {
-        return false;
+        return DR_FALSE;
     }
 
     return drte_engine_get_word_containing_character(pView->pEngine, pView->pCursors[cursorIndex].iCharAbs, pWordBegOut, pWordEndOut);
 }
 
-bool drte_view_get_word_under_point(drte_view* pView, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut)
+drBool32 drte_view_get_word_under_point(drte_view* pView, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut)
 {
     if (pView == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     size_t iChar;
     if (!drte_view_get_character_under_point(pView, pView->pWrappedLines, posX, posY, &iChar, NULL)) {
-        return false;
+        return DR_FALSE;
     }
 
     return drte_engine_get_word_containing_character(pView->pEngine, iChar, pWordBegOut, pWordEndOut);
@@ -5200,10 +5200,10 @@ bool drte_view_get_word_under_point(drte_view* pView, float posX, float posY, si
 
 
 
-bool drte_view_is_anything_selected(drte_view* pView)
+drBool32 drte_view_is_anything_selected(drte_view* pView)
 {
     if (pView == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return pView->selectionCount > 0;
@@ -5388,46 +5388,46 @@ void drte_view_set_selection_end_point(drte_view* pView, size_t iCharEnd)
     }
 }
 
-bool drte_view_get_last_selection(drte_view* pView, size_t* iCharBegOut, size_t* iCharEndOut)
+drBool32 drte_view_get_last_selection(drte_view* pView, size_t* iCharBegOut, size_t* iCharEndOut)
 {
     if (pView == NULL || pView->selectionCount == 0) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_region selection = drte_region_normalize(pView->pSelections[pView->selectionCount-1]);
 
     if (iCharBegOut) *iCharBegOut = selection.iCharBeg;
     if (iCharEndOut) *iCharEndOut = selection.iCharEnd;
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_view_get_selection_under_point(drte_view* pView, float posX, float posY, size_t* piSelectionOut)
+drBool32 drte_view_get_selection_under_point(drte_view* pView, float posX, float posY, size_t* piSelectionOut)
 {
-    if (pView == NULL) return false;
+    if (pView == NULL) return DR_FALSE;
 
     size_t iChar;
     if (!drte_view_get_character_under_point(pView, pView->pWrappedLines, posX, posY, &iChar, NULL)) {
-        return false;
+        return DR_FALSE;
     }
 
     for (size_t iSelection = 0; iSelection < pView->selectionCount; ++iSelection) {
         drte_region selection = drte_region_normalize(pView->pSelections[iSelection]);
         if (iChar >= selection.iCharBeg && iChar < selection.iCharEnd) {
             if (piSelectionOut) *piSelectionOut = iSelection;
-            return true;
+            return DR_TRUE;
         }
     }
 
-    return false;
+    return DR_FALSE;
 }
 
 
 
 
-bool drte_view_insert_character_at_cursor(drte_view* pView, size_t cursorIndex, unsigned int character)
+drBool32 drte_view_insert_character_at_cursor(drte_view* pView, size_t cursorIndex, unsigned int character)
 {
     if (pView == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_view_begin_dirty(pView);
@@ -5443,25 +5443,25 @@ bool drte_view_insert_character_at_cursor(drte_view* pView, size_t cursorIndex, 
 
     drte_engine__on_cursor_move(pView->pEngine, pView, cursorIndex);
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_view_insert_character_at_cursors(drte_view* pView, unsigned int character)
+drBool32 drte_view_insert_character_at_cursors(drte_view* pView, unsigned int character)
 {
     if (pView == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     // TODO: This can be improved because it is posting multiple onTextChanged messages.
 
-    bool wasTextChanged = false;
+    drBool32 wasTextChanged = DR_FALSE;
     drte_view_begin_dirty(pView);
     {
         for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
             if (!drte_view_insert_character_at_cursor(pView, iCursor, character)) {
                 continue;
             } else {
-                wasTextChanged = true;
+                wasTextChanged = DR_TRUE;
             }
         }
     }
@@ -5470,10 +5470,10 @@ bool drte_view_insert_character_at_cursors(drte_view* pView, unsigned int charac
     return wasTextChanged;
 }
 
-bool drte_view_insert_text_at_cursor(drte_view* pView, size_t cursorIndex, const char* text)
+drBool32 drte_view_insert_text_at_cursor(drte_view* pView, size_t cursorIndex, const char* text)
 {
     if (pView == NULL || text == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_view_begin_dirty(pView);
@@ -5489,31 +5489,31 @@ bool drte_view_insert_text_at_cursor(drte_view* pView, size_t cursorIndex, const
 
     drte_engine__on_cursor_move(pView->pEngine, pView, cursorIndex);
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_view_delete_character_to_left_of_cursor(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_delete_character_to_left_of_cursor(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     // We just move the cursor to the left, and then delete the character to the right.
     if (drte_view_move_cursor_left(pView, cursorIndex)) {
         drte_view_delete_character_to_right_of_cursor(pView, cursorIndex);
-        return true;
+        return DR_TRUE;
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool drte_view_delete_character_to_left_of_cursors(drte_view* pView, bool leaveNewLines)
+drBool32 drte_view_delete_character_to_left_of_cursors(drte_view* pView, drBool32 leaveNewLines)
 {
     if (pView == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
-    bool wasTextChanged = false;
+    drBool32 wasTextChanged = DR_FALSE;
     drte_view_begin_dirty(pView);
     {
         for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
@@ -5533,7 +5533,7 @@ bool drte_view_delete_character_to_left_of_cursors(drte_view* pView, bool leaveN
                 continue;
             }
 
-            wasTextChanged = true;
+            wasTextChanged = DR_TRUE;
         }
     }
     drte_view_end_dirty(pView);
@@ -5541,10 +5541,10 @@ bool drte_view_delete_character_to_left_of_cursors(drte_view* pView, bool leaveN
     return wasTextChanged;
 }
 
-bool drte_view_delete_character_to_right_of_cursor(drte_view* pView, size_t cursorIndex)
+drBool32 drte_view_delete_character_to_right_of_cursor(drte_view* pView, size_t cursorIndex)
 {
     if (pView == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     size_t iCharBeg = pView->pCursors[cursorIndex].iCharAbs;
@@ -5556,7 +5556,7 @@ bool drte_view_delete_character_to_right_of_cursor(drte_view* pView, size_t curs
         }
 
         if (!drte_engine_delete_text(pView->pEngine, iCharBeg, iCharEnd)) {
-            return false;
+            return DR_FALSE;
         }
 
 
@@ -5569,19 +5569,19 @@ bool drte_view_delete_character_to_right_of_cursor(drte_view* pView, size_t curs
 
         drte_view_dirty(pView, drte_view_get_local_rect(pView));
 
-        return true;
+        return DR_TRUE;
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool drte_view_delete_character_to_right_of_cursors(drte_view* pView, bool leaveNewLines)
+drBool32 drte_view_delete_character_to_right_of_cursors(drte_view* pView, drBool32 leaveNewLines)
 {
     if (pView == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
-    bool wasTextChanged = false;
+    drBool32 wasTextChanged = DR_FALSE;
     drte_view_begin_dirty(pView);
     {
         for (size_t iCursor = 0; iCursor < pView->cursorCount; ++iCursor) {
@@ -5597,7 +5597,7 @@ bool drte_view_delete_character_to_right_of_cursors(drte_view* pView, bool leave
                 continue;
             }
 
-            wasTextChanged = true;
+            wasTextChanged = DR_TRUE;
         }
     }
     drte_view_end_dirty(pView);
@@ -5606,13 +5606,13 @@ bool drte_view_delete_character_to_right_of_cursors(drte_view* pView, bool leave
 }
 
 
-bool drte_view_delete_selected_text(drte_view* pView)
+drBool32 drte_view_delete_selected_text(drte_view* pView)
 {
     if (pView == NULL || pView->selectionCount == 0) {
-        return false;
+        return DR_FALSE;
     }
 
-    bool wasTextChanged = false;
+    drBool32 wasTextChanged = DR_FALSE;
     drte_view_begin_dirty(pView);
     {
         for (size_t iSelection = 0; iSelection < pView->selectionCount; ++iSelection) {
@@ -5624,25 +5624,25 @@ bool drte_view_delete_selected_text(drte_view* pView)
     return wasTextChanged;
 }
 
-bool drte_view_delete_selection_text(drte_view* pView, size_t iSelectionToDelete)
+drBool32 drte_view_delete_selection_text(drte_view* pView, size_t iSelectionToDelete)
 {
     if (pView == NULL || pView->selectionCount == 0) {
-        return false;
+        return DR_FALSE;
     }
 
     drte_region selectionToDelete = drte_region_normalize(pView->pSelections[iSelectionToDelete]);
     if (selectionToDelete.iCharBeg == selectionToDelete.iCharEnd) {
-        return false;   // Nothing is selected.
+        return DR_FALSE;   // Nothing is selected.
     }
 
     return drte_engine_delete_text(pView->pEngine, selectionToDelete.iCharBeg, selectionToDelete.iCharEnd);
 }
 
 
-bool drte_view_find_next(drte_view* pView, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut)
+drBool32 drte_view_find_next(drte_view* pView, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut)
 {
     if (pView == NULL || pView->pEngine == NULL || pView->pEngine->text == NULL || text == NULL || text[0] == '\0') {
-        return false;
+        return DR_FALSE;
     }
 
     size_t cursorPos = 0;
@@ -5656,7 +5656,7 @@ bool drte_view_find_next(drte_view* pView, const char* text, size_t* pSelectionS
     }
 
     if (nextOccurance == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (pSelectionStartOut) {
@@ -5666,13 +5666,13 @@ bool drte_view_find_next(drte_view* pView, const char* text, size_t* pSelectionS
         *pSelectionEndOut = (nextOccurance - pView->pEngine->text) + strlen(text);
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool drte_view_find_next_no_loop(drte_view* pView, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut)
+drBool32 drte_view_find_next_no_loop(drte_view* pView, const char* text, size_t* pSelectionStartOut, size_t* pSelectionEndOut)
 {
     if (pView == NULL || pView->pEngine == NULL || pView->pEngine->text == NULL || text == NULL || text[0] == '\0') {
-        return false;
+        return DR_FALSE;
     }
 
     size_t cursorPos = 0;
@@ -5682,7 +5682,7 @@ bool drte_view_find_next_no_loop(drte_view* pView, const char* text, size_t* pSe
 
     char* nextOccurance = strstr(pView->pEngine->text + cursorPos, text);
     if (nextOccurance == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (pSelectionStartOut) {
@@ -5692,7 +5692,7 @@ bool drte_view_find_next_no_loop(drte_view* pView, const char* text, size_t* pSe
         *pSelectionEndOut = (nextOccurance - pView->pEngine->text) + strlen(text);
     }
 
-    return true;
+    return DR_TRUE;
 }
 
 

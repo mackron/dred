@@ -1,9 +1,9 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
+drBool32 dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
 {
     if (pLibrary == NULL || pDred == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     memset(pLibrary, 0, sizeof(*pLibrary));
@@ -22,7 +22,7 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     // The default menu.
     pLibrary->pMenu_Default = dred_menu_create(pDred, dred_menu_type_menubar);
     if (pLibrary->pMenu_Default == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     dred_menu* pFileMenu_Default = dred_menu_create(pDred, dred_menu_type_popup);
@@ -58,7 +58,7 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     // The text editor menu.
     pLibrary->pMenu_TextEditor = dred_menu_create(pDred, dred_menu_type_menubar);
     if (pLibrary->pMenu_TextEditor == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     dred_menu* pFileMenu = dred_menu_create(pDred, dred_menu_type_popup);
@@ -132,7 +132,7 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     // The text editor right-click popup menu.
     pLibrary->pPopupMenu_TextEditor = dred_menu_create(pDred, dred_menu_type_popup);
     if (pLibrary->pPopupMenu_TextEditor == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_TextEditor, "&Undo", DRED_MENU_ITEM_ID_EDIT_UNDO, DRED_SHORTCUT_NAME_UNDO, 0);
@@ -148,7 +148,7 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
 
     pLibrary->pPopupMenu_Tab = dred_menu_create(pDred, dred_menu_type_popup);
     if (pLibrary->pPopupMenu_Tab == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_Tab, "&Save", DRED_MENU_ITEM_ID_FILE_SAVE, DRED_SHORTCUT_NAME_SAVE, 0);
@@ -167,7 +167,7 @@ bool dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
     dred_menu_library_update_favourite_files_menu(pLibrary);
     dred_menu_library_update_themes_menu(pLibrary);
 
-    return true;
+    return DR_TRUE;
 }
 
 void dred_menu_library_uninit(dred_menu_library* pLibrary)

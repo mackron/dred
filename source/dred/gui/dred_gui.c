@@ -304,7 +304,7 @@ DRED_GUI_PRIVATE void dred_gui__post_on_mouse_leave_recursive(dred_gui* pGUI, dr
     dred_control* pOldAncestor = pOldControlUnderMouse;
     while (pOldAncestor != NULL)
     {
-        bool isOldControlUnderMouse = pNewControlUnderMouse == pOldAncestor || dred_control_is_ancestor(pOldAncestor, pNewControlUnderMouse);
+        drBool32 isOldControlUnderMouse = pNewControlUnderMouse == pOldAncestor || dred_control_is_ancestor(pOldAncestor, pNewControlUnderMouse);
         if (!isOldControlUnderMouse)
         {
             dred_control__post_outbound_event_mouse_leave(pOldAncestor);
@@ -325,7 +325,7 @@ DRED_GUI_PRIVATE void dred_gui__post_on_mouse_enter_recursive(dred_gui* pGUI, dr
         dred_gui__post_on_mouse_enter_recursive(pGUI, pNewControlUnderMouse->pParent, pOldControlUnderMouse);
     }
 
-    bool wasNewControlUnderMouse = pOldControlUnderMouse == pNewControlUnderMouse || dred_control_is_ancestor(pNewControlUnderMouse, pOldControlUnderMouse);
+    drBool32 wasNewControlUnderMouse = pOldControlUnderMouse == pNewControlUnderMouse || dred_control_is_ancestor(pNewControlUnderMouse, pOldControlUnderMouse);
     if (!wasNewControlUnderMouse)
     {
         dred_control__post_outbound_event_mouse_enter(pNewControlUnderMouse);
@@ -542,17 +542,17 @@ void dred_gui__log(dred_gui* pGUI, const char* message)
 //
 /////////////////////////////////////////////////////////////////
 
-bool dred_gui_init(dred_gui* pGUI, dred_context* pDred)
+drBool32 dred_gui_init(dred_gui* pGUI, dred_context* pDred)
 {
     if (pGUI == NULL || pDred == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     memset(pGUI, 0, sizeof(*pGUI));
     pGUI->pDred = pDred;
     pGUI->currentCursor = dred_cursor_type_default;
 
-    return true;
+    return DR_TRUE;
 }
 
 void dred_gui_uninit(dred_gui* pGUI)
@@ -841,10 +841,10 @@ void dred_gui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog)
 /////////////////////////////////////////////////////////////////
 // Controls
 
-bool dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, const char* type)
+drBool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, const char* type)
 {
     if (pControl == NULL || pDred == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     memset(pControl, 0, sizeof(*pControl));
@@ -864,7 +864,7 @@ bool dred_control_init(dred_control* pControl, dred_context* pDred, dred_control
     }
 
     dred_control_set_type(pControl, type);
-    return true;
+    return DR_TRUE;
 }
 
 void dred_control_uninit(dred_control* pControl)
@@ -887,17 +887,17 @@ void dred_control_uninit(dred_control* pControl)
 
 
     // If this was element is marked as the one that was last under the mouse it needs to be unset.
-    bool needsMouseUpdate = false;
+    drBool32 needsMouseUpdate = DR_FALSE;
     if (pGUI->pControlUnderMouse == pControl) {
         pGUI->pControlUnderMouse = NULL;
-        needsMouseUpdate = true;
+        needsMouseUpdate = DR_TRUE;
     }
 
     if (pGUI->pLastMouseMoveTopLevelControl == pControl) {
         pGUI->pLastMouseMoveTopLevelControl = NULL;
         pGUI->lastMouseMovePosX = 0;
         pGUI->lastMouseMovePosY = 0;
-        needsMouseUpdate = false;       // It was a top-level element so the mouse enter/leave state doesn't need an update.
+        needsMouseUpdate = DR_FALSE;       // It was a top-level element so the mouse enter/leave state doesn't need an update.
     }
 
 
@@ -980,10 +980,10 @@ dred_gui* dred_control_get_gui(dred_control* pControl)
 }
 
 
-bool dred_control_set_type(dred_control* pControl, const char* type)
+drBool32 dred_control_set_type(dred_control* pControl, const char* type)
 {
     if (pControl == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return strcpy_s(pControl->type, sizeof(pControl->type), (type == NULL) ? "" : type) == 0;
@@ -998,19 +998,19 @@ const char* dred_control_get_type(dred_control* pControl)
     return pControl->type;
 }
 
-bool dred_control_is_of_type(dred_control* pControl, const char* type)
+drBool32 dred_control_is_of_type(dred_control* pControl, const char* type)
 {
     if (pControl == NULL || type == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return dred_is_control_type_of_type(pControl->type, type);
 }
 
-bool dred_is_control_type_of_type(const char* type, const char* base)
+drBool32 dred_is_control_type_of_type(const char* type, const char* base)
 {
     if (type == NULL || base == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return strncmp(type, base, strlen(base)) == 0;
@@ -1033,16 +1033,16 @@ void dred_control_show(dred_control* pControl)
     }
 }
 
-bool dred_control_is_visible(const dred_control* pControl)
+drBool32 dred_control_is_visible(const dred_control* pControl)
 {
     if (pControl != NULL) {
         return (pControl->flags & IS_CONTROL_HIDDEN) == 0;
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool dred_control_is_visible_recursive(const dred_control* pControl)
+drBool32 dred_control_is_visible_recursive(const dred_control* pControl)
 {
     if (dred_control_is_visible(pControl))
     {
@@ -1053,7 +1053,7 @@ bool dred_control_is_visible_recursive(const dred_control* pControl)
         }
     }
 
-    return false;
+    return DR_FALSE;
 }
 
 
@@ -1071,13 +1071,13 @@ void dred_control_enable_clipping(dred_control* pControl)
     }
 }
 
-bool dred_control_is_clipping_enabled(const dred_control* pControl)
+drBool32 dred_control_is_clipping_enabled(const dred_control* pControl)
 {
     if (pControl != NULL) {
         return (pControl->flags & IS_CONTROL_CLIPPING_DISABLED) == 0;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
 
@@ -1170,10 +1170,10 @@ dred_control* dred_gui_get_element_with_mouse_capture(dred_gui* pGUI)
     return pGUI->pControlWithMouseCapture;
 }
 
-bool dred_control_has_mouse_capture(dred_control* pControl)
+drBool32 dred_control_has_mouse_capture(dred_control* pControl)
 {
     if (pControl == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return dred_gui_get_element_with_mouse_capture(pControl->pGUI) == pControl;
@@ -1293,10 +1293,10 @@ dred_control* dred_gui_get_element_with_keyboard_capture(dred_gui* pGUI)
     return pGUI->pControlWithKeyboardCapture;
 }
 
-bool dred_control_has_keyboard_capture(dred_control* pControl)
+drBool32 dred_control_has_keyboard_capture(dred_control* pControl)
 {
     if (pControl == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return dred_gui_get_element_with_keyboard_capture(pControl->pGUI) == pControl;
@@ -1480,38 +1480,38 @@ void dred_control_set_on_release_keyboard(dred_control* pControl, dred_gui_on_re
 
 
 
-bool dred_control_is_point_inside_bounds(const dred_control* pControl, float absolutePosX, float absolutePosY)
+drBool32 dred_control_is_point_inside_bounds(const dred_control* pControl, float absolutePosX, float absolutePosY)
 {
     if (absolutePosX < pControl->absolutePosX ||
         absolutePosX < pControl->absolutePosY)
     {
-        return false;
+        return DR_FALSE;
     }
 
     if (absolutePosX >= pControl->absolutePosX + pControl->width ||
         absolutePosY >= pControl->absolutePosY + pControl->height)
     {
-        return false;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool dred_control_is_point_inside(dred_control* pControl, float absolutePosX, float absolutePosY)
+drBool32 dred_control_is_point_inside(dred_control* pControl, float absolutePosX, float absolutePosY)
 {
     if (dred_control_is_point_inside_bounds(pControl, absolutePosX, absolutePosY))
     {
         // It is valid for onHitTest to be null, in which case we use the default hit test which assumes the element is just a rectangle
-        // equal to the size of it's bounds. It's equivalent to onHitTest always returning true.
+        // equal to the size of it's bounds. It's equivalent to onHitTest always returning DR_TRUE.
 
         if (pControl->onHitTest) {
             return pControl->onHitTest(pControl, absolutePosX - pControl->absolutePosX, absolutePosY - pControl->absolutePosY);
         }
 
-        return true;
+        return DR_TRUE;
     }
 
-    return false;
+    return DR_FALSE;
 }
 
 
@@ -1523,7 +1523,7 @@ typedef struct
     float absolutePosY;
 }dred_gui_find_control_under_point_data;
 
-bool dred_gui_find_control_under_point_iterator(dred_control* pControl, dred_rect* pRelativeVisibleRect, void* pUserData)
+drBool32 dred_gui_find_control_under_point_iterator(dred_control* pControl, dred_rect* pRelativeVisibleRect, void* pUserData)
 {
     assert(pControl             != NULL);
     assert(pRelativeVisibleRect != NULL);
@@ -1547,8 +1547,8 @@ bool dred_gui_find_control_under_point_iterator(dred_control* pControl, dred_rec
     }
 
 
-    // Always return true to ensure the entire hierarchy is checked.
-    return true;
+    // Always return DR_TRUE to ensure the entire hierarchy is checked.
+    return DR_TRUE;
 }
 
 dred_control* dred_gui_find_control_under_point(dred_control* pTopLevelControl, float absolutePosX, float absolutePosY)
@@ -1566,10 +1566,10 @@ dred_control* dred_gui_find_control_under_point(dred_control* pTopLevelControl, 
     return data.pControlUnderPoint;
 }
 
-bool dred_control_is_under_mouse(dred_control* pControl)
+drBool32 dred_control_is_under_mouse(dred_control* pControl)
 {
     if (pControl == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return dred_gui_find_control_under_point(pControl->pGUI->pLastMouseMoveTopLevelControl, pControl->pGUI->lastMouseMovePosX, pControl->pGUI->lastMouseMovePosY) == pControl;
@@ -1697,51 +1697,51 @@ dred_control* dred_control_find_top_level_control(dred_control* pControl)
     return pControl;
 }
 
-bool dred_control_is_parent(dred_control* pParentControl, dred_control* pChildControl)
+drBool32 dred_control_is_parent(dred_control* pParentControl, dred_control* pChildControl)
 {
     if (pParentControl == NULL || pChildControl == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return pParentControl == pChildControl->pParent;
 }
 
-bool dred_control_is_child(dred_control* pChildControl, dred_control* pParentControl)
+drBool32 dred_control_is_child(dred_control* pChildControl, dred_control* pParentControl)
 {
     return dred_control_is_parent(pParentControl, pChildControl);
 }
 
-bool dred_control_is_ancestor(dred_control* pAncestorControl, dred_control* pChildControl)
+drBool32 dred_control_is_ancestor(dred_control* pAncestorControl, dred_control* pChildControl)
 {
     if (pAncestorControl == NULL || pChildControl == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     dred_control* pParent = pChildControl->pParent;
     while (pParent != NULL)
     {
         if (pParent == pAncestorControl) {
-            return true;
+            return DR_TRUE;
         }
 
         pParent = pParent->pParent;
     }
 
 
-    return false;
+    return DR_FALSE;
 }
 
-bool dred_control_is_descendant(dred_control* pChildControl, dred_control* pAncestorControl)
+drBool32 dred_control_is_descendant(dred_control* pChildControl, dred_control* pAncestorControl)
 {
     return dred_control_is_ancestor(pAncestorControl, pChildControl);
 }
 
-bool dred_control_is_self_or_ancestor(dred_control* pAncestorControl, dred_control* pChildControl)
+drBool32 dred_control_is_self_or_ancestor(dred_control* pAncestorControl, dred_control* pChildControl)
 {
     return pAncestorControl == pChildControl || dred_control_is_ancestor(pAncestorControl, pChildControl);
 }
 
-bool dred_control_is_self_or_descendant(dred_control* pChildControl, dred_control* pAncestorControl)
+drBool32 dred_control_is_self_or_descendant(dred_control* pChildControl, dred_control* pAncestorControl)
 {
     return pChildControl == pAncestorControl || dred_control_is_descendant(pChildControl, pAncestorControl);
 }
@@ -2001,38 +2001,38 @@ dred_rect dred_control_get_local_rect(const dred_control* pControl)
 
 //// Painting ////
 
-bool dred_gui_register_painting_callbacks(dred_gui* pGUI, void* pPaintingContext, dred_gui_painting_callbacks callbacks)
+drBool32 dred_gui_register_painting_callbacks(dred_gui* pGUI, void* pPaintingContext, dred_gui_painting_callbacks callbacks)
 {
     if (pGUI == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     // Fail if the painting callbacks have already been registered.
     if (pGUI->pPaintingContext != NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 
     pGUI->pPaintingContext  = pPaintingContext;
     pGUI->paintingCallbacks = callbacks;
 
-    return true;
+    return DR_TRUE;
 }
 
 
-bool dred_control_iterate_visible_elements(dred_control* pParentControl, dred_rect relativeRect, dred_gui_visible_iteration_proc callback, void* pUserData)
+drBool32 dred_control_iterate_visible_elements(dred_control* pParentControl, dred_rect relativeRect, dred_gui_visible_iteration_proc callback, void* pUserData)
 {
     if (pParentControl == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (callback == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 
     if (!dred_control_is_visible(pParentControl)) {
-        return true;
+        return DR_TRUE;
     }
 
     dred_rect clampedRelativeRect = relativeRect;
@@ -2040,7 +2040,7 @@ bool dred_control_iterate_visible_elements(dred_control* pParentControl, dred_re
     {
         // We'll only get here if some part of the rectangle was inside the element.
         if (!callback(pParentControl, &clampedRelativeRect, pUserData)) {
-            return false;
+            return DR_FALSE;
         }
     }
 
@@ -2063,12 +2063,12 @@ bool dred_control_iterate_visible_elements(dred_control* pParentControl, dred_re
         childRect.bottom -= childRelativePosY;
 
         if (!dred_control_iterate_visible_elements(pChild, childRect, callback, pUserData)) {
-            return false;
+            return DR_FALSE;
         }
     }
 
 
-    return true;
+    return DR_TRUE;
 }
 
 void dred_gui_disable_auto_dirty(dred_gui* pGUI)
@@ -2085,13 +2085,13 @@ void dred_gui_enable_auto_dirty(dred_gui* pGUI)
     }
 }
 
-bool dred_gui_is_auto_dirty_enabled(dred_gui* pGUI)
+drBool32 dred_gui_is_auto_dirty_enabled(dred_gui* pGUI)
 {
     if (pGUI != NULL) {
         return (pGUI->flags & IS_AUTO_DIRTY_DISABLED) == 0;
     }
 
-    return false;
+    return DR_FALSE;
 }
 
 
@@ -2108,10 +2108,10 @@ dred_control* dred_control_begin_dirty(dred_control* pControl)
     assert(pTopLevelControl != NULL);
 
     // The element needs to be added to the list of dirty elements if it doesn't exist already.
-    bool isAlreadyDirty = false;
+    drBool32 isAlreadyDirty = DR_FALSE;
     for (size_t iDirtyControlCount = 0; iDirtyControlCount < pGUI->dirtyControlCount; ++iDirtyControlCount) {
         if (pGUI->ppDirtyControls[iDirtyControlCount] == pTopLevelControl) {
-            isAlreadyDirty = true;
+            isAlreadyDirty = DR_TRUE;
             break;
         }
     }
@@ -2180,7 +2180,7 @@ void dred_control_dirty(dred_control* pControl, dred_rect relativeRect)
 }
 
 
-bool dred_control_draw_iteration_callback(dred_control* pControl, dred_rect* pRelativeRect, void* pUserData)
+drBool32 dred_control_draw_iteration_callback(dred_control* pControl, dred_rect* pRelativeRect, void* pUserData)
 {
     assert(pControl      != NULL);
     assert(pRelativeRect != NULL);
@@ -2197,7 +2197,7 @@ bool dred_control_draw_iteration_callback(dred_control* pControl, dred_rect* pRe
         dred_control_set_clip(pControl, *pRelativeRect, pUserData);
     }
 
-    return true;
+    return DR_TRUE;
 }
 
 void dred_control_draw(dred_control* pControl, dred_rect relativeRect, void* pPaintData)
@@ -2374,14 +2374,14 @@ void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dre
     dred_rect prevClip;
     pControl->pGUI->paintingCallbacks.getClip(&prevClip, pPaintData);
 
-    bool restoreClip = false;
+    drBool32 restoreClip = DR_FALSE;
     if ((pArgs->options & DRED_GUI_IMAGE_CLIP_BOUNDS) != 0)
     {
         // We only need to clip if part of the destination rectangle falls outside of the bounds.
         if (pArgs->dstX < pArgs->dstBoundsX || pArgs->dstX + pArgs->dstWidth  > pArgs->dstBoundsX + pArgs->dstBoundsWidth ||
             pArgs->dstY < pArgs->dstBoundsY || pArgs->dstY + pArgs->dstHeight > pArgs->dstBoundsY + pArgs->dstBoundsHeight)
         {
-            restoreClip = true;
+            restoreClip = DR_TRUE;
             pControl->pGUI->paintingCallbacks.setClip(dred_make_rect(pArgs->dstBoundsX, pArgs->dstBoundsY, pArgs->dstBoundsX + pArgs->dstBoundsWidth, pArgs->dstBoundsY + pArgs->dstBoundsHeight), pPaintData);
         }
     }
@@ -2481,47 +2481,47 @@ void dred_gui_delete_font(dred_gui_font* pFont)
     free(pFont);
 }
 
-bool dred_gui_get_font_metrics(dred_gui_font* pFont, dred_gui_font_metrics* pMetricsOut)
+drBool32 dred_gui_get_font_metrics(dred_gui_font* pFont, dred_gui_font_metrics* pMetricsOut)
 {
     if (pFont == NULL || pMetricsOut == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     assert(pFont->pGUI != NULL);
 
     if (pFont->pGUI->paintingCallbacks.getFontMetrics == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return pFont->pGUI->paintingCallbacks.getFontMetrics(pFont->internalFont, pMetricsOut);
 }
 
-bool dred_gui_get_glyph_metrics(dred_gui_font* pFont, unsigned int utf32, dred_glyph_metrics* pMetricsOut)
+drBool32 dred_gui_get_glyph_metrics(dred_gui_font* pFont, unsigned int utf32, dred_glyph_metrics* pMetricsOut)
 {
     if (pFont == NULL || pMetricsOut == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     assert(pFont->pGUI != NULL);
 
     if (pFont->pGUI->paintingCallbacks.getGlyphMetrics == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return pFont->pGUI->paintingCallbacks.getGlyphMetrics(pFont->internalFont, utf32, pMetricsOut);
 }
 
-bool dred_gui_measure_string(dred_gui_font* pFont, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut)
+drBool32 dred_gui_measure_string(dred_gui_font* pFont, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut)
 {
     if (pFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (text == NULL || textLengthInBytes == 0)
     {
         dred_gui_font_metrics metrics;
         if (!dred_gui_get_font_metrics(pFont, &metrics)) {
-            return false;
+            return DR_FALSE;
         }
 
         if (pWidthOut) {
@@ -2531,7 +2531,7 @@ bool dred_gui_measure_string(dred_gui_font* pFont, const char* text, size_t text
             *pHeightOut = (float)metrics.lineHeight;
         }
 
-        return true;
+        return DR_TRUE;
     }
 
 
@@ -2539,16 +2539,16 @@ bool dred_gui_measure_string(dred_gui_font* pFont, const char* text, size_t text
     assert(pFont->pGUI != NULL);
 
     if (pFont->pGUI->paintingCallbacks.measureString == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return pFont->pGUI->paintingCallbacks.measureString(pFont->internalFont, text, textLengthInBytes, pWidthOut, pHeightOut);
 }
 
-bool dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+drBool32 dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     if (pFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     assert(pFont->pGUI != NULL);
@@ -2557,13 +2557,13 @@ bool dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, const ch
         return pFont->pGUI->paintingCallbacks.getTextCursorPositionFromPoint(pFont->internalFont, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+drBool32 dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
     if (pFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     assert(pFont->pGUI != NULL);
@@ -2572,7 +2572,7 @@ bool dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, const cha
         return pFont->pGUI->paintingCallbacks.getTextCursorPositionFromChar(pFont->internalFont, text, characterIndex, pTextCursorPosXOut);
     }
 
-    return false;
+    return DR_FALSE;
 }
 
 
@@ -2698,13 +2698,13 @@ void dred_control_on_size_fit_children_to_parent(dred_control* pControl, float n
     }
 }
 
-bool dred_control_pass_through_hit_test(dred_control* pControl, float mousePosX, float mousePosY)
+drBool32 dred_control_pass_through_hit_test(dred_control* pControl, float mousePosX, float mousePosY)
 {
     (void)pControl;
     (void)mousePosX;
     (void)mousePosY;
 
-    return false;
+    return DR_FALSE;
 }
 
 
@@ -2757,10 +2757,10 @@ dred_rect dred_clamp_rect(dred_rect rect, dred_rect other)
     return result;
 }
 
-bool dred_clamp_rect_to_element(const dred_control* pControl, dred_rect* pRelativeRect)
+drBool32 dred_clamp_rect_to_element(const dred_control* pControl, dred_rect* pRelativeRect)
 {
     if (pControl == NULL || pRelativeRect == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -2898,20 +2898,20 @@ dred_rect dred_rect_union(dred_rect rect0, dred_rect rect1)
     return result;
 }
 
-bool dred_rect_contains_point(dred_rect rect, float posX, float posY)
+drBool32 dred_rect_contains_point(dred_rect rect, float posX, float posY)
 {
     if (posX < rect.left || posY < rect.top) {
-        return false;
+        return DR_FALSE;
     }
 
     if (posX >= rect.right || posY >= rect.bottom) {
-        return false;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool dred_rect_equal(dred_rect rect0, dred_rect rect1)
+drBool32 dred_rect_equal(dred_rect rect0, dred_rect rect1)
 {
     return
         rect0.left   == rect1.left  &&
@@ -2920,7 +2920,7 @@ bool dred_rect_equal(dred_rect rect0, dred_rect rect1)
         rect0.bottom == rect1.bottom;
 }
 
-bool dred_rect_has_volume(dred_rect rect)
+drBool32 dred_rect_has_volume(dred_rect rect)
 {
     return rect.right > rect.left && rect.bottom > rect.top;
 }
@@ -2951,11 +2951,11 @@ void dred_control_draw_image_dr_2d(dred_gui_resource image, dred_gui_draw_image_
 dred_gui_resource dred_gui_create_font_dr_2d(void*, const char*, unsigned int, dred_gui_font_weight, dred_gui_font_slant, float, unsigned int flags);
 void dred_gui_delete_font_dr_2d(dred_gui_resource);
 unsigned int dred_gui_get_font_size_dr_2d(dred_gui_resource hFont);
-bool dred_gui_get_font_metrics_dr_2d(dred_gui_resource, dred_gui_font_metrics*);
-bool dred_gui_get_glyph_metrics_dr_2d(dred_gui_resource, unsigned int, dred_glyph_metrics*);
-bool dred_gui_measure_string_dr_2d(dred_gui_resource, const char*, size_t, float*, float*);
-bool dred_gui_get_text_cursor_position_from_point_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-bool dred_gui_get_text_cursor_position_from_char_dr_2d(dred_gui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+drBool32 dred_gui_get_font_metrics_dr_2d(dred_gui_resource, dred_gui_font_metrics*);
+drBool32 dred_gui_get_glyph_metrics_dr_2d(dred_gui_resource, unsigned int, dred_glyph_metrics*);
+drBool32 dred_gui_measure_string_dr_2d(dred_gui_resource, const char*, size_t, float*, float*);
+drBool32 dred_gui_get_text_cursor_position_from_point_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+drBool32 dred_gui_get_text_cursor_position_from_char_dr_2d(dred_gui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 dred_gui_resource dred_gui_create_image_dr_2d(void* pPaintingContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pImageData);
 void dred_gui_delete_image_dr_2d(dred_gui_resource image);
@@ -2964,14 +2964,14 @@ dred_gui_image_format dred_gui_get_optimal_image_format_dr_2d(void* pPaintingCon
 void* dred_gui_map_image_data_dr_2d(dred_gui_resource image, unsigned int accessFlags);
 void dred_gui_unmap_image_data_dr_2d(dred_gui_resource image);
 
-bool dred_gui_init_dr_2d(dred_gui* pGUI, dred_context* pDred, dr2d_context* pDrawingContext)
+drBool32 dred_gui_init_dr_2d(dred_gui* pGUI, dred_context* pDred, dr2d_context* pDrawingContext)
 {
     if (!dred_gui_init(pGUI, pDred)) {
-        return false;
+        return DR_FALSE;
     }
 
     dred_gui_register_dr_2d_callbacks(pGUI, pDrawingContext);
-    return true;
+    return DR_TRUE;
 }
 
 void dred_gui_register_dr_2d_callbacks(dred_gui* pGUI, dr2d_context* pDrawingContext)
@@ -3139,13 +3139,13 @@ unsigned int dred_gui_get_font_size_dr_2d(dred_gui_resource font)
     return dr2d_get_font_size((dr2d_font*)font);
 }
 
-bool dred_gui_get_font_metrics_dr_2d(dred_gui_resource font, dred_gui_font_metrics* pMetricsOut)
+drBool32 dred_gui_get_font_metrics_dr_2d(dred_gui_resource font, dred_gui_font_metrics* pMetricsOut)
 {
     assert(pMetricsOut != NULL);
 
     dr2d_font_metrics metrics;
     if (!dr2d_get_font_metrics((dr2d_font*)font, &metrics)) {
-        return false;
+        return DR_FALSE;
     }
 
     pMetricsOut->ascent     = metrics.ascent;
@@ -3153,16 +3153,16 @@ bool dred_gui_get_font_metrics_dr_2d(dred_gui_resource font, dred_gui_font_metri
     pMetricsOut->lineHeight = metrics.lineHeight;
     pMetricsOut->spaceWidth = metrics.spaceWidth;
 
-    return true;
+    return DR_TRUE;
 }
 
-bool dred_gui_get_glyph_metrics_dr_2d(dred_gui_resource font, unsigned int utf32, dred_glyph_metrics* pMetricsOut)
+drBool32 dred_gui_get_glyph_metrics_dr_2d(dred_gui_resource font, unsigned int utf32, dred_glyph_metrics* pMetricsOut)
 {
     assert(pMetricsOut != NULL);
 
     dr2d_glyph_metrics metrics;
     if (!dr2d_get_glyph_metrics((dr2d_font*)font, utf32, &metrics)) {
-        return false;
+        return DR_FALSE;
     }
 
     pMetricsOut->width    = metrics.width;
@@ -3172,20 +3172,20 @@ bool dred_gui_get_glyph_metrics_dr_2d(dred_gui_resource font, unsigned int utf32
     pMetricsOut->advanceX = metrics.advanceX;
     pMetricsOut->advanceY = metrics.advanceY;
 
-    return true;
+    return DR_TRUE;
 }
 
-bool dred_gui_measure_string_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
+drBool32 dred_gui_measure_string_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
 {
     return dr2d_measure_string((dr2d_font*)font, text, textSizeInBytes, pWidthOut, pHeightOut);
 }
 
-bool dred_gui_get_text_cursor_position_from_point_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+drBool32 dred_gui_get_text_cursor_position_from_point_dr_2d(dred_gui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     return dr2d_get_text_cursor_position_from_point((dr2d_font*)font, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
 }
 
-bool dred_gui_get_text_cursor_position_from_char_dr_2d(dred_gui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+drBool32 dred_gui_get_text_cursor_position_from_char_dr_2d(dred_gui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
     return dr2d_get_text_cursor_position_from_char((dr2d_font*)font, text, characterIndex, pTextCursorPosXOut);
 }

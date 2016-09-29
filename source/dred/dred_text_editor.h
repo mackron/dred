@@ -52,7 +52,7 @@ void dred_text_editor_enable_word_wrap(dred_text_editor* pTextEditor);
 void dred_text_editor_disable_word_wrap(dred_text_editor* pTextEditor);
 
 // Determines whether or not word wrap is enabled.
-bool dred_text_editor_is_word_wrap_enabled(dred_text_editor* pTextEditor);
+drBool32 dred_text_editor_is_word_wrap_enabled(dred_text_editor* pTextEditor);
 
 
 // Enables drag-and-drop.
@@ -62,13 +62,13 @@ void dred_text_editor_enable_drag_and_drop(dred_text_editor* pTextEditor);
 void dred_text_editor_disable_drag_and_drop(dred_text_editor* pTextEditor);
 
 // Determines whether or not drag and drop is enabled.
-bool dred_text_editor_is_drag_and_drop_enabled(dred_text_editor* pTextEditor);
+drBool32 dred_text_editor_is_drag_and_drop_enabled(dred_text_editor* pTextEditor);
 
 
 // Inserts text at every cursor.
 //
 // Returns whether or not the text was changed.
-bool dred_text_editor_insert_text_at_cursors(dred_text_editor* pTextEditor, const char* text);
+drBool32 dred_text_editor_insert_text_at_cursors(dred_text_editor* pTextEditor, const char* text);
 
 
 // Refreshes the styling of the given text editor.
@@ -108,13 +108,13 @@ void dred_text_editor_deselect_all_in_focused_view(dred_text_editor* pTextEditor
 
 
 // Finds and selects the next occurance of the given string, starting from the cursor and looping back to the start.
-bool dred_text_editor_find_and_select_next(dred_text_editor* pTextEditor, const char* text);
+drBool32 dred_text_editor_find_and_select_next(dred_text_editor* pTextEditor, const char* text);
 
 // Finds the next occurance of the given string and replaces it with another.
-bool dred_text_editor_find_and_replace_next(dred_text_editor* pTextEditor, const char* text, const char* replacement);
+drBool32 dred_text_editor_find_and_replace_next(dred_text_editor* pTextEditor, const char* text, const char* replacement);
 
 // Finds every occurance of the given string and replaces it with another.
-bool dred_text_editor_find_and_replace_all(dred_text_editor* pTextEditor, const char* text, const char* replacement);
+drBool32 dred_text_editor_find_and_replace_all(dred_text_editor* pTextEditor, const char* text, const char* replacement);
 
 
 // Sets the scale of the internal text.

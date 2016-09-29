@@ -329,15 +329,15 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
-bool dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_control* pParent)
+drBool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_control* pParent)
 {
     if (pCmdBar == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     memset(pCmdBar, 0, sizeof(*pCmdBar));
     if (!dred_control_init(DRED_CONTROL(pCmdBar), pDred, pParent, DRED_CONTROL_TYPE_CMDBAR)) {
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -346,7 +346,7 @@ bool dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_control* p
     pCmdBar->pTextBox = &pCmdBar->textBox;
     if (!dred_textbox_init(pCmdBar->pTextBox, pDred, DRED_CONTROL(pCmdBar))) {
         dred_control_uninit(DRED_CONTROL(pCmdBar));
-        return false;
+        return DR_FALSE;
     }
 
     dred_textbox_disable_horizontal_scrollbar(pCmdBar->pTextBox);
@@ -374,7 +374,7 @@ bool dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_control* p
 
 
     dred_cmdbar_refresh_styling(pCmdBar);
-    return true;
+    return DR_TRUE;
 }
 
 void dred_cmdbar_uninit(dred_cmdbar* pCmdBar)
@@ -405,25 +405,25 @@ void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text)
     dred_textbox_move_cursor_to_end_of_text(pCmdBar->pTextBox);
 }
 
-bool dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigned int iPrevCommand)
+drBool32 dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigned int iPrevCommand)
 {
     if (pCmdBar == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (iPrevCommand >= pCmdBar->pDred->config.recentCommandsCount) {
-        return false;
+        return DR_FALSE;
     }
 
     dred_cmdbar_set_text(pCmdBar, pCmdBar->pDred->config.recentCommands[iPrevCommand]);
-    return true;
+    return DR_TRUE;
 }
 
 
-bool dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
+drBool32 dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
 {
     if (pCmdBar == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return dred_control_has_keyboard_capture(DRED_CONTROL(pCmdBar->pTextBox));

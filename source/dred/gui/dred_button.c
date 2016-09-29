@@ -52,7 +52,7 @@ void dred_button__on_mouse_enter(dred_control* pControl)
     dred_button* pButton = DRED_BUTTON(pControl);
     assert(pButton != NULL);
 
-    pButton->isMouseOver = true;
+    pButton->isMouseOver = DR_TRUE;
 
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
@@ -62,7 +62,7 @@ void dred_button__on_mouse_leave(dred_control* pControl)
     dred_button* pButton = DRED_BUTTON(pControl);
     assert(pButton != NULL);
 
-    pButton->isMouseOver = false;
+    pButton->isMouseOver = DR_FALSE;
 
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
@@ -146,15 +146,15 @@ void dred_button__refresh_layout(dred_button* pButton)
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
 
-bool dred_button_init(dred_button* pButton, dred_context* pDred, dred_control* pParent, const char* text)
+drBool32 dred_button_init(dred_button* pButton, dred_context* pDred, dred_control* pParent, const char* text)
 {
     if (pButton == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     memset(pButton, 0, sizeof(*pButton));
     if (!dred_control_init(DRED_CONTROL(pButton), pDred, pParent, DRED_CONTROL_TYPE_BUTTON)) {
-        return false;
+        return DR_FALSE;
     }
 
     strncpy_s(pButton->text, sizeof(pButton->text), text, _TRUNCATE);
@@ -168,7 +168,7 @@ bool dred_button_init(dred_button* pButton, dred_context* pDred, dred_control* p
     pButton->borderWidth = 1;
     pButton->paddingHorz = 16;
     pButton->paddingVert = 4;
-    pButton->isAutoSizeEnabled = true;
+    pButton->isAutoSizeEnabled = DR_TRUE;
 
     // Events.
     dred_control_set_on_paint(DRED_CONTROL(pButton), dred_button__on_paint);
@@ -181,7 +181,7 @@ bool dred_button_init(dred_button* pButton, dred_context* pDred, dred_control* p
 
     dred_button__refresh_layout(pButton);
 
-    return true;
+    return DR_TRUE;
 }
 
 void dred_button_uninit(dred_button* pButton)
@@ -210,7 +210,7 @@ void dred_button_enable_auto_size(dred_button* pButton)
         return;
     }
 
-    pButton->isAutoSizeEnabled = true;
+    pButton->isAutoSizeEnabled = DR_TRUE;
 
     dred_button__refresh_layout(pButton);
 }
@@ -221,7 +221,7 @@ void dred_button_disable_auto_size(dred_button* pButton)
         return;
     }
 
-    pButton->isAutoSizeEnabled = false;
+    pButton->isAutoSizeEnabled = DR_FALSE;
 
     dred_button__refresh_layout(pButton);
 }
