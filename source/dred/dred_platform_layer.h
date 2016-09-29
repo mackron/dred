@@ -127,9 +127,6 @@ struct dred_window
     // Whether or not the menu is being shown.
     drBool32 isShowingMenu;
 
-    // Whether or not the window is maximized.
-    drBool32 isMaximized;
-
     // External user data.
     void* pUserData;
 

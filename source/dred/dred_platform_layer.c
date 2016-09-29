@@ -585,13 +585,6 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
 
         case WM_SIZE:
         {
-            // Don't change the maximized state when the window is going from maximized to minimized. The maximized state is used to
-            // determine whether or not the window should be maximized when it's restored from minimized state or brought back into
-            // focus.
-            if ((wParam & SIZE_MINIMIZED) == 0) {
-                pWindow->isMaximized = (wParam & SIZE_MAXIMIZED) != 0;
-            }
-
             dred_window_on_size(pWindow, LOWORD(lParam), HIWORD(lParam));
         } break;
 
@@ -1034,6 +1027,12 @@ void dred_window_bring_to_top__win32(dred_window* pWindow)
         return;
     }
 
+    if (IsZoomed(pWindow->hWnd)) {
+        ShowWindow(pWindow->hWnd, SW_SHOWMAXIMIZED);
+    } else if (IsIconic(pWindow->hWnd)) {
+        ShowWindow(pWindow->hWnd, SW_RESTORE);
+    }
+
     SetForegroundWindow(pWindow->hWnd);
 }
 
@@ -1043,7 +1042,7 @@ drBool32 dred_window_is_maximized__win32(dred_window* pWindow)
         return DR_FALSE;
     }
 
-    return pWindow->isMaximized;
+    return IsZoomed(pWindow->hWnd);
 }
 
 
@@ -3483,8 +3482,6 @@ void dred_window_show_maximized(dred_window* pWindow)
 #ifdef DRED_GTK
     dred_window_show_maximized__gtk(pWindow);
 #endif
-
-    pWindow->isMaximized = DR_TRUE;
 }
 
 void dred_window_show_sized(dred_window* pWindow, unsigned int width, unsigned int height)
@@ -3514,12 +3511,6 @@ void dred_window_bring_to_top(dred_window* pWindow)
 {
     if (pWindow == NULL) {
         return;
-    }
-
-    if (dred_window_is_maximized(pWindow)) {
-        dred_window_show_maximized(pWindow);
-    } else {
-        dred_window_show(pWindow);
     }
 
 #ifdef DRED_WIN32
