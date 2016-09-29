@@ -88,6 +88,8 @@ static void dred_platform_untrack_menu__win32(dred_menu* pMenu)
             for (size_t i = index; i < g_MenuCount-1; ++i) {
                 g_ppMenus[i] = g_ppMenus[i+1];
             }
+
+            g_MenuCount -= 1;
         }
     }
     dred_mutex_unlock(&g_MenuMutex);
