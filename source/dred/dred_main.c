@@ -23,23 +23,23 @@
 
 #include "dred.c"
 
-bool dred_parse_cmdline__post_startup_files_to_server(const char* key, const char* value, void* pUserData)
+drBool32 dred_parse_cmdline__post_startup_files_to_server(const char* key, const char* value, void* pUserData)
 {
     drpipe client = (drpipe)pUserData;
 
     if (key == NULL) {
         dred_ipc_post_message(client, DRED_IPC_MESSAGE_OPEN, value, strlen(value)+1);   // +1 for null terminator.
-        return true;
+        return DR_TRUE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool dred__try_opening_existing_process(dr_cmdline cmdline)
+drBool32 dred__try_opening_existing_process(dr_cmdline cmdline)
 {
     char pipeName[256];
     if (!dred_ipc_get_pipe_name(pipeName, sizeof(pipeName))) {
-        return false;
+        return DR_FALSE;
     }
 
     drpipe client;
@@ -55,16 +55,16 @@ bool dred__try_opening_existing_process(dr_cmdline cmdline)
         dred_ipc_post_message(client, DRED_IPC_MESSAGE_TERMINATOR, NULL, 0);
         drpipe_close(client);
 
-        return true;
+        return DR_TRUE;
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-/*bool dred_load_packages(dred_package_library* pLibrary)
+/*drBool32 dred_load_packages(dred_package_library* pLibrary)
 {
-    if (pLibrary == NULL) return false;
-    return true;
+    if (pLibrary == NULL) return DR_FALSE;
+    return DR_TRUE;
 }*/
 
 
@@ -81,14 +81,14 @@ int dred_main(dr_cmdline cmdline)
     }
 
 
-    bool tryUsingExistingInstance = true;
+    drBool32 tryUsingExistingInstance = DR_TRUE;
     if (dr_cmdline_key_exists(&cmdline, "newinstance")) {
-        tryUsingExistingInstance = false;
+        tryUsingExistingInstance = DR_FALSE;
     }
 
-    bool disableIPC = false;
+    drBool32 disableIPC = DR_FALSE;
     if (dr_cmdline_key_exists(&cmdline, "noipc")) {
-        disableIPC = true;
+        disableIPC = DR_TRUE;
     }
 
 #ifndef _WIN32
@@ -112,13 +112,13 @@ int dred_main(dr_cmdline cmdline)
             return 0;
         }
 #else
-        bool isOtherProcessRunning = false;
+        drBool32 isOtherProcessRunning = DR_FALSE;
         int fd = open(lockFileName, O_RDONLY, 0666);
         if (fd != -1) {
             if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
-                isOtherProcessRunning = true;
+                isOtherProcessRunning = DR_TRUE;
             } else {
-                isOtherProcessRunning = false;
+                isOtherProcessRunning = DR_FALSE;
             }
 
             close(fd);

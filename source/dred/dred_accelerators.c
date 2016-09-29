@@ -1,17 +1,17 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
 
-bool dred_accelerator_table_init(dred_accelerator_table* pTable)
+drBool32 dred_accelerator_table_init(dred_accelerator_table* pTable)
 {
     if (pTable == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     pTable->pAccelerators = NULL;
     pTable->count = 0;
     pTable->bufferSize = 0;
 
-    return true;
+    return DR_TRUE;
 }
 
 void dred_accelerator_table_uninit(dred_accelerator_table* pTable)
@@ -26,16 +26,16 @@ void dred_accelerator_table_uninit(dred_accelerator_table* pTable)
 }
 
 
-bool dred_accelerator_table_add(dred_accelerator_table* pTable, dred_accelerator accelerator)
+drBool32 dred_accelerator_table_add(dred_accelerator_table* pTable, dred_accelerator accelerator)
 {
     if (pTable == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     // If an accelerator with the same key combination already exists, just replace the command.
     size_t existingIndex;
     if (dred_accelerator_table_find(pTable, accelerator, &existingIndex)) {
-        return true;    // Already exists.
+        return DR_TRUE;    // Already exists.
     }
 
     // If we get here it means the accelerator does not already exist and needs to be added.
@@ -44,7 +44,7 @@ bool dred_accelerator_table_add(dred_accelerator_table* pTable, dred_accelerator
         size_t newBufferSize = (pTable->bufferSize == 0) ? 16 : (pTable->bufferSize * 2);
         dred_accelerator* pNewAccelerators = (dred_accelerator*)realloc(pTable->pAccelerators, newBufferSize * sizeof(*pNewAccelerators));
         if (pNewAccelerators == NULL) {
-            return false;
+            return DR_FALSE;
         }
 
         pTable->pAccelerators = pNewAccelerators;
@@ -56,14 +56,14 @@ bool dred_accelerator_table_add(dred_accelerator_table* pTable, dred_accelerator
     pTable->pAccelerators[pTable->count] = accelerator;
     pTable->count += 1;
 
-    return true;
+    return DR_TRUE;
 }
 
-bool dred_accelerator_table_remove(dred_accelerator_table* pTable, dred_accelerator accelerator)
+drBool32 dred_accelerator_table_remove(dred_accelerator_table* pTable, dred_accelerator accelerator)
 {
     size_t index;
     if (!dred_accelerator_table_find(pTable, accelerator, &index)) {
-        return false;
+        return DR_FALSE;
     }
 
     if (index+1 < pTable->count) {
@@ -71,25 +71,25 @@ bool dred_accelerator_table_remove(dred_accelerator_table* pTable, dred_accelera
     }
 
     pTable->count -= 1;
-    return true;
+    return DR_TRUE;
 }
 
 
-bool dred_accelerator_table_find(dred_accelerator_table* pTable, dred_accelerator accelerator, size_t* pIndexOut)
+drBool32 dred_accelerator_table_find(dred_accelerator_table* pTable, dred_accelerator accelerator, size_t* pIndexOut)
 {
     if (pIndexOut) *pIndexOut = 0;  // Safety.
     if (pTable == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     for (size_t i = 0; i < pTable->count; ++i) {
         if (pTable->pAccelerators[i].key == accelerator.key && pTable->pAccelerators[i].modifiers == accelerator.modifiers) {
             if (pIndexOut) *pIndexOut = i;
-            return true;
+            return DR_TRUE;
         }
     }
 
-    return false;
+    return DR_FALSE;
 }
 
 
@@ -195,7 +195,7 @@ dred_accelerator dred_accelerator_parse(const char* accelStr)
     return accelerator;
 }
 
-bool dred_accelerator_equal(dred_accelerator a, dred_accelerator b)
+drBool32 dred_accelerator_equal(dred_accelerator a, dred_accelerator b)
 {
     return a.key == b.key && a.modifiers == b.modifiers;
 }

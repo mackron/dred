@@ -1,9 +1,9 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-bool dred_shortcut_table_init(dred_shortcut_table* pTable)
+drBool32 dred_shortcut_table_init(dred_shortcut_table* pTable)
 {
     if (pTable == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     pTable->pShortcuts = NULL;
@@ -13,10 +13,10 @@ bool dred_shortcut_table_init(dred_shortcut_table* pTable)
     pTable->bufferSize = 0;
 
     if (!dred_accelerator_table_init(&pTable->acceleratorTable)) {
-        return false;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
 void dred_shortcut_table_uninit(dred_shortcut_table* pTable)
@@ -39,10 +39,10 @@ void dred_shortcut_table_uninit(dred_shortcut_table* pTable)
     dred_accelerator_table_uninit(&pTable->acceleratorTable);
 }
 
-bool dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name, dred_shortcut shortcut, const char* cmdStr)
+drBool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name, dred_shortcut shortcut, const char* cmdStr)
 {
     if (pTable == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (name == NULL) {
@@ -54,7 +54,7 @@ bool dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name, dre
     size_t existingIndex;
     if (dred_shortcut_table_find(pTable, shortcut, &existingIndex)) {
         dred_shortcut_table_replace(pTable, existingIndex, cmdStr);
-        return true;   // Already exists.
+        return DR_TRUE;   // Already exists.
     }
 
     // If we get here it means the accelerator does not already exist and needs to be added.
@@ -63,17 +63,17 @@ bool dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name, dre
         size_t newBufferSize = (pTable->bufferSize == 0) ? 16 : (pTable->bufferSize * 2);
         dred_shortcut* pNewShortcuts = (dred_shortcut*)realloc(pTable->pShortcuts, newBufferSize * sizeof(*pNewShortcuts));
         if (pNewShortcuts == NULL) {
-            return false;
+            return DR_FALSE;
         }
 
         char** ppNewCmdStrings = (char**)realloc(pTable->ppCmdStrings, newBufferSize * sizeof(*ppNewCmdStrings));
         if (ppNewCmdStrings == NULL) {
-            return false;
+            return DR_FALSE;
         }
 
         char** ppNewNameStrings = (char**)realloc(pTable->ppNameStrings, newBufferSize * sizeof(*ppNewNameStrings));
         if (ppNewNameStrings == NULL) {
-            return false;
+            return DR_FALSE;
         }
 
         pTable->pShortcuts = pNewShortcuts;
@@ -86,10 +86,10 @@ bool dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name, dre
 
     // The accelerators of the shortcut need to be added to the table. If we don't do this, the platform layer will not be aware of it.
     if (shortcut.accelerators[0].key != 0 && !dred_accelerator_table_add(&pTable->acceleratorTable, shortcut.accelerators[0])) {
-        return false;
+        return DR_FALSE;
     }
     if (shortcut.accelerators[1].key != 0 && !dred_accelerator_table_add(&pTable->acceleratorTable, shortcut.accelerators[1])) {
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -98,14 +98,14 @@ bool dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name, dre
     pTable->ppNameStrings[pTable->count] = gb_make_string(name);
     pTable->count += 1;
 
-    return true;
+    return DR_TRUE;
 }
 
-bool dred_shortcut_table_unbind(dred_shortcut_table* pTable, dred_shortcut shortcut)
+drBool32 dred_shortcut_table_unbind(dred_shortcut_table* pTable, dred_shortcut shortcut)
 {
     size_t index;
     if (!dred_shortcut_table_find(pTable, shortcut, &index)) {
-        return false;
+        return DR_FALSE;
     }
 
     if (index+1 < pTable->count) {
@@ -138,42 +138,42 @@ bool dred_shortcut_table_unbind(dred_shortcut_table* pTable, dred_shortcut short
         dred_accelerator_table_remove(&pTable->acceleratorTable, shortcut.accelerators[i]);
     }
 
-    return true;
+    return DR_TRUE;
 }
 
 
-bool dred_shortcut_table_find(dred_shortcut_table* pTable, dred_shortcut shortcut, size_t* pIndexOut)
+drBool32 dred_shortcut_table_find(dred_shortcut_table* pTable, dred_shortcut shortcut, size_t* pIndexOut)
 {
     if (pIndexOut) *pIndexOut = 0;  // Safety.
     if (pTable == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     for (size_t i = 0; i < pTable->count; ++i) {
         if (dred_shortcut_equal(pTable->pShortcuts[i], shortcut)) {
             if (pIndexOut) *pIndexOut = i;
-            return true;
+            return DR_TRUE;
         }
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool dred_shortcut_table_find_by_name(dred_shortcut_table* pTable, const char* name, size_t* pIndexOut)
+drBool32 dred_shortcut_table_find_by_name(dred_shortcut_table* pTable, const char* name, size_t* pIndexOut)
 {
     if (pIndexOut) *pIndexOut = 0;  // Safety.
     if (pTable == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     for (size_t i = 0; i < pTable->count; ++i) {
         if (strcmp(name, pTable->ppNameStrings[i]) == 0) {
             if (pIndexOut) *pIndexOut = i;
-            return true;
+            return DR_TRUE;
         }
     }
 
-    return false;
+    return DR_FALSE;
 }
 
 void dred_shortcut_table_replace(dred_shortcut_table* pTable, size_t shortcutIndex, const char* cmdStr)
@@ -192,14 +192,14 @@ void dred_shortcut_table_replace(dred_shortcut_table* pTable, size_t shortcutInd
 }
 
 
-bool dred_shortcut_table_get_shortcut_by_index(dred_shortcut_table* pTable, size_t shortcutIndex, dred_shortcut* pShortcutOut)
+drBool32 dred_shortcut_table_get_shortcut_by_index(dred_shortcut_table* pTable, size_t shortcutIndex, dred_shortcut* pShortcutOut)
 {
     if (pTable == NULL || shortcutIndex > pTable->count) {
-        return false;
+        return DR_FALSE;
     }
 
     if (pShortcutOut) *pShortcutOut = pTable->pShortcuts[shortcutIndex];
-    return true;
+    return DR_TRUE;
 }
 
 const char* dred_shortcut_table_get_command_string_by_index(dred_shortcut_table* pTable, size_t shortcutIndex)
@@ -275,7 +275,7 @@ dred_shortcut dred_shortcut_parse(const char* shortcutStr)
     return shortcut;
 }
 
-bool dred_shortcut_equal(dred_shortcut a, dred_shortcut b)
+drBool32 dred_shortcut_equal(dred_shortcut a, dred_shortcut b)
 {
     return dred_accelerator_equal(a.accelerators[0], b.accelerators[0]) &&
            dred_accelerator_equal(a.accelerators[1], b.accelerators[1]);

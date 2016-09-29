@@ -13,14 +13,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DRED_THREADING_WIN32
-bool dred_thread_create__win32(dred_thread* pThread, dred_thread_entry_proc entryProc, void* pData)
+drBool32 dred_thread_create__win32(dred_thread* pThread, dred_thread_entry_proc entryProc, void* pData)
 {
     *pThread = CreateThread(NULL, 0, entryProc, pData, 0, NULL);
     if (*pThread == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
 void dred_thread_wait__win32(dred_thread* pThread)
@@ -30,14 +30,14 @@ void dred_thread_wait__win32(dred_thread* pThread)
 
 
 
-bool dred_mutex_create__win32(dred_mutex* pMutex)
+drBool32 dred_mutex_create__win32(dred_mutex* pMutex)
 {
     *pMutex = CreateEventA(NULL, FALSE, TRUE, NULL);
     if (*pMutex == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
 void dred_mutex_delete__win32(dred_mutex* pMutex)
@@ -57,14 +57,14 @@ void dred_mutex_unlock__win32(dred_mutex* pMutex)
 
 
 
-bool dred_semaphore_create__win32(dred_semaphore* pSemaphore, int initialValue)
+drBool32 dred_semaphore_create__win32(dred_semaphore* pSemaphore, int initialValue)
 {
     *pSemaphore = CreateSemaphoreA(NULL, initialValue, LONG_MAX, NULL);
     if (*pSemaphore == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
 void dred_semaphore_delete__win32(dred_semaphore* pSemaphore)
@@ -72,12 +72,12 @@ void dred_semaphore_delete__win32(dred_semaphore* pSemaphore)
     CloseHandle(*pSemaphore);
 }
 
-bool dred_semaphore_wait__win32(dred_semaphore* pSemaphore)
+drBool32 dred_semaphore_wait__win32(dred_semaphore* pSemaphore)
 {
     return WaitForSingleObject(*pSemaphore, INFINITE) == WAIT_OBJECT_0;
 }
 
-bool dred_semaphore_release__win32(dred_semaphore* pSemaphore)
+drBool32 dred_semaphore_release__win32(dred_semaphore* pSemaphore)
 {
     return ReleaseSemaphore(*pSemaphore, 1, NULL) != 0;
 }
@@ -90,7 +90,7 @@ bool dred_semaphore_release__win32(dred_semaphore* pSemaphore)
 //
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DRED_THREADING_POSIX
-bool dred_thread_create__posix(dred_thread* pThread, dred_thread_entry_proc entryProc, void* pData)
+drBool32 dred_thread_create__posix(dred_thread* pThread, dred_thread_entry_proc entryProc, void* pData)
 {
     return pthread_create(pThread, NULL, entryProc, pData) == 0;
 }
@@ -102,7 +102,7 @@ void dred_thread_wait__posix(dred_thread* pThread)
 
 
 
-bool dred_mutex_create__posix(dred_mutex* pMutex)
+drBool32 dred_mutex_create__posix(dred_mutex* pMutex)
 {
     return pthread_mutex_init(pMutex, NULL) == 0;
 }
@@ -124,7 +124,7 @@ void dred_mutex_unlock__posix(dred_mutex* pMutex)
 
 
 
-bool dred_semaphore_create__posix(dred_semaphore* pSemaphore, int initialValue)
+drBool32 dred_semaphore_create__posix(dred_semaphore* pSemaphore, int initialValue)
 {
     return sem_init(pSemaphore, 0, (unsigned int)initialValue) != -1;
 }
@@ -134,12 +134,12 @@ void dred_semaphore_delete__posix(dred_semaphore* pSemaphore)
     sem_close(pSemaphore);
 }
 
-bool dred_semaphore_wait__posix(dred_semaphore* pSemaphore)
+drBool32 dred_semaphore_wait__posix(dred_semaphore* pSemaphore)
 {
     return sem_wait(pSemaphore) != -1;
 }
 
-bool dred_semaphore_release__posix(dred_semaphore* pSemaphore)
+drBool32 dred_semaphore_release__posix(dred_semaphore* pSemaphore)
 {
     return sem_post(pSemaphore) != -1;
 }
@@ -150,10 +150,10 @@ bool dred_semaphore_release__posix(dred_semaphore* pSemaphore)
 
 //// Thread ////
 
-bool dred_thread_create(dred_thread* pThread, dred_thread_entry_proc entryProc, void* pData)
+drBool32 dred_thread_create(dred_thread* pThread, dred_thread_entry_proc entryProc, void* pData)
 {
     if (pThread == NULL || entryProc == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 #ifdef DRED_THREADING_WIN32
@@ -183,10 +183,10 @@ void dred_thread_wait(dred_thread* pThread)
 
 //// Mutex ////
 
-bool dred_mutex_create(dred_mutex* pMutex)
+drBool32 dred_mutex_create(dred_mutex* pMutex)
 {
     if (pMutex == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 #ifdef DRED_THREADING_WIN32
@@ -246,10 +246,10 @@ void dred_mutex_unlock(dred_mutex* pMutex)
 
 //// Semaphore ///
 
-bool dred_semaphore_create(dred_semaphore* pSemaphore, int initialValue)
+drBool32 dred_semaphore_create(dred_semaphore* pSemaphore, int initialValue)
 {
     if (pSemaphore == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 #ifdef DRED_THREADING_WIN32
@@ -276,10 +276,10 @@ void dred_semaphore_delete(dred_semaphore* pSemaphore)
 #endif
 }
 
-bool dred_semaphore_wait(dred_semaphore* pSemaphore)
+drBool32 dred_semaphore_wait(dred_semaphore* pSemaphore)
 {
     if (pSemaphore == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 #ifdef DRED_THREADING_WIN32
@@ -291,10 +291,10 @@ bool dred_semaphore_wait(dred_semaphore* pSemaphore)
 #endif
 }
 
-bool dred_semaphore_release(dred_semaphore* pSemaphore)
+drBool32 dred_semaphore_release(dred_semaphore* pSemaphore)
 {
     if (pSemaphore == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 #ifdef DRED_THREADING_WIN32

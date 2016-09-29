@@ -17,7 +17,7 @@ struct dred_textbox
 
 
 // Creates a new text box control.
-bool dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_control* pParent);
+drBool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_control* pParent);
 
 // Deletes the given text box control.
 void dred_textbox_uninit(dred_textbox* pTextBox);
@@ -116,7 +116,7 @@ void dred_textbox_enable_word_wrap(dred_textbox* pTextBox);
 void dred_textbox_disable_word_wrap(dred_textbox* pTextBox);
 
 // Determines whether or not word wrap is enabled.
-bool dred_textbox_is_word_wrap_enabled(dred_textbox* pTextBox);
+drBool32 dred_textbox_is_word_wrap_enabled(dred_textbox* pTextBox);
 
 
 // Sets the text of the given text box.
@@ -138,7 +138,7 @@ void dred_textbox_move_cursor_to_end_of_text(dred_textbox* pTextBox);
 void dred_textbox_move_cursor_to_start_of_line_by_index(dred_textbox* pTextBox, size_t iLine);
 
 // Determines whether or not anything is selected in the given text box.
-bool dred_textbox_is_anything_selected(dred_textbox* pTextBox);
+drBool32 dred_textbox_is_anything_selected(dred_textbox* pTextBox);
 
 // Selects all of the text inside the text box.
 void dred_textbox_select_all(dred_textbox* pTextBox);
@@ -158,28 +158,28 @@ size_t dred_textbox_get_selected_text(dred_textbox* pTextBox, char* textOut, siz
 // Deletes the character to the right of the cursor.
 //
 // @return True if the text within the text engine has changed.
-bool dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox);
+drBool32 dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox);
 
 // Deletes the currently selected text.
 //
 // @return True if the text within the text engine has changed.
-bool dred_textbox_delete_selected_text_no_undo(dred_textbox* pTextBox);
-bool dred_textbox_delete_selected_text(dred_textbox* pTextBox);
+drBool32 dred_textbox_delete_selected_text_no_undo(dred_textbox* pTextBox);
+drBool32 dred_textbox_delete_selected_text(dred_textbox* pTextBox);
 
 // Inserts a character at the position of the cursor.
 //
 // @return True if the text within the text engine has changed.
-bool dred_textbox_insert_text_at_cursors_no_undo(dred_textbox* pTextBox, const char* text);
-bool dred_textbox_insert_text_at_cursors(dred_textbox* pTextBox, const char* text);
+drBool32 dred_textbox_insert_text_at_cursors_no_undo(dred_textbox* pTextBox, const char* text);
+drBool32 dred_textbox_insert_text_at_cursors(dred_textbox* pTextBox, const char* text);
 
 // Unindents selected text.
-bool dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox);
+drBool32 dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox);
 
 // Performs an undo operation.
-bool dred_textbox_undo(dred_textbox* pTextBox);
+drBool32 dred_textbox_undo(dred_textbox* pTextBox);
 
 // Performs a redo operation.
-bool dred_textbox_redo(dred_textbox* pTextBox);
+drBool32 dred_textbox_redo(dred_textbox* pTextBox);
 
 // Retrieves the number of undo points remaining.
 unsigned int dred_textbox_get_undo_points_remaining_count(dred_textbox* pTextBox);
@@ -201,13 +201,13 @@ size_t dred_textbox_get_line_count(dred_textbox* pTextBox);
 
 
 // Finds and selects the next occurance of the given string, starting from the cursor and looping back to the start.
-bool dred_textbox_find_and_select_next(dred_textbox* pTextBox, const char* text);
+drBool32 dred_textbox_find_and_select_next(dred_textbox* pTextBox, const char* text);
 
 // Finds the next occurance of the given string and replaces it with another.
-bool dred_textbox_find_and_replace_next(dred_textbox* pTextBox, const char* text, const char* replacement);
+drBool32 dred_textbox_find_and_replace_next(dred_textbox* pTextBox, const char* text, const char* replacement);
 
 // Finds every occurance of the given string and replaces it with another.
-bool dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text, const char* replacement);
+drBool32 dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text, const char* replacement);
 
 
 // Shows the line numbers.
@@ -258,11 +258,11 @@ void dred_textbox_enable_tabs_to_spaces(dred_textbox* pTextBox);
 void dred_textbox_disable_tabs_to_spaces(dred_textbox* pTextBox);
 
 // Determines whether or not the textbox should convert tabs to spaces.
-bool dred_textbox_is_tabs_to_spaces_enabled(dred_textbox* pTextBox);
+drBool32 dred_textbox_is_tabs_to_spaces_enabled(dred_textbox* pTextBox);
 
 
 // Prepares an undo point.
-bool dred_textbox_prepare_undo_point(dred_textbox* pTextBox);
+drBool32 dred_textbox_prepare_undo_point(dred_textbox* pTextBox);
 
 // Commits an undo point.
-bool dred_textbox_commit_undo_point(dred_textbox* pTextBox);
+drBool32 dred_textbox_commit_undo_point(dred_textbox* pTextBox);

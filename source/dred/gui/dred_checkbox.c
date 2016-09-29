@@ -72,7 +72,7 @@ void dred_checkbox__on_mouse_enter(dred_control* pControl)
         return;
     }
 
-    pCheckbox->isMouseOver = true;
+    pCheckbox->isMouseOver = DR_TRUE;
 
     dred_control_dirty(pControl, dred_control_get_local_rect(pControl));
 }
@@ -84,7 +84,7 @@ void dred_checkbox__on_mouse_leave(dred_control* pControl)
         return;
     }
 
-    pCheckbox->isMouseOver = false;
+    pCheckbox->isMouseOver = DR_FALSE;
 
     dred_control_dirty(pControl, dred_control_get_local_rect(pControl));
 }
@@ -171,15 +171,15 @@ void dred_checkbox__refresh_layout(dred_checkbox* pCheckbox)
     dred_control_dirty(DRED_CONTROL(pCheckbox), dred_control_get_local_rect(DRED_CONTROL(pCheckbox)));
 }
 
-bool dred_checkbox_init(dred_checkbox* pCheckbox, dred_context* pDred, dred_control* pParent, const char* text, bool checked)
+drBool32 dred_checkbox_init(dred_checkbox* pCheckbox, dred_context* pDred, dred_control* pParent, const char* text, drBool32 checked)
 {
     if (pCheckbox == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     memset(pCheckbox, 0, sizeof(*pCheckbox));
     if (!dred_control_init(DRED_CONTROL(pCheckbox), pDred, pParent, DRED_CONTROL_TYPE_CHECKBOX)) {
-        return false;
+        return DR_FALSE;
     }
 
     strncpy_s(pCheckbox->text, sizeof(pCheckbox->text), text, _TRUNCATE);
@@ -194,7 +194,7 @@ bool dred_checkbox_init(dred_checkbox* pCheckbox, dred_context* pDred, dred_cont
     pCheckbox->checkColor = dred_rgb(64, 128, 64);
     pCheckbox->borderWidth = 1;
     pCheckbox->padding = 4;
-    pCheckbox->isAutoSizeEnabled = true;
+    pCheckbox->isAutoSizeEnabled = DR_TRUE;
     pCheckbox->isChecked = checked;
 
     // Events.
@@ -208,7 +208,7 @@ bool dred_checkbox_init(dred_checkbox* pCheckbox, dred_context* pDred, dred_cont
 
     dred_checkbox__refresh_layout(pCheckbox);
 
-    return true;
+    return DR_TRUE;
 }
 
 void dred_checkbox_uninit(dred_checkbox* pCheckbox)
@@ -241,7 +241,7 @@ void dred_checkbox_enable_auto_size(dred_checkbox* pCheckbox)
         return;
     }
 
-    pCheckbox->isAutoSizeEnabled = true;
+    pCheckbox->isAutoSizeEnabled = DR_TRUE;
 
     dred_checkbox__refresh_layout(pCheckbox);
 }
@@ -252,7 +252,7 @@ void dred_checkbox_disable_auto_size(dred_checkbox* pCheckbox)
         return;
     }
 
-    pCheckbox->isAutoSizeEnabled = false;
+    pCheckbox->isAutoSizeEnabled = DR_FALSE;
 
     dred_checkbox__refresh_layout(pCheckbox);
 }
@@ -326,12 +326,12 @@ void dred_checkbox_set_padding(dred_checkbox* pCheckbox, float padding)
 
 void dred_checkbox_check(dred_checkbox* pCheckbox)
 {
-    dred_checkbox_set_checked(pCheckbox, true, false);
+    dred_checkbox_set_checked(pCheckbox, DR_TRUE, DR_FALSE);
 }
 
 void dred_checkbox_uncheck(dred_checkbox* pCheckbox)
 {
-    dred_checkbox_set_checked(pCheckbox, false, false);
+    dred_checkbox_set_checked(pCheckbox, DR_FALSE, DR_FALSE);
 }
 
 void dred_checkbox_toggle(dred_checkbox* pCheckbox)
@@ -347,7 +347,7 @@ void dred_checkbox_toggle(dred_checkbox* pCheckbox)
     }
 }
 
-void dred_checkbox_set_checked(dred_checkbox* pCheckbox, bool checked, bool blockEvent)
+void dred_checkbox_set_checked(dred_checkbox* pCheckbox, drBool32 checked, drBool32 blockEvent)
 {
     if (pCheckbox == NULL) {
         return;
@@ -361,7 +361,7 @@ void dred_checkbox_set_checked(dred_checkbox* pCheckbox, bool checked, bool bloc
 
     if (!blockEvent) {
         if (pCheckbox->varBinding[0] != '\0') {
-            dred_config_set(&dred_control_get_context(DRED_CONTROL(pCheckbox))->config, pCheckbox->varBinding, checked ? "true" : "false");
+            dred_config_set(&dred_control_get_context(DRED_CONTROL(pCheckbox))->config, pCheckbox->varBinding, checked ? "DR_TRUE" : "DR_FALSE");
         }
 
         if (pCheckbox->onCheckChanged) {
@@ -372,10 +372,10 @@ void dred_checkbox_set_checked(dred_checkbox* pCheckbox, bool checked, bool bloc
     dred_control_dirty(DRED_CONTROL(pCheckbox), dred_checkbox__get_box_rect(pCheckbox));
 }
 
-bool dred_is_checked(dred_checkbox* pCheckbox)
+drBool32 dred_is_checked(dred_checkbox* pCheckbox)
 {
     if (pCheckbox == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return pCheckbox->isChecked;

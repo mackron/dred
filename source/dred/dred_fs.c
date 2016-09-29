@@ -1,45 +1,45 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-bool dred_get_config_folder_path(char* pathOut, size_t pathOutSize)
+drBool32 dred_get_config_folder_path(char* pathOut, size_t pathOutSize)
 {
     if (!dr_get_config_folder_path(pathOut, pathOutSize)) {
-        return false;
+        return DR_FALSE;
     }
 
     return drpath_append(pathOut, pathOutSize, "dred");
 }
 
-bool dred_get_config_path(char* pathOut, size_t pathOutSize)
+drBool32 dred_get_config_path(char* pathOut, size_t pathOutSize)
 {
     if (!dred_get_config_folder_path(pathOut, pathOutSize)) {
-        return false;
+        return DR_FALSE;
     }
 
     return drpath_append(pathOut, pathOutSize, ".dred");
 }
 
-bool dred_get_log_folder_path(char* pathOut, size_t pathOutSize)
+drBool32 dred_get_log_folder_path(char* pathOut, size_t pathOutSize)
 {
     if (!dr_get_log_folder_path(pathOut, pathOutSize)) {
-        return false;
+        return DR_FALSE;
     }
 
     return drpath_append(pathOut, pathOutSize, "dred");
 }
 
-bool dred_get_log_path(char* pathOut, size_t pathOutSize)
+drBool32 dred_get_log_path(char* pathOut, size_t pathOutSize)
 {
     if (!dred_get_log_folder_path(pathOut, pathOutSize)) {
-        return false;
+        return DR_FALSE;
     }
 
     return drpath_append(pathOut, pathOutSize, "dred.log");
 }
 
-bool dred_get_packages_folder_path(char* pathOut, size_t pathOutSize)
+drBool32 dred_get_packages_folder_path(char* pathOut, size_t pathOutSize)
 {
     if (!dr_get_executable_directory_path(pathOut, pathOutSize)) {
-        return false;
+        return DR_FALSE;
     }
 
     return drpath_append(pathOut, pathOutSize, "packages");
@@ -95,31 +95,31 @@ void dred_file_close(dred_file file)
     fclose((FILE*)file);
 }
 
-bool dred_file_read(dred_file file, void* pDataOut, size_t bytesToRead, size_t* pBytesRead)
+drBool32 dred_file_read(dred_file file, void* pDataOut, size_t bytesToRead, size_t* pBytesRead)
 {
     size_t bytesRead = fread(pDataOut, 1, bytesToRead, (FILE*)file);
     if (pBytesRead) *pBytesRead = bytesRead;
 
     if (bytesRead == 0 && bytesToRead != 0) {
-        return false;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool dred_file_write(dred_file file, const void* pData, size_t bytesToWrite, size_t* pBytesWritten)
+drBool32 dred_file_write(dred_file file, const void* pData, size_t bytesToWrite, size_t* pBytesWritten)
 {
     size_t bytesWritten = fwrite(pData, 1, bytesToWrite, (FILE*)file);
     if (pBytesWritten) *pBytesWritten = bytesWritten;
 
     if (bytesWritten == 0 && bytesToWrite != 0) {
-        return false;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool dred_file_seek(dred_file file, int64_t bytesToSeek, dred_seek_origin origin)
+drBool32 dred_file_seek(dred_file file, int64_t bytesToSeek, dred_seek_origin origin)
 {
     int originSTD = SEEK_SET;
     if (origin == dred_seek_origin_current) {
@@ -130,15 +130,15 @@ bool dred_file_seek(dred_file file, int64_t bytesToSeek, dred_seek_origin origin
 
 #ifdef DRED_WIN32
     if (_fseeki64((FILE*)file, bytesToSeek, originSTD) == -1) {
-        return false;
+        return DR_FALSE;
     }
 #else
     if (fseeko((FILE*)file, bytesToSeek, originSTD) == -1) {
-        return false;
+        return DR_FALSE;
     }
 #endif
 
-    return true;
+    return DR_TRUE;
 }
 
 uint64_t dred_file_tell(dred_file file)
@@ -166,18 +166,18 @@ void dred_file_flush(dred_file file)
 
 //// High Level Helpers ////
 
-bool dred_file_write_string(dred_file file, const char* str)
+drBool32 dred_file_write_string(dred_file file, const char* str)
 {
     return dred_file_write(file, str, (unsigned int)strlen(str), NULL);
 }
 
-bool dred_file_write_line(dred_file file, const char* str)
+drBool32 dred_file_write_line(dred_file file, const char* str)
 {
     return dred_file_write_string(file, str) && dred_file_write_string(file, "\n");
 }
 
 
-bool dred_to_absolute_path(const char* relativePath, char* absolutePathOut, size_t absolutePathOutSize)
+drBool32 dred_to_absolute_path(const char* relativePath, char* absolutePathOut, size_t absolutePathOutSize)
 {
     if (drpath_is_absolute(relativePath)) {
         return strcpy_s(absolutePathOut, absolutePathOutSize, relativePath) == 0;
@@ -185,7 +185,7 @@ bool dred_to_absolute_path(const char* relativePath, char* absolutePathOut, size
 
 
     if (dr_get_current_directory(absolutePathOut, absolutePathOutSize) == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return drpath_append(absolutePathOut, absolutePathOutSize, relativePath);

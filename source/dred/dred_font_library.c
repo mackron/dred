@@ -65,10 +65,10 @@ dred_font* dred_font_library__find_by_desc(dred_font_library* pLibrary, dred_fon
 }
 
 
-bool dred_font_library_init(dred_font_library* pLibrary, dred_context* pDred)
+drBool32 dred_font_library_init(dred_font_library* pLibrary, dred_context* pDred)
 {
     if (pLibrary == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     pLibrary->pDred = pDred;
@@ -76,7 +76,7 @@ bool dred_font_library_init(dred_font_library* pLibrary, dred_context* pDred)
     pLibrary->fontCount = 0;
     pLibrary->ppFonts = NULL;
 
-    return true;
+    return DR_TRUE;
 }
 
 void dred_font_library_uninit(dred_font_library* pLibrary)

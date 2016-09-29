@@ -197,13 +197,13 @@ typedef struct
 } dr2d_draw_image_args;
 
 
-typedef bool              (* dr2d_on_create_context_proc)                  (dr2d_context* pContext, const void* pUserData);
+typedef drBool32              (* dr2d_on_create_context_proc)                  (dr2d_context* pContext, const void* pUserData);
 typedef void              (* dr2d_on_delete_context_proc)                  (dr2d_context* pContext);
-typedef bool              (* dr2d_on_create_surface_proc)                  (dr2d_surface* pSurface, float width, float height);
+typedef drBool32              (* dr2d_on_create_surface_proc)                  (dr2d_surface* pSurface, float width, float height);
 typedef void              (* dr2d_on_delete_surface_proc)                  (dr2d_surface* pSurface);
-typedef bool              (* dr2d_on_create_font_proc)                     (dr2d_font* pFont);
+typedef drBool32              (* dr2d_on_create_font_proc)                     (dr2d_font* pFont);
 typedef void              (* dr2d_on_delete_font_proc)                     (dr2d_font* pFont);
-typedef bool              (* dr2d_on_create_image_proc)                    (dr2d_image* pImage, unsigned int stride, const void* pData);
+typedef drBool32              (* dr2d_on_create_image_proc)                    (dr2d_image* pImage, unsigned int stride, const void* pData);
 typedef void              (* dr2d_on_delete_image_proc)                    (dr2d_image* pImage);
 typedef void              (* dr2d_begin_draw_proc)                         (dr2d_surface* pSurface);
 typedef void              (* dr2d_end_draw_proc)                           (dr2d_surface* pSurface);
@@ -221,11 +221,11 @@ typedef void              (* dr2d_get_clip_proc)                           (dr2d
 typedef dr2d_image_format (* dr2d_get_optimal_image_format_proc)           (dr2d_context* pContext);
 typedef void*             (* dr2d_map_image_data_proc)                     (dr2d_image* pImage, unsigned int accessFlags);
 typedef void              (* dr2d_unmap_image_data_proc)                   (dr2d_image* pImage);
-typedef bool              (* dr2d_get_font_metrics_proc)                   (dr2d_font* pFont, dr2d_font_metrics* pMetricsOut);
-typedef bool              (* dr2d_get_glyph_metrics_proc)                  (dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pMetricsOut);
-typedef bool              (* dr2d_measure_string_proc)                     (dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
-typedef bool              (* dr2d_get_text_cursor_position_from_point_proc)(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-typedef bool              (* dr2d_get_text_cursor_position_from_char_proc) (dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+typedef drBool32              (* dr2d_get_font_metrics_proc)                   (dr2d_font* pFont, dr2d_font_metrics* pMetricsOut);
+typedef drBool32              (* dr2d_get_glyph_metrics_proc)                  (dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pMetricsOut);
+typedef drBool32              (* dr2d_measure_string_proc)                     (dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
+typedef drBool32              (* dr2d_get_text_cursor_position_from_point_proc)(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+typedef drBool32              (* dr2d_get_text_cursor_position_from_char_proc) (dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 
 struct dr2d_drawing_callbacks
@@ -279,7 +279,7 @@ struct dr2d_image
     dr2d_image_format format;
 
     /// Whether or not the image's data is already mapped.
-    bool isMapped;
+    drBool32 isMapped;
 
     /// The extra bytes. The size of this buffer is equal to pContext->imageExtraBytes.
     dr2d_byte pExtraData[1];
@@ -433,19 +433,19 @@ void* dr2d_get_font_extra_data(dr2d_font* pFont);
 unsigned int dr2d_get_font_size(dr2d_font* pFont);
 
 /// Retrieves the metrics of the given font.
-bool dr2d_get_font_metrics(dr2d_font* pFont, dr2d_font_metrics* pMetricsOut);
+drBool32 dr2d_get_font_metrics(dr2d_font* pFont, dr2d_font_metrics* pMetricsOut);
 
 /// Retrieves the metrics of the glyph for the given character when rendered with the given font.
-bool dr2d_get_glyph_metrics(dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pMetricsOut);
+drBool32 dr2d_get_glyph_metrics(dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pMetricsOut);
 
 /// Retrieves the dimensions of the given string when drawn with the given font.
-bool dr2d_measure_string(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
+drBool32 dr2d_measure_string(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
 
 /// Retrieves the position to place a text cursor based on the given point for the given string when drawn with the given font.
-bool dr2d_get_text_cursor_position_from_point(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+drBool32 dr2d_get_text_cursor_position_from_point(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
 
 /// Retrieves the position to palce a text cursor based on the character at the given index for the given string when drawn with the given font.
-bool dr2d_get_text_cursor_position_from_char(dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+drBool32 dr2d_get_text_cursor_position_from_char(dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 
 /// Creates an image that can be passed to dr2d_draw_image().
@@ -637,7 +637,7 @@ dr2d_context* dr2d_create_context(dr2d_drawing_callbacks drawingCallbacks, size_
         memset(pContext->pExtraData, 0, contextExtraBytes);
 
         // The create_context callback is optional. If it is set to NULL, we just finish up here and return successfully. Otherwise
-        // we want to call the create_context callback and check it's return value. If it's return value if false it means there
+        // we want to call the create_context callback and check it's return value. If it's return value if DR_FALSE it means there
         // was an error and we need to return null.
         if (pContext->drawingCallbacks.on_create_context != NULL)
         {
@@ -683,7 +683,7 @@ dr2d_surface* dr2d_create_surface(dr2d_context* pContext, float width, float hei
             memset(pSurface->pExtraData, 0, pContext->surfaceExtraBytes);
 
             // The create_surface callback is optional. If it is set to NULL, we just finish up here and return successfully. Otherwise
-            // we want to call the create_surface callback and check it's return value. If it's return value if false it means there
+            // we want to call the create_surface callback and check it's return value. If it's return value if DR_FALSE it means there
             // was an error and we need to return null.
             if (pContext->drawingCallbacks.on_create_surface != NULL)
             {
@@ -966,10 +966,10 @@ unsigned int dr2d_get_font_size(dr2d_font* pFont)
     return pFont->size;
 }
 
-bool dr2d_get_font_metrics(dr2d_font* pFont, dr2d_font_metrics* pMetricsOut)
+drBool32 dr2d_get_font_metrics(dr2d_font* pFont, dr2d_font_metrics* pMetricsOut)
 {
     if (pFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     assert(pFont->pContext != NULL);
@@ -978,13 +978,13 @@ bool dr2d_get_font_metrics(dr2d_font* pFont, dr2d_font_metrics* pMetricsOut)
         return pFont->pContext->drawingCallbacks.get_font_metrics(pFont, pMetricsOut);
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool dr2d_get_glyph_metrics(dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pMetricsOut)
+drBool32 dr2d_get_glyph_metrics(dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pMetricsOut)
 {
     if (pFont == NULL || pMetricsOut == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     assert(pFont->pContext != NULL);
@@ -993,13 +993,13 @@ bool dr2d_get_glyph_metrics(dr2d_font* pFont, unsigned int utf32, dr2d_glyph_met
         return pFont->pContext->drawingCallbacks.get_glyph_metrics(pFont, utf32, pMetricsOut);
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool dr2d_measure_string(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
+drBool32 dr2d_measure_string(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
 {
     if (pFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     assert(pFont->pContext != NULL);
@@ -1008,13 +1008,13 @@ bool dr2d_measure_string(dr2d_font* pFont, const char* text, size_t textSizeInBy
         return pFont->pContext->drawingCallbacks.measure_string(pFont, text, textSizeInBytes, pWidthOut, pHeightOut);
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool dr2d_get_text_cursor_position_from_point(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+drBool32 dr2d_get_text_cursor_position_from_point(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     if (pFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     assert(pFont->pContext != NULL);
@@ -1023,13 +1023,13 @@ bool dr2d_get_text_cursor_position_from_point(dr2d_font* pFont, const char* text
         return pFont->pContext->drawingCallbacks.get_text_cursor_position_from_point(pFont, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool dr2d_get_text_cursor_position_from_char(dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+drBool32 dr2d_get_text_cursor_position_from_char(dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
     if (pFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     assert(pFont->pContext != NULL);
@@ -1038,7 +1038,7 @@ bool dr2d_get_text_cursor_position_from_char(dr2d_font* pFont, const char* text,
         return pFont->pContext->drawingCallbacks.get_text_cursor_position_from_char(pFont, text, characterIndex, pTextCursorPosXOut);
     }
 
-    return false;
+    return DR_FALSE;
 }
 
 
@@ -1057,7 +1057,7 @@ dr2d_image* dr2d_create_image(dr2d_context* pContext, unsigned int width, unsign
     pImage->width    = width;
     pImage->height   = height;
     pImage->format   = format;
-    pImage->isMapped = false;
+    pImage->isMapped = DR_FALSE;
 
     if (pContext->drawingCallbacks.on_create_image != NULL) {
         if (!pContext->drawingCallbacks.on_create_image(pImage, stride, pData)) {
@@ -1115,7 +1115,7 @@ void* dr2d_map_image_data(dr2d_image* pImage, unsigned int accessFlags)
 
     void* pImageData = pImage->pContext->drawingCallbacks.map_image_data(pImage, accessFlags);
     if (pImageData != NULL) {
-        pImage->isMapped = true;
+        pImage->isMapped = DR_TRUE;
     }
 
     return pImageData;
@@ -1128,7 +1128,7 @@ void dr2d_unmap_image_data(dr2d_image* pImage)
     }
 
     pImage->pContext->drawingCallbacks.unmap_image_data(pImage);
-    pImage->isMapped = false;
+    pImage->isMapped = DR_FALSE;
 }
 
 dr2d_image_format dr2d_get_optimal_image_format(dr2d_context* pContext)
@@ -1239,7 +1239,7 @@ typedef struct
     size_t glyphCacheSize;
 
     /// Whether or not the context owns the device context.
-    bool ownsDC;
+    drBool32 ownsDC;
 
 } gdi_context_data;
 
@@ -1335,13 +1335,13 @@ typedef struct
 } gdi_image_data;
 
 
-bool dr2d_on_create_context_gdi(dr2d_context* pContext, const void* pUserData);
+drBool32 dr2d_on_create_context_gdi(dr2d_context* pContext, const void* pUserData);
 void dr2d_on_delete_context_gdi(dr2d_context* pContext);
-bool dr2d_on_create_surface_gdi(dr2d_surface* pSurface, float width, float height);
+drBool32 dr2d_on_create_surface_gdi(dr2d_surface* pSurface, float width, float height);
 void dr2d_on_delete_surface_gdi(dr2d_surface* pSurface);
-bool dr2d_on_create_font_gdi(dr2d_font* pFont);
+drBool32 dr2d_on_create_font_gdi(dr2d_font* pFont);
 void dr2d_on_delete_font_gdi(dr2d_font* pFont);
-bool dr2d_on_create_image_gdi(dr2d_image* pImage, unsigned int stride, const void* pData);
+drBool32 dr2d_on_create_image_gdi(dr2d_image* pImage, unsigned int stride, const void* pData);
 void dr2d_on_delete_image_gdi(dr2d_image* pImage);
 
 void dr2d_begin_draw_gdi(dr2d_surface* pSurface);
@@ -1362,11 +1362,11 @@ dr2d_image_format dr2d_get_optimal_image_format_gdi(dr2d_context* pContext);
 void* dr2d_map_image_data_gdi(dr2d_image* pImage, unsigned accessFlags);
 void dr2d_unmap_image_data_gdi(dr2d_image* pImage);
 
-bool dr2d_get_font_metrics_gdi(dr2d_font* pFont, dr2d_font_metrics* pMetricsOut);
-bool dr2d_get_glyph_metrics_gdi(dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pGlyphMetrics);
-bool dr2d_measure_string_gdi(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
-bool dr2d_get_text_cursor_position_from_point_gdi(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-bool dr2d_get_text_cursor_position_from_char_gdi(dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+drBool32 dr2d_get_font_metrics_gdi(dr2d_font* pFont, dr2d_font_metrics* pMetricsOut);
+drBool32 dr2d_get_glyph_metrics_gdi(dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pGlyphMetrics);
+drBool32 dr2d_measure_string_gdi(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
+drBool32 dr2d_get_text_cursor_position_from_point_gdi(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+drBool32 dr2d_get_text_cursor_position_from_char_gdi(dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 /// Converts a char* to a wchar_t* string.
 wchar_t* dr2d_mb_to_wchar_gdi(dr2d_context* pContext, const char* text, size_t textSizeInBytes, unsigned int* characterCountOut);
@@ -1502,7 +1502,7 @@ HFONT dr2d_get_HFONT(dr2d_font* pFont)
 }
 
 
-bool dr2d_on_create_context_gdi(dr2d_context* pContext, const void* pUserData)
+drBool32 dr2d_on_create_context_gdi(dr2d_context* pContext, const void* pUserData)
 {
     assert(pContext != NULL);
 
@@ -1511,22 +1511,22 @@ bool dr2d_on_create_context_gdi(dr2d_context* pContext, const void* pUserData)
         hDC = *(HDC*)pUserData;
     }
 
-    bool ownsDC = false;
+    drBool32 ownsDC = DR_FALSE;
     if (hDC == NULL) {
         hDC = CreateCompatibleDC(GetDC(GetDesktopWindow()));
-        ownsDC = true;
+        ownsDC = DR_TRUE;
     }
 
 
     // We need to create the DC that all of our rendering commands will be drawn to.
     gdi_context_data* pGDIData = (gdi_context_data*)dr2d_get_context_extra_data(pContext);
     if (pGDIData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     pGDIData->hDC = hDC;
     if (pGDIData->hDC == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     pGDIData->ownsDC = ownsDC;
@@ -1545,7 +1545,7 @@ bool dr2d_on_create_context_gdi(dr2d_context* pContext, const void* pUserData)
     pGDIData->pGlyphCache = NULL;
     pGDIData->glyphCacheSize = 0;
 
-    return true;
+    return DR_TRUE;
 }
 
 void dr2d_on_delete_context_gdi(dr2d_context* pContext)
@@ -1574,28 +1574,28 @@ void dr2d_on_delete_context_gdi(dr2d_context* pContext)
     }
 }
 
-bool dr2d_on_create_surface_gdi(dr2d_surface* pSurface, float width, float height)
+drBool32 dr2d_on_create_surface_gdi(dr2d_surface* pSurface, float width, float height)
 {
     assert(pSurface != NULL);
 
     gdi_context_data* pGDIContextData = (gdi_context_data*)dr2d_get_context_extra_data(pSurface->pContext);
     if (pGDIContextData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     gdi_surface_data* pGDISurfaceData = (gdi_surface_data*)dr2d_get_surface_extra_data(pSurface);
     if (pGDISurfaceData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     HDC hDC = pGDIContextData->hDC;
     if (hDC == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     HDC hIntermediateDC = CreateCompatibleDC(hDC);
     if (hIntermediateDC == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     pGDISurfaceData->hIntermediateDC = hIntermediateDC;
@@ -1616,7 +1616,7 @@ bool dr2d_on_create_surface_gdi(dr2d_surface* pSurface, float width, float heigh
         bmi.bmiHeader.biCompression = BI_RGB;
         pGDISurfaceData->hBitmap = CreateDIBSection(hDC, &bmi, DIB_RGB_COLORS, &pGDISurfaceData->pBitmapData, NULL, 0);
         if (pGDISurfaceData->hBitmap == NULL) {
-            return false;
+            return DR_FALSE;
         }
     }
     else
@@ -1626,7 +1626,7 @@ bool dr2d_on_create_surface_gdi(dr2d_surface* pSurface, float width, float heigh
     }
 
 
-    return true;
+    return DR_TRUE;
 }
 
 void dr2d_on_delete_surface_gdi(dr2d_surface* pSurface)
@@ -1644,13 +1644,13 @@ void dr2d_on_delete_surface_gdi(dr2d_surface* pSurface)
     }
 }
 
-bool dr2d_on_create_font_gdi(dr2d_font* pFont)
+drBool32 dr2d_on_create_font_gdi(dr2d_font* pFont)
 {
     assert(pFont != NULL);
 
     gdi_font_data* pGDIData = (gdi_font_data*)dr2d_get_font_extra_data(pFont);
     if (pGDIData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -1694,13 +1694,13 @@ bool dr2d_on_create_font_gdi(dr2d_font* pFont)
 
 	pGDIData->hFont = CreateFontIndirectA(&logfont);
     if (pGDIData->hFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 
     gdi_context_data* pGDIContextData = (gdi_context_data*)dr2d_get_context_extra_data(pFont->pContext);
     if (pGDIContextData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     // Cache the font metrics.
@@ -1727,7 +1727,7 @@ bool dr2d_on_create_font_gdi(dr2d_font* pFont)
     SelectObject(pGDIContextData->hDC, hPrevFont);
 
 
-    return true;
+    return DR_TRUE;
 }
 
 void dr2d_on_delete_font_gdi(dr2d_font* pFont)
@@ -1742,18 +1742,18 @@ void dr2d_on_delete_font_gdi(dr2d_font* pFont)
     DeleteObject(pGDIData->hFont);
 }
 
-bool dr2d_on_create_image_gdi(dr2d_image* pImage, unsigned int stride, const void* pData)
+drBool32 dr2d_on_create_image_gdi(dr2d_image* pImage, unsigned int stride, const void* pData)
 {
     assert(pImage != NULL);
 
     gdi_image_data* pGDIData = (gdi_image_data*)dr2d_get_image_extra_data(pImage);
     if (pGDIData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     gdi_context_data* pGDIContextData = (gdi_context_data*)dr2d_get_context_extra_data(pImage->pContext);
     if (pGDIContextData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -1767,13 +1767,13 @@ bool dr2d_on_create_image_gdi(dr2d_image* pImage, unsigned int stride, const voi
     bmi.bmiHeader.biCompression = BI_RGB;
     pGDIData->hSrcBitmap = CreateDIBSection(pGDIContextData->hDC, &bmi, DIB_RGB_COLORS, (void**)&pGDIData->pSrcBitmapData, NULL, 0);
     if (pGDIData->hSrcBitmap == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     pGDIData->hIntermediateBitmap = CreateDIBSection(pGDIContextData->hDC, &bmi, DIB_RGB_COLORS, (void**)&pGDIData->pIntermediateBitmapData, NULL, 0);
     if (pGDIData->hIntermediateBitmap == NULL) {
         DeleteObject(pGDIData->hSrcBitmap);
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -1790,7 +1790,7 @@ bool dr2d_on_create_image_gdi(dr2d_image* pImage, unsigned int stride, const voi
     pGDIData->mapAccessFlags = 0;
 
     // At this point everything should be good.
-    return true;
+    return DR_TRUE;
 }
 
 void dr2d_on_delete_image_gdi(dr2d_image* pImage)
@@ -2058,14 +2058,14 @@ void dr2d_draw_image_gdi(dr2d_surface* pSurface, dr2d_image* pImage, dr2d_draw_i
         return;
     }
 
-    bool drawFlipped = false;
+    drBool32 drawFlipped = DR_FALSE;
     HBITMAP hSrcBitmap = NULL;
 
     if ((pArgs->options & DR2D_IMAGE_DRAW_BACKGROUND) == 0 && (pArgs->options & DR2D_IMAGE_HINT_NO_ALPHA) != 0 && pArgs->foregroundTint.r == 255 && pArgs->foregroundTint.g == 255 && pArgs->foregroundTint.b == 255)
     {
         // Fast path. No tint, no background, no alpha.
         hSrcBitmap = pGDIImageData->hSrcBitmap;
-        drawFlipped = true;
+        drawFlipped = DR_TRUE;
     }
     else
     {
@@ -2122,7 +2122,7 @@ void dr2d_draw_image_gdi(dr2d_surface* pSurface, dr2d_image* pImage, dr2d_draw_i
     }
     else
     {
-        assert(drawFlipped == false);   // <-- Error if this is hit.
+        assert(drawFlipped == DR_FALSE);   // <-- Error if this is hit.
         BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
         AlphaBlend(pGDISurfaceData->hDC, (int)pArgs->dstX, (int)pArgs->dstY, (int)pArgs->dstWidth, (int)pArgs->dstHeight, pGDISurfaceData->hIntermediateDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend);
     }
@@ -2257,33 +2257,33 @@ void dr2d_unmap_image_data_gdi(dr2d_image* pImage)
 }
 
 
-bool dr2d_get_font_metrics_gdi(dr2d_font* pFont, dr2d_font_metrics* pMetricsOut)
+drBool32 dr2d_get_font_metrics_gdi(dr2d_font* pFont, dr2d_font_metrics* pMetricsOut)
 {
     assert(pFont != NULL);
     assert(pMetricsOut != NULL);
 
     gdi_font_data* pGDIFontData = (gdi_font_data*)dr2d_get_font_extra_data(pFont);
     if (pGDIFontData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     *pMetricsOut = pGDIFontData->metrics;
-    return true;
+    return DR_TRUE;
 }
 
-bool dr2d_get_glyph_metrics_gdi(dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pGlyphMetrics)
+drBool32 dr2d_get_glyph_metrics_gdi(dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pGlyphMetrics)
 {
     assert(pFont != NULL);
     assert(pGlyphMetrics != NULL);
 
     gdi_font_data* pGDIFontData = (gdi_font_data*)dr2d_get_font_extra_data(pFont);
     if (pGDIFontData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     gdi_context_data* pGDIContextData = (gdi_context_data*)dr2d_get_context_extra_data(pFont->pContext);
     if (pGDIContextData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -2315,25 +2315,25 @@ bool dr2d_get_glyph_metrics_gdi(dr2d_font* pFont, unsigned int utf32, dr2d_glyph
             pGlyphMetrics->advanceX = metrics.gmCellIncX;
             pGlyphMetrics->advanceY = metrics.gmCellIncY;
 
-            return true;
+            return DR_TRUE;
         }
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool dr2d_measure_string_gdi(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
+drBool32 dr2d_measure_string_gdi(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
 {
     assert(pFont != NULL);
 
     gdi_font_data* pGDIFontData = (gdi_font_data*)dr2d_get_font_extra_data(pFont);
     if (pGDIFontData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     gdi_context_data* pGDIContextData = (gdi_context_data*)dr2d_get_context_extra_data(pFont->pContext);
     if (pGDIContextData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -2353,27 +2353,27 @@ bool dr2d_measure_string_gdi(dr2d_font* pFont, const char* text, size_t textSize
                 *pHeightOut = (float)sizeWin32.cy;
             }
 
-            return true;
+            return DR_TRUE;
         }
     }
 
-    return false;
+    return DR_FALSE;
 }
 
-bool dr2d_get_text_cursor_position_from_point_gdi(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+drBool32 dr2d_get_text_cursor_position_from_point_gdi(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
-    bool successful = false;
+    drBool32 successful = DR_FALSE;
 
     assert(pFont != NULL);
 
     gdi_font_data* pGDIFontData = (gdi_font_data*)dr2d_get_font_extra_data(pFont);
     if (pGDIFontData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     gdi_context_data* pGDIContextData = (gdi_context_data*)dr2d_get_context_extra_data(pFont->pContext);
     if (pGDIContextData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -2439,7 +2439,7 @@ bool dr2d_get_text_cursor_position_from_point_gdi(dr2d_font* pFont, const char* 
                     *pCharacterIndexOut = iChar;
                 }
 
-                successful = true;
+                successful = DR_TRUE;
             }
         }
     }
@@ -2447,20 +2447,20 @@ bool dr2d_get_text_cursor_position_from_point_gdi(dr2d_font* pFont, const char* 
     return successful;
 }
 
-bool dr2d_get_text_cursor_position_from_char_gdi(dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+drBool32 dr2d_get_text_cursor_position_from_char_gdi(dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
-    bool successful = false;
+    drBool32 successful = DR_FALSE;
 
     assert(pFont != NULL);
 
     gdi_font_data* pGDIFontData = (gdi_font_data*)dr2d_get_font_extra_data(pFont);
     if (pGDIFontData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     gdi_context_data* pGDIContextData = (gdi_context_data*)dr2d_get_context_extra_data(pFont->pContext);
     if (pGDIContextData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -2488,7 +2488,7 @@ bool dr2d_get_text_cursor_position_from_char_gdi(dr2d_font* pFont, const char* t
             if (GetCharacterPlacementW(pGDIContextData->hDC, textW, results.nGlyphs, 0, &results, GCP_USEKERNING) != 0)
             {
                 if (pTextCursorPosXOut) *pTextCursorPosXOut = (float)results.lpCaretPos[characterIndex];
-                successful = true;
+                successful = DR_TRUE;
             }
         }
     }
@@ -2645,13 +2645,13 @@ typedef struct
 
 } cairo_image_data;
 
-bool dr2d_on_create_context_cairo(dr2d_context* pContext, const void* pUserData);
+drBool32 dr2d_on_create_context_cairo(dr2d_context* pContext, const void* pUserData);
 void dr2d_on_delete_context_cairo(dr2d_context* pContext);
-bool dr2d_on_create_surface_cairo(dr2d_surface* pSurface, float width, float height);
+drBool32 dr2d_on_create_surface_cairo(dr2d_surface* pSurface, float width, float height);
 void dr2d_on_delete_surface_cairo(dr2d_surface* pSurface);
-bool dr2d_on_create_font_cairo(dr2d_font* pFont);
+drBool32 dr2d_on_create_font_cairo(dr2d_font* pFont);
 void dr2d_on_delete_font_cairo(dr2d_font* pFont);
-bool dr2d_on_create_image_cairo(dr2d_image* pImage, unsigned int stride, const void* pData);
+drBool32 dr2d_on_create_image_cairo(dr2d_image* pImage, unsigned int stride, const void* pData);
 void dr2d_on_delete_image_cairo(dr2d_image* pImage);
 
 void dr2d_begin_draw_cairo(dr2d_surface* pSurface);
@@ -2672,11 +2672,11 @@ dr2d_image_format dr2d_get_optimal_image_format_cairo(dr2d_context* pContext);
 void* dr2d_map_image_data_cairo(dr2d_image* pImage, unsigned accessFlags);
 void dr2d_unmap_image_data_cairo(dr2d_image* pImage);
 
-bool dr2d_get_font_metrics_cairo(dr2d_font* pFont, dr2d_font_metrics* pMetricsOut);
-bool dr2d_get_glyph_metrics_cairo(dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pGlyphMetrics);
-bool dr2d_measure_string_cairo(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
-bool dr2d_get_text_cursor_position_from_point_cairo(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-bool dr2d_get_text_cursor_position_from_char_cairo(dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+drBool32 dr2d_get_font_metrics_cairo(dr2d_font* pFont, dr2d_font_metrics* pMetricsOut);
+drBool32 dr2d_get_glyph_metrics_cairo(dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pGlyphMetrics);
+drBool32 dr2d_measure_string_cairo(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
+drBool32 dr2d_get_text_cursor_position_from_point_cairo(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+drBool32 dr2d_get_text_cursor_position_from_char_cairo(dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 
 dr2d_context* dr2d_create_context_cairo()
@@ -2757,13 +2757,13 @@ cairo_t* dr2d_get_cairo_t(dr2d_surface* pSurface)
 }
 
 
-bool dr2d_on_create_context_cairo(dr2d_context* pContext, const void* pUserData)
+drBool32 dr2d_on_create_context_cairo(dr2d_context* pContext, const void* pUserData)
 {
     assert(pContext != NULL);
     (void)pContext;
     (void)pUserData;
 
-    return true;
+    return DR_TRUE;
 }
 
 void dr2d_on_delete_context_cairo(dr2d_context* pContext)
@@ -2772,25 +2772,25 @@ void dr2d_on_delete_context_cairo(dr2d_context* pContext)
     (void)pContext;
 }
 
-bool dr2d_on_create_surface_cairo(dr2d_surface* pSurface, float width, float height)
+drBool32 dr2d_on_create_surface_cairo(dr2d_surface* pSurface, float width, float height)
 {
     assert(pSurface != NULL);
 
     cairo_surface_data* pCairoData = dr2d_get_surface_extra_data(pSurface);
     if (pCairoData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (width != 0 && height != 0) {
         pCairoData->pCairoSurface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (int)width, (int)height);
         if (pCairoData->pCairoSurface == NULL) {
-            return false;
+            return DR_FALSE;
         }
 
         pCairoData->pCairoContext = cairo_create(pCairoData->pCairoSurface);
         if (pCairoData->pCairoContext == NULL) {
             cairo_surface_destroy(pCairoData->pCairoSurface);
-            return false;
+            return DR_FALSE;
         }
     } else {
         pCairoData->pCairoSurface = NULL;
@@ -2798,7 +2798,7 @@ bool dr2d_on_create_surface_cairo(dr2d_surface* pSurface, float width, float hei
     }
 
 
-    return true;
+    return DR_TRUE;
 }
 
 void dr2d_on_delete_surface_cairo(dr2d_surface* pSurface)
@@ -2813,11 +2813,11 @@ void dr2d_on_delete_surface_cairo(dr2d_surface* pSurface)
     }
 }
 
-bool dr2d_on_create_font_cairo(dr2d_font* pFont)
+drBool32 dr2d_on_create_font_cairo(dr2d_font* pFont)
 {
     cairo_font_data* pCairoFont = dr2d_get_font_extra_data(pFont);
     if (pCairoFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     cairo_font_slant_t cairoSlant = CAIRO_FONT_SLANT_NORMAL;
@@ -2834,7 +2834,7 @@ bool dr2d_on_create_font_cairo(dr2d_font* pFont)
 
     pCairoFont->pFace = cairo_toy_font_face_create(pFont->family, cairoSlant, cairoWeight);
     if (pCairoFont->pFace == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     cairo_matrix_t fontMatrix;
@@ -2850,7 +2850,7 @@ bool dr2d_on_create_font_cairo(dr2d_font* pFont)
     pCairoFont->pFont = cairo_scaled_font_create(pCairoFont->pFace, &fontMatrix, &ctm, options);
     if (pCairoFont->pFont == NULL) {
         cairo_font_face_destroy(pCairoFont->pFace);
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -2869,7 +2869,7 @@ bool dr2d_on_create_font_cairo(dr2d_font* pFont)
     cairo_scaled_font_text_extents(pCairoFont->pFont, space, &spaceMetrics);
     pCairoFont->metrics.spaceWidth = spaceMetrics.x_advance;
 
-    return true;
+    return DR_TRUE;
 }
 
 void dr2d_on_delete_font_cairo(dr2d_font* pFont)
@@ -2883,17 +2883,17 @@ void dr2d_on_delete_font_cairo(dr2d_font* pFont)
     cairo_font_face_destroy(pCairoFont->pFace);
 }
 
-bool dr2d_on_create_image_cairo(dr2d_image* pImage, unsigned int stride, const void* pData)
+drBool32 dr2d_on_create_image_cairo(dr2d_image* pImage, unsigned int stride, const void* pData)
 {
     cairo_image_data* pCairoImage = dr2d_get_image_extra_data(pImage);
     if (pCairoImage == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     size_t dataSize = pImage->height * pImage->width * 4;
     pCairoImage->pData = malloc(dataSize);
     if (pCairoImage->pData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (pData != NULL)
@@ -2925,10 +2925,10 @@ bool dr2d_on_create_image_cairo(dr2d_image* pImage, unsigned int stride, const v
     pCairoImage->pCairoSurface = cairo_image_surface_create_for_data(pCairoImage->pData, CAIRO_FORMAT_ARGB32, (int)pImage->width, (int)pImage->height, (int)pImage->width*4);
     if (pCairoImage->pCairoSurface == NULL) {
         free(pCairoImage->pData);
-        return false;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
 void dr2d_on_delete_image_cairo(dr2d_image* pImage)
@@ -3213,18 +3213,18 @@ void dr2d_unmap_image_data_cairo(dr2d_image* pImage)
 }
 
 
-bool dr2d_get_font_metrics_cairo(dr2d_font* pFont, dr2d_font_metrics* pMetricsOut)
+drBool32 dr2d_get_font_metrics_cairo(dr2d_font* pFont, dr2d_font_metrics* pMetricsOut)
 {
     cairo_font_data* pCairoFont = dr2d_get_font_extra_data(pFont);
     if (pCairoFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     if (pMetricsOut) {
         *pMetricsOut = pCairoFont->metrics;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
 static size_t dr2d__utf32_to_utf8(unsigned int utf32, char* utf8, size_t utf8Size)
@@ -3267,18 +3267,18 @@ static size_t dr2d__utf32_to_utf8(unsigned int utf32, char* utf8, size_t utf8Siz
     return utf8ByteCount;
 }
 
-bool dr2d_get_glyph_metrics_cairo(dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pGlyphMetrics)
+drBool32 dr2d_get_glyph_metrics_cairo(dr2d_font* pFont, unsigned int utf32, dr2d_glyph_metrics* pGlyphMetrics)
 {
     cairo_font_data* pCairoFont = dr2d_get_font_extra_data(pFont);
     if (pCairoFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     // The UTF-32 code point needs to be converted to a UTF-8 character.
     char utf8[16];
     size_t utf8len = dr2d__utf32_to_utf8(utf32, utf8, sizeof(utf8)); // This will null-terminate.
     if (utf8len == 0) {
-        return false;   // Error converting UTF-32 to UTF-8.
+        return DR_FALSE;   // Error converting UTF-32 to UTF-8.
     }
 
 
@@ -3295,14 +3295,14 @@ bool dr2d_get_glyph_metrics_cairo(dr2d_font* pFont, unsigned int utf32, dr2d_gly
         pGlyphMetrics->advanceY = glyphExtents.y_advance;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool dr2d_measure_string_cairo(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
+drBool32 dr2d_measure_string_cairo(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
 {
     cairo_font_data* pCairoFont = dr2d_get_font_extra_data(pFont);
     if (pCairoFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 
@@ -3311,7 +3311,7 @@ bool dr2d_measure_string_cairo(dr2d_font* pFont, const char* text, size_t textSi
     if (textSizeInBytes != (size_t)-1) {
         textNT = malloc(textSizeInBytes + 1);
         if (textNT == NULL) {
-            return false;
+            return DR_FALSE;
         }
         memcpy(textNT, text, textSizeInBytes);
         textNT[textSizeInBytes] = '\0';
@@ -3336,21 +3336,21 @@ bool dr2d_measure_string_cairo(dr2d_font* pFont, const char* text, size_t textSi
         free(textNT);
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool dr2d_get_text_cursor_position_from_point_cairo(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+drBool32 dr2d_get_text_cursor_position_from_point_cairo(dr2d_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     cairo_font_data* pCairoFont = dr2d_get_font_extra_data(pFont);
     if (pCairoFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     cairo_glyph_t* pGlyphs = NULL;
     int glyphCount = 0;
     cairo_status_t result = cairo_scaled_font_text_to_glyphs(pCairoFont->pFont, 0, 0, text, textSizeInBytes, &pGlyphs, &glyphCount, NULL, NULL, NULL);
     if (result != CAIRO_STATUS_SUCCESS) {
-        return false;
+        return DR_FALSE;
     }
 
     float cursorPosX = 0;
@@ -3408,21 +3408,21 @@ bool dr2d_get_text_cursor_position_from_point_cairo(dr2d_font* pFont, const char
         *pCharacterIndexOut = charIndex;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool dr2d_get_text_cursor_position_from_char_cairo(dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+drBool32 dr2d_get_text_cursor_position_from_char_cairo(dr2d_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
     cairo_font_data* pCairoFont = dr2d_get_font_extra_data(pFont);
     if (pCairoFont == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     cairo_glyph_t* pGlyphs = NULL;
     int glyphCount = 0;
     cairo_status_t result = cairo_scaled_font_text_to_glyphs(pCairoFont->pFont, 0, 0, text, -1, &pGlyphs, &glyphCount, NULL, NULL, NULL);
     if (result != CAIRO_STATUS_SUCCESS) {
-        return false;
+        return DR_FALSE;
     }
 
     float cursorPosX = 0;
@@ -3446,7 +3446,7 @@ bool dr2d_get_text_cursor_position_from_char_cairo(dr2d_font* pFont, const char*
         *pTextCursorPosXOut = cursorPosX;
     }
 
-    return true;
+    return DR_TRUE;
 }
 #endif  // Cairo
 #endif

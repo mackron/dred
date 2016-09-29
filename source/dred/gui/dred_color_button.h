@@ -25,14 +25,14 @@ struct dred_colorbutton
     dred_color color;
     float borderWidth;
     float padding;
-    bool isMouseOver;
-    bool isAutoSizeEnabled;
+    drBool32 isMouseOver;
+    drBool32 isAutoSizeEnabled;
     char varBinding[128];
     dred_colorbutton_on_color_changed_proc onColorChanged;
 };
 
 
-bool dred_colorbutton_init(dred_colorbutton* pButton, dred_context* pDred, dred_control* pParent, const char* text, dred_color color);
+drBool32 dred_colorbutton_init(dred_colorbutton* pButton, dred_context* pDred, dred_control* pParent, const char* text, dred_color color);
 void dred_colorbutton_uninit(dred_colorbutton* pButton);
 
 void dred_colorbutton_set_text(dred_colorbutton* pButton, const char* text);
@@ -45,7 +45,7 @@ void dred_colorbutton_set_border_color(dred_colorbutton* pButton, dred_color col
 void dred_colorbutton_set_border_width(dred_colorbutton* pButton, float width);
 void dred_colorbutton_set_padding(dred_colorbutton* pButton, float padding);
 
-void dred_colorbutton_set_color(dred_colorbutton* pButton, dred_color color, bool blockEvent);
+void dred_colorbutton_set_color(dred_colorbutton* pButton, dred_color color, drBool32 blockEvent);
 dred_color dred_colorbutton_get_color(dred_colorbutton* pbutton);
 
 void dred_colorbutton_set_bind_to_config_var(dred_colorbutton* pButton, const char* varName);

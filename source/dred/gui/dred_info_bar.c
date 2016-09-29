@@ -89,22 +89,22 @@ void dred_info_bar__on_paint(dred_control* pControl, dred_rect rect, void* pPain
     }
 }
 
-bool dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_control* pParent)
+drBool32 dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_control* pParent)
 {
     if (pInfoBar == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     memset(pInfoBar, 0, sizeof(*pInfoBar));
     if (!dred_control_init(DRED_CONTROL(pInfoBar), pDred, pParent, DRED_CONTROL_TYPE_INFO_BAR)) {
-        return false;
+        return DR_FALSE;
     }
 
 
     pInfoBar->pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
     if (pInfoBar->pFont == NULL) {
         dred_control_uninit(DRED_CONTROL(pInfoBar));
-        return false;
+        return DR_FALSE;
     }
 
     pInfoBar->type = DRED_INFO_BAR_TYPE_NONE;
@@ -122,7 +122,7 @@ bool dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_contr
     // Events.
     dred_control_set_on_paint(DRED_CONTROL(pInfoBar), dred_info_bar__on_paint);
 
-    return true;
+    return DR_TRUE;
 }
 
 void dred_info_bar_uninit(dred_info_bar* pInfoBar)

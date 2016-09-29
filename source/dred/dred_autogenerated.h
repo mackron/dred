@@ -8,16 +8,16 @@
 
 
 #define DRED_CONFIG_VARIABLE_DECLARATIONS \
-bool showTabBar; \
-bool showMenuBar; \
-bool autoHideCmdBar; \
-bool enableAutoReload; \
-bool useDefaultWindowPos; \
+drBool32 showTabBar; \
+drBool32 showMenuBar; \
+drBool32 autoHideCmdBar; \
+drBool32 enableAutoReload; \
+drBool32 useDefaultWindowPos; \
 int windowPosX; \
 int windowPosY; \
 int windowWidth; \
 int windowHeight; \
-bool windowMaximized; \
+drBool32 windowMaximized; \
 float uiScale; \
 dred_font* pUIFont; \
 dred_color cmdbarBGColor; \
@@ -36,7 +36,7 @@ dred_color tabTextColor; \
 dred_color tabTextColorActive; \
 dred_color tabTextColorHovered; \
 float tabPadding; \
-bool tabShowCloseButton; \
+drBool32 tabShowCloseButton; \
 dred_color tabCloseButtonColor; \
 dred_font* pTextEditorFont; \
 dred_color textEditorTextColor; \
@@ -45,7 +45,7 @@ dred_color textEditorCursorColor; \
 float textEditorCursorWidth; \
 dred_color textEditorSelectionBGColor; \
 dred_color textEditorActiveLineColor; \
-bool textEditorShowLineNumbers; \
+drBool32 textEditorShowLineNumbers; \
 dred_color textEditorLineNumbersColor; \
 dred_color textEditorLineNumbersBGColor; \
 float textEditorLineNumbersPadding; \
@@ -54,15 +54,15 @@ dred_color textEditorSBThumbColor; \
 dred_color textEditorSBThumbColorHovered; \
 dred_color textEditorSBThumbColorPressed; \
 float textEditorSBSize; \
-bool textEditorShowScrollbarHorz; \
-bool textEditorShowScrollbarVert; \
-bool textEditorEnableExcessScrolling; \
-bool textEditorTabsToSpacesEnabled; \
+drBool32 textEditorShowScrollbarHorz; \
+drBool32 textEditorShowScrollbarVert; \
+drBool32 textEditorEnableExcessScrolling; \
+drBool32 textEditorTabsToSpacesEnabled; \
 int textEditorTabSizeInSpaces; \
 float textEditorScale; \
-bool textEditorEnableAutoIndent; \
-bool textEditorEnableWordWrap; \
-bool textEditorEnableDragAndDrop; \
+drBool32 textEditorEnableAutoIndent; \
+drBool32 textEditorEnableWordWrap; \
+drBool32 textEditorEnableDragAndDrop; \
 dred_color cppCommentTextColor; \
 dred_color cppStringTextColor; \
 dred_color cppKeywordTextColor;

@@ -249,7 +249,7 @@ void dred_about_dialog_show(dred_about_dialog* pDialog)
 
     dred_window_move_to_center(pDialog->pWindow);
     dred_window_show(pDialog->pWindow);
-    pDialog->isShowing = true;
+    pDialog->isShowing = DR_TRUE;
 }
 
 void dred_about_dialog_hide(dred_about_dialog* pDialog)
@@ -259,13 +259,13 @@ void dred_about_dialog_hide(dred_about_dialog* pDialog)
     }
 
     dred_window_hide(pDialog->pWindow, 0);
-    pDialog->isShowing = false;
+    pDialog->isShowing = DR_FALSE;
 }
 
-bool dred_about_dialog_is_showing(dred_about_dialog* pDialog)
+drBool32 dred_about_dialog_is_showing(dred_about_dialog* pDialog)
 {
     if (pDialog == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     return pDialog->isShowing;

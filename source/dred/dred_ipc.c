@@ -1,11 +1,11 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-bool dred_ipc_post_message(drpipe clientPipe, uint32_t message, const void* pData, size_t dataSize)
+drBool32 dred_ipc_post_message(drpipe clientPipe, uint32_t message, const void* pData, size_t dataSize)
 {
     size_t messageSize = sizeof(dred_ipc_message_header) + dataSize;
     uint8_t* pMessageData = (uint8_t*)malloc(messageSize);
     if (pMessageData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     dred_ipc_message_header header;
@@ -26,33 +26,33 @@ bool dred_ipc_post_message(drpipe clientPipe, uint32_t message, const void* pDat
     return result == dripc_result_success && bytesWritten == messageSize;
 }
 
-bool dred_ipc_read_message(drpipe serverPipe, dred_ipc_message_header* pHeaderOut, void** ppDataOut)
+drBool32 dred_ipc_read_message(drpipe serverPipe, dred_ipc_message_header* pHeaderOut, void** ppDataOut)
 {
-    if (ppDataOut == NULL) return false;
+    if (ppDataOut == NULL) return DR_FALSE;
     *ppDataOut = NULL;
 
     if (pHeaderOut == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
 
     size_t bytesRead;
     dripc_result result = drpipe_read_exact(serverPipe, pHeaderOut, sizeof(*pHeaderOut), &bytesRead);
     if (result != dripc_result_success) {
-        return false;
+        return DR_FALSE;
     }
 
     if (pHeaderOut->magic != DRED_IPC_MAGIC_NUMBER) {
-        return false;
+        return DR_FALSE;
     }
 
     if (pHeaderOut->size == 0) {
-        return true;
+        return DR_TRUE;
     }
 
     void* pData = malloc(pHeaderOut->size);
     if (pData == NULL) {
-        return false;
+        return DR_FALSE;
     }
 
     *ppDataOut = pData;
@@ -60,62 +60,62 @@ bool dred_ipc_read_message(drpipe serverPipe, dred_ipc_message_header* pHeaderOu
     result = drpipe_read_exact(serverPipe, pData, pHeaderOut->size, &bytesRead);
     if (result != dripc_result_success) {
         free(pData);
-        return false;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
 
-bool dred_ipc_get_pipe_name(char* nameOut, size_t nameOutSize)
+drBool32 dred_ipc_get_pipe_name(char* nameOut, size_t nameOutSize)
 {
     if (nameOut == NULL || nameOutSize == 0) {
-        return false;
+        return DR_FALSE;
     }
 
     if (dr_get_username(nameOut, nameOutSize) == 0) {
-        return false;
+        return DR_FALSE;
     }
 
     if (strcat_s(nameOut, nameOutSize, ".") != 0) {
-        return false;
+        return DR_FALSE;
     }
     if (strcat_s(nameOut, nameOutSize, "dred.pipe") != 0) {
-        return false;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 }
 
-bool dred_ipc_get_lock_name(char* nameOut, size_t nameOutSize)
+drBool32 dred_ipc_get_lock_name(char* nameOut, size_t nameOutSize)
 {
     if (nameOut == NULL || nameOutSize == 0) {
-        return false;
+        return DR_FALSE;
     }
 
 #ifdef _WIN32
     nameOut[0] = '\0';
-    return true;
+    return DR_TRUE;
 #else
     if (strcpy_s(nameOut, nameOutSize, "/tmp/") != 0) {
-        return false;
+        return DR_FALSE;
     }
 
     char username[512];
     if (dr_get_username(username, sizeof(username)) == 0) {
-        return false;
+        return DR_FALSE;
     }
 
     if (strcat_s(nameOut, nameOutSize, username) != 0) {
-        return false;
+        return DR_FALSE;
     }
     if (strcat_s(nameOut, nameOutSize, ".") != 0) {
-        return false;
+        return DR_FALSE;
     }
     if (strcat_s(nameOut, nameOutSize, "dred.lock") != 0) {
-        return false;
+        return DR_FALSE;
     }
 
-    return true;
+    return DR_TRUE;
 #endif
 }
