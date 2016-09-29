@@ -30,11 +30,85 @@ static const char* g_WindowClassTimer = "dred_WindowClass_Timer";
 
 HWND g_hTimerWnd = NULL;
 
+// Win32 has an annoying way of handling menu events. We need to keep track of each menu, each of which are
+// tied to a HMENU handle. The HMENU handle is used to retrieve the dred_menu* object in response to a menu
+// event.
+dred_menu** g_ppMenus = NULL;
+size_t g_MenuCount = 0;
+dred_mutex g_MenuMutex;     // <-- This is used to keep access to the global menus thread-safe.
+
 #define GET_X_LPARAM(lp)    ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp)    ((int)(short)HIWORD(lp))
 
 // Custom message IDs.
 #define DRED_WIN32_WM_IPC   (WM_USER + 0)
+
+static drBool32 dred_platform_find_menu__nolock__win32(dred_menu* pMenu, size_t* pIndex)
+{
+    assert(pMenu != NULL);
+    if (pIndex) *pIndex = 0;
+
+    for (size_t i = 0; i < g_MenuCount; ++i) {
+        if (g_ppMenus[i] == pMenu) {
+            if (pIndex) *pIndex = i;
+            return DR_TRUE;
+        }
+    }
+
+    return DR_FALSE;
+}
+
+static void dred_platform_track_menu__win32(dred_menu* pMenu)
+{
+    assert(pMenu != NULL);
+
+    dred_mutex_lock(&g_MenuMutex);
+    {
+        if (!dred_platform_find_menu__nolock__win32(pMenu, NULL)) {
+            dred_menu** pNewMenus = (dred_menu**)realloc(g_ppMenus, sizeof(*pNewMenus) * (g_MenuCount+1));
+            if (pNewMenus != NULL) {
+                g_ppMenus = pNewMenus;
+                g_ppMenus[g_MenuCount] = pMenu;
+                g_MenuCount += 1;
+            }
+        }
+    }
+    dred_mutex_unlock(&g_MenuMutex);
+}
+
+static void dred_platform_untrack_menu__win32(dred_menu* pMenu)
+{
+    assert(pMenu != NULL);
+
+    dred_mutex_lock(&g_MenuMutex);
+    {
+        size_t index;
+        if (dred_platform_find_menu__nolock__win32(pMenu, &index)) {
+            assert(g_MenuCount > 0);
+            for (size_t i = index; i < g_MenuCount-1; ++i) {
+                g_ppMenus[i] = g_ppMenus[i+1];
+            }
+        }
+    }
+    dred_mutex_unlock(&g_MenuMutex);
+}
+
+static dred_menu* dred_platform_find_menu_by_HMENU__win32(HMENU hMenu)
+{
+    dred_menu* pMenu = NULL;
+    dred_mutex_lock(&g_MenuMutex);
+    {
+        for (size_t i = 0; i < g_MenuCount; ++i) {
+            if (g_ppMenus[i]->hMenu == hMenu) {
+                pMenu = g_ppMenus[i];
+                break;
+            }
+        }
+    }
+    dred_mutex_unlock(&g_MenuMutex);
+
+    return pMenu;
+}
 
 static void dred_win32_track_mouse_leave_event(HWND hWnd)
 {
@@ -536,37 +610,18 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             if (HIWORD(wParam) == 1) {
                 WORD acceleratorIndex = LOWORD(wParam);
                 dred_on_accelerator(pWindow->pDred, pWindow, acceleratorIndex);
-            } else if (HIWORD(wParam) == 0) {
-                WORD menuItemID = LOWORD(wParam);
-                dred_menu_item* pMenuItem = dred_window_find_menu_item_by_id(pWindow, menuItemID);
-                if (pMenuItem != NULL) {
-                    dred_exec(pWindow->pDred, pMenuItem->command, NULL);
-                }
             }
         } break;
 
         case WM_MENUCOMMAND:
         {
-            // TODO: Fix errors with menu items. The WM_COMMAND version is completely wrong.
-            //
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms647603(v=vs.85).aspx
-            //
-            // Implement:
-            //   dred_platform_track_menu__win32() - Called whenever a window is created.
-            //   dred_platform_untrack_menu__win32() - Called whenever a window is deleted.
-            //   dred_platform_get_menu_by_HMENU__win32() - Called below.
-            //
-            // Remove the [HIWORD(wParam) == 0] branch in WM_COMMAND.
-            // Test that the main menu still works.
-#if 0
             size_t itemIndex = (size_t)wParam;
-            dred_menu* pMenu = dred_platform_get_menu_by_HMENU__win32((HMENU)lParam);
+            dred_menu* pMenu = dred_platform_find_menu_by_HMENU__win32((HMENU)lParam);
             if (pMenu != NULL && itemIndex < pMenu->menuItemCount) {
                 dred_menu_item* pMenuItem = pMenu->ppMenuItems[itemIndex];
                 assert(pMenuItem != NULL);
                 dred_exec(pWindow->pDred, pMenuItem->command, NULL);
             }
-#endif
         } break;
 
 
@@ -661,11 +716,15 @@ drBool32 dred_platform_init__win32()
         return DR_FALSE;
     }
 
+    dred_mutex_create(&g_MenuMutex);
+
     return DR_TRUE;
 }
 
 void dred_platform_uninit__win32()
 {
+    dred_mutex_delete(&g_MenuMutex);
+
     DestroyWindow(g_hTimerWnd);
     g_hTimerWnd = NULL;
 
@@ -1190,8 +1249,19 @@ dred_menu* dred_menu_create__win32(dred_context* pDred, dred_menu_type type)
     pMenu->type  = type;
     pMenu->hMenu = hMenu;
 
-    // TODO: Need to track this menu so we can map the dred_menu object to the HMENU handle.
+    // We want to receive notifications via the WM_MENUCOMMAND event. We need to do this because we want to handle menu-item events based on their
+    // position rather than their ID.
+    MENUINFO mi;
+    ZeroMemory(&mi, sizeof(mi));
+    mi.cbSize = sizeof(mi);
+    mi.fMask = MIM_STYLE;
+    GetMenuInfo(hMenu, &mi);
+    mi.fMask = MIM_STYLE;
+    mi.dwStyle |= MNS_NOTIFYBYPOS;      // <-- This is how we make Windows post WM_MENUCOMMAND events instead of WM_COMMAND.
+    SetMenuInfo(hMenu, &mi);
 
+    // We need to track this menu so we can map the dred_menu object to the HMENU handle.
+    dred_platform_track_menu__win32(pMenu);
     return pMenu;
 }
 
@@ -1200,6 +1270,8 @@ void dred_menu_delete__win32(dred_menu* pMenu)
     if (pMenu == NULL) {
         return;
     }
+
+    dred_platform_untrack_menu__win32(pMenu);
 
     if (pMenu->hMenu) {
         DestroyMenu(pMenu->hMenu);
