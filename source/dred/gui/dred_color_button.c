@@ -178,7 +178,7 @@ void dred_colorbutton__refresh_layout(dred_colorbutton* pButton)
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
 
-drBool32 dred_colorbutton_init(dred_colorbutton* pButton, dred_context* pDred, dred_control* pParent, const char* text, dred_color color)
+dr_bool32 dred_colorbutton_init(dred_colorbutton* pButton, dred_context* pDred, dred_control* pParent, const char* text, dred_color color)
 {
     if (pButton == NULL) {
         return DR_FALSE;
@@ -329,7 +329,7 @@ void dred_colorbutton_set_padding(dred_colorbutton* pButton, float padding)
 }
 
 
-void dred_colorbutton_set_color(dred_colorbutton* pButton, dred_color color, drBool32 blockEvent)
+void dred_colorbutton_set_color(dred_colorbutton* pButton, dred_color color, dr_bool32 blockEvent)
 {
     if (pButton == NULL) {
         return;

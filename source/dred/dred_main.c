@@ -23,7 +23,7 @@
 
 #include "dred.c"
 
-drBool32 dred_parse_cmdline__post_startup_files_to_server(const char* key, const char* value, void* pUserData)
+dr_bool32 dred_parse_cmdline__post_startup_files_to_server(const char* key, const char* value, void* pUserData)
 {
     drpipe client = (drpipe)pUserData;
 
@@ -35,7 +35,7 @@ drBool32 dred_parse_cmdline__post_startup_files_to_server(const char* key, const
     return DR_TRUE;
 }
 
-drBool32 dred__try_opening_existing_process(dr_cmdline cmdline)
+dr_bool32 dred__try_opening_existing_process(dr_cmdline cmdline)
 {
     char pipeName[256];
     if (!dred_ipc_get_pipe_name(pipeName, sizeof(pipeName))) {
@@ -61,7 +61,7 @@ drBool32 dred__try_opening_existing_process(dr_cmdline cmdline)
     return DR_FALSE;
 }
 
-/*drBool32 dred_load_packages(dred_package_library* pLibrary)
+/*dr_bool32 dred_load_packages(dred_package_library* pLibrary)
 {
     if (pLibrary == NULL) return DR_FALSE;
     return DR_TRUE;
@@ -81,12 +81,12 @@ int dred_main(dr_cmdline cmdline)
     }
 
 
-    drBool32 tryUsingExistingInstance = DR_TRUE;
+    dr_bool32 tryUsingExistingInstance = DR_TRUE;
     if (dr_cmdline_key_exists(&cmdline, "newinstance")) {
         tryUsingExistingInstance = DR_FALSE;
     }
 
-    drBool32 disableIPC = DR_FALSE;
+    dr_bool32 disableIPC = DR_FALSE;
     if (dr_cmdline_key_exists(&cmdline, "noipc")) {
         disableIPC = DR_TRUE;
     }
@@ -112,7 +112,7 @@ int dred_main(dr_cmdline cmdline)
             return 0;
         }
 #else
-        drBool32 isOtherProcessRunning = DR_FALSE;
+        dr_bool32 isOtherProcessRunning = DR_FALSE;
         int fd = open(lockFileName, O_RDONLY, 0666);
         if (fd != -1) {
             if (flock(fd, LOCK_EX | LOCK_NB) == -1) {

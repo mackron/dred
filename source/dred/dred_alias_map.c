@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-drBool32 dred_alias_map_init(dred_alias_map* pMap)
+dr_bool32 dred_alias_map_init(dred_alias_map* pMap)
 {
     if (pMap == NULL) {
         return DR_FALSE;
@@ -110,7 +110,7 @@ const char* dred_alias_map_get_value_by_index(dred_alias_map* pMap, size_t index
 }
 
 
-drBool32 dred_alias_map_find(dred_alias_map* pMap, const char* key, size_t* pIndexOut)
+dr_bool32 dred_alias_map_find(dred_alias_map* pMap, const char* key, size_t* pIndexOut)
 {
     if (pMap == NULL || key == NULL) {
         return DR_FALSE;

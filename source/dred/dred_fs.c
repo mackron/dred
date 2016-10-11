@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-drBool32 dred_get_config_folder_path(char* pathOut, size_t pathOutSize)
+dr_bool32 dred_get_config_folder_path(char* pathOut, size_t pathOutSize)
 {
     if (!dr_get_config_folder_path(pathOut, pathOutSize)) {
         return DR_FALSE;
@@ -9,7 +9,7 @@ drBool32 dred_get_config_folder_path(char* pathOut, size_t pathOutSize)
     return drpath_append(pathOut, pathOutSize, "dred");
 }
 
-drBool32 dred_get_config_path(char* pathOut, size_t pathOutSize)
+dr_bool32 dred_get_config_path(char* pathOut, size_t pathOutSize)
 {
     if (!dred_get_config_folder_path(pathOut, pathOutSize)) {
         return DR_FALSE;
@@ -18,7 +18,7 @@ drBool32 dred_get_config_path(char* pathOut, size_t pathOutSize)
     return drpath_append(pathOut, pathOutSize, ".dred");
 }
 
-drBool32 dred_get_log_folder_path(char* pathOut, size_t pathOutSize)
+dr_bool32 dred_get_log_folder_path(char* pathOut, size_t pathOutSize)
 {
     if (!dr_get_log_folder_path(pathOut, pathOutSize)) {
         return DR_FALSE;
@@ -27,7 +27,7 @@ drBool32 dred_get_log_folder_path(char* pathOut, size_t pathOutSize)
     return drpath_append(pathOut, pathOutSize, "dred");
 }
 
-drBool32 dred_get_log_path(char* pathOut, size_t pathOutSize)
+dr_bool32 dred_get_log_path(char* pathOut, size_t pathOutSize)
 {
     if (!dred_get_log_folder_path(pathOut, pathOutSize)) {
         return DR_FALSE;
@@ -36,7 +36,7 @@ drBool32 dred_get_log_path(char* pathOut, size_t pathOutSize)
     return drpath_append(pathOut, pathOutSize, "dred.log");
 }
 
-drBool32 dred_get_packages_folder_path(char* pathOut, size_t pathOutSize)
+dr_bool32 dred_get_packages_folder_path(char* pathOut, size_t pathOutSize)
 {
     if (!dr_get_executable_directory_path(pathOut, pathOutSize)) {
         return DR_FALSE;
@@ -95,7 +95,7 @@ void dred_file_close(dred_file file)
     fclose((FILE*)file);
 }
 
-drBool32 dred_file_read(dred_file file, void* pDataOut, size_t bytesToRead, size_t* pBytesRead)
+dr_bool32 dred_file_read(dred_file file, void* pDataOut, size_t bytesToRead, size_t* pBytesRead)
 {
     size_t bytesRead = fread(pDataOut, 1, bytesToRead, (FILE*)file);
     if (pBytesRead) *pBytesRead = bytesRead;
@@ -107,7 +107,7 @@ drBool32 dred_file_read(dred_file file, void* pDataOut, size_t bytesToRead, size
     return DR_TRUE;
 }
 
-drBool32 dred_file_write(dred_file file, const void* pData, size_t bytesToWrite, size_t* pBytesWritten)
+dr_bool32 dred_file_write(dred_file file, const void* pData, size_t bytesToWrite, size_t* pBytesWritten)
 {
     size_t bytesWritten = fwrite(pData, 1, bytesToWrite, (FILE*)file);
     if (pBytesWritten) *pBytesWritten = bytesWritten;
@@ -119,7 +119,7 @@ drBool32 dred_file_write(dred_file file, const void* pData, size_t bytesToWrite,
     return DR_TRUE;
 }
 
-drBool32 dred_file_seek(dred_file file, int64_t bytesToSeek, dred_seek_origin origin)
+dr_bool32 dred_file_seek(dred_file file, int64_t bytesToSeek, dred_seek_origin origin)
 {
     int originSTD = SEEK_SET;
     if (origin == dred_seek_origin_current) {
@@ -166,18 +166,18 @@ void dred_file_flush(dred_file file)
 
 //// High Level Helpers ////
 
-drBool32 dred_file_write_string(dred_file file, const char* str)
+dr_bool32 dred_file_write_string(dred_file file, const char* str)
 {
     return dred_file_write(file, str, (unsigned int)strlen(str), NULL);
 }
 
-drBool32 dred_file_write_line(dred_file file, const char* str)
+dr_bool32 dred_file_write_line(dred_file file, const char* str)
 {
     return dred_file_write_string(file, str) && dred_file_write_string(file, "\n");
 }
 
 
-drBool32 dred_to_absolute_path(const char* relativePath, char* absolutePathOut, size_t absolutePathOutSize)
+dr_bool32 dred_to_absolute_path(const char* relativePath, char* absolutePathOut, size_t absolutePathOutSize)
 {
     if (drpath_is_absolute(relativePath)) {
         return strcpy_s(absolutePathOut, absolutePathOutSize, relativePath) == 0;

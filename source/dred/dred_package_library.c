@@ -38,7 +38,7 @@ void dred_load_package_info__on_pair(void* pUserData, const char* key, const cha
     // properties for it's own internal configuration.
 }
 
-drBool32 dred_load_package_info(const char* dredpackagePath, dred_package_info* pInfo)
+dr_bool32 dred_load_package_info(const char* dredpackagePath, dred_package_info* pInfo)
 {
     assert(dredpackagePath != NULL);
     assert(pInfo != NULL);
@@ -56,7 +56,7 @@ drBool32 dred_load_package_info(const char* dredpackagePath, dred_package_info* 
     return DR_TRUE;
 }
 
-drBool32 dred_construct_library_path(char* pathOut, size_t pathOutSize, const char* basePackageFolderPath, dred_package_info* pInfo)
+dr_bool32 dred_construct_library_path(char* pathOut, size_t pathOutSize, const char* basePackageFolderPath, dred_package_info* pInfo)
 {
     assert(pathOut != NULL);
     assert(pathOutSize > 0);
@@ -142,12 +142,12 @@ void dred_package_library_unload_package(dred_package_library* pLibrary, dred_pa
 }
 
 
-drBool32 dred_package_library_package_iterator_cb(const char* filePath, void* pUserData)
+dr_bool32 dred_package_library_package_iterator_cb(const char* filePath, void* pUserData)
 {
     dred_package_library* pLibrary = (dred_package_library*)pUserData;
     assert(pLibrary != NULL);
 
-    drBool32 isDirectory = dr_is_directory(filePath);
+    dr_bool32 isDirectory = dr_is_directory(filePath);
     if (isDirectory) {
         dred_package* pPackage = dred_package_library_load_package(pLibrary, filePath);
         if (pPackage != NULL) {
@@ -158,7 +158,7 @@ drBool32 dred_package_library_package_iterator_cb(const char* filePath, void* pU
     return DR_TRUE;
 }
 
-drBool32 dred_package_library_init(dred_package_library* pLibrary)
+dr_bool32 dred_package_library_init(dred_package_library* pLibrary)
 {
     if (pLibrary == NULL) return DR_FALSE;
 

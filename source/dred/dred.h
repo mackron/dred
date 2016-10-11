@@ -29,6 +29,9 @@
 #include <gdk/gdkkeysyms.h>
 #include <glib-object.h>
 #include <fontconfig/fontconfig.h>
+#include <semaphore.h>
+#include <pthread.h>
+#include <dlfcn.h>
 #endif
 
 // Platform libraries, for simplifying MSVC builds.

@@ -117,7 +117,7 @@ struct dred_menu_library
     dred_menu_item* pMenuItem_ToggleWordWrap;
 };
 
-drBool32 dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred);
+dr_bool32 dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred);
 void dred_menu_library_uninit(dred_menu_library* pLibrary);
 
 void dred_menu_library_update_recent_files_menu(dred_menu_library* pLibrary);

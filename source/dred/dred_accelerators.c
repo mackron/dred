@@ -1,7 +1,7 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
 
-drBool32 dred_accelerator_table_init(dred_accelerator_table* pTable)
+dr_bool32 dred_accelerator_table_init(dred_accelerator_table* pTable)
 {
     if (pTable == NULL) {
         return DR_FALSE;
@@ -26,7 +26,7 @@ void dred_accelerator_table_uninit(dred_accelerator_table* pTable)
 }
 
 
-drBool32 dred_accelerator_table_add(dred_accelerator_table* pTable, dred_accelerator accelerator)
+dr_bool32 dred_accelerator_table_add(dred_accelerator_table* pTable, dred_accelerator accelerator)
 {
     if (pTable == NULL) {
         return DR_FALSE;
@@ -59,7 +59,7 @@ drBool32 dred_accelerator_table_add(dred_accelerator_table* pTable, dred_acceler
     return DR_TRUE;
 }
 
-drBool32 dred_accelerator_table_remove(dred_accelerator_table* pTable, dred_accelerator accelerator)
+dr_bool32 dred_accelerator_table_remove(dred_accelerator_table* pTable, dred_accelerator accelerator)
 {
     size_t index;
     if (!dred_accelerator_table_find(pTable, accelerator, &index)) {
@@ -75,7 +75,7 @@ drBool32 dred_accelerator_table_remove(dred_accelerator_table* pTable, dred_acce
 }
 
 
-drBool32 dred_accelerator_table_find(dred_accelerator_table* pTable, dred_accelerator accelerator, size_t* pIndexOut)
+dr_bool32 dred_accelerator_table_find(dred_accelerator_table* pTable, dred_accelerator accelerator, size_t* pIndexOut)
 {
     if (pIndexOut) *pIndexOut = 0;  // Safety.
     if (pTable == NULL) {
@@ -195,7 +195,7 @@ dred_accelerator dred_accelerator_parse(const char* accelStr)
     return accelerator;
 }
 
-drBool32 dred_accelerator_equal(dred_accelerator a, dred_accelerator b)
+dr_bool32 dred_accelerator_equal(dred_accelerator a, dred_accelerator b)
 {
     return a.key == b.key && a.modifiers == b.modifiers;
 }

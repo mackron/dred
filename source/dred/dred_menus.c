@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-drBool32 dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
+dr_bool32 dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
 {
     if (pLibrary == NULL || pDred == NULL) {
         return DR_FALSE;

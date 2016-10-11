@@ -171,7 +171,7 @@ void dred_checkbox__refresh_layout(dred_checkbox* pCheckbox)
     dred_control_dirty(DRED_CONTROL(pCheckbox), dred_control_get_local_rect(DRED_CONTROL(pCheckbox)));
 }
 
-drBool32 dred_checkbox_init(dred_checkbox* pCheckbox, dred_context* pDred, dred_control* pParent, const char* text, drBool32 checked)
+dr_bool32 dred_checkbox_init(dred_checkbox* pCheckbox, dred_context* pDred, dred_control* pParent, const char* text, dr_bool32 checked)
 {
     if (pCheckbox == NULL) {
         return DR_FALSE;
@@ -347,7 +347,7 @@ void dred_checkbox_toggle(dred_checkbox* pCheckbox)
     }
 }
 
-void dred_checkbox_set_checked(dred_checkbox* pCheckbox, drBool32 checked, drBool32 blockEvent)
+void dred_checkbox_set_checked(dred_checkbox* pCheckbox, dr_bool32 checked, dr_bool32 blockEvent)
 {
     if (pCheckbox == NULL) {
         return;
@@ -372,7 +372,7 @@ void dred_checkbox_set_checked(dred_checkbox* pCheckbox, drBool32 checked, drBoo
     dred_control_dirty(DRED_CONTROL(pCheckbox), dred_checkbox__get_box_rect(pCheckbox));
 }
 
-drBool32 dred_is_checked(dred_checkbox* pCheckbox)
+dr_bool32 dred_is_checked(dred_checkbox* pCheckbox)
 {
     if (pCheckbox == NULL) {
         return DR_FALSE;

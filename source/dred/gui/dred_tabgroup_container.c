@@ -12,7 +12,7 @@ void dred_tabgroup_container__on_size(dred_control* pControl, float newWidth, fl
     }
 }
 
-drBool32 dred_tabgroup_container_init(dred_tabgroup_container* pContainer, dred_context* pDred, dred_control* pParent)
+dr_bool32 dred_tabgroup_container_init(dred_tabgroup_container* pContainer, dred_context* pDred, dred_control* pParent)
 {
     if (pContainer == NULL) {
         return DR_FALSE;

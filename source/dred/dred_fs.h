@@ -1,19 +1,19 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
 // dred_get_config_folder_path()
-drBool32 dred_get_config_folder_path(char* pathOut, size_t pathOutSize);
+dr_bool32 dred_get_config_folder_path(char* pathOut, size_t pathOutSize);
 
 // dred_get_config_path()
-drBool32 dred_get_config_path(char* pathOut, size_t pathOutSize);
+dr_bool32 dred_get_config_path(char* pathOut, size_t pathOutSize);
 
 // dred_get_log_folder_path()
-drBool32 dred_get_log_folder_path(char* pathOut, size_t pathOutSize);
+dr_bool32 dred_get_log_folder_path(char* pathOut, size_t pathOutSize);
 
 // dred_get_log_path()
-drBool32 dred_get_log_path(char* pathOut, size_t pathOutSize);
+dr_bool32 dred_get_log_path(char* pathOut, size_t pathOutSize);
 
 // dred_get_packages_folder_path()
-drBool32 dred_get_packages_folder_path(char* pathOut, size_t pathOutSize);
+dr_bool32 dred_get_packages_folder_path(char* pathOut, size_t pathOutSize);
 
 
 //// Basic File IO Wrapper ////
@@ -36,13 +36,13 @@ dred_file dred_file_open(const char* filePath, unsigned int openMode);
 void dred_file_close(dred_file file);
 
 // dred_file_read()
-drBool32 dred_file_read(dred_file file, void* pDataOut, size_t bytesToRead, size_t* pBytesRead);
+dr_bool32 dred_file_read(dred_file file, void* pDataOut, size_t bytesToRead, size_t* pBytesRead);
 
 // dred_file_write()
-drBool32 dred_file_write(dred_file file, const void* pData, size_t bytesToWrite, size_t* pBytesWritten);
+dr_bool32 dred_file_write(dred_file file, const void* pData, size_t bytesToWrite, size_t* pBytesWritten);
 
 // dred_file_seek()
-drBool32 dred_file_seek(dred_file file, int64_t bytesToSeek, dred_seek_origin origin);
+dr_bool32 dred_file_seek(dred_file file, int64_t bytesToSeek, dred_seek_origin origin);
 
 // dred_file_tell()
 uint64_t dred_file_tell(dred_file file);
@@ -55,11 +55,11 @@ void dred_file_flush(dred_file file);
 //// High Level Helpers ////
 
 // dred_file_write_string()
-drBool32 dred_file_write_string(dred_file file, const char* str);
+dr_bool32 dred_file_write_string(dred_file file, const char* str);
 
 // dred_file_write_line()
-drBool32 dred_file_write_line(dred_file file, const char* str);
+dr_bool32 dred_file_write_line(dred_file file, const char* str);
 
 
 // Converts a relative path to absolute.
-drBool32 dred_to_absolute_path(const char* relativePath, char* absolutePathOut, size_t absolutePathOutSize);
+dr_bool32 dred_to_absolute_path(const char* relativePath, char* absolutePathOut, size_t absolutePathOutSize);

@@ -6,7 +6,7 @@ struct dred_package_library
 };
 
 // Initializes the package library by loading every active package.
-drBool32 dred_package_library_init(dred_package_library* pLibrary);
+dr_bool32 dred_package_library_init(dred_package_library* pLibrary);
 
 // Uninitializes the package library.
 void dred_package_library_uninit(dred_package_library* pLibrary);

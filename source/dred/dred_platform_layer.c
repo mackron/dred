@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////
 
 // Helper for creating the root GUI element of a window.
-drBool32 dred_platform__init_root_gui_element(dred_control* pControl, dred_context* pDred, dred_window* pWindow)
+dr_bool32 dred_platform__init_root_gui_element(dred_control* pControl, dred_context* pDred, dred_window* pWindow)
 {
     if (!dred_control_init(pControl, pDred, NULL, "RootGUIControl")) {
         return DR_FALSE;
@@ -43,7 +43,7 @@ dred_mutex g_MenuMutex;     // <-- This is used to keep access to the global men
 // Custom message IDs.
 #define DRED_WIN32_WM_IPC   (WM_USER + 0)
 
-static drBool32 dred_platform_find_menu__nolock__win32(dred_menu* pMenu, size_t* pIndex)
+static dr_bool32 dred_platform_find_menu__nolock__win32(dred_menu* pMenu, size_t* pIndex)
 {
     assert(pMenu != NULL);
     if (pIndex) *pIndex = 0;
@@ -122,7 +122,7 @@ static void dred_win32_track_mouse_leave_event(HWND hWnd)
     TrackMouseEvent(&tme);
 }
 
-drBool32 dred_is_win32_mouse_button_key_code(WPARAM wParam)
+dr_bool32 dred_is_win32_mouse_button_key_code(WPARAM wParam)
 {
     return wParam == VK_LBUTTON || wParam == VK_RBUTTON || wParam == VK_MBUTTON || wParam == VK_XBUTTON1 || wParam == VK_XBUTTON2;
 }
@@ -664,7 +664,7 @@ LRESULT CALLBACK TimerWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 }
 
 
-drBool32 dred_platform_init__win32()
+dr_bool32 dred_platform_init__win32()
 {
     // We'll be handling DPI ourselves. This should be done at the top.
     dr_win32_make_dpi_aware();
@@ -1036,7 +1036,7 @@ void dred_window_bring_to_top__win32(dred_window* pWindow)
     SetForegroundWindow(pWindow->hWnd);
 }
 
-drBool32 dred_window_is_maximized__win32(dred_window* pWindow)
+dr_bool32 dred_window_is_maximized__win32(dred_window* pWindow)
 {
     if (pWindow == NULL) {
         return DR_FALSE;
@@ -1094,7 +1094,7 @@ void dred_window_set_cursor__win32(dred_window* pWindow, dred_cursor_type cursor
     }
 }
 
-drBool32 dred_window_is_cursor_over__win32(dred_window* pWindow)
+dr_bool32 dred_window_is_cursor_over__win32(dred_window* pWindow)
 {
     if (pWindow == NULL) {
         return DR_FALSE;
@@ -1293,7 +1293,7 @@ dred_menu_item* dred_menu_item_create_and_append__win32__internal(dred_menu* pMe
     }
 
 
-    drBool32 separator = (options & DRED_MENU_ITEM_SEPARATOR) != 0;
+    dr_bool32 separator = (options & DRED_MENU_ITEM_SEPARATOR) != 0;
     if (separator)
     {
         AppendMenuA(pMenu->hMenu, MF_SEPARATOR, 0, NULL);
@@ -1401,7 +1401,7 @@ void dred_menu_item_disable__win32(dred_menu_item* pItem)
 }
 
 
-void dred_menu_item_set_checked__win32(dred_menu_item* pItem, drBool32 checked)
+void dred_menu_item_set_checked__win32(dred_menu_item* pItem, dr_bool32 checked)
 {
     MENUITEMINFOA mii;
     ZeroMemory(&mii, sizeof(mii));
@@ -1411,7 +1411,7 @@ void dred_menu_item_set_checked__win32(dred_menu_item* pItem, drBool32 checked)
     SetMenuItemInfoA(pItem->pOwnerMenu->hMenu, (UINT)pItem->index, TRUE, &mii);
 }
 
-drBool32 dred_menu_item_is_checked__win32(dred_menu_item* pItem)
+dr_bool32 dred_menu_item_is_checked__win32(dred_menu_item* pItem)
 {
     MENUITEMINFOA mii;
     ZeroMemory(&mii, sizeof(mii));
@@ -1476,7 +1476,7 @@ void dred_timer_delete__win32(dred_timer* pTimer)
 
 //// Clipboard ////
 
-drBool32 dred_clipboard_set_text__win32(const char* text, size_t textLength)
+dr_bool32 dred_clipboard_set_text__win32(const char* text, size_t textLength)
 {
     if (textLength == (size_t)-1) {
         textLength = strlen(text);
@@ -1589,7 +1589,7 @@ void dred_clipboard_free_text__win32(char* text)
 
 //// Drag and Drop ////
 
-drBool32 dred_begin_drag_and_drop__win32(dred_data_type dataType, const void* pData, size_t dataSize)
+dr_bool32 dred_begin_drag_and_drop__win32(dred_data_type dataType, const void* pData, size_t dataSize)
 {
 #if 0
     IDataObjectVtbl dataObject;
@@ -1841,7 +1841,7 @@ static int dred_from_gtk_mouse_button(guint buttonGTK)
 }
 
 
-drBool32 dred_platform_init__gtk()
+dr_bool32 dred_platform_init__gtk()
 {
     gtk_init(NULL, NULL);
 
@@ -1991,7 +1991,7 @@ static void dred_gtk_cb__on_paint(GtkWidget* pGTKWindow, cairo_t* pCairoContext,
     }
 }
 
-static drBool32 dred_gtk_cb__on_configure(GtkWidget* pGTKWindow, GdkEventConfigure* pEvent, gpointer pUserData)
+static dr_bool32 dred_gtk_cb__on_configure(GtkWidget* pGTKWindow, GdkEventConfigure* pEvent, gpointer pUserData)
 {
     dred_window* pWindow = pUserData;
     if (pWindow == NULL) {
@@ -2034,7 +2034,7 @@ static drBool32 dred_gtk_cb__on_configure(GtkWidget* pGTKWindow, GdkEventConfigu
     return DR_FALSE;
 }
 
-static drBool32 dred_gtk_cb__on_configure__move(GtkWidget* pGTKWindow, GdkEventConfigure* pEvent, gpointer pUserData)
+static dr_bool32 dred_gtk_cb__on_configure__move(GtkWidget* pGTKWindow, GdkEventConfigure* pEvent, gpointer pUserData)
 {
     (void)pGTKWindow;
 
@@ -2568,7 +2568,7 @@ void dred_window_bring_to_top__gtk(dred_window* pWindow)
     gdk_flush();
 }
 
-drBool32 dred_window_is_maximized__gtk(dred_window* pWindow)
+dr_bool32 dred_window_is_maximized__gtk(dred_window* pWindow)
 {
     if (pWindow == NULL) {
         return DR_FALSE;
@@ -2622,7 +2622,7 @@ void dred_window_set_cursor__gtk(dred_window* pWindow, dred_cursor_type cursor)
     }
 }
 
-drBool32 dred_window_is_cursor_over__gtk(dred_window* pWindow)
+dr_bool32 dred_window_is_cursor_over__gtk(dred_window* pWindow)
 {
     return pWindow->isCursorOver;
 }
@@ -2856,7 +2856,7 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
 
     GtkWidget* pGTKMenuItem = NULL;
 
-    drBool32 separator = (options & DRED_MENU_ITEM_SEPARATOR) != 0;
+    dr_bool32 separator = (options & DRED_MENU_ITEM_SEPARATOR) != 0;
     if (separator) {
         pGTKMenuItem = gtk_separator_menu_item_new();
         if (pGTKMenuItem == NULL) {
@@ -2871,7 +2871,7 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
         char transformedText[256];
         strncpy_s(transformedText, sizeof(transformedText), text, _TRUNCATE);
 
-        drBool32 useMnemonic = DR_TRUE;
+        dr_bool32 useMnemonic = DR_TRUE;
         for (char* c = transformedText; c[0] != '\0'; c += 1) {
             // If the text has an underscore, don't use mnemonics. Otherwise we'll end up with incorrect text.
             if (c[0] == '_') {
@@ -2885,7 +2885,7 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
             }
         }
 
-        drBool32 isCheckMenu = (options & DRED_MENU_ITEM_CHECK) != 0;
+        dr_bool32 isCheckMenu = (options & DRED_MENU_ITEM_CHECK) != 0;
         if (useMnemonic) {
             if (isCheckMenu) {
                 pGTKMenuItem = gtk_check_menu_item_new_with_mnemonic(transformedText);
@@ -3014,7 +3014,7 @@ void dred_menu_item_disable__gtk(dred_menu_item* pItem)
 
 
 
-void dred_menu_item_set_checked__gtk(dred_menu_item* pItem, drBool32 checked)
+void dred_menu_item_set_checked__gtk(dred_menu_item* pItem, dr_bool32 checked)
 {
     assert(pItem != NULL);
     if (!(pItem->flags & DRED_MENU_ITEM_CHECK)) {
@@ -3028,7 +3028,7 @@ void dred_menu_item_set_checked__gtk(dred_menu_item* pItem, drBool32 checked)
     }
 }
 
-drBool32 dred_menu_item_is_checked__gtk(dred_menu_item* pItem)
+dr_bool32 dred_menu_item_is_checked__gtk(dred_menu_item* pItem)
 {
     assert(pItem != NULL);
     if (!(pItem->flags & DRED_MENU_ITEM_CHECK)) {
@@ -3103,7 +3103,7 @@ void dred_timer_delete__gtk(dred_timer* pTimer)
 
 //// Clipboard ////
 
-drBool32 dred_clipboard_set_text__gtk(const char* text, size_t textLength)
+dr_bool32 dred_clipboard_set_text__gtk(const char* text, size_t textLength)
 {
     if (textLength == (size_t)-1) {
         textLength = strlen(text);
@@ -3127,7 +3127,7 @@ void dred_clipboard_free_text__gtk(char* text)
 
 //// Drag and Drop ////
 
-drBool32 dred_begin_drag_and_drop__gtk(dred_data_type dataType, const void* pData, size_t dataSize)
+dr_bool32 dred_begin_drag_and_drop__gtk(dred_data_type dataType, const void* pData, size_t dataSize)
 {
     (void)dataType;
     (void)pData;
@@ -3143,8 +3143,13 @@ static void dred_platform__on_global_capture_mouse__gtk(dred_control* pControl)
 {
     dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
+#if (GTK_MAJOR_VERSION >= 3 && GTK_MINOR_VERSION >= 20) // GTK 3.20+
         gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
             gtk_widget_get_window(pWindow->pGTKClientArea), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
+#else
+		gdk_device_grab(gtk_get_current_event_device(), gtk_widget_get_window(pWindow->pGTKClientArea), GDK_OWNERSHIP_APPLICATION, FALSE,
+			GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK, NULL, GDK_CURRENT_TIME);
+#endif
     }
 }
 
@@ -3152,7 +3157,11 @@ static void dred_platform__on_global_release_mouse__gtk(dred_control* pControl)
 {
     dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
+#if (GTK_MAJOR_VERSION >= 3 && GTK_MINOR_VERSION >= 20) // GTK 3.20+
         gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
+#else
+		gdk_device_ungrab(gtk_get_current_event_device(), GDK_CURRENT_TIME);
+#endif
     }
 }
 
@@ -3251,7 +3260,7 @@ void dred_platform__on_delete_gui_element(dred_control* pControl)
 }
 
 
-drBool32 dred_platform_init()
+dr_bool32 dred_platform_init()
 {
 #ifdef DRED_WIN32
     return dred_platform_init__win32();
@@ -3522,7 +3531,7 @@ void dred_window_bring_to_top(dred_window* pWindow)
 #endif
 }
 
-drBool32 dred_window_is_maximized(dred_window* pWindow)
+dr_bool32 dred_window_is_maximized(dred_window* pWindow)
 {
     if (pWindow == NULL) {
         return DR_FALSE;
@@ -3549,7 +3558,7 @@ void dred_window_set_cursor(dred_window* pWindow, dred_cursor_type cursor)
 #endif
 }
 
-drBool32 dred_window_is_cursor_over(dred_window* pWindow)
+dr_bool32 dred_window_is_cursor_over(dred_window* pWindow)
 {
 #ifdef DRED_WIN32
     return dred_window_is_cursor_over__win32(pWindow);
@@ -3621,7 +3630,7 @@ void dred_window_show_menu(dred_window* pWindow)
 #endif
 }
 
-drBool32 dred_window_is_showing_menu(dred_window* pWindow)
+dr_bool32 dred_window_is_showing_menu(dred_window* pWindow)
 {
     if (pWindow == NULL) {
         return DR_FALSE;
@@ -3673,7 +3682,7 @@ void dred_window_on_close(dred_window* pWindow)
     }
 }
 
-drBool32 dred_window_on_hide(dred_window* pWindow, unsigned int flags)
+dr_bool32 dred_window_on_hide(dred_window* pWindow, unsigned int flags)
 {
     if (pWindow->onHide) {
         return pWindow->onHide(pWindow, flags);
@@ -3682,7 +3691,7 @@ drBool32 dred_window_on_hide(dred_window* pWindow, unsigned int flags)
     return DR_TRUE;    // Returning DR_TRUE means to process the message as per normal.
 }
 
-drBool32 dred_window_on_show(dred_window* pWindow)
+dr_bool32 dred_window_on_show(dred_window* pWindow)
 {
     if (pWindow->onShow) {
         return pWindow->onShow(pWindow);
@@ -4050,7 +4059,7 @@ void dred_menu_item_uncheck(dred_menu_item* pItem)
     dred_menu_item_set_checked(pItem, DR_FALSE);
 }
 
-void dred_menu_item_set_checked(dred_menu_item* pItem, drBool32 checked)
+void dred_menu_item_set_checked(dred_menu_item* pItem, dr_bool32 checked)
 {
     if (pItem == NULL) {
         return;
@@ -4065,7 +4074,7 @@ void dred_menu_item_set_checked(dred_menu_item* pItem, drBool32 checked)
 #endif
 }
 
-drBool32 dred_menu_item_is_checked(dred_menu_item* pItem)
+dr_bool32 dred_menu_item_is_checked(dred_menu_item* pItem)
 {
     if (pItem == NULL) {
         return DR_FALSE;
@@ -4138,7 +4147,7 @@ void dred_timer_delete(dred_timer* pTimer)
 
 //// Clipboard ////
 
-drBool32 dred_clipboard_set_text(const char* text, size_t textLength)
+dr_bool32 dred_clipboard_set_text(const char* text, size_t textLength)
 {
 #ifdef DRED_WIN32
     return dred_clipboard_set_text__win32(text, textLength);
@@ -4175,7 +4184,7 @@ void dred_clipboard_free_text(char* text)
 
 //// Drag and Drop ////
 
-drBool32 dred_begin_drag_and_drop(dred_data_type dataType, const void* pData, size_t dataSize)
+dr_bool32 dred_begin_drag_and_drop(dred_data_type dataType, const void* pData, size_t dataSize)
 {
     if (pData == NULL) return DR_FALSE;
 

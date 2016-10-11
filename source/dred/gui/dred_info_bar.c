@@ -89,7 +89,7 @@ void dred_info_bar__on_paint(dred_control* pControl, dred_rect rect, void* pPain
     }
 }
 
-drBool32 dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_control* pParent)
+dr_bool32 dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_control* pParent)
 {
     if (pInfoBar == NULL) {
         return DR_FALSE;

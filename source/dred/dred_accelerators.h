@@ -29,12 +29,12 @@ struct dred_accelerator_table
     size_t bufferSize;
 };
 
-drBool32 dred_accelerator_table_init(dred_accelerator_table* pTable);
+dr_bool32 dred_accelerator_table_init(dred_accelerator_table* pTable);
 void dred_accelerator_table_uninit(dred_accelerator_table* pTable);
 
-drBool32 dred_accelerator_table_add(dred_accelerator_table* pTable, dred_accelerator accelerator);
-drBool32 dred_accelerator_table_remove(dred_accelerator_table* pTable, dred_accelerator accelerator);
-drBool32 dred_accelerator_table_find(dred_accelerator_table* pTable, dred_accelerator accelerator, size_t* pIndexOut);
+dr_bool32 dred_accelerator_table_add(dred_accelerator_table* pTable, dred_accelerator accelerator);
+dr_bool32 dred_accelerator_table_remove(dred_accelerator_table* pTable, dred_accelerator accelerator);
+dr_bool32 dred_accelerator_table_find(dred_accelerator_table* pTable, dred_accelerator accelerator, size_t* pIndexOut);
 
 
 
@@ -43,5 +43,5 @@ drBool32 dred_accelerator_table_find(dred_accelerator_table* pTable, dred_accele
 dred_accelerator dred_accelerator_none();
 dred_accelerator dred_accelerator_create(dred_key key, uint32_t modifiers);
 dred_accelerator dred_accelerator_parse(const char* accelStr);
-drBool32 dred_accelerator_equal(dred_accelerator a, dred_accelerator b);
+dr_bool32 dred_accelerator_equal(dred_accelerator a, dred_accelerator b);
 size_t dred_accelerator_to_string(dred_accelerator accelerator, char* strOut, size_t strOutSize);

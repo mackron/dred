@@ -329,7 +329,7 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
-drBool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_control* pParent)
+dr_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_control* pParent)
 {
     if (pCmdBar == NULL) {
         return DR_FALSE;
@@ -405,7 +405,7 @@ void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text)
     dred_textbox_move_cursor_to_end_of_text(pCmdBar->pTextBox);
 }
 
-drBool32 dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigned int iPrevCommand)
+dr_bool32 dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigned int iPrevCommand)
 {
     if (pCmdBar == NULL) {
         return DR_FALSE;
@@ -420,7 +420,7 @@ drBool32 dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigned
 }
 
 
-drBool32 dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
+dr_bool32 dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
 {
     if (pCmdBar == NULL) {
         return DR_FALSE;

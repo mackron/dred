@@ -17,7 +17,7 @@ struct dred_image_library
 };
 
 // Initializes the given image library.
-drBool32 dred_image_library_init(dred_image_library* pLibrary, dred_context* pDred);
+dr_bool32 dred_image_library_init(dred_image_library* pLibrary, dred_context* pDred);
 
 // Uninitializes the given image library.
 void dred_image_library_uninit(dred_image_library* pLibrary);

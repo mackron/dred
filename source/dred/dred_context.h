@@ -76,17 +76,17 @@ struct dred_context
 
 
     // Whether or not the context is initialized.
-    drBool32 isInitialized;
+    dr_bool32 isInitialized;
 
     // Whether or not the context is closing. This is used to terminate loops.
-    drBool32 isClosing;
+    dr_bool32 isClosing;
 
     // Whether or not the application is running in silent mode.
-    drBool32 isTerminalOutputDisabled;
+    dr_bool32 isTerminalOutputDisabled;
 };
 
 // dred_init
-drBool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_library* pPackageLibrary);
+dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_library* pPackageLibrary);
 
 // dred_uninit
 void dred_uninit(dred_context* pDred);
@@ -119,14 +119,14 @@ void dred_errorf(dred_context* pDred, const char* format, ...);
 
 
 // Loads a config file.
-drBool32 dred_load_config(dred_context* pDred, const char* configFilePath);
+dr_bool32 dred_load_config(dred_context* pDred, const char* configFilePath);
 
 
 // Executes a command.
-drBool32 dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdOut);
+dr_bool32 dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdOut);
 
 // Binds a shortcut.
-drBool32 dred_bind_shortcut(dred_context* pDred, const char* shortcutName, dred_shortcut shortcut, const char* commandStr);
+dr_bool32 dred_bind_shortcut(dred_context* pDred, const char* shortcutName, dred_shortcut shortcut, const char* commandStr);
 
 
 // Saves the .dredprivate file.
@@ -174,10 +174,10 @@ dred_tab* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char*
 
 
 // Opens the file at the given path.
-drBool32 dred_open_file(dred_context* pDred, const char* filePath);
+dr_bool32 dred_open_file(dred_context* pDred, const char* filePath);
 
 // Opens the file at the given path as the given type.
-drBool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType);
+dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType);
 
 // Closes the focused file.
 void dred_close_focused_file(dred_context* pDred);
@@ -200,7 +200,7 @@ void dred_close_all_tabs(dred_context* pDred);
 // result in _none_ of the files being closed.
 //
 // True will be returned if every tab was closed. False will be returned if the tabs were not closed.
-drBool32 dred_close_all_tabs_with_confirmation(dred_context* pDred);
+dr_bool32 dred_close_all_tabs_with_confirmation(dred_context* pDred);
 
 
 // Finds the tab associated with the given control, usually an editor.
@@ -210,26 +210,26 @@ dred_tab* dred_find_control_tab(dred_control* pControl);
 // Saves the currently focused file.
 //
 // The new file name can be null in which case the file is just saved over the top of the current file.
-drBool32 dred_save_focused_file(dred_context* pDred, const char* newFilePath);
+dr_bool32 dred_save_focused_file(dred_context* pDred, const char* newFilePath);
 
 // Opens save dialog box and gives the user the opportunity to save the focused file as a different name.
-drBool32 dred_save_focused_file_as(dred_context* pDred);
+dr_bool32 dred_save_focused_file_as(dred_context* pDred);
 
 // Saves every open file, skipping those that would otherwise require a save-as dialog.
 void dred_save_all_open_files(dred_context* pDred);
 
 // Saves every open file and opens are save-as dialog for any applicable files. This will return DR_FALSE if any
 // files could not be saved.
-drBool32 dred_save_all_open_files_with_saveas(dred_context* pDred);
+dr_bool32 dred_save_all_open_files_with_saveas(dred_context* pDred);
 
 
 // Creates and opens a new file.
 //
 // The newFilePath argument can be null, in which case it simply creates an empty text file.
-drBool32 dred_create_and_open_file(dred_context* pDred, const char* newFilePath);
+dr_bool32 dred_create_and_open_file(dred_context* pDred, const char* newFilePath);
 
 // Opens an empty text file.
-drBool32 dred_open_new_text_file(dred_context* pDred);
+dr_bool32 dred_open_new_text_file(dred_context* pDred);
 
 
 // Creates an editor by it's type.
@@ -240,36 +240,36 @@ void dred_delete_editor_by_type(dred_editor* pEditor);
 
 
 // Determines whether or not any open files are modified.
-drBool32 dred_are_any_open_files_modified(dred_context* pDred);
+dr_bool32 dred_are_any_open_files_modified(dred_context* pDred);
 
 
 // Reloads the focused file.
-drBool32 dred_reload_focused_file(dred_context* pDred);
+dr_bool32 dred_reload_focused_file(dred_context* pDred);
 
 // Checks if the focused file is dirty and attempts to reload it if so.
-drBool32 dred_check_if_focused_file_is_dirty_and_reload(dred_context* pDred);
+dr_bool32 dred_check_if_focused_file_is_dirty_and_reload(dred_context* pDred);
 
 
 // Show the Open File dialog.
 void dred_show_open_file_dialog(dred_context* pDred);
 
 // Shows the Save File dialog.
-drBool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath, char* absolutePathOut, size_t absolutePathOutSize);
+dr_bool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath, char* absolutePathOut, size_t absolutePathOutSize);
 
 // Shows a yes/no/cancel dialog and returns the result as DRED_MESSAGE_BOX_YES, DRED_MESSAGE_BOX_NO or DRED_MESSAGE_BOX_CANCEL.
 unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* message, const char* title);
 
 // Shows the font picker dialog. Returns DR_TRUE if the user chose a font, DR_FALSE if they hit the cancel button or an error occurs.
-drBool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut);
+dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut);
 
 // Shows the color picker dialog. Returns DR_TRUE if the user chose a color, DR_FALSE if they hit the cancel button or an error occurs.
-drBool32 dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_color initialColor, dred_color* pColorOut);
+dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_color initialColor, dred_color* pColorOut);
 
 // Shows the "Print" dialog box.
 //
 // This is a little different to other platform-specific dialog boxes in that it performs the full printing operation from start
 // to finish. It does not
-drBool32 dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_print_info* pInfoOut);
+dr_bool32 dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_print_info* pInfoOut);
 
 
 
@@ -381,10 +381,10 @@ const char* dred_get_language_by_file_path(dred_context* pDred, const char* file
 
 
 // Adds a favourite file.
-drBool32 dred_add_favourite(dred_context* pDred, const char* absolutePath);
+dr_bool32 dred_add_favourite(dred_context* pDred, const char* absolutePath);
 
 // Removes a favourite file.
-drBool32 dred_remove_favourite(dred_context* pDred, const char* absolutePath);
+dr_bool32 dred_remove_favourite(dred_context* pDred, const char* absolutePath);
 
 
 // Called when a tab is activated. This is where contextual GUI elements are shown or hidden.

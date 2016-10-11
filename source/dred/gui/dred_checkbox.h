@@ -26,14 +26,14 @@ struct dred_checkbox
     dred_color checkColor;
     float borderWidth;
     float padding;
-    drBool32 isMouseOver;
-    drBool32 isAutoSizeEnabled;
-    drBool32 isChecked;
+    dr_bool32 isMouseOver;
+    dr_bool32 isAutoSizeEnabled;
+    dr_bool32 isChecked;
     char varBinding[128];
     dred_checkbox_on_checked_changed_proc onCheckChanged;
 };
 
-drBool32 dred_checkbox_init(dred_checkbox* pCheckbox, dred_context* pDred, dred_control* pParent, const char* text, drBool32 checked);
+dr_bool32 dred_checkbox_init(dred_checkbox* pCheckbox, dred_context* pDred, dred_control* pParent, const char* text, dr_bool32 checked);
 void dred_checkbox_uninit(dred_checkbox* pCheckbox);
 
 void dred_checkbox_set_text(dred_checkbox* pCheckbox, const char* text);
@@ -49,8 +49,8 @@ void dred_checkbox_set_padding(dred_checkbox* pCheckbox, float padding);
 void dred_checkbox_check(dred_checkbox* pCheckbox);
 void dred_checkbox_uncheck(dred_checkbox* pCheckbox);
 void dred_checkbox_toggle(dred_checkbox* pCheckbox);
-void dred_checkbox_set_checked(dred_checkbox* pCheckbox, drBool32 checked, drBool32 blockEvent);
-drBool32 dred_is_checked(dred_checkbox* pCheckbox);
+void dred_checkbox_set_checked(dred_checkbox* pCheckbox, dr_bool32 checked, dr_bool32 blockEvent);
+dr_bool32 dred_is_checked(dred_checkbox* pCheckbox);
 
 void dred_checkbox_set_bind_to_config_var(dred_checkbox* pCheckbox, const char* varName);
 void dred_checkbox_set_on_checked_changed(dred_checkbox* pCheckbox, dred_checkbox_on_checked_changed_proc proc);

@@ -146,7 +146,7 @@ void dred_button__refresh_layout(dred_button* pButton)
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
 
-drBool32 dred_button_init(dred_button* pButton, dred_context* pDred, dred_control* pParent, const char* text)
+dr_bool32 dred_button_init(dred_button* pButton, dred_context* pDred, dred_control* pParent, const char* text)
 {
     if (pButton == NULL) {
         return DR_FALSE;

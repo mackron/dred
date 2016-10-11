@@ -65,7 +65,7 @@ dred_font* dred_font_library__find_by_desc(dred_font_library* pLibrary, dred_fon
 }
 
 
-drBool32 dred_font_library_init(dred_font_library* pLibrary, dred_context* pDred)
+dr_bool32 dred_font_library_init(dred_font_library* pLibrary, dred_context* pDred)
 {
     if (pLibrary == NULL) {
         return DR_FALSE;

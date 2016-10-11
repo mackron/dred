@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-drBool32 dred_ipc_post_message(drpipe clientPipe, uint32_t message, const void* pData, size_t dataSize)
+dr_bool32 dred_ipc_post_message(drpipe clientPipe, uint32_t message, const void* pData, size_t dataSize)
 {
     size_t messageSize = sizeof(dred_ipc_message_header) + dataSize;
     uint8_t* pMessageData = (uint8_t*)malloc(messageSize);
@@ -26,7 +26,7 @@ drBool32 dred_ipc_post_message(drpipe clientPipe, uint32_t message, const void* 
     return result == dripc_result_success && bytesWritten == messageSize;
 }
 
-drBool32 dred_ipc_read_message(drpipe serverPipe, dred_ipc_message_header* pHeaderOut, void** ppDataOut)
+dr_bool32 dred_ipc_read_message(drpipe serverPipe, dred_ipc_message_header* pHeaderOut, void** ppDataOut)
 {
     if (ppDataOut == NULL) return DR_FALSE;
     *ppDataOut = NULL;
@@ -67,7 +67,7 @@ drBool32 dred_ipc_read_message(drpipe serverPipe, dred_ipc_message_header* pHead
 }
 
 
-drBool32 dred_ipc_get_pipe_name(char* nameOut, size_t nameOutSize)
+dr_bool32 dred_ipc_get_pipe_name(char* nameOut, size_t nameOutSize)
 {
     if (nameOut == NULL || nameOutSize == 0) {
         return DR_FALSE;
@@ -87,7 +87,7 @@ drBool32 dred_ipc_get_pipe_name(char* nameOut, size_t nameOutSize)
     return DR_TRUE;
 }
 
-drBool32 dred_ipc_get_lock_name(char* nameOut, size_t nameOutSize)
+dr_bool32 dred_ipc_get_lock_name(char* nameOut, size_t nameOutSize)
 {
     if (nameOut == NULL || nameOutSize == 0) {
         return DR_FALSE;

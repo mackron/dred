@@ -293,7 +293,7 @@ void dred_settings_editor_page__on_paint(dred_control* pPageControl, dred_rect r
     dred_control_draw_rect(pPageControl, dred_control_get_local_rect(pPageControl), dred_rgb(255, 255, 255), pPaintData);
 }
 
-drBool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_control* pParent, const char* title)
+dr_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_control* pParent, const char* title)
 {
     assert(pPage != NULL);
     assert(pDred != NULL);
@@ -313,7 +313,7 @@ drBool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_
     return DR_TRUE;
 }
 
-drBool32 dred_settings_editor__init_page__general(dred_settings_editor* pSettingsEditor)
+dr_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSettingsEditor)
 {
     assert(pSettingsEditor != NULL);
 
@@ -353,7 +353,7 @@ drBool32 dred_settings_editor__init_page__general(dred_settings_editor* pSetting
     return DR_TRUE;
 }
 
-drBool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettingsEditor)
+dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettingsEditor)
 {
     assert(pSettingsEditor != NULL);
 
@@ -423,7 +423,7 @@ drBool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettingsE
     return DR_TRUE;
 }
 
-drBool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pSettingsEditor)
+dr_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pSettingsEditor)
 {
     assert(pSettingsEditor != NULL);
 

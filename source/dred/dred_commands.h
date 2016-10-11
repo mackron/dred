@@ -64,7 +64,7 @@
 #define DRED_CMDBAR_RELEASE_KEYBOARD    1   // Releases the keyboard if the command was executed from the command bar.
 #define DRED_CMDBAR_NO_CLEAR            2   // Prevents the command bar from being cleared if the command was executed from the command bar.
 
-typedef drBool32 (* dred_command_proc) (dred_context* pDred, const char* value);
+typedef dr_bool32 (* dred_command_proc) (dred_context* pDred, const char* value);
 
 typedef enum
 {
@@ -84,198 +84,198 @@ struct dred_command
 //// General ////
 
 // Handles the "!" command.
-drBool32 dred_command__system_command(dred_context* pDred, const char* value);
+dr_bool32 dred_command__system_command(dred_context* pDred, const char* value);
 
 // cmdbar
 //
 // This command puts keyboard focus onto the command bar and sets the text in the text box to the value.
-drBool32 dred_command__cmdbar(dred_context* pDred, const char* value);
+dr_bool32 dred_command__cmdbar(dred_context* pDred, const char* value);
 
 // bind
 //
 // Syntax:  bind <name> <shortcut> <command>
 // Example: bind "SelectAll" "CTRL+A" select-all
-drBool32 dred_command__bind(dred_context* pDred, const char* value);
+dr_bool32 dred_command__bind(dred_context* pDred, const char* value);
 
 // load-config
 //
 // Loads and applies a config file.
-drBool32 dred_command__load_config(dred_context* pDred, const char* value);
+dr_bool32 dred_command__load_config(dred_context* pDred, const char* value);
 
 // set
 //
 // Sets a config variable.
-drBool32 dred_command__set(dred_context* pDred, const char* value);
+dr_bool32 dred_command__set(dred_context* pDred, const char* value);
 
 // set
 //
 // Sets a config variable to it's default value.
-drBool32 dred_command__set_default(dred_context* pDred, const char* value);
+dr_bool32 dred_command__set_default(dred_context* pDred, const char* value);
 
 
 // show-menu-bar
-drBool32 dred_command__show_menu_bar(dred_context* pDred, const char* value);
+dr_bool32 dred_command__show_menu_bar(dred_context* pDred, const char* value);
 
 // hide-menu-bar
-drBool32 dred_command__hide_menu_bar(dred_context* pDred, const char* value);
+dr_bool32 dred_command__hide_menu_bar(dred_context* pDred, const char* value);
 
 // toggle-menu-bar
 //
 // Toggles the visibility of the menu bar.
-drBool32 dred_command__toggle_menu_bar(dred_context* pDred, const char* value);
+dr_bool32 dred_command__toggle_menu_bar(dred_context* pDred, const char* value);
 
 
 // show-tabbars
-drBool32 dred_command__show_tab_bar(dred_context* pDred, const char* value);
+dr_bool32 dred_command__show_tab_bar(dred_context* pDred, const char* value);
 
 // hide-tabbars
-drBool32 dred_command__hide_tab_bar(dred_context* pDred, const char* value);
+dr_bool32 dred_command__hide_tab_bar(dred_context* pDred, const char* value);
 
 // toggle-tabbars
 //
 // Toggles the visibility of the tab bars on each tab group.
-drBool32 dred_command__toggle_tab_bar(dred_context* pDred, const char* value);
+dr_bool32 dred_command__toggle_tab_bar(dred_context* pDred, const char* value);
 
 
 // enable-auto-hide-cmdbar
-drBool32 dred_command__enable_auto_hide_cmdbar(dred_context* pDred, const char* value);
+dr_bool32 dred_command__enable_auto_hide_cmdbar(dred_context* pDred, const char* value);
 
 // disable-auto-hide-cmdbar
-drBool32 dred_command__disable_auto_hide_cmdbar(dred_context* pDred, const char* value);
+dr_bool32 dred_command__disable_auto_hide_cmdbar(dred_context* pDred, const char* value);
 
 // toggle-auto-hide-cmdbar
-drBool32 dred_command__toggle_auto_hide_cmdbar(dred_context* pDred, const char* value);
+dr_bool32 dred_command__toggle_auto_hide_cmdbar(dred_context* pDred, const char* value);
 
 
 // next-tab
-drBool32 dred_command__next_tab(dred_context* pDred, const char* value);
+dr_bool32 dred_command__next_tab(dred_context* pDred, const char* value);
 
 // prev-tab
-drBool32 dred_command__prev_tab(dred_context* pDred, const char* value);
+dr_bool32 dred_command__prev_tab(dred_context* pDred, const char* value);
 
 
 // cd
-drBool32 dred_command__cd(dred_context* pDred, const char* value);
+dr_bool32 dred_command__cd(dred_context* pDred, const char* value);
 
 
 
 // new
-drBool32 dred_command__new(dred_context* pDred, const char* value);
+dr_bool32 dred_command__new(dred_context* pDred, const char* value);
 
 // open
-drBool32 dred_command__open(dred_context* pDred, const char* value);
+dr_bool32 dred_command__open(dred_context* pDred, const char* value);
 
 // save
-drBool32 dred_command__save(dred_context* pDred, const char* value);
+dr_bool32 dred_command__save(dred_context* pDred, const char* value);
 
 // save-all
-drBool32 dred_command__save_all(dred_context* pDred, const char* value);
+dr_bool32 dred_command__save_all(dred_context* pDred, const char* value);
 
 // save-as
-drBool32 dred_command__save_as(dred_context* pDred, const char* value);
+dr_bool32 dred_command__save_as(dred_context* pDred, const char* value);
 
 // close
-drBool32 dred_command__close(dred_context* pDred, const char* value);
+dr_bool32 dred_command__close(dred_context* pDred, const char* value);
 
 // close-all
-drBool32 dred_command__close_all(dred_context* pDred, const char* value);
+dr_bool32 dred_command__close_all(dred_context* pDred, const char* value);
 
 // exit
-drBool32 dred_command__exit(dred_context* pDred, const char* value);
+dr_bool32 dred_command__exit(dred_context* pDred, const char* value);
 
 // help
-drBool32 dred_command__help(dred_context* pDred, const char* value);
+dr_bool32 dred_command__help(dred_context* pDred, const char* value);
 
 // about
-drBool32 dred_command__about(dred_context* pDred, const char* value);
+dr_bool32 dred_command__about(dred_context* pDred, const char* value);
 
 // settings
-drBool32 dred_command__settings(dred_context* pDred, const char* value);
+dr_bool32 dred_command__settings(dred_context* pDred, const char* value);
 
 // print
-drBool32 dred_command__print(dred_context* pDred, const char* value);
+dr_bool32 dred_command__print(dred_context* pDred, const char* value);
 
 // reload
 //
 // Reloads the currently focused file.
-drBool32 dred_command__reload(dred_context* pDred, const char* value);
+dr_bool32 dred_command__reload(dred_context* pDred, const char* value);
 
 // add-favourite
-drBool32 dred_command__add_favourite(dred_context* pDred, const char* value);
+dr_bool32 dred_command__add_favourite(dred_context* pDred, const char* value);
 
 // remove-favourite
-drBool32 dred_command__remove_favourite(dred_context* pDred, const char* value);
+dr_bool32 dred_command__remove_favourite(dred_context* pDred, const char* value);
 
 
 
 //// General Editing ////
 
 // undo
-drBool32 dred_command__undo(dred_context* pDred, const char* value);
+dr_bool32 dred_command__undo(dred_context* pDred, const char* value);
 
 // redo
-drBool32 dred_command__redo(dred_context* pDred, const char* value);
+dr_bool32 dred_command__redo(dred_context* pDred, const char* value);
 
 // cut
-drBool32 dred_command__cut(dred_context* pDred, const char* value);
+dr_bool32 dred_command__cut(dred_context* pDred, const char* value);
 
 // copy
-drBool32 dred_command__copy(dred_context* pDred, const char* value);
+dr_bool32 dred_command__copy(dred_context* pDred, const char* value);
 
 // paste
-drBool32 dred_command__paste(dred_context* pDred, const char* value);
+dr_bool32 dred_command__paste(dred_context* pDred, const char* value);
 
 // delete
-drBool32 dred_command__delete(dred_context* pDred, const char* value);
+dr_bool32 dred_command__delete(dred_context* pDred, const char* value);
 
 // select-all
-drBool32 dred_command__select_all(dred_context* pDred, const char* value);
+dr_bool32 dred_command__select_all(dred_context* pDred, const char* value);
 
 
 
 //// Text Editor ////
 
 // goto
-drBool32 dred_command__goto(dred_context* pDred, const char* value);
+dr_bool32 dred_command__goto(dred_context* pDred, const char* value);
 
 // find
-drBool32 dred_command__find(dred_context* pDred, const char* value);
+dr_bool32 dred_command__find(dred_context* pDred, const char* value);
 
 // replace
-drBool32 dred_command__replace(dred_context* pDred, const char* value);
+dr_bool32 dred_command__replace(dred_context* pDred, const char* value);
 
 // replace-all
-drBool32 dred_command__replace_all(dred_context* pDred, const char* value);
+dr_bool32 dred_command__replace_all(dred_context* pDred, const char* value);
 
 // show-line-numbers
-drBool32 dred_command__show_line_numbers(dred_context* pDred, const char* value);
+dr_bool32 dred_command__show_line_numbers(dred_context* pDred, const char* value);
 
 // hide-line-numbers
-drBool32 dred_command__hide_line_numbers(dred_context* pDred, const char* value);
+dr_bool32 dred_command__hide_line_numbers(dred_context* pDred, const char* value);
 
 // toggle-line-numbers
-drBool32 dred_command__toggle_line_numbers(dred_context* pDred, const char* value);
+dr_bool32 dred_command__toggle_line_numbers(dred_context* pDred, const char* value);
 
 // toggle-word-wrap
-drBool32 dred_command__toggle_word_wrap(dred_context* pDred, const char* value);
+dr_bool32 dred_command__toggle_word_wrap(dred_context* pDred, const char* value);
 
 // zoom
-drBool32 dred_command__zoom(dred_context* pDred, const char* value);
+dr_bool32 dred_command__zoom(dred_context* pDred, const char* value);
 
 // unindent
-drBool32 dred_command__unindent(dred_context* pDred, const char* value);
+dr_bool32 dred_command__unindent(dred_context* pDred, const char* value);
 
 // insert-date
-drBool32 dred_command__insert_date(dred_context* pDred, const char* value);
+dr_bool32 dred_command__insert_date(dred_context* pDred, const char* value);
 
 // export2cstring
-drBool32 dred_command__export2cstring(dred_context* pDred, const char* value);
+dr_bool32 dred_command__export2cstring(dred_context* pDred, const char* value);
 
 
 
 
 // Finds the index of a command.
-drBool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, const char** pValueOut);
+dr_bool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, const char** pValueOut);
 
 // Finds the index of the given command function. Returns -1 if the command could not be found.
 size_t dred_find_command_index(const char* cmdFunc);
@@ -286,4 +286,4 @@ const char* dred_next_command_string(const char* cmdStr, char* cmdOut, size_t cm
 
 
 // Helper function for parsing the "bind" command.
-drBool32 dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSize, dred_shortcut* pShortcutOut, char* pCmdOut, size_t cmdOutSize);
+dr_bool32 dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSize, dred_shortcut* pShortcutOut, char* pCmdOut, size_t cmdOutSize);

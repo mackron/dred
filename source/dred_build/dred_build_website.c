@@ -79,7 +79,7 @@ void dred_build__generate_website__on_error(drwg_context* pWebgen, const char* m
     printf("%s\n", message);
 }
 
-drBool32 dred_build__generate_website(command_var* pCommandVars, config_var* pConfigVars)
+dr_bool32 dred_build__generate_website(command_var* pCommandVars, config_var* pConfigVars)
 {
     dred_build_context context;
     context.pCommandVars = pCommandVars;
@@ -97,7 +97,7 @@ drBool32 dred_build__generate_website(command_var* pCommandVars, config_var* pCo
     // Properties.
     drwg_context_set(&webgen, "dred-version", DRED_VERSION_STRING);
 
-    drBool32 result = drwg_context_generate(&webgen);
+    dr_bool32 result = drwg_context_generate(&webgen);
 
     drwg_context_uninit(&webgen);
     return result;

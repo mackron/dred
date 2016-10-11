@@ -39,7 +39,7 @@ DRED_GUI_PRIVATE int dred_scrollbar_maxi(int x, int y)
 }
 
 
-drBool32 dred_scrollbar_init(dred_scrollbar* pScrollbar, dred_context* pDred, dred_control* pParent, dred_scrollbar_orientation orientation)
+dr_bool32 dred_scrollbar_init(dred_scrollbar* pScrollbar, dred_context* pDred, dred_control* pParent, dred_scrollbar_orientation orientation)
 {
     if (pScrollbar == NULL || orientation == dred_scrollbar_orientation_none) {
         return DR_FALSE;
@@ -265,7 +265,7 @@ void dred_scrollbar_disable_thumb_auto_hide(dred_scrollbar* pScrollbar)
     }
 }
 
-drBool32 dred_scrollbar_is_thumb_auto_hide_enabled(dred_scrollbar* pScrollbar)
+dr_bool32 dred_scrollbar_is_thumb_auto_hide_enabled(dred_scrollbar* pScrollbar)
 {
     if (pScrollbar == NULL) {
         return DR_FALSE;
@@ -274,7 +274,7 @@ drBool32 dred_scrollbar_is_thumb_auto_hide_enabled(dred_scrollbar* pScrollbar)
     return pScrollbar->autoHideThumb;
 }
 
-drBool32 dred_scrollbar_is_thumb_visible(dred_scrollbar* pScrollbar)
+dr_bool32 dred_scrollbar_is_thumb_visible(dred_scrollbar* pScrollbar)
 {
     if (pScrollbar == NULL) {
         return DR_FALSE;
@@ -415,7 +415,7 @@ void dred_scrollbar_on_mouse_leave(dred_control* pControl)
         return;
     }
 
-    drBool32 needsRedraw = DR_FALSE;
+    dr_bool32 needsRedraw = DR_FALSE;
     if (pScrollbar->thumbHovered)
     {
         needsRedraw = DR_TRUE;
@@ -470,7 +470,7 @@ void dred_scrollbar_on_mouse_move(dred_control* pControl, int relativeMousePosX,
         // The thumb is not pressed. We just need to check if the hovered state has change and redraw if required.
         if (dred_scrollbar_is_thumb_visible(pScrollbar))
         {
-            drBool32 wasThumbHovered = pScrollbar->thumbHovered;
+            dr_bool32 wasThumbHovered = pScrollbar->thumbHovered;
 
             dred_rect thumbRect = dred_scrollbar_get_thumb_rect(pScrollbar);
             pScrollbar->thumbHovered = dred_rect_contains_point(thumbRect, (float)relativeMousePosX, (float)relativeMousePosY);

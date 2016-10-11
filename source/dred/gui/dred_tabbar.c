@@ -40,9 +40,9 @@ DRED_GUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, d
 DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
 
 /// Finds the tab sitting under the given point, if any.
-DRED_GUI_PRIVATE dred_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, drBool32* pIsOverCloseButtonOut);
+DRED_GUI_PRIVATE dred_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, dr_bool32* pIsOverCloseButtonOut);
 
-drBool32 dred_tabbar_init(dred_tabbar* pTabBar, dred_context* pDred, dred_control* pParent, dred_tabbar_orientation orientation)
+dr_bool32 dred_tabbar_init(dred_tabbar* pTabBar, dred_context* pDred, dred_control* pParent, dred_tabbar_orientation orientation)
 {
     if (pTabBar == NULL) {
         return DR_FALSE;
@@ -487,7 +487,7 @@ void dred_tabbar_disable_auto_size(dred_tabbar* pTabBar)
     pTabBar->isAutoSizeEnabled = DR_FALSE;
 }
 
-drBool32 dred_tabbar_is_auto_size_enabled(dred_tabbar* pTabBar)
+dr_bool32 dred_tabbar_is_auto_size_enabled(dred_tabbar* pTabBar)
 {
     if (pTabBar == NULL) {
         return DR_FALSE;
@@ -608,7 +608,7 @@ dred_tab* dred_tabbar_get_active_tab(dred_tabbar* pTabBar)
 }
 
 
-drBool32 dred_tabbar_is_tab_in_view(dred_tabbar* pTabBar, dred_tab* pTabIn)
+dr_bool32 dred_tabbar_is_tab_in_view(dred_tabbar* pTabBar, dred_tab* pTabIn)
 {
     if (pTabBar == NULL) {
         return DR_FALSE;
@@ -689,7 +689,7 @@ void dred_tabbar_disable_close_on_middle_click(dred_tabbar* pTabBar)
     pTabBar->isCloseOnMiddleClickEnabled = DR_FALSE;
 }
 
-drBool32 dred_tabbar_is_close_on_middle_click_enabled(dred_tabbar* pTabBar)
+dr_bool32 dred_tabbar_is_close_on_middle_click_enabled(dred_tabbar* pTabBar)
 {
     if (pTabBar == NULL) {
         return DR_FALSE;
@@ -726,7 +726,7 @@ void dred_tabbar_on_mouse_move(dred_control* pControl, int relativeMousePosX, in
         return;
     }
 
-    drBool32 isCloseButtonHovered = DR_FALSE;
+    dr_bool32 isCloseButtonHovered = DR_FALSE;
 
     dred_tab* pOldHoveredTab = pTabBar->pHoveredTab;
     dred_tab* pNewHoveredTab = dred_tabbar_find_tab_under_point(pTabBar, (float)relativeMousePosX, (float)relativeMousePosY, &isCloseButtonHovered);
@@ -753,7 +753,7 @@ void dred_tabbar_on_mouse_button_down(dred_control* pControl, int mouseButton, i
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT || mouseButton == DRED_GUI_MOUSE_BUTTON_RIGHT)
     {
-        drBool32 isOverCloseButton = DR_FALSE;
+        dr_bool32 isOverCloseButton = DR_FALSE;
 
         dred_tab* pOldActiveTab = pTabBar->pActiveTab;
         dred_tab* pNewActiveTab = dred_tabbar_find_tab_under_point(pTabBar, (float)relativeMousePosX, (float)relativeMousePosY, &isOverCloseButton);
@@ -794,7 +794,7 @@ void dred_tabbar_on_mouse_button_up(dred_control* pControl, int mouseButton, int
     }
 
 
-    drBool32 releasedOverCloseButton = DR_FALSE;
+    dr_bool32 releasedOverCloseButton = DR_FALSE;
     dred_tab* pTabUnderMouse = dred_tabbar_find_tab_under_point(pTabBar, (float)relativeMousePosX, (float)relativeMousePosY, &releasedOverCloseButton);
 
     if (pTabBar->pTabWithCloseButtonPressed != NULL && mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
@@ -990,7 +990,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
     }
 }
 
-DRED_GUI_PRIVATE dred_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, drBool32* pIsOverCloseButtonOut)
+DRED_GUI_PRIVATE dred_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, dr_bool32* pIsOverCloseButtonOut)
 {
     if (pTabBar == NULL) {
         return NULL;
@@ -1230,7 +1230,7 @@ void dred_tab_move_to_front(dred_tab* pTab)
     dred_tab_prepend(pTab, pTabBar);
 }
 
-drBool32 dred_tab_is_in_view(dred_tab* pTab)
+dr_bool32 dred_tab_is_in_view(dred_tab* pTab)
 {
     if (pTab == NULL) {
         return DR_FALSE;

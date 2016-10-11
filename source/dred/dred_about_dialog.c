@@ -262,7 +262,7 @@ void dred_about_dialog_hide(dred_about_dialog* pDialog)
     pDialog->isShowing = DR_FALSE;
 }
 
-drBool32 dred_about_dialog_is_showing(dred_about_dialog* pDialog)
+dr_bool32 dred_about_dialog_is_showing(dred_about_dialog* pDialog)
 {
     if (pDialog == NULL) {
         return DR_FALSE;

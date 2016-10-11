@@ -146,7 +146,7 @@ void dred_tabbar__on_tab_mouse_button_up(dred_tabbar* pTabBar, dred_tab* pTab, i
 }
 
 
-drBool32 dred_tabgroup_init(dred_tabgroup* pTabGroup, dred_context* pDred, dred_control* pParent)
+dr_bool32 dred_tabgroup_init(dred_tabgroup* pTabGroup, dred_context* pDred, dred_control* pParent)
 {
     if (pTabGroup == NULL) {
         return DR_FALSE;
@@ -412,7 +412,7 @@ void dred_tabgroup_show_tabbar(dred_tabgroup* pTabGroup)
     dred_tabgroup__refresh_layout(pTabGroup, dred_control_get_width(DRED_CONTROL(pTabGroup)), dred_control_get_height(DRED_CONTROL(pTabGroup)));
 }
 
-drBool32 dred_tabgroup_is_showing_tabbar(dred_tabgroup* pTabGroup)
+dr_bool32 dred_tabgroup_is_showing_tabbar(dred_tabgroup* pTabGroup)
 {
     if (pTabGroup == NULL) {
         return DR_FALSE;

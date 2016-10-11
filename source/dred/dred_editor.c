@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-drBool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dred_control* pParent, const char* type, float sizeX, float sizeY, const char* filePathAbsolute)
+dr_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dred_control* pParent, const char* type, float sizeX, float sizeY, const char* filePathAbsolute)
 {
     if (!dred_is_control_type_of_type(type, DRED_CONTROL_TYPE_EDITOR)) {
         dred_errorf(pDred, "[DEVELOPER ERROR] Attempting to create an editor that is not of an editor type (%s).", type);
@@ -66,7 +66,7 @@ const char* dred_editor_get_file_path(dred_editor* pEditor)
     return pEditor->filePathAbsolute;
 }
 
-drBool32 dred_editor_set_file_path(dred_editor* pEditor, const char* newFilePath)
+dr_bool32 dred_editor_set_file_path(dred_editor* pEditor, const char* newFilePath)
 {
     if (pEditor == NULL || newFilePath == NULL) {
         return DR_FALSE;
@@ -89,7 +89,7 @@ drBool32 dred_editor_set_file_path(dred_editor* pEditor, const char* newFilePath
 }
 
 
-drBool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath)
+dr_bool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath)
 {
     if (pEditor == NULL) {
         return DR_FALSE;
@@ -151,7 +151,7 @@ drBool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath)
     }
 }
 
-drBool32 dred_editor_reload(dred_editor* pEditor)
+dr_bool32 dred_editor_reload(dred_editor* pEditor)
 {
     if (pEditor == NULL) {
         return DR_FALSE;
@@ -174,7 +174,7 @@ drBool32 dred_editor_reload(dred_editor* pEditor)
     return DR_TRUE;
 }
 
-drBool32 dred_editor_check_if_dirty_and_reload(dred_editor* pEditor)
+dr_bool32 dred_editor_check_if_dirty_and_reload(dred_editor* pEditor)
 {
     if (pEditor == NULL) {
         return DR_FALSE;
@@ -221,7 +221,7 @@ void dred_editor_unmark_as_modified(dred_editor* pEditor)
     }
 }
 
-drBool32 dred_editor_is_modified(dred_editor* pEditor)
+dr_bool32 dred_editor_is_modified(dred_editor* pEditor)
 {
     if (pEditor == NULL) {
         return DR_FALSE;
@@ -240,7 +240,7 @@ void dred_editor_update_file_last_modified_time(dred_editor* pEditor)
     pEditor->fileLastModifiedTime = dr_get_file_modified_time(dred_editor_get_file_path(pEditor));
 }
 
-drBool32 dred_editor_is_read_only(dred_editor* pEditor)
+dr_bool32 dred_editor_is_read_only(dred_editor* pEditor)
 {
     if (pEditor == NULL) {
         return DR_FALSE;

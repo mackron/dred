@@ -198,7 +198,7 @@ void dred_text_editor_engine__on_undo_stack_trimmed(drte_engine* pTextEngine)
     }
 }
 
-drBool32 dred_text_editor__on_save(dred_editor* pEditor, dred_file file, const char* filePath)
+dr_bool32 dred_text_editor__on_save(dred_editor* pEditor, dred_file file, const char* filePath)
 {
     dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(pEditor);
     assert(pTextEditor != NULL);
@@ -215,7 +215,7 @@ drBool32 dred_text_editor__on_save(dred_editor* pEditor, dred_file file, const c
     }
     dred_textview_get_text(pTextView, text, textLength+1);
 
-    drBool32 result = dred_file_write_string(file, text);
+    dr_bool32 result = dred_file_write_string(file, text);
     free(text);
 
     // After saving we need to update the base undo point and unmark the file as modified.
@@ -229,7 +229,7 @@ drBool32 dred_text_editor__on_save(dred_editor* pEditor, dred_file file, const c
     return result;
 }
 
-drBool32 dred_text_editor__on_reload(dred_editor* pEditor)
+dr_bool32 dred_text_editor__on_reload(dred_editor* pEditor)
 {
     dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(pEditor);
     assert(pTextEditor != NULL);
@@ -404,7 +404,7 @@ void dred_text_editor_disable_word_wrap(dred_text_editor* pTextEditor)
     dred_textview_disable_word_wrap(pTextEditor->pTextView);
 }
 
-drBool32 dred_text_editor_is_word_wrap_enabled(dred_text_editor* pTextEditor)
+dr_bool32 dred_text_editor_is_word_wrap_enabled(dred_text_editor* pTextEditor)
 {
     if (pTextEditor == NULL) {
         return DR_FALSE;
@@ -432,7 +432,7 @@ void dred_text_editor_disable_drag_and_drop(dred_text_editor* pTextEditor)
     dred_textview_disable_drag_and_drop(pTextEditor->pTextView);
 }
 
-drBool32 dred_text_editor_is_drag_and_drop_enabled(dred_text_editor* pTextEditor)
+dr_bool32 dred_text_editor_is_drag_and_drop_enabled(dred_text_editor* pTextEditor)
 {
     if (pTextEditor == NULL) {
         return DR_FALSE;
@@ -442,7 +442,7 @@ drBool32 dred_text_editor_is_drag_and_drop_enabled(dred_text_editor* pTextEditor
 }
 
 
-drBool32 dred_text_editor_insert_text_at_cursors(dred_text_editor* pTextEditor, const char* text)
+dr_bool32 dred_text_editor_insert_text_at_cursors(dred_text_editor* pTextEditor, const char* text)
 {
     if (pTextEditor == NULL) {
         return DR_FALSE;
@@ -647,7 +647,7 @@ void dred_text_editor_deselect_all_in_focused_view(dred_text_editor* pTextEditor
 }
 
 
-drBool32 dred_text_editor_find_and_select_next(dred_text_editor* pTextEditor, const char* text)
+dr_bool32 dred_text_editor_find_and_select_next(dred_text_editor* pTextEditor, const char* text)
 {
     if (pTextEditor == NULL) {
         return DR_FALSE;
@@ -656,7 +656,7 @@ drBool32 dred_text_editor_find_and_select_next(dred_text_editor* pTextEditor, co
     return dred_textview_find_and_select_next(pTextEditor->pTextView, text);
 }
 
-drBool32 dred_text_editor_find_and_replace_next(dred_text_editor* pTextEditor, const char* text, const char* replacement)
+dr_bool32 dred_text_editor_find_and_replace_next(dred_text_editor* pTextEditor, const char* text, const char* replacement)
 {
     if (pTextEditor == NULL) {
         return DR_FALSE;
@@ -665,7 +665,7 @@ drBool32 dred_text_editor_find_and_replace_next(dred_text_editor* pTextEditor, c
     return dred_textview_find_and_replace_next(pTextEditor->pTextView, text, replacement);
 }
 
-drBool32 dred_text_editor_find_and_replace_all(dred_text_editor* pTextEditor, const char* text, const char* replacement)
+dr_bool32 dred_text_editor_find_and_replace_all(dred_text_editor* pTextEditor, const char* text, const char* replacement)
 {
     if (pTextEditor == NULL) {
         return DR_FALSE;

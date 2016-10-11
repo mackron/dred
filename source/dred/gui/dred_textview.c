@@ -215,7 +215,7 @@ void dred_textview__insert_cursor(dred_textview* pTextView, size_t iChar, size_t
     pTextView->cursorCount += 1;
 }
 
-drBool32 dred_textview__get_cursor_selection(dred_textview* pTextView, size_t iCursor, size_t* iSelectionOut)
+dr_bool32 dred_textview__get_cursor_selection(dred_textview* pTextView, size_t iCursor, size_t* iSelectionOut)
 {
     assert(pTextView != NULL);
 
@@ -230,14 +230,14 @@ drBool32 dred_textview__get_cursor_selection(dred_textview* pTextView, size_t iC
     return DR_FALSE;
 }
 
-drBool32 dred_textview__is_cursor_on_selection(dred_textview* pTextView)
+dr_bool32 dred_textview__is_cursor_on_selection(dred_textview* pTextView)
 {
     assert(pTextView != NULL);
 
     return dred_textview__get_cursor_selection(pTextView, drte_view_get_last_cursor(pTextView->pView), NULL);
 }
 
-drBool32 dred_textview__move_cursor_to_start_of_selection(dred_textview* pTextView, size_t* iSelectionOut)
+dr_bool32 dred_textview__move_cursor_to_start_of_selection(dred_textview* pTextView, size_t* iSelectionOut)
 {
     assert(pTextView != NULL);
 
@@ -260,7 +260,7 @@ drBool32 dred_textview__move_cursor_to_start_of_selection(dred_textview* pTextVi
     return DR_FALSE;
 }
 
-drBool32 dred_textview__move_cursor_to_end_of_selection(dred_textview* pTextView, size_t* iSelectionOut)
+dr_bool32 dred_textview__move_cursor_to_end_of_selection(dred_textview* pTextView, size_t* iSelectionOut)
 {
     assert(pTextView != NULL);
 
@@ -283,7 +283,7 @@ drBool32 dred_textview__move_cursor_to_end_of_selection(dred_textview* pTextView
     return DR_FALSE;
 }
 
-drBool32 dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
+dr_bool32 dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
 {
     assert(pTextView != NULL);
 
@@ -292,7 +292,7 @@ drBool32 dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
 
     drte_view_begin_dirty(pTextView->pView);
 
-    drBool32 wasTextChanged = DR_FALSE;
+    dr_bool32 wasTextChanged = DR_FALSE;
     if (pDred->config.textEditorTabsToSpacesEnabled) {
         size_t insertedCharacterCount = drte_view_get_spaces_to_next_column_from_character(pTextView->pView, iChar);
         for (size_t i = 0; i < insertedCharacterCount; ++i) {
@@ -307,7 +307,7 @@ drBool32 dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
     return wasTextChanged;
 }
 
-drBool32 dred_textview__insert_tab_at_cursor(dred_textview* pTextView, size_t iCursor)
+dr_bool32 dred_textview__insert_tab_at_cursor(dred_textview* pTextView, size_t iCursor)
 {
     assert(pTextView != NULL);
 
@@ -315,7 +315,7 @@ drBool32 dred_textview__insert_tab_at_cursor(dred_textview* pTextView, size_t iC
 }
 
 
-drBool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_control* pParent, drte_engine* pTextEngine)
+dr_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_control* pParent, drte_engine* pTextEngine)
 {
     if (pTextView == NULL || pTextEngine == NULL) {
         return DR_FALSE;
@@ -807,7 +807,7 @@ void dred_textview_disable_word_wrap(dred_textview* pTextView)
     dred_textview__refresh_scrollbars(pTextView);
 }
 
-drBool32 dred_textview_is_word_wrap_enabled(dred_textview* pTextView)
+dr_bool32 dred_textview_is_word_wrap_enabled(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return DR_FALSE;
@@ -835,7 +835,7 @@ void dred_textview_disable_drag_and_drop(dred_textview* pTextView)
     pTextView->isDragAndDropEnabled = DR_FALSE;
 }
 
-drBool32 dred_textview_is_drag_and_drop_enabled(dred_textview* pTextView)
+dr_bool32 dred_textview_is_drag_and_drop_enabled(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return DR_FALSE;
@@ -918,7 +918,7 @@ void dred_textview_move_cursor_to_start_of_line_by_index(dred_textview* pTextVie
 }
 
 
-drBool32 dred_textview_is_anything_selected(dred_textview* pTextView)
+dr_bool32 dred_textview_is_anything_selected(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return DR_FALSE;
@@ -955,13 +955,13 @@ size_t dred_textview_get_selected_text(dred_textview* pTextView, char* textOut, 
     return drte_view_get_selected_text(pTextView->pView, textOut, textOutLength);
 }
 
-drBool32 dred_textview_delete_character_to_right_of_cursor(dred_textview* pTextView)
+dr_bool32 dred_textview_delete_character_to_right_of_cursor(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return DR_FALSE;
     }
 
-    drBool32 wasTextChanged = DR_FALSE;
+    dr_bool32 wasTextChanged = DR_FALSE;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
         wasTextChanged = drte_view_delete_character_to_right_of_cursor(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
@@ -971,25 +971,25 @@ drBool32 dred_textview_delete_character_to_right_of_cursor(dred_textview* pTextV
     return wasTextChanged;
 }
 
-drBool32 dred_textview_delete_selected_text_no_undo(dred_textview* pTextView)
+dr_bool32 dred_textview_delete_selected_text_no_undo(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return DR_FALSE;
     }
 
-    drBool32 wasTextChanged = drte_view_delete_selected_text(pTextView->pView);
+    dr_bool32 wasTextChanged = drte_view_delete_selected_text(pTextView->pView);
     drte_view_deselect_all(pTextView->pView);
 
     return wasTextChanged;
 }
 
-drBool32 dred_textview_delete_selected_text(dred_textview* pTextView)
+dr_bool32 dred_textview_delete_selected_text(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return DR_FALSE;
     }
 
-    drBool32 wasTextChanged = DR_FALSE;
+    dr_bool32 wasTextChanged = DR_FALSE;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
         wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView);
@@ -999,13 +999,13 @@ drBool32 dred_textview_delete_selected_text(dred_textview* pTextView)
     return wasTextChanged;
 }
 
-drBool32 dred_textview_insert_text_at_cursors_no_undo(dred_textview* pTextView, const char* text)
+dr_bool32 dred_textview_insert_text_at_cursors_no_undo(dred_textview* pTextView, const char* text)
 {
     if (pTextView == NULL) {
         return DR_FALSE;
     }
 
-    drBool32 wasTextChanged = DR_FALSE;
+    dr_bool32 wasTextChanged = DR_FALSE;
     for (size_t iCursor = 0; iCursor < pTextView->cursorCount; ++iCursor) {
         wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pView, iCursor, text) || wasTextChanged;
     }
@@ -1013,13 +1013,13 @@ drBool32 dred_textview_insert_text_at_cursors_no_undo(dred_textview* pTextView, 
     return wasTextChanged;
 }
 
-drBool32 dred_textview_insert_text_at_cursors(dred_textview* pTextView, const char* text)
+dr_bool32 dred_textview_insert_text_at_cursors(dred_textview* pTextView, const char* text)
 {
     if (pTextView == NULL) {
         return DR_FALSE;
     }
 
-    drBool32 wasTextChanged = DR_FALSE;
+    dr_bool32 wasTextChanged = DR_FALSE;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
         wasTextChanged = dred_textview_insert_text_at_cursors_no_undo(pTextView, text) || wasTextChanged;
@@ -1029,7 +1029,7 @@ drBool32 dred_textview_insert_text_at_cursors(dred_textview* pTextView, const ch
     return wasTextChanged;
 }
 
-drBool32 dred_textview_unindent_selected_blocks(dred_textview* pTextView)
+dr_bool32 dred_textview_unindent_selected_blocks(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return DR_FALSE;
@@ -1037,7 +1037,7 @@ drBool32 dred_textview_unindent_selected_blocks(dred_textview* pTextView)
 
     drte_view_begin_dirty(pTextView->pView);
 
-    drBool32 wasTextChanged = DR_FALSE;
+    dr_bool32 wasTextChanged = DR_FALSE;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
         for (size_t iSelection = 0; iSelection < pTextView->pView->selectionCount; ++iSelection) {
@@ -1089,7 +1089,7 @@ drBool32 dred_textview_unindent_selected_blocks(dred_textview* pTextView)
     return wasTextChanged;
 }
 
-drBool32 dred_textview_undo(dred_textview* pTextView)
+dr_bool32 dred_textview_undo(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return DR_FALSE;
@@ -1098,7 +1098,7 @@ drBool32 dred_textview_undo(dred_textview* pTextView)
     return drte_engine_undo(pTextView->pTextEngine);
 }
 
-drBool32 dred_textview_redo(dred_textview* pTextView)
+dr_bool32 dred_textview_redo(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return DR_FALSE;
@@ -1163,7 +1163,7 @@ size_t dred_textview_get_line_count(dred_textview* pTextView)
 }
 
 
-drBool32 dred_textview_find_and_select_next(dred_textview* pTextView, const char* text)
+dr_bool32 dred_textview_find_and_select_next(dred_textview* pTextView, const char* text)
 {
     if (pTextView == NULL) {
         return 0;
@@ -1182,13 +1182,13 @@ drBool32 dred_textview_find_and_select_next(dred_textview* pTextView, const char
     return DR_FALSE;
 }
 
-drBool32 dred_textview_find_and_replace_next(dred_textview* pTextView, const char* text, const char* replacement)
+dr_bool32 dred_textview_find_and_replace_next(dred_textview* pTextView, const char* text, const char* replacement)
 {
     if (pTextView == NULL) {
         return 0;
     }
 
-    drBool32 wasTextChanged = DR_FALSE;
+    dr_bool32 wasTextChanged = DR_FALSE;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
         size_t selectionStart;
@@ -1207,7 +1207,7 @@ drBool32 dred_textview_find_and_replace_next(dred_textview* pTextView, const cha
     return wasTextChanged;
 }
 
-drBool32 dred_textview_find_and_replace_all(dred_textview* pTextView, const char* text, const char* replacement)
+dr_bool32 dred_textview_find_and_replace_all(dred_textview* pTextView, const char* text, const char* replacement)
 {
     if (pTextView == NULL) {
         return 0;
@@ -1218,7 +1218,7 @@ drBool32 dred_textview_find_and_replace_all(dred_textview* pTextView, const char
     int originalScrollPosX = dred_scrollbar_get_scroll_position(pTextView->pHorzScrollbar);
     int originalScrollPosY = dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar);
 
-    drBool32 wasTextChanged = DR_FALSE;
+    dr_bool32 wasTextChanged = DR_FALSE;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
         // It's important that we don't replace the replacement text. To handle this, we just move the cursor to the top of the text and find
@@ -1417,7 +1417,7 @@ void dred_textview_disable_tabs_to_spaces(dred_textview* pTextView)
     pTextView->isTabsToSpacesEnabled = DR_FALSE;
 }
 
-drBool32 dred_textview_is_tabs_to_spaces_enabled(dred_textview* pTextView)
+dr_bool32 dred_textview_is_tabs_to_spaces_enabled(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return DR_FALSE;;
@@ -1427,7 +1427,7 @@ drBool32 dred_textview_is_tabs_to_spaces_enabled(dred_textview* pTextView)
 }
 
 
-drBool32 dred_textview_prepare_undo_point(dred_textview* pTextView)
+dr_bool32 dred_textview_prepare_undo_point(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return DR_FALSE;;
@@ -1436,7 +1436,7 @@ drBool32 dred_textview_prepare_undo_point(dred_textview* pTextView)
     return drte_engine_prepare_undo_point(pTextView->pTextEngine);
 }
 
-drBool32 dred_textview_commit_undo_point(dred_textview* pTextView)
+dr_bool32 dred_textview_commit_undo_point(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return DR_FALSE;;
@@ -1824,8 +1824,8 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
 
     drte_view_begin_dirty(pTextView->pView);
 
-    drBool32 isShiftDown = (stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0;
-    //drBool32 isCtrlDown  = (stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0;
+    dr_bool32 isShiftDown = (stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0;
+    //dr_bool32 isCtrlDown  = (stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0;
 
     size_t iLastCursor = drte_view_get_last_cursor(pTextView->pView);
     size_t iLastCursorLine = drte_view_get_cursor_line(pTextView->pView, iLastCursor);
@@ -1835,7 +1835,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
     {
         case DRED_GUI_BACKSPACE:
         {
-            drBool32 wasTextChanged = DR_FALSE;
+            dr_bool32 wasTextChanged = DR_FALSE;
             drte_engine_prepare_undo_point(pTextView->pTextEngine);
             {
                 if (drte_view_is_anything_selected(pTextView->pView)) {
@@ -1851,7 +1851,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                                 continue;
                             }
 
-                            drBool32 leaveNewLines = pTextView->pView->cursorCount > 1;
+                            dr_bool32 leaveNewLines = pTextView->pView->cursorCount > 1;
                             if (leaveNewLines) {
                                 size_t iLineCharBeg = drte_view_get_line_first_character(pTextView->pView, pTextView->pView->pWrappedLines, drte_view_get_cursor_line(pTextView->pView, iCursor));
                                 if (iCursorChar == iLineCharBeg) {
@@ -1878,7 +1878,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
 
         case DRED_GUI_DELETE:
         {
-            drBool32 wasTextChanged = DR_FALSE;
+            dr_bool32 wasTextChanged = DR_FALSE;
             drte_engine_prepare_undo_point(pTextView->pTextEngine);
             {
                 if (drte_view_is_anything_selected(pTextView->pView)) {
@@ -2178,10 +2178,10 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
             //
             // The tab key is handled for each cursor.
             for (size_t iCursor = 0; iCursor < pTextView->cursorCount; ++iCursor) {
-                drBool32 isDoingBlockIndent = DR_FALSE;
+                dr_bool32 isDoingBlockIndent = DR_FALSE;
 
                 size_t iSelection;
-                drBool32 isSomethingSelected = dred_textview__get_cursor_selection(pTextView, iCursor, &iSelection);
+                dr_bool32 isSomethingSelected = dred_textview__get_cursor_selection(pTextView, iCursor, &iSelection);
                 if (isSomethingSelected) {
                     //isDoingBlockIndent = drte_view_get_selection_first_line(pTextView->pView, iSelection) != drte_view_get_selection_last_line(pTextView->pView, iSelection);
                     isDoingBlockIndent = DR_TRUE;
@@ -2715,7 +2715,7 @@ void dred_textview__on_mouse_move_line_numbers(dred_control* pLineNumbers, int r
 
             // If we're moving updwards we want to position the cursor at the start of the line. Otherwise we want to move the cursor to the start
             // of the next line, or the end of the text.
-            drBool32 movingUp = DR_FALSE;
+            dr_bool32 movingUp = DR_FALSE;
             if (iLine < iAnchorLine) {
                 movingUp = DR_TRUE;
             }

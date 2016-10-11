@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-static drBool32 dred__preprocess_system_command(dred_context* pDred, const char* cmd, char* cmdOut, size_t cmdOutSize)
+static dr_bool32 dred__preprocess_system_command(dred_context* pDred, const char* cmd, char* cmdOut, size_t cmdOutSize)
 {
     // Currently, the only symbols we're expanding is the enescaped "%" character, which is expanded to the relative
     // path of the currently focused file.
@@ -54,7 +54,7 @@ static drBool32 dred__preprocess_system_command(dred_context* pDred, const char*
     return DR_TRUE;
 }
 
-drBool32 dred_command__system_command(dred_context* pDred, const char* value)
+dr_bool32 dred_command__system_command(dred_context* pDred, const char* value)
 {
     char valueExpanded[4096];
     if (dred__preprocess_system_command(pDred, value, valueExpanded, sizeof(valueExpanded))) {
@@ -64,13 +64,13 @@ drBool32 dred_command__system_command(dred_context* pDred, const char* value)
     }
 }
 
-drBool32 dred_command__cmdbar(dred_context* pDred, const char* value)
+dr_bool32 dred_command__cmdbar(dred_context* pDred, const char* value)
 {
     dred_focus_command_bar_and_set_text(pDred, value);
     return DR_TRUE;
 }
 
-drBool32 dred_command__bind(dred_context* pDred, const char* value)
+dr_bool32 dred_command__bind(dred_context* pDred, const char* value)
 {
     char shortcutName[256];
     dred_shortcut shortcut;
@@ -82,7 +82,7 @@ drBool32 dred_command__bind(dred_context* pDred, const char* value)
     return DR_FALSE;
 }
 
-drBool32 dred_command__load_config(dred_context* pDred, const char* value)
+dr_bool32 dred_command__load_config(dred_context* pDred, const char* value)
 {
     char path[DRED_MAX_PATH];
     if (!dr_next_token(value, path, sizeof(path))) {
@@ -106,7 +106,7 @@ drBool32 dred_command__load_config(dred_context* pDred, const char* value)
     return DR_FALSE;
 }
 
-drBool32 dred_command__set(dred_context* pDred, const char* value)
+dr_bool32 dred_command__set(dred_context* pDred, const char* value)
 {
     char name[256];
     value = dr_next_token(value, name, sizeof(name));
@@ -118,7 +118,7 @@ drBool32 dred_command__set(dred_context* pDred, const char* value)
     return DR_TRUE;
 }
 
-drBool32 dred_command__set_default(dred_context* pDred, const char* value)
+dr_bool32 dred_command__set_default(dred_context* pDred, const char* value)
 {
     char name[256];
     value = dr_next_token(value, name, sizeof(name));
@@ -131,21 +131,21 @@ drBool32 dred_command__set_default(dred_context* pDred, const char* value)
 }
 
 
-drBool32 dred_command__show_menu_bar(dred_context* pDred, const char* value)
+dr_bool32 dred_command__show_menu_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_show_menu_bar(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__hide_menu_bar(dred_context* pDred, const char* value)
+dr_bool32 dred_command__hide_menu_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_hide_menu_bar(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__toggle_menu_bar(dred_context* pDred, const char* value)
+dr_bool32 dred_command__toggle_menu_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_toggle_menu_bar(pDred);
@@ -153,21 +153,21 @@ drBool32 dred_command__toggle_menu_bar(dred_context* pDred, const char* value)
 }
 
 
-drBool32 dred_command__show_tab_bar(dred_context* pDred, const char* value)
+dr_bool32 dred_command__show_tab_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_show_tabbars(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__hide_tab_bar(dred_context* pDred, const char* value)
+dr_bool32 dred_command__hide_tab_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_hide_tabbars(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__toggle_tab_bar(dred_context* pDred, const char* value)
+dr_bool32 dred_command__toggle_tab_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_toggle_tabbars(pDred);
@@ -175,21 +175,21 @@ drBool32 dred_command__toggle_tab_bar(dred_context* pDred, const char* value)
 }
 
 
-drBool32 dred_command__enable_auto_hide_cmdbar(dred_context* pDred, const char* value)
+dr_bool32 dred_command__enable_auto_hide_cmdbar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_enable_auto_hide_command_bar(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__disable_auto_hide_cmdbar(dred_context* pDred, const char* value)
+dr_bool32 dred_command__disable_auto_hide_cmdbar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_disable_auto_hide_command_bar(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__toggle_auto_hide_cmdbar(dred_context* pDred, const char* value)
+dr_bool32 dred_command__toggle_auto_hide_cmdbar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_toggle_auto_hide_command_bar(pDred);
@@ -197,14 +197,14 @@ drBool32 dred_command__toggle_auto_hide_cmdbar(dred_context* pDred, const char* 
 }
 
 
-drBool32 dred_command__next_tab(dred_context* pDred, const char* value)
+dr_bool32 dred_command__next_tab(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_tabgroup_activate_next_tab(dred_get_focused_tabgroup(pDred));
     return DR_TRUE;
 }
 
-drBool32 dred_command__prev_tab(dred_context* pDred, const char* value)
+dr_bool32 dred_command__prev_tab(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_tabgroup_activate_prev_tab(dred_get_focused_tabgroup(pDred));
@@ -212,7 +212,7 @@ drBool32 dred_command__prev_tab(dred_context* pDred, const char* value)
 }
 
 
-drBool32 dred_command__cd(dred_context* pDred, const char* value)
+dr_bool32 dred_command__cd(dred_context* pDred, const char* value)
 {
     (void)pDred;
     return dr_set_current_directory(value);
@@ -220,13 +220,13 @@ drBool32 dred_command__cd(dred_context* pDred, const char* value)
 
 
 
-drBool32 dred_command__new(dred_context* pDred, const char* value)
+dr_bool32 dred_command__new(dred_context* pDred, const char* value)
 {
     dred_create_and_open_file(pDred, value);
     return DR_TRUE;
 }
 
-drBool32 dred_command__open(dred_context* pDred, const char* value)
+dr_bool32 dred_command__open(dred_context* pDred, const char* value)
 {
     char fileName[DRED_MAX_PATH];
     if (dr_next_token(value, fileName, sizeof(fileName)) == NULL) {
@@ -241,7 +241,7 @@ drBool32 dred_command__open(dred_context* pDred, const char* value)
     return DR_TRUE;
 }
 
-drBool32 dred_command__save(dred_context* pDred, const char* value)
+dr_bool32 dred_command__save(dred_context* pDred, const char* value)
 {
     if (!dred_save_focused_file(pDred, value)) {
         return dred_save_focused_file_as(pDred);
@@ -250,42 +250,42 @@ drBool32 dred_command__save(dred_context* pDred, const char* value)
     return DR_TRUE;
 }
 
-drBool32 dred_command__save_all(dred_context* pDred, const char* value)
+dr_bool32 dred_command__save_all(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_save_all_open_files(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__save_as(dred_context* pDred, const char* value)
+dr_bool32 dred_command__save_as(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_save_focused_file_as(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__close(dred_context* pDred, const char* value)
+dr_bool32 dred_command__close(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_close_focused_file_with_confirmation(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__close_all(dred_context* pDred, const char* value)
+dr_bool32 dred_command__close_all(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_close_all_tabs_with_confirmation(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__exit(dred_context* pDred, const char* value)
+dr_bool32 dred_command__exit(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_close(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__help(dred_context* pDred, const char* value)
+dr_bool32 dred_command__help(dred_context* pDred, const char* value)
 {
     (void)value;
     (void)pDred;
@@ -294,21 +294,21 @@ drBool32 dred_command__help(dred_context* pDred, const char* value)
     return DR_TRUE;
 }
 
-drBool32 dred_command__about(dred_context* pDred, const char* value)
+dr_bool32 dred_command__about(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_show_about_dialog(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__settings(dred_context* pDred, const char* value)
+dr_bool32 dred_command__settings(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_show_settings_dialog(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__print(dred_context* pDred, const char* value)
+dr_bool32 dred_command__print(dred_context* pDred, const char* value)
 {
     (void)value;
 
@@ -316,14 +316,14 @@ drBool32 dred_command__print(dred_context* pDred, const char* value)
     return dred_show_print_dialog(pDred, NULL, &printInfo);
 }
 
-drBool32 dred_command__reload(dred_context* pDred, const char* value)
+dr_bool32 dred_command__reload(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_check_if_focused_file_is_dirty_and_reload(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__add_favourite(dred_context* pDred, const char* value)
+dr_bool32 dred_command__add_favourite(dred_context* pDred, const char* value)
 {
     const char* absolutePath = value;
     if (absolutePath == NULL || absolutePath[0] == '\0') {
@@ -342,7 +342,7 @@ drBool32 dred_command__add_favourite(dred_context* pDred, const char* value)
     return dred_add_favourite(pDred, absolutePath);
 }
 
-drBool32 dred_command__remove_favourite(dred_context* pDred, const char* value)
+dr_bool32 dred_command__remove_favourite(dred_context* pDred, const char* value)
 {
     const char* absolutePath = value;
     if (absolutePath == NULL || absolutePath[0] == '\0') {
@@ -362,7 +362,7 @@ drBool32 dred_command__remove_favourite(dred_context* pDred, const char* value)
 }
 
 
-drBool32 dred_command__undo(dred_context* pDred, const char* value)
+dr_bool32 dred_command__undo(dred_context* pDred, const char* value)
 {
     (void)value;
 
@@ -379,7 +379,7 @@ drBool32 dred_command__undo(dred_context* pDred, const char* value)
     return DR_FALSE;
 }
 
-drBool32 dred_command__redo(dred_context* pDred, const char* value)
+dr_bool32 dred_command__redo(dred_context* pDred, const char* value)
 {
     (void)value;
 
@@ -396,14 +396,14 @@ drBool32 dred_command__redo(dred_context* pDred, const char* value)
     return DR_FALSE;
 }
 
-drBool32 dred_command__cut(dred_context* pDred, const char* value)
+dr_bool32 dred_command__cut(dred_context* pDred, const char* value)
 {
     dred_command__copy(pDred, value);
     dred_command__delete(pDred, value);
     return DR_TRUE;
 }
 
-drBool32 dred_command__copy(dred_context* pDred, const char* value)
+dr_bool32 dred_command__copy(dred_context* pDred, const char* value)
 {
     (void)value;
 
@@ -429,7 +429,7 @@ drBool32 dred_command__copy(dred_context* pDred, const char* value)
     return DR_FALSE;
 }
 
-drBool32 dred_command__paste(dred_context* pDred, const char* value)
+dr_bool32 dred_command__paste(dred_context* pDred, const char* value)
 {
     (void)value;
 
@@ -444,7 +444,7 @@ drBool32 dred_command__paste(dred_context* pDred, const char* value)
             return DR_FALSE;
         }
 
-        drBool32 wasTextChanged = DR_FALSE;
+        dr_bool32 wasTextChanged = DR_FALSE;
         dred_textview_prepare_undo_point(DRED_TEXTVIEW(pFocusedControl));
         {
             wasTextChanged = dred_textview_delete_selected_text_no_undo(DRED_TEXTVIEW(pFocusedControl)) || wasTextChanged;
@@ -459,7 +459,7 @@ drBool32 dred_command__paste(dred_context* pDred, const char* value)
     return DR_FALSE;
 }
 
-drBool32 dred_command__delete(dred_context* pDred, const char* value)
+dr_bool32 dred_command__delete(dred_context* pDred, const char* value)
 {
     (void)value;
 
@@ -476,7 +476,7 @@ drBool32 dred_command__delete(dred_context* pDred, const char* value)
     return DR_FALSE;
 }
 
-drBool32 dred_command__select_all(dred_context* pDred, const char* value)
+dr_bool32 dred_command__select_all(dred_context* pDred, const char* value)
 {
     (void)value;
 
@@ -494,7 +494,7 @@ drBool32 dred_command__select_all(dred_context* pDred, const char* value)
 }
 
 
-drBool32 dred_command__goto(dred_context* pDred, const char* value)
+dr_bool32 dred_command__goto(dred_context* pDred, const char* value)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
@@ -519,7 +519,7 @@ drBool32 dred_command__goto(dred_context* pDred, const char* value)
     return DR_FALSE;
 }
 
-drBool32 dred_command__find(dred_context* pDred, const char* value)
+dr_bool32 dred_command__find(dred_context* pDred, const char* value)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
@@ -542,7 +542,7 @@ drBool32 dred_command__find(dred_context* pDred, const char* value)
     return DR_FALSE;
 }
 
-drBool32 dred_command__replace(dred_context* pDred, const char* value)
+dr_bool32 dred_command__replace(dred_context* pDred, const char* value)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
@@ -569,7 +569,7 @@ drBool32 dred_command__replace(dred_context* pDred, const char* value)
     return DR_FALSE;
 }
 
-drBool32 dred_command__replace_all(dred_context* pDred, const char* value)
+dr_bool32 dred_command__replace_all(dred_context* pDred, const char* value)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
@@ -596,35 +596,35 @@ drBool32 dred_command__replace_all(dred_context* pDred, const char* value)
     return DR_FALSE;
 }
 
-drBool32 dred_command__show_line_numbers(dred_context* pDred, const char* value)
+dr_bool32 dred_command__show_line_numbers(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_show_line_numbers(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__hide_line_numbers(dred_context* pDred, const char* value)
+dr_bool32 dred_command__hide_line_numbers(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_hide_line_numbers(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__toggle_line_numbers(dred_context* pDred, const char* value)
+dr_bool32 dred_command__toggle_line_numbers(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_toggle_line_numbers(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__toggle_word_wrap(dred_context* pDred, const char* value)
+dr_bool32 dred_command__toggle_word_wrap(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_toggle_word_wrap(pDred);
     return DR_TRUE;
 }
 
-drBool32 dred_command__zoom(dred_context* pDred, const char* value)
+dr_bool32 dred_command__zoom(dred_context* pDred, const char* value)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
@@ -638,7 +638,7 @@ drBool32 dred_command__zoom(dred_context* pDred, const char* value)
     return DR_TRUE;
 }
 
-drBool32 dred_command__unindent(dred_context* pDred, const char* value)
+dr_bool32 dred_command__unindent(dred_context* pDred, const char* value)
 {
     (void)value;
 
@@ -654,7 +654,7 @@ drBool32 dred_command__unindent(dred_context* pDred, const char* value)
     return DR_TRUE;
 }
 
-drBool32 dred_command__insert_date(dred_context* pDred, const char* value)
+dr_bool32 dred_command__insert_date(dred_context* pDred, const char* value)
 {
     (void)value;
 
@@ -673,7 +673,7 @@ drBool32 dred_command__insert_date(dred_context* pDred, const char* value)
     return DR_TRUE;
 }
 
-drBool32 dred_command__export2cstring(dred_context* pDred, const char* value)
+dr_bool32 dred_command__export2cstring(dred_context* pDred, const char* value)
 {
     (void)value;
 
@@ -738,7 +738,7 @@ drBool32 dred_command__export2cstring(dred_context* pDred, const char* value)
 
 
 
-drBool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, const char** pValueOut)
+dr_bool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, const char** pValueOut)
 {
     if (cmdStr == NULL || pCommandOut == NULL || pValueOut == NULL) {
         return DR_FALSE;
@@ -825,7 +825,7 @@ const char* dred_next_command_string(const char* cmdStr, char* cmdOut, size_t cm
     return NULL;
 }
 
-drBool32 dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSize, dred_shortcut* pShortcutOut, char* pCmdOut, size_t cmdOutSize)
+dr_bool32 dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSize, dred_shortcut* pShortcutOut, char* pCmdOut, size_t cmdOutSize)
 {
     if (value == NULL) {
         return DR_FALSE;

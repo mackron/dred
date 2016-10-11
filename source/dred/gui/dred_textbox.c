@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-drBool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_control* pParent)
+dr_bool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_control* pParent)
 {
     if (pTextBox == NULL) {
         return DR_FALSE;
@@ -194,7 +194,7 @@ void dred_textbox_disable_word_wrap(dred_textbox* pTextBox)
     dred_textview_disable_word_wrap(DRED_TEXTVIEW(pTextBox));
 }
 
-drBool32 dred_textbox_is_word_wrap_enabled(dred_textbox* pTextBox)
+dr_bool32 dred_textbox_is_word_wrap_enabled(dred_textbox* pTextBox)
 {
     return dred_textview_is_word_wrap_enabled(DRED_TEXTVIEW(pTextBox));
 }
@@ -232,7 +232,7 @@ void dred_textbox_move_cursor_to_start_of_line_by_index(dred_textbox* pTextBox, 
 }
 
 
-drBool32 dred_textbox_is_anything_selected(dred_textbox* pTextBox)
+dr_bool32 dred_textbox_is_anything_selected(dred_textbox* pTextBox)
 {
     return dred_textview_is_anything_selected(DRED_TEXTVIEW(pTextBox));
 }
@@ -252,42 +252,42 @@ size_t dred_textbox_get_selected_text(dred_textbox* pTextBox, char* textOut, siz
     return dred_textview_get_selected_text(DRED_TEXTVIEW(pTextBox), textOut, textOutLength);
 }
 
-drBool32 dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox)
+dr_bool32 dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox)
 {
     return dred_textview_delete_character_to_right_of_cursor(DRED_TEXTVIEW(pTextBox));
 }
 
-drBool32 dred_textbox_delete_selected_text_no_undo(dred_textbox* pTextBox)
+dr_bool32 dred_textbox_delete_selected_text_no_undo(dred_textbox* pTextBox)
 {
     return dred_textview_delete_selected_text_no_undo(DRED_TEXTVIEW(pTextBox));
 }
 
-drBool32 dred_textbox_delete_selected_text(dred_textbox* pTextBox)
+dr_bool32 dred_textbox_delete_selected_text(dred_textbox* pTextBox)
 {
     return dred_textview_delete_selected_text(DRED_TEXTVIEW(pTextBox));
 }
 
-drBool32 dred_textbox_insert_text_at_cursors_no_undo(dred_textbox* pTextBox, const char* text)
+dr_bool32 dred_textbox_insert_text_at_cursors_no_undo(dred_textbox* pTextBox, const char* text)
 {
     return dred_textview_insert_text_at_cursors_no_undo(DRED_TEXTVIEW(pTextBox), text);
 }
 
-drBool32 dred_textbox_insert_text_at_cursors(dred_textbox* pTextBox, const char* text)
+dr_bool32 dred_textbox_insert_text_at_cursors(dred_textbox* pTextBox, const char* text)
 {
     return dred_textview_insert_text_at_cursors(DRED_TEXTVIEW(pTextBox), text);
 }
 
-drBool32 dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox)
+dr_bool32 dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox)
 {
     return dred_textview_unindent_selected_blocks(DRED_TEXTVIEW(pTextBox));
 }
 
-drBool32 dred_textbox_undo(dred_textbox* pTextBox)
+dr_bool32 dred_textbox_undo(dred_textbox* pTextBox)
 {
     return dred_textview_undo(DRED_TEXTVIEW(pTextBox));
 }
 
-drBool32 dred_textbox_redo(dred_textbox* pTextBox)
+dr_bool32 dred_textbox_redo(dred_textbox* pTextBox)
 {
     return dred_textview_redo(DRED_TEXTVIEW(pTextBox));
 }
@@ -324,17 +324,17 @@ size_t dred_textbox_get_line_count(dred_textbox* pTextBox)
 }
 
 
-drBool32 dred_textbox_find_and_select_next(dred_textbox* pTextBox, const char* text)
+dr_bool32 dred_textbox_find_and_select_next(dred_textbox* pTextBox, const char* text)
 {
     return dred_textview_find_and_select_next(DRED_TEXTVIEW(pTextBox), text);
 }
 
-drBool32 dred_textbox_find_and_replace_next(dred_textbox* pTextBox, const char* text, const char* replacement)
+dr_bool32 dred_textbox_find_and_replace_next(dred_textbox* pTextBox, const char* text, const char* replacement)
 {
     return dred_textview_find_and_replace_next(DRED_TEXTVIEW(pTextBox), text, replacement);
 }
 
-drBool32 dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text, const char* replacement)
+dr_bool32 dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text, const char* replacement)
 {
     return dred_textview_find_and_replace_all(DRED_TEXTVIEW(pTextBox), text, replacement);
 }
@@ -418,18 +418,18 @@ void dred_textbox_disable_tabs_to_spaces(dred_textbox* pTextBox)
     dred_textview_disable_tabs_to_spaces(DRED_TEXTVIEW(pTextBox));
 }
 
-drBool32 dred_textbox_is_tabs_to_spaces_enabled(dred_textbox* pTextBox)
+dr_bool32 dred_textbox_is_tabs_to_spaces_enabled(dred_textbox* pTextBox)
 {
     return dred_textview_is_tabs_to_spaces_enabled(DRED_TEXTVIEW(pTextBox));
 }
 
 
-drBool32 dred_textbox_prepare_undo_point(dred_textbox* pTextBox)
+dr_bool32 dred_textbox_prepare_undo_point(dred_textbox* pTextBox)
 {
     return dred_textview_prepare_undo_point(DRED_TEXTVIEW(pTextBox));
 }
 
-drBool32 dred_textbox_commit_undo_point(dred_textbox* pTextBox)
+dr_bool32 dred_textbox_commit_undo_point(dred_textbox* pTextBox)
 {
     return dred_textview_commit_undo_point(DRED_TEXTVIEW(pTextBox));
 }

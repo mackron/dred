@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-drBool32 dred_config_init(dred_config* pConfig, dred_context* pDred)
+dr_bool32 dred_config_init(dred_config* pConfig, dred_context* pDred)
 {
     if (pConfig == NULL || pDred == NULL) {
         return DR_FALSE;
@@ -165,7 +165,7 @@ void dred_config_load_file__on_error(void* pUserData, const char* message, unsig
     }
 }
 
-drBool32 dred_config_load_file(dred_config* pConfig, const char* filePath, dred_config_on_error_proc onError, void* pUserData)
+dr_bool32 dred_config_load_file(dred_config* pConfig, const char* filePath, dred_config_on_error_proc onError, void* pUserData)
 {
     if (pConfig == NULL) {
         return DR_FALSE;

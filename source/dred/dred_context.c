@@ -40,7 +40,7 @@ void dred__update_main_window_layout(dred_window* pWindow, float windowWidth, fl
 }
 
 
-drBool32 dred_parse_cmdline__startup_files(const char* key, const char* value, void* pUserData)
+dr_bool32 dred_parse_cmdline__startup_files(const char* key, const char* value, void* pUserData)
 {
     dred_context* pDred = (dred_context*)pUserData;
     assert(pDred != NULL);
@@ -256,7 +256,7 @@ dred_thread_result DRED_THREADCALL dred_ipc_message_proc(void* pData)
         void* pMsgData;
         dred_ipc_message_header header;
         while (dred_ipc_read_message(server, &header, &pMsgData)) {
-            drBool32 foundTerminator = DR_FALSE;
+            dr_bool32 foundTerminator = DR_FALSE;
             switch (header.message)
             {
                 case DRED_IPC_MESSAGE_TERMINATOR:
@@ -284,7 +284,7 @@ dred_thread_result DRED_THREADCALL dred_ipc_message_proc(void* pData)
 }
 
 
-drBool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_library* pPackageLibrary)
+dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_library* pPackageLibrary)
 {
     // TODO: USE dred_error() AND FAMILY FOR PRINTING CRITICAL ERRORS INSTEAD OF printf()
 
@@ -292,7 +292,7 @@ drBool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_library
     int windowPosY;
     unsigned int windowWidth;
     unsigned int windowHeight;
-    drBool32 showWindowMaximized;
+    dr_bool32 showWindowMaximized;
 
     if (pDred == NULL) {
         return DR_FALSE;
@@ -711,7 +711,7 @@ void dred_errorf(dred_context* pDred, const char* format, ...)
 }
 
 
-drBool32 dred_load_config(dred_context* pDred, const char* configFilePath)
+dr_bool32 dred_load_config(dred_context* pDred, const char* configFilePath)
 {
     if (pDred == NULL || configFilePath == NULL) {
         return DR_FALSE;
@@ -721,7 +721,7 @@ drBool32 dred_load_config(dred_context* pDred, const char* configFilePath)
 }
 
 
-drBool32 dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdOut)
+dr_bool32 dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdOut)
 {
     if (pDred == NULL || cmd == NULL) {
         return DR_FALSE;
@@ -736,7 +736,7 @@ drBool32 dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdO
         if (dred_find_command(subcmd, &command, &value)) {
             if (pLastCmdOut) *pLastCmdOut = command;
 
-            drBool32 result = command.proc(pDred, value);
+            dr_bool32 result = command.proc(pDred, value);
             if (result) {
                 if (cmdSeparator == dred_command_separator_or) {
                     return DR_TRUE;
@@ -752,7 +752,7 @@ drBool32 dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdO
     return DR_TRUE;
 }
 
-drBool32 dred_bind_shortcut(dred_context* pDred, const char* shortcutName, dred_shortcut shortcut, const char* commandStr)
+dr_bool32 dred_bind_shortcut(dred_context* pDred, const char* shortcutName, dred_shortcut shortcut, const char* commandStr)
 {
     if (pDred == NULL) {
         return DR_FALSE;
@@ -937,7 +937,7 @@ dred_control* dred_get_element_with_keyboard_capture(dred_context* pDred)
 }
 
 
-drBool32 dred__save_editor(dred_editor* pEditor, const char* newFilePath, dred_tab* pTab)
+dr_bool32 dred__save_editor(dred_editor* pEditor, const char* newFilePath, dred_tab* pTab)
 {
     if (!dred_editor_save(pEditor, newFilePath)) {
         return DR_FALSE;
@@ -997,12 +997,12 @@ dred_tab* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char*
     return NULL;
 }
 
-drBool32 dred_open_file(dred_context* pDred, const char* filePath)
+dr_bool32 dred_open_file(dred_context* pDred, const char* filePath)
 {
     return dred_open_file_by_type(pDred, filePath, dred_get_editor_type_by_path(pDred, filePath));
 }
 
-drBool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType)
+dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType)
 {
     char filePathAbsolute[DRED_MAX_PATH];
     if (filePath != NULL && filePath[0] != '\0') {
@@ -1160,7 +1160,7 @@ void dred_close_all_tabs(dred_context* pDred)
     }
 }
 
-drBool32 dred_close_all_tabs_with_confirmation(dred_context* pDred)
+dr_bool32 dred_close_all_tabs_with_confirmation(dred_context* pDred)
 {
     if (pDred == NULL) {
         return DR_FALSE;
@@ -1202,7 +1202,7 @@ dred_tab* dred_find_control_tab(dred_control* pControl)
 }
 
 
-drBool32 dred_save_focused_file(dred_context* pDred, const char* newFilePath)
+dr_bool32 dred_save_focused_file(dred_context* pDred, const char* newFilePath)
 {
     if (pDred == NULL) {
         return DR_FALSE;
@@ -1239,7 +1239,7 @@ drBool32 dred_save_focused_file(dred_context* pDred, const char* newFilePath)
     return DR_FALSE;
 }
 
-drBool32 dred_save_focused_file_as(dred_context* pDred)
+dr_bool32 dred_save_focused_file_as(dred_context* pDred)
 {
     if (pDred == NULL) {
         return DR_FALSE;
@@ -1274,7 +1274,7 @@ void dred_save_all_open_files(dred_context* pDred)
     }
 }
 
-drBool32 dred_save_all_open_files_with_saveas(dred_context* pDred)
+dr_bool32 dred_save_all_open_files_with_saveas(dred_context* pDred)
 {
     if (pDred == NULL) {
         return DR_FALSE;
@@ -1302,7 +1302,7 @@ drBool32 dred_save_all_open_files_with_saveas(dred_context* pDred)
 }
 
 
-drBool32 dred_create_and_open_file(dred_context* pDred, const char* newFilePath)
+dr_bool32 dred_create_and_open_file(dred_context* pDred, const char* newFilePath)
 {
     if (pDred == NULL) {
         return DR_FALSE;
@@ -1325,7 +1325,7 @@ drBool32 dred_create_and_open_file(dred_context* pDred, const char* newFilePath)
     }
 }
 
-drBool32 dred_open_new_text_file(dred_context* pDred)
+dr_bool32 dred_open_new_text_file(dred_context* pDred)
 {
     return dred_open_file_by_type(pDred, NULL, DRED_CONTROL_TYPE_TEXT_EDITOR);
 }
@@ -1395,7 +1395,7 @@ void dred_delete_editor_by_type(dred_editor* pEditor)
 }
 
 
-drBool32 dred_are_any_open_files_modified(dred_context* pDred)
+dr_bool32 dred_are_any_open_files_modified(dred_context* pDred)
 {
     if (pDred == NULL) {
         return DR_FALSE;
@@ -1416,7 +1416,7 @@ drBool32 dred_are_any_open_files_modified(dred_context* pDred)
 }
 
 
-drBool32 dred_reload_focused_file(dred_context* pDred)
+dr_bool32 dred_reload_focused_file(dred_context* pDred)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
@@ -1426,7 +1426,7 @@ drBool32 dred_reload_focused_file(dred_context* pDred)
     return dred_editor_reload(pFocusedEditor);
 }
 
-drBool32 dred_check_if_focused_file_is_dirty_and_reload(dred_context* pDred)
+dr_bool32 dred_check_if_focused_file_is_dirty_and_reload(dred_context* pDred)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
@@ -1514,7 +1514,7 @@ void dred_show_open_file_dialog(dred_context* pDred)
 #endif
 }
 
-drBool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath, char* absolutePathOut, size_t absolutePathOutSize)
+dr_bool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath, char* absolutePathOut, size_t absolutePathOutSize)
 {
     if (pDred == NULL || absolutePathOut == NULL || absolutePathOutSize == 0) {
         return DR_FALSE;
@@ -1556,7 +1556,7 @@ drBool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFile
     }
 
 
-    drBool32 result = DR_FALSE;
+    dr_bool32 result = DR_FALSE;
     gint response = gtk_dialog_run(GTK_DIALOG(dialog));
     if (response == GTK_RESPONSE_ACCEPT) {
         char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
@@ -1619,7 +1619,7 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 #endif
 }
 
-drBool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut)
+dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut)
 {
     if (pDred == NULL || pDescOut == NULL) {
         return DR_FALSE;
@@ -1744,7 +1744,7 @@ drBool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWi
 #endif
 }
 
-drBool32 dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_color initialColor, dred_color* pColorOut)
+dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_color initialColor, dred_color* pColorOut)
 {
     if (pDred == NULL || pColorOut == NULL) {
         return DR_FALSE;
@@ -1958,7 +1958,7 @@ void dred_gtk__on_draw_page(GtkPrintOperation *pPrint, GtkPrintContext *context,
 }
 #endif
 
-drBool32 dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_print_info* pInfoOut)
+dr_bool32 dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_print_info* pInfoOut)
 {
     if (pDred == NULL || pInfoOut == NULL) {
         return DR_FALSE;
@@ -2698,7 +2698,7 @@ const char* dred_get_language_by_file_path(dred_context* pDred, const char* file
 }
 
 
-drBool32 dred_add_favourite(dred_context* pDred, const char* absolutePath)
+dr_bool32 dred_add_favourite(dred_context* pDred, const char* absolutePath)
 {
     if (pDred == NULL || absolutePath == NULL) {
         return DR_FALSE;
@@ -2709,7 +2709,7 @@ drBool32 dred_add_favourite(dred_context* pDred, const char* absolutePath)
     return DR_TRUE;
 }
 
-drBool32 dred_remove_favourite(dred_context* pDred, const char* absolutePath)
+dr_bool32 dred_remove_favourite(dred_context* pDred, const char* absolutePath)
 {
     if (pDred == NULL || absolutePath == NULL) {
         return DR_FALSE;

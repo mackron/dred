@@ -38,14 +38,19 @@ int dred_file2chex(int argc, char** argv)
     fseek(pFile, 0, SEEK_SET);
 
     unsigned char* pFileData = (unsigned char*)malloc(fileSize);
-    fread(pFileData, 1, fileSize, pFile);
+    size_t bytesRead = fread(pFileData, 1, fileSize, pFile);
+	if (bytesRead != (size_t)fileSize) {
+		free(pFileData);
+		fclose(pFile);
+		return -4;
+	}
     fclose(pFile);
 
     char* pHexData = dred_codegen_buffer_to_c_array(pFileData, fileSize, variableName);
     free(pFileData);
 
     if (pHexData == NULL) {
-        return -4;
+        return -5;
     }
 
     printf("%s", pHexData);

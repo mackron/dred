@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-drBool32 dred_parse_bool(const char* value)
+dr_bool32 dred_parse_bool(const char* value)
 {
     if (_stricmp(value, "DR_FALSE") == 0 || _stricmp(value, "0") == 0) {
         return DR_FALSE;
@@ -48,7 +48,7 @@ dred_gui_font_weight dred_parse_font_weight(const char* weight)
     return dred_gui_font_weight_normal;
 }
 
-drBool32 dred_font_weight_to_string(dred_gui_font_weight weight, char* strOut, size_t strOutSize)
+dr_bool32 dred_font_weight_to_string(dred_gui_font_weight weight, char* strOut, size_t strOutSize)
 {
     if (weight == dred_gui_font_weight_normal/* || weight == dred_gui_font_weight_medium || weight == dred_gui_font_weight_default*/) {
         return strcpy_s(strOut, strOutSize, "default") == 0;
@@ -103,7 +103,7 @@ dred_gui_font_slant dred_parse_font_slant(const char* slant)
     return dred_gui_font_slant_none;
 }
 
-drBool32 dred_font_slant_to_string(dred_gui_font_slant slant, char* strOut, size_t strOutSize)
+dr_bool32 dred_font_slant_to_string(dred_gui_font_slant slant, char* strOut, size_t strOutSize)
 {
     if (slant == dred_gui_font_slant_none) {
         return strcpy_s(strOut, strOutSize, "none") == 0;

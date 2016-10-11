@@ -36,7 +36,7 @@ struct dred_scrollbar
     int scrollPos;
 
     /// Whether or not to auto-hide the thumb.
-    drBool32 autoHideThumb;
+    dr_bool32 autoHideThumb;
 
     /// The mouse wheel scale.
     int mouseWheelScale;
@@ -67,10 +67,10 @@ struct dred_scrollbar
     float thumbPadding;
 
     /// Whether or not we are hovered over the thumb.
-    drBool32 thumbHovered;
+    dr_bool32 thumbHovered;
 
     /// Whether or not the thumb is pressed.
-    drBool32 thumbPressed;
+    dr_bool32 thumbPressed;
 
     /// The relative position of the mouse on the x axis at the time the thumb was pressed with the mouse.
     float thumbClickPosX;
@@ -81,7 +81,7 @@ struct dred_scrollbar
 
 
 /// Creates a scrollbar element.
-drBool32 dred_scrollbar_init(dred_scrollbar* pScrollbar, dred_context* pDred, dred_control* pParent, dred_scrollbar_orientation orientation);
+dr_bool32 dred_scrollbar_init(dred_scrollbar* pScrollbar, dred_context* pDred, dred_control* pParent, dred_scrollbar_orientation orientation);
 
 /// Deletes the given scrollbar element.
 void dred_scrollbar_uninit(dred_scrollbar* pScrollbar);
@@ -146,13 +146,13 @@ void dred_scrollbar_enable_thumb_auto_hide(dred_scrollbar* pScrollbar);
 void dred_scrollbar_disable_thumb_auto_hide(dred_scrollbar* pScrollbar);
 
 /// Determines whether or not thumb auto-hiding is enabled.
-drBool32 dred_scrollbar_is_thumb_auto_hide_enabled(dred_scrollbar* pScrollbar);
+dr_bool32 dred_scrollbar_is_thumb_auto_hide_enabled(dred_scrollbar* pScrollbar);
 
 /// Determines whether or not the thumb is visible.
 ///
 /// @remarks
 ///     This is determined by whether or not the thumb is set to auto-hide and the current range and page size.
-drBool32 dred_scrollbar_is_thumb_visible(dred_scrollbar* pScrollbar);
+dr_bool32 dred_scrollbar_is_thumb_visible(dred_scrollbar* pScrollbar);
 
 
 /// Sets the mouse wheel scale.

@@ -1,7 +1,7 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
 
-drBool32 dred_image_library_init__stock_images(dred_image_library* pLibrary)
+dr_bool32 dred_image_library_init__stock_images(dred_image_library* pLibrary)
 {
     assert(pLibrary != NULL);
 
@@ -79,7 +79,7 @@ dred_image* dred_image_library__find_by_desc(dred_image_library* pLibrary, dred_
 }
 
 
-drBool32 dred_image_library_init(dred_image_library* pLibrary, dred_context* pDred)
+dr_bool32 dred_image_library_init(dred_image_library* pLibrary, dred_context* pDred)
 {
     if (pLibrary == NULL) {
         return DR_FALSE;

@@ -58,4 +58,4 @@ typedef struct
 } dred_highlighter;
 
 //
-drBool32 dred_highlighter_init(dred_highlighter* pHighlighter, dred_context* pDred, drte_engine* pEngine, dred_highlight_keyword* keywords, size_t keywordCount);
+dr_bool32 dred_highlighter_init(dred_highlighter* pHighlighter, dred_context* pDred, drte_engine* pEngine, dred_highlight_keyword* keywords, size_t keywordCount);
