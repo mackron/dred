@@ -2455,7 +2455,11 @@ dr_bool32 drte_engine_insert_text(drte_engine* pEngine, const char* text, size_t
                 pView->pSelections[iSelection].iCharEnd += newTextLength;
             } else {
                 if (selection.iCharEnd >= insertIndex) {
-                    pView->pSelections[iSelection].iCharEnd += newTextLength;
+                    if (pView->pSelections[iSelection].iCharEnd > pView->pSelections[iSelection].iCharBeg) {
+                        pView->pSelections[iSelection].iCharEnd += newTextLength;
+                    } else {
+                        pView->pSelections[iSelection].iCharBeg += newTextLength;
+                    }
                 }
             }
         }
