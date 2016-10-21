@@ -633,7 +633,7 @@ void dred_text_editor_goto_line(dred_text_editor* pTextEditor, size_t lineNumber
     }
 
     dred_textview_deselect_all(pTextEditor->pTextView);
-    dred_textview_move_cursor_to_start_of_line_by_index(pTextEditor->pTextView, lineNumber - 1);
+    dred_textview_move_cursor_to_start_of_unwrapped_line_by_index(pTextEditor->pTextView, lineNumber - 1);
 }
 
 

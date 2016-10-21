@@ -271,6 +271,9 @@ void dred_textview_move_cursor_to_end_of_text(dred_textview* pTextView);
 // Moves the caret to the beginning of the line at the given index.
 void dred_textview_move_cursor_to_start_of_line_by_index(dred_textview* pTextView, size_t iLine);
 
+// Moves the caret to the beginnning of the unwrapped line at the given index.
+void dred_textview_move_cursor_to_start_of_unwrapped_line_by_index(dred_textview* pTextView, size_t iLine);
+
 // Determines whether or not anything is selected in the given text box.
 dr_bool32 dred_textview_is_anything_selected(dred_textview* pTextView);
 

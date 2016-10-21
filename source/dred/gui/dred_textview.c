@@ -917,6 +917,15 @@ void dred_textview_move_cursor_to_start_of_line_by_index(dred_textview* pTextVie
     drte_view_move_cursor_to_start_of_line_by_index(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iLine);
 }
 
+void dred_textview_move_cursor_to_start_of_unwrapped_line_by_index(dred_textview* pTextView, size_t iLine)
+{
+    if (pTextView == NULL) {
+        return;
+    }
+
+    drte_view_move_cursor_to_start_of_unwrapped_line_by_index(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), iLine);
+}
+
 
 dr_bool32 dred_textview_is_anything_selected(dred_textview* pTextView)
 {

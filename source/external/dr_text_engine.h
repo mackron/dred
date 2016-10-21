@@ -771,6 +771,9 @@ dr_bool32 drte_view_move_cursor_to_end_of_unwrapped_line(drte_view* pView, size_
 /// Moves the cursor to the start of the unwrapped line it is sitting on.
 dr_bool32 drte_view_move_cursor_to_start_of_unwrapped_line(drte_view* pView, size_t cursorIndex);
 
+/// Moves the cursor to the start of the unwrapped line at the given index.
+dr_bool32 drte_view_move_cursor_to_start_of_unwrapped_line_by_index(drte_view* pView, size_t cursorIndex, size_t iLine);
+
 /// Determines whether or not the given cursor is at the end of a wrapped line.
 dr_bool32 drte_view_is_cursor_at_end_of_wrapped_line(drte_view* pView, size_t cursorIndex);
 
@@ -4942,7 +4945,16 @@ dr_bool32 drte_view_move_cursor_to_start_of_unwrapped_line(drte_view* pView, siz
         return DR_FALSE;
     }
 
-    drte_view_move_cursor_to_character(pView, cursorIndex, drte_view_get_line_first_character(pView, pView->pEngine->pUnwrappedLines, drte_view_get_character_line(pView, pView->pEngine->pUnwrappedLines, pView->pCursors[cursorIndex].iCharAbs)));
+    return drte_view_move_cursor_to_start_of_unwrapped_line_by_index(pView, cursorIndex, drte_view_get_character_line(pView, pView->pEngine->pUnwrappedLines, pView->pCursors[cursorIndex].iCharAbs));
+}
+
+dr_bool32 drte_view_move_cursor_to_start_of_unwrapped_line_by_index(drte_view* pView, size_t cursorIndex, size_t iLine)
+{
+    if (pView == NULL || pView->pEngine->text == NULL || pView->cursorCount <= cursorIndex) {
+        return DR_FALSE;
+    }
+
+    drte_view_move_cursor_to_character(pView, cursorIndex, drte_view_get_line_first_character(pView, pView->pEngine->pUnwrappedLines, iLine));
     return DR_TRUE;
 }
 
