@@ -2277,6 +2277,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
             if (utf32 == '\n') {
                 dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextView));
                 if (pDred->config.textEditorEnableAutoIndent) {
+                    drte_view_begin_dirty(pTextView->pView);
                     for (size_t iCursor = 0; iCursor < pTextView->pView->cursorCount; ++iCursor) {
                         size_t iCursorChar = pTextView->pView->pCursors[iCursor].iCharAbs;
                         size_t iCursorLine = drte_view_get_character_line(pTextView->pView, NULL, iCursorChar);
@@ -2325,6 +2326,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                             }
                         }
                     }
+                    drte_view_end_dirty(pTextView->pView);
                 }
             }
         }
