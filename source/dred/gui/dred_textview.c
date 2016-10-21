@@ -1389,6 +1389,52 @@ void dred_textview_disable_excess_scrolling(dred_textview* pTextView)
 }
 
 
+dr_bool32 dred_textview_is_line_in_view(dred_textview* pTextView, size_t iLine)
+{
+    if (pTextView == NULL) {
+        return DR_FALSE;
+    }
+
+    dr_uint64 scrollPosTop = dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar);
+    dr_uint64 scrollPosBot = scrollPosTop + dred_scrollbar_get_page_size(pTextView->pVertScrollbar);
+    if (iLine >= scrollPosTop && iLine < scrollPosBot) {
+        return DR_TRUE;
+    }
+
+    return DR_FALSE;
+}
+
+dr_bool32 dred_textview_is_unwrapped_line_in_view(dred_textview* pTextView, size_t iLine)
+{
+    if (pTextView == NULL) {
+        return DR_FALSE;
+    }
+
+    // This is silly... need a cleaner way to do line management.
+    size_t iWrappedLine = drte_view_get_character_line(pTextView->pView, pTextView->pView->pWrappedLines, drte_view_get_line_first_character(pTextView->pView, pTextView->pView->pEngine->pUnwrappedLines, iLine));
+
+    return dred_textview_is_line_in_view(pTextView, iWrappedLine);
+}
+
+dr_bool32 dred_textview_is_cursor_in_view(dred_textview* pTextView)
+{
+    if (pTextView == NULL) {
+        return DR_FALSE;
+    }
+
+    return dred_textview_is_line_in_view(pTextView, dred_textview_get_cursor_line(pTextView));
+}
+
+void dred_textview_center_on_cursor(dred_textview* pTextView)
+{
+    if (pTextView == NULL) {
+        return;
+    }
+
+    dred_scrollbar_scroll_to(pTextView->pVertScrollbar, dred_textview_get_cursor_line(pTextView) - (dred_scrollbar_get_page_size(pTextView->pVertScrollbar)/2));
+}
+
+
 void dred_textview_set_tab_size_in_spaces(dred_textview* pTextView, unsigned int tabSizeInSpaces)
 {
     if (pTextView == NULL) {

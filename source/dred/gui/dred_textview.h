@@ -382,6 +382,19 @@ void dred_textview_enable_excess_scrolling(dred_textview* pTextView);
 void dred_textview_disable_excess_scrolling(dred_textview* pTextView);
 
 
+// Determines whether or not a wrapped line is currently inside the view.
+dr_bool32 dred_textview_is_line_in_view(dred_textview* pTextView, size_t iLine);
+
+// Determines whether or not the unwrapped line is currently inside the view.
+dr_bool32 dred_textview_is_unwrapped_line_in_view(dred_textview* pTextView, size_t iLine);
+
+// Determines whether or not the active cursor is currently inside the view.
+dr_bool32 dred_textview_is_cursor_in_view(dred_textview* pTextView);
+
+// Centers the view onto the active cursor.
+void dred_textview_center_on_cursor(dred_textview* pTextView);
+
+
 // Sets the size of tabs in spaces.
 void dred_textview_set_tab_size_in_spaces(dred_textview* pTextView, unsigned int tabSizeInSpaces);
 
