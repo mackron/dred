@@ -29,3 +29,12 @@ DRED_INLINE drte_rect dred_rect_to_drte(dred_rect rect)
 {
     return drte_make_rect(rect.left, rect.top, rect.right, rect.bottom);
 }
+
+
+// Strings
+
+// Determines whether or not the given string is null or empty.
+DRED_INLINE dr_bool32 dred_string_is_null_or_empty(const char* str)
+{
+    return str == NULL || str[0] == '\0';
+}

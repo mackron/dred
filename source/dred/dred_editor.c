@@ -113,32 +113,41 @@ dr_bool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath)
         return DR_FALSE;
     }
 
-    // Saving a file happens in two steps. The first step writes to a temporary file. The second step replaces the old
-    // file with the new file. The reason for this process is to prevent pEditor loss in the event that an error occurs
-    // while in the middle of saving.
+    // Saving is done in 3 stages:
+    //   1) A copy of the original file is created called <original_file>.dredtmp.
+    //   2) The contents of the original file is replaced with the new contents.
+    //   3) The copy of the original file is deleted.
+    //
+    // The rationale for this system is to try and prevent data loss in the event that an error occurs while in the
+    // middle of saving.
+    dr_bool32 haveTempFile = DR_FALSE;
     char tempFilePath[DRED_MAX_PATH];
-    if (!drpath_copy_and_append_extension(tempFilePath, sizeof(tempFilePath), actualFilePath, "dredtmp")) {
-        return DR_FALSE;
+
+    const char* originalFilePath = dred_editor_get_file_path(pEditor);
+    if (!dred_string_is_null_or_empty(originalFilePath)) {
+        if (drpath_copy_and_append_extension(tempFilePath, sizeof(tempFilePath), originalFilePath, "dredtmp")) {
+            if (dr_copy_file(originalFilePath, tempFilePath, DR_TRUE)) {
+                haveTempFile = DR_TRUE;
+            }
+        }
     }
 
-    dred_file file = dred_file_open(tempFilePath, DRED_FILE_OPEN_MODE_WRITE);
-    if (file == NULL) {
-        return DR_FALSE;
-    }
-
-    if (!pEditor->onSave(pEditor, file, actualFilePath)) {
+    dr_bool32 wasSaved = DR_FALSE;
+    dred_file file = dred_file_open(actualFilePath, DRED_FILE_OPEN_MODE_WRITE);
+    if (file != NULL) {
+        wasSaved = pEditor->onSave(pEditor, file, actualFilePath);
         dred_file_close(file);
-        return DR_FALSE;
     }
 
-    dred_file_close(file);
-
-
-    // At this point the temporary file has been saved, so now we just need to overwrite the old one.
-    if (!dr_move_file(tempFilePath, actualFilePath)) {
+    // Everything should be saved so just delete the temporary one.
+    if (haveTempFile) {
         dr_delete_file(tempFilePath);
+    }
+
+    if (!wasSaved) {
         return DR_FALSE;
     }
+    
 
     dred_editor_unmark_as_modified(pEditor);
     dred_editor_update_file_last_modified_time(pEditor);
