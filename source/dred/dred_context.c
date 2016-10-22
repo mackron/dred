@@ -1030,35 +1030,41 @@ dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, cons
         return DR_FALSE;   // TODO: This means there is no tab group so one need to be created.
     }
 
-    dred_editor* pEditor = dred_create_editor_by_type(pDred, pTabGroup, editorType, filePathAbsolute);
-    if (pEditor == NULL) {
-        return DR_FALSE;
-    }
+    dred_control_begin_dirty(DRED_CONTROL(pTabGroup));
+    {
+        dred_editor* pEditor = dred_create_editor_by_type(pDred, pTabGroup, editorType, filePathAbsolute);
+        if (pEditor == NULL) {
+            dred_control_end_dirty(DRED_CONTROL(pTabGroup));
+            return DR_FALSE;
+        }
 
-    dred_editor_set_on_modified(pEditor, dred__on_editor_modified);
-    dred_editor_set_on_unmodified(pEditor, dred__on_editor_unmodified);
+        dred_editor_set_on_modified(pEditor, dred__on_editor_modified);
+        dred_editor_set_on_unmodified(pEditor, dred__on_editor_unmodified);
 
-    // We have the editor, so now we need to create a tab an associate the new editor with it.
-    dred_tab* pTab = dred_tabgroup_prepend_tab(pTabGroup, NULL, DRED_CONTROL(pEditor));
-    if (pTab == NULL) {
-        dred_delete_editor_by_type(pEditor);
-        return DR_FALSE;
-    }
-    dred__refresh_editor_tab_text(pEditor, pTab);
-    dred_tabgroup_activate_tab(pTabGroup, pTab);
+        // We have the editor, so now we need to create a tab an associate the new editor with it.
+        dred_tab* pTab = dred_tabgroup_prepend_tab(pTabGroup, NULL, DRED_CONTROL(pEditor));
+        if (pTab == NULL) {
+            dred_delete_editor_by_type(pEditor);
+            dred_control_end_dirty(DRED_CONTROL(pTabGroup));
+            return DR_FALSE;
+        }
+        dred__refresh_editor_tab_text(pEditor, pTab);
+        dred_tabgroup_activate_tab(pTabGroup, pTab);
 
 
-    // If there is only one other tab, and it's an new, unmodified file, close it.
-    if (pTab->pNextTab != NULL && pTab->pNextTab->pNextTab == NULL) {
-        dred_editor* pOtherEditor = DRED_EDITOR(dred_tab_get_control(pTab->pNextTab));
-        if (dred_control_is_of_type(DRED_CONTROL(pOtherEditor), DRED_CONTROL_TYPE_EDITOR) && !dred_editor_is_modified(pOtherEditor)) {
-            const char* pOtherEditorFile = dred_editor_get_file_path(pOtherEditor);
-            if (pOtherEditorFile == NULL || pOtherEditorFile[0] == '\0') {
-                // It's a new unmodified file. Close it.
-                dred_close_tab(pDred, pTab->pNextTab);
+        // If there is only one other tab, and it's an new, unmodified file, close it.
+        if (pTab->pNextTab != NULL && pTab->pNextTab->pNextTab == NULL) {
+            dred_editor* pOtherEditor = DRED_EDITOR(dred_tab_get_control(pTab->pNextTab));
+            if (dred_control_is_of_type(DRED_CONTROL(pOtherEditor), DRED_CONTROL_TYPE_EDITOR) && !dred_editor_is_modified(pOtherEditor)) {
+                const char* pOtherEditorFile = dred_editor_get_file_path(pOtherEditor);
+                if (pOtherEditorFile == NULL || pOtherEditorFile[0] == '\0') {
+                    // It's a new unmodified file. Close it.
+                    dred_close_tab(pDred, pTab->pNextTab);
+                }
             }
         }
     }
+    dred_control_end_dirty(DRED_CONTROL(pTabGroup));
 
 
     // The file should be added to the recent file list. This is done by adding it to the config and then refreshing the menu.
