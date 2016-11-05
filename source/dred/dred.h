@@ -46,10 +46,12 @@
 // External libraries.
 
 // TODO: Remove dr.h from the public header. This is only required because of dr_cmdline which is a member of dred_context.
-#ifdef DRED_USE_EXTERNAL_REPOS
-#include "../../../../dr_libs/dr.h"
-#else
-#include "../external/dr.h"
+#ifndef DR_IMPLEMENTATION
+    #ifdef DRED_USE_EXTERNAL_REPOS
+        #include "../../../../dr_libs/dr.h"
+    #else
+        #include "../external/dr.h"
+    #endif
 #endif
 
 #ifdef DRED_USE_EXTERNAL_REPOS

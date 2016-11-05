@@ -4,11 +4,13 @@
 #include "dred.h"
 
 // External libraries.
-#define DR_IMPLEMENTATION
-#ifdef DRED_USE_EXTERNAL_REPOS
-#include "../../../../dr_libs/dr.h"
-#else
-#include "../external/dr.h"
+#ifndef DR_IMPLEMENTATION
+    #define DR_IMPLEMENTATION
+    #ifdef DRED_USE_EXTERNAL_REPOS
+        #include "../../../../dr_libs/dr.h"
+    #else
+        #include "../external/dr.h"
+    #endif
 #endif
 
 #define DR_IPC_IMPLEMENTATION
