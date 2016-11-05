@@ -213,7 +213,6 @@ static void * stb__raw_sbgrowf(void *arr, int increment, int itemsize)
       return (void *) (2*sizeof(int)); // try to force a NULL pointer exception later
    }
 }
-#endif // STB_STRETCHY_BUFFER_H_INCLUDED
 
 #ifdef __cplusplus
 template<class T>
@@ -223,3 +222,5 @@ static T * stb__sbgrowf(T * arr, int increment, int itemsize) {
 #else
 #define stb__sbgrowf stb__raw_sbgrowf
 #endif
+
+#endif // STB_STRETCHY_BUFFER_H_INCLUDED
