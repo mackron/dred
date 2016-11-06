@@ -49,8 +49,8 @@ void dred_platform_bind_logging(dred_context* pDred);
 
 //// Windows ////
 typedef void (* dred_window_on_close_proc)             (dred_window* pWindow);
-typedef dr_bool32 (* dred_window_on_hide_proc)              (dred_window* pWindow, unsigned int flags);
-typedef dr_bool32 (* dred_window_on_show_proc)              (dred_window* pWindow);
+typedef dr_bool32 (* dred_window_on_hide_proc)         (dred_window* pWindow, unsigned int flags);
+typedef dr_bool32 (* dred_window_on_show_proc)         (dred_window* pWindow);
 typedef void (* dred_window_on_activate_proc)          (dred_window* pWindow);
 typedef void (* dred_window_on_deactivate_proc)        (dred_window* pWindow);
 typedef void (* dred_window_on_size_proc)              (dred_window* pWindow, unsigned int newWidth, unsigned int newHeight);
