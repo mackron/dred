@@ -2235,6 +2235,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
         return;
     }
 
+    dred_control_begin_dirty(pControl);
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
         drte_view_begin_dirty(pTextView->pView);
@@ -2346,6 +2347,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
         drte_view_end_dirty(pTextView->pView);
     }
     drte_engine_commit_undo_point(pTextView->pTextEngine);
+    dred_control_end_dirty(pControl);
 }
 
 
