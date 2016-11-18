@@ -1104,7 +1104,14 @@ dr_bool32 dred_textview_undo(dred_textview* pTextView)
         return DR_FALSE;
     }
 
-    return drte_engine_undo(pTextView->pTextEngine);
+    dr_bool32 result;
+    dred_control_begin_dirty(DRED_CONTROL(pTextView));
+    {
+        result = drte_engine_undo(pTextView->pTextEngine);
+    }
+    dred_control_end_dirty(DRED_CONTROL(pTextView));
+
+    return result;
 }
 
 dr_bool32 dred_textview_redo(dred_textview* pTextView)
@@ -1113,7 +1120,14 @@ dr_bool32 dred_textview_redo(dred_textview* pTextView)
         return DR_FALSE;
     }
 
-    return drte_engine_redo(pTextView->pTextEngine);
+    dr_bool32 result;
+    dred_control_begin_dirty(DRED_CONTROL(pTextView));
+    {
+        result =  drte_engine_redo(pTextView->pTextEngine);
+    }
+    dred_control_end_dirty(DRED_CONTROL(pTextView));
+
+    return result;
 }
 
 unsigned int dred_textview_get_undo_points_remaining_count(dred_textview* pTextView)
