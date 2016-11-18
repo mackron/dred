@@ -1200,18 +1200,25 @@ dr_bool32 dred_textview_find_and_replace_next(dred_textview* pTextView, const ch
     dr_bool32 wasTextChanged = DR_FALSE;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
-        size_t selectionStart;
-        size_t selectionEnd;
-        if (drte_view_find_next(pTextView->pView, text, &selectionStart, &selectionEnd))
+        drte_view_begin_dirty(pTextView->pView);
         {
-            drte_view_select(pTextView->pView, selectionStart, selectionEnd);
-            drte_view_move_cursor_to_end_of_selection(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
+            drte_view_deselect_all(pTextView->pView);
 
-            wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView) || wasTextChanged;
-            wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), replacement) || wasTextChanged;
+            size_t selectionStart;
+            size_t selectionEnd;
+            if (drte_view_find_next(pTextView->pView, text, &selectionStart, &selectionEnd))
+            {
+                drte_view_select(pTextView->pView, selectionStart, selectionEnd);
+                drte_view_move_cursor_to_end_of_selection(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
+
+                wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView) || wasTextChanged;
+                wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), replacement) || wasTextChanged;
+            }
         }
+        drte_view_end_dirty(pTextView->pView);
     }
     if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
+    
 
     return wasTextChanged;
 }
@@ -1230,31 +1237,37 @@ dr_bool32 dred_textview_find_and_replace_all(dred_textview* pTextView, const cha
     dr_bool32 wasTextChanged = DR_FALSE;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
-        // It's important that we don't replace the replacement text. To handle this, we just move the cursor to the top of the text and find
-        // and replace every occurance without looping.
-        drte_view_move_cursor_to_start_of_text(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
-
-        size_t selectionStart;
-        size_t selectionEnd;
-        while (drte_view_find_next_no_loop(pTextView->pView, text, &selectionStart, &selectionEnd))
+        drte_view_begin_dirty(pTextView->pView);
         {
-            drte_view_select(pTextView->pView, selectionStart, selectionEnd);
-            drte_view_move_cursor_to_end_of_selection(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
+            drte_view_deselect_all(pTextView->pView);
 
-            wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView) || wasTextChanged;
-            wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), replacement) || wasTextChanged;
+            // It's important that we don't replace the replacement text. To handle this, we just move the cursor to the top of the text and find
+            // and replace every occurance without looping.
+            drte_view_move_cursor_to_start_of_text(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
+
+            size_t selectionStart;
+            size_t selectionEnd;
+            while (drte_view_find_next_no_loop(pTextView->pView, text, &selectionStart, &selectionEnd))
+            {
+                drte_view_select(pTextView->pView, selectionStart, selectionEnd);
+                drte_view_move_cursor_to_end_of_selection(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
+
+                wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView) || wasTextChanged;
+                wasTextChanged = drte_view_insert_text_at_cursor(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), replacement) || wasTextChanged;
+            }
+
+            // The cursor may have moved so we'll need to restore it.
+            size_t lineCharStart;
+            size_t lineCharEnd;
+            drte_view_get_line_character_range(pTextView->pView, NULL, originalCursorLine, &lineCharStart, &lineCharEnd);
+
+            size_t newCursorPos = lineCharStart + originalCursorPos;
+            if (newCursorPos > lineCharEnd) {
+                newCursorPos = lineCharEnd;
+            }
+            drte_view_move_cursor_to_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), newCursorPos);
         }
-
-        // The cursor may have moved so we'll need to restore it.
-        size_t lineCharStart;
-        size_t lineCharEnd;
-        drte_view_get_line_character_range(pTextView->pView, NULL, originalCursorLine, &lineCharStart, &lineCharEnd);
-
-        size_t newCursorPos = lineCharStart + originalCursorPos;
-        if (newCursorPos > lineCharEnd) {
-            newCursorPos = lineCharEnd;
-        }
-        drte_view_move_cursor_to_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), newCursorPos);
+        drte_view_end_dirty(pTextView->pView);
     }
     if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
 

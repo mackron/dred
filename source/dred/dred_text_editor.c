@@ -677,7 +677,13 @@ dr_bool32 dred_text_editor_find_and_replace_all(dred_text_editor* pTextEditor, c
         return DR_FALSE;
     }
 
-    return dred_textview_find_and_replace_all(pTextEditor->pTextView, text, replacement);
+    dr_bool32 result = DR_FALSE;
+    dred_control_begin_dirty(DRED_CONTROL(pTextEditor));
+    {
+        result = dred_textview_find_and_replace_all(pTextEditor->pTextView, text, replacement);
+    }
+    dred_control_end_dirty(DRED_CONTROL(pTextEditor));
+    return result;
 }
 
 
