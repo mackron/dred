@@ -5096,14 +5096,19 @@ size_t drte_view_move_cursor_to_start_of_next_word(drte_view* pView, size_t curs
         return 0;
     }
 
-    size_t iChar = drte_view_move_cursor_to_end_of_word(pView, cursorIndex);
-    while (pView->pEngine->text[iChar] != '\0') {
-        uint32_t c = pView->pEngine->text[iChar];
-        if (!drte_is_whitespace(c)) {
-            break;
-        }
+    size_t iChar = drte_view_get_cursor_character(pView, cursorIndex);
+    dr_bool32 isOnNewLine = pView->pEngine->text[iChar] == '\r' || pView->pEngine->text[iChar] == '\n';
 
-        iChar += 1;
+    iChar = drte_view_move_cursor_to_end_of_word(pView, cursorIndex);
+    if (!isOnNewLine) {
+        while (pView->pEngine->text[iChar] != '\0') {
+            uint32_t c = pView->pEngine->text[iChar];
+            if (!drte_is_whitespace(c)) {
+                break;
+            }
+
+            iChar += 1;
+        }
     }
 
     drte_view_move_cursor_to_character(pView, cursorIndex, iChar);
@@ -5126,7 +5131,16 @@ size_t drte_view_move_cursor_to_start_of_word(drte_view* pView, size_t cursorInd
     // Skip whitespace.
     if (drte_is_whitespace(pView->pEngine->text[iChar])) {
         while (iChar > 0) {
-            if (!drte_is_whitespace(pView->pEngine->text[iChar])) {
+            uint32_t c = pView->pEngine->text[iChar];
+            if (!drte_is_whitespace(c)) {
+                break;
+            }
+
+            if (c == '\n') {
+                if (pView->pEngine->text[iChar-1] == '\r') {
+                    iChar -= 1;
+                }
+
                 break;
             }
 
