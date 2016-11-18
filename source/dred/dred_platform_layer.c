@@ -2896,7 +2896,7 @@ dred_menu_item* dred_menu_item_create_and_append__gtk__internal(dred_menu* pMenu
             if (isCheckMenu) {
                 pGTKMenuItem = gtk_check_menu_item_new_with_label(transformedText);
             } else {
-                pGTKMenuItem = gtk_menu_item_new_with_mnemonic(transformedText);
+                pGTKMenuItem = gtk_menu_item_new_with_label(transformedText);
             }
         }
 
