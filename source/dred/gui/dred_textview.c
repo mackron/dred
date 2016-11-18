@@ -1768,10 +1768,6 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
 
 void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
-    (void)relativeMousePosX;
-    (void)relativeMousePosY;
-    (void)stateFlags;
-
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     if (pTextView == NULL) {
         return;
