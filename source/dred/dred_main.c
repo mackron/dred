@@ -61,13 +61,6 @@ dr_bool32 dred__try_opening_existing_process(dr_cmdline cmdline)
     return DR_FALSE;
 }
 
-/*dr_bool32 dred_load_packages(dred_package_library* pLibrary)
-{
-    if (pLibrary == NULL) return DR_FALSE;
-    return DR_TRUE;
-}*/
-
-
 
 int dred_main(dr_cmdline cmdline)
 {
