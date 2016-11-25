@@ -2520,7 +2520,7 @@ dred_font* dred__load_system_font_ui(dred_context* pDred)
     fontDesc.slant = dred_gui_font_slant_none;
 
     #if 1
-    GSettings* settings = g_settings_new("org.mate.interface");
+    GSettings* settings = g_settings_new("org.gnome.desktop.interface");
     if (settings != NULL) {
         char* fontName = g_settings_get_string(settings, "font-name");
         if (fontName != NULL) {
@@ -2602,7 +2602,7 @@ dred_font* dred__load_system_font_mono(dred_context* pDred)
     #endif
 
     #if 1
-    GSettings* settings = g_settings_new("org.mate.interface");
+    GSettings* settings = g_settings_new("org.gnome.desktop.interface");
     if (settings != NULL) {
         char* fontName = g_settings_get_string(settings, "monospace-font-name");
         if (fontName != NULL) {
