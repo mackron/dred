@@ -7,8 +7,14 @@ than 500KB.
 
 Compiling
 =========
+Just compile source/dred/dred_main.c using your favourite compiler.
 
-Just compile dred_main.c using your favourite compiler.
+Compiling this on Linux requires the development version of the GTK+ 3.0 library and all associated
+libraries (glib, gdk, atk, cairo, ...).
+
+To compile dred on Linux use the following command:
+
+    cc dred_main.c -lm -lrt -ldl `pkg-config --cflags --libs gtk+-3.0 glib-2.0`
 
 
 
