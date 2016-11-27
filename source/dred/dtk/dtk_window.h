@@ -23,7 +23,9 @@ struct dtk_window
     #ifdef DTK_GTK
         struct
         {
-            int unused;
+            /*GtkWidget**/ dtk_ptr pWidget;
+            /*GtkWidget**/ dtk_ptr pBox;
+            /*GtkWidget**/ dtk_ptr pClientArea;
         } gtk;
     #endif
     #ifdef DTK_X11

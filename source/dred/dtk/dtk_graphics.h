@@ -23,7 +23,8 @@ typedef struct
     #ifdef DTK_GTK
         struct
         {
-            int unused;
+            /*cairo_surface_t**/ dtk_ptr pSurface;
+            /*cairo_t**/ dtk_ptr pContext;
         } cairo;
     #endif
     #ifdef DTK_X11

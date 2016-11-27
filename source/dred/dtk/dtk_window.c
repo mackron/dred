@@ -4,8 +4,16 @@ dtk_result dtk_window__handle_event(dtk_window* pWindow, dtk_event* pEvent)
 {
     dtk_assert(pWindow != NULL);
     dtk_assert(pEvent != NULL);
+    
+    // Post to the global event handler first.
+    dtk_event_proc onEventGlobal = DTK_CONTROL(pWindow)->pTK->onEvent;
+    dtk_bool32 propagate = onEventGlobal == NULL || onEventGlobal(pEvent);
+    if (!propagate) {
+        return DTK_SUCCESS;
+    }
+    
 
-    // Some event need special handling before posting to the event handler.
+    // Some event need special handling before posting to the window's event handler.
     switch (pEvent->type)
     {
         case DTK_EVENT_SIZE:
@@ -13,12 +21,28 @@ dtk_result dtk_window__handle_event(dtk_window* pWindow, dtk_event* pEvent)
             // When a window is resized the drawing surface also needs to be resized.
             DTK_CONTROL(pWindow)->width = pEvent->size.width;
             DTK_CONTROL(pWindow)->height = pEvent->size.height;
+            
+            if (DTK_CONTROL(pWindow)->pSurface != NULL) {
+                dtk_assert(DTK_CONTROL(pWindow)->pSurface == &pWindow->surface);
+                dtk_surface_uninit(&pWindow->surface);
+            }
+            
+            if (dtk_surface_init_window(DTK_CONTROL(pWindow)->pTK, pWindow, &pWindow->surface) != DTK_SUCCESS) {
+                DTK_CONTROL(pWindow)->pSurface = NULL;
+            }
+        } break;
+        
+        case DTK_EVENT_MOVE:
+        {
+            DTK_CONTROL(pWindow)->absolutePosX = pEvent->move.x;
+            DTK_CONTROL(pWindow)->absolutePosY = pEvent->move.y;
         } break;
 
         default: break;
     }
 
-    dtk_bool32 propagate = DTK_CONTROL(pWindow)->onEvent == NULL || DTK_CONTROL(pWindow)->onEvent(pEvent);
+    dtk_event_proc onEventLocal = DTK_CONTROL(pWindow)->onEvent;
+    propagate = onEventLocal == NULL || onEventLocal(pEvent);
     if (!propagate) {
         return DTK_SUCCESS;
     }
@@ -106,11 +130,6 @@ dtk_result dtk_window_init__win32(dtk_context* pTK, dtk_control* pParent, const 
 {
     (void)pTK;
 
-    // Do an upwards traversal until we find the overarching window control.
-    while (pParent != NULL && pParent->type != DTK_CONTROL_TYPE_WINDOW) {
-        pParent = pParent->pParent;
-    }
-
     DWORD dwStyleEx = 0;
     DWORD dwStyle = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW;
     HWND hWnd = CreateWindowExA(dwStyleEx, DTK_WIN32_WINDOW_CLASS, title, dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, width, height, (pParent != NULL) ? (HWND)DTK_WINDOW(pParent)->win32.hWnd : NULL, NULL, NULL, NULL);
@@ -162,6 +181,159 @@ dtk_result dtk_window_show__win32(dtk_window* pWindow, int mode)
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DTK_GTK
+static gboolean dtk_window__on_close__gtk(GtkWidget* pWidget, GdkEvent* pEvent, gpointer pUserData)
+{
+    (void)pWidget;
+    (void)pEvent;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) return DTK_TRUE;
+    
+    dtk_event e = dtk_event_init(DTK_EVENT_CLOSE, DTK_CONTROL(pWindow));
+    dtk_window__handle_event(pWindow, &e);
+    
+    return DTK_TRUE;
+}
+
+static gboolean dtk_window__on_configure__gtk(GtkWidget* pWidget, GdkEventConfigure* pEvent, gpointer pUserData)
+{
+    dtk_window* pWindow = pUserData;
+    if (pWindow == NULL) {
+        return DTK_FALSE;
+    }
+
+    if (pEvent->x != DTK_CONTROL(pWindow)->absolutePosX || pEvent->y != DTK_CONTROL(pWindow)->absolutePosY) {    
+        // Position has changed.
+        dtk_event e = dtk_event_init(DTK_EVENT_MOVE, DTK_CONTROL(pWindow));
+        e.move.x = pEvent->x;
+        e.move.y = pEvent->y;
+        dtk_window__handle_event(pWindow, &e);
+    }
+
+    return DTK_FALSE;
+}
+
+static gboolean dtk_window__on_draw_clientarea__gtk(GtkWidget* pWidget, cairo_t* cr, gpointer pUserData)
+{
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL || DTK_CONTROL(pWindow)->pSurface == NULL) return DTK_FALSE;
+    
+    dtk_surface_draw_quad(DTK_CONTROL(pWindow)->pSurface, 32, 32, 64, 64);
+    
+    cairo_set_source_surface(cr, DTK_CONTROL(pWindow)->pSurface->cairo.pSurface, 0, 0);
+    cairo_paint(cr);
+
+    return DTK_FALSE;
+}
+
+static gboolean dtk_window__on_configure_clientarea__gtk(GtkWidget* pWidget, GdkEventConfigure* pEvent, gpointer pUserData)
+{
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return DTK_FALSE;
+    }
+
+    // If the window's size has changed, it's panel and surface need to be resized, and then redrawn.
+    if (pEvent->width != DTK_CONTROL(pWindow)->width || pEvent->height != DTK_CONTROL(pWindow)->height) {
+        // Size has changed.
+        dtk_event e = dtk_event_init(DTK_EVENT_SIZE, DTK_CONTROL(pWindow));
+        e.size.width = pEvent->width;
+        e.size.height = pEvent->height;
+        dtk_window__handle_event(pWindow, &e);
+
+        // Invalidate the window to force a redraw.
+        gtk_widget_queue_draw(pWidget);
+    }
+
+    return DTK_FALSE;
+}
+
+
+dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_window* pWindow)
+{
+    // Client area. This is where everything is drawn.
+    GtkWidget* pClientArea = gtk_drawing_area_new();
+    if (pClientArea == NULL) {
+        return DTK_ERROR;
+    }
+    
+    gtk_widget_add_events(pClientArea,
+        GDK_ENTER_NOTIFY_MASK   |
+        GDK_LEAVE_NOTIFY_MASK   |
+        GDK_POINTER_MOTION_MASK |
+        GDK_BUTTON_PRESS_MASK   |
+        GDK_BUTTON_RELEASE_MASK |
+        GDK_SCROLL_MASK);
+        
+    g_signal_connect(pClientArea, "draw",            G_CALLBACK(dtk_window__on_draw_clientarea__gtk),      pWindow);
+    g_signal_connect(pClientArea, "configure-event", G_CALLBACK(dtk_window__on_configure_clientarea__gtk), pWindow);
+    
+    
+    // Box container. This is used to laying out the menu bar and client area.
+    GtkWidget* pBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    if (pBox == NULL) {
+        gtk_widget_destroy(pClientArea);
+        return DTK_ERROR;
+    }
+    
+    gtk_box_pack_start(GTK_BOX(pBox), pClientArea, TRUE, TRUE, 0);
+    
+    
+    // Main window.
+    GtkWidget* pWidget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    if (pWidget == NULL) {
+        gtk_widget_destroy(pBox);
+        gtk_widget_destroy(pClientArea);
+        return DTK_ERROR;
+    }
+    
+    gtk_widget_add_events(pWidget,
+        GDK_KEY_PRESS_MASK      |
+        GDK_KEY_RELEASE_MASK    |
+        GDK_FOCUS_CHANGE_MASK);
+        
+    gtk_window_set_resizable(GTK_WINDOW(pWidget), TRUE);
+    gtk_window_resize(GTK_WINDOW(pWidget), (int)width, (int)height);
+    g_signal_connect(pWidget, "delete-event",    G_CALLBACK(dtk_window__on_close__gtk),     pWindow);
+    g_signal_connect(pWidget, "configure-event", G_CALLBACK(dtk_window__on_configure__gtk), pWindow);
+    
+    gtk_container_add(GTK_CONTAINER(pWidget), pBox);
+
+
+
+    pWindow->gtk.pWidget     = pWidget;
+    pWindow->gtk.pBox        = pBox;
+    pWindow->gtk.pClientArea = pClientArea;
+    
+    gtk_widget_show_all(pBox);
+    gtk_widget_realize(pWidget);
+    
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_uninit__gtk(dtk_window* pWindow)
+{
+    gtk_widget_destroy(GTK_WIDGET(pWindow->gtk.pClientArea));
+    gtk_widget_destroy(GTK_WIDGET(pWindow->gtk.pBox));
+    gtk_widget_destroy(GTK_WIDGET(pWindow->gtk.pWidget));
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_show__gtk(dtk_window* pWindow, int mode)
+{
+    if (mode == DTK_HIDE) {
+        gtk_widget_hide(GTK_WIDGET(pWindow->gtk.pWidget));
+    } else if (mode == DTK_SHOW_NORMAL) {
+        gtk_window_present(GTK_WINDOW(pWindow->gtk.pWidget));
+    } else if (mode == DTK_SHOW_MAXIMIZED) {
+        gtk_window_present(GTK_WINDOW(pWindow->gtk.pWidget));
+        gtk_window_maximize(GTK_WINDOW(pWindow->gtk.pWidget));
+    } else {
+        return DTK_INVALID_ARGS;
+    }
+    
+    return DTK_SUCCESS;
+}
 #endif
 
 
@@ -176,10 +348,15 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, const char* t
     if (title  == NULL) title = "";
     if (width  == 0) width  = 1;
     if (height == 0) height = 1;
-
+    
     dtk_result result = dtk_control_init(pTK, DTK_CONTROL_TYPE_WINDOW, onEvent, DTK_CONTROL(pWindow));
     if (result != DTK_SUCCESS) {
         return result;
+    }
+    
+    // Do an upwards traversal until we find the overarching window control.
+    while (pParent != NULL && pParent->type != DTK_CONTROL_TYPE_WINDOW) {
+        pParent = pParent->pParent;
     }
     
 #ifdef DTK_WIN32
@@ -189,7 +366,7 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, const char* t
 #endif
 #ifdef DTK_GTK
     if (pTK->platform == dtk_platform_gtk) {
-        result = dtk_window_init__win32(pTK, pParent, title, width, height, pWindow);
+        result = dtk_window_init__gtk(pTK, pParent, title, width, height, pWindow);
     }
 #endif
     if (result != DTK_SUCCESS) {
@@ -199,6 +376,7 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, const char* t
     result = dtk_surface_init_window(pTK, pWindow, &pWindow->surface);
     if (result != DTK_SUCCESS) {
         dtk_window_uninit(pWindow);
+        return result;
     }
     DTK_CONTROL(pWindow)->pSurface = &pWindow->surface;
 
@@ -223,7 +401,7 @@ dtk_result dtk_window_uninit(dtk_window* pWindow)
 #endif
 #ifdef DTK_GTK
     if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
-        result = dtk_window_uint32__gtk(pWindow);
+        result = dtk_window_uninit__gtk(pWindow);
     }
 #endif
     if (result != DTK_SUCCESS) {

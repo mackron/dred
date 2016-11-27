@@ -13,6 +13,7 @@
 #endif
 
 #include <assert.h>
+#include <string.h> // For memset()
 
 #if !defined(DTK_64BIT) && !defined(DTK_32BIT)
 #ifdef _WIN32
@@ -65,9 +66,25 @@
 #define dtk_atomic_exchange_ptr dtk_atomic_exchange_32
 #endif
 
+
+DTK_INLINE dtk_event dtk_event_init(dtk_event_type type, dtk_control* pControl)
+{
+    dtk_event e;
+    dtk_zero_object(&e);
+    e.type = type;
+    
+    if (pControl) {
+        e.pTK = pControl->pTK;
+        e.pControl = pControl;
+    }
+    
+    return e;
+}
+
 #include "dtk_graphics.c"
 #include "dtk_controls.c"
 #include "dtk_window.c"
+
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -283,6 +300,91 @@ dtk_result dtk_post_quit_event__win32(dtk_context* pTK, int exitCode)
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DTK_GTK
+static dtk_uint32 g_dtkInitCounter_GTK = 0;
+static dtk_bool32 g_dtkHasQuit = DTK_FALSE;
+
+dtk_result dtk_init_backend_apis__gtk(dtk_context* pTK)
+{
+    dtk_assert(pTK != NULL);
+
+    // GTK
+    
+    
+    // Cairo
+
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_uninit_backend_apis__win32(dtk_context* pTK)
+{
+    dtk_assert(pTK != NULL);
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_init__gtk(dtk_context* pTK)
+{
+    g_dtkInitCounter_GTK += 1;
+    if (g_dtkInitCounter_GTK == 1) {
+        // Initialize backend APIs.
+        dtk_init_backend_apis__gtk(pTK);
+        
+        if (!gtk_init_check(0, NULL)) {
+            return DTK_FAILED_TO_INIT_BACKEND;
+        }
+    }
+
+    pTK->platform = dtk_platform_gtk;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_uninit__gtk(dtk_context* pTK)
+{
+    dtk_assert(g_dtkInitCounter_GTK > 0); // Oh no! You have an init/uninit mismatch! Remember, init() and uninit() are _not_ thread-safe.
+    if (g_dtkInitCounter_GTK == 0) {
+        return DTK_ERROR;
+    }
+
+    g_dtkInitCounter_GTK -= 1;
+    if (g_dtkInitCounter_GTK == 0) {
+        // There is no gtk_uninit()
+        
+        dtk_init_backend_apis__gtk(pTK);
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_next_event__gtk(dtk_context* pTK, dtk_bool32 blocking)
+{
+    if (!blocking) {
+        if (!gtk_events_pending()) {
+            return DTK_NO_EVENT;
+        }
+    }
+
+    gtk_main_iteration();
+    
+    // If we just handled a quit message make sure we return appropraitely.
+    if (g_dtkHasQuit) {
+        dtk_atomic_exchange_32(&g_dtkHasQuit, DTK_FALSE); // <-- Reset this to false to ensure we can get back into a new loop later on.
+        return DTK_QUIT;
+    }
+    
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_post_quit_event__gtk(dtk_context* pTK, int exitCode)
+{
+    // When this is called, there's a chance we're waiting on gtk_main_iteration(). We'll need to
+    // make sure we wake that up so it can see we have quit.
+    dtk_atomic_exchange_32(&g_dtkHasQuit, DTK_TRUE);
+    dtk_atomic_exchange_32(&pTK->exitCode, exitCode);
+    g_main_context_wakeup(NULL);
+    
+    return DTK_SUCCESS;
+}
 #endif
 
 dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent)
@@ -298,9 +400,9 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent)
         result = dtk_init__win32(pTK);
     }
 #endif
-#if DTK_GTK
+#ifdef DTK_GTK
     if (result != DTK_SUCCESS) {
-        result = dtk_init__gtk(pGTK);
+        result = dtk_init__gtk(pTK);
     }
 #endif
 

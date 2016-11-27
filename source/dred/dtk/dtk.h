@@ -65,13 +65,14 @@ typedef void (* dtk_proc)();
 
 // Result codes.
 typedef int dtk_result;
-#define DTK_SUCCESS          0
-#define DTK_NO_EVENT         1      // Not an error. Returned by dtk_next_event() to indicate there are no events currently in the queue.
-#define DTK_ERROR           -1
-#define DTK_INVALID_ARGS    -2
-#define DTK_OUT_OF_MEMORY   -3
-#define DTK_NO_BACKEND      -4
-#define DTK_QUIT            -1024   // Returned by dtk_next_event() when a quit message is received.
+#define DTK_SUCCESS                  0
+#define DTK_NO_EVENT                 1      // Not an error. Returned by dtk_next_event() to indicate there are no events currently in the queue.
+#define DTK_ERROR                   -1
+#define DTK_INVALID_ARGS            -2
+#define DTK_OUT_OF_MEMORY           -3
+#define DTK_NO_BACKEND              -4
+#define DTK_FAILED_TO_INIT_BACKEND  -5
+#define DTK_QUIT                    -1024   // Returned by dtk_next_event() when a quit message is received.
 
 // Standard library stuff.
 #ifndef dtk_assert
