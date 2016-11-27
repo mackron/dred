@@ -3103,19 +3103,24 @@ void dred_timer_delete__gtk(dred_timer* pTimer)
 
 //// Clipboard ////
 
+GtkClipboard* dred_get_gtk_clipboard()
+{
+    return gtk_clipboard_get_for_display(gdk_display_get_default(), GDK_SELECTION_CLIPBOARD);
+}
+
 dr_bool32 dred_clipboard_set_text__gtk(const char* text, size_t textLength)
 {
     if (textLength == (size_t)-1) {
         textLength = strlen(text);
     }
 
-    gtk_clipboard_set_text(gtk_clipboard_get_default(gdk_display_get_default()), text, textLength);
+    gtk_clipboard_set_text(dred_get_gtk_clipboard(), text, textLength);
     return DR_TRUE;
 }
 
 char* dred_clipboard_get_text__gtk()
 {
-    return gtk_clipboard_wait_for_text(gtk_clipboard_get_default(gdk_display_get_default()));
+    return gtk_clipboard_wait_for_text(dred_get_gtk_clipboard());
 }
 
 void dred_clipboard_free_text__gtk(char* text)
