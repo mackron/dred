@@ -148,9 +148,7 @@ struct dred_window
     // The high-surrogate from a WM_CHAR message. This is used in order to build a surrogate pair from a couple of WM_CHAR messages. When
     // a WM_CHAR message is received when code point is not a high surrogate, this is set to 0.
     unsigned short utf16HighSurrogate;
-#endif
-
-#ifdef __linux__
+#else
     // The GTK window.
     GtkWidget* pGTKWindow;
     GtkWidget* pGTKBox;

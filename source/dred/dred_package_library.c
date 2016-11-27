@@ -66,9 +66,8 @@ dr_bool32 dred_construct_library_path(char* pathOut, size_t pathOutSize, const c
     const char* platformSubPath = "bin/"
 #ifdef DRED_WIN32
         "win32";
-#endif
-#ifdef DRED_LINUX
-        "linux";
+#else
+        "unix";
 #endif
 
     const char* libraryExt = "_"
@@ -80,9 +79,10 @@ dr_bool32 dred_construct_library_path(char* pathOut, size_t pathOutSize, const c
 #endif
 #ifdef DRED_WIN32
         "dll";
-#endif
-#ifdef DRED_LINUX
+#elif __linux__
         "so";
+#elif __APPLE__
+        "dylib";
 #endif
 
     // Doubtful this will show up in profiling, but this can definitely be optimized.

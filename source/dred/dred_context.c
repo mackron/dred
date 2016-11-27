@@ -2511,9 +2511,7 @@ dred_font* dred__load_system_font_ui(dred_context* pDred)
     fontDesc.size = 12;
     fontDesc.weight = dred_gui_font_weight_normal;
     fontDesc.slant = dred_gui_font_slant_none;
-#endif
-
-#ifdef __linux__
+#else
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "sans");
     fontDesc.size = 13;
     fontDesc.weight = dred_gui_font_weight_normal;
