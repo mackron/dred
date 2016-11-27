@@ -93,14 +93,23 @@ typedef struct dtk_context dtk_context;
 typedef struct dtk_control dtk_control;
 typedef struct dtk_window dtk_window;
 
+typedef struct
+{
+    dtk_int32 left;
+    dtk_int32 top;
+    dtk_int32 right;
+    dtk_int32 bottom;
+} dtk_rect;
+
 // Event types.
 typedef int dtk_event_type;
 #define DTK_EVENT_NONE          0
 #define DTK_EVENT_QUIT          1
 #define DTK_EVENT_CLOSE         2
-#define DTK_EVENT_SIZE          3
-#define DTK_EVENT_MOVE          4
-#define DTK_EVENT_MOUSE_MOVE    5
+#define DTK_EVENT_PAINT         3
+#define DTK_EVENT_SIZE          4
+#define DTK_EVENT_MOVE          5
+#define DTK_EVENT_MOUSE_MOVE    6
 
 typedef struct
 {
@@ -119,6 +128,11 @@ typedef struct
         {
             int unused;
         } close;
+
+        struct
+        {
+            dtk_rect rect;
+        } paint;
 
         struct
         {

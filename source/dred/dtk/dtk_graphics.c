@@ -30,7 +30,7 @@ void dtk_surface_draw_quad__gdi(dtk_surface* pSurface, dtk_int32 x, dtk_int32 y,
 {
     SelectObject((HDC)pSurface->gdi.hDC, GetStockObject(NULL_PEN));
     SelectObject((HDC)pSurface->gdi.hDC, GetStockObject(DC_BRUSH));
-    SetDCBrushColor((HDC)pSurface->gdi.hDC, RGB(0, 0, 0));
+    SetDCBrushColor((HDC)pSurface->gdi.hDC, RGB(0, 0, 255));
     Rectangle((HDC)pSurface->gdi.hDC, x, y, x + width + 1, y + height + 1);
 }
 #endif

@@ -16,6 +16,11 @@ dtk_result dtk_window__handle_event(dtk_window* pWindow, dtk_event* pEvent)
     // Some event need special handling before posting to the window's event handler.
     switch (pEvent->type)
     {
+        case DTK_EVENT_PAINT:
+        {
+            dtk_surface_draw_quad(pEvent->pControl->pSurface, 32, 32, 64, 64);
+        } break;
+
         case DTK_EVENT_SIZE:
         {
             // When a window is resized the drawing surface also needs to be resized.
@@ -96,6 +101,18 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             }
         } return 0;
 
+        case WM_PAINT:
+        {
+            RECT rect;
+            if (GetUpdateRect(hWnd, &rect, FALSE)) {
+                e.type = DTK_EVENT_PAINT;
+                e.paint.rect.left = rect.left;
+                e.paint.rect.top = rect.top;
+                e.paint.rect.right = rect.right;
+                e.paint.rect.bottom = rect.bottom;
+            }
+        } break;
+
         case WM_MOUSEMOVE:
         {
             e.type = DTK_EVENT_MOUSE_MOVE;
@@ -103,16 +120,6 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseMove.y = DTK_GET_Y_LPARAM(lParam);
         } break;
         
-        case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            BeginPaint(hWnd, &ps);
-            {
-                dtk_surface_draw_quad(e.pControl->pSurface, 32, 32, 64, 64);
-            }
-            EndPaint(hWnd, &ps);
-        } break;
-
         default: break;
     }
 
@@ -217,8 +224,19 @@ static gboolean dtk_window__on_draw_clientarea__gtk(GtkWidget* pWidget, cairo_t*
 {
     dtk_window* pWindow = (dtk_window*)pUserData;
     if (pWindow == NULL || DTK_CONTROL(pWindow)->pSurface == NULL) return DTK_FALSE;
-    
-    dtk_surface_draw_quad(DTK_CONTROL(pWindow)->pSurface, 32, 32, 64, 64);
+
+    double clipLeft;
+    double clipTop;
+    double clipRight;
+    double clipBottom;
+    cairo_clip_extents(pCairoContext, &clipLeft, &clipTop, &clipRight, &clipBottom);
+
+    dtk_event e = dtk_event_init(DTK_EVENT_PAINT, DTK_CONTROL(pWindow));
+    e.paint.rect.left = clipLeft;
+    e.paint.rect.top = clipTop;
+    e.paint.rect.right = clipRight;
+    e.paint.rect.bottom = clipBottom;
+    dtk_window__handle_event(pWindow, &e);
     
     cairo_set_source_surface(cr, DTK_CONTROL(pWindow)->pSurface->cairo.pSurface, 0, 0);
     cairo_paint(cr);
@@ -305,7 +323,7 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, const ch
     pWindow->gtk.pBox        = pBox;
     pWindow->gtk.pClientArea = pClientArea;
     
-    gtk_widget_show_all(pBox);
+    gtk_widget_show_all(GTK_CONTAINER(pWidget));
     gtk_widget_realize(pWidget);
     
     return DTK_SUCCESS;
