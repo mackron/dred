@@ -2,12 +2,12 @@ Building
 ========
 Just compile source/dred/dred_main.c using your favourite compiler.
 
-Compiling this on Linux requires the development version of the GTK+ 3.0 library and all associated
-libraries (glib, gdk, atk, cairo, ...).
+Compiling this on Unix based platforms requires the development version of the
+GTK+ 3.0 library and all associated libraries (glib, gdk, atk, cairo, ...).
 
-To compile dred on Linux use the following command:
+To compile dred on Unix based platforms use the following command:
 
-    cc dred_main.c -lm -ldl `pkg-config --cflags --libs gtk+-3.0 glib-2.0`
+    cc source/dred/dred_main.c -o dred `pkg-config --cflags --libs gtk+-3.0` -lm -ldl
 
 
 Options
