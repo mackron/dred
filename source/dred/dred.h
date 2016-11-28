@@ -11,6 +11,12 @@
 #endif
 #endif
 
+// File I/O is 64-bit by default on macOS
+#ifdef __APPLE__
+#define off64_t off_t
+#define fopen64 fopen
+#endif
+
 
 // Standard headers.
 #include <stdlib.h>
@@ -21,8 +27,7 @@
 // Platform headers.
 #ifdef _WIN32
 #include <windows.h>
-#endif
-#ifdef __linux__
+#else
 #include <sys/file.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
