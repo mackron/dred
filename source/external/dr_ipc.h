@@ -108,6 +108,12 @@
 //   dripc_close_shared_memory(hMem);
 //
 //
+// OPTIONS
+// #define these options before including this file.
+//
+// #define DR_IPC_NO_SHARED_MEMORY
+//   Disables shared memory.
+//
 //
 // QUICK NOTES
 // - Currently, only pipes have been implemented. Sockets will be coming soon.
@@ -978,7 +984,7 @@ size_t drpipe_get_translated_name(const char* name, char* nameOut, size_t nameOu
 // Shared Memory
 //
 ///////////////////////////////////////////////////////////////////////////////
-
+#ifndef DR_IPC_NO_SHARED_MEMORY
 #ifdef DR_IPC_WIN32
 char* dripc_alloc_shared_memory_name__win32(const char* name)
 {
@@ -1289,10 +1295,7 @@ dr_bool32 dripc_is_shared_memory_mapped(dripc_handle memory)
     return dripc_is_shared_memory_mapped__unix(memory);
 #endif
 }
-
-
-
-
+#endif  // DR_IPC_NO_SHARED_MEMORY
 #endif  // DR_IPC_IMPLEMENTATION
 
 

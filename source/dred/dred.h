@@ -59,6 +59,7 @@
     #endif
 #endif
 
+#define DR_IPC_NO_SHARED_MEMORY
 #ifdef DRED_USE_EXTERNAL_REPOS
 #include "../../../dr_ipc/dr_ipc.h"
 #else
