@@ -12,8 +12,8 @@
 #define DRED_WIN32
 #define DRED_EXE_NAME               "dred.exe"
 #endif
-#ifdef __linux__
-#define DRED_LINUX
+#if defined(__unix__) || defined(__linux__) || defined(__APPLE__)
+#define DRED_UNIX
 #define DRED_GTK
 #define DRED_EXE_NAME               "dred"
 #endif
