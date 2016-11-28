@@ -1,5 +1,5 @@
 // Interprocess communication. Public Domain. See "unlicense" statement at the end of this file.
-// dr_ipc - v0.3a - 2016-10-11
+// dr_ipc - v0.3b - 2016-11-28
 //
 // David Reid - mackron@gmail.com
 
@@ -1300,6 +1300,9 @@ dr_bool32 dripc_is_shared_memory_mapped(dripc_handle memory)
 
 
 // REVISION HISTORY
+//
+// v0.3b - 2016-11-28
+//   - Add an option for disabling shared memory.
 //
 // v0.3a - 2016-10-11
 //   - Rename drBool32 to dr_bool32 for styling consistency.
