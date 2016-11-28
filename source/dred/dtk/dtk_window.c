@@ -18,13 +18,14 @@ dtk_result dtk_window__handle_event(dtk_window* pWindow, dtk_event* pEvent)
     {
         case DTK_EVENT_PAINT:
         {
+            dtk_surface_clear(pEvent->pControl->pSurface, dtk_color_rgb(128, 255, 128));
             dtk_surface_draw_quad(pEvent->pControl->pSurface, 32, 32, 64, 64);
         } break;
 
         case DTK_EVENT_SIZE:
         {
             // When a window is resized the drawing surface also needs to be resized.
-            DTK_CONTROL(pWindow)->width = pEvent->size.width;
+            DTK_CONTROL(pWindow)->width  = pEvent->size.width;
             DTK_CONTROL(pWindow)->height = pEvent->size.height;
             
             if (DTK_CONTROL(pWindow)->pSurface != NULL) {
@@ -111,6 +112,30 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.paint.rect.right = rect.right;
                 e.paint.rect.bottom = rect.bottom;
             }
+        } break;
+
+        case WM_SIZE:
+        {
+            e.type = DTK_EVENT_SIZE;
+            e.size.width  = LOWORD(lParam);
+            e.size.height = HIWORD(lParam);
+        } break;
+
+        case WM_MOVE:
+        {
+            e.type = DTK_EVENT_MOVE;
+
+        #if 1
+            // This technique will use the position of the entire window, including the frame.
+            RECT rect;
+            GetWindowRect(hWnd, &rect);
+            e.move.x = rect.left;
+            e.move.y = rect.top;
+        #else
+            // This technique will use the position of the client area.
+            e.move.x = DTK_GET_X_LPARAM(lParam);
+            e.move.y = DTK_GET_Y_LPARAM(lParam);
+        #endif
         } break;
 
         case WM_MOUSEMOVE:
@@ -229,7 +254,7 @@ static gboolean dtk_window__on_draw_clientarea__gtk(GtkWidget* pWidget, cairo_t*
     double clipTop;
     double clipRight;
     double clipBottom;
-    cairo_clip_extents(pCairoContext, &clipLeft, &clipTop, &clipRight, &clipBottom);
+    cairo_clip_extents(DTK_CONTROL(pWindow)->pSurface->cairo.pContext, &clipLeft, &clipTop, &clipRight, &clipBottom);
 
     dtk_event e = dtk_event_init(DTK_EVENT_PAINT, DTK_CONTROL(pWindow));
     e.paint.rect.left = clipLeft;
@@ -323,7 +348,7 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, const ch
     pWindow->gtk.pBox        = pBox;
     pWindow->gtk.pClientArea = pClientArea;
     
-    gtk_widget_show_all(GTK_CONTAINER(pWidget));
+    gtk_widget_show_all(GTK_WIDGET(pWidget));
     gtk_widget_realize(pWidget);
     
     return DTK_SUCCESS;

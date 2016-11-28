@@ -17,6 +17,7 @@ dtk_result dtk_surface_init_window__gdi(dtk_context* pTK, dtk_window* pWindow, d
         return DTK_ERROR;
     }
 
+    pSurface->backend = dtk_graphics_backend_gdi;
     return DTK_SUCCESS;
 }
 
@@ -24,6 +25,14 @@ dtk_result dtk_surface_uninit__gdi(dtk_surface* pSurface)
 {
     (void)pSurface;
     return DTK_SUCCESS;
+}
+
+void dtk_surface_clear__gdi(dtk_surface* pSurface, dtk_color color)
+{
+    SelectObject((HDC)pSurface->gdi.hDC, GetStockObject(NULL_PEN));
+    SelectObject((HDC)pSurface->gdi.hDC, GetStockObject(DC_BRUSH));
+    SetDCBrushColor((HDC)pSurface->gdi.hDC, RGB(color.r, color.g, color.b));
+    Rectangle((HDC)pSurface->gdi.hDC, 0, 0, (int)pSurface->width+1, (int)pSurface->height+1);
 }
 
 void dtk_surface_draw_quad__gdi(dtk_surface* pSurface, dtk_int32 x, dtk_int32 y, dtk_uint32 width, dtk_uint32 height)
@@ -64,6 +73,8 @@ dtk_result dtk_surface_init_window__cairo(dtk_context* pTK, dtk_window* pWindow,
     
     pSurface->cairo.pSurface = pCairoSurface;
     pSurface->cairo.pContext = pCairoContext;
+    
+    pSurface->backend = dtk_graphics_backend_cairo;
     return DTK_SUCCESS;
 }
 
@@ -73,6 +84,12 @@ dtk_result dtk_surface_uninit__cairo(dtk_surface* pSurface)
     cairo_surface_destroy((cairo_surface_t*)pSurface->cairo.pSurface);
     
     return DTK_SUCCESS;
+}
+
+void dtk_surface_clear__cairo(dtk_surface* pSurface, dtk_color color)
+{
+    cairo_set_source_rgba(pSurface->cairo.pContext, color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
+    cairo_paint(pSurface->cairo.pContext);
 }
 
 void dtk_surface_draw_quad__cairo(dtk_surface* pSurface, dtk_int32 x, dtk_int32 y, dtk_uint32 width, dtk_uint32 height)
@@ -94,6 +111,8 @@ dtk_result dtk_surface_init_window(dtk_context* pTK, dtk_window* pWindow, dtk_su
 
     if (pTK == NULL || pWindow == NULL) return DTK_INVALID_ARGS;
     pSurface->pTK = pTK;
+    pSurface->width  = DTK_CONTROL(pWindow)->width;
+    pSurface->height = DTK_CONTROL(pWindow)->height;
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
@@ -116,12 +135,12 @@ dtk_result dtk_surface_uninit(dtk_surface* pSurface)
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
-    if (pSurface->pTK->platform == dtk_platform_win32) {
+    if (pSurface->backend == dtk_graphics_backend_gdi) {
         result = dtk_surface_uninit__gdi(pSurface);
     }
 #endif
 #ifdef DTK_GTK
-    if (pSurface->pTK->platform == dtk_platform_gtk) {
+    if (pSurface->backend == dtk_graphics_backend_cairo) {
         result = dtk_surface_uninit__cairo(pSurface);
     }
 #endif
@@ -129,17 +148,33 @@ dtk_result dtk_surface_uninit(dtk_surface* pSurface)
     return result;
 }
 
+void dtk_surface_clear(dtk_surface* pSurface, dtk_color color)
+{
+    if (pSurface == NULL) return;
+    
+#ifdef DTK_WIN32
+    if (pSurface->backend == dtk_graphics_backend_gdi) {
+        dtk_surface_clear__gdi(pSurface, color);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pSurface->backend == dtk_graphics_backend_cairo) {
+        dtk_surface_clear__cairo(pSurface, color);
+    }
+#endif
+}
+
 void dtk_surface_draw_quad(dtk_surface* pSurface, dtk_int32 x, dtk_int32 y, dtk_uint32 width, dtk_uint32 height)
 {
     if (pSurface == NULL) return;
 
 #ifdef DTK_WIN32
-    if (pSurface->pTK->platform == dtk_platform_win32) {
+    if (pSurface->backend == dtk_graphics_backend_gdi) {
         dtk_surface_draw_quad__gdi(pSurface, x, y, width, height);
     }
 #endif
 #ifdef DTK_GTK
-    if (pSurface->pTK->platform == dtk_platform_gtk) {
+    if (pSurface->backend == dtk_graphics_backend_cairo) {
         dtk_surface_draw_quad__cairo(pSurface, x, y, width, height);
     }
 #endif

@@ -7,10 +7,37 @@ typedef enum
     //dtk_graphics_backend_x11
 } dtk_graphics_backend;
 
+
+typedef struct
+{
+    dtk_uint8 r;
+    dtk_uint8 g;
+    dtk_uint8 b;
+    dtk_uint8 a;
+} dtk_color;
+
+DTK_INLINE dtk_color dtk_color_rgba(dtk_uint8 r, dtk_uint8 g, dtk_uint8 b, dtk_uint8 a)
+{
+    dtk_color color;
+    color.r = r;
+    color.g = g;
+    color.b = b;
+    color.a = a;
+    return color;
+}
+
+DTK_INLINE dtk_color dtk_color_rgb(dtk_uint8 r, dtk_uint8 g, dtk_uint8 b)
+{
+    return dtk_color_rgba(r, g, b, 255);
+}
+
+
 typedef struct
 {
     dtk_context* pTK;
     dtk_graphics_backend backend;
+    dtk_uint32 width;
+    dtk_uint32 height;
     
     union
     {
@@ -41,6 +68,9 @@ dtk_result dtk_surface_init_window(dtk_context* pTK, dtk_window* pWindow, dtk_su
 
 // Uninitializes a surface.
 dtk_result dtk_surface_uninit(dtk_surface* pSurface);
+
+// Clears the given surface within it's current clipping region.
+void dtk_surface_clear(dtk_surface* pSurface, dtk_color color);
 
 // Draws a quad onto the given surface.
 void dtk_surface_draw_quad(dtk_surface* pSurface, dtk_int32 x, dtk_int32 y, dtk_uint32 width, dtk_uint32 height);
