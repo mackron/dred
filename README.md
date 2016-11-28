@@ -14,7 +14,7 @@ libraries (glib, gdk, atk, cairo, ...).
 
 To compile dred on Linux use the following command:
 
-    cc dred_main.c -lm -lrt -ldl `pkg-config --cflags --libs gtk+-3.0 glib-2.0`
+    cc dred_main.c -lm -ldl `pkg-config --cflags --libs gtk+-3.0 glib-2.0`
 
 
 

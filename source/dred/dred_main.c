@@ -16,10 +16,7 @@
 
 // BUILDING (LINUX)
 //
-// `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0`
-// -lpthread
-// -lm
-// -lrt
+// cc source/dred/dred_main.c `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0` -lpthread -lm -ldl
 
 #include "dred.c"
 
