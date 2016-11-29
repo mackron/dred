@@ -81,10 +81,10 @@ DTK_INLINE dtk_event dtk_event_init(dtk_event_type type, dtk_control* pControl)
     return e;
 }
 
+#include "dtk_string.c"
 #include "dtk_graphics.c"
 #include "dtk_controls.c"
 #include "dtk_window.c"
-
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////

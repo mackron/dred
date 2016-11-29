@@ -16,6 +16,9 @@ struct dtk_control
     dtk_int32 absolutePosY;
     dtk_uint32 width;
     dtk_uint32 height;
+
+    // TESTING
+    dtk_font font;
 };
 
 // Initializes a control.

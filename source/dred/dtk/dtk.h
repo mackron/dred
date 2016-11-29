@@ -75,8 +75,20 @@ typedef int dtk_result;
 #define DTK_QUIT                    -1024   // Returned by dtk_next_event() when a quit message is received.
 
 // Standard library stuff.
+#include <string.h>
+#include <stdlib.h>
+
 #ifndef dtk_assert
 #define dtk_assert(condition)   assert(condition)
+#endif
+#ifndef dtk_malloc
+#define dtk_malloc(sz)          malloc(sz);
+#endif
+#ifndef dtk_calloc
+#define dtk_calloc(c, sz)       calloc(c, sz)
+#endif
+#ifndef dtk_free
+#define dtk_free(p)             free(p)
 #endif
 #ifndef dtk_zero_memory
 #define dtk_zero_memory(p, sz)  memset((p), 0, (sz))
@@ -159,7 +171,7 @@ typedef struct
 // almost always want to return true.
 typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 
-
+#include "dtk_string.h"
 #include "dtk_graphics.h"
 #include "dtk_controls.h"
 #include "dtk_window.h"

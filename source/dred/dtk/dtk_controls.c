@@ -10,6 +10,7 @@ dtk_result dtk_control_init(dtk_context* pTK, dtk_control_type type, dtk_event_p
     pControl->type = type;
     pControl->onEvent = onEvent;
 
+    dtk_result result = dtk_font_init(pTK, "Courier New", 24, dtk_font_weight_bold, dtk_font_slant_italic, 0, 0, &pControl->font);
     return DTK_SUCCESS;
 }
 
