@@ -3,6 +3,7 @@
 typedef dtk_uint32 dtk_control_type;
 #define DTK_CONTROL_TYPE_EMPTY      0
 #define DTK_CONTROL_TYPE_WINDOW     1
+#define DTK_CONTROL_TYPE_CUSTOM     65536
 
 #define DTK_CONTROL(p) ((dtk_control*)(p))
 struct dtk_control

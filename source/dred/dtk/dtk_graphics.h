@@ -154,4 +154,4 @@ void dtk_surface_clear(dtk_surface* pSurface, dtk_color color);
 void dtk_surface_draw_rect(dtk_surface* pSurface, dtk_int32 x, dtk_int32 y, dtk_uint32 width, dtk_uint32 height);
 
 // Draws a run of text.
-void dtk_surface_draw_text(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float posX, float posY, dtk_color fgColor, dtk_color bgColor);
+void dtk_surface_draw_text(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32 posX, dtk_int32 posY, dtk_color fgColor, dtk_color bgColor);

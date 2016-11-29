@@ -138,7 +138,7 @@ fallback:;
     return pSurface->gdi.pScratchBuffer;
 }
 
-void dtk_surface_draw_text__gdi(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float posX, float posY, dtk_color fgColor, dtk_color bgColor)
+void dtk_surface_draw_text__gdi(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32 posX, dtk_int32 posY, dtk_color fgColor, dtk_color bgColor)
 {
     // TODO: Select the closest sub-font based on the scale.
     (void)scale;
@@ -390,7 +390,7 @@ void dtk_surface_draw_rect(dtk_surface* pSurface, dtk_int32 x, dtk_int32 y, dtk_
 #endif
 }
 
-void dtk_surface_draw_text(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textLength, float posX, float posY, dtk_color fgColor, dtk_color bgColor)
+void dtk_surface_draw_text(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textLength, dtk_int32 posX, dtk_int32 posY, dtk_color fgColor, dtk_color bgColor)
 {
     if (pSurface == NULL) return;
 

@@ -240,7 +240,7 @@ dtk_result dtk_set_event_callback(dtk_context* pTK, dtk_event_proc proc);
 //   Do not call this from multiple threads. Have a single thread that does all event handling.
 dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking);
 
-// Posts a quit event to the event queue. This will case the main loop to terminate and dtk_next_event() to
+// Posts a quit event to the event queue. This will cause the main loop to terminate and dtk_next_event() to
 // return DTK_QUIT.
 //
 // Thread Safety: SAFE
