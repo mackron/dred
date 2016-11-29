@@ -1,10 +1,9 @@
 ![dred](http://dred.io/img/banner2_wide.png)
 
 dred is a fast, ultra-lightweight graphical text editor. It currently weighs in at less
-than 500KB. The UI and some of the features compare well to modern editors like Atom or Sublime text
-but many complex bulky features and dependencies are omitted and it is written in pure C rather than a scripting language.
+than 500KB.
 
-Supported platforms include Windows, Linux and Mac. Linux and Mac depdend on GTK+3.
+Supported platforms include Windows, Linux and Mac. Linux and Mac depdend on GTK+ 3.
 
 
 Compiling
