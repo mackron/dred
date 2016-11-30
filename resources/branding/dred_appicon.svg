@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   width="40"
+   height="40"
+   viewBox="0 0 40 40"
+   sodipodi:docname="dred_appicon.svg">
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1845"
+     inkscape:window-height="1045"
+     id="namedview4"
+     showgrid="false"
+     inkscape:zoom="8"
+     inkscape:cx="72.708288"
+     inkscape:cy="9.5457215"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <g
+     id="g3340"
+     transform="matrix(0.99981102,0,0,0.99941017,0,0.02359333)">
+    <path
+       style="fill:#fefefe"
+       d="M 0,20 0,0 20,0 40,0 40,20 40,40 20,40 0,40 0,20 Z"
+       id="path3344"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#710000"
+       d="m 0,20 0,-20 15,0 15,0 0,5 0,5 -10,0 -10,0 0,12.5 0,12.5 12.5,0 12.5,0 0,-17.5 C 35,0.83333334 35.11905,0 37.5,0 39.895834,0 40,0.83333334 40,20 L 40,40 20,40 0,40 0,20 Z m 15,2.5 0,-7.5 7.5,0 7.5,0 0,7.5 0,7.5 -7.5,0 -7.5,0 0,-7.5 z"
+       id="path3342"
+       inkscape:connector-curvature="0" />
+  </g>
+  <rect
+     style="fill:#710000;fill-opacity:1"
+     id="rect3346"
+     width="5.0048294"
+     height="39.99707"
+     x="34.995171"
+     y="2.3453461e-15" />
+</svg>
