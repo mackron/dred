@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Dred
+Comment=A fast, ultra lightweight text editor
+Icon=dred_appicon
+Exec=dred %u
+Categories=Utility;TextEditor;
+StartupNotify=true
