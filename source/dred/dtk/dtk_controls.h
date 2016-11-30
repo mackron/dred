@@ -39,3 +39,27 @@ dtk_result dtk_control_show(dtk_control* pControl);
 
 // Hides a control.
 dtk_result dtk_control_hide(dtk_control* pControl);
+
+
+// Sets the size of a window.
+dtk_result dtk_control_set_size(dtk_control* pControl, dtk_uint32 width, dtk_uint32 height);
+dtk_result dtk_control_get_size(dtk_control* pControl, dtk_uint32* pWidth, dtk_uint32* pHeight);
+
+// Sets the absolute position of a control.
+dtk_result dtk_control_set_absolute_position(dtk_control* pControl, dtk_int32 posX, dtk_int32 posY);
+dtk_result dtk_control_get_absolute_position(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY);
+
+// Sets the relative position of a control.
+dtk_result dtk_control_set_relative_position(dtk_control* pControl, dtk_int32 posX, dtk_int32 posY);
+dtk_result dtk_control_get_relative_position(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY);
+
+// Converts a relative position to absolute. On input, the position represents the relative position. Out output they
+// will be set to the absolute position.
+dtk_result dtk_control_relative_to_absolute(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY);
+
+// Makes an absolute position relative to the given control.
+dtk_result dtk_control_absolute_to_relative(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY);
+
+
+// Finds the top level control for the given control.
+dtk_control* dtk_control_find_top_level_control(dtk_control* pControl);

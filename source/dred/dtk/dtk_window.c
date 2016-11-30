@@ -41,6 +41,7 @@ dtk_result dtk_window__handle_event(dtk_window* pWindow, dtk_event* pEvent)
         
         case DTK_EVENT_MOVE:
         {
+            // TODO: Verify the accuracy of this, especially for Win32 popup windows.
             DTK_CONTROL(pWindow)->absolutePosX = pEvent->move.x;
             DTK_CONTROL(pWindow)->absolutePosY = pEvent->move.y;
         } break;
@@ -76,7 +77,11 @@ dtk_result dtk_window__handle_event(dtk_window* pWindow, dtk_event* pEvent)
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DTK_WIN32
-#define DTK_WIN32_WINDOW_CLASS "dtk.window"
+#define DTK_WIN32_WINDOW_CLASS              "dtk.window"
+#define DTK_WIN32_WINDOW_CLASS_DIALOG       "dtk.window.dialog"
+#define DTK_WIN32_WINDOW_CLASS_POPUP        "dtk.window.popup"
+#define DTK_WIN32_WINDOW_CLASS_POPUP_SHADOW "dtk.window.popup.shadow"
+#define DTK_WIN32_WINDOW_CLASS_TIMER        "dtk.window.timer"
 
 #define DTK_GET_X_LPARAM(lp)    ((int)(short)LOWORD(lp))
 #define DTK_GET_Y_LPARAM(lp)    ((int)(short)HIWORD(lp))
@@ -186,6 +191,109 @@ dtk_result dtk_window_uninit__win32(dtk_window* pWindow)
 
     return DTK_SUCCESS;
 }
+
+dtk_result dtk_window_set_title__win32(dtk_window* pWindow, const char* title)
+{
+    if (!SetWindowTextA((HWND)pWindow->win32.hWnd, title)) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_set_size__win32(dtk_window* pWindow, dtk_uint32 width, dtk_uint32 height)
+{
+    RECT windowRect;
+    RECT clientRect;
+    if (!GetWindowRect((HWND)pWindow->win32.hWnd, &windowRect)) return DTK_ERROR;
+    if (!GetClientRect((HWND)pWindow->win32.hWnd, &clientRect)) return DTK_ERROR;
+
+    int windowFrameX = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left);
+    int windowFrameY = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top);
+
+    assert(windowFrameX >= 0);
+    assert(windowFrameY >= 0);
+
+    int scaledWidth  = width  + windowFrameX;
+    int scaledHeight = height + windowFrameY;
+    if (!SetWindowPos((HWND)pWindow->win32.hWnd, NULL, 0, 0, scaledWidth, scaledHeight, SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE)) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_get_size__win32(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight)
+{
+    RECT rect;
+    if (!GetClientRect((HWND)pWindow->win32.hWnd, &rect)) {
+        return DTK_ERROR;
+    }
+
+    if (pWidth  != NULL) *pWidth  = rect.right - rect.left;
+    if (pHeight != NULL) *pHeight = rect.bottom - rect.top;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_get_client_size__win32(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight)
+{
+    return dtk_window_get_size__win32(pWindow, pWidth, pHeight);
+}
+
+dtk_result dtk_window_set_absolute_position__win32(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY)
+{
+    // Normally, the absolute position refers to the position of the control relative to the top level window. Win32, however,
+    // positions popup windows relative to the screen, so we need to adjust.
+    dtk_int32 adjustedPosX = posX;
+    dtk_int32 adjustedPosY = posY;
+    if ((pWindow->flags & DTK_WINDOW_FLAG_POPUP) == 0) {
+        dtk_control* pTopLevelControl= dtk_control_find_top_level_control(DTK_CONTROL(pWindow));
+        if (pTopLevelControl != NULL) {
+            dtk_control_relative_to_absolute(pTopLevelControl, &adjustedPosX, &adjustedPosY);
+        }
+    }
+
+    if (!SetWindowPos((HWND)pWindow->win32.hWnd, NULL, adjustedPosX, adjustedPosY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE)) {
+        return DTK_ERROR;
+    }
+
+    DTK_CONTROL(pWindow)->absolutePosX = posX;
+    DTK_CONTROL(pWindow)->absolutePosY = posY;
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_get_absolute_position__win32(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
+{
+    RECT rect;
+    if (!GetWindowRect((HWND)pWindow->win32.hWnd, &rect)) {
+        return DTK_ERROR;
+    }
+
+    if (pPosX) *pPosX = rect.left;
+    if (pPosY) *pPosY = rect.top;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_move_to_center_of_screen__win32(dtk_window* pWindow)
+{
+    MONITORINFO mi;
+    ZeroMemory(&mi, sizeof(mi));
+    mi.cbSize = sizeof(MONITORINFO);
+    if (!GetMonitorInfoA(MonitorFromWindow((HWND)pWindow->win32.hWnd, 0), &mi)) {
+        return DTK_ERROR;
+    }
+
+    LONG screenSizeX = mi.rcMonitor.right - mi.rcMonitor.left;
+    LONG screenSizeY = mi.rcMonitor.bottom - mi.rcMonitor.top;
+
+    dtk_uint32 windowSizeX;
+    dtk_uint32 windowSizeY;
+    dtk_window_get_size(pWindow, &windowSizeX, &windowSizeY);
+
+    return dtk_window_set_absolute_position(pWindow, (screenSizeX - windowSizeX)/2, (screenSizeY - windowSizeY)/2);
+}
+
 
 dtk_result dtk_window_show__win32(dtk_window* pWindow, int mode)
 {
@@ -363,6 +471,71 @@ dtk_result dtk_window_uninit__gtk(dtk_window* pWindow)
     return DTK_SUCCESS;
 }
 
+dtk_result dtk_window_set_title__gtk(dtk_window* pWindow, const char* title)
+{
+    gtk_window_set_title(GTK_WINDOW(pWindow->gtk.pWidget), title);
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_set_size__gtk(dtk_window* pWindow, dtk_uint32 width, dtk_uint32 height)
+{
+#if 0   // TODO: Uncomment this when menus are implemented.
+    if (pWindow->pMenu != NULL) {
+        GtkAllocation alloc;
+        gtk_widget_get_allocation(pWindow->pMenu->gtk.pMenu, &alloc);
+
+        newHeight += alloc.height;
+    }
+#endif
+
+    gtk_window_resize(GTK_WINDOW(pWindow->gtk.pWidget), (int)newWidth, (int)newHeight);
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_get_size__gtk(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight)
+{
+    gint width;
+    gint height;
+    gtk_window_get_size(GTK_WINDOW(pWindow->gtk.pWidget), &width, &height);
+
+    if (pWidth) *pWidth = width;
+    if (pHeight) *pHeight = height;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_get_client_size__gtk(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight)
+{
+    GtkAllocation alloc;
+    gtk_widget_get_allocation(pWindow->gtk.pClientArea, &alloc);
+
+    if (pWidth) *pWidth = alloc.width;
+    if (pHeight) *pHeight = alloc.height;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_set_absolute_position__gtk(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY)
+{
+    gtk_window_move(GTK_WINDOW(pWindow->gtk.pWidget), (gint)posX, (gint)posY);
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_get_absolute_position__gtk(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
+{
+    gint posX = 0;
+    gint posY = 0;
+    gtk_window_get_position(GTK_WINDOW(pWindow->gtk.pWidget), &posX, &posY);
+
+    if (pPosX) *pPosX = (dtk_int32)posX;
+    if (pPosY) *pPosY = (dtk_int32)posY;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_move_to_center_of_screen__gtk(dtk_window* pWindow)
+{
+    gtk_window_set_position(GTK_WINDOW(pWindow->gtk.pWidget), GTK_WIN_POS_CENTER);
+    return DTK_SUCCESS;
+}
+
 dtk_result dtk_window_show__gtk(dtk_window* pWindow, int mode)
 {
     if (mode == DTK_HIDE) {
@@ -454,6 +627,181 @@ dtk_result dtk_window_uninit(dtk_window* pWindow)
 
     return dtk_control_uninit(DTK_CONTROL(pWindow));
 }
+
+dtk_result dtk_window_set_title(dtk_window* pWindow, const char* title)
+{
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    if (title == NULL) {
+        title = "";
+    }
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_set_title__win32(pWindow, title);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_set_title__gtk(pWindow, title);
+    }
+#endif
+
+    return result;
+}
+
+
+dtk_result dtk_window_set_size(dtk_window* pWindow, dtk_uint32 width, dtk_uint32 height)
+{
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+    if (width  == 0) width  = 1;
+    if (height == 0) height = 1;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_set_size__win32(pWindow, width, height);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_set_size__gtk(pWindow, width, height);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_window_get_size(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight)
+{
+    if (pWidth) *pWidth = 0;
+    if (pHeight) *pHeight = 0;
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_get_size__win32(pWindow, pWidth, pHeight);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_get_size__gtk(pWindow, pWidth, pHeight);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_window_get_client_size(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight)
+{
+    if (pWidth) *pWidth = 0;
+    if (pHeight) *pHeight = 0;
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_get_client_size__win32(pWindow, pWidth, pHeight);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_get_client_size__gtk(pWindow, pWidth, pHeight);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_window_set_absolute_position(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY)
+{
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_set_absolute_position__win32(pWindow, posX, posY);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_set_absolute_position__gtk(pWindow, posX, posY);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_window_get_absolute_position(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
+{
+    if (pPosX) *pPosX = 0;
+    if (pPosY) *pPosY = 0;
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_get_absolute_position__win32(pWindow, pPosX, pPosY);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_get_absolute_position__gtk(pWindow, pPosX, pPosY);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_window_set_relative_position(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY)
+{
+    return dtk_control_set_relative_position(DTK_CONTROL(pWindow), posX, posY);
+}
+
+dtk_result dtk_window_get_relative_position(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
+{
+    return dtk_control_get_relative_position(DTK_CONTROL(pWindow), pPosX, pPosY);
+}
+
+dtk_result dtk_window_move_to_center(dtk_window* pWindow)
+{
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    if (DTK_CONTROL(pWindow)->pParent) {
+        dtk_uint32 parentSizeX;
+        dtk_uint32 parentSizeY;
+        if (dtk_control_get_size(DTK_CONTROL(pWindow)->pParent, &parentSizeX, &parentSizeY) != DTK_SUCCESS) {
+            return DTK_ERROR;
+        }
+
+        dtk_uint32 sizeX;
+        dtk_uint32 sizeY;
+        if (dtk_window_get_size(pWindow, &sizeX, &sizeY) != DTK_SUCCESS) {
+            return DTK_ERROR;
+        }
+
+        dtk_int32 newRelativePosX = (parentSizeX - sizeX)/2;
+        dtk_int32 newRelativePosY = (parentSizeY - sizeY)/2;
+        return dtk_window_set_relative_position(pWindow, newRelativePosX, newRelativePosY);
+    } else {
+        dtk_result result = DTK_NO_BACKEND;
+    #ifdef DTK_WIN32
+        if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+            result = dtk_window_move_to_center_of_screen__win32(pWindow);
+        }
+    #endif
+    #ifdef DTK_GTK
+        if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+            result = dtk_window_move_to_center_of_screen__gtk(pWindow);
+        }
+    #endif
+
+        return result;
+    }
+}
+
 
 dtk_result dtk_window_show(dtk_window* pWindow, int mode)
 {

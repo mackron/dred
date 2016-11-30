@@ -53,3 +53,118 @@ dtk_result dtk_control_hide(dtk_control* pControl)
     // TODO: Implement me.
     return DTK_SUCCESS;
 }
+
+
+dtk_result dtk_control_set_size(dtk_control* pControl, dtk_uint32 width, dtk_uint32 height)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    pControl->width = width;
+    pControl->height = height;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_control_get_size(dtk_control* pControl, dtk_uint32* pWidth, dtk_uint32* pHeight)
+{
+    if (pWidth) *pWidth = 0;
+    if (pHeight) *pHeight = 0;
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    if (pWidth) *pWidth = pControl->width;
+    if (pHeight) *pHeight = pControl->height;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_control_set_absolute_position(dtk_control* pControl, dtk_int32 posX, dtk_int32 posY)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    // Special case for windows.
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        return dtk_window_set_absolute_position(DTK_WINDOW(pControl), posX, posY);
+    } else {
+        pControl->absolutePosX = posX;
+        pControl->absolutePosY = posY;
+        return DTK_SUCCESS; 
+    }
+}
+
+dtk_result dtk_control_get_absolute_position(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY)
+{
+    if (pPosX) *pPosX = 0;  // Safety.
+    if (pPosY) *pPosY = 0;  // ^
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    if (pPosX) *pPosX = pControl->absolutePosX;
+    if (pPosY) *pPosY = pControl->absolutePosY;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_control_set_relative_position(dtk_control* pControl, dtk_int32 posX, dtk_int32 posY)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+    
+    if (pControl->pParent == NULL) {
+        return dtk_control_set_absolute_position(pControl, posX, posY);
+    }
+
+    dtk_control_relative_to_absolute(pControl, &posX, &posY);
+    return dtk_control_set_absolute_position(pControl, posX, posY);
+}
+
+dtk_result dtk_control_get_relative_position(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY)
+{
+    if (pPosX) *pPosX = 0;  // Safety.
+    if (pPosY) *pPosY = 0;  // ^
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = dtk_control_get_absolute_position(pControl, pPosX, pPosY);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    if (pControl->pParent != NULL) {
+        return dtk_control_absolute_to_relative(pControl->pParent, pPosX, pPosY);
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_control_relative_to_absolute(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    dtk_int32 parentAbsolutePosX = 0;
+    dtk_int32 parentAbsolutePosY = 0;
+    if (pControl->pParent) {
+        dtk_control_get_absolute_position(pControl, &parentAbsolutePosX, &parentAbsolutePosY);
+    }
+
+    if (pPosX) *pPosX += parentAbsolutePosX;
+    if (pPosY) *pPosY += parentAbsolutePosY;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_control_absolute_to_relative(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    dtk_int32 absolutePosX;
+    dtk_int32 absolutePosY;
+    dtk_control_get_absolute_position(pControl, &absolutePosX, &absolutePosY);
+
+    if (pPosX) *pPosX -= absolutePosX;
+    if (pPosY) *pPosY -= absolutePosY;
+    return DTK_SUCCESS;
+}
+
+
+dtk_control* dtk_control_find_top_level_control(dtk_control* pControl)
+{
+    dtk_control* pTopLevelControl = pControl;
+    while (pTopLevelControl != NULL) {
+        pTopLevelControl = pControl->pParent;
+    }
+
+    return pTopLevelControl;
+}
