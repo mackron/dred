@@ -175,6 +175,7 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_graphics.h"
 #include "dtk_controls.h"
 #include "dtk_window.h"
+#include "dtk_menu.h"
 
 // The main toolkit context.
 struct dtk_context

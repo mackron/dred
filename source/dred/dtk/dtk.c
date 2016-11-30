@@ -81,10 +81,33 @@ DTK_INLINE dtk_event dtk_event_init(dtk_event_type type, dtk_control* pControl)
     return e;
 }
 
+// TODO: Implement these.
+dtk_result dtk__track_window(dtk_context* pTK, dtk_window* pWindow)
+{
+    return DTK_ERROR;
+}
+
+dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
+{
+    return DTK_ERROR;
+}
+
+dtk_result dtk__track_menu(dtk_context* pTK, dtk_menu* pMenu)
+{
+    return DTK_ERROR;
+}
+
+dtk_result dtk__untrack_menu(dtk_context* pTK, dtk_menu* pMenu)
+{
+    return DTK_ERROR;
+}
+
+
 #include "dtk_string.c"
 #include "dtk_graphics.c"
 #include "dtk_controls.c"
 #include "dtk_window.c"
+#include "dtk_menu.c"
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
