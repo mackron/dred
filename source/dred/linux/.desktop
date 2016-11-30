@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Encoding=UTF-8
-Name=dred
-Comment=Lightweight text editor
-Exec=dred
-Icon=dred_appicon.png
-Terminal=false
