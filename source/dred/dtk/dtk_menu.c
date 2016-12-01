@@ -341,7 +341,6 @@ static gboolean dtk_menu_item__on_check_menu_item_toggled__gtk(GtkCheckMenuItem 
 static void dtk__on_menu_item_activate__gtk(GtkWidget *pItem, gpointer pUserData)
 {
     (void)pUserData;
-    //printf("Menu Pressed: %s\n", (const char*)pUserData);
     
     dtk_menu_item_extra_data__gtk* pItemData = g_object_get_data(G_OBJECT(pItem), DTK_MENU_ITEM_DATA_KEY);
     if (pItemData->blockNextActivateSignal) {
