@@ -17,6 +17,16 @@
 #define DTK_GET_X_LPARAM(lp)    ((int)(short)LOWORD(lp))
 #define DTK_GET_Y_LPARAM(lp)    ((int)(short)HIWORD(lp))
 
+static void dtk_track_mouse_leave_event__win32(HWND hWnd)
+{
+    TRACKMOUSEEVENT tme;
+    ZeroMemory(&tme, sizeof(tme));
+    tme.cbSize    = sizeof(tme);
+    tme.dwFlags   = TME_LEAVE;
+    tme.hwndTrack = hWnd;
+    TrackMouseEvent(&tme);
+}
+
 LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     dtk_window* pWindow = (dtk_window*)GetWindowLongPtrA(hWnd, 0);
@@ -31,6 +41,15 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
 
     switch (msg)
     {
+        case WM_CREATE:
+        {
+            dtk_track_mouse_leave_event__win32(hWnd);   // <-- This allows us to track mouse enter and leave events for the window.
+        } return 0;
+
+        case WM_DESTROY:
+        {
+        } break;
+
         case WM_CLOSE:
         {
             e.type = DTK_EVENT_CLOSE;
@@ -75,8 +94,22 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         #endif
         } break;
 
+
+        case WM_MOUSELEAVE:
+        {
+            pWindow->win32.isCursorOverClientArea = DTK_FALSE;
+            e.type = DTK_EVENT_MOUSE_LEAVE;
+        } break;
+
         case WM_MOUSEMOVE:
         {
+            if (!pWindow->win32.isCursorOverClientArea) {
+                pWindow->win32.isCursorOverClientArea = DTK_TRUE;
+                e.type = DTK_EVENT_MOUSE_ENTER;
+
+                dtk_track_mouse_leave_event__win32(hWnd);
+            }
+
             e.type = DTK_EVENT_MOUSE_MOVE;
             e.mouseMove.x = DTK_GET_X_LPARAM(lParam);
             e.mouseMove.y = DTK_GET_Y_LPARAM(lParam);
@@ -95,6 +128,14 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.type = DTK_EVENT_MENU;
                 e.menu.pMenu = pMenu;
                 e.menu.itemIndex = (dtk_uint32)wParam;
+            }
+        } break;
+
+        case WM_SETCURSOR:
+        {
+            if (LOWORD(lParam) == HTCLIENT) {
+                SetCursor((HCURSOR)pWindow->win32.hCursor);
+                return TRUE;
             }
         } break;
         
@@ -257,6 +298,60 @@ dtk_result dtk_window_show__win32(dtk_window* pWindow, int mode)
     return DTK_SUCCESS;
 }
 
+
+dtk_result dtk_window_set_cursor__win32(dtk_window* pWindow, dtk_system_cursor_type cursor)
+{
+    HCURSOR hCursor = NULL;
+    switch (cursor)
+    {
+        case dtk_system_cursor_type_text:
+        {
+            hCursor = LoadCursor(NULL, IDC_IBEAM);
+        } break;
+
+        case dtk_system_cursor_type_cross:
+        {
+            hCursor = LoadCursor(NULL, IDC_CROSS);
+        } break;
+
+        case dtk_system_cursor_type_double_arrow_h:
+        {
+            hCursor = LoadCursor(NULL, IDC_SIZEWE);
+        } break;
+
+        case dtk_system_cursor_type_double_arrow_v:
+        {
+            hCursor = LoadCursor(NULL, IDC_SIZENS);
+        } break;
+
+
+        case dtk_system_cursor_type_none:
+        {
+            hCursor = NULL;
+        } break;
+
+        //case dtk_systemcursor_type_arrow:
+        case dtk_system_cursor_type_default:
+        default:
+        {
+            hCursor = LoadCursor(NULL, IDC_ARROW);
+        } break;
+    }
+
+    pWindow->win32.hCursor = (HCURSOR)hCursor;
+
+    // If the cursor is currently inside the window it needs to be changed right now.
+    if (dtk_window_is_cursor_over(pWindow)) {
+        SetCursor(hCursor);
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_bool32 dtk_window_is_cursor_over__win32(dtk_window* pWindow)
+{
+    return pWindow->win32.isCursorOverClientArea;
+}
 
 dtk_result dtk_window_set_menu__win32(dtk_window* pWindow, dtk_menu* pMenu)
 {
@@ -507,6 +602,62 @@ dtk_result dtk_window_show__gtk(dtk_window* pWindow, int mode)
     }
     
     return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_set_cursor__gtk(dtk_window* pWindow, dtk_system_cursor_type cursor)
+{
+    dtk_context* pTK = DTK_CONTROL(pWindow)->pTK;
+
+    GdkCursor* pGTKCursor = NULL;
+    switch (cursor)
+    {
+        case dtk_system_cursor_type_text:
+        {
+            pGTKCursor = pTK->gtk.Cursor_IBeam;
+        } break;
+
+        case dtk_system_cursor_type_cross:
+        {
+            pGTKCursor = pTK->gtk.Cursor_Cross;
+        } break;
+
+        case dtk_system_cursor_type_double_arrow_h:
+        {
+            pGTKCursor = pTK->gtk.Cursor_DoubleArrowH;
+        } break;
+
+        case dtk_system_cursor_type_double_arrow_v:
+        {
+            pGTKCursor = pTK->gtk.Cursor_DoubleArrowH;
+        } break;
+
+
+        case dtk_system_cursor_type_none:
+        {
+            pGTKCursor = NULL;
+        } break;
+
+        //case dtk_systemcursor_type_arrow:
+        case dtk_system_cursor_type_default:
+        default:
+        {
+            pGTKCursor = pTK->gtk.Cursor_Default;
+        } break;
+    }
+
+    pWindow->gtk.pCursor = pGTKCursor;
+
+    // If the cursor is currently inside the window it needs to be changed right now.
+    if (dtk_window_is_cursor_over(pWindow)) {
+        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pWidget)), pWindow->gtk.pCursor);
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_bool32 dtk_window_is_cursor_over__gtk(dtk_window* pWindow)
+{
+    return pWindow->gtk.isCursorOverClientArea;
 }
 
 dtk_result dtk_window_set_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu)
@@ -804,6 +955,44 @@ dtk_result dtk_window_show(dtk_window* pWindow, int mode)
     return result;
 }
 
+
+dtk_result dtk_window_set_cursor(dtk_window* pWindow, dtk_system_cursor_type cursor)
+{
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_set_cursor__win32(pWindow, cursor);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_set_cursor__gtk(pWindow, cursor);
+    }
+#endif
+
+    return result;
+}
+
+dtk_bool32 dtk_window_is_cursor_over(dtk_window* pWindow)
+{
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk_bool32 result = DTK_FALSE;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_is_cursor_over__win32(pWindow);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_is_cursor_over__gtk(pWindow);
+    }
+#endif
+
+    return result;
+}
 
 dtk_result dtk_window_set_menu(dtk_window* pWindow, dtk_menu* pMenu)
 {

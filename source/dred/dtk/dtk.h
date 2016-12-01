@@ -125,7 +125,9 @@ typedef int dtk_event_type;
 #define DTK_EVENT_PAINT         5
 #define DTK_EVENT_SIZE          6
 #define DTK_EVENT_MOVE          7
-#define DTK_EVENT_MOUSE_MOVE    8
+#define DTK_EVENT_MOUSE_LEAVE   8
+#define DTK_EVENT_MOUSE_ENTER   9
+#define DTK_EVENT_MOUSE_MOVE    10
 
 typedef struct
 {
@@ -172,6 +174,11 @@ typedef struct
             dtk_int32 x;
             dtk_int32 y;
         } move;
+
+        struct
+        {
+            int unused;
+        } mouseLeave;
 
         struct
         {

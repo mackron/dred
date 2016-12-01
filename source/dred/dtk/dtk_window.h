@@ -8,6 +8,17 @@
 #define DTK_WINDOW_FLAG_DIALOG  (1 << 0)    // Set when the window is a dialog.
 #define DTK_WINDOW_FLAG_POPUP   (1 << 1)    // Set when the window is a popup.
 
+typedef enum
+{
+    dtk_system_cursor_type_none,
+    dtk_system_cursor_type_default,
+    dtk_system_cursor_type_arrow = dtk_system_cursor_type_default,
+    dtk_system_cursor_type_text,
+    dtk_system_cursor_type_cross,
+    dtk_system_cursor_type_double_arrow_h,
+    dtk_system_cursor_type_double_arrow_v,
+} dtk_system_cursor_type;
+
 #define DTK_WINDOW(p) ((dtk_window*)(p))
 struct dtk_window
 {
@@ -22,7 +33,9 @@ struct dtk_window
         struct
         {
             /*HWND*/ dtk_handle hWnd;
-            /*HACCEL*/ dtk_handle hAccel; // The Win32 accelerator table handle. This is deleted and re-created whenever a new accelerator table is bound.
+            /*HACCEL*/ dtk_handle hAccel;   // The Win32 accelerator table handle. This is deleted and re-created whenever a new accelerator table is bound.
+            /*HCURSOR*/ dtk_handle hCursor; // Used when the window receives WM_SETCURSOR
+            dtk_bool32 isCursorOverClientArea;
         } win32;
     #endif
     #ifdef DTK_GTK
@@ -31,7 +44,9 @@ struct dtk_window
             /*GtkWidget**/ dtk_ptr pWidget;
             /*GtkWidget**/ dtk_ptr pBox;
             /*GtkWidget**/ dtk_ptr pClientArea;
+            /*GdkCursor**/ dtk_ptr pCursor;
             dtk_menu* pMenu;
+            dtk_bool32 isCursorOverClientArea;
         } gtk;
     #endif
     #ifdef DTK_X11
@@ -84,6 +99,12 @@ dtk_result dtk_window_show(dtk_window* pWindow, int mode);
 // This is equivalent to dtk_window_show(pWindow, DTK_HIDE).
 DTK_INLINE dtk_result dtk_window_hide(dtk_window* pWindow) { return dtk_window_show(pWindow, DTK_HIDE); }
 
+
+// Sets the cursor to use for the given window.
+dtk_result dtk_window_set_cursor(dtk_window* pWindow, dtk_system_cursor_type cursor);
+
+// Determines whether or not the cursor is currently sitting on top of the given window's client area.
+dtk_bool32 dtk_window_is_cursor_over(dtk_window* pWindow);
 
 // Sets the menu for a window. Pass null to remove the menu.
 dtk_result dtk_window_set_menu(dtk_window* pWindow, dtk_menu* pMenu);
