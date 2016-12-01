@@ -59,8 +59,14 @@ dtk_result dtk_control_set_size(dtk_control* pControl, dtk_uint32 width, dtk_uin
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
-    pControl->width = width;
-    pControl->height = height;
+    // Special case for windows.
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        return dtk_window_set_size(DTK_WINDOW(pControl), width, height);
+    } else {
+        pControl->width = width;
+        pControl->height = height;
+    }
+
     return DTK_SUCCESS;
 }
 

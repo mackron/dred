@@ -81,24 +81,58 @@ DTK_INLINE dtk_event dtk_event_init(dtk_event_type type, dtk_control* pControl)
     return e;
 }
 
-// TODO: Implement these.
+
 dtk_result dtk__track_window(dtk_context* pTK, dtk_window* pWindow)
 {
-    return DTK_ERROR;
+    if (pTK == NULL || pWindow == NULL) return DTK_INVALID_ARGS;
+
+    pWindow->pNextWindow = pTK->pFirstWindow;
+    pTK->pFirstWindow = pWindow;
+
+    return DTK_SUCCESS;
 }
 
 dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
 {
+    if (pTK == NULL || pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk_window** ppNext = &pTK->pFirstWindow;
+    while (*ppNext != NULL) {
+        if (*ppNext == pWindow) {
+            *ppNext = (*ppNext)->pNextWindow;
+            return DTK_SUCCESS;
+        }
+
+        ppNext = &(*ppNext)->pNextWindow;
+    }
+
     return DTK_ERROR;
 }
 
 dtk_result dtk__track_menu(dtk_context* pTK, dtk_menu* pMenu)
 {
-    return DTK_ERROR;
+    if (pTK == NULL || pMenu == NULL) return DTK_INVALID_ARGS;
+
+    pMenu->pNextMenu = pTK->pFirstMenu;
+    pTK->pFirstMenu = pMenu;
+
+    return DTK_SUCCESS;
 }
 
 dtk_result dtk__untrack_menu(dtk_context* pTK, dtk_menu* pMenu)
 {
+    if (pTK == NULL || pMenu == NULL) return DTK_INVALID_ARGS;
+
+    dtk_menu** ppNext = &pTK->pFirstMenu;
+    while (*ppNext != NULL) {
+        if (*ppNext == pMenu) {
+            *ppNext = (*ppNext)->pNextMenu;
+            return DTK_SUCCESS;
+        }
+
+        ppNext = &(*ppNext)->pNextMenu;
+    }
+
     return DTK_ERROR;
 }
 

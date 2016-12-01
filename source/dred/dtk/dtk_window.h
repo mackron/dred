@@ -14,6 +14,7 @@ struct dtk_window
     dtk_control control;
     dtk_surface surface;    // A window always has it's own surface.
     dtk_uint32 flags;
+    dtk_window* pNextWindow;
 
     union
     {
@@ -82,3 +83,6 @@ dtk_result dtk_window_show(dtk_window* pWindow, int mode);
 // This is equivalent to dtk_window_show(pWindow, DTK_HIDE).
 DTK_INLINE dtk_result dtk_window_hide(dtk_window* pWindow) { return dtk_window_show(pWindow, DTK_HIDE); }
 
+
+// Sets the menu for a window. Pass null to remove the menu.
+dtk_result dtk_window_set_menu(dtk_window* pWindow, dtk_menu* pMenu);

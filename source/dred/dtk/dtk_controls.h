@@ -17,6 +17,7 @@ struct dtk_control
     dtk_int32 absolutePosY;
     dtk_uint32 width;
     dtk_uint32 height;
+    void* pUserData;        // For use by the application.
 
     // TESTING
     dtk_font font;

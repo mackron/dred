@@ -150,6 +150,22 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseMove.x = DTK_GET_X_LPARAM(lParam);
             e.mouseMove.y = DTK_GET_Y_LPARAM(lParam);
         } break;
+
+        case WM_MENUCOMMAND:
+        {
+            MENUINFO mi;
+            dtk_zero_object(&mi);
+            mi.cbSize = sizeof(mi);
+            mi.fMask = MIM_MENUDATA;
+            if (GetMenuInfo((HMENU)lParam, &mi)) {
+                dtk_menu* pMenu = (dtk_menu*)mi.dwMenuData;
+                dtk_assert(pMenu != NULL);
+
+                e.type = DTK_EVENT_MENU;
+                e.menu.pMenu = pMenu;
+                e.menu.itemIndex = (dtk_uint32)wParam;
+            }
+        } break;
         
         default: break;
     }
@@ -304,6 +320,16 @@ dtk_result dtk_window_show__win32(dtk_window* pWindow, int mode)
     };
 
     if (!ShowWindow((HWND)pWindow->win32.hWnd, nCmdShow[mode])) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+}
+
+
+dtk_result dtk_window_set_menu__win32(dtk_window* pWindow, dtk_menu* pMenu)
+{
+    if (!SetMenu((HWND)pWindow->win32.hWnd, (pMenu == NULL) ? NULL : (HMENU)pMenu->win32.hMenu)) {
         return DTK_ERROR;
     }
 
@@ -669,7 +695,11 @@ dtk_result dtk_window_set_size(dtk_window* pWindow, dtk_uint32 width, dtk_uint32
         result = dtk_window_set_size__gtk(pWindow, width, height);
     }
 #endif
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
 
+    dtk_window_get_size(pWindow, &DTK_CONTROL(pWindow)->width, &DTK_CONTROL(pWindow)->height);
     return result;
 }
 
@@ -821,6 +851,26 @@ dtk_result dtk_window_show(dtk_window* pWindow, int mode)
 #ifdef DTK_GTK
     if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
         result = dtk_window_show__gtk(pWindow, mode);
+    }
+#endif
+
+    return result;
+}
+
+
+dtk_result dtk_window_set_menu(dtk_window* pWindow, dtk_menu* pMenu)
+{
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_set_menu__win32(pWindow, pMenu);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_set_menu__gtk(pWindow, pMenu);
     }
 #endif
 

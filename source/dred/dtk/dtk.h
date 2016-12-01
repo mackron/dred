@@ -104,6 +104,8 @@ typedef int dtk_result;
 typedef struct dtk_context dtk_context;
 typedef struct dtk_control dtk_control;
 typedef struct dtk_window dtk_window;
+typedef struct dtk_menu dtk_menu;
+//typedef struct dtk_menu_item dtk_menu_item;
 
 typedef struct
 {
@@ -117,11 +119,13 @@ typedef struct
 typedef int dtk_event_type;
 #define DTK_EVENT_NONE          0
 #define DTK_EVENT_QUIT          1
-#define DTK_EVENT_CLOSE         2
-#define DTK_EVENT_PAINT         3
-#define DTK_EVENT_SIZE          4
-#define DTK_EVENT_MOVE          5
-#define DTK_EVENT_MOUSE_MOVE    6
+#define DTK_EVENT_MENU          2
+#define DTK_EVENT_SHORTCUT      3
+#define DTK_EVENT_CLOSE         4
+#define DTK_EVENT_PAINT         5
+#define DTK_EVENT_SIZE          6
+#define DTK_EVENT_MOVE          7
+#define DTK_EVENT_MOUSE_MOVE    8
 
 typedef struct
 {
@@ -140,6 +144,17 @@ typedef struct
         {
             int unused;
         } close;
+
+        struct
+        {
+            dtk_menu* pMenu;
+            dtk_uint32 itemIndex;
+        } menu;
+
+        struct
+        {
+            int unused;
+        } shortcut;
 
         struct
         {
@@ -183,6 +198,8 @@ struct dtk_context
     dtk_platform platform;
     dtk_event_proc onEvent;
     int exitCode;
+    dtk_window* pFirstWindow;
+    dtk_menu* pFirstMenu;
 
     union
     {
