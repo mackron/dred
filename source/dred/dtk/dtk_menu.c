@@ -239,13 +239,14 @@ typedef struct
     GtkWidget* pItem;
 } dtk_menu_item_iterator_data__gtk;
 
-static gboolean dtk_menu__item_iterator__gtk(GtkWidget* pItem, dtk_menu_item_iterator_data__gtk* pData)
+static gboolean dtk_menu__get_item_widget_by_index_cb__gtk(GtkWidget* pItem, dtk_menu_item_iterator_data__gtk* pData)
 {
     if (pData->count == pData->index) {
         pData->pItem = pItem;
         return FALSE;
     }
 
+    pData->count += 1;
     return TRUE;
 }
 
@@ -255,12 +256,33 @@ static GtkWidget* dtk_menu__get_item_widget_by_index__gtk(dtk_menu* pMenu, dtk_u
     data.index = index;
     data.count = 0;
     data.pItem = NULL;
-    gtk_container_foreach(GTK_CONTAINER(pMenu->gtk.pWidget), (GtkCallback)dtk_menu__item_iterator__gtk, (gpointer)&data);
+    gtk_container_foreach(GTK_CONTAINER(pMenu->gtk.pWidget), (GtkCallback)dtk_menu__get_item_widget_by_index_cb__gtk, (gpointer)&data);
 
     return data.pItem;
 }
 
-static gboolean dtk_menu__on_mouse_enter(GtkWidget* pGTKMenu, GdkEventCrossing* pEvent, gpointer pUserData)
+static gboolean dtk_menu__get_item_index_cb__gtk(GtkWidget* pItem, dtk_menu_item_iterator_data__gtk* pData)
+{
+    if (pData->pItem == pItem) {
+        return FALSE;
+    }
+
+    pData->index += 1;
+    return TRUE;
+}
+
+static dtk_uint32 dtk_menu__get_item_index__gtk(dtk_menu* pMenu, GtkWidget* pItem)
+{
+    dtk_menu_item_iterator_data__gtk data;
+    data.index = 0;
+    data.count = 0;
+    data.pItem = pItem;
+    gtk_container_foreach(GTK_CONTAINER(pMenu->gtk.pWidget), (GtkCallback)dtk_menu__get_item_index_cb__gtk, (gpointer)&data);
+
+    return data.index;
+}
+
+static gboolean dtk_menu__on_mouse_enter__gtk(GtkWidget* pGTKMenu, GdkEventCrossing* pEvent, gpointer pUserData)
 {
     (void)pEvent;
     
@@ -287,7 +309,7 @@ dtk_result dtk_menu_init__gtk(dtk_context* pTK, dtk_menu_type type, dtk_menu* pM
     pMenu->gtk.pWidget = (dtk_ptr)pGTKMenu;
 
     // We want to make sure the cursor is set to the arrow while over the menu bar.
-    g_signal_connect(pGTKMenu, "enter-notify-event", G_CALLBACK(dtk_menu__on_mouse_enter), pMenu);
+    g_signal_connect(pGTKMenu, "enter-notify-event", G_CALLBACK(dtk_menu__on_mouse_enter__gtk), pMenu);
 
     // When switching out menus we use the gtk_container_remove() function which decrements the reference counter
     // and may delete the widget. We don't want this behaviour so we just grab a reference to it from here.
@@ -306,6 +328,33 @@ dtk_result dtk_menu_get_item_count__gtk(dtk_menu* pMenu, dtk_uint32* pCount)
 {
     *pCount = pMenu->gtk.itemCount;
     return DTK_SUCCESS;
+}
+
+
+static gboolean dtk_menu_item__on_check_menu_item_toggled__gtk(GtkCheckMenuItem *pItem, gpointer pUserData)
+{
+    (void)pItem;
+    (void)pUserData;
+    return DTK_FALSE;
+}
+
+static void dtk__on_menu_item_activate__gtk(GtkWidget *pItem, gpointer pUserData)
+{
+    (void)pUserData;
+    //printf("Menu Pressed: %s\n", (const char*)pUserData);
+    
+    dtk_menu_item_extra_data__gtk* pItemData = g_object_get_data(G_OBJECT(pItem), DTK_MENU_ITEM_DATA_KEY);
+    if (pItemData->blockNextActivateSignal) {
+        return;
+    }
+    
+    dtk_event e;
+    e.pTK = pItemData->pMenu->pTK;
+    e.pControl = NULL;
+    e.type = DTK_EVENT_MENU;
+    e.menu.pMenu = pItemData->pMenu;
+    e.menu.itemIndex = dtk_menu__get_item_index__gtk(pItemData->pMenu, pItem);
+    dtk__handle_event(&e);
 }
 
 dtk_result dtk_menu_insert_item__gtk(dtk_menu* pMenu, dtk_uint32 index, dtk_menu_item_info* pInfo)
@@ -355,6 +404,18 @@ dtk_result dtk_menu_insert_item__gtk(dtk_menu* pMenu, dtk_uint32 index, dtk_menu
         }
 
         // TODO: Set the accelerator label. See dred_platform_layer.c
+    }
+    
+    if (pInfo->type == dtk_menu_item_type_check) {
+        g_signal_connect(pItem, "toggled", G_CALLBACK(dtk_menu_item__on_check_menu_item_toggled__gtk), NULL);
+    }
+
+    g_signal_connect(pItem, "activate", G_CALLBACK(dtk__on_menu_item_activate__gtk), pItem);
+    gtk_menu_shell_append(GTK_MENU_SHELL(pMenu->gtk.pWidget), pItem);
+    gtk_widget_show(pItem);
+
+    if (pInfo->pSubMenu != NULL) {
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(pItem), pInfo->pSubMenu->gtk.pWidget);
     }
 
 

@@ -1,58 +1,65 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-dtk_result dtk_window__handle_event(dtk_window* pWindow, dtk_event* pEvent)
+dtk_result dtk__handle_event(dtk_event* pEvent)
 {
-    dtk_assert(pWindow != NULL);
     dtk_assert(pEvent != NULL);
+    dtk_assert(pEvent->pTK != NULL);
     
     // Post to the global event handler first.
-    dtk_event_proc onEventGlobal = DTK_CONTROL(pWindow)->pTK->onEvent;
+    dtk_event_proc onEventGlobal = pEvent->pTK->onEvent;
     dtk_bool32 propagate = onEventGlobal == NULL || onEventGlobal(pEvent);
     if (!propagate) {
         return DTK_SUCCESS;
     }
     
-
-    // Some event need special handling before posting to the window's event handler.
-    switch (pEvent->type)
-    {
-        case DTK_EVENT_PAINT:
-        {
-            dtk_surface_clear(pEvent->pControl->pSurface, dtk_color_rgb(128, 255, 128));
-            dtk_surface_draw_rect(pEvent->pControl->pSurface, 32, 32, 64, 64);
-            dtk_surface_draw_text(pEvent->pControl->pSurface, &pEvent->pControl->font, 1, "Hello, World!", (size_t)-1, 0, 0, dtk_color_rgb(255, 255, 255), dtk_color_rgb(255, 128, 128));
-        } break;
-
-        case DTK_EVENT_SIZE:
-        {
-            // When a window is resized the drawing surface also needs to be resized.
-            DTK_CONTROL(pWindow)->width  = pEvent->size.width;
-            DTK_CONTROL(pWindow)->height = pEvent->size.height;
-            
-            if (DTK_CONTROL(pWindow)->pSurface != NULL) {
-                dtk_assert(DTK_CONTROL(pWindow)->pSurface == &pWindow->surface);
-                dtk_surface_uninit(&pWindow->surface);
-            }
-            
-            if (dtk_surface_init_window(DTK_CONTROL(pWindow)->pTK, pWindow, &pWindow->surface) != DTK_SUCCESS) {
-                DTK_CONTROL(pWindow)->pSurface = NULL;
-            }
-        } break;
-        
-        case DTK_EVENT_MOVE:
-        {
-            // TODO: Verify the accuracy of this, especially for Win32 popup windows.
-            DTK_CONTROL(pWindow)->absolutePosX = pEvent->move.x;
-            DTK_CONTROL(pWindow)->absolutePosY = pEvent->move.y;
-        } break;
-
-        default: break;
-    }
-
-    dtk_event_proc onEventLocal = DTK_CONTROL(pWindow)->onEvent;
-    propagate = onEventLocal == NULL || onEventLocal(pEvent);
-    if (!propagate) {
+    if (pEvent->pControl == NULL) {
         return DTK_SUCCESS;
+    }
+    
+    
+    // Some event need special handling before posting to the window's event handler.
+    if (pEvent->pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        dtk_window* pWindow = DTK_WINDOW(pEvent->pControl);
+        switch (pEvent->type)
+        {
+            case DTK_EVENT_PAINT:
+            {
+                dtk_surface_clear(pEvent->pControl->pSurface, dtk_color_rgb(128, 255, 128));
+                dtk_surface_draw_rect(pEvent->pControl->pSurface, 32, 32, 64, 64);
+                dtk_surface_draw_text(pEvent->pControl->pSurface, &pEvent->pControl->font, 1, "Hello, World!", (size_t)-1, 0, 0, dtk_color_rgb(255, 255, 255), dtk_color_rgb(255, 128, 128));
+            } break;
+    
+            case DTK_EVENT_SIZE:
+            {
+                // When a window is resized the drawing surface also needs to be resized.
+                DTK_CONTROL(pWindow)->width  = pEvent->size.width;
+                DTK_CONTROL(pWindow)->height = pEvent->size.height;
+                
+                if (DTK_CONTROL(pWindow)->pSurface != NULL) {
+                    dtk_assert(DTK_CONTROL(pWindow)->pSurface == &pWindow->surface);
+                    dtk_surface_uninit(&pWindow->surface);
+                }
+                
+                if (dtk_surface_init_window(DTK_CONTROL(pWindow)->pTK, pWindow, &pWindow->surface) != DTK_SUCCESS) {
+                    DTK_CONTROL(pWindow)->pSurface = NULL;
+                }
+            } break;
+            
+            case DTK_EVENT_MOVE:
+            {
+                // TODO: Verify the accuracy of this, especially for Win32 popup windows.
+                DTK_CONTROL(pWindow)->absolutePosX = pEvent->move.x;
+                DTK_CONTROL(pWindow)->absolutePosY = pEvent->move.y;
+            } break;
+    
+            default: break;
+        }
+    
+        dtk_event_proc onEventLocal = DTK_CONTROL(pWindow)->onEvent;
+        propagate = onEventLocal == NULL || onEventLocal(pEvent);
+        if (!propagate) {
+            return DTK_SUCCESS;
+        }
     }
 
     switch (pEvent->type)
@@ -173,7 +180,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
     if (e.type != DTK_EVENT_NONE) {
         dtk_bool32 propagate = e.pTK->onEvent == NULL || e.pTK->onEvent(&e);
         if (propagate) {
-            dtk_window__handle_event(pWindow, &e);
+            dtk__handle_event(pWindow, &e);
         }
     }
 
@@ -357,7 +364,7 @@ static gboolean dtk_window__on_close__gtk(GtkWidget* pWidget, GdkEvent* pEvent, 
     if (pWindow == NULL) return DTK_TRUE;
     
     dtk_event e = dtk_event_init(DTK_EVENT_CLOSE, DTK_CONTROL(pWindow));
-    dtk_window__handle_event(pWindow, &e);
+    dtk__handle_event(&e);
     
     return DTK_TRUE;
 }
@@ -374,7 +381,7 @@ static gboolean dtk_window__on_configure__gtk(GtkWidget* pWidget, GdkEventConfig
         dtk_event e = dtk_event_init(DTK_EVENT_MOVE, DTK_CONTROL(pWindow));
         e.move.x = pEvent->x;
         e.move.y = pEvent->y;
-        dtk_window__handle_event(pWindow, &e);
+        dtk__handle_event(&e);
     }
 
     return DTK_FALSE;
@@ -396,7 +403,7 @@ static gboolean dtk_window__on_draw_clientarea__gtk(GtkWidget* pWidget, cairo_t*
     e.paint.rect.top = clipTop;
     e.paint.rect.right = clipRight;
     e.paint.rect.bottom = clipBottom;
-    dtk_window__handle_event(pWindow, &e);
+    dtk__handle_event(&e);
     
     cairo_set_source_surface(cr, DTK_CONTROL(pWindow)->pSurface->cairo.pSurface, 0, 0);
     cairo_paint(cr);
@@ -417,7 +424,7 @@ static gboolean dtk_window__on_configure_clientarea__gtk(GtkWidget* pWidget, Gdk
         dtk_event e = dtk_event_init(DTK_EVENT_SIZE, DTK_CONTROL(pWindow));
         e.size.width = pEvent->width;
         e.size.height = pEvent->height;
-        dtk_window__handle_event(pWindow, &e);
+        dtk__handle_event(&e);
 
         // Invalidate the window to force a redraw.
         gtk_widget_queue_draw(pWidget);
