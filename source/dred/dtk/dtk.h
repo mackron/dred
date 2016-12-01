@@ -106,7 +106,6 @@ typedef struct dtk_context dtk_context;
 typedef struct dtk_control dtk_control;
 typedef struct dtk_window dtk_window;
 typedef struct dtk_menu dtk_menu;
-//typedef struct dtk_menu_item dtk_menu_item;
 
 typedef struct
 {

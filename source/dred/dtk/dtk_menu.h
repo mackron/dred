@@ -26,38 +26,6 @@ typedef struct
     void* pUserData;
 } dtk_menu_item_info;
 
-#if 0
-struct dtk_menu_item
-{
-    dtk_menu* pMenu;        // The menu that owns this item.
-    dtk_menu* pSubMenu;     // The sub-menu, if any.
-    dtk_uint32 id;          // An application-defined identifier for the menu item.
-    dtk_uint32 index;       // The index of the item in the menu that owns it. This includes separators.
-    dtk_menu_item_type type;
-
-    union
-    {
-    #ifdef DTK_WIN32
-        struct
-        {
-            int unused;
-        } win32;
-    #endif
-    #ifdef DTK_GTK
-        struct
-        {
-            /*GtkWidget**/ dtk_ptr pWidget;
-        } gtk;
-    #endif
-    #ifdef DTK_X11
-        struct
-        {
-        } x11;
-    #endif
-    };
-};
-#endif
-
 struct dtk_menu
 {
     dtk_context* pTK;
