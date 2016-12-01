@@ -62,6 +62,7 @@ struct dtk_menu
 {
     dtk_context* pTK;
     dtk_menu_type type;
+    void* pUserData;    // For use by the application.
 
     union
     {
@@ -75,6 +76,7 @@ struct dtk_menu
         struct
         {
             /*GtkWidget**/ dtk_ptr pWidget;
+            dtk_uint32 itemCount;
         } gtk;
     #endif
     #ifdef DTK_X11

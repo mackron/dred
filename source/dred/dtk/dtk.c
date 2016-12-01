@@ -363,6 +363,12 @@ dtk_result dtk_init__gtk(dtk_context* pTK)
         if (!gtk_init_check(0, NULL)) {
             return DTK_FAILED_TO_INIT_BACKEND;
         }
+        
+        pTK->gtk.Cursor_Default      = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_LEFT_PTR);
+        pTK->gtk.Cursor_IBeam        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_XTERM);;
+        pTK->gtk.Cursor_Cross        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_CROSSHAIR);;
+        pTK->gtk.Cursor_DoubleArrowH = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_H_DOUBLE_ARROW);;
+        pTK->gtk.Cursor_DoubleArrowV = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_V_DOUBLE_ARROW);;
     }
 
     pTK->platform = dtk_platform_gtk;

@@ -77,6 +77,7 @@ typedef int dtk_result;
 // Standard library stuff.
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #ifndef dtk_assert
 #define dtk_assert(condition)   assert(condition)
@@ -213,7 +214,11 @@ struct dtk_context
 #ifdef DTK_GTK
         struct
         {
-            int unused;
+            /*GdkCursor**/ dtk_ptr Cursor_Default;
+            /*GdkCursor**/ dtk_ptr Cursor_IBeam;
+            /*GdkCursor**/ dtk_ptr Cursor_Cross;
+            /*GdkCursor**/ dtk_ptr Cursor_DoubleArrowH;
+            /*GdkCursor**/ dtk_ptr Cursor_DoubleArrowV;
         } gtk;
 
         struct

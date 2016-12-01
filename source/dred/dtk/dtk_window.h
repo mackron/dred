@@ -31,6 +31,7 @@ struct dtk_window
             /*GtkWidget**/ dtk_ptr pWidget;
             /*GtkWidget**/ dtk_ptr pBox;
             /*GtkWidget**/ dtk_ptr pClientArea;
+            dtk_menu* pMenu;
         } gtk;
     #endif
     #ifdef DTK_X11

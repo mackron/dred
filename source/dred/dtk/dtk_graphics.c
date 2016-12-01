@@ -248,6 +248,21 @@ void dtk_surface_draw_rect__cairo(dtk_surface* pSurface, dtk_int32 x, dtk_int32 
     cairo_rectangle(pSurface->cairo.pContext, x, y, width, height);
     cairo_fill(pSurface->cairo.pContext);
 }
+
+void dtk_surface_draw_text__cairo(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textLength, dtk_int32 posX, dtk_int32 posY, dtk_color fgColor, dtk_color bgColor)
+{
+    (void)pSurface;
+    (void)pFont;
+    (void)scale;
+    (void)text;
+    (void)textLength;
+    (void)posX;
+    (void)posY;
+    (void)fgColor;
+    (void)bgColor;
+    
+    // TODO: Implement me.
+}
 #endif
 
 

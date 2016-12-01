@@ -514,7 +514,7 @@ dtk_result dtk_window_set_size__gtk(dtk_window* pWindow, dtk_uint32 width, dtk_u
     }
 #endif
 
-    gtk_window_resize(GTK_WINDOW(pWindow->gtk.pWidget), (int)newWidth, (int)newHeight);
+    gtk_window_resize(GTK_WINDOW(pWindow->gtk.pWidget), (int)width, (int)height);
     return DTK_SUCCESS;
 }
 
@@ -575,6 +575,22 @@ dtk_result dtk_window_show__gtk(dtk_window* pWindow, int mode)
         return DTK_INVALID_ARGS;
     }
     
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_set_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu)
+{
+    // The old menu bar needs to be removed.
+    if (pWindow->gtk.pMenu != NULL) {
+        gtk_container_remove(GTK_CONTAINER(pWindow->gtk.pBox), pWindow->gtk.pMenu->gtk.pWidget);
+    }
+
+    // Add the new menu to the top.
+    gtk_box_pack_start(GTK_BOX(pWindow->gtk.pBox), pMenu->gtk.pWidget, FALSE, FALSE, 0);
+    gtk_box_reorder_child(GTK_BOX(pWindow->gtk.pBox), pMenu->gtk.pWidget, 0);
+    gtk_widget_show(pMenu->gtk.pWidget);
+
+    pWindow->gtk.pMenu = pMenu;
     return DTK_SUCCESS;
 }
 #endif
@@ -861,6 +877,11 @@ dtk_result dtk_window_show(dtk_window* pWindow, int mode)
 dtk_result dtk_window_set_menu(dtk_window* pWindow, dtk_menu* pMenu)
 {
     if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    // Only menu bars are allowed to be set on a window.
+    if (pMenu != NULL && pMenu->type != dtk_menu_type_menubar) {
+        return DTK_INVALID_ARGS;
+    }
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
