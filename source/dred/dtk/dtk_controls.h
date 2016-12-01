@@ -64,3 +64,8 @@ dtk_result dtk_control_absolute_to_relative(dtk_control* pControl, dtk_int32* pP
 
 // Finds the top level control for the given control.
 dtk_control* dtk_control_find_top_level_control(dtk_control* pControl);
+
+// Finds the window that the given control is part of. All this does is performs an updwards traversal of
+// the hierarchy and returns the first occurance of a dtk_window control. If <pControl> itself is a window,
+// this will return <pControl>.
+dtk_window* dtk_control_get_window(dtk_control* pControl);

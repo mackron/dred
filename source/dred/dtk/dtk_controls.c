@@ -174,3 +174,16 @@ dtk_control* dtk_control_find_top_level_control(dtk_control* pControl)
 
     return pTopLevelControl;
 }
+
+dtk_window* dtk_control_get_window(dtk_control* pControl)
+{
+    while (pControl != NULL) {
+        if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+            return DTK_WINDOW(pControl);
+        }
+
+        pControl = pControl->pParent;
+    }
+
+    return NULL;
+}
