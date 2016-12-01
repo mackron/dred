@@ -410,7 +410,7 @@ dtk_result dtk_menu_insert_item__gtk(dtk_menu* pMenu, dtk_uint32 index, dtk_menu
     }
 
     g_signal_connect(pItem, "activate", G_CALLBACK(dtk__on_menu_item_activate__gtk), pItem);
-    gtk_menu_shell_append(GTK_MENU_SHELL(pMenu->gtk.pWidget), pItem);
+    gtk_menu_shell_insert(GTK_MENU_SHELL(pMenu->gtk.pWidget), pItem, index);
     gtk_widget_show(pItem);
 
     if (pInfo->pSubMenu != NULL) {
