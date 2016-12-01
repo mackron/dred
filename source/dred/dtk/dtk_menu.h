@@ -23,6 +23,7 @@ typedef struct
     dtk_uint32 stateFlags;      // DTK_MENU_ITEM_STATE_*
     dtk_menu* pSubMenu;
     const char* text;
+    void* pUserData;
 } dtk_menu_item_info;
 
 #if 0
@@ -107,4 +108,32 @@ dtk_result dtk_menu_remove_item(dtk_menu* pMenu, dtk_uint32 index);
 dtk_result dtk_menu_remove_all_items(dtk_menu* pMenu);
 
 
+// Retrieves the user data of the menu item at the given index.
+dtk_result dtk_menu_get_item_user_data(dtk_menu* pMenu, dtk_uint32 index, void** ppUserData);
 
+// Retrieves the ID of the item at the given index.
+dtk_result dtk_menu_get_item_id(dtk_menu* pMenu, dtk_uint32 index, dtk_uint32* pID);
+
+// Retrieves the index of the first item with the given ID. If the item could not be found, -1 will
+// be returned. This runs in linear time.
+dtk_uint32 dtk_menu_find_item_by_id(dtk_menu* pMenu, dtk_uint32 id);
+
+
+// Enables the menu item at the given index.
+dtk_result dtk_menu_enable_item(dtk_menu* pMenu, dtk_uint32 index);
+
+// Disables the menu item at the given index.
+dtk_result dtk_menu_disable_item(dtk_menu* pMenu, dtk_uint32 index);
+
+
+// Checks the given menu item.
+dtk_result dtk_menu_check_item(dtk_menu* pMenu, dtk_uint32 index);
+
+// Unchecks the given menu item.
+dtk_result dtk_menu_uncheck_item(dtk_menu* pMenu, dtk_uint32 index);
+
+// Sets whether or not the menu item is checked.
+dtk_result dtk_menu_set_item_checked(dtk_menu* pMenu, dtk_uint32 index, dtk_bool32 checked);
+
+// Determines whether or not the given menu item is checked.
+dtk_bool32 dtk_menu_is_item_checked(dtk_menu* pMenu, dtk_uint32 index);
