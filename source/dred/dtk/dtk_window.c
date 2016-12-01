@@ -104,7 +104,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
     if (e.type != DTK_EVENT_NONE) {
         dtk_bool32 propagate = e.pTK->onEvent == NULL || e.pTK->onEvent(&e);
         if (propagate) {
-            dtk__handle_event(pWindow, &e);
+            dtk__handle_event(&e);
         }
     }
 
