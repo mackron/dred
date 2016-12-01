@@ -61,7 +61,6 @@ struct dtk_menu
 {
     dtk_context* pTK;
     dtk_menu_type type;
-    dtk_menu* pNextMenu;    // <-- Used internally by DTK. Applications should not use this.
 
     union
     {

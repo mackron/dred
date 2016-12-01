@@ -109,33 +109,6 @@ dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
     return DTK_ERROR;
 }
 
-dtk_result dtk__track_menu(dtk_context* pTK, dtk_menu* pMenu)
-{
-    if (pTK == NULL || pMenu == NULL) return DTK_INVALID_ARGS;
-
-    pMenu->pNextMenu = pTK->pFirstMenu;
-    pTK->pFirstMenu = pMenu;
-
-    return DTK_SUCCESS;
-}
-
-dtk_result dtk__untrack_menu(dtk_context* pTK, dtk_menu* pMenu)
-{
-    if (pTK == NULL || pMenu == NULL) return DTK_INVALID_ARGS;
-
-    dtk_menu** ppNext = &pTK->pFirstMenu;
-    while (*ppNext != NULL) {
-        if (*ppNext == pMenu) {
-            *ppNext = (*ppNext)->pNextMenu;
-            return DTK_SUCCESS;
-        }
-
-        ppNext = &(*ppNext)->pNextMenu;
-    }
-
-    return DTK_ERROR;
-}
-
 
 #include "dtk_string.c"
 #include "dtk_graphics.c"
