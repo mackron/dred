@@ -2,6 +2,7 @@ build/
 docs/private/
 resources/branding/banners/
 resources/branding/icons/
+resources/screenshots/
 /resources/win32/dred.aps
 source/website/docs/
 !source/website/docs/dred/
