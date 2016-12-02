@@ -200,7 +200,9 @@ dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DTK_WIN32
-typedef BOOL (WINAPI * DTK_PFN_InitCommonControlsEx)(const LPINITCOMMONCONTROLSEX lpInitCtrls);
+typedef BOOL    (WINAPI * DTK_PFN_InitCommonControlsEx)(const LPINITCOMMONCONTROLSEX lpInitCtrls);
+typedef HRESULT (WINAPI * DTK_PFN_OleInitialize)       (LPVOID pvReserved);
+typedef void    (WINAPI * DTK_PFN_OleUninitialize)     ();
 
 static dtk_uint32 g_dtkInitCounter_Win32 = 0;
 
@@ -256,6 +258,16 @@ void dtk_make_dpi_aware__win32()
     }
 }
 
+dtk_result dtk_uninit_backend_apis__win32(dtk_context* pTK)
+{
+    dtk_assert(pTK != NULL);
+
+    FreeLibrary(pTK->win32.hOle32DLL);
+    FreeLibrary(pTK->win32.hComctl32DLL);
+
+    return DTK_SUCCESS;
+}
+
 dtk_result dtk_init_backend_apis__win32(dtk_context* pTK)
 {
     dtk_assert(pTK != NULL);
@@ -266,22 +278,20 @@ dtk_result dtk_init_backend_apis__win32(dtk_context* pTK)
         return DTK_ERROR;
     }
 
-    pTK->win32.hComctl32DLL = hComctl32DLL;
+    pTK->win32.hComctl32DLL = (dtk_handle)hComctl32DLL;
     pTK->win32.InitCommonControlsEx = (dtk_proc)GetProcAddress(hComctl32DLL, "InitCommonControlsEx");
 
 
     // Ole32.dll
+    HMODULE hOle32DLL = LoadLibraryW(L"ole32.dll");
+    if (hComctl32DLL == NULL) {
+        dtk_uninit_backend_apis__win32(pTK);
+        return DTK_ERROR;
+    }
 
-
-
-    return DTK_SUCCESS;
-}
-
-dtk_result dtk_uninit_backend_apis__win32(dtk_context* pTK)
-{
-    dtk_assert(pTK != NULL);
-
-    FreeLibrary(pTK->win32.hComctl32DLL);
+    pTK->win32.hOle32DLL = (dtk_handle)hOle32DLL;
+    pTK->win32.OleInitialize   = (dtk_proc)GetProcAddress(hOle32DLL, "OleInitialize");
+    pTK->win32.OleUninitialize = (dtk_proc)GetProcAddress(hOle32DLL, "OleUninitialize");
 
     return DTK_SUCCESS;
 }
@@ -302,7 +312,9 @@ dtk_result dtk_init__win32(dtk_context* pTK)
         dtk_init_backend_apis__win32(pTK);
 
         // For drag and drop.
-        OleInitialize(NULL);
+        if (pTK->win32.OleInitialize) {
+            ((DTK_PFN_OleInitialize)pTK->win32.OleInitialize)(NULL);
+        }
 
         // Need to call this to enable visual styles.
         if (pTK->win32.InitCommonControlsEx) {
@@ -344,7 +356,9 @@ dtk_result dtk_uninit__win32(dtk_context* pTK)
     g_dtkInitCounter_Win32 -= 1;
     if (g_dtkInitCounter_Win32 == 0) {
         UnregisterClassA(DTK_WIN32_WINDOW_CLASS, GetModuleHandleA(NULL));
-        OleUninitialize();
+        if (pTK->win32.OleUninitialize) {
+            ((DTK_PFN_OleUninitialize)pTK->win32.OleUninitialize)();
+        }
     }
 
     return DTK_SUCCESS;

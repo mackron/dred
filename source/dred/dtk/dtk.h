@@ -278,6 +278,10 @@ struct dtk_context
         {
             /*HMODULE*/ dtk_handle hComctl32DLL;
             dtk_proc InitCommonControlsEx;
+
+            /*HMODULE*/ dtk_handle hOle32DLL;
+            dtk_proc OleInitialize;
+            dtk_proc OleUninitialize;
         } win32;
 #endif
 #ifdef DTK_GTK
