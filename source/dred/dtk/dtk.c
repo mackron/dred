@@ -500,8 +500,14 @@ dtk_result dtk_uninit__gtk(dtk_context* pTK)
 
     g_dtkInitCounter_GTK -= 1;
     if (g_dtkInitCounter_GTK == 0) {
-        // There is no gtk_uninit()
+        g_object_unref(G_OBJECT(pTK->gtk.pCursorDefault));
+        g_object_unref(G_OBJECT(pTK->gtk.pCursorIBeam));
+        g_object_unref(G_OBJECT(pTK->gtk.pCursorCross));
+        g_object_unref(G_OBJECT(pTK->gtk.pCursorDoubleArrowH));
+        g_object_unref(G_OBJECT(pTK->gtk.pCursorDoubleArrowV));
         
+        // Note: There is no gtk_uninit()
+
         dtk_init_backend_apis__gtk(pTK);
     }
 
