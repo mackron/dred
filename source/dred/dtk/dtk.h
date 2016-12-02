@@ -282,16 +282,22 @@ struct dtk_context
             /*HMODULE*/ dtk_handle hOle32DLL;
             dtk_proc OleInitialize;
             dtk_proc OleUninitialize;
+
+            /*HCURSOR*/ dtk_handle hCursorArrow;
+            /*HCURSOR*/ dtk_handle hCursorIBeam;
+            /*HCURSOR*/ dtk_handle hCursorCross;
+            /*HCURSOR*/ dtk_handle hCursorSizeWE;
+            /*HCURSOR*/ dtk_handle hCursorSizeNS;
         } win32;
 #endif
 #ifdef DTK_GTK
         struct
         {
-            /*GdkCursor**/ dtk_ptr Cursor_Default;
-            /*GdkCursor**/ dtk_ptr Cursor_IBeam;
-            /*GdkCursor**/ dtk_ptr Cursor_Cross;
-            /*GdkCursor**/ dtk_ptr Cursor_DoubleArrowH;
-            /*GdkCursor**/ dtk_ptr Cursor_DoubleArrowV;
+            /*GdkCursor**/ dtk_ptr pCursorDefault;
+            /*GdkCursor**/ dtk_ptr pCursorIBeam;
+            /*GdkCursor**/ dtk_ptr pCursorCross;
+            /*GdkCursor**/ dtk_ptr pCursorDoubleArrowH;
+            /*GdkCursor**/ dtk_ptr pCursorDoubleArrowV;
         } gtk;
 
         struct

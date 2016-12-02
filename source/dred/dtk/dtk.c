@@ -141,17 +141,21 @@ dtk_result dtk__handle_event(dtk_event* pEvent)
         if (!propagate) {
             return DTK_SUCCESS;
         }
-    }
 
-    switch (pEvent->type)
-    {
-        case DTK_EVENT_MOUSE_MOVE:
+        // After the window has had the event posted to it we may need to post some related events to controls which are not
+        // handled by the operating system and thus need to be done manually by us.
+        switch (pEvent->type)
         {
-            
-        } break;
+            case DTK_EVENT_MOUSE_MOVE:
+            {
+                
+            } break;
 
-        default: break;
+            default: break;
+        }
     }
+
+    
 
     return DTK_SUCCESS;
 }
@@ -326,7 +330,7 @@ dtk_result dtk_init__win32(dtk_context* pTK)
 
         // Window classes.
         WNDCLASSEXA wc;
-        ZeroMemory(&wc, sizeof(wc));
+        dtk_zero_object(&wc);
         wc.cbSize        = sizeof(wc);
         wc.cbWndExtra    = sizeof(dtk_window*);
         wc.lpfnWndProc   = (WNDPROC)dtk_GenericWindowProc;
@@ -335,9 +339,31 @@ dtk_result dtk_init__win32(dtk_context* pTK)
         wc.hIcon         = LoadIconA(GetModuleHandleA(NULL), MAKEINTRESOURCEA(101));
         wc.style         = CS_OWNDC | CS_DBLCLKS;
         if (!RegisterClassExA(&wc)) {
+            return DTK_ERROR;
+        }
+
+        wc.lpszClassName = DTK_WIN32_WINDOW_CLASS_POPUP;
+        wc.style         = CS_OWNDC | CS_DBLCLKS | CS_DROPSHADOW;
+        if (!RegisterClassExA(&wc)) {
             UnregisterClassA(DTK_WIN32_WINDOW_CLASS, NULL);
             return DTK_ERROR;
         }
+
+        wc.lpfnWndProc   = (WNDPROC)dtk_TimerWindowProcWin32;
+        wc.lpszClassName = DTK_WIN32_WINDOW_CLASS_TIMER;
+        if (!RegisterClassExA(&wc)) {
+            UnregisterClassA(DTK_WIN32_WINDOW_CLASS_POPUP, NULL);
+            UnregisterClassA(DTK_WIN32_WINDOW_CLASS, NULL);
+            return DTK_ERROR;
+        }
+
+        
+        // Cursors.
+        pTK->win32.hCursorArrow  = (dtk_handle)LoadCursor(NULL, IDC_ARROW);
+        pTK->win32.hCursorIBeam  = (dtk_handle)LoadCursor(NULL, IDC_IBEAM);
+        pTK->win32.hCursorCross  = (dtk_handle)LoadCursor(NULL, IDC_CROSS);
+        pTK->win32.hCursorSizeWE = (dtk_handle)LoadCursor(NULL, IDC_SIZEWE);
+        pTK->win32.hCursorSizeNS = (dtk_handle)LoadCursor(NULL, IDC_SIZENS);
     }
 
     pTK->platform = dtk_platform_win32;
@@ -454,11 +480,11 @@ dtk_result dtk_init__gtk(dtk_context* pTK)
             return DTK_FAILED_TO_INIT_BACKEND;
         }
         
-        pTK->gtk.Cursor_Default      = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_LEFT_PTR);
-        pTK->gtk.Cursor_IBeam        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_XTERM);;
-        pTK->gtk.Cursor_Cross        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_CROSSHAIR);;
-        pTK->gtk.Cursor_DoubleArrowH = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_H_DOUBLE_ARROW);;
-        pTK->gtk.Cursor_DoubleArrowV = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_V_DOUBLE_ARROW);;
+        pTK->gtk.pCursorDefault      = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_LEFT_PTR);
+        pTK->gtk.pCursorIBeam        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_XTERM);;
+        pTK->gtk.pCursorCross        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_CROSSHAIR);;
+        pTK->gtk.pCursorDoubleArrowH = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_H_DOUBLE_ARROW);;
+        pTK->gtk.pCursorDoubleArrowV = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_V_DOUBLE_ARROW);;
     }
 
     pTK->platform = dtk_platform_gtk;

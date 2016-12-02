@@ -9,9 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DTK_WIN32
 #define DTK_WIN32_WINDOW_CLASS              "dtk.window"
-#define DTK_WIN32_WINDOW_CLASS_DIALOG       "dtk.window.dialog"
 #define DTK_WIN32_WINDOW_CLASS_POPUP        "dtk.window.popup"
-#define DTK_WIN32_WINDOW_CLASS_POPUP_SHADOW "dtk.window.popup.shadow"
 #define DTK_WIN32_WINDOW_CLASS_TIMER        "dtk.window.timer"
 
 #define DTK_GET_X_LPARAM(lp)    ((int)(short)LOWORD(lp))
@@ -233,7 +231,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
     {
         case WM_CREATE:
         {
-            dtk_track_mouse_leave_event__win32(hWnd);   // <-- This allows us to track mouse enter and leave events for the window.
+            //dtk_track_mouse_leave_event__win32(hWnd);   // <-- This allows us to track mouse enter and leave events for the window.
         } return 0;
 
         case WM_DESTROY:
@@ -257,6 +255,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.paint.rect.top = rect.top;
                 e.paint.rect.right = rect.right;
                 e.paint.rect.bottom = rect.bottom;
+                dtk__handle_event(&e);
             }
         } break;
 
@@ -265,6 +264,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.type = DTK_EVENT_SIZE;
             e.size.width  = LOWORD(lParam);
             e.size.height = HIWORD(lParam);
+            dtk__handle_event(&e);
         } break;
 
         case WM_MOVE:
@@ -282,6 +282,8 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.move.x = DTK_GET_X_LPARAM(lParam);
             e.move.y = DTK_GET_Y_LPARAM(lParam);
         #endif
+
+            dtk__handle_event(&e);
         } break;
 
 
@@ -293,9 +295,11 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
 
             if ((pWindowPos->flags & SWP_HIDEWINDOW) != 0) {
                 e.type = DTK_EVENT_HIDE;
+                dtk__handle_event(&e);
             }
             if ((pWindowPos->flags & SWP_SHOWWINDOW) != 0) {
                 e.type = DTK_EVENT_SHOW;
+                dtk__handle_event(&e);
             }
         } break;
 
@@ -303,7 +307,9 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         case WM_MOUSELEAVE:
         {
             pWindow->win32.isCursorOverClientArea = DTK_FALSE;
+
             e.type = DTK_EVENT_MOUSE_LEAVE;
+            dtk__handle_event(&e);
         } break;
 
         case WM_MOUSEMOVE:
@@ -318,6 +324,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.type = DTK_EVENT_MOUSE_MOVE;
             e.mouseMove.x = DTK_GET_X_LPARAM(lParam);
             e.mouseMove.y = DTK_GET_Y_LPARAM(lParam);
+            dtk__handle_event(&e);
         } break;
 
         case WM_NCLBUTTONDOWN:
@@ -334,6 +341,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
             e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+            dtk__handle_event(&e);
         } break;
 
         case WM_NCLBUTTONUP:
@@ -350,6 +358,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
             e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+            dtk__handle_event(&e);
         } break;
 
         case WM_NCLBUTTONDBLCLK:
@@ -370,6 +379,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             dtk__handle_event(&e);
 
             e.type = DTK_EVENT_MOUSE_BUTTON_DBLCLICK;
+            dtk__handle_event(&e);
         } break;
 
         case WM_LBUTTONDOWN:
@@ -385,6 +395,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
             e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+            dtk__handle_event(&e);
         } break;
 
         case WM_LBUTTONUP:
@@ -400,6 +411,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
             e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+            dtk__handle_event(&e);
         } break;
 
         case WM_LBUTTONDBLCLK:
@@ -419,6 +431,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             dtk__handle_event(&e);
 
             e.type = DTK_EVENT_MOUSE_BUTTON_DBLCLICK;
+            dtk__handle_event(&e);
         } break;
 
         case WM_MOUSEWHEEL:
@@ -435,6 +448,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseWheel.y = p.y;
             e.mouseWheel.delta = delta;
             e.mouseWheel.state = dtk_get_mouse_event_state_flags__win32(wParam);
+            dtk__handle_event(&e);
         } break;
 
 
@@ -449,6 +463,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.type = DTK_EVENT_KEY_DOWN;
                 e.keyDown.key = dtk_win32_to_dtk_key(wParam);
                 e.keyDown.state = stateFlags;
+                dtk__handle_event(&e);
             }
         } break;
 
@@ -458,6 +473,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.type = DTK_EVENT_KEY_UP;
                 e.keyDown.key = dtk_win32_to_dtk_key(wParam);
                 e.keyDown.state = dtk_get_modifier_key_state_flags__win32();
+                dtk__handle_event(&e);
             }
         } break;
 
@@ -487,16 +503,18 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
 
                     pWindow->win32.utf16HighSurrogate = 0;
 
+                    int stateFlags = dtk_get_modifier_key_state_flags__win32();
+                    if ((lParam & (1 << 30)) != 0) {
+                        stateFlags |= DTK_KEY_AUTO_REPEATED;
+                    }
+
+                    e.type = DTK_EVENT_PRINTABLE_KEY_DOWN;
+                    e.printableKeyDown.utf32 = character;
+                    e.printableKeyDown.state = stateFlags;
+
                     int repeatCount = lParam & 0x0000FFFF;
                     for (int i = 0; i < repeatCount; ++i) {
-                        int stateFlags = dtk_get_modifier_key_state_flags__win32();
-                        if ((lParam & (1 << 30)) != 0) {
-                            stateFlags |= DTK_KEY_AUTO_REPEATED;
-                        }
-
-                        e.type = DTK_EVENT_PRINTABLE_KEY_DOWN;
-                        e.printableKeyDown.utf32 = character;
-                        e.printableKeyDown.state = stateFlags;
+                        dtk__handle_event(&e);
                     }
                 }
             }
@@ -506,11 +524,13 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         case WM_SETFOCUS:
         {
             e.type = DTK_EVENT_FOCUS;
+            dtk__handle_event(&e);
         } break;
 
         case WM_KILLFOCUS:
         {
             e.type = DTK_EVENT_UNFOCUS;
+            dtk__handle_event(&e);
         } break;
 
 
@@ -535,6 +555,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.type = DTK_EVENT_MENU;
                 e.menu.pMenu = pMenu;
                 e.menu.itemIndex = (dtk_uint32)wParam;
+                dtk__handle_event(&e);
             }
         } break;
 
@@ -549,25 +570,38 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         default: break;
     }
 
-    if (e.type != DTK_EVENT_NONE) {
-        dtk__handle_event(&e);
-    }
-
     return DefWindowProcA(hWnd, msg, wParam, lParam);
 }
 
-dtk_result dtk_window_init__win32(dtk_context* pTK, dtk_control* pParent, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_window* pWindow)
+dtk_result dtk_window_init__win32(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_window* pWindow)
 {
     (void)pTK;
 
     DWORD dwStyleEx = 0;
-    DWORD dwStyle = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW;
+    DWORD dwStyle = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+    if (type == dtk_window_type_toplevel) {
+        dwStyle   |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW;
+    }
+    if (type == dtk_window_type_dialog) {
+        dwStyleEx |= WS_EX_DLGMODALFRAME;
+        dwStyle   |= WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+    }
+    if (type == dtk_window_type_popup) {
+        dwStyle   |= WS_POPUP;
+    }
+
+    const char* pClassName = DTK_WIN32_WINDOW_CLASS;
+    if (type == dtk_window_type_popup) {
+        pClassName = DTK_WIN32_WINDOW_CLASS_POPUP;
+    }
+
     HWND hWnd = CreateWindowExA(dwStyleEx, DTK_WIN32_WINDOW_CLASS, title, dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, width, height, (pParent != NULL) ? (HWND)DTK_WINDOW(pParent)->win32.hWnd : NULL, NULL, NULL, NULL);
     if (hWnd == NULL) {
         return DTK_ERROR;
     }
 
     pWindow->win32.hWnd = (dtk_handle)hWnd;
+    pWindow->win32.hCursor = pTK->win32.hCursorArrow;
 
     // The dtk window needs to be linked to the Win32 window handle so it can be accessed from the event handler.
     SetWindowLongPtrA(hWnd, 0, (LONG_PTR)pWindow);
@@ -722,27 +756,29 @@ dtk_bool32 dtk_window_is_maximized__win32(dtk_window* pWindow)
 
 dtk_result dtk_window_set_cursor__win32(dtk_window* pWindow, dtk_system_cursor_type cursor)
 {
+    dtk_context* pTK = DTK_CONTROL(pWindow)->pTK;
+
     HCURSOR hCursor = NULL;
     switch (cursor)
     {
         case dtk_system_cursor_type_text:
         {
-            hCursor = LoadCursor(NULL, IDC_IBEAM);
+            hCursor = pTK->win32.hCursorIBeam;
         } break;
 
         case dtk_system_cursor_type_cross:
         {
-            hCursor = LoadCursor(NULL, IDC_CROSS);
+            hCursor = pTK->win32.hCursorCross;
         } break;
 
         case dtk_system_cursor_type_double_arrow_h:
         {
-            hCursor = LoadCursor(NULL, IDC_SIZEWE);
+            hCursor = pTK->win32.hCursorSizeWE;
         } break;
 
         case dtk_system_cursor_type_double_arrow_v:
         {
-            hCursor = LoadCursor(NULL, IDC_SIZENS);
+            hCursor = pTK->win32.hCursorSizeNS;
         } break;
 
 
@@ -755,7 +791,7 @@ dtk_result dtk_window_set_cursor__win32(dtk_window* pWindow, dtk_system_cursor_t
         case dtk_system_cursor_type_default:
         default:
         {
-            hCursor = LoadCursor(NULL, IDC_ARROW);
+            hCursor = pTK->win32.hCursorArrow;
         } break;
     }
 
@@ -1292,7 +1328,7 @@ static gboolean dtk_window_clientarea__on_mouse_wheel__gtk(GtkWidget* pClientAre
 }
 
 
-dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_window* pWindow)
+dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_window* pWindow)
 {
     // Client area. This is where everything is drawn.
     GtkWidget* pClientArea = gtk_drawing_area_new();
@@ -1352,8 +1388,6 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, const ch
     g_signal_connect(pWidget, "focus-out-event",   G_CALLBACK(dtk_window__on_lose_focus__gtk),    pWindow);     // Lose focus.
     
     gtk_container_add(GTK_CONTAINER(pWidget), pBox);
-
-
 
     pWindow->gtk.pWidget     = pWidget;
     pWindow->gtk.pBox        = pBox;
@@ -1474,22 +1508,22 @@ dtk_result dtk_window_set_cursor__gtk(dtk_window* pWindow, dtk_system_cursor_typ
     {
         case dtk_system_cursor_type_text:
         {
-            pGTKCursor = pTK->gtk.Cursor_IBeam;
+            pGTKCursor = pTK->gtk.pCursorIBeam;
         } break;
 
         case dtk_system_cursor_type_cross:
         {
-            pGTKCursor = pTK->gtk.Cursor_Cross;
+            pGTKCursor = pTK->gtk.pCursorCross;
         } break;
 
         case dtk_system_cursor_type_double_arrow_h:
         {
-            pGTKCursor = pTK->gtk.Cursor_DoubleArrowH;
+            pGTKCursor = pTK->gtk.pCursorDoubleArrowH;
         } break;
 
         case dtk_system_cursor_type_double_arrow_v:
         {
-            pGTKCursor = pTK->gtk.Cursor_DoubleArrowH;
+            pGTKCursor = pTK->gtk.pCursorDoubleArrowV;
         } break;
 
 
@@ -1502,7 +1536,7 @@ dtk_result dtk_window_set_cursor__gtk(dtk_window* pWindow, dtk_system_cursor_typ
         case dtk_system_cursor_type_default:
         default:
         {
-            pGTKCursor = pTK->gtk.Cursor_Default;
+            pGTKCursor = pTK->gtk.pCursorDefault;
         } break;
     }
 
@@ -1563,7 +1597,7 @@ dtk_result dtk_window_show_popup_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu,
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_event_proc onEvent, dtk_window* pWindow)
+dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_event_proc onEvent, dtk_window* pWindow)
 {
     if (pWindow == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pWindow);
@@ -1578,18 +1612,16 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, const char* t
     }
     
     // Do an upwards traversal until we find the overarching window control.
-    while (pParent != NULL && pParent->type != DTK_CONTROL_TYPE_WINDOW) {
-        pParent = pParent->pParent;
-    }
+    dtk_window* pParentWindow = dtk_control_get_window(pParent);
     
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
-        result = dtk_window_init__win32(pTK, pParent, title, width, height, pWindow);
+        result = dtk_window_init__win32(pTK, DTK_CONTROL(pParentWindow), type, title, width, height, pWindow);
     }
 #endif
 #ifdef DTK_GTK
     if (pTK->platform == dtk_platform_gtk) {
-        result = dtk_window_init__gtk(pTK, pParent, title, width, height, pWindow);
+        result = dtk_window_init__gtk(pTK, DTK_CONTROL(pParentWindow), type, title, width, height, pWindow);
     }
 #endif
     if (result != DTK_SUCCESS) {
@@ -1605,6 +1637,13 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, const char* t
 
     // Make sure the position attributes of the structure are updated.
     dtk_window_get_absolute_position(pWindow, &DTK_CONTROL(pWindow)->absolutePosX, &DTK_CONTROL(pWindow)->absolutePosY);
+
+    if (type == dtk_window_type_dialog) {
+        pWindow->flags |= DTK_WINDOW_FLAG_DIALOG;
+    }
+    if (type == dtk_window_type_popup) {
+        pWindow->flags |= DTK_WINDOW_FLAG_POPUP;
+    }
 
     return DTK_SUCCESS;
 }

@@ -10,6 +10,13 @@
 
 typedef enum
 {
+    dtk_window_type_toplevel,
+    dtk_window_type_dialog,
+    dtk_window_type_popup
+} dtk_window_type;
+
+typedef enum
+{
     dtk_system_cursor_type_none,
     dtk_system_cursor_type_default,
     dtk_system_cursor_type_arrow = dtk_system_cursor_type_default,
@@ -62,7 +69,7 @@ struct dtk_window
 };
 
 // Initializes a window control.
-dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_event_proc onEvent, dtk_window* pWindow);
+dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_event_proc onEvent, dtk_window* pWindow);
 
 // Uninitializes a window control.
 dtk_result dtk_window_uninit(dtk_window* pWindow);
