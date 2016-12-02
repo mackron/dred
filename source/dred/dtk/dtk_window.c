@@ -241,9 +241,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         case WM_CLOSE:
         {
             e.type = DTK_EVENT_CLOSE;
-            if (e.pControl->onEvent) {
-                e.pControl->onEvent(&e);
-            }
+            dtk__handle_event(&e);
         } return 0;
 
         case WM_PAINT:
@@ -1879,6 +1877,14 @@ dtk_result dtk_window_show(dtk_window* pWindow, int mode)
         result = dtk_window_show__gtk(pWindow, mode);
     }
 #endif
+
+    if (result == DTK_SUCCESS) {
+        if (mode == DTK_HIDE) {
+            DTK_CONTROL(pWindow)->flags |=  DTK_CONTROL_FLAG_HIDDEN;
+        } else {
+            DTK_CONTROL(pWindow)->flags &= ~DTK_CONTROL_FLAG_HIDDEN;
+        }
+    }
 
     return result;
 }

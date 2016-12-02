@@ -32,27 +32,43 @@ dtk_result dtk_control_set_event_handler(dtk_control* pControl, dtk_event_proc o
 dtk_result dtk_control_show(dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    // Don't do anything if it's already visible.
+    if (dtk_control_is_visible(pControl)) {
+        return DTK_SUCCESS;
+    }
     
     // Special case for windows.
+    dtk_result result = DTK_SUCCESS;
     if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
-        return dtk_window_show(DTK_WINDOW(pControl), DTK_SHOW_NORMAL);
+        result = dtk_window_show(DTK_WINDOW(pControl), DTK_SHOW_NORMAL);
     }
 
-    // TODO: Implement me.
-    return DTK_SUCCESS;
+    return result;
 }
 
 dtk_result dtk_control_hide(dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
-    // Special case for windows.
-    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
-        return dtk_window_hide(DTK_WINDOW(pControl));
+    // Don't do anything if it's already visible.
+    if (!dtk_control_is_visible(pControl)) {
+        return DTK_SUCCESS;
     }
 
-    // TODO: Implement me.
-    return DTK_SUCCESS;
+    // Special case for windows.
+    dtk_result result = DTK_SUCCESS;
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        result = dtk_window_hide(DTK_WINDOW(pControl));
+    }
+
+    return result;
+}
+
+dtk_bool32 dtk_control_is_visible(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_FALSE;
+    return (pControl->flags & DTK_CONTROL_FLAG_HIDDEN) == 0;
 }
 
 

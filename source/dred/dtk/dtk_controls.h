@@ -5,19 +5,22 @@ typedef dtk_uint32 dtk_control_type;
 #define DTK_CONTROL_TYPE_WINDOW     1
 #define DTK_CONTROL_TYPE_CUSTOM     65536
 
+#define DTK_CONTROL_FLAG_HIDDEN     (1 << 0)
+
 #define DTK_CONTROL(p) ((dtk_control*)(p))
 struct dtk_control
 {
     dtk_context* pTK;
-    dtk_control_type type;
     dtk_event_proc onEvent;
     dtk_surface* pSurface;  // This is usually set to the surface of a top-level window control and will change when the hierarchy changes where appropriate.
     dtk_control* pParent;
+    void* pUserData;        // For use by the application.
+    dtk_control_type type;
+    dtk_uint32 flags;       // DTK_CONTROL_FLAG_*
     dtk_int32 absolutePosX;
     dtk_int32 absolutePosY;
     dtk_uint32 width;
     dtk_uint32 height;
-    void* pUserData;        // For use by the application.
 
     // TESTING
     dtk_font font;
@@ -40,6 +43,9 @@ dtk_result dtk_control_show(dtk_control* pControl);
 
 // Hides a control.
 dtk_result dtk_control_hide(dtk_control* pControl);
+
+// Determines whether or not the control is visible.
+dtk_bool32 dtk_control_is_visible(dtk_control* pControl);
 
 
 // Sets the size of a window.
