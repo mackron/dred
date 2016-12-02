@@ -384,6 +384,9 @@ dtk_result dtk_uninit__win32(dtk_context* pTK)
 
     g_dtkInitCounter_Win32 -= 1;
     if (g_dtkInitCounter_Win32 == 0) {
+        dtk_free(pTK->win32.pAccelerators);
+        DestroyAcceleratorTable(pTK->win32.hAccel);
+
         UnregisterClassA(DTK_WIN32_WINDOW_CLASS, GetModuleHandleA(NULL));
         if (pTK->win32.OleUninitialize) {
             ((DTK_PFN_OleUninitialize)pTK->win32.OleUninitialize)();
@@ -414,16 +417,21 @@ dtk_result dtk_next_event__win32(dtk_context* pTK, dtk_bool32 blocking)
 
     // Handle accelerator keys. If an accelerator key is processed with TranslateAccelerator() we do _not_ want to handle
     // the event with TranslateMessage/DispatchMessage.
+    if (TranslateAcceleratorA(msg.hwnd, pTK->win32.hAccel, &msg)) {
+        return DTK_SUCCESS;
+    }
+
+#if 0
     WNDPROC wndproc = (WNDPROC)GetWindowLongPtrA(msg.hwnd, GWLP_WNDPROC);
     if (wndproc == dtk_GenericWindowProc) {
         dtk_window* pWindow = (dtk_window*)GetWindowLongPtrA(msg.hwnd, 0);
         if (pWindow != NULL) {
-            if (TranslateAcceleratorA((HWND)pWindow->win32.hWnd, pWindow->win32.hAccel, &msg)) {
+            if (TranslateAcceleratorA((HWND)pWindow->win32.hWnd, pTK->win32.hAccel, &msg)) {
                 return DTK_SUCCESS;
             }
         }
     }
-
+#endif
 
     TranslateMessage(&msg);
     DispatchMessageA(&msg);
@@ -437,6 +445,96 @@ dtk_result dtk_post_quit_event__win32(dtk_context* pTK, int exitCode)
 
     PostQuitMessage(exitCode);
     return DTK_SUCCESS;
+}
+
+
+dtk_result dtk_recreate_HACCEL__win32(dtk_context* pTK)
+{
+    ACCEL* pAccels = (ACCEL*)dtk_malloc(pTK->win32.acceleratorCount * sizeof(*pAccels));
+    if (pAccels == NULL) {
+        return DTK_OUT_OF_MEMORY;
+    }
+
+    for (dtk_uint32 i = 0; i < pTK->win32.acceleratorCount; ++i) {
+        dtk_uint32 modifiers = pTK->win32.pAccelerators[i].modifiers;
+
+        ACCEL a;
+        a.key = dtk_key_to_win32(pTK->win32.pAccelerators[i].key);
+        a.cmd = (WORD)i;    // <-- The command is set to the index. In the WM_COMMAND event handler we'll use this as a lookup into an array.
+
+        a.fVirt = FVIRTKEY;
+        if (modifiers & DTK_KEY_SHIFT_DOWN) {
+            a.fVirt |= FSHIFT;
+        }
+        if (modifiers & DTK_KEY_CTRL_DOWN) {
+            a.fVirt |= FCONTROL;
+        }
+        if (modifiers & DTK_KEY_ALT_DOWN) {
+            a.fVirt |= FALT;
+        }
+
+        pAccels[i] = a;
+    }
+
+    HACCEL hAccel = CreateAcceleratorTableA(pAccels, (int)pTK->win32.acceleratorCount);
+    if (hAccel == NULL) {
+        dtk_free(pAccels);
+        return DTK_ERROR;
+    }
+
+    DestroyAcceleratorTable(pTK->win32.hAccel);
+    pTK->win32.hAccel = hAccel;
+
+    dtk_free(pAccels);
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_bind_accelerators__win32(dtk_context* pTK, dtk_accelerator* pAccelerators, dtk_uint32 count)
+{
+    // Whenever a new accelerator is bound we need to delete and recreate the entire table.
+    dtk_uint32 newCount = pTK->win32.acceleratorCount + count;
+    if (newCount < 1 || newCount > 65536) {
+        return DTK_OUT_OF_RANGE;    // 16-bit maximum for Win32.
+    }
+
+    if (newCount > pTK->win32.acceleratorCapacity) {
+        dtk_uint32 newCapacity = pTK->win32.acceleratorCapacity + count;
+        dtk_accelerator* pNewAccelerators = (dtk_accelerator*)dtk_realloc(pTK->win32.pAccelerators, newCapacity * sizeof(*pNewAccelerators));
+        if (pNewAccelerators == NULL) {
+            return DTK_OUT_OF_MEMORY;
+        }
+
+        pTK->win32.pAccelerators = pNewAccelerators;
+        pTK->win32.acceleratorCapacity = newCapacity;
+    }
+
+    dtk_assert(newCount <= pTK->win32.acceleratorCapacity);
+
+    for (dtk_uint32 i = 0; i < count; ++i) {
+        pTK->win32.pAccelerators[pTK->win32.acceleratorCount] = pAccelerators[i];
+        pTK->win32.acceleratorCount += 1;
+    }
+
+    return dtk_recreate_HACCEL__win32(pTK);
+}
+
+dtk_result dtk_unbind_accelerator__win32(dtk_context* pTK, dtk_accelerator accelerator)
+{
+    for (dtk_uint32 i = 0; i < pTK->win32.acceleratorCount; /* DO NOTHING */) {
+        if (memcmp(&pTK->win32.pAccelerators[i], &accelerator, sizeof(accelerator)) == 0) {
+            for (dtk_uint32 j = i; j < pTK->win32.acceleratorCount-1; ++j) {
+                pTK->win32.pAccelerators[i] = pTK->win32.pAccelerators[i+1];
+            }
+
+            pTK->win32.acceleratorCount -= 1;
+
+            // We could break here, but there's a chance an accelerator was bound more than once.
+        } else {
+            i += 1;
+        }
+    }
+
+    return dtk_recreate_HACCEL__win32(pTK);
 }
 #endif
 
@@ -628,6 +726,52 @@ dtk_result dtk_post_quit_event(dtk_context* pTK, int exitCode)
 #ifdef DTK_GTK
     if (pTK->platform == dtk_platform_gtk) {
         result = dtk_post_quit_event__gtk(pTK, exitCode);
+    }
+#endif
+
+    return result;
+}
+
+
+//// Accelerators ////
+
+dtk_result dtk_bind_accelerator(dtk_context* pTK, dtk_accelerator accelerator)
+{
+    return dtk_bind_accelerators(pTK, &accelerator, 1);
+}
+
+dtk_result dtk_bind_accelerators(dtk_context* pTK, dtk_accelerator* pAccelerators, dtk_uint32 count)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk_bind_accelerators__win32(pTK, pAccelerators, count);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk_bind_accelerators__gtk(pTK, pAccelerators, count);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_unbind_accelerator(dtk_context* pTK, dtk_accelerator accelerator)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk_unbind_accelerator__win32(pTK, accelerator);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk_unbind_accelerator__gtk(pTK, accelerator);
     }
 #endif
 

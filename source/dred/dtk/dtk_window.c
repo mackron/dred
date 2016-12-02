@@ -539,8 +539,12 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         case WM_COMMAND:
         {
             if (HIWORD(wParam) == 1) {
-                //WORD acceleratorIndex = LOWORD(wParam);
-                //dred_on_accelerator(pWindow->pDred, pWindow, acceleratorIndex);
+                WORD acceleratorIndex = LOWORD(wParam);
+                e.type = DTK_EVENT_ACCELERATOR;
+                e.accelerator.key       = e.pTK->win32.pAccelerators[acceleratorIndex].key;
+                e.accelerator.modifiers = e.pTK->win32.pAccelerators[acceleratorIndex].modifiers;
+                e.accelerator.id        = e.pTK->win32.pAccelerators[acceleratorIndex].id;
+                dtk__handle_event(&e);
             }
         } break;
 

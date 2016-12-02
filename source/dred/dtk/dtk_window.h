@@ -40,7 +40,7 @@ struct dtk_window
         struct
         {
             /*HWND*/ dtk_handle hWnd;
-            /*HACCEL*/ dtk_handle hAccel;   // The Win32 accelerator table handle. This is deleted and re-created whenever a new accelerator table is bound.
+            ///*HACCEL*/ dtk_handle hAccel;   // The Win32 accelerator table handle. This is deleted and re-created whenever a new accelerator table is bound.
             /*HCURSOR*/ dtk_handle hCursor; // Used when the window receives WM_SETCURSOR
             dtk_bool32 isCursorOverClientArea;
 

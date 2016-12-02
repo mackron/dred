@@ -72,6 +72,7 @@ typedef int dtk_result;
 #define DTK_OUT_OF_MEMORY           -3
 #define DTK_NO_BACKEND              -4
 #define DTK_FAILED_TO_INIT_BACKEND  -5
+#define DTK_OUT_OF_RANGE            -6
 #define DTK_QUIT                    -1024   // Returned by dtk_next_event() when a quit message is received.
 
 // Standard library stuff.
@@ -87,6 +88,9 @@ typedef int dtk_result;
 #endif
 #ifndef dtk_calloc
 #define dtk_calloc(c, sz)       calloc(c, sz)
+#endif
+#ifndef dtk_realloc
+#define dtk_realloc(p, sz)      realloc(p, sz)
 #endif
 #ifndef dtk_free
 #define dtk_free(p)             free(p)
@@ -128,12 +132,29 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_window.h"
 #include "dtk_menu.h"
 
+typedef struct
+{
+    dtk_key key;
+    dtk_uint32 modifiers;
+    dtk_uint32 id;
+} dtk_accelerator;
+
+DTK_INLINE dtk_accelerator dtk_accelerator_init(dtk_key key, dtk_uint32 modifiers, dtk_uint32 id)
+{
+    dtk_accelerator a;
+    a.key = key;
+    a.modifiers = modifiers;
+    a.id = id;
+    return a;
+}
+
+
 // Event types.
 typedef int dtk_event_type;
 #define DTK_EVENT_NONE                  0
 #define DTK_EVENT_QUIT                  1
 #define DTK_EVENT_MENU                  2
-#define DTK_EVENT_SHORTCUT              3
+#define DTK_EVENT_ACCELERATOR           3
 #define DTK_EVENT_CLOSE                 4
 #define DTK_EVENT_PAINT                 5
 #define DTK_EVENT_SIZE                  6
@@ -180,8 +201,10 @@ struct dtk_event
 
         struct
         {
-            int unused;
-        } shortcut;
+            dtk_key key;
+            dtk_uint32 modifiers;
+            dtk_uint32 id;
+        } accelerator;
 
         struct
         {
@@ -289,6 +312,11 @@ struct dtk_context
             /*HCURSOR*/ dtk_handle hCursorCross;
             /*HCURSOR*/ dtk_handle hCursorSizeWE;
             /*HCURSOR*/ dtk_handle hCursorSizeNS;
+
+            /*HACCEL*/ dtk_handle hAccel;   // The global accelerator table.
+            dtk_accelerator* pAccelerators;
+            dtk_uint32 acceleratorCount;
+            dtk_uint32 acceleratorCapacity;
         } win32;
 #endif
 #ifdef DTK_GTK
@@ -348,6 +376,22 @@ dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking);
 //
 // Thread Safety: SAFE
 dtk_result dtk_post_quit_event(dtk_context* pTK, int exitCode);
+
+
+//// Accelerators ////
+
+// Binds an accelerator.
+//
+// If you need to bind multiple accelerators, consider binding them in bulk with dtk_bind_accelerators(). Binding
+// acceleratos individually on Windows is particularly inefficient.
+dtk_result dtk_bind_accelerator(dtk_context* pTK, dtk_accelerator accelerator);
+
+// Binds a group of accelerators.
+dtk_result dtk_bind_accelerators(dtk_context* pTK, dtk_accelerator* pAccelerators, dtk_uint32 count);
+
+// Unbinds an accelerator.
+dtk_result dtk_unbind_accelerator(dtk_context* pTK, dtk_accelerator accelerator);
+
 
 
 #endif  // DTK_H
