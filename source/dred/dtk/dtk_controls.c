@@ -42,6 +42,8 @@ dtk_result dtk_control_show(dtk_control* pControl)
     dtk_result result = DTK_SUCCESS;
     if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
         result = dtk_window_show(DTK_WINDOW(pControl), DTK_SHOW_NORMAL);
+    } else {
+        pControl->flags &= ~DTK_CONTROL_FLAG_HIDDEN;
     }
 
     return result;
@@ -60,6 +62,8 @@ dtk_result dtk_control_hide(dtk_control* pControl)
     dtk_result result = DTK_SUCCESS;
     if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
         result = dtk_window_hide(DTK_WINDOW(pControl));
+    } else {
+        pControl->flags |= DTK_CONTROL_FLAG_HIDDEN;
     }
 
     return result;
