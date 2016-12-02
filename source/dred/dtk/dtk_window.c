@@ -298,6 +298,23 @@ dtk_result dtk_window_show__win32(dtk_window* pWindow, int mode)
     return DTK_SUCCESS;
 }
 
+dtk_result dtk_window_bring_to_top__win32(dtk_window* pWindow)
+{
+    if (IsZoomed(pWindow->win32.hWnd)) {
+        ShowWindow(pWindow->win32.hWnd, SW_SHOWMAXIMIZED);
+    } else if (IsIconic(pWindow->win32.hWnd)) {
+        ShowWindow(pWindow->win32.hWnd, SW_RESTORE);
+    }
+
+    SetForegroundWindow(pWindow->win32.hWnd);
+    return DTK_SUCCESS;
+}
+
+dtk_bool32 dtk_window_is_maximized__win32(dtk_window* pWindow)
+{
+    return IsZoomed(pWindow->win32.hWnd);
+}
+
 
 dtk_result dtk_window_set_cursor__win32(dtk_window* pWindow, dtk_system_cursor_type cursor)
 {
@@ -361,6 +378,26 @@ dtk_result dtk_window_set_menu__win32(dtk_window* pWindow, dtk_menu* pMenu)
 
     return DTK_SUCCESS;
 }
+
+dtk_result dtk_window_show_popup_menu__win32(dtk_window* pWindow, dtk_menu* pMenu, int posX, int posY)
+{
+    POINT screenCoords;
+    screenCoords.x = posX;
+    screenCoords.y = posY;
+    ClientToScreen(pWindow->win32.hWnd, &screenCoords);
+
+    UINT flags = TPM_RIGHTBUTTON | TPM_HORIZONTAL | TPM_VERTICAL;
+    int alignment = GetSystemMetrics(SM_MENUDROPALIGNMENT);
+    if (alignment == 0) {
+        flags |= TPM_RIGHTALIGN;
+    }
+
+    if (!TrackPopupMenuEx(pMenu->win32.hMenu, flags, screenCoords.x, screenCoords.y, pWindow->win32.hWnd, NULL)) {
+        return DTK_FALSE;
+    }
+
+    return DTK_SUCCESS;
+}
 #endif
 
 
@@ -374,6 +411,146 @@ dtk_result dtk_window_set_menu__win32(dtk_window* pWindow, dtk_menu* pMenu)
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DTK_GTK
+static dtk_key gtk_to_dtk_key(guint keyval)
+{
+    switch (keyval)
+    {
+    case GDK_KEY_BackSpace: return DTK_KEY_BACKSPACE;
+    case GDK_KEY_Shift_L:   return DTK_KEY_SHIFT;
+    case GDK_KEY_Shift_R:   return DTK_KEY_SHIFT;
+    case GDK_KEY_Escape:    return DTK_KEY_ESCAPE;
+    case GDK_KEY_Page_Up:   return DTK_KEY_PAGE_UP;
+    case GDK_KEY_Page_Down: return DTK_KEY_PAGE_DOWN;
+    case GDK_KEY_End:       return DTK_KEY_END;
+    case GDK_KEY_Home:      return DTK_KEY_HOME;
+    case GDK_KEY_Left:      return DTK_KEY_ARROW_LEFT;
+    case GDK_KEY_Up:        return DTK_KEY_ARROW_UP;
+    case GDK_KEY_Right:     return DTK_KEY_ARROW_RIGHT;
+    case GDK_KEY_Down:      return DTK_KEY_ARROW_DOWN;
+    case GDK_KEY_Delete:    return DTK_KEY_DELETE;
+    case GDK_KEY_F1:        return DTK_KEY_F1;
+    case GDK_KEY_F2:        return DTK_KEY_F2;
+    case GDK_KEY_F3:        return DTK_KEY_F3;
+    case GDK_KEY_F4:        return DTK_KEY_F4;
+    case GDK_KEY_F5:        return DTK_KEY_F5;
+    case GDK_KEY_F6:        return DTK_KEY_F6;
+    case GDK_KEY_F7:        return DTK_KEY_F7;
+    case GDK_KEY_F8:        return DTK_KEY_F8;
+    case GDK_KEY_F9:        return DTK_KEY_F9;
+    case GDK_KEY_F10:       return DTK_KEY_F10;
+    case GDK_KEY_F11:       return DTK_KEY_F11;
+    case GDK_KEY_F12:       return DTK_KEY_F12;
+
+    default: break;
+    }
+
+    if (keyval == GDK_KEY_Tab) {
+        return '\t';
+    }
+
+    return (dtk_key)keyval;
+}
+
+guint dtk_key_to_gtk(dtk_key key)
+{
+    switch (key)
+    {
+    case DTK_KEY_BACKSPACE:   return GDK_KEY_BackSpace;
+    case DTK_KEY_SHIFT:       return GDK_KEY_Shift_L;
+    //case DTK_KEY_SHIFT:       return GDK_KEY_Shift_R;
+    case DTK_KEY_ESCAPE:      return GDK_KEY_Escape;
+    case DTK_KEY_PAGE_UP:     return GDK_KEY_Page_Up;
+    case DTK_KEY_PAGE_DOWN:   return GDK_KEY_Page_Down;
+    case DTK_KEY_END:         return GDK_KEY_End;
+    case DTK_KEY_HOME:        return GDK_KEY_Begin;
+    case DTK_KEY_ARROW_LEFT:  return GDK_KEY_Left;
+    case DTK_KEY_ARROW_UP:    return GDK_KEY_Up;
+    case DTK_KEY_ARROW_RIGHT: return GDK_KEY_Right;
+    case DTK_KEY_ARROW_DOWN:  return GDK_KEY_Down;
+    case DTK_KEY_DELETE:      return GDK_KEY_Delete;
+    case DTK_KEY_F1:          return GDK_KEY_F1;
+    case DTK_KEY_F2:          return GDK_KEY_F2;
+    case DTK_KEY_F3:          return GDK_KEY_F3;
+    case DTK_KEY_F4:          return GDK_KEY_F4;
+    case DTK_KEY_F5:          return GDK_KEY_F5;
+    case DTK_KEY_F6:          return GDK_KEY_F6;
+    case DTK_KEY_F7:          return GDK_KEY_F7;
+    case DTK_KEY_F8:          return GDK_KEY_F8;
+    case DTK_KEY_F9:          return GDK_KEY_F9;
+    case DTK_KEY_F10:         return GDK_KEY_F10;
+    case DTK_KEY_F11:         return GDK_KEY_F11;
+    case DTK_KEY_F12:         return GDK_KEY_F12;
+
+    default: break;
+    }
+
+    if (key == '\t') {
+        return GDK_KEY_Tab;
+    }
+
+    return (guint)key;
+}
+
+static int dtk_get_modifier_state_flags__gtk(guint stateFromGTK)
+{
+    int result = 0;
+
+    if ((stateFromGTK & GDK_SHIFT_MASK) != 0) {
+        result |= DTK_KEY_SHIFT_DOWN;
+    }
+    if ((stateFromGTK & GDK_CONTROL_MASK) != 0) {
+        result |= DTK_KEY_CTRL_DOWN;
+    }
+    if ((stateFromGTK & GDK_MOD1_MASK) != 0) {
+        result |= DTK_KEY_ALT_DOWN;
+    }
+
+    if ((stateFromGTK & GDK_BUTTON1_MASK) != 0) {
+        result |= DTK_MOUSE_BUTTON_LEFT_DOWN;
+    }
+    if ((stateFromGTK & GDK_BUTTON2_MASK) != 0) {
+        result |= DTK_MOUSE_BUTTON_MIDDLE_DOWN;
+    }
+    if ((stateFromGTK & GDK_BUTTON3_MASK) != 0) {
+        result |= DTK_MOUSE_BUTTON_RIGHT_DOWN;
+    }
+    if ((stateFromGTK & GDK_BUTTON4_MASK) != 0) {
+        result |= DTK_MOUSE_BUTTON_4_DOWN;
+    }
+    if ((stateFromGTK & GDK_BUTTON5_MASK) != 0) {
+        result |= DTK_MOUSE_BUTTON_5_DOWN;
+    }
+
+    return result;
+}
+
+guint dtk_accelerator_modifiers_to_gtk(dtk_uint32 modifiers)
+{
+    guint result = 0;
+    if (modifiers & DTK_KEY_SHIFT_DOWN) {
+        result |= GDK_SHIFT_MASK;
+    }
+    if (modifiers & DTK_KEY_CTRL_DOWN) {
+        result |= GDK_CONTROL_MASK;
+    }
+    if (modifiers & DTK_KEY_ALT_DOWN) {
+        result |= GDK_MOD1_MASK;
+    }
+
+    return result;
+}
+
+static int dtk_from_gtk_mouse_button(guint buttonGTK)
+{
+    switch (buttonGTK) {
+        case 1: return DTK_MOUSE_BUTTON_LEFT;
+        case 2: return DTK_MOUSE_BUTTON_MIDDLE;
+        case 3: return DTK_MOUSE_BUTTON_RIGHT;
+        default: return (int)buttonGTK;
+    }
+}
+
+
 static gboolean dtk_window__on_close__gtk(GtkWidget* pWidget, GdkEvent* pEvent, gpointer pUserData)
 {
     (void)pWidget;
@@ -390,7 +567,7 @@ static gboolean dtk_window__on_close__gtk(GtkWidget* pWidget, GdkEvent* pEvent, 
 
 static gboolean dtk_window__on_configure__gtk(GtkWidget* pWidget, GdkEventConfigure* pEvent, gpointer pUserData)
 {
-    dtk_window* pWindow = pUserData;
+    dtk_window* pWindow = (dtk_window*)pUserData;
     if (pWindow == NULL) {
         return DTK_FALSE;
     }
@@ -406,7 +583,138 @@ static gboolean dtk_window__on_configure__gtk(GtkWidget* pWidget, GdkEventConfig
     return DTK_FALSE;
 }
 
-static gboolean dtk_window__on_draw_clientarea__gtk(GtkWidget* pWidget, cairo_t* cr, gpointer pUserData)
+static void dtk_window__on_hide__gtk(GtkWidget* pWidget, gpointer pUserData)
+{
+    (void)pWidget;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return;
+    }
+
+    dtk_event e = dtk_event_init(DTK_EVENT_HIDE, DTK_CONTROL(pWindow));
+    dtk__handle_event(&e);
+}
+
+static void dtk_window__on_show__gtk(GtkWidget* pWidget, gpointer pUserData)
+{
+    (void)pWidget;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return;
+    }
+
+    dtk_event e = dtk_event_init(DTK_EVENT_SHOW, DTK_CONTROL(pWindow));
+    dtk__handle_event(&e);
+
+    gtk_widget_grab_focus(GTK_WIDGET(pWidget)); // <-- Is this needed?
+}
+
+static gboolean dtk_window__on_key_down__gtk(GtkWidget* pWidget, GdkEventKey* pEvent, gpointer pUserData)
+{
+    (void)pWidget;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return DTK_TRUE;
+    }
+
+    int stateFlags = dtk_get_modifier_state_flags__gtk(pEvent->state);
+    // TODO: Check here if key is auto-repeated.
+
+    // If the key is a tab key and there are modifiers we will need to simulate an accelerator because GTK doesn't let
+    // us bind the tab key to an accelerator... sigh...
+#if 0
+    if ((pEvent->keyval == GDK_KEY_Tab || pEvent->keyval == GDK_KEY_ISO_Left_Tab) && stateFlags != 0) {
+        for (size_t i = 0; i < pWindow->accelCount; ++i) {
+            dred_gtk_accelerator* pAccel = &pWindow->pAccels[i];
+            if (pAccel->accelerator.key == '\t' && (int)pAccel->accelerator.modifiers == stateFlags) {
+                dred_on_accelerator(pAccel->pWindow->pDred, pAccel->pWindow, pAccel->index);
+                return DTK_FALSE;
+            }
+        }
+    }
+#endif
+
+    dtk_event e = dtk_event_init(DTK_EVENT_KEY_DOWN, DTK_CONTROL(pWindow));
+    e.keyDown.key = gtk_to_dtk_key(pEvent->keyval);
+    e.keyDown.state = stateFlags;
+    dtk__handle_event(&e);
+
+
+    // Printable keys. These are posted as UTF-32 code points.
+    guint32 utf32 = gdk_keyval_to_unicode(pEvent->keyval);
+    if (utf32 == 0) {
+        if (pEvent->keyval == GDK_KEY_KP_Enter) {
+            utf32 = '\r';
+        }
+    }
+
+    if (utf32 != 0 && (stateFlags & DTK_KEY_CTRL_DOWN) == 0 && (stateFlags & DTK_KEY_ALT_DOWN) == 0) {
+        if (!(utf32 < 32 || utf32 == 127) || utf32 == '\t' || utf32 == '\r') {
+            e.type = DTK_EVENT_PRINTABLE_KEY_DOWN;
+            e.printableKeyDown.utf32 = utf32;
+            e.printableKeyDown.state = stateFlags;
+            dtk__handle_event(&e);
+        }
+    }
+
+    return DTK_FALSE;
+}
+
+static gboolean dtk_window__on_key_up__gtk(GtkWidget* pWidget, GdkEventKey* pEvent, gpointer pUserData)
+{
+    (void)pWidget;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return DTK_TRUE;
+    }
+
+    dtk_event e = dtk_event_init(DTK_EVENT_KEY_UP, DTK_CONTROL(pWindow));
+    e.keyDown.key = gtk_to_dtk_key(pEvent->keyval);
+    e.keyDown.state = dtk_get_modifier_state_flags__gtk(pEvent->state);
+    dtk__handle_event(&e);
+
+    return DTK_FALSE;
+}
+
+static gboolean dtk_window__on_receive_focus__gtk(GtkWidget* pWidget, GdkEventFocus* pEvent, gpointer pUserData)
+{
+    (void)pWidget;
+    (void)pEvent;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return DTK_TRUE;
+    }
+
+    dtk_event e = dtk_event_init(DTK_EVENT_FOCUS, DTK_CONTROL(pWindow));
+    dtk__handle_event(&e);
+
+    return DTK_FALSE;
+}
+
+static gboolean dtk_window__on_lose_focus__gtk(GtkWidget* pWidget, GdkEventFocus* pEvent, gpointer pUserData)
+{
+    (void)pWidget;
+    (void)pEvent;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return DTK_TRUE;
+    }
+
+    dtk_event e = dtk_event_init(DTK_EVENT_UNFOCUS, DTK_CONTROL(pWindow));
+    dtk__handle_event(&e);
+
+    return DTK_FALSE;
+}
+
+
+
+static gboolean dtk_window_clientarea__on_draw__gtk(GtkWidget* pClientArea, cairo_t* cr, gpointer pUserData)
 {
     dtk_window* pWindow = (dtk_window*)pUserData;
     if (pWindow == NULL || DTK_CONTROL(pWindow)->pSurface == NULL) return DTK_FALSE;
@@ -430,7 +738,7 @@ static gboolean dtk_window__on_draw_clientarea__gtk(GtkWidget* pWidget, cairo_t*
     return DTK_FALSE;
 }
 
-static gboolean dtk_window__on_configure_clientarea__gtk(GtkWidget* pWidget, GdkEventConfigure* pEvent, gpointer pUserData)
+static gboolean dtk_window_clientarea__on_configure__gtk(GtkWidget* pClientArea, GdkEventConfigure* pEvent, gpointer pUserData)
 {
     dtk_window* pWindow = (dtk_window*)pUserData;
     if (pWindow == NULL) {
@@ -446,10 +754,137 @@ static gboolean dtk_window__on_configure_clientarea__gtk(GtkWidget* pWidget, Gdk
         dtk__handle_event(&e);
 
         // Invalidate the window to force a redraw.
-        gtk_widget_queue_draw(pWidget);
+        gtk_widget_queue_draw(pClientArea);
     }
 
     return DTK_FALSE;
+}
+
+static gboolean dtk_window_clientarea__on_mouse_enter__gtk(GtkWidget* pClientArea, GdkEventCrossing* pEvent, gpointer pUserData)
+{
+    (void)pClientArea;
+    (void)pEvent;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return DTK_TRUE;
+    }
+
+    pWindow->gtk.isCursorOverClientArea = DTK_TRUE;
+    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pWidget)), pWindow->gtk.pCursor);
+
+    dtk_event e = dtk_event_init(DTK_EVENT_MOUSE_ENTER, DTK_CONTROL(pWindow));
+    dtk__handle_event(&e);
+
+    return DTK_FALSE;
+}
+
+static gboolean dtk_window_clientarea__on_mouse_leave__gtk(GtkWidget* pClientArea, GdkEventCrossing* pEvent, gpointer pUserData)
+{
+    (void)pClientArea;
+    (void)pEvent;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return DTK_TRUE;
+    }
+
+    pWindow->gtk.isCursorOverClientArea = DTK_FALSE;
+
+    dtk_event e = dtk_event_init(DTK_EVENT_MOUSE_LEAVE, DTK_CONTROL(pWindow));
+    dtk__handle_event(&e);
+
+    return DTK_TRUE;
+}
+
+static gboolean dtk_window_clientarea__on_mouse_move__gtk(GtkWidget* pClientArea, GdkEventMotion* pEvent, gpointer pUserData)
+{
+    (void)pClientArea;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return DTK_TRUE;
+    }
+
+    dtk_event e = dtk_event_init(DTK_EVENT_MOUSE_MOVE, DTK_CONTROL(pWindow));
+    e.mouseMove.x = pEvent->x;
+    e.mouseMove.y = pEvent->y;
+    e.mouseMove.state = dtk_get_modifier_state_flags__gtk(pEvent->state);
+    dtk__handle_event(&e);
+
+    return DTK_FALSE;
+}
+
+static gboolean dtk_window_clientarea__on_mouse_button_down__gtk(GtkWidget* pClientArea, GdkEventButton* pEvent, gpointer pUserData)
+{
+    (void)pClientArea;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return DTK_TRUE;
+    }
+
+    dtk_event e = dtk_event_init(DTK_EVENT_NONE, DTK_CONTROL(pWindow));
+    if (pEvent->type == GDK_BUTTON_PRESS) {
+        e.type = DTK_EVENT_MOUSE_BUTTON_DOWN;
+    } else if (pEvent->type == GDK_2BUTTON_PRESS) {
+        e.type = DTK_EVENT_MOUSE_BUTTON_DBLCLICK;
+    }
+
+    e.mouseButton.x = pEvent->x;
+    e.mouseButton.y = pEvent->y;
+    e.mouseButton.button = dtk_from_gtk_mouse_button(pEvent->button);
+    e.mouseButton.state = dtk_get_modifier_state_flags__gtk(pEvent->state);
+    dtk__handle_event(&e);
+
+    return DTK_TRUE;
+}
+
+static gboolean dtk_window_clientarea__on_mouse_button_up__gtk(GtkWidget* pClientArea, GdkEventButton* pEvent, gpointer pUserData)
+{
+    (void)pClientArea;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return DTK_TRUE;
+    }
+
+    dtk_event e = dtk_event_init(DTK_EVENT_MOUSE_BUTTON_UP, DTK_CONTROL(pWindow));
+    e.mouseButton.x = pEvent->x;
+    e.mouseButton.y = pEvent->y;
+    e.mouseButton.button = dtk_from_gtk_mouse_button(pEvent->button);
+    e.mouseButton.state = dtk_get_modifier_state_flags__gtk(pEvent->state);
+    dtk__handle_event(&e);
+
+    return DTK_TRUE;
+}
+
+static gboolean dtk_window_clientarea__on_mouse_wheel__gtk(GtkWidget* pClientArea, GdkEventScroll* pEvent, gpointer pUserData)
+{
+    (void)pClientArea;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return DTK_TRUE;
+    }
+
+    // TODO: Fixme. This delta calculation is wrong, I think. Look at pEvent->delta_y. Also, why am I checking the direction, and then negating
+    //       it again when constructing the event structure?
+    gdouble delta_y = 0;
+    if (pEvent->direction == GDK_SCROLL_UP) {
+        delta_y = -1;
+    } else if (pEvent->direction == GDK_SCROLL_DOWN) {
+        delta_y = 1;
+    }
+
+    dtk_event e = dtk_event_init(DTK_EVENT_MOUSE_WHEEL, DTK_CONTROL(pWindow));
+    e.mouseWheel.x = pEvent->x;
+    e.mouseWheel.y = pEvent->y;
+    e.mouseWheel.delta = (dtk_int32)-delta_y;
+    e.mouseWheel.state = dtk_get_modifier_state_flags__gtk(pEvent->state);
+    dtk__handle_event(&e);
+
+    return DTK_TRUE;
 }
 
 
@@ -469,9 +904,14 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, const ch
         GDK_BUTTON_RELEASE_MASK |
         GDK_SCROLL_MASK);
         
-    g_signal_connect(pClientArea, "draw",            G_CALLBACK(dtk_window__on_draw_clientarea__gtk),      pWindow);
-    g_signal_connect(pClientArea, "configure-event", G_CALLBACK(dtk_window__on_configure_clientarea__gtk), pWindow);
-    
+    g_signal_connect(pClientArea, "draw",                 G_CALLBACK(dtk_window_clientarea__on_draw__gtk),              pWindow);
+    g_signal_connect(pClientArea, "configure-event",      G_CALLBACK(dtk_window_clientarea__on_configure__gtk),         pWindow);
+    g_signal_connect(pClientArea, "enter-notify-event",   G_CALLBACK(dtk_window_clientarea__on_mouse_enter__gtk),       pWindow);     // Mouse enter.
+    g_signal_connect(pClientArea, "leave-notify-event",   G_CALLBACK(dtk_window_clientarea__on_mouse_leave__gtk),       pWindow);     // Mouse leave.
+    g_signal_connect(pClientArea, "motion-notify-event",  G_CALLBACK(dtk_window_clientarea__on_mouse_move__gtk),        pWindow);     // Mouse move.
+    g_signal_connect(pClientArea, "button-press-event",   G_CALLBACK(dtk_window_clientarea__on_mouse_button_down__gtk), pWindow);     // Mouse button down.
+    g_signal_connect(pClientArea, "button-release-event", G_CALLBACK(dtk_window_clientarea__on_mouse_button_up__gtk),   pWindow);     // Mouse button up.
+    g_signal_connect(pClientArea, "scroll-event",         G_CALLBACK(dtk_window_clientarea__on_mouse_wheel__gtk),       pWindow);     // Mouse wheel.
     
     // Box container. This is used to laying out the menu bar and client area.
     GtkWidget* pBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -498,8 +938,14 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, const ch
         
     gtk_window_set_resizable(GTK_WINDOW(pWidget), TRUE);
     gtk_window_resize(GTK_WINDOW(pWidget), (int)width, (int)height);
-    g_signal_connect(pWidget, "delete-event",    G_CALLBACK(dtk_window__on_close__gtk),     pWindow);
-    g_signal_connect(pWidget, "configure-event", G_CALLBACK(dtk_window__on_configure__gtk), pWindow);
+    g_signal_connect(pWidget, "delete-event",      G_CALLBACK(dtk_window__on_close__gtk),         pWindow);     // Close
+    g_signal_connect(pWidget, "configure-event",   G_CALLBACK(dtk_window__on_configure__gtk),     pWindow);     // Size/Move
+    g_signal_connect(pWidget, "hide",              G_CALLBACK(dtk_window__on_hide__gtk),          pWindow);     // Hide.
+    g_signal_connect(pWidget, "show",              G_CALLBACK(dtk_window__on_show__gtk),          pWindow);     // Show.
+    g_signal_connect(pWidget, "key-press-event",   G_CALLBACK(dtk_window__on_key_down__gtk),      pWindow);     // Key down.
+    g_signal_connect(pWidget, "key-release-event", G_CALLBACK(dtk_window__on_key_up__gtk),        pWindow);     // Key up.
+    g_signal_connect(pWidget, "focus-in-event",    G_CALLBACK(dtk_window__on_receive_focus__gtk), pWindow);     // Receive focus.
+    g_signal_connect(pWidget, "focus-out-event",   G_CALLBACK(dtk_window__on_lose_focus__gtk),    pWindow);     // Lose focus.
     
     gtk_container_add(GTK_CONTAINER(pWidget), pBox);
 
@@ -511,7 +957,7 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, const ch
     
     gtk_widget_show_all(GTK_WIDGET(pWidget));
     gtk_widget_realize(pWidget);
-    
+
     return DTK_SUCCESS;
 }
 
@@ -531,14 +977,12 @@ dtk_result dtk_window_set_title__gtk(dtk_window* pWindow, const char* title)
 
 dtk_result dtk_window_set_size__gtk(dtk_window* pWindow, dtk_uint32 width, dtk_uint32 height)
 {
-#if 0   // TODO: Uncomment this when menus are implemented.
-    if (pWindow->pMenu != NULL) {
+    if (pWindow->gtk.pMenu != NULL) {
         GtkAllocation alloc;
-        gtk_widget_get_allocation(pWindow->pMenu->gtk.pMenu, &alloc);
+        gtk_widget_get_allocation(pWindow->gtk.pMenu->gtk.pWidget, &alloc);
 
-        newHeight += alloc.height;
+        height += alloc.height;
     }
-#endif
 
     gtk_window_resize(GTK_WINDOW(pWindow->gtk.pWidget), (int)width, (int)height);
     return DTK_SUCCESS;
@@ -602,6 +1046,19 @@ dtk_result dtk_window_show__gtk(dtk_window* pWindow, int mode)
     }
     
     return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_bring_to_top__gtk(dtk_window* pWindow)
+{
+    gtk_window_present(GTK_WINDOW(pWindow->gtk.pWidget));
+    gdk_flush();    // <-- Is this needed?
+
+    return DTK_SUCCESS;
+}
+
+dtk_bool32 dtk_window_is_maximized__gtk(dtk_window* pWindow)
+{
+    return gtk_window_is_maximized(GTK_WINDOW(pWindow->gtk.pWidget));
 }
 
 dtk_result dtk_window_set_cursor__gtk(dtk_window* pWindow, dtk_system_cursor_type cursor)
@@ -675,6 +1132,27 @@ dtk_result dtk_window_set_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu)
     pWindow->gtk.pMenu = pMenu;
     return DTK_SUCCESS;
 }
+
+
+dtk_result dtk_window_show_popup_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu, dtk_int32 posX, dtk_int32 posY)
+{
+    GtkRequisition size;
+    gtk_widget_get_preferred_size(GTK_WIDGET(pMenu->gtk.pWidget), NULL, &size);
+
+    GtkRequisition menubarSize = {0, 0};
+    if (pWindow->gtk.pMenu) {
+        gtk_widget_get_preferred_size(GTK_WIDGET(pWindow->gtk.pMenu->gtk.pWidget), NULL, &menubarSize);
+    }
+
+    GdkRectangle rect;
+    rect.x = posX;
+    rect.y = posY + menubarSize.height;
+    rect.width = size.width;
+    rect.height = size.height;
+    gtk_menu_popup_at_rect(GTK_MENU(pMenu->gtk.pWidget), gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pWidget)), &rect, GDK_GRAVITY_NORTH_WEST, GDK_GRAVITY_NORTH_WEST, NULL);
+
+    return DTK_SUCCESS;
+}
 #endif
 
 
@@ -721,6 +1199,8 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, const char* t
     }
     DTK_CONTROL(pWindow)->pSurface = &pWindow->surface;
 
+    // Make sure the position attributes of the structure are updated.
+    dtk_window_get_absolute_position(pWindow, &DTK_CONTROL(pWindow)->absolutePosX, &DTK_CONTROL(pWindow)->absolutePosY);
 
     return DTK_SUCCESS;
 }
@@ -955,6 +1435,44 @@ dtk_result dtk_window_show(dtk_window* pWindow, int mode)
     return result;
 }
 
+dtk_result dtk_window_bring_to_top(dtk_window* pWindow)
+{
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_bring_to_top__win32(pWindow);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_bring_to_top__gtk(pWindow);
+    }
+#endif
+
+    return result;
+}
+
+dtk_bool32 dtk_window_is_maximized(dtk_window* pWindow)
+{
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk_bool32 result = DTK_FALSE;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_is_maximized__win32(pWindow);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_is_maximized__gtk(pWindow);
+    }
+#endif
+
+    return result;
+}
+
 
 dtk_result dtk_window_set_cursor(dtk_window* pWindow, dtk_system_cursor_type cursor)
 {
@@ -1012,6 +1530,29 @@ dtk_result dtk_window_set_menu(dtk_window* pWindow, dtk_menu* pMenu)
 #ifdef DTK_GTK
     if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
         result = dtk_window_set_menu__gtk(pWindow, pMenu);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_window_show_popup_menu(dtk_window* pWindow, dtk_menu* pMenu, int posX, int posY)
+{
+    if (pWindow == NULL || pMenu == NULL) return DTK_INVALID_ARGS;
+
+    if (pMenu->type != dtk_menu_type_popup) {
+        return DTK_INVALID_ARGS;
+    }
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_show_popup_menu__win32(pWindow, pMenu, posX, posY);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_show_popup_menu__gtk(pWindow, pMenu, posX, posY);
     }
 #endif
 

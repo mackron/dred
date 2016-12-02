@@ -187,6 +187,7 @@ dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
 
 #include "dtk_string.c"
 #include "dtk_graphics.c"
+#include "dtk_input.c"
 #include "dtk_controls.c"
 #include "dtk_window.c"
 #include "dtk_menu.c"

@@ -103,6 +103,7 @@ typedef int dtk_result;
 #endif
 
 typedef struct dtk_context dtk_context;
+typedef struct dtk_event dtk_event;
 typedef struct dtk_control dtk_control;
 typedef struct dtk_window dtk_window;
 typedef struct dtk_menu dtk_menu;
@@ -115,21 +116,44 @@ typedef struct
     dtk_int32 bottom;
 } dtk_rect;
 
+// The callback function to call when an event is received and needs handling. The return value controls whether or
+// not the event should be propagated. Returning true will propagate the event, false will cancel the event. You will
+// almost always want to return true.
+typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
+
+#include "dtk_string.h"
+#include "dtk_graphics.h"
+#include "dtk_input.h"
+#include "dtk_controls.h"
+#include "dtk_window.h"
+#include "dtk_menu.h"
+
 // Event types.
 typedef int dtk_event_type;
-#define DTK_EVENT_NONE          0
-#define DTK_EVENT_QUIT          1
-#define DTK_EVENT_MENU          2
-#define DTK_EVENT_SHORTCUT      3
-#define DTK_EVENT_CLOSE         4
-#define DTK_EVENT_PAINT         5
-#define DTK_EVENT_SIZE          6
-#define DTK_EVENT_MOVE          7
-#define DTK_EVENT_MOUSE_LEAVE   8
-#define DTK_EVENT_MOUSE_ENTER   9
-#define DTK_EVENT_MOUSE_MOVE    10
+#define DTK_EVENT_NONE                  0
+#define DTK_EVENT_QUIT                  1
+#define DTK_EVENT_MENU                  2
+#define DTK_EVENT_SHORTCUT              3
+#define DTK_EVENT_CLOSE                 4
+#define DTK_EVENT_PAINT                 5
+#define DTK_EVENT_SIZE                  6
+#define DTK_EVENT_MOVE                  7
+#define DTK_EVENT_SHOW                  8
+#define DTK_EVENT_HIDE                  9
+#define DTK_EVENT_MOUSE_LEAVE           10
+#define DTK_EVENT_MOUSE_ENTER           11
+#define DTK_EVENT_MOUSE_MOVE            12
+#define DTK_EVENT_MOUSE_BUTTON_DOWN     13
+#define DTK_EVENT_MOUSE_BUTTON_UP       14
+#define DTK_EVENT_MOUSE_BUTTON_DBLCLICK 15
+#define DTK_EVENT_MOUSE_WHEEL           16
+#define DTK_EVENT_KEY_DOWN              17
+#define DTK_EVENT_KEY_UP                18
+#define DTK_EVENT_PRINTABLE_KEY_DOWN    19
+#define DTK_EVENT_FOCUS                 20
+#define DTK_EVENT_UNFOCUS               21
 
-typedef struct
+struct dtk_event
 {
     dtk_event_type type;
     dtk_context* pTK;
@@ -182,22 +206,61 @@ typedef struct
 
         struct
         {
+            int unused;
+        } mouseEnter;
+
+        struct
+        {
             dtk_int32 x;
             dtk_int32 y;
+            dtk_uint32 state;
         } mouseMove;
+
+        struct
+        {
+            dtk_int32 x;
+            dtk_int32 y;
+            dtk_mouse_button button;
+            dtk_uint32 state;
+        } mouseButton;
+
+        struct
+        {
+            dtk_int32 x;
+            dtk_int32 y;
+            dtk_int32 delta;
+            dtk_uint32 state;
+        } mouseWheel;
+
+        struct
+        {
+            dtk_key key;
+            dtk_uint32 state;
+        } keyDown;
+
+        struct
+        {
+            dtk_key ket;
+            dtk_uint32 state;
+        } keyUp;
+
+        struct
+        {
+            dtk_uint32 utf32;
+            dtk_uint32 state;
+        } printableKeyDown;
+
+        struct
+        {
+            int unused;
+        } focus;
+
+        struct
+        {
+            int unused;
+        } unfocus;
     };
-} dtk_event;
-
-// The callback function to call when an event is received and needs handling. The return value controls whether or
-// not the event should be propagated. Returning true will propagate the event, false will cancel the event. You will
-// almost always want to return true.
-typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
-
-#include "dtk_string.h"
-#include "dtk_graphics.h"
-#include "dtk_controls.h"
-#include "dtk_window.h"
-#include "dtk_menu.h"
+};
 
 // The main toolkit context.
 struct dtk_context

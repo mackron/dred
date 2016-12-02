@@ -99,6 +99,12 @@ dtk_result dtk_window_show(dtk_window* pWindow, int mode);
 // This is equivalent to dtk_window_show(pWindow, DTK_HIDE).
 DTK_INLINE dtk_result dtk_window_hide(dtk_window* pWindow) { return dtk_window_show(pWindow, DTK_HIDE); }
 
+// Brings the given window to the top of the z order and activates it.
+dtk_result dtk_window_bring_to_top(dtk_window* pWindow);
+
+// Determines whether or not the window is maximized.
+dtk_bool32 dtk_window_is_maximized(dtk_window* pWindow);
+
 
 // Sets the cursor to use for the given window.
 dtk_result dtk_window_set_cursor(dtk_window* pWindow, dtk_system_cursor_type cursor);
@@ -108,3 +114,6 @@ dtk_bool32 dtk_window_is_cursor_over(dtk_window* pWindow);
 
 // Sets the menu for a window. Pass null to remove the menu.
 dtk_result dtk_window_set_menu(dtk_window* pWindow, dtk_menu* pMenu);
+
+// Shows a popup menu on the given window.
+dtk_result dtk_window_show_popup_menu(dtk_window* pWindow, dtk_menu* pMenu, int posX, int posY);
