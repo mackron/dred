@@ -27,6 +27,196 @@ static void dtk_track_mouse_leave_event__win32(HWND hWnd)
     TrackMouseEvent(&tme);
 }
 
+dtk_bool32 dtk_is_win32_mouse_button_key_code(WPARAM wParam)
+{
+    return wParam == VK_LBUTTON || wParam == VK_RBUTTON || wParam == VK_MBUTTON || wParam == VK_XBUTTON1 || wParam == VK_XBUTTON2;
+}
+
+dtk_key dtk_win32_to_dtk_key(WPARAM wParam)
+{
+    switch (wParam)
+    {
+    case VK_BACK:   return DTK_KEY_BACKSPACE;
+    case VK_SHIFT:  return DTK_KEY_SHIFT;
+    case VK_ESCAPE: return DTK_KEY_ESCAPE;
+    case VK_PRIOR:  return DTK_KEY_PAGE_UP;
+    case VK_NEXT:   return DTK_KEY_PAGE_DOWN;
+    case VK_END:    return DTK_KEY_END;
+    case VK_HOME:   return DTK_KEY_HOME;
+    case VK_LEFT:   return DTK_KEY_ARROW_LEFT;
+    case VK_UP:     return DTK_KEY_ARROW_UP;
+    case VK_RIGHT:  return DTK_KEY_ARROW_RIGHT;
+    case VK_DOWN:   return DTK_KEY_ARROW_DOWN;
+    case VK_DELETE: return DTK_KEY_DELETE;
+    case VK_F1:     return DTK_KEY_F1;
+    case VK_F2:     return DTK_KEY_F2;
+    case VK_F3:     return DTK_KEY_F3;
+    case VK_F4:     return DTK_KEY_F4;
+    case VK_F5:     return DTK_KEY_F5;
+    case VK_F6:     return DTK_KEY_F6;
+    case VK_F7:     return DTK_KEY_F7;
+    case VK_F8:     return DTK_KEY_F8;
+    case VK_F9:     return DTK_KEY_F9;
+    case VK_F10:    return DTK_KEY_F10;
+    case VK_F11:    return DTK_KEY_F11;
+    case VK_F12:    return DTK_KEY_F12;
+
+    default: break;
+    }
+
+    return (dtk_key)wParam;
+}
+
+WORD dtk_key_to_win32(dtk_key key)
+{
+    switch (key)
+    {
+    case DTK_KEY_BACKSPACE:   return VK_BACK;
+    case DTK_KEY_SHIFT:       return VK_SHIFT;
+    case DTK_KEY_ESCAPE:      return VK_ESCAPE;
+    case DTK_KEY_PAGE_UP:     return VK_PRIOR;
+    case DTK_KEY_PAGE_DOWN:   return VK_NEXT;
+    case DTK_KEY_END:         return VK_END;
+    case DTK_KEY_HOME:        return VK_HOME;
+    case DTK_KEY_ARROW_LEFT:  return VK_LEFT;
+    case DTK_KEY_ARROW_UP:    return VK_UP;
+    case DTK_KEY_ARROW_RIGHT: return VK_RIGHT;
+    case DTK_KEY_ARROW_DOWN:  return VK_DOWN;
+    case DTK_KEY_DELETE:      return VK_DELETE;
+    case DTK_KEY_F1:          return VK_F1;
+    case DTK_KEY_F2:          return VK_F2;
+    case DTK_KEY_F3:          return VK_F3;
+    case DTK_KEY_F4:          return VK_F4;
+    case DTK_KEY_F5:          return VK_F5;
+    case DTK_KEY_F6:          return VK_F6;
+    case DTK_KEY_F7:          return VK_F7;
+    case DTK_KEY_F8:          return VK_F8;
+    case DTK_KEY_F9:          return VK_F9;
+    case DTK_KEY_F10:         return VK_F10;
+    case DTK_KEY_F11:         return VK_F11;
+    case DTK_KEY_F12:         return VK_F12;
+
+    default: break;
+    }
+
+    return (WORD)key;
+}
+
+static dtk_uint32 dtk_get_modifier_key_state_flags__win32()
+{
+    int stateFlags = 0;
+
+    SHORT keyState = GetAsyncKeyState(VK_SHIFT);
+    if (keyState & 0x8000) {
+        stateFlags |= DTK_KEY_SHIFT_DOWN;
+    }
+
+    keyState = GetAsyncKeyState(VK_CONTROL);
+    if (keyState & 0x8000) {
+        stateFlags |= DTK_KEY_CTRL_DOWN;
+    }
+
+    keyState = GetAsyncKeyState(VK_MENU);
+    if (keyState & 0x8000) {
+        stateFlags |= DTK_KEY_ALT_DOWN;
+    }
+
+    return stateFlags;
+}
+
+static dtk_uint32 dtk_get_mouse_event_state_flags__win32(WPARAM wParam)
+{
+    int stateFlags = 0;
+
+    if ((wParam & MK_LBUTTON) != 0) {
+        stateFlags |= DTK_MOUSE_BUTTON_LEFT_DOWN;
+    }
+    if ((wParam & MK_RBUTTON) != 0) {
+        stateFlags |= DTK_MOUSE_BUTTON_RIGHT_DOWN;
+    }
+    if ((wParam & MK_MBUTTON) != 0) {
+        stateFlags |= DTK_MOUSE_BUTTON_MIDDLE_DOWN;
+    }
+    if ((wParam & MK_XBUTTON1) != 0) {
+        stateFlags |= DTK_MOUSE_BUTTON_4_DOWN;
+    }
+    if ((wParam & MK_XBUTTON2) != 0) {
+        stateFlags |= DTK_MOUSE_BUTTON_5_DOWN;
+    }
+
+    if ((wParam & MK_CONTROL) != 0) {
+        stateFlags |= DTK_KEY_CTRL_DOWN;
+    }
+    if ((wParam & MK_SHIFT) != 0) {
+        stateFlags |= DTK_KEY_SHIFT_DOWN;
+    }
+
+    SHORT keyState = GetAsyncKeyState(VK_MENU);
+    if (keyState & 0x8000) {
+        stateFlags |= DTK_KEY_ALT_DOWN;
+    }
+
+    return stateFlags;
+}
+
+static ACCEL dtk_win32_to_ACCEL(dtk_key key, uint32_t modifiers, WORD cmd)
+{
+    ACCEL a;
+    a.key = dtk_key_to_win32(key);
+    a.cmd = cmd;
+
+    a.fVirt = FVIRTKEY;
+    if (modifiers & DTK_KEY_SHIFT_DOWN) {
+        a.fVirt |= FSHIFT;
+    }
+    if (modifiers & DTK_KEY_CTRL_DOWN) {
+        a.fVirt |= FCONTROL;
+    }
+    if (modifiers & DTK_KEY_ALT_DOWN) {
+        a.fVirt |= FALT;
+    }
+
+    return a;
+}
+
+
+static dtk_uint32 dtk_wm_event_to_mouse_button__win32(UINT msg)
+{
+    switch (msg)
+    {
+        case WM_NCRBUTTONDOWN:
+        case WM_NCRBUTTONUP:
+        case WM_NCRBUTTONDBLCLK:
+        case WM_RBUTTONDOWN:
+        case WM_RBUTTONUP:
+        case WM_RBUTTONDBLCLK:
+        {
+            return DTK_MOUSE_BUTTON_RIGHT;
+        }
+
+        case WM_NCMBUTTONDOWN:
+        case WM_NCMBUTTONUP:
+        case WM_NCMBUTTONDBLCLK:
+        case WM_MBUTTONDOWN:
+        case WM_MBUTTONUP:
+        case WM_MBUTTONDBLCLK:
+        {
+            return DTK_MOUSE_BUTTON_MIDDLE;
+        }
+
+        case WM_NCLBUTTONDOWN:
+        case WM_NCLBUTTONUP:
+        case WM_NCLBUTTONDBLCLK:
+        case WM_LBUTTONDOWN:
+        case WM_LBUTTONUP:
+        case WM_LBUTTONDBLCLK:
+        default:
+        {
+            return DTK_MOUSE_BUTTON_LEFT;
+        }
+    }
+}
+
 LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     dtk_window* pWindow = (dtk_window*)GetWindowLongPtrA(hWnd, 0);
@@ -95,6 +285,21 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         } break;
 
 
+        // show/hide
+        case WM_WINDOWPOSCHANGING:
+        {
+            WINDOWPOS* pWindowPos = (WINDOWPOS*)lParam;
+            assert(pWindowPos != NULL);
+
+            if ((pWindowPos->flags & SWP_HIDEWINDOW) != 0) {
+                e.type = DTK_EVENT_HIDE;
+            }
+            if ((pWindowPos->flags & SWP_SHOWWINDOW) != 0) {
+                e.type = DTK_EVENT_SHOW;
+            }
+        } break;
+
+
         case WM_MOUSELEAVE:
         {
             pWindow->win32.isCursorOverClientArea = DTK_FALSE;
@@ -113,6 +318,208 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.type = DTK_EVENT_MOUSE_MOVE;
             e.mouseMove.x = DTK_GET_X_LPARAM(lParam);
             e.mouseMove.y = DTK_GET_Y_LPARAM(lParam);
+        } break;
+
+        case WM_NCLBUTTONDOWN:
+        case WM_NCRBUTTONDOWN:
+        case WM_NCMBUTTONDOWN:
+        {
+            POINT p;
+            p.x = DTK_GET_X_LPARAM(lParam);
+            p.y = DTK_GET_Y_LPARAM(lParam);
+            ScreenToClient(hWnd, &p);
+
+            e.type = DTK_EVENT_MOUSE_BUTTON_DOWN;
+            e.mouseButton.x = p.x;
+            e.mouseButton.y = p.y;
+            e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
+            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+        } break;
+
+        case WM_NCLBUTTONUP:
+        case WM_NCRBUTTONUP:
+        case WM_NCMBUTTONUP:
+        {
+            POINT p;
+            p.x = DTK_GET_X_LPARAM(lParam);
+            p.y = DTK_GET_Y_LPARAM(lParam);
+            ScreenToClient(hWnd, &p);
+
+            e.type = DTK_EVENT_MOUSE_BUTTON_UP;
+            e.mouseButton.x = p.x;
+            e.mouseButton.y = p.y;
+            e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
+            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+        } break;
+
+        case WM_NCLBUTTONDBLCLK:
+        case WM_NCRBUTTONDBLCLK:
+        case WM_NCMBUTTONDBLCLK:
+        {
+            POINT p;
+            p.x = DTK_GET_X_LPARAM(lParam);
+            p.y = DTK_GET_Y_LPARAM(lParam);
+            ScreenToClient(hWnd, &p);
+
+            // Special case for double click because we want to post a normal mouse button down event first before the double-click event.
+            e.type = DTK_EVENT_MOUSE_BUTTON_DOWN;
+            e.mouseButton.x = p.x;
+            e.mouseButton.y = p.y;
+            e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
+            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+            dtk__handle_event(&e);
+
+            e.type = DTK_EVENT_MOUSE_BUTTON_DBLCLICK;
+        } break;
+
+        case WM_LBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+        case WM_MBUTTONDOWN:
+        {
+            POINT p;
+            p.x = DTK_GET_X_LPARAM(lParam);
+            p.y = DTK_GET_Y_LPARAM(lParam);
+
+            e.type = DTK_EVENT_MOUSE_BUTTON_DOWN;
+            e.mouseButton.x = p.x;
+            e.mouseButton.y = p.y;
+            e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
+            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+        } break;
+
+        case WM_LBUTTONUP:
+        case WM_RBUTTONUP:
+        case WM_MBUTTONUP:
+        {
+            POINT p;
+            p.x = DTK_GET_X_LPARAM(lParam);
+            p.y = DTK_GET_Y_LPARAM(lParam);
+
+            e.type = DTK_EVENT_MOUSE_BUTTON_UP;
+            e.mouseButton.x = p.x;
+            e.mouseButton.y = p.y;
+            e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
+            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+        } break;
+
+        case WM_LBUTTONDBLCLK:
+        case WM_RBUTTONDBLCLK:
+        case WM_MBUTTONDBLCLK:
+        {
+            POINT p;
+            p.x = DTK_GET_X_LPARAM(lParam);
+            p.y = DTK_GET_Y_LPARAM(lParam);
+
+            // Special case for double click because we want to post a normal mouse button down event first before the double-click event.
+            e.type = DTK_EVENT_MOUSE_BUTTON_DOWN;
+            e.mouseButton.x = p.x;
+            e.mouseButton.y = p.y;
+            e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
+            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+            dtk__handle_event(&e);
+
+            e.type = DTK_EVENT_MOUSE_BUTTON_DBLCLICK;
+        } break;
+
+        case WM_MOUSEWHEEL:
+        {
+            dtk_int32 delta = GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
+
+            POINT p;
+            p.x = DTK_GET_X_LPARAM(lParam);
+            p.y = DTK_GET_Y_LPARAM(lParam);
+            ScreenToClient(hWnd, &p);
+
+            e.type = DTK_EVENT_MOUSE_WHEEL;
+            e.mouseWheel.x = p.x;
+            e.mouseWheel.y = p.y;
+            e.mouseWheel.delta = delta;
+            e.mouseWheel.state = dtk_get_mouse_event_state_flags__win32(wParam);
+        } break;
+
+
+        case WM_KEYDOWN:
+        {
+            if (!dtk_is_win32_mouse_button_key_code(wParam)) {
+                int stateFlags = dtk_get_modifier_key_state_flags__win32();
+                if ((lParam & (1 << 30)) != 0) {
+                    stateFlags |= DTK_KEY_AUTO_REPEATED;
+                }
+
+                e.type = DTK_EVENT_KEY_DOWN;
+                e.keyDown.key = dtk_win32_to_dtk_key(wParam);
+                e.keyDown.state = stateFlags;
+            }
+        } break;
+
+        case WM_KEYUP:
+        {
+            if (!dtk_is_win32_mouse_button_key_code(wParam)) {
+                e.type = DTK_EVENT_KEY_UP;
+                e.keyDown.key = dtk_win32_to_dtk_key(wParam);
+                e.keyDown.state = dtk_get_modifier_key_state_flags__win32();
+            }
+        } break;
+
+        // NOTE: WM_UNICHAR is not posted by Windows itself, but rather intended to be posted by applications. Thus, we need to use WM_CHAR. WM_CHAR
+        //       posts events as UTF-16 code points. When the code point is a surrogate pair, we need to store it and wait for the next WM_CHAR event
+        //       which will contain the other half of the pair.
+        case WM_CHAR:
+        {
+            // Windows will post WM_CHAR events for keys we don't particularly want. We'll filter them out here (they will be processed by WM_KEYDOWN).
+            if (wParam < 32 || wParam == 127) {      // 127 = ASCII DEL (will be triggered by CTRL+Backspace)
+                if (wParam != VK_TAB  &&
+                    wParam != VK_RETURN) {   // VK_RETURN = Enter Key.
+                    break;
+                }
+            }
+
+            if ((lParam & (1U << 31)) == 0) {    // Bit 31 will be 1 if the key was pressed, 0 if it was released.
+                if (IS_HIGH_SURROGATE(wParam)) {
+                    dtk_assert(pWindow->win32.utf16HighSurrogate == 0);
+                    pWindow->win32.utf16HighSurrogate = (unsigned short)wParam;
+                } else {
+                    unsigned int character = (unsigned int)wParam;
+                    if (IS_LOW_SURROGATE(wParam)) {
+                        assert(IS_HIGH_SURROGATE(pWindow->win32.utf16HighSurrogate) != 0);
+                        character = dtk_utf16pair_to_utf32_ch(pWindow->win32.utf16HighSurrogate, (unsigned short)wParam);
+                    }
+
+                    pWindow->win32.utf16HighSurrogate = 0;
+
+                    int repeatCount = lParam & 0x0000FFFF;
+                    for (int i = 0; i < repeatCount; ++i) {
+                        int stateFlags = dtk_get_modifier_key_state_flags__win32();
+                        if ((lParam & (1 << 30)) != 0) {
+                            stateFlags |= DTK_KEY_AUTO_REPEATED;
+                        }
+
+                        e.type = DTK_EVENT_PRINTABLE_KEY_DOWN;
+                        e.printableKeyDown.utf32 = character;
+                        e.printableKeyDown.state = stateFlags;
+                    }
+                }
+            }
+        } break;
+
+
+        case WM_SETFOCUS:
+        {
+            e.type = DTK_EVENT_FOCUS;
+        } break;
+
+        case WM_KILLFOCUS:
+        {
+            e.type = DTK_EVENT_UNFOCUS;
+        } break;
+
+
+        case WM_COMMAND:
+        {
+            if (HIWORD(wParam) == 1) {
+                //WORD acceleratorIndex = LOWORD(wParam);
+                //dred_on_accelerator(pWindow->pDred, pWindow, acceleratorIndex);
+            }
         } break;
 
         case WM_MENUCOMMAND:
@@ -143,10 +550,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
     }
 
     if (e.type != DTK_EVENT_NONE) {
-        dtk_bool32 propagate = e.pTK->onEvent == NULL || e.pTK->onEvent(&e);
-        if (propagate) {
-            dtk__handle_event(&e);
-        }
+        dtk__handle_event(&e);
     }
 
     return DefWindowProcA(hWnd, msg, wParam, lParam);

@@ -36,6 +36,10 @@ struct dtk_window
             /*HACCEL*/ dtk_handle hAccel;   // The Win32 accelerator table handle. This is deleted and re-created whenever a new accelerator table is bound.
             /*HCURSOR*/ dtk_handle hCursor; // Used when the window receives WM_SETCURSOR
             dtk_bool32 isCursorOverClientArea;
+
+            // The high-surrogate from a WM_CHAR message. This is used in order to build a surrogate pair from a couple of WM_CHAR messages. When
+            // a WM_CHAR message is received when code point is not a high surrogate, this is set to 0.
+            dtk_uint16 utf16HighSurrogate;
         } win32;
     #endif
     #ifdef DTK_GTK

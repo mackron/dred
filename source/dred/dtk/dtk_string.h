@@ -72,3 +72,31 @@ DTK_INLINE int dtk_strncpy_s(char* dst, size_t dstSizeInBytes, const char* src, 
     return ERANGE;
 #endif
 }
+
+
+// Converts a UTF-16 character to UTF-32.
+DTK_INLINE dtk_uint32 dtk_utf16_to_utf32_ch(dtk_uint16 utf16[2])
+{
+    if (utf16 == NULL) {
+        return 0;
+    }
+
+    if (utf16[0] < 0xD800 || utf16[0] > 0xDFFF) {
+        return utf16[0];
+    } else {
+        if ((utf16[0] & 0xFC00) == 0xD800 && (utf16[1] & 0xFC00) == 0xDC00) {
+            return ((dtk_uint32)utf16[0] << 10) + utf16[1] - 0x35FDC00;
+        } else {
+            return 0;   // Invalid.
+        }
+    }
+}
+
+// Converts a UTF-16 surrogate pair to UTF-32.
+DTK_INLINE dtk_uint32 dtk_utf16pair_to_utf32_ch(dtk_uint16 utf160, dtk_uint16 utf161)
+{
+    dtk_uint16 utf16[2];
+    utf16[0] = utf160;
+    utf16[1] = utf161;
+    return dtk_utf16_to_utf32_ch(utf16);
+}
