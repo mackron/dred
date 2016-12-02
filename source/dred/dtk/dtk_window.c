@@ -315,6 +315,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             if (!pWindow->win32.isCursorOverClientArea) {
                 pWindow->win32.isCursorOverClientArea = DTK_TRUE;
                 e.type = DTK_EVENT_MOUSE_ENTER;
+                dtk__handle_event(&e);
 
                 dtk_track_mouse_leave_event__win32(hWnd);
             }
