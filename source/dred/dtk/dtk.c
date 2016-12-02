@@ -481,10 +481,10 @@ dtk_result dtk_init__gtk(dtk_context* pTK)
         }
         
         pTK->gtk.pCursorDefault      = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_LEFT_PTR);
-        pTK->gtk.pCursorIBeam        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_XTERM);;
-        pTK->gtk.pCursorCross        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_CROSSHAIR);;
-        pTK->gtk.pCursorDoubleArrowH = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_H_DOUBLE_ARROW);;
-        pTK->gtk.pCursorDoubleArrowV = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_V_DOUBLE_ARROW);;
+        pTK->gtk.pCursorIBeam        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_XTERM);
+        pTK->gtk.pCursorCross        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_CROSSHAIR);
+        pTK->gtk.pCursorDoubleArrowH = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_H_DOUBLE_ARROW);
+        pTK->gtk.pCursorDoubleArrowV = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_V_DOUBLE_ARROW);
     }
 
     pTK->platform = dtk_platform_gtk;

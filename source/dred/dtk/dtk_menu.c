@@ -237,12 +237,18 @@ typedef struct
     dtk_uint32 index;
     dtk_uint32 count;
     GtkWidget* pItem;
+    dtk_bool32 stop;
 } dtk_menu_item_iterator_data__gtk;
 
 static gboolean dtk_menu__get_item_widget_by_index_cb__gtk(GtkWidget* pItem, dtk_menu_item_iterator_data__gtk* pData)
 {
+    if (pData->stop) {
+        return FALSE;
+    }
+
     if (pData->count == pData->index) {
         pData->pItem = pItem;
+        pData->stop  = DTK_TRUE;
         return FALSE;
     }
 
@@ -256,6 +262,7 @@ static GtkWidget* dtk_menu__get_item_widget_by_index__gtk(dtk_menu* pMenu, dtk_u
     data.index = index;
     data.count = 0;
     data.pItem = NULL;
+    data.stop = DTK_FALSE;
     gtk_container_foreach(GTK_CONTAINER(pMenu->gtk.pWidget), (GtkCallback)dtk_menu__get_item_widget_by_index_cb__gtk, (gpointer)&data);
 
     return data.pItem;
@@ -263,7 +270,12 @@ static GtkWidget* dtk_menu__get_item_widget_by_index__gtk(dtk_menu* pMenu, dtk_u
 
 static gboolean dtk_menu__get_item_index_cb__gtk(GtkWidget* pItem, dtk_menu_item_iterator_data__gtk* pData)
 {
+    if (pData->stop) {
+        return FALSE;
+    }
+
     if (pData->pItem == pItem) {
+        pData->stop = DTK_TRUE;
         return FALSE;
     }
 
@@ -277,6 +289,7 @@ static dtk_uint32 dtk_menu__get_item_index__gtk(dtk_menu* pMenu, GtkWidget* pIte
     data.index = 0;
     data.count = 0;
     data.pItem = pItem;
+    data.stop = DTK_FALSE;
     gtk_container_foreach(GTK_CONTAINER(pMenu->gtk.pWidget), (GtkCallback)dtk_menu__get_item_index_cb__gtk, (gpointer)&data);
 
     return data.index;
@@ -289,7 +302,7 @@ static gboolean dtk_menu__on_mouse_enter__gtk(GtkWidget* pGTKMenu, GdkEventCross
     dtk_menu* pMenu = (dtk_menu*)pUserData;
     dtk_assert(pMenu != NULL);
 
-    gdk_window_set_cursor(gtk_widget_get_window(pGTKMenu), pMenu->pTK->gtk.Cursor_Default);
+    gdk_window_set_cursor(gtk_widget_get_window(pGTKMenu), pMenu->pTK->gtk.pCursorDefault);
     return DTK_FALSE;
 }
 
@@ -341,9 +354,30 @@ static gboolean dtk_menu_item__on_check_menu_item_toggled__gtk(GtkCheckMenuItem 
 static void dtk__on_menu_item_activate__gtk(GtkWidget *pItem, gpointer pUserData)
 {
     (void)pUserData;
-    
+
     dtk_menu_item_extra_data__gtk* pItemData = g_object_get_data(G_OBJECT(pItem), DTK_MENU_ITEM_DATA_KEY);
     if (pItemData->blockNextActivateSignal) {
+        return;
+    }
+
+    dtk_uint32 itemIndex = dtk_menu__get_item_index__gtk(pItemData->pMenu, pItem);
+
+    // GTK likes to automatically toggle checked menu items. Win32, however, does _not_ do this, so for consistency
+    // we're going to manually toggle it back.
+    if (pItemData->type == dtk_menu_item_type_check) {
+        pItemData->blockNextActivateSignal = DTK_TRUE;
+        {
+            if (dtk_menu_is_item_checked(pItemData->pMenu, itemIndex)) {
+                dtk_menu_uncheck_item(pItemData->pMenu, itemIndex);
+            } else {
+                dtk_menu_check_item(pItemData->pMenu, itemIndex);
+            }
+        }
+        pItemData->blockNextActivateSignal = DTK_FALSE;
+    }
+
+    // GTK likes to send activation events on menu items with sub-menus which, again, is inconsistent with Win32.
+    if (gtk_menu_item_get_submenu(GTK_MENU_ITEM(pItem)) != NULL) {
         return;
     }
     
@@ -352,7 +386,8 @@ static void dtk__on_menu_item_activate__gtk(GtkWidget *pItem, gpointer pUserData
     e.pControl = NULL;
     e.type = DTK_EVENT_MENU;
     e.menu.pMenu = pItemData->pMenu;
-    e.menu.itemIndex = dtk_menu__get_item_index__gtk(pItemData->pMenu, pItem);
+    e.menu.itemIndex = itemIndex;
+    e.menu.itemID = pItemData->id;
     dtk__handle_event(&e);
 }
 

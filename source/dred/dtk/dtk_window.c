@@ -555,6 +555,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.type = DTK_EVENT_MENU;
                 e.menu.pMenu = pMenu;
                 e.menu.itemIndex = (dtk_uint32)wParam;
+                dtk_menu_get_item_id(pMenu, e.menu.itemIndex, &e.menu.itemID);
                 dtk__handle_event(&e);
             }
         } break;

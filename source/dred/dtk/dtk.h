@@ -175,6 +175,7 @@ struct dtk_event
         {
             dtk_menu* pMenu;
             dtk_uint32 itemIndex;
+            dtk_uint32 itemID;
         } menu;
 
         struct
