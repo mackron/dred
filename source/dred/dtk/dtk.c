@@ -153,9 +153,13 @@ dtk_result dtk__handle_event(dtk_event* pEvent)
 
             default: break;
         }
+    } else {
+        // It's not a window. We just pass the event straight through to the control's event handler.
+        dtk_event_proc onEventLocal = pEvent->pControl->onEvent;
+        if (onEventLocal) {
+            onEventLocal(pEvent);
+        }
     }
-
-    
 
     return DTK_SUCCESS;
 }

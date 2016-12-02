@@ -327,6 +327,8 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             dtk__handle_event(&e);
         } break;
 
+    // Uncomment this to enable mouse button events in the non-client area of the window. This is inconsistent with other backends, however.
+    #if 0
         case WM_NCLBUTTONDOWN:
         case WM_NCRBUTTONDOWN:
         case WM_NCMBUTTONDOWN:
@@ -381,6 +383,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.type = DTK_EVENT_MOUSE_BUTTON_DBLCLICK;
             dtk__handle_event(&e);
         } break;
+    #endif
 
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
@@ -1309,19 +1312,17 @@ static gboolean dtk_window_clientarea__on_mouse_wheel__gtk(GtkWidget* pClientAre
         return DTK_TRUE;
     }
 
-    // TODO: Fixme. This delta calculation is wrong, I think. Look at pEvent->delta_y. Also, why am I checking the direction, and then negating
-    //       it again when constructing the event structure?
     gdouble delta_y = 0;
     if (pEvent->direction == GDK_SCROLL_UP) {
-        delta_y = -1;
-    } else if (pEvent->direction == GDK_SCROLL_DOWN) {
         delta_y = 1;
+    } else if (pEvent->direction == GDK_SCROLL_DOWN) {
+        delta_y = -1;
     }
 
     dtk_event e = dtk_event_init(DTK_EVENT_MOUSE_WHEEL, DTK_CONTROL(pWindow));
     e.mouseWheel.x = pEvent->x;
     e.mouseWheel.y = pEvent->y;
-    e.mouseWheel.delta = (dtk_int32)-delta_y;
+    e.mouseWheel.delta = (dtk_int32)delta_y;
     e.mouseWheel.state = dtk_get_modifier_state_flags__gtk(pEvent->state);
     dtk__handle_event(&e);
 
