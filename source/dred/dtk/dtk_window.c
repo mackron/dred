@@ -672,23 +672,15 @@ dtk_result dtk_window_get_client_size__win32(dtk_window* pWindow, dtk_uint32* pW
 
 dtk_result dtk_window_set_absolute_position__win32(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY)
 {
-    // Normally, the absolute position refers to the position of the control relative to the top level window. Win32, however,
-    // positions popup windows relative to the screen, so we need to adjust.
-    dtk_int32 adjustedPosX = posX;
-    dtk_int32 adjustedPosY = posY;
-    if ((pWindow->flags & DTK_WINDOW_FLAG_POPUP) == 0) {
-        dtk_control* pTopLevelControl= dtk_control_find_top_level_control(DTK_CONTROL(pWindow));
-        if (pTopLevelControl != NULL) {
-            dtk_control_relative_to_absolute(pTopLevelControl, &adjustedPosX, &adjustedPosY);
-        }
-    }
-
-    if (!SetWindowPos((HWND)pWindow->win32.hWnd, NULL, adjustedPosX, adjustedPosY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE)) {
+    // The absolute position of window's is relative to the screen.
+    dtk_int32 screenPosX = posX;
+    dtk_int32 screenPosY = posY;
+    if (!SetWindowPos((HWND)pWindow->win32.hWnd, NULL, screenPosX, screenPosY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE)) {
         return DTK_ERROR;
     }
 
-    DTK_CONTROL(pWindow)->absolutePosX = posX;
-    DTK_CONTROL(pWindow)->absolutePosY = posY;
+    DTK_CONTROL(pWindow)->absolutePosX = screenPosX;
+    DTK_CONTROL(pWindow)->absolutePosY = screenPosY;
 
     return DTK_SUCCESS;
 }
@@ -1619,7 +1611,7 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_ty
     if (width  == 0) width  = 1;
     if (height == 0) height = 1;
     
-    dtk_result result = dtk_control_init(pTK, DTK_CONTROL_TYPE_WINDOW, onEvent, DTK_CONTROL(pWindow));
+    dtk_result result = dtk_control_init(pTK, pParent, DTK_CONTROL_TYPE_WINDOW, onEvent, DTK_CONTROL(pWindow));
     if (result != DTK_SUCCESS) {
         return result;
     }

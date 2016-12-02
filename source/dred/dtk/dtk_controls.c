@@ -1,14 +1,15 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-dtk_result dtk_control_init(dtk_context* pTK, dtk_control_type type, dtk_event_proc onEvent, dtk_control* pControl)
+dtk_result dtk_control_init(dtk_context* pTK, dtk_control* pParent, dtk_control_type type, dtk_event_proc onEvent, dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pControl);
 
-    if (pTK == NULL) return DTK_INVALID_ARGS;
+    if (pTK == NULL || pParent == pControl) return DTK_INVALID_ARGS;
     pControl->pTK = pTK;
     pControl->type = type;
     pControl->onEvent = onEvent;
+    pControl->pParent = pParent;
 
     dtk_font_init(pTK, "Courier New", 24, dtk_font_weight_bold, dtk_font_slant_italic, 0, 0, &pControl->font);
     return DTK_SUCCESS;
@@ -114,7 +115,7 @@ dtk_result dtk_control_set_relative_position(dtk_control* pControl, dtk_int32 po
         return dtk_control_set_absolute_position(pControl, posX, posY);
     }
 
-    dtk_control_relative_to_absolute(pControl, &posX, &posY);
+    dtk_control_relative_to_absolute(pControl->pParent, &posX, &posY);
     return dtk_control_set_absolute_position(pControl, posX, posY);
 }
 
@@ -140,14 +141,12 @@ dtk_result dtk_control_relative_to_absolute(dtk_control* pControl, dtk_int32* pP
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
-    dtk_int32 parentAbsolutePosX = 0;
-    dtk_int32 parentAbsolutePosY = 0;
-    if (pControl->pParent) {
-        dtk_control_get_absolute_position(pControl, &parentAbsolutePosX, &parentAbsolutePosY);
-    }
+    dtk_int32 absolutePosX = 0;
+    dtk_int32 absolutePosY = 0;
+    dtk_control_get_absolute_position(pControl, &absolutePosX, &absolutePosY);
 
-    if (pPosX) *pPosX += parentAbsolutePosX;
-    if (pPosY) *pPosY += parentAbsolutePosY;
+    if (pPosX) *pPosX += absolutePosX;
+    if (pPosY) *pPosY += absolutePosY;
     return DTK_SUCCESS;
 }
 
@@ -167,12 +166,15 @@ dtk_result dtk_control_absolute_to_relative(dtk_control* pControl, dtk_int32* pP
 
 dtk_control* dtk_control_find_top_level_control(dtk_control* pControl)
 {
-    dtk_control* pTopLevelControl = pControl;
-    while (pTopLevelControl != NULL) {
-        pTopLevelControl = pControl->pParent;
+    while (pControl != NULL) {
+        if (pControl->pParent == NULL) {
+            return pControl;    // <-- This is the top-level control.
+        }
+
+        pControl = pControl->pParent;
     }
 
-    return pTopLevelControl;
+    return NULL;
 }
 
 dtk_window* dtk_control_get_window(dtk_control* pControl)
