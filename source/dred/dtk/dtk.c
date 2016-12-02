@@ -13,7 +13,6 @@
 #endif
 
 #include <assert.h>
-#include <string.h> // For memset()
 
 #if !defined(DTK_64BIT) && !defined(DTK_32BIT)
 #ifdef _WIN32
