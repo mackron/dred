@@ -1377,9 +1377,20 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_wind
         GDK_KEY_PRESS_MASK      |
         GDK_KEY_RELEASE_MASK    |
         GDK_FOCUS_CHANGE_MASK);
-        
-    gtk_window_set_resizable(GTK_WINDOW(pWidget), TRUE);
-    gtk_window_resize(GTK_WINDOW(pWidget), (int)width, (int)height);
+
+
+    
+    gtk_window_set_title(GTK_WINDOW(pWidget), title);
+    if (type == dtk_window_type_toplevel) {
+        gtk_window_set_resizable(GTK_WINDOW(pWidget), TRUE);
+        gtk_window_resize(GTK_WINDOW(pWidget), (gint)width, (gint)height);
+    } else if (type == dtk_window_type_dialog) {
+        gtk_window_set_resizable(GTK_WINDOW(pWidget), FALSE);
+        gtk_widget_set_size_request(GTK_WIDGET(pWidget), (gint)width, (gint)height);
+        gtk_window_set_type_hint(GTK_WINDOW(pWidget), GDK_WINDOW_TYPE_HINT_DIALOG);
+        gtk_window_set_skip_taskbar_hint(GTK_WINDOW(pWidget), TRUE);
+    }
+    
     g_signal_connect(pWidget, "delete-event",      G_CALLBACK(dtk_window__on_close__gtk),         pWindow);     // Close
     g_signal_connect(pWidget, "configure-event",   G_CALLBACK(dtk_window__on_configure__gtk),     pWindow);     // Size/Move
     g_signal_connect(pWidget, "hide",              G_CALLBACK(dtk_window__on_hide__gtk),          pWindow);     // Hide.
@@ -1395,7 +1406,7 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_wind
     pWindow->gtk.pBox        = pBox;
     pWindow->gtk.pClientArea = pClientArea;
     
-    gtk_widget_show_all(GTK_WIDGET(pWidget));
+    gtk_widget_show_all(GTK_WIDGET(pBox));
     gtk_widget_realize(pWidget);
 
     return DTK_SUCCESS;
