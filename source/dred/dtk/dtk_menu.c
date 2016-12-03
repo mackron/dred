@@ -446,9 +446,20 @@ dtk_result dtk_menu_insert_item__gtk(dtk_menu* pMenu, dtk_uint32 index, dtk_menu
             return DTK_ERROR;
         }
 
-        // TODO: Set the accelerator label. See dred_platform_layer.c
+        // Set the accelerator label. GTK does not currently allow one to set the accelerator label to an arbitrary string nor
+        // multiple accelerators (for the sake a multi-accelerator chords). Thus, we only show the accelerator labels for those
+        // shortcuts that have only a single accelerator.
         GtkWidget* pGTKAccelLabel = gtk_bin_get_child(GTK_BIN(pItem));
-        //gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), dred_dred_key_to_gtk(accel0.key), dred_accelerator_modifiers_to_gtk(accel0.modifiers));
+        
+        dtk_accelerator accelerators[2];
+        dtk_uint32 acceleratorCount = dtk_count_of(accelerators);
+        if (dtk_accelerator_parse_chord(pInfo->shortcut, accelerators, &acceleratorCount) == DTK_SUCCESS) {
+            if (acceleratorCount == 1) {
+                guint keyGTK = dtk_to_gtk_key(accelerators[0].key);
+                GdkModifierType modifiersGTK = dtk_accelerator_modifiers_to_gtk(accelerators[0].modifiers);
+                gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), keyGTK, modifiersGTK);
+            }
+        }
     }
     
     if (pInfo->type == dtk_menu_item_type_check) {

@@ -1,5 +1,11 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
+// Determines whether or not the given string is null or empty.
+DTK_INLINE dtk_bool32 dtk_string_is_null_or_empty(const char* str)
+{
+    return str == NULL || str[0] == '\0';
+}
+
 #ifndef _MSC_VER
     #ifndef _TRUNCATE
     #define _TRUNCATE ((size_t)-1)
@@ -165,6 +171,13 @@ DTK_INLINE int dtk_strncat_s(char* dst, size_t dstSizeInBytes, const char* src, 
     return 0;
 #endif
 }
+
+#if !defined(_MSC_VER) && !defined(__MINGW32__)
+DTK_INLINE int _stricmp(const char* string1, const char* string2)
+{
+    return strcasecmp(string1, string2);
+}
+#endif
 
 
 // Converts a UTF-16 character to UTF-32.

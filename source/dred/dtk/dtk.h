@@ -100,6 +100,8 @@ typedef int dtk_result;
 #endif
 #define dtk_zero_object(p)      dtk_zero_memory((p), sizeof(*(p)))
 
+#define dtk_count_of(obj)       (sizeof(obj) / sizeof(obj[0]))
+
 #if defined(_MSC_VER)
 #define DTK_INLINE static __inline
 #else
@@ -128,25 +130,10 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_string.h"
 #include "dtk_graphics.h"
 #include "dtk_input.h"
+#include "dtk_accelerators.h"
 #include "dtk_controls.h"
 #include "dtk_window.h"
 #include "dtk_menu.h"
-
-typedef struct
-{
-    dtk_key key;
-    dtk_uint32 modifiers;
-    dtk_uint32 id;
-} dtk_accelerator;
-
-DTK_INLINE dtk_accelerator dtk_accelerator_init(dtk_key key, dtk_uint32 modifiers, dtk_uint32 id)
-{
-    dtk_accelerator a;
-    a.key = key;
-    a.modifiers = modifiers;
-    a.id = id;
-    return a;
-}
 
 
 // Event types.

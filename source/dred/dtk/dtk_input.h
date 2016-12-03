@@ -43,6 +43,12 @@ typedef dtk_uint32 dtk_key;
 #define DTK_KEY_F11                    0xffc8
 #define DTK_KEY_F12                    0xffc9
 
+// Converts a key to a string, returning the length of the string.
+size_t dtk_key_to_string(dtk_key key, char* strOut, size_t strOutSize);
+
+// Converts a string to a key code.
+dtk_key dtk_key_parse(const char* str);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
