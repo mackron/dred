@@ -10,6 +10,7 @@
 #ifdef DTK_WIN32
 #define DTK_WIN32_WINDOW_CLASS              "dtk.window"
 #define DTK_WIN32_WINDOW_CLASS_POPUP        "dtk.window.popup"
+#define DTK_WIN32_WINDOW_CLASS_MESSAGING    "dtk.window.messaging"
 #define DTK_WIN32_WINDOW_CLASS_TIMER        "dtk.window.timer"
 
 #define DTK_GET_X_LPARAM(lp)    ((int)(short)LOWORD(lp))

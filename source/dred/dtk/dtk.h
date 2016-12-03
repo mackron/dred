@@ -160,6 +160,7 @@ typedef int dtk_event_type;
 #define DTK_EVENT_PRINTABLE_KEY_DOWN    19
 #define DTK_EVENT_FOCUS                 20
 #define DTK_EVENT_UNFOCUS               21
+#define DTK_EVENT_CUSTOM                256
 
 struct dtk_event
 {
@@ -270,6 +271,13 @@ struct dtk_event
         {
             int unused;
         } unfocus;
+
+        struct
+        {
+            dtk_uint32 id;
+            void* pData;
+            size_t dataSize;
+        } custom;
     };
 };
 
@@ -312,6 +320,8 @@ struct dtk_context
             dtk_accelerator* pAccelerators;
             dtk_uint32 acceleratorCount;
             dtk_uint32 acceleratorCapacity;
+
+            /*HWND*/ dtk_handle hMessagingWindow;   // A special hidden window which is only used for pumping messages, usually custom ones.
         } win32;
 #endif
 #ifdef DTK_GTK
@@ -370,6 +380,13 @@ dtk_result dtk_set_event_callback(dtk_context* pTK, dtk_event_proc proc);
 // Thread Safety: UNSAFE
 //   Do not call this from multiple threads. Have a single thread that does all event handling.
 dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking);
+
+// Posts a custom event.
+//
+// This will post an event of type DTK_EVENT_CUSTOM. This will make a copy of the data.
+//
+// Thread Safety: SAFE
+dtk_result dtk_post_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize);
 
 // Posts a quit event to the event queue. This will cause the main loop to terminate and dtk_next_event() to
 // return DTK_QUIT.

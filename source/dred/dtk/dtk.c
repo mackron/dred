@@ -201,6 +201,15 @@ dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
 #include "dtk_window.c"
 #include "dtk_menu.c"
 
+typedef struct
+{
+    dtk_context* pTK;
+    dtk_control* pControl;
+    dtk_uint32 eventID;
+    size_t dataSize;
+    dtk_uint8 pData[1];
+} dtk_custom_event_data;
+
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -209,6 +218,8 @@ dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DTK_WIN32
+#define DTK_WM_CUSTOM   (WM_USER + 0)
+
 typedef BOOL    (WINAPI * DTK_PFN_InitCommonControlsEx)(const LPINITCOMMONCONTROLSEX lpInitCtrls);
 typedef HRESULT (WINAPI * DTK_PFN_OleInitialize)       (LPVOID pvReserved);
 typedef void    (WINAPI * DTK_PFN_OleUninitialize)     ();
@@ -310,6 +321,33 @@ LRESULT CALLBACK dtk_TimerWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam, LP
     return DefWindowProcA(hWnd, msg, wParam, lParam);
 }
 
+LRESULT CALLBACK dtk_MessagingWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg)
+    {
+        case DTK_WM_CUSTOM:
+        {
+            dtk_custom_event_data* pEventData = (dtk_custom_event_data*)lParam;
+            dtk_assert(pEventData != NULL);
+
+            dtk_event e;
+            e.type = DTK_EVENT_CUSTOM;
+            e.pTK = pEventData->pTK;
+            e.pControl = pEventData->pControl;
+            e.custom.id = pEventData->eventID;
+            e.custom.dataSize = pEventData->dataSize;
+            e.custom.pData = pEventData->pData;
+            dtk__handle_event(&e);
+
+            dtk_free(pEventData);
+        } break;
+
+        default: break;
+    }
+
+    return DefWindowProcA(hWnd, msg, wParam, lParam);
+}
+
 dtk_result dtk_init__win32(dtk_context* pTK)
 {
     g_dtkInitCounter_Win32 += 1;
@@ -362,6 +400,26 @@ dtk_result dtk_init__win32(dtk_context* pTK)
             return DTK_ERROR;
         }
 
+        wc.lpfnWndProc   = (WNDPROC)dtk_MessagingWindowProcWin32;
+        wc.lpszClassName = DTK_WIN32_WINDOW_CLASS_MESSAGING;
+        if (!RegisterClassExA(&wc)) {
+            UnregisterClassA(DTK_WIN32_WINDOW_CLASS_TIMER, NULL);
+            UnregisterClassA(DTK_WIN32_WINDOW_CLASS_POPUP, NULL);
+            UnregisterClassA(DTK_WIN32_WINDOW_CLASS, NULL);
+            return DTK_ERROR;
+        }
+
+
+        // Hidden windows.
+        pTK->win32.hMessagingWindow = (dtk_handle)CreateWindowExA(0, DTK_WIN32_WINDOW_CLASS_MESSAGING, "", 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+        if (pTK->win32.hMessagingWindow == NULL) {
+            UnregisterClassA(DTK_WIN32_WINDOW_CLASS_MESSAGING, NULL);
+            UnregisterClassA(DTK_WIN32_WINDOW_CLASS_TIMER, NULL);
+            UnregisterClassA(DTK_WIN32_WINDOW_CLASS_POPUP, NULL);
+            UnregisterClassA(DTK_WIN32_WINDOW_CLASS, NULL);
+            return DTK_ERROR;
+        }
+
         
         // Cursors.
         pTK->win32.hCursorArrow  = (dtk_handle)LoadCursor(NULL, IDC_ARROW);
@@ -389,7 +447,11 @@ dtk_result dtk_uninit__win32(dtk_context* pTK)
         dtk_free(pTK->win32.pAccelerators);
         DestroyAcceleratorTable(pTK->win32.hAccel);
 
-        UnregisterClassA(DTK_WIN32_WINDOW_CLASS, GetModuleHandleA(NULL));
+        UnregisterClassA(DTK_WIN32_WINDOW_CLASS_MESSAGING, NULL);
+        UnregisterClassA(DTK_WIN32_WINDOW_CLASS_TIMER, NULL);
+        UnregisterClassA(DTK_WIN32_WINDOW_CLASS_POPUP, NULL);
+        UnregisterClassA(DTK_WIN32_WINDOW_CLASS, NULL);
+
         if (pTK->win32.OleUninitialize) {
             ((DTK_PFN_OleUninitialize)pTK->win32.OleUninitialize)();
         }
@@ -423,20 +485,26 @@ dtk_result dtk_next_event__win32(dtk_context* pTK, dtk_bool32 blocking)
         return DTK_SUCCESS;
     }
 
-#if 0
-    WNDPROC wndproc = (WNDPROC)GetWindowLongPtrA(msg.hwnd, GWLP_WNDPROC);
-    if (wndproc == dtk_GenericWindowProc) {
-        dtk_window* pWindow = (dtk_window*)GetWindowLongPtrA(msg.hwnd, 0);
-        if (pWindow != NULL) {
-            if (TranslateAcceleratorA((HWND)pWindow->win32.hWnd, pTK->win32.hAccel, &msg)) {
-                return DTK_SUCCESS;
-            }
-        }
-    }
-#endif
-
     TranslateMessage(&msg);
     DispatchMessageA(&msg);
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_post_event__win32(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
+{
+    // We need a copy of the data. This will be freed in dtk_GenericWindowProc().
+    dtk_custom_event_data* pEventData = (dtk_custom_event_data*)dtk_malloc(sizeof(dtk_custom_event_data) + dataSize);
+    if (pEventData == NULL) {
+        return DTK_OUT_OF_MEMORY;
+    }
+
+    pEventData->pTK = pTK;
+    pEventData->pControl = pControl;
+    pEventData->eventID = eventID;
+    pEventData->dataSize = dataSize;
+    if (pData != NULL && dataSize > 0) memcpy(pEventData->pData, pData, dataSize);
+    SendMessageA(pTK->win32.hMessagingWindow, DTK_WM_CUSTOM, (WPARAM)eventID, (LPARAM)pEventData);
 
     return DTK_SUCCESS;
 }
@@ -599,7 +667,7 @@ dtk_result dtk_init__gtk(dtk_context* pTK)
             dtk_uninit_backend_apis__gtk(pTK);
             return DTK_FAILED_TO_INIT_BACKEND;
         }
-        
+
         pTK->gtk.pCursorDefault      = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_LEFT_PTR);
         pTK->gtk.pCursorIBeam        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_XTERM);
         pTK->gtk.pCursorCross        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_CROSSHAIR);
@@ -658,6 +726,39 @@ dtk_result dtk_next_event__gtk(dtk_context* pTK, dtk_bool32 blocking)
         return DTK_QUIT;
     }
     
+    return DTK_SUCCESS;
+}
+
+static gboolean dtk_post_event_cb__gtk(dtk_custom_event_data* pEventData)
+{
+    dtk_event e;
+    e.type = DTK_EVENT_CUSTOM;
+    e.pTK = pEventData->pTK;
+    e.pControl = pEventData->pControl;
+    e.custom.id = pEventData->eventID;
+    e.custom.dataSize = pEventData->dataSize;
+    e.custom.pData = pEventData->pData;
+    dtk__handle_event(&e);
+
+    dtk_free(pEventData);
+    return FALSE;
+}
+
+dtk_result dtk_post_event__gtk(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
+{
+    // We need a copy of the data. This will be freed in dtk_GenericWindowProc().
+    dtk_custom_event_data* pEventData = (dtk_custom_event_data*)dtk_malloc(sizeof(dtk_custom_event_data) + dataSize);
+    if (pEventData == NULL) {
+        return DTK_OUT_OF_MEMORY;
+    }
+
+    pEventData->pTK = pTK;
+    pEventData->pControl = pControl;
+    pEventData->eventID = eventID;
+    pEventData->dataSize = dataSize;
+    if (pData != NULL && dataSize > 0) memcpy(pEventData->pData, pData, dataSize);
+    
+    g_idle_add((GSourceFunc)dtk_post_event_cb__gtk, pEventData);
     return DTK_SUCCESS;
 }
 
@@ -840,6 +941,25 @@ dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking)
 #ifdef DTK_GTK
     if (pTK->platform == dtk_platform_gtk) {
         result = dtk_next_event__gtk(pTK, blocking);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_post_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk_post_event__win32(pTK, pControl, eventID, pData, dataSize);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk_post_event__gtk(pTK, pControl, eventID, pData, dataSize);
     }
 #endif
 
