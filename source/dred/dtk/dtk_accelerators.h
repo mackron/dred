@@ -25,7 +25,8 @@ DTK_INLINE dtk_bool32 dtk_accelerator_equal(dtk_accelerator a, dtk_accelerator b
 dtk_result dtk_accelerator_parse(const char* accelStr, dtk_accelerator* pAccelerator);
 
 // Converts a string to an accelerator chord. On input, pCount is the number of dtk_accelerator objects
-// available in pAccelerators. On output it is set to the number of accelerators output.
+// available in pAccelerators. On output it is set to the number of accelerators that were output, or
+// would have been had there been enough room.
 dtk_result dtk_accelerator_parse_chord(const char* accelStr, dtk_accelerator* pAccelerators, dtk_uint32* pCount);
 
 // Converts an accelerator to it's string form. Useful for displaying the accelerator on menu items.
