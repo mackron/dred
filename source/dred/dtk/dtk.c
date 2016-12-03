@@ -103,13 +103,6 @@ dtk_result dtk__handle_event(dtk_event* pEvent)
         dtk_window* pWindow = DTK_WINDOW(pEvent->pControl);
         switch (pEvent->type)
         {
-            case DTK_EVENT_PAINT:
-            {
-                dtk_surface_clear(pEvent->pControl->pSurface, dtk_color_rgb(128, 255, 128));
-                dtk_surface_draw_rect(pEvent->pControl->pSurface, 32, 32, 64, 64);
-                dtk_surface_draw_text(pEvent->pControl->pSurface, &pEvent->pControl->font, 1, "Hello, World!", (size_t)-1, 0, 0, dtk_color_rgb(255, 255, 255), dtk_color_rgb(255, 128, 128));
-            } break;
-    
             case DTK_EVENT_SIZE:
             {
                 // When a window is resized the drawing surface also needs to be resized.
