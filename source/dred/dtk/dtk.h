@@ -286,6 +286,14 @@ struct dtk_event
     };
 };
 
+#ifdef DTK_GTK
+typedef struct
+{
+    dtk_accelerator accelerator;
+    /*GClosure**/ dtk_ptr pClosure;
+} dtk_accelerator_gtk;
+#endif
+
 // The main toolkit context.
 struct dtk_context
 {
@@ -327,6 +335,11 @@ struct dtk_context
             /*GdkCursor**/ dtk_ptr pCursorCross;
             /*GdkCursor**/ dtk_ptr pCursorDoubleArrowH;
             /*GdkCursor**/ dtk_ptr pCursorDoubleArrowV;
+
+            /*GtkAccelGroup**/ dtk_ptr pAccelGroup;
+            dtk_accelerator_gtk* pAccelerators;
+            dtk_uint32 acceleratorCount;
+            dtk_uint32 acceleratorCapacity;
         } gtk;
 
         struct

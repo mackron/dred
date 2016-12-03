@@ -13,6 +13,7 @@
 #endif
 
 #include <assert.h>
+#include <ctype.h>  // For toupper()
 
 #if !defined(DTK_64BIT) && !defined(DTK_32BIT)
 #ifdef _WIN32
@@ -489,6 +490,19 @@ dtk_result dtk_recreate_HACCEL__win32(dtk_context* pTK)
     return DTK_SUCCESS;
 }
 
+dtk_bool32 dtk_find_accelerator__win32(dtk_context* pTK, dtk_key key, dtk_uint32 modifiers, dtk_uint32* pIndex)
+{
+    if (pIndex) *pIndex = (dtk_uint32)-1;
+    for (dtk_uint32 i = 0; i < pTK->win32.acceleratorCount; ++i) {
+        if (pTK->win32.pAccelerators[i].key == key && pTK->win32.pAccelerators[i].modifiers == modifiers) {
+            if (pIndex) *pIndex = i;
+            return DTK_TRUE;
+        }
+    }
+
+    return DTK_FALSE;
+}
+
 dtk_result dtk_bind_accelerators__win32(dtk_context* pTK, dtk_accelerator* pAccelerators, dtk_uint32 count)
 {
     // Whenever a new accelerator is bound we need to delete and recreate the entire table.
@@ -511,8 +525,15 @@ dtk_result dtk_bind_accelerators__win32(dtk_context* pTK, dtk_accelerator* pAcce
     dtk_assert(newCount <= pTK->win32.acceleratorCapacity);
 
     for (dtk_uint32 i = 0; i < count; ++i) {
-        pTK->win32.pAccelerators[pTK->win32.acceleratorCount] = pAccelerators[i];
-        pTK->win32.acceleratorCount += 1;
+        dtk_uint32 existingIndex;
+        if (dtk_find_accelerator__win32(pTK, pAccelerators[i].key, pAccelerators[i].modifiers, &existingIndex)) {
+            // Already exists. Replace.
+            pTK->win32.pAccelerators[existingIndex].id = pAccelerators[i].id;
+        } else {
+            // Does not exist. Insert.
+            pTK->win32.pAccelerators[pTK->win32.acceleratorCount] = pAccelerators[i];
+            pTK->win32.acceleratorCount += 1;
+        }
     }
 
     return dtk_recreate_HACCEL__win32(pTK);
@@ -520,19 +541,15 @@ dtk_result dtk_bind_accelerators__win32(dtk_context* pTK, dtk_accelerator* pAcce
 
 dtk_result dtk_unbind_accelerator__win32(dtk_context* pTK, dtk_accelerator accelerator)
 {
-    for (dtk_uint32 i = 0; i < pTK->win32.acceleratorCount; /* DO NOTHING */) {
-        if (memcmp(&pTK->win32.pAccelerators[i], &accelerator, sizeof(accelerator)) == 0) {
-            for (dtk_uint32 j = i; j < pTK->win32.acceleratorCount-1; ++j) {
-                pTK->win32.pAccelerators[i] = pTK->win32.pAccelerators[i+1];
-            }
-
-            pTK->win32.acceleratorCount -= 1;
-
-            // We could break here, but there's a chance an accelerator was bound more than once.
-        } else {
-            i += 1;
-        }
+    dtk_uint32 i;
+    if (!dtk_find_accelerator__win32(pTK, accelerator.key, accelerator.modifiers, &i)) {
+        return DTK_ERROR;   // Accelerator is not bound.
     }
+
+    for (dtk_uint32 j = i; j < pTK->win32.acceleratorCount-1; ++j) {
+        pTK->win32.pAccelerators[j] = pTK->win32.pAccelerators[j+1];
+    }
+    pTK->win32.acceleratorCount -= 1;
 
     return dtk_recreate_HACCEL__win32(pTK);
 }
@@ -563,7 +580,7 @@ dtk_result dtk_init_backend_apis__gtk(dtk_context* pTK)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_uninit_backend_apis__win32(dtk_context* pTK)
+dtk_result dtk_uninit_backend_apis__gtk(dtk_context* pTK)
 {
     dtk_assert(pTK != NULL);
 
@@ -578,6 +595,7 @@ dtk_result dtk_init__gtk(dtk_context* pTK)
         dtk_init_backend_apis__gtk(pTK);
         
         if (!gtk_init_check(0, NULL)) {
+            dtk_uninit_backend_apis__gtk(pTK);
             return DTK_FAILED_TO_INIT_BACKEND;
         }
         
@@ -586,6 +604,12 @@ dtk_result dtk_init__gtk(dtk_context* pTK)
         pTK->gtk.pCursorCross        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_CROSSHAIR);
         pTK->gtk.pCursorDoubleArrowH = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_H_DOUBLE_ARROW);
         pTK->gtk.pCursorDoubleArrowV = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_V_DOUBLE_ARROW);
+
+        pTK->gtk.pAccelGroup = (dtk_ptr)gtk_accel_group_new();
+        if (pTK->gtk.pAccelGroup == NULL) {
+            dtk_uninit_backend_apis__gtk(pTK);
+            return DTK_FAILED_TO_INIT_BACKEND;
+        }
     }
 
     pTK->platform = dtk_platform_gtk;
@@ -601,6 +625,8 @@ dtk_result dtk_uninit__gtk(dtk_context* pTK)
 
     g_dtkInitCounter_GTK -= 1;
     if (g_dtkInitCounter_GTK == 0) {
+        g_object_unref(G_OBJECT(pTK->gtk.pAccelGroup));
+
         g_object_unref(G_OBJECT(pTK->gtk.pCursorDefault));
         g_object_unref(G_OBJECT(pTK->gtk.pCursorIBeam));
         g_object_unref(G_OBJECT(pTK->gtk.pCursorCross));
@@ -642,6 +668,101 @@ dtk_result dtk_post_quit_event__gtk(dtk_context* pTK, int exitCode)
     dtk_atomic_exchange_32(&pTK->exitCode, exitCode);
     g_main_context_wakeup(NULL);
     
+    return DTK_SUCCESS;
+}
+
+
+dtk_bool32 dtk_find_accelerator__gtk(dtk_context* pTK, dtk_key key, dtk_uint32 modifiers, dtk_uint32* pIndex)
+{
+    if (pIndex) *pIndex = (dtk_uint32)-1;
+    for (dtk_uint32 i = 0; i < pTK->gtk.acceleratorCount; ++i) {
+        if (pTK->gtk.pAccelerators[i].accelerator.key == key && pTK->gtk.pAccelerators[i].accelerator.modifiers == modifiers) {
+            if (pIndex) *pIndex = i;
+            return DTK_TRUE;
+        }
+    }
+
+    return DTK_FALSE;
+}
+
+static gboolean dtk__on_accelerator__gtk(GtkAccelGroup *pAccelGroup, GObject *acceleratable, guint keyvalGTK, GdkModifierType modifiersGTK, gpointer pUserData)
+{
+    (void)pAccelGroup;
+    (void)acceleratable;
+
+    dtk_context* pTK = (dtk_context*)pUserData;
+    dtk_assert(pTK != NULL);
+
+    dtk_key key = (dtk_key)toupper(gtk_to_dtk_key(keyvalGTK));
+    dtk_uint32 modifiers = dtk_accelerator_modifiers_from_gtk(modifiersGTK);
+
+    dtk_uint32 index;
+    if (dtk_find_accelerator__gtk(pTK, key, modifiers, &index)) {
+        dtk_event e;
+        e.type = DTK_EVENT_ACCELERATOR;
+        e.pTK = pTK;
+        e.pControl = NULL;
+        e.accelerator.key = pTK->gtk.pAccelerators[index].accelerator.key;
+        e.accelerator.modifiers = pTK->gtk.pAccelerators[index].accelerator.modifiers;
+        e.accelerator.id = pTK->gtk.pAccelerators[index].accelerator.id;
+        dtk__handle_event(&e);
+    }
+
+    return DTK_TRUE;    // Returning true here is important because it ensures the accelerator is handled only once.
+}
+
+dtk_result dtk_bind_accelerators__gtk(dtk_context* pTK, dtk_accelerator* pAccelerators, dtk_uint32 count)
+{
+    dtk_uint32 newCount = pTK->gtk.acceleratorCount + count;
+    if (newCount > pTK->gtk.acceleratorCapacity) {
+        dtk_uint32 newCapacity = pTK->gtk.acceleratorCapacity + count;
+        dtk_accelerator_gtk* pNewAccelerators = (dtk_accelerator_gtk*)dtk_realloc(pTK->gtk.pAccelerators, newCapacity * sizeof(*pNewAccelerators));
+        if (pNewAccelerators == NULL) {
+            return DTK_OUT_OF_MEMORY;
+        }
+
+        pTK->gtk.pAccelerators = pNewAccelerators;
+        pTK->gtk.acceleratorCapacity = newCapacity;
+    }
+
+    dtk_assert(newCount <= pTK->gtk.acceleratorCapacity);
+
+    for (dtk_uint32 i = 0; i < count; ++i) {
+        guint keyvalGTK = dtk_to_gtk_key(pAccelerators[i].key);
+        GdkModifierType modifiersGTK = dtk_accelerator_modifiers_to_gtk(pAccelerators[i].modifiers);
+        if (keyvalGTK > 0) {
+            dtk_unbind_accelerator(pTK, pAccelerators[i]);   // With GTK it's easier to just unbind the existing accelerator completely and start over.
+
+            dtk_uint32 index = pTK->gtk.acceleratorCount;
+            pTK->gtk.pAccelerators[index].accelerator = pAccelerators[i];
+            pTK->gtk.pAccelerators[index].pClosure = g_cclosure_new(G_CALLBACK(dtk__on_accelerator__gtk), pTK, NULL);
+            pTK->gtk.acceleratorCount += 1;
+
+            gtk_accel_group_connect(GTK_ACCEL_GROUP(pTK->gtk.pAccelGroup), keyvalGTK, modifiersGTK, 0, (GClosure*)pTK->gtk.pAccelerators[index].pClosure);
+        }
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_unbind_accelerator__gtk(dtk_context* pTK, dtk_accelerator accelerator)
+{
+    dtk_uint32 index;
+    if (!dtk_find_accelerator__gtk(pTK, accelerator.key, accelerator.modifiers, &index)) {
+        return DTK_ERROR;   // Accelerator is not bound.
+    }
+
+    guint keyvalGTK = dtk_to_gtk_key(accelerator.key);
+    GdkModifierType modifiersGTK = dtk_accelerator_modifiers_to_gtk(accelerator.modifiers);
+    if (!gtk_accel_group_disconnect_key(GTK_ACCEL_GROUP(pTK->gtk.pAccelGroup), keyvalGTK, modifiersGTK)) {  // <-- This will unref the closure.
+        return DTK_ERROR;   // Failed to disconnect from the GTK accelerator group.
+    }
+
+    for (dtk_uint32 j = index; j < pTK->gtk.acceleratorCount-1; ++j) {
+        pTK->gtk.pAccelerators[j] = pTK->gtk.pAccelerators[j+1];
+    }
+    pTK->gtk.acceleratorCount -= 1;
+
     return DTK_SUCCESS;
 }
 #endif

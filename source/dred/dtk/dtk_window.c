@@ -890,7 +890,7 @@ static dtk_key gtk_to_dtk_key(guint keyval)
     return (dtk_key)keyval;
 }
 
-guint dtk_key_to_gtk(dtk_key key)
+guint dtk_to_gtk_key(dtk_key key)
 {
     switch (key)
     {
@@ -963,7 +963,7 @@ static int dtk_get_modifier_state_flags__gtk(guint stateFromGTK)
     return result;
 }
 
-guint dtk_accelerator_modifiers_to_gtk(dtk_uint32 modifiers)
+GdkModifierType dtk_accelerator_modifiers_to_gtk(dtk_uint32 modifiers)
 {
     guint result = 0;
     if (modifiers & DTK_KEY_SHIFT_DOWN) {
@@ -974,6 +974,22 @@ guint dtk_accelerator_modifiers_to_gtk(dtk_uint32 modifiers)
     }
     if (modifiers & DTK_KEY_ALT_DOWN) {
         result |= GDK_MOD1_MASK;
+    }
+
+    return result;
+}
+
+dtk_uint32 dtk_accelerator_modifiers_from_gtk(GdkModifierType modifiers)
+{
+    dtk_uint32 result = 0;
+    if (modifiers & GDK_SHIFT_MASK) {
+        result |= DTK_KEY_SHIFT_DOWN;
+    }
+    if (modifiers & GDK_CONTROL_MASK) {
+        result |= DTK_KEY_CTRL_DOWN;
+    }
+    if (modifiers & GDK_MOD1_MASK) {
+        result |= DTK_KEY_ALT_DOWN;
     }
 
     return result;
@@ -1059,22 +1075,29 @@ static gboolean dtk_window__on_key_down__gtk(GtkWidget* pWidget, GdkEventKey* pE
         return DTK_TRUE;
     }
 
+    dtk_context* pTK = DTK_CONTROL(pWindow)->pTK;
+
     int stateFlags = dtk_get_modifier_state_flags__gtk(pEvent->state);
     // TODO: Check here if key is auto-repeated.
 
     // If the key is a tab key and there are modifiers we will need to simulate an accelerator because GTK doesn't let
     // us bind the tab key to an accelerator... sigh...
-#if 0
     if ((pEvent->keyval == GDK_KEY_Tab || pEvent->keyval == GDK_KEY_ISO_Left_Tab) && stateFlags != 0) {
-        for (size_t i = 0; i < pWindow->accelCount; ++i) {
-            dred_gtk_accelerator* pAccel = &pWindow->pAccels[i];
+        for (size_t i = 0; i < pTK->gtk.acceleratorCount; ++i) {
+            dtk_accelerator_gtk* pAccel = &pTK->gtk.pAccelerators[i];
             if (pAccel->accelerator.key == '\t' && (int)pAccel->accelerator.modifiers == stateFlags) {
-                dred_on_accelerator(pAccel->pWindow->pDred, pAccel->pWindow, pAccel->index);
+                dtk_event e;
+                e.type = DTK_EVENT_ACCELERATOR;
+                e.pTK = pTK;
+                e.pControl = DTK_CONTROL(pWindow);
+                e.accelerator.key = pTK->gtk.pAccelerators[i].accelerator.key;
+                e.accelerator.modifiers = pTK->gtk.pAccelerators[i].accelerator.modifiers;
+                e.accelerator.id = pTK->gtk.pAccelerators[i].accelerator.id;
+                dtk__handle_event(&e);
                 return DTK_FALSE;
             }
         }
     }
-#endif
 
     dtk_event e = dtk_event_init(DTK_EVENT_KEY_DOWN, DTK_CONTROL(pWindow));
     e.keyDown.key = gtk_to_dtk_key(pEvent->keyval);
@@ -1403,6 +1426,9 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_wind
     
     gtk_widget_show_all(GTK_WIDGET(pBox));
     gtk_widget_realize(pWidget);
+
+    // Bind the accelerator group to every window for now.
+    gtk_window_add_accel_group(GTK_WINDOW(pWidget), pTK->gtk.pAccelGroup);
 
     return DTK_SUCCESS;
 }
