@@ -672,6 +672,17 @@ dtk_result dtk_post_quit_event__gtk(dtk_context* pTK, int exitCode)
 }
 
 
+dtk_window* dtk_find_window_by_gobject__gtk(dtk_context* pTK, GObject* pObject)
+{
+    for (dtk_window* pWindow = pTK->pFirstWindow; pWindow != NULL; pWindow = pWindow->pNextWindow) {
+        if (pWindow->gtk.pWidget == pObject) {
+            return pWindow;
+        }
+    }
+
+    return NULL;
+}
+
 dtk_bool32 dtk_find_accelerator__gtk(dtk_context* pTK, dtk_key key, dtk_uint32 modifiers, dtk_uint32* pIndex)
 {
     if (pIndex) *pIndex = (dtk_uint32)-1;
@@ -701,7 +712,7 @@ static gboolean dtk__on_accelerator__gtk(GtkAccelGroup *pAccelGroup, GObject *ac
         dtk_event e;
         e.type = DTK_EVENT_ACCELERATOR;
         e.pTK = pTK;
-        e.pControl = NULL;
+        e.pControl = DTK_CONTROL(dtk_find_window_by_gobject__gtk(pTK, acceleratable));
         e.accelerator.key = pTK->gtk.pAccelerators[index].accelerator.key;
         e.accelerator.modifiers = pTK->gtk.pAccelerators[index].accelerator.modifiers;
         e.accelerator.id = pTK->gtk.pAccelerators[index].accelerator.id;
