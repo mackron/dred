@@ -1679,12 +1679,15 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_ty
         pWindow->flags |= DTK_WINDOW_FLAG_POPUP;
     }
 
+    dtk__track_window(pTK, pWindow);
     return DTK_SUCCESS;
 }
 
 dtk_result dtk_window_uninit(dtk_window* pWindow)
 {
     if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk__untrack_window(DTK_CONTROL(pWindow)->pTK, pWindow);
 
     // Window controls always own their surfaces.
     if (DTK_CONTROL(pWindow)->pSurface) {
