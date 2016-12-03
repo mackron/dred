@@ -23,6 +23,7 @@ typedef struct
     dtk_uint32 stateFlags;      // DTK_MENU_ITEM_STATE_*
     dtk_menu* pSubMenu;
     const char* text;
+    const char* shortcut;
     void* pUserData;
 } dtk_menu_item_info;
 

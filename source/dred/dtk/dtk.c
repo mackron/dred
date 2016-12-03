@@ -13,7 +13,6 @@
 #endif
 
 #include <assert.h>
-#include <ctype.h>  // For toupper()
 
 #if !defined(DTK_64BIT) && !defined(DTK_32BIT)
 #ifdef _WIN32
@@ -704,7 +703,7 @@ static gboolean dtk__on_accelerator__gtk(GtkAccelGroup *pAccelGroup, GObject *ac
     dtk_context* pTK = (dtk_context*)pUserData;
     dtk_assert(pTK != NULL);
 
-    dtk_key key = (dtk_key)toupper(gtk_to_dtk_key(keyvalGTK));
+    dtk_key key = gtk_to_dtk_key(gdk_keyval_to_upper(keyvalGTK));
     dtk_uint32 modifiers = dtk_accelerator_modifiers_from_gtk(modifiersGTK);
 
     dtk_uint32 index;

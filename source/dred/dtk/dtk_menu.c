@@ -71,6 +71,15 @@ dtk_result dtk_menu_insert_item__win32(dtk_menu* pMenu, dtk_uint32 index, dtk_me
     dtk_zero_object(&mii);
     mii.cbSize = sizeof(mii);
 
+    char textWithShortcut[256];
+    if (pInfo->shortcut != NULL) {
+        size_t shortcutLen = strlen(pInfo->shortcut);
+        dtk_strncpy_s(textWithShortcut, sizeof(textWithShortcut)-shortcutLen-1, pInfo->text,     _TRUNCATE);
+        dtk_strncat_s(textWithShortcut, sizeof(textWithShortcut)-shortcutLen,   "\t",            _TRUNCATE);
+        dtk_strncat_s(textWithShortcut, sizeof(textWithShortcut),               pInfo->shortcut, _TRUNCATE);
+        pInfo->text = textWithShortcut;
+    }
+
     if (pInfo->pSubMenu != NULL) {
         mii.fMask |= MIIM_SUBMENU;
         mii.hSubMenu = (HMENU)pInfo->pSubMenu->win32.hMenu;
@@ -438,6 +447,8 @@ dtk_result dtk_menu_insert_item__gtk(dtk_menu* pMenu, dtk_uint32 index, dtk_menu
         }
 
         // TODO: Set the accelerator label. See dred_platform_layer.c
+        GtkWidget* pGTKAccelLabel = gtk_bin_get_child(GTK_BIN(pItem));
+        //gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), dred_dred_key_to_gtk(accel0.key), dred_accelerator_modifiers_to_gtk(accel0.modifiers));
     }
     
     if (pInfo->type == dtk_menu_item_type_check) {
@@ -651,13 +662,15 @@ dtk_result dtk_menu_get_item_count(dtk_menu* pMenu, dtk_uint32* pCount)
 
 dtk_result dtk_menu_insert_item(dtk_menu* pMenu, dtk_uint32 index, dtk_menu_item_info* pInfo)
 {
-    if (pMenu == NULL) return DTK_INVALID_ARGS;
-
+    if (pMenu == NULL || pInfo == NULL) return DTK_INVALID_ARGS;
+    
     dtk_uint32 itemCount;
     dtk_menu_get_item_count(pMenu, &itemCount);
     if (index > itemCount) {
         return DTK_INVALID_ARGS;
     }
+
+    if (pInfo->shortcut == NULL) pInfo->shortcut = "";
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
