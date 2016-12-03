@@ -522,7 +522,7 @@ dtk_result dtk_recreate_HACCEL__win32(dtk_context* pTK)
         dtk_uint32 modifiers = pTK->win32.pAccelerators[i].modifiers;
 
         ACCEL a;
-        a.key = dtk_key_to_win32(pTK->win32.pAccelerators[i].key);
+        a.key = dtk_convert_key_to_win32(pTK->win32.pAccelerators[i].key);
         a.cmd = (WORD)i;    // <-- The command is set to the index. In the WM_COMMAND event handler we'll use this as a lookup into an array.
 
         a.fVirt = FVIRTKEY;
@@ -799,7 +799,7 @@ static gboolean dtk__on_accelerator__gtk(GtkAccelGroup *pAccelGroup, GObject *ac
     dtk_context* pTK = (dtk_context*)pUserData;
     dtk_assert(pTK != NULL);
 
-    dtk_key key = gtk_to_dtk_key(gdk_keyval_to_upper(keyvalGTK));
+    dtk_key key = dtk_convert_key_from_gtk(gdk_keyval_to_upper(keyvalGTK));
     dtk_uint32 modifiers = dtk_accelerator_modifiers_from_gtk(modifiersGTK);
 
     dtk_uint32 index;
@@ -834,7 +834,7 @@ dtk_result dtk_bind_accelerators__gtk(dtk_context* pTK, dtk_accelerator* pAccele
     dtk_assert(newCount <= pTK->gtk.acceleratorCapacity);
 
     for (dtk_uint32 i = 0; i < count; ++i) {
-        guint keyvalGTK = dtk_to_gtk_key(pAccelerators[i].key);
+        guint keyvalGTK = dtk_convert_key_to_gtk(pAccelerators[i].key);
         GdkModifierType modifiersGTK = dtk_accelerator_modifiers_to_gtk(pAccelerators[i].modifiers);
         if (keyvalGTK > 0) {
             dtk_unbind_accelerator(pTK, pAccelerators[i]);   // With GTK it's easier to just unbind the existing accelerator completely and start over.
@@ -858,7 +858,7 @@ dtk_result dtk_unbind_accelerator__gtk(dtk_context* pTK, dtk_accelerator acceler
         return DTK_ERROR;   // Accelerator is not bound.
     }
 
-    guint keyvalGTK = dtk_to_gtk_key(accelerator.key);
+    guint keyvalGTK = dtk_convert_key_to_gtk(accelerator.key);
     GdkModifierType modifiersGTK = dtk_accelerator_modifiers_to_gtk(accelerator.modifiers);
     if (!gtk_accel_group_disconnect_key(GTK_ACCEL_GROUP(pTK->gtk.pAccelGroup), keyvalGTK, modifiersGTK)) {  // <-- This will unref the closure.
         return DTK_ERROR;   // Failed to disconnect from the GTK accelerator group.

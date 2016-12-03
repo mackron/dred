@@ -455,7 +455,7 @@ dtk_result dtk_menu_insert_item__gtk(dtk_menu* pMenu, dtk_uint32 index, dtk_menu
         dtk_uint32 acceleratorCount = dtk_count_of(accelerators);
         if (dtk_accelerator_parse_chord(pInfo->shortcut, accelerators, &acceleratorCount) == DTK_SUCCESS) {
             if (acceleratorCount == 1) {
-                guint keyGTK = dtk_to_gtk_key(accelerators[0].key);
+                guint keyGTK = dtk_convert_key_to_gtk(accelerators[0].key);
                 GdkModifierType modifiersGTK = dtk_accelerator_modifiers_to_gtk(accelerators[0].modifiers);
                 gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), keyGTK, modifiersGTK);
             }

@@ -112,3 +112,174 @@ dtk_key dtk_key_parse(const char* str)
     // TODO: Non-ascii characters.
     return 0;
 }
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+//
+// WIN32
+//
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+#ifdef DTK_WIN32
+dtk_key dtk_convert_key_from_win32(WPARAM wParam)
+{
+    switch (wParam)
+    {
+    case VK_BACK:   return DTK_KEY_BACKSPACE;
+    case VK_SHIFT:  return DTK_KEY_SHIFT;
+    case VK_ESCAPE: return DTK_KEY_ESCAPE;
+    case VK_PRIOR:  return DTK_KEY_PAGE_UP;
+    case VK_NEXT:   return DTK_KEY_PAGE_DOWN;
+    case VK_END:    return DTK_KEY_END;
+    case VK_HOME:   return DTK_KEY_HOME;
+    case VK_LEFT:   return DTK_KEY_ARROW_LEFT;
+    case VK_UP:     return DTK_KEY_ARROW_UP;
+    case VK_RIGHT:  return DTK_KEY_ARROW_RIGHT;
+    case VK_DOWN:   return DTK_KEY_ARROW_DOWN;
+    case VK_DELETE: return DTK_KEY_DELETE;
+    case VK_F1:     return DTK_KEY_F1;
+    case VK_F2:     return DTK_KEY_F2;
+    case VK_F3:     return DTK_KEY_F3;
+    case VK_F4:     return DTK_KEY_F4;
+    case VK_F5:     return DTK_KEY_F5;
+    case VK_F6:     return DTK_KEY_F6;
+    case VK_F7:     return DTK_KEY_F7;
+    case VK_F8:     return DTK_KEY_F8;
+    case VK_F9:     return DTK_KEY_F9;
+    case VK_F10:    return DTK_KEY_F10;
+    case VK_F11:    return DTK_KEY_F11;
+    case VK_F12:    return DTK_KEY_F12;
+
+    default: break;
+    }
+
+    return (dtk_key)wParam;
+}
+
+WORD dtk_convert_key_to_win32(dtk_key key)
+{
+    switch (key)
+    {
+    case DTK_KEY_BACKSPACE:   return VK_BACK;
+    case DTK_KEY_SHIFT:       return VK_SHIFT;
+    case DTK_KEY_ESCAPE:      return VK_ESCAPE;
+    case DTK_KEY_PAGE_UP:     return VK_PRIOR;
+    case DTK_KEY_PAGE_DOWN:   return VK_NEXT;
+    case DTK_KEY_END:         return VK_END;
+    case DTK_KEY_HOME:        return VK_HOME;
+    case DTK_KEY_ARROW_LEFT:  return VK_LEFT;
+    case DTK_KEY_ARROW_UP:    return VK_UP;
+    case DTK_KEY_ARROW_RIGHT: return VK_RIGHT;
+    case DTK_KEY_ARROW_DOWN:  return VK_DOWN;
+    case DTK_KEY_DELETE:      return VK_DELETE;
+    case DTK_KEY_F1:          return VK_F1;
+    case DTK_KEY_F2:          return VK_F2;
+    case DTK_KEY_F3:          return VK_F3;
+    case DTK_KEY_F4:          return VK_F4;
+    case DTK_KEY_F5:          return VK_F5;
+    case DTK_KEY_F6:          return VK_F6;
+    case DTK_KEY_F7:          return VK_F7;
+    case DTK_KEY_F8:          return VK_F8;
+    case DTK_KEY_F9:          return VK_F9;
+    case DTK_KEY_F10:         return VK_F10;
+    case DTK_KEY_F11:         return VK_F11;
+    case DTK_KEY_F12:         return VK_F12;
+
+    default: break;
+    }
+
+    return (WORD)key;
+}
+#endif  // DTK_WIN32
+
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+//
+// GTK
+//
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+#ifdef DTK_GTK
+dtk_key dtk_convert_key_from_gtk(guint keyval)
+{
+    switch (keyval)
+    {
+    case GDK_KEY_BackSpace: return DTK_KEY_BACKSPACE;
+    case GDK_KEY_Shift_L:   return DTK_KEY_SHIFT;
+    case GDK_KEY_Shift_R:   return DTK_KEY_SHIFT;
+    case GDK_KEY_Escape:    return DTK_KEY_ESCAPE;
+    case GDK_KEY_Page_Up:   return DTK_KEY_PAGE_UP;
+    case GDK_KEY_Page_Down: return DTK_KEY_PAGE_DOWN;
+    case GDK_KEY_End:       return DTK_KEY_END;
+    case GDK_KEY_Home:      return DTK_KEY_HOME;
+    case GDK_KEY_Left:      return DTK_KEY_ARROW_LEFT;
+    case GDK_KEY_Up:        return DTK_KEY_ARROW_UP;
+    case GDK_KEY_Right:     return DTK_KEY_ARROW_RIGHT;
+    case GDK_KEY_Down:      return DTK_KEY_ARROW_DOWN;
+    case GDK_KEY_Delete:    return DTK_KEY_DELETE;
+    case GDK_KEY_F1:        return DTK_KEY_F1;
+    case GDK_KEY_F2:        return DTK_KEY_F2;
+    case GDK_KEY_F3:        return DTK_KEY_F3;
+    case GDK_KEY_F4:        return DTK_KEY_F4;
+    case GDK_KEY_F5:        return DTK_KEY_F5;
+    case GDK_KEY_F6:        return DTK_KEY_F6;
+    case GDK_KEY_F7:        return DTK_KEY_F7;
+    case GDK_KEY_F8:        return DTK_KEY_F8;
+    case GDK_KEY_F9:        return DTK_KEY_F9;
+    case GDK_KEY_F10:       return DTK_KEY_F10;
+    case GDK_KEY_F11:       return DTK_KEY_F11;
+    case GDK_KEY_F12:       return DTK_KEY_F12;
+
+    default: break;
+    }
+
+    if (keyval == GDK_KEY_Tab) {
+        return '\t';
+    }
+
+    return (dtk_key)keyval;
+}
+
+guint dtk_convert_key_to_gtk(dtk_key key)
+{
+    switch (key)
+    {
+    case DTK_KEY_BACKSPACE:   return GDK_KEY_BackSpace;
+    case DTK_KEY_SHIFT:       return GDK_KEY_Shift_L;
+    //case DTK_KEY_SHIFT:       return GDK_KEY_Shift_R;
+    case DTK_KEY_ESCAPE:      return GDK_KEY_Escape;
+    case DTK_KEY_PAGE_UP:     return GDK_KEY_Page_Up;
+    case DTK_KEY_PAGE_DOWN:   return GDK_KEY_Page_Down;
+    case DTK_KEY_END:         return GDK_KEY_End;
+    case DTK_KEY_HOME:        return GDK_KEY_Begin;
+    case DTK_KEY_ARROW_LEFT:  return GDK_KEY_Left;
+    case DTK_KEY_ARROW_UP:    return GDK_KEY_Up;
+    case DTK_KEY_ARROW_RIGHT: return GDK_KEY_Right;
+    case DTK_KEY_ARROW_DOWN:  return GDK_KEY_Down;
+    case DTK_KEY_DELETE:      return GDK_KEY_Delete;
+    case DTK_KEY_F1:          return GDK_KEY_F1;
+    case DTK_KEY_F2:          return GDK_KEY_F2;
+    case DTK_KEY_F3:          return GDK_KEY_F3;
+    case DTK_KEY_F4:          return GDK_KEY_F4;
+    case DTK_KEY_F5:          return GDK_KEY_F5;
+    case DTK_KEY_F6:          return GDK_KEY_F6;
+    case DTK_KEY_F7:          return GDK_KEY_F7;
+    case DTK_KEY_F8:          return GDK_KEY_F8;
+    case DTK_KEY_F9:          return GDK_KEY_F9;
+    case DTK_KEY_F10:         return GDK_KEY_F10;
+    case DTK_KEY_F11:         return GDK_KEY_F11;
+    case DTK_KEY_F12:         return GDK_KEY_F12;
+
+    default: break;
+    }
+
+    if (key == '\t') {
+        return GDK_KEY_Tab;
+    }
+
+    return (guint)key;
+}
+#endif  // DTK_GTK
