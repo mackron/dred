@@ -193,6 +193,7 @@ dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
 #include "dtk_controls.c"
 #include "dtk_window.c"
 #include "dtk_menu.c"
+#include "dtk_timer.c"
 
 typedef struct
 {
@@ -309,11 +310,6 @@ dtk_result dtk_init_backend_apis__win32(dtk_context* pTK)
     return DTK_SUCCESS;
 }
 
-LRESULT CALLBACK dtk_TimerWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    return DefWindowProcA(hWnd, msg, wParam, lParam);
-}
-
 LRESULT CALLBACK dtk_MessagingWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
@@ -385,18 +381,9 @@ dtk_result dtk_init__win32(dtk_context* pTK)
             return DTK_ERROR;
         }
 
-        wc.lpfnWndProc   = (WNDPROC)dtk_TimerWindowProcWin32;
-        wc.lpszClassName = DTK_WIN32_WINDOW_CLASS_TIMER;
-        if (!RegisterClassExA(&wc)) {
-            UnregisterClassA(DTK_WIN32_WINDOW_CLASS_POPUP, NULL);
-            UnregisterClassA(DTK_WIN32_WINDOW_CLASS, NULL);
-            return DTK_ERROR;
-        }
-
         wc.lpfnWndProc   = (WNDPROC)dtk_MessagingWindowProcWin32;
         wc.lpszClassName = DTK_WIN32_WINDOW_CLASS_MESSAGING;
         if (!RegisterClassExA(&wc)) {
-            UnregisterClassA(DTK_WIN32_WINDOW_CLASS_TIMER, NULL);
             UnregisterClassA(DTK_WIN32_WINDOW_CLASS_POPUP, NULL);
             UnregisterClassA(DTK_WIN32_WINDOW_CLASS, NULL);
             return DTK_ERROR;
@@ -407,7 +394,6 @@ dtk_result dtk_init__win32(dtk_context* pTK)
         pTK->win32.hMessagingWindow = (dtk_handle)CreateWindowExA(0, DTK_WIN32_WINDOW_CLASS_MESSAGING, "", 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
         if (pTK->win32.hMessagingWindow == NULL) {
             UnregisterClassA(DTK_WIN32_WINDOW_CLASS_MESSAGING, NULL);
-            UnregisterClassA(DTK_WIN32_WINDOW_CLASS_TIMER, NULL);
             UnregisterClassA(DTK_WIN32_WINDOW_CLASS_POPUP, NULL);
             UnregisterClassA(DTK_WIN32_WINDOW_CLASS, NULL);
             return DTK_ERROR;
@@ -441,7 +427,6 @@ dtk_result dtk_uninit__win32(dtk_context* pTK)
         DestroyAcceleratorTable(pTK->win32.hAccel);
 
         UnregisterClassA(DTK_WIN32_WINDOW_CLASS_MESSAGING, NULL);
-        UnregisterClassA(DTK_WIN32_WINDOW_CLASS_TIMER, NULL);
         UnregisterClassA(DTK_WIN32_WINDOW_CLASS_POPUP, NULL);
         UnregisterClassA(DTK_WIN32_WINDOW_CLASS, NULL);
 

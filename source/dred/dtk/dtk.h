@@ -113,6 +113,7 @@ typedef struct dtk_event dtk_event;
 typedef struct dtk_control dtk_control;
 typedef struct dtk_window dtk_window;
 typedef struct dtk_menu dtk_menu;
+typedef struct dtk_timer dtk_timer;
 
 typedef struct
 {
@@ -134,6 +135,7 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_controls.h"
 #include "dtk_window.h"
 #include "dtk_menu.h"
+#include "dtk_timer.h"
 
 
 // Event types.
