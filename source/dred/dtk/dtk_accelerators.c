@@ -53,17 +53,17 @@ dtk_result dtk_accelerator_parse(const char* accelStr, dtk_accelerator* pAcceler
     char token[256];
     while ((accelStr = dtk_accelerator__next_token(accelStr, token, sizeof(token))) != NULL) {
         if (_stricmp(token, "ctrl") == 0) {
-            accelerator.modifiers |= DTK_KEY_CTRL_DOWN;
+            accelerator.modifiers |= DTK_MODIFIER_CTRL;
             prevAccelStr = accelStr;
             continue;
         }
         if (_stricmp(token, "alt") == 0) {
-            accelerator.modifiers |= DTK_KEY_ALT_DOWN;
+            accelerator.modifiers |= DTK_MODIFIER_ALT;
             prevAccelStr = accelStr;
             continue;
         }
         if (_stricmp(token, "shift") == 0) {
-            accelerator.modifiers |= DTK_KEY_SHIFT_DOWN;
+            accelerator.modifiers |= DTK_MODIFIER_SHIFT;
             prevAccelStr = accelStr;
             continue;
         }
@@ -156,7 +156,7 @@ size_t dtk_accelerator_to_string(dtk_accelerator accelerator, char* strOut, size
 
     size_t modifiersLength = 0;
     char modifiersStr[256] = {0};
-    if (accelerator.modifiers & DTK_KEY_CTRL_DOWN) {
+    if (accelerator.modifiers & DTK_MODIFIER_CTRL) {
         if (modifiersStr[0] != '\0') {
             modifiersStr[modifiersLength++] = '+';
         }
@@ -166,7 +166,7 @@ size_t dtk_accelerator_to_string(dtk_accelerator accelerator, char* strOut, size
         modifiersLength += strlen("Ctrl");
     }
 
-    if (accelerator.modifiers & DTK_KEY_SHIFT_DOWN) {
+    if (accelerator.modifiers & DTK_MODIFIER_SHIFT) {
         if (modifiersStr[0] != '\0') {
             modifiersStr[modifiersLength++] = '+';
         }
@@ -176,7 +176,7 @@ size_t dtk_accelerator_to_string(dtk_accelerator accelerator, char* strOut, size
         modifiersLength += strlen("Shift");
     }
 
-    if (accelerator.modifiers & DTK_KEY_ALT_DOWN) {
+    if (accelerator.modifiers & DTK_MODIFIER_ALT) {
         if (modifiersStr[0] != '\0') {
             modifiersStr[modifiersLength++] = '+';
         }

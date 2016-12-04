@@ -1,15 +1,18 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-// The flags below are posted on on key down/up and mouse button events.
-#define DTK_MOUSE_BUTTON_LEFT_DOWN    (1 << 0)
-#define DTK_MOUSE_BUTTON_RIGHT_DOWN   (1 << 1)
-#define DTK_MOUSE_BUTTON_MIDDLE_DOWN  (1 << 2)
-#define DTK_MOUSE_BUTTON_4_DOWN       (1 << 3)
-#define DTK_MOUSE_BUTTON_5_DOWN       (1 << 4)
-#define DTK_KEY_SHIFT_DOWN            (1 << 5)        // Whether or not a shift key is down at the time the input event is handled.
-#define DTK_KEY_CTRL_DOWN             (1 << 6)        // Whether or not a ctrl key is down at the time the input event is handled.
-#define DTK_KEY_ALT_DOWN              (1 << 7)        // Whether or not an alt key is down at the time the input event is handled.
-#define DTK_KEY_AUTO_REPEATED         (1 << 31)       // Whether or not the key press is generated due to auto-repeating. Only used with key down events.
+// Modifier flags. These will be passed to the "state" flags for mouse and key events.
+#define DTK_MODIFIER_MOUSE_BUTTON_LEFT      (1 << 0)
+#define DTK_MODIFIER_MOUSE_BUTTON_RIGHT     (1 << 1)
+#define DTK_MODIFIER_MOUSE_BUTTON_MIDDLE    (1 << 2)
+#define DTK_MODIFIER_MOUSE_BUTTON_4         (1 << 3)
+#define DTK_MODIFIER_MOUSE_BUTTON_5         (1 << 4)
+#define DTK_MODIFIER_SHIFT                  (1 << 5)
+#define DTK_MODIFIER_CTRL                   (1 << 6)
+#define DTK_MODIFIER_ALT                    (1 << 7)
+
+// Key state flags. These will be passed to the "state" flags for key events.
+#define DTK_KEY_STATE_AUTO_REPEATED         (1 << 31)
+
 
 
 ///////////////////////////////////////////////////////////////////////////////

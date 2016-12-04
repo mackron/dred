@@ -36,17 +36,17 @@ static dtk_uint32 dtk_get_modifier_key_state_flags__win32()
 
     SHORT keyState = GetAsyncKeyState(VK_SHIFT);
     if (keyState & 0x8000) {
-        stateFlags |= DTK_KEY_SHIFT_DOWN;
+        stateFlags |= DTK_MODIFIER_SHIFT;
     }
 
     keyState = GetAsyncKeyState(VK_CONTROL);
     if (keyState & 0x8000) {
-        stateFlags |= DTK_KEY_CTRL_DOWN;
+        stateFlags |= DTK_MODIFIER_CTRL;
     }
 
     keyState = GetAsyncKeyState(VK_MENU);
     if (keyState & 0x8000) {
-        stateFlags |= DTK_KEY_ALT_DOWN;
+        stateFlags |= DTK_MODIFIER_ALT;
     }
 
     return stateFlags;
@@ -57,31 +57,31 @@ static dtk_uint32 dtk_get_mouse_event_state_flags__win32(WPARAM wParam)
     int stateFlags = 0;
 
     if ((wParam & MK_LBUTTON) != 0) {
-        stateFlags |= DTK_MOUSE_BUTTON_LEFT_DOWN;
+        stateFlags |= DTK_MODIFIER_MOUSE_BUTTON_LEFT;
     }
     if ((wParam & MK_RBUTTON) != 0) {
-        stateFlags |= DTK_MOUSE_BUTTON_RIGHT_DOWN;
+        stateFlags |= DTK_MODIFIER_MOUSE_BUTTON_RIGHT;
     }
     if ((wParam & MK_MBUTTON) != 0) {
-        stateFlags |= DTK_MOUSE_BUTTON_MIDDLE_DOWN;
+        stateFlags |= DTK_MODIFIER_MOUSE_BUTTON_MIDDLE;
     }
     if ((wParam & MK_XBUTTON1) != 0) {
-        stateFlags |= DTK_MOUSE_BUTTON_4_DOWN;
+        stateFlags |= DTK_MODIFIER_MOUSE_BUTTON_4;
     }
     if ((wParam & MK_XBUTTON2) != 0) {
-        stateFlags |= DTK_MOUSE_BUTTON_5_DOWN;
+        stateFlags |= DTK_MODIFIER_MOUSE_BUTTON_5;
     }
 
     if ((wParam & MK_CONTROL) != 0) {
-        stateFlags |= DTK_KEY_CTRL_DOWN;
+        stateFlags |= DTK_MODIFIER_CTRL;
     }
     if ((wParam & MK_SHIFT) != 0) {
-        stateFlags |= DTK_KEY_SHIFT_DOWN;
+        stateFlags |= DTK_MODIFIER_SHIFT;
     }
 
     SHORT keyState = GetAsyncKeyState(VK_MENU);
     if (keyState & 0x8000) {
-        stateFlags |= DTK_KEY_ALT_DOWN;
+        stateFlags |= DTK_MODIFIER_ALT;
     }
 
     return stateFlags;
@@ -94,13 +94,13 @@ static ACCEL dtk_win32_to_ACCEL(dtk_key key, uint32_t modifiers, WORD cmd)
     a.cmd = cmd;
 
     a.fVirt = FVIRTKEY;
-    if (modifiers & DTK_KEY_SHIFT_DOWN) {
+    if (modifiers & DTK_MODIFIER_SHIFT) {
         a.fVirt |= FSHIFT;
     }
-    if (modifiers & DTK_KEY_CTRL_DOWN) {
+    if (modifiers & DTK_MODIFIER_CTRL) {
         a.fVirt |= FCONTROL;
     }
-    if (modifiers & DTK_KEY_ALT_DOWN) {
+    if (modifiers & DTK_MODIFIER_ALT) {
         a.fVirt |= FALT;
     }
 
@@ -389,7 +389,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             if (!dtk_is_win32_mouse_button_key_code(wParam)) {
                 int stateFlags = dtk_get_modifier_key_state_flags__win32();
                 if ((lParam & (1 << 30)) != 0) {
-                    stateFlags |= DTK_KEY_AUTO_REPEATED;
+                    stateFlags |= DTK_KEY_STATE_AUTO_REPEATED;
                 }
 
                 e.type = DTK_EVENT_KEY_DOWN;
@@ -437,7 +437,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
 
                     int stateFlags = dtk_get_modifier_key_state_flags__win32();
                     if ((lParam & (1 << 30)) != 0) {
-                        stateFlags |= DTK_KEY_AUTO_REPEATED;
+                        stateFlags |= DTK_KEY_STATE_AUTO_REPEATED;
                     }
 
                     e.type = DTK_EVENT_PRINTABLE_KEY_DOWN;
@@ -785,29 +785,29 @@ static int dtk_get_modifier_state_flags__gtk(guint stateFromGTK)
     int result = 0;
 
     if ((stateFromGTK & GDK_SHIFT_MASK) != 0) {
-        result |= DTK_KEY_SHIFT_DOWN;
+        result |= DTK_MODIFIER_SHIFT;
     }
     if ((stateFromGTK & GDK_CONTROL_MASK) != 0) {
-        result |= DTK_KEY_CTRL_DOWN;
+        result |= DTK_MODIFIER_CTRL;
     }
     if ((stateFromGTK & GDK_MOD1_MASK) != 0) {
-        result |= DTK_KEY_ALT_DOWN;
+        result |= DTK_MODIFIER_ALT;
     }
 
     if ((stateFromGTK & GDK_BUTTON1_MASK) != 0) {
-        result |= DTK_MOUSE_BUTTON_LEFT_DOWN;
+        result |= DTK_MODIFIER_MOUSE_BUTTON_LEFT;
     }
     if ((stateFromGTK & GDK_BUTTON2_MASK) != 0) {
-        result |= DTK_MOUSE_BUTTON_MIDDLE_DOWN;
+        result |= DTK_MODIFIER_MOUSE_BUTTON_MIDDLE;
     }
     if ((stateFromGTK & GDK_BUTTON3_MASK) != 0) {
-        result |= DTK_MOUSE_BUTTON_RIGHT_DOWN;
+        result |= DTK_MODIFIER_MOUSE_BUTTON_RIGHT;
     }
     if ((stateFromGTK & GDK_BUTTON4_MASK) != 0) {
-        result |= DTK_MOUSE_BUTTON_4_DOWN;
+        result |= DTK_MODIFIER_MOUSE_BUTTON_4;
     }
     if ((stateFromGTK & GDK_BUTTON5_MASK) != 0) {
-        result |= DTK_MOUSE_BUTTON_5_DOWN;
+        result |= DTK_MODIFIER_MOUSE_BUTTON_5;
     }
 
     return result;
@@ -816,13 +816,13 @@ static int dtk_get_modifier_state_flags__gtk(guint stateFromGTK)
 GdkModifierType dtk_accelerator_modifiers_to_gtk(dtk_uint32 modifiers)
 {
     guint result = 0;
-    if (modifiers & DTK_KEY_SHIFT_DOWN) {
+    if (modifiers & DTK_MODIFIER_SHIFT) {
         result |= GDK_SHIFT_MASK;
     }
-    if (modifiers & DTK_KEY_CTRL_DOWN) {
+    if (modifiers & DTK_MODIFIER_CTRL) {
         result |= GDK_CONTROL_MASK;
     }
-    if (modifiers & DTK_KEY_ALT_DOWN) {
+    if (modifiers & DTK_MODIFIER_ALT) {
         result |= GDK_MOD1_MASK;
     }
 
@@ -833,13 +833,13 @@ dtk_uint32 dtk_accelerator_modifiers_from_gtk(GdkModifierType modifiers)
 {
     dtk_uint32 result = 0;
     if (modifiers & GDK_SHIFT_MASK) {
-        result |= DTK_KEY_SHIFT_DOWN;
+        result |= DTK_MODIFIER_SHIFT;
     }
     if (modifiers & GDK_CONTROL_MASK) {
-        result |= DTK_KEY_CTRL_DOWN;
+        result |= DTK_MODIFIER_CTRL;
     }
     if (modifiers & GDK_MOD1_MASK) {
-        result |= DTK_KEY_ALT_DOWN;
+        result |= DTK_MODIFIER_ALT;
     }
 
     return result;
@@ -963,7 +963,7 @@ static gboolean dtk_window__on_key_down__gtk(GtkWidget* pWidget, GdkEventKey* pE
         }
     }
 
-    if (utf32 != 0 && (stateFlags & DTK_KEY_CTRL_DOWN) == 0 && (stateFlags & DTK_KEY_ALT_DOWN) == 0) {
+    if (utf32 != 0 && (stateFlags & DTK_MODIFIER_CTRL) == 0 && (stateFlags & DTK_MODIFIER_ALT) == 0) {
         if (!(utf32 < 32 || utf32 == 127) || utf32 == '\t' || utf32 == '\r') {
             e.type = DTK_EVENT_PRINTABLE_KEY_DOWN;
             e.printableKeyDown.utf32 = utf32;

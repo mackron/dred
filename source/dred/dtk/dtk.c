@@ -512,13 +512,13 @@ dtk_result dtk_recreate_HACCEL__win32(dtk_context* pTK)
         a.cmd = (WORD)i;    // <-- The command is set to the index. In the WM_COMMAND event handler we'll use this as a lookup into an array.
 
         a.fVirt = FVIRTKEY;
-        if (modifiers & DTK_KEY_SHIFT_DOWN) {
+        if (modifiers & DTK_MODIFIER_SHIFT) {
             a.fVirt |= FSHIFT;
         }
-        if (modifiers & DTK_KEY_CTRL_DOWN) {
+        if (modifiers & DTK_MODIFIER_CTRL) {
             a.fVirt |= FCONTROL;
         }
-        if (modifiers & DTK_KEY_ALT_DOWN) {
+        if (modifiers & DTK_MODIFIER_ALT) {
             a.fVirt |= FALT;
         }
 
