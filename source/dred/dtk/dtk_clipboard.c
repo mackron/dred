@@ -8,8 +8,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DTK_WIN32
-dtk_bool32 dtk_clipboard_set_text__win32(const char* text, size_t textLength)
+dtk_bool32 dtk_clipboard_set_text__win32(dtk_context* pTK, const char* text, size_t textLength)
 {
+    (void)pTK;
+
     // We must ensure line endlings are normalized to \r\n. If we don't do this pasting won't work
     // correctly in things like Notepad.
     //
@@ -68,8 +70,10 @@ dtk_bool32 dtk_clipboard_set_text__win32(const char* text, size_t textLength)
     return DTK_TRUE;
 }
 
-char* dtk_clipboard_get_text__win32()
+char* dtk_clipboard_get_text__win32(dtk_context* pTK)
 {
+    (void)pTK;
+
     if (!IsClipboardFormatAvailable(CF_TEXT)) {
         return 0;
     }
@@ -100,8 +104,9 @@ char* dtk_clipboard_get_text__win32()
     return result;
 }
 
-void dtk_clipboard_free_text__win32(char* text)
+void dtk_clipboard_free_text__win32(dtk_context* pTK, char* text)
 {
+    (void)pTK;
     dtk_free(text);
 }
 #endif  // DTK_WIN32
@@ -120,25 +125,31 @@ GtkClipboard* dtk_get_gtk_clipboard()
     return gtk_clipboard_get_for_display(gdk_display_get_default(), GDK_SELECTION_CLIPBOARD);
 }
 
-dtk_bool32 dtk_clipboard_set_text__gtk(const char* text, size_t textLength)
+dtk_bool32 dtk_clipboard_set_text__gtk(dtk_context* pTK, const char* text, size_t textLength)
 {
+    (void)pTK;
+
     gtk_clipboard_set_text(dtk_get_gtk_clipboard(), text, textLength);
     return DTK_TRUE;
 }
 
-char* dtk_clipboard_get_text__gtk()
+char* dtk_clipboard_get_text__gtk(dtk_context* pTK)
 {
+    (void)pTK;
     return gtk_clipboard_wait_for_text(dtk_get_gtk_clipboard());
 }
 
-void dtk_clipboard_free_text__gtk(char* text)
+void dtk_clipboard_free_text__gtk(dtk_context* pTK, char* text)
 {
+    (void)pTK;
     g_free(text);
 }
 #endif  // DTK_GTK
 
-dtk_bool32 dtk_clipboard_set_text(const char* text, size_t textLength)
+dtk_bool32 dtk_clipboard_set_text(dtk_context* pTK, const char* text, size_t textLength)
 {
+    if (pTK == NULL) return DTK_FALSE;
+
     if (text == NULL) {
         text = "";
         textLength = 0;
@@ -148,32 +159,47 @@ dtk_bool32 dtk_clipboard_set_text(const char* text, size_t textLength)
         textLength = strlen(text);
     }
 
+    dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
-    return dtk_clipboard_set_text__win32(text, textLength);
+    result = dtk_clipboard_set_text__win32(pTK, text, textLength);
 #endif
 #ifdef DTK_GTK
-    return dtk_clipboard_set_text__gtk(text, textLength);
+    result = dtk_clipboard_set_text__gtk(pTK, text, textLength);
 #endif
+
+    return result;
 }
 
-char* dtk_clipboard_get_text()
+char* dtk_clipboard_get_text(dtk_context* pTK)
 {
+    if (pTK == NULL) return NULL;
+
 #ifdef DTK_WIN32
-    return dtk_clipboard_get_text__win32();
+    if (pTK->platform == dtk_platform_win32) {
+        return dtk_clipboard_get_text__win32(pTK);
+    }
 #endif
 #ifdef DTK_GTK
-    return dtk_clipboard_get_text__gtk();
+    if (pTK->platform == dtk_platform_gtk) {
+        return dtk_clipboard_get_text__gtk(pTK);
+    }
 #endif
+
+    return NULL;    // No backend.
 }
 
-void dtk_clipboard_free_text(char* text)
+void dtk_clipboard_free_text(dtk_context* pTK, char* text)
 {
-    if (text == NULL) return;
+    if (pTK == NULL || text == NULL) return;
 
 #ifdef DTK_WIN32
-    dtk_clipboard_free_text__win32(text);
+    if (pTK->platform == dtk_platform_win32) {
+        dtk_clipboard_free_text__win32(pTK, text);
+    }
 #endif
 #ifdef DTK_GTK
-    dtk_clipboard_free_text__gtk(text);
+    if (pTK->platform == dtk_platform_gtk) {
+        dtk_clipboard_free_text__gtk(pTK, text);
+    }
 #endif
 }
