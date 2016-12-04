@@ -194,6 +194,7 @@ dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
 #include "dtk_window.c"
 #include "dtk_menu.c"
 #include "dtk_timer.c"
+#include "dtk_clipboard.c"
 
 typedef struct
 {

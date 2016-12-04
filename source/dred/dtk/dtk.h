@@ -136,7 +136,7 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_window.h"
 #include "dtk_menu.h"
 #include "dtk_timer.h"
-
+#include "dtk_clipboard.h"
 
 // Event types.
 typedef int dtk_event_type;
