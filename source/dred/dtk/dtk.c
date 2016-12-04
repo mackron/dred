@@ -601,6 +601,25 @@ dtk_result dtk_unbind_accelerator__win32(dtk_context* pTK, dtk_accelerator accel
 
     return dtk_recreate_HACCEL__win32(pTK);
 }
+
+
+dtk_result dtk_get_base_dpi__win32(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut)
+{
+    (void)pTK;
+
+    if (pDPIXOut != NULL) *pDPIXOut = 96;
+    if (pDPIYOut != NULL) *pDPIYOut = 96;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_get_system_dpi__win32(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut)
+{
+    (void)pTK;
+
+    if (pDPIXOut != NULL) *pDPIXOut = GetDeviceCaps(GetDC(NULL), LOGPIXELSX);
+    if (pDPIYOut != NULL) *pDPIYOut = GetDeviceCaps(GetDC(NULL), LOGPIXELSY);
+    return DTK_SUCCESS;
+}
 #endif
 
 
@@ -857,6 +876,28 @@ dtk_result dtk_unbind_accelerator__gtk(dtk_context* pTK, dtk_accelerator acceler
 
     return DTK_SUCCESS;
 }
+
+
+dtk_result dtk_get_base_dpi__gtk(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut)
+{
+    (void)pTK;
+
+    if (pDPIXOut != NULL) *pDPIXOut = 96;
+    if (pDPIYOut != NULL) *pDPIYOut = 96;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_get_system_dpi__gtk(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut)
+{
+    // TODO: Implement me.
+    //
+    // Things to consider:
+    // - GdkMonitor (new in 3.22)
+    // - GdkScreen (much is deprecated in favour of the monitor API in 3.22 - need to think about compatibility with older versions of GTK.)
+    if (pDPIXOut != NULL) *pDPIXOut = 96;
+    if (pDPIYOut != NULL) *pDPIYOut = 96;
+    return DTK_SUCCESS;
+}
 #endif
 
 dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent)
@@ -1010,6 +1051,46 @@ dtk_result dtk_unbind_accelerator(dtk_context* pTK, dtk_accelerator accelerator)
     return result;
 }
 
+
+//// DPI Scaling ////
+
+dtk_result dtk_get_base_dpi(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk_get_base_dpi__win32(pTK, pDPIXOut, pDPIYOut);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk_get_base_dpi__gtk(pTK, pDPIXOut, pDPIYOut);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_get_system_dpi(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk_get_system_dpi__win32(pTK, pDPIXOut, pDPIYOut);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk_get_system_dpi__gtk(pTK, pDPIXOut, pDPIYOut);
+    }
+#endif
+
+    return result;
+}
 
 
 #if defined(_MSC_VER)

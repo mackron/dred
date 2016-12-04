@@ -412,5 +412,13 @@ dtk_result dtk_bind_accelerators(dtk_context* pTK, dtk_accelerator* pAccelerator
 dtk_result dtk_unbind_accelerator(dtk_context* pTK, dtk_accelerator accelerator);
 
 
+//// DPI Scaling ////
+
+// Retrieves the base system DPI to use as a reference when calculating DPI scaling.
+dtk_result dtk_get_base_dpi(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut);
+
+// Retrieves the system-wide DPI.
+dtk_result dtk_get_system_dpi(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut);
+
 
 #endif  // DTK_H
