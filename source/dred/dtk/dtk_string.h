@@ -172,12 +172,14 @@ DTK_INLINE int dtk_strncat_s(char* dst, size_t dstSizeInBytes, const char* src, 
 #endif
 }
 
-#if !defined(_MSC_VER) && !defined(__MINGW32__)
-DTK_INLINE int _stricmp(const char* string1, const char* string2)
+DTK_INLINE int dtk_stricmp(const char* string1, const char* string2)
 {
+#if defined(_MSC_VER) || defined(__MINGW32__)
+    return _stricmp(string1, string2);
+#else
     return strcasecmp(string1, string2);
-}
 #endif
+}
 
 
 // Converts a UTF-16 character to UTF-32.

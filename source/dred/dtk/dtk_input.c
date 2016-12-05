@@ -65,18 +65,18 @@ dtk_key dtk_key_parse(const char* str)
         return 0;
     }
 
-    if (_stricmp(str, "backspace")   == 0) return DTK_KEY_BACKSPACE;
-    if (_stricmp(str, "shift")       == 0) return DTK_KEY_SHIFT;
-    if (_stricmp(str, "escape")      == 0) return DTK_KEY_ESCAPE;
-    if (_stricmp(str, "page up")     == 0 || _stricmp(str, "pageup")     == 0) return DTK_KEY_PAGE_UP;
-    if (_stricmp(str, "page down")   == 0 || _stricmp(str, "pagedown")   == 0) return DTK_KEY_PAGE_DOWN;
-    if (_stricmp(str, "end")         == 0) return DTK_KEY_END;
-    if (_stricmp(str, "home")        == 0) return DTK_KEY_HOME;
-    if (_stricmp(str, "arrow left")  == 0 || _stricmp(str, "arrowleft")  == 0) return DTK_KEY_ARROW_LEFT;
-    if (_stricmp(str, "arrow up")    == 0 || _stricmp(str, "arrowup")    == 0) return DTK_KEY_ARROW_UP;
-    if (_stricmp(str, "arrow right") == 0 || _stricmp(str, "arrowright") == 0) return DTK_KEY_ARROW_RIGHT;
-    if (_stricmp(str, "arrow down")  == 0 || _stricmp(str, "arrowdown")  == 0) return DTK_KEY_ARROW_DOWN;
-    if (_stricmp(str, "delete")      == 0) return DTK_KEY_BACKSPACE;
+    if (dtk_stricmp(str, "backspace")   == 0) return DTK_KEY_BACKSPACE;
+    if (dtk_stricmp(str, "shift")       == 0) return DTK_KEY_SHIFT;
+    if (dtk_stricmp(str, "escape")      == 0) return DTK_KEY_ESCAPE;
+    if (dtk_stricmp(str, "page up")     == 0 || dtk_stricmp(str, "pageup")     == 0) return DTK_KEY_PAGE_UP;
+    if (dtk_stricmp(str, "page down")   == 0 || dtk_stricmp(str, "pagedown")   == 0) return DTK_KEY_PAGE_DOWN;
+    if (dtk_stricmp(str, "end")         == 0) return DTK_KEY_END;
+    if (dtk_stricmp(str, "home")        == 0) return DTK_KEY_HOME;
+    if (dtk_stricmp(str, "arrow left")  == 0 || dtk_stricmp(str, "arrowleft")  == 0) return DTK_KEY_ARROW_LEFT;
+    if (dtk_stricmp(str, "arrow up")    == 0 || dtk_stricmp(str, "arrowup")    == 0) return DTK_KEY_ARROW_UP;
+    if (dtk_stricmp(str, "arrow right") == 0 || dtk_stricmp(str, "arrowright") == 0) return DTK_KEY_ARROW_RIGHT;
+    if (dtk_stricmp(str, "arrow down")  == 0 || dtk_stricmp(str, "arrowdown")  == 0) return DTK_KEY_ARROW_DOWN;
+    if (dtk_stricmp(str, "delete")      == 0) return DTK_KEY_BACKSPACE;
 
     if (str[0] == 'F' || str[0] == 'f') {
         if (str[1] ==  '1') {
@@ -104,7 +104,7 @@ dtk_key dtk_key_parse(const char* str)
         return str[0];
     }
 
-    if (_stricmp(str, "tab") == 0) {
+    if (dtk_stricmp(str, "tab") == 0) {
         return '\t';
     }
 
