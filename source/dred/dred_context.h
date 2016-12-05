@@ -15,6 +15,9 @@ struct dred_context
     // The IPC thread.
     dred_thread threadIPC;
 
+    // The main toolkit context. This needs to be initialized before doing pretty much anything.
+    dtk_context tk;
+
 
     // The context for the 2D graphics sub-system which will be used for drawing the GUI.
     dr2d_context* pDrawingContext;

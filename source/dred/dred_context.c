@@ -284,6 +284,13 @@ dred_thread_result DRED_THREADCALL dred_ipc_message_proc(void* pData)
 }
 
 
+static dtk_bool32 dred_dtk_global_event_proc(dtk_event* pEvent)
+{
+    (void)pEvent;
+    return DTK_TRUE;
+}
+
+
 dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_library* pPackageLibrary)
 {
     // TODO: USE dred_error() AND FAMILY FOR PRINTING CRITICAL ERRORS INSTEAD OF printf()
@@ -294,11 +301,17 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     unsigned int windowHeight;
     dr_bool32 showWindowMaximized;
 
-    if (pDred == NULL) {
-        return DR_FALSE;
+    if (pDred == NULL) return DR_FALSE;
+    dtk_zero_object(pDred);
+
+    // Initialize the toolkit first.
+    if (dtk_init(&pDred->tk, dred_dtk_global_event_proc) != DTK_SUCCESS) {
+        return DTK_FALSE;
     }
 
-    memset(pDred, 0, sizeof(*pDred));
+    dred_platform_init(&pDred->tk); // <-- This is only temporary while DTK is being integrated.
+
+
     pDred->pGUI = &pDred->gui;
 
     pDred->cmdline = cmdline;
@@ -592,6 +605,8 @@ void dred_uninit(dred_context* pDred)
     if (pDred->logFile) {
         dred_file_close(pDred->logFile);
     }
+
+    dtk_uninit(&pDred->tk);
 }
 
 

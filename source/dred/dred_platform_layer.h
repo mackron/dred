@@ -29,7 +29,7 @@ typedef enum
 
 
 // Initializes the platform layer. Should be the first function to be called.
-dr_bool32 dred_platform_init();
+dr_bool32 dred_platform_init(dtk_context* pTK);
 
 // Uninitializes the platform layer. Should be the last function to be called.
 void dred_platform_uninit();

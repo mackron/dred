@@ -1,5 +1,10 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
+// This is set to a pointer to the dtk_context object that was passed to dred_platform_init() and is only temporary
+// while working on the integration phase. Later on this source file will be removed entirely.
+dtk_context* g_pTK = NULL;
+
+
 //////////////////////////////////////////////////////////////////
 //
 // Private Cross Platform
@@ -666,18 +671,6 @@ LRESULT CALLBACK TimerWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 dr_bool32 dred_platform_init__win32()
 {
-    // We'll be handling DPI ourselves. This should be done at the top.
-    dr_win32_make_dpi_aware();
-
-    // For drag and drop.
-    OleInitialize(NULL);
-
-    // Need to call this to enable visual styles.
-    INITCOMMONCONTROLSEX ctls;
-    ctls.dwSize = sizeof(ctls);
-    ctls.dwICC = ICC_STANDARD_CLASSES;
-    InitCommonControlsEx(&ctls);
-
     // Window classes.
     WNDCLASSEXA wc;
     ZeroMemory(&wc, sizeof(wc));
@@ -725,8 +718,6 @@ void dred_platform_uninit__win32()
 
     UnregisterClassA(g_WindowClass, NULL);
     UnregisterClassA(g_WindowClassTimer, NULL);
-
-    OleUninitialize();
 }
 
 int dred_platform_run__win32()
@@ -3265,8 +3256,10 @@ void dred_platform__on_delete_gui_element(dred_control* pControl)
 }
 
 
-dr_bool32 dred_platform_init()
+dr_bool32 dred_platform_init(dtk_context* pTK)
 {
+    g_pTK = pTK;
+
 #ifdef DRED_WIN32
     return dred_platform_init__win32();
 #endif

@@ -135,11 +135,6 @@ int dred_main(dr_cmdline cmdline)
 #endif
     }
 
-
-    // The platform needs to be initialized first. In the case of Windows, this will register the window classes
-    // and enable DPI awareness. Always make sure this is the first thing to be called.
-    dred_platform_init();
-
     dred_context dred;
     if (!dred_init(&dred, cmdline, &packages)) {
         return -1;
