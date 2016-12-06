@@ -440,22 +440,6 @@ void dred_timer_delete(dred_timer* pTimer);
 
 
 
-
-//// Clipboard ////
-
-// Sets the text on the clipboard.
-dr_bool32 dred_clipboard_set_text(const char* text, size_t textLength);
-
-// Retrieves the text on the clipboard.
-//
-// The returned string must be freed with dred_clipboard_free_text().
-char* dred_clipboard_get_text();
-
-// Frees the text returned by dred_clipboard_get_text().
-void dred_clipboard_free_text(char* text);
-
-
-
 //// Drag and Drop ////
 
 typedef enum

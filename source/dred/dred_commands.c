@@ -420,7 +420,7 @@ dr_bool32 dred_command__copy(dred_context* pDred, const char* value)
         }
 
         selectedTextLength = dred_textview_get_selected_text(DRED_TEXTVIEW(pFocusedControl), selectedText, selectedTextLength + 1);
-        dred_clipboard_set_text(selectedText, selectedTextLength);
+        dtk_clipboard_set_text(&pDred->tk, selectedText, selectedTextLength);
         free(selectedText);
 
         return DR_TRUE;
@@ -439,7 +439,7 @@ dr_bool32 dred_command__paste(dred_context* pDred, const char* value)
     }
 
     if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
-        char* clipboardText = dred_clipboard_get_text();
+        char* clipboardText = dtk_clipboard_get_text(&pDred->tk);
         if (clipboardText == NULL) {
             return DR_FALSE;
         }
@@ -452,7 +452,7 @@ dr_bool32 dred_command__paste(dred_context* pDred, const char* value)
         }
         if (wasTextChanged) { dred_textview_commit_undo_point(DRED_TEXTVIEW(pFocusedControl)); }
 
-        dred_clipboard_free_text(clipboardText);
+        dtk_clipboard_free_text(&pDred->tk, clipboardText);
         return DR_TRUE;
     }
 
