@@ -1415,56 +1415,6 @@ dr_bool32 dred_menu_item_is_checked__win32(dred_menu_item* pItem)
 
 
 
-//// TIMERS ////
-
-static VOID CALLBACK dred_timer_proc_win32(HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
-{
-    (void)hWnd;
-    (void)uMsg;
-    (void)dwTime;
-
-    dred_timer* pTimer = (dred_timer*)idEvent;
-    if (pTimer == NULL) {
-        assert(DR_FALSE);
-    }
-
-    if (pTimer->callback != NULL) {
-        pTimer->callback(pTimer, pTimer->pUserData);
-    }
-}
-
-dred_timer* dred_timer_create__win32(unsigned int timeoutInMilliseconds, dred_timer_proc callback, void* pUserData)
-{
-    dred_timer* pTimer = (dred_timer*)malloc(sizeof(*pTimer));
-    if (pTimer == NULL) {
-        return NULL;
-    }
-
-    // On Win32 we need to associate the timer with a window.
-    pTimer->tagWin32 = SetTimer(g_hTimerWnd, (UINT_PTR)pTimer, timeoutInMilliseconds, dred_timer_proc_win32);
-    if (pTimer->tagWin32 == 0) {
-        free(pTimer);
-        return NULL;
-    }
-
-    pTimer->timeoutInMilliseconds = timeoutInMilliseconds;
-    pTimer->callback              = callback;
-    pTimer->pUserData             = pUserData;
-
-    return pTimer;
-}
-
-void dred_timer_delete__win32(dred_timer* pTimer)
-{
-    if (pTimer == NULL) {
-        return;
-    }
-
-    KillTimer(g_hTimerWnd, pTimer->tagWin32);
-    free(pTimer);
-}
-
-
 
 //// Drag and Drop ////
 
@@ -2936,49 +2886,6 @@ void dred_get_system_dpi__gtk(int* pDPIXOut, int* pDPIYOut)
 
 
 
-//// TIMERS ////
-
-static gboolean dred_timer_proc_gtk(gpointer data)
-{
-    dred_timer* pTimer = (dred_timer*)data;
-    if (pTimer == NULL) {
-        assert(DR_FALSE);
-        return DR_FALSE;
-    }
-
-    if (pTimer->callback != NULL) {
-        pTimer->callback(pTimer, pTimer->pUserData);
-    }
-
-    return DR_TRUE;
-}
-
-dred_timer* dred_timer_create__gtk(unsigned int timeoutInMilliseconds, dred_timer_proc callback, void* pUserData)
-{
-    dred_timer* pTimer = (dred_timer*)malloc(sizeof(*pTimer));
-    if (pTimer == NULL) {
-        return NULL;
-    }
-
-    pTimer->timerID               = g_timeout_add(timeoutInMilliseconds, dred_timer_proc_gtk, pTimer);
-    pTimer->timeoutInMilliseconds = timeoutInMilliseconds;
-    pTimer->callback              = callback;
-    pTimer->pUserData             = pUserData;
-
-    return pTimer;
-}
-
-void dred_timer_delete__gtk(dred_timer* pTimer)
-{
-    if (pTimer == NULL) {
-        return;
-    }
-
-    g_source_remove(pTimer->timerID);
-    free(pTimer);
-}
-
-
 //// Drag and Drop ////
 
 dr_bool32 dred_begin_drag_and_drop__gtk(dred_data_type dataType, const void* pData, size_t dataSize)
@@ -3984,32 +3891,6 @@ void dred_get_system_dpi(int* pDPIXOut, int* pDPIYOut)
 #endif
 }
 
-
-
-
-//// TIMERS ////
-
-dred_timer* dred_timer_create(unsigned int timeoutInMilliseconds, dred_timer_proc callback, void* pUserData)
-{
-#ifdef DRED_WIN32
-    return dred_timer_create__win32(timeoutInMilliseconds, callback, pUserData);
-#endif
-
-#ifdef DRED_GTK
-    return dred_timer_create__gtk(timeoutInMilliseconds, callback, pUserData);
-#endif
-}
-
-void dred_timer_delete(dred_timer* pTimer)
-{
-#ifdef DRED_WIN32
-    dred_timer_delete__win32(pTimer);
-#endif
-
-#ifdef DRED_GTK
-    dred_timer_delete__gtk(pTimer);
-#endif
-}
 
 
 //// Drag and Drop ////

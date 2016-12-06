@@ -135,7 +135,7 @@ struct dred_textview
 
 
     // The timer for stepping the cursor.
-    dred_timer* pTimer;
+    dtk_timer* pTimer;
 };
 
 

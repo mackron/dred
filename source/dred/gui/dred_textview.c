@@ -2531,7 +2531,7 @@ void dred_textview_on_paint(dred_control* pControl, dred_rect relativeRect, void
     drte_view_paint(pTextView->pView, dred_rect_to_drte(dred_offset_rect(dred_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top)), pPaintData);
 }
 
-void dred_textview__on_timer(dred_timer* pTimer, void* pUserData)
+void dred_textview__on_timer(dtk_timer* pTimer, void* pUserData)
 {
     (void)pTimer;
 
@@ -2553,7 +2553,8 @@ void dred_textview_on_capture_keyboard(dred_control* pControl, dred_control* pPr
     drte_view_show_cursors(pTextView->pView);
 
     if (pTextView->pTimer == NULL) {
-        pTextView->pTimer = dred_timer_create(100, dred_textview__on_timer, pTextView);
+        pTextView->pTimer = (dtk_timer*)malloc(sizeof(*pTextView->pTimer));
+        dtk_timer_init(&pControl->pGUI->pDred->tk, 100, dred_textview__on_timer, pTextView, pTextView->pTimer);
     }
 }
 
@@ -2569,7 +2570,8 @@ void dred_textview_on_release_keyboard(dred_control* pControl, dred_control* pNe
     drte_view_hide_cursors(pTextView->pView);
 
     if (pTextView->pTimer != NULL) {
-        dred_timer_delete(pTextView->pTimer);
+        dtk_timer_uninit(pTextView->pTimer);
+        free(pTextView->pTimer);
         pTextView->pTimer = NULL;
     }
 }

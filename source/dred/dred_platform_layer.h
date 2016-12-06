@@ -406,39 +406,6 @@ void dred_get_system_dpi(int* pDPIXOut, int* pDPIYOut);
 
 
 
-//// TIMERS ////
-
-typedef void (* dred_timer_proc)(dred_timer* pTimer, void* pUserData);
-
-struct dred_timer
-{
-#ifdef DRED_WIN32
-    // The value returned by SetTimer().
-    UINT_PTR tagWin32;
-#endif
-
-#ifdef DRED_GTK
-    // The GTK timer ID.
-    guint timerID;
-#endif
-
-    // The timeout in milliseconds.
-    unsigned int timeoutInMilliseconds;
-
-    // The callback function.
-    dred_timer_proc callback;
-
-    // The user data passed to ak_create_timer().
-    void* pUserData;
-};
-
-// Creates a callback based timer.
-dred_timer* dred_timer_create(unsigned int timeoutInMilliseconds, dred_timer_proc callback, void* pUserData);
-
-// Deletes the given timer.
-void dred_timer_delete(dred_timer* pTimer);
-
-
 
 //// Drag and Drop ////
 
