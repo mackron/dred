@@ -1,11 +1,12 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-dr_bool32 dred_shortcut_table_init(dred_shortcut_table* pTable)
+dr_bool32 dred_shortcut_table_init(dred_context* pDred, dred_shortcut_table* pTable)
 {
     if (pTable == NULL) {
         return DR_FALSE;
     }
-
+    
+    pTable->pDred = pDred;
     pTable->pShortcuts = NULL;
     pTable->ppCmdStrings = NULL;
     pTable->ppNameStrings = NULL;
@@ -92,6 +93,15 @@ dr_bool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name
         return DR_FALSE;
     }
 
+    // TODO: Need to improve the efficiency of this. The implementation of dtk_bind_accelerator() will perform a complete recreation
+    //       of the internal accelerator table for each call. May want something like a begin/end pair or dtk_shortcut_table_update_internal_bindings().
+    if (dtk_bind_accelerator(&pTable->pDred->tk, shortcut.accelerators[0]) != DTK_SUCCESS) {
+        return DTK_FALSE;
+    }
+    if (dtk_bind_accelerator(&pTable->pDred->tk, shortcut.accelerators[1]) != DTK_SUCCESS) {
+        return DTK_FALSE;
+    }
+
 
     pTable->pShortcuts[pTable->count] = shortcut;
     pTable->ppCmdStrings[pTable->count] = gb_make_string(cmdStr);
@@ -126,7 +136,7 @@ dr_bool32 dred_shortcut_table_unbind(dred_shortcut_table* pTable, dred_shortcut 
     for (int i = 0; i < 2; ++i) {
         int refcount = 0;
         for (size_t j = 0; j < pTable->acceleratorTable.count; ++j) {
-            if (dred_accelerator_equal(shortcut.accelerators[i], pTable->acceleratorTable.pAccelerators[j])) {
+            if (dtk_accelerator_equal(shortcut.accelerators[i], pTable->acceleratorTable.pAccelerators[j])) {
                 refcount += 1;
                 continue;
             }
@@ -213,7 +223,7 @@ const char* dred_shortcut_table_get_command_string_by_index(dred_shortcut_table*
 
 
 
-dred_shortcut dred_shortcut_create(dred_accelerator accel0, dred_accelerator accel1)
+dred_shortcut dred_shortcut_create(dtk_accelerator accel0, dtk_accelerator accel1)
 {
     if (accel0.key == 0 && accel1.key != 0) {
         accel0 = accel1;
@@ -226,14 +236,14 @@ dred_shortcut dred_shortcut_create(dred_accelerator accel0, dred_accelerator acc
     return shortcut;
 }
 
-dred_shortcut dred_shortcut_create_single(dred_accelerator accel)
+dred_shortcut dred_shortcut_create_single(dtk_accelerator accel)
 {
-    return dred_shortcut_create(accel, dred_accelerator_none());
+    return dred_shortcut_create(accel, dtk_accelerator_none());
 }
 
 dred_shortcut dred_shortcut_none()
 {
-    return dred_shortcut_create(dred_accelerator_none(), dred_accelerator_none());
+    return dred_shortcut_create(dtk_accelerator_none(), dtk_accelerator_none());
 }
 
 dred_shortcut dred_shortcut_parse(const char* shortcutStr)
@@ -257,7 +267,7 @@ dred_shortcut dred_shortcut_parse(const char* shortcutStr)
                 break;
             }
 
-            shortcut.accelerators[iNextAccel++] = dred_accelerator_parse(nextAccelStr);
+            dtk_accelerator_parse(nextAccelStr, &shortcut.accelerators[iNextAccel++]);
 
 
             if (nextEnd[0] == '\0' || iNextAccel == 1) {
@@ -277,8 +287,8 @@ dred_shortcut dred_shortcut_parse(const char* shortcutStr)
 
 dr_bool32 dred_shortcut_equal(dred_shortcut a, dred_shortcut b)
 {
-    return dred_accelerator_equal(a.accelerators[0], b.accelerators[0]) &&
-           dred_accelerator_equal(a.accelerators[1], b.accelerators[1]);
+    return dtk_accelerator_equal(a.accelerators[0], b.accelerators[0]) &&
+           dtk_accelerator_equal(a.accelerators[1], b.accelerators[1]);
 }
 
 size_t dred_shortcut_to_string(dred_shortcut shortcut, char* strOut, size_t strOutSize)
@@ -289,12 +299,12 @@ size_t dred_shortcut_to_string(dred_shortcut shortcut, char* strOut, size_t strO
     }
 
     char accelStr0[256];
-    dred_accelerator_to_string(shortcut.accelerators[0], accelStr0, sizeof(accelStr0));
+    dtk_accelerator_to_string(shortcut.accelerators[0], accelStr0, sizeof(accelStr0));
 
     int length = 0;
     if (shortcut.accelerators[1].key != 0) {
         char accelStr1[256];
-        dred_accelerator_to_string(shortcut.accelerators[1], accelStr1, sizeof(accelStr1));
+        dtk_accelerator_to_string(shortcut.accelerators[1], accelStr1, sizeof(accelStr1));
 
         length = snprintf(strOut, strOutSize, "%s,%s", accelStr0, accelStr1);
     } else {

@@ -3282,12 +3282,25 @@ void dred_platform_uninit()
 
 int dred_platform_run()
 {
+#if 0
 #ifdef DRED_WIN32
     return dred_platform_run__win32();
 #endif
 
 #ifdef DRED_GTK
     return dred_platform_run__gtk();
+#endif
+#else
+    int exitCode = 0;
+    for (;;) {
+        dtk_result result = dtk_next_event(g_pTK, DTK_TRUE);  // <-- DTK_TRUE = blocking.
+        if (result != DTK_SUCCESS) {
+            exitCode = g_pTK->exitCode; // <-- TODO: This doesn't feel right... Implement an accessor function for this.
+            break;
+        }
+    }
+
+    return exitCode;
 #endif
 }
 

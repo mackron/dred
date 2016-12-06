@@ -41,7 +41,7 @@ struct dred_context
     dred_shortcut_table shortcutTable;
 
     // The queued accelerator for when the user is doing a double-accelerator shortcut.
-    dred_accelerator queuedAccelerator;
+    dtk_accelerator queuedAccelerator;
 
 
     // The main config.

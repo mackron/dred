@@ -24,11 +24,12 @@
 
 struct dred_shortcut
 {
-    dred_accelerator accelerators[2];
+    dtk_accelerator accelerators[2];
 };
 
 struct dred_shortcut_table
 {
+    dred_context* pDred;
     dred_shortcut* pShortcuts;
     char** ppCmdStrings;
     char** ppNameStrings;
@@ -39,7 +40,7 @@ struct dred_shortcut_table
     dred_accelerator_table acceleratorTable;
 };
 
-dr_bool32 dred_shortcut_table_init(dred_shortcut_table* pTable);
+dr_bool32 dred_shortcut_table_init(dred_context* pDred, dred_shortcut_table* pTable);
 void dred_shortcut_table_uninit(dred_shortcut_table* pTable);
 
 dr_bool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name, dred_shortcut shortcut, const char* cmdStr);
@@ -55,8 +56,8 @@ const char* dred_shortcut_table_get_command_string_by_index(dred_shortcut_table*
 
 
 
-dred_shortcut dred_shortcut_create(dred_accelerator accel0, dred_accelerator accel1);
-dred_shortcut dred_shortcut_create_single(dred_accelerator accel1);
+dred_shortcut dred_shortcut_create(dtk_accelerator accel0, dtk_accelerator accel1);
+dred_shortcut dred_shortcut_create_single(dtk_accelerator accel1);
 dred_shortcut dred_shortcut_none();
 dred_shortcut dred_shortcut_parse(const char* shortcutStr);
 dr_bool32 dred_shortcut_equal(dred_shortcut a, dred_shortcut b);

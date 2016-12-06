@@ -16,6 +16,11 @@ DTK_INLINE dtk_accelerator dtk_accelerator_init(dtk_key key, dtk_uint32 modifier
     return a;
 }
 
+DTK_INLINE dtk_accelerator dtk_accelerator_none()
+{
+    return dtk_accelerator_init(0, 0, 0);
+}
+
 DTK_INLINE dtk_bool32 dtk_accelerator_equal(dtk_accelerator a, dtk_accelerator b)
 {
     return a.key == b.key && a.modifiers == b.modifiers;

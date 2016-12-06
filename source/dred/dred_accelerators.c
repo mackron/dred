@@ -26,7 +26,7 @@ void dred_accelerator_table_uninit(dred_accelerator_table* pTable)
 }
 
 
-dr_bool32 dred_accelerator_table_add(dred_accelerator_table* pTable, dred_accelerator accelerator)
+dr_bool32 dred_accelerator_table_add(dred_accelerator_table* pTable, dtk_accelerator accelerator)
 {
     if (pTable == NULL) {
         return DR_FALSE;
@@ -42,7 +42,7 @@ dr_bool32 dred_accelerator_table_add(dred_accelerator_table* pTable, dred_accele
     if (pTable->count == pTable->bufferSize)
     {
         size_t newBufferSize = (pTable->bufferSize == 0) ? 16 : (pTable->bufferSize * 2);
-        dred_accelerator* pNewAccelerators = (dred_accelerator*)realloc(pTable->pAccelerators, newBufferSize * sizeof(*pNewAccelerators));
+        dtk_accelerator* pNewAccelerators = (dtk_accelerator*)realloc(pTable->pAccelerators, newBufferSize * sizeof(*pNewAccelerators));
         if (pNewAccelerators == NULL) {
             return DR_FALSE;
         }
@@ -59,7 +59,7 @@ dr_bool32 dred_accelerator_table_add(dred_accelerator_table* pTable, dred_accele
     return DR_TRUE;
 }
 
-dr_bool32 dred_accelerator_table_remove(dred_accelerator_table* pTable, dred_accelerator accelerator)
+dr_bool32 dred_accelerator_table_remove(dred_accelerator_table* pTable, dtk_accelerator accelerator)
 {
     size_t index;
     if (!dred_accelerator_table_find(pTable, accelerator, &index)) {
@@ -75,7 +75,7 @@ dr_bool32 dred_accelerator_table_remove(dred_accelerator_table* pTable, dred_acc
 }
 
 
-dr_bool32 dred_accelerator_table_find(dred_accelerator_table* pTable, dred_accelerator accelerator, size_t* pIndexOut)
+dr_bool32 dred_accelerator_table_find(dred_accelerator_table* pTable, dtk_accelerator accelerator, size_t* pIndexOut)
 {
     if (pIndexOut) *pIndexOut = 0;  // Safety.
     if (pTable == NULL) {
@@ -93,6 +93,7 @@ dr_bool32 dred_accelerator_table_find(dred_accelerator_table* pTable, dred_accel
 }
 
 
+#if 0
 dred_accelerator dred_accelerator_none()
 {
     dred_accelerator result;
@@ -259,3 +260,4 @@ size_t dred_accelerator_to_string(dred_accelerator accelerator, char* strOut, si
     snprintf(strOut, strOutSize, "%s%s", modifiersStr, characterStr);
     return modifiersLength + characterLength;
 }
+#endif
