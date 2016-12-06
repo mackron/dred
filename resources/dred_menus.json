@@ -1,0 +1,45 @@
+// The menus defined here represent the default format of the menus. These can be modified at run-time.
+
+{"menus":[
+	{"id":"generic.settings", "text":"Settings", "items":[
+		{"id":"generic.settings.themes", "text":"Themes", "items":[
+			{"id":"generic.settings.themes.dark",  "text":"Dark (Default)", "cmd":"load-config dark.dredtheme"},
+			{"id":"generic.settings.themes.light", "text":"Light", "cmd":"load-config light.dredtheme"}
+		]}
+		{"id":"separator"}
+		{"id":"generic.settings.settings", "text":"Settings", "cmd":"settings"}
+	]},
+	
+	{"id":"generic.help", "text":"Help", "items":[
+		{"id":"generic.help.about", "text":"About", "cmd":"about"}
+	]},
+    
+    
+    {"id":"text.file", "items":[
+        {"id":"text.file.new", "text":"New", "shortcut":"file.new"},
+        {"id":"text.file.open", "text":"Open", "shortcut":"file.open"},
+        {"id":"text.file.open.recent", "text":"Open Recent", "items":[]},
+        {"id":"text.file.open.favourite", "text":"Open Favourite", "items":[]},
+        {"id":"separator"},
+        {"id":"text.file.addfavourite", "text":"Add to Favourites", "cmd":"add-favourite"},
+        {"id":"text.file.removefavourite", "text":"Remove from Favourites", "cmd":"remove-favourite"},
+        {"id":"separator"},
+    ]},
+    
+    
+    {"id":"none", "type":"menubar", "items":[
+        {"id":"none.file"},
+        {"id":"none.view"},
+        {"id":"generic.settings"},
+        {"id":"generic.help"}
+    ]},
+    
+    {"id":"text", "type":"menubar", "items":[
+        {"id":"text.file"},
+        {"id":"text.edit"},
+        {"id":"text.view"},
+        {"id":"text.find"},
+        {"id":"generic.settings"},
+        {"id":"generic.help"}
+    ]}
+]}
