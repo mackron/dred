@@ -2869,23 +2869,6 @@ dr_bool32 dred_menu_item_is_checked__gtk(dred_menu_item* pItem)
 
 
 
-//// DPI SCALING ////
-
-void dred_get_base_dpi__gtk(int* pDPIXOut, int* pDPIYOut)
-{
-    if (pDPIXOut) *pDPIXOut = 96;
-    if (pDPIYOut) *pDPIYOut = 96;
-}
-
-void dred_get_system_dpi__gtk(int* pDPIXOut, int* pDPIYOut)
-{
-    // TODO: Read this from a setting... no idea which one, though...
-    if (pDPIXOut) *pDPIXOut = 96;
-    if (pDPIYOut) *pDPIYOut = 96;
-}
-
-
-
 //// Drag and Drop ////
 
 dr_bool32 dred_begin_drag_and_drop__gtk(dred_data_type dataType, const void* pData, size_t dataSize)
@@ -3862,32 +3845,6 @@ dr_bool32 dred_menu_item_is_checked(dred_menu_item* pItem)
 
 #ifdef DRED_GTK
     return dred_menu_item_is_checked__gtk(pItem);
-#endif
-}
-
-
-
-//// DPI SCALING ////
-
-void dred_get_base_dpi(int* pDPIXOut, int* pDPIYOut)
-{
-#ifdef DRED_WIN32
-    dr_win32_get_base_dpi(pDPIXOut, pDPIYOut);
-#endif
-
-#ifdef DRED_GTK
-    dred_get_base_dpi__gtk(pDPIXOut, pDPIYOut);
-#endif
-}
-
-void dred_get_system_dpi(int* pDPIXOut, int* pDPIYOut)
-{
-#ifdef DRED_WIN32
-    dr_win32_get_system_dpi(pDPIXOut, pDPIYOut);
-#endif
-
-#ifdef DRED_GTK
-    dred_get_system_dpi__gtk(pDPIXOut, pDPIYOut);
 #endif
 }
 

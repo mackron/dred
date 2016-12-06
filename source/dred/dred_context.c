@@ -341,8 +341,8 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     // Grab the system DPI scaling early so it can be used to correctly size GUI elements at initialization time.
     int baseDPI;
     int systemDPI;
-    dred_get_base_dpi(&baseDPI, NULL);
-    dred_get_system_dpi(&systemDPI, NULL);
+    dtk_get_base_dpi(&pDred->tk, &baseDPI, NULL);
+    dtk_get_system_dpi(&pDred->tk, &systemDPI, NULL);
 
     pDred->dpiScale = (float)systemDPI / (float)baseDPI;
     pDred->uiScale = pDred->dpiScale;

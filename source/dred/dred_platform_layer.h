@@ -396,17 +396,6 @@ dr_bool32 dred_menu_item_is_checked(dred_menu_item* pItem);
 
 
 
-//// DPI SCALING ////
-
-// Retrieves the base system DPI to use as a reference when calculating DPI scaling.
-void dred_get_base_dpi(int* pDPIXOut, int* pDPIYOut);
-
-// Retrieves the system-wide DPI.
-void dred_get_system_dpi(int* pDPIXOut, int* pDPIYOut);
-
-
-
-
 //// Drag and Drop ////
 
 typedef enum
