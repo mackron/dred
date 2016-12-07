@@ -36,6 +36,9 @@ struct dred_context
     // The menu library. This is where the different context menus can be retrieved.
     dred_menu_library menuLibrary;
 
+    // The menus.
+    dred_stock_menus menus;
+
 
     // The shortcut table.
     dred_shortcut_table shortcutTable;

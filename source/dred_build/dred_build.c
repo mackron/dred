@@ -47,8 +47,12 @@ typedef struct
     unsigned int baseHeight;
 } stock_image;
 
+static void fwrite_string(FILE* pFile, const char* str)
+{
+    fwrite(str, 1, strlen(str), pFile);
+}
 
-
+#include "dred_build_menus.c"
 #include "dred_build_website.c"
 
 #include <stdio.h>
@@ -231,10 +235,6 @@ char* write_image_data_rgba8(char* output, unsigned int* pCurrentByteColumn, con
 }
 
 
-void fwrite_string(FILE* pFile, const char* str)
-{
-    fwrite(str, 1, strlen(str), pFile);
-}
 
 void generate_commands_list(FILE* pFileOut)
 {
@@ -876,17 +876,20 @@ int main(int argc, char** argv)
 
     // Stock images.
     generate_stock_images(pFileOut, pFileOutH);
-
+    
     // Config vars.
     generate_config_vars(pFileOut, pFileOutH);
+
+    // Menus.
+    dred_build__generate_menus(pFileOut, pFileOutH);
 
 
     fclose(pFileOut);
     fclose(pFileOutH);
 
 
-    // Website.
-    dred_build__generate_website(g_CommandVars, g_ConfigVars);
+    // Website. (Temporarily disabled until the performance issue is resolved.)
+    //dred_build__generate_website(g_CommandVars, g_ConfigVars);
 
 
     return 0;

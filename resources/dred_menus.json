@@ -1,45 +1,99 @@
 // The menus defined here represent the default format of the menus. These can be modified at run-time.
 
 {"menus":[
-	{"id":"generic.settings", "text":"Settings", "items":[
-		{"id":"generic.settings.themes", "text":"Themes", "items":[
-			{"id":"generic.settings.themes.dark",  "text":"Dark (Default)", "cmd":"load-config dark.dredtheme"},
-			{"id":"generic.settings.themes.light", "text":"Light", "cmd":"load-config light.dredtheme"}
-		]}
-		{"id":"separator"}
-		{"id":"generic.settings.settings", "text":"Settings", "cmd":"settings"}
-	]},
-	
-	{"id":"generic.help", "text":"Help", "items":[
-		{"id":"generic.help.about", "text":"About", "cmd":"about"}
-	]},
+    {"id":"generic.help", "items":[
+        {"id":"generic.help.about", "text":"About...", "cmd":"about"}
+    ]},
+    
+
+    {"id":"generic.settings.themes", "items":[
+        {"id":"generic.settings.themes.dark", "text":"Dark (Default)", "cmd":"load-config light.dredtheme"},
+        {"id":"generic.settings.themes.light", "text":"Light", "cmd":"load-config light.dredtheme"}
+    ]},
+
+    {"id":"generic.settings", "items":[
+        {"id":"generic.settings.themes", "text":"Themes", "submenu":"generic.settings.themes"},
+        {"id":"separator"},
+        {"id":"generic.settings.settings", "text":"Settings", "cmd":"settings"}
+    ]},
+    
+    
+    {"id":"nothingopen.file", "items":[
+        {"id":"nothingopen.file.new", "text":"&New", "shortcut":"file.new"},
+        {"id":"nothingopen.file.open", "text":"&Open...", "shortcut":"file.open"},
+        {"id":"nothingopen.file.open.recent", "text":"Open Recent"},
+        {"id":"nothingopen.file.open.favourite", "text":"Open Favourite"},
+        {"id":"separator"},
+        {"id":"nothingopen.file.exit", "text":"E&xit", "shortcut":"exit"}
+    ]},
+    
+    {"id":"nothingopen.view", "items":[
+    ]},
+    
+    {"id":"nothingopen", "type":"menubar", "items":[
+        {"id":"nothingopen.file", "text":"&File", "submenu":"nothingopen.file"},
+        {"id":"nothingopen.view", "text":"&View", "submenu":"nothingopen.view"},
+        {"id":"nothingopen.settings", "text":"&Settings", "submenu":"generic.settings"},
+        {"id":"nothingopen.help", "text":"&Help", "submenu":"generic.help"}
+    ]},
     
     
     {"id":"text.file", "items":[
-        {"id":"text.file.new", "text":"New", "shortcut":"file.new"},
-        {"id":"text.file.open", "text":"Open", "shortcut":"file.open"},
-        {"id":"text.file.open.recent", "text":"Open Recent", "items":[]},
-        {"id":"text.file.open.favourite", "text":"Open Favourite", "items":[]},
+        {"id":"text.file.new", "text":"&New", "shortcut":"file.new"},
+        {"id":"text.file.open", "text":"&Open...", "shortcut":"file.open"},
+        {"id":"text.file.open.recent", "text":"Open Recent"},
+        {"id":"text.file.open.favourite", "text":"Open Favourite"},
         {"id":"separator"},
         {"id":"text.file.addfavourite", "text":"Add to Favourites", "cmd":"add-favourite"},
         {"id":"text.file.removefavourite", "text":"Remove from Favourites", "cmd":"remove-favourite"},
         {"id":"separator"},
+        {"id":"text.file.save", "text":"&Save", "shortcut":"file.save"},
+        {"id":"text.file.saveas", "text":"Save &As", "shortcut":"file.saveas"},
+        {"id":"text.file.saveall", "text":"Save A&ll", "shortcut":"file.saveall"},
+        {"id":"separator"},
+        {"id":"text.file.close", "text":"&Close", "shortcut":"file.close"},
+        {"id":"text.file.closeall", "text":"Clos&e All", "shortcut":"file.closeall"},
+        {"id":"separator"},
+        {"id":"text.file.print", "text":"&Print", "shortcut":"file.print"},
+        {"id":"separator"},
+        {"id":"text.file.exit", "text":"E&xit", "shortcut":"exit"}
     ]},
     
+    {"id":"text.edit", "items":[
+        {"id":"text.edit.undo", "text":"Undo", "shortcut":"edit.undo"},
+        {"id":"text.edit.redo", "text":"Redo", "shortcut":"edit.redo"},
+        {"id":"separator"},
+        {"id":"text.edit.cut", "text":"Cut", "shortcut":"edit.cut"},
+        {"id":"text.edit.copy", "text":"Copy", "shortcut":"edit.copy"},
+        {"id":"text.edit.paste", "text":"Paste", "shortcut":"edit.paste"},
+        {"id":"text.edit.delete", "text":"Delete", "shortcut":"edit.delete"},
+        {"id":"separator"},
+        {"id":"text.edit.selectall", "text":"Select All", "shortcut":"edit.select-all"}
+    ]},
     
-    {"id":"none", "type":"menubar", "items":[
-        {"id":"none.file"},
-        {"id":"none.view"},
-        {"id":"generic.settings"},
-        {"id":"generic.help"}
+    {"id":"text.view", "items":[
+        {"id":"text.view.tabbars", "type":"check", "text":"Show Tab Bars", "cmd":"toggle-tabbars"},
+        {"id":"text.view.cmdbar", "type":"check", "text":"Auto-Hide Command Bar", "cmd":"toggle-auto-hide-cmdbar"},
+        {"id":"separator"},
+        {"id":"text.view.linenumbers", "type":"check", "text":"Show Line Numbers", "cmd":"toggle-line-numbers"},
+        {"id":"text.view.resetzoom", "text":"Reset Zoom", "cmd":"zoom 1"},
+        {"id":"separator"},
+        {"id":"text.view.wordwrap", "type":"check", "text":"Word Wrap", "cmd":"toggle-word-wrap"}
+    ]},
+    
+    {"id":"text.find", "items":[
+        {"id":"text.find.find", "text":"Find...", "shortcut":"find.find"},
+        {"id":"text.find.replace", "text":"Find and Replace...", "shortcut":"find.replace"},
+        {"id":"separator"},
+        {"id":"text.find.goto", "text":"Go To...", "shortcut":"find.goto"}
     ]},
     
     {"id":"text", "type":"menubar", "items":[
-        {"id":"text.file"},
-        {"id":"text.edit"},
-        {"id":"text.view"},
-        {"id":"text.find"},
-        {"id":"generic.settings"},
-        {"id":"generic.help"}
+        {"id":"text.file", "text":"&File", "submenu":"text.file"},
+        {"id":"text.edit", "text":"&Edit", "submenu":"text.edit"},
+        {"id":"text.view", "text":"&View", "submenu":"text.view"},
+        {"id":"text.find", "text":"F&ind", "submenu":"text.find"},
+        {"id":"text.settings", "text":"&Settings", "submenu":"generic.settings"},
+        {"id":"text.help", "text":"&Help", "submenu":"generic.help"}
     ]}
 ]}
