@@ -5,14 +5,12 @@
 // Libraries:
 // - gdi32
 // - msimg32
-// - comctl32
 // - comdlg32
-// - ole32
 //
 // Notes:
 // - When compiling with MSVC, make sure the [Manifest Tool -> Input and Output -> Embed Manifest] setting is set to "No". Not doing
-//   so will result in a link error about it already being defined (we defined it manually in dred.rc).
-// - Make sure source/dred/win32/dred.rc is included with the VC project and compiled with it.
+//   so will result in a link error about it already being defined (it's defined manually in dred.rc).
+// - Make sure resources/win32/dred.rc is included with the VC project and compiled with it.
 
 // BUILDING (LINUX)
 //
