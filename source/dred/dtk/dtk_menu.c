@@ -47,7 +47,7 @@ dtk_result dtk_menu_init__win32(dtk_context* pTK, dtk_menu_type type, dtk_menu* 
 
 dtk_result dtk_menu_uninit__win32(dtk_menu* pMenu)
 {
-    if (!DestroyMenu(pMenu->win32.hMenu)) {
+    if (!DestroyMenu((HMENU)pMenu->win32.hMenu)) {
         return DTK_ERROR;
     }
 
