@@ -5,7 +5,6 @@
 #ifndef _LARGEFILE64_SOURCE
 #define _LARGEFILE64_SOURCE
 #endif
-
 #ifndef _FILE_OFFSET_BITS
 #define _FILE_OFFSET_BITS 64
 #endif
@@ -39,7 +38,7 @@
 #include <dlfcn.h>
 #endif
 
-// Platform libraries, for simplifying MSVC builds.
+// Platform libraries, for simplifying MSVC builds. TODO: Remove these once run-time linking is finished.
 #ifdef _WIN32
 #if defined(_MSC_VER)
 #pragma comment(lib, "msimg32.lib")
