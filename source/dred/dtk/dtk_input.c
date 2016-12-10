@@ -215,6 +215,7 @@ dtk_key dtk_convert_key_from_gtk(guint keyval)
     switch (keyval)
     {
     case GDK_KEY_BackSpace: return DTK_KEY_BACKSPACE;
+    case GDK_KEY_Tab:       return DTK_KEY_TAB;
     case GDK_KEY_Shift_L:   return DTK_KEY_SHIFT;
     case GDK_KEY_Shift_R:   return DTK_KEY_SHIFT;
     case GDK_KEY_Escape:    return DTK_KEY_ESCAPE;
@@ -255,6 +256,7 @@ guint dtk_convert_key_to_gtk(dtk_key key)
     switch (key)
     {
     case DTK_KEY_BACKSPACE:   return GDK_KEY_BackSpace;
+    case DTK_KEY_TAB:         return GDK_KEY_Tab;
     case DTK_KEY_SHIFT:       return GDK_KEY_Shift_L;
     //case DTK_KEY_SHIFT:       return GDK_KEY_Shift_R;
     case DTK_KEY_ESCAPE:      return GDK_KEY_Escape;
