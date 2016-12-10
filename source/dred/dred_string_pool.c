@@ -7,10 +7,10 @@
 
 #define DRED_STRING_POOL_CHUNK_SIZE     256
 
-dred_result dred_string_pool_init(dred_string_pool* pPool, const char* pInitialData, size_t initialDataSize)
+dr_bool32 dred_string_pool_init(dred_string_pool* pPool, const char* pInitialData, size_t initialDataSize)
 {
-    if (pPool == NULL) return DRED_INVALID_ARGS;
-    dtk_zero_object(pPool);
+    if (pPool == NULL) return DR_FALSE;
+    memset(pPool, 0, sizeof(*pPool));
 
     if (pInitialData != NULL) {
         if (initialDataSize == (size_t)-1) {
@@ -24,7 +24,7 @@ dred_result dred_string_pool_init(dred_string_pool* pPool, const char* pInitialD
 
     pPool->pData = (char*)malloc(pPool->capacity);
     if (pPool->pData == NULL) {
-        return DRED_OUT_OF_MEMORY;
+        return DR_FALSE;
     }
 
     // Initial size of 1 for the first entry which is just a null terminator.
@@ -35,13 +35,15 @@ dred_result dred_string_pool_init(dred_string_pool* pPool, const char* pInitialD
         memcpy(pPool->pData+1, pInitialData, initialDataSize);
     }
 
-    return DRED_SUCCESS;
+    return DR_TRUE;
 }
 
-dred_result dred_string_pool_uninit(dred_string_pool* pPool)
+dr_bool32 dred_string_pool_uninit(dred_string_pool* pPool)
 {
-    if (pPool == NULL) return DRED_INVALID_ARGS;
+    if (pPool == NULL) return DR_FALSE;
+
     free(pPool->pData);
+    return DR_TRUE;
 }
 
 
@@ -58,7 +60,7 @@ size_t dred_string_pool_add(dred_string_pool* pPool, const char* str, size_t str
         size_t newCapacity = dr_round_up(pPool->capacity + strLen+1, DRED_STRING_POOL_CHUNK_SIZE);
         char* pNewData = (char*)realloc(pPool->pData, newCapacity);
         if (pNewData == NULL) {
-            return DRED_OUT_OF_MEMORY;
+            return 0;
         }
 
         pPool->pData = pNewData;
@@ -75,10 +77,11 @@ size_t dred_string_pool_add(dred_string_pool* pPool, const char* str, size_t str
     return offset;
 }
 
-size_t dred_string_pool_find(dred_string_pool* pPool, const char* str)
+dr_bool32 dred_string_pool_find(dred_string_pool* pPool, const char* str, size_t* pOffset)
 {
-    if (pPool == NULL || dtk_string_is_null_or_empty(str)) {
-        return 0;
+    if (pOffset) *pOffset = 0;
+    if (pPool == NULL || str == NULL || str[0] == '\0') {
+        return DR_FALSE;
     }
 
     // NOTE: This can be optimized. See optimization notes at the top of this file.
@@ -90,12 +93,13 @@ size_t dred_string_pool_find(dred_string_pool* pPool, const char* str)
         size_t nextStrLen = strlen(pNextStr);
         if (strLen == nextStrLen) {
             if (strcmp(pNextStr, str) == 0) {
-                return i;   // Found it.
+                if (pOffset) *pOffset = i;
+                return DR_TRUE; // Found it.
             }
         }
 
         i += nextStrLen+1;
     }
 
-    return 0;   // Didn't find it.
+    return DR_FALSE;   // Didn't find it.
 }
