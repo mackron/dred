@@ -22,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 typedef dtk_uint32 dtk_key;
 #define DTK_KEY_BACKSPACE              0xff08
+#define DTK_KEY_TAB                    0xff09
 #define DTK_KEY_SHIFT                  0xff10
 #define DTK_KEY_ESCAPE                 0xff1b
 #define DTK_KEY_PAGE_UP                0xff55

@@ -49,6 +49,10 @@ size_t dtk_key_to_string(dtk_key key, char* strOut, size_t strOutSize)
     case DTK_KEY_F12:         return dtk_strcpy_len(strOut, strOutSize, "F12");
     }
 
+    if (key == '\t') {
+        return dtk_strcpy_len(strOut, strOutSize, "Tab");
+    }
+
     if (key >= 32 && key <= 126) {
         strOut[0] = (char)key;
         strOut[1] = '\0';
@@ -128,6 +132,7 @@ dtk_key dtk_convert_key_from_win32(WPARAM wParam)
     switch (wParam)
     {
     case VK_BACK:   return DTK_KEY_BACKSPACE;
+    case VK_TAB:    return DTK_KEY_TAB;
     case VK_SHIFT:  return DTK_KEY_SHIFT;
     case VK_ESCAPE: return DTK_KEY_ESCAPE;
     case VK_PRIOR:  return DTK_KEY_PAGE_UP;
@@ -163,6 +168,7 @@ WORD dtk_convert_key_to_win32(dtk_key key)
     switch (key)
     {
     case DTK_KEY_BACKSPACE:   return VK_BACK;
+    case DTK_KEY_TAB:         return VK_TAB;
     case DTK_KEY_SHIFT:       return VK_SHIFT;
     case DTK_KEY_ESCAPE:      return VK_ESCAPE;
     case DTK_KEY_PAGE_UP:     return VK_PRIOR;
