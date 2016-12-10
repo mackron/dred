@@ -68,6 +68,7 @@ dred_color cppStringTextColor; \
 dred_color cppKeywordTextColor;
 
 
+#define DRED_STOCK_SHORTCUT_COUNT 23
 #define DRED_SHORTCUT_ID_NONE 0
 #define DRED_SHORTCUT_ID_FILE_NEW 1
 #define DRED_SHORTCUT_ID_FILE_OPEN 2
@@ -117,6 +118,7 @@ dred_color cppKeywordTextColor;
 #define DRED_SHORTCUT_NAME_EXIT "exit"
 
 
+#define DRED_STOCK_MENU_ITEM_COUNT 80
 #define DRED_MENU_ITEM_ID_NONE 0
 #define DRED_MENU_ITEM_ID_SEPARATOR 1
 #define DRED_MENU_ITEM_ID_GENERIC_HELP_ABOUT 2

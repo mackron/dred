@@ -265,6 +265,7 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
     
     // Header file.
     fwrite_string(pFileOutH, "\n\n");
+    fprintf(pFileOutH, "#define DRED_STOCK_MENU_ITEM_COUNT %u\n", stb_sb_count(context.pAllItems)+2);   // +2 to include NONE and SEPARATOR
     fwrite_string(pFileOutH, "#define DRED_MENU_ITEM_ID_NONE 0\n");
     fwrite_string(pFileOutH, "#define DRED_MENU_ITEM_ID_SEPARATOR 1\n");
     int nextID = 2;

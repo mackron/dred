@@ -240,6 +240,7 @@ void dred_build__generate_shortcuts(FILE* pFileOut, FILE* pFileOutH, dred_string
 
     // Header file.
     fwrite_string(pFileOutH, "\n\n");
+    fprintf(pFileOutH, "#define DRED_STOCK_SHORTCUT_COUNT %u\n", stb_sb_count(context.pShortcuts)+1); // +1 to include NONE
     fwrite_string(pFileOutH, "#define DRED_SHORTCUT_ID_NONE 0\n");
     int nextID = 1;
     for (int i = 0; i < stb_sb_count(context.pShortcuts); ++i) {
