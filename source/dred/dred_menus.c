@@ -26,8 +26,8 @@ dr_bool32 dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDre
     }
 
     dred_menu* pFileMenu_Default = dred_menu_create(pDred, dred_menu_type_popup);
-    dred_menu_item_create_and_append_with_shortcut(pFileMenu_Default, "&New", DRED_MENU_ITEM_ID_FILE_NEW, DRED_SHORTCUT_NAME_NEW, 0);
-    dred_menu_item_create_and_append_with_shortcut(pFileMenu_Default, "&Open...", DRED_MENU_ITEM_ID_FILE_OPEN, DRED_SHORTCUT_NAME_OPEN, 0);
+    dred_menu_item_create_and_append_with_shortcut(pFileMenu_Default, "&New", DRED_MENU_ITEM_ID_FILE_NEW, DRED_SHORTCUT_NAME_FILE_NEW, 0);
+    dred_menu_item_create_and_append_with_shortcut(pFileMenu_Default, "&Open...", DRED_MENU_ITEM_ID_FILE_OPEN, DRED_SHORTCUT_NAME_FILE_OPEN, 0);
     pLibrary->pOpenRecentItem_Default = dred_menu_item_create_and_append(pFileMenu_Default, "Open Recent", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), 0, pLibrary->pMenu_RecentFiles);
     pLibrary->pOpenFavouriteItem_Default = dred_menu_item_create_and_append(pFileMenu_Default, "Open Favourite", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), 0, pLibrary->pMenu_FavouriteFiles);
     dred_menu_item_create_and_append_separator(pFileMenu_Default);
@@ -62,35 +62,35 @@ dr_bool32 dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDre
     }
 
     dred_menu* pFileMenu = dred_menu_create(pDred, dred_menu_type_popup);
-    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "&New", DRED_MENU_ITEM_ID_FILE_NEW, DRED_SHORTCUT_NAME_NEW, 0);
-    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "&Open...", DRED_MENU_ITEM_ID_FILE_OPEN, DRED_SHORTCUT_NAME_OPEN, 0);
+    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "&New", DRED_MENU_ITEM_ID_FILE_NEW, DRED_SHORTCUT_NAME_FILE_NEW, 0);
+    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "&Open...", DRED_MENU_ITEM_ID_FILE_OPEN, DRED_SHORTCUT_NAME_FILE_OPEN, 0);
     pLibrary->pOpenRecentItem_TextEditor = dred_menu_item_create_and_append(pFileMenu, "Open Recent", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), 0, pLibrary->pMenu_RecentFiles);
     pLibrary->pOpenFavouriteItem_TextEditor = dred_menu_item_create_and_append(pFileMenu, "Open Favourite", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), 0, pLibrary->pMenu_FavouriteFiles);
     dred_menu_item_create_and_append_separator(pFileMenu);
     pLibrary->pMenuItem_AddToFavourites = dred_menu_item_create_and_append(pFileMenu, "Add to Favourites", DRED_MENU_ITEM_ID_ADD_TO_FAVOURITES, "add-favourite", dred_shortcut_none(), 0, NULL);
     pLibrary->pMenuItem_RemoveFromFavourites = dred_menu_item_create_and_append(pFileMenu, "Remove from Favourites", DRED_MENU_ITEM_ID_REMOVE_FROM_FAVOURITES, "remove-favourite", dred_shortcut_none(), 0, NULL);
     dred_menu_item_create_and_append_separator(pFileMenu);
-    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "&Save", DRED_MENU_ITEM_ID_FILE_SAVE, DRED_SHORTCUT_NAME_SAVE, 0);
+    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "&Save", DRED_MENU_ITEM_ID_FILE_SAVE, DRED_SHORTCUT_NAME_FILE_SAVE, 0);
     dred_menu_item_create_and_append(pFileMenu, "Save &As...", DRED_MENU_ITEM_ID_FILE_SAVE_AS,  "save-as",  dred_shortcut_none(), 0, NULL);
-    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "Save A&ll", DRED_MENU_ITEM_ID_FILE_SAVE_ALL,  DRED_SHORTCUT_NAME_SAVE_ALL, 0);
+    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "Save A&ll", DRED_MENU_ITEM_ID_FILE_SAVE_ALL,  DRED_SHORTCUT_NAME_FILE_SAVE_ALL, 0);
     dred_menu_item_create_and_append_separator(pFileMenu);
-    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "&Close", DRED_MENU_ITEM_ID_FILE_CLOSE, DRED_SHORTCUT_NAME_CLOSE, 0);
-    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "Clos&e All", DRED_MENU_ITEM_ID_FILE_CLOSE_ALL, DRED_SHORTCUT_NAME_CLOSE_ALL, 0);
+    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "&Close", DRED_MENU_ITEM_ID_FILE_CLOSE, DRED_SHORTCUT_NAME_FILE_CLOSE, 0);
+    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "Clos&e All", DRED_MENU_ITEM_ID_FILE_CLOSE_ALL, DRED_SHORTCUT_NAME_FILE_CLOSE_ALL, 0);
     dred_menu_item_create_and_append_separator(pFileMenu);
-    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "Print...", DRED_MENU_ITEM_ID_FILE_PRINT, DRED_SHORTCUT_NAME_PRINT, 0);
+    dred_menu_item_create_and_append_with_shortcut(pFileMenu, "Print...", DRED_MENU_ITEM_ID_FILE_PRINT, DRED_SHORTCUT_NAME_FILE_PRINT, 0);
     dred_menu_item_create_and_append_separator(pFileMenu);
     dred_menu_item_create_and_append(pFileMenu, "E&xit", DRED_MENU_ITEM_ID_FILE_EXIT, "exit", dred_shortcut_create_single(dtk_accelerator_init(DRED_GUI_F4, DRED_KEY_STATE_ALT_DOWN, 0)), 0, NULL);
 
     dred_menu* pEditMenu = dred_menu_create(pDred, dred_menu_type_popup);
-    dred_menu_item_create_and_append_with_shortcut(pEditMenu, "&Undo", DRED_MENU_ITEM_ID_EDIT_UNDO, DRED_SHORTCUT_NAME_UNDO, 0);
-    dred_menu_item_create_and_append_with_shortcut(pEditMenu, "&Redo", DRED_MENU_ITEM_ID_EDIT_REDO, DRED_SHORTCUT_NAME_REDO, 0);
+    dred_menu_item_create_and_append_with_shortcut(pEditMenu, "&Undo", DRED_MENU_ITEM_ID_EDIT_UNDO, DRED_SHORTCUT_NAME_EDIT_UNDO, 0);
+    dred_menu_item_create_and_append_with_shortcut(pEditMenu, "&Redo", DRED_MENU_ITEM_ID_EDIT_REDO, DRED_SHORTCUT_NAME_EDIT_REDO, 0);
     dred_menu_item_create_and_append_separator(pEditMenu);
-    dred_menu_item_create_and_append_with_shortcut(pEditMenu, "Cu&t", DRED_MENU_ITEM_ID_EDIT_CUT, DRED_SHORTCUT_NAME_CUT, 0);
-    dred_menu_item_create_and_append_with_shortcut(pEditMenu, "&Copy", DRED_MENU_ITEM_ID_EDIT_COPY, DRED_SHORTCUT_NAME_COPY, 0);
-    dred_menu_item_create_and_append_with_shortcut(pEditMenu, "&Paste", DRED_MENU_ITEM_ID_EDIT_PASTE, DRED_SHORTCUT_NAME_PASTE, 0);
+    dred_menu_item_create_and_append_with_shortcut(pEditMenu, "Cu&t", DRED_MENU_ITEM_ID_EDIT_CUT, DRED_SHORTCUT_NAME_EDIT_CUT, 0);
+    dred_menu_item_create_and_append_with_shortcut(pEditMenu, "&Copy", DRED_MENU_ITEM_ID_EDIT_COPY, DRED_SHORTCUT_NAME_EDIT_COPY, 0);
+    dred_menu_item_create_and_append_with_shortcut(pEditMenu, "&Paste", DRED_MENU_ITEM_ID_EDIT_PASTE, DRED_SHORTCUT_NAME_EDIT_PASTE, 0);
     dred_menu_item_create_and_append(pEditMenu, "&Delete", DRED_MENU_ITEM_ID_EDIT_DELETE, "delete", dred_shortcut_create_single(dtk_accelerator_init(DRED_GUI_DELETE, 0, 0)), 0, NULL);
     dred_menu_item_create_and_append_separator(pEditMenu);
-    dred_menu_item_create_and_append_with_shortcut(pEditMenu, "Select &All", DRED_MENU_ITEM_ID_EDIT_SELECT_ALL, DRED_SHORTCUT_NAME_SELECT_ALL, 0);
+    dred_menu_item_create_and_append_with_shortcut(pEditMenu, "Select &All", DRED_MENU_ITEM_ID_EDIT_SELECT_ALL, DRED_SHORTCUT_NAME_EDIT_SELECT_ALL, 0);
 
     dred_menu* pViewMenu = dred_menu_create(pDred, dred_menu_type_popup);
     pLibrary->pMenuItem_ToggleTabBars = dred_menu_item_create_and_append(pViewMenu, "Show Tab Bars", DRED_MENU_ITEM_ID_VIEW_TAB_BARS, "toggle-tab-bar", dred_shortcut_none(),DRED_MENU_ITEM_CHECK, NULL);
@@ -106,10 +106,10 @@ dr_bool32 dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDre
     dred_menu_item_set_checked(pLibrary->pMenuItem_ToggleWordWrap, pDred->config.textEditorEnableWordWrap);
 
     dred_menu* pFindMenu = dred_menu_create(pDred, dred_menu_type_popup);
-    dred_menu_item_create_and_append_with_shortcut(pFindMenu, "&Find...", DRED_MENU_ITEM_ID_FIND_FIND, DRED_SHORTCUT_NAME_FIND, 0);
-    dred_menu_item_create_and_append_with_shortcut(pFindMenu, "Find and &Replace...", DRED_MENU_ITEM_ID_FIND_REPLACE, DRED_SHORTCUT_NAME_REPLACE, 0);
+    dred_menu_item_create_and_append_with_shortcut(pFindMenu, "&Find...", DRED_MENU_ITEM_ID_FIND_FIND, DRED_SHORTCUT_NAME_FIND_FIND, 0);
+    dred_menu_item_create_and_append_with_shortcut(pFindMenu, "Find and &Replace...", DRED_MENU_ITEM_ID_FIND_REPLACE, DRED_SHORTCUT_NAME_FIND_REPLACE, 0);
     dred_menu_item_create_and_append_separator(pFindMenu);
-    dred_menu_item_create_and_append_with_shortcut(pFindMenu, "&Go To...", DRED_MENU_ITEM_ID_FIND_GOTO, DRED_SHORTCUT_NAME_GOTO, 0);
+    dred_menu_item_create_and_append_with_shortcut(pFindMenu, "&Go To...", DRED_MENU_ITEM_ID_FIND_GOTO, DRED_SHORTCUT_NAME_FIND_GOTO, 0);
 
     dred_menu* pSettingsMenu = dred_menu_create(pDred, dred_menu_type_popup);
     pLibrary->pThemesItem_Default = dred_menu_item_create_and_append(pSettingsMenu, "Themes", DRED_MENU_ITEM_ID_NONE, NULL, dred_shortcut_none(), 0, pLibrary->pMenu_Themes);
@@ -135,15 +135,15 @@ dr_bool32 dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDre
         return DR_FALSE;
     }
 
-    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_TextEditor, "&Undo", DRED_MENU_ITEM_ID_EDIT_UNDO, DRED_SHORTCUT_NAME_UNDO, 0);
-    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_TextEditor, "&Redo", DRED_MENU_ITEM_ID_EDIT_REDO, DRED_SHORTCUT_NAME_REDO, 0);
+    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_TextEditor, "&Undo", DRED_MENU_ITEM_ID_EDIT_UNDO, DRED_SHORTCUT_NAME_EDIT_UNDO, 0);
+    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_TextEditor, "&Redo", DRED_MENU_ITEM_ID_EDIT_REDO, DRED_SHORTCUT_NAME_EDIT_REDO, 0);
     dred_menu_item_create_and_append_separator(pLibrary->pPopupMenu_TextEditor);
-    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_TextEditor, "Cu&t", DRED_MENU_ITEM_ID_EDIT_CUT, DRED_SHORTCUT_NAME_CUT, 0);
-    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_TextEditor, "&Copy", DRED_MENU_ITEM_ID_EDIT_COPY, DRED_SHORTCUT_NAME_COPY, 0);
-    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_TextEditor, "&Paste", DRED_MENU_ITEM_ID_EDIT_PASTE, DRED_SHORTCUT_NAME_PASTE, 0);
+    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_TextEditor, "Cu&t", DRED_MENU_ITEM_ID_EDIT_CUT, DRED_SHORTCUT_NAME_EDIT_CUT, 0);
+    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_TextEditor, "&Copy", DRED_MENU_ITEM_ID_EDIT_COPY, DRED_SHORTCUT_NAME_EDIT_COPY, 0);
+    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_TextEditor, "&Paste", DRED_MENU_ITEM_ID_EDIT_PASTE, DRED_SHORTCUT_NAME_EDIT_PASTE, 0);
     dred_menu_item_create_and_append(pLibrary->pPopupMenu_TextEditor, "&Delete", DRED_MENU_ITEM_ID_EDIT_DELETE, "delete", dred_shortcut_create_single(dtk_accelerator_init(DRED_GUI_DELETE, 0, 0)), 0, NULL);
     dred_menu_item_create_and_append_separator(pLibrary->pPopupMenu_TextEditor);
-    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_TextEditor, "Select &All", DRED_MENU_ITEM_ID_EDIT_SELECT_ALL, DRED_SHORTCUT_NAME_SELECT_ALL, 0);
+    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_TextEditor, "Select &All", DRED_MENU_ITEM_ID_EDIT_SELECT_ALL, DRED_SHORTCUT_NAME_EDIT_SELECT_ALL, 0);
 
 
     pLibrary->pPopupMenu_Tab = dred_menu_create(pDred, dred_menu_type_popup);
@@ -151,12 +151,12 @@ dr_bool32 dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDre
         return DR_FALSE;
     }
 
-    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_Tab, "&Save", DRED_MENU_ITEM_ID_FILE_SAVE, DRED_SHORTCUT_NAME_SAVE, 0);
+    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_Tab, "&Save", DRED_MENU_ITEM_ID_FILE_SAVE, DRED_SHORTCUT_NAME_FILE_SAVE, 0);
     dred_menu_item_create_and_append(pLibrary->pPopupMenu_Tab, "Save &As...",       DRED_MENU_ITEM_ID_FILE_SAVE_AS, "save-as", dred_shortcut_none(), 0, NULL);
-    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_Tab, "Save A&ll", DRED_MENU_ITEM_ID_FILE_SAVE_ALL,  DRED_SHORTCUT_NAME_SAVE_ALL, 0);
+    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_Tab, "Save A&ll", DRED_MENU_ITEM_ID_FILE_SAVE_ALL,  DRED_SHORTCUT_NAME_FILE_SAVE_ALL, 0);
     dred_menu_item_create_and_append_separator(pLibrary->pPopupMenu_Tab);
-    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_Tab, "&Close", DRED_MENU_ITEM_ID_FILE_CLOSE, DRED_SHORTCUT_NAME_CLOSE, 0);
-    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_Tab, "Clos&e All", DRED_MENU_ITEM_ID_FILE_CLOSE_ALL, DRED_SHORTCUT_NAME_CLOSE_ALL, 0);
+    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_Tab, "&Close", DRED_MENU_ITEM_ID_FILE_CLOSE, DRED_SHORTCUT_NAME_FILE_CLOSE, 0);
+    dred_menu_item_create_and_append_with_shortcut(pLibrary->pPopupMenu_Tab, "Clos&e All", DRED_MENU_ITEM_ID_FILE_CLOSE_ALL, DRED_SHORTCUT_NAME_FILE_CLOSE_ALL, 0);
     //dred_menu_item_create_and_append_separator(pLibrary->pPopupMenu_Tab);
     //pLibrary->pMenuItem_AddToFavourites = dred_menu_item_create_and_append(pLibrary->pPopupMenu_Tab, "Add to Favourites", DRED_MENU_ITEM_ID_ADD_TO_FAVOURITES, "add-favourite", dred_shortcut_none(), 0, NULL);
     //pLibrary->pMenuItem_RemoveFromFavourites = dred_menu_item_create_and_append(pLibrary->pPopupMenu_Tab, "Remove from Favourites", DRED_MENU_ITEM_ID_REMOVE_FROM_FAVOURITES, "remove-favourite", dred_shortcut_none(), 0, NULL);

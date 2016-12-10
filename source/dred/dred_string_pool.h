@@ -37,3 +37,11 @@ size_t dred_string_pool_add(dred_string_pool* pPool, const char* str, size_t str
 //
 // Returns true if the string exists; false otherwise. If the string does not exist, 0 is returned in <pOffset>. This runs in linear time.
 dr_bool32 dred_string_pool_find(dred_string_pool* pPool, const char* str, size_t* pOffset);
+
+// A helper for finding a string, and if not found, adding it.
+//
+// Returns the offset of the string. Returns 0 if an error occurs.
+size_t dred_string_pool_find_or_add(dred_string_pool* pPool, const char* str);
+
+// Retrieves a C-style string from the given string offset.
+const char* dred_string_pool_cstr(dred_string_pool* pPool, size_t offset);

@@ -361,7 +361,7 @@ void dred_checkbox_set_checked(dred_checkbox* pCheckbox, dr_bool32 checked, dr_b
 
     if (!blockEvent) {
         if (pCheckbox->varBinding[0] != '\0') {
-            dred_config_set(&dred_control_get_context(DRED_CONTROL(pCheckbox))->config, pCheckbox->varBinding, checked ? "DR_TRUE" : "DR_FALSE");
+            dred_config_set(&dred_control_get_context(DRED_CONTROL(pCheckbox))->config, pCheckbox->varBinding, checked ? "true" : "false");
         }
 
         if (pCheckbox->onCheckChanged) {

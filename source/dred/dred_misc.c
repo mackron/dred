@@ -2,7 +2,7 @@
 
 dr_bool32 dred_parse_bool(const char* value)
 {
-    if (_stricmp(value, "DR_FALSE") == 0 || _stricmp(value, "0") == 0) {
+    if (_stricmp(value, "false") == 0 || _stricmp(value, "0") == 0) {
         return DR_FALSE;
     }
 

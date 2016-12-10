@@ -1,6 +1,7 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
 // Stock shortcut names.
+/*
 #define DRED_SHORTCUT_NAME_NEW          "New"
 #define DRED_SHORTCUT_NAME_OPEN         "Open"
 #define DRED_SHORTCUT_NAME_SAVE         "Save"
@@ -21,18 +22,21 @@
 #define DRED_SHORTCUT_NAME_NEXT_TAB     "NextTab"
 #define DRED_SHORTCUT_NAME_PREV_TAB     "PrevTab"
 #define DRED_SHORTCUT_NAME_RELOAD       "Reload"
+*/
 
 struct dred_shortcut
 {
-    dtk_accelerator accelerators[2];
+    dtk_uint32 id;
+    size_t nameOffset;  // Offset of the main string pool.
+    size_t cmdOffset;   // Offset of the main string pool.
+    dtk_uint32 acceleratorCount;
+    dtk_accelerator accelerators[4];
 };
 
 struct dred_shortcut_table
 {
     dred_context* pDred;
     dred_shortcut* pShortcuts;
-    char** ppCmdStrings;
-    char** ppNameStrings;
     size_t count;
     size_t bufferSize;
 
@@ -40,15 +44,15 @@ struct dred_shortcut_table
     dred_accelerator_table acceleratorTable;
 };
 
-dr_bool32 dred_shortcut_table_init(dred_context* pDred, dred_shortcut_table* pTable);
+dr_bool32 dred_shortcut_table_init(dred_context* pDred, dred_shortcut_table* pTable, size_t initialCapacity);
 void dred_shortcut_table_uninit(dred_shortcut_table* pTable);
 
-dr_bool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name, dred_shortcut shortcut, const char* cmdStr);
-dr_bool32 dred_shortcut_table_unbind(dred_shortcut_table* pTable, dred_shortcut shortcut);
+dr_bool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, dtk_uint32 id, const char* name, const char* cmdStr, dtk_uint32 acceleratorCount, dtk_accelerator* pAccelerators);
+dr_bool32 dred_shortcut_table_unbind(dred_shortcut_table* pTable, dtk_uint32 id);
 
-dr_bool32 dred_shortcut_table_find(dred_shortcut_table* pTable, dred_shortcut shortcut, size_t* pIndexOut);
+dr_bool32 dred_shortcut_table_find(dred_shortcut_table* pTable, dtk_uint32 id, size_t* pIndexOut);
 dr_bool32 dred_shortcut_table_find_by_name(dred_shortcut_table* pTable, const char* name, size_t* pIndexOut);
-void dred_shortcut_table_replace(dred_shortcut_table* pTable, size_t shortcutIndex, const char* cmdStr);
+void dred_shortcut_table_replace_by_index(dred_shortcut_table* pTable, size_t shortcutIndex, const char* name, const char* cmdStr, dtk_uint32 acceleratorCount, dtk_accelerator* pAccelerators);
 
 dr_bool32 dred_shortcut_table_get_shortcut_by_index(dred_shortcut_table* pTable, size_t shortcutIndex, dred_shortcut* pShortcutOut);
 const char* dred_shortcut_table_get_command_string_by_index(dred_shortcut_table* pTable, size_t shortcutIndex);

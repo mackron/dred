@@ -1,17 +1,20 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-dr_bool32 dred_shortcut_table_init(dred_context* pDred, dred_shortcut_table* pTable)
+dr_bool32 dred_shortcut_table_init(dred_context* pDred, dred_shortcut_table* pTable, size_t initialCapacity)
 {
-    if (pTable == NULL) {
-        return DR_FALSE;
-    }
+    if (pTable == NULL) return DR_FALSE;
+    memset(pTable, 0, sizeof(*pTable));
     
     pTable->pDred = pDred;
-    pTable->pShortcuts = NULL;
-    pTable->ppCmdStrings = NULL;
-    pTable->ppNameStrings = NULL;
     pTable->count = 0;
-    pTable->bufferSize = 0;
+    pTable->bufferSize = initialCapacity;
+
+    if (initialCapacity > 0) {
+        pTable->pShortcuts = (dred_shortcut*)realloc(pTable->pShortcuts, pTable->bufferSize * sizeof(*pTable->pShortcuts));
+        if (pTable->pShortcuts == NULL) {
+            return DR_FALSE;
+        }
+    }
 
     if (!dred_accelerator_table_init(&pTable->acceleratorTable)) {
         return DR_FALSE;
@@ -26,13 +29,6 @@ void dred_shortcut_table_uninit(dred_shortcut_table* pTable)
         return;
     }
 
-    for (size_t i = 0; i < pTable->count; ++i) {
-        gb_free_string(pTable->ppCmdStrings[i]);
-        gb_free_string(pTable->ppNameStrings[i]);
-    }
-    free(pTable->ppCmdStrings);
-    free(pTable->ppNameStrings);
-
     free(pTable->pShortcuts);
     pTable->count = 0;
     pTable->bufferSize = 0;
@@ -40,7 +36,7 @@ void dred_shortcut_table_uninit(dred_shortcut_table* pTable)
     dred_accelerator_table_uninit(&pTable->acceleratorTable);
 }
 
-dr_bool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name, dred_shortcut shortcut, const char* cmdStr)
+dr_bool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, dtk_uint32 id, const char* name, const char* cmdStr, dtk_uint32 acceleratorCount, dtk_accelerator* pAccelerators)
 {
     if (pTable == NULL) {
         return DR_FALSE;
@@ -53,79 +49,60 @@ dr_bool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, const char* name
 
     // If an accelerator with the same key combination already exists, just replace the command.
     size_t existingIndex;
-    if (dred_shortcut_table_find(pTable, shortcut, &existingIndex)) {
-        dred_shortcut_table_replace(pTable, existingIndex, cmdStr);
+    if (dred_shortcut_table_find(pTable, id, &existingIndex)) {
+        dred_shortcut_table_replace_by_index(pTable, existingIndex, name, cmdStr, acceleratorCount, pAccelerators);
         return DR_TRUE;   // Already exists.
     }
 
     // If we get here it means the accelerator does not already exist and needs to be added.
-    if (pTable->count == pTable->bufferSize)
-    {
+    if (pTable->count == pTable->bufferSize) {
         size_t newBufferSize = (pTable->bufferSize == 0) ? 16 : (pTable->bufferSize * 2);
         dred_shortcut* pNewShortcuts = (dred_shortcut*)realloc(pTable->pShortcuts, newBufferSize * sizeof(*pNewShortcuts));
         if (pNewShortcuts == NULL) {
             return DR_FALSE;
         }
 
-        char** ppNewCmdStrings = (char**)realloc(pTable->ppCmdStrings, newBufferSize * sizeof(*ppNewCmdStrings));
-        if (ppNewCmdStrings == NULL) {
-            return DR_FALSE;
-        }
-
-        char** ppNewNameStrings = (char**)realloc(pTable->ppNameStrings, newBufferSize * sizeof(*ppNewNameStrings));
-        if (ppNewNameStrings == NULL) {
-            return DR_FALSE;
-        }
-
         pTable->pShortcuts = pNewShortcuts;
-        pTable->ppCmdStrings = ppNewCmdStrings;
-        pTable->ppNameStrings = ppNewNameStrings;
         pTable->bufferSize = newBufferSize;
     }
 
     assert(pTable->count < pTable->bufferSize);
 
     // The accelerators of the shortcut need to be added to the table. If we don't do this, the platform layer will not be aware of it.
-    if (shortcut.accelerators[0].key != 0 && !dred_accelerator_table_add(&pTable->acceleratorTable, shortcut.accelerators[0])) {
-        return DR_FALSE;
-    }
-    if (shortcut.accelerators[1].key != 0 && !dred_accelerator_table_add(&pTable->acceleratorTable, shortcut.accelerators[1])) {
-        return DR_FALSE;
+    for (size_t i = 0; i < acceleratorCount; ++i) {
+        if (!dred_accelerator_table_add(&pTable->acceleratorTable, pAccelerators[i])) {
+            return DR_FALSE;
+        }
     }
 
     // TODO: Need to improve the efficiency of this. The implementation of dtk_bind_accelerator() will perform a complete recreation
     //       of the internal accelerator table for each call. May want something like a begin/end pair or dtk_shortcut_table_update_internal_bindings().
-    if (dtk_bind_accelerator(&pTable->pDred->tk, shortcut.accelerators[0]) != DTK_SUCCESS) {
-        return DTK_FALSE;
-    }
-    if (dtk_bind_accelerator(&pTable->pDred->tk, shortcut.accelerators[1]) != DTK_SUCCESS) {
-        return DTK_FALSE;
+    if (dtk_bind_accelerators(&pTable->pDred->tk, pAccelerators, acceleratorCount) != DTK_SUCCESS) {
+        return DR_FALSE;
     }
 
-
-    pTable->pShortcuts[pTable->count] = shortcut;
-    pTable->ppCmdStrings[pTable->count] = gb_make_string(cmdStr);
-    pTable->ppNameStrings[pTable->count] = gb_make_string(name);
+    memset(&pTable->pShortcuts[pTable->count], 0, sizeof(pTable->pShortcuts[pTable->count]));
+    pTable->pShortcuts[pTable->count].id = id;
+    pTable->pShortcuts[pTable->count].nameOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, name);
+    pTable->pShortcuts[pTable->count].cmdOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, cmdStr);
+    pTable->pShortcuts[pTable->count].acceleratorCount = acceleratorCount;
+    memcpy(pTable->pShortcuts[pTable->count].accelerators, pAccelerators, acceleratorCount * sizeof(*pAccelerators));
     pTable->count += 1;
 
     return DR_TRUE;
 }
 
-dr_bool32 dred_shortcut_table_unbind(dred_shortcut_table* pTable, dred_shortcut shortcut)
+dr_bool32 dred_shortcut_table_unbind(dred_shortcut_table* pTable, dtk_uint32 id)
 {
     size_t index;
-    if (!dred_shortcut_table_find(pTable, shortcut, &index)) {
+    if (!dred_shortcut_table_find(pTable, id, &index)) {
         return DR_FALSE;
     }
 
+    dred_shortcut shortcut = pTable->pShortcuts[index];
+
     if (index+1 < pTable->count) {
         memmove(pTable->pShortcuts + index, pTable->pShortcuts + (index+1), sizeof(*pTable->pShortcuts) * (pTable->count - (index+1)));
-
-        gb_free_string(pTable->ppCmdStrings[index]);
-        memmove(pTable->ppCmdStrings + index, pTable->ppCmdStrings + (index+1), sizeof(*pTable->ppCmdStrings) * (pTable->count - (index+1)));
-
-        gb_free_string(pTable->ppNameStrings[index]);
-        memmove(pTable->ppNameStrings + index, pTable->ppNameStrings + (index+1), sizeof(*pTable->ppNameStrings) * (pTable->count - (index+1)));
     }
 
     pTable->count -= 1;
@@ -133,26 +110,26 @@ dr_bool32 dred_shortcut_table_unbind(dred_shortcut_table* pTable, dred_shortcut 
 
     // At this point the shortcut will be removed, but there may be a leftover accelerator in the accelerator table. We need
     // to check if those accelerators are now unused, and if so, remove them.
-    for (int i = 0; i < 2; ++i) {
-        int refcount = 0;
+    for (size_t i = 0; i < shortcut.acceleratorCount; ++i) {
+        dr_bool32 exists = DR_FALSE;
         for (size_t j = 0; j < pTable->acceleratorTable.count; ++j) {
             if (dtk_accelerator_equal(shortcut.accelerators[i], pTable->acceleratorTable.pAccelerators[j])) {
-                refcount += 1;
-                continue;
+                exists = DR_TRUE;
+                break;
             }
         }
 
-        assert(refcount == 0);
-
-        // The accelerator is unused. Remove it from the table.
-        dred_accelerator_table_remove(&pTable->acceleratorTable, shortcut.accelerators[i]);
+        // Remove the accelerator from the table if it's unused.
+        if (!exists) {
+            dred_accelerator_table_remove(&pTable->acceleratorTable, shortcut.accelerators[i]);
+        }
     }
 
     return DR_TRUE;
 }
 
 
-dr_bool32 dred_shortcut_table_find(dred_shortcut_table* pTable, dred_shortcut shortcut, size_t* pIndexOut)
+dr_bool32 dred_shortcut_table_find(dred_shortcut_table* pTable, dtk_uint32 id, size_t* pIndexOut)
 {
     if (pIndexOut) *pIndexOut = 0;  // Safety.
     if (pTable == NULL) {
@@ -160,7 +137,7 @@ dr_bool32 dred_shortcut_table_find(dred_shortcut_table* pTable, dred_shortcut sh
     }
 
     for (size_t i = 0; i < pTable->count; ++i) {
-        if (dred_shortcut_equal(pTable->pShortcuts[i], shortcut)) {
+        if (pTable->pShortcuts[i].id == id) {
             if (pIndexOut) *pIndexOut = i;
             return DR_TRUE;
         }
@@ -177,7 +154,7 @@ dr_bool32 dred_shortcut_table_find_by_name(dred_shortcut_table* pTable, const ch
     }
 
     for (size_t i = 0; i < pTable->count; ++i) {
-        if (strcmp(name, pTable->ppNameStrings[i]) == 0) {
+        if (strcmp(name, dred_string_pool_cstr(&pTable->pDred->stringPool, pTable->pShortcuts[i].nameOffset)) == 0) {
             if (pIndexOut) *pIndexOut = i;
             return DR_TRUE;
         }
@@ -186,19 +163,16 @@ dr_bool32 dred_shortcut_table_find_by_name(dred_shortcut_table* pTable, const ch
     return DR_FALSE;
 }
 
-void dred_shortcut_table_replace(dred_shortcut_table* pTable, size_t shortcutIndex, const char* cmdStr)
+void dred_shortcut_table_replace_by_index(dred_shortcut_table* pTable, size_t shortcutIndex, const char* name, const char* cmdStr, dtk_uint32 acceleratorCount, dtk_accelerator* pAccelerators)
 {
-    if (pTable == NULL || shortcutIndex >= pTable->count) {
+    if (pTable == NULL || shortcutIndex >= pTable->count || acceleratorCount > 4) {
         return;
     }
 
-    char* pNewCmdStr = gb_make_string(cmdStr);
-    if (pNewCmdStr == NULL) {
-        return;
-    }
-
-    gb_free_string(pTable->ppCmdStrings[shortcutIndex]);
-    pTable->ppCmdStrings[shortcutIndex] = pNewCmdStr;
+    pTable->pShortcuts[shortcutIndex].nameOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, name);
+    pTable->pShortcuts[shortcutIndex].cmdOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, cmdStr);
+    pTable->pShortcuts[shortcutIndex].acceleratorCount = acceleratorCount;
+    memcpy(pTable->pShortcuts[shortcutIndex].accelerators, pAccelerators, acceleratorCount * sizeof(*pAccelerators));
 }
 
 
@@ -218,7 +192,7 @@ const char* dred_shortcut_table_get_command_string_by_index(dred_shortcut_table*
         return NULL;
     }
 
-    return pTable->ppCmdStrings[shortcutIndex];
+    return pTable->pDred->stringPool.pData + pTable->pShortcuts[shortcutIndex].cmdOffset;
 }
 
 
@@ -230,8 +204,12 @@ dred_shortcut dred_shortcut_create(dtk_accelerator accel0, dtk_accelerator accel
     }
 
     dred_shortcut shortcut;
+    memset(&shortcut, 0, sizeof(shortcut));
     shortcut.accelerators[0] = accel0;
     shortcut.accelerators[1] = accel1;
+
+    if (shortcut.accelerators[0].key != 0) shortcut.acceleratorCount += 1;
+    if (shortcut.accelerators[1].key != 0) shortcut.acceleratorCount += 1;
 
     return shortcut;
 }
@@ -256,7 +234,7 @@ dred_shortcut dred_shortcut_parse(const char* shortcutStr)
     dred_shortcut shortcut = dred_shortcut_none();
     int iNextAccel = 0;
 
-    // A shortcut string is just 1 or 2 accelerator strings separated by a comma.
+    // A shortcut string is just 1-4 accelerator strings separated by a comma.
     const char* nextBeg = shortcutStr;
     const char* nextEnd = nextBeg;
     for (;;)
@@ -270,7 +248,7 @@ dred_shortcut dred_shortcut_parse(const char* shortcutStr)
             dtk_accelerator_parse(nextAccelStr, &shortcut.accelerators[iNextAccel++]);
 
 
-            if (nextEnd[0] == '\0' || iNextAccel == 1) {
+            if (nextEnd[0] == '\0' || iNextAccel == 4) {
                 break;
             } else {
                 nextBeg = nextEnd + 1;
@@ -282,38 +260,58 @@ dred_shortcut dred_shortcut_parse(const char* shortcutStr)
         nextEnd += 1;
     }
 
+    shortcut.acceleratorCount = (dtk_uint32)iNextAccel;
     return shortcut;
 }
 
 dr_bool32 dred_shortcut_equal(dred_shortcut a, dred_shortcut b)
 {
-    return dtk_accelerator_equal(a.accelerators[0], b.accelerators[0]) &&
-           dtk_accelerator_equal(a.accelerators[1], b.accelerators[1]);
+    if (a.acceleratorCount == b.acceleratorCount) {
+        for (dtk_uint32 i = 0; i < a.acceleratorCount; ++i) {
+            if (!dtk_accelerator_equal(a.accelerators[i], b.accelerators[i])) {
+                return DR_FALSE;
+            }
+        }
+    } else {
+        return DR_FALSE;
+    }
+
+    return DR_TRUE;
 }
 
 size_t dred_shortcut_to_string(dred_shortcut shortcut, char* strOut, size_t strOutSize)
 {
     if (shortcut.accelerators[0].key == 0) {
-        strcpy_s(strOut, strOutSize, "");
+        if (strOut != NULL && strOutSize > 0) {
+            strOut[0] = '\0';
+        }
+
         return 0;
     }
 
-    char accelStr0[256];
-    dtk_accelerator_to_string(shortcut.accelerators[0], accelStr0, sizeof(accelStr0));
+    if (strOut == NULL) {
+        size_t len = shortcut.acceleratorCount-1;   // <-- One character for each comma.
+        for (dtk_uint32 i = 0; i < shortcut.acceleratorCount; ++i) {
+            char accelStr[256];
+            len += dtk_accelerator_to_string(shortcut.accelerators[i], accelStr, sizeof(accelStr));
+        }
 
-    int length = 0;
-    if (shortcut.accelerators[1].key != 0) {
-        char accelStr1[256];
-        dtk_accelerator_to_string(shortcut.accelerators[1], accelStr1, sizeof(accelStr1));
-
-        length = snprintf(strOut, strOutSize, "%s,%s", accelStr0, accelStr1);
+        return len;
     } else {
-        length = snprintf(strOut, strOutSize, "%s", accelStr0);
-    }
+        if (strOutSize > 0) {
+            strOut[0] = '\0';
+        }
 
-    if (length < 0) {
-        return 0;
-    }
+        for (dtk_uint32 i = 0; i < shortcut.acceleratorCount; ++i) {
+            char accelStr[256];
+            dtk_accelerator_to_string(shortcut.accelerators[0], accelStr, sizeof(accelStr));
+            dtk_strcat_s(strOut, strOutSize, accelStr);
 
-    return length;
+            if (i != shortcut.acceleratorCount-1) {
+                dtk_strcat_s(strOut, strOutSize, ",");
+            }
+        }
+
+        return strlen(strOut);
+    }
 }

@@ -99,13 +99,7 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
     }
 
     if (strcmp(key, "bind") == 0) {
-        char shortcutName[256];
-        dred_shortcut shortcut;
-        char commandStr[4096];
-        if (dred_parse_bind_command(value, shortcutName, sizeof(shortcutName), &shortcut, commandStr, sizeof(commandStr))) {
-            dred_bind_shortcut(pData->pConfig->pDred, shortcutName, shortcut, commandStr);
-        }
-
+        dred_command__bind(pData->pConfig->pDred, value);
         return;
     }
 

@@ -103,3 +103,20 @@ dr_bool32 dred_string_pool_find(dred_string_pool* pPool, const char* str, size_t
 
     return DR_FALSE;   // Didn't find it.
 }
+
+
+size_t dred_string_pool_find_or_add(dred_string_pool* pPool, const char* str)
+{
+    size_t offset = 0;
+    if (!dred_string_pool_find(pPool, str, &offset)) {
+        offset = dred_string_pool_add(pPool, str, (size_t)-1);
+    }
+
+    return offset;
+}
+
+const char* dred_string_pool_cstr(dred_string_pool* pPool, size_t offset)
+{
+    if (pPool == NULL || offset >= pPool->byteCount) return NULL;
+    return pPool->pData + offset;
+}

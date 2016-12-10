@@ -757,7 +757,7 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
             case CONFIG_VAR_TYPE_BOOL:
             {
                 funcOutput = gb_append_cstring(funcOutput, "    snprintf(tempbuf, sizeof(tempbuf), \""); funcOutput = gb_append_cstring(funcOutput, pVar->name); funcOutput = gb_append_cstring(funcOutput, " %s\\n\", ");
-                funcOutput = gb_append_cstring(funcOutput, "pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " ? \"DR_TRUE\" : \"DR_FALSE\");\n");
+                funcOutput = gb_append_cstring(funcOutput, "pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " ? \"true\" : \"false\");\n");
             } break;
 
             case CONFIG_VAR_TYPE_STRING:

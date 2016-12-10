@@ -123,3 +123,11 @@ void dred_menu_library_uninit(dred_menu_library* pLibrary);
 void dred_menu_library_update_recent_files_menu(dred_menu_library* pLibrary);
 void dred_menu_library_update_favourite_files_menu(dred_menu_library* pLibrary);
 void dred_menu_library_update_themes_menu(dred_menu_library* pLibrary);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+typedef struct
+{
+    size_t commandStrOffset;
+    size_t shortcutStrOffset;
+} dred_menu_item_data;

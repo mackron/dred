@@ -76,7 +76,12 @@ dr_bool32 dred_command__bind(dred_context* pDred, const char* value)
     dred_shortcut shortcut;
     char commandStr[4096];
     if (dred_parse_bind_command(value, shortcutName, sizeof(shortcutName), &shortcut, commandStr, sizeof(commandStr))) {
-        return dred_bind_shortcut(pDred, shortcutName, shortcut, commandStr);
+        size_t existingIndex;
+        if (dred_shortcut_table_find_by_name(&pDred->shortcutTable, shortcutName, &existingIndex)) {
+            dred_shortcut_table_replace_by_index(&pDred->shortcutTable, existingIndex, shortcutName, commandStr, shortcut.acceleratorCount, shortcut.accelerators);
+        }
+
+        return DR_TRUE;
     }
 
     return DR_FALSE;

@@ -18,6 +18,12 @@ struct dred_context
     // The main toolkit context. This needs to be initialized before doing pretty much anything.
     dtk_context tk;
 
+    // The string pool for infrequently changed, but dynamically allocated strings. Strings stored in this
+    // pool include:
+    // - Shortcut ID strings
+    // - Menu item command strings
+    dred_string_pool stringPool;
+
 
     // The context for the 2D graphics sub-system which will be used for drawing the GUI.
     dr2d_context* pDrawingContext;
@@ -132,7 +138,7 @@ dr_bool32 dred_load_config(dred_context* pDred, const char* configFilePath);
 dr_bool32 dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdOut);
 
 // Binds a shortcut.
-dr_bool32 dred_bind_shortcut(dred_context* pDred, const char* shortcutName, dred_shortcut shortcut, const char* commandStr);
+dr_bool32 dred_bind_shortcut(dred_context* pDred, dtk_uint32 id, const char* name, const char* cmdStr, dtk_uint32 acceleratorCount, dtk_accelerator* pAccelerators);
 
 
 // Saves the .dredprivate file.
