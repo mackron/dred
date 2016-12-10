@@ -58,6 +58,8 @@
 
 #define DRED_MAX_RECENT_FILES       10
 #define DRED_MAX_RECENT_COMMANDS    32
+#define DRED_MAX_FAVOURITE_FILES    1024
+#define DRED_MAX_THEMES             1024
 
 
 // Define these to exclude certain features from the build.

@@ -60,10 +60,6 @@
 #define DRED_MENU_ITEM_ID_ADD_TO_FAVOURITES         30
 #define DRED_MENU_ITEM_ID_REMOVE_FROM_FAVOURITES    31
 
-#define DRED_MENU_ITEM_ID_RECENT_FILE_0             32768
-#define DRED_MENU_ITEM_ID_FAVOURITE_FILE_0          DRED_MENU_ITEM_ID_RECENT_FILE_0 + 1024
-#define DRED_MENU_ITEM_ID_THEME_0                   DRED_MENU_ITEM_ID_FAVOURITE_FILE_0 + 1024
-
 struct dred_menu_library
 {
     // The main context that initialized the library.

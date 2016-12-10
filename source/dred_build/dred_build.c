@@ -19,6 +19,8 @@
 
 #include "../external/json.c"
 
+#include "../dred/dred_build_config.h"
+
 #include "../dred/dtk/dtk.c"
 #include "../dred/dred_string_pool.h"
 #include "../dred/dred_string_pool.c"
