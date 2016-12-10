@@ -24,6 +24,7 @@ size_t dtk_key_to_string(dtk_key key, char* strOut, size_t strOutSize)
     switch (key)
     {
     case DTK_KEY_BACKSPACE:   return dtk_strcpy_len(strOut, strOutSize, "Backspace");
+    case DTK_KEY_TAB:         return dtk_strcpy_len(strOut, strOutSize, "Tab");
     case DTK_KEY_SHIFT:       return dtk_strcpy_len(strOut, strOutSize, "Shift");
     case DTK_KEY_ESCAPE:      return dtk_strcpy_len(strOut, strOutSize, "Escape");
     case DTK_KEY_PAGE_UP:     return dtk_strcpy_len(strOut, strOutSize, "Page Up");
@@ -80,7 +81,7 @@ dtk_key dtk_key_parse(const char* str)
     if (dtk_stricmp(str, "arrow up")    == 0 || dtk_stricmp(str, "arrowup")    == 0) return DTK_KEY_ARROW_UP;
     if (dtk_stricmp(str, "arrow right") == 0 || dtk_stricmp(str, "arrowright") == 0) return DTK_KEY_ARROW_RIGHT;
     if (dtk_stricmp(str, "arrow down")  == 0 || dtk_stricmp(str, "arrowdown")  == 0) return DTK_KEY_ARROW_DOWN;
-    if (dtk_stricmp(str, "delete")      == 0) return DTK_KEY_BACKSPACE;
+    if (dtk_stricmp(str, "delete")      == 0) return DTK_KEY_DELETE;
 
     if (str[0] == 'F' || str[0] == 'f') {
         if (str[1] ==  '1') {
