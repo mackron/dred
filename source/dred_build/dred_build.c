@@ -17,6 +17,8 @@
 #define DR_WEBGEN_IMPLEMENTATION
 #include "../../../dr_webgen/dr_webgen.h"
 
+#include "../external/json.c"
+
 
 typedef struct
 {
@@ -52,6 +54,7 @@ static void fwrite_string(FILE* pFile, const char* str)
     fwrite(str, 1, strlen(str), pFile);
 }
 
+#include "dred_build_shortcuts.c"
 #include "dred_build_menus.c"
 #include "dred_build_website.c"
 
@@ -879,6 +882,9 @@ int main(int argc, char** argv)
     
     // Config vars.
     generate_config_vars(pFileOut, pFileOutH);
+
+    // Shortcuts.
+    dred_build__generate_shortcuts(pFileOut, pFileOutH);
 
     // Menus.
     dred_build__generate_menus(pFileOut, pFileOutH);

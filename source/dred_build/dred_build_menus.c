@@ -1,5 +1,3 @@
-#include "../external/json.c"
-
 typedef struct
 {
     char id[256];
@@ -263,7 +261,7 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH)
     context.pAllMenus = NULL;
 
     size_t menusFileSize;
-    char* menusFileData = dr_open_and_read_text_file("../../../resources/dred_menus.json", &menusFileSize);
+    char* menusFileData = dr_open_and_read_text_file("../../../resources/gui/dred_menus.json", &menusFileSize);
     if (menusFileData == NULL) {
         printf("ERROR: Could not find dred_menus.json\n");
         return;
