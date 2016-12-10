@@ -1,29 +1,29 @@
 // This defines the default shortcut bindings, but they can be changed at run-time via configs and whatnot.
 
 {"shortcuts":[
-    {"id":"file.new",       "key":"CTRL+N",        "cmd":"new"},
-    {"id":"file.open",      "key":"CTRL+O",        "cmd":"open"},
-    {"id":"file.save",      "key":"CTRL+S",        "cmd":"save"},
-    {"id":"file.save-all",  "key":"CTRL+SHIFT+S",  "cmd":"save-all"},
-    {"id":"file.close",     "key":"CTRL+W",        "cmd":"close"},
-    {"id":"file.close-all", "key":"CTRL+SHIFT+W",  "cmd":"close-all"},
-    {"id":"file.print",     "key":"CTRL+P",        "cmd":"print"},
-    {"id":"file.reload",    "key":"F5",            "cmd":"reload"},
+    {"id":"file.new",        "key":"CTRL+N",         "cmd":"new"},
+    {"id":"file.open",       "key":"CTRL+O",         "cmd":"open"},
+    {"id":"file.save",       "key":"CTRL+S",         "cmd":"save"},
+    {"id":"file.save-all",   "key":"CTRL+SHIFT+S",   "cmd":"save-all"},
+    {"id":"file.close",      "key":"CTRL+W",         "cmd":"close"},
+    {"id":"file.close-all",  "key":"CTRL+SHIFT+W",   "cmd":"close-all"},
+    {"id":"file.print",      "key":"CTRL+P",         "cmd":"print"},
+    {"id":"file.reload",     "key":"F5",             "cmd":"reload"},
     
-    {"id":"edit.undo",      "key":"CTRL+Z",        "cmd":"undo"},
-    {"id":"edit.redo",      "key":"CTRL+Y",        "cmd":"redo"},
-    {"id":"edit.cut",       "key":"CTRL+X",        "cmd":"cut"},
-    {"id":"edit.copy",      "key":"CTRL+C",        "cmd":"copy"},
-    {"id":"edit.paste",     "key":"CTRL+V",        "cmd":"paste"},
-    {"id":"edit.delete",    "key":"DELETE",        "cmd":"delete"},
-    {"id":"edit.selectall", "key":"CTRL+A",        "cmd":"select-all"},
-    {"id":"edit.unindent",  "key":"SHIFT+TAB",     "cmd":"unindent"},
+    {"id":"edit.undo",       "key":"CTRL+Z",         "cmd":"undo"},
+    {"id":"edit.redo",       "key":"CTRL+Y",         "cmd":"redo"},
+    {"id":"edit.cut",        "key":"CTRL+X",         "cmd":"cut"},
+    {"id":"edit.copy",       "key":"CTRL+C",         "cmd":"copy"},
+    {"id":"edit.paste",      "key":"CTRL+V",         "cmd":"paste"},
+    {"id":"edit.delete",     "key":"DELETE",         "cmd":"delete"},
+    {"id":"edit.select-all", "key":"CTRL+A",         "cmd":"select-all"},
+    {"id":"edit.unindent",   "key":"SHIFT+TAB",      "cmd":"unindent"},
     
-    {"id":"find.find",      "key":"CTRL+F",        "cmd":"cmdbar find "},
-    {"id":"find.replace",   "key":"CTRL+SHIFT+F",  "cmd":"cmdbar replace-all "},
-    {"id":"find.goto",      "key":"CTRL+G",        "cmd":"cmdbar goto "},
+    {"id":"find.find",       "key":"CTRL+F",         "cmd":"cmdbar find "},
+    {"id":"find.replace",    "key":"CTRL+SHIFT+F",   "cmd":"cmdbar replace-all "},
+    {"id":"find.goto",       "key":"CTRL+G",         "cmd":"cmdbar goto "},
     
-    {"id":"next-tab",       "key":"CTRL+TAB"       "cmd":"next-tab"},
-    {"id":"prev-tab",       "key":"CTRL+SHIFT+TAB" "cmd":"prev-tab"},
-    {"id":"exit",           "key":"ALT+F4",        "cmd":"exit"}
+    {"id":"next-tab",        "key":"CTRL+TAB",       "cmd":"next-tab"},
+    {"id":"prev-tab",        "key":"CTRL+SHIFT+TAB", "cmd":"prev-tab"},
+    {"id":"exit",            "key":"ALT+F4",         "cmd":"exit"}
 ]}

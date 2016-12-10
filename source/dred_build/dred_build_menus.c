@@ -21,28 +21,6 @@ typedef struct
     dred_build__menu* pAllMenus;
 } dred_build__menu_parse_context;
 
-const char* dred_build__json_error_to_string(enum json_parse_error_e error)
-{
-    switch (error)
-    {
-        case json_parse_error_none: return "json_parse_error_none";
-        case json_parse_error_expected_comma: return "json_parse_error_expected_comma";
-        case json_parse_error_expected_colon: return "json_parse_error_expected_colon";
-        case json_parse_error_expected_opening_quote: return "json_parse_error_expected_opening_quote";
-        case json_parse_error_invalid_string_escape_sequence: return "json_parse_error_invalid_string_escape_sequence";
-        case json_parse_error_invalid_number_format: return "json_parse_error_invalid_number_format";
-        case json_parse_error_invalid_value: return "json_parse_error_invalid_value";
-        case json_parse_error_premature_end_of_buffer: return "json_parse_error_premature_end_of_buffer";
-        case json_parse_error_invalid_string: return "json_parse_error_invalid_string";
-        case json_parse_error_allocator_failed: return "json_parse_error_allocator_failed";
-        case json_parse_error_unexpected_trailing_characters: return "json_parse_error_unexpected_trailing_characters";
-        case json_parse_error_unknown: return "json_parse_error_unknown";
-        default: break;
-    }
-
-    return "Unknown error";
-}
-
 void dred_build__process_json_menus(dred_build__menu_parse_context* pContext, struct json_array_s* pJSONArray)
 {
     // The format of the JSON file is simple. There is a global "menus" object with an array of sub-objects. These sub-objects
@@ -184,7 +162,7 @@ void dred_build__format_menu_name(const char* id, char* nameOut)
             break;
         }
 
-        if (*id == '.') {
+        if (*id == '.' || *id == '-') {
             isFirstWord = DR_FALSE;
             atStartOfWord = DR_TRUE;
             id += 1;
@@ -209,7 +187,7 @@ void dred_build__format_menu_item_id_macro(const char* id, char* strOut)
 {
     // - Prefixed with DRED_MENU_ITEM_ID_
     // - All letters are converted to upper case
-    // - Periods are replaced with underscores
+    // - Periods and dashes are replaced with underscores
 
     char tail[256];
     char* tailRunning = tail;
@@ -219,7 +197,7 @@ void dred_build__format_menu_item_id_macro(const char* id, char* strOut)
             break;
         }
 
-        if (*id == '.') {
+        if (*id == '.' || *id == '-') {
             *tailRunning = '_';
         } else {
             *tailRunning = (char)toupper(*id);
@@ -254,7 +232,7 @@ void dred_build__sort_menus_by_init_order(dred_build__menu_parse_context* pConte
     (void)pMenuOrder;
 }
 
-void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH)
+void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_pool* pStringPool)
 {
     dred_build__menu_parse_context context;
     context.pAllItems = NULL;
@@ -377,4 +355,14 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH)
         free(pMenuOrder);
     }
     fwrite_string(pFileOut, "\n}\n\n");
+
+
+    // The strings for each menu item's command needs to be added to the main string pool. dred will use this as the storage
+    // for the command strings for menu items.
+    for (int iItem = 0; iItem < stb_sb_count(context.pAllItems); ++iItem) {
+        const char* cmd = context.pAllItems[iItem].cmd;
+        if (cmd[0] != '\0' && !dred_string_pool_find(pStringPool, cmd, NULL)) {
+            dred_string_pool_add(pStringPool, cmd, (size_t)-1);
+        }
+    }
 }

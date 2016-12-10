@@ -7,7 +7,7 @@
     
 
     {"id":"generic.settings.themes", "items":[
-        {"id":"generic.settings.themes.dark", "text":"Dark (Default)", "cmd":"load-config light.dredtheme"},
+        {"id":"generic.settings.themes.dark", "text":"Dark (Default)", "cmd":"load-config dark.dredtheme"},
         {"id":"generic.settings.themes.light", "text":"Light", "cmd":"load-config light.dredtheme"}
     ]},
 
