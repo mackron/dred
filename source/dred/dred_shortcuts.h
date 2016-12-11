@@ -41,7 +41,7 @@ struct dred_shortcut_table
     size_t bufferSize;
 
     // The table of accelerators used by every shortcut.
-    dred_accelerator_table acceleratorTable;
+    //dred_accelerator_table acceleratorTable;
 };
 
 dr_bool32 dred_shortcut_table_init(dred_context* pDred, dred_shortcut_table* pTable, size_t initialCapacity);

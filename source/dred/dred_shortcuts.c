@@ -16,9 +16,9 @@ dr_bool32 dred_shortcut_table_init(dred_context* pDred, dred_shortcut_table* pTa
         }
     }
 
-    if (!dred_accelerator_table_init(&pTable->acceleratorTable)) {
-        return DR_FALSE;
-    }
+    //if (!dred_accelerator_table_init(&pTable->acceleratorTable)) {
+    //    return DR_FALSE;
+    //}
 
     return DR_TRUE;
 }
@@ -33,7 +33,7 @@ void dred_shortcut_table_uninit(dred_shortcut_table* pTable)
     pTable->count = 0;
     pTable->bufferSize = 0;
 
-    dred_accelerator_table_uninit(&pTable->acceleratorTable);
+    //dred_accelerator_table_uninit(&pTable->acceleratorTable);
 }
 
 dr_bool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, dtk_uint32 id, const char* name, const char* cmdStr, dtk_uint32 acceleratorCount, dtk_accelerator* pAccelerators)
@@ -69,11 +69,11 @@ dr_bool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, dtk_uint32 id, c
     assert(pTable->count < pTable->bufferSize);
 
     // The accelerators of the shortcut need to be added to the table. If we don't do this, the platform layer will not be aware of it.
-    for (size_t i = 0; i < acceleratorCount; ++i) {
-        if (!dred_accelerator_table_add(&pTable->acceleratorTable, pAccelerators[i])) {
-            return DR_FALSE;
-        }
-    }
+    //for (size_t i = 0; i < acceleratorCount; ++i) {
+    //    if (!dred_accelerator_table_add(&pTable->acceleratorTable, pAccelerators[i])) {
+    //        return DR_FALSE;
+    //    }
+    //}
 
     // TODO: Need to improve the efficiency of this. The implementation of dtk_bind_accelerator() will perform a complete recreation
     //       of the internal accelerator table for each call. May want something like a begin/end pair or dtk_shortcut_table_update_internal_bindings().
@@ -99,7 +99,7 @@ dr_bool32 dred_shortcut_table_unbind(dred_shortcut_table* pTable, dtk_uint32 id)
         return DR_FALSE;
     }
 
-    dred_shortcut shortcut = pTable->pShortcuts[index];
+    //dred_shortcut shortcut = pTable->pShortcuts[index];
 
     if (index+1 < pTable->count) {
         memmove(pTable->pShortcuts + index, pTable->pShortcuts + (index+1), sizeof(*pTable->pShortcuts) * (pTable->count - (index+1)));
@@ -110,6 +110,7 @@ dr_bool32 dred_shortcut_table_unbind(dred_shortcut_table* pTable, dtk_uint32 id)
 
     // At this point the shortcut will be removed, but there may be a leftover accelerator in the accelerator table. We need
     // to check if those accelerators are now unused, and if so, remove them.
+#if 0
     for (size_t i = 0; i < shortcut.acceleratorCount; ++i) {
         dr_bool32 exists = DR_FALSE;
         for (size_t j = 0; j < pTable->acceleratorTable.count; ++j) {
@@ -124,6 +125,7 @@ dr_bool32 dred_shortcut_table_unbind(dred_shortcut_table* pTable, dtk_uint32 id)
             dred_accelerator_table_remove(&pTable->acceleratorTable, shortcut.accelerators[i]);
         }
     }
+#endif
 
     return DR_TRUE;
 }

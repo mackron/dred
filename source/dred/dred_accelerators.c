@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-
+#if 0
 dr_bool32 dred_accelerator_table_init(dred_accelerator_table* pTable)
 {
     if (pTable == NULL) {
@@ -91,6 +91,7 @@ dr_bool32 dred_accelerator_table_find(dred_accelerator_table* pTable, dtk_accele
 
     return DR_FALSE;
 }
+#endif
 
 
 #if 0

@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-#if 1
+#if 0
 struct dred_accelerator_table
 {
     dtk_accelerator* pAccelerators;
