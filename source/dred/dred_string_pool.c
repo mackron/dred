@@ -13,11 +13,7 @@ dr_bool32 dred_string_pool_init(dred_string_pool* pPool, const char* pInitialDat
     memset(pPool, 0, sizeof(*pPool));
 
     if (pInitialData != NULL) {
-        if (initialDataSize == (size_t)-1) {
-            initialDataSize = strlen(pInitialData)+1;
-        }
-
-        pPool->capacity = dr_round_up(initialDataSize+1, DRED_STRING_POOL_CHUNK_SIZE);    // <-- +1 because we always need the first byte to be a null terminator.
+        pPool->capacity = dr_round_up(initialDataSize, DRED_STRING_POOL_CHUNK_SIZE);
     } else {
         pPool->capacity = DRED_STRING_POOL_CHUNK_SIZE;
     }
@@ -27,12 +23,12 @@ dr_bool32 dred_string_pool_init(dred_string_pool* pPool, const char* pInitialDat
         return DR_FALSE;
     }
 
-    // Initial size of 1 for the first entry which is just a null terminator.
-    pPool->byteCount = 1;
-    pPool->pData[0] = '\0';
-
     if (pInitialData != NULL) {
-        memcpy(pPool->pData+1, pInitialData, initialDataSize);
+        pPool->byteCount = initialDataSize;
+        memcpy(pPool->pData, pInitialData, initialDataSize);
+    } else {
+        pPool->byteCount = 1;
+        pPool->pData[0] = '\0';
     }
 
     return DR_TRUE;
@@ -108,7 +104,7 @@ dr_bool32 dred_string_pool_find(dred_string_pool* pPool, const char* str, size_t
 size_t dred_string_pool_find_or_add(dred_string_pool* pPool, const char* str)
 {
     size_t offset = 0;
-    if (!dred_string_pool_find(pPool, str, &offset)) {
+    if (str != NULL && str[0] != '\0' && !dred_string_pool_find(pPool, str, &offset)) {
         offset = dred_string_pool_add(pPool, str, (size_t)-1);
     }
 

@@ -270,7 +270,7 @@ char* stringify_string_pool_data(dred_string_pool* pStringPool)
     char byteStr[5] = {'0', 'x', '0', '0', '\0'};
 
     char* output = gb_make_string("const unsigned char g_InitialStringPoolData[] = {");
-    for (size_t i = 1; i < pStringPool->byteCount; ++i) {   // <-- Start at one to skip the initial zero byte for the first item in the pool.
+    for (size_t i = 0; i < pStringPool->byteCount; ++i) {
         if (currentByteColumn == 0) {
             output = gb_append_cstring(output, "\n    ");
         }

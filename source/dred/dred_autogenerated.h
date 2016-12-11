@@ -188,6 +188,8 @@ dred_color cppKeywordTextColor;
 #define DRED_MENU_ITEM_ID_THEME_0 1098
 #define DRED_MENU_ITEM_ID_USER 2122
 
+#define DRED_STOCK_MENU_ITEM_ID_COUNT 64
+
 typedef struct
 {
     dtk_menu genericHelp;

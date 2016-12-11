@@ -55,11 +55,11 @@
         {"id":"text.file.removefavourite", "text":"Remove from Favourites", "cmd":"remove-favourite"},
         {"id":"separator"},
         {"id":"text.file.save", "text":"&Save", "shortcut":"file.save"},
-        {"id":"text.file.saveas", "text":"Save &As", "shortcut":"file.saveas"},
-        {"id":"text.file.saveall", "text":"Save A&ll", "shortcut":"file.saveall"},
+        {"id":"text.file.saveas", "text":"Save &As", "cmd":"save-as"},
+        {"id":"text.file.saveall", "text":"Save A&ll", "shortcut":"file.save-all"},
         {"id":"separator"},
         {"id":"text.file.close", "text":"&Close", "shortcut":"file.close"},
-        {"id":"text.file.closeall", "text":"Clos&e All", "shortcut":"file.closeall"},
+        {"id":"text.file.closeall", "text":"Clos&e All", "shortcut":"file.close-all"},
         {"id":"separator"},
         {"id":"text.file.print", "text":"&Print", "shortcut":"file.print"},
         {"id":"separator"},
@@ -75,7 +75,7 @@
         {"id":"text.edit.paste", "text":"Paste", "shortcut":"edit.paste"},
         {"id":"text.edit.delete", "text":"Delete", "shortcut":"edit.delete"},
         {"id":"separator"},
-        {"id":"text.edit.selectall", "text":"Select All", "shortcut":"edit.selectall"}
+        {"id":"text.edit.selectall", "text":"Select All", "shortcut":"edit.select-all"}
     ]},
     
     {"id":"text.view", "items":[
@@ -114,16 +114,16 @@
         {"id":"text.popup.paste", "text":"Paste", "shortcut":"edit.paste"},
         {"id":"text.popup.delete", "text":"Delete", "shortcut":"edit.delete"},
         {"id":"separator"},
-        {"id":"text.popup.selectall", "text":"Select All", "shortcut":"edit.selectall"}
+        {"id":"text.popup.selectall", "text":"Select All", "shortcut":"edit.select-all"}
     ]},
     
     {"id":"tabpopup", "items":[
         {"id":"tabpopup.save", "text":"&Save", "shortcut":"file.save"},
-        {"id":"tabpopup.saveas", "text":"Save &As", "shortcut":"file.saveas"},
-        {"id":"tabpopup.saveall", "text":"Save A&ll", "shortcut":"file.saveall"},
+        {"id":"tabpopup.saveas", "text":"Save &As", "cmd":"save-as"},
+        {"id":"tabpopup.saveall", "text":"Save A&ll", "shortcut":"file.save-all"},
         {"id":"separator"},
         {"id":"tabpopup.close", "text":"&Close", "shortcut":"file.close"},
-        {"id":"tabpopup.closeall", "text":"Clos&e All", "shortcut":"file.closeall"},
+        {"id":"tabpopup.closeall", "text":"Clos&e All", "shortcut":"file.close-all"},
         {"id":"separator"},
         {"id":"tabpopup.addfavourite", "text":"Add to Favourites", "cmd":"add-favourite"},
         {"id":"tabpopup.removefavourite", "text":"Remove from Favourites", "cmd":"remove-favourite"}

@@ -45,6 +45,9 @@ struct dred_context
     // The menus.
     dred_stock_menus menus;
 
+    // The menu item binding table. This is used for binding menu items to dred-specific data.
+    dred_menu_item_table menuItemTable;
+
 
     // The shortcut table.
     dred_shortcut_table shortcutTable;
