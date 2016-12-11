@@ -195,8 +195,8 @@ typedef struct
     dtk_menu genericHelp;
     dtk_menu genericSettingsThemes;
     dtk_menu genericSettings;
-    dtk_menu recentfiles;
-    dtk_menu favouritefiles;
+    dtk_menu recentFiles;
+    dtk_menu favouriteFiles;
     dtk_menu nothingopenFile;
     dtk_menu nothingopenView;
     dtk_menu nothingopen;

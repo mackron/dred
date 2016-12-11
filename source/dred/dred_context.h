@@ -39,8 +39,6 @@ struct dred_context
     // The image library.
     dred_image_library imageLibrary;
 
-    // The menu library. This is where the different context menus can be retrieved.
-    dred_menu_library menuLibrary;
 
     // The menus.
     dred_stock_menus menus;

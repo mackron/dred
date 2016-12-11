@@ -1062,7 +1062,7 @@ void dred_control_set_cursor(dred_control* pControl, dred_cursor_type cursor);
 dred_cursor_type dred_control_get_cursor(dred_control* pControl);
 
 // Helper function for showing a popup menu relative to the given control.
-void dred_control_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int relativePosX, int relativePosY);
+void dred_control_show_popup_menu(dred_control* pControl, dtk_menu* pMenu, int relativePosX, int relativePosY);
 
 
 //// Events ////

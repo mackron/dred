@@ -1,5 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
+#if 0
 dr_bool32 dred_menu_library_init(dred_menu_library* pLibrary, dred_context* pDred)
 {
     if (pLibrary == NULL || pDred == NULL) {
@@ -257,7 +258,120 @@ void dred_menu_library_update_themes_menu(dred_menu_library* pLibrary)
     dred_menu_item_create_and_append(pLibrary->pMenu_Themes, "Dark (Default)", DRED_MENU_ITEM_ID_THEME_0 + 0, "load-config dark.dredtheme",  dred_shortcut_none(), 0, NULL);
     dred_menu_item_create_and_append(pLibrary->pMenu_Themes, "Light",          DRED_MENU_ITEM_ID_THEME_0 + 1, "load-config light.dredtheme", dred_shortcut_none(), 0, NULL);
 }
+#endif
 
+
+void dred_refresh_recent_files_menu(dred_context* pDred)
+{
+    // To refresh the list, we just overwrite any existing items, and then remove the excess, if any.
+    dtk_uint32 newCount = pDred->config.recentFileCount;
+    dtk_uint32 oldCount;
+    dtk_menu_get_item_count(&pDred->menus.recentFiles, &oldCount);
+
+    // Replace existing items.
+    for (dtk_uint32 iItem = 0; iItem < newCount && iItem < oldCount; ++iItem) {
+        char cmdStr[DRED_MAX_PATH];
+        if (snprintf(cmdStr, sizeof(cmdStr), "open \"%s\"", pDred->config.recentFiles[iItem]) < 0) {
+            continue;   // Failed to make the command string. Probably because the buffer is too small.
+        }
+
+        dred_menu_item_table_bind(&pDred->menuItemTable, DRED_MENU_ITEM_ID_RECENT_FILE_0 + iItem, cmdStr, NULL);
+    }
+
+    // Either insert or remove extra items.
+    if (newCount > oldCount) {
+        // Insert new items.
+        for (dtk_uint32 iItem = oldCount; iItem < newCount; ++iItem) {
+            char cmdStr[DRED_MAX_PATH];
+            if (snprintf(cmdStr, sizeof(cmdStr), "open \"%s\"", pDred->config.recentFiles[iItem]) < 0) {
+                continue;   // Failed to make the command string. Probably because the buffer is too small.
+            }
+
+            dtk_uint32 itemID = DRED_MENU_ITEM_ID_RECENT_FILE_0 + iItem;
+
+            // Create the menu item.
+            dtk_menu_item_info info;
+            memset(&info, 0, sizeof(info));
+            info.id = itemID;
+            info.text = pDred->config.recentFiles[iItem];
+            dtk_menu_append_item(&pDred->menus.recentFiles, &info);
+
+            // Bind the menu item to a command.
+            dred_menu_item_table_bind(&pDred->menuItemTable, itemID, cmdStr, NULL);
+        }
+    } else {
+        // Remove excess.
+        for (dtk_uint32 iItem = newCount; iItem < oldCount; ++iItem) {
+            dtk_menu_remove_item(&pDred->menus.recentFiles, iItem);
+            dred_menu_item_table_unbind(&pDred->menuItemTable, DRED_MENU_ITEM_ID_RECENT_FILE_0 + iItem);
+        }
+    }
+
+    // Enable or disable the relevant menu items depending on how many recent files we have.
+    if (pDred->config.recentFileCount > 0) {
+        dtk_menu_enable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_OPEN_RECENT);
+        dtk_menu_enable_item(&pDred->menus.nothingopenFile, DRED_MENU_ITEM_ID_NOTHINGOPEN_FILE_OPEN_RECENT);
+    } else {
+        dtk_menu_disable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_OPEN_RECENT);
+        dtk_menu_disable_item(&pDred->menus.nothingopenFile, DRED_MENU_ITEM_ID_NOTHINGOPEN_FILE_OPEN_RECENT);
+    }
+}
+
+void dred_refresh_favourite_files_menu(dred_context* pDred)
+{
+    // To refresh the list, we just overwrite any existing items, and then remove the excess, if any.
+    dtk_uint32 newCount = pDred->config.favouriteFileCount;
+    dtk_uint32 oldCount;
+    dtk_menu_get_item_count(&pDred->menus.favouriteFiles, &oldCount);
+
+    // Replace existing items.
+    for (dtk_uint32 iItem = 0; iItem < newCount && iItem < oldCount; ++iItem) {
+        char cmdStr[DRED_MAX_PATH];
+        if (snprintf(cmdStr, sizeof(cmdStr), "open \"%s\"", pDred->config.favouriteFiles[iItem]) < 0) {
+            continue;   // Failed to make the command string. Probably because the buffer is too small.
+        }
+
+        dred_menu_item_table_bind(&pDred->menuItemTable, DRED_MENU_ITEM_ID_FAVOURITE_FILE_0 + iItem, cmdStr, NULL);
+    }
+
+    // Either insert or remove extra items.
+    if (newCount > oldCount) {
+        // Insert new items.
+        for (dtk_uint32 iItem = oldCount; iItem < newCount; ++iItem) {
+            char cmdStr[DRED_MAX_PATH];
+            if (snprintf(cmdStr, sizeof(cmdStr), "open \"%s\"", pDred->config.favouriteFiles[iItem]) < 0) {
+                continue;   // Failed to make the command string. Probably because the buffer is too small.
+            }
+
+            dtk_uint32 itemID = DRED_MENU_ITEM_ID_FAVOURITE_FILE_0 + iItem;
+
+            // Create the menu item.
+            dtk_menu_item_info info;
+            memset(&info, 0, sizeof(info));
+            info.id = itemID;
+            info.text = pDred->config.favouriteFiles[iItem];
+            dtk_menu_append_item(&pDred->menus.favouriteFiles, &info);
+
+            // Bind the menu item to a command.
+            dred_menu_item_table_bind(&pDred->menuItemTable, itemID, cmdStr, NULL);
+        }
+    } else {
+        // Remove excess.
+        for (dtk_uint32 iItem = newCount; iItem < oldCount; ++iItem) {
+            dtk_menu_remove_item(&pDred->menus.favouriteFiles, iItem);
+            dred_menu_item_table_unbind(&pDred->menuItemTable, DRED_MENU_ITEM_ID_FAVOURITE_FILE_0 + iItem);
+        }
+    }
+
+    // Enable or disable the relevant menu items depending on how many recent files we have.
+    if (pDred->config.favouriteFileCount > 0) {
+        dtk_menu_enable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_OPEN_FAVOURITE);
+        dtk_menu_enable_item(&pDred->menus.nothingopenFile, DRED_MENU_ITEM_ID_NOTHINGOPEN_FILE_OPEN_FAVOURITE);
+    } else {
+        dtk_menu_disable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_OPEN_FAVOURITE);
+        dtk_menu_disable_item(&pDred->menus.nothingopenFile, DRED_MENU_ITEM_ID_NOTHINGOPEN_FILE_OPEN_FAVOURITE);
+    }
+}
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

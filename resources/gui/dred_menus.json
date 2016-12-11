@@ -18,18 +18,18 @@
     ]},
     
     
-    {"id":"recentfiles", "items":[
+    {"id":"recent-files", "items":[
     ]},
     
-    {"id":"favouritefiles", "items":[
+    {"id":"favourite-files", "items":[
     ]},
     
     
     {"id":"nothingopen.file", "items":[
         {"id":"nothingopen.file.new", "text":"&New", "shortcut":"file.new"},
         {"id":"nothingopen.file.open", "text":"&Open...", "shortcut":"file.open"},
-        {"id":"nothingopen.file.open.recent", "text":"Open Recent", "submenu":"recentfiles"},
-        {"id":"nothingopen.file.open.favourite", "text":"Open Favourite", "submenu":"favouritefiles"},
+        {"id":"nothingopen.file.open.recent", "text":"Open Recent", "submenu":"recent-files"},
+        {"id":"nothingopen.file.open.favourite", "text":"Open Favourite", "submenu":"favourite-files"},
         {"id":"separator"},
         {"id":"nothingopen.file.exit", "text":"E&xit", "shortcut":"exit"}
     ]},
@@ -48,8 +48,8 @@
     {"id":"text.file", "items":[
         {"id":"text.file.new", "text":"&New", "shortcut":"file.new"},
         {"id":"text.file.open", "text":"&Open...", "shortcut":"file.open"},
-        {"id":"text.file.open.recent", "text":"Open Recent", "submenu":"recentfiles"},
-        {"id":"text.file.open.favourite", "text":"Open Favourite", "submenu":"favouritefiles"},
+        {"id":"text.file.open.recent", "text":"Open Recent", "submenu":"recent-files"},
+        {"id":"text.file.open.favourite", "text":"Open Favourite", "submenu":"favourite-files"},
         {"id":"separator"},
         {"id":"text.file.addfavourite", "text":"Add to Favourites", "cmd":"add-favourite"},
         {"id":"text.file.removefavourite", "text":"Remove from Favourites", "cmd":"remove-favourite"},

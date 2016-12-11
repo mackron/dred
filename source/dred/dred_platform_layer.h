@@ -85,7 +85,7 @@ struct dred_window
     dred_context* pDred;
 
     // The current menu bar of the window.
-    dred_menu* pMenu;
+    dtk_menu* pMenu;
 
     // The window's top level GUI element.
     dred_control rootGUIControl;
@@ -222,7 +222,7 @@ dr_bool32 dred_window_is_cursor_over(dred_window* pWindow);
 void dred_window_bind_accelerators(dred_window* pWindow, dred_accelerator_table* pAcceleratorTable);
 
 // Sets the menu for the given window. Can be null, in which case the menu is removed.
-void dred_window_set_menu(dred_window* pWindow, dred_menu* pMenu);
+void dred_window_set_menu(dred_window* pWindow, dtk_menu* pMenu);
 
 // Hides the menu for the given window.
 void dred_window_hide_menu(dred_window* pWindow);
@@ -234,10 +234,10 @@ void dred_window_show_menu(dred_window* pWindow);
 dr_bool32 dred_window_is_showing_menu(dred_window* pWindow);
 
 // Finds the menu item with the given id. The search is recursive.
-dred_menu_item* dred_window_find_menu_item_by_id(dred_window* pWindow, uint16_t id);
+//dred_menu_item* dred_window_find_menu_item_by_id(dred_window* pWindow, uint16_t id);
 
 // Shows a popup menu on the given window.
-void dred_window_show_popup_menu(dred_window* pWindow, dred_menu* pMenu, int posX, int posY);
+void dred_window_show_popup_menu(dred_window* pWindow, dtk_menu* pMenu, int posX, int posY);
 
 // Sends an IPC message to the event queue for the given window.
 void dred_window_send_ipc_message_event(dred_window* pWindow, unsigned int messageID, const void* pMessageData, size_t messageDataSize);
@@ -279,7 +279,7 @@ dred_window* dred_get_control_window(dred_control* pControl);
 
 
 
-
+#if 0
 //// MENUS ////
 #define DRED_MENU_ITEM_SEPARATOR    (1 << 0)
 #define DRED_MENU_ITEM_CHECK        (1 << 1)
@@ -393,7 +393,7 @@ void dred_menu_item_set_checked(dred_menu_item* pItem, dr_bool32 checked);
 
 // Determines whether or not the given menu item is checked.
 dr_bool32 dred_menu_item_is_checked(dred_menu_item* pItem);
-
+#endif
 
 
 //// Drag and Drop ////

@@ -1,5 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
+#if 0
 // BEGIN MENUS
 //
 // MENU FileMenu
@@ -119,6 +120,13 @@ void dred_menu_library_uninit(dred_menu_library* pLibrary);
 void dred_menu_library_update_recent_files_menu(dred_menu_library* pLibrary);
 void dred_menu_library_update_favourite_files_menu(dred_menu_library* pLibrary);
 void dred_menu_library_update_themes_menu(dred_menu_library* pLibrary);
+#endif
+
+// Refreshes the Recent Files menu.
+void dred_refresh_recent_files_menu(dred_context* pDred);
+
+// Refreshes the Favourite Files menu.
+void dred_refresh_favourite_files_menu(dred_context* pDred);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

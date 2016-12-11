@@ -38,9 +38,9 @@ HWND g_hTimerWnd = NULL;
 // Win32 has an annoying way of handling menu events. We need to keep track of each menu, each of which are
 // tied to a HMENU handle. The HMENU handle is used to retrieve the dred_menu* object in response to a menu
 // event.
-dred_menu** g_ppMenus = NULL;
-size_t g_MenuCount = 0;
-dred_mutex g_MenuMutex;     // <-- This is used to keep access to the global menus thread-safe.
+//dred_menu** g_ppMenus = NULL;
+//size_t g_MenuCount = 0;
+//dred_mutex g_MenuMutex;     // <-- This is used to keep access to the global menus thread-safe.
 
 #define GET_X_LPARAM(lp)    ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp)    ((int)(short)HIWORD(lp))
@@ -48,6 +48,7 @@ dred_mutex g_MenuMutex;     // <-- This is used to keep access to the global men
 // Custom message IDs.
 #define DRED_WIN32_WM_IPC   (WM_USER + 0)
 
+#if 0
 static dr_bool32 dred_platform_find_menu__nolock__win32(dred_menu* pMenu, size_t* pIndex)
 {
     assert(pMenu != NULL);
@@ -116,6 +117,7 @@ static dred_menu* dred_platform_find_menu_by_HMENU__win32(HMENU hMenu)
 
     return pMenu;
 }
+#endif
 
 static void dred_win32_track_mouse_leave_event(HWND hWnd)
 {
@@ -615,6 +617,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
 
         case WM_MENUCOMMAND:
         {
+#if 0
             size_t itemIndex = (size_t)wParam;
             dred_menu* pMenu = dred_platform_find_menu_by_HMENU__win32((HMENU)lParam);
             if (pMenu != NULL && itemIndex < pMenu->menuItemCount) {
@@ -622,6 +625,9 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
                 assert(pMenuItem != NULL);
                 dred_exec(pWindow->pDred, pMenuItem->command, NULL);
             }
+#else
+            // TODO: Implement me.
+#endif
         } break;
 
 
@@ -704,14 +710,14 @@ dr_bool32 dred_platform_init__win32()
         return DR_FALSE;
     }
 
-    dred_mutex_create(&g_MenuMutex);
+    //dred_mutex_create(&g_MenuMutex);
 
     return DR_TRUE;
 }
 
 void dred_platform_uninit__win32()
 {
-    dred_mutex_delete(&g_MenuMutex);
+    //dred_mutex_delete(&g_MenuMutex);
 
     DestroyWindow(g_hTimerWnd);
     g_hTimerWnd = NULL;
@@ -1127,7 +1133,7 @@ void dred_window_bind_accelerators__win32(dred_window* pWindow, dred_accelerator
     }
 }
 
-void dred_window_set_menu__win32(dred_window* pWindow, dred_menu* pMenu)
+void dred_window_set_menu__win32(dred_window* pWindow, dtk_menu* pMenu)
 {
     if (pWindow == NULL) {
         return;
@@ -1140,7 +1146,7 @@ void dred_window_set_menu__win32(dred_window* pWindow, dred_menu* pMenu)
 
     if (pMenu != NULL) {
         if (pWindow->isShowingMenu) {
-            SetMenu(pWindow->hWnd, pMenu->hMenu);
+            SetMenu(pWindow->hWnd, (HMENU)pMenu->win32.hMenu);
         }
     } else {
         SetMenu(pWindow->hWnd, NULL);
@@ -1169,13 +1175,13 @@ void dred_window_show_menu__win32(dred_window* pWindow)
     }
 
     if (pWindow->pMenu != NULL) {
-        SetMenu(pWindow->hWnd, pWindow->pMenu->hMenu);
+        SetMenu(pWindow->hWnd, (HMENU)pWindow->pMenu->win32.hMenu);
     }
 
     pWindow->isShowingMenu = DR_TRUE;
 }
 
-void dred_window_show_popup_menu__win32(dred_window* pWindow, dred_menu* pMenu, int posX, int posY)
+void dred_window_show_popup_menu__win32(dred_window* pWindow, dtk_menu* pMenu, int posX, int posY)
 {
     if (pWindow == NULL || pMenu == NULL) {
         return;
@@ -1192,7 +1198,7 @@ void dred_window_show_popup_menu__win32(dred_window* pWindow, dred_menu* pMenu, 
         flags |= TPM_RIGHTALIGN;
     }
 
-    TrackPopupMenuEx(pMenu->hMenu, flags, screenCoords.x, screenCoords.y, pWindow->hWnd, NULL);
+    TrackPopupMenuEx((HMENU)pMenu->win32.hMenu, flags, screenCoords.x, screenCoords.y, pWindow->hWnd, NULL);
 }
 
 
@@ -1212,8 +1218,8 @@ void dred_window_send_ipc_message_event__win32(dred_window* pWindow, unsigned in
 }
 
 
+#if 0
 //// MENUS ////
-
 dred_menu* dred_menu_create__win32(dred_context* pDred, dred_menu_type type)
 {
     if (pDred == NULL) {
@@ -1412,7 +1418,7 @@ dr_bool32 dred_menu_item_is_checked__win32(dred_menu_item* pItem)
 
     return (mii.fState & MIIM_STATE) != 0;
 }
-
+#endif
 
 
 
@@ -2606,8 +2612,8 @@ void dred_window_send_ipc_message_event__gtk(dred_window* pWindow, unsigned int 
 }
 
 
+#if 0
 //// MENUS ////
-
 static gboolean dred_gtk_cb__on_mouse_enter__menu(GtkWidget* pGTKMenu, GdkEventCrossing* pEvent, gpointer pUserData)
 {
     (void)pGTKMenu;
@@ -2866,6 +2872,7 @@ dr_bool32 dred_menu_item_is_checked__gtk(dred_menu_item* pItem)
 
     return gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(pItem->pGTKMenuItem));
 }
+#endif
 
 
 
@@ -3340,7 +3347,7 @@ void dred_window_bind_accelerators(dred_window* pWindow, dred_accelerator_table*
 #endif
 }
 
-void dred_window_set_menu(dred_window* pWindow, dred_menu* pMenu)
+void dred_window_set_menu(dred_window* pWindow, dtk_menu* pMenu)
 {
     if (pWindow == NULL) {
         return;
@@ -3398,16 +3405,16 @@ dr_bool32 dred_window_is_showing_menu(dred_window* pWindow)
     return pWindow->isShowingMenu;
 }
 
-dred_menu_item* dred_window_find_menu_item_by_id(dred_window* pWindow, uint16_t id)
+/*dred_menu_item* dred_window_find_menu_item_by_id(dred_window* pWindow, uint16_t id)
 {
     if (pWindow == NULL || pWindow->pMenu == NULL) {
         return NULL;
     }
 
     return dred_menu_find_menu_item_by_id(pWindow->pMenu, id);
-}
+}*/
 
-void dred_window_show_popup_menu(dred_window* pWindow, dred_menu* pMenu, int posX, int posY)
+void dred_window_show_popup_menu(dred_window* pWindow, dtk_menu* pMenu, int posX, int posY)
 {
 #ifdef DRED_WIN32
     dred_window_show_popup_menu__win32(pWindow, pMenu, posX, posY);
@@ -3642,8 +3649,8 @@ dred_window* dred_get_control_window(dred_control* pControl)
 }
 
 
+#if 0
 //// MENUS ////
-
 dred_menu* dred_menu_create(dred_context* pDred, dred_menu_type type)
 {
 #ifdef DRED_WIN32
@@ -3847,7 +3854,7 @@ dr_bool32 dred_menu_item_is_checked(dred_menu_item* pItem)
     return dred_menu_item_is_checked__gtk(pItem);
 #endif
 }
-
+#endif
 
 
 //// Drag and Drop ////

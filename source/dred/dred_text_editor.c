@@ -110,7 +110,7 @@ void dred_text_editor_textview__on_mouse_button_up(dred_control* pControl, int m
     assert(pDred != NULL);
 
     if (mouseButton == DRED_GUI_MOUSE_BUTTON_RIGHT) {
-        dred_control_show_popup_menu(pControl, pDred->menuLibrary.pPopupMenu_TextEditor, mousePosX, mousePosY);
+        dred_control_show_popup_menu(pControl, &pDred->menus.textPopup, mousePosX, mousePosY);
     } else {
         dred_textview_on_mouse_button_up(DRED_CONTROL(pTextView), mouseButton, mousePosX, mousePosY, stateFlags);
     }

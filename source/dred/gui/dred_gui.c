@@ -1325,7 +1325,7 @@ dred_cursor_type dred_control_get_cursor(dred_control* pControl)
     return pControl->cursor;
 }
 
-void dred_control_show_popup_menu(dred_control* pControl, dred_menu* pMenu, int relativePosX, int relativePosY)
+void dred_control_show_popup_menu(dred_control* pControl, dtk_menu* pMenu, int relativePosX, int relativePosY)
 {
     if (pControl == NULL || pMenu == NULL) {
         return;

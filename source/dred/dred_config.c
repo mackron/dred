@@ -359,7 +359,8 @@ void dred_config_on_set__show_tab_bar(dred_context* pDred)
         }
     }
 
-    dred_menu_item_set_checked(pDred->menuLibrary.pMenuItem_ToggleTabBars, pDred->config.showTabBar);
+    dtk_menu_set_item_checked(&pDred->menus.textView, DRED_MENU_ITEM_ID_TEXT_VIEW_TABBARS, pDred->config.showTabBar);
+    // TODO: Nothing Open menu: dtk_menu_set_item_checked(&pDred->menus.nothingopenView, DRED_MENU_ITEM_ID_NOTHINGOPEN_VIEW_TABBARS, pDred->config.showTabBar);
 }
 
 void dred_config_on_set__show_menu_bar(dred_context* pDred)
@@ -381,7 +382,8 @@ void dred_config_on_set__auto_hide_cmd_bar(dred_context* pDred)
         dred_show_command_bar(pDred);
     }
 
-    dred_menu_item_set_checked(pDred->menuLibrary.pMenuItem_ToggleCmdBarAutoHide, pDred->config.autoHideCmdBar);
+    dtk_menu_set_item_checked(&pDred->menus.textView, DRED_MENU_ITEM_ID_TEXT_VIEW_CMDBAR, pDred->config.autoHideCmdBar);
+    // TODO: Nothing Open menu.
 }
 
 void dred_config_on_set__enable_auto_reload(dred_context* pDred)
@@ -448,7 +450,7 @@ void dred_config_on_set__texteditor_generic_refresh(dred_context* pDred)
         }
     }
 
-    dred_menu_item_set_checked(pDred->menuLibrary.pMenuItem_ToggleLineNumbers, pDred->config.textEditorShowLineNumbers);
+    dtk_menu_set_item_checked(&pDred->menus.textView, DRED_MENU_ITEM_ID_TEXT_VIEW_LINENUMBERS, pDred->config.textEditorShowLineNumbers);
 }
 
 void dred_config_on_set__texteditor_word_wrap(dred_context* pDred)
@@ -466,7 +468,7 @@ void dred_config_on_set__texteditor_word_wrap(dred_context* pDred)
         }
     }
 
-    dred_menu_item_set_checked(pDred->menuLibrary.pMenuItem_ToggleWordWrap, pDred->config.textEditorEnableWordWrap);
+    dtk_menu_set_item_checked(&pDred->menus.textView, DRED_MENU_ITEM_ID_TEXT_VIEW_WORDWRAP, pDred->config.textEditorEnableWordWrap);
 }
 
 void dred_config_on_set__texteditor_drag_and_drop(dred_context* pDred)
