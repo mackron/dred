@@ -254,7 +254,7 @@ struct dtk_event
 
         struct
         {
-            dtk_key ket;
+            dtk_key key;
             dtk_uint32 state;
         } keyUp;
 

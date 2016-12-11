@@ -403,8 +403,8 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         {
             if (!dtk_is_win32_mouse_button_key_code(wParam)) {
                 e.type = DTK_EVENT_KEY_UP;
-                e.keyDown.key = dtk_convert_key_from_win32(wParam);
-                e.keyDown.state = dtk_get_modifier_key_state_flags__win32();
+                e.keyUp.key = dtk_convert_key_from_win32(wParam);
+                e.keyUp.state = dtk_get_modifier_key_state_flags__win32();
                 dtk__handle_event(&e);
             }
         } break;
@@ -667,19 +667,19 @@ dtk_result dtk_window_show__win32(dtk_window* pWindow, int mode)
 
 dtk_result dtk_window_bring_to_top__win32(dtk_window* pWindow)
 {
-    if (IsZoomed(pWindow->win32.hWnd)) {
-        ShowWindow(pWindow->win32.hWnd, SW_SHOWMAXIMIZED);
-    } else if (IsIconic(pWindow->win32.hWnd)) {
-        ShowWindow(pWindow->win32.hWnd, SW_RESTORE);
+    if (IsZoomed((HWND)pWindow->win32.hWnd)) {
+        ShowWindow((HWND)pWindow->win32.hWnd, SW_SHOWMAXIMIZED);
+    } else if (IsIconic((HWND)pWindow->win32.hWnd)) {
+        ShowWindow((HWND)pWindow->win32.hWnd, SW_RESTORE);
     }
 
-    SetForegroundWindow(pWindow->win32.hWnd);
+    SetForegroundWindow((HWND)pWindow->win32.hWnd);
     return DTK_SUCCESS;
 }
 
 dtk_bool32 dtk_window_is_maximized__win32(dtk_window* pWindow)
 {
-    return IsZoomed(pWindow->win32.hWnd);
+    return IsZoomed((HWND)pWindow->win32.hWnd);
 }
 
 
@@ -692,22 +692,22 @@ dtk_result dtk_window_set_cursor__win32(dtk_window* pWindow, dtk_system_cursor_t
     {
         case dtk_system_cursor_type_text:
         {
-            hCursor = pTK->win32.hCursorIBeam;
+            hCursor = (HCURSOR)pTK->win32.hCursorIBeam;
         } break;
 
         case dtk_system_cursor_type_cross:
         {
-            hCursor = pTK->win32.hCursorCross;
+            hCursor = (HCURSOR)pTK->win32.hCursorCross;
         } break;
 
         case dtk_system_cursor_type_double_arrow_h:
         {
-            hCursor = pTK->win32.hCursorSizeWE;
+            hCursor = (HCURSOR)pTK->win32.hCursorSizeWE;
         } break;
 
         case dtk_system_cursor_type_double_arrow_v:
         {
-            hCursor = pTK->win32.hCursorSizeNS;
+            hCursor = (HCURSOR)pTK->win32.hCursorSizeNS;
         } break;
 
 
@@ -720,7 +720,7 @@ dtk_result dtk_window_set_cursor__win32(dtk_window* pWindow, dtk_system_cursor_t
         case dtk_system_cursor_type_default:
         default:
         {
-            hCursor = pTK->win32.hCursorArrow;
+            hCursor = (HCURSOR)pTK->win32.hCursorArrow;
         } break;
     }
 
@@ -753,7 +753,7 @@ dtk_result dtk_window_show_popup_menu__win32(dtk_window* pWindow, dtk_menu* pMen
     POINT screenCoords;
     screenCoords.x = posX;
     screenCoords.y = posY;
-    ClientToScreen(pWindow->win32.hWnd, &screenCoords);
+    ClientToScreen((HWND)pWindow->win32.hWnd, &screenCoords);
 
     UINT flags = TPM_RIGHTBUTTON | TPM_HORIZONTAL | TPM_VERTICAL;
     int alignment = GetSystemMetrics(SM_MENUDROPALIGNMENT);
@@ -761,7 +761,7 @@ dtk_result dtk_window_show_popup_menu__win32(dtk_window* pWindow, dtk_menu* pMen
         flags |= TPM_RIGHTALIGN;
     }
 
-    if (!TrackPopupMenuEx(pMenu->win32.hMenu, flags, screenCoords.x, screenCoords.y, pWindow->win32.hWnd, NULL)) {
+    if (!TrackPopupMenuEx((HMENU)pMenu->win32.hMenu, flags, screenCoords.x, screenCoords.y, (HWND)pWindow->win32.hWnd, NULL)) {
         return DTK_FALSE;
     }
 
@@ -985,8 +985,8 @@ static gboolean dtk_window__on_key_up__gtk(GtkWidget* pWidget, GdkEventKey* pEve
     }
 
     dtk_event e = dtk_event_init(DTK_EVENT_KEY_UP, DTK_CONTROL(pWindow));
-    e.keyDown.key = dtk_convert_key_from_gtk(pEvent->keyval);
-    e.keyDown.state = dtk_get_modifier_state_flags__gtk(pEvent->state);
+    e.keyUp.key = dtk_convert_key_from_gtk(pEvent->keyval);
+    e.keyUp.state = dtk_get_modifier_state_flags__gtk(pEvent->state);
     dtk__handle_event(&e);
 
     return DTK_FALSE;
