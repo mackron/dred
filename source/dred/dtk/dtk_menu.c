@@ -126,6 +126,23 @@ dtk_result dtk_menu_remove_item__win32(dtk_menu* pMenu, dtk_uint32 index)
     return DTK_SUCCESS;
 }
 
+dtk_result dtk_menu_set_item_text__win32(dtk_menu* pMenu, dtk_uint32 index, const char* text)
+{
+    MENUITEMINFOA mii;
+    dtk_zero_object(&mii);
+    mii.cbSize = sizeof(mii);
+    mii.fMask = MIIM_FTYPE | MIIM_STRING;
+    mii.fType = MFT_STRING;
+    mii.cch = strlen(text);
+    mii.dwTypeData = (LPSTR)text;
+    BOOL wasSuccessful = SetMenuItemInfoA((HMENU)pMenu->win32.hMenu, index, TRUE, &mii);
+    if (!wasSuccessful) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+}
+
 dtk_result dtk_menu_get_item_user_data__win32(dtk_menu* pMenu, dtk_uint32 index, void** ppUserData)
 {
     MENUITEMINFOA mii;
@@ -752,6 +769,26 @@ dtk_result dtk_menu_remove_all_items(dtk_menu* pMenu)
     }
 
     return DTK_SUCCESS;
+}
+
+
+dtk_result dtk_menu_set_item_text(dtk_menu* pMenu, dtk_uint32 index, const char* text)
+{
+    if (pMenu == NULL || !dtk_menu__is_item_index_valid(pMenu, index)) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pMenu->pTK->platform == dtk_platform_win32) {
+        result = dtk_menu_set_item_text__win32(pMenu, index, text);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pMenu->pTK->platform == dtk_platform_gtk) {
+        result = dtk_menu_set_item_text__gtk(pMenu, index, text);
+    }
+#endif
+
+    return result;
 }
 
 

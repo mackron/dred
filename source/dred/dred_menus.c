@@ -275,7 +275,10 @@ void dred_refresh_recent_files_menu(dred_context* pDred)
             continue;   // Failed to make the command string. Probably because the buffer is too small.
         }
 
-        dred_menu_item_table_bind(&pDred->menuItemTable, DRED_MENU_ITEM_ID_RECENT_FILE_0 + iItem, cmdStr, NULL);
+        dtk_uint32 itemID = DRED_MENU_ITEM_ID_RECENT_FILE_0 + iItem;
+
+        dtk_menu_set_item_text(&pDred->menus.recentFiles, dtk_menu_find_item_by_id(&pDred->menus.recentFiles, itemID), pDred->config.recentFiles[iItem]);
+        dred_menu_item_table_bind(&pDred->menuItemTable, itemID, cmdStr, NULL);
     }
 
     // Either insert or remove extra items.
@@ -331,7 +334,10 @@ void dred_refresh_favourite_files_menu(dred_context* pDred)
             continue;   // Failed to make the command string. Probably because the buffer is too small.
         }
 
-        dred_menu_item_table_bind(&pDred->menuItemTable, DRED_MENU_ITEM_ID_FAVOURITE_FILE_0 + iItem, cmdStr, NULL);
+        dtk_uint32 itemID = DRED_MENU_ITEM_ID_FAVOURITE_FILE_0 + iItem;
+
+        dtk_menu_set_item_text(&pDred->menus.recentFiles, dtk_menu_find_item_by_id(&pDred->menus.recentFiles, itemID), pDred->config.recentFiles[iItem]);
+        dred_menu_item_table_bind(&pDred->menuItemTable, itemID, cmdStr, NULL);
     }
 
     // Either insert or remove extra items.

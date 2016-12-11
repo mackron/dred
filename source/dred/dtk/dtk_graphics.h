@@ -121,7 +121,7 @@ typedef struct
         struct
         {
             /*HDC*/ dtk_handle hDC;
-            void* pScratchBuffer;
+            void* pScratchBuffer;       // For wchar_t <-> char conversions.
             size_t scratchBufferSize;
         } gdi;
     #endif

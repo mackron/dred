@@ -52,6 +52,16 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_SIZE:
         {
+            // TODO: Remove this hack.
+            //
+            // TEMPORARY HACK: The GTK surface needs to be resized here.
+#ifdef DRED_GTK
+            if (pWindow->pDrawingSurface != NULL) {
+                dr2d_delete_surface(pWindow->pDrawingSurface);
+            }
+            pWindow->pDrawingSurface = dr2d_create_surface(pWindow->pDred->pDrawingContext, (float)pEvent->size.width, (float)pEvent->size.height);
+#endif
+
             dred_window_on_size(pWindow, pEvent->size.width, pEvent->size.height);
         } break;
 

@@ -79,6 +79,10 @@ dtk_result dtk_menu_remove_item(dtk_menu* pMenu, dtk_uint32 index);
 dtk_result dtk_menu_remove_all_items(dtk_menu* pMenu);
 
 
+// Sets the text of a menu item.
+dtk_result dtk_menu_set_item_text(dtk_menu* pMenu, dtk_uint32 index, const char* text);
+
+
 // Retrieves the user data of the menu item at the given index.
 dtk_result dtk_menu_get_item_user_data(dtk_menu* pMenu, dtk_uint32 index, void** ppUserData);
 
