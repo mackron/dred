@@ -292,6 +292,7 @@ static dtk_bool32 dred_dtk_global_event_proc(dtk_event* pEvent)
     {
         case DTK_EVENT_ACCELERATOR:
         {
+            dred_on_accelerator((dred_context*)pEvent->pTK->pUserData, dtk_accelerator_init(pEvent->accelerator.key, pEvent->accelerator.modifiers, pEvent->accelerator.id));
         } break;
 
         default: break;
@@ -315,14 +316,14 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     dtk_zero_object(pDred);
 
     // Initialize the toolkit first.
-    if (dtk_init(&pDred->tk, dred_dtk_global_event_proc) != DTK_SUCCESS) {
+    if (dtk_init(&pDred->tk, dred_dtk_global_event_proc, pDred) != DTK_SUCCESS) {
         return DTK_FALSE;
     }
 
     dred_platform_init(&pDred->tk); // <-- This is only temporary while DTK is being integrated.
 
 
-    // The string pool is initialized from a string pool that was built by the pre-build tool.
+    // The string pool is initialized with data from the pre-build tool. It contains strings for stock shortcuts, menus, etc.
     dred_string_pool_init(&pDred->stringPool, (const char*)g_InitialStringPoolData, sizeof(g_InitialStringPoolData));
 
 
@@ -475,10 +476,6 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
     pDred->pMainWindow->onMove = dred_window_cb__on_main_window_move;
     dred_control_set_on_size(pDred->pMainWindow->pRootGUIControl, dred_window_cb__on_main_window_size);
-
-    // Ensure the accelerators are bound. This needs to be done after loading the initial configs.
-    dred_window_bind_accelerators(pDred->pMainWindow, &pDred->shortcutTable.acceleratorTable);
-
 
 
     // The main tab group container.
@@ -799,11 +796,6 @@ dr_bool32 dred_bind_shortcut(dred_context* pDred, dtk_uint32 id, const char* nam
 
     if (!dred_shortcut_table_bind(&pDred->shortcutTable, id, name, cmdStr, acceleratorCount, pAccelerators)) {
         return DR_FALSE;
-    }
-
-    // If we have a window we'll need to re-bind the accelerators.
-    if (pDred->pMainWindow != NULL) {
-        dred_window_bind_accelerators(pDred->pMainWindow, &pDred->shortcutTable.acceleratorTable);
     }
 
     return DR_TRUE;
@@ -1498,7 +1490,7 @@ void dred_show_open_file_dialog(dred_context* pDred)
     OPENFILENAMEA ofn;
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = pDred->pMainWindow->hWnd;
+    ofn.hwndOwner = (HWND)pDred->pMainWindow->windowDTK.win32.hWnd;
     ofn.lpstrFile = filePaths;
     ofn.nMaxFile = sizeof(filePaths);
     ofn.lpstrFilter = "All\0*.*\0Text Files\0*.txt\0";
@@ -1578,7 +1570,7 @@ dr_bool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFil
     OPENFILENAMEA ofn;
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = pDred->pMainWindow->hWnd;
+    ofn.hwndOwner = (HWND)pDred->pMainWindow->windowDTK.win32.hWnd;
     ofn.lpstrFile = absolutePathOut;
     ofn.nMaxFile = (DWORD)absolutePathOutSize;
     ofn.lpstrFilter = "All\0*.*\0";
@@ -1626,7 +1618,7 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 
     // TODO: Move this to the platform layer.
 #ifdef _WIN32
-    int result = MessageBoxA(pDred->pMainWindow->hWnd, message, title, MB_YESNOCANCEL);
+    int result = MessageBoxA((HWND)pDred->pMainWindow->windowDTK.win32.hWnd, message, title, MB_YESNOCANCEL);
     switch (result)
     {
         case IDCANCEL: return DRED_MESSAGE_BOX_CANCEL;
@@ -1710,8 +1702,8 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerW
     CHOOSEFONTA cf;
     ZeroMemory(&cf, sizeof(cf));
     cf.lStructSize = sizeof(cf);
-    cf.hwndOwner = pOwnerWindow->hWnd;
-    cf.hDC = GetDC(pOwnerWindow->hWnd);
+    cf.hwndOwner = (HWND)pOwnerWindow->windowDTK.win32.hWnd;
+    cf.hDC = GetDC((HWND)pOwnerWindow->windowDTK.win32.hWnd);
     cf.lpLogFont = &lf;
     cf.Flags = CF_INITTOLOGFONTSTRUCT | CF_BOTH;
 
@@ -1727,23 +1719,23 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerW
         pDescOut->size = lf.lfHeight;
     }
 
-    pDescOut->weight = dred_gui_font_weight_default;
+    pDescOut->weight = dtk_font_weight_default;
     switch (lf.lfWeight)
     {
-    case FW_MEDIUM:     pDescOut->weight = dred_gui_font_weight_medium;      break;
-    case FW_THIN:       pDescOut->weight = dred_gui_font_weight_thin;        break;
-    case FW_EXTRALIGHT: pDescOut->weight = dred_gui_font_weight_extra_light; break;
-    case FW_LIGHT:      pDescOut->weight = dred_gui_font_weight_light;       break;
-    case FW_SEMIBOLD:   pDescOut->weight = dred_gui_font_weight_semi_bold;   break;
-    case FW_BOLD:       pDescOut->weight = dred_gui_font_weight_bold;        break;
-    case FW_EXTRABOLD:  pDescOut->weight = dred_gui_font_weight_extra_bold;  break;
-    case FW_HEAVY:      pDescOut->weight = dred_gui_font_weight_heavy;       break;
+    case FW_MEDIUM:     pDescOut->weight = dtk_font_weight_medium;      break;
+    case FW_THIN:       pDescOut->weight = dtk_font_weight_thin;        break;
+    case FW_EXTRALIGHT: pDescOut->weight = dtk_font_weight_extra_light; break;
+    case FW_LIGHT:      pDescOut->weight = dtk_font_weight_light;       break;
+    case FW_SEMIBOLD:   pDescOut->weight = dtk_font_weight_semi_bold;   break;
+    case FW_BOLD:       pDescOut->weight = dtk_font_weight_bold;        break;
+    case FW_EXTRABOLD:  pDescOut->weight = dtk_font_weight_extra_bold;  break;
+    case FW_HEAVY:      pDescOut->weight = dtk_font_weight_heavy;       break;
     default: break;
     }
 
-    pDescOut->slant = dred_gui_font_slant_none;
+    pDescOut->slant = dtk_font_slant_none;
     if (lf.lfItalic) {
-        pDescOut->slant = dred_gui_font_slant_italic;
+        pDescOut->slant = dtk_font_slant_italic;
     }
 
     pDescOut->flags = 0;
@@ -1813,7 +1805,7 @@ dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwner
     CHOOSECOLORA cc;
     ZeroMemory(&cc, sizeof(cc));
     cc.lStructSize = sizeof(cc);
-    cc.hwndOwner = pOwnerWindow->hWnd;
+    cc.hwndOwner = (HWND)pOwnerWindow->windowDTK.win32.hWnd;
     cc.rgbResult = RGB(initialColor.r, initialColor.g, initialColor.b);
     cc.lpCustColors = prevcolors;
     cc.Flags = CC_RGBINIT | CC_ANYCOLOR | CC_FULLOPEN;
@@ -2064,7 +2056,7 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow,
     PRINTDLGA pd;
     ZeroMemory(&pd, sizeof(pd));
     pd.lStructSize = sizeof(pd);
-    pd.hwndOwner = pOwnerWindow->hWnd;
+    pd.hwndOwner = (HWND)pOwnerWindow->windowDTK.win32.hWnd;
     pd.Flags = PD_RETURNDC;
     if (!PrintDlgA(&pd)) {
         return DR_FALSE;
@@ -2551,13 +2543,13 @@ dred_font* dred__load_system_font_ui(dred_context* pDred)
 #ifdef _WIN32
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Segoe UI");
     fontDesc.size = 12;
-    fontDesc.weight = dred_gui_font_weight_normal;
-    fontDesc.slant = dred_gui_font_slant_none;
+    fontDesc.weight = dtk_font_weight_normal;
+    fontDesc.slant = dtk_font_slant_none;
 #else
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "sans");
     fontDesc.size = 13;
-    fontDesc.weight = dred_gui_font_weight_normal;
-    fontDesc.slant = dred_gui_font_slant_none;
+    fontDesc.weight = dtk_font_weight_normal;
+    fontDesc.slant = dtk_font_slant_none;
 
     #if 1
     GSettings* settings = g_settings_new("org.gnome.desktop.interface");
@@ -2601,8 +2593,8 @@ dred_font* dred__load_system_font_mono(dred_context* pDred)
 #ifdef _WIN32
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Consolas");
     fontDesc.size = 13;
-    fontDesc.weight = dred_gui_font_weight_normal;
-    fontDesc.slant = dred_gui_font_slant_none;
+    fontDesc.weight = dtk_font_weight_normal;
+    fontDesc.slant = dtk_font_slant_none;
 
     // Fall back to Courier New by default for XP.
     OSVERSIONINFOEXA version;
@@ -2617,8 +2609,8 @@ dred_font* dred__load_system_font_mono(dred_context* pDred)
 #ifdef DRED_GTK
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "monospace");
     fontDesc.size = 13;
-    fontDesc.weight = dred_gui_font_weight_normal;
-    fontDesc.slant = dred_gui_font_slant_none;
+    fontDesc.weight = dtk_font_weight_normal;
+    fontDesc.slant = dtk_font_slant_none;
 
     #if 0
     FcPattern* basepat = FcNameParse((const FcChar8*)"monospace");
@@ -2690,8 +2682,8 @@ dred_font* dred_parse_and_load_font(dred_context* pDred, const char* value)
     dred_font_desc fontDesc;
     fontDesc.flags = 0;
     fontDesc.rotation = 0;
-    fontDesc.weight = dred_gui_font_weight_normal;
-    fontDesc.slant = dred_gui_font_slant_none;
+    fontDesc.weight = dtk_font_weight_normal;
+    fontDesc.slant = dtk_font_slant_none;
 
     // Family.
     value = dr_next_token(value, fontDesc.family, sizeof(fontDesc.family));
@@ -2819,12 +2811,8 @@ void dred_on_tab_deactivated(dred_context* pDred, dred_tab* pTab, dred_tab* pNew
     }
 }
 
-void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t acceleratorIndex)
+void dred_on_accelerator(dred_context* pDred, dtk_accelerator accelerator)
 {
-    (void)pWindow;
-
-    dtk_accelerator accelerator = pDred->shortcutTable.acceleratorTable.pAccelerators[acceleratorIndex];
-
     // The accelerator should be tied to a shortcut. We need to find that shortcut and execute it's command.
     for (size_t iShortcut = 0; iShortcut < pDred->shortcutTable.count; ++iShortcut) {
         dred_shortcut shortcut = pDred->shortcutTable.pShortcuts[iShortcut];

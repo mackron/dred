@@ -81,6 +81,8 @@ typedef struct
 
 struct dred_window
 {
+    dtk_window windowDTK;
+
     // The main context that owns the window.
     dred_context* pDred;
 
@@ -121,16 +123,13 @@ struct dred_window
     // receives focus.
     dred_control* pControlWithKeyboardCapture;
 
-    // The flags to pass to the onHide event handler.
-    unsigned int onHideFlags;
-
     // Whether or not the menu is being shown.
     dr_bool32 isShowingMenu;
 
     // External user data.
     void* pUserData;
 
-
+#if 0
     // Platform specific.
 #ifdef _WIN32
     // The Win32 window handle.
@@ -174,6 +173,7 @@ struct dred_window
     int windowPosX;
     int windowPosY;
 #endif
+#endif
 };
 
 // Creates a top-level window.
@@ -206,7 +206,7 @@ void dred_window_move_to_center(dred_window* pWindow);
 void dred_window_show(dred_window* pWindow);
 void dred_window_show_maximized(dred_window* pWindow);
 void dred_window_show_sized(dred_window* pWindow, unsigned int width, unsigned int height);
-void dred_window_hide(dred_window* pWindow, unsigned int flags);
+void dred_window_hide(dred_window* pWindow);
 
 // Brings the given window to the top of the z order and activates it.
 void dred_window_bring_to_top(dred_window* pWindow);

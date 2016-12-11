@@ -299,6 +299,7 @@ struct dtk_context
     int exitCode;
     dtk_window* pFirstWindow;
     dtk_menu* pFirstMenu;
+    void* pUserData;
 
     union
     {
@@ -361,7 +362,7 @@ struct dtk_context
 // Consider using malloc() to allocate memory for the context if this becomes an issue for you.
 //
 // Thread Safety: UNSAFE
-dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent);
+dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData);
 
 // Uninitializes the toolkit.
 //

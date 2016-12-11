@@ -900,11 +900,12 @@ dtk_result dtk_get_system_dpi__gtk(dtk_context* pTK, int* pDPIXOut, int* pDPIYOu
 }
 #endif
 
-dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent)
+dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pTK);
     pTK->onEvent = onEvent;
+    pTK->pUserData = pUserData;
 
     // Detect the platform first.
     dtk_result result = DTK_NO_BACKEND;

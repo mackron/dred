@@ -22,6 +22,121 @@ dr_bool32 dred_platform__init_root_gui_element(dred_control* pControl, dred_cont
     return DR_TRUE;
 }
 
+// Event handler for windows.
+static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
+{
+    dred_context* pDred = (dred_context*)pEvent->pTK->pUserData;
+    assert(pDred != NULL);
+
+    dred_window* pWindow = (dred_window*)pEvent->pControl->pUserData;
+    if (pWindow == NULL) {
+        return DTK_TRUE;
+    }
+
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_PAINT:
+        {
+            dred_control_draw(pWindow->pRootGUIControl, dred_make_rect((float)pEvent->paint.rect.left, (float)pEvent->paint.rect.top, (float)pEvent->paint.rect.right, (float)pEvent->paint.rect.bottom), pWindow->pDrawingSurface);
+        } break;
+
+        case DTK_EVENT_CLOSE:
+        {
+            dred_window_on_close(pWindow);
+        } break;
+
+        case DTK_EVENT_MOVE:
+        {
+            dred_window_on_move(pWindow, pEvent->move.x, pEvent->move.y);
+        } break;
+
+        case DTK_EVENT_SIZE:
+        {
+            dred_window_on_size(pWindow, pEvent->size.width, pEvent->size.height);
+        } break;
+
+        case DTK_EVENT_MOUSE_ENTER:
+        {
+            dred_window_on_mouse_enter(pWindow);
+        } break;
+
+        case DTK_EVENT_MOUSE_LEAVE:
+        {
+            dred_window_on_mouse_leave(pWindow);
+        } break;
+
+        case DTK_EVENT_MOUSE_MOVE:
+        {
+            dred_window_on_mouse_move(pWindow, pEvent->mouseMove.x, pEvent->mouseMove.y, pEvent->mouseMove.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_DOWN:
+        {
+            dred_window_on_mouse_button_down(pWindow, pEvent->mouseButton.button, pEvent->mouseButton.x, pEvent->mouseButton.y, pEvent->mouseButton.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_UP:
+        {
+            dred_window_on_mouse_button_up(pWindow, pEvent->mouseButton.button, pEvent->mouseButton.x, pEvent->mouseButton.y, pEvent->mouseButton.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_DBLCLICK:
+        {
+            dred_window_on_mouse_button_dblclick(pWindow, pEvent->mouseButton.button, pEvent->mouseButton.x, pEvent->mouseButton.y, pEvent->mouseButton.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_WHEEL:
+        {
+            dred_window_on_mouse_wheel(pWindow, pEvent->mouseWheel.delta, pEvent->mouseWheel.x, pEvent->mouseWheel.y, pEvent->mouseWheel.state);
+        } break;
+
+        case DTK_EVENT_KEY_DOWN:
+        {
+            dred_window_on_key_down(pWindow, pEvent->keyDown.key, pEvent->keyDown.state);
+        } break;
+
+        case DTK_EVENT_KEY_UP:
+        {
+            dred_window_on_key_up(pWindow, pEvent->keyUp.key, pEvent->keyUp.state);
+        } break;
+
+        case DTK_EVENT_PRINTABLE_KEY_DOWN:
+        {
+            dred_window_on_printable_key_down(pWindow, pEvent->printableKeyDown.utf32, pEvent->printableKeyDown.state);
+        } break;
+
+        case DTK_EVENT_FOCUS:
+        {
+            dred_window_on_focus(pWindow);
+        } break;
+
+        case DTK_EVENT_UNFOCUS:
+        {
+            dred_window_on_unfocus(pWindow);
+        } break;
+
+        case DTK_EVENT_MENU:
+        {
+            // If the menu has an explicit command, use that. If not, check for the shortcut and use _it's_ command instead.
+            const char* command = dred_menu_item_table_get_command(&pDred->menuItemTable, pEvent->menu.itemID);
+            if (dtk_string_is_null_or_empty(command)) {
+                const char* shortcut = dred_menu_item_table_get_shortcut(&pDred->menuItemTable, pEvent->menu.itemID);
+                if (!dtk_string_is_null_or_empty(shortcut)) {
+                    command = dred_shortcut_table_get_command_string_by_name(&pDred->shortcutTable, shortcut);
+                }
+            }
+
+            if (!dtk_string_is_null_or_empty(command)) {
+                dred_exec(pDred, command, NULL);
+            }
+        } break;
+
+        default: break;
+    }
+
+    return DTK_TRUE;
+}
+
 
 //////////////////////////////////////////////////////////////////
 //
@@ -30,6 +145,7 @@ dr_bool32 dred_platform__init_root_gui_element(dred_control* pControl, dred_cont
 //////////////////////////////////////////////////////////////////
 
 #ifdef DRED_WIN32
+#if 0
 static const char* g_WindowClass = "dred_WindowClass";
 static const char* g_WindowClassTimer = "dred_WindowClass_Timer";
 
@@ -1051,34 +1167,34 @@ void dred_window_set_cursor__win32(dred_window* pWindow, dred_cursor_type cursor
 
     switch (cursor)
     {
-        case dred_cursor_type_text:
+        case dtk_system_cursor_type_text:
         {
             pWindow->hCursor = LoadCursor(NULL, IDC_IBEAM);
         } break;
 
-        case dred_cursor_type_cross:
+        case dtk_system_cursor_type_cross:
         {
             pWindow->hCursor = LoadCursor(NULL, IDC_CROSS);
         } break;
 
-        case dred_cursor_type_double_arrow_h:
+        case dtk_system_cursor_type_double_arrow_h:
         {
             pWindow->hCursor = LoadCursor(NULL, IDC_SIZEWE);
         } break;
 
-        case dred_cursor_type_double_arrow_v:
+        case dtk_system_cursor_type_double_arrow_v:
         {
             pWindow->hCursor = LoadCursor(NULL, IDC_SIZENS);
         } break;
 
 
-        case dred_cursor_type_none:
+        case dtk_system_cursor_type_none:
         {
             pWindow->hCursor = NULL;
         } break;
 
         //case cursor_type_arrow:
-        case dred_cursor_type_default:
+        case dtk_system_cursor_type_default:
         default:
         {
             pWindow->hCursor = LoadCursor(NULL, IDC_ARROW);
@@ -1216,6 +1332,7 @@ void dred_window_send_ipc_message_event__win32(dred_window* pWindow, unsigned in
 
     SendMessageA(pWindow->hWnd, DRED_WIN32_WM_IPC, (WPARAM)messageID, (LPARAM)pCopyOfMessageData);
 }
+#endif
 
 
 #if 0
@@ -1457,7 +1574,7 @@ static void dred_platform__on_global_capture_mouse__win32(dred_control* pControl
 {
     dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
-        SetCapture(pWindow->hWnd);
+        SetCapture((HWND)pWindow->windowDTK.win32.hWnd);
     }
 }
 
@@ -1476,7 +1593,7 @@ static void dred_platform__on_global_capture_keyboard__win32(dred_control* pCont
     dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
         pWindow->pControlWithKeyboardCapture = pControl;
-        SetFocus(pWindow->hWnd);
+        SetFocus((HWND)pWindow->windowDTK.win32.hWnd);
     }
 }
 
@@ -1510,10 +1627,10 @@ static void dred_platform__on_global_dirty__win32(dred_control* pControl, dred_r
 
 #if 0
         // Scheduled redraw.
-        InvalidateRect(pWindow->hWnd, &rect, FALSE);
+        InvalidateRect((HWND)pWindow->windowDTK.win32.hWnd, &rect, FALSE);
 #else
         // Immediate redraw.
-        RedrawWindow(pWindow->hWnd, &rect, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+        RedrawWindow((HWND)pWindow->windowDTK.win32.hWnd, &rect, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 #endif
     }
 }
@@ -2417,34 +2534,34 @@ void dred_window_set_cursor__gtk(dred_window* pWindow, dred_cursor_type cursor)
 {
     switch (cursor)
     {
-        case dred_cursor_type_text:
+        case dtk_system_cursor_type_text:
         {
             pWindow->pGTKCursor = g_GTKCursor_IBeam;
         } break;
 
-        case dred_cursor_type_cross:
+        case dtk_system_cursor_type_cross:
         {
             pWindow->pGTKCursor = g_GTKCursor_Cross;
         } break;
 
-        case dred_cursor_type_double_arrow_h:
+        case dtk_system_cursor_type_double_arrow_h:
         {
             pWindow->pGTKCursor = g_GTKCursor_DoubleArrowH;
         } break;
 
-        case dred_cursor_type_double_arrow_v:
+        case dtk_system_cursor_type_double_arrow_v:
         {
             pWindow->pGTKCursor = g_GTKCursor_DoubleArrowH;
         } break;
 
 
-        case dred_cursor_type_none:
+        case dtk_system_cursor_type_none:
         {
             pWindow->pGTKCursor = NULL;
         } break;
 
         //case cursor_type_arrow:
-        case dred_cursor_type_default:
+        case dtk_system_cursor_type_default:
         default:
         {
             pWindow->pGTKCursor = g_GTKCursor_Default;
@@ -2983,16 +3100,16 @@ static void dred_platform__on_global_change_cursor(dred_control* pControl, dred_
 #if 0
     switch (cursor)
     {
-    case dred_cursor_none:    dred_window_set_cursor(pWindow, dred_cursor_type_none);           break;
-    case dred_cursor_text:    dred_window_set_cursor(pWindow, dred_cursor_type_text);           break;
-    case dred_cursor_cross:   dred_window_set_cursor(pWindow, dred_cursor_type_cross);          break;
-    case dred_cursor_size_ns: dred_window_set_cursor(pWindow, dred_cursor_type_double_arrow_h); break;
-    case dred_cursor_size_we: dred_window_set_cursor(pWindow, dred_cursor_type_double_arrow_v); break;
+    case dred_cursor_none:    dred_window_set_cursor(pWindow, dtk_system_cursor_type_none);           break;
+    case dred_cursor_text:    dred_window_set_cursor(pWindow, dtk_system_cursor_type_text);           break;
+    case dred_cursor_cross:   dred_window_set_cursor(pWindow, dtk_system_cursor_type_cross);          break;
+    case dred_cursor_size_ns: dred_window_set_cursor(pWindow, dtk_system_cursor_type_double_arrow_h); break;
+    case dred_cursor_size_we: dred_window_set_cursor(pWindow, dtk_system_cursor_type_double_arrow_v); break;
 
     case dred_cursor_default:
     default:
         {
-            dred_window_set_cursor(pWindow, dred_cursor_type_default);
+            dred_window_set_cursor(pWindow, dtk_system_cursor_type_default);
         } break;
     }
 #endif
@@ -3014,24 +3131,29 @@ void dred_platform__on_delete_gui_element(dred_control* pControl)
 dr_bool32 dred_platform_init(dtk_context* pTK)
 {
     g_pTK = pTK;
+    return DR_TRUE;
 
+#if 0
 #ifdef DRED_WIN32
     return dred_platform_init__win32();
 #endif
-
 #ifdef DRED_GTK
     return dred_platform_init__gtk();
+#endif
 #endif
 }
 
 void dred_platform_uninit()
 {
+    g_pTK = NULL;
+
+#if 0
 #ifdef DRED_WIN32
     dred_platform_uninit__win32();
 #endif
-
 #ifdef DRED_GTK
     dred_platform_uninit__gtk();
+#endif
 #endif
 }
 
@@ -3041,7 +3163,6 @@ int dred_platform_run()
 #ifdef DRED_WIN32
     return dred_platform_run__win32();
 #endif
-
 #ifdef DRED_GTK
     return dred_platform_run__gtk();
 #endif
@@ -3061,12 +3182,15 @@ int dred_platform_run()
 
 void dred_platform_post_quit_message(int resultCode)
 {
+    dtk_post_quit_event(g_pTK, resultCode);
+
+#if 0
 #ifdef DRED_WIN32
     dred_platform_post_quit_message__win32(resultCode);
 #endif
-
 #ifdef DRED_GTK
     dred_platform_post_quit_message__gtk(resultCode);
+#endif
 #endif
 }
 
@@ -3079,7 +3203,6 @@ void dred_platform_bind_gui(dred_gui* pGUI)
     dred_gui_set_global_on_release_keyboard(pGUI, dred_platform__on_global_release_keyboard__win32);
     dred_gui_set_global_on_dirty(pGUI, dred_platform__on_global_dirty__win32);
 #endif
-
 #ifdef DRED_GTK
     dred_gui_set_global_on_capture_mouse(pGUI, dred_platform__on_global_capture_mouse__gtk);
     dred_gui_set_global_on_release_mouse(pGUI, dred_platform__on_global_release_mouse__gtk);
@@ -3096,71 +3219,150 @@ void dred_platform_bind_logging(dred_context* pDred)
 {
     if (pDred == NULL) return;
 
+    // TODO: Implement this in DTK.
+
+#if 0
 #ifdef DRED_WIN32
     dred_platform_bind_logging__win32(pDred);
 #endif
-
 #ifdef DRED_GTK
     dred_platform_bind_logging__gtk(pDred);
+#endif
 #endif
 }
 
 
+dr_bool32 dred_window_create__post_setup(dred_context* pDred, dred_window* pWindow)
+{
+    pWindow->pDred = pDred;
+    pWindow->isShowingMenu = DR_TRUE;
+    DTK_CONTROL(&pWindow->windowDTK)->pUserData = pWindow;
+
+#ifdef DRED_WIN32
+    pWindow->pDrawingSurface = dr2d_create_surface_gdi_HWND(pDred->pDrawingContext, (HWND)pWindow->windowDTK.win32.hWnd);
+    if (pWindow->pDrawingSurface == NULL) {
+        return DR_FALSE;
+    }
+#endif
+
+    pWindow->pRootGUIControl = &pWindow->rootGUIControl;
+    if (!dred_platform__init_root_gui_element(pWindow->pRootGUIControl, pDred, pWindow)) {
+        return DR_FALSE;
+    }
+
+    return DR_TRUE;
+}
 
 dred_window* dred_window_create(dred_context* pDred)
 {
+    if (pDred == NULL) return NULL;
+
+    dred_window* pWindow = (dred_window*)calloc(1, sizeof(*pWindow));
+    if (pWindow == NULL) {
+        return NULL;
+    }
+
+    if (dtk_window_init(&pDred->tk, NULL, dtk_window_type_toplevel, "dred", 1280, 1024, dred_dtk_window_event_handler, &pWindow->windowDTK) != DTK_SUCCESS) {
+        free(pWindow);
+        return NULL;
+    }
+
+    if (!dred_window_create__post_setup(pDred, pWindow)) {
+        dtk_window_uninit(&pWindow->windowDTK);
+        free(pWindow);
+        return NULL;
+    }
+
+    return pWindow;
+
+
+#if 0
 #ifdef DRED_WIN32
     return dred_window_create__win32(pDred);
 #endif
-
 #ifdef DRED_GTK
     return dred_window_create__gtk(pDred);
+#endif
 #endif
 }
 
 dred_window* dred_window_create_dialog(dred_window* pParentWindow, const char* title, unsigned int width, unsigned int height)
 {
+    if (pParentWindow == NULL) return NULL; // All dialog windows must be tied to a parent.
+
+    dred_window* pWindow = (dred_window*)calloc(1, sizeof(*pWindow));
+    if (pWindow == NULL) {
+        return NULL;
+    }
+
+    if (dtk_window_init(pParentWindow->windowDTK.control.pTK, DTK_CONTROL(&pParentWindow->windowDTK), dtk_window_type_dialog, title, width, height, dred_dtk_window_event_handler, &pWindow->windowDTK) != DTK_SUCCESS) {
+        free(pWindow);
+        return NULL;
+    }
+
+    if (!dred_window_create__post_setup(pParentWindow->pDred, pWindow)) {
+        dtk_window_uninit(&pWindow->windowDTK);
+        free(pWindow);
+        return NULL;
+    }
+
+    return pWindow;
+
+#if 0
 #ifdef DRED_WIN32
     return dred_window_create_dialog__win32(pParentWindow, title, width, height);
 #endif
-
 #ifdef DRED_GTK
     return dred_window_create_dialog__gtk(pParentWindow, title, width, height);
+#endif
 #endif
 }
 
 void dred_window_delete(dred_window* pWindow)
 {
+    if (pWindow == NULL) return;
+    dtk_window_uninit(&pWindow->windowDTK);
+    free(pWindow);
+
+#if 0
 #ifdef DRED_WIN32
     dred_window_delete__win32(pWindow);
 #endif
-
 #ifdef DRED_GTK
     dred_window_delete__gtk(pWindow);
+#endif
 #endif
 }
 
 
 void dred_window_set_title(dred_window* pWindow, const char* title)
 {
+    if (pWindow == NULL) return;
+    dtk_window_set_title(&pWindow->windowDTK, title);
+
+#if 0
 #ifdef DRED_WIN32
     dred_window_set_title__win32(pWindow, title);
 #endif
-
 #ifdef DRED_GTK
     dred_window_set_title__gtk(pWindow, title);
+#endif
 #endif
 }
 
 
 void dred_window_set_size(dred_window* pWindow, unsigned int newWidth, unsigned int newHeight)
 {
+    if (pWindow == NULL);
+    dtk_window_set_size(&pWindow->windowDTK, newWidth, newHeight);
+
+#if 0
 #ifdef DRED_WIN32
     dred_window_set_size__win32(pWindow, newWidth, newHeight);
 #endif
-
 #ifdef DRED_GTK
     dred_window_set_size__gtk(pWindow, newWidth, newHeight);
+#endif
 #endif
 }
 
@@ -3169,25 +3371,31 @@ void dred_window_get_size(dred_window* pWindow, unsigned int* pWidthOut, unsigne
     if (pWidthOut) *pWidthOut = 0;
     if (pHeightOut) *pHeightOut = 0;
     if (pWindow == NULL) return;
+    dtk_window_get_size(&pWindow->windowDTK, pWidthOut, pHeightOut);
 
+#if 0
 #ifdef DRED_WIN32
     dred_window_get_size__win32(pWindow, pWidthOut, pHeightOut);
 #endif
-
 #ifdef DRED_GTK
     dred_window_get_size__gtk(pWindow, pWidthOut, pHeightOut);
+#endif
 #endif
 }
 
 
 void dred_window_set_position(dred_window* pWindow, int posX, int posY)
 {
+    if (pWindow == NULL) return;
+    dtk_window_set_absolute_position(&pWindow->windowDTK, posX, posY);
+
+#if 0
 #ifdef DRED_WIN32
     dred_window_set_position__win32(pWindow, posX, posY);
 #endif
-
 #ifdef DRED_GTK
     dred_window_set_position__gtk(pWindow, posX, posY);
+#endif
 #endif
 }
 
@@ -3196,13 +3404,15 @@ void dred_window_get_position(dred_window* pWindow, int* pPosXOut, int* pPosYOut
     if (pPosXOut) *pPosXOut = 0;
     if (pPosYOut) *pPosYOut = 0;
     if (pWindow == NULL) return;
+    dtk_window_get_absolute_position(&pWindow->windowDTK, pPosXOut, pPosYOut);
 
+#if 0
 #ifdef DRED_WIN32
     dred_window_get_position__win32(pWindow, pPosXOut, pPosYOut);
 #endif
-
 #ifdef DRED_GTK
     dred_window_get_position__gtk(pWindow, pPosXOut, pPosYOut);
+#endif
 #endif
 }
 
@@ -3212,50 +3422,62 @@ void dred_window_get_client_size(dred_window* pWindow, unsigned int* pWidthOut, 
     if (pWidthOut) *pWidthOut = 0;
     if (pHeightOut) *pHeightOut = 0;
     if (pWindow == NULL) return;
+    dtk_window_get_client_size(&pWindow->windowDTK, pWidthOut, pHeightOut);
 
+#if 0
 #ifdef DRED_WIN32
     dred_window_get_client_size__win32(pWindow, pWidthOut, pHeightOut);
 #endif
-
 #ifdef DRED_GTK
     dred_window_get_client_size__gtk(pWindow, pWidthOut, pHeightOut);
+#endif
 #endif
 }
 
 
 void dred_window_move_to_center(dred_window* pWindow)
 {
+    if (pWindow == NULL) return;
+    dtk_window_move_to_center(&pWindow->windowDTK);
+
+#if 0
 #ifdef DRED_WIN32
     dred_window_move_to_center__win32(pWindow);
 #endif
-
 #ifdef DRED_GTK
     dred_window_move_to_center__gtk(pWindow);
+#endif
 #endif
 }
 
 
 void dred_window_show(dred_window* pWindow)
 {
+    if (pWindow == NULL) return;
+    dtk_window_show(&pWindow->windowDTK, DTK_SHOW_NORMAL);
+
+#if 0
 #ifdef DRED_WIN32
     dred_window_show__win32(pWindow);
 #endif
-
 #ifdef DRED_GTK
     dred_window_show__gtk(pWindow);
+#endif
 #endif
 }
 
 void dred_window_show_maximized(dred_window* pWindow)
 {
     if (pWindow == NULL) return;
+    dtk_window_show(&pWindow->windowDTK, DTK_SHOW_MAXIMIZED);
 
+#if 0
 #ifdef DRED_WIN32
     dred_window_show_maximized__win32(pWindow);
 #endif
-
 #ifdef DRED_GTK
     dred_window_show_maximized__gtk(pWindow);
+#endif
 #endif
 }
 
@@ -3265,143 +3487,165 @@ void dred_window_show_sized(dred_window* pWindow, unsigned int width, unsigned i
     dred_window_show(pWindow);
 }
 
-void dred_window_hide(dred_window* pWindow, unsigned int flags)
+void dred_window_hide(dred_window* pWindow)
 {
-    if (pWindow == NULL) {
-        return;
-    }
+    if (pWindow == NULL) return;
+    dtk_window_hide(&pWindow->windowDTK);
 
-    pWindow->onHideFlags = flags;
-
+#if 0
 #ifdef DRED_WIN32
     dred_window_hide__win32(pWindow);
 #endif
-
 #ifdef DRED_GTK
     dred_window_hide__gtk(pWindow);
+#endif
 #endif
 }
 
 void dred_window_bring_to_top(dred_window* pWindow)
 {
-    if (pWindow == NULL) {
-        return;
-    }
+    if (pWindow == NULL) return;
+    dtk_window_bring_to_top(&pWindow->windowDTK);
 
+#if 0
 #ifdef DRED_WIN32
     dred_window_bring_to_top__win32(pWindow);
 #endif
-
 #ifdef DRED_GTK
     dred_window_bring_to_top__gtk(pWindow);
+#endif
 #endif
 }
 
 dr_bool32 dred_window_is_maximized(dred_window* pWindow)
 {
-    if (pWindow == NULL) {
-        return DR_FALSE;
-    }
+    if (pWindow == NULL) return DR_FALSE;
+    return dtk_window_is_maximized(&pWindow->windowDTK);
 
+#if 0
 #ifdef DRED_WIN32
     return dred_window_is_maximized__win32(pWindow);
 #endif
-
 #ifdef DRED_GTK
     return dred_window_is_maximized__gtk(pWindow);
+#endif
 #endif
 }
 
 
 void dred_window_set_cursor(dred_window* pWindow, dred_cursor_type cursor)
 {
+    if (pWindow == NULL) return;
+    dtk_window_set_cursor(&pWindow->windowDTK, cursor);
+
+#if 0
 #ifdef DRED_WIN32
     dred_window_set_cursor__win32(pWindow, cursor);
 #endif
-
 #ifdef DRED_GTK
     dred_window_set_cursor__gtk(pWindow, cursor);
+#endif
 #endif
 }
 
 dr_bool32 dred_window_is_cursor_over(dred_window* pWindow)
 {
+    if (pWindow == NULL) return DR_FALSE;
+    return dtk_window_is_cursor_over(&pWindow->windowDTK);
+
+#if 0
 #ifdef DRED_WIN32
     return dred_window_is_cursor_over__win32(pWindow);
 #endif
-
 #ifdef DRED_GTK
     return dred_window_is_cursor_over__gtk(pWindow);
+#endif
 #endif
 }
 
 
+#if 0
 void dred_window_bind_accelerators(dred_window* pWindow, dred_accelerator_table* pAcceleratorTable)
 {
+    if (pWindow == NULL) return;
+
 #ifdef DRED_WIN32
     dred_window_bind_accelerators__win32(pWindow, pAcceleratorTable);
 #endif
-
 #ifdef DRED_GTK
     dred_window_bind_accelerators__gtk(pWindow, pAcceleratorTable);
 #endif
 }
+#endif
 
 void dred_window_set_menu(dred_window* pWindow, dtk_menu* pMenu)
 {
-    if (pWindow == NULL) {
-        return;
-    }
-
+    if (pWindow == NULL) return;
     if (pWindow->pMenu == pMenu) {
         return; // It's the same menu.
     }
 
+    dtk_window_set_menu(&pWindow->windowDTK, pMenu);
+
+#if 0
 #ifdef DRED_WIN32
     dred_window_set_menu__win32(pWindow, pMenu);
 #endif
-
 #ifdef DRED_GTK
     dred_window_set_menu__gtk(pWindow, pMenu);
+#endif
 #endif
 }
 
 void dred_window_hide_menu(dred_window* pWindow)
 {
+    if (pWindow == NULL) return;
     if (!dred_window_is_showing_menu(pWindow)) {
         return;
     }
 
+    if (pWindow->pMenu != NULL) {
+        dtk_window_set_menu(&pWindow->windowDTK, NULL);
+    }
+
+    pWindow->isShowingMenu = DR_FALSE;
+
+#if 0
 #ifdef DRED_WIN32
     dred_window_hide_menu__win32(pWindow);
 #endif
-
 #ifdef DRED_GTK
     dred_window_hide_menu__gtk(pWindow);
+#endif
 #endif
 }
 
 void dred_window_show_menu(dred_window* pWindow)
 {
+    if (pWindow == NULL) return;
     if (dred_window_is_showing_menu(pWindow)) {
         return;
     }
 
+    if (pWindow->pMenu != NULL) {
+        dtk_window_set_menu(&pWindow->windowDTK, pWindow->pMenu);
+    }
+
+    pWindow->isShowingMenu = DR_TRUE;
+
+#if 0
 #ifdef DRED_WIN32
     dred_window_show_menu__win32(pWindow);
 #endif
-
 #ifdef DRED_GTK
     dred_window_show_menu__gtk(pWindow);
+#endif
 #endif
 }
 
 dr_bool32 dred_window_is_showing_menu(dred_window* pWindow)
 {
-    if (pWindow == NULL) {
-        return DR_FALSE;
-    }
-
+    if (pWindow == NULL) return DR_FALSE;
     return pWindow->isShowingMenu;
 }
 
@@ -3416,27 +3660,35 @@ dr_bool32 dred_window_is_showing_menu(dred_window* pWindow)
 
 void dred_window_show_popup_menu(dred_window* pWindow, dtk_menu* pMenu, int posX, int posY)
 {
+    if (pWindow == NULL) return;
+    dtk_window_show_popup_menu(&pWindow->windowDTK, pMenu, posX, posY);
+
+#if 0
 #ifdef DRED_WIN32
     dred_window_show_popup_menu__win32(pWindow, pMenu, posX, posY);
 #endif
-
 #ifdef DRED_GTK
     dred_window_show_popup_menu__gtk(pWindow, pMenu, posX, posY);
+#endif
 #endif
 }
 
 void dred_window_send_ipc_message_event(dred_window* pWindow, unsigned int messageID, const void* pMessageData, size_t messageDataSize)
 {
-    if (pWindow == NULL) {
-        return;
-    }
+    if (pWindow == NULL) return;
 
+    // TODO: Implement me.
+    (void)messageID;
+    (void)pMessageData;
+    (void)messageDataSize;
+
+#if 0
 #ifdef DRED_WIN32
     dred_window_send_ipc_message_event__win32(pWindow, messageID, pMessageData, messageDataSize);
 #endif
-
 #ifdef DRED_GTK
     dred_window_send_ipc_message_event__gtk(pWindow, messageID, pMessageData, messageDataSize);
+#endif
 #endif
 }
 
@@ -3626,7 +3878,7 @@ void dred_window_on_ipc_message(dred_window* pWindow, unsigned int messageID, co
 void dred_window__stock_event__hide_on_close(dred_window* pWindow)
 {
     assert(pWindow != NULL);
-    dred_window_hide(pWindow, 0);
+    dred_window_hide(pWindow);
 }
 
 

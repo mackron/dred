@@ -407,7 +407,7 @@ void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab, dred_tab* pOldAc
 void dred_on_tab_deactivated(dred_context* pDred, dred_tab* pTab, dred_tab* pNewActiveTab);
 
 // Called when an accelerator is triggered.
-void dred_on_accelerator(dred_context* pDred, dred_window* pWindow, size_t acceleratorIndex);
+void dred_on_accelerator(dred_context* pDred, dtk_accelerator accelerator);
 
 // Called from the main loop in the platform layer when an IPC message is received.
 void dred_on_ipc_message(dred_context* pDred, unsigned int messageID, const void* pMessageData);

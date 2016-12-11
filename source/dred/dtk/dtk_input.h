@@ -60,8 +60,8 @@ dtk_key dtk_key_parse(const char* str);
 //
 ///////////////////////////////////////////////////////////////////////////////
 typedef dtk_uint32 dtk_mouse_button;
-#define DTK_MOUSE_BUTTON_LEFT   0
-#define DTK_MOUSE_BUTTON_RIGHT  1
-#define DTK_MOUSE_BUTTON_MIDDLE 2
-#define DTK_MOUSE_BUTTON_4      3
-#define DTK_MOUSE_BUTTON_5      4
+#define DTK_MOUSE_BUTTON_LEFT   1
+#define DTK_MOUSE_BUTTON_RIGHT  2
+#define DTK_MOUSE_BUTTON_MIDDLE 3
+#define DTK_MOUSE_BUTTON_4      4
+#define DTK_MOUSE_BUTTON_5      5

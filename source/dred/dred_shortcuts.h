@@ -56,6 +56,7 @@ void dred_shortcut_table_replace_by_index(dred_shortcut_table* pTable, size_t sh
 
 dr_bool32 dred_shortcut_table_get_shortcut_by_index(dred_shortcut_table* pTable, size_t shortcutIndex, dred_shortcut* pShortcutOut);
 const char* dred_shortcut_table_get_command_string_by_index(dred_shortcut_table* pTable, size_t shortcutIndex);
+const char* dred_shortcut_table_get_command_string_by_name(dred_shortcut_table* pTable, const char* name);
 
 
 

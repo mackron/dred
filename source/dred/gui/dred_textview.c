@@ -340,7 +340,7 @@ dr_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred
 
 
 
-    dred_control_set_cursor(DRED_CONTROL(pTextView), dred_cursor_type_text);
+    dred_control_set_cursor(DRED_CONTROL(pTextView), dtk_system_cursor_type_text);
     dred_control_set_on_size(DRED_CONTROL(pTextView), dred_textview_on_size);
     dred_control_set_on_mouse_move(DRED_CONTROL(pTextView), dred_textview_on_mouse_move);
     dred_control_set_on_mouse_button_down(DRED_CONTROL(pTextView), dred_textview_on_mouse_button_down);
@@ -1684,9 +1684,9 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
                     pTextView->isWantingToDragAndDrop = DR_FALSE;
                 }
 
-                dred_control_set_cursor(DRED_CONTROL(pTextView), dred_cursor_type_arrow);
+                dred_control_set_cursor(DRED_CONTROL(pTextView), dtk_system_cursor_type_arrow);
             } else {
-                dred_control_set_cursor(DRED_CONTROL(pTextView), dred_cursor_type_text);
+                dred_control_set_cursor(DRED_CONTROL(pTextView), dtk_system_cursor_type_text);
             }
         }
     }

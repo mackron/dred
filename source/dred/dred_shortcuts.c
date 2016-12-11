@@ -195,6 +195,16 @@ const char* dred_shortcut_table_get_command_string_by_index(dred_shortcut_table*
     return pTable->pDred->stringPool.pData + pTable->pShortcuts[shortcutIndex].cmdOffset;
 }
 
+const char* dred_shortcut_table_get_command_string_by_name(dred_shortcut_table* pTable, const char* name)
+{
+    size_t index;
+    if (!dred_shortcut_table_find_by_name(pTable, name, &index)) {
+        return NULL;
+    }
+
+    return dred_shortcut_table_get_command_string_by_index(pTable, index);
+}
+
 
 
 dred_shortcut dred_shortcut_create(dtk_accelerator accel0, dtk_accelerator accel1)

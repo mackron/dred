@@ -73,7 +73,7 @@ void dred_settings_dialog_hide(dred_settings_dialog* pDialog)
         return;
     }
 
-    dred_window_hide(pDialog->pWindow, 0);
+    dred_window_hide(pDialog->pWindow);
     pDialog->isShowing = DR_FALSE;
 }
 

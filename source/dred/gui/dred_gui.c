@@ -346,7 +346,7 @@ void dred_gui__update_mouse_enter_and_leave_state(dred_gui* pGUI, dred_control* 
         {
             pGUI->pControlUnderMouse = pNewControlUnderMouse;
 
-            dred_cursor_type newCursor = dred_cursor_type_default;
+            dred_cursor_type newCursor = dtk_system_cursor_type_default;
             if (pNewControlUnderMouse != NULL) {
                 newCursor = pNewControlUnderMouse->cursor;
             }
@@ -550,7 +550,7 @@ dr_bool32 dred_gui_init(dred_gui* pGUI, dred_context* pDred)
 
     memset(pGUI, 0, sizeof(*pGUI));
     pGUI->pDred = pDred;
-    pGUI->currentCursor = dred_cursor_type_default;
+    pGUI->currentCursor = dtk_system_cursor_type_default;
 
     return DR_TRUE;
 }
@@ -850,7 +850,7 @@ dr_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_co
     memset(pControl, 0, sizeof(*pControl));
     pControl->pGUI = pDred->pGUI;
     pControl->pParent = pParent;
-    pControl->cursor = dred_cursor_type_default;
+    pControl->cursor = dtk_system_cursor_type_default;
     pControl->dirtyRect = dred_make_inside_out_rect();
 
     // Add to the the hierarchy.
@@ -1319,7 +1319,7 @@ void dred_control_set_cursor(dred_control* pControl, dred_cursor_type cursor)
 dred_cursor_type dred_control_get_cursor(dred_control* pControl)
 {
     if (pControl == NULL) {
-        return dred_cursor_type_none;
+        return dtk_system_cursor_type_none;
     }
 
     return pControl->cursor;

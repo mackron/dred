@@ -174,47 +174,10 @@ typedef void* dred_gui_resource;
 // is at the first byte of the structure.
 #define DRED_CONTROL(a) ((dred_control*)(a))
 
-
-/// Common system cursors.
-typedef enum
-{
-    dred_cursor_type_none,
-    dred_cursor_type_default,
-    dred_cursor_type_arrow = dred_cursor_type_default,
-    dred_cursor_type_text,
-    dred_cursor_type_cross,
-    dred_cursor_type_double_arrow_h,
-    dred_cursor_type_double_arrow_v,
-} dred_cursor_type;
-
-/// Font weights.
-typedef enum
-{
-    dred_gui_font_weight_medium,
-    dred_gui_font_weight_thin,
-    dred_gui_font_weight_extra_light,
-    dred_gui_font_weight_light,
-    dred_gui_font_weight_semi_light,
-    dred_gui_font_weight_book,
-    dred_gui_font_weight_semi_bold,
-    dred_gui_font_weight_bold,
-    dred_gui_font_weight_extra_bold,
-    dred_gui_font_weight_heavy,
-    dred_gui_font_weight_extra_heavy,
-
-    dred_gui_font_weight_normal  = dred_gui_font_weight_medium,
-    dred_gui_font_weight_default = dred_gui_font_weight_medium
-
-} dred_gui_font_weight;
-
-/// Font slants.
-typedef enum
-{
-    dred_gui_font_slant_none,
-    dred_gui_font_slant_italic,
-    dred_gui_font_slant_oblique
-
-} dred_gui_font_slant;
+// Common system cursors.
+typedef enum dtk_cursor_type dred_cursor_type;
+typedef enum dtk_font_weight dred_gui_font_weight;
+typedef enum dtk_font_slant  dred_gui_font_slant;
 
 /// Image formats.
 typedef enum
