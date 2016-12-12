@@ -31,7 +31,7 @@ typedef struct
     char proc[256];
     char flags[256];
 } command_var;
-command_var* g_CommandVars = NULL;
+command_var* g_CommandVars = NULL;  // <-- stretchy_buffer
 
 typedef struct
 {
@@ -44,7 +44,7 @@ typedef struct
     char defaultValueSrc[1024];
     char* documentation;
 } config_var;
-config_var* g_ConfigVars = NULL;
+config_var* g_ConfigVars = NULL;    // <-- stretchy_buffer
 
 typedef struct
 {
@@ -79,6 +79,20 @@ const char* dred_build__json_error_to_string(enum json_parse_error_e error)
     }
 
     return "Unknown error";
+}
+
+dr_bool32 dred_build_find_config_var(const char* name, size_t* pIndex)
+{
+    if (pIndex) *pIndex = 0;
+
+    for (int i = 0; i < stb_sb_count(g_ConfigVars); ++i) {
+        if (strcmp(g_ConfigVars[i].name, name) == 0) {
+            if (pIndex) *pIndex = i;
+            return DR_TRUE;
+        }
+    }
+
+    return DR_FALSE;
 }
 
 #include "dred_build_shortcuts.c"
@@ -232,6 +246,7 @@ void parse_config_var_value(unsigned int type, const char* valueIn, char* valueO
 
     free(str);
 }
+
 
 char* write_image_data_rgba8(char* output, unsigned int* pCurrentByteColumn, const uint8_t* pImageData, unsigned int width, unsigned int height, unsigned int stride)
 {

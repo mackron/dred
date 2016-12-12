@@ -35,8 +35,8 @@
     ]},
     
     {"id":"nothingopen.view", "items":[
-		{"id":"nothingopen.view.tabbars", "type":"check", "text":"Show Tab Bars", "cmd":"toggle-tabbars"},
-        {"id":"nothingopen.view.cmdbar", "type":"check", "text":"Auto-Hide Command Bar", "cmd":"toggle-auto-hide-cmdbar"}
+		{"id":"nothingopen.view.tabbars", "type":"check", "text":"Show Tab Bars", "cmd":"toggle-tab-bar", "config":"show-tab-bar"},
+        {"id":"nothingopen.view.cmdbar", "type":"check", "text":"Auto-Hide Command Bar", "cmd":"toggle-auto-hide-cmdbar", "config":"auto-hide-cmd-bar"}
     ]},
     
     {"id":"nothingopen", "type":"menubar", "items":[
@@ -81,13 +81,13 @@
     ]},
     
     {"id":"text.view", "items":[
-        {"id":"text.view.tabbars", "type":"check", "text":"Show Tab Bars", "cmd":"toggle-tabbars"},
-        {"id":"text.view.cmdbar", "type":"check", "text":"Auto-Hide Command Bar", "cmd":"toggle-auto-hide-cmdbar"},
+        {"id":"text.view.tabbars", "type":"check", "text":"Show Tab Bars", "cmd":"toggle-tab-bar", "config":"show-tab-bar"},
+        {"id":"text.view.cmdbar", "type":"check", "text":"Auto-Hide Command Bar", "cmd":"toggle-auto-hide-cmdbar", "config":"auto-hide-cmd-bar"},
         {"id":"separator"},
-        {"id":"text.view.linenumbers", "type":"check", "text":"Show Line Numbers", "cmd":"toggle-line-numbers"},
+        {"id":"text.view.linenumbers", "type":"check", "text":"Show Line Numbers", "cmd":"toggle-line-numbers", "config":"texteditor-show-line-numbers"},
         {"id":"text.view.resetzoom", "text":"Reset Zoom", "cmd":"zoom 1"},
         {"id":"separator"},
-        {"id":"text.view.wordwrap", "type":"check", "text":"Word Wrap", "cmd":"toggle-word-wrap"}
+        {"id":"text.view.wordwrap", "type":"check", "text":"Word Wrap", "cmd":"toggle-word-wrap", "config":"texteditor-enable-word-wrap"}
     ]},
     
     {"id":"text.find", "items":[

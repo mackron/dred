@@ -6,6 +6,7 @@ typedef struct
     char shortcut[256]; // Can be empty.
     char cmd[256];      // Can be empty.
     char submenu[256];
+    char config[256];   // The name of the config variable the menu item is tied to.
 } dred_build__menu_item;
 
 typedef struct
@@ -83,6 +84,7 @@ void dred_build__process_json_menus(dred_build__menu_parse_context* pContext, st
                     struct json_object_element_s* pJSONObjectElement_Shortcut = NULL;
                     struct json_object_element_s* pJSONObjectElement_Cmd      = NULL;
                     struct json_object_element_s* pJSONObjectElement_Submenu  = NULL;
+                    struct json_object_element_s* pJSONObjectElement_Config   = NULL;
                     for (struct json_object_element_s* pJSONItemObjectElement = pJSONItemObject->start; pJSONItemObjectElement != NULL; pJSONItemObjectElement = pJSONItemObjectElement->next) {
                         if (strcmp(pJSONItemObjectElement->name->string, "id") == 0) {
                             pJSONObjectElement_ID = pJSONItemObjectElement;
@@ -96,6 +98,8 @@ void dred_build__process_json_menus(dred_build__menu_parse_context* pContext, st
                             pJSONObjectElement_Cmd = pJSONItemObjectElement;
                         } else if (strcmp(pJSONItemObjectElement->name->string, "submenu") == 0) {
                             pJSONObjectElement_Submenu = pJSONItemObjectElement;
+                        } else if (strcmp(pJSONItemObjectElement->name->string, "config") == 0) {
+                            pJSONObjectElement_Config = pJSONItemObjectElement;
                         }
                     }
 
@@ -138,6 +142,9 @@ void dred_build__process_json_menus(dred_build__menu_parse_context* pContext, st
                     }
                     if (pJSONObjectElement_Submenu != NULL && pJSONObjectElement_Submenu->value->type == json_type_string) {
                         strcpy_s(item.submenu, sizeof(item.submenu), ((struct json_string_s*)pJSONObjectElement_Submenu->value->payload)->string);
+                    }
+                    if (pJSONObjectElement_Config != NULL && pJSONObjectElement_Config->value->type == json_type_string) {
+                        strcpy_s(item.config, sizeof(item.config), ((struct json_string_s*)pJSONObjectElement_Config->value->payload)->string);
                     }
 
                     stb_sb_push(menu.pItemsIndices, stb_sb_count(pContext->pAllItems));
@@ -347,7 +354,16 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
                 fprintf(pFileOut, "\n");
                 fprintf(pFileOut, "        item.id = %s;\n", idMacroStr);
                 fprintf(pFileOut, "        item.type = dtk_menu_item_type_%s;\n", pItem->type);
+                
                 fprintf(pFileOut, "        item.stateFlags = 0;\n");
+                if (strcmp(pItem->type, "check") == 0 && pItem->config[0] != '\0') {
+                    size_t iConfigVar;
+                    if (dred_build_find_config_var(pItem->config, &iConfigVar)) {
+                        fprintf(pFileOut, "        if (pDred->config.%s) item.stateFlags |= DTK_MENU_ITEM_STATE_CHECKED;\n", g_ConfigVars[iConfigVar].varname);
+                    }
+                }
+
+
                 if (submenuFormattedName[0] == '\0') {
                     fprintf(pFileOut, "        item.pSubMenu = NULL;\n");
                 } else {
