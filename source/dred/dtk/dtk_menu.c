@@ -555,6 +555,17 @@ dtk_result dtk_menu_insert_item__gtk(dtk_menu* pMenu, dtk_uint32 index, dtk_menu
     g_object_set_data(G_OBJECT(pItem), DTK_MENU_ITEM_DATA_KEY, pItemData);
 
     pMenu->gtk.itemCount += 1;
+
+    // Initial state.
+    if (pInfo->stateFlags & DTK_MENU_ITEM_STATE_CHECKED) {
+        pItemData->blockNextActivateSignal = DTK_TRUE;
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(pItem), TRUE);
+        pItemData->blockNextActivateSignal = DTK_FALSE;
+    }
+    if (pInfo->stateFlags & DTK_MENU_ITEM_STATE_DISABLED) {
+        gtk_widget_set_sensitive(pItem, FALSE);
+    }
+
     return DTK_SUCCESS;
 }
 
