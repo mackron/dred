@@ -1523,7 +1523,7 @@ void dred_show_open_file_dialog(dred_context* pDred)
         dred_open_file(pDred, filePaths);
     }
 #else
-    GtkWidget* dialog = gtk_file_chooser_dialog_new("Open", GTK_WINDOW(pDred->pMainWindow->pGTKWindow), GTK_FILE_CHOOSER_ACTION_OPEN,
+    GtkWidget* dialog = gtk_file_chooser_dialog_new("Open", GTK_WINDOW(pDred->pMainWindow->windowDTK.gtk.pWidget), GTK_FILE_CHOOSER_ACTION_OPEN,
         "_Open",   GTK_RESPONSE_ACCEPT,
         "_Cancel", GTK_RESPONSE_CANCEL, NULL);
     if (dialog == NULL) {
@@ -1582,7 +1582,7 @@ dr_bool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFil
 
     return DR_TRUE;
 #else
-    GtkWidget* dialog = gtk_file_chooser_dialog_new("Save As", GTK_WINDOW(pDred->pMainWindow->pGTKWindow), GTK_FILE_CHOOSER_ACTION_SAVE,
+    GtkWidget* dialog = gtk_file_chooser_dialog_new("Save As", GTK_WINDOW(pDred->pMainWindow->windowDTK.gtk.pWidget), GTK_FILE_CHOOSER_ACTION_SAVE,
         "_Save",   GTK_RESPONSE_ACCEPT,
         "_Cancel", GTK_RESPONSE_CANCEL, NULL);
     if (dialog == NULL) {
@@ -1630,7 +1630,7 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 
     return 0;
 #else
-    GtkWidget* dialog = gtk_message_dialog_new(GTK_WINDOW(pDred->pMainWindow->pGTKWindow), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, "%s", message);
+    GtkWidget* dialog = gtk_message_dialog_new(GTK_WINDOW(pDred->pMainWindow->windowDTK.gtk.pWidget), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, "%s", message);
     if (dialog == NULL) {
         return 0;
     }
@@ -1747,7 +1747,7 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerW
 #ifdef DRED_GTK
     (void)pDefaultFontDesc;
 
-    GtkWidget* dialog = gtk_font_chooser_dialog_new(NULL, GTK_WINDOW(pDred->pMainWindow->pGTKWindow));
+    GtkWidget* dialog = gtk_font_chooser_dialog_new(NULL, GTK_WINDOW(pDred->pMainWindow->windowDTK.gtk.pWidget));
     if (dialog == NULL) {
         return DR_FALSE;
     }
@@ -1823,7 +1823,7 @@ dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwner
 #endif
 
 #ifdef DRED_GTK
-    GtkWidget* dialog = gtk_color_chooser_dialog_new(NULL, GTK_WINDOW(pOwnerWindow->pGTKWindow));
+    GtkWidget* dialog = gtk_color_chooser_dialog_new(NULL, GTK_WINDOW(pOwnerWindow->windowDTK.gtk.pWidget));
     if (dialog == NULL) {
         return DR_FALSE;
     }
@@ -2168,7 +2168,7 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow,
     g_signal_connect(pPrint, "begin_print", G_CALLBACK(dred_gtk__on_begin_print), &printData);
     g_signal_connect(pPrint, "draw_page", G_CALLBACK(dred_gtk__on_draw_page), &printData);
 
-    GtkPrintOperationResult printResult = gtk_print_operation_run(pPrint, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, GTK_WINDOW(pOwnerWindow->pGTKWindow), NULL);
+    GtkPrintOperationResult printResult = gtk_print_operation_run(pPrint, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, GTK_WINDOW(pOwnerWindow->windowDTK.gtk.pWidget), NULL);
     if (printResult != GTK_PRINT_OPERATION_RESULT_APPLY) {
         g_object_unref(pPrint);
         g_object_unref(pSettings);

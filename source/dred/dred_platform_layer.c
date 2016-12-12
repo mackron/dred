@@ -67,6 +67,7 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_MOUSE_ENTER:
         {
+            printf("TESTING\n");
             dred_window_on_mouse_enter(pWindow);
         } break;
 
@@ -1656,6 +1657,7 @@ static void dred_platform__on_global_dirty__win32(dred_control* pControl, dred_r
 //////////////////////////////////////////////////////////////////
 
 #ifdef DRED_GTK
+#if 0
 int g_GTKMainLoopResultCode = 0;
 GdkCursor* g_GTKCursor_Default = NULL;
 GdkCursor* g_GTKCursor_IBeam = NULL;
@@ -2737,7 +2739,7 @@ void dred_window_send_ipc_message_event__gtk(dred_window* pWindow, unsigned int 
 
     g_idle_add((GSourceFunc)dred_window_send_ipc_message_event__gtk__idle_add, pMessage);
 }
-
+#endif
 
 #if 0
 //// MENUS ////
@@ -3023,9 +3025,9 @@ static void dred_platform__on_global_capture_mouse__gtk(dred_control* pControl)
     if (pWindow != NULL) {
 #if (GTK_MAJOR_VERSION >= 3 && GTK_MINOR_VERSION >= 20) // GTK 3.20+
         gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
-            gtk_widget_get_window(pWindow->pGTKClientArea), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
+            gtk_widget_get_window(pWindow->windowDTK.gtk.pClientArea), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
 #else
-		gdk_device_grab(gtk_get_current_event_device(), gtk_widget_get_window(pWindow->pGTKClientArea), GDK_OWNERSHIP_APPLICATION, FALSE,
+		gdk_device_grab(gtk_get_current_event_device(), gtk_widget_get_window(pWindow->windowDTK.gtk.pClientArea), GDK_OWNERSHIP_APPLICATION, FALSE,
 			GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK, NULL, GDK_CURRENT_TIME);
 #endif
     }
@@ -3050,7 +3052,7 @@ static void dred_platform__on_global_capture_keyboard__gtk(dred_control* pContro
     dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
         pWindow->pControlWithKeyboardCapture = pControl;
-        gtk_widget_grab_focus(GTK_WIDGET(pWindow->pGTKWindow));
+        gtk_widget_grab_focus(GTK_WIDGET(pWindow->windowDTK.gtk.pWidget));
     }
 }
 
@@ -3070,17 +3072,16 @@ static void dred_platform__on_global_release_keyboard__gtk(dred_control* pContro
 static void dred_platform__on_global_dirty__gtk(dred_control* pControl, dred_rect relativeRect)
 {
     dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL && pWindow->pGTKWindow != NULL)
-    {
+    if (pWindow != NULL && pWindow->windowDTK.gtk.pWidget != NULL) {
         dred_rect absoluteRect = relativeRect;
         dred_make_rect_absolute(pControl, &absoluteRect);
 
         if (dred_rect_has_volume(absoluteRect)) {
-            gtk_widget_queue_draw_area(pWindow->pGTKClientArea,
+            gtk_widget_queue_draw_area(pWindow->windowDTK.gtk.pClientArea,
                 (gint)absoluteRect.left, (gint)absoluteRect.top, (gint)(absoluteRect.right - absoluteRect.left), (gint)(absoluteRect.bottom - absoluteRect.top));
 
             // Redraw immediately.
-            GdkWindow* pGDKWindow = gtk_widget_get_window(pWindow->pGTKClientArea);
+            GdkWindow* pGDKWindow = gtk_widget_get_window(pWindow->windowDTK.gtk.pClientArea);
             if (pGDKWindow != NULL) {
                 gdk_window_process_updates(pGDKWindow, TRUE);
             }

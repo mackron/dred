@@ -68,17 +68,6 @@ typedef void (* dred_window_on_unfocus_proc)           (dred_window* pWindow);
 typedef void (* dred_window_on_ipc_message_proc)       (dred_window* pWindow, unsigned int messageID, const void* pMessageData);
 
 
-#ifdef DRED_GTK
-typedef struct
-{
-    size_t index;
-    dred_accelerator accelerator;
-    GClosure* pClosure;
-    dred_window* pWindow;
-    dred_menu* pMenu;
-} dred_gtk_accelerator;
-#endif
-
 struct dred_window
 {
     dtk_window windowDTK;

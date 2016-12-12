@@ -175,9 +175,9 @@ typedef void* dred_gui_resource;
 #define DRED_CONTROL(a) ((dred_control*)(a))
 
 // Common system cursors.
-typedef enum dtk_cursor_type dred_cursor_type;
-typedef enum dtk_font_weight dred_gui_font_weight;
-typedef enum dtk_font_slant  dred_gui_font_slant;
+#define dred_cursor_type dtk_system_cursor_type
+#define dred_gui_font_weight dtk_font_weight
+#define dred_gui_font_slant dtk_font_slant
 
 /// Image formats.
 typedef enum

@@ -246,6 +246,34 @@ dtk_bool32 dtk_menu_is_item_checked__win32(dtk_menu* pMenu, dtk_uint32 index)
 #ifdef DTK_GTK
 #define DTK_MENU_ITEM_DATA_KEY  "dtk.data"
 
+// Formats the given menu item label for use by GTK. What this does:
+// - Converts '&' symbols to '_'.
+// - Returns a value to indicate whether or not there were any underscores present in the original string.
+static dtk_bool32 dtk_format_menu_label__gtk(char* output, size_t outputCapacity, const char* label)
+{
+    assert(output != NULL);
+    assert(outputCapacity > 0);
+    assert(label != NULL);
+
+    dtk_strncpy_s(output, outputCapacity, label, _TRUNCATE);
+
+    dtk_bool32 hasUnderscore = DTK_FALSE;
+    for (char* c = output; c[0] != '\0'; c += 1) {
+        // If the text has an underscore, don't use mnemonics. Otherwise we'll end up with incorrect text.
+        if (c[0] == '_') {
+            hasUnderscore = DTK_TRUE;
+            break;
+        }
+
+        if (c[0] == '&') {
+            c[0] = '_';
+            break;
+        }
+    }
+
+    return hasUnderscore;
+}
+
 typedef struct
 {
     void* pUserData;
@@ -429,21 +457,8 @@ dtk_result dtk_menu_insert_item__gtk(dtk_menu* pMenu, dtk_uint32 index, dtk_menu
     } else {
         // The input string will have "&" characters for the mnemonic symbol, but GTK expects "_".
         char transformedText[256];
-        dtk_strncpy_s(transformedText, sizeof(transformedText), pInfo->text, _TRUNCATE);
-
-        dtk_bool32 useMnemonic = DTK_TRUE;
-        for (char* c = transformedText; c[0] != '\0'; c += 1) {
-            // If the text has an underscore, don't use mnemonics. Otherwise we'll end up with incorrect text.
-            if (c[0] == '_') {
-                useMnemonic = DTK_FALSE;
-                break;
-            }
-
-            if (c[0] == '&') {
-                c[0] = '_';
-                break;
-            }
-        }
+        dtk_bool32 hasUnderscore = dtk_format_menu_label__gtk(transformedText, sizeof(transformedText), pInfo->text);
+        dtk_bool32 useMnemonic = !hasUnderscore;    // If the text has an underscore, don't use mnemonics. Otherwise we'll end up with incorrect text.
 
         if (useMnemonic) {
             if (pInfo->type == dtk_menu_item_type_check) {
@@ -521,6 +536,22 @@ dtk_result dtk_menu_remove_item__gtk(dtk_menu* pMenu, dtk_uint32 index)
 
     dtk_assert(pMenu->gtk.itemCount > 0);
     pMenu->gtk.itemCount -= 1;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_menu_set_item_text__gtk(dtk_menu* pMenu, dtk_uint32 index, const char* text)
+{
+    GtkWidget* pItem = dtk_menu__get_item_widget_by_index__gtk(pMenu, index);
+    if (pItem == NULL) {
+        return DTK_ERROR;
+    }
+
+    char transformedText[256];
+    dtk_bool32 hasUnderscore = dtk_format_menu_label__gtk(transformedText, sizeof(transformedText), text);
+    dtk_bool32 useMnemonic = !hasUnderscore;    // If the text has an underscore, don't use mnemonics. Otherwise we'll end up with incorrect text.
+    gtk_menu_item_set_use_underline(GTK_MENU_ITEM(pItem), useMnemonic);
+    gtk_menu_item_set_label(GTK_MENU_ITEM(pItem), text);
+
     return DTK_SUCCESS;
 }
 
