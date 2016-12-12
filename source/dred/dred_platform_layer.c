@@ -3679,11 +3679,7 @@ void dred_window_show_popup_menu(dred_window* pWindow, dtk_menu* pMenu, int posX
 void dred_window_send_ipc_message_event(dred_window* pWindow, unsigned int messageID, const void* pMessageData, size_t messageDataSize)
 {
     if (pWindow == NULL) return;
-
-    // TODO: Implement me.
-    (void)messageID;
-    (void)pMessageData;
-    (void)messageDataSize;
+    dtk_post_event(DTK_CONTROL(&pWindow->windowDTK)->pTK, DTK_CONTROL(&pWindow->windowDTK), messageID, pMessageData, messageDataSize);
 
 #if 0
 #ifdef DRED_WIN32
