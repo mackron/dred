@@ -3330,6 +3330,17 @@ dred_window* dred_window_create_dialog(dred_window* pParentWindow, const char* t
 void dred_window_delete(dred_window* pWindow)
 {
     if (pWindow == NULL) return;
+
+    if (pWindow->pRootGUIControl) {
+        dred_control_uninit(pWindow->pRootGUIControl);
+        pWindow->pRootGUIControl = NULL;
+    }
+
+    if (pWindow->pDrawingSurface) {
+        dr2d_delete_surface(pWindow->pDrawingSurface);
+        pWindow->pDrawingSurface = NULL;
+    }
+
     dtk_window_uninit(&pWindow->windowDTK);
     free(pWindow);
 
