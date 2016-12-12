@@ -319,8 +319,8 @@ static dtk_bool32 dred_dtk_global_event_proc(dtk_event* pEvent)
         {
             switch (pEvent->custom.id)
             {
-                case DRED_IPC_MESSAGE_ACTIVATE:
-                case DRED_IPC_MESSAGE_OPEN:
+                case DRED_EVENT_IPC_ACTIVATE:
+                case DRED_EVENT_IPC_OPEN:
                 {
                     dred_on_ipc_message(pDred, pEvent->custom.id, pEvent->custom.pData);
                 } break;
