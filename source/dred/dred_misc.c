@@ -9,7 +9,7 @@ dr_bool32 dred_parse_bool(const char* value)
     return DR_TRUE;
 }
 
-dred_gui_font_weight dred_parse_font_weight(const char* weight)
+dtk_font_weight dred_parse_font_weight(const char* weight)
 {
     if (strcmp(weight, "medium") == 0 || strcmp(weight, "normal") == 0 || strcmp(weight, "default") == 0) {
         return dtk_font_weight_normal;
@@ -48,7 +48,7 @@ dred_gui_font_weight dred_parse_font_weight(const char* weight)
     return dtk_font_weight_normal;
 }
 
-dr_bool32 dred_font_weight_to_string(dred_gui_font_weight weight, char* strOut, size_t strOutSize)
+dr_bool32 dred_font_weight_to_string(dtk_font_weight weight, char* strOut, size_t strOutSize)
 {
     if (weight == dtk_font_weight_normal/* || weight == dtk_font_weight_medium || weight == dtk_font_weight_default*/) {
         return strcpy_s(strOut, strOutSize, "default") == 0;
@@ -88,7 +88,7 @@ dr_bool32 dred_font_weight_to_string(dred_gui_font_weight weight, char* strOut, 
 }
 
 
-dred_gui_font_slant dred_parse_font_slant(const char* slant)
+dtk_font_slant dred_parse_font_slant(const char* slant)
 {
     if (strcmp(slant, "none") == 0 || strcmp(slant, "default") == 0) {
         return dtk_font_slant_none;
@@ -103,7 +103,7 @@ dred_gui_font_slant dred_parse_font_slant(const char* slant)
     return dtk_font_slant_none;
 }
 
-dr_bool32 dred_font_slant_to_string(dred_gui_font_slant slant, char* strOut, size_t strOutSize)
+dr_bool32 dred_font_slant_to_string(dtk_font_slant slant, char* strOut, size_t strOutSize)
 {
     if (slant == dtk_font_slant_none) {
         return strcpy_s(strOut, strOutSize, "none") == 0;
@@ -120,7 +120,7 @@ dr_bool32 dred_font_slant_to_string(dred_gui_font_slant slant, char* strOut, siz
 
 
 #ifdef DRED_GTK
-dred_gui_font_weight dred_font_weight_from_pango(PangoWeight weight)
+dtk_font_weight dred_font_weight_from_pango(PangoWeight weight)
 {
     if (weight == PANGO_WEIGHT_THIN) {
         return dtk_font_weight_thin;
@@ -151,7 +151,7 @@ dred_gui_font_weight dred_font_weight_from_pango(PangoWeight weight)
     }
 }
 
-dred_gui_font_slant dred_font_slant_from_pango(PangoStyle slant)
+dtk_font_slant dred_font_slant_from_pango(PangoStyle slant)
 {
     if (slant == PANGO_STYLE_OBLIQUE) {
         return dtk_font_slant_oblique;

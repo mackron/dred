@@ -93,7 +93,7 @@ void dred_font_library_uninit(dred_font_library* pLibrary)
 }
 
 
-dred_font* dred_font_library_create_font(dred_font_library* pLibrary, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags)
+dred_font* dred_font_library_create_font(dred_font_library* pLibrary, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, float rotation, unsigned int flags)
 {
     dred_font_desc desc;
     if (strcpy_s(desc.family, sizeof(desc.family), family) != 0) {

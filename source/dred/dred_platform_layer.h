@@ -204,7 +204,7 @@ void dred_window_bring_to_top(dred_window* pWindow);
 dr_bool32 dred_window_is_maximized(dred_window* pWindow);
 
 // Sets the cursor to use with the window.
-void dred_window_set_cursor(dred_window* pWindow, dred_cursor_type cursor);
+void dred_window_set_cursor(dred_window* pWindow, dtk_system_cursor_type cursor);
 dr_bool32 dred_window_is_cursor_over(dred_window* pWindow);
 
 // Sets the menu for the given window. Can be null, in which case the menu is removed.

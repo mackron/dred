@@ -264,7 +264,7 @@ void dred_control__auto_dirty(dred_control* pControl, dred_rect relativeRect)
 }
 
 
-void dred_gui__change_cursor(dred_control* pControl, dred_cursor_type cursor)
+void dred_gui__change_cursor(dred_control* pControl, dtk_system_cursor_type cursor)
 {
     if (pControl == NULL || pControl->pGUI == NULL) {
         return;
@@ -346,7 +346,7 @@ void dred_gui__update_mouse_enter_and_leave_state(dred_gui* pGUI, dred_control* 
         {
             pGUI->pControlUnderMouse = pNewControlUnderMouse;
 
-            dred_cursor_type newCursor = dtk_system_cursor_type_default;
+            dtk_system_cursor_type newCursor = dtk_system_cursor_type_default;
             if (pNewControlUnderMouse != NULL) {
                 newCursor = pNewControlUnderMouse->cursor;
             }
@@ -1303,7 +1303,7 @@ dr_bool32 dred_control_has_keyboard_capture(dred_control* pControl)
 }
 
 
-void dred_control_set_cursor(dred_control* pControl, dred_cursor_type cursor)
+void dred_control_set_cursor(dred_control* pControl, dtk_system_cursor_type cursor)
 {
     if (pControl == NULL) {
         return;
@@ -1316,7 +1316,7 @@ void dred_control_set_cursor(dred_control* pControl, dred_cursor_type cursor)
     }
 }
 
-dred_cursor_type dred_control_get_cursor(dred_control* pControl)
+dtk_system_cursor_type dred_control_get_cursor(dred_control* pControl)
 {
     if (pControl == NULL) {
         return dtk_system_cursor_type_none;
@@ -2428,7 +2428,7 @@ void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dre
 }
 
 
-dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags)
+dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, float rotation, unsigned int flags)
 {
     if (pGUI == NULL) {
         return NULL;
@@ -2948,7 +2948,7 @@ void dred_control_draw_round_rect_with_outline_dr_2d(dred_rect, dred_color, floa
 void dred_control_draw_text_dr_2d(dred_gui_resource, const char*, int, float, float, dred_color, dred_color, void*);
 void dred_control_draw_image_dr_2d(dred_gui_resource image, dred_gui_draw_image_args* pArgs, void* pPaintData);
 
-dred_gui_resource dred_gui_create_font_dr_2d(void*, const char*, unsigned int, dred_gui_font_weight, dred_gui_font_slant, float, unsigned int flags);
+dred_gui_resource dred_gui_create_font_dr_2d(void*, const char*, unsigned int, dtk_font_weight, dtk_font_slant, float, unsigned int flags);
 void dred_gui_delete_font_dr_2d(dred_gui_resource);
 unsigned int dred_gui_get_font_size_dr_2d(dred_gui_resource hFont);
 dr_bool32 dred_gui_get_font_metrics_dr_2d(dred_gui_resource, dred_gui_font_metrics*);
@@ -3124,7 +3124,7 @@ void dred_control_draw_image_dr_2d(dred_gui_resource image, dred_gui_draw_image_
 }
 
 
-dred_gui_resource dred_gui_create_font_dr_2d(void* pPaintingContext, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags)
+dred_gui_resource dred_gui_create_font_dr_2d(void* pPaintingContext, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, float rotation, unsigned int flags)
 {
     return dr2d_create_font((dr2d_context*)pPaintingContext, family, size, (dr2d_font_weight)weight, (dr2d_font_slant)slant, rotation, flags);
 }

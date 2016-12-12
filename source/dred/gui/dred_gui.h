@@ -174,11 +174,6 @@ typedef void* dred_gui_resource;
 // is at the first byte of the structure.
 #define DRED_CONTROL(a) ((dred_control*)(a))
 
-// Common system cursors.
-#define dred_cursor_type dtk_system_cursor_type
-#define dred_gui_font_weight dtk_font_weight
-#define dred_gui_font_slant dtk_font_slant
-
 /// Image formats.
 typedef enum
 {
@@ -323,7 +318,7 @@ typedef void (* dred_gui_on_capture_mouse_proc)        (dred_control* pControl);
 typedef void (* dred_gui_on_release_mouse_proc)        (dred_control* pControl);
 typedef void (* dred_gui_on_capture_keyboard_proc)     (dred_control* pControl, dred_control* pPrevCapturedControl);
 typedef void (* dred_gui_on_release_keyboard_proc)     (dred_control* pControl, dred_control* pNewCapturedControl);
-typedef void (* dred_gui_on_change_cursor_proc)        (dred_control* pControl, dred_cursor_type cursor);
+typedef void (* dred_gui_on_change_cursor_proc)        (dred_control* pControl, dtk_system_cursor_type cursor);
 typedef void (* dred_gui_on_delete_element_proc)       (dred_control* pControl);
 typedef void (* dred_gui_on_log)                       (dred_gui* pGUI, const char* message);
 
@@ -341,7 +336,7 @@ typedef void (* dred_gui_draw_round_rect_with_outline_proc) (dred_rect relativeR
 typedef void (* dred_gui_draw_text_proc)                    (dred_gui_resource font, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData);
 typedef void (* dred_gui_draw_image_proc)                   (dred_gui_resource image, dred_gui_draw_image_args* pArgs, void* pPaintData);
 
-typedef dred_gui_resource (* dred_gui_create_font_proc)                        (void* pPaintingContext, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags);
+typedef dred_gui_resource (* dred_gui_create_font_proc)                        (void* pPaintingContext, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, float rotation, unsigned int flags);
 typedef void              (* dred_gui_delete_font_proc)                        (dred_gui_resource font);
 typedef unsigned int      (* dred_gui_get_font_size_proc)                      (dred_gui_resource font);
 typedef dr_bool32              (* dred_gui_get_font_metrics_proc)                   (dred_gui_resource font, dred_gui_font_metrics* pMetricsOut);
@@ -573,10 +568,10 @@ struct dred_gui_font
     unsigned int size;
 
     /// The font's weight.
-    dred_gui_font_weight weight;
+    dtk_font_weight weight;
 
     /// The fon't slant.
-    dred_gui_font_slant slant;
+    dtk_font_slant slant;
 
     /// The fon't rotation.
     float rotation;
@@ -631,7 +626,7 @@ struct dred_control
 
 
     /// The cursor. Defaults to drge_cursor_default.
-    dred_cursor_type cursor;
+    dtk_system_cursor_type cursor;
 
     /// Boolean flags.
     unsigned int flags;
@@ -740,7 +735,7 @@ struct dred_gui
     dred_control* pControlWantingKeyboardCapture;
 
     /// The current cursor.
-    dred_cursor_type currentCursor;
+    dtk_system_cursor_type currentCursor;
 
     /// Boolean flags.
     unsigned int flags;
@@ -1019,10 +1014,10 @@ dr_bool32 dred_control_has_keyboard_capture(dred_control* pControl);
 
 
 /// Sets the cursor to use when the mouse enters the given GUI element.
-void dred_control_set_cursor(dred_control* pControl, dred_cursor_type cursor);
+void dred_control_set_cursor(dred_control* pControl, dtk_system_cursor_type cursor);
 
 /// Retrieves the cursor to use when the mouse enters the given GUI element.
-dred_cursor_type dred_control_get_cursor(dred_control* pControl);
+dtk_system_cursor_type dred_control_get_cursor(dred_control* pControl);
 
 // Helper function for showing a popup menu relative to the given control.
 void dred_control_show_popup_menu(dred_control* pControl, dtk_menu* pMenu, int relativePosX, int relativePosY);
@@ -1306,7 +1301,7 @@ void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dre
 
 
 /// Creates a font resource.
-dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dred_gui_font_weight weight, dred_gui_font_slant slant, float rotation, unsigned int flags);
+dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, float rotation, unsigned int flags);
 
 /// Deletes a font resource.
 void dred_gui_delete_font(dred_gui_font* pFont);

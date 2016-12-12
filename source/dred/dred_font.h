@@ -4,8 +4,8 @@ typedef struct
 {
     char family[64];
     unsigned int size;
-    dred_gui_font_weight weight;
-    dred_gui_font_slant slant;
+    dtk_font_weight weight;
+    dtk_font_slant slant;
     float rotation;
     unsigned int flags;
 } dred_font_desc;

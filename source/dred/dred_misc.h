@@ -3,15 +3,15 @@
 // This is where anything that doesn't belong to any particular category is placed.
 
 dr_bool32 dred_parse_bool(const char* value);
-dred_gui_font_weight dred_parse_font_weight(const char* weight);
-dr_bool32 dred_font_weight_to_string(dred_gui_font_weight weight, char* strOut, size_t strOutSize);
+dtk_font_weight dred_parse_font_weight(const char* weight);
+dr_bool32 dred_font_weight_to_string(dtk_font_weight weight, char* strOut, size_t strOutSize);
 
-dred_gui_font_slant dred_parse_font_slant(const char* slant);
-dr_bool32 dred_font_slant_to_string(dred_gui_font_slant slant, char* strOut, size_t strOutSize);
+dtk_font_slant dred_parse_font_slant(const char* slant);
+dr_bool32 dred_font_slant_to_string(dtk_font_slant slant, char* strOut, size_t strOutSize);
 
 #ifdef DRED_GTK
-dred_gui_font_weight dred_font_weight_from_pango(PangoWeight weight);
-dred_gui_font_slant dred_font_slant_from_pango(PangoStyle slant);
+dtk_font_weight dred_font_weight_from_pango(PangoWeight weight);
+dtk_font_slant dred_font_slant_from_pango(PangoStyle slant);
 #endif
 
 dred_color dred_parse_color(const char* color);

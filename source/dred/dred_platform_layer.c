@@ -1162,7 +1162,7 @@ dr_bool32 dred_window_is_maximized__win32(dred_window* pWindow)
 }
 
 
-void dred_window_set_cursor__win32(dred_window* pWindow, dred_cursor_type cursor)
+void dred_window_set_cursor__win32(dred_window* pWindow, dtk_system_cursor_type cursor)
 {
     if (pWindow == NULL) {
         return;
@@ -2534,7 +2534,7 @@ dr_bool32 dred_window_is_maximized__gtk(dred_window* pWindow)
 }
 
 
-void dred_window_set_cursor__gtk(dred_window* pWindow, dred_cursor_type cursor)
+void dred_window_set_cursor__gtk(dred_window* pWindow, dtk_system_cursor_type cursor)
 {
     switch (cursor)
     {
@@ -3091,7 +3091,7 @@ static void dred_platform__on_global_dirty__gtk(dred_control* pControl, dred_rec
 //
 //////////////////////////////////////////////////////////////////
 
-static void dred_platform__on_global_change_cursor(dred_control* pControl, dred_cursor_type cursor)
+static void dred_platform__on_global_change_cursor(dred_control* pControl, dtk_system_cursor_type cursor)
 {
     dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow == NULL) {
@@ -3553,7 +3553,7 @@ dr_bool32 dred_window_is_maximized(dred_window* pWindow)
 }
 
 
-void dred_window_set_cursor(dred_window* pWindow, dred_cursor_type cursor)
+void dred_window_set_cursor(dred_window* pWindow, dtk_system_cursor_type cursor)
 {
     if (pWindow == NULL) return;
     dtk_window_set_cursor(&pWindow->windowDTK, cursor);

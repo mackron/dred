@@ -1728,7 +1728,7 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerW
         default: break;
         }
 
-        if (pDefaultFontDesc->slant == (dred_gui_font_slant)dr2d_font_slant_italic || pDefaultFontDesc->slant == (dred_gui_font_slant)dr2d_font_slant_oblique) {
+        if (pDefaultFontDesc->slant == (dtk_font_slant)dr2d_font_slant_italic || pDefaultFontDesc->slant == (dtk_font_slant)dr2d_font_slant_oblique) {
             lf.lfItalic = TRUE;
         }
     }
