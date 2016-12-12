@@ -336,7 +336,7 @@ void dred_refresh_favourite_files_menu(dred_context* pDred)
 
         dtk_uint32 itemID = DRED_MENU_ITEM_ID_FAVOURITE_FILE_0 + iItem;
 
-        dtk_menu_set_item_text(&pDred->menus.recentFiles, dtk_menu_find_item_by_id(&pDred->menus.recentFiles, itemID), pDred->config.recentFiles[iItem]);
+        dtk_menu_set_item_text(&pDred->menus.favouriteFiles, dtk_menu_find_item_by_id(&pDred->menus.favouriteFiles, itemID), pDred->config.favouriteFiles[iItem]);
         dred_menu_item_table_bind(&pDred->menuItemTable, itemID, cmdStr, NULL);
     }
 
