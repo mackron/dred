@@ -1452,9 +1452,11 @@ dtk_result dtk_window_set_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu)
     }
 
     // Add the new menu to the top.
-    gtk_box_pack_start(GTK_BOX(pWindow->gtk.pBox), pMenu->gtk.pWidget, FALSE, FALSE, 0);
-    gtk_box_reorder_child(GTK_BOX(pWindow->gtk.pBox), pMenu->gtk.pWidget, 0);
-    gtk_widget_show(pMenu->gtk.pWidget);
+    if (pMenu != NULL) {
+        gtk_box_pack_start(GTK_BOX(pWindow->gtk.pBox), pMenu->gtk.pWidget, FALSE, FALSE, 0);
+        gtk_box_reorder_child(GTK_BOX(pWindow->gtk.pBox), pMenu->gtk.pWidget, 0);
+        gtk_widget_show(pMenu->gtk.pWidget);
+    }
 
     pWindow->gtk.pMenu = pMenu;
     return DTK_SUCCESS;

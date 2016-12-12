@@ -208,3 +208,11 @@ DTK_INLINE dtk_uint32 dtk_utf16pair_to_utf32_ch(dtk_uint16 utf160, dtk_uint16 ut
     utf16[1] = utf161;
     return dtk_utf16_to_utf32_ch(utf16);
 }
+
+
+// Creates a formatted string. Free the string with dtk_free_string().
+char* dtk_make_stringv(const char* format, va_list args);
+char* dtk_make_stringf(const char* format, ...);
+
+// Frees a string created by dtk_make_string*()
+void dtk_free_string(char* str);

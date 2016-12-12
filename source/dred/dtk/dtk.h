@@ -123,6 +123,9 @@ typedef struct
     dtk_int32 bottom;
 } dtk_rect;
 
+// The callback function for handing log messages.
+typedef void (* dtk_log_proc)(dtk_context* pTK, const char* message);
+
 // The callback function to call when an event is received and needs handling. The return value controls whether or
 // not the event should be propagated. Returning true will propagate the event, false will cancel the event. You will
 // almost always want to return true.
@@ -296,6 +299,7 @@ struct dtk_context
 {
     dtk_platform platform;
     dtk_event_proc onEvent;
+    dtk_log_proc onLog;
     int exitCode;
     dtk_window* pFirstWindow;
     dtk_menu* pFirstMenu;
@@ -396,6 +400,9 @@ dtk_result dtk_post_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 ev
 //
 // Thread Safety: SAFE
 dtk_result dtk_post_quit_event(dtk_context* pTK, int exitCode);
+
+// Sets the logging callback.
+dtk_result dtk_set_log_callback(dtk_context* pTK, dtk_log_proc proc);
 
 
 //// Accelerators ////

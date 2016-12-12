@@ -3218,11 +3218,17 @@ void dred_platform_bind_gui(dred_gui* pGUI)
     dred_gui_set_on_delete_element(pGUI, dred_platform__on_delete_gui_element);
 }
 
+
+void dred_dtk_log_callback(dtk_context* pTK, const char* message)
+{
+    dred_context* pDred = (dred_context*)pTK->pUserData;
+    dred_log(pDred, message);
+}
+
 void dred_platform_bind_logging(dred_context* pDred)
 {
     if (pDred == NULL) return;
-
-    // TODO: Implement this in DTK.
+    dtk_set_log_callback(&pDred->tk, dred_dtk_log_callback);
 
 #if 0
 #ifdef DRED_WIN32
@@ -3588,7 +3594,9 @@ void dred_window_set_menu(dred_window* pWindow, dtk_menu* pMenu)
         return; // It's the same menu.
     }
 
-    dtk_window_set_menu(&pWindow->windowDTK, pMenu);
+    if (dtk_window_set_menu(&pWindow->windowDTK, pMenu) == DTK_SUCCESS) {
+        pWindow->pMenu = pMenu;
+    }
 
 #if 0
 #ifdef DRED_WIN32

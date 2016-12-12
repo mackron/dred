@@ -654,6 +654,82 @@ dtk_result dtk_uninit_backend_apis__gtk(dtk_context* pTK)
     return DTK_SUCCESS;
 }
 
+void dtk_log_handler__gtk(const gchar *domain, GLogLevelFlags level, const gchar *message, gpointer pUserData)
+{
+    dtk_context* pTK = (dtk_context*)pUserData;
+    dtk_assert(pTK != NULL);
+
+    const char* tag = "";
+
+    printf("LOGGED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    dtk_log_proc onLog = pTK->onLog;
+    if (onLog) {
+        if ((level & (G_LOG_FLAG_FATAL | G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL)) != 0) {
+            tag = "[ERROR] ";
+        }
+        if ((level & (G_LOG_LEVEL_WARNING)) != 0) {
+            tag = "[WARNING] ";
+        }
+        if ((level & (G_LOG_LEVEL_MESSAGE | G_LOG_LEVEL_INFO)) != 0) {
+            tag = "";
+        }
+
+        char* formattedMessage = dtk_make_stringf("%s %s - %s", tag, domain, message);
+        if (formattedMessage != NULL) {
+            onLog(pTK, formattedMessage);
+            dtk_free_string(formattedMessage);
+        } else {
+            g_log_default_handler(domain, level, message, NULL);
+        }
+    } else {
+        g_log_default_handler(domain, level, message, NULL);
+    }
+}
+
+#if GLIB_CHECK_VERSION(2, 5, 0)
+GLogWriterOutput dtk_log_writer_handler__gtk(GLogLevelFlags level, const GLogField *fields, gsize fieldCount, gpointer pUserData)
+{
+    dtk_context* pTK = (dtk_context*)pUserData;
+    dtk_assert(pTK != NULL);
+
+    const char* tag = "";
+    const char* domain = "";
+    const char* message = "";
+    for (gsize i = 0; i < fieldCount; ++i) {
+        if (strcmp(fields[i].key, "GLIB_DOMAIN") == 0) {
+            domain = (const char*)fields[i].value;
+        }
+        if (strcmp(fields[i].key, "MESSAGE") == 0) {
+            message = (const char*)fields[i].value;
+        }
+    }
+
+    dtk_log_proc onLog = pTK->onLog;
+    if (onLog) {
+        if ((level & (G_LOG_FLAG_FATAL | G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL)) != 0) {
+            tag = "[ERROR] ";
+        }
+        if ((level & (G_LOG_LEVEL_WARNING)) != 0) {
+            tag = "[WARNING] ";
+        }
+        if ((level & (G_LOG_LEVEL_MESSAGE | G_LOG_LEVEL_INFO)) != 0) {
+            tag = "";
+        }
+
+        char* formattedMessage = dtk_make_stringf("%s%s - %s", tag, domain, message);
+        if (formattedMessage != NULL) {
+            onLog(pTK, formattedMessage);
+            dtk_free_string(formattedMessage);
+            return G_LOG_WRITER_HANDLED;
+        } else {
+            return g_log_writer_default(level, fields, fieldCount, pUserData);
+        }
+    } else {
+        return g_log_writer_default(level, fields, fieldCount, pUserData);
+    }
+}
+#endif
+
 dtk_result dtk_init__gtk(dtk_context* pTK)
 {
     g_dtkInitCounter_GTK += 1;
@@ -665,6 +741,15 @@ dtk_result dtk_init__gtk(dtk_context* pTK)
             dtk_uninit_backend_apis__gtk(pTK);
             return DTK_FAILED_TO_INIT_BACKEND;
         }
+
+        // Logging.
+        g_log_set_handler(NULL,   G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL, dtk_log_handler__gtk, pTK);
+        g_log_set_handler("GLib", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL, dtk_log_handler__gtk, pTK);
+        g_log_set_handler("Gtk",  G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL, dtk_log_handler__gtk, pTK);
+
+#if GLIB_CHECK_VERSION(2, 5, 0)
+        g_log_set_writer_func(dtk_log_writer_handler__gtk, pTK, NULL);
+#endif
 
         pTK->gtk.pCursorDefault      = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_LEFT_PTR);
         pTK->gtk.pCursorIBeam        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_XTERM);
@@ -1004,6 +1089,14 @@ dtk_result dtk_post_quit_event(dtk_context* pTK, int exitCode)
 #endif
 
     return result;
+}
+
+dtk_result dtk_set_log_callback(dtk_context* pTK, dtk_log_proc proc)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    dtk_atomic_exchange_ptr(&pTK->onLog, proc);
+    return DTK_SUCCESS;
 }
 
 
