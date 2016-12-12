@@ -3594,9 +3594,11 @@ void dred_window_set_menu(dred_window* pWindow, dtk_menu* pMenu)
         return; // It's the same menu.
     }
 
-    if (dtk_window_set_menu(&pWindow->windowDTK, pMenu) == DTK_SUCCESS) {
-        pWindow->pMenu = pMenu;
+    if (pWindow->isShowingMenu && dtk_window_set_menu(&pWindow->windowDTK, pMenu) != DTK_SUCCESS) {
+        return; // Failed to set the menu.
     }
+
+    pWindow->pMenu = pMenu;
 
 #if 0
 #ifdef DRED_WIN32
