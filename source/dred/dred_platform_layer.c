@@ -134,22 +134,6 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
             dred_window_on_unfocus(pWindow);
         } break;
 
-        case DTK_EVENT_MENU:
-        {
-            // If the menu has an explicit command, use that. If not, check for the shortcut and use _it's_ command instead.
-            const char* command = dred_menu_item_table_get_command(&pDred->menuItemTable, pEvent->menu.itemID);
-            if (dtk_string_is_null_or_empty(command)) {
-                const char* shortcut = dred_menu_item_table_get_shortcut(&pDred->menuItemTable, pEvent->menu.itemID);
-                if (!dtk_string_is_null_or_empty(shortcut)) {
-                    command = dred_shortcut_table_get_command_string_by_name(&pDred->shortcutTable, shortcut);
-                }
-            }
-
-            if (!dtk_string_is_null_or_empty(command)) {
-                dred_exec(pDred, command, NULL);
-            }
-        } break;
-
         default: break;
     }
 

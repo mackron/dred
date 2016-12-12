@@ -286,13 +286,33 @@ dred_thread_result DRED_THREADCALL dred_ipc_message_proc(void* pData)
 
 static dtk_bool32 dred_dtk_global_event_proc(dtk_event* pEvent)
 {
-    (void)pEvent;
+    dred_context* pDred = (dred_context*)pEvent->pTK->pUserData;
+    assert(pDred != NULL);
 
     switch (pEvent->type)
     {
         case DTK_EVENT_ACCELERATOR:
         {
             dred_on_accelerator((dred_context*)pEvent->pTK->pUserData, dtk_accelerator_init(pEvent->accelerator.key, pEvent->accelerator.modifiers, pEvent->accelerator.id));
+        } break;
+
+        // Currently, DTK does not reliably pass the window that owns the menu that triggered the DTK_EVENT_MENU event on
+        // all platforms (looking at you GTK!). Therefore, we need to handle these here in the global event handler rather
+        // than in the window's event handler.
+        case DTK_EVENT_MENU:
+        {
+            // If the menu has an explicit command, use that. If not, check for the shortcut and use _it's_ command instead.
+            const char* command = dred_menu_item_table_get_command(&pDred->menuItemTable, pEvent->menu.itemID);
+            if (dtk_string_is_null_or_empty(command)) {
+                const char* shortcut = dred_menu_item_table_get_shortcut(&pDred->menuItemTable, pEvent->menu.itemID);
+                if (!dtk_string_is_null_or_empty(shortcut)) {
+                    command = dred_shortcut_table_get_command_string_by_name(&pDred->shortcutTable, shortcut);
+                }
+            }
+
+            if (!dtk_string_is_null_or_empty(command)) {
+                dred_exec(pDred, command, NULL);
+            }
         } break;
 
         default: break;
