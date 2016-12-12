@@ -63,6 +63,9 @@ void dred_textview__on_apply_undo_state(dred_textview* pTextView, size_t dataSiz
 // dred_textview__refresh_horizontal_scrollbar()
 void dred_textview__refresh_horizontal_scrollbar(dred_textview* pTextView);
 
+void dred_textview__move_cursor_left(dred_textview* pTextView, size_t iCursor, int stateFlags);
+void dred_textview__move_cursor_right(dred_textview* pTextView, size_t iCursor, int stateFlags);
+
 void dred_textview__on_vscroll(dred_scrollbar* pSBControl, int scrollPos)
 {
     dred_textview* pTextView = (dred_textview*)DRED_CONTROL(pSBControl)->pUserData;
@@ -1008,6 +1011,88 @@ dr_bool32 dred_textview_delete_selected_text(dred_textview* pTextView)
     return wasTextChanged;
 }
 
+dr_bool32 dred_textview_do_delete(dred_textview* pTextView, int keyStateFlags)
+{
+    size_t iLastCursor = drte_view_get_last_cursor(pTextView->pView);
+
+    dr_bool32 wasTextChanged = DR_FALSE;
+    drte_engine_prepare_undo_point(pTextView->pTextEngine);
+    {
+        if (drte_view_is_anything_selected(pTextView->pView)) {
+            wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView);
+            drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[iLastCursor]);
+            drte_view_remove_overlapping_cursors(pTextView->pView);
+        } else {
+            drte_view_begin_dirty(pTextView->pView);
+            {
+                for (size_t iCursor = 0; iCursor < pTextView->pView->cursorCount; ++iCursor) {
+                    size_t iCharBeg = drte_view_get_cursor_character(pTextView->pView, iCursor);
+                    dred_textview__move_cursor_right(pTextView, iCursor, keyStateFlags);
+                    size_t iCharEnd = drte_view_get_cursor_character(pTextView->pView, iCursor);
+
+                    if (iCharEnd == iCharBeg) {
+                        continue;   // Nothing to delete.
+                    }
+
+                    wasTextChanged = drte_engine_delete_text(pTextView->pTextEngine, iCharBeg, iCharEnd);
+                    drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[iCursor]);
+                }
+            }
+            drte_view_end_dirty(pTextView->pView);
+        }
+    }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
+
+    return wasTextChanged;
+}
+
+dr_bool32 dred_textview_do_backspace(dred_textview* pTextView, int keyStateFlags)
+{
+    size_t iLastCursor = drte_view_get_last_cursor(pTextView->pView);
+
+    dr_bool32 wasTextChanged = DR_FALSE;
+    drte_engine_prepare_undo_point(pTextView->pTextEngine);
+    {
+        if (drte_view_is_anything_selected(pTextView->pView)) {
+            wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView);
+            drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[iLastCursor]);
+            drte_view_remove_overlapping_cursors(pTextView->pView);
+        } else {
+            drte_view_begin_dirty(pTextView->pView);
+            {
+                for (size_t iCursor = 0; iCursor < pTextView->pView->cursorCount; ++iCursor) {
+                    size_t iCursorChar = pTextView->pView->pCursors[iCursor].iCharAbs;
+                    if (iCursorChar == 0) {
+                        continue;
+                    }
+
+                    dr_bool32 leaveNewLines = pTextView->pView->cursorCount > 1;
+                    if (leaveNewLines) {
+                        size_t iLineCharBeg = drte_view_get_line_first_character(pTextView->pView, pTextView->pView->pWrappedLines, drte_view_get_cursor_line(pTextView->pView, iCursor));
+                        if (iCursorChar == iLineCharBeg) {
+                            continue;
+                        }
+                    }
+
+                    size_t iCharEnd = drte_view_get_cursor_character(pTextView->pView, iCursor);
+                    dred_textview__move_cursor_left(pTextView, iCursor, keyStateFlags);
+                    size_t iCharBeg = drte_view_get_cursor_character(pTextView->pView, iCursor);
+
+                    if (iCharEnd == iCharBeg) {
+                        continue;   // Nothing to delete.
+                    }
+
+                    wasTextChanged = drte_engine_delete_text(pTextView->pTextEngine, iCharBeg, iCharEnd);
+                }
+            }
+            drte_view_end_dirty(pTextView->pView);
+        }
+    }
+    if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
+
+    return wasTextChanged;
+}
+
 dr_bool32 dred_textview_insert_text_at_cursors_no_undo(dred_textview* pTextView, const char* text)
 {
     if (pTextView == NULL) {
@@ -1913,76 +1998,12 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
     {
         case DRED_GUI_BACKSPACE:
         {
-            dr_bool32 wasTextChanged = DR_FALSE;
-            drte_engine_prepare_undo_point(pTextView->pTextEngine);
-            {
-                if (drte_view_is_anything_selected(pTextView->pView)) {
-                    wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView);
-                    drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[iLastCursor]);
-                    drte_view_remove_overlapping_cursors(pTextView->pView);
-                } else {
-                    drte_view_begin_dirty(pTextView->pView);
-                    {
-                        for (size_t iCursor = 0; iCursor < pTextView->pView->cursorCount; ++iCursor) {
-                            size_t iCursorChar = pTextView->pView->pCursors[iCursor].iCharAbs;
-                            if (iCursorChar == 0) {
-                                continue;
-                            }
-
-                            dr_bool32 leaveNewLines = pTextView->pView->cursorCount > 1;
-                            if (leaveNewLines) {
-                                size_t iLineCharBeg = drte_view_get_line_first_character(pTextView->pView, pTextView->pView->pWrappedLines, drte_view_get_cursor_line(pTextView->pView, iCursor));
-                                if (iCursorChar == iLineCharBeg) {
-                                    continue;
-                                }
-                            }
-
-                            size_t iCharEnd = drte_view_get_cursor_character(pTextView->pView, iCursor);
-                            dred_textview__move_cursor_left(pTextView, iCursor, stateFlags);
-                            size_t iCharBeg = drte_view_get_cursor_character(pTextView->pView, iCursor);
-
-                            if (iCharEnd == iCharBeg) {
-                                continue;   // Nothing to delete.
-                            }
-
-                            wasTextChanged = drte_engine_delete_text(pTextView->pTextEngine, iCharBeg, iCharEnd);
-                        }
-                    }
-                    drte_view_end_dirty(pTextView->pView);
-                }
-            }
-            if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
+            dred_textview_do_backspace(pTextView, stateFlags);
         } break;
 
         case DRED_GUI_DELETE:
         {
-            dr_bool32 wasTextChanged = DR_FALSE;
-            drte_engine_prepare_undo_point(pTextView->pTextEngine);
-            {
-                if (drte_view_is_anything_selected(pTextView->pView)) {
-                    wasTextChanged = dred_textview_delete_selected_text_no_undo(pTextView);
-                    drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[iLastCursor]);
-                    drte_view_remove_overlapping_cursors(pTextView->pView);
-                } else {
-                    drte_view_begin_dirty(pTextView->pView);
-                    {
-                        for (size_t iCursor = 0; iCursor < pTextView->pView->cursorCount; ++iCursor) {
-                            size_t iCharBeg = drte_view_get_cursor_character(pTextView->pView, iCursor);
-                            dred_textview__move_cursor_right(pTextView, iCursor, stateFlags);
-                            size_t iCharEnd = drte_view_get_cursor_character(pTextView->pView, iCursor);
-
-                            if (iCharEnd == iCharBeg) {
-                                continue;   // Nothing to delete.
-                            }
-
-                            wasTextChanged = drte_engine_delete_text(pTextView->pTextEngine, iCharBeg, iCharEnd);
-                            drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[iCursor]);
-                        }
-                    }
-                    drte_view_end_dirty(pTextView->pView);
-                }
-            }
-            if (wasTextChanged) { drte_engine_commit_undo_point(pTextView->pTextEngine); }
+            dred_textview_do_delete(pTextView, stateFlags);
         } break;
 
 

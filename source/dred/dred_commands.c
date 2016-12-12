@@ -474,7 +474,7 @@ dr_bool32 dred_command__delete(dred_context* pDred, const char* value)
     }
 
     if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
-        dred_textview_delete_selected_text(DRED_TEXTVIEW(pFocusedControl));
+        dred_textview_do_delete(DRED_TEXTVIEW(pFocusedControl), 0);
         return DR_TRUE;
     }
 

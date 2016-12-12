@@ -303,6 +303,12 @@ dr_bool32 dred_textview_delete_character_to_right_of_cursor(dred_textview* pText
 dr_bool32 dred_textview_delete_selected_text_no_undo(dred_textview* pTextView);
 dr_bool32 dred_textview_delete_selected_text(dred_textview* pTextView);
 
+// Processes the delete key.
+dr_bool32 dred_textview_do_delete(dred_textview* pTextView, int keyStateFlags);
+
+// Processes the backspace key.
+dr_bool32 dred_textview_do_backspace(dred_textview* pTextView, int keyStateFlags);
+
 // Inserts a character at the position of the cursor.
 //
 // @return True if the text within the text engine has changed.

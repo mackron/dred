@@ -3584,20 +3584,6 @@ dr_bool32 dred_window_is_cursor_over(dred_window* pWindow)
 }
 
 
-#if 0
-void dred_window_bind_accelerators(dred_window* pWindow, dred_accelerator_table* pAcceleratorTable)
-{
-    if (pWindow == NULL) return;
-
-#ifdef DRED_WIN32
-    dred_window_bind_accelerators__win32(pWindow, pAcceleratorTable);
-#endif
-#ifdef DRED_GTK
-    dred_window_bind_accelerators__gtk(pWindow, pAcceleratorTable);
-#endif
-}
-#endif
-
 void dred_window_set_menu(dred_window* pWindow, dtk_menu* pMenu)
 {
     if (pWindow == NULL) return;

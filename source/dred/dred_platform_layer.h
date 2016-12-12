@@ -207,9 +207,6 @@ dr_bool32 dred_window_is_maximized(dred_window* pWindow);
 void dred_window_set_cursor(dred_window* pWindow, dred_cursor_type cursor);
 dr_bool32 dred_window_is_cursor_over(dred_window* pWindow);
 
-// Binds the given accelerator table to the given window.
-//void dred_window_bind_accelerators(dred_window* pWindow, dred_accelerator_table* pAcceleratorTable);
-
 // Sets the menu for the given window. Can be null, in which case the menu is removed.
 void dred_window_set_menu(dred_window* pWindow, dtk_menu* pMenu);
 
