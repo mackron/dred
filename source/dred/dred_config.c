@@ -360,7 +360,7 @@ void dred_config_on_set__show_tab_bar(dred_context* pDred)
     }
 
     dtk_menu_set_item_checked_by_id(&pDred->menus.textView, DRED_MENU_ITEM_ID_TEXT_VIEW_TABBARS, pDred->config.showTabBar);
-    // TODO: Nothing Open menu: dtk_menu_set_item_checked_by_id(&pDred->menus.nothingopenView, DRED_MENU_ITEM_ID_NOTHINGOPEN_VIEW_TABBARS, pDred->config.showTabBar);
+    dtk_menu_set_item_checked_by_id(&pDred->menus.nothingopenView, DRED_MENU_ITEM_ID_NOTHINGOPEN_VIEW_TABBARS, pDred->config.showTabBar);
 }
 
 void dred_config_on_set__show_menu_bar(dred_context* pDred)
@@ -383,7 +383,7 @@ void dred_config_on_set__auto_hide_cmd_bar(dred_context* pDred)
     }
 
     dtk_menu_set_item_checked_by_id(&pDred->menus.textView, DRED_MENU_ITEM_ID_TEXT_VIEW_CMDBAR, pDred->config.autoHideCmdBar);
-    // TODO: Nothing Open menu.
+    dtk_menu_set_item_checked_by_id(&pDred->menus.nothingopenView, DRED_MENU_ITEM_ID_NOTHINGOPEN_VIEW_CMDBAR, pDred->config.autoHideCmdBar);
 }
 
 void dred_config_on_set__enable_auto_reload(dred_context* pDred)

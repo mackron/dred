@@ -35,6 +35,8 @@
     ]},
     
     {"id":"nothingopen.view", "items":[
+		{"id":"nothingopen.view.tabbars", "type":"check", "text":"Show Tab Bars", "cmd":"toggle-tabbars"},
+        {"id":"nothingopen.view.cmdbar", "type":"check", "text":"Auto-Hide Command Bar", "cmd":"toggle-auto-hide-cmdbar"}
     ]},
     
     {"id":"nothingopen", "type":"menubar", "items":[
