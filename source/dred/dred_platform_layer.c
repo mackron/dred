@@ -38,6 +38,15 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
         case DTK_EVENT_PAINT:
         {
             dred_control_draw(pWindow->pRootGUIControl, dred_make_rect((float)pEvent->paint.rect.left, (float)pEvent->paint.rect.top, (float)pEvent->paint.rect.right, (float)pEvent->paint.rect.bottom), pWindow->pDrawingSurface);
+
+            // TODO: Remove this hack.
+            //
+            // TEMPORARY HACK: Copy pWindow->pDrawingSurface to the internal DTK window surface.
+#ifdef DRED_GTK
+            cairo_surface_t* pCairoSurface = dr2d_get_cairo_surface_t(pWindow->pDrawingSurface);
+            cairo_set_source_surface(pWindow->windowDTK.surface.cairo.pContext, pCairoSurface, 0, 0);
+            cairo_paint(pWindow->windowDTK.surface.cairo.pContext);
+#endif
         } break;
 
         case DTK_EVENT_CLOSE:
