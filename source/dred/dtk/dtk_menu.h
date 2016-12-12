@@ -82,9 +82,9 @@ dtk_result dtk_menu_remove_all_items(dtk_menu* pMenu);
 // Sets the text of a menu item.
 dtk_result dtk_menu_set_item_text(dtk_menu* pMenu, dtk_uint32 index, const char* text);
 
-
 // Retrieves the user data of the menu item at the given index.
 dtk_result dtk_menu_get_item_user_data(dtk_menu* pMenu, dtk_uint32 index, void** ppUserData);
+
 
 // Retrieves the ID of the item at the given index.
 dtk_result dtk_menu_get_item_id(dtk_menu* pMenu, dtk_uint32 index, dtk_uint32* pID);
@@ -96,19 +96,25 @@ dtk_uint32 dtk_menu_find_item_by_id(dtk_menu* pMenu, dtk_uint32 id);
 
 // Enables the menu item at the given index.
 dtk_result dtk_menu_enable_item(dtk_menu* pMenu, dtk_uint32 index);
+DTK_INLINE dtk_result dtk_menu_enable_item_by_id(dtk_menu* pMenu, dtk_uint32 id) { return dtk_menu_enable_item(pMenu, dtk_menu_find_item_by_id(pMenu, id)); }
 
 // Disables the menu item at the given index.
 dtk_result dtk_menu_disable_item(dtk_menu* pMenu, dtk_uint32 index);
+DTK_INLINE dtk_result dtk_menu_disable_item_by_id(dtk_menu* pMenu, dtk_uint32 id) { return dtk_menu_disable_item(pMenu, dtk_menu_find_item_by_id(pMenu, id)); }
 
 
 // Checks the given menu item.
 dtk_result dtk_menu_check_item(dtk_menu* pMenu, dtk_uint32 index);
+DTK_INLINE dtk_result dtk_menu_check_item_by_id(dtk_menu* pMenu, dtk_uint32 id) { return dtk_menu_check_item(pMenu, dtk_menu_find_item_by_id(pMenu, id)); }
 
 // Unchecks the given menu item.
 dtk_result dtk_menu_uncheck_item(dtk_menu* pMenu, dtk_uint32 index);
+DTK_INLINE dtk_result dtk_menu_uncheck_item_by_id(dtk_menu* pMenu, dtk_uint32 id) { return dtk_menu_uncheck_item(pMenu, dtk_menu_find_item_by_id(pMenu, id)); }
 
 // Sets whether or not the menu item is checked.
 dtk_result dtk_menu_set_item_checked(dtk_menu* pMenu, dtk_uint32 index, dtk_bool32 checked);
+DTK_INLINE dtk_result dtk_menu_set_item_checked_by_id(dtk_menu* pMenu, dtk_uint32 id, dtk_bool32 checked) { return dtk_menu_set_item_checked(pMenu, dtk_menu_find_item_by_id(pMenu, id), checked); }
 
 // Determines whether or not the given menu item is checked.
 dtk_bool32 dtk_menu_is_item_checked(dtk_menu* pMenu, dtk_uint32 index);
+DTK_INLINE dtk_bool32 dtk_menu_is_item_checked_by_id(dtk_menu* pMenu, dtk_uint32 id) { return dtk_menu_is_item_checked(pMenu, dtk_menu_find_item_by_id(pMenu, id)); }
