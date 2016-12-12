@@ -67,7 +67,6 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_MOUSE_ENTER:
         {
-            printf("TESTING\n");
             dred_window_on_mouse_enter(pWindow);
         } break;
 

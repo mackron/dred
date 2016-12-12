@@ -414,6 +414,8 @@ static void dtk__on_menu_item_activate__gtk(GtkWidget *pItem, gpointer pUserData
         return;
     }
 
+    dtk_context* pTK = pItemData->pMenu->pTK;
+
     dtk_uint32 itemIndex = dtk_menu__get_item_index__gtk(pItemData->pMenu, pItem);
 
     // GTK likes to automatically toggle checked menu items. Win32, however, does _not_ do this, so for consistency
@@ -434,10 +436,42 @@ static void dtk__on_menu_item_activate__gtk(GtkWidget *pItem, gpointer pUserData
     if (gtk_menu_item_get_submenu(GTK_MENU_ITEM(pItem)) != NULL) {
         return;
     }
-    
+
+    // For consistency with Win32 we'll want to pass the window that the menu is attached to.
+    GtkWidget* pAttachWidget = pItem;
+    while (pAttachWidget != NULL && (G_OBJECT_TYPE(pAttachWidget) == GTK_TYPE_MENU_ITEM || G_OBJECT_TYPE(pAttachWidget) == GTK_TYPE_CHECK_MENU_ITEM)) {
+        GtkWidget* pAttachWidgetParent = gtk_widget_get_parent(pAttachWidget);
+        if (G_OBJECT_TYPE(pAttachWidgetParent) == GTK_TYPE_MENU_BAR) {
+            pAttachWidget = pAttachWidgetParent;
+            break;
+        } else if (G_OBJECT_TYPE(pAttachWidgetParent) == GTK_TYPE_MENU) {
+            GtkWidget* pNewAttachWidget = gtk_menu_get_attach_widget(GTK_MENU(pAttachWidgetParent));
+            if (pNewAttachWidget == NULL) {
+                pAttachWidget = pAttachWidgetParent;
+                break;
+            }
+
+            pAttachWidget = pNewAttachWidget;
+        }
+    }
+
+    GtkWidget* pTopLevelMenu = pAttachWidget;
+
+    dtk_window* pOwnerWindow = NULL;
+    if (pTopLevelMenu != NULL) {
+        // At this point we have found the top level menu. To find the window that the menu is attached to we will just
+        // do a linear search of the tracked windows.
+        for (dtk_window* pWindow = pTK->pFirstWindow; pWindow != NULL; pWindow = pWindow->pNextWindow) {
+            if (pWindow->gtk.pMenu != NULL && pWindow->gtk.pMenu->gtk.pWidget == pTopLevelMenu) {
+                pOwnerWindow = pWindow;
+                break;
+            }
+        }
+    }
+
     dtk_event e;
     e.pTK = pItemData->pMenu->pTK;
-    e.pControl = NULL;
+    e.pControl = DTK_CONTROL(pOwnerWindow);
     e.type = DTK_EVENT_MENU;
     e.menu.pMenu = pItemData->pMenu;
     e.menu.itemIndex = itemIndex;

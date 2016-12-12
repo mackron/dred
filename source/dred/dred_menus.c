@@ -312,11 +312,11 @@ void dred_refresh_recent_files_menu(dred_context* pDred)
 
     // Enable or disable the relevant menu items depending on how many recent files we have.
     if (pDred->config.recentFileCount > 0) {
-        dtk_menu_enable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_OPEN_RECENT);
-        dtk_menu_enable_item(&pDred->menus.nothingopenFile, DRED_MENU_ITEM_ID_NOTHINGOPEN_FILE_OPEN_RECENT);
+        dtk_menu_enable_item(&pDred->menus.textFile, dtk_menu_find_item_by_id(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_OPEN_RECENT));
+        dtk_menu_enable_item(&pDred->menus.nothingopenFile, dtk_menu_find_item_by_id(&pDred->menus.nothingopenFile, DRED_MENU_ITEM_ID_NOTHINGOPEN_FILE_OPEN_RECENT));
     } else {
-        dtk_menu_disable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_OPEN_RECENT);
-        dtk_menu_disable_item(&pDred->menus.nothingopenFile, DRED_MENU_ITEM_ID_NOTHINGOPEN_FILE_OPEN_RECENT);
+        dtk_menu_disable_item(&pDred->menus.textFile, dtk_menu_find_item_by_id(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_OPEN_RECENT));
+        dtk_menu_disable_item(&pDred->menus.nothingopenFile, dtk_menu_find_item_by_id(&pDred->menus.nothingopenFile, DRED_MENU_ITEM_ID_NOTHINGOPEN_FILE_OPEN_RECENT));
     }
 }
 
@@ -371,11 +371,11 @@ void dred_refresh_favourite_files_menu(dred_context* pDred)
 
     // Enable or disable the relevant menu items depending on how many recent files we have.
     if (pDred->config.favouriteFileCount > 0) {
-        dtk_menu_enable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_OPEN_FAVOURITE);
-        dtk_menu_enable_item(&pDred->menus.nothingopenFile, DRED_MENU_ITEM_ID_NOTHINGOPEN_FILE_OPEN_FAVOURITE);
+        dtk_menu_enable_item(&pDred->menus.textFile, dtk_menu_find_item_by_id(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_OPEN_FAVOURITE));
+        dtk_menu_enable_item(&pDred->menus.nothingopenFile, dtk_menu_find_item_by_id(&pDred->menus.nothingopenFile, DRED_MENU_ITEM_ID_NOTHINGOPEN_FILE_OPEN_FAVOURITE));
     } else {
-        dtk_menu_disable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_OPEN_FAVOURITE);
-        dtk_menu_disable_item(&pDred->menus.nothingopenFile, DRED_MENU_ITEM_ID_NOTHINGOPEN_FILE_OPEN_FAVOURITE);
+        dtk_menu_disable_item(&pDred->menus.textFile, dtk_menu_find_item_by_id(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_OPEN_FAVOURITE));
+        dtk_menu_disable_item(&pDred->menus.nothingopenFile, dtk_menu_find_item_by_id(&pDred->menus.nothingopenFile, DRED_MENU_ITEM_ID_NOTHINGOPEN_FILE_OPEN_FAVOURITE));
     }
 }
 

@@ -780,6 +780,8 @@ dtk_result dtk_window_show_popup_menu__win32(dtk_window* pWindow, dtk_menu* pMen
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DTK_GTK
+#define DTK_WINDOW_GTK_PROPERTY_NAME_USERDATA    "dtk.userdata"
+
 static int dtk_get_modifier_state_flags__gtk(guint stateFromGTK)
 {
     int result = 0;
@@ -1240,6 +1242,8 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_wind
         gtk_widget_destroy(pClientArea);
         return DTK_ERROR;
     }
+
+    g_object_set_data(G_OBJECT(pWidget), DTK_WINDOW_GTK_PROPERTY_NAME_USERDATA, pWindow);
     
     gtk_widget_add_events(pWidget,
         GDK_KEY_PRESS_MASK      |
@@ -1276,6 +1280,7 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_wind
     
     gtk_widget_show_all(GTK_WIDGET(pBox));
     gtk_widget_realize(pWidget);
+    g_object_set_data(G_OBJECT(gtk_widget_get_window(pWidget)), "GtkWindow", pWidget);
 
     // Bind the accelerator group to every window for now.
     gtk_window_add_accel_group(GTK_WINDOW(pWidget), pTK->gtk.pAccelGroup);

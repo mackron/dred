@@ -456,6 +456,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
         goto on_error;
     }
 
+    dred_refresh_recent_files_menu(pDred);
     dred_refresh_favourite_files_menu(pDred);
 
 
