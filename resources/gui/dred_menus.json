@@ -2,7 +2,7 @@
 
 {"menus":[
     {"id":"generic.help", "items":[
-        {"id":"generic.help.about", "text":"About...", "cmd":"about"}
+        {"id":"generic.help.about", "text":"&About...", "cmd":"about"}
     ]},
     
 
@@ -12,9 +12,9 @@
     ]},
 
     {"id":"generic.settings", "items":[
-        {"id":"generic.settings.themes", "text":"Themes", "submenu":"generic.settings.themes"},
+        {"id":"generic.settings.themes", "text":"&Themes", "submenu":"generic.settings.themes"},
         {"id":"separator"},
-        {"id":"generic.settings.settings", "text":"Settings", "cmd":"settings"}
+        {"id":"generic.settings.settings", "text":"&Settings", "cmd":"settings"}
     ]},
     
     
@@ -35,8 +35,8 @@
     ]},
     
     {"id":"nothingopen.view", "items":[
-		{"id":"nothingopen.view.tabbars", "type":"check", "text":"Show Tab Bars", "cmd":"toggle-tab-bar", "config":"show-tab-bar"},
-        {"id":"nothingopen.view.cmdbar", "type":"check", "text":"Auto-Hide Command Bar", "cmd":"toggle-auto-hide-cmdbar", "config":"auto-hide-cmd-bar"}
+		{"id":"nothingopen.view.tabbars", "type":"check", "text":"Show &Tab Bars", "cmd":"toggle-tab-bar", "config":"show-tab-bar"},
+        {"id":"nothingopen.view.cmdbar", "type":"check", "text":"Auto-Hide &Command Bar", "cmd":"toggle-auto-hide-cmdbar", "config":"auto-hide-cmd-bar"}
     ]},
     
     {"id":"nothingopen", "type":"menubar", "items":[
@@ -63,38 +63,38 @@
         {"id":"text.file.close", "text":"&Close", "shortcut":"file.close"},
         {"id":"text.file.closeall", "text":"Clos&e All", "shortcut":"file.close-all"},
         {"id":"separator"},
-        {"id":"text.file.print", "text":"&Print", "shortcut":"file.print"},
+        {"id":"text.file.print", "text":"&Print...", "shortcut":"file.print"},
         {"id":"separator"},
         {"id":"text.file.exit", "text":"E&xit", "shortcut":"exit"}
     ]},
     
     {"id":"text.edit", "items":[
-        {"id":"text.edit.undo", "text":"Undo", "shortcut":"edit.undo"},
-        {"id":"text.edit.redo", "text":"Redo", "shortcut":"edit.redo"},
+        {"id":"text.edit.undo", "text":"&Undo", "shortcut":"edit.undo"},
+        {"id":"text.edit.redo", "text":"&Redo", "shortcut":"edit.redo"},
         {"id":"separator"},
-        {"id":"text.edit.cut", "text":"Cut", "shortcut":"edit.cut"},
-        {"id":"text.edit.copy", "text":"Copy", "shortcut":"edit.copy"},
-        {"id":"text.edit.paste", "text":"Paste", "shortcut":"edit.paste"},
-        {"id":"text.edit.delete", "text":"Delete", "shortcut":"edit.delete"},
+        {"id":"text.edit.cut", "text":"Cu&t", "shortcut":"edit.cut"},
+        {"id":"text.edit.copy", "text":"&Copy", "shortcut":"edit.copy"},
+        {"id":"text.edit.paste", "text":"&Paste", "shortcut":"edit.paste"},
+        {"id":"text.edit.delete", "text":"&Delete", "shortcut":"edit.delete"},
         {"id":"separator"},
-        {"id":"text.edit.selectall", "text":"Select All", "shortcut":"edit.select-all"}
+        {"id":"text.edit.selectall", "text":"Select &All", "shortcut":"edit.select-all"}
     ]},
     
     {"id":"text.view", "items":[
-        {"id":"text.view.tabbars", "type":"check", "text":"Show Tab Bars", "cmd":"toggle-tab-bar", "config":"show-tab-bar"},
-        {"id":"text.view.cmdbar", "type":"check", "text":"Auto-Hide Command Bar", "cmd":"toggle-auto-hide-cmdbar", "config":"auto-hide-cmd-bar"},
+        {"id":"text.view.tabbars", "type":"check", "text":"Show &Tab Bars", "cmd":"toggle-tab-bar", "config":"show-tab-bar"},
+        {"id":"text.view.cmdbar", "type":"check", "text":"Auto-Hide &Command Bar", "cmd":"toggle-auto-hide-cmdbar", "config":"auto-hide-cmd-bar"},
         {"id":"separator"},
-        {"id":"text.view.linenumbers", "type":"check", "text":"Show Line Numbers", "cmd":"toggle-line-numbers", "config":"texteditor-show-line-numbers"},
-        {"id":"text.view.resetzoom", "text":"Reset Zoom", "cmd":"zoom 1"},
+        {"id":"text.view.linenumbers", "type":"check", "text":"Show &Line Numbers", "cmd":"toggle-line-numbers", "config":"texteditor-show-line-numbers"},
+        {"id":"text.view.resetzoom", "text":"Reset &Zoom", "cmd":"zoom 1"},
         {"id":"separator"},
-        {"id":"text.view.wordwrap", "type":"check", "text":"Word Wrap", "cmd":"toggle-word-wrap", "config":"texteditor-enable-word-wrap"}
+        {"id":"text.view.wordwrap", "type":"check", "text":"&Word Wrap", "cmd":"toggle-word-wrap", "config":"texteditor-enable-word-wrap"}
     ]},
     
     {"id":"text.find", "items":[
-        {"id":"text.find.find", "text":"Find...", "shortcut":"find.find"},
-        {"id":"text.find.replace", "text":"Find and Replace...", "shortcut":"find.replace"},
+        {"id":"text.find.find", "text":"&Find...", "shortcut":"find.find"},
+        {"id":"text.find.replace", "text":"Find and &Replace...", "shortcut":"find.replace"},
         {"id":"separator"},
-        {"id":"text.find.goto", "text":"Go To...", "shortcut":"find.goto"}
+        {"id":"text.find.goto", "text":"&Go To...", "shortcut":"find.goto"}
     ]},
     
     {"id":"text", "type":"menubar", "items":[
@@ -108,15 +108,15 @@
     
     
     {"id":"text.popup", "items":[
-        {"id":"text.popup.undo", "text":"Undo", "shortcut":"edit.undo"},
-        {"id":"text.popup.redo", "text":"Redo", "shortcut":"edit.redo"},
+        {"id":"text.popup.undo", "text":"&Undo", "shortcut":"edit.undo"},
+        {"id":"text.popup.redo", "text":"&Redo", "shortcut":"edit.redo"},
         {"id":"separator"},
-        {"id":"text.popup.cut", "text":"Cut", "shortcut":"edit.cut"},
-        {"id":"text.popup.copy", "text":"Copy", "shortcut":"edit.copy"},
-        {"id":"text.popup.paste", "text":"Paste", "shortcut":"edit.paste"},
-        {"id":"text.popup.delete", "text":"Delete", "shortcut":"edit.delete"},
+        {"id":"text.popup.cut", "text":"Cu&t", "shortcut":"edit.cut"},
+        {"id":"text.popup.copy", "text":"&Copy", "shortcut":"edit.copy"},
+        {"id":"text.popup.paste", "text":"&Paste", "shortcut":"edit.paste"},
+        {"id":"text.popup.delete", "text":"&Delete", "shortcut":"edit.delete"},
         {"id":"separator"},
-        {"id":"text.popup.selectall", "text":"Select All", "shortcut":"edit.select-all"}
+        {"id":"text.popup.selectall", "text":"Select &All", "shortcut":"edit.select-all"}
     ]},
     
     {"id":"tabpopup", "items":[
