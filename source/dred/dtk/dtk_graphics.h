@@ -103,6 +103,10 @@ typedef struct
     #ifdef DTK_GTK
         struct
         {
+            /*cairo_font_face_t**/ dtk_ptr pFace;
+
+            /*cairo_scaled_font_t**/ dtk_ptr pFont;
+            dtk_font_metrics metrics;   // We cache font metrics on the Cairo backend for efficiency.
         } cairo;
     #endif
     #ifdef DTK_X11

@@ -234,6 +234,45 @@ DTK_INLINE dtk_uint32 dtk_utf32_to_utf16_ch(dtk_uint32 utf32, dtk_uint16 utf16[2
     }
 }
 
+// Converts a UTF-32 character to a UTF-8 character. Returns the number of bytes making up the UTF-8 character.
+DTK_INLINE dtk_uint32 dtk_utf32_to_utf8_ch(dtk_uint32 utf32, char* utf8, size_t utf8Size)
+{
+    size_t utf8ByteCount = 0;
+    if (utf32 < 0x80) {
+        utf8ByteCount = 1;
+    } else if (utf32 < 0x800) {
+        utf8ByteCount = 2;
+    } else if (utf32 < 0x10000) {
+        utf8ByteCount = 3;
+    } else if (utf32 < 0x110000) {
+        utf8ByteCount = 4;
+    }
+
+    if (utf8ByteCount > utf8Size) {
+        if (utf8 != NULL && utf8Size > 0) {
+            utf8[0] = '\0';
+        }
+        return 0;
+    }
+
+    utf8 += utf8ByteCount;
+    if (utf8ByteCount < utf8Size) {
+        utf8[0] = '\0'; // Null terminate.
+    }
+
+    const unsigned char firstByteMark[7] = {0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
+    switch (utf8ByteCount)
+    {
+        case 4: *--utf8 = (char)((utf32 | 0x80) & 0xBF); utf32 >>= 6;
+        case 3: *--utf8 = (char)((utf32 | 0x80) & 0xBF); utf32 >>= 6;
+        case 2: *--utf8 = (char)((utf32 | 0x80) & 0xBF); utf32 >>= 6;
+        case 1: *--utf8 = (char)(utf32 | firstByteMark[utf8ByteCount]);
+        default: break;
+    }
+
+    return utf8ByteCount;
+}
+
 
 // Creates a formatted string. Free the string with dtk_free_string().
 char* dtk_make_stringv(const char* format, va_list args);

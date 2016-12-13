@@ -78,6 +78,7 @@ typedef int dtk_result;
 // Standard library stuff.
 #include <string.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <errno.h>
 
 #ifndef dtk_assert
