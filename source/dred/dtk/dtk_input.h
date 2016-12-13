@@ -65,3 +65,7 @@ typedef dtk_uint32 dtk_mouse_button;
 #define DTK_MOUSE_BUTTON_MIDDLE 3
 #define DTK_MOUSE_BUTTON_4      4
 #define DTK_MOUSE_BUTTON_5      5
+
+// Retrieves the modifier flag for the given mouse button. The return value will be a value with one of
+// the DTK_MODIFIER_MOUSE_BUTTON_* flags set.
+dtk_uint32 dtk_get_mouse_button_modifier_flag(dtk_mouse_button button);

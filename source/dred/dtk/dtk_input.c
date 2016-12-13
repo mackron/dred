@@ -292,3 +292,22 @@ guint dtk_convert_key_to_gtk(dtk_key key)
     return (guint)key;
 }
 #endif  // DTK_GTK
+
+
+dtk_uint32 dtk_get_mouse_button_modifier_flag(dtk_mouse_button button)
+{
+    if (button > DTK_MOUSE_BUTTON_5) {
+        return 0;
+    }
+
+    dtk_uint32 table[] = {
+        0,                                  // 0
+        DTK_MODIFIER_MOUSE_BUTTON_LEFT,     // DTK_MOUSE_BUTTON_LEFT
+        DTK_MODIFIER_MOUSE_BUTTON_RIGHT,    // DTK_MOUSE_BUTTON_RIGHT
+        DTK_MODIFIER_MOUSE_BUTTON_MIDDLE,   // DTK_MOUSE_BUTTON_MIDDLE
+        DTK_MODIFIER_MOUSE_BUTTON_4,        // DTK_MOUSE_BUTTON_4
+        DTK_MODIFIER_MOUSE_BUTTON_5,        // DTK_MOUSE_BUTTON_5
+    };
+
+    return table[button];
+}

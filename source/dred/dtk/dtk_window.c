@@ -253,6 +253,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.type = DTK_EVENT_MOUSE_MOVE;
             e.mouseMove.x = DTK_GET_X_LPARAM(lParam);
             e.mouseMove.y = DTK_GET_Y_LPARAM(lParam);
+            e.mouseMove.state = dtk_get_mouse_event_state_flags__win32(wParam);
             dtk__handle_event(&e);
         } break;
 
@@ -271,7 +272,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.x = p.x;
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
-            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam) | dtk_get_mouse_button_modifier_flag(e.mouseButton.button);
             dtk__handle_event(&e);
         } break;
 
@@ -306,7 +307,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.x = p.x;
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
-            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam) | dtk_get_mouse_button_modifier_flag(e.mouseButton.button);
             dtk__handle_event(&e);
 
             e.type = DTK_EVENT_MOUSE_BUTTON_DBLCLICK;
@@ -326,7 +327,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.x = p.x;
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
-            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam) | dtk_get_mouse_button_modifier_flag(e.mouseButton.button);
             dtk__handle_event(&e);
         } break;
 
@@ -359,7 +360,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.x = p.x;
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
-            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
+            e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam) | dtk_get_mouse_button_modifier_flag(e.mouseButton.button);
             dtk__handle_event(&e);
 
             e.type = DTK_EVENT_MOUSE_BUTTON_DBLCLICK;
