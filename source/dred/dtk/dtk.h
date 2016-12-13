@@ -317,12 +317,19 @@ struct dtk_context
             /*HCURSOR*/ dtk_handle hCursorSizeWE;
             /*HCURSOR*/ dtk_handle hCursorSizeNS;
 
-            /*HACCEL*/ dtk_handle hAccel;   // The global accelerator table.
+            /*HACCEL*/ dtk_handle hAccel;           // The global accelerator table.
             dtk_accelerator* pAccelerators;
             dtk_uint32 acceleratorCount;
             dtk_uint32 acceleratorCapacity;
 
             /*HWND*/ dtk_handle hMessagingWindow;   // A special hidden window which is only used for pumping messages, usually custom ones.
+            /*HDC*/ dtk_handle hGraphicsDC;         // A special device context for use by the graphics sub-system (usually for font management).
+
+            void* pCharConvBuffer;                  // For wchar_t <-> char conversions.
+            size_t charConvBufferSize;
+
+            dtk_int32* pGlyphCache;                 // The cache of glyph character positions. Used by the graphics sub-system.
+            size_t glyphCacheSize;
         } win32;
 #endif
 #ifdef DTK_GTK

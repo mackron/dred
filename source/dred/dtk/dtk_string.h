@@ -209,6 +209,31 @@ DTK_INLINE dtk_uint32 dtk_utf16pair_to_utf32_ch(dtk_uint16 utf160, dtk_uint16 ut
     return dtk_utf16_to_utf32_ch(utf16);
 }
 
+// Converts a UTF-32 character to a UTF-16. Returns the number fo UTF-16 values making up the character.
+DTK_INLINE dtk_uint32 dtk_utf32_to_utf16_ch(dtk_uint32 utf32, dtk_uint16 utf16[2])
+{
+    if (utf16 == NULL) {
+        return 0;
+    }
+
+    if (utf32 < 0xD800 || (utf32 >= 0xE000 && utf32 <= 0xFFFF)) {
+        utf16[0] = (dtk_uint16)utf32;
+        utf16[1] = 0;
+        return 1;
+    } else {
+        if (utf32 >= 0x10000 && utf32 <= 0x10FFFF) {
+            utf16[0] = (dtk_uint16)(0xD7C0 + (dtk_uint16)(utf32 >> 10));
+            utf16[1] = (dtk_uint16)(0xDC00 + (dtk_uint16)(utf32 & 0x3FF));
+            return 2;
+        } else {
+            // Invalid.
+            utf16[0] = 0;
+            utf16[1] = 0;
+            return 0;
+        }
+    }
+}
+
 
 // Creates a formatted string. Free the string with dtk_free_string().
 char* dtk_make_stringv(const char* format, va_list args);

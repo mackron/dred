@@ -64,6 +64,24 @@ typedef enum
 
 typedef struct
 {
+    dtk_int32 ascent;
+    dtk_int32 descent;
+    dtk_int32 lineHeight;
+    dtk_int32 spaceWidth;
+} dtk_font_metrics;
+
+typedef struct
+{
+    dtk_int32 width;
+    dtk_int32 height;
+    dtk_int32 originX;
+    dtk_int32 originY;
+    dtk_int32 advanceX;
+    dtk_int32 advanceY;
+} dtk_glyph_metrics;
+
+typedef struct
+{
     dtk_context* pTK;
     dtk_graphics_backend backend;
     char family[128];
@@ -79,6 +97,7 @@ typedef struct
         struct
         {
             /*HFONT*/ dtk_handle hFont;
+            dtk_font_metrics metrics;   // Font metrics retrieval is slow with GDI, so we cache.
         } gdi;
     #endif
     #ifdef DTK_GTK
@@ -101,13 +120,41 @@ dtk_result dtk_font_init(dtk_context* pTK, const char* family, float size, dtk_f
 // Uninitializes a font.
 dtk_result dtk_font_uninit(dtk_font* pFont);
 
+// Retrieves the metrics of a font at the given scale.
+dtk_result dtk_font_get_metrics(dtk_font* pFont, float scale, dtk_font_metrics* pMetrics);
 
+// Retrieves the metrics of a glyph when drawn with the given font at the given scale.
+//
+// NOTE: This API is tempoarary until an improved Unicode implementation is done.
+dtk_result dtk_font_get_glyph_metrics(dtk_font* pFont, float scale, dtk_uint32 utf32, dtk_glyph_metrics* pMetrics);
+
+// Retrieves the dimensions of a given string when drawn with the given font at the given scale.
+//
+// NOTE: This API is tempoarary until an improved Unicode implementation is done.
+dtk_result dtk_font_measure_string(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float* pWidth, float* pHeight);
+
+// Retrieves the position to place a text cursor based on the given point for the given string when drawn with the given font.
+//
+// NOTE: This API is tempoarary until an improved Unicode implementation is done.
+dtk_result dtk_font_get_text_cursor_position_from_point(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosX, size_t* pCharacterIndex);
+
+// Retrieves the position to palce a text cursor based on the character at the given index for the given string when drawn with the given font.
+//
+// NOTE: This API is tempoarary until an improved Unicode implementation is done.
+dtk_result dtk_font_get_text_cursor_position_from_char(dtk_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosX);
 
 
 
 
 // Surfaces
 // ========
+typedef enum
+{
+    dtk_pixel_format_rgba8,
+    dtk_pixel_format_bgra8,
+    dtk_pixel_format_argb8,
+} dtk_pixel_format;
+
 typedef struct
 {
     dtk_context* pTK;
@@ -121,8 +168,6 @@ typedef struct
         struct
         {
             /*HDC*/ dtk_handle hDC;
-            void* pScratchBuffer;       // For wchar_t <-> char conversions.
-            size_t scratchBufferSize;
         } gdi;
     #endif
     #ifdef DTK_GTK

@@ -193,6 +193,13 @@ dtk_result dtk__release_keyboard(dtk_context* pTK);
 dtk_result dtk__capture_mouse(dtk_context* pTK, dtk_window* pWindow);
 dtk_result dtk__release_mouse(dtk_context* pTK);
 
+#ifdef DTK_WIN32
+// This function is not thread safe, and the returned value is a pointer to a buffer that's managed
+// by the context. Should probably change this to use thread-local storage or something...
+//
+// TODO: Improve this API to make it thread-safe. Consider thread-local storage for the returned buffer.
+wchar_t* dtk__mb_to_wchar__win32(dtk_context* pTK, const char* text, size_t textSizeInBytes, size_t* pCharacterCount);
+#endif
 
 #include "dtk_rect.c"
 #include "dtk_string.c"
@@ -398,25 +405,23 @@ dtk_result dtk_init__win32(dtk_context* pTK)
             UnregisterClassA(DTK_WIN32_WINDOW_CLASS, NULL);
             return DTK_ERROR;
         }
-
-
-        // Hidden windows.
-        pTK->win32.hMessagingWindow = (dtk_handle)CreateWindowExA(0, DTK_WIN32_WINDOW_CLASS_MESSAGING, "", 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
-        if (pTK->win32.hMessagingWindow == NULL) {
-            UnregisterClassA(DTK_WIN32_WINDOW_CLASS_MESSAGING, NULL);
-            UnregisterClassA(DTK_WIN32_WINDOW_CLASS_POPUP, NULL);
-            UnregisterClassA(DTK_WIN32_WINDOW_CLASS, NULL);
-            return DTK_ERROR;
-        }
-
-        
-        // Cursors.
-        pTK->win32.hCursorArrow  = (dtk_handle)LoadCursor(NULL, IDC_ARROW);
-        pTK->win32.hCursorIBeam  = (dtk_handle)LoadCursor(NULL, IDC_IBEAM);
-        pTK->win32.hCursorCross  = (dtk_handle)LoadCursor(NULL, IDC_CROSS);
-        pTK->win32.hCursorSizeWE = (dtk_handle)LoadCursor(NULL, IDC_SIZEWE);
-        pTK->win32.hCursorSizeNS = (dtk_handle)LoadCursor(NULL, IDC_SIZENS);
     }
+
+    // Hidden windows.
+    pTK->win32.hMessagingWindow = (dtk_handle)CreateWindowExA(0, DTK_WIN32_WINDOW_CLASS_MESSAGING, "", 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+    if (pTK->win32.hMessagingWindow == NULL) {
+        return DTK_ERROR;
+    }
+
+    // Cursors.
+    pTK->win32.hCursorArrow  = (dtk_handle)LoadCursor(NULL, IDC_ARROW);
+    pTK->win32.hCursorIBeam  = (dtk_handle)LoadCursor(NULL, IDC_IBEAM);
+    pTK->win32.hCursorCross  = (dtk_handle)LoadCursor(NULL, IDC_CROSS);
+    pTK->win32.hCursorSizeWE = (dtk_handle)LoadCursor(NULL, IDC_SIZEWE);
+    pTK->win32.hCursorSizeNS = (dtk_handle)LoadCursor(NULL, IDC_SIZENS);
+
+    // Graphics.
+    pTK->win32.hGraphicsDC = (dtk_handle)CreateCompatibleDC(NULL);
 
     pTK->platform = dtk_platform_win32;
     return DTK_SUCCESS;
@@ -430,6 +435,10 @@ dtk_result dtk_uninit__win32(dtk_context* pTK)
     if (g_dtkInitCounter_Win32 == 0) {
         return DTK_ERROR;
     }
+
+    DeleteDC((HDC)pTK->win32.hGraphicsDC);
+    dtk_free(pTK->win32.pGlyphCache);
+    dtk_free(pTK->win32.pCharConvBuffer);
 
     g_dtkInitCounter_Win32 -= 1;
     if (g_dtkInitCounter_Win32 == 0) {
@@ -664,6 +673,44 @@ dtk_result dtk__release_mouse__win32(dtk_context* pTK)
     }
 
     return DTK_SUCCESS;
+}
+
+wchar_t* dtk__mb_to_wchar__win32(dtk_context* pTK, const char* text, size_t textSizeInBytes, size_t* pCharacterCount)
+{
+    int wcharCount = 0;
+
+    // We first try to copy the string into the already-allocated buffer. If it fails we fall back to the slow path which requires
+    // two conversions.
+    if (pTK->win32.pCharConvBuffer == NULL) {
+        goto fallback;
+    }
+
+    wcharCount = MultiByteToWideChar(CP_UTF8, 0, text, (int)textSizeInBytes, (wchar_t*)pTK->win32.pCharConvBuffer, pTK->win32.charConvBufferSize);
+    if (wcharCount != 0) {
+        if (pCharacterCount) *pCharacterCount = (size_t)wcharCount;
+        return (wchar_t*)pTK->win32.pCharConvBuffer;
+    }
+
+
+fallback:;
+    wcharCount = MultiByteToWideChar(CP_UTF8, 0, text, (int)textSizeInBytes, NULL, 0);
+    if (wcharCount == 0) {
+        return NULL;
+    }
+
+    if (pTK->win32.charConvBufferSize < (size_t)(wcharCount+1) * sizeof(wchar_t)) {
+        dtk_free(pTK->win32.pCharConvBuffer);
+        pTK->win32.pCharConvBuffer    = dtk_malloc((wcharCount+1) * sizeof(wchar_t));
+        pTK->win32.charConvBufferSize = wcharCount + 1;
+    }
+
+    wcharCount = MultiByteToWideChar(CP_UTF8, 0, text, (int)textSizeInBytes, (wchar_t*)pTK->win32.pCharConvBuffer, pTK->win32.charConvBufferSize);
+    if (wcharCount == 0) {
+        return NULL;
+    }
+
+    if (pCharacterCount != NULL) *pCharacterCount = wcharCount;
+    return (wchar_t*)pTK->win32.pCharConvBuffer;
 }
 #endif
 
