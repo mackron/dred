@@ -161,7 +161,6 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
     {
         case WM_CREATE:
         {
-            //dtk_track_mouse_leave_event__win32(hWnd);   // <-- This allows us to track mouse enter and leave events for the window.
         } return 0;
 
         case WM_DESTROY:
