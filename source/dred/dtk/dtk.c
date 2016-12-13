@@ -185,6 +185,15 @@ dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
     return DTK_ERROR;
 }
 
+
+// When capturing the keyboard and mouse on a control it must be completed by capturing the window
+// that owns said control. The functions below are used for this.
+dtk_result dtk__capture_keyboard(dtk_context* pTK, dtk_window* pWindow);
+dtk_result dtk__release_keyboard(dtk_context* pTK);
+dtk_result dtk__capture_mouse(dtk_context* pTK, dtk_window* pWindow);
+dtk_result dtk__release_mouse(dtk_context* pTK);
+
+
 #include "dtk_rect.c"
 #include "dtk_string.c"
 #include "dtk_graphics.c"
@@ -620,6 +629,42 @@ dtk_result dtk_get_system_dpi__win32(dtk_context* pTK, int* pDPIXOut, int* pDPIY
     if (pDPIYOut != NULL) *pDPIYOut = GetDeviceCaps(GetDC(NULL), LOGPIXELSY);
     return DTK_SUCCESS;
 }
+
+
+dtk_result dtk__capture_keyboard__win32(dtk_context* pTK, dtk_window* pWindow)
+{
+    (void)pTK;
+
+    SetFocus((HWND)pWindow->win32.hWnd);
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk__release_keyboard__win32(dtk_context* pTK)
+{
+    (void)pTK;
+
+    SetFocus(NULL);
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk__capture_mouse__win32(dtk_context* pTK, dtk_window* pWindow)
+{
+    (void)pTK;
+
+    SetCapture((HWND)pWindow->win32.hWnd);
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk__release_mouse__win32(dtk_context* pTK)
+{
+    (void)pTK;
+
+    if (!ReleaseCapture()) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+}
 #endif
 
 
@@ -661,7 +706,6 @@ void dtk_log_handler__gtk(const gchar *domain, GLogLevelFlags level, const gchar
 
     const char* tag = "";
 
-    printf("LOGGED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     dtk_log_proc onLog = pTK->onLog;
     if (onLog) {
         if ((level & (G_LOG_FLAG_FATAL | G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL)) != 0) {
@@ -983,6 +1027,51 @@ dtk_result dtk_get_system_dpi__gtk(dtk_context* pTK, int* pDPIXOut, int* pDPIYOu
     if (pDPIYOut != NULL) *pDPIYOut = 96;
     return DTK_SUCCESS;
 }
+
+dtk_result dtk__capture_keyboard__gtk(dtk_context* pTK, dtk_window* pWindow)
+{
+    (void)pTK;
+
+    gtk_widget_grab_focus(GTK_WIDGET(pWindow->gtk.pWidget));
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk__release_keyboard__gtk(dtk_context* pTK)
+{
+    (void)pTK;
+
+    // From what I can tell I appears there isn't actually a way to ungrab the focus. Passing NULL to gtk_widget_grab_focus() results in an
+    // error, so I'm not quite sure how do it, of if it's event needed...
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk__capture_mouse__gtk(dtk_context* pTK, dtk_window* pWindow)
+{
+    (void)pTK;
+
+#if (GTK_MAJOR_VERSION >= 3 && GTK_MINOR_VERSION >= 20) // GTK 3.20+
+    gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
+        gtk_widget_get_window(pWindow->gtk.pClientArea), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
+#else
+	gdk_device_grab(gtk_get_current_event_device(), gtk_widget_get_window(pWindow->gtk.pClientArea), GDK_OWNERSHIP_APPLICATION, FALSE,
+		GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK, NULL, GDK_CURRENT_TIME);
+#endif
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk__release_mouse__gtk(dtk_context* pTK)
+{
+    (void)pTK;
+
+#if (GTK_MAJOR_VERSION >= 3 && GTK_MINOR_VERSION >= 20) // GTK 3.20+
+    gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
+#else
+	gdk_device_ungrab(gtk_get_current_event_device(), GDK_CURRENT_TIME);
+#endif
+
+    return DTK_SUCCESS;
+}
 #endif
 
 dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
@@ -1180,6 +1269,90 @@ dtk_result dtk_get_system_dpi(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut)
 #ifdef DTK_GTK
     if (pTK->platform == dtk_platform_gtk) {
         result = dtk_get_system_dpi__gtk(pTK, pDPIXOut, pDPIYOut);
+    }
+#endif
+
+    return result;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Internal APIs
+//
+///////////////////////////////////////////////////////////////////////////////
+dtk_result dtk__capture_keyboard(dtk_context* pTK, dtk_window* pWindow)
+{
+    dtk_assert(pTK != NULL);
+    dtk_assert(pWindow != NULL);
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk__capture_keyboard__win32(pTK, pWindow);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk__capture_keyboard__gtk(pTK, pWindow);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk__release_keyboard(dtk_context* pTK)
+{
+    dtk_assert(pTK != NULL);
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk__release_keyboard__win32(pTK);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk__release_keyboard__gtk(pTK);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk__capture_mouse(dtk_context* pTK, dtk_window* pWindow)
+{
+    dtk_assert(pTK != NULL);
+    dtk_assert(pWindow != NULL);
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk__capture_mouse__win32(pTK, pWindow);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk__capture_mouse__gtk(pTK, pWindow);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk__release_mouse(dtk_context* pTK)
+{
+    dtk_assert(pTK != NULL);
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk__release_mouse__win32(pTK);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk__release_mouse__gtk(pTK);
     }
 #endif
 

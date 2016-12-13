@@ -25,8 +25,8 @@ dr_bool32 dred_platform__init_root_gui_element(dred_control* pControl, dred_cont
 // Event handler for windows.
 static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
 {
-    dred_context* pDred = (dred_context*)pEvent->pTK->pUserData;
-    assert(pDred != NULL);
+    //dred_context* pDred = (dred_context*)pEvent->pTK->pUserData;
+    //assert(pDred != NULL);
 
     dred_window* pWindow = (dred_window*)pEvent->pControl->pUserData;
     if (pWindow == NULL) {
@@ -1568,50 +1568,6 @@ dr_bool32 dred_begin_drag_and_drop__win32(dred_data_type dataType, const void* p
     (void)dataSize;
     return DR_FALSE;
 }
-
-
-
-//// WIN32 <-> GUI BINDING ////
-
-static void dred_platform__on_global_capture_mouse__win32(dred_control* pControl)
-{
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL) {
-        SetCapture((HWND)pWindow->windowDTK.win32.hWnd);
-    }
-}
-
-static void dred_platform__on_global_release_mouse__win32(dred_control* pControl)
-{
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL) {
-        ReleaseCapture();
-    }
-}
-
-static void dred_platform__on_global_capture_keyboard__win32(dred_control* pControl, dred_control* pPrevCapturedControl)
-{
-    (void)pPrevCapturedControl;
-
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL) {
-        pWindow->pControlWithKeyboardCapture = pControl;
-        SetFocus((HWND)pWindow->windowDTK.win32.hWnd);
-    }
-}
-
-static void dred_platform__on_global_release_keyboard__win32(dred_control* pControl, dred_control* pNewCapturedControl)
-{
-    (void)pNewCapturedControl;
-
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL) {
-        dred_window* pNewWindow = dred_get_control_window(pNewCapturedControl);
-        if (pWindow != pNewWindow) {
-            SetFocus(NULL);
-        }
-    }
-}
 #endif
 
 
@@ -2981,60 +2937,6 @@ dr_bool32 dred_begin_drag_and_drop__gtk(dred_data_type dataType, const void* pDa
     (void)dataSize;
     return DR_FALSE;
 }
-
-
-
-//// GTK <-> GUI BINDING ////
-
-static void dred_platform__on_global_capture_mouse__gtk(dred_control* pControl)
-{
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL) {
-#if (GTK_MAJOR_VERSION >= 3 && GTK_MINOR_VERSION >= 20) // GTK 3.20+
-        gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
-            gtk_widget_get_window(pWindow->windowDTK.gtk.pClientArea), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
-#else
-		gdk_device_grab(gtk_get_current_event_device(), gtk_widget_get_window(pWindow->windowDTK.gtk.pClientArea), GDK_OWNERSHIP_APPLICATION, FALSE,
-			GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK, NULL, GDK_CURRENT_TIME);
-#endif
-    }
-}
-
-static void dred_platform__on_global_release_mouse__gtk(dred_control* pControl)
-{
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL) {
-#if (GTK_MAJOR_VERSION >= 3 && GTK_MINOR_VERSION >= 20) // GTK 3.20+
-        gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
-#else
-		gdk_device_ungrab(gtk_get_current_event_device(), GDK_CURRENT_TIME);
-#endif
-    }
-}
-
-static void dred_platform__on_global_capture_keyboard__gtk(dred_control* pControl, dred_control* pPrevCapturedControl)
-{
-    (void)pPrevCapturedControl;
-
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL) {
-        pWindow->pControlWithKeyboardCapture = pControl;
-        gtk_widget_grab_focus(GTK_WIDGET(pWindow->windowDTK.gtk.pWidget));
-    }
-}
-
-static void dred_platform__on_global_release_keyboard__gtk(dred_control* pControl, dred_control* pNewCapturedControl)
-{
-    (void)pNewCapturedControl;
-
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL) {
-        dred_window* pNewWindow = dred_get_control_window(pNewCapturedControl);
-        if (pWindow != pNewWindow) {
-            //gtk_widget_grab_focus(NULL);
-        }
-    }
-}
 #endif
 
 
@@ -3045,6 +2947,44 @@ static void dred_platform__on_global_release_keyboard__gtk(dred_control* pContro
 // Cross Platform
 //
 //////////////////////////////////////////////////////////////////
+
+static void dred_platform__on_global_capture_mouse(dred_control* pControl)
+{
+    dred_window* pWindow = dred_get_control_window(pControl);
+    if (pWindow != NULL) {
+        dtk__capture_mouse(&pWindow->pDred->tk, &pWindow->windowDTK);
+    }
+}
+
+static void dred_platform__on_global_release_mouse(dred_control* pControl)
+{
+    dred_window* pWindow = dred_get_control_window(pControl);
+    if (pWindow != NULL) {
+        dtk__release_mouse(&pWindow->pDred->tk);
+    }
+}
+
+static void dred_platform__on_global_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
+{
+    (void)pPrevCapturedControl;
+
+    dred_window* pWindow = dred_get_control_window(pControl);
+    if (pWindow != NULL) {
+        pWindow->pControlWithKeyboardCapture = pControl;
+        dtk__capture_keyboard(&pWindow->pDred->tk, &pWindow->windowDTK);
+    }
+}
+
+static void dred_platform__on_global_release_keyboard(dred_control* pControl, dred_control* pNewCapturedControl)
+{
+    dred_window* pWindow = dred_get_control_window(pControl);
+    if (pWindow != NULL) {
+        dred_window* pNewWindow = dred_get_control_window(pNewCapturedControl);
+        if (pWindow != pNewWindow) {
+            dtk__release_keyboard(&pWindow->pDred->tk);
+        }
+    }
+}
 
 static void dred_platform__on_global_dirty(dred_control* pControl, dred_rect relativeRect)
 {
@@ -3172,19 +3112,10 @@ void dred_platform_post_quit_message(int resultCode)
 
 void dred_platform_bind_gui(dred_gui* pGUI)
 {
-#ifdef DRED_WIN32
-    dred_gui_set_global_on_capture_mouse(pGUI, dred_platform__on_global_capture_mouse__win32);
-    dred_gui_set_global_on_release_mouse(pGUI, dred_platform__on_global_release_mouse__win32);
-    dred_gui_set_global_on_capture_keyboard(pGUI, dred_platform__on_global_capture_keyboard__win32);
-    dred_gui_set_global_on_release_keyboard(pGUI, dred_platform__on_global_release_keyboard__win32);
-#endif
-#ifdef DRED_GTK
-    dred_gui_set_global_on_capture_mouse(pGUI, dred_platform__on_global_capture_mouse__gtk);
-    dred_gui_set_global_on_release_mouse(pGUI, dred_platform__on_global_release_mouse__gtk);
-    dred_gui_set_global_on_capture_keyboard(pGUI, dred_platform__on_global_capture_keyboard__gtk);
-    dred_gui_set_global_on_release_keyboard(pGUI, dred_platform__on_global_release_keyboard__gtk);
-#endif
-
+    dred_gui_set_global_on_capture_mouse(pGUI, dred_platform__on_global_capture_mouse);
+    dred_gui_set_global_on_release_mouse(pGUI, dred_platform__on_global_release_mouse);
+    dred_gui_set_global_on_capture_keyboard(pGUI, dred_platform__on_global_capture_keyboard);
+    dred_gui_set_global_on_release_keyboard(pGUI, dred_platform__on_global_release_keyboard);
     dred_gui_set_global_on_dirty(pGUI, dred_platform__on_global_dirty);
     dred_gui_set_global_on_change_cursor(pGUI, dred_platform__on_global_change_cursor);
     dred_gui_set_on_delete_element(pGUI, dred_platform__on_delete_gui_element);
