@@ -75,3 +75,4 @@ dtk_control* dtk_control_find_top_level_control(dtk_control* pControl);
 // the hierarchy and returns the first occurance of a dtk_window control. If <pControl> itself is a window,
 // this will return <pControl>.
 dtk_window* dtk_control_get_window(dtk_control* pControl);
+

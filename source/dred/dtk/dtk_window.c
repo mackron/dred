@@ -767,6 +767,29 @@ dtk_result dtk_window_show_popup_menu__win32(dtk_window* pWindow, dtk_menu* pMen
 
     return DTK_SUCCESS;
 }
+
+dtk_result dtk_window_redraw__win32(dtk_window* pWindow, dtk_rect rect)
+{
+    RECT rectWin32;
+    rectWin32.left   = (LONG)rect.left;
+    rectWin32.top    = (LONG)rect.top;
+    rectWin32.right  = (LONG)rect.right;
+    rectWin32.bottom = (LONG)rect.bottom;
+
+#if 0
+    // Scheduled redraw.
+    if (!InvalidateRect((HWND)pWindow->win32.hWnd, &rect, FALSE)) {
+        return DTK_ERROR;
+    }
+#else
+    // Immediate redraw.
+    if (!RedrawWindow((HWND)pWindow->win32.hWnd, &rectWin32, NULL, RDW_INVALIDATE | RDW_UPDATENOW)) {
+        return DTK_ERROR;
+    }
+#endif
+
+    return DTK_SUCCESS;
+}
 #endif
 
 
@@ -1462,7 +1485,6 @@ dtk_result dtk_window_set_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu)
     return DTK_SUCCESS;
 }
 
-
 dtk_result dtk_window_show_popup_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu, dtk_int32 posX, dtk_int32 posY)
 {
     GtkRequisition size;
@@ -1479,6 +1501,19 @@ dtk_result dtk_window_show_popup_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu,
     rect.width = size.width;
     rect.height = size.height;
     gtk_menu_popup_at_rect(GTK_MENU(pMenu->gtk.pWidget), gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pWidget)), &rect, GDK_GRAVITY_NORTH_WEST, GDK_GRAVITY_NORTH_WEST, NULL);
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_redraw__gtk(dtk_window* pWindow, dtk_rect rect)
+{
+    gtk_widget_queue_draw_area(pWindow->gtk.pClientArea, (gint)rect.left, (gint)rect.top, (gint)(rect.right - rect.left), (gint)(rect.bottom - rect.top));
+
+    // Redraw immediately.
+    GdkWindow* pGDKWindow = gtk_widget_get_window(pWindow->gtk.pClientArea);
+    if (pGDKWindow != NULL) {
+        gdk_window_process_updates(pGDKWindow, TRUE);
+    }
 
     return DTK_SUCCESS;
 }
@@ -1898,6 +1933,31 @@ dtk_result dtk_window_show_popup_menu(dtk_window* pWindow, dtk_menu* pMenu, int 
 #ifdef DTK_GTK
     if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
         result = dtk_window_show_popup_menu__gtk(pWindow, pMenu, posX, posY);
+    }
+#endif
+
+    return result;
+}
+
+
+dtk_result dtk_window_redraw(dtk_window* pWindow, dtk_rect rect)
+{
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+    
+    // If the rectangle does not have any volume, just return immediately and pretend it was drawn.
+    if (!dtk_rect_has_volume(rect)) {
+        return DTK_SUCCESS;
+    }
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_redraw__win32(pWindow, rect);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_redraw__gtk(pWindow, rect);
     }
 #endif
 

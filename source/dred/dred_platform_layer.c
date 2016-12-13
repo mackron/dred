@@ -1612,31 +1612,6 @@ static void dred_platform__on_global_release_keyboard__win32(dred_control* pCont
         }
     }
 }
-
-static void dred_platform__on_global_dirty__win32(dred_control* pControl, dred_rect relativeRect)
-{
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL)
-    {
-        dred_rect absoluteRect = relativeRect;
-        dred_make_rect_absolute(pControl, &absoluteRect);
-
-
-        RECT rect;
-        rect.left   = (LONG)absoluteRect.left;
-        rect.top    = (LONG)absoluteRect.top;
-        rect.right  = (LONG)absoluteRect.right;
-        rect.bottom = (LONG)absoluteRect.bottom;
-
-#if 0
-        // Scheduled redraw.
-        InvalidateRect((HWND)pWindow->windowDTK.win32.hWnd, &rect, FALSE);
-#else
-        // Immediate redraw.
-        RedrawWindow((HWND)pWindow->windowDTK.win32.hWnd, &rect, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-#endif
-    }
-}
 #endif
 
 
@@ -3060,26 +3035,6 @@ static void dred_platform__on_global_release_keyboard__gtk(dred_control* pContro
         }
     }
 }
-
-static void dred_platform__on_global_dirty__gtk(dred_control* pControl, dred_rect relativeRect)
-{
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL && pWindow->windowDTK.gtk.pWidget != NULL) {
-        dred_rect absoluteRect = relativeRect;
-        dred_make_rect_absolute(pControl, &absoluteRect);
-
-        if (dred_rect_has_volume(absoluteRect)) {
-            gtk_widget_queue_draw_area(pWindow->windowDTK.gtk.pClientArea,
-                (gint)absoluteRect.left, (gint)absoluteRect.top, (gint)(absoluteRect.right - absoluteRect.left), (gint)(absoluteRect.bottom - absoluteRect.top));
-
-            // Redraw immediately.
-            GdkWindow* pGDKWindow = gtk_widget_get_window(pWindow->windowDTK.gtk.pClientArea);
-            if (pGDKWindow != NULL) {
-                gdk_window_process_updates(pGDKWindow, TRUE);
-            }
-        }
-    }
-}
 #endif
 
 
@@ -3090,6 +3045,24 @@ static void dred_platform__on_global_dirty__gtk(dred_control* pControl, dred_rec
 // Cross Platform
 //
 //////////////////////////////////////////////////////////////////
+
+static void dred_platform__on_global_dirty(dred_control* pControl, dred_rect relativeRect)
+{
+    dred_window* pWindow = dred_get_control_window(pControl);
+    if (pWindow == NULL) {
+        return;
+    }
+
+    dred_rect absoluteRect = relativeRect;
+    dred_make_rect_absolute(pControl, &absoluteRect);
+
+    dtk_rect absoluteRectDTK;
+    absoluteRectDTK.left   = (dtk_int32)absoluteRect.left;
+    absoluteRectDTK.top    = (dtk_int32)absoluteRect.top;
+    absoluteRectDTK.right  = (dtk_int32)absoluteRect.right;
+    absoluteRectDTK.bottom = (dtk_int32)absoluteRect.bottom;
+    dtk_window_redraw(&pWindow->windowDTK, absoluteRectDTK);
+}
 
 static void dred_platform__on_global_change_cursor(dred_control* pControl, dtk_system_cursor_type cursor)
 {
@@ -3204,16 +3177,15 @@ void dred_platform_bind_gui(dred_gui* pGUI)
     dred_gui_set_global_on_release_mouse(pGUI, dred_platform__on_global_release_mouse__win32);
     dred_gui_set_global_on_capture_keyboard(pGUI, dred_platform__on_global_capture_keyboard__win32);
     dred_gui_set_global_on_release_keyboard(pGUI, dred_platform__on_global_release_keyboard__win32);
-    dred_gui_set_global_on_dirty(pGUI, dred_platform__on_global_dirty__win32);
 #endif
 #ifdef DRED_GTK
     dred_gui_set_global_on_capture_mouse(pGUI, dred_platform__on_global_capture_mouse__gtk);
     dred_gui_set_global_on_release_mouse(pGUI, dred_platform__on_global_release_mouse__gtk);
     dred_gui_set_global_on_capture_keyboard(pGUI, dred_platform__on_global_capture_keyboard__gtk);
     dred_gui_set_global_on_release_keyboard(pGUI, dred_platform__on_global_release_keyboard__gtk);
-    dred_gui_set_global_on_dirty(pGUI, dred_platform__on_global_dirty__gtk);
 #endif
 
+    dred_gui_set_global_on_dirty(pGUI, dred_platform__on_global_dirty);
     dred_gui_set_global_on_change_cursor(pGUI, dred_platform__on_global_change_cursor);
     dred_gui_set_on_delete_element(pGUI, dred_platform__on_delete_gui_element);
 }

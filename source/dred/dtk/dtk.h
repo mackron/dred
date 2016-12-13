@@ -115,14 +115,6 @@ typedef struct dtk_window dtk_window;
 typedef struct dtk_menu dtk_menu;
 typedef struct dtk_timer dtk_timer;
 
-typedef struct
-{
-    dtk_int32 left;
-    dtk_int32 top;
-    dtk_int32 right;
-    dtk_int32 bottom;
-} dtk_rect;
-
 // The callback function for handing log messages.
 typedef void (* dtk_log_proc)(dtk_context* pTK, const char* message);
 
@@ -131,6 +123,7 @@ typedef void (* dtk_log_proc)(dtk_context* pTK, const char* message);
 // almost always want to return true.
 typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 
+#include "dtk_rect.h"
 #include "dtk_string.h"
 #include "dtk_graphics.h"
 #include "dtk_input.h"

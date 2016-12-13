@@ -185,7 +185,7 @@ dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
     return DTK_ERROR;
 }
 
-
+#include "dtk_rect.c"
 #include "dtk_string.c"
 #include "dtk_graphics.c"
 #include "dtk_input.c"

@@ -127,3 +127,10 @@ dtk_result dtk_window_set_menu(dtk_window* pWindow, dtk_menu* pMenu);
 
 // Shows a popup menu on the given window.
 dtk_result dtk_window_show_popup_menu(dtk_window* pWindow, dtk_menu* pMenu, int posX, int posY);
+
+
+// Requests a redraw of the given control.
+//
+// If the redrawing is currently being batched, the control will only be redrawn when the batching has
+// completed.
+dtk_result dtk_window_redraw(dtk_window* pWindow, dtk_rect rect);
