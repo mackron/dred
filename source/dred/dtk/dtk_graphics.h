@@ -18,7 +18,7 @@ typedef struct
     dtk_uint8 a;
 } dtk_color;
 
-DTK_INLINE dtk_color dtk_color_rgba(dtk_uint8 r, dtk_uint8 g, dtk_uint8 b, dtk_uint8 a)
+DTK_INLINE dtk_color dtk_rgba(dtk_uint8 r, dtk_uint8 g, dtk_uint8 b, dtk_uint8 a)
 {
     dtk_color color;
     color.r = r;
@@ -28,9 +28,9 @@ DTK_INLINE dtk_color dtk_color_rgba(dtk_uint8 r, dtk_uint8 g, dtk_uint8 b, dtk_u
     return color;
 }
 
-DTK_INLINE dtk_color dtk_color_rgb(dtk_uint8 r, dtk_uint8 g, dtk_uint8 b)
+DTK_INLINE dtk_color dtk_rgb(dtk_uint8 r, dtk_uint8 g, dtk_uint8 b)
 {
-    return dtk_color_rgba(r, g, b, 255);
+    return dtk_rgba(r, g, b, 255);
 }
 
 
