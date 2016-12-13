@@ -66,6 +66,14 @@ dtk_result dtk_menu_init(dtk_context* pTK, dtk_menu_type type, dtk_menu* pMenu);
 dtk_result dtk_menu_uninit(dtk_menu* pMenu);
 
 
+// Retrieves the ID of the item at the given index.
+dtk_result dtk_menu_get_item_id(dtk_menu* pMenu, dtk_uint32 index, dtk_uint32* pID);
+
+// Retrieves the index of the first item with the given ID. If the item could not be found, -1 will
+// be returned. This runs in linear time.
+dtk_uint32 dtk_menu_find_item_by_id(dtk_menu* pMenu, dtk_uint32 id);
+
+
 // Retrieves the number of menu items making up the given menu.
 dtk_result dtk_menu_get_item_count(dtk_menu* pMenu, dtk_uint32* pCount);
 
@@ -76,22 +84,20 @@ dtk_result dtk_menu_prepend_item(dtk_menu* pMenu, dtk_menu_item_info* pInfo);
 
 // Removes a menu item.
 dtk_result dtk_menu_remove_item(dtk_menu* pMenu, dtk_uint32 index);
+DTK_INLINE dtk_result dtk_menu_remove_item_by_id(dtk_menu* pMenu, dtk_uint32 id) { return dtk_menu_remove_item(pMenu, dtk_menu_find_item_by_id(pMenu, id)); }
+
+// Removes every item from the menu.
 dtk_result dtk_menu_remove_all_items(dtk_menu* pMenu);
 
 
 // Sets the text of a menu item.
 dtk_result dtk_menu_set_item_text(dtk_menu* pMenu, dtk_uint32 index, const char* text);
+DTK_INLINE dtk_result dtk_menu_set_item_text_by_id(dtk_menu* pMenu, dtk_uint32 id, const char* text) { return dtk_menu_set_item_text(pMenu, dtk_menu_find_item_by_id(pMenu, id), text); }
 
 // Retrieves the user data of the menu item at the given index.
 dtk_result dtk_menu_get_item_user_data(dtk_menu* pMenu, dtk_uint32 index, void** ppUserData);
+DTK_INLINE dtk_result dtk_menu_get_item_user_data_by_id(dtk_menu* pMenu, dtk_uint32 id, void** ppUserData) { return dtk_menu_get_item_user_data(pMenu, dtk_menu_find_item_by_id(pMenu, id), ppUserData); }
 
-
-// Retrieves the ID of the item at the given index.
-dtk_result dtk_menu_get_item_id(dtk_menu* pMenu, dtk_uint32 index, dtk_uint32* pID);
-
-// Retrieves the index of the first item with the given ID. If the item could not be found, -1 will
-// be returned. This runs in linear time.
-dtk_uint32 dtk_menu_find_item_by_id(dtk_menu* pMenu, dtk_uint32 id);
 
 
 // Enables the menu item at the given index.

@@ -741,6 +741,49 @@ dtk_result dtk_menu_uninit(dtk_menu* pMenu)
     return result;
 }
 
+
+dtk_result dtk_menu_get_item_id(dtk_menu* pMenu, dtk_uint32 index, dtk_uint32* pID)
+{
+    if (pID == NULL) return DTK_INVALID_ARGS;
+    *pID = 0;
+
+    if (pMenu == NULL || !dtk_menu__is_item_index_valid(pMenu, index)) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pMenu->pTK->platform == dtk_platform_win32) {
+        result = dtk_menu_get_item_id__win32(pMenu, index, pID);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pMenu->pTK->platform == dtk_platform_gtk) {
+        result = dtk_menu_get_item_id__gtk(pMenu, index, pID);
+    }
+#endif
+
+    return result;
+}
+
+dtk_uint32 dtk_menu_find_item_by_id(dtk_menu* pMenu, dtk_uint32 id)
+{
+    dtk_uint32 itemCount;
+    if (dtk_menu_get_item_count(pMenu, &itemCount) != DTK_SUCCESS) {
+        return (dtk_uint32)-1;
+    }
+
+    for (dtk_uint32 i = 0; i < itemCount; ++i) {
+        dtk_uint32 iID;
+        if (dtk_menu_get_item_id(pMenu, i, &iID) == DTK_SUCCESS) {
+            if (iID == id) {
+                return i;
+            }
+        }
+    }
+
+    return (dtk_uint32)-1;
+}
+
+
 dtk_result dtk_menu_get_item_count(dtk_menu* pMenu, dtk_uint32* pCount)
 {
     if (pCount == NULL) return DTK_INVALID_ARGS;
@@ -888,47 +931,6 @@ dtk_result dtk_menu_get_item_user_data(dtk_menu* pMenu, dtk_uint32 index, void**
 #endif
 
     return result;
-}
-
-dtk_result dtk_menu_get_item_id(dtk_menu* pMenu, dtk_uint32 index, dtk_uint32* pID)
-{
-    if (pID == NULL) return DTK_INVALID_ARGS;
-    *pID = 0;
-
-    if (pMenu == NULL || !dtk_menu__is_item_index_valid(pMenu, index)) return DTK_INVALID_ARGS;
-
-    dtk_result result = DTK_NO_BACKEND;
-#ifdef DTK_WIN32
-    if (pMenu->pTK->platform == dtk_platform_win32) {
-        result = dtk_menu_get_item_id__win32(pMenu, index, pID);
-    }
-#endif
-#ifdef DTK_GTK
-    if (pMenu->pTK->platform == dtk_platform_gtk) {
-        result = dtk_menu_get_item_id__gtk(pMenu, index, pID);
-    }
-#endif
-
-    return result;
-}
-
-dtk_uint32 dtk_menu_find_item_by_id(dtk_menu* pMenu, dtk_uint32 id)
-{
-    dtk_uint32 itemCount;
-    if (dtk_menu_get_item_count(pMenu, &itemCount) != DTK_SUCCESS) {
-        return (dtk_uint32)-1;
-    }
-
-    for (dtk_uint32 i = 0; i < itemCount; ++i) {
-        dtk_uint32 iID;
-        if (dtk_menu_get_item_id(pMenu, i, &iID) == DTK_SUCCESS) {
-            if (iID == id) {
-                return i;
-            }
-        }
-    }
-
-    return (dtk_uint32)-1;
 }
 
 
