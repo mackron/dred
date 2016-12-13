@@ -182,6 +182,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.paint.rect.top = rect.top;
                 e.paint.rect.right = rect.right;
                 e.paint.rect.bottom = rect.bottom;
+                e.paint.pSurface = &pWindow->surface;
                 dtk__handle_event(&e);
             }
         } break;
@@ -1067,6 +1068,7 @@ static gboolean dtk_window_clientarea__on_draw__gtk(GtkWidget* pClientArea, cair
     e.paint.rect.top = clipTop;
     e.paint.rect.right = clipRight;
     e.paint.rect.bottom = clipBottom;
+    e.paint.pSurface = &pWindow->surface;
     dtk__handle_event(&e);
     
     cairo_set_source_surface(cr, DTK_CONTROL(pWindow)->pSurface->cairo.pSurface, 0, 0);

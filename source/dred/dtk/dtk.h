@@ -195,6 +195,7 @@ struct dtk_event
         struct
         {
             dtk_rect rect;
+            dtk_surface* pSurface;
         } paint;
 
         struct
