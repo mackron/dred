@@ -42,6 +42,9 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
             // TODO: Remove this hack.
             //
             // TEMPORARY HACK: Copy pWindow->pDrawingSurface to the internal DTK window surface.
+#ifdef DRED_WIN32
+            BitBlt(pEvent->paint.pSurface->gdi.hDC, 0, 0, (int)dr2d_get_surface_width(pWindow->pDrawingSurface), (int)dr2d_get_surface_height(pWindow->pDrawingSurface), dr2d_get_HDC(pWindow->pDrawingSurface), 0, 0, SRCCOPY);
+#endif
 #ifdef DRED_GTK
             cairo_surface_t* pCairoSurface = dr2d_get_cairo_surface_t(pWindow->pDrawingSurface);
             cairo_set_source_surface(pEvent->paint.pSurface->cairo.pContext, pCairoSurface, 0, 0);
@@ -3151,7 +3154,7 @@ dr_bool32 dred_window_create__post_setup(dred_context* pDred, dred_window* pWind
     DTK_CONTROL(&pWindow->windowDTK)->pUserData = pWindow;
 
 #ifdef DRED_WIN32
-    pWindow->pDrawingSurface = dr2d_create_surface_gdi_HWND(pDred->pDrawingContext, (HWND)pWindow->windowDTK.win32.hWnd);
+    pWindow->pDrawingSurface = dr2d_create_surface_gdi_HDC(pDred->pDrawingContext, GetDC((HWND)pWindow->windowDTK.win32.hWnd));
     if (pWindow->pDrawingSurface == NULL) {
         return DR_FALSE;
     }
