@@ -12,7 +12,6 @@ struct dtk_control
 {
     dtk_context* pTK;
     dtk_event_proc onEvent;
-    dtk_surface* pSurface;  // This is usually set to the surface of a top-level window control and will change when the hierarchy changes where appropriate.
     dtk_control* pParent;
     void* pUserData;        // For use by the application.
     dtk_control_type type;

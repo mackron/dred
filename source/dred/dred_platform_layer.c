@@ -44,8 +44,8 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
             // TEMPORARY HACK: Copy pWindow->pDrawingSurface to the internal DTK window surface.
 #ifdef DRED_GTK
             cairo_surface_t* pCairoSurface = dr2d_get_cairo_surface_t(pWindow->pDrawingSurface);
-            cairo_set_source_surface(pWindow->windowDTK.surface.cairo.pContext, pCairoSurface, 0, 0);
-            cairo_paint(pWindow->windowDTK.surface.cairo.pContext);
+            cairo_set_source_surface(pEvent->paint.pSurface->cairo.pContext, pCairoSurface, 0, 0);
+            cairo_paint(pEvent->paint.pSurface->cairo.pContext);
 #endif
         } break;
 

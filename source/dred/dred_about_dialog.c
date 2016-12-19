@@ -91,7 +91,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
     args.backgroundColor = dred_rgb(255, 255, 255);
     dred_control_draw_image(pControl, pDialog->pLogo, &args, pPaintData);
 
-    
+
 
     dred_gui_font* pFont = dred_font_acquire_subfont(pWindow->pDred->config.pUIFont, uiScale);
     dred_gui_font_metrics fontMetrics;

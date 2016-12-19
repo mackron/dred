@@ -312,6 +312,9 @@ struct dtk_context
             dtk_proc OleInitialize;
             dtk_proc OleUninitialize;
 
+            /*HMODULE*/ dtk_handle hMsimg32DLL;
+            dtk_proc AlphaBlend;
+
             /*HCURSOR*/ dtk_handle hCursorArrow;
             /*HCURSOR*/ dtk_handle hCursorIBeam;
             /*HCURSOR*/ dtk_handle hCursorCross;

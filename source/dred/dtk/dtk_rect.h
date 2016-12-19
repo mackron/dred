@@ -20,15 +20,24 @@ DTK_INLINE dtk_rect dtk_rect_init(dtk_int32 left, dtk_int32 top, dtk_int32 right
 
 DTK_INLINE dtk_rect dtk_rect_inside_out()
 {
-    dtk_rect rect;
-    rect.left   = INT32_MAX;
-    rect.top    = INT32_MAX;
-    rect.right  = INT32_MIN;
-    rect.bottom = INT32_MIN;
-    return rect;
+    return dtk_rect_init(
+        INT32_MAX,
+        INT32_MAX,
+        INT32_MIN,
+        INT32_MIN
+    );
 }
 
 DTK_INLINE dtk_bool32 dtk_rect_has_volume(dtk_rect rect)
 {
     return rect.left < rect.right && rect.top < rect.bottom;
+}
+
+DTK_INLINE dtk_rect dtk_rect_grow(dtk_rect rect, dtk_int32 amount)
+{
+    return dtk_rect_init(
+        rect.left   - amount,
+        rect.top    - amount,
+        rect.right  + amount,
+        rect.bottom + amount);
 }

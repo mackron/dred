@@ -175,15 +175,23 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
 
         case WM_PAINT:
         {
-            RECT rect;
-            if (GetUpdateRect(hWnd, &rect, FALSE)) {
-                e.type = DTK_EVENT_PAINT;
-                e.paint.rect.left = rect.left;
-                e.paint.rect.top = rect.top;
-                e.paint.rect.right = rect.right;
-                e.paint.rect.bottom = rect.bottom;
-                e.paint.pSurface = &pWindow->surface;
-                dtk__handle_event(&e);
+            PAINTSTRUCT ps;
+            HDC hDC = BeginPaint(hWnd, &ps);
+            if (hDC != NULL) {
+                dtk_surface surface;
+                if (dtk_surface_init_transient_HDC(e.pTK, hDC, DTK_CONTROL(pWindow)->width, DTK_CONTROL(pWindow)->height, &surface) == DTK_SUCCESS) {
+                    e.type = DTK_EVENT_PAINT;
+                    e.paint.rect.left = ps.rcPaint.left;
+                    e.paint.rect.top = ps.rcPaint.top;
+                    e.paint.rect.right = ps.rcPaint.right;
+                    e.paint.rect.bottom = ps.rcPaint.bottom;
+                    e.paint.pSurface = &surface;
+                    dtk__handle_event(&e);
+
+                    dtk_surface_uninit(&surface);
+                }
+
+                EndPaint(hWnd, &ps);
             }
         } break;
 
@@ -1055,25 +1063,28 @@ static gboolean dtk_window__on_lose_focus__gtk(GtkWidget* pWidget, GdkEventFocus
 static gboolean dtk_window_clientarea__on_draw__gtk(GtkWidget* pClientArea, cairo_t* cr, gpointer pUserData)
 {
     dtk_window* pWindow = (dtk_window*)pUserData;
-    if (pWindow == NULL || DTK_CONTROL(pWindow)->pSurface == NULL) return DTK_FALSE;
+    if (pWindow == NULL) return DTK_FALSE;
 
     double clipLeft;
     double clipTop;
     double clipRight;
     double clipBottom;
-    cairo_clip_extents(DTK_CONTROL(pWindow)->pSurface->cairo.pContext, &clipLeft, &clipTop, &clipRight, &clipBottom);
+    cairo_clip_extents(cr, &clipLeft, &clipTop, &clipRight, &clipBottom);
+
+    dtk_surface surface;
+    if (dtk_surface_init_transient_cairo(DTK_CONTROL(pWindow)->pTK, cr, DTK_CONTROL(pWindow)->width, DTK_CONTROL(pWindow)->height, &surface) != DTK_SUCCESS) {
+        return DTK_FALSE;
+    }
 
     dtk_event e = dtk_event_init(DTK_EVENT_PAINT, DTK_CONTROL(pWindow));
     e.paint.rect.left = clipLeft;
     e.paint.rect.top = clipTop;
     e.paint.rect.right = clipRight;
     e.paint.rect.bottom = clipBottom;
-    e.paint.pSurface = &pWindow->surface;
+    e.paint.pSurface = &surface;
     dtk__handle_event(&e);
     
-    cairo_set_source_surface(cr, DTK_CONTROL(pWindow)->pSurface->cairo.pSurface, 0, 0);
-    cairo_paint(cr);
-
+    dtk_surface_uninit(&surface);
     return DTK_FALSE;
 }
 
@@ -1556,13 +1567,6 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_ty
         return result;
     }
 
-    result = dtk_surface_init_window(pTK, pWindow, &pWindow->surface);
-    if (result != DTK_SUCCESS) {
-        dtk_window_uninit(pWindow);
-        return result;
-    }
-    DTK_CONTROL(pWindow)->pSurface = &pWindow->surface;
-
     // Make sure the position attributes of the structure are updated.
     dtk_window_get_absolute_position(pWindow, &DTK_CONTROL(pWindow)->absolutePosX, &DTK_CONTROL(pWindow)->absolutePosY);
 
@@ -1582,11 +1586,6 @@ dtk_result dtk_window_uninit(dtk_window* pWindow)
     if (pWindow == NULL) return DTK_INVALID_ARGS;
 
     dtk__untrack_window(DTK_CONTROL(pWindow)->pTK, pWindow);
-
-    // Window controls always own their surfaces.
-    if (DTK_CONTROL(pWindow)->pSurface) {
-        dtk_surface_uninit(DTK_CONTROL(pWindow)->pSurface);
-    }
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32

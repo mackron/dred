@@ -1,5 +1,63 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
+// RGBA8 <-> BGRA8 swap with alpha pre-multiply and vertical flip.
+void dtk__rgba8_bgra8_swap__premul_flip(const void* pSrc, void* pDst, unsigned int width, unsigned int height, unsigned int srcStride, unsigned int dstStride)
+{
+    assert(pSrc != NULL);
+    assert(pDst != NULL);
+
+    const unsigned int srcStride32 = srcStride/4;
+    const unsigned int dstStride32 = dstStride/4;
+
+    for (unsigned int iRow = 0; iRow < height; ++iRow) {
+        const unsigned int* pSrcRow = (const unsigned int*)pSrc + (iRow * srcStride32);
+              unsigned int* pDstRow =       (unsigned int*)pDst + ((height - iRow - 1) * dstStride32);
+
+        for (unsigned int iCol = 0; iCol < width; ++iCol) {
+            unsigned int srcTexel = pSrcRow[iCol];
+            unsigned int srcTexelA = (srcTexel & 0xFF000000) >> 24;
+            unsigned int srcTexelB = (srcTexel & 0x00FF0000) >> 16;
+            unsigned int srcTexelG = (srcTexel & 0x0000FF00) >> 8;
+            unsigned int srcTexelR = (srcTexel & 0x000000FF) >> 0;
+
+            srcTexelB = (unsigned int)(srcTexelB * (srcTexelA / 255.0f));
+            srcTexelG = (unsigned int)(srcTexelG * (srcTexelA / 255.0f));
+            srcTexelR = (unsigned int)(srcTexelR * (srcTexelA / 255.0f));
+
+            pDstRow[iCol] = (srcTexelR << 16) | (srcTexelG << 8) | (srcTexelB << 0) | (srcTexelA << 24);
+        }
+    }
+}
+
+// RGBA8 <-> BGRA8 swap with alpha pre-multiply.
+void dtk__rgba8_bgra8_swap__premul(const void* pSrc, void* pDst, unsigned int width, unsigned int height, unsigned int srcStride, unsigned int dstStride)
+{
+    assert(pSrc != NULL);
+    assert(pDst != NULL);
+
+    const unsigned int srcStride32 = srcStride/4;
+    const unsigned int dstStride32 = dstStride/4;
+
+    for (unsigned int iRow = 0; iRow < height; ++iRow) {
+        const unsigned int* pSrcRow = (const unsigned int*)pSrc + (iRow * srcStride32);
+              unsigned int* pDstRow =       (unsigned int*)pDst + (iRow * dstStride32);
+
+        for (unsigned int iCol = 0; iCol < width; ++iCol) {
+            unsigned int srcTexel = pSrcRow[iCol];
+            unsigned int srcTexelA = (srcTexel & 0xFF000000) >> 24;
+            unsigned int srcTexelB = (srcTexel & 0x00FF0000) >> 16;
+            unsigned int srcTexelG = (srcTexel & 0x0000FF00) >> 8;
+            unsigned int srcTexelR = (srcTexel & 0x000000FF) >> 0;
+
+            srcTexelB = (unsigned int)(srcTexelB * (srcTexelA / 255.0f));
+            srcTexelG = (unsigned int)(srcTexelG * (srcTexelA / 255.0f));
+            srcTexelR = (unsigned int)(srcTexelR * (srcTexelA / 255.0f));
+
+            pDstRow[iCol] = (srcTexelR << 16) | (srcTexelG << 8) | (srcTexelB << 0) | (srcTexelA << 24);
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -267,14 +325,46 @@ dtk_result dtk_font_get_text_cursor_position_from_char__gdi(dtk_font* pFont, flo
 
 // Surfaces
 // ========
-dtk_result dtk_surface_init_window__gdi(dtk_context* pTK, dtk_window* pWindow, dtk_surface* pSurface)
+dtk_result dtk_surface_init_transient_HDC(dtk_context* pTK, dtk_handle hDC, dtk_uint32 width, dtk_uint32 height, dtk_surface* pSurface)
+{
+    if (pSurface == NULL) return DTK_INVALID_ARGS;
+    dtk_zero_object(pSurface);
+
+    if (pTK == NULL || hDC == NULL) return DTK_INVALID_ARGS;
+    pSurface->pTK = pTK;
+    pSurface->backend = dtk_graphics_backend_gdi;
+    pSurface->width  = width;
+    pSurface->height = height;
+    pSurface->isTransient = DTK_TRUE;
+    pSurface->gdi.hDC = (HDC)hDC;
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_surface_init_image__gdi(dtk_context* pTK, dtk_uint32 width, dtk_uint32 height, dtk_uint32 strideInBytes, const void* pImageData, dtk_surface* pSurface)
 {
     (void)pTK;
 
-    pSurface->gdi.hDC = (dtk_handle)GetDC((HWND)pWindow->win32.hWnd);
-    if (pSurface->gdi.hDC == 0) {
+    BITMAPINFO bmi;
+    ZeroMemory(&bmi, sizeof(bmi));
+    bmi.bmiHeader.biSize        = sizeof(bmi.bmiHeader);
+    bmi.bmiHeader.biWidth       = (LONG)width;
+    bmi.bmiHeader.biHeight      = (LONG)height;
+    bmi.bmiHeader.biPlanes      = 1;
+    bmi.bmiHeader.biBitCount    = 32;   // Only supporting 32-bit formats.
+    bmi.bmiHeader.biCompression = BI_RGB;
+    pSurface->gdi.hBitmap = CreateDIBSection(pTK->win32.hGraphicsDC, &bmi, DIB_RGB_COLORS, (void**)&pSurface->gdi.pBitmapData, NULL, 0);
+    if (pSurface->gdi.hBitmap == NULL) {
         return DTK_ERROR;
     }
+
+    // We need to convert the data so it renders correctly with AlphaBlend().
+    if (pImageData != NULL) {
+        dtk__rgba8_bgra8_swap__premul_flip(pImageData, pSurface->gdi.pBitmapData, width, height, strideInBytes, width*4);
+    }
+
+    // Flush GDI to let it know we are finished with the bitmap object's data.
+    GdiFlush();
 
     pSurface->backend = dtk_graphics_backend_gdi;
     return DTK_SUCCESS;
@@ -283,8 +373,14 @@ dtk_result dtk_surface_init_window__gdi(dtk_context* pTK, dtk_window* pWindow, d
 dtk_result dtk_surface_uninit__gdi(dtk_surface* pSurface)
 {
     (void)pSurface;
+
+    if (pSurface->isImage) {
+        DeleteObject(pSurface->gdi.hBitmap);
+    }
+
     return DTK_SUCCESS;
 }
+
 
 void dtk_surface_clear__gdi(dtk_surface* pSurface, dtk_color color)
 {
@@ -294,12 +390,46 @@ void dtk_surface_clear__gdi(dtk_surface* pSurface, dtk_color color)
     Rectangle((HDC)pSurface->gdi.hDC, 0, 0, (int)pSurface->width+1, (int)pSurface->height+1);
 }
 
-void dtk_surface_draw_rect__gdi(dtk_surface* pSurface, dtk_int32 x, dtk_int32 y, dtk_uint32 width, dtk_uint32 height)
+void dtk_surface_set_clip__gdi(dtk_surface* pSurface, dtk_rect rect)
+{
+    SelectClipRgn((HDC)pSurface->gdi.hDC, NULL);
+    IntersectClipRect((HDC)pSurface->gdi.hDC, rect.left, rect.top, rect.right, rect.bottom);
+}
+
+void dtk_surface_get_clip__gdi(dtk_surface* pSurface, dtk_rect* pRect)
+{
+    RECT rect;
+    GetClipBox((HDC)pSurface->gdi.hDC, &rect);
+
+    pRect->left   = rect.left;
+    pRect->top    = rect.top;
+    pRect->right  = rect.right;
+    pRect->bottom = rect.bottom;
+}
+
+void dtk_surface_draw_rect__gdi(dtk_surface* pSurface, dtk_rect rect, dtk_color color)
 {
     SelectObject((HDC)pSurface->gdi.hDC, GetStockObject(NULL_PEN));
     SelectObject((HDC)pSurface->gdi.hDC, GetStockObject(DC_BRUSH));
-    SetDCBrushColor((HDC)pSurface->gdi.hDC, RGB(0, 0, 255));
-    Rectangle((HDC)pSurface->gdi.hDC, x, y, x + width + 1, y + height + 1);
+    SetDCBrushColor((HDC)pSurface->gdi.hDC, RGB(color.r, color.g, color.b));
+    Rectangle((HDC)pSurface->gdi.hDC, rect.left, rect.top, rect.right + 1, rect.bottom + 1);
+}
+
+void dtk_surface_draw_rect_outline__gdi(dtk_surface* pSurface, dtk_rect rect, dtk_color color, dtk_int32 outlineWidth)
+{
+    HDC hDC = (HDC)pSurface->gdi.hDC;
+
+    SelectObject(hDC, GetStockObject(NULL_PEN));
+    SelectObject(hDC, GetStockObject(DC_BRUSH));
+    SetDCBrushColor(hDC, RGB(color.r, color.g, color.b));
+
+    // Now draw the rectangle. The documentation for this says that the width and height is 1 pixel less when the pen is null. Therefore we will
+    // increase the width and height by 1 since we have got the pen set to null.
+
+    Rectangle(hDC, rect.left,                 rect.top,                   rect.left  + outlineWidth + 1, rect.bottom + 1);              // Left.
+    Rectangle(hDC, rect.right - outlineWidth, rect.top,                   rect.right + 1,                rect.bottom + 1);              // Right.
+    Rectangle(hDC, rect.left  + outlineWidth, rect.top,                   rect.right - outlineWidth + 1, rect.top + outlineWidth + 1);  // Top
+    Rectangle(hDC, rect.left  + outlineWidth, rect.bottom - outlineWidth, rect.right - outlineWidth + 1, rect.bottom + 1);              // Bottom
 }
 
 void dtk_surface_draw_text__gdi(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32 posX, dtk_int32 posY, dtk_color fgColor, dtk_color bgColor)
@@ -339,6 +469,112 @@ void dtk_surface_draw_text__gdi(dtk_surface* pSurface, dtk_font* pFont, float sc
         SetTextColor(hDC, RGB(fgColor.r, fgColor.g, fgColor.b));
         ExtTextOutW(hDC, (int)posX, (int)posY, options, &rect, textW, textWLength, NULL);
     }
+}
+
+void dtk_surface_draw_surface__gdi(dtk_surface* pDstSurface, dtk_surface* pSrcSurface, dtk_draw_surface_args* pArgs)
+{
+    HDC hDstDC = (HDC)pDstSurface->gdi.hDC;
+    HDC hSrcDC = (HDC)pSrcSurface->gdi.hDC;
+
+    if (pSrcSurface->isImage) {
+        hSrcDC = (HDC)pDstSurface->pTK->win32.hGraphicsDC;
+        SelectObject(hSrcDC, pSrcSurface->gdi.hBitmap);
+    }
+
+    if (pArgs->options & DTK_SURFACE_HINT_NO_ALPHA) {
+        StretchBlt(hDstDC, (int)pArgs->dstX, (int)pArgs->dstY, (int)pArgs->dstWidth, (int)pArgs->dstHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, SRCCOPY);
+    } else {
+        HDC hIntermediateDC = CreateCompatibleDC(hDstDC);
+        HBITMAP hIntermediateBitmap = CreateCompatibleBitmap(hDstDC, (int)pArgs->dstWidth, (int)pArgs->dstHeight);
+        SelectObject(hIntermediateDC, hIntermediateBitmap);
+
+        // Background.
+        SelectObject(hIntermediateDC, GetStockObject(NULL_PEN));
+        SelectObject(hIntermediateDC, GetStockObject(DC_BRUSH));
+        SetDCBrushColor(hIntermediateDC, RGB(pArgs->backgroundColor.r, pArgs->backgroundColor.g, pArgs->backgroundColor.b));
+        Rectangle(hIntermediateDC, 0, 0, pArgs->dstX + pArgs->dstWidth + 1, pArgs->dstY + pArgs->dstHeight + 1);
+
+        BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
+        if (pSrcSurface->pTK->win32.AlphaBlend) {
+            ((DTK_PFN_AlphaBlend)pSrcSurface->pTK->win32.AlphaBlend)(hIntermediateDC, 0, 0, (int)pArgs->dstWidth, (int)pArgs->dstHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend);
+        }
+
+        // Transfer from the intermediary DC to the destination.
+        StretchBlt(hDstDC, (int)pArgs->dstX, (int)pArgs->dstY, (int)pArgs->dstWidth, (int)pArgs->dstHeight, hIntermediateDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, SRCCOPY);
+
+        DeleteObject(hIntermediateBitmap);
+        DeleteDC(hIntermediateDC);
+    }
+
+    // Flush GDI to let it know we are finished with the bitmap object's data.
+    GdiFlush();
+
+#if 0
+    dr_bool32 drawFlipped = DTK_FALSE;
+    HBITMAP hSrcBitmap = NULL;
+
+    if ((pArgs->options & DTK_IMAGE_DRAW_BACKGROUND) == 0 && (pArgs->options & DTK_IMAGE_HINT_NO_ALPHA) != 0 && pArgs->foregroundTint.r == 255 && pArgs->foregroundTint.g == 255 && pArgs->foregroundTint.b == 255)
+    {
+        // Fast path. No tint, no background, no alpha.
+        hSrcBitmap = pSrcSurface->gdi.hBitmap;
+        drawFlipped = DR_TRUE;
+    }
+    else
+    {
+        // Slow path. We need to manually change the color values of the intermediate bitmap and use that as the source when drawing it. This is also flipped.
+        unsigned int* pSrcBitmapData = pSrcSurface->gdi.pBitmapData;
+        unsigned int* pDstBitmapData = pGDIImageData->pIntermediateBitmapData;
+        for (unsigned int iRow = 0; iRow < pSrcSurface->height; ++iRow) {
+            for (unsigned int iCol = 0; iCol < pSrcSurface->width; ++iCol) {
+                unsigned int  srcTexel = *(pSrcBitmapData + (iRow * pSrcSurface->width) + iCol);
+                unsigned int* dstTexel =  (pDstBitmapData + ((pSrcSurface->height - iRow - 1) * pSrcSurface->width) + iCol);
+
+                unsigned int srcTexelA = (srcTexel & 0xFF000000) >> 24;
+                unsigned int srcTexelR = (unsigned int)(((srcTexel & 0x00FF0000) >> 16) * (pArgs->foregroundTint.r / 255.0f));
+                unsigned int srcTexelG = (unsigned int)(((srcTexel & 0x0000FF00) >> 8)  * (pArgs->foregroundTint.g / 255.0f));
+                unsigned int srcTexelB = (unsigned int)(((srcTexel & 0x000000FF) >> 0)  * (pArgs->foregroundTint.b / 255.0f));
+
+                if (srcTexelR > 255) srcTexelR = 255;
+                if (srcTexelG > 255) srcTexelG = 255;
+                if (srcTexelB > 255) srcTexelB = 255;
+
+                if ((pArgs->options & DTK_IMAGE_DRAW_BACKGROUND) != 0) {
+                    srcTexelB += (unsigned int)(pArgs->backgroundColor.b * ((255 - srcTexelA) / 255.0f));
+                    srcTexelG += (unsigned int)(pArgs->backgroundColor.g * ((255 - srcTexelA) / 255.0f));
+                    srcTexelR += (unsigned int)(pArgs->backgroundColor.r * ((255 - srcTexelA) / 255.0f));
+                    srcTexelA = 0xFF;
+                }
+
+                *dstTexel = (srcTexelR << 16) | (srcTexelG << 8) | (srcTexelB << 0) | (srcTexelA << 24);
+            }
+        }
+
+        // Flush GDI to let it know we are finished with the bitmap object's data.
+        GdiFlush();
+
+        // If we have drawn the background manually we don't need to do an alpha blend.
+        if ((pArgs->options & DTK_IMAGE_DRAW_BACKGROUND) != 0) {
+            pArgs->options |= DTK_IMAGE_HINT_NO_ALPHA;
+        }
+
+        hSrcBitmap = pGDIImageData->hIntermediateBitmap;
+        drawFlipped = DR_FALSE;
+    }
+
+    HGDIOBJ hPrevBitmap = SelectObject(pGDISurfaceData->hIntermediateDC, hSrcBitmap);
+    if ((pArgs->options & DTK_IMAGE_HINT_NO_ALPHA) != 0) {
+        if (drawFlipped) {
+            StretchBlt(pGDISurfaceData->hDC, (int)pArgs->dstX, (int)pArgs->dstY + (int)pArgs->dstHeight - 1, (int)pArgs->dstWidth, -(int)pArgs->dstHeight, pGDISurfaceData->hIntermediateDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, SRCCOPY);
+        } else {
+            StretchBlt(pGDISurfaceData->hDC, (int)pArgs->dstX, (int)pArgs->dstY, (int)pArgs->dstWidth, (int)pArgs->dstHeight, pGDISurfaceData->hIntermediateDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, SRCCOPY);
+        }
+    } else {
+        dtk_assert(drawFlipped == DR_FALSE);   // <-- Error if this is hit.
+        BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
+        AlphaBlend(pGDISurfaceData->hDC, (int)pArgs->dstX, (int)pArgs->dstY, (int)pArgs->dstWidth, (int)pArgs->dstHeight, pGDISurfaceData->hIntermediateDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend);
+    }
+    SelectObject(pGDISurfaceData->hIntermediateDC, hPrevBitmap);
+#endif
 }
 #endif
 
@@ -580,51 +816,112 @@ dtk_result dtk_font_get_text_cursor_position_from_char__cairo(dtk_font* pFont, f
 
 // Surfaces
 // ========
-dtk_result dtk_surface_init_window__cairo(dtk_context* pTK, dtk_window* pWindow, dtk_surface* pSurface)
+dtk_result dtk_surface_init_transient_cairo(dtk_context* pTK, dtk_ptr pCairoContext, dtk_uint32 width, dtk_uint32 height, dtk_surface* pSurface)
 {
-    (void)pTK;
-    
-    int width;
-    int height;
-    gtk_window_get_size(GTK_WINDOW(pWindow->gtk.pWidget), &width, &height);
-    
-    cairo_surface_t* pCairoSurface = gdk_window_create_similar_surface(gtk_widget_get_window((GtkWidget*)pWindow->gtk.pWidget), CAIRO_CONTENT_COLOR, width, height); 
-    if (pCairoSurface == NULL) {
-        return DTK_ERROR;   // I don't think this is ever hit, but I like it for safety.
+    if (pSurface == NULL) return DTK_INVALID_ARGS;
+    dtk_zero_object(pSurface);
+
+    if (pTK == NULL || pCairoContext == NULL) return DTK_INVALID_ARGS;
+    pSurface->pTK = pTK;
+    pSurface->backend = dtk_graphics_backend_cairo;
+    pSurface->width  = width;
+    pSurface->height = height;
+    pSurface->isTransient = DTK_TRUE;
+    pSurface->cairo.pContext = pCairoContext;
+    pSurface->cairo.pSurface = (dtk_ptr)cairo_get_target((cairo_t*)pCairoContext);
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_surface_init_image__cairo(dtk_context* pTK, dtk_uint32 width, dtk_uint32 height, dtk_uint32 strideInBytes, const void* pImageData, dtk_surface* pSurface)
+{
+    // The image data needs to be converted from RGBA to ARGB for cairo.
+    dtk_uint32 srcStrideInBytes = (dtk_uint32)cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, (int)width);
+
+    void* pImageDataARGB = dtk_malloc(srcStrideInBytes * height);
+    if (pImageDataARGB == NULL) {
+        return DTK_OUT_OF_MEMORY;
     }
-    
-    cairo_t* pCairoContext = cairo_create(pCairoSurface);
-    if (pCairoContext == NULL) {
-        cairo_surface_destroy(pCairoSurface);
+
+    // TODO: CAIRO_FORMAT_ARGB32 is in native endian, so may want to do a big-endian rgba8 -> argb8 swap.
+    dtk__rgba8_bgra8_swap__premul(pImageData, pImageDataARGB, width, height, strideInBytes, srcStrideInBytes);
+
+    cairo_surface_t* pCairoSurface = cairo_image_surface_create_for_data(pImageDataARGB, CAIRO_FORMAT_ARGB32, (int)width, (int)height, (int)width*4);
+    if (pCairoSurface == NULL) {
+        dtk_free(pImageDataARGB);
         return DTK_ERROR;
     }
-    
-    pSurface->cairo.pSurface = pCairoSurface;
-    pSurface->cairo.pContext = pCairoContext;
-    
-    pSurface->backend = dtk_graphics_backend_cairo;
+
+    pSurface->cairo.pSurface = (dtk_ptr)pCairoSurface;
+    pSurface->cairo.pContext = (dtk_ptr)cairo_create(pCairoSurface);
+    pSurface->cairo.pImageData = pImageDataARGB;
+
     return DTK_SUCCESS;
 }
 
 dtk_result dtk_surface_uninit__cairo(dtk_surface* pSurface)
 {
-    cairo_destroy((cairo_t*)pSurface->cairo.pContext);
-    cairo_surface_destroy((cairo_surface_t*)pSurface->cairo.pSurface);
+    if (!pSurface->isTransient) {
+        cairo_destroy((cairo_t*)pSurface->cairo.pContext);
+        cairo_surface_destroy((cairo_surface_t*)pSurface->cairo.pSurface);
+    }
+
+    if (pSurface->cairo.pImageData) {
+        dtk_free(pSurface->cairo.pImageData);
+    }
     
     return DTK_SUCCESS;
 }
 
 void dtk_surface_clear__cairo(dtk_surface* pSurface, dtk_color color)
 {
-    cairo_set_source_rgba(pSurface->cairo.pContext, color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
+    cairo_set_source_rgba(pSurface->cairo.pContext, color.r/255.0, color.g/255.0, color.b/255.0, color.a/255.0);
     cairo_paint(pSurface->cairo.pContext);
 }
 
-void dtk_surface_draw_rect__cairo(dtk_surface* pSurface, dtk_int32 x, dtk_int32 y, dtk_uint32 width, dtk_uint32 height)
+void dtk_surface_set_clip__cairo(dtk_surface* pSurface, dtk_rect rect)
 {
-    cairo_set_source_rgba(pSurface->cairo.pContext, 0, 0, 1, 1);
-    cairo_rectangle(pSurface->cairo.pContext, x, y, width, height);
+    cairo_reset_clip(pSurface->cairo.pContext);
+    cairo_rectangle(pSurface->cairo.pContext, rect.left, rect.top, (rect.right - rect.left), (rect.bottom - rect.top));
+    cairo_clip(pSurface->cairo.pContext);
+}
+
+void dtk_surface_get_clip__cairo(dtk_surface* pSurface, dtk_rect* pRect)
+{
+    double left;
+    double top;
+    double right;
+    double bottom;
+    cairo_clip_extents(pSurface->cairo.pContext, &left, &top, &right, &bottom);
+
+    pRect->left   = (dtk_int32)left;
+    pRect->top    = (dtk_int32)top;
+    pRect->right  = (dtk_int32)right;
+    pRect->bottom = (dtk_int32)bottom;
+}
+
+void dtk_surface_draw_rect__cairo(dtk_surface* pSurface, dtk_rect rect, dtk_color color)
+{
+    cairo_set_source_rgba(pSurface->cairo.pContext, color.r/255.0, color.g/255.0, color.b/255.0, color.a/255.0);
+    cairo_rectangle(pSurface->cairo.pContext, rect.left, rect.top, (rect.right - rect.left), (rect.bottom - rect.top));
     cairo_fill(pSurface->cairo.pContext);
+}
+
+void dtk_surface_draw_rect_outline__cairo(dtk_surface* pSurface, dtk_rect rect, dtk_color color, dtk_int32 outlineWidth)
+{
+    cairo_t* cr = pSurface->cairo.pContext;
+
+    cairo_set_source_rgba(cr, color.r/255.0, color.g/255.0, color.b/255.0, color.a/255.0);
+
+    // We do this as 4 separate rectangles... but I can't remember why...
+    cairo_rectangle(cr, rect.left, rect.top, outlineWidth, rect.bottom - rect.top);                                                     // Left
+    cairo_fill(cr);
+    cairo_rectangle(cr, rect.right - outlineWidth, rect.top, outlineWidth, rect.bottom - rect.top);                                     // Right
+    cairo_fill(cr);
+    cairo_rectangle(cr, rect.left + outlineWidth, rect.top, rect.right - rect.left - (outlineWidth*2), outlineWidth);                   // Top
+    cairo_fill(cr);
+    cairo_rectangle(cr, rect.left + outlineWidth, rect.bottom - outlineWidth, rect.right - rect.left - (outlineWidth*2), outlineWidth); // Bottom
+    cairo_fill(cr);
 }
 
 void dtk_surface_draw_text__cairo(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textLength, dtk_int32 posX, dtk_int32 posY, dtk_color fgColor, dtk_color bgColor)
@@ -662,6 +959,66 @@ void dtk_surface_draw_text__cairo(dtk_surface* pSurface, dtk_font* pFont, float 
     if (textNT != text) {
         dtk_free(textNT);
     }
+}
+
+void dtk_surface_draw_surface__cairo(dtk_surface* pSurface, dtk_surface* pSrcSurface, dtk_draw_surface_args* pArgs)
+{
+    cairo_t* cr = pSurface->cairo.pContext;
+
+    cairo_save(cr);
+    cairo_translate(cr, pArgs->dstX, pArgs->dstY);
+
+    // Background.
+    if ((pArgs->options & DTK_SURFACE_HINT_NO_ALPHA) == 0) {
+        cairo_set_source_rgba(cr, pArgs->backgroundColor.r/255.0, pArgs->backgroundColor.g/255.0, pArgs->backgroundColor.b/255.0, pArgs->backgroundColor.a/255.0);
+        cairo_rectangle(cr, 0, 0, pArgs->dstWidth, pArgs->dstHeight);
+        cairo_fill(cr);
+    }
+
+#if 1
+    if (pArgs->foregroundTint.r == 255 && pArgs->foregroundTint.g == 255 && pArgs->foregroundTint.b == 255 && pArgs->foregroundTint.a == 255) {
+        cairo_scale(cr, pArgs->dstWidth / pArgs->srcWidth, pArgs->dstHeight / pArgs->srcHeight);
+        cairo_set_source_surface(cr, pSrcSurface->cairo.pSurface, pArgs->srcX, pArgs->srcY);
+        cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+        cairo_paint(cr);
+    } else {
+        // Slower path. The image needs to be tinted. We create a temporary image for this.
+        // NOTE: This is incorrect. It's just a temporary solution until I figure out a better way.
+        cairo_surface_t* pTempImageSurface = cairo_surface_create_similar_image(pSrcSurface->cairo.pSurface, CAIRO_FORMAT_ARGB32,
+            cairo_image_surface_get_width(pSrcSurface->cairo.pSurface), cairo_image_surface_get_height(pSrcSurface->cairo.pSurface));
+        if (pTempImageSurface != NULL) {
+            cairo_t* cr2 = cairo_create(pTempImageSurface);
+
+            cairo_set_operator(cr2, CAIRO_OPERATOR_SOURCE);
+            cairo_set_source_surface(cr2, pSrcSurface->cairo.pSurface, 0, 0);
+            cairo_pattern_set_filter(cairo_get_source(cr2), CAIRO_FILTER_NEAREST);
+            cairo_paint(cr2);
+
+            // Tint.
+            cairo_set_operator(cr2, CAIRO_OPERATOR_ATOP);
+            cairo_set_source_rgba(cr2, pArgs->foregroundTint.r / 255.0, pArgs->foregroundTint.g / 255.0, pArgs->foregroundTint.b / 255.0, 1);
+            cairo_rectangle(cr2, 0, 0, pArgs->dstWidth, pArgs->dstHeight);
+            cairo_fill(cr2);
+
+            /*cairo_set_operator(cr2, CAIRO_OPERATOR_MULTIPLY);
+            cairo_set_source_surface(cr2, pCairoImage->pCairoSurface, 0, 0);
+            cairo_pattern_set_filter(cairo_get_source(cr2), CAIRO_FILTER_NEAREST);
+            cairo_paint(cr2);*/
+
+            // Draw the temporary surface onto the main surface.
+            cairo_scale(cr, pArgs->dstWidth / pArgs->srcWidth, pArgs->dstHeight / pArgs->srcHeight);
+            cairo_set_source_surface(cr, pTempImageSurface, pArgs->srcX, pArgs->srcY);
+            cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+            //cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+            cairo_paint(cr);
+
+            cairo_destroy(cr2);
+            cairo_surface_destroy(pTempImageSurface);
+        }
+    }
+#endif
+
+    cairo_restore(cr);
 }
 #endif
 
@@ -832,28 +1189,29 @@ dtk_result dtk_font_get_text_cursor_position_from_char(dtk_font* pFont, float sc
 
 // Surfaces
 // ========
-dtk_result dtk_surface_init_window(dtk_context* pTK, dtk_window* pWindow, dtk_surface* pSurface)
+dtk_result dtk_surface_init_image(dtk_context* pTK, dtk_uint32 width, dtk_uint32 height, dtk_uint32 strideInBytes, const void* pImageData, dtk_surface* pSurface)
 {
     if (pSurface == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pSurface);
 
-    if (pTK == NULL || pWindow == NULL) return DTK_INVALID_ARGS;
+    if (pTK == NULL) return DTK_INVALID_ARGS;
     pSurface->pTK = pTK;
-    pSurface->width  = DTK_CONTROL(pWindow)->width;
-    pSurface->height = DTK_CONTROL(pWindow)->height;
+    pSurface->width = width;
+    pSurface->height = height;
+    pSurface->isImage = DTK_TRUE;
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
         if (result != DTK_SUCCESS) {
-            result = dtk_surface_init_window__gdi(pTK, pWindow, pSurface);
+            result = dtk_surface_init_image__gdi(pTK, width, height, strideInBytes, pImageData, pSurface);
         }
     }
 #endif
 #ifdef DTK_GTK
     if (pTK->platform == dtk_platform_gtk) {
         if (result != DTK_SUCCESS) {
-            result = dtk_surface_init_window__cairo(pTK, pWindow, pSurface);
+            result = dtk_surface_init_image__cairo(pTK, width, height, strideInBytes, pImageData, pSurface);
         }
     }
 #endif
@@ -896,20 +1254,76 @@ void dtk_surface_clear(dtk_surface* pSurface, dtk_color color)
 #endif
 }
 
-void dtk_surface_draw_rect(dtk_surface* pSurface, dtk_int32 x, dtk_int32 y, dtk_uint32 width, dtk_uint32 height)
+void dtk_surface_set_clip(dtk_surface* pSurface, dtk_rect rect)
 {
     if (pSurface == NULL) return;
 
 #ifdef DTK_WIN32
     if (pSurface->backend == dtk_graphics_backend_gdi) {
-        dtk_surface_draw_rect__gdi(pSurface, x, y, width, height);
+        dtk_surface_set_clip__gdi(pSurface, rect);
     }
 #endif
 #ifdef DTK_GTK
     if (pSurface->backend == dtk_graphics_backend_cairo) {
-        dtk_surface_draw_rect__cairo(pSurface, x, y, width, height);
+        dtk_surface_set_clip__cairo(pSurface, rect);
     }
 #endif
+}
+
+void dtk_surface_get_clip(dtk_surface* pSurface, dtk_rect* pRect)
+{
+    if (pSurface == NULL || pRect == NULL) return;
+
+#ifdef DTK_WIN32
+    if (pSurface->backend == dtk_graphics_backend_gdi) {
+        dtk_surface_get_clip__gdi(pSurface, pRect);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pSurface->backend == dtk_graphics_backend_cairo) {
+        dtk_surface_get_clip__cairo(pSurface, pRect);
+    }
+#endif
+}
+
+void dtk_surface_draw_rect(dtk_surface* pSurface, dtk_rect rect, dtk_color color)
+{
+    if (pSurface == NULL) return;
+
+#ifdef DTK_WIN32
+    if (pSurface->backend == dtk_graphics_backend_gdi) {
+        dtk_surface_draw_rect__gdi(pSurface, rect, color);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pSurface->backend == dtk_graphics_backend_cairo) {
+        dtk_surface_draw_rect__cairo(pSurface, rect, color);
+    }
+#endif
+}
+
+void dtk_surface_draw_rect_outline(dtk_surface* pSurface, dtk_rect rect, dtk_color color, dtk_int32 outlineWidth)
+{
+    if (pSurface == NULL || outlineWidth <= 0) return;
+
+#ifdef DTK_WIN32
+    if (pSurface->backend == dtk_graphics_backend_gdi) {
+        dtk_surface_draw_rect_outline__gdi(pSurface, rect, color, outlineWidth);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pSurface->backend == dtk_graphics_backend_cairo) {
+        dtk_surface_draw_rect_outline__cairo(pSurface, rect, color, outlineWidth);
+    }
+#endif
+}
+
+void dtk_surface_draw_rect_with_outline(dtk_surface* pSurface, dtk_rect rect, dtk_color color, dtk_int32 outlineWidth, dtk_color outlineColor)
+{
+    if (pSurface == NULL) return;
+
+    dtk_surface_draw_rect_outline(pSurface, rect, outlineColor, outlineWidth);
+    dtk_surface_draw_rect(pSurface, dtk_rect_grow(rect, -outlineWidth), color);
 }
 
 void dtk_surface_draw_text(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textLength, dtk_int32 posX, dtk_int32 posY, dtk_color fgColor, dtk_color bgColor)
@@ -924,6 +1338,22 @@ void dtk_surface_draw_text(dtk_surface* pSurface, dtk_font* pFont, float scale, 
 #ifdef DTK_GTK
     if (pSurface->backend == dtk_graphics_backend_cairo) {
         dtk_surface_draw_text__cairo(pSurface, pFont, scale, text, textLength, posX, posY, fgColor, bgColor);
+    }
+#endif
+}
+
+void dtk_surface_draw_surface(dtk_surface* pSurface, dtk_surface* pSrcSurface, dtk_draw_surface_args* pArgs)
+{
+    if (pSurface == NULL || pSrcSurface == NULL || pArgs == NULL) return;
+
+#ifdef DTK_WIN32
+    if (pSurface->backend == dtk_graphics_backend_gdi) {
+        dtk_surface_draw_surface__gdi(pSurface, pSrcSurface, pArgs);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pSurface->backend == dtk_graphics_backend_cairo) {
+        dtk_surface_draw_surface__cairo(pSurface, pSrcSurface, pArgs);
     }
 #endif
 }

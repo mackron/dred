@@ -152,6 +152,8 @@ dtk_result dtk_font_get_text_cursor_position_from_char(dtk_font* pFont, float sc
 
 // Surfaces
 // ========
+#define DTK_SURFACE_HINT_NO_ALPHA   (1 << 0)
+
 typedef enum
 {
     dtk_pixel_format_rgba8,
@@ -165,6 +167,8 @@ typedef struct
     dtk_graphics_backend backend;
     dtk_uint32 width;
     dtk_uint32 height;
+    dtk_bool32 isTransient : 1;
+    dtk_bool32 isImage     : 1;
     
     union
     {
@@ -172,6 +176,8 @@ typedef struct
         struct
         {
             /*HDC*/ dtk_handle hDC;
+            /*HBITMAP*/ dtk_handle hBitmap; // Only used with image surfaces.
+            void* pBitmapData;              // Only used with image surfaces. It's a buffer to the internal data of hBitmap.
         } gdi;
     #endif
     #ifdef DTK_GTK
@@ -179,6 +185,7 @@ typedef struct
         {
             /*cairo_surface_t**/ dtk_ptr pSurface;
             /*cairo_t**/ dtk_ptr pContext;
+            void* pImageData;               // Only used with image surfaces. The internal data for use internally by Cairo. ARGB32.
         } cairo;
     #endif
     #ifdef DTK_X11
@@ -190,17 +197,63 @@ typedef struct
     };
 } dtk_surface;
 
-// Initializes a surface which draws directly to a window.
-dtk_result dtk_surface_init_window(dtk_context* pTK, dtk_window* pWindow, dtk_surface* pSurface);
+#ifdef DTK_WIN32
+// Initializes a transient surface for a Win32 device context.
+dtk_result dtk_surface_init_transient_HDC(dtk_context* pTK, dtk_handle hDC, dtk_uint32 width, dtk_uint32 height, dtk_surface* pSurface);
+#endif
+
+#ifdef DTK_GTK
+// Initializes a transient surface for a Cairo context.
+dtk_result dtk_surface_init_transient_cairo(dtk_context* pTK, dtk_ptr pCairoContext, dtk_uint32 width, dtk_uint32 height, dtk_surface* pSurface);
+#endif
+
+// Initializes a surface that's used as an image.
+//
+// Currently, the image data must be in simple 32-bit RGBA format (8-bits per component).
+dtk_result dtk_surface_init_image(dtk_context* pTK, dtk_uint32 width, dtk_uint32 height, dtk_uint32 strideInBytes, const void* pImageData, dtk_surface* pSurface);
 
 // Uninitializes a surface.
 dtk_result dtk_surface_uninit(dtk_surface* pSurface);
 
+
 // Clears the given surface within it's current clipping region.
 void dtk_surface_clear(dtk_surface* pSurface, dtk_color color);
 
+
+//// APIs below are temporary until an improved graphics API is implemented. ////
+
+// Sets the clipping rectangle for the given surface.
+void dtk_surface_set_clip(dtk_surface* pSurface, dtk_rect rect);
+
+// Retrieves the clipping rectangle for the given surface.
+void dtk_surface_get_clip(dtk_surface* pSurface, dtk_rect* pRect);
+
 // Draws a quad onto the given surface.
-void dtk_surface_draw_rect(dtk_surface* pSurface, dtk_int32 x, dtk_int32 y, dtk_uint32 width, dtk_uint32 height);
+void dtk_surface_draw_rect(dtk_surface* pSurface, dtk_rect rect, dtk_color color);
+
+// Draws the outline of a rectangle.
+void dtk_surface_draw_rect_outline(dtk_surface* pSurface, dtk_rect rect, dtk_color color, dtk_int32 outlineWidth);
+
+// Draws a solid rectangle with an outline.
+void dtk_surface_draw_rect_with_outline(dtk_surface* pSurface, dtk_rect rect, dtk_color color, dtk_int32 outlineWidth, dtk_color outlineColor);
 
 // Draws a run of text.
 void dtk_surface_draw_text(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32 posX, dtk_int32 posY, dtk_color fgColor, dtk_color bgColor);
+
+typedef struct
+{
+    dtk_int32 dstX;
+    dtk_int32 dstY;
+    dtk_int32 dstWidth;
+    dtk_int32 dstHeight;
+    dtk_int32 srcX;
+    dtk_int32 srcY;
+    dtk_int32 srcWidth;
+    dtk_int32 srcHeight;
+    dtk_color foregroundTint;
+    dtk_color backgroundColor;
+    dtk_uint32 options;
+} dtk_draw_surface_args;
+
+// Draws an image.
+void dtk_surface_draw_surface(dtk_surface* pSurface, dtk_surface* pSrcSurface, dtk_draw_surface_args* pArgs);

@@ -14,6 +14,8 @@
 
 #include <assert.h>
 #include <ctype.h>  // For toupper()
+#include <math.h>   // For ceil(), round(), etc.
+#include <stdio.h>  // For sprintf() and family.
 
 #if !defined(DTK_64BIT) && !defined(DTK_32BIT)
 #ifdef _WIN32
@@ -108,15 +110,6 @@ dtk_result dtk__handle_event(dtk_event* pEvent)
                 // When a window is resized the drawing surface also needs to be resized.
                 DTK_CONTROL(pWindow)->width  = pEvent->size.width;
                 DTK_CONTROL(pWindow)->height = pEvent->size.height;
-                
-                if (DTK_CONTROL(pWindow)->pSurface != NULL) {
-                    dtk_assert(DTK_CONTROL(pWindow)->pSurface == &pWindow->surface);
-                    dtk_surface_uninit(&pWindow->surface);
-                }
-                
-                if (dtk_surface_init_window(DTK_CONTROL(pWindow)->pTK, pWindow, &pWindow->surface) != DTK_SUCCESS) {
-                    DTK_CONTROL(pWindow)->pSurface = NULL;
-                }
             } break;
             
             case DTK_EVENT_MOVE:
@@ -194,6 +187,11 @@ dtk_result dtk__capture_mouse(dtk_context* pTK, dtk_window* pWindow);
 dtk_result dtk__release_mouse(dtk_context* pTK);
 
 #ifdef DTK_WIN32
+typedef BOOL    (WINAPI * DTK_PFN_InitCommonControlsEx)(const LPINITCOMMONCONTROLSEX lpInitCtrls);
+typedef HRESULT (WINAPI * DTK_PFN_OleInitialize)       (LPVOID pvReserved);
+typedef void    (WINAPI * DTK_PFN_OleUninitialize)     ();
+typedef BOOL    (WINAPI * DTK_PFN_AlphaBlend)          (HDC hdcDest, int xoriginDest, int yoriginDest, int wDest, int hDest, HDC hdcSrc, int xoriginSrc, int yoriginSrc, int wSrc, int hSrc, BLENDFUNCTION ftn);
+
 // This function is not thread safe, and the returned value is a pointer to a buffer that's managed
 // by the context. Should probably change this to use thread-local storage or something...
 //
@@ -230,10 +228,6 @@ typedef struct
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DTK_WIN32
 #define DTK_WM_CUSTOM   (WM_USER + 0)
-
-typedef BOOL    (WINAPI * DTK_PFN_InitCommonControlsEx)(const LPINITCOMMONCONTROLSEX lpInitCtrls);
-typedef HRESULT (WINAPI * DTK_PFN_OleInitialize)       (LPVOID pvReserved);
-typedef void    (WINAPI * DTK_PFN_OleUninitialize)     ();
 
 static dtk_uint32 g_dtkInitCounter_Win32 = 0;
 
@@ -323,6 +317,16 @@ dtk_result dtk_init_backend_apis__win32(dtk_context* pTK)
     pTK->win32.hOle32DLL = (dtk_handle)hOle32DLL;
     pTK->win32.OleInitialize   = (dtk_proc)GetProcAddress(hOle32DLL, "OleInitialize");
     pTK->win32.OleUninitialize = (dtk_proc)GetProcAddress(hOle32DLL, "OleUninitialize");
+
+
+    // Msimg32.dll
+    HMODULE hMsimg32DLL = LoadLibraryW(L"msimg32.dll");
+    if (hMsimg32DLL == NULL) {
+        return DTK_ERROR;
+    }
+
+    pTK->win32.hMsimg32DLL = (dtk_handle)hMsimg32DLL;
+    pTK->win32.AlphaBlend = (dtk_proc)GetProcAddress(hMsimg32DLL, "AlphaBlend");
 
     return DTK_SUCCESS;
 }

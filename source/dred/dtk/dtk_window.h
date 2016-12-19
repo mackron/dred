@@ -30,7 +30,6 @@ typedef enum
 struct dtk_window
 {
     dtk_control control;
-    dtk_surface surface;    // A window always has it's own surface.
     dtk_uint32 flags;
     dtk_window* pNextWindow;
 
