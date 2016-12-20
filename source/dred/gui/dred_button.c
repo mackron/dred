@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-void dred_button__on_paint(dred_control* pControl, dred_rect rect, void* pPaintData)
+void dred_button__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
 {
     (void)rect;
 
@@ -27,7 +27,7 @@ void dred_button__on_paint(dred_control* pControl, dred_rect rect, void* pPaintD
 
 
     // Draw the border first.
-    dred_control_draw_rect_outline(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)), pButton->borderColor, pButton->borderWidth, pPaintData);
+    dred_control_draw_rect_outline(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)), pButton->borderColor, pButton->borderWidth, pSurface);
 
     // Text and background. The text is centered.
     dred_rect bgrect = dred_grow_rect(dred_control_get_local_rect(DRED_CONTROL(pButton)), -pButton->borderWidth);
@@ -38,13 +38,13 @@ void dred_button__on_paint(dred_control* pControl, dred_rect rect, void* pPaintD
 
     float textPosX = roundf(((bgrect.right - bgrect.left) - textWidth) / 2);
     float textPosY = roundf(((bgrect.bottom - bgrect.top) - textHeight) / 2);
-    dred_control_draw_text(DRED_CONTROL(pButton), pButton->pSubFont, pButton->text, (int)strlen(pButton->text), textPosX, textPosY, pButton->textColor, bgColor, pPaintData);
+    dred_control_draw_text(DRED_CONTROL(pButton), pButton->pSubFont, pButton->text, (int)strlen(pButton->text), textPosX, textPosY, pButton->textColor, bgColor, pSurface);
     
     // Make sure the background does not overdraw the text.
-    dred_control_draw_rect(DRED_CONTROL(pButton), dred_make_rect(bgrect.left, bgrect.top, textPosX, bgrect.bottom), bgColor, pPaintData);
-    dred_control_draw_rect(DRED_CONTROL(pButton), dred_make_rect(textPosX + textWidth, bgrect.top, bgrect.right, bgrect.bottom), bgColor, pPaintData);
-    dred_control_draw_rect(DRED_CONTROL(pButton), dred_make_rect(textPosX, bgrect.top, textPosX + textWidth, textPosY), bgColor, pPaintData);
-    dred_control_draw_rect(DRED_CONTROL(pButton), dred_make_rect(textPosX, textPosY + textHeight, textPosX + textWidth, bgrect.bottom), bgColor, pPaintData);
+    dred_control_draw_rect(DRED_CONTROL(pButton), dred_make_rect(bgrect.left, bgrect.top, textPosX, bgrect.bottom), bgColor, pSurface);
+    dred_control_draw_rect(DRED_CONTROL(pButton), dred_make_rect(textPosX + textWidth, bgrect.top, bgrect.right, bgrect.bottom), bgColor, pSurface);
+    dred_control_draw_rect(DRED_CONTROL(pButton), dred_make_rect(textPosX, bgrect.top, textPosX + textWidth, textPosY), bgColor, pSurface);
+    dred_control_draw_rect(DRED_CONTROL(pButton), dred_make_rect(textPosX, textPosY + textHeight, textPosX + textWidth, bgrect.bottom), bgColor, pSurface);
 }
 
 void dred_button__on_mouse_enter(dred_control* pControl)

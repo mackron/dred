@@ -15,7 +15,7 @@ dred_rect dred_colorbutton__get_box_rect(dred_colorbutton* pButton)
     return dred_make_rect(posX, posY, posX + metrics.lineHeight, posY + metrics.lineHeight);
 }
 
-void dred_colorbutton__on_paint(dred_control* pControl, dred_rect rect, void* pPaintData)
+void dred_colorbutton__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
 {
     (void)rect;
 
@@ -43,8 +43,8 @@ void dred_colorbutton__on_paint(dred_control* pControl, dred_rect rect, void* pP
     dred_rect bgrect = dred_control_get_local_rect(DRED_CONTROL(pButton));
     dred_rect boxRect = dred_colorbutton__get_box_rect(pButton);
 
-    dred_control_draw_rect_outline(pControl, boxRect, pButton->boxBorderColor, pButton->borderWidth, pPaintData);
-    dred_control_draw_rect(pControl, dred_grow_rect(boxRect, -pButton->borderWidth), pButton->color, pPaintData);
+    dred_control_draw_rect_outline(pControl, boxRect, pButton->boxBorderColor, pButton->borderWidth, pSurface);
+    dred_control_draw_rect(pControl, dred_grow_rect(boxRect, -pButton->borderWidth), pButton->color, pSurface);
 
 
     // The text is positioned to the right of the box, and centered vertically.
@@ -54,13 +54,13 @@ void dred_colorbutton__on_paint(dred_control* pControl, dred_rect rect, void* pP
 
     float textPosX = boxRect.right + pButton->padding;
     float textPosY = roundf(dred_control_get_height(pControl) - textHeight) / 2;
-    dred_control_draw_text(pControl, pButton->pSubFont, pButton->text, (int)strlen(pButton->text), textPosX, textPosY, pButton->textColor, bgColor, pPaintData);
+    dred_control_draw_text(pControl, pButton->pSubFont, pButton->text, (int)strlen(pButton->text), textPosX, textPosY, pButton->textColor, bgColor, pSurface);
 
     // Background
-    dred_control_draw_rect(pControl, dred_make_rect(boxRect.right, boxRect.top, boxRect.right + pButton->padding, boxRect.bottom), bgColor, pPaintData);    // Padding bettween colorbutton and text.
-    dred_control_draw_rect(pControl, dred_make_rect(bgrect.left, bgrect.top, bgrect.right, boxRect.top), bgColor, pPaintData);
-    dred_control_draw_rect(pControl, dred_make_rect(bgrect.left, boxRect.bottom, bgrect.right, bgrect.bottom), bgColor, pPaintData);
-    dred_control_draw_rect(pControl, dred_make_rect(textPosX + textWidth, boxRect.top, bgrect.right, boxRect.bottom), bgColor, pPaintData);
+    dred_control_draw_rect(pControl, dred_make_rect(boxRect.right, boxRect.top, boxRect.right + pButton->padding, boxRect.bottom), bgColor, pSurface);    // Padding bettween colorbutton and text.
+    dred_control_draw_rect(pControl, dred_make_rect(bgrect.left, bgrect.top, bgrect.right, boxRect.top), bgColor, pSurface);
+    dred_control_draw_rect(pControl, dred_make_rect(bgrect.left, boxRect.bottom, bgrect.right, bgrect.bottom), bgColor, pSurface);
+    dred_control_draw_rect(pControl, dred_make_rect(textPosX + textWidth, boxRect.top, bgrect.right, boxRect.bottom), bgColor, pSurface);
 }
 
 void dred_colorbutton__on_mouse_enter(dred_control* pControl)

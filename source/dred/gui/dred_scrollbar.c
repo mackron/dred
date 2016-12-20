@@ -560,7 +560,7 @@ void dred_scrollbar_on_mouse_wheel(dred_control* pControl, int delta, int relati
     dred_scrollbar_scroll(pScrollbar, -delta * dred_scrollbar_get_mouse_wheel_scale(pScrollbar));
 }
 
-void dred_scrollbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect, void* pPaintData)
+void dred_scrollbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect, dtk_surface* pSurface)
 {
     (void)relativeClippingRect;
 
@@ -576,10 +576,10 @@ void dred_scrollbar_on_paint(dred_control* pControl, dred_rect relativeClippingR
         // The thumb is visible.
 
         // Track. We draw this in 4 seperate pieces so we can avoid overdraw with the thumb.
-        dred_control_draw_rect(pControl, dred_make_rect(0, 0, dred_control_get_width(pControl), thumbRect.top), pScrollbar->trackColor, pPaintData);  // Top
-        dred_control_draw_rect(pControl, dred_make_rect(0, thumbRect.bottom, dred_control_get_width(pControl), dred_control_get_height(pControl)), pScrollbar->trackColor, pPaintData);  // Bottom
-        dred_control_draw_rect(pControl, dred_make_rect(0, thumbRect.top, thumbRect.left, thumbRect.bottom), pScrollbar->trackColor, pPaintData);  // Left
-        dred_control_draw_rect(pControl, dred_make_rect(thumbRect.right, thumbRect.top, dred_control_get_width(pControl), thumbRect.bottom), pScrollbar->trackColor, pPaintData); // Right
+        dred_control_draw_rect(pControl, dred_make_rect(0, 0, dred_control_get_width(pControl), thumbRect.top), pScrollbar->trackColor, pSurface);  // Top
+        dred_control_draw_rect(pControl, dred_make_rect(0, thumbRect.bottom, dred_control_get_width(pControl), dred_control_get_height(pControl)), pScrollbar->trackColor, pSurface);  // Bottom
+        dred_control_draw_rect(pControl, dred_make_rect(0, thumbRect.top, thumbRect.left, thumbRect.bottom), pScrollbar->trackColor, pSurface);  // Left
+        dred_control_draw_rect(pControl, dred_make_rect(thumbRect.right, thumbRect.top, dred_control_get_width(pControl), thumbRect.bottom), pScrollbar->trackColor, pSurface); // Right
 
         // Thumb.
         dred_color thumbColor;
@@ -591,12 +591,12 @@ void dred_scrollbar_on_paint(dred_control* pControl, dred_rect relativeClippingR
             thumbColor = pScrollbar->thumbColor;
         }
 
-        dred_control_draw_rect(pControl, thumbRect, thumbColor, pPaintData);
+        dred_control_draw_rect(pControl, thumbRect, thumbColor, pSurface);
     }
     else
     {
         // The thumb is not visible - just draw the track as one quad.
-        dred_control_draw_rect(pControl, dred_control_get_local_rect(pControl), pScrollbar->trackColor, pPaintData);
+        dred_control_draw_rect(pControl, dred_control_get_local_rect(pControl), pScrollbar->trackColor, pSurface);
     }
 }
 

@@ -37,7 +37,7 @@ struct dred_tab
 DRED_GUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, dred_tab* pTab, float* pWidthOut, float* pHeightOut);
 
 /// Paints the given menu item.
-DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
+DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, dtk_surface* pSurface);
 
 /// Finds the tab sitting under the given point, if any.
 DRED_GUI_PRIVATE dred_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, dr_bool32* pIsOverCloseButtonOut);
@@ -414,14 +414,14 @@ void dred_tabbar_measure_tab(dred_tabbar* pTabBar, dred_tab* pTab, float* pWidth
     }
 }
 
-void dred_tabbar_paint_tab(dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData)
+void dred_tabbar_paint_tab(dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, dtk_surface* pSurface)
 {
     if (pTabBar == NULL) {
         return;
     }
 
     if (pTabBar->onPaintTab) {
-        pTabBar->onPaintTab(pTabBar, pTab, relativeClippingRect, offsetX, offsetY, width, height, pPaintData);
+        pTabBar->onPaintTab(pTabBar, pTab, relativeClippingRect, offsetX, offsetY, width, height, pSurface);
     }
 }
 
@@ -822,7 +822,7 @@ void dred_tabbar_on_mouse_button_up(dred_control* pControl, int mouseButton, int
     }
 }
 
-void dred_tabbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect, void* pPaintData)
+void dred_tabbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect, dtk_surface* pSurface)
 {
     dred_tabbar* pTabBar = DRED_TABBAR(pControl);
     if (pTabBar == NULL) {
@@ -850,14 +850,14 @@ void dred_tabbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect
         }
 
 
-        dred_tabbar_paint_tab(pTabBar, pTab, relativeClippingRect, runningPosX, runningPosY, tabWidth, tabHeight, pPaintData);
+        dred_tabbar_paint_tab(pTabBar, pTab, relativeClippingRect, runningPosX, runningPosY, tabWidth, tabHeight, pSurface);
 
         // After painting the tab, there may be a region of the background that was not drawn by the tab painting callback. We'll need to
         // draw that here.
         if (pTabBar->orientation == dred_tabbar_orientation_top || pTabBar->orientation == dred_tabbar_orientation_bottom) {
-            dred_control_draw_rect(pControl, dred_make_rect(runningPosX, runningPosY + tabHeight, tabbarWidth, tabbarHeight), pTabBar->tabBackgroundColor, pPaintData);
+            dred_control_draw_rect(pControl, dred_make_rect(runningPosX, runningPosY + tabHeight, tabbarWidth, tabbarHeight), pTabBar->tabBackgroundColor, pSurface);
         } else {
-            dred_control_draw_rect(pControl, dred_make_rect(runningPosX + tabWidth, runningPosY, tabbarWidth, runningPosY + tabHeight), pTabBar->tabBackgroundColor, pPaintData);
+            dred_control_draw_rect(pControl, dred_make_rect(runningPosX + tabWidth, runningPosY, tabbarWidth, runningPosY + tabHeight), pTabBar->tabBackgroundColor, pSurface);
         }
 
 
@@ -871,7 +871,7 @@ void dred_tabbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect
 
 
     // Background. We just draw a quad around the region that is not covered by items.
-    dred_control_draw_rect(pControl, dred_make_rect(runningPosX, runningPosY, tabbarWidth, tabbarHeight), pTabBar->tabBackgroundColor, pPaintData);
+    dred_control_draw_rect(pControl, dred_make_rect(runningPosX, runningPosY, tabbarWidth, tabbarHeight), pTabBar->tabBackgroundColor, pSurface);
 }
 
 
@@ -906,7 +906,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, d
     }
 }
 
-DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData)
+DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, dtk_surface* pSurface)
 {
     (void)relativeClippingRect;
 
@@ -938,14 +938,14 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
         }
     }
 
-    dred_control_draw_rect_outline(DRED_CONTROL(pTabBar), dred_make_rect(offsetX, offsetY, offsetX + width, offsetY + height), bgcolor, pTabBar->tabPadding, pPaintData);
+    dred_control_draw_rect_outline(DRED_CONTROL(pTabBar), dred_make_rect(offsetX, offsetY, offsetX + width, offsetY + height), bgcolor, pTabBar->tabPadding, pSurface);
 
 
     // Text.
     float textPosX = offsetX + pTabBar->tabPadding;
     float textPosY = offsetY + pTabBar->tabPadding;
     if (pTab != NULL) {
-        dred_control_draw_text(DRED_CONTROL(pTabBar), pTabBar->pFont, pTab->text, (int)strlen(pTab->text), textPosX, textPosY, textColor, bgcolor, pPaintData);
+        dred_control_draw_text(DRED_CONTROL(pTabBar), pTabBar->pFont, pTab->text, (int)strlen(pTab->text), textPosX, textPosY, textColor, bgcolor, pSurface);
     }
 
 
@@ -982,11 +982,11 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
         args.backgroundColor = bgcolor;
         args.boundsColor     = bgcolor;
         args.options         = DRED_GUI_IMAGE_DRAW_BOUNDS | DRED_GUI_IMAGE_CLIP_BOUNDS | DRED_GUI_IMAGE_ALIGN_CENTER;
-        dred_control_draw_image(DRED_CONTROL(pTabBar), pTabBar->pCloseButtonImage, &args, pPaintData);
+        dred_control_draw_image(DRED_CONTROL(pTabBar), pTabBar->pCloseButtonImage, &args, pSurface);
 
 
         /// Space between the text and the padding.
-        dred_control_draw_rect(DRED_CONTROL(pTabBar), dred_make_rect(textPosX + textWidth, textPosY, closeButtonPosX, textPosY + textHeight), bgcolor, pPaintData);
+        dred_control_draw_rect(DRED_CONTROL(pTabBar), dred_make_rect(textPosX + textWidth, textPosY, closeButtonPosX, textPosY + textHeight), bgcolor, pSurface);
     }
 }
 

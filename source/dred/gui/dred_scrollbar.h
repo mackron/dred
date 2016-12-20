@@ -208,4 +208,4 @@ void dred_scrollbar_on_mouse_button_up(dred_control* pControl, int button, int r
 void dred_scrollbar_on_mouse_wheel(dred_control* pControl, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the paint event needs to be processed.
-void dred_scrollbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect, void* pPaintData);
+void dred_scrollbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect, dtk_surface* pSurface);

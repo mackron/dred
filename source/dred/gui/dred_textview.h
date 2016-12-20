@@ -460,7 +460,7 @@ void dred_textview_on_key_up(dred_control* pControl, dred_key key, int stateFlag
 void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int utf32, int stateFlags);
 
 // on_paint.
-void dred_textview_on_paint(dred_control* pControl, dred_rect relativeRect, void* pPaintData);
+void dred_textview_on_paint(dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
 
 // on_capture_keyboard
 void dred_textview_on_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl);

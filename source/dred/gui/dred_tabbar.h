@@ -18,7 +18,7 @@ typedef enum
 typedef struct dred_tab dred_tab;
 
 typedef void (* dred_tabbar_on_measure_tab_proc)        (dred_tabbar* pTabBar, dred_tab* pTab, float* pWidthOut, float* pHeightOut);
-typedef void (* dred_tabbar_on_paint_tab_proc)          (dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
+typedef void (* dred_tabbar_on_paint_tab_proc)          (dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, dtk_surface* pSurface);
 typedef void (* dred_tabbar_on_tab_activated_proc)      (dred_tabbar* pTabBar, dred_tab* pTab, dred_tab* pOldActiveTab);
 typedef void (* dred_tabbar_on_tab_deactivated_proc)    (dred_tabbar* pTabBar, dred_tab* pTab, dred_tab* pNewActiveTab);
 typedef void (* dred_tabbar_on_tab_close_proc)          (dred_tabbar* pTabBar, dred_tab* pTab);
@@ -233,7 +233,7 @@ void dred_tabbar_set_on_tab_mouse_button_up(dred_tabbar* pTabBar, dred_tabbar_on
 void dred_tabbar_measure_tab(dred_tabbar* pTabBar, dred_tab* pTab, float* pWidthOut, float* pHeightOut);
 
 /// Paints the given tab.
-void dred_tabbar_paint_tab(dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, void* pPaintData);
+void dred_tabbar_paint_tab(dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, dtk_surface* pSurface);
 
 
 /// Sets the width or height of the tab bar to that of it's tabs based on it's orientation.
@@ -320,7 +320,7 @@ void dred_tabbar_on_mouse_button_down(dred_control* pControl, int mouseButton, i
 void dred_tabbar_on_mouse_button_up(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the paint event needs to be processed for the given tab control.
-void dred_tabbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect, void* pPaintData);
+void dred_tabbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect, dtk_surface* pSurface);
 
 
 

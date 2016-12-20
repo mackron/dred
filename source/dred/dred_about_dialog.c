@@ -49,7 +49,7 @@ void dred_about_dialog__on_size(dred_control* pControl, float newWidth, float ne
         newHeight - dred_control_get_height(DRED_CONTROL(&pDialog->closeButton)) - 8*pDred->uiScale);
 }
 
-void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* pPaintData)
+void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
 {
     (void)rect;
 
@@ -65,7 +65,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
 
     dred_rect dialogRect = dred_control_get_local_rect(pControl);
 
-    dred_control_draw_rect(pControl, dialogRect, dred_rgb(255, 255, 255), pPaintData);
+    dred_control_draw_rect(pControl, dialogRect, dred_rgb(255, 255, 255), pSurface);
 
     unsigned int logoWidth;
     unsigned int logoHeight;
@@ -89,7 +89,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
     args.options = DRED_GUI_IMAGE_ALIGN_CENTER;
     args.foregroundTint = dred_rgb(255, 255, 255);
     args.backgroundColor = dred_rgb(255, 255, 255);
-    dred_control_draw_image(pControl, pDialog->pLogo, &args, pPaintData);
+    dred_control_draw_image(pControl, pDialog->pLogo, &args, pSurface);
 
 
 
@@ -104,7 +104,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
 
     float linkWidth;
     dred_gui_measure_string(pFont, linkStr, strlen(linkStr), &linkWidth, NULL);
-    dred_control_draw_text(pControl, pFont, linkStr, (int)strlen(linkStr), ((dialogRect.right - dialogRect.left) - linkWidth) / 2, penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255), pPaintData);
+    dred_control_draw_text(pControl, pFont, linkStr, (int)strlen(linkStr), ((dialogRect.right - dialogRect.left) - linkWidth) / 2, penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255), pSurface);
 
 
     const char* versionStr = "dred version " DRED_VERSION_STRING;
@@ -114,21 +114,21 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
     penPosX = (8*uiScale);
     penPosY = bannerRect.bottom;
 
-    dred_control_draw_rect(pControl, dred_make_rect(0, bannerRect.bottom, dialogRect.right, penPosY + (1 * uiScale)), dred_rgb(200, 200, 200), pPaintData);
+    dred_control_draw_rect(pControl, dred_make_rect(0, bannerRect.bottom, dialogRect.right, penPosY + (1 * uiScale)), dred_rgb(200, 200, 200), pSurface);
     penPosY += (9*uiScale);
 
-    dred_control_draw_text(pControl, pFont, versionStr, (int)strlen(versionStr), penPosX, penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255), pPaintData);
+    dred_control_draw_text(pControl, pFont, versionStr, (int)strlen(versionStr), penPosX, penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255), pSurface);
     penPosY += fontMetrics.lineHeight;
 
-    dred_control_draw_text(pControl, pFont, copyrightStr, (int)strlen(copyrightStr), penPosX, penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255), pPaintData);
+    dred_control_draw_text(pControl, pFont, copyrightStr, (int)strlen(copyrightStr), penPosX, penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255), pSurface);
     penPosY += fontMetrics.lineHeight;
     
     penPosY += (9*uiScale);
-    dred_control_draw_rect(pControl, dred_make_rect(0, penPosY, dialogRect.right, penPosY + (1 * uiScale)), dred_rgb(200, 200, 200), pPaintData);
+    dred_control_draw_rect(pControl, dred_make_rect(0, penPosY, dialogRect.right, penPosY + (1 * uiScale)), dred_rgb(200, 200, 200), pSurface);
     penPosY += 9*uiScale;
 
     const char* creditsTitle = "The following libraries are used internally by dred:";
-    dred_control_draw_text(pControl, pFont, creditsTitle, (int)strlen(creditsTitle), penPosX, penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255), pPaintData);
+    dred_control_draw_text(pControl, pFont, creditsTitle, (int)strlen(creditsTitle), penPosX, penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255), pSurface);
     penPosY += 4*uiScale + fontMetrics.lineHeight;
 
     static const char* credits[] = {
@@ -140,7 +140,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
     size_t creditsCount = sizeof(credits) / sizeof(credits[0]);
 
     for (size_t iCredit = 0; iCredit < creditsCount; ++iCredit) {
-        dred_control_draw_text(pControl, pFont, credits[iCredit], (int)strlen(credits[iCredit]), penPosX, penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255), pPaintData);
+        dred_control_draw_text(pControl, pFont, credits[iCredit], (int)strlen(credits[iCredit]), penPosX, penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255), pSurface);
         penPosY += fontMetrics.lineHeight;
     }
 }
