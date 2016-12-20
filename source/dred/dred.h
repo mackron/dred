@@ -38,14 +38,6 @@
 #include <dlfcn.h>
 #endif
 
-// Platform libraries, for simplifying MSVC builds. TODO: Remove these once run-time linking is finished.
-#ifdef _WIN32
-#if defined(_MSC_VER)
-#pragma comment(lib, "msimg32.lib")
-#pragma comment(lib, "comctl32.lib")
-#endif
-#endif
-
 
 // External libraries.
 
