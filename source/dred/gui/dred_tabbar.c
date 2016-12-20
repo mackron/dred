@@ -440,7 +440,7 @@ void dred_tabbar_resize_by_tabs(dred_tabbar* pTabBar)
     float maxHeight = 0;
     if (pTabBar->pFirstTab == NULL) {
         // There are no tabs. Set initial size based on the line height of the font.
-        dred_gui_font_metrics fontMetrics;
+        dtk_font_metrics fontMetrics;
         if (dred_gui_get_font_metrics(pTabBar->pFont, &fontMetrics)) {
             if (pTabBar->orientation == dred_tabbar_orientation_top || pTabBar->orientation == dred_tabbar_orientation_bottom) {
                 maxHeight = fontMetrics.lineHeight + (pTabBar->tabPadding*2);
@@ -981,7 +981,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
         args.foregroundTint  = closeButtonColor;
         args.backgroundColor = bgcolor;
         args.boundsColor     = bgcolor;
-        args.options         = DRED_GUI_IMAGE_DRAW_BACKGROUND | DRED_GUI_IMAGE_DRAW_BOUNDS | DRED_GUI_IMAGE_CLIP_BOUNDS | DRED_GUI_IMAGE_ALIGN_CENTER;
+        args.options         = DRED_GUI_IMAGE_DRAW_BOUNDS | DRED_GUI_IMAGE_CLIP_BOUNDS | DRED_GUI_IMAGE_ALIGN_CENTER;
         dred_control_draw_image(DRED_CONTROL(pTabBar), pTabBar->pCloseButtonImage, &args, pPaintData);
 
 

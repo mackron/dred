@@ -162,12 +162,8 @@ typedef struct dred_rect dred_rect;
 typedef struct dred_gui_painting_callbacks dred_gui_painting_callbacks;
 typedef struct dred_gui_font dred_gui_font;
 typedef struct dred_gui_image dred_gui_image;
-typedef struct dred_gui_font_metrics dred_gui_font_metrics;
-typedef struct dred_glyph_metrics dred_glyph_metrics;
 
 typedef unsigned int dred_key;
-
-typedef void* dred_gui_resource;
 
 
 // Casts a pointer to any structure to a dred_control*. Note that this will only work if the dred_control object
@@ -181,27 +177,6 @@ typedef enum
     dred_gui_image_format_bgra8,
     dred_gui_image_format_argb8,
 } dred_gui_image_format;
-
-
-/// Font metrics.
-struct dred_gui_font_metrics
-{
-    int ascent;
-    int descent;
-    int lineHeight;
-    int spaceWidth;
-};
-
-/// Glyph metrics.
-struct dred_glyph_metrics
-{
-    int width;
-    int height;
-    int originX;
-    int originY;
-    int advanceX;
-    int advanceY;
-};
 
 
 /// Structure representing an RGBA color. Color components are specified in the range of 0 - 255.
@@ -228,18 +203,6 @@ typedef struct
     dred_color fgColor;
     dred_gui_font* pFont;
 } dred_text_style;
-
-
-#define DRED_GUI_IMAGE_DRAW_BACKGROUND     (1 << 0)
-#define DRED_GUI_IMAGE_HINT_NO_ALPHA       (1 << 1)
-#define DRED_GUI_IMAGE_DRAW_BOUNDS         (1 << 2)
-#define DRED_GUI_IMAGE_CLIP_BOUNDS         (1 << 3)        //< Clips the image to the bounds
-#define DRED_GUI_IMAGE_ALIGN_CENTER        (1 << 4)
-
-#define DRED_GUI_READ                      (1 << 0)
-#define DRED_GUI_WRITE                     (1 << 1)
-
-#define DRED_GUI_FONT_NO_CLEARTYPE         (1 << 0)
 
 typedef struct
 {
@@ -299,6 +262,16 @@ typedef struct
 } dred_gui_draw_image_args;
 
 
+#define DRED_GUI_IMAGE_DRAW_BOUNDS         (1 << 2)
+#define DRED_GUI_IMAGE_CLIP_BOUNDS         (1 << 3)        //< Clips the image to the bounds
+#define DRED_GUI_IMAGE_ALIGN_CENTER        (1 << 4)
+
+#define DRED_GUI_READ                      (1 << 0)
+#define DRED_GUI_WRITE                     (1 << 1)
+
+#define DRED_GUI_FONT_NO_CLEARTYPE         (1 << 0)
+
+
 typedef void (* dred_gui_on_move_proc)                 (dred_control* pControl, float newRelativePosX, float newRelativePosY);
 typedef void (* dred_gui_on_size_proc)                 (dred_control* pControl, float newWidth, float newHeight);
 typedef void (* dred_gui_on_mouse_enter_proc)          (dred_control* pControl);
@@ -311,7 +284,7 @@ typedef void (* dred_gui_on_mouse_wheel_proc)          (dred_control* pControl, 
 typedef void (* dred_gui_on_key_down_proc)             (dred_control* pControl, dred_key key, int stateFlags);
 typedef void (* dred_gui_on_key_up_proc)               (dred_control* pControl, dred_key key, int stateFlags);
 typedef void (* dred_gui_on_printable_key_down_proc)   (dred_control* pControl, unsigned int character, int stateFlags);
-typedef void (* dred_gui_on_paint_proc)                (dred_control* pControl, dred_rect relativeRect, void* pPaintData);
+typedef void (* dred_gui_on_paint_proc)                (dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
 typedef void (* dred_gui_on_dirty_proc)                (dred_control* pControl, dred_rect relativeRect);
 typedef dr_bool32 (* dred_gui_on_hittest_proc)              (dred_control* pControl, float relativePosX, float relativePosY);
 typedef void (* dred_gui_on_capture_mouse_proc)        (dred_control* pControl);
@@ -322,35 +295,32 @@ typedef void (* dred_gui_on_change_cursor_proc)        (dred_control* pControl, 
 typedef void (* dred_gui_on_delete_element_proc)       (dred_control* pControl);
 typedef void (* dred_gui_on_log)                       (dred_gui* pGUI, const char* message);
 
-typedef void (* dred_gui_draw_begin_proc)                   (void* pPaintData);
-typedef void (* dred_gui_draw_end_proc)                     (void* pPaintData);
-typedef void (* dred_gui_set_clip_proc)                     (dred_rect relativeRect, void* pPaintData);
-typedef void (* dred_gui_get_clip_proc)                     (dred_rect* pRectOut, void* pPaintData);
-typedef void (* dred_gui_draw_line_proc)                    (float startX, float startY, float endX, float endY, float width, dred_color color, void* pPaintData);
-typedef void (* dred_gui_draw_rect_proc)                    (dred_rect relativeRect, dred_color color, void* pPaintData);
-typedef void (* dred_gui_draw_rect_outline_proc)            (dred_rect relativeRect, dred_color color, float outlineWidth, void* pPaintData);
-typedef void (* dred_gui_draw_rect_with_outline_proc)       (dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, void* pPaintData);
-typedef void (* dred_gui_draw_round_rect_proc)              (dred_rect relativeRect, dred_color color, float radius, void* pPaintData);
-typedef void (* dred_gui_draw_round_rect_outline_proc)      (dred_rect relativeRect, dred_color color, float radius, float outlineWidth, void* pPaintData);
-typedef void (* dred_gui_draw_round_rect_with_outline_proc) (dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData);
-typedef void (* dred_gui_draw_text_proc)                    (dred_gui_resource font, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData);
-typedef void (* dred_gui_draw_image_proc)                   (dred_gui_resource image, dred_gui_draw_image_args* pArgs, void* pPaintData);
+typedef void (* dred_gui_draw_begin_proc)                   (dtk_surface* pSurface);
+typedef void (* dred_gui_draw_end_proc)                     (dtk_surface* pSurface);
+typedef void (* dred_gui_set_clip_proc)                     (dred_rect relativeRect, dtk_surface* pSurface);
+typedef void (* dred_gui_get_clip_proc)                     (dred_rect* pRectOut, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_line_proc)                    (float startX, float startY, float endX, float endY, float width, dred_color color, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_rect_proc)                    (dred_rect relativeRect, dred_color color, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_rect_outline_proc)            (dred_rect relativeRect, dred_color color, float outlineWidth, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_rect_with_outline_proc)       (dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_round_rect_proc)              (dred_rect relativeRect, dred_color color, float radius, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_round_rect_outline_proc)      (dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_round_rect_with_outline_proc) (dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_text_proc)                    (dtk_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_image_proc)                   (dtk_surface* pImage, dtk_draw_surface_args* pArgs, dtk_surface* pSurface);
 
-typedef dred_gui_resource (* dred_gui_create_font_proc)                        (void* pPaintingContext, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, float rotation, unsigned int flags);
-typedef void              (* dred_gui_delete_font_proc)                        (dred_gui_resource font);
-typedef unsigned int      (* dred_gui_get_font_size_proc)                      (dred_gui_resource font);
-typedef dr_bool32              (* dred_gui_get_font_metrics_proc)                   (dred_gui_resource font, dred_gui_font_metrics* pMetricsOut);
-typedef dr_bool32              (* dred_gui_get_glyph_metrics_proc)                  (dred_gui_resource font, unsigned int utf32, dred_glyph_metrics* pMetricsOut);
-typedef dr_bool32              (* dred_gui_measure_string_proc)                     (dred_gui_resource font, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
-typedef dr_bool32              (* dred_gui_get_text_cursor_position_from_point_proc)(dred_gui_resource font, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-typedef dr_bool32              (* dred_gui_get_text_cursor_position_from_char_proc) (dred_gui_resource font, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+typedef dtk_font* (* dred_gui_create_font_proc)                        (dtk_context* pTK, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, float rotation, unsigned int flags);
+typedef void              (* dred_gui_delete_font_proc)                        (dtk_font* pFont);
+typedef unsigned int      (* dred_gui_get_font_size_proc)                      (dtk_font* pFont);
+typedef dr_bool32              (* dred_gui_get_font_metrics_proc)                   (dtk_font* pFont, dtk_font_metrics* pMetricsOut);
+typedef dr_bool32              (* dred_gui_get_glyph_metrics_proc)                  (dtk_font* pFont, unsigned int utf32, dtk_glyph_metrics* pMetricsOut);
+typedef dr_bool32              (* dred_gui_measure_string_proc)                     (dtk_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
+typedef dr_bool32              (* dred_gui_get_text_cursor_position_from_point_proc)(dtk_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+typedef dr_bool32              (* dred_gui_get_text_cursor_position_from_char_proc) (dtk_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
-typedef dred_gui_resource     (* dred_gui_create_image_proc)            (void* pPaintingContext, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pImageData);
-typedef void                  (* dred_gui_delete_image_proc)            (dred_gui_resource image);
-typedef dred_gui_image_format (* dred_gui_get_optimal_image_format_proc)(void* pPaintingContext);
-typedef void                  (* dred_gui_get_image_size_proc)          (dred_gui_resource image, unsigned int* pWidthOut, unsigned int* pHeightOut);
-typedef void*                 (* dred_gui_map_image_data_proc)          (dred_gui_resource image, unsigned int accessFlags);
-typedef void                  (* dred_gui_unmap_image_data_proc)        (dred_gui_resource image);
+typedef dtk_surface*     (* dred_gui_create_image_proc)            (dtk_context* pTK, unsigned int width, unsigned int height, unsigned int stride, const void* pImageData);
+typedef void                  (* dred_gui_delete_image_proc)            (dtk_surface* pImage);
+typedef void                  (* dred_gui_get_image_size_proc)          (dtk_surface* pImage, unsigned int* pWidthOut, unsigned int* pHeightOut);
 
 typedef dr_bool32 (* dred_gui_visible_iteration_proc)(dred_control* pControl, dred_rect *pRelativeRect, void* pUserData);
 
@@ -541,10 +511,7 @@ struct dred_gui_painting_callbacks
 
     dred_gui_create_image_proc                        createImage;
     dred_gui_delete_image_proc                        deleteImage;
-    dred_gui_get_optimal_image_format_proc            getOptimalImageFormat;
     dred_gui_get_image_size_proc                      getImageSize;
-    dred_gui_map_image_data_proc                      mapImageData;
-    dred_gui_unmap_image_data_proc                    unmapImageData;
 };
 
 struct dred_gui_image
@@ -553,7 +520,7 @@ struct dred_gui_image
     dred_gui* pGUI;
 
     /// The resource handle that is passed around to the callback functions.
-    dred_gui_resource hResource;
+    dtk_surface* pInternalImage;
 };
 
 struct dred_gui_font
@@ -581,7 +548,7 @@ struct dred_gui_font
     unsigned int flags;
 
     /// The internal font. This is created by the rendering backend.
-    dred_gui_resource internalFont;
+    dtk_font* pInternalFont;
 };
 
 
@@ -701,10 +668,6 @@ struct dred_gui
 {
     // The dred context that owns the GUI system.
     dred_context* pDred;
-
-
-    /// The paiting context.
-    void* pPaintingContext;
 
     /// The painting callbacks.
     dred_gui_painting_callbacks paintingCallbacks;
@@ -1210,7 +1173,7 @@ dred_rect dred_control_get_local_rect(const dred_control* pControl);
 /// @remarks
 ///     This can only be called once, so it should always be done after initialization. This will fail if called
 ///     more than once.
-dr_bool32 dred_gui_register_painting_callbacks(dred_gui* pGUI, void* pPaintingContext, dred_gui_painting_callbacks callbacks);
+dr_bool32 dred_gui_register_painting_callbacks(dred_gui* pGUI, dred_gui_painting_callbacks callbacks);
 
 
 /// Performs a recursive traversal of all visible elements in the given rectangle.
@@ -1261,31 +1224,31 @@ void dred_control_dirty(dred_control* pControl, dred_rect relativeRect);
 ///     This will call painting event handlers which will give the application time to do custom drawing.
 ///     @par
 ///     When using easy_draw to do drawing, pPaintData must be set to a pointer to the relevant easydraw_surface object.
-void dred_control_draw(dred_control* pControl, dred_rect relativeRect, void* pPaintData);
+void dred_control_draw(dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
 
 /// Retrieves the current clipping rectangle.
-void dred_control_get_clip(dred_control* pControl, dred_rect* pRelativeRect, void* pPaintData);
+void dred_control_get_clip(dred_control* pControl, dred_rect* pRelativeRect, dtk_surface* pSurface);
 
 /// Sets the clipping rectangle to apply to all future draw operations on this element.
-void dred_control_set_clip(dred_control* pControl, dred_rect relativeRect, void* pPaintData);
+void dred_control_set_clip(dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
 
 /// Draws a rectangle on the given element.
-void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, void* pPaintData);
+void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, dtk_surface* pSurface);
 
 /// Draws the outline of a rectangle on the given element.
-void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float outlineWidth, void* pPaintData);
+void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float outlineWidth, dtk_surface* pSurface);
 
 /// Draws a filled rectangle with an outline on the given element.
-void dred_control_draw_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, void* pPaintData);
+void dred_control_draw_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, dtk_surface* pSurface);
 
 /// Draws a rectangle with rounded corners on the given element.
-void dred_control_draw_round_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, void* pPaintData);
+void dred_control_draw_round_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, dtk_surface* pSurface);
 
 /// Draws the outline of a rectangle with rounded corners on the given element.
-void dred_control_draw_round_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, void* pPaintData);
+void dred_control_draw_round_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dtk_surface* pSurface);
 
 /// Draws a filled rectangle and it's outline with rounded corners on the given element.
-void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, void* pPaintData);
+void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, dtk_surface* pSurface);
 
 /// Draws a run of text on the given element.
 ///
@@ -1294,10 +1257,10 @@ void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect
 ///     calls to this function.
 ///     @par
 ///     \c textSizeInBytes can be -1 in which case the text string is treated as null terminated.
-void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, void* pPaintData);
+void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, dtk_surface* pSurface);
 
 /// Draws an image.
-void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_draw_image_args* pArgs, void* pPaintData);
+void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_draw_image_args* pArgs, dtk_surface* pSurface);
 
 
 /// Creates a font resource.
@@ -1307,10 +1270,10 @@ dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned
 void dred_gui_delete_font(dred_gui_font* pFont);
 
 /// Retrieves the metrics of the given font.
-dr_bool32 dred_gui_get_font_metrics(dred_gui_font* pFont, dred_gui_font_metrics* pMetricsOut);
+dr_bool32 dred_gui_get_font_metrics(dred_gui_font* pFont, dtk_font_metrics* pMetricsOut);
 
 /// Retrieves the metrics of the glyph for the given character when rendered with the given font.
-dr_bool32 dred_gui_get_glyph_metrics(dred_gui_font* pFont, unsigned int utf32, dred_glyph_metrics* pMetricsOut);
+dr_bool32 dred_gui_get_glyph_metrics(dred_gui_font* pFont, unsigned int utf32, dtk_glyph_metrics* pMetricsOut);
 
 /// Retrieves the dimensions of the given string when drawn with the given font.
 ///
@@ -1334,31 +1297,13 @@ dr_bool32 dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, cons
 ///     If pData is NULL, the default image data is undefined.
 ///     @par
 ///     If stride is set to 0, it is assumed to be tightly packed.
-///     @par
-///     Use dred_gui_map_image_data() and dred_gui_unmap_image_data() to update or retrieve image data.
-dred_gui_image* dred_gui_create_image(dred_gui* pGUI, unsigned int width, unsigned int height, dred_gui_image_format format, unsigned int stride, const void* pData);
+dred_gui_image* dred_gui_create_image(dred_gui* pGUI, unsigned int width, unsigned int height, unsigned int stride, const void* pData);
 
 /// Deletes the given image.
 void dred_gui_delete_image(dred_gui_image* pImage);
 
 /// Retrieves the size of the given image.
 void dred_gui_get_image_size(dred_gui_image* pImage, unsigned int* pWidthOut, unsigned int* pHeightOut);
-
-/// Retrieves the optimal image format for the given context.
-dred_gui_image_format dred_gui_get_optimal_image_format(dred_gui* pGUI);
-
-/// Retrieves a pointer to a buffer representing the given image's data.
-///
-/// Call dred_gui_unmap_image_data() when you are done with this function.
-///
-/// Use this function to access an image's data. The returned pointer does not necessarilly point to the image's actual data, so when
-/// writing to this pointer, nothing is actually updated until dred_gui_unmap_image_data() is called.
-///
-/// The returned data will contain the image data at the time of the mapping.
-void* dred_gui_map_image_data(dred_gui_image* pImage, unsigned int accessFlags);
-
-/// Unmaps the given image data.
-void dred_gui_unmap_image_data(dred_gui_image* pImage);
 
 
 
@@ -1477,12 +1422,12 @@ dr_bool32 dred_rect_has_volume(dred_rect rect);
 ///
 /// @remarks
 ///     This is equivalent to dred_gui_init() followed by dred_gui_register_dr_2d_callbacks().
-dr_bool32 dred_gui_init_dr_2d(dred_gui* pGUI, dred_context* pDred, dr2d_context* pDrawingContext);
+dr_bool32 dred_gui_init_dr_2d(dred_gui* pGUI, dred_context* pDred);
 
 /// Registers the drawing callbacks for use with easy_draw.
 ///
 /// @remarks
 ///     The user data of each callback is assumed to be a pointer to an easydraw_surface object.
-void dred_gui_register_dr_2d_callbacks(dred_gui* pGUI, dr2d_context* pDrawingContext);
+void dred_gui_register_dr_2d_callbacks(dred_gui* pGUI);
 
 #endif

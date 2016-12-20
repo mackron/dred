@@ -50,7 +50,7 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, void* pPaintD
     dred_gui_font* pFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
     if (pFont != NULL)
     {
-        dred_gui_font_metrics fontMetrics;
+        dtk_font_metrics fontMetrics;
         dred_gui_get_font_metrics(pFont, &fontMetrics);
 
         // The text info will be right-aligned so we need to measure first.
@@ -114,7 +114,7 @@ dr_bool32 dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_
 
 
     // The height of the command bar is based on the size of the font.
-    dred_gui_font_metrics fontMetrics;
+    dtk_font_metrics fontMetrics;
     dred_gui_get_font_metrics(pInfoBar->pFont, &fontMetrics);
     dred_control_set_size(DRED_CONTROL(pInfoBar), 0, (float)fontMetrics.lineHeight);
 
@@ -166,7 +166,7 @@ void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar)
         pInfoBar->pFont = pNewFont;
 
         // The height of the command bar is based on the size of the font.
-        dred_gui_font_metrics fontMetrics;
+        dtk_font_metrics fontMetrics;
         dred_gui_get_font_metrics(pInfoBar->pFont, &fontMetrics);
         dred_control_set_size(DRED_CONTROL(pInfoBar), dred_control_get_width(DRED_CONTROL(pInfoBar)), (float)fontMetrics.lineHeight);
     }

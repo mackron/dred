@@ -94,7 +94,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
 
 
     dred_gui_font* pFont = dred_font_acquire_subfont(pWindow->pDred->config.pUIFont, uiScale);
-    dred_gui_font_metrics fontMetrics;
+    dtk_font_metrics fontMetrics;
     dred_gui_get_font_metrics(pFont, &fontMetrics);
 
     float penPosX = 0;
@@ -209,7 +209,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     
 
 
-    pDialog->pLogo = dred_gui_create_image(pDred->pGUI, g_LogoBannerImage.width, g_LogoBannerImage.height, dred_gui_image_format_rgba8, g_LogoBannerImage.width*4, g_LogoBannerImage.pixel_data);
+    pDialog->pLogo = dred_gui_create_image(pDred->pGUI, g_LogoBannerImage.width, g_LogoBannerImage.height, g_LogoBannerImage.width*4, g_LogoBannerImage.pixel_data);
 
 
     dred_window_get_client_size(pDialog->pWindow, &windowWidth, &windowHeight);

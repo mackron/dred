@@ -37,8 +37,9 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
     {
         case DTK_EVENT_PAINT:
         {
-            dred_control_draw(pWindow->pRootGUIControl, dred_make_rect((float)pEvent->paint.rect.left, (float)pEvent->paint.rect.top, (float)pEvent->paint.rect.right, (float)pEvent->paint.rect.bottom), pWindow->pDrawingSurface);
+            dred_control_draw(pWindow->pRootGUIControl, dred_make_rect((float)pEvent->paint.rect.left, (float)pEvent->paint.rect.top, (float)pEvent->paint.rect.right, (float)pEvent->paint.rect.bottom), pEvent->paint.pSurface);
 
+#if 0
             // TODO: Remove this hack.
             //
             // TEMPORARY HACK: Copy pWindow->pDrawingSurface to the internal DTK window surface.
@@ -49,6 +50,7 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
             cairo_surface_t* pCairoSurface = dr2d_get_cairo_surface_t(pWindow->pDrawingSurface);
             cairo_set_source_surface(pEvent->paint.pSurface->cairo.pContext, pCairoSurface, 0, 0);
             cairo_paint(pEvent->paint.pSurface->cairo.pContext);
+#endif
 #endif
         } break;
 
@@ -64,6 +66,7 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_SIZE:
         {
+#if 0
             // TODO: Remove this hack.
             //
             // TEMPORARY HACK: The GTK surface needs to be resized here.
@@ -72,6 +75,7 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
                 dr2d_delete_surface(pWindow->pDrawingSurface);
             }
             pWindow->pDrawingSurface = dr2d_create_surface(pWindow->pDred->pDrawingContext, (float)pEvent->size.width, (float)pEvent->size.height);
+#endif
 #endif
 
             dred_window_on_size(pWindow, pEvent->size.width, pEvent->size.height);
@@ -3153,11 +3157,13 @@ dr_bool32 dred_window_create__post_setup(dred_context* pDred, dred_window* pWind
     pWindow->isShowingMenu = DR_TRUE;
     DTK_CONTROL(&pWindow->windowDTK)->pUserData = pWindow;
 
+#if 0
 #ifdef DRED_WIN32
     pWindow->pDrawingSurface = dr2d_create_surface_gdi_HDC(pDred->pDrawingContext, GetDC((HWND)pWindow->windowDTK.win32.hWnd));
     if (pWindow->pDrawingSurface == NULL) {
         return DR_FALSE;
     }
+#endif
 #endif
 
     pWindow->pRootGUIControl = &pWindow->rootGUIControl;
@@ -3242,10 +3248,12 @@ void dred_window_delete(dred_window* pWindow)
         pWindow->pRootGUIControl = NULL;
     }
 
+#if 0
     if (pWindow->pDrawingSurface) {
         dr2d_delete_surface(pWindow->pDrawingSurface);
         pWindow->pDrawingSurface = NULL;
     }
+#endif
 
     dtk_window_uninit(&pWindow->windowDTK);
     free(pWindow);

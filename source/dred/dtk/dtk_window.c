@@ -175,6 +175,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
 
         case WM_PAINT:
         {
+#if 0
             PAINTSTRUCT ps;
             HDC hDC = BeginPaint(hWnd, &ps);
             if (hDC != NULL) {
@@ -192,6 +193,23 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 }
 
                 EndPaint(hWnd, &ps);
+            }
+#endif
+
+            RECT rect;
+            if (GetUpdateRect(hWnd, &rect, FALSE)) {
+                dtk_surface surface;
+                if (dtk_surface_init_transient_HDC(e.pTK, GetDC(hWnd), DTK_CONTROL(pWindow)->width, DTK_CONTROL(pWindow)->height, &surface) == DTK_SUCCESS) {
+                    e.type = DTK_EVENT_PAINT;
+                    e.paint.rect.left = rect.left;
+                    e.paint.rect.top = rect.top;
+                    e.paint.rect.right = rect.right;
+                    e.paint.rect.bottom = rect.bottom;
+                    e.paint.pSurface = &surface;
+                    dtk__handle_event(&e);
+
+                    dtk_surface_uninit(&surface);
+                }
             }
         } break;
 

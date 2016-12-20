@@ -33,7 +33,7 @@ int dred_settings_editor__get_side_panel_btn_index_under_point(dred_settings_edi
     }
 
 
-    dred_gui_font_metrics metrics;
+    dtk_font_metrics metrics;
     dred_gui_get_font_metrics(pSettingsEditor->pFont, &metrics);
 
     float paddingY = metrics.lineHeight*pSettingsEditor->sidePanelBtnPaddingYRatio;
@@ -177,7 +177,7 @@ void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, void
     float penPosX = 0;
     float penPosY = pSettingsEditor->sidePanelBtnOffsetY;
 
-    dred_gui_font_metrics metrics;
+    dtk_font_metrics metrics;
     dred_gui_get_font_metrics(pSettingsEditor->pFont, &metrics);
 
     float paddingY = metrics.lineHeight*pSettingsEditor->sidePanelBtnPaddingYRatio;
@@ -326,7 +326,7 @@ dr_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSettin
         return DR_FALSE;
     }
 
-    dred_gui_font_metrics fontMetrics;
+    dtk_font_metrics fontMetrics;
     dred_gui_get_font_metrics(pSettingsEditor->pFont, &fontMetrics);
 
     float penPosX = 8*pDred->uiScale;
@@ -366,7 +366,7 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
         return DR_FALSE;
     }
 
-    dred_gui_font_metrics fontMetrics;
+    dtk_font_metrics fontMetrics;
     dred_gui_get_font_metrics(pSettingsEditor->pFont, &fontMetrics);
 
     float penPosX = 8*pDred->uiScale;
@@ -436,7 +436,7 @@ dr_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pSe
         return DR_FALSE;
     }
 
-    dred_gui_font_metrics fontMetrics;
+    dtk_font_metrics fontMetrics;
     dred_gui_get_font_metrics(pSettingsEditor->pFont, &fontMetrics);
 
     float penPosX = 8*pDred->uiScale;

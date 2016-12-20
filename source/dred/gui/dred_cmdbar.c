@@ -110,7 +110,7 @@ void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, void* pPaintD
 
     dred_gui_font* pMessageFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
 
-    dred_gui_font_metrics messageFontMetrics;
+    dtk_font_metrics messageFontMetrics;
     dred_gui_get_font_metrics(pMessageFont, &messageFontMetrics);
 
     float messageLeft = mrect.left + (4*pDred->uiScale);
@@ -305,12 +305,12 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     assert(pDred != NULL);
 
 
-    dred_gui_font_metrics fontMetricsTB;
+    dtk_font_metrics fontMetricsTB;
     dred_gui_get_font_metrics(dred_textbox_get_font(pCmdBar->pTextBox), &fontMetricsTB);
 
     dred_gui_font* pMessageFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
 
-    dred_gui_font_metrics fontMetricsMsg;
+    dtk_font_metrics fontMetricsMsg;
     dred_gui_get_font_metrics(pMessageFont, &fontMetricsMsg);
 
     float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(pCmdBar->pTextBox)*2;

@@ -7,7 +7,7 @@ dred_rect dred_colorbutton__get_box_rect(dred_colorbutton* pButton)
 
     assert(pButton != NULL);
     
-    dred_gui_font_metrics metrics;
+    dtk_font_metrics metrics;
     dred_gui_get_font_metrics(pButton->pSubFont, &metrics);
 
     float posX = 0;

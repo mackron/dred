@@ -5,7 +5,7 @@ typedef struct
     float scale;
     unsigned int width;
     unsigned int height;
-    dred_gui_image_format format;
+    dred_gui_image_format format;   // <-- TODO: Remove this (always use RGBA8).
     const void* pImageData;
 } dred_image_desc;
 

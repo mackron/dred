@@ -90,7 +90,7 @@ void dred_textview__refresh_style(dred_textview* pTextView)
 {
     assert(pTextView != NULL);
 
-    dred_gui_font_metrics fontMetrics;
+    dtk_font_metrics fontMetrics;
     dred_gui_get_font_metrics(pTextView->defaultStyle.pFont, &fontMetrics);
 
     // Default.

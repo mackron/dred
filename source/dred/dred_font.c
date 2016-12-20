@@ -194,7 +194,7 @@ dr_bool32 dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize)
 }
 
 
-dr_bool32 dred_font_get_metrics(dred_font* pFont, float scale, dred_gui_font_metrics* pMetricsOut)
+dr_bool32 dred_font_get_metrics(dred_font* pFont, float scale, dtk_font_metrics* pMetricsOut)
 {
     if (pFont == NULL) {
         return DR_FALSE;   

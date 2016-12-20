@@ -44,7 +44,7 @@ dred_image* dred_image_create(dred_context* pDred, unsigned int id, const dred_i
     {
         pImage->pSubImages[pImage->subimageCount].scale = pDesc[iSubImage].scale;
         pImage->pSubImages[pImage->subimageCount].referenceCount = 1;
-        pImage->pSubImages[pImage->subimageCount].pGUIImage = dred_gui_create_image(pDred->pGUI, pDesc[iSubImage].width, pDesc[iSubImage].height, pDesc[iSubImage].format, 0, pDesc[iSubImage].pImageData);
+        pImage->pSubImages[pImage->subimageCount].pGUIImage = dred_gui_create_image(pDred->pGUI, pDesc[iSubImage].width, pDesc[iSubImage].height, 0, pDesc[iSubImage].pImageData);
         if (pImage->pSubImages[pImage->subimageCount].pGUIImage == NULL) {
             continue;   // Skip this sub-image if it was not successfully created.
         }

@@ -82,10 +82,6 @@ struct dred_window
     dred_control rootGUIControl;
     dred_control* pRootGUIControl;  // <-- Always set to &rootGUIControl, and exists only for convenience.
 
-    // The surface we'll be drawing to when drawing the GUI.
-    dr2d_surface* pDrawingSurface;
-
-
     // Event handlers.
     dred_window_on_close_proc onClose;
     dred_window_on_hide_proc onHide;

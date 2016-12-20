@@ -399,7 +399,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
 
 
     // The GUI.
-    if (!dred_gui_init_dr_2d(pDred->pGUI, pDred, pDred->pDrawingContext)) {
+    if (!dred_gui_init_dr_2d(pDred->pGUI, pDred)) {
         goto on_error;
     }
 

@@ -5,7 +5,7 @@ dred_rect dred_checkbox__get_box_rect(dred_checkbox* pCheckbox)
     // The size of the box is based on the size of the font.
     assert(pCheckbox != NULL);
     
-    dred_gui_font_metrics metrics;
+    dtk_font_metrics metrics;
     dred_gui_get_font_metrics(pCheckbox->pSubFont, &metrics);
 
     float posX = 0;
