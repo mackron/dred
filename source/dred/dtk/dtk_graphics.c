@@ -496,7 +496,52 @@ void dtk_surface_draw_surface__gdi(dtk_surface* pDstSurface, dtk_surface* pSrcSu
 
         BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
         if (pSrcSurface->pTK->win32.AlphaBlend) {
-            ((DTK_PFN_AlphaBlend)pSrcSurface->pTK->win32.AlphaBlend)(hIntermediateDC, 0, 0, (int)pArgs->srcWidth, (int)pArgs->srcHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend);
+            // TODO: This needs a lot of improvements:
+            // - Make more efficient.
+            // - Have the background and foreground colors be applied to images properly.
+            if (pSrcSurface->gdi.pBitmapData != NULL && (pArgs->foregroundTint.r != 255 || pArgs->foregroundTint.g != 255 || pArgs->foregroundTint.b != 255 || pArgs->foregroundTint.a != 255)) {
+                BITMAPINFO bmi;
+                ZeroMemory(&bmi, sizeof(bmi));
+                bmi.bmiHeader.biSize        = sizeof(bmi.bmiHeader);
+                bmi.bmiHeader.biWidth       = (LONG)pSrcSurface->width;
+                bmi.bmiHeader.biHeight      = (LONG)pSrcSurface->height;
+                bmi.bmiHeader.biPlanes      = 1;
+                bmi.bmiHeader.biBitCount    = 32;   // Only supporting 32-bit formats.
+                bmi.bmiHeader.biCompression = BI_RGB;
+
+                void* pTempImageData;
+                HBITMAP hTempBitmap = CreateDIBSection(hSrcDC, &bmi, DIB_RGB_COLORS, (void**)&pTempImageData, NULL, 0);
+                if (hTempBitmap != NULL) {
+                    const unsigned int srcStride32 = pSrcSurface->width;
+                    const unsigned int dstStride32 = pSrcSurface->width;
+
+                    for (unsigned int iRow = 0; iRow < pSrcSurface->height; ++iRow) {
+                        const unsigned int* pSrcRow = (const unsigned int*)pSrcSurface->gdi.pBitmapData + (iRow * srcStride32);
+                              unsigned int* pDstRow =       (unsigned int*)pTempImageData               + (iRow * dstStride32);
+
+                        for (unsigned int iCol = 0; iCol < pSrcSurface->width; ++iCol) {
+                            unsigned int srcTexel = pSrcRow[iCol];
+                            unsigned int srcTexelA = (srcTexel & 0xFF000000) >> 24;
+                            unsigned int srcTexelR = (unsigned int)(((srcTexel & 0x00FF0000) >> 16) * (pArgs->foregroundTint.r / 255.0f));
+                            unsigned int srcTexelG = (unsigned int)(((srcTexel & 0x0000FF00) >> 8)  * (pArgs->foregroundTint.g / 255.0f));
+                            unsigned int srcTexelB = (unsigned int)(((srcTexel & 0x000000FF) >> 0)  * (pArgs->foregroundTint.b / 255.0f));
+
+                            if (srcTexelR > 255) srcTexelR = 255;
+                            if (srcTexelG > 255) srcTexelG = 255;
+                            if (srcTexelB > 255) srcTexelB = 255;
+
+                            pDstRow[iCol] = (srcTexelR << 16) | (srcTexelG << 8) | (srcTexelB << 0) | (srcTexelA << 24);
+                        }
+                    }
+
+                    SelectObject(hSrcDC, hTempBitmap);
+                    ((DTK_PFN_AlphaBlend)pSrcSurface->pTK->win32.AlphaBlend)(hIntermediateDC, 0, 0, (int)pArgs->srcWidth, (int)pArgs->srcHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend);
+
+                    DeleteObject(hTempBitmap);
+                }
+            } else {
+                ((DTK_PFN_AlphaBlend)pSrcSurface->pTK->win32.AlphaBlend)(hIntermediateDC, 0, 0, (int)pArgs->srcWidth, (int)pArgs->srcHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend);
+            }
         }
 
         // Transfer from the intermediary DC to the destination.
