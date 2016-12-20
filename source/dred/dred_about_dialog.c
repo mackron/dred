@@ -98,7 +98,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, void* p
     dred_gui_get_font_metrics(pFont, &fontMetrics);
 
     float penPosX = 0;
-    float penPosY = bannerRect.bottom - (fontMetrics.lineHeight*2.0f);
+    float penPosY = bannerRect.bottom - (fontMetrics.lineHeight*1.5f);
 
     const char* linkStr = "http://dred.io";
 

@@ -485,18 +485,18 @@ void dtk_surface_draw_surface__gdi(dtk_surface* pDstSurface, dtk_surface* pSrcSu
         StretchBlt(hDstDC, (int)pArgs->dstX, (int)pArgs->dstY, (int)pArgs->dstWidth, (int)pArgs->dstHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, SRCCOPY);
     } else {
         HDC hIntermediateDC = CreateCompatibleDC(hDstDC);
-        HBITMAP hIntermediateBitmap = CreateCompatibleBitmap(hDstDC, (int)pArgs->dstWidth, (int)pArgs->dstHeight);
+        HBITMAP hIntermediateBitmap = CreateCompatibleBitmap(hDstDC, (int)pArgs->srcWidth, (int)pArgs->srcHeight);
         SelectObject(hIntermediateDC, hIntermediateBitmap);
 
         // Background.
         SelectObject(hIntermediateDC, GetStockObject(NULL_PEN));
         SelectObject(hIntermediateDC, GetStockObject(DC_BRUSH));
         SetDCBrushColor(hIntermediateDC, RGB(pArgs->backgroundColor.r, pArgs->backgroundColor.g, pArgs->backgroundColor.b));
-        Rectangle(hIntermediateDC, 0, 0, pArgs->dstX + pArgs->dstWidth + 1, pArgs->dstY + pArgs->dstHeight + 1);
+        Rectangle(hIntermediateDC, 0, 0, pArgs->srcWidth+1, pArgs->srcHeight+1);
 
         BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
         if (pSrcSurface->pTK->win32.AlphaBlend) {
-            ((DTK_PFN_AlphaBlend)pSrcSurface->pTK->win32.AlphaBlend)(hIntermediateDC, 0, 0, (int)pArgs->dstWidth, (int)pArgs->dstHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend);
+            ((DTK_PFN_AlphaBlend)pSrcSurface->pTK->win32.AlphaBlend)(hIntermediateDC, 0, 0, (int)pArgs->srcWidth, (int)pArgs->srcHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend);
         }
 
         // Transfer from the intermediary DC to the destination.
