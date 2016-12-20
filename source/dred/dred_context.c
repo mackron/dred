@@ -386,18 +386,6 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     pDred->uiScale = pDred->dpiScale;
 
 
-    // The drawing context.
-#ifdef DRED_WIN32
-    pDred->pDrawingContext = dr2d_create_context_gdi(NULL);
-#endif
-#ifdef DRED_GTK
-    pDred->pDrawingContext = dr2d_create_context_cairo();
-#endif
-    if (pDred->pDrawingContext == NULL) {
-        goto on_error;
-    }
-
-
     // The GUI.
     if (!dred_gui_init_dr_2d(pDred->pGUI, pDred)) {
         goto on_error;
@@ -651,10 +639,6 @@ void dred_uninit(dred_context* pDred)
 
     if (pDred->pGUI) {
         dred_gui_uninit(pDred->pGUI);
-    }
-
-    if (pDred->pDrawingContext) {
-        dr2d_delete_context(pDred->pDrawingContext);
     }
 
     if (pDred->logFile) {
@@ -1717,18 +1701,18 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerW
 
         switch (pDefaultFontDesc->weight)
         {
-        case dr2d_font_weight_medium:      lf.lfWeight = FW_MEDIUM;     break;
-        case dr2d_font_weight_thin:        lf.lfWeight = FW_THIN;       break;
-        case dr2d_font_weight_extra_light: lf.lfWeight = FW_EXTRALIGHT; break;
-        case dr2d_font_weight_light:       lf.lfWeight = FW_LIGHT;      break;
-        case dr2d_font_weight_semi_bold:   lf.lfWeight = FW_SEMIBOLD;   break;
-        case dr2d_font_weight_bold:        lf.lfWeight = FW_BOLD;       break;
-        case dr2d_font_weight_extra_bold:  lf.lfWeight = FW_EXTRABOLD;  break;
-        case dr2d_font_weight_heavy:       lf.lfWeight = FW_HEAVY;      break;
+        case dtk_font_weight_medium:      lf.lfWeight = FW_MEDIUM;     break;
+        case dtk_font_weight_thin:        lf.lfWeight = FW_THIN;       break;
+        case dtk_font_weight_extra_light: lf.lfWeight = FW_EXTRALIGHT; break;
+        case dtk_font_weight_light:       lf.lfWeight = FW_LIGHT;      break;
+        case dtk_font_weight_semi_bold:   lf.lfWeight = FW_SEMIBOLD;   break;
+        case dtk_font_weight_bold:        lf.lfWeight = FW_BOLD;       break;
+        case dtk_font_weight_extra_bold:  lf.lfWeight = FW_EXTRABOLD;  break;
+        case dtk_font_weight_heavy:       lf.lfWeight = FW_HEAVY;      break;
         default: break;
         }
 
-        if (pDefaultFontDesc->slant == (dtk_font_slant)dr2d_font_slant_italic || pDefaultFontDesc->slant == (dtk_font_slant)dr2d_font_slant_oblique) {
+        if (pDefaultFontDesc->slant == dtk_font_slant_italic || pDefaultFontDesc->slant == dtk_font_slant_oblique) {
             lf.lfItalic = TRUE;
         }
     }
@@ -1888,9 +1872,8 @@ typedef struct
     dred_context* pDred;
     drte_engine textEngine;
     drte_view* pTextView;
-    dr2d_context* pPaintContext;
-    dr2d_surface* pPaintSurface;
-    dr2d_font* pFont;
+    dtk_surface paintSurface;
+    dtk_font font;
     float offsetX;
     float offsetY;
     float pageSizeX;
@@ -1902,19 +1885,16 @@ typedef struct
 void dred__init_print_font(dred_print_data* pPrintData)
 {
     dred_font* pFont = pPrintData->pDred->config.pTextEditorFont;
-    dr2d_font_weight fontWeight = (dr2d_font_weight)pFont->desc.weight;
-    dr2d_font_slant fontSlant = (dr2d_font_slant)pFont->desc.slant;
 
-    pPrintData->pFont = dr2d_create_font(pPrintData->pPaintContext, pFont->desc.family, (unsigned int)(pFont->desc.size*pPrintData->scaleY), fontWeight, fontSlant, 0, 0);
-    if (pPrintData->pFont == NULL) {
+    if (dtk_font_init(&pPrintData->pDred->tk, pFont->desc.family, pFont->desc.size*pPrintData->scaleY, pFont->desc.weight, pFont->desc.slant, 0, 0, &pPrintData->font) != DTK_SUCCESS) {
         return;
     }
 
-    dr2d_font_metrics fontMetrics;
-    dr2d_get_font_metrics(pPrintData->pFont, &fontMetrics);
+    dtk_font_metrics fontMetrics;
+    dtk_font_get_metrics(&pPrintData->font, 1, &fontMetrics);
 
-    drte_engine_register_style_token(&pPrintData->textEngine, (drte_style_token)pPrintData->pFont, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
-    drte_engine_set_default_style(&pPrintData->textEngine, (drte_style_token)pPrintData->pFont);
+    drte_engine_register_style_token(&pPrintData->textEngine, (drte_style_token)&pPrintData->font, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
+    drte_engine_set_default_style(&pPrintData->textEngine, (drte_style_token)&pPrintData->font);
 
 
     // Should probably move this to somewhere more appropriate.
@@ -1923,7 +1903,7 @@ void dred__init_print_font(dred_print_data* pPrintData)
 
 void dred__uninit_print_font(dred_print_data* pPrintData)
 {
-    dr2d_delete_font(pPrintData->pFont);
+    dtk_font_uninit(&pPrintData->font);
 }
 
 void dred__on_paint_rect_for_printing(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleToken, drte_rect rect, void* pPaintData)
@@ -1950,38 +1930,34 @@ void dred__on_paint_text_for_printing(drte_engine* pTextEngine, drte_view* pView
         return;
     }
 
-    dr2d_draw_text(pPrintData->pPaintSurface, pPrintData->pFont, text, (int)textLength, posX, posY, dr2d_rgb(0, 0, 0), dr2d_rgba(0, 0, 0, 0));
+    dtk_surface_draw_text(&pPrintData->paintSurface, &pPrintData->font, 1, text, (int)textLength, (dtk_int32)posX, (dtk_int32)posY, dtk_rgb(0, 0, 0), dtk_rgba(0, 0, 0, 0));
 }
 
 void dred__on_measure_string_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut)
 {
     (void)pTextEngine;
-    dr2d_measure_string((dr2d_font*)styleToken, text, textLength, pWidthOut, pHeightOut);
+    dtk_font_measure_string((dtk_font*)styleToken, 1, text, textLength, pWidthOut, pHeightOut);
 }
 
 void dred__on_get_cursor_position_from_point_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     (void)pTextEngine;
-    dr2d_get_text_cursor_position_from_point((dr2d_font*)styleToken, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
+    dtk_font_get_text_cursor_position_from_point((dtk_font*)styleToken, 1, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
 }
 
 void dred__on_get_cursor_position_from_char_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
     (void)pTextEngine;
-    dr2d_get_text_cursor_position_from_char((dr2d_font*)styleToken, text, characterIndex, pTextCursorPosXOut);
+    dtk_font_get_text_cursor_position_from_char((dtk_font*)styleToken, 1, text, characterIndex, pTextCursorPosXOut);
 }
 
 void dred__print_page(dred_print_data* pPrintData, size_t iPage)
 {
-    dr2d_begin_draw(pPrintData->pPaintSurface);
-    {
-        // Scroll to the page.
-        drte_view_set_inner_offset_y(pPrintData->pTextView, -(iPage * drte_engine_get_line_height(&pPrintData->textEngine) * drte_view_get_line_count_per_page(pPrintData->pTextView)));
+    // Scroll to the page.
+    drte_view_set_inner_offset_y(pPrintData->pTextView, -(iPage * drte_engine_get_line_height(&pPrintData->textEngine) * drte_view_get_line_count_per_page(pPrintData->pTextView)));
 
-        // Paint.
-        drte_view_paint(pPrintData->pTextView, drte_make_rect(0, 0, drte_view_get_size_x(pPrintData->pTextView), drte_view_get_size_y(pPrintData->pTextView)), pPrintData);
-    }
-    dr2d_end_draw(pPrintData->pPaintSurface);
+    // Paint.
+    drte_view_paint(pPrintData->pTextView, drte_make_rect(0, 0, drte_view_get_size_x(pPrintData->pTextView), drte_view_get_size_y(pPrintData->pTextView)), pPrintData);
 }
 
 #ifdef DRED_GTK
@@ -1997,13 +1973,7 @@ void dred_gtk__on_begin_print(GtkPrintOperation *pPrint, GtkPrintContext *contex
     pPrintData->scaleX    = 1;
     pPrintData->scaleY    = 1;
 
-    pPrintData->pPaintContext = dr2d_create_context_cairo();
-    if (pPrintData->pPaintContext == NULL) {
-        return;
-    }
-
-    pPrintData->pPaintSurface = dr2d_create_surface_cairo(pPrintData->pPaintContext, gtk_print_context_get_cairo_context(context));
-    if (pPrintData->pPaintSurface == NULL) {
+    if (dtk_surface_init_transient_cairo(&pPrintData->pDred->tk, gtk_print_context_get_cairo_context(context), pPrintData->pageSizeX, pPrintData->pageSizeY, &pPrintData->paintSurface) != DTK_SUCCESS) {
         return;
     }
 
@@ -2021,6 +1991,7 @@ void dred_gtk__on_end_print(GtkPrintOperation *operation, GtkPrintContext *conte
     assert(pPrintData != NULL);
 
     dred__uninit_print_font(pPrintData);
+    dtk_surface_uninit(&pPrintData->paintSurface);
 }
 
 void dred_gtk__on_draw_page(GtkPrintOperation *pPrint, GtkPrintContext *context, gint page_nr, gpointer user_data)
@@ -2116,14 +2087,7 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow,
     printData.scaleX    = GetDeviceCaps(hPrintDC, LOGPIXELSX) / 72.0f;
     printData.scaleY    = GetDeviceCaps(hPrintDC, LOGPIXELSY) / 72.0f;
 
-
-    printData.pPaintContext = dr2d_create_context_gdi(hPrintDC);
-    if (printData.pPaintContext == NULL) {
-        return DR_FALSE;
-    }
-
-    printData.pPaintSurface = dr2d_create_surface_gdi_HDC(printData.pPaintContext, hPrintDC);
-    if (printData.pPaintSurface == NULL) {
+    if (dtk_surface_init_transient_HDC(&pDred->tk, hPrintDC, physicalWidth, physicalHeight, &printData.paintSurface) != DTK_SUCCESS) {
         return DR_FALSE;
     }
 
@@ -2160,16 +2124,13 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow,
 
 
     dred__uninit_print_font(&printData);
-    dr2d_delete_surface(printData.pPaintSurface);
-    dr2d_delete_context(printData.pPaintContext);
+    dtk_surface_uninit(&printData.paintSurface);
 
     DeleteObject(hPrintDC);
 
 
     PDEVMODEA pDevMode = (PDEVMODEA)GlobalLock(pd.hDevMode);
     LPDEVNAMES pDevNames = (LPDEVNAMES)GlobalLock(pd.hDevNames); (void)pDevNames;
-
-    //pDevMode->
 
     strcpy_s(pInfoOut->printerName, sizeof(pInfoOut->printerName), (char*)pDevMode->dmDeviceName);
     pInfoOut->firstPage = pd.nFromPage;

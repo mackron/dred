@@ -25,9 +25,6 @@ struct dred_context
     dred_string_pool stringPool;
 
 
-    // The context for the 2D graphics sub-system which will be used for drawing the GUI.
-    dr2d_context* pDrawingContext;
-
     // The main GUI context.
     dred_gui gui;
     dred_gui* pGUI; // <-- This is always set to &gui and exists for convenience.

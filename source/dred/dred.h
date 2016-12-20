@@ -65,7 +65,6 @@
 #include "../external/dr_ipc.h"
 #endif
 
-#include "../external/dr_2d.h"
 #include "../external/dr_text_engine.h"
 
 

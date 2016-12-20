@@ -997,6 +997,7 @@ DRTE_INLINE drte_rect drte_rect_make_right_way_out(drte_rect rect)
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DR_TEXT_ENGINE_IMPLEMENTATION
 #include <stdlib.h>
+#include <math.h>
 
 #ifndef DRTE_STACK_BUFFER_ALIGNMENT
 #define DRTE_STACK_BUFFER_ALIGNMENT sizeof(size_t)
