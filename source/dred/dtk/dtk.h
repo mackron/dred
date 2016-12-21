@@ -214,6 +214,16 @@ struct dtk_event
         struct
         {
             int unused;
+        } show;
+
+        struct
+        {
+            int unused;
+        } hide;
+
+        struct
+        {
+            int unused;
         } mouseLeave;
 
         struct
