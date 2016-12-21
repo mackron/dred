@@ -50,7 +50,6 @@
 #include "dred_fs.c"
 #include "dred_alias_map.c"
 #include "dred_config.c"
-#include "dred_accelerators.c"
 #include "dred_shortcuts.c"
 #include "dred_editor.c"
 #include "dred_settings_editor.c"

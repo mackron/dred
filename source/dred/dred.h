@@ -101,7 +101,6 @@ extern "C" {
 #include "dred_fs.h"
 #include "dred_alias_map.h"
 #include "dred_config.h"
-#include "dred_accelerators.h"
 #include "dred_shortcuts.h"
 #include "dred_editor.h"
 #include "dred_settings_editor.h"
