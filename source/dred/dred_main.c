@@ -4,7 +4,6 @@
 //
 // Libraries:
 // - gdi32
-// - msimg32
 // - comdlg32
 //
 // Notes:
@@ -14,7 +13,7 @@
 
 // BUILDING (LINUX)
 //
-// cc source/dred/dred_main.c `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0` -lpthread -lm -ldl
+// cc source/dred/dred_main.c -o dred `pkg-config --cflags --libs gtk+-3.0` -lm -ldl
 
 #include "dred.c"
 
