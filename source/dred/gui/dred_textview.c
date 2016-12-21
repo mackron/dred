@@ -1733,7 +1733,7 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
                 }
             } else {
                 if (pTextView->isDoingRectangleSelect) {
-                    if ((stateFlags & DRED_GUI_KEY_STATE_ALT_DOWN) != 0) {
+                    if ((stateFlags & DTK_MODIFIER_ALT) != 0) {
                         // We're doing rectangle selection.
                         pTextView->selectionRect.right  = mousePosXRelativeToTextArea - pTextView->pView->innerOffsetX;
                         pTextView->selectionRect.bottom = mousePosYRelativeToTextArea - pTextView->pView->innerOffsetY;
@@ -1805,12 +1805,12 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
         if (!pTextView->isWantingToDragAndDrop) {
             pTextView->isDoingWordSelect = DR_FALSE;
 
-            if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
+            if ((stateFlags & DTK_MODIFIER_SHIFT) != 0) {
                 if (!drte_view_is_anything_selected(pTextView->pView)) {
                     drte_view_begin_selection(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
                 }
             } else {
-                if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0 || (stateFlags & DRED_GUI_KEY_STATE_ALT_DOWN) != 0) {
+                if ((stateFlags & DTK_MODIFIER_CTRL) == 0 || (stateFlags & DTK_MODIFIER_ALT) != 0) {
                     drte_view_deselect_all(pTextView->pView);
                     dred_textview__clear_all_cursors_except_last(pTextView);
                 }
@@ -1820,15 +1820,15 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
             size_t iChar;
             drte_view_get_character_under_point(pTextView->pView, NULL, mousePosXRelativeToTextArea, mousePosYRelativeToTextArea, &iChar, &iLine);
 
-            if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
+            if ((stateFlags & DTK_MODIFIER_SHIFT) != 0) {
                 drte_view_set_selection_end_point(pTextView->pView, iChar);
             } else {
-                if ((stateFlags & DRED_GUI_KEY_STATE_ALT_DOWN) != 0) {
+                if ((stateFlags & DTK_MODIFIER_ALT) != 0) {
                     pTextView->isDoingRectangleSelect = DR_TRUE;
                     pTextView->selectionRect.left = pTextView->selectionRect.right = mousePosXRelativeToTextArea - pTextView->pView->innerOffsetX;
                     pTextView->selectionRect.top = pTextView->selectionRect.bottom = mousePosYRelativeToTextArea - pTextView->pView->innerOffsetY;
                 } else {
-                    if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
+                    if ((stateFlags & DTK_MODIFIER_CTRL) != 0) {
                         dred_textview__insert_cursor(pTextView, iChar, iLine);
                     }
                 }
@@ -1892,7 +1892,7 @@ void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, i
             size_t iChar;
             drte_view_get_character_under_point(pTextView->pView, NULL, mousePosXRelativeToTextArea, mousePosYRelativeToTextArea, &iChar, &iLine);
 
-            if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
+            if ((stateFlags & DTK_MODIFIER_CTRL) != 0) {
                 dred_textview__insert_cursor(pTextView, iChar, iLine);
             }
 
@@ -1917,9 +1917,9 @@ void dred_textview_on_mouse_button_dblclick(dred_control* pControl, int mouseBut
     }
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
-        if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) == 0) {
+        if ((stateFlags & DTK_MODIFIER_SHIFT) == 0) {
             // If the control key is not being held down make sure other selection regions are cleared.
-            if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
+            if ((stateFlags & DTK_MODIFIER_CTRL) == 0) {
                 drte_view_deselect_all(pTextView->pView);
             }
 
@@ -1960,7 +1960,7 @@ void dred_textview__move_cursor_left(dred_textview* pTextView, size_t iCursor, i
 {
     assert(pTextView != NULL);
 
-    if (stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) {
+    if (stateFlags & DTK_MODIFIER_CTRL) {
         drte_view_move_cursor_to_start_of_word(pTextView->pView, iCursor);
     } else {
         drte_view_move_cursor_left(pTextView->pView, iCursor);
@@ -1971,7 +1971,7 @@ void dred_textview__move_cursor_right(dred_textview* pTextView, size_t iCursor, 
 {
     assert(pTextView != NULL);
 
-    if (stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) {
+    if (stateFlags & DTK_MODIFIER_CTRL) {
         drte_view_move_cursor_to_start_of_next_word(pTextView->pView, iCursor);
     } else {
         drte_view_move_cursor_right(pTextView->pView, iCursor);
@@ -1987,8 +1987,8 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
 
     drte_view_begin_dirty(pTextView->pView);
 
-    dr_bool32 isShiftDown = (stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0;
-    //dr_bool32 isCtrlDown  = (stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0;
+    dr_bool32 isShiftDown = (stateFlags & DTK_MODIFIER_SHIFT) != 0;
+    //dr_bool32 isCtrlDown  = (stateFlags & DTK_MODIFIER_CTRL) != 0;
 
     size_t iLastCursor = drte_view_get_last_cursor(pTextView->pView);
     size_t iLastCursorLine = drte_view_get_cursor_line(pTextView->pView, iLastCursor);
@@ -2114,7 +2114,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                 }
             }
 
-            if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
+            if ((stateFlags & DTK_MODIFIER_CTRL) != 0) {
                 drte_view_move_cursor_to_end_of_text(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
             } else {
                 if (drte_view_is_cursor_at_end_of_wrapped_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView))) {
@@ -2147,7 +2147,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                 }
             }
 
-            if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) != 0) {
+            if ((stateFlags & DTK_MODIFIER_CTRL) != 0) {
                 drte_view_move_cursor_to_start_of_text(pTextView->pView, iLastCursor);
             } else {
                 size_t iNewChar = iLastCursorChar;
@@ -2194,7 +2194,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
             }
 
             int scrollOffset = dred_scrollbar_get_page_size(pTextView->pVertScrollbar);
-            if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
+            if ((stateFlags & DTK_MODIFIER_CTRL) == 0) {
                 dred_scrollbar_scroll(pTextView->pVertScrollbar, -scrollOffset);
             }
 
@@ -2226,7 +2226,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
                 scrollOffset = 0;
             }
 
-            if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
+            if ((stateFlags & DTK_MODIFIER_CTRL) == 0) {
                 dred_scrollbar_scroll(pTextView->pVertScrollbar, scrollOffset);
             }
 
@@ -2806,7 +2806,7 @@ void dred_textview__on_mouse_move_line_numbers(dred_control* pLineNumbers, int r
     dred_textview* pTextView = DRED_TEXTVIEW(dred_control_get_parent(pLineNumbers));
     assert(pTextView != NULL);
 
-    if ((stateFlags & DRED_GUI_MOUSE_BUTTON_LEFT_DOWN) != 0)
+    if ((stateFlags & DTK_MODIFIER_MOUSE_BUTTON_LEFT) != 0)
     {
         if (dred_gui_get_element_with_mouse_capture(pLineNumbers->pGUI) == pLineNumbers)
         {
@@ -2869,9 +2869,9 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
         dred_gui_capture_mouse(pLineNumbers);
 
         // If the shift key is down and we already have a selection, this is equivalent to a mouse drag.
-        if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
+        if ((stateFlags & DTK_MODIFIER_SHIFT) != 0) {
             if (drte_view_is_anything_selected(pTextView->pView)) {
-                dred_textview__on_mouse_move_line_numbers(pLineNumbers, relativeMousePosX, relativeMousePosY, stateFlags | DRED_GUI_MOUSE_BUTTON_LEFT_DOWN);
+                dred_textview__on_mouse_move_line_numbers(pLineNumbers, relativeMousePosX, relativeMousePosY, stateFlags | DTK_MODIFIER_MOUSE_BUTTON_LEFT);
                 return;
             }
         }
@@ -2881,14 +2881,14 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
         float offsetY = pTextView->padding + pTextView->pView->innerOffsetY;
         size_t iClickedLine = drte_view_get_line_at_pos_y(pTextView->pView, NULL, relativeMousePosY - offsetY);
 
-        if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) != 0) {
+        if ((stateFlags & DTK_MODIFIER_SHIFT) != 0) {
             pTextView->iLineSelectAnchor = drte_view_get_cursor_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
         } else {
             pTextView->iLineSelectAnchor = iClickedLine;
         }
 
 
-        if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
+        if ((stateFlags & DTK_MODIFIER_CTRL) == 0) {
             dred_textview_deselect_all(pTextView);
         }
 

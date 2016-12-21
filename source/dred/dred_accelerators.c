@@ -164,17 +164,17 @@ dred_accelerator dred_accelerator_parse(const char* accelStr)
     char token[256];
     while ((accelStr = dred_accelerator__next_token(accelStr, token, sizeof(token))) != NULL) {
         if (_stricmp(token, "ctrl") == 0) {
-            accelerator.modifiers |= DRED_GUI_KEY_STATE_CTRL_DOWN;
+            accelerator.modifiers |= DTK_MODIFIER_CTRL;
             prevAccelStr = accelStr;
             continue;
         }
         if (_stricmp(token, "alt") == 0) {
-            accelerator.modifiers |= DRED_GUI_KEY_STATE_ALT_DOWN;
+            accelerator.modifiers |= DTK_MODIFIER_ALT;
             prevAccelStr = accelStr;
             continue;
         }
         if (_stricmp(token, "shift") == 0) {
-            accelerator.modifiers |= DRED_GUI_KEY_STATE_SHIFT_DOWN;
+            accelerator.modifiers |= DTK_MODIFIER_SHIFT;
             prevAccelStr = accelStr;
             continue;
         }

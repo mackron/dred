@@ -74,7 +74,7 @@ void dred_text_editor_textview__on_mouse_wheel(dred_control* pControl, int delta
     dred_context* pDred = dred_control_get_context(pControl);
     assert(pDred != NULL);
 
-    if (stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) {
+    if (stateFlags & DTK_MODIFIER_CTRL) {
         // When setting the scale, we actually do it application-wide, not just local to the current text editor.
         float oldTextScale = dred_get_text_editor_scale(pDred);
         float newTextScale;

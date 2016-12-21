@@ -305,19 +305,7 @@ typedef void                  (* dred_gui_get_image_size_proc)          (dtk_sur
 
 typedef dr_bool32 (* dred_gui_visible_iteration_proc)(dred_control* pControl, dred_rect *pRelativeRect, void* pUserData);
 
-
-// Key state flags.
-#define DRED_GUI_MOUSE_BUTTON_LEFT_DOWN   (1 << 0)
-#define DRED_GUI_MOUSE_BUTTON_RIGHT_DOWN  (1 << 1)
-#define DRED_GUI_MOUSE_BUTTON_MIDDLE_DOWN (1 << 2)
-#define DRED_GUI_MOUSE_BUTTON_4_DOWN      (1 << 3)
-#define DRED_GUI_MOUSE_BUTTON_5_DOWN      (1 << 4)
-#define DRED_GUI_KEY_STATE_SHIFT_DOWN     (1 << 5)        // Whether or not a shift key is down at the time the input event is handled.
-#define DRED_GUI_KEY_STATE_CTRL_DOWN      (1 << 6)        // Whether or not a ctrl key is down at the time the input event is handled.
-#define DRED_GUI_KEY_STATE_ALT_DOWN       (1 << 7)        // Whether or not an alt key is down at the time the input event is handled.
-#define DRED_GUI_KEY_STATE_AUTO_REPEATED  (1 << 31)       // Whether or not the key press is generated due to auto-repeating. Only used with key down events.
-
-/// Structure containing callbacks for painting routines.
+// Structure containing callbacks for painting routines.
 struct dred_gui_painting_callbacks
 {
     dred_gui_draw_begin_proc                          drawBegin;
