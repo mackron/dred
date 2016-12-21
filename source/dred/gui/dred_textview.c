@@ -1787,7 +1787,7 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
     // Focus the text editor.
     dred_gui_capture_keyboard(pControl);
 
-    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
+    if (mouseButton == DTK_MOUSE_BUTTON_LEFT)
     {
         float offsetX;
         float offsetY;
@@ -1846,7 +1846,7 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
         }
     }
 
-    if (mouseButton == DRED_GUI_MOUSE_BUTTON_RIGHT)
+    if (mouseButton == DTK_MOUSE_BUTTON_RIGHT)
     {
     }
 }
@@ -1858,7 +1858,7 @@ void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, i
         return;
     }
 
-    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
+    if (mouseButton == DTK_MOUSE_BUTTON_LEFT)
     {
         pTextView->isDoingRectangleSelect = DR_FALSE;
 
@@ -1916,7 +1916,7 @@ void dred_textview_on_mouse_button_dblclick(dred_control* pControl, int mouseBut
         return;
     }
 
-    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
+    if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
         if ((stateFlags & DRED_GUI_KEY_STATE_SHIFT_DOWN) == 0) {
             // If the control key is not being held down make sure other selection regions are cleared.
             if ((stateFlags & DRED_GUI_KEY_STATE_CTRL_DOWN) == 0) {
@@ -2864,7 +2864,7 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
     dred_textview* pTextView = DRED_TEXTVIEW(dred_control_get_parent(pLineNumbers));
     assert(pTextView != NULL);
 
-    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
+    if (mouseButton == DTK_MOUSE_BUTTON_LEFT)
     {
         dred_gui_capture_mouse(pLineNumbers);
 
@@ -2911,7 +2911,7 @@ void dred_textview__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, 
     (void)relativeMousePosY;
     (void)stateFlags;
 
-    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
+    if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
         if (dred_control_has_mouse_capture(pLineNumbers)) {
             dred_gui_release_mouse(pLineNumbers->pGUI);
         }

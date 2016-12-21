@@ -491,7 +491,7 @@ void dred_scrollbar_on_mouse_button_down(dred_control* pControl, int button, int
         return;
     }
 
-    if (button == DRED_GUI_MOUSE_BUTTON_LEFT)
+    if (button == DTK_MOUSE_BUTTON_LEFT)
     {
         if (dred_scrollbar_is_thumb_visible(pScrollbar))
         {
@@ -534,7 +534,7 @@ void dred_scrollbar_on_mouse_button_up(dred_control* pControl, int button, int r
         return;
     }
 
-    if (button == DRED_GUI_MOUSE_BUTTON_LEFT)
+    if (button == DTK_MOUSE_BUTTON_LEFT)
     {
         if (pScrollbar->thumbPressed && dred_gui_get_element_with_mouse_capture(dred_control_get_gui(pControl)) == pControl)
         {

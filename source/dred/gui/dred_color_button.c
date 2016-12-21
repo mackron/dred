@@ -113,7 +113,7 @@ void dtk_colorbutton__on_mouse_button_down(dred_control* pControl, int mouseButt
         return;
     }
 
-    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
+    if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
         if (!dred_control_has_mouse_capture(pControl)) {
             dred_gui_capture_mouse(pControl);
 
@@ -137,7 +137,7 @@ void dtk_colorbutton__on_mouse_button_up(dred_control* pControl, int mouseButton
         return;
     }
 
-    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
+    if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
         if (dred_control_has_mouse_capture(pControl)) {
             dred_gui_release_mouse(dred_control_get_gui(pControl));
             

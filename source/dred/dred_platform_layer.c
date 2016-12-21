@@ -494,7 +494,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DTK_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
         } break;
         case WM_NCLBUTTONUP:
         {
@@ -503,7 +503,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_up(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam));
+            dred_window_on_mouse_button_up(pWindow, DTK_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam));
 
         } break;
         case WM_NCLBUTTONDBLCLK:
@@ -513,23 +513,23 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
-            dred_window_on_mouse_button_dblclick(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DTK_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
+            dred_window_on_mouse_button_dblclick(pWindow, DTK_MOUSE_BUTTON_LEFT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
 
         } break;
 
         case WM_LBUTTONDOWN:
         {
-            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DTK_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
         } break;
         case WM_LBUTTONUP:
         {
-            dred_window_on_mouse_button_up(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam));
+            dred_window_on_mouse_button_up(pWindow, DTK_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam));
         } break;
         case WM_LBUTTONDBLCLK:
         {
-            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
-            dred_window_on_mouse_button_dblclick(pWindow, DRED_GUI_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DTK_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
+            dred_window_on_mouse_button_dblclick(pWindow, DTK_MOUSE_BUTTON_LEFT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_LEFT_DOWN);
         } break;
 
 
@@ -540,7 +540,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DTK_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
         } break;
         case WM_NCRBUTTONUP:
         {
@@ -549,7 +549,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_up(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam));
+            dred_window_on_mouse_button_up(pWindow, DTK_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam));
         } break;
         case WM_NCRBUTTONDBLCLK:
         {
@@ -558,22 +558,22 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
-            dred_window_on_mouse_button_dblclick(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DTK_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
+            dred_window_on_mouse_button_dblclick(pWindow, DTK_MOUSE_BUTTON_RIGHT, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
         } break;
 
         case WM_RBUTTONDOWN:
         {
-            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DTK_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
         } break;
         case WM_RBUTTONUP:
         {
-            dred_window_on_mouse_button_up(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam));
+            dred_window_on_mouse_button_up(pWindow, DTK_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam));
         } break;
         case WM_RBUTTONDBLCLK:
         {
-            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
-            dred_window_on_mouse_button_dblclick(pWindow, DRED_GUI_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DTK_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
+            dred_window_on_mouse_button_dblclick(pWindow, DTK_MOUSE_BUTTON_RIGHT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_RIGHT_DOWN);
         } break;
 
 
@@ -584,7 +584,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DTK_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
         } break;
         case WM_NCMBUTTONUP:
         {
@@ -593,7 +593,7 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_up(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam));
+            dred_window_on_mouse_button_up(pWindow, DTK_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam));
         } break;
         case WM_NCMBUTTONDBLCLK:
         {
@@ -602,22 +602,22 @@ LRESULT CALLBACK CALLBACK GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, 
             p.y = GET_Y_LPARAM(lParam);
             ScreenToClient(hWnd, &p);
 
-            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
-            dred_window_on_mouse_button_dblclick(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DTK_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
+            dred_window_on_mouse_button_dblclick(pWindow, DTK_MOUSE_BUTTON_MIDDLE, p.x, p.y, dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
         } break;
 
         case WM_MBUTTONDOWN:
         {
-            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DTK_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
         } break;
         case WM_MBUTTONUP:
         {
-            dred_window_on_mouse_button_up(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam));
+            dred_window_on_mouse_button_up(pWindow, DTK_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam));
         } break;
         case WM_MBUTTONDBLCLK:
         {
-            dred_window_on_mouse_button_down(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
-            dred_window_on_mouse_button_dblclick(pWindow, DRED_GUI_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
+            dred_window_on_mouse_button_down(pWindow, DTK_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
+            dred_window_on_mouse_button_dblclick(pWindow, DTK_MOUSE_BUTTON_MIDDLE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), dred_win32_get_mouse_event_state_flags(wParam) | DRED_MOUSE_BUTTON_MIDDLE_DOWN);
         } break;
 
         case WM_MOUSEWHEEL:
@@ -1727,9 +1727,9 @@ guint dred_accelerator_modifiers_to_gtk(uint32_t modifiers)
 static int dred_from_gtk_mouse_button(guint buttonGTK)
 {
     switch (buttonGTK) {
-        case 1: return DRED_GUI_MOUSE_BUTTON_LEFT;
-        case 2: return DRED_GUI_MOUSE_BUTTON_MIDDLE;
-        case 3: return DRED_GUI_MOUSE_BUTTON_RIGHT;
+        case 1: return DTK_MOUSE_BUTTON_LEFT;
+        case 2: return DTK_MOUSE_BUTTON_MIDDLE;
+        case 3: return DTK_MOUSE_BUTTON_RIGHT;
         default: return (int)buttonGTK;
     }
 }

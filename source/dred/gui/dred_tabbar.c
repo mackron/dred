@@ -751,7 +751,7 @@ void dred_tabbar_on_mouse_button_down(dred_control* pControl, int mouseButton, i
         return;
     }
 
-    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT || mouseButton == DRED_GUI_MOUSE_BUTTON_RIGHT)
+    if (mouseButton == DTK_MOUSE_BUTTON_LEFT || mouseButton == DTK_MOUSE_BUTTON_RIGHT)
     {
         dr_bool32 isOverCloseButton = DR_FALSE;
 
@@ -762,7 +762,7 @@ void dred_tabbar_on_mouse_button_down(dred_control* pControl, int mouseButton, i
             dred_tabbar_activate_tab(pTabBar, pNewActiveTab);
         }
 
-        if (isOverCloseButton && mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
+        if (isOverCloseButton && mouseButton == DTK_MOUSE_BUTTON_LEFT) {
             pTabBar->pTabWithCloseButtonPressed = pNewActiveTab;
 
             if (dred_gui_is_auto_dirty_enabled(dred_control_get_gui(pControl))) {
@@ -770,7 +770,7 @@ void dred_tabbar_on_mouse_button_down(dred_control* pControl, int mouseButton, i
             }
         }
     }
-    else if (mouseButton == DRED_GUI_MOUSE_BUTTON_MIDDLE)
+    else if (mouseButton == DTK_MOUSE_BUTTON_MIDDLE)
     {
         if (pTabBar->isCloseOnMiddleClickEnabled)
         {
@@ -797,7 +797,7 @@ void dred_tabbar_on_mouse_button_up(dred_control* pControl, int mouseButton, int
     dr_bool32 releasedOverCloseButton = DR_FALSE;
     dred_tab* pTabUnderMouse = dred_tabbar_find_tab_under_point(pTabBar, (float)relativeMousePosX, (float)relativeMousePosY, &releasedOverCloseButton);
 
-    if (pTabBar->pTabWithCloseButtonPressed != NULL && mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT)
+    if (pTabBar->pTabWithCloseButtonPressed != NULL && mouseButton == DTK_MOUSE_BUTTON_LEFT)
     {
         if (releasedOverCloseButton && pTabUnderMouse == pTabBar->pTabWithCloseButtonPressed) {
             if (pTabBar->onTabClose) {

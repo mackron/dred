@@ -89,7 +89,7 @@ void dred_button__on_mouse_button_down(dred_control* pControl, int mouseButton, 
     dred_button* pButton = DRED_BUTTON(pControl);
     assert(pButton != NULL);
 
-    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
+    if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
         if (!dred_control_has_mouse_capture(DRED_CONTROL(pButton))) {
             dred_gui_capture_mouse(DRED_CONTROL(pButton));
 
@@ -108,7 +108,7 @@ void dred_button__on_mouse_button_up(dred_control* pControl, int mouseButton, in
     dred_button* pButton = DRED_BUTTON(pControl);
     assert(pButton != NULL);
 
-    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
+    if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
         if (dred_control_has_mouse_capture(DRED_CONTROL(pButton))) {
             dred_gui_release_mouse(dred_control_get_gui(DRED_CONTROL(pButton)));
 

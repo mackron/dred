@@ -115,7 +115,7 @@ void dred_checkbox__on_mouse_button_down(dred_control* pControl, int mouseButton
         return;
     }
 
-    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
+    if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
         if (!dred_control_has_mouse_capture(pControl)) {
             dred_gui_capture_mouse(pControl);
 
@@ -136,7 +136,7 @@ void dred_checkbox__on_mouse_button_up(dred_control* pControl, int mouseButton, 
         return;
     }
 
-    if (mouseButton == DRED_GUI_MOUSE_BUTTON_LEFT) {
+    if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
         if (dred_control_has_mouse_capture(pControl)) {
             dred_gui_release_mouse(pControl->pGUI);
             dred_checkbox_toggle(pCheckbox);

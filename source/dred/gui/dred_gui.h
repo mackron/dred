@@ -317,11 +317,6 @@ typedef dr_bool32 (* dred_gui_visible_iteration_proc)(dred_control* pControl, dr
 #define DRED_GUI_KEY_STATE_ALT_DOWN       (1 << 7)        // Whether or not an alt key is down at the time the input event is handled.
 #define DRED_GUI_KEY_STATE_AUTO_REPEATED  (1 << 31)       // Whether or not the key press is generated due to auto-repeating. Only used with key down events.
 
-// Common mouse buttons.
-#define DRED_GUI_MOUSE_BUTTON_LEFT      1
-#define DRED_GUI_MOUSE_BUTTON_RIGHT     2
-#define DRED_GUI_MOUSE_BUTTON_MIDDLE    3
-
 /// Structure containing callbacks for painting routines.
 struct dred_gui_painting_callbacks
 {
