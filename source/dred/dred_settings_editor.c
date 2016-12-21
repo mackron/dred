@@ -187,8 +187,8 @@ void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, dtk_
 
     int sideButtonsCount = (int)(sizeof(pSettingsEditor->pages) / sizeof(pSettingsEditor->pages[0]));
     for (int i = 0; i < sideButtonsCount; ++i) {
-        dred_color bgColor = dred_rgb(255, 255, 255); //dred_rgb(128, 32, 32);
-        dred_color borderColor = bgColor;
+        dtk_color bgColor = dred_rgb(255, 255, 255); //dred_rgb(128, 32, 32);
+        dtk_color borderColor = bgColor;
         if (pSettingsEditor->selectedPageIndex == i) {
             selectedBtnPosY = penPosY;
             borderColor = pSettingsEditor->sidePanelBtnBorderColor;
@@ -384,38 +384,38 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->fontButton)) + (6*pDred->uiScale);
 
 
-    if (!dred_colorbutton_init(&pSettingsEditor->textColorButton, pDred, pPage->pGUIControl, "Text color", pDred->config.textEditorTextColor)) {
+    if (!dtk_colorbutton_init(&pSettingsEditor->textColorButton, pDred, pPage->pGUIControl, "Text color", pDred->config.textEditorTextColor)) {
         dred_control_uninit(pPage->pGUIControl);
         return DR_FALSE;
     }
 
-    dred_colorbutton_set_bind_to_config_var(&pSettingsEditor->textColorButton, "texteditor-text-color");
-    dred_colorbutton_set_padding(&pSettingsEditor->textColorButton, 4*pDred->uiScale);
+    dtk_colorbutton_set_bind_to_config_var(&pSettingsEditor->textColorButton, "texteditor-text-color");
+    dtk_colorbutton_set_padding(&pSettingsEditor->textColorButton, 4*pDred->uiScale);
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->textColorButton), penPosX, penPosY);
 
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*pDred->uiScale);
 
 
 
-    if (!dred_colorbutton_init(&pSettingsEditor->bgColorButton, pDred, pPage->pGUIControl, "Background color", pDred->config.textEditorBGColor)) {
+    if (!dtk_colorbutton_init(&pSettingsEditor->bgColorButton, pDred, pPage->pGUIControl, "Background color", pDred->config.textEditorBGColor)) {
         dred_control_uninit(pPage->pGUIControl);
         return DR_FALSE;
     }
 
-    dred_colorbutton_set_bind_to_config_var(&pSettingsEditor->bgColorButton, "texteditor-bg-color");
-    dred_colorbutton_set_padding(&pSettingsEditor->bgColorButton, 4*pDred->uiScale);
+    dtk_colorbutton_set_bind_to_config_var(&pSettingsEditor->bgColorButton, "texteditor-bg-color");
+    dtk_colorbutton_set_padding(&pSettingsEditor->bgColorButton, 4*pDred->uiScale);
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->bgColorButton), penPosX, penPosY);
 
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*pDred->uiScale);
 
 
-    if (!dred_colorbutton_init(&pSettingsEditor->lineColorButton, pDred, pPage->pGUIControl, "Active line color", pDred->config.textEditorActiveLineColor)) {
+    if (!dtk_colorbutton_init(&pSettingsEditor->lineColorButton, pDred, pPage->pGUIControl, "Active line color", pDred->config.textEditorActiveLineColor)) {
         dred_control_uninit(pPage->pGUIControl);
         return DR_FALSE;
     }
 
-    dred_colorbutton_set_bind_to_config_var(&pSettingsEditor->lineColorButton, "texteditor-active-line-color");
-    dred_colorbutton_set_padding(&pSettingsEditor->lineColorButton, 4*pDred->uiScale);
+    dtk_colorbutton_set_bind_to_config_var(&pSettingsEditor->lineColorButton, "texteditor-active-line-color");
+    dtk_colorbutton_set_padding(&pSettingsEditor->lineColorButton, 4*pDred->uiScale);
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->lineColorButton), penPosX, penPosY);
 
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*pDred->uiScale);

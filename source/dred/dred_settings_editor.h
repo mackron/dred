@@ -27,9 +27,9 @@ struct dred_settings_editor
 
     // Theme
     dred_button fontButton;
-    dred_colorbutton textColorButton;
-    dred_colorbutton bgColorButton;
-    dred_colorbutton lineColorButton;
+    dtk_colorbutton textColorButton;
+    dtk_colorbutton bgColorButton;
+    dtk_colorbutton lineColorButton;
 
     // Text Editor
     dred_checkbox cbTabsToSpaces;
@@ -49,13 +49,13 @@ struct dred_settings_editor
     float sidePanelBtnPaddingYRatio;
 
     // The color of the text of side panels.
-    dred_color sidePanelBtnTextColor;
+    dtk_color sidePanelBtnTextColor;
 
     // The color of the border of side panel buttons.
-    dred_color sidePanelBtnBorderColor;
+    dtk_color sidePanelBtnBorderColor;
 
     // The background color of side panel buttons while hovered.
-    dred_color sidePanelBtnGBColorHovered;
+    dtk_color sidePanelBtnGBColorHovered;
 
     // Everything in the settings editor is grouped into "pages". This array holds those pages, with specific pages
     // being accessable with a 0 based index DRED_SETTINGS_PAGE_*.

@@ -58,27 +58,27 @@ dred_gui_font* dred_textbox_get_font(dred_textbox* pTextBox)
     return dred_textview_get_font(DRED_TEXTVIEW(pTextBox));
 }
 
-void dred_textbox_set_text_color(dred_textbox* pTextBox, dred_color color)
+void dred_textbox_set_text_color(dred_textbox* pTextBox, dtk_color color)
 {
     dred_textview_set_text_color(DRED_TEXTVIEW(pTextBox), color);
 }
 
-void dred_textbox_set_background_color(dred_textbox* pTextBox, dred_color color)
+void dred_textbox_set_background_color(dred_textbox* pTextBox, dtk_color color)
 {
     dred_textview_set_background_color(DRED_TEXTVIEW(pTextBox), color);
 }
 
-void dred_textbox_set_selection_background_color(dred_textbox* pTextBox, dred_color color)
+void dred_textbox_set_selection_background_color(dred_textbox* pTextBox, dtk_color color)
 {
     dred_textview_set_selection_background_color(DRED_TEXTVIEW(pTextBox), color);
 }
 
-dred_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox)
+dtk_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox)
 {
     return dred_textview_get_selection_background_color(DRED_TEXTVIEW(pTextBox));
 }
 
-void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, dred_color color)
+void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, dtk_color color)
 {
     dred_textview_set_active_line_background_color(DRED_TEXTVIEW(pTextBox), color);
 }
@@ -93,12 +93,12 @@ float dred_textbox_get_cursor_width(dred_textbox* pTextBox)
     return dred_textview_get_cursor_width(DRED_TEXTVIEW(pTextBox));
 }
 
-void dred_textbox_set_cursor_color(dred_textbox* pTextBox, dred_color color)
+void dred_textbox_set_cursor_color(dred_textbox* pTextBox, dtk_color color)
 {
     dred_textview_set_cursor_color(DRED_TEXTVIEW(pTextBox), color);
 }
 
-void dred_textbox_set_border_color(dred_textbox* pTextBox, dred_color color)
+void dred_textbox_set_border_color(dred_textbox* pTextBox, dtk_color color)
 {
     dred_textview_set_border_color(DRED_TEXTVIEW(pTextBox), color);
 }
@@ -143,42 +143,42 @@ float dred_textbox_get_line_numbers_padding(dred_textbox* pTextBox)
     return dred_textview_get_line_numbers_padding(DRED_TEXTVIEW(pTextBox));
 }
 
-void dred_textbox_set_line_numbers_color(dred_textbox* pTextBox, dred_color color)
+void dred_textbox_set_line_numbers_color(dred_textbox* pTextBox, dtk_color color)
 {
     dred_textview_set_line_numbers_color(DRED_TEXTVIEW(pTextBox), color);
 }
 
-dred_color dred_textbox_get_line_numbers_color(dred_textbox* pTextBox)
+dtk_color dred_textbox_get_line_numbers_color(dred_textbox* pTextBox)
 {
     return dred_textview_get_line_numbers_color(DRED_TEXTVIEW(pTextBox));
 }
 
-void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, dred_color color)
+void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, dtk_color color)
 {
     dred_textview_set_line_numbers_background_color(DRED_TEXTVIEW(pTextBox), color);
 }
 
-dred_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBox)
+dtk_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBox)
 {
     return dred_textview_get_line_numbers_background_color(DRED_TEXTVIEW(pTextBox));
 }
 
-void dred_textbox_set_scrollbar_track_color(dred_textbox* pTextBox, dred_color color)
+void dred_textbox_set_scrollbar_track_color(dred_textbox* pTextBox, dtk_color color)
 {
     dred_textview_set_scrollbar_track_color(DRED_TEXTVIEW(pTextBox), color);
 }
 
-void dred_textbox_set_scrollbar_thumb_color(dred_textbox* pTextBox, dred_color color)
+void dred_textbox_set_scrollbar_thumb_color(dred_textbox* pTextBox, dtk_color color)
 {
     dred_textview_set_scrollbar_thumb_color(DRED_TEXTVIEW(pTextBox), color);
 }
 
-void dred_textbox_set_scrollbar_thumb_color_hovered(dred_textbox* pTextBox, dred_color color)
+void dred_textbox_set_scrollbar_thumb_color_hovered(dred_textbox* pTextBox, dtk_color color)
 {
     dred_textview_set_scrollbar_thumb_color_hovered(DRED_TEXTVIEW(pTextBox), color);
 }
 
-void dred_textbox_set_scrollbar_thumb_color_pressed(dred_textbox* pTextBox, dred_color color)
+void dred_textbox_set_scrollbar_thumb_color_pressed(dred_textbox* pTextBox, dtk_color color)
 {
     dred_textview_set_scrollbar_thumb_color_pressed(DRED_TEXTVIEW(pTextBox), color);
 }

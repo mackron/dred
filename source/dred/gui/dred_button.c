@@ -15,7 +15,7 @@ void dred_button__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
     }
 
 
-    dred_color bgColor = pButton->bgColor;
+    dtk_color bgColor = pButton->bgColor;
     if (dred_control_has_mouse_capture(DRED_CONTROL(pButton))) {
         bgColor = pButton->bgColorHovered;
         if (pButton->isMouseOver) {
@@ -245,7 +245,7 @@ void dred_button_set_font(dred_button* pButton, dred_font* pFont)
     dred_button__refresh_layout(pButton);
 }
 
-void dred_button_set_background_color(dred_button* pButton, dred_color color)
+void dred_button_set_background_color(dred_button* pButton, dtk_color color)
 {
     if (pButton == NULL) {
         return;
@@ -257,7 +257,7 @@ void dred_button_set_background_color(dred_button* pButton, dred_color color)
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
 
-void dred_button_set_border_color(dred_button* pButton, dred_color color)
+void dred_button_set_border_color(dred_button* pButton, dtk_color color)
 {
     if (pButton == NULL) {
         return;

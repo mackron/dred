@@ -28,7 +28,7 @@ void dred_checkbox__on_paint(dred_control* pControl, dred_rect rect, dtk_surface
     }
 
     // Draw the box first.
-    dred_color boxBGColor = pCheckbox->boxBGColor;
+    dtk_color boxBGColor = pCheckbox->boxBGColor;
     if (dred_control_has_mouse_capture(pControl)) {
         boxBGColor = pCheckbox->boxBGColorHovered;
         if (pCheckbox->isMouseOver) {
@@ -276,7 +276,7 @@ void dred_checkbox_set_font(dred_checkbox* pCheckbox, dred_font* pFont)
     dred_checkbox__refresh_layout(pCheckbox);
 }
 
-void dred_checkbox_set_background_color(dred_checkbox* pCheckbox, dred_color color)
+void dred_checkbox_set_background_color(dred_checkbox* pCheckbox, dtk_color color)
 {
     if (pCheckbox == NULL) {
         return;
@@ -288,7 +288,7 @@ void dred_checkbox_set_background_color(dred_checkbox* pCheckbox, dred_color col
     dred_control_dirty(DRED_CONTROL(pCheckbox), dred_control_get_local_rect(DRED_CONTROL(pCheckbox)));
 }
 
-void dred_checkbox_set_border_color(dred_checkbox* pCheckbox, dred_color color)
+void dred_checkbox_set_border_color(dred_checkbox* pCheckbox, dtk_color color)
 {
     if (pCheckbox == NULL) {
         return;

@@ -157,7 +157,6 @@
 
 typedef struct dred_gui dred_gui;
 typedef struct dred_control dred_control;
-typedef struct dred_color dred_color;
 typedef struct dred_rect dred_rect;
 typedef struct dred_gui_painting_callbacks dred_gui_painting_callbacks;
 typedef struct dred_gui_font dred_gui_font;
@@ -170,15 +169,6 @@ typedef unsigned int dred_key;
 // is at the first byte of the structure.
 #define DRED_CONTROL(a) ((dred_control*)(a))
 
-/// Structure representing an RGBA color. Color components are specified in the range of 0 - 255.
-struct dred_color
-{
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t a;
-};
-
 /// Structure representing a rectangle.
 struct dred_rect
 {
@@ -190,8 +180,8 @@ struct dred_rect
 
 typedef struct
 {
-    dred_color bgColor;
-    dred_color fgColor;
+    dtk_color bgColor;
+    dtk_color fgColor;
     dred_gui_font* pFont;
 } dred_text_style;
 
@@ -237,14 +227,14 @@ typedef struct
 
 
     /// The foreground tint color. This is not applied to the background color, and the alpha component is ignored.
-    dred_color foregroundTint;
+    dtk_color foregroundTint;
 
     /// The background color. Only used if the DR2D_IMAGE_DRAW_BACKGROUND option is set.
-    dred_color backgroundColor;
+    dtk_color backgroundColor;
 
     /// The bounds color. This color is used for the region of the bounds that sit on the outside of the destination rectangle. This will
     /// usually be set to the same value as backgroundColor, but it could also be used to draw a border around the image.
-    dred_color boundsColor;
+    dtk_color boundsColor;
 
 
     /// Flags for controlling how the image should be drawn.
@@ -290,14 +280,14 @@ typedef void (* dred_gui_draw_begin_proc)                   (dtk_surface* pSurfa
 typedef void (* dred_gui_draw_end_proc)                     (dtk_surface* pSurface);
 typedef void (* dred_gui_set_clip_proc)                     (dred_rect relativeRect, dtk_surface* pSurface);
 typedef void (* dred_gui_get_clip_proc)                     (dred_rect* pRectOut, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_line_proc)                    (float startX, float startY, float endX, float endY, float width, dred_color color, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_rect_proc)                    (dred_rect relativeRect, dred_color color, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_rect_outline_proc)            (dred_rect relativeRect, dred_color color, float outlineWidth, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_rect_with_outline_proc)       (dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_round_rect_proc)              (dred_rect relativeRect, dred_color color, float radius, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_round_rect_outline_proc)      (dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_round_rect_with_outline_proc) (dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_text_proc)                    (dtk_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_line_proc)                    (float startX, float startY, float endX, float endY, float width, dtk_color color, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_rect_proc)                    (dred_rect relativeRect, dtk_color color, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_rect_outline_proc)            (dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_rect_with_outline_proc)       (dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_round_rect_proc)              (dred_rect relativeRect, dtk_color color, float radius, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_round_rect_outline_proc)      (dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_round_rect_with_outline_proc) (dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_text_proc)                    (dtk_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface);
 typedef void (* dred_gui_draw_image_proc)                   (dtk_surface* pImage, dtk_draw_surface_args* pArgs, dtk_surface* pSurface);
 
 typedef dtk_font* (* dred_gui_create_font_proc)                        (dtk_context* pTK, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, float rotation, unsigned int flags);
@@ -1224,22 +1214,22 @@ void dred_control_get_clip(dred_control* pControl, dred_rect* pRelativeRect, dtk
 void dred_control_set_clip(dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
 
 /// Draws a rectangle on the given element.
-void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, dtk_surface* pSurface);
+void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dtk_color color, dtk_surface* pSurface);
 
 /// Draws the outline of a rectangle on the given element.
-void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float outlineWidth, dtk_surface* pSurface);
+void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_surface* pSurface);
 
 /// Draws a filled rectangle with an outline on the given element.
-void dred_control_draw_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, dtk_surface* pSurface);
+void dred_control_draw_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface);
 
 /// Draws a rectangle with rounded corners on the given element.
-void dred_control_draw_round_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, dtk_surface* pSurface);
+void dred_control_draw_round_rect(dred_control* pControl, dred_rect relativeRect, dtk_color color, float radius, dtk_surface* pSurface);
 
 /// Draws the outline of a rectangle with rounded corners on the given element.
-void dred_control_draw_round_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dtk_surface* pSurface);
+void dred_control_draw_round_rect_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_surface* pSurface);
 
 /// Draws a filled rectangle and it's outline with rounded corners on the given element.
-void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, dtk_surface* pSurface);
+void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface);
 
 /// Draws a run of text on the given element.
 ///
@@ -1248,7 +1238,7 @@ void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect
 ///     calls to this function.
 ///     @par
 ///     \c textSizeInBytes can be -1 in which case the text string is treated as null terminated.
-void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, dtk_surface* pSurface);
+void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface);
 
 /// Draws an image.
 void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_draw_image_args* pArgs, dtk_surface* pSurface);
@@ -1316,7 +1306,7 @@ dr_bool32 dred_control_pass_through_hit_test(dred_control* pControl, float mouse
 //// Painting ////
 
 /// Draws a border around the given element.
-void dred_control_draw_border(dred_control* pControl, float borderWidth, dred_color color, void* pUserData);
+void dred_control_draw_border(dred_control* pControl, float borderWidth, dtk_color color, void* pUserData);
 
 
 
@@ -1327,10 +1317,10 @@ void dred_control_draw_border(dred_control* pControl, float borderWidth, dred_co
 /////////////////////////////////////////////////////////////////
 
 /// Creates a color object from a set of RGBA color components.
-dred_color dred_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+dtk_color dred_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
 /// Creates a color object from a set of RGB color components.
-dred_color dred_rgb(uint8_t r, uint8_t g, uint8_t b);
+dtk_color dred_rgb(uint8_t r, uint8_t g, uint8_t b);
 
 /// Clamps the given rectangle to another.
 dred_rect dred_clamp_rect(dred_rect rect, dred_rect other);

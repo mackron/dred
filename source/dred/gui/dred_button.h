@@ -15,11 +15,11 @@ struct dred_button
     char text[64];
     dred_font* pFont;
     dred_gui_font* pSubFont;
-    dred_color textColor;
-    dred_color bgColor;
-    dred_color bgColorHovered;
-    dred_color bgColorPressed;
-    dred_color borderColor;
+    dtk_color textColor;
+    dtk_color bgColor;
+    dtk_color bgColorHovered;
+    dtk_color bgColorPressed;
+    dtk_color borderColor;
     float borderWidth;
     float paddingHorz;
     float paddingVert;
@@ -36,8 +36,8 @@ void dred_button_enable_auto_size(dred_button* pButton);
 void dred_button_disable_auto_size(dred_button* pButton);
 
 void dred_button_set_font(dred_button* pButton, dred_font* pFont);
-void dred_button_set_background_color(dred_button* pButton, dred_color color);
-void dred_button_set_border_color(dred_button* pButton, dred_color color);
+void dred_button_set_background_color(dred_button* pButton, dtk_color color);
+void dred_button_set_border_color(dred_button* pButton, dtk_color color);
 void dred_button_set_border_width(dred_button* pButton, float width);
 void dred_button_set_padding(dred_button* pButton, float paddingHorz, float paddingVert);
 

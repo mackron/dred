@@ -32,7 +32,7 @@ DTK_INLINE dtk_rect dtk_rect_init_dred(dred_rect rect)
     return dtk_rect_init((dtk_int32)rect.left, (dtk_int32)rect.top, (dtk_int32)rect.right, (dtk_int32)rect.bottom);
 }
 
-DTK_INLINE dtk_color dtk_color_init_dred(dred_color color)
+DTK_INLINE dtk_color dtk_color_init_dred(dtk_color color)
 {
     return dtk_rgba(color.r, color.g, color.b, color.a);
 }
@@ -2260,7 +2260,7 @@ void dred_control_set_clip(dred_control* pControl, dred_rect relativeRect, dtk_s
     pControl->pGUI->paintingCallbacks.setClip(absoluteRect, pSurface);
 }
 
-void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, dtk_surface* pSurface)
+void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dtk_color color, dtk_surface* pSurface)
 {
     if (pControl == NULL) {
         return;
@@ -2274,7 +2274,7 @@ void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dred
     pControl->pGUI->paintingCallbacks.drawRect(absoluteRect, color, pSurface);
 }
 
-void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float outlineWidth, dtk_surface* pSurface)
+void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_surface* pSurface)
 {
     if (pControl == NULL) {
         return;
@@ -2288,7 +2288,7 @@ void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRe
     pControl->pGUI->paintingCallbacks.drawRectOutline(absoluteRect, color, outlineWidth, pSurface);
 }
 
-void dred_control_draw_rect_with_outline(dred_control * pControl, dred_rect relativeRect, dred_color color, float outlineWidth, dred_color outlineColor, dtk_surface* pSurface)
+void dred_control_draw_rect_with_outline(dred_control * pControl, dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface)
 {
     if (pControl == NULL) {
         return;
@@ -2302,7 +2302,7 @@ void dred_control_draw_rect_with_outline(dred_control * pControl, dred_rect rela
     pControl->pGUI->paintingCallbacks.drawRectWithOutline(absoluteRect, color, outlineWidth, outlineColor, pSurface);
 }
 
-void dred_control_draw_round_rect(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, dtk_surface* pSurface)
+void dred_control_draw_round_rect(dred_control* pControl, dred_rect relativeRect, dtk_color color, float radius, dtk_surface* pSurface)
 {
     if (pControl == NULL) {
         return;
@@ -2316,7 +2316,7 @@ void dred_control_draw_round_rect(dred_control* pControl, dred_rect relativeRect
     pControl->pGUI->paintingCallbacks.drawRoundRect(absoluteRect, color, radius, pSurface);
 }
 
-void dred_control_draw_round_rect_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dtk_surface* pSurface)
+void dred_control_draw_round_rect_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_surface* pSurface)
 {
     if (pControl == NULL) {
         return;
@@ -2330,7 +2330,7 @@ void dred_control_draw_round_rect_outline(dred_control* pControl, dred_rect rela
     pControl->pGUI->paintingCallbacks.drawRoundRectOutline(absoluteRect, color, radius, outlineWidth, pSurface);
 }
 
-void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, dtk_surface* pSurface)
+void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface)
 {
     if (pControl == NULL) {
         return;
@@ -2344,7 +2344,7 @@ void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect
     pControl->pGUI->paintingCallbacks.drawRoundRectWithOutline(absoluteRect, color, radius, outlineWidth, outlineColor, pSurface);
 }
 
-void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, dtk_surface* pSurface)
+void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface)
 {
     if (pControl == NULL || pFont == NULL) {
         return;
@@ -2693,7 +2693,7 @@ dr_bool32 dred_control_pass_through_hit_test(dred_control* pControl, float mouse
 
 //// Painting ////
 
-void dred_control_draw_border(dred_control* pControl, float borderWidth, dred_color color, void* pUserData)
+void dred_control_draw_border(dred_control* pControl, float borderWidth, dtk_color color, void* pUserData)
 {
     dred_control_draw_rect_outline(pControl, dred_control_get_local_rect(pControl), color, borderWidth, pUserData);
 }
@@ -2706,9 +2706,9 @@ void dred_control_draw_border(dred_control* pControl, float borderWidth, dred_co
 //
 /////////////////////////////////////////////////////////////////
 
-dred_color dred_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+dtk_color dred_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
-    dred_color color;
+    dtk_color color;
     color.r = r;
     color.g = g;
     color.b = b;
@@ -2717,9 +2717,9 @@ dred_color dred_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
     return color;
 }
 
-dred_color dred_rgb(uint8_t r, uint8_t g, uint8_t b)
+dtk_color dred_rgb(uint8_t r, uint8_t g, uint8_t b)
 {
-    dred_color color;
+    dtk_color color;
     color.r = r;
     color.g = g;
     color.b = b;
@@ -2921,13 +2921,13 @@ void dred_control_draw_begin_dr_2d(dtk_surface* pSurface);
 void dred_control_draw_end_dr_2d(dtk_surface* pSurface);
 void dred_control_set_clip_dr_2d(dred_rect rect, dtk_surface* pSurface);
 void dred_control_get_clip_dr_2d(dred_rect* pRectOut, dtk_surface* pSurface);
-void dred_control_draw_rect_dr_2d(dred_rect rect, dred_color color, dtk_surface* pSurface);
-void dred_control_draw_rect_outline_dr_2d(dred_rect, dred_color, float, dtk_surface* pSurface);
-void dred_control_draw_rect_with_outline_dr_2d(dred_rect, dred_color, float, dred_color, dtk_surface* pSurface);
-void dred_control_draw_round_rect_dr_2d(dred_rect, dred_color, float, dtk_surface* pSurface);
-void dred_control_draw_round_rect_outline_dr_2d(dred_rect, dred_color, float, float, dtk_surface* pSurface);
-void dred_control_draw_round_rect_with_outline_dr_2d(dred_rect, dred_color, float, float, dred_color, dtk_surface* pSurface);
-void dred_control_draw_text_dr_2d(dtk_font*, const char*, int, float, float, dred_color, dred_color, dtk_surface* pSurface);
+void dred_control_draw_rect_dr_2d(dred_rect rect, dtk_color color, dtk_surface* pSurface);
+void dred_control_draw_rect_outline_dr_2d(dred_rect, dtk_color, float, dtk_surface* pSurface);
+void dred_control_draw_rect_with_outline_dr_2d(dred_rect, dtk_color, float, dtk_color, dtk_surface* pSurface);
+void dred_control_draw_round_rect_dr_2d(dred_rect, dtk_color, float, dtk_surface* pSurface);
+void dred_control_draw_round_rect_outline_dr_2d(dred_rect, dtk_color, float, float, dtk_surface* pSurface);
+void dred_control_draw_round_rect_with_outline_dr_2d(dred_rect, dtk_color, float, float, dtk_color, dtk_surface* pSurface);
+void dred_control_draw_text_dr_2d(dtk_font*, const char*, int, float, float, dtk_color, dtk_color, dtk_surface* pSurface);
 void dred_control_draw_image_dr_2d(dtk_surface*, dtk_draw_surface_args* pArgs, dtk_surface* pSurface);
 
 dtk_font* dred_gui_create_font_dr_2d(dtk_context*, const char*, unsigned int, dtk_font_weight, dtk_font_slant, float, unsigned int flags);
@@ -3045,7 +3045,7 @@ void dred_control_get_clip_dr_2d(dred_rect* pRectOut, dtk_surface* pSurface)
 #endif
 }
 
-void dred_control_draw_rect_dr_2d(dred_rect rect, dred_color color, dtk_surface* pSurface)
+void dred_control_draw_rect_dr_2d(dred_rect rect, dtk_color color, dtk_surface* pSurface)
 {
     dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(rect), dtk_color_init_dred(color));
 
@@ -3057,7 +3057,7 @@ void dred_control_draw_rect_dr_2d(dred_rect rect, dred_color color, dtk_surface*
 #endif
 }
 
-void dred_control_draw_rect_outline_dr_2d(dred_rect rect, dred_color color, float outlineWidth, dtk_surface* pSurface)
+void dred_control_draw_rect_outline_dr_2d(dred_rect rect, dtk_color color, float outlineWidth, dtk_surface* pSurface)
 {
     dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(rect), dtk_color_init_dred(color), (dtk_int32)outlineWidth);
 
@@ -3069,7 +3069,7 @@ void dred_control_draw_rect_outline_dr_2d(dred_rect rect, dred_color color, floa
 #endif
 }
 
-void dred_control_draw_rect_with_outline_dr_2d(dred_rect rect, dred_color color, float outlineWidth, dred_color outlineColor, dtk_surface* pSurface)
+void dred_control_draw_rect_with_outline_dr_2d(dred_rect rect, dtk_color color, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface)
 {
     dtk_surface_draw_rect_with_outline(pSurface, dtk_rect_init_dred(rect), dtk_color_init_dred(color), (dtk_int32)outlineWidth, dtk_color_init_dred(outlineColor));
 
@@ -3081,7 +3081,7 @@ void dred_control_draw_rect_with_outline_dr_2d(dred_rect rect, dred_color color,
 #endif
 }
 
-void dred_control_draw_round_rect_dr_2d(dred_rect rect, dred_color color, float radius, dtk_surface* pSurface)
+void dred_control_draw_round_rect_dr_2d(dred_rect rect, dtk_color color, float radius, dtk_surface* pSurface)
 {
     // NOTE: Rounded rectangles not currently supported.
     (void)radius;
@@ -3095,7 +3095,7 @@ void dred_control_draw_round_rect_dr_2d(dred_rect rect, dred_color color, float 
 #endif
 }
 
-void dred_control_draw_round_rect_outline_dr_2d(dred_rect rect, dred_color color, float radius, float outlineWidth, dtk_surface* pSurface)
+void dred_control_draw_round_rect_outline_dr_2d(dred_rect rect, dtk_color color, float radius, float outlineWidth, dtk_surface* pSurface)
 {
     // NOTE: Rounded rectangles not currently supported.
     (void)radius;
@@ -3109,7 +3109,7 @@ void dred_control_draw_round_rect_outline_dr_2d(dred_rect rect, dred_color color
 #endif
 }
 
-void dred_control_draw_round_rect_with_outline_dr_2d(dred_rect rect, dred_color color, float radius, float outlineWidth, dred_color outlineColor, dtk_surface* pSurface)
+void dred_control_draw_round_rect_with_outline_dr_2d(dred_rect rect, dtk_color color, float radius, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface)
 {
     // NOTE: Rounded rectangles not currently supported.
     (void)radius;
@@ -3123,7 +3123,7 @@ void dred_control_draw_round_rect_with_outline_dr_2d(dred_rect rect, dred_color 
 #endif
 }
 
-void dred_control_draw_text_dr_2d(dtk_font* pFont, const char* text, int textSizeInBytes, float posX, float posY, dred_color color, dred_color backgroundColor, dtk_surface* pSurface)
+void dred_control_draw_text_dr_2d(dtk_font* pFont, const char* text, int textSizeInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface)
 {
     dtk_surface_draw_text(pSurface, pFont, 1, text, textSizeInBytes, (dtk_int32)posX, (dtk_int32)posY, dtk_color_init_dred(color), dtk_color_init_dred(backgroundColor));
 

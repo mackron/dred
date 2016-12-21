@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-dred_rect dred_colorbutton__get_box_rect(dred_colorbutton* pButton)
+dred_rect dtk_colorbutton__get_box_rect(dtk_colorbutton* pButton)
 {
     // The size of the box is based on the size of the font.
     assert(pButton != NULL);
@@ -15,11 +15,11 @@ dred_rect dred_colorbutton__get_box_rect(dred_colorbutton* pButton)
     return dred_make_rect(posX, posY, posX + metrics.lineHeight, posY + metrics.lineHeight);
 }
 
-void dred_colorbutton__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
+void dtk_colorbutton__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
 {
     (void)rect;
 
-    dred_colorbutton* pButton = DRED_COLOR_BUTTON(pControl);
+    dtk_colorbutton* pButton = DRED_COLOR_BUTTON(pControl);
     if (pButton == NULL) {
         return;
     }
@@ -30,7 +30,7 @@ void dred_colorbutton__on_paint(dred_control* pControl, dred_rect rect, dtk_surf
     }
 
     // Draw the box first.
-    dred_color bgColor = pButton->bgColor;
+    dtk_color bgColor = pButton->bgColor;
     /*if (dred_control_has_mouse_capture(pButton)) {
         boxBGColor = pButton->boxBGColorHovered;
         if (pButton->isMouseOver) {
@@ -41,7 +41,7 @@ void dred_colorbutton__on_paint(dred_control* pControl, dred_rect rect, dtk_surf
     }*/
 
     dred_rect bgrect = dred_control_get_local_rect(DRED_CONTROL(pButton));
-    dred_rect boxRect = dred_colorbutton__get_box_rect(pButton);
+    dred_rect boxRect = dtk_colorbutton__get_box_rect(pButton);
 
     dred_control_draw_rect_outline(pControl, boxRect, pButton->boxBorderColor, pButton->borderWidth, pSurface);
     dred_control_draw_rect(pControl, dred_grow_rect(boxRect, -pButton->borderWidth), pButton->color, pSurface);
@@ -63,9 +63,9 @@ void dred_colorbutton__on_paint(dred_control* pControl, dred_rect rect, dtk_surf
     dred_control_draw_rect(pControl, dred_make_rect(textPosX + textWidth, boxRect.top, bgrect.right, boxRect.bottom), bgColor, pSurface);
 }
 
-void dred_colorbutton__on_mouse_enter(dred_control* pControl)
+void dtk_colorbutton__on_mouse_enter(dred_control* pControl)
 {
-    dred_colorbutton* pButton = DRED_COLOR_BUTTON(pControl);
+    dtk_colorbutton* pButton = DRED_COLOR_BUTTON(pControl);
     if (pButton == NULL) {
         return;
     }
@@ -75,9 +75,9 @@ void dred_colorbutton__on_mouse_enter(dred_control* pControl)
     dred_control_dirty(pControl, dred_control_get_local_rect(pControl));
 }
 
-void dred_colorbutton__on_mouse_leave(dred_control* pControl)
+void dtk_colorbutton__on_mouse_leave(dred_control* pControl)
 {
-    dred_colorbutton* pButton = DRED_COLOR_BUTTON(pControl);
+    dtk_colorbutton* pButton = DRED_COLOR_BUTTON(pControl);
     if (pButton == NULL) {
         return;
     }
@@ -87,11 +87,11 @@ void dred_colorbutton__on_mouse_leave(dred_control* pControl)
     dred_control_dirty(pControl, dred_control_get_local_rect(pControl));
 }
 
-void dred_colorbutton__on_mouse_move(dred_control* pControl, int mousePosX, int mousePosY, int stateFlags)
+void dtk_colorbutton__on_mouse_move(dred_control* pControl, int mousePosX, int mousePosY, int stateFlags)
 {
     (void)stateFlags;
 
-    dred_colorbutton* pButton = DRED_COLOR_BUTTON(pControl);
+    dtk_colorbutton* pButton = DRED_COLOR_BUTTON(pControl);
     if (pButton == NULL) {
         return;
     }
@@ -102,13 +102,13 @@ void dred_colorbutton__on_mouse_move(dred_control* pControl, int mousePosX, int 
     }
 }
 
-void dred_colorbutton__on_mouse_button_down(dred_control* pControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+void dtk_colorbutton__on_mouse_button_down(dred_control* pControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
     (void)mousePosX;
     (void)mousePosY;
     (void)stateFlags;
 
-    dred_colorbutton* pButton = DRED_COLOR_BUTTON(pControl);
+    dtk_colorbutton* pButton = DRED_COLOR_BUTTON(pControl);
     if (pButton == NULL) {
         return;
     }
@@ -123,7 +123,7 @@ void dred_colorbutton__on_mouse_button_down(dred_control* pControl, int mouseBut
     }
 }
 
-void dred_colorbutton__on_mouse_button_up(dred_control* pControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+void dtk_colorbutton__on_mouse_button_up(dred_control* pControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
     (void)mousePosX;
     (void)mousePosY;
@@ -132,7 +132,7 @@ void dred_colorbutton__on_mouse_button_up(dred_control* pControl, int mouseButto
     dred_window* pOwnerWindow = dred_get_control_window(pControl);
     assert(pOwnerWindow != NULL);
 
-    dred_colorbutton* pButton = DRED_COLOR_BUTTON(pControl);
+    dtk_colorbutton* pButton = DRED_COLOR_BUTTON(pControl);
     if (pButton == NULL) {
         return;
     }
@@ -142,21 +142,21 @@ void dred_colorbutton__on_mouse_button_up(dred_control* pControl, int mouseButto
             dred_gui_release_mouse(dred_control_get_gui(pControl));
             
             // Show a color picker.
-            dred_color newColor;
+            dtk_color newColor;
             if (dred_show_color_picker_dialog(pOwnerWindow->pDred, pOwnerWindow, pButton->color, &newColor)) {
-                dred_colorbutton_set_color(pButton, newColor, DR_FALSE);
+                dtk_colorbutton_set_color(pButton, newColor, DR_FALSE);
                 dred_control_dirty(pControl, dred_control_get_local_rect(pControl));
             }
         }
     }
 }
 
-void dred_colorbutton__on_release_mouse(dred_control* pControl)
+void dtk_colorbutton__on_release_mouse(dred_control* pControl)
 {
     dred_control_dirty(pControl, dred_control_get_local_rect(pControl));
 }
 
-void dred_colorbutton__refresh_layout(dred_colorbutton* pButton)
+void dtk_colorbutton__refresh_layout(dtk_colorbutton* pButton)
 {
     if (pButton == NULL) {
         return;
@@ -167,7 +167,7 @@ void dred_colorbutton__refresh_layout(dred_colorbutton* pButton)
         float textHeight;
         dred_gui_measure_string(pButton->pSubFont, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
 
-        dred_rect boxRect = dred_colorbutton__get_box_rect(pButton);
+        dred_rect boxRect = dtk_colorbutton__get_box_rect(pButton);
         float boxWidth = (boxRect.right - boxRect.left);
 
         dred_control_set_size(DRED_CONTROL(pButton), textWidth + boxWidth + pButton->padding, textHeight);
@@ -178,7 +178,7 @@ void dred_colorbutton__refresh_layout(dred_colorbutton* pButton)
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
 
-dr_bool32 dred_colorbutton_init(dred_colorbutton* pButton, dred_context* pDred, dred_control* pParent, const char* text, dred_color color)
+dr_bool32 dtk_colorbutton_init(dtk_colorbutton* pButton, dred_context* pDred, dred_control* pParent, const char* text, dtk_color color)
 {
     if (pButton == NULL) {
         return DR_FALSE;
@@ -203,20 +203,20 @@ dr_bool32 dred_colorbutton_init(dred_colorbutton* pButton, dred_context* pDred, 
     pButton->color = color;
 
     // Events.
-    dred_control_set_on_paint(DRED_CONTROL(pButton), dred_colorbutton__on_paint);
-    dred_control_set_on_mouse_enter(DRED_CONTROL(pButton), dred_colorbutton__on_mouse_enter);
-    dred_control_set_on_mouse_leave(DRED_CONTROL(pButton), dred_colorbutton__on_mouse_leave);
-    dred_control_set_on_mouse_move(DRED_CONTROL(pButton), dred_colorbutton__on_mouse_move);
-    dred_control_set_on_mouse_button_down(DRED_CONTROL(pButton), dred_colorbutton__on_mouse_button_down);
-    dred_control_set_on_mouse_button_up(DRED_CONTROL(pButton), dred_colorbutton__on_mouse_button_up);
-    dred_control_set_on_release_mouse(DRED_CONTROL(pButton), dred_colorbutton__on_release_mouse);
+    dred_control_set_on_paint(DRED_CONTROL(pButton), dtk_colorbutton__on_paint);
+    dred_control_set_on_mouse_enter(DRED_CONTROL(pButton), dtk_colorbutton__on_mouse_enter);
+    dred_control_set_on_mouse_leave(DRED_CONTROL(pButton), dtk_colorbutton__on_mouse_leave);
+    dred_control_set_on_mouse_move(DRED_CONTROL(pButton), dtk_colorbutton__on_mouse_move);
+    dred_control_set_on_mouse_button_down(DRED_CONTROL(pButton), dtk_colorbutton__on_mouse_button_down);
+    dred_control_set_on_mouse_button_up(DRED_CONTROL(pButton), dtk_colorbutton__on_mouse_button_up);
+    dred_control_set_on_release_mouse(DRED_CONTROL(pButton), dtk_colorbutton__on_release_mouse);
 
-    dred_colorbutton__refresh_layout(pButton);
+    dtk_colorbutton__refresh_layout(pButton);
 
     return DR_TRUE;
 }
 
-void dred_colorbutton_uninit(dred_colorbutton* pButton)
+void dtk_colorbutton_uninit(dtk_colorbutton* pButton)
 {
     if (pButton == NULL) {
         return;
@@ -227,7 +227,7 @@ void dred_colorbutton_uninit(dred_colorbutton* pButton)
 }
 
 
-void dred_colorbutton_set_text(dred_colorbutton* pButton, const char* text)
+void dtk_colorbutton_set_text(dtk_colorbutton* pButton, const char* text)
 {
     if (pButton == NULL) {
         return;
@@ -240,7 +240,7 @@ void dred_colorbutton_set_text(dred_colorbutton* pButton, const char* text)
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
 
-void dred_colorbutton_enable_auto_size(dred_colorbutton* pButton)
+void dtk_colorbutton_enable_auto_size(dtk_colorbutton* pButton)
 {
     if (pButton == NULL) {
         return;
@@ -248,10 +248,10 @@ void dred_colorbutton_enable_auto_size(dred_colorbutton* pButton)
 
     pButton->isAutoSizeEnabled = DR_TRUE;
 
-    dred_colorbutton__refresh_layout(pButton);
+    dtk_colorbutton__refresh_layout(pButton);
 }
 
-void dred_colorbutton_disable_auto_size(dred_colorbutton* pButton)
+void dtk_colorbutton_disable_auto_size(dtk_colorbutton* pButton)
 {
     if (pButton == NULL) {
         return;
@@ -259,11 +259,11 @@ void dred_colorbutton_disable_auto_size(dred_colorbutton* pButton)
 
     pButton->isAutoSizeEnabled = DR_FALSE;
 
-    dred_colorbutton__refresh_layout(pButton);
+    dtk_colorbutton__refresh_layout(pButton);
 }
 
 
-void dred_colorbutton_set_font(dred_colorbutton* pButton, dred_font* pFont)
+void dtk_colorbutton_set_font(dtk_colorbutton* pButton, dred_font* pFont)
 {
     if (pButton == NULL) {
         return;
@@ -278,10 +278,10 @@ void dred_colorbutton_set_font(dred_colorbutton* pButton, dred_font* pFont)
     pButton->pFont = pFont;
     pButton->pSubFont = dred_font_acquire_subfont(pButton->pFont, dred_control_get_context(DRED_CONTROL(pButton))->uiScale);
 
-    dred_colorbutton__refresh_layout(pButton);
+    dtk_colorbutton__refresh_layout(pButton);
 }
 
-void dred_colorbutton_set_background_color(dred_colorbutton* pButton, dred_color color)
+void dtk_colorbutton_set_background_color(dtk_colorbutton* pButton, dtk_color color)
 {
     if (pButton == NULL) {
         return;
@@ -293,7 +293,7 @@ void dred_colorbutton_set_background_color(dred_colorbutton* pButton, dred_color
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
 
-void dred_colorbutton_set_border_color(dred_colorbutton* pButton, dred_color color)
+void dtk_colorbutton_set_border_color(dtk_colorbutton* pButton, dtk_color color)
 {
     if (pButton == NULL) {
         return;
@@ -305,7 +305,7 @@ void dred_colorbutton_set_border_color(dred_colorbutton* pButton, dred_color col
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
 
-void dred_colorbutton_set_border_width(dred_colorbutton* pButton, float width)
+void dtk_colorbutton_set_border_width(dtk_colorbutton* pButton, float width)
 {
     if (pButton == NULL) {
         return;
@@ -317,7 +317,7 @@ void dred_colorbutton_set_border_width(dred_colorbutton* pButton, float width)
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
 
-void dred_colorbutton_set_padding(dred_colorbutton* pButton, float padding)
+void dtk_colorbutton_set_padding(dtk_colorbutton* pButton, float padding)
 {
     if (pButton == NULL) {
         return;
@@ -325,11 +325,11 @@ void dred_colorbutton_set_padding(dred_colorbutton* pButton, float padding)
 
     pButton->padding = padding;
 
-    dred_colorbutton__refresh_layout(pButton);
+    dtk_colorbutton__refresh_layout(pButton);
 }
 
 
-void dred_colorbutton_set_color(dred_colorbutton* pButton, dred_color color, dr_bool32 blockEvent)
+void dtk_colorbutton_set_color(dtk_colorbutton* pButton, dtk_color color, dr_bool32 blockEvent)
 {
     if (pButton == NULL) {
         return;
@@ -352,7 +352,7 @@ void dred_colorbutton_set_color(dred_colorbutton* pButton, dred_color color, dr_
     }
 }
 
-dred_color dred_colorbutton_get_color(dred_colorbutton* pButton)
+dtk_color dtk_colorbutton_get_color(dtk_colorbutton* pButton)
 {
     if (pButton == NULL) {
         return dred_rgb(0, 0, 0);
@@ -362,7 +362,7 @@ dred_color dred_colorbutton_get_color(dred_colorbutton* pButton)
 }
 
 
-void dred_colorbutton_set_bind_to_config_var(dred_colorbutton* pButton, const char* varName)
+void dtk_colorbutton_set_bind_to_config_var(dtk_colorbutton* pButton, const char* varName)
 {
     if (pButton == NULL) {
         return;
@@ -375,7 +375,7 @@ void dred_colorbutton_set_bind_to_config_var(dred_colorbutton* pButton, const ch
     }
 }
 
-void dred_colorbutton_set_on_color_changed(dred_colorbutton* pButton, dred_colorbutton_on_color_changed_proc proc)
+void dtk_colorbutton_set_on_color_changed(dtk_colorbutton* pButton, dtk_colorbutton_on_color_changed_proc proc)
 {
     if (pButton == NULL) {
         return;

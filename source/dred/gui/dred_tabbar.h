@@ -56,22 +56,22 @@ struct dred_tabbar
     dred_gui_font* pFont;
 
     /// The default color to use for tab bar item text.
-    dred_color tabTextColor;
+    dtk_color tabTextColor;
 
     /// The default color to use for tab bar item text while active.
-    dred_color tabTextColorActivated;
+    dtk_color tabTextColorActivated;
 
     /// The default color to use for tab bar item text while hovered.
-    dred_color tabTextColorHovered;
+    dtk_color tabTextColorHovered;
 
     /// The default background color of tab bar items.
-    dred_color tabBackgroundColor;
+    dtk_color tabBackgroundColor;
 
     /// The background color of tab bar items while hovered.
-    dred_color tabBackgroundColorHovered;
+    dtk_color tabBackgroundColorHovered;
 
     /// The background color of tab bar items while selected.
-    dred_color tabBackbroundColorActivated;
+    dtk_color tabBackbroundColorActivated;
 
     /// The padding to apply to the text of tabs.
     float tabPadding;
@@ -83,16 +83,16 @@ struct dred_tabbar
     float closeButtonPaddingLeft;
 
     /// The default color of the close button.
-    dred_color closeButtonColorDefault;
+    dtk_color closeButtonColorDefault;
 
     /// The color of the close button when the tab is hovered, but not the close button itself.
-    dred_color closeButtonColorTabHovered;
+    dtk_color closeButtonColorTabHovered;
 
     /// The color of the close button when it is hovered.
-    dred_color closeButtonColorHovered;
+    dtk_color closeButtonColorHovered;
 
     /// The color of the close button when it is pressed.
-    dred_color closeButtonColorPressed;
+    dtk_color closeButtonColorPressed;
 
 
     /// Whether or not auto-sizing is enabled. Disabled by default.
@@ -159,16 +159,16 @@ void dred_tabbar_set_font(dred_tabbar* pTabBar, dred_gui_font* pFont);
 dred_gui_font* dred_tabbar_get_font(dred_tabbar* pTabBar);
 
 // Sets the color of the text to use on tabs.
-void dred_tabbar_set_text_color(dred_tabbar* pTabBar, dred_color color);
+void dred_tabbar_set_text_color(dred_tabbar* pTabBar, dtk_color color);
 
 // Retrieves the color of the text to use on tabs.
-dred_color dred_tabbar_get_text_color(dred_tabbar* pTabBar);
+dtk_color dred_tabbar_get_text_color(dred_tabbar* pTabBar);
 
 // Sets the color of the text to use on active tabs.
-void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, dred_color color);
+void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, dtk_color color);
 
 // Sets the color of the text to use on hovered tabs.
-void dred_tabbar_set_text_color_hovered(dred_tabbar* pTabBar, dred_color color);
+void dred_tabbar_set_text_color_hovered(dred_tabbar* pTabBar, dtk_color color);
 
 /// Sets the image to use for close buttons.
 void dred_tabbar_set_close_button_image(dred_tabbar* pTabBar, dred_gui_image* pImage);
@@ -177,7 +177,7 @@ void dred_tabbar_set_close_button_image(dred_tabbar* pTabBar, dred_gui_image* pI
 dred_gui_image* dred_tabbar_get_close_button_image(dred_tabbar* pTabBar);
 
 // Sets the default color of the close button.
-void dred_tabbar_set_close_button_color(dred_tabbar* pTabBar, dred_color color);
+void dred_tabbar_set_close_button_color(dred_tabbar* pTabBar, dtk_color color);
 
 // Sets the padding to apply the the text of each tab.
 void dred_tabbar_set_tab_padding(dred_tabbar* pTabBar, float padding);
@@ -192,22 +192,22 @@ void dred_tabbar_set_close_button_left_padding(dred_tabbar* pTabBar, float paddi
 float dred_tabbar_get_close_button_left_padding(dred_tabbar* pTabBar);
 
 // Sets the default background color of tabs. This is the color of inactive tabs.
-void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, dred_color color);
+void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, dtk_color color);
 
 // Retrieves the default background color of tabs while inactive.
-dred_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar);
+dtk_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar);
 
 // Sets the background color of tabs while hovered.
-void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, dred_color color);
+void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, dtk_color color);
 
 // Retrieves the background color of tabs while hovered.
-dred_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar);
+dtk_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar);
 
 // Sets the background color of tabs while activated.
-void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, dred_color color);
+void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, dtk_color color);
 
 // Retrieves the background color of tabs while activated.
-dred_color dred_tabbar_get_tab_background_color_actived(dred_tabbar* pTabBar);
+dtk_color dred_tabbar_get_tab_background_color_actived(dred_tabbar* pTabBar);
 
 
 /// Sets the function to call when a tab needs to be measured.

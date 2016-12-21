@@ -42,16 +42,16 @@ struct dred_scrollbar
     int mouseWheelScale;
 
     /// The color of the track.
-    dred_color trackColor;
+    dtk_color trackColor;
 
     /// The color of the thumb while not hovered or pressed.
-    dred_color thumbColor;
+    dtk_color thumbColor;
 
     /// The color of the thumb while hovered.
-    dred_color thumbColorHovered;
+    dtk_color thumbColorHovered;
 
     /// The color of the thumb while pressed.
-    dred_color thumbColorPressed;
+    dtk_color thumbColorPressed;
 
     /// The function to call when the scroll position changes.
     dred_scrollbar_on_scroll_proc onScroll;
@@ -166,16 +166,16 @@ int dred_scrollbar_get_mouse_wheel_scale(dred_scrollbar* pScrollbar);
 
 
 /// Sets the color of the track.
-void dred_scrollbar_set_track_color(dred_scrollbar* pScrollbar, dred_color color);
+void dred_scrollbar_set_track_color(dred_scrollbar* pScrollbar, dtk_color color);
 
 /// Sets the default color of the thumb.
-void dred_scrollbar_set_default_thumb_color(dred_scrollbar* pScrollbar, dred_color color);
+void dred_scrollbar_set_default_thumb_color(dred_scrollbar* pScrollbar, dtk_color color);
 
 /// Sets the hovered color of the thumb.
-void dred_scrollbar_set_hovered_thumb_color(dred_scrollbar* pScrollbar, dred_color color);
+void dred_scrollbar_set_hovered_thumb_color(dred_scrollbar* pScrollbar, dtk_color color);
 
 /// Sets the pressed color of the thumb.
-void dred_scrollbar_set_pressed_thumb_color(dred_scrollbar* pScrollbar, dred_color color);
+void dred_scrollbar_set_pressed_thumb_color(dred_scrollbar* pScrollbar, dtk_color color);
 
 
 /// Sets the function to call when the given scrollbar is scrolled.

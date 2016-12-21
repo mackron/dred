@@ -59,7 +59,7 @@ struct dred_textview
 
 
     /// The color of the border.
-    dred_color borderColor;
+    dtk_color borderColor;
 
     /// The width of the border.
     float borderWidth;
@@ -157,19 +157,19 @@ void dred_textview_set_font(dred_textview* pTextView, dred_gui_font* pFont);
 dred_gui_font* dred_textview_get_font(dred_textview* pTextView);
 
 // Sets the color of the text in teh given text box.
-void dred_textview_set_text_color(dred_textview* pTextView, dred_color color);
+void dred_textview_set_text_color(dred_textview* pTextView, dtk_color color);
 
 // Sets the background color of the given text box.
-void dred_textview_set_background_color(dred_textview* pTextView, dred_color color);
+void dred_textview_set_background_color(dred_textview* pTextView, dtk_color color);
 
 // Sets the background color of selected text.
-void dred_textview_set_selection_background_color(dred_textview* pTextView, dred_color color);
+void dred_textview_set_selection_background_color(dred_textview* pTextView, dtk_color color);
 
 // Retrieves the background color of selected text.
-dred_color dred_textview_get_selection_background_color(dred_textview* pTextView);
+dtk_color dred_textview_get_selection_background_color(dred_textview* pTextView);
 
 // Sets the background color for the line the caret is currently sitting on.
-void dred_textview_set_active_line_background_color(dred_textview* pTextView, dred_color color);
+void dred_textview_set_active_line_background_color(dred_textview* pTextView, dtk_color color);
 
 // Sets the width of the text cursor.
 void dred_textview_set_cursor_width(dred_textview* pTextView, float cursorWidth);
@@ -178,10 +178,10 @@ void dred_textview_set_cursor_width(dred_textview* pTextView, float cursorWidth)
 float dred_textview_get_cursor_width(dred_textview* pTextView);
 
 // Sets the color of the cursor of the given text box.
-void dred_textview_set_cursor_color(dred_textview* pTextView, dred_color color);
+void dred_textview_set_cursor_color(dred_textview* pTextView, dtk_color color);
 
 // Sets the border color of the given text box.
-void dred_textview_set_border_color(dred_textview* pTextView, dred_color color);
+void dred_textview_set_border_color(dred_textview* pTextView, dtk_color color);
 
 // Sets the border width of the given text box.
 void dred_textview_set_border_width(dred_textview* pTextView, float borderWidth);
@@ -208,28 +208,28 @@ void dred_textview_set_line_numbers_padding(dred_textview* pTextView, float line
 float dred_textview_get_line_numbers_padding(dred_textview* pTextView);
 
 // Sets the color of the text of the line numbers.
-void dred_textview_set_line_numbers_color(dred_textview* pTextView, dred_color color);
+void dred_textview_set_line_numbers_color(dred_textview* pTextView, dtk_color color);
 
 // Retrieves the color of the text of the line numbers.
-dred_color dred_textview_get_line_numbers_color(dred_textview* pTextView);
+dtk_color dred_textview_get_line_numbers_color(dred_textview* pTextView);
 
 // Sets the color of the background of the line numbers.
-void dred_textview_set_line_numbers_background_color(dred_textview* pTextView, dred_color color);
+void dred_textview_set_line_numbers_background_color(dred_textview* pTextView, dtk_color color);
 
 // Retrieves the color of the background of the line numbers.
-dred_color dred_textview_get_line_numbers_background_color(dred_textview* pTextView);
+dtk_color dred_textview_get_line_numbers_background_color(dred_textview* pTextView);
 
 // Sets the color of the track of the scrollbars.
-void dred_textview_set_scrollbar_track_color(dred_textview* pTextView, dred_color color);
+void dred_textview_set_scrollbar_track_color(dred_textview* pTextView, dtk_color color);
 
 // Sets the color of the thumb of the scrollbars.
-void dred_textview_set_scrollbar_thumb_color(dred_textview* pTextView, dred_color color);
+void dred_textview_set_scrollbar_thumb_color(dred_textview* pTextView, dtk_color color);
 
 // Sets the color of the thumb of the scrollbars while hovered.
-void dred_textview_set_scrollbar_thumb_color_hovered(dred_textview* pTextView, dred_color color);
+void dred_textview_set_scrollbar_thumb_color_hovered(dred_textview* pTextView, dtk_color color);
 
 // Sets the color of the thumb of the scrollbars while pressed.
-void dred_textview_set_scrollbar_thumb_color_pressed(dred_textview* pTextView, dred_color color);
+void dred_textview_set_scrollbar_thumb_color_pressed(dred_textview* pTextView, dtk_color color);
 
 
 // Enables word wrap.

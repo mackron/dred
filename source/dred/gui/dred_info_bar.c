@@ -7,7 +7,7 @@
 #define DRED_INFO_BAR_TYPE_ICON_EDITOR      4
 #define DRED_INFO_BAR_TYPE_PARTICLE_EDITOR  5
 
-dred_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
+dtk_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
 {
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pInfoBar));
     assert(pDred != NULL);
@@ -19,7 +19,7 @@ dred_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
     }
 }
 
-dred_color dred_info_bar__get_text_color(dred_info_bar* pInfoBar)
+dtk_color dred_info_bar__get_text_color(dred_info_bar* pInfoBar)
 {
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pInfoBar));
     assert(pDred != NULL);

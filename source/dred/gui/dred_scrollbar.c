@@ -308,7 +308,7 @@ int dred_scrollbar_get_mouse_wheel_scale(dred_scrollbar* pScrollbar)
 }
 
 
-void dred_scrollbar_set_track_color(dred_scrollbar* pScrollbar, dred_color color)
+void dred_scrollbar_set_track_color(dred_scrollbar* pScrollbar, dtk_color color)
 {
     if (pScrollbar == NULL) {
         return;
@@ -317,7 +317,7 @@ void dred_scrollbar_set_track_color(dred_scrollbar* pScrollbar, dred_color color
     pScrollbar->trackColor = color;
 }
 
-void dred_scrollbar_set_default_thumb_color(dred_scrollbar* pScrollbar, dred_color color)
+void dred_scrollbar_set_default_thumb_color(dred_scrollbar* pScrollbar, dtk_color color)
 {
     if (pScrollbar == NULL) {
         return;
@@ -326,7 +326,7 @@ void dred_scrollbar_set_default_thumb_color(dred_scrollbar* pScrollbar, dred_col
     pScrollbar->thumbColor = color;
 }
 
-void dred_scrollbar_set_hovered_thumb_color(dred_scrollbar* pScrollbar, dred_color color)
+void dred_scrollbar_set_hovered_thumb_color(dred_scrollbar* pScrollbar, dtk_color color)
 {
     if (pScrollbar == NULL) {
         return;
@@ -335,7 +335,7 @@ void dred_scrollbar_set_hovered_thumb_color(dred_scrollbar* pScrollbar, dred_col
     pScrollbar->thumbColorHovered = color;
 }
 
-void dred_scrollbar_set_pressed_thumb_color(dred_scrollbar* pScrollbar, dred_color color)
+void dred_scrollbar_set_pressed_thumb_color(dred_scrollbar* pScrollbar, dtk_color color)
 {
     if (pScrollbar == NULL) {
         return;
@@ -582,7 +582,7 @@ void dred_scrollbar_on_paint(dred_control* pControl, dred_rect relativeClippingR
         dred_control_draw_rect(pControl, dred_make_rect(thumbRect.right, thumbRect.top, dred_control_get_width(pControl), thumbRect.bottom), pScrollbar->trackColor, pSurface); // Right
 
         // Thumb.
-        dred_color thumbColor;
+        dtk_color thumbColor;
         if (pScrollbar->thumbPressed) {
             thumbColor = pScrollbar->thumbColorPressed;
         } else if (pScrollbar->thumbHovered) {

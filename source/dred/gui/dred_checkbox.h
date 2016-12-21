@@ -17,13 +17,13 @@ struct dred_checkbox
     char text[64];
     dred_font* pFont;
     dred_gui_font* pSubFont;
-    dred_color textColor;
-    dred_color bgColor;
-    dred_color boxBGColor;
-    dred_color boxBGColorHovered;
-    dred_color boxBGColorPressed;
-    dred_color boxBorderColor;
-    dred_color checkColor;
+    dtk_color textColor;
+    dtk_color bgColor;
+    dtk_color boxBGColor;
+    dtk_color boxBGColorHovered;
+    dtk_color boxBGColorPressed;
+    dtk_color boxBorderColor;
+    dtk_color checkColor;
     float borderWidth;
     float padding;
     dr_bool32 isMouseOver;
@@ -41,8 +41,8 @@ void dred_checkbox_enable_auto_size(dred_checkbox* pCheckbox);
 void dred_checkbox_disable_auto_size(dred_checkbox* pCheckbox);
 
 void dred_checkbox_set_font(dred_checkbox* pCheckbox, dred_font* pFont);
-void dred_checkbox_set_background_color(dred_checkbox* pCheckbox, dred_color color);
-void dred_checkbox_set_border_color(dred_checkbox* pCheckbox, dred_color color);
+void dred_checkbox_set_background_color(dred_checkbox* pCheckbox, dtk_color color);
+void dred_checkbox_set_border_color(dred_checkbox* pCheckbox, dtk_color color);
 void dred_checkbox_set_border_width(dred_checkbox* pCheckbox, float width);
 void dred_checkbox_set_padding(dred_checkbox* pCheckbox, float padding);
 

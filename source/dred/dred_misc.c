@@ -163,7 +163,7 @@ dtk_font_slant dred_font_slant_from_pango(PangoStyle slant)
 }
 #endif // DRED_GTK
 
-dred_color dred_parse_color(const char* color)
+dtk_color dred_parse_color(const char* color)
 {
     if (color != NULL) {
         color = dr_first_non_whitespace(color);

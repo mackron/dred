@@ -548,7 +548,7 @@ dred_gui_font* dred_textview_get_font(dred_textview* pTextView)
     return pTextView->defaultStyle.pFont;
 }
 
-void dred_textview_set_text_color(dred_textview* pTextView, dred_color color)
+void dred_textview_set_text_color(dred_textview* pTextView, dtk_color color)
 {
     if (pTextView == NULL) {
         return;
@@ -558,7 +558,7 @@ void dred_textview_set_text_color(dred_textview* pTextView, dred_color color)
     dred_textview__refresh_style(pTextView);
 }
 
-void dred_textview_set_background_color(dred_textview* pTextView, dred_color color)
+void dred_textview_set_background_color(dred_textview* pTextView, dtk_color color)
 {
     if (pTextView == NULL) {
         return;
@@ -568,7 +568,7 @@ void dred_textview_set_background_color(dred_textview* pTextView, dred_color col
     dred_textview__refresh_style(pTextView);
 }
 
-void dred_textview_set_selection_background_color(dred_textview* pTextView, dred_color color)
+void dred_textview_set_selection_background_color(dred_textview* pTextView, dtk_color color)
 {
     if (pTextView == NULL) {
         return;
@@ -578,7 +578,7 @@ void dred_textview_set_selection_background_color(dred_textview* pTextView, dred
     dred_textview__refresh_style(pTextView);
 }
 
-dred_color dred_textview_get_selection_background_color(dred_textview* pTextView)
+dtk_color dred_textview_get_selection_background_color(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return dred_rgb(0, 0, 0);
@@ -587,7 +587,7 @@ dred_color dred_textview_get_selection_background_color(dred_textview* pTextView
     return pTextView->selectionStyle.bgColor;
 }
 
-void dred_textview_set_active_line_background_color(dred_textview* pTextView, dred_color color)
+void dred_textview_set_active_line_background_color(dred_textview* pTextView, dtk_color color)
 {
     if (pTextView == NULL) {
         return;
@@ -616,7 +616,7 @@ float dred_textview_get_cursor_width(dred_textview* pTextView)
     return drte_view_get_cursor_width(pTextView->pView);
 }
 
-void dred_textview_set_cursor_color(dred_textview* pTextView, dred_color color)
+void dred_textview_set_cursor_color(dred_textview* pTextView, dtk_color color)
 {
     if (pTextView == NULL) {
         return;
@@ -627,7 +627,7 @@ void dred_textview_set_cursor_color(dred_textview* pTextView, dred_color color)
     //drte_engine_set_cursor_color(pTextView->pTextEngine, color);
 }
 
-void dred_textview_set_border_color(dred_textview* pTextView, dred_color color)
+void dred_textview_set_border_color(dred_textview* pTextView, dtk_color color)
 {
     if (pTextView == NULL) {
         return;
@@ -708,7 +708,7 @@ float dred_textview_get_line_numbers_padding(dred_textview* pTextView)
     return pTextView->lineNumbersPaddingRight;
 }
 
-void dred_textview_set_line_numbers_color(dred_textview* pTextView, dred_color color)
+void dred_textview_set_line_numbers_color(dred_textview* pTextView, dtk_color color)
 {
     if (pTextView == NULL) {
         return;
@@ -720,7 +720,7 @@ void dred_textview_set_line_numbers_color(dred_textview* pTextView, dred_color c
     dred_textview__refresh_line_numbers(pTextView);
 }
 
-dred_color dred_textview_get_line_numbers_color(dred_textview* pTextView)
+dtk_color dred_textview_get_line_numbers_color(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return dred_rgb(0, 0, 0);
@@ -729,7 +729,7 @@ dred_color dred_textview_get_line_numbers_color(dred_textview* pTextView)
     return pTextView->lineNumbersStyle.fgColor;
 }
 
-void dred_textview_set_line_numbers_background_color(dred_textview* pTextView, dred_color color)
+void dred_textview_set_line_numbers_background_color(dred_textview* pTextView, dtk_color color)
 {
     if (pTextView == NULL) {
         return;
@@ -740,7 +740,7 @@ void dred_textview_set_line_numbers_background_color(dred_textview* pTextView, d
     dred_textview__refresh_line_numbers(pTextView);
 }
 
-dred_color dred_textview_get_line_numbers_background_color(dred_textview* pTextView)
+dtk_color dred_textview_get_line_numbers_background_color(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return dred_rgb(0, 0, 0);
@@ -749,7 +749,7 @@ dred_color dred_textview_get_line_numbers_background_color(dred_textview* pTextV
     return pTextView->lineNumbersStyle.bgColor;
 }
 
-void dred_textview_set_scrollbar_track_color(dred_textview* pTextView, dred_color color)
+void dred_textview_set_scrollbar_track_color(dred_textview* pTextView, dtk_color color)
 {
     if (pTextView == NULL) {
         return;
@@ -759,7 +759,7 @@ void dred_textview_set_scrollbar_track_color(dred_textview* pTextView, dred_colo
     dred_scrollbar_set_track_color(pTextView->pVertScrollbar, color);
 }
 
-void dred_textview_set_scrollbar_thumb_color(dred_textview* pTextView, dred_color color)
+void dred_textview_set_scrollbar_thumb_color(dred_textview* pTextView, dtk_color color)
 {
     if (pTextView == NULL) {
         return;
@@ -769,7 +769,7 @@ void dred_textview_set_scrollbar_thumb_color(dred_textview* pTextView, dred_colo
     dred_scrollbar_set_default_thumb_color(pTextView->pVertScrollbar, color);
 }
 
-void dred_textview_set_scrollbar_thumb_color_hovered(dred_textview* pTextView, dred_color color)
+void dred_textview_set_scrollbar_thumb_color_hovered(dred_textview* pTextView, dtk_color color)
 {
     if (pTextView == NULL) {
         return;
@@ -779,7 +779,7 @@ void dred_textview_set_scrollbar_thumb_color_hovered(dred_textview* pTextView, d
     dred_scrollbar_set_hovered_thumb_color(pTextView->pVertScrollbar, color);
 }
 
-void dred_textview_set_scrollbar_thumb_color_pressed(dred_textview* pTextView, dred_color color)
+void dred_textview_set_scrollbar_thumb_color_pressed(dred_textview* pTextView, dtk_color color)
 {
     if (pTextView == NULL) {
         return;

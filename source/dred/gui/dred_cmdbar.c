@@ -88,7 +88,7 @@ void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
 
     dred_rect localRect = dred_control_get_local_rect(DRED_CONTROL(pCmdBar));
 
-    dred_color bgcolor = pDred->config.cmdbarBGColor;
+    dtk_color bgcolor = pDred->config.cmdbarBGColor;
     if (dred_cmdbar_has_keyboard_focus(pCmdBar)) {
         bgcolor = pDred->config.cmdbarBGColorActive;
     }

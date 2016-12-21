@@ -1802,7 +1802,7 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerW
 #endif
 }
 
-dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_color initialColor, dred_color* pColorOut)
+dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut)
 {
     if (pDred == NULL || pColorOut == NULL) {
         return DR_FALSE;

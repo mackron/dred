@@ -151,7 +151,7 @@ dred_gui_font* dred_tabbar_get_font(dred_tabbar* pTabBar)
 }
 
 
-void dred_tabbar_set_text_color(dred_tabbar* pTabBar, dred_color color)
+void dred_tabbar_set_text_color(dred_tabbar* pTabBar, dtk_color color)
 {
     if (pTabBar == NULL) {
         return;
@@ -164,7 +164,7 @@ void dred_tabbar_set_text_color(dred_tabbar* pTabBar, dred_color color)
     }
 }
 
-dred_color dred_tabbar_get_text_color(dred_tabbar* pTabBar)
+dtk_color dred_tabbar_get_text_color(dred_tabbar* pTabBar)
 {
     if (pTabBar == NULL) {
         return dred_rgb(0, 0, 0);
@@ -173,7 +173,7 @@ dred_color dred_tabbar_get_text_color(dred_tabbar* pTabBar)
     return pTabBar->tabTextColor;
 }
 
-void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, dred_color color)
+void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, dtk_color color)
 {
     if (pTabBar == NULL) {
         return;
@@ -186,7 +186,7 @@ void dred_tabbar_set_text_color_active(dred_tabbar* pTabBar, dred_color color)
     }
 }
 
-void dred_tabbar_set_text_color_hovered(dred_tabbar* pTabBar, dred_color color)
+void dred_tabbar_set_text_color_hovered(dred_tabbar* pTabBar, dtk_color color)
 {
     if (pTabBar == NULL) {
         return;
@@ -222,7 +222,7 @@ dred_gui_image* dred_tabbar_get_close_button_image(dred_tabbar* pTabBar)
     return pTabBar->pCloseButtonImage;
 }
 
-void dred_tabbar_set_close_button_color(dred_tabbar* pTabBar, dred_color color)
+void dred_tabbar_set_close_button_color(dred_tabbar* pTabBar, dtk_color color)
 {
     if (pTabBar == NULL) {
         return;
@@ -281,7 +281,7 @@ float dred_tabbar_get_close_button_left_padding(dred_tabbar* pTabBar)
 }
 
 
-void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, dred_color color)
+void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, dtk_color color)
 {
     if (pTabBar == NULL) {
         return;
@@ -294,7 +294,7 @@ void dred_tabbar_set_tab_background_color(dred_tabbar* pTabBar, dred_color color
     }
 }
 
-dred_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar)
+dtk_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar)
 {
     if (pTabBar == NULL) {
         return dred_rgb(0, 0, 0);
@@ -303,7 +303,7 @@ dred_color dred_tabbar_get_tab_background_color(dred_tabbar* pTabBar)
     return pTabBar->tabBackgroundColor;
 }
 
-void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, dred_color color)
+void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, dtk_color color)
 {
     if (pTabBar == NULL) {
         return;
@@ -316,7 +316,7 @@ void dred_tabbar_set_tab_background_color_hovered(dred_tabbar* pTabBar, dred_col
     }
 }
 
-dred_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar)
+dtk_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar)
 {
     if (pTabBar == NULL) {
         return dred_rgb(0, 0, 0);
@@ -325,7 +325,7 @@ dred_color dred_tabbar_get_tab_background_color_hovered(dred_tabbar* pTabBar)
     return pTabBar->tabBackgroundColorHovered;
 }
 
-void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, dred_color color)
+void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, dtk_color color)
 {
     if (pTabBar == NULL) {
         return;
@@ -338,7 +338,7 @@ void dred_tabbar_set_tab_background_color_active(dred_tabbar* pTabBar, dred_colo
     }
 }
 
-dred_color dred_tabbar_get_tab_background_color_actived(dred_tabbar* pTabBar)
+dtk_color dred_tabbar_get_tab_background_color_actived(dred_tabbar* pTabBar)
 {
     if (pTabBar == NULL) {
         return dred_rgb(0, 0, 0);
@@ -915,9 +915,9 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
     }
 
     // Background.
-    dred_color bgcolor = pTabBar->tabBackgroundColor;
-    dred_color closeButtonColor = pTabBar->closeButtonColorDefault;
-    dred_color textColor = pTabBar->tabTextColor;
+    dtk_color bgcolor = pTabBar->tabBackgroundColor;
+    dtk_color closeButtonColor = pTabBar->closeButtonColorDefault;
+    dtk_color textColor = pTabBar->tabTextColor;
 
     if (pTabBar->pHoveredTab == pTab) {
         bgcolor = pTabBar->tabBackgroundColorHovered;

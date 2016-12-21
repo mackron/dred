@@ -34,19 +34,19 @@ void dred_textbox_set_font(dred_textbox* pTextBox, dred_gui_font* pFont);
 dred_gui_font* dred_textbox_get_font(dred_textbox* pTextBox);
 
 // Sets the color of the text in teh given text box.
-void dred_textbox_set_text_color(dred_textbox* pTextBox, dred_color color);
+void dred_textbox_set_text_color(dred_textbox* pTextBox, dtk_color color);
 
 // Sets the background color of the given text box.
-void dred_textbox_set_background_color(dred_textbox* pTextBox, dred_color color);
+void dred_textbox_set_background_color(dred_textbox* pTextBox, dtk_color color);
 
 // Sets the background color of selected text.
-void dred_textbox_set_selection_background_color(dred_textbox* pTextBox, dred_color color);
+void dred_textbox_set_selection_background_color(dred_textbox* pTextBox, dtk_color color);
 
 // Retrieves the background color of selected text.
-dred_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox);
+dtk_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox);
 
 // Sets the background color for the line the caret is currently sitting on.
-void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, dred_color color);
+void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, dtk_color color);
 
 // Sets the width of the text cursor.
 void dred_textbox_set_cursor_width(dred_textbox* pTextBox, float cursorWidth);
@@ -55,10 +55,10 @@ void dred_textbox_set_cursor_width(dred_textbox* pTextBox, float cursorWidth);
 float dred_textbox_get_cursor_width(dred_textbox* pTextBox);
 
 // Sets the color of the cursor of the given text box.
-void dred_textbox_set_cursor_color(dred_textbox* pTextBox, dred_color color);
+void dred_textbox_set_cursor_color(dred_textbox* pTextBox, dtk_color color);
 
 // Sets the border color of the given text box.
-void dred_textbox_set_border_color(dred_textbox* pTextBox, dred_color color);
+void dred_textbox_set_border_color(dred_textbox* pTextBox, dtk_color color);
 
 // Sets the border width of the given text box.
 void dred_textbox_set_border_width(dred_textbox* pTextBox, float borderWidth);
@@ -85,28 +85,28 @@ void dred_textbox_set_line_numbers_padding(dred_textbox* pTextBox, float lineNum
 float dred_textbox_get_line_numbers_padding(dred_textbox* pTextBox);
 
 // Sets the color of the text of the line numbers.
-void dred_textbox_set_line_numbers_color(dred_textbox* pTextBox, dred_color color);
+void dred_textbox_set_line_numbers_color(dred_textbox* pTextBox, dtk_color color);
 
 // Retrieves the color of the text of the line numbers.
-dred_color dred_textbox_get_line_numbers_color(dred_textbox* pTextBox);
+dtk_color dred_textbox_get_line_numbers_color(dred_textbox* pTextBox);
 
 // Sets the color of the background of the line numbers.
-void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, dred_color color);
+void dred_textbox_set_line_numbers_background_color(dred_textbox* pTextBox, dtk_color color);
 
 // Retrieves the color of the background of the line numbers.
-dred_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBox);
+dtk_color dred_textbox_get_line_numbers_background_color(dred_textbox* pTextBox);
 
 // Sets the color of the track of the scrollbars.
-void dred_textbox_set_scrollbar_track_color(dred_textbox* pTextBox, dred_color color);
+void dred_textbox_set_scrollbar_track_color(dred_textbox* pTextBox, dtk_color color);
 
 // Sets the color of the thumb of the scrollbars.
-void dred_textbox_set_scrollbar_thumb_color(dred_textbox* pTextBox, dred_color color);
+void dred_textbox_set_scrollbar_thumb_color(dred_textbox* pTextBox, dtk_color color);
 
 // Sets the color of the thumb of the scrollbars while hovered.
-void dred_textbox_set_scrollbar_thumb_color_hovered(dred_textbox* pTextBox, dred_color color);
+void dred_textbox_set_scrollbar_thumb_color_hovered(dred_textbox* pTextBox, dtk_color color);
 
 // Sets the color of the thumb of the scrollbars while pressed.
-void dred_textbox_set_scrollbar_thumb_color_pressed(dred_textbox* pTextBox, dred_color color);
+void dred_textbox_set_scrollbar_thumb_color_pressed(dred_textbox* pTextBox, dtk_color color);
 
 
 // Enables word wrap.
