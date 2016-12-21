@@ -91,17 +91,6 @@
 // - Real-time application guidelines (games, etc.):
 //   - dred_gui_disable_auto_dirty()
 //   - dred_control_draw(pTopLevelControl, 0, 0, viewportWidth, viewportHeight) at the end of every frame after your main loop.
-//
-
-
-//
-// OPTIONS
-//
-// #define DRED_GUI_NO_DR_2D
-//   Disable dr_2d integration. Disabling dr_2d will require you to implement your own drawing callbacks.
-//
-// #define DRED_GUI_NO_TEXT_EDITING
-//   Disables the text box control and text engine.
 
 
 //
@@ -276,8 +265,6 @@ typedef void (* dred_gui_on_change_cursor_proc)        (dred_control* pControl, 
 typedef void (* dred_gui_on_delete_element_proc)       (dred_control* pControl);
 typedef void (* dred_gui_on_log)                       (dred_gui* pGUI, const char* message);
 
-typedef void (* dred_gui_draw_begin_proc)                   (dtk_surface* pSurface);
-typedef void (* dred_gui_draw_end_proc)                     (dtk_surface* pSurface);
 typedef void (* dred_gui_set_clip_proc)                     (dred_rect relativeRect, dtk_surface* pSurface);
 typedef void (* dred_gui_get_clip_proc)                     (dred_rect* pRectOut, dtk_surface* pSurface);
 typedef void (* dred_gui_draw_line_proc)                    (float startX, float startY, float endX, float endY, float width, dtk_color color, dtk_surface* pSurface);
@@ -308,13 +295,9 @@ typedef dr_bool32 (* dred_gui_visible_iteration_proc)(dred_control* pControl, dr
 // Structure containing callbacks for painting routines.
 struct dred_gui_painting_callbacks
 {
-    dred_gui_draw_begin_proc                          drawBegin;
-    dred_gui_draw_end_proc                            drawEnd;
-
     dred_gui_set_clip_proc                            setClip;
     dred_gui_get_clip_proc                            getClip;
 
-    dred_gui_draw_line_proc                           drawLine;
     dred_gui_draw_rect_proc                           drawRect;
     dred_gui_draw_rect_outline_proc                   drawRectOutline;
     dred_gui_draw_rect_with_outline_proc              drawRectWithOutline;
@@ -1237,21 +1220,19 @@ dr_bool32 dred_rect_has_volume(dred_rect rect);
 
 /////////////////////////////////////////////////////////////////
 //
-// DR_2D-SPECIFIC API
+// DTK Interop.
 //
 /////////////////////////////////////////////////////////////////
-#ifndef DRED_GUI_NO_DR_2D
 
-/// A covenience function for creating a new context and registering the easy_draw painting callbacks.
-///
-/// @remarks
-///     This is equivalent to dred_gui_init() followed by dred_gui_register_dr_2d_callbacks().
-dr_bool32 dred_gui_init_dr_2d(dred_gui* pGUI, dred_context* pDred);
+// A covenience function for creating a new context and registering the DTK painting callbacks.
+//
+// @remarks
+//     This is equivalent to dred_gui_init() followed by dred_gui_register_dtk_callbacks().
+dr_bool32 dred_gui_init_dtk(dred_gui* pGUI, dred_context* pDred);
 
-/// Registers the drawing callbacks for use with easy_draw.
-///
-/// @remarks
-///     The user data of each callback is assumed to be a pointer to an easydraw_surface object.
-void dred_gui_register_dr_2d_callbacks(dred_gui* pGUI);
+// Registers the drawing callbacks for use with DTK.
+//
+// @remarks
+//     The user data of each callback is assumed to be a pointer to a dtk_surface object.
+void dred_gui_register_dtk_callbacks(dred_gui* pGUI);
 
-#endif
