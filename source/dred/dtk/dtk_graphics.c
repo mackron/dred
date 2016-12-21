@@ -196,11 +196,11 @@ dtk_result dtk_font_measure_string__gdi(dtk_font* pFont, float scale, const char
     dtk_result result = DTK_ERROR;
     HGDIOBJ hPrevFont = SelectObject((HDC)pFont->pTK->win32.hGraphicsDC, (HFONT)pFont->gdi.hFont);
     {
-        unsigned int textWLength;
+        size_t textWLength;
         wchar_t* textW = dtk__mb_to_wchar__win32(pFont->pTK, text, textSizeInBytes, &textWLength);
         if (textW != NULL) {
             SIZE sizeWin32;
-            if (GetTextExtentPoint32W((HDC)pFont->pTK->win32.hGraphicsDC, textW, textWLength, &sizeWin32)) {
+            if (GetTextExtentPoint32W((HDC)pFont->pTK->win32.hGraphicsDC, textW, (int)textWLength, &sizeWin32)) {
                 if (pWidth)  *pWidth  = (float)sizeWin32.cx;
                 if (pHeight) *pHeight = (float)sizeWin32.cy;
                 result = DTK_SUCCESS;
@@ -225,7 +225,7 @@ dtk_result dtk_font_get_text_cursor_position_from_point__gdi(dtk_font* pFont, fl
         results.lStructSize = sizeof(results);
         results.nGlyphs     = (UINT)textSizeInBytes;
 
-        unsigned int textWLength;
+        size_t textWLength;
         wchar_t* textW = dtk__mb_to_wchar__win32(pFont->pTK, text, textSizeInBytes, &textWLength);
         if (textW != NULL) {
             if (results.nGlyphs > pFont->pTK->win32.glyphCacheSize) {
@@ -295,7 +295,7 @@ dtk_result dtk_font_get_text_cursor_position_from_char__gdi(dtk_font* pFont, flo
         results.lStructSize = sizeof(results);
         results.nGlyphs     = (DWORD)(characterIndex + 1);
 
-        unsigned int textWLength;
+        size_t textWLength;
         wchar_t* textW = dtk__mb_to_wchar__win32(pFont->pTK, text, (int)results.nGlyphs, &textWLength);
         if (textW != NULL) {
             if (results.nGlyphs > pFont->pTK->win32.glyphCacheSize) {
@@ -459,7 +459,7 @@ void dtk_surface_draw_text__gdi(dtk_surface* pSurface, dtk_font* pFont, float sc
             options |= ETO_CLIPPED;
 
             SIZE textSize = {0, 0};
-            GetTextExtentPoint32W(hDC, textW, textWLength, &textSize);
+            GetTextExtentPoint32W(hDC, textW, (int)textWLength, &textSize);
             rect.left   = (LONG)posX;
             rect.top    = (LONG)posY;
             rect.right  = (LONG)(posX + textSize.cx);
@@ -467,7 +467,7 @@ void dtk_surface_draw_text__gdi(dtk_surface* pSurface, dtk_font* pFont, float sc
         }
 
         SetTextColor(hDC, RGB(fgColor.r, fgColor.g, fgColor.b));
-        ExtTextOutW(hDC, (int)posX, (int)posY, options, &rect, textW, textWLength, NULL);
+        ExtTextOutW(hDC, (int)posX, (int)posY, options, &rect, textW, (int)textWLength, NULL);
     }
 }
 

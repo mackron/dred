@@ -264,7 +264,7 @@ void dred_menu_library_update_themes_menu(dred_menu_library* pLibrary)
 void dred_refresh_recent_files_menu(dred_context* pDred)
 {
     // To refresh the list, we just overwrite any existing items, and then remove the excess, if any.
-    dtk_uint32 newCount = pDred->config.recentFileCount;
+    dtk_uint32 newCount = (dtk_uint32)pDred->config.recentFileCount;
     dtk_uint32 oldCount;
     dtk_menu_get_item_count(&pDred->menus.recentFiles, &oldCount);
 
@@ -323,7 +323,7 @@ void dred_refresh_recent_files_menu(dred_context* pDred)
 void dred_refresh_favourite_files_menu(dred_context* pDred)
 {
     // To refresh the list, we just overwrite any existing items, and then remove the excess, if any.
-    dtk_uint32 newCount = pDred->config.favouriteFileCount;
+    dtk_uint32 newCount = (dtk_uint32)pDred->config.favouriteFileCount;
     dtk_uint32 oldCount;
     dtk_menu_get_item_count(&pDred->menus.favouriteFiles, &oldCount);
 

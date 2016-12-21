@@ -179,7 +179,7 @@ void dred_build__format_shortcut_init_string(char* shortcutInitStr, size_t short
 {
     // The key string is just an accelerator string. We just pass that using DTK.
     dtk_accelerator accelerators[4];
-    size_t acceleratorCount = sizeof(accelerators) / sizeof(accelerators[0]);
+    dtk_uint32 acceleratorCount = sizeof(accelerators) / sizeof(accelerators[0]);
     if (dtk_accelerator_parse_chord(keyStr, accelerators, &acceleratorCount) != DTK_SUCCESS) {
         printf("[SHORTCUTS] ERROR: Failed to parse key combination: %s", keyStr);
         return;
@@ -223,7 +223,7 @@ void dred_build__generate_shortcuts(FILE* pFileOut, FILE* pFileOutH, dred_string
     struct json_parse_result_s resultJSON;
     struct json_value_s* pJSON = json_parse_ex(shortcutsFileData, shortcutsFileSize, json_parse_flags_allow_c_style_comments, NULL, NULL, &resultJSON);
     if (pJSON == NULL) {
-        printf("dred_shortcuts.json (%d): %s\n", resultJSON.error_line_no, dred_build__json_error_to_string(resultJSON.error));
+        printf("dred_shortcuts.json (%u): %s\n", (unsigned int)resultJSON.error_line_no, dred_build__json_error_to_string(resultJSON.error));
         return;
     }
 
@@ -270,7 +270,7 @@ void dred_build__generate_shortcuts(FILE* pFileOut, FILE* pFileOutH, dred_string
             dred_build__shortcut* pShortcut = &context.pShortcuts[i];
 
             dtk_accelerator accelerators[4];
-            size_t acceleratorCount = sizeof(accelerators) / sizeof(accelerators[0]);
+            dtk_uint32 acceleratorCount = sizeof(accelerators) / sizeof(accelerators[0]);
             if (dtk_accelerator_parse_chord(pShortcut->key, accelerators, &acceleratorCount) != DTK_SUCCESS) {
                 printf("[SHORTCUTS] ERROR: Failed to parse key combination: %s", pShortcut->key);
                 return;
@@ -279,7 +279,7 @@ void dred_build__generate_shortcuts(FILE* pFileOut, FILE* pFileOutH, dred_string
             for (size_t iAccel = 0; iAccel < acceleratorCount; ++iAccel) {
                 char accelInitStr[256];
                 dred_build__format_accelerator_init_string(accelInitStr, sizeof(accelInitStr), accelerators[0]);
-                fprintf(pFileOut, "    accelerators[%u] = %s;\n", iAccel, accelInitStr);
+                fprintf(pFileOut, "    accelerators[%u] = %s;\n", (unsigned int)iAccel, accelInitStr);
             }
 
 
@@ -291,7 +291,7 @@ void dred_build__generate_shortcuts(FILE* pFileOut, FILE* pFileOutH, dred_string
             char nameStr[256];
             dred_build__format_shortcut_name_macro(context.pShortcuts[i].id, nameStr);
 
-            fprintf(pFileOut, "    dred_bind_shortcut(pDred, %s, %s, \"%s\", %d, accelerators);", idStr, nameStr, cmdStr, acceleratorCount);
+            fprintf(pFileOut, "    dred_bind_shortcut(pDred, %s, %s, \"%s\", %u, accelerators);", idStr, nameStr, cmdStr, acceleratorCount);
 
             if (i != stb_sb_count(context.pShortcuts)-1) {
                 fprintf(pFileOut, "\n\n");

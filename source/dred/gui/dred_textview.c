@@ -1543,7 +1543,7 @@ void dred_textview_center_on_cursor(dred_textview* pTextView)
         return;
     }
 
-    dred_scrollbar_scroll_to(pTextView->pVertScrollbar, dred_textview_get_cursor_line(pTextView) - (dred_scrollbar_get_page_size(pTextView->pVertScrollbar)/2));
+    dred_scrollbar_scroll_to(pTextView->pVertScrollbar, (int)(dred_textview_get_cursor_line(pTextView) - (dred_scrollbar_get_page_size(pTextView->pVertScrollbar)/2)));
 }
 
 

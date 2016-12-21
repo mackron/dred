@@ -94,7 +94,7 @@ dtk_result dtk_menu_insert_item__win32(dtk_menu* pMenu, dtk_uint32 index, dtk_me
     } else {
         mii.fMask |= MIIM_STRING;
         mii.fType = MFT_STRING;
-        mii.cch = strlen(pInfo->text);
+        mii.cch = (UINT)strlen(pInfo->text);
         mii.dwTypeData = (LPSTR)pInfo->text;
     }
 
@@ -133,7 +133,7 @@ dtk_result dtk_menu_set_item_text__win32(dtk_menu* pMenu, dtk_uint32 index, cons
     mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_FTYPE | MIIM_STRING;
     mii.fType = MFT_STRING;
-    mii.cch = strlen(text);
+    mii.cch = (UINT)strlen(text);
     mii.dwTypeData = (LPSTR)text;
     BOOL wasSuccessful = SetMenuItemInfoA((HMENU)pMenu->win32.hMenu, index, TRUE, &mii);
     if (!wasSuccessful) {

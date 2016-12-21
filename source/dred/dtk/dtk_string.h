@@ -237,7 +237,7 @@ DTK_INLINE dtk_uint32 dtk_utf32_to_utf16_ch(dtk_uint32 utf32, dtk_uint16 utf16[2
 // Converts a UTF-32 character to a UTF-8 character. Returns the number of bytes making up the UTF-8 character.
 DTK_INLINE dtk_uint32 dtk_utf32_to_utf8_ch(dtk_uint32 utf32, char* utf8, size_t utf8Size)
 {
-    size_t utf8ByteCount = 0;
+    dtk_uint32 utf8ByteCount = 0;
     if (utf32 < 0x80) {
         utf8ByteCount = 1;
     } else if (utf32 < 0x800) {

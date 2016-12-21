@@ -255,7 +255,7 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
     struct json_parse_result_s resultJSON;
     struct json_value_s* pJSON = json_parse_ex(menusFileData, menusFileSize, json_parse_flags_allow_c_style_comments, NULL, NULL, &resultJSON);
     if (pJSON == NULL) {
-        printf("dred_menus.json (%d): %s\n", resultJSON.error_line_no, dred_build__json_error_to_string(resultJSON.error));
+        printf("dred_menus.json (%u): %s\n", (unsigned int)resultJSON.error_line_no, dred_build__json_error_to_string(resultJSON.error));
         return;
     }
 
@@ -418,8 +418,8 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
                 dred_build__format_menu_item_id_macro(context.pAllItems[iItem].id, idMacroStr);
 
                 fprintf(pFileOut, "    pTable->pItems[%s].id = %s;\n", idMacroStr, idMacroStr);
-                fprintf(pFileOut, "    pTable->pItems[%s].commandStrOffset = %d;\n", idMacroStr, dred_string_pool_find_or_add(pStringPool, pItem->cmd));
-                fprintf(pFileOut, "    pTable->pItems[%s].shortcutStrOffset = %d;\n", idMacroStr, dred_string_pool_find_or_add(pStringPool, pItem->shortcut));
+                fprintf(pFileOut, "    pTable->pItems[%s].commandStrOffset = %u;\n", idMacroStr, (unsigned int)dred_string_pool_find_or_add(pStringPool, pItem->cmd));
+                fprintf(pFileOut, "    pTable->pItems[%s].shortcutStrOffset = %u;\n", idMacroStr, (unsigned int)dred_string_pool_find_or_add(pStringPool, pItem->shortcut));
                 //fprintf(pFileOut, "    pTable->pItems[%s].commandStrOffset = dred_string_pool_find_or_add(&pDred->stringPool, \"%s\");\n", idMacroStr, pItem->cmd);
                 //fprintf(pFileOut, "    pTable->pItems[%s].shortcutStrOffset = dred_string_pool_find_or_add(&pDred->stringPool, \"%s\");\n", idMacroStr, pItem->shortcut);
 

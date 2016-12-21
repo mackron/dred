@@ -689,7 +689,7 @@ wchar_t* dtk__mb_to_wchar__win32(dtk_context* pTK, const char* text, size_t text
         goto fallback;
     }
 
-    wcharCount = MultiByteToWideChar(CP_UTF8, 0, text, (int)textSizeInBytes, (wchar_t*)pTK->win32.pCharConvBuffer, pTK->win32.charConvBufferSize);
+    wcharCount = MultiByteToWideChar(CP_UTF8, 0, text, (int)textSizeInBytes, (wchar_t*)pTK->win32.pCharConvBuffer, (int)pTK->win32.charConvBufferSize);
     if (wcharCount != 0) {
         if (pCharacterCount) *pCharacterCount = (size_t)wcharCount;
         return (wchar_t*)pTK->win32.pCharConvBuffer;
@@ -708,7 +708,7 @@ fallback:;
         pTK->win32.charConvBufferSize = wcharCount + 1;
     }
 
-    wcharCount = MultiByteToWideChar(CP_UTF8, 0, text, (int)textSizeInBytes, (wchar_t*)pTK->win32.pCharConvBuffer, pTK->win32.charConvBufferSize);
+    wcharCount = MultiByteToWideChar(CP_UTF8, 0, text, (int)textSizeInBytes, (wchar_t*)pTK->win32.pCharConvBuffer, (int)pTK->win32.charConvBufferSize);
     if (wcharCount == 0) {
         return NULL;
     }
