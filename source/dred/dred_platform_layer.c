@@ -671,7 +671,7 @@ void dred_window_on_mouse_wheel(dred_window* pWindow, int delta, int mousePosX, 
     dred_gui_post_inbound_event_mouse_wheel(pWindow->pRootGUIControl, delta, mousePosX, mousePosY, stateFlags);
 }
 
-void dred_window_on_key_down(dred_window* pWindow, dred_key key, unsigned int stateFlags)
+void dred_window_on_key_down(dred_window* pWindow, dtk_key key, unsigned int stateFlags)
 {
     if (pWindow->onKeyDown) {
         pWindow->onKeyDown(pWindow, key, stateFlags);
@@ -682,7 +682,7 @@ void dred_window_on_key_down(dred_window* pWindow, dred_key key, unsigned int st
     }
 }
 
-void dred_window_on_key_up(dred_window* pWindow, dred_key key, unsigned int stateFlags)
+void dred_window_on_key_up(dred_window* pWindow, dtk_key key, unsigned int stateFlags)
 {
     if (pWindow->onKeyUp) {
         pWindow->onKeyUp(pWindow, key, stateFlags);

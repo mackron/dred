@@ -1978,7 +1978,7 @@ void dred_textview__move_cursor_right(dred_textview* pTextView, size_t iCursor, 
     }
 }
 
-void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFlags)
+void dred_textview_on_key_down(dred_control* pControl, dtk_key key, int stateFlags)
 {
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     if (pTextView == NULL) {
@@ -2250,7 +2250,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
     drte_view_end_dirty(pTextView->pView);
 }
 
-void dred_textview_on_key_up(dred_control* pControl, dred_key key, int stateFlags)
+void dred_textview_on_key_up(dred_control* pControl, dtk_key key, int stateFlags)
 {
     (void)pControl;
     (void)key;

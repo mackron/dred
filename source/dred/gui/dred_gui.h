@@ -151,8 +151,6 @@ typedef struct dred_gui_painting_callbacks dred_gui_painting_callbacks;
 typedef struct dred_gui_font dred_gui_font;
 typedef struct dred_gui_image dred_gui_image;
 
-typedef unsigned int dred_key;
-
 
 // Casts a pointer to any structure to a dred_control*. Note that this will only work if the dred_control object
 // is at the first byte of the structure.
@@ -251,8 +249,8 @@ typedef void (* dred_gui_on_mouse_button_down_proc)    (dred_control* pControl, 
 typedef void (* dred_gui_on_mouse_button_up_proc)      (dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 typedef void (* dred_gui_on_mouse_button_dblclick_proc)(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 typedef void (* dred_gui_on_mouse_wheel_proc)          (dred_control* pControl, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
-typedef void (* dred_gui_on_key_down_proc)             (dred_control* pControl, dred_key key, int stateFlags);
-typedef void (* dred_gui_on_key_up_proc)               (dred_control* pControl, dred_key key, int stateFlags);
+typedef void (* dred_gui_on_key_down_proc)             (dred_control* pControl, dtk_key key, int stateFlags);
+typedef void (* dred_gui_on_key_up_proc)               (dred_control* pControl, dtk_key key, int stateFlags);
 typedef void (* dred_gui_on_printable_key_down_proc)   (dred_control* pControl, unsigned int character, int stateFlags);
 typedef void (* dred_gui_on_paint_proc)                (dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
 typedef void (* dred_gui_on_dirty_proc)                (dred_control* pControl, dred_rect relativeRect);
@@ -603,10 +601,10 @@ void dred_gui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelCo
 void dred_gui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
 
 /// Posts a key down inbound event.
-void dred_gui_post_inbound_event_key_down(dred_gui* pGUI, dred_key key, int stateFlags);
+void dred_gui_post_inbound_event_key_down(dred_gui* pGUI, dtk_key key, int stateFlags);
 
 /// Posts a key up inbound event.
-void dred_gui_post_inbound_event_key_up(dred_gui* pGUI, dred_key key, int stateFlags);
+void dred_gui_post_inbound_event_key_up(dred_gui* pGUI, dtk_key key, int stateFlags);
 
 /// Posts a printable key down inbound event.
 ///

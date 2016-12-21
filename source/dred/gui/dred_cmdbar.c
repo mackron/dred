@@ -189,7 +189,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dred_control* p
     dred_textview_on_release_keyboard(DRED_CONTROL(pTextBox), pNextCapturedControl);
 }
 
-void dred_cmdbar_tb__on_key_down(dred_control* pControl, dred_key key, int stateFlags)
+void dred_cmdbar_tb__on_key_down(dred_control* pControl, dtk_key key, int stateFlags)
 {
     (void)stateFlags;
 

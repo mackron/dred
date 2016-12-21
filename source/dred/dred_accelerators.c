@@ -104,7 +104,7 @@ dred_accelerator dred_accelerator_none()
     return result;
 }
 
-dred_accelerator dred_accelerator_create(dred_key key, uint32_t modifiers)
+dred_accelerator dred_accelerator_create(dtk_key key, uint32_t modifiers)
 {
     dred_accelerator result;
     result.key = key;

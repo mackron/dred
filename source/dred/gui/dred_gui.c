@@ -100,8 +100,8 @@ void dred_control__post_outbound_event_mouse_button_down(dred_control* pControl,
 void dred_control__post_outbound_event_mouse_button_up(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 void dred_control__post_outbound_event_mouse_button_dblclick(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 void dred_control__post_outbound_event_mouse_wheel(dred_control* pControl, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
-void dred_control__post_outbound_event_key_down(dred_control* pControl, dred_key key, int stateFlags);
-void dred_control__post_outbound_event_key_up(dred_control* pControl, dred_key key, int stateFlags);
+void dred_control__post_outbound_event_key_down(dred_control* pControl, dtk_key key, int stateFlags);
+void dred_control__post_outbound_event_key_up(dred_control* pControl, dtk_key key, int stateFlags);
 void dred_control__post_outbound_event_printable_key_down(dred_control* pControl, unsigned int character, int stateFlags);
 void dred_control__post_outbound_event_dirty(dred_control* pControl, dred_rect relativeRect);
 void dred_control__post_outbound_event_dirty_global(dred_control* pControl, dred_rect relativeRect);
@@ -446,14 +446,14 @@ void dred_control__post_outbound_event_mouse_wheel(dred_control* pControl, int d
     }
 }
 
-void dred_control__post_outbound_event_key_down(dred_control* pControl, dred_key key, int stateFlags)
+void dred_control__post_outbound_event_key_down(dred_control* pControl, dtk_key key, int stateFlags)
 {
     if (pControl->onKeyDown) {
         pControl->onKeyDown(pControl, key, stateFlags);
     }
 }
 
-void dred_control__post_outbound_event_key_up(dred_control* pControl, dred_key key, int stateFlags)
+void dred_control__post_outbound_event_key_up(dred_control* pControl, dtk_key key, int stateFlags)
 {
     if (pControl->onKeyUp) {
         pControl->onKeyUp(pControl, key, stateFlags);
@@ -757,7 +757,7 @@ void dred_gui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int
     }
 }
 
-void dred_gui_post_inbound_event_key_down(dred_gui* pGUI, dred_key key, int stateFlags)
+void dred_gui_post_inbound_event_key_down(dred_gui* pGUI, dtk_key key, int stateFlags)
 {
     if (pGUI == NULL) {
         return;
@@ -768,7 +768,7 @@ void dred_gui_post_inbound_event_key_down(dred_gui* pGUI, dred_key key, int stat
     }
 }
 
-void dred_gui_post_inbound_event_key_up(dred_gui* pGUI, dred_key key, int stateFlags)
+void dred_gui_post_inbound_event_key_up(dred_gui* pGUI, dtk_key key, int stateFlags)
 {
     if (pGUI == NULL) {
         return;

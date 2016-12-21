@@ -451,10 +451,10 @@ void dred_textview_on_mouse_button_dblclick(dred_control* pControl, int mouseBut
 void dred_textview_on_mouse_wheel(dred_control* pControl, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 // on_key_down.
-void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFlags);
+void dred_textview_on_key_down(dred_control* pControl, dtk_key key, int stateFlags);
 
 // on_key_up.
-void dred_textview_on_key_up(dred_control* pControl, dred_key key, int stateFlags);
+void dred_textview_on_key_up(dred_control* pControl, dtk_key key, int stateFlags);
 
 // on_printable_key_down.
 void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int utf32, int stateFlags);

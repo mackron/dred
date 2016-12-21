@@ -159,7 +159,7 @@ void dred_about_dialog__on_window_close(dred_window* pWindow)
     pDred->pAboutDialog = NULL;
 }
 
-/*void dred_about_dialog__on_key_down(dred_window* pWindow, dred_key key, unsigned int stateFlags)
+/*void dred_about_dialog__on_key_down(dred_window* pWindow, dtk_key key, unsigned int stateFlags)
 {
     (void)stateFlags;
 

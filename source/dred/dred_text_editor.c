@@ -49,7 +49,7 @@ void dred_text_editor__on_capture_keyboard(dred_control* pControl, dred_control*
     dred_capture_keyboard(dred_control_get_context(pControl), DRED_CONTROL(pTextView));
 }
 
-void dred_text_editor_textview__on_key_down(dred_control* pControl, dred_key key, int stateFlags)
+void dred_text_editor_textview__on_key_down(dred_control* pControl, dtk_key key, int stateFlags)
 {
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);

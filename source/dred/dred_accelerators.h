@@ -18,7 +18,7 @@ dr_bool32 dred_accelerator_table_find(dred_accelerator_table* pTable, dtk_accele
 #if 0
 // Creates an empty accelerator object.
 dred_accelerator dred_accelerator_none();
-dred_accelerator dred_accelerator_create(dred_key key, uint32_t modifiers);
+dred_accelerator dred_accelerator_create(dtk_key key, uint32_t modifiers);
 dred_accelerator dred_accelerator_parse(const char* accelStr);
 dr_bool32 dred_accelerator_equal(dred_accelerator a, dred_accelerator b);
 size_t dred_accelerator_to_string(dred_accelerator accelerator, char* strOut, size_t strOutSize);
