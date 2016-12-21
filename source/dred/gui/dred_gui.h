@@ -170,15 +170,6 @@ typedef unsigned int dred_key;
 // is at the first byte of the structure.
 #define DRED_CONTROL(a) ((dred_control*)(a))
 
-/// Image formats.
-typedef enum
-{
-    dred_gui_image_format_rgba8,
-    dred_gui_image_format_bgra8,
-    dred_gui_image_format_argb8,
-} dred_gui_image_format;
-
-
 /// Structure representing an RGBA color. Color components are specified in the range of 0 - 255.
 struct dred_color
 {
