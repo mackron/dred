@@ -54,7 +54,7 @@ void dred_text_editor_textview__on_key_down(dred_control* pControl, dred_key key
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);
 
-    if (key == DRED_GUI_ESCAPE) {
+    if (key == DTK_KEY_ESCAPE) {
         dred_focus_command_bar(dred_control_get_context(pControl));
     } else {
         dred_textview_on_key_down(DRED_CONTROL(pTextView), key, stateFlags);

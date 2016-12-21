@@ -1996,18 +1996,18 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
 
     switch (key)
     {
-        case DRED_GUI_BACKSPACE:
+        case DTK_KEY_BACKSPACE:
         {
             dred_textview_do_backspace(pTextView, stateFlags);
         } break;
 
-        case DRED_GUI_DELETE:
+        case DTK_KEY_DELETE:
         {
             dred_textview_do_delete(pTextView, stateFlags);
         } break;
 
 
-        case DRED_GUI_ARROW_LEFT:
+        case DTK_KEY_ARROW_LEFT:
         {
             if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview__move_cursor_to_start_of_selection(pTextView, NULL);
@@ -2032,7 +2032,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
             }
         } break;
 
-        case DRED_GUI_ARROW_RIGHT:
+        case DTK_KEY_ARROW_RIGHT:
         {
             if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview__move_cursor_to_end_of_selection(pTextView, NULL);
@@ -2057,7 +2057,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
             }
         } break;
 
-        case DRED_GUI_ARROW_UP:
+        case DTK_KEY_ARROW_UP:
         {
             if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview_deselect_all(pTextView);
@@ -2080,7 +2080,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
             }
         } break;
 
-        case DRED_GUI_ARROW_DOWN:
+        case DTK_KEY_ARROW_DOWN:
         {
             if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview_deselect_all(pTextView);
@@ -2104,7 +2104,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
         } break;
 
 
-        case DRED_GUI_END:
+        case DTK_KEY_END:
         {
             if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview_deselect_all(pTextView);
@@ -2137,7 +2137,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
             drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[drte_view_get_last_cursor(pTextView->pView)]);
         } break;
 
-        case DRED_GUI_HOME:
+        case DTK_KEY_HOME:
         {
             if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview_deselect_all(pTextView);
@@ -2183,7 +2183,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
             drte_view__update_cursor_sticky_position(pTextView->pView, &pTextView->pView->pCursors[iLastCursor]);
         } break;
 
-        case DRED_GUI_PAGE_UP:
+        case DTK_KEY_PAGE_UP:
         {
             if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview_deselect_all(pTextView);
@@ -2211,7 +2211,7 @@ void dred_textview_on_key_down(dred_control* pControl, dred_key key, int stateFl
             }
         } break;
 
-        case DRED_GUI_PAGE_DOWN:
+        case DTK_KEY_PAGE_DOWN:
         {
             if (drte_view_is_anything_selected(pTextView->pView) && !isShiftDown) {
                 dred_textview_deselect_all(pTextView);

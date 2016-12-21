@@ -207,12 +207,12 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dred_key key, int state
 
     switch (key)
     {
-        case DRED_GUI_ESCAPE:
+        case DTK_KEY_ESCAPE:
         {
             dred_unfocus_command_bar(pDred);
         } break;
 
-        case DRED_GUI_ARROW_UP:
+        case DTK_KEY_ARROW_UP:
         {
             if (pCmdBar->iPrevCommand == 0) {
                 // The working command needs to be saved so it can be restored later if the user pressed the down key.
@@ -231,7 +231,7 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dred_key key, int state
             }
         } break;
 
-        case DRED_GUI_ARROW_DOWN:
+        case DTK_KEY_ARROW_DOWN:
         {
             if (pCmdBar->iPrevCommand > 0) {
                 if (dred_cmdbar_set_text_to_previous_command(pCmdBar, pCmdBar->iPrevCommand - 1)) {
