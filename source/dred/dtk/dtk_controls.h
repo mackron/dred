@@ -90,3 +90,17 @@ dtk_result dtk_control_forbid_keyboard_capture(dtk_control* pControl);
 //
 // This is recursive because capture allowance depends on the ancestory.
 dtk_bool32 dtk_control_is_keyboard_capture_allowed(dtk_control* pControl);
+
+
+// Helper function for giving a control the keyboard capture. This will fail if keyboard capture is forbidden for the control.
+dtk_result dtk_control_capture_keyboard(dtk_control* pControl);
+
+// Helper function for determining whether or not the given control has the keyboard capture.
+dtk_bool32 dtk_control_has_keyboard_capture(dtk_control* pControl);
+
+
+// Helper function for giving a control the mouse capture. This will fail if mouse capture is forbidden for the control.
+dtk_result dtk_control_capture_mouse(dtk_control* pControl);
+
+// Helper function for determining whether or not the given control has the mouse capture.
+dtk_bool32 dtk_control_has_mouse_capture(dtk_control* pControl);

@@ -215,6 +215,11 @@ dtk_result dtk_control_allow_keyboard_capture(dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
+    // If keyboard capture is already allowed just pretend it was successful.
+    if ((pControl->flags & DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE) == 0) {
+        return DTK_SUCCESS;
+    }
+
     pControl->flags &= ~DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE;
     return DTK_SUCCESS;
 }
@@ -223,9 +228,14 @@ dtk_result dtk_control_forbid_keyboard_capture(dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
-    //if (dtk_control_has_keyboard_capture(pControl)) {
-    //    dtk_release_keyboard(pControl);
-    //}
+    // If keyboard capture is already forbidden just pretend it was successful.
+    if ((pControl->flags & DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE) != 0) {
+        return DTK_SUCCESS;
+    }
+
+    if (dtk_control_has_keyboard_capture(pControl)) {
+        dtk_release_keyboard(pControl->pTK);
+    }
 
     pControl->flags |= DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE;
     return DTK_SUCCESS;
@@ -244,4 +254,33 @@ dtk_bool32 dtk_control_is_keyboard_capture_allowed(dtk_control* pControl)
     }
 
     return DTK_TRUE;
+}
+
+
+dtk_result dtk_control_capture_keyboard(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+    return dtk_capture_keyboard(pControl->pTK, pControl);
+}
+
+dtk_bool32 dtk_control_has_keyboard_capture(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_FALSE;
+    return pControl == pControl->pTK->pControlWithKeyboardCapture;
+}
+
+
+dtk_result dtk_control_capture_mouse(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    // TODO: Implement me.
+    //return dtk_capture_mouse(pControl->pTK, pControl);
+    return DTK_ERROR;
+}
+
+dtk_bool32 dtk_control_has_mouse_capture(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_FALSE;
+    return pControl == pControl->pTK->pControlWithMouseCapture;
 }
