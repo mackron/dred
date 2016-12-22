@@ -69,17 +69,14 @@
 #endif
 
 
-DTK_INLINE dtk_event dtk_event_init(dtk_event_type type, dtk_control* pControl)
+DTK_INLINE dtk_event dtk_event_init(dtk_context* pTK, dtk_event_type type, dtk_control* pControl)
 {
     dtk_event e;
     dtk_zero_object(&e);
+    e.pTK = pTK;
     e.type = type;
-    
-    if (pControl) {
-        e.pTK = pControl->pTK;
-        e.pControl = pControl;
-    }
-    
+    e.pControl = pControl;
+
     return e;
 }
 
@@ -181,10 +178,10 @@ dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
 
 // When capturing the keyboard and mouse on a control it must be completed by capturing the window
 // that owns said control. The functions below are used for this.
-dtk_result dtk__capture_keyboard(dtk_context* pTK, dtk_window* pWindow);
-dtk_result dtk__release_keyboard(dtk_context* pTK);
-dtk_result dtk__capture_mouse(dtk_context* pTK, dtk_window* pWindow);
-dtk_result dtk__release_mouse(dtk_context* pTK);
+dtk_result dtk__capture_keyboard_window(dtk_context* pTK, dtk_window* pWindow);
+dtk_result dtk__release_keyboard_window(dtk_context* pTK);
+dtk_result dtk__capture_mouse_window(dtk_context* pTK, dtk_window* pWindow);
+dtk_result dtk__release_mouse_window(dtk_context* pTK);
 
 #ifdef DTK_WIN32
 typedef BOOL    (WINAPI * DTK_PFN_InitCommonControlsEx)(const LPINITCOMMONCONTROLSEX lpInitCtrls);
@@ -227,7 +224,8 @@ typedef struct
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DTK_WIN32
-#define DTK_WM_CUSTOM   (WM_USER + 0)
+#define DTK_WM_LOCAL    (WM_USER + 0)
+#define DTK_WM_CUSTOM   (WM_USER + 1)
 
 static dtk_uint32 g_dtkInitCounter_Win32 = 0;
 
@@ -335,20 +333,21 @@ LRESULT CALLBACK dtk_MessagingWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam
 {
     switch (msg)
     {
+        case DTK_WM_LOCAL:
+        {
+            dtk_event* pEvent = (dtk_event*)lParam;
+            dtk_assert(pEvent != NULL);
+
+            dtk_handle_local_event(pEvent->pTK, pEvent);
+            dtk_free(pEvent);
+        } break;
+
         case DTK_WM_CUSTOM:
         {
             dtk_custom_event_data* pEventData = (dtk_custom_event_data*)lParam;
             dtk_assert(pEventData != NULL);
 
-            dtk_event e;
-            e.type = DTK_EVENT_CUSTOM;
-            e.pTK = pEventData->pTK;
-            e.pControl = pEventData->pControl;
-            e.custom.id = pEventData->eventID;
-            e.custom.dataSize = pEventData->dataSize;
-            e.custom.pData = pEventData->pData;
-            dtk__handle_event(&e);
-
+            dtk_handle_custom_event(pEventData->pTK, pEventData->pControl, pEventData->eventID, pEventData->pData, pEventData->dataSize);
             dtk_free(pEventData);
         } break;
 
@@ -492,7 +491,20 @@ dtk_result dtk_next_event__win32(dtk_context* pTK, dtk_bool32 blocking)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_post_event__win32(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
+dtk_result dtk_post_local_event__win32(dtk_context* pTK, dtk_event* pEvent)
+{
+    dtk_event* pEventCopy = (dtk_event*)dtk_malloc(sizeof(*pEventCopy));
+    if (pEventCopy == NULL) {
+        return DTK_OUT_OF_MEMORY;
+    }
+
+    *pEventCopy = *pEvent;
+    SendMessageA(pTK->win32.hMessagingWindow, DTK_WM_LOCAL, (WPARAM)0, (LPARAM)pEventCopy);
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_post_custom_event__win32(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
 {
     // We need a copy of the data. This will be freed in dtk_GenericWindowProc().
     dtk_custom_event_data* pEventData = (dtk_custom_event_data*)dtk_malloc(sizeof(dtk_custom_event_data) + dataSize);
@@ -644,7 +656,7 @@ dtk_result dtk_get_system_dpi__win32(dtk_context* pTK, int* pDPIXOut, int* pDPIY
 }
 
 
-dtk_result dtk__capture_keyboard__win32(dtk_context* pTK, dtk_window* pWindow)
+dtk_result dtk__capture_keyboard_window__win32(dtk_context* pTK, dtk_window* pWindow)
 {
     (void)pTK;
 
@@ -652,7 +664,7 @@ dtk_result dtk__capture_keyboard__win32(dtk_context* pTK, dtk_window* pWindow)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk__release_keyboard__win32(dtk_context* pTK)
+dtk_result dtk__release_keyboard_window__win32(dtk_context* pTK)
 {
     (void)pTK;
 
@@ -660,7 +672,7 @@ dtk_result dtk__release_keyboard__win32(dtk_context* pTK)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk__capture_mouse__win32(dtk_context* pTK, dtk_window* pWindow)
+dtk_result dtk__capture_mouse_window__win32(dtk_context* pTK, dtk_window* pWindow)
 {
     (void)pTK;
 
@@ -668,7 +680,7 @@ dtk_result dtk__capture_mouse__win32(dtk_context* pTK, dtk_window* pWindow)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk__release_mouse__win32(dtk_context* pTK)
+dtk_result dtk__release_mouse_window__win32(dtk_context* pTK)
 {
     (void)pTK;
 
@@ -907,22 +919,39 @@ dtk_result dtk_next_event__gtk(dtk_context* pTK, dtk_bool32 blocking)
     return DTK_SUCCESS;
 }
 
-static gboolean dtk_post_event_cb__gtk(dtk_custom_event_data* pEventData)
+
+static gboolean dtk_post_local_event_cb__gtk(dtk_event* pEvent)
 {
-    dtk_event e;
-    e.type = DTK_EVENT_CUSTOM;
-    e.pTK = pEventData->pTK;
-    e.pControl = pEventData->pControl;
-    e.custom.id = pEventData->eventID;
-    e.custom.dataSize = pEventData->dataSize;
-    e.custom.pData = pEventData->pData;
-    dtk__handle_event(&e);
+    dtk_handle_local_event(pEvent->pTK, pEvent);
+
+    dtk_free(pEvent);
+    return FALSE;
+}
+
+dtk_result dtk_post_local_event__gtk(dtk_context* pTK, dtk_event* pEvent)
+{
+    // We need a copy of the data. This will be freed in dtk_GenericWindowProc().
+    dtk_event* pEventCopy = (dtk_event*)dtk_malloc(sizeof(*pEventCopy));
+    if (pEventCopy == NULL) {
+        return DTK_OUT_OF_MEMORY;
+    }
+
+    *pEventCopy = *pEvent;
+    
+    g_idle_add((GSourceFunc)dtk_post_local_event_cb__gtk, pEventCopy);
+    return DTK_SUCCESS;
+}
+
+
+static gboolean dtk_post_custom_event_cb__gtk(dtk_custom_event_data* pEventData)
+{
+    dtk_handle_custom_event(pEventData->pTK, pEventData->pControl, pEventData->eventID, pEventData->pData, pEventData->dataSize);
 
     dtk_free(pEventData);
     return FALSE;
 }
 
-dtk_result dtk_post_event__gtk(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
+dtk_result dtk_post_custom_event__gtk(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
 {
     // We need a copy of the data. This will be freed in dtk_GenericWindowProc().
     dtk_custom_event_data* pEventData = (dtk_custom_event_data*)dtk_malloc(sizeof(dtk_custom_event_data) + dataSize);
@@ -936,9 +965,10 @@ dtk_result dtk_post_event__gtk(dtk_context* pTK, dtk_control* pControl, dtk_uint
     pEventData->dataSize = dataSize;
     if (pData != NULL && dataSize > 0) memcpy(pEventData->pData, pData, dataSize);
     
-    g_idle_add((GSourceFunc)dtk_post_event_cb__gtk, pEventData);
+    g_idle_add((GSourceFunc)dtk_post_custom_event_cb__gtk, pEventData);
     return DTK_SUCCESS;
 }
+
 
 dtk_result dtk_post_quit_event__gtk(dtk_context* pTK, int exitCode)
 {
@@ -1079,7 +1109,7 @@ dtk_result dtk_get_system_dpi__gtk(dtk_context* pTK, int* pDPIXOut, int* pDPIYOu
     return DTK_SUCCESS;
 }
 
-dtk_result dtk__capture_keyboard__gtk(dtk_context* pTK, dtk_window* pWindow)
+dtk_result dtk__capture_keyboard_window__gtk(dtk_context* pTK, dtk_window* pWindow)
 {
     (void)pTK;
 
@@ -1087,7 +1117,7 @@ dtk_result dtk__capture_keyboard__gtk(dtk_context* pTK, dtk_window* pWindow)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk__release_keyboard__gtk(dtk_context* pTK)
+dtk_result dtk__release_keyboard_window__gtk(dtk_context* pTK)
 {
     (void)pTK;
 
@@ -1096,7 +1126,7 @@ dtk_result dtk__release_keyboard__gtk(dtk_context* pTK)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk__capture_mouse__gtk(dtk_context* pTK, dtk_window* pWindow)
+dtk_result dtk__capture_mouse_window__gtk(dtk_context* pTK, dtk_window* pWindow)
 {
     (void)pTK;
 
@@ -1111,7 +1141,7 @@ dtk_result dtk__capture_mouse__gtk(dtk_context* pTK, dtk_window* pWindow)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk__release_mouse__gtk(dtk_context* pTK)
+dtk_result dtk__release_mouse_window__gtk(dtk_context* pTK)
 {
     (void)pTK;
 
@@ -1193,23 +1223,68 @@ dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking)
     return result;
 }
 
-dtk_result dtk_post_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
+dtk_result dtk_post_local_event(dtk_context* pTK, dtk_event* pEvent)
+{
+    if (pTK == NULL || pEvent == NULL || pEvent->pControl == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk_post_local_event__win32(pTK, pEvent);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk_post_local_event__gtk(pTK, pEvent);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent)
+{
+    if (pTK == NULL || pEvent == NULL || pEvent->pControl == NULL) return DTK_INVALID_ARGS;
+
+    dtk_event_proc onEvent = pEvent->pControl->onEvent;
+    if (onEvent) {
+        onEvent(pEvent);
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_post_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
-        result = dtk_post_event__win32(pTK, pControl, eventID, pData, dataSize);
+        result = dtk_post_custom_event__win32(pTK, pControl, eventID, pData, dataSize);
     }
 #endif
 #ifdef DTK_GTK
     if (pTK->platform == dtk_platform_gtk) {
-        result = dtk_post_event__gtk(pTK, pControl, eventID, pData, dataSize);
+        result = dtk_post_custom_event__gtk(pTK, pControl, eventID, pData, dataSize);
     }
 #endif
 
     return result;
+}
+
+dtk_result dtk_handle_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    dtk_event e;
+    e.type = DTK_EVENT_CUSTOM;
+    e.pTK = pTK;
+    e.pControl = pControl;
+    e.custom.id = eventID;
+    e.custom.dataSize = dataSize;
+    e.custom.pData = pData;
+    return dtk__handle_event(&e);
 }
 
 dtk_result dtk_post_quit_event(dtk_context* pTK, int exitCode)
@@ -1327,12 +1402,89 @@ dtk_result dtk_get_system_dpi(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut)
 }
 
 
+//// Input ////
+
+dtk_result dtk_capture_keyboard(dtk_context* pTK, dtk_control* pControl)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    // Don't do anything if the control already has the capture.
+    if (pTK->pControlWithKeyboardCapture == pControl) {
+        return DTK_SUCCESS;
+    }
+
+    // The control must be allowed to receive capture.
+    if (pControl != NULL && dtk_control_is_keyboard_capture_allowed(pControl)) {
+        return DTK_INVALID_ARGS;
+    }
+
+
+    // Make sure the keyboard is first cleanly released from whatever control currently has the capture.
+    dtk_result result = dtk_release_keyboard(pTK);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    // If pControl is NULL this should just act as a release.
+    if (pControl == NULL) {
+        return DTK_SUCCESS;
+    }
+
+
+    // In order to complete the capture we need to also capture the keyboard on the window that owns the control. This must be done
+    // before marking the control as captured and posting the event in order to ensure the window's event handler does not post a
+    // duplicate capture event to pControl.
+    dtk_window* pWindow = dtk_control_get_window(pControl);
+    if (pWindow != NULL) {
+        result = dtk__capture_keyboard_window(pTK, pWindow);
+        if (result != DTK_SUCCESS) {
+            return result;
+        }
+    }
+
+    pTK->pControlWithKeyboardCapture = pControl;
+
+    dtk_event e = dtk_event_init(pTK, DTK_EVENT_CAPTURE_KEYBOARD, pTK->pControlWithKeyboardCapture);
+    dtk_post_local_event(pTK, &e);
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_release_keyboard(dtk_context* pTK)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    // Just pretend everything was successful if there was already nothing captured.
+    if (pTK->pControlWithKeyboardCapture == NULL) {
+        return DTK_SUCCESS;
+    }
+
+    dtk_event e = dtk_event_init(pTK, DTK_EVENT_RELEASE_KEYBOARD, pTK->pControlWithKeyboardCapture);
+    dtk_post_local_event(pTK, &e);
+
+    pTK->pControlWithKeyboardCapture = NULL;
+
+    // To complete the release we need to release the keyboard from whatever window has the capture. Note that this _must_ be
+    // done after marking the control as released and posting the event to ensure the window's event handler does not post a
+    // duplicate release event to pControlWithKeyboardCapture.
+    dtk__release_keyboard_window(pTK);
+
+    return DTK_SUCCESS;
+}
+
+dtk_control* dtk_get_control_with_keyboard_capture(dtk_context* pTK)
+{
+    if (pTK == NULL) return NULL;
+    return pTK->pControlWithKeyboardCapture;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Internal APIs
 //
 ///////////////////////////////////////////////////////////////////////////////
-dtk_result dtk__capture_keyboard(dtk_context* pTK, dtk_window* pWindow)
+dtk_result dtk__capture_keyboard_window(dtk_context* pTK, dtk_window* pWindow)
 {
     dtk_assert(pTK != NULL);
     dtk_assert(pWindow != NULL);
@@ -1340,38 +1492,38 @@ dtk_result dtk__capture_keyboard(dtk_context* pTK, dtk_window* pWindow)
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
-        result = dtk__capture_keyboard__win32(pTK, pWindow);
+        result = dtk__capture_keyboard_window__win32(pTK, pWindow);
     }
 #endif
 #ifdef DTK_GTK
     if (pTK->platform == dtk_platform_gtk) {
-        result = dtk__capture_keyboard__gtk(pTK, pWindow);
+        result = dtk__capture_keyboard_window__gtk(pTK, pWindow);
     }
 #endif
 
     return result;
 }
 
-dtk_result dtk__release_keyboard(dtk_context* pTK)
+dtk_result dtk__release_keyboard_window(dtk_context* pTK)
 {
     dtk_assert(pTK != NULL);
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
-        result = dtk__release_keyboard__win32(pTK);
+        result = dtk__release_keyboard_window__win32(pTK);
     }
 #endif
 #ifdef DTK_GTK
     if (pTK->platform == dtk_platform_gtk) {
-        result = dtk__release_keyboard__gtk(pTK);
+        result = dtk__release_keyboard_window__gtk(pTK);
     }
 #endif
 
     return result;
 }
 
-dtk_result dtk__capture_mouse(dtk_context* pTK, dtk_window* pWindow)
+dtk_result dtk__capture_mouse_window(dtk_context* pTK, dtk_window* pWindow)
 {
     dtk_assert(pTK != NULL);
     dtk_assert(pWindow != NULL);
@@ -1379,31 +1531,31 @@ dtk_result dtk__capture_mouse(dtk_context* pTK, dtk_window* pWindow)
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
-        result = dtk__capture_mouse__win32(pTK, pWindow);
+        result = dtk__capture_mouse_window__win32(pTK, pWindow);
     }
 #endif
 #ifdef DTK_GTK
     if (pTK->platform == dtk_platform_gtk) {
-        result = dtk__capture_mouse__gtk(pTK, pWindow);
+        result = dtk__capture_mouse_window__gtk(pTK, pWindow);
     }
 #endif
 
     return result;
 }
 
-dtk_result dtk__release_mouse(dtk_context* pTK)
+dtk_result dtk__release_mouse_window(dtk_context* pTK)
 {
     dtk_assert(pTK != NULL);
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
-        result = dtk__release_mouse__win32(pTK);
+        result = dtk__release_mouse_window__win32(pTK);
     }
 #endif
 #ifdef DTK_GTK
     if (pTK->platform == dtk_platform_gtk) {
-        result = dtk__release_mouse__gtk(pTK);
+        result = dtk__release_mouse_window__gtk(pTK);
     }
 #endif
 

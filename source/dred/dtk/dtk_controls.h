@@ -5,7 +5,9 @@ typedef dtk_uint32 dtk_control_type;
 #define DTK_CONTROL_TYPE_WINDOW     1
 #define DTK_CONTROL_TYPE_CUSTOM     65536
 
-#define DTK_CONTROL_FLAG_HIDDEN     (1 << 0)
+#define DTK_CONTROL_FLAG_HIDDEN                     (1 << 0)
+#define DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE    (1 << 1)
+#define DTK_CONTROL_FLAG_FORBID_MOUSE_CAPTURE       (1 << 2)
 
 #define DTK_CONTROL(p) ((dtk_control*)(p))
 struct dtk_control
@@ -75,3 +77,16 @@ dtk_control* dtk_control_find_top_level_control(dtk_control* pControl);
 // this will return <pControl>.
 dtk_window* dtk_control_get_window(dtk_control* pControl);
 
+
+// Enables the ability for the control to receive keyboard focus (default).
+dtk_result dtk_control_allow_keyboard_capture(dtk_control* pControl);
+
+// Disables the ability for the control to receive keyboard focus.
+//
+// If the control has the keyboard focus at the time this is called, it will be unfocused.
+dtk_result dtk_control_forbid_keyboard_capture(dtk_control* pControl);
+
+// Determines whether or not the control has the ability to receive keyboard focus.
+//
+// This is recursive because capture allowance depends on the ancestory.
+dtk_bool32 dtk_control_is_keyboard_capture_allowed(dtk_control* pControl);

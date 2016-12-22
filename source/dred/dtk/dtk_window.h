@@ -95,6 +95,13 @@ dtk_result dtk_window_get_relative_position(dtk_window* pWindow, dtk_int32* pPos
 dtk_result dtk_window_move_to_center(dtk_window* pWindow);
 
 
+// Retrieves the rectangle of the client area of the given window.
+//
+// The left and top coordinates will always be set to 0, and the right and bottom coordinates will be set to
+// the width and height respectively.
+dtk_rect dtk_window_get_client_rect(dtk_window* pWindow);
+
+
 // Shows or hides a window.
 //
 // The <mode> parameter should be set to one of the following:

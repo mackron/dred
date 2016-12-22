@@ -157,8 +157,10 @@ typedef int dtk_event_type;
 #define DTK_EVENT_KEY_DOWN              17
 #define DTK_EVENT_KEY_UP                18
 #define DTK_EVENT_PRINTABLE_KEY_DOWN    19
-#define DTK_EVENT_FOCUS                 20
-#define DTK_EVENT_UNFOCUS               21
+#define DTK_EVENT_CAPTURE_KEYBOARD      20
+#define DTK_EVENT_RELEASE_KEYBOARD      21
+#define DTK_EVENT_CAPTURE_MOUSE         22
+#define DTK_EVENT_RELEASE_MOUSE         23
 #define DTK_EVENT_CUSTOM                256
 
 struct dtk_event
@@ -275,17 +277,17 @@ struct dtk_event
         struct
         {
             int unused;
-        } focus;
+        } captureKeyboard, captureMouse;
 
         struct
         {
             int unused;
-        } unfocus;
+        } releaseKeyboard, releaseMouse;
 
         struct
         {
             dtk_uint32 id;
-            void* pData;
+            const void* pData;  // <-- Marked as const to discourage modification since it's only a _copy_ of the original input data.
             size_t dataSize;
         } custom;
     };
@@ -307,7 +309,8 @@ struct dtk_context
     dtk_log_proc onLog;
     int exitCode;
     dtk_window* pFirstWindow;
-    dtk_menu* pFirstMenu;
+    dtk_control* pControlWithKeyboardCapture;
+    dtk_control* pControlWithMouseCapture;
     void* pUserData;
 
     union
@@ -403,12 +406,23 @@ dtk_result dtk_set_event_callback(dtk_context* pTK, dtk_event_proc proc);
 //   Do not call this from multiple threads. Have a single thread that does all event handling.
 dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking);
 
+// Posts an event to the queue which will later handled by _only_ the event handler of the respective control.
+//
+// To handle the event immediately, use dtk_handle_control_event().
+dtk_result dtk_post_local_event(dtk_context* pTK, dtk_event* pEvent);
+
+// Same as dtk_post_local_event(), except handles it immediately instead of posting it to the queue.
+dtk_result dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent);
+
 // Posts a custom event.
 //
 // This will post an event of type DTK_EVENT_CUSTOM. This will make a copy of the data.
 //
 // Thread Safety: SAFE
-dtk_result dtk_post_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize);
+dtk_result dtk_post_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize);
+
+// Same as dtk_post_custom_event(), except handles it immediately rather than posting it to the queue.
+dtk_result dtk_handle_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize);
 
 // Posts a quit event to the event queue. This will cause the main loop to terminate and dtk_next_event() to
 // return DTK_QUIT.
@@ -442,6 +456,20 @@ dtk_result dtk_get_base_dpi(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut);
 
 // Retrieves the system-wide DPI.
 dtk_result dtk_get_system_dpi(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut);
+
+
+//// Input ////
+
+// Sets the control that should receive keyboard capture. This will fail if the control is not allowed to receive capture.
+//
+// Setting pControl to NULL is equivalent to dtk_release_keyboard().
+dtk_result dtk_capture_keyboard(dtk_context* pTK, dtk_control* pControl);
+
+// Releases the keyboard capture from whatever control currently has the capture.
+dtk_result dtk_release_keyboard(dtk_context* pTK);
+
+// Retrieves a pointer to the control with the keyboard capture.
+dtk_control* dtk_get_control_with_keyboard_capture(dtk_context* pTK);
 
 
 #endif  // DTK_H

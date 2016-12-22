@@ -102,12 +102,12 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
             dred_window_on_printable_key_down(pWindow, pEvent->printableKeyDown.utf32, pEvent->printableKeyDown.state);
         } break;
 
-        case DTK_EVENT_FOCUS:
+        case DTK_EVENT_CAPTURE_KEYBOARD:
         {
             dred_window_on_focus(pWindow);
         } break;
 
-        case DTK_EVENT_UNFOCUS:
+        case DTK_EVENT_RELEASE_KEYBOARD:
         {
             dred_window_on_unfocus(pWindow);
         } break;
@@ -186,7 +186,7 @@ static void dred_platform__on_global_capture_mouse(dred_control* pControl)
 {
     dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
-        dtk__capture_mouse(&pWindow->pDred->tk, &pWindow->windowDTK);
+        dtk__capture_mouse_window(&pWindow->pDred->tk, &pWindow->windowDTK);
     }
 }
 
@@ -194,7 +194,7 @@ static void dred_platform__on_global_release_mouse(dred_control* pControl)
 {
     dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
-        dtk__release_mouse(&pWindow->pDred->tk);
+        dtk__release_mouse_window(&pWindow->pDred->tk);
     }
 }
 
@@ -205,7 +205,7 @@ static void dred_platform__on_global_capture_keyboard(dred_control* pControl, dr
     dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow != NULL) {
         pWindow->pControlWithKeyboardCapture = pControl;
-        dtk__capture_keyboard(&pWindow->pDred->tk, &pWindow->windowDTK);
+        dtk__capture_keyboard_window(&pWindow->pDred->tk, &pWindow->windowDTK);
     }
 }
 
@@ -215,7 +215,7 @@ static void dred_platform__on_global_release_keyboard(dred_control* pControl, dr
     if (pWindow != NULL) {
         dred_window* pNewWindow = dred_get_control_window(pNewCapturedControl);
         if (pWindow != pNewWindow) {
-            dtk__release_keyboard(&pWindow->pDred->tk);
+            dtk__release_keyboard_window(&pWindow->pDred->tk);
         }
     }
 }
@@ -550,7 +550,7 @@ void dred_window_show_popup_menu(dred_window* pWindow, dtk_menu* pMenu, int posX
 void dred_window_send_ipc_message_event(dred_window* pWindow, unsigned int messageID, const void* pMessageData, size_t messageDataSize)
 {
     if (pWindow == NULL) return;
-    dtk_post_event(DTK_CONTROL(&pWindow->windowDTK)->pTK, DTK_CONTROL(&pWindow->windowDTK), messageID, pMessageData, messageDataSize);
+    dtk_post_custom_event(DTK_CONTROL(&pWindow->windowDTK)->pTK, DTK_CONTROL(&pWindow->windowDTK), messageID, pMessageData, messageDataSize);
 }
 
 

@@ -209,3 +209,39 @@ dtk_window* dtk_control_get_window(dtk_control* pControl)
 
     return NULL;
 }
+
+
+dtk_result dtk_control_allow_keyboard_capture(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    pControl->flags &= ~DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_control_forbid_keyboard_capture(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    //if (dtk_control_has_keyboard_capture(pControl)) {
+    //    dtk_release_keyboard(pControl);
+    //}
+
+    pControl->flags |= DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE;
+    return DTK_SUCCESS;
+}
+
+dtk_bool32 dtk_control_is_keyboard_capture_allowed(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_FALSE;
+
+    if ((pControl->flags & DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE) != 0) {
+        return DTK_FALSE;
+    }
+
+    if (pControl->pParent != NULL) {
+        return dtk_control_is_keyboard_capture_allowed(pControl->pParent);
+    }
+
+    return DTK_TRUE;
+}
