@@ -1114,7 +1114,10 @@ static gboolean dtk_window_clientarea__on_configure__gtk(GtkWidget* pClientArea,
     }
 
     // If the window's size has changed, it's panel and surface need to be resized, and then redrawn.
-    if (pEvent->width != DTK_CONTROL(pWindow)->width || pEvent->height != DTK_CONTROL(pWindow)->height) {
+    if (pEvent->width != pWindow->gtk.configureClientWidth || pEvent->height != pWindow->gtk.configureClientHeight) {
+        pWindow->gtk.configureClientWidth  = pEvent->width;
+        pWindow->gtk.configureClientHeight = pEvent->height;
+
         // Size has changed.
         dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_SIZE, DTK_CONTROL(pWindow));
         e.size.width = pEvent->width;

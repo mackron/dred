@@ -55,6 +55,8 @@ struct dtk_window
             /*GtkWidget**/ dtk_ptr pClientArea;
             /*GdkCursor**/ dtk_ptr pCursor;
             dtk_menu* pMenu;
+            int configureClientWidth;     // The size of the client area based on the last "configure" event. This is used to know whether or not the event is for a move or size.
+            int configureClientHeight;    // ^
             dtk_bool32 isCursorOverClientArea;
         } gtk;
     #endif
