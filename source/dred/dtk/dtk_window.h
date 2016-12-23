@@ -5,8 +5,9 @@
 #define DTK_SHOW_NORMAL         1
 #define DTK_SHOW_MAXIMIZED      2
 
-#define DTK_WINDOW_FLAG_DIALOG  (1 << 0)    // Set when the window is a dialog.
-#define DTK_WINDOW_FLAG_POPUP   (1 << 1)    // Set when the window is a popup.
+#define DTK_WINDOW_FLAG_TOPLEVEL    (1 << 0)    // Set when the window is a top-level window.
+#define DTK_WINDOW_FLAG_DIALOG      (1 << 1)    // Set when the window is a dialog.
+#define DTK_WINDOW_FLAG_POPUP       (1 << 2)    // Set when the window is a popup.
 
 typedef enum
 {

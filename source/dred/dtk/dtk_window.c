@@ -145,6 +145,35 @@ static dtk_uint32 dtk_wm_event_to_mouse_button__win32(UINT msg)
     }
 }
 
+static HWND dtk_get_root_top_level_HWND(HWND hWnd)
+{
+    HWND hTopLevelWindow = hWnd;
+    do
+    {
+        dtk_window* pWindow = (dtk_window*)GetWindowLongPtrA(hTopLevelWindow, 0);
+        if (pWindow != NULL) {
+            if (pWindow->flags & DTK_WINDOW_FLAG_TOPLEVEL) {
+                return hTopLevelWindow;
+            }
+        }
+
+        hTopLevelWindow = GetWindow(hTopLevelWindow, GW_OWNER);
+    } while (hTopLevelWindow != 0);
+
+    return hTopLevelWindow;
+}
+
+static BOOL dtk_is_HWND_owned_by_this(dtk_context* pTK, HWND hWnd)
+{
+    for (dtk_window* pWindow = pTK->pFirstWindow; pWindow != NULL; pWindow = pWindow->pNextWindow) {
+        if (pWindow->win32.hWnd == hWnd) {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     dtk_window* pWindow = (dtk_window*)GetWindowLongPtrA(hWnd, 0);
@@ -152,9 +181,12 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         return DefWindowProcA(hWnd, msg, wParam, lParam);
     }
 
+    dtk_context* pTK = DTK_CONTROL(pWindow)->pTK;
+    dtk_assert(pTK != NULL);
+
     dtk_event e;
     e.type = DTK_EVENT_NONE;
-    e.pTK = DTK_CONTROL(pWindow)->pTK;
+    e.pTK = pTK;
     e.pControl = DTK_CONTROL(pWindow);
 
     switch (msg)
@@ -528,6 +560,100 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             if (LOWORD(lParam) == HTCLIENT) {
                 SetCursor((HCURSOR)pWindow->win32.hCursor);
                 return TRUE;
+            }
+        } break;
+
+
+        // The WM_NCACTIVATE and WM_ACTIVATE events below are used for making it so the main top level does not lose
+        // it's activation visual style when a child popup window is activated. We use popup windows for things like
+        // combo box drop-downs and auto-complete popups which don't look right if the parent window loses activation.
+        //
+        // Look at http://www.catch22.net/tuts/docking-toolbars-part-1 for a detailed explanation of this.
+        case WM_NCACTIVATE:
+        {
+            BOOL keepActive = (BOOL)wParam;
+            BOOL syncOthers = TRUE;
+
+            for (dtk_window* pTrackedWindow = pTK->pFirstWindow; pTrackedWindow != NULL; pTrackedWindow = pTrackedWindow->pNextWindow) {
+                if (pTrackedWindow->win32.hWnd == (HWND)lParam) {
+                    keepActive = TRUE;
+                    syncOthers = FALSE;
+                    break;
+                }
+            }
+
+            if (lParam == -1) {
+                return DefWindowProc(hWnd, msg, keepActive, 0);
+            }
+
+            if (syncOthers) {
+                for (dtk_window* pTrackedWindow = pTK->pFirstWindow; pTrackedWindow != NULL; pTrackedWindow = pTrackedWindow->pNextWindow) {
+                    if (hWnd != pTrackedWindow->win32.hWnd && hWnd != (HWND)lParam) {
+                        SendMessage((HWND)pTrackedWindow->win32.hWnd, msg, keepActive, -1);
+                    }
+                }
+            }
+
+            return DefWindowProc(hWnd, msg, keepActive, lParam);
+        } break;
+
+        case WM_ACTIVATE:
+        {
+            HWND hActivatedWnd   = NULL;
+            HWND hDeactivatedWnd = NULL;
+            BOOL isActivatedWindowOwnedByThis   = FALSE;
+            BOOL isDeactivatedWindowOwnedByThis = FALSE;
+
+            if (LOWORD(wParam) != WA_INACTIVE) {
+                // Activated.
+                hActivatedWnd   = hWnd;
+                hDeactivatedWnd = (HWND)lParam;
+                isActivatedWindowOwnedByThis = TRUE;
+            } else {
+                // Deactivated.
+                hActivatedWnd   = (HWND)lParam;
+                hDeactivatedWnd = hWnd;
+                isDeactivatedWindowOwnedByThis = TRUE;
+            }
+
+            if (!isActivatedWindowOwnedByThis) {
+                isActivatedWindowOwnedByThis = dtk_is_HWND_owned_by_this(pTK, hActivatedWnd);
+            }
+            if (!isDeactivatedWindowOwnedByThis) {
+                isDeactivatedWindowOwnedByThis = dtk_is_HWND_owned_by_this(pTK, hDeactivatedWnd);
+            }
+
+            if (isActivatedWindowOwnedByThis && isDeactivatedWindowOwnedByThis) {
+                // Both windows are owned the by application.
+                if (LOWORD(wParam) != WA_INACTIVE) {
+                    hActivatedWnd   = dtk_get_root_top_level_HWND(hActivatedWnd);
+                    hDeactivatedWnd = dtk_get_root_top_level_HWND(hDeactivatedWnd);
+
+                    if (hActivatedWnd != hDeactivatedWnd) {
+                        if (hDeactivatedWnd != NULL) {
+                            // on_deactivate(hDeactivatedWnd)
+                        }
+
+                        if (hActivatedWnd != NULL) {
+                            // on_activate(hActivatedWnd)
+                        }
+                    }
+                }
+            } else {
+                // The windows are not both owned by this manager.
+                if (isDeactivatedWindowOwnedByThis) {
+                    hDeactivatedWnd = dtk_get_root_top_level_HWND(hDeactivatedWnd);
+                    if (hDeactivatedWnd != NULL) {
+                        // on_deactivate(hDeactivatedWnd)
+                    }
+                }
+
+                if (isActivatedWindowOwnedByThis) {
+                    hActivatedWnd = dtk_get_root_top_level_HWND(hActivatedWnd);
+                    if (hActivatedWnd != NULL) {
+                        // on_activate(hDeactivatedWnd)
+                    }
+                }
             }
         } break;
         
@@ -1594,6 +1720,9 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_ty
     // The size needs to be set to the client of the client.
     dtk_window_get_client_size(pWindow, &DTK_CONTROL(pWindow)->width, &DTK_CONTROL(pWindow)->height);
 
+    if (type == dtk_window_type_toplevel) {
+        pWindow->flags |= DTK_WINDOW_FLAG_TOPLEVEL;
+    }
     if (type == dtk_window_type_dialog) {
         pWindow->flags |= DTK_WINDOW_FLAG_DIALOG;
     }
