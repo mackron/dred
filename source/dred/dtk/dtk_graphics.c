@@ -299,7 +299,7 @@ dtk_result dtk_font_get_text_cursor_position_from_char__gdi(dtk_font* pFont, flo
         wchar_t* textW = dtk__mb_to_wchar__win32(pFont->pTK, text, (int)results.nGlyphs, &textWLength);
         if (textW != NULL) {
             if (results.nGlyphs > pFont->pTK->win32.glyphCacheSize) {
-                pFont->pTK->win32.pGlyphCache = (dtk_int32*)dtk_realloc(pFont->pTK->win32.pGlyphCache, results.nGlyphs);
+                pFont->pTK->win32.pGlyphCache = (dtk_int32*)dtk_realloc(pFont->pTK->win32.pGlyphCache, results.nGlyphs * sizeof(*pFont->pTK->win32.pGlyphCache));
                 if (pFont->pTK->win32.pGlyphCache == NULL) {
                     pFont->pTK->win32.glyphCacheSize = 0;
                 } else {
