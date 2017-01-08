@@ -456,7 +456,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                     stateFlags |= DTK_KEY_STATE_AUTO_REPEATED;
                 }
 
-                e.pControl = pTK->pControlWithKeyboardCapture;
+                e.pControl = DTK_CONTROL(pTK->win32.pWindowWithKeyboardFocus);
                 e.type = DTK_EVENT_KEY_DOWN;
                 e.keyDown.key = dtk_convert_key_from_win32(wParam);
                 e.keyDown.state = stateFlags;
@@ -467,7 +467,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         case WM_KEYUP:
         {
             if (!dtk_is_win32_mouse_button_key_code(wParam)) {
-                e.pControl = pTK->pControlWithKeyboardCapture;
+                e.pControl = DTK_CONTROL(pTK->win32.pWindowWithKeyboardFocus);
                 e.type = DTK_EVENT_KEY_UP;
                 e.keyUp.key = dtk_convert_key_from_win32(wParam);
                 e.keyUp.state = dtk_get_modifier_key_state_flags__win32();
@@ -506,7 +506,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                         stateFlags |= DTK_KEY_STATE_AUTO_REPEATED;
                     }
 
-                    e.pControl = pTK->pControlWithMouseCapture;
+                    e.pControl = DTK_CONTROL(pTK->win32.pWindowWithKeyboardFocus);
                     e.type = DTK_EVENT_PRINTABLE_KEY_DOWN;
                     e.printableKeyDown.utf32 = character;
                     e.printableKeyDown.state = stateFlags;
@@ -527,6 +527,8 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.type = DTK_EVENT_CAPTURE_KEYBOARD;
                 dtk__handle_event(&e);
             }
+
+            pTK->win32.pWindowWithKeyboardFocus = pWindow;
         } break;
 
         case WM_KILLFOCUS:
@@ -537,6 +539,8 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.type = DTK_EVENT_RELEASE_KEYBOARD;
                 dtk__handle_event(&e);
             }
+
+            pTK->win32.pWindowWithKeyboardFocus = NULL;
         } break;
 
 

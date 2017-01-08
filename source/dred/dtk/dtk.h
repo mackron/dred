@@ -347,6 +347,8 @@ struct dtk_context
 
             dtk_int32* pGlyphCache;                 // The cache of glyph character positions. Used by the graphics sub-system.
             size_t glyphCacheSize;
+
+            dtk_window* pWindowWithKeyboardFocus;
         } win32;
 #endif
 #ifdef DTK_GTK
