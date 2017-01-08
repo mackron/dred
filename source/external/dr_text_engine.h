@@ -847,7 +847,8 @@ void drte_view_select_word_under_cursor(drte_view* pView, size_t cursorIndex);
 ///     buffer.
 ///     @par
 ///     If the output buffer is not larger enough, the string will be truncated.
-size_t drte_view_get_selected_text(drte_view* pView, char* textOut, size_t textOutLength);
+size_t drte_view_get_selected_text(drte_view* pView, char* textOut, size_t textOutSize);
+size_t drte_view_get_selection_text(drte_view* pView, size_t iSelection, char* textOut, size_t textOutSize);
 
 /// Retrieves the index of the first line of the current selection.
 size_t drte_view_get_selection_first_line(drte_view* pView, size_t iSelection);
@@ -5322,6 +5323,29 @@ size_t drte_view_get_selected_text(drte_view* pView, char* textOut, size_t textO
     }
 
     return length;
+}
+
+size_t drte_view_get_selection_text(drte_view* pView, size_t iSelection, char* textOut, size_t textOutSize)
+{
+    // Safety.
+    if (textOut != NULL && textOutSize > 0) {
+        textOut[0] = '\0';
+    }
+
+    if (pView == NULL || (textOut != NULL && textOutSize == 0)) {
+        return 0;
+    }
+
+    if (!drte_view_is_anything_selected(pView)) {
+        return 0;
+    }
+
+    drte_region region = drte_region_normalize(pView->pSelections[iSelection]);
+    if (textOut != NULL) {
+        drte__strncpy_s(textOut, textOutSize, pView->pEngine->text+region.iCharBeg, (region.iCharEnd - region.iCharBeg));
+    }
+
+    return (region.iCharEnd - region.iCharBeg);
 }
 
 size_t drte_view_get_selection_first_line(drte_view* pView, size_t iSelection)

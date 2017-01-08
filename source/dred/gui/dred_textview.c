@@ -1761,9 +1761,17 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
             size_t iHoveredSelection;
             if (drte_view_get_selection_under_point(pTextView->pView, mousePosXRelativeToTextArea, mousePosYRelativeToTextArea, &iHoveredSelection)) {
                 if (pTextView->isWantingToDragAndDrop) {
-                    //printf("Begin dragging...\n");
-                    dred_begin_drag_and_drop(dred_data_type_text, "Hello!", strlen("Hello")+1);
-                    pTextView->isWantingToDragAndDrop = DR_FALSE;
+                    size_t selectionLen = drte_view_get_selection_text(pTextView->pView, iHoveredSelection, NULL, 0);
+                    if (selectionLen > 0) {
+                        char* pSelectionText = malloc(selectionLen+1);
+                        if (pSelectionText != NULL) {
+                            //printf("Begin dragging...\n");
+                            drte_view_get_selection_text(pTextView->pView, iHoveredSelection, pSelectionText, selectionLen+1);
+                            dred_begin_drag_and_drop(dred_data_type_text, pSelectionText, selectionLen+1);
+                            pTextView->isWantingToDragAndDrop = DR_FALSE;
+                            free(pSelectionText);
+                        }
+                    }
                 }
 
                 dred_control_set_cursor(DRED_CONTROL(pTextView), dtk_system_cursor_type_arrow);
