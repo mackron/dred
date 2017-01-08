@@ -5097,10 +5097,8 @@ size_t drte_view_move_cursor_to_start_of_next_word(drte_view* pView, size_t curs
         return 0;
     }
 
-    size_t iChar = drte_view_get_cursor_character(pView, cursorIndex);
+    size_t iChar = drte_view_move_cursor_to_end_of_word(pView, cursorIndex);
     dr_bool32 isOnNewLine = pView->pEngine->text[iChar] == '\r' || pView->pEngine->text[iChar] == '\n';
-
-    iChar = drte_view_move_cursor_to_end_of_word(pView, cursorIndex);
     if (!isOnNewLine) {
         while (pView->pEngine->text[iChar] != '\0') {
             uint32_t c = pView->pEngine->text[iChar];
