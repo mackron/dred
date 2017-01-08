@@ -5229,9 +5229,7 @@ dr_bool32 drte_view_get_word_under_point(drte_view* pView, float posX, float pos
     }
 
     size_t iChar;
-    if (!drte_view_get_character_under_point(pView, pView->pWrappedLines, posX, posY, &iChar, NULL)) {
-        return DR_FALSE;
-    }
+    drte_view_get_character_under_point(pView, pView->pWrappedLines, posX, posY, &iChar, NULL);
 
     return drte_engine_get_word_containing_character(pView->pEngine, iChar, pWordBegOut, pWordEndOut);
 }
