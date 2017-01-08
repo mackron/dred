@@ -3515,8 +3515,7 @@ void drte_engine__on_cursor_move(drte_engine* pEngine, drte_view* pView, size_t 
     }
 
     // When the cursor moves we want to reset the cursor's blink state.
-    pEngine->timeToNextCursorBlink = pEngine->cursorBlinkRate;
-    pEngine->isCursorBlinkOn = DR_TRUE;
+    drte_engine_reset_cursor_blinks(pEngine);
 
     if (pEngine->onCursorMove) {
         pEngine->onCursorMove(pEngine, pView, cursorIndex);
@@ -4486,6 +4485,7 @@ void drte_view_show_cursors(drte_view* pView)
         return;
     }
 
+    drte_engine_reset_cursor_blinks(pView->pEngine);
     pView->flags |= DRTE_SHOWING_CURSORS;
 
     drte_view_begin_dirty(pView);
