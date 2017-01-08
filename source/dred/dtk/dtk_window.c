@@ -163,15 +163,20 @@ static HWND dtk_get_root_top_level_HWND(HWND hWnd)
     return hTopLevelWindow;
 }
 
-static BOOL dtk_is_HWND_owned_by_this(dtk_context* pTK, HWND hWnd)
+static dtk_window* dtk_find_window_by_HWND(dtk_context* pTK, HWND hWnd)
 {
     for (dtk_window* pWindow = pTK->pFirstWindow; pWindow != NULL; pWindow = pWindow->pNextWindow) {
         if (pWindow->win32.hWnd == hWnd) {
-            return TRUE;
+            return pWindow;
         }
     }
 
-    return FALSE;
+    return NULL;
+}
+
+static BOOL dtk_is_HWND_owned_by_this(dtk_context* pTK, HWND hWnd)
+{
+    return dtk_find_window_by_HWND(pTK, hWnd) != NULL;
 }
 
 LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -307,7 +312,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
 
                 dtk_track_mouse_leave_event__win32(hWnd);
             }
-
+            
             e.type = DTK_EVENT_MOUSE_MOVE;
             e.mouseMove.x = DTK_GET_X_LPARAM(lParam);
             e.mouseMove.y = DTK_GET_Y_LPARAM(lParam);
@@ -451,6 +456,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                     stateFlags |= DTK_KEY_STATE_AUTO_REPEATED;
                 }
 
+                e.pControl = pTK->pControlWithKeyboardCapture;
                 e.type = DTK_EVENT_KEY_DOWN;
                 e.keyDown.key = dtk_convert_key_from_win32(wParam);
                 e.keyDown.state = stateFlags;
@@ -461,6 +467,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         case WM_KEYUP:
         {
             if (!dtk_is_win32_mouse_button_key_code(wParam)) {
+                e.pControl = pTK->pControlWithKeyboardCapture;
                 e.type = DTK_EVENT_KEY_UP;
                 e.keyUp.key = dtk_convert_key_from_win32(wParam);
                 e.keyUp.state = dtk_get_modifier_key_state_flags__win32();
@@ -499,6 +506,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                         stateFlags |= DTK_KEY_STATE_AUTO_REPEATED;
                     }
 
+                    e.pControl = pTK->pControlWithMouseCapture;
                     e.type = DTK_EVENT_PRINTABLE_KEY_DOWN;
                     e.printableKeyDown.utf32 = character;
                     e.printableKeyDown.state = stateFlags;
@@ -514,14 +522,21 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
 
         case WM_SETFOCUS:
         {
-            e.type = DTK_EVENT_CAPTURE_KEYBOARD;
-            dtk__handle_event(&e);
+            // Only receive focus if the window is allowed to receive the keyboard capture.
+            if (dtk_control_is_keyboard_capture_allowed(e.pControl)) {
+                e.type = DTK_EVENT_CAPTURE_KEYBOARD;
+                dtk__handle_event(&e);
+            }
         } break;
 
         case WM_KILLFOCUS:
         {
-            e.type = DTK_EVENT_RELEASE_KEYBOARD;
-            dtk__handle_event(&e);
+            // Do not release the keyboard if the next window is not allowed to receive it.
+            HWND hNewFocusedWnd = (HWND)wParam;
+            if (hNewFocusedWnd == NULL || dtk_control_is_keyboard_capture_allowed((dtk_control*)GetWindowLongPtrA(hWnd, 0))) {
+                e.type = DTK_EVENT_RELEASE_KEYBOARD;
+                dtk__handle_event(&e);
+            }
         } break;
 
 
@@ -1728,6 +1743,9 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_ty
     }
     if (type == dtk_window_type_popup) {
         pWindow->flags |= DTK_WINDOW_FLAG_POPUP;
+
+        // Popup windows are not currently allowed to receive the keyboard capture.
+        dtk_control_forbid_keyboard_capture(DTK_CONTROL(pWindow));
     }
 
     dtk__track_window(pTK, pWindow);
