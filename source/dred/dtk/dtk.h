@@ -371,6 +371,9 @@ struct dtk_context
 #endif
     };
 };
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif
 
 // Initializes the toolkit.
 //

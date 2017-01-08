@@ -307,7 +307,7 @@ dtk_result dtk_init_backend_apis__win32(dtk_context* pTK)
 
     // Ole32.dll
     HMODULE hOle32DLL = LoadLibraryW(L"ole32.dll");
-    if (hComctl32DLL == NULL) {
+    if (hOle32DLL == NULL) {
         dtk_uninit_backend_apis__win32(pTK);
         return DTK_ERROR;
     }
@@ -1561,8 +1561,3 @@ dtk_result dtk__release_mouse_window(dtk_context* pTK)
 
     return result;
 }
-
-
-#if defined(_MSC_VER)
-    #pragma warning(pop)
-#endif
