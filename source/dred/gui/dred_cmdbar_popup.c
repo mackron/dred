@@ -2,6 +2,9 @@
 
 void dred_cmdbar_popup__on_size(dred_control* pControl, float newWidth, float newHeight)
 {
+    (void)newWidth;
+    (void)newHeight;
+
     dred_window* pWindow = dred_get_control_window(pControl);
     if (pWindow == NULL) {
         return;
@@ -23,6 +26,7 @@ void dred_cmdbar_popup__on_paint(dred_control* pControl, dred_rect rect, dtk_sur
     assert(pCmdBarPopup != NULL);
 
     float uiScale = (float)pWindow->pDred->uiScale;
+    (void)uiScale;
 
     dred_rect popupRect = dred_control_get_local_rect(pControl);
 
@@ -40,10 +44,7 @@ dred_cmdbar_popup* dred_cmdbar_popup_create(dred_context* pDred)
 
     pCmdBarPopup->pDred = pDred;
 
-    unsigned int windowWidth = (unsigned int)(480*pDred->uiScale);
-    unsigned int windowHeight = (unsigned int)(360*pDred->uiScale);
-
-    pCmdBarPopup->pWindow = dred_window_create_popup(pDred->pMainWindow, windowWidth, windowHeight);
+    pCmdBarPopup->pWindow = dred_window_create_popup(pDred->pMainWindow, 0, 0);
     if (pCmdBarPopup->pWindow == NULL) {
         free(pCmdBarPopup);
         return NULL;
@@ -85,5 +86,5 @@ void dred_cmdbar_popup_refresh_position(dred_cmdbar_popup* pCmdBarPopup)
     unsigned int popupSizeX;
     unsigned int popupSizeY;
     dred_window_get_size(pCmdBarPopup->pWindow, &popupSizeX, &popupSizeY);
-    dred_window_set_position(pCmdBarPopup->pWindow, mainWindowPosX + cmdbarPosX, mainWindowPosY + cmdbarPosY - popupSizeY);
+    dred_window_set_position(pCmdBarPopup->pWindow, (int)(mainWindowPosX + cmdbarPosX), (int)(mainWindowPosY + cmdbarPosY - popupSizeY));
 }
