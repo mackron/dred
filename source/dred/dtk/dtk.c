@@ -395,7 +395,7 @@ dtk_result dtk_init__win32(dtk_context* pTK)
         }
 
         wc.lpszClassName = DTK_WIN32_WINDOW_CLASS_POPUP;
-        wc.style         = CS_OWNDC | CS_DBLCLKS | CS_DROPSHADOW;
+        wc.style         = CS_OWNDC | CS_DBLCLKS /*| CS_DROPSHADOW*/;
         if (!RegisterClassExA(&wc)) {
             UnregisterClassA(DTK_WIN32_WINDOW_CLASS, NULL);
             return DTK_ERROR;
