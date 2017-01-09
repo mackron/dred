@@ -851,10 +851,7 @@ dtk_result dtk_window_show__win32(dtk_window* pWindow, int mode)
         SW_SHOWMAXIMIZED,   // DTK_SHOW_MAXIMIZED
     };
 
-    if (!ShowWindow((HWND)pWindow->win32.hWnd, nCmdShow[mode])) {
-        return DTK_ERROR;
-    }
-
+    ShowWindow((HWND)pWindow->win32.hWnd, nCmdShow[mode]);
     return DTK_SUCCESS;
 }
 
@@ -1772,6 +1769,9 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_ty
         // Popup windows are not currently allowed to receive the keyboard capture.
         dtk_control_forbid_keyboard_capture(DTK_CONTROL(pWindow));
     }
+
+    // Window's are not shown by default.
+    DTK_CONTROL(pWindow)->flags |= DTK_CONTROL_FLAG_HIDDEN;
 
     dtk__track_window(pTK, pWindow);
     return DTK_SUCCESS;
