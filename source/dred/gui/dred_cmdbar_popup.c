@@ -26,16 +26,7 @@ void dred_cmdbar_popup__on_paint(dred_control* pControl, dred_rect rect, dtk_sur
 
     dred_rect popupRect = dred_control_get_local_rect(pControl);
 
-    dred_control_draw_rect_with_outline(pControl, popupRect, dred_rgb(128, 128, 128), 2, dred_rgb(0, 0, 0), pSurface);
-}
-
-void dred_cmdbar_popup__on_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
-{
-    printf("cmdbar popup captured\n");
-}
-void dred_cmdbar_popup__on_release_keyboard(dred_control* pControl, dred_control* pNextCapturedControl)
-{
-    printf("cmdbar popup released\n");
+    dred_control_draw_rect_with_outline(pControl, popupRect, dred_rgb(128, 128, 128), 2, pWindow->pDred->config.cmdbarBGColorActive, pSurface);
 }
 
 dred_cmdbar_popup* dred_cmdbar_popup_create(dred_context* pDred)
@@ -61,8 +52,6 @@ dred_cmdbar_popup* dred_cmdbar_popup_create(dred_context* pDred)
     pCmdBarPopup->pWindow->pUserData = pCmdBarPopup;
     dred_control_set_on_size(pCmdBarPopup->pWindow->pRootGUIControl, dred_cmdbar_popup__on_size);
     dred_control_set_on_paint(pCmdBarPopup->pWindow->pRootGUIControl, dred_cmdbar_popup__on_paint);
-    dred_control_set_on_capture_keyboard(pCmdBarPopup->pWindow->pRootGUIControl, dred_cmdbar_popup__on_capture_keyboard);
-    dred_control_set_on_release_keyboard(pCmdBarPopup->pWindow->pRootGUIControl, dred_cmdbar_popup__on_release_keyboard);
 
     return pCmdBarPopup;
 }
