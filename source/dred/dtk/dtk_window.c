@@ -523,24 +523,28 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         case WM_SETFOCUS:
         {
             // Only receive focus if the window is allowed to receive the keyboard capture.
-            if (dtk_control_is_keyboard_capture_allowed(e.pControl)) {
-                e.type = DTK_EVENT_CAPTURE_KEYBOARD;
-                dtk__handle_event(&e);
+            if (pWindow != pTK->win32.pWindowWithKeyboardFocus) {
+                if (dtk_control_is_keyboard_capture_allowed(e.pControl)) {
+                    e.type = DTK_EVENT_CAPTURE_KEYBOARD;
+                    dtk__handle_event(&e);
+                    pTK->win32.pWindowWithKeyboardFocus = pWindow;
+                    printf("Captured\n");
+                }
             }
-
-            pTK->win32.pWindowWithKeyboardFocus = pWindow;
         } break;
 
         case WM_KILLFOCUS:
         {
             // Do not release the keyboard if the next window is not allowed to receive it.
             HWND hNewFocusedWnd = (HWND)wParam;
-            if (hNewFocusedWnd == NULL || dtk_control_is_keyboard_capture_allowed((dtk_control*)GetWindowLongPtrA(hWnd, 0))) {
-                e.type = DTK_EVENT_RELEASE_KEYBOARD;
-                dtk__handle_event(&e);
+            if (pWindow == pTK->win32.pWindowWithKeyboardFocus || hNewFocusedWnd == NULL) {
+                if (hNewFocusedWnd == NULL || dtk_control_is_keyboard_capture_allowed((dtk_control*)GetWindowLongPtrA(hNewFocusedWnd, 0))) {
+                    e.type = DTK_EVENT_RELEASE_KEYBOARD;
+                    dtk__handle_event(&e);
+                    pTK->win32.pWindowWithKeyboardFocus = NULL;
+                    printf("Released\n");
+                }
             }
-
-            pTK->win32.pWindowWithKeyboardFocus = NULL;
         } break;
 
 
@@ -689,7 +693,7 @@ dtk_result dtk_window_init__win32(dtk_context* pTK, dtk_control* pParent, dtk_wi
     DWORD dwStyleEx = 0;
     DWORD dwStyle = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
     if (type == dtk_window_type_toplevel) {
-        dwStyle   |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW;
+        dwStyle   |= WS_OVERLAPPEDWINDOW;
     }
     if (type == dtk_window_type_dialog) {
         dwStyleEx |= WS_EX_DLGMODALFRAME;
@@ -792,13 +796,30 @@ dtk_result dtk_window_set_absolute_position__win32(dtk_window* pWindow, dtk_int3
 
 dtk_result dtk_window_get_absolute_position__win32(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
 {
+#if 0
+    // NOTE: This is returning incorrect results for some reason. When fullscreen, it reports an extra 8 pixels
+    //       on each side for some reason. Windows 10. http://stackoverflow.com/questions/34139450/getwindowrect-returns-a-size-including-invisible-borders
     RECT rect;
     if (!GetWindowRect((HWND)pWindow->win32.hWnd, &rect)) {
         return DTK_ERROR;
     }
 
+    MapWindowPoints(HWND_DESKTOP, GetParent((HWND)pWindow->win32.hWnd), (LPPOINT) &rect, 2);
+
     if (pPosX) *pPosX = rect.left;
     if (pPosY) *pPosY = rect.top;
+#else
+    POINT pt;
+    pt.x = 0;
+    pt.y = 0;
+    if (!ClientToScreen((HWND)pWindow->win32.hWnd, &pt)) {
+        return DTK_ERROR;
+    }
+
+    if (pPosX) *pPosX = pt.x;
+    if (pPosY) *pPosY = pt.y;
+#endif
+
     return DTK_SUCCESS;
 }
 

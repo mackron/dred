@@ -19,6 +19,12 @@ dr_bool32 dred_platform__init_root_gui_element(dred_control* pControl, dred_cont
     }
 
     pControl->pUserData = pWindow;
+
+    unsigned int width;
+    unsigned int height;
+    dred_window_get_client_size(pWindow, &width, &height);
+    dred_control_set_size(pControl, (float)width, (float)height);
+
     return DR_TRUE;
 }
 
@@ -363,6 +369,29 @@ dred_window* dred_window_create_dialog(dred_window* pParentWindow, const char* t
     }
 
     if (dtk_window_init(pParentWindow->windowDTK.control.pTK, DTK_CONTROL(&pParentWindow->windowDTK), dtk_window_type_dialog, title, width, height, dred_dtk_window_event_handler, &pWindow->windowDTK) != DTK_SUCCESS) {
+        free(pWindow);
+        return NULL;
+    }
+
+    if (!dred_window_create__post_setup(pParentWindow->pDred, pWindow)) {
+        dtk_window_uninit(&pWindow->windowDTK);
+        free(pWindow);
+        return NULL;
+    }
+
+    return pWindow;
+}
+
+dred_window* dred_window_create_popup(dred_window* pParentWindow, unsigned int width, unsigned int height)
+{
+    if (pParentWindow == NULL) return NULL; // All popup windows must be tied to a parent.
+
+    dred_window* pWindow = (dred_window*)calloc(1, sizeof(*pWindow));
+    if (pWindow == NULL) {
+        return NULL;
+    }
+
+    if (dtk_window_init(pParentWindow->windowDTK.control.pTK, DTK_CONTROL(&pParentWindow->windowDTK), dtk_window_type_popup, "", width, height, dred_dtk_window_event_handler, &pWindow->windowDTK) != DTK_SUCCESS) {
         free(pWindow);
         return NULL;
     }

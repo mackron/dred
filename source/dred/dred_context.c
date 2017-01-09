@@ -28,6 +28,10 @@ void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float
 
     dred_control_set_size(DRED_CONTROL(pCmdBar), parentWidth, dred_control_get_height(DRED_CONTROL(pCmdBar)));
     dred_control_set_relative_position(DRED_CONTROL(pCmdBar), 0, parentHeight - dred__get_cmd_bar_height(pDred));
+
+    if (pDred->pCmdBarPopup != NULL) {
+        dred_window_set_size(pDred->pCmdBarPopup->pWindow, (int)parentWidth, 400);
+    }
 }
 
 void dred__update_main_window_layout(dred_window* pWindow, float windowWidth, float windowHeight)
@@ -524,6 +528,8 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     if (pDred->config.autoHideCmdBar) {
         dred_control_hide(DRED_CONTROL(pDred->pCmdBar));
     }
+
+    pDred->pCmdBarPopup = dred_cmdbar_popup_create(pDred);
 
 
 

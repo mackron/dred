@@ -97,6 +97,7 @@ extern "C" {
 #include "gui/dred_textview.h"
 #include "gui/dred_textbox.h"
 #include "gui/dred_info_bar.h"
+#include "gui/dred_cmdbar_popup.h"
 #include "gui/dred_cmdbar.h"
 #include "dred_fs.h"
 #include "dred_alias_map.h"

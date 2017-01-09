@@ -46,6 +46,7 @@
 #include "gui/dred_textview.c"
 #include "gui/dred_textbox.c"
 #include "gui/dred_info_bar.c"
+#include "gui/dred_cmdbar_popup.c"
 #include "gui/dred_cmdbar.c"
 #include "dred_fs.c"
 #include "dred_alias_map.c"

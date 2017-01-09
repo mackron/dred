@@ -77,6 +77,9 @@ struct dred_context
     dred_cmdbar cmdBar;
     dred_cmdbar* pCmdBar;
 
+    // The command bar auto-complete popup window.
+    dred_cmdbar_popup* pCmdBarPopup;
+
 
     // The scale to apply for normal system DPI scaling. Usually this will be the same as UI scale, but not always.
     float dpiScale;

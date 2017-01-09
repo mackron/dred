@@ -660,7 +660,10 @@ dtk_result dtk__capture_keyboard_window__win32(dtk_context* pTK, dtk_window* pWi
 {
     (void)pTK;
 
-    SetFocus((HWND)pWindow->win32.hWnd);
+    if (pTK->win32.pWindowWithKeyboardFocus != pWindow) {
+        SetFocus((HWND)pWindow->win32.hWnd);
+    }
+
     return DTK_SUCCESS;
 }
 
@@ -930,7 +933,7 @@ static gboolean dtk_post_local_event_cb__gtk(dtk_event* pEvent)
 
 dtk_result dtk_post_local_event__gtk(dtk_context* pTK, dtk_event* pEvent)
 {
-    // We need a copy of the data. This will be freed in dtk_GenericWindowProc().
+    // We need a copy of the data.
     dtk_event* pEventCopy = (dtk_event*)dtk_malloc(sizeof(*pEventCopy));
     if (pEventCopy == NULL) {
         return DTK_OUT_OF_MEMORY;
@@ -953,7 +956,7 @@ static gboolean dtk_post_custom_event_cb__gtk(dtk_custom_event_data* pEventData)
 
 dtk_result dtk_post_custom_event__gtk(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
 {
-    // We need a copy of the data. This will be freed in dtk_GenericWindowProc().
+    // We need a copy of the data.
     dtk_custom_event_data* pEventData = (dtk_custom_event_data*)dtk_malloc(sizeof(dtk_custom_event_data) + dataSize);
     if (pEventData == NULL) {
         return DTK_OUT_OF_MEMORY;

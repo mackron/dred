@@ -1207,7 +1207,10 @@ DRED_GUI_PRIVATE void dred_gui_release_keyboard_private(dred_gui* pGUI, dred_con
         pGUI->pControlWithKeyboardCapture = NULL;
 
         dred_control__post_outbound_event_release_keyboard(pPrevCapturedControl, pNewCapturedControl);
-        dred_control__post_outbound_event_release_keyboard_global(pPrevCapturedControl, pNewCapturedControl);
+
+        //if (pNewCapturedControl != NULL) {
+            dred_control__post_outbound_event_release_keyboard_global(pPrevCapturedControl, pNewCapturedControl);
+        //}
     }
     pGUI->flags &= ~IS_RELEASING_KEYBOARD;
 
@@ -1241,7 +1244,7 @@ void dred_gui_capture_keyboard(dred_control* pControl)
             dred_gui_release_keyboard_private(pControl->pGUI, pControl);
         }
 
-        assert(pControl->pGUI->pControlWithKeyboardCapture == NULL);
+        //assert(pControl->pGUI->pControlWithKeyboardCapture == NULL);
 
         pControl->pGUI->pControlWithKeyboardCapture = pControl;
         pControl->pGUI->pControlWantingKeyboardCapture = NULL;

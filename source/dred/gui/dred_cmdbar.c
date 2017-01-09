@@ -148,8 +148,13 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dred_control* p
     dred_control_dirty(DRED_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));
 
 
+    // Show the popup window.
+    dred_cmdbar_popup_show(pDred->pCmdBarPopup);
+
     // Fall through to the default handler.
     dred_textview_on_capture_keyboard(DRED_CONTROL(pTextBox), pPrevCapturedControl);
+
+    printf("cmdbar capture\n");
 }
 
 void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dred_control* pNextCapturedControl)
@@ -165,10 +170,16 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dred_control* p
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
+    
+
     // If the element being captured is the inner text box, just ignore it and pretend that we're not actually losing focus.
     if (dred_control_is_descendant(pNextCapturedControl, DRED_CONTROL(pCmdBar->pTextBox))) {
         return;
     }
+
+    printf("cmdbar release\n");
+
+    dred_cmdbar_popup_hide(pDred->pCmdBarPopup);
 
     // Deactivate unfocused styles.
     dred_textbox_set_text_color(pCmdBar->pTextBox, pDred->config.cmdbarTextColor);

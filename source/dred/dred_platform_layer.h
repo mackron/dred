@@ -97,6 +97,9 @@ dred_window* dred_window_create(dred_context* pDred);
 // Creates a dialog window.
 dred_window* dred_window_create_dialog(dred_window* pParentWindow, const char* title, unsigned int width, unsigned int height);
 
+// Creates a popup window.
+dred_window* dred_window_create_popup(dred_window* pParentWindow, unsigned int width, unsigned int height);
+
 // Deletes a window.
 void dred_window_delete(dred_window* pWindow);
 
