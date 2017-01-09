@@ -30,7 +30,7 @@ void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float
     dred_control_set_relative_position(DRED_CONTROL(pCmdBar), 0, parentHeight - dred__get_cmd_bar_height(pDred));
 
     if (pDred->pCmdBarPopup != NULL) {
-        dred_window_set_size(pDred->pCmdBarPopup->pWindow, (int)parentWidth, 400);
+        dred_window_set_size(pDred->pCmdBarPopup->pWindow, (int)parentWidth, 300);
     }
 }
 
