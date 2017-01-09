@@ -152,6 +152,10 @@ void dred_window_cb__on_main_window_move(dred_window* pWindow, int posX, int pos
 {
     assert(pWindow != NULL);
 
+    if (dtk_control_is_visible(DTK_CONTROL(&pWindow->pDred->pCmdBarPopup->pWindow->windowDTK))) {
+        dred_cmdbar_popup_refresh_position(pWindow->pDred->pCmdBarPopup);
+    }
+
     pWindow->pDred->config.windowPosX = posX;
     pWindow->pDred->config.windowPosY = posY;
 }
@@ -166,6 +170,10 @@ void dred_window_cb__on_main_window_size(dred_control* pControl, float width, fl
     }
 
     dred__update_main_window_layout(pWindow, width, height);
+
+    if (dtk_control_is_visible(DTK_CONTROL(&pWindow->pDred->pCmdBarPopup->pWindow->windowDTK))) {
+        dred_cmdbar_popup_refresh_position(pWindow->pDred->pCmdBarPopup);
+    }
 
 
     // The config needs to be updated so that it's settings are serialized.

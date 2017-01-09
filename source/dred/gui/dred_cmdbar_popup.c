@@ -74,6 +74,17 @@ void dred_cmdbar_popup_delete(dred_cmdbar_popup* pCmdBarPopup)
 
 void dred_cmdbar_popup_show(dred_cmdbar_popup* pCmdBarPopup)
 {
+    dred_cmdbar_popup_refresh_position(pCmdBarPopup);
+    dred_window_show(pCmdBarPopup->pWindow);
+}
+
+void dred_cmdbar_popup_hide(dred_cmdbar_popup* pCmdBarPopup)
+{
+    dred_window_hide(pCmdBarPopup->pWindow);
+}
+
+void dred_cmdbar_popup_refresh_position(dred_cmdbar_popup* pCmdBarPopup)
+{
     int mainWindowPosX;
     int mainWindowPosY;
     dred_window_get_position(pCmdBarPopup->pDred->pMainWindow, &mainWindowPosX, &mainWindowPosY);
@@ -86,11 +97,4 @@ void dred_cmdbar_popup_show(dred_cmdbar_popup* pCmdBarPopup)
     unsigned int popupSizeY;
     dred_window_get_size(pCmdBarPopup->pWindow, &popupSizeX, &popupSizeY);
     dred_window_set_position(pCmdBarPopup->pWindow, mainWindowPosX + cmdbarPosX, mainWindowPosY + cmdbarPosY - popupSizeY);
-
-    dred_window_show(pCmdBarPopup->pWindow);
-}
-
-void dred_cmdbar_popup_hide(dred_cmdbar_popup* pCmdBarPopup)
-{
-    dred_window_hide(pCmdBarPopup->pWindow);
 }

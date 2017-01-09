@@ -11,3 +11,4 @@ void dred_cmdbar_popup_delete(dred_cmdbar_popup* pCmdBarPopup);
 
 void dred_cmdbar_popup_show(dred_cmdbar_popup* pCmdBarPopup);
 void dred_cmdbar_popup_hide(dred_cmdbar_popup* pCmdBarPopup);
+void dred_cmdbar_popup_refresh_position(dred_cmdbar_popup* pCmdBarPopup);
