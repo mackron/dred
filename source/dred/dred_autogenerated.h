@@ -27,6 +27,10 @@ dtk_color cmdbarTextColor; \
 dtk_color cmdbarTextColorActive; \
 float cmdbarPaddingX; \
 float cmdbarPaddingY; \
+dtk_color cmdbarPopupBGColor; \
+dred_font* cmdbarPopupFont; \
+float cmdbarPopupBorderWidth; \
+float cmdbarPopupPadding; \
 dtk_color tabgroupBGColor; \
 dtk_color tabBGColorInvactive; \
 dtk_color tabBGColorActive; \

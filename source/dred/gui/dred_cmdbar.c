@@ -153,8 +153,6 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dred_control* p
 
     // Fall through to the default handler.
     dred_textview_on_capture_keyboard(DRED_CONTROL(pTextBox), pPrevCapturedControl);
-
-    printf("cmdbar capture\n");
 }
 
 void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dred_control* pNextCapturedControl)
@@ -176,8 +174,6 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dred_control* p
     if (dred_control_is_descendant(pNextCapturedControl, DRED_CONTROL(pCmdBar->pTextBox))) {
         return;
     }
-
-    printf("cmdbar release\n");
 
     dred_cmdbar_popup_hide(pDred->pCmdBarPopup);
 
@@ -310,6 +306,25 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
     }
 }
 
+void dred_cmdbar_tb__on_text_changed(dred_textbox* pTextBox)
+{
+    // The parent is the command bar.
+    dred_cmdbar* pCmdBar = DRED_CMDBAR(dred_control_get_parent(DRED_CONTROL(pTextBox)));
+    assert(pCmdBar != NULL);
+
+    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
+    assert(pDred != NULL);
+
+
+    char* pText = dred_textbox_get_text_malloc(pTextBox);
+    if (pText == NULL) {
+        return;
+    }
+
+    dred_cmdbar_popup_refresh_autocomplete(pDred->pCmdBarPopup, pText);
+    free(pText);
+}
+
 void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
 {
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
@@ -362,6 +377,7 @@ dr_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_contr
 
     dred_textbox_disable_horizontal_scrollbar(pCmdBar->pTextBox);
     dred_textbox_disable_vertical_scrollbar(pCmdBar->pTextBox);
+    dred_textbox_set_on_text_changed(pCmdBar->pTextBox, dred_cmdbar_tb__on_text_changed);
 
     // Events.
     dred_control_set_on_size(DRED_CONTROL(pCmdBar), dred_cmdbar__on_size);
@@ -373,7 +389,6 @@ dr_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_contr
     dred_control_set_on_release_keyboard(DRED_CONTROL(pCmdBar->pTextBox), dred_cmdbar_tb__on_release_keyboard);
     dred_control_set_on_key_down(DRED_CONTROL(pCmdBar->pTextBox), dred_cmdbar_tb__on_key_down);
     dred_control_set_on_printable_key_down(DRED_CONTROL(pCmdBar->pTextBox), dred_cmdbar_tb__on_printable_key_down);
-
 
     strcpy_s(pCmdBar->message, sizeof(pCmdBar->message), "");
 
@@ -428,6 +443,18 @@ dr_bool32 dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigne
 
     dred_cmdbar_set_text(pCmdBar, pCmdBar->pDred->config.recentCommands[iPrevCommand]);
     return DR_TRUE;
+}
+
+size_t dred_cmdbar_get_text(dred_cmdbar* pCmdBar, char* pTextOut, size_t textOutSize)
+{
+    if (pCmdBar == NULL) return 0;
+    return dred_textbox_get_text(pCmdBar->pTextBox, pTextOut, textOutSize);
+}
+
+char* dred_cmdbar_get_text_malloc(dred_cmdbar* pCmdBar)
+{
+    if (pCmdBar == NULL) return 0;
+    return dred_textbox_get_text_malloc(pCmdBar->pTextBox);
 }
 
 

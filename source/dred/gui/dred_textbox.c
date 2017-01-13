@@ -1,5 +1,15 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
+void dred_textbox__engine_on_text_changed(drte_engine* pTextEngine)
+{
+    dred_textbox* pTextBox = (dred_textbox*)pTextEngine->pUserData;
+    assert(pTextBox);
+
+    if (pTextBox->onTextChanged) {
+        pTextBox->onTextChanged(pTextBox);
+    }
+}
+
 dr_bool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_control* pParent)
 {
     if (pTextBox == NULL) {
@@ -13,6 +23,8 @@ dr_bool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_co
         return DR_FALSE;
     }
 
+    pTextBox->pTextEngine->pUserData = pTextBox;
+    drte_engine_set_on_text_changed(pTextBox->pTextEngine, dred_textbox__engine_on_text_changed);
 
 
     if (!dred_textview_init(DRED_TEXTVIEW(pTextBox), pDred, pParent, pTextBox->pTextEngine)) {
@@ -209,6 +221,19 @@ void dred_textbox_set_text(dred_textbox* pTextBox, const char* text)
 size_t dred_textbox_get_text(dred_textbox* pTextBox, char* pTextOut, size_t textOutSize)
 {
     return dred_textview_get_text(DRED_TEXTVIEW(pTextBox), pTextOut, textOutSize);
+}
+
+char* dred_textbox_get_text_malloc(dred_textbox* pTextBox)
+{
+    size_t len = dred_textbox_get_text(pTextBox, NULL, 0);
+    
+    char* str = malloc(len+1);
+    if (str == NULL) {
+        return NULL;
+    }
+
+    dred_textbox_get_text(pTextBox, str, len+1);
+    return str;
 }
 
 void dred_textbox_step(dred_textbox* pTextBox, unsigned int milliseconds)
@@ -432,4 +457,10 @@ dr_bool32 dred_textbox_prepare_undo_point(dred_textbox* pTextBox)
 dr_bool32 dred_textbox_commit_undo_point(dred_textbox* pTextBox)
 {
     return dred_textview_commit_undo_point(DRED_TEXTVIEW(pTextBox));
+}
+
+
+void dred_textbox_set_on_text_changed(dred_textbox* pTextBox, dred_textbox_on_text_changed_proc proc)
+{
+    pTextBox->onTextChanged = proc;
 }

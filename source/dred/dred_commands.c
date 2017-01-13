@@ -740,9 +740,6 @@ dr_bool32 dred_command__export2cstring(dred_context* pDred, const char* value)
 }
 
 
-
-
-
 dr_bool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, const char** pValueOut)
 {
     if (cmdStr == NULL || pCommandOut == NULL || pValueOut == NULL) {
@@ -793,6 +790,35 @@ size_t dred_find_command_index(const char* cmdFunc)
     return (size_t)-1;
 }
 
+int dred_find_commands_starting_with_qsort_comp(const void* a, const void* b)
+{
+    size_t indexA = *(size_t*)a;
+    size_t indexB = *(size_t*)b;
+    return strcmp(g_CommandNames[indexA], g_CommandNames[indexB]);
+}
+
+size_t dred_find_commands_starting_with(size_t* pIndexOut, size_t sizeOut, const char* cmdFunc)
+{
+    if (sizeOut == 0 && pIndexOut != NULL) return 0;
+
+    size_t count = 0;
+    for (size_t i = 0; i < DRED_COMMAND_COUNT; ++i) {
+        if (dred_string_is_null_or_empty(cmdFunc) || strncmp(g_CommandNames[i], cmdFunc, strlen(cmdFunc)) == 0) {
+            if (count < sizeOut) {
+                pIndexOut[count] = i;
+            }
+
+            count += 1;
+        }
+    }
+
+    if (pIndexOut != NULL) {
+        qsort(pIndexOut, count, sizeof(size_t), dred_find_commands_starting_with_qsort_comp);
+    }
+
+    return count;
+}
+
 const char* dred_next_command_string(const char* cmdStr, char* cmdOut, size_t cmdOutSize, dred_command_separator* pSeparatorOut)
 {
     if (cmdStr == NULL || cmdStr[0] == '\0' || cmdOut == NULL || cmdOutSize == 0) {
@@ -809,12 +835,12 @@ const char* dred_next_command_string(const char* cmdStr, char* cmdOut, size_t cm
         if (cmdStr[length] == '&' && cmdStr[length+1] == '&') {
             if (pSeparatorOut) *pSeparatorOut = dred_command_separator_and;
             strncpy_s(cmdOut, cmdOutSize, cmdStr, length);
-            return cmdStr + length + 2; // +1 to skip past the '&&'
+            return cmdStr + length + 2; // +2 to skip past the '&&'
         }
         if (cmdStr[length] == '|' && cmdStr[length+1] == '|') {
             if (pSeparatorOut) *pSeparatorOut = dred_command_separator_or;
             strncpy_s(cmdOut, cmdOutSize, cmdStr, length);
-            return cmdStr + length + 2; // +1 to skip past the '||'
+            return cmdStr + length + 2; // +2 to skip past the '||'
         }
 
         length += 1;

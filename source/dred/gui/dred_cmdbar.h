@@ -37,6 +37,10 @@ void dred_cmdbar_uninit(dred_cmdbar* pCmdBar);
 void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text);
 dr_bool32 dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigned int iPrevCommand);
 
+// Retrieves the text of the command bar.
+size_t dred_cmdbar_get_text(dred_cmdbar* pCmdBar, char* pTextOut, size_t textOutSize);
+char* dred_cmdbar_get_text_malloc(dred_cmdbar* pCmdBar);
+
 // Determines whether or not the given command bar has the keyboard focus.
 dr_bool32 dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar);
 

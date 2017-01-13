@@ -430,6 +430,26 @@ void dred_config_on_set__cmdbar_padding_vert(dred_context* pDred)
     dred_update_main_window_layout(pDred);
 }
 
+void dred_config_on_set__cmdbar_popup_bg_color_active(dred_context* pDred)
+{
+    dred_cmdbar_popup_refresh_styling(pDred->pCmdBarPopup);
+}
+
+void dred_config_on_set__cmdbar_popup_font(dred_context* pDred)
+{
+    dred_cmdbar_popup_refresh_styling(pDred->pCmdBarPopup);
+}
+
+void dred_config_on_set__cmdbar_popup_border_width(dred_context* pDred)
+{
+    dred_cmdbar_popup_refresh_styling(pDred->pCmdBarPopup);
+}
+
+void dred_config_on_set__cmdbar_popup_padding(dred_context* pDred)
+{
+    dred_cmdbar_popup_refresh_styling(pDred->pCmdBarPopup);
+}
+
 
 void dred_config_on_set__tabgroup_generic_refresh(dred_context* pDred)
 {

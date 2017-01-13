@@ -5,6 +5,8 @@
 typedef struct dred_textbox dred_textbox;
 #define DRED_TEXTBOX(a) ((dred_textbox*)(a))
 
+typedef void (* dred_textbox_on_text_changed_proc)(dred_textbox* pTextBox);
+
 struct dred_textbox
 {
     // A text box control is just a text view control with a text engine.
@@ -13,6 +15,8 @@ struct dred_textbox
     // The text engine.
     drte_engine textEngine;
     drte_engine* pTextEngine;
+
+    dred_textbox_on_text_changed_proc onTextChanged;
 };
 
 
@@ -124,6 +128,7 @@ void dred_textbox_set_text(dred_textbox* pTextBox, const char* text);
 
 // Retrieves the text of the given text box.
 size_t dred_textbox_get_text(dred_textbox* pTextBox, char* pTextOut, size_t textOutSize);
+char* dred_textbox_get_text_malloc(dred_textbox* pTextBox);
 
 // Steps the text box to allow it to blink the cursor.
 void dred_textbox_step(dred_textbox* pTextBox, unsigned int milliseconds);
@@ -266,3 +271,7 @@ dr_bool32 dred_textbox_prepare_undo_point(dred_textbox* pTextBox);
 
 // Commits an undo point.
 dr_bool32 dred_textbox_commit_undo_point(dred_textbox* pTextBox);
+
+
+// Sets the event handle for text changes.
+void dred_textbox_set_on_text_changed(dred_textbox* pTextBox, dred_textbox_on_text_changed_proc proc);

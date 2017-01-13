@@ -65,6 +65,18 @@
 // cmdbar-padding-vert cmdbarPaddingY float dred_config_on_set__cmdbar_padding_vert 2
 //   The amount of padding to apply to the command bar on the top and bottom sides.
 //
+// cmdbar-popup-bg-color cmdbarPopupBGColor color dred_config_on_set__cmdbar_popup_bg_color_active 224 224 224
+//   The background color of the auto-complete popup box for the command bar.
+//
+// cmdbar-popup-font cmdbarPopupFont font dred_config_on_set__cmdbar_popup_font system-font-ui
+//   The font to use in the auto-complete popup box for the command bar.
+//
+// cmdbar-popup-border-width cmdbarPopupBorderWidth float dred_config_on_set__cmdbar_popup_border_width 2
+//   The width of the border for the auto-complete popup box.
+//
+// cmdbar-popup-padding cmdbarPopupPadding float dred_config_on_set__cmdbar_popup_padding 2
+//   The padding to apply between the border and the contents of the auto-complete popup box for the command bar.
+//
 //
 // tabgroup-bg-color tabgroupBGColor color dred_config_on_set__tabgroup_generic_refresh 48 48 48
 //   The background color of tab groups. This will be shown when there are no tabs open in the group.
@@ -271,26 +283,17 @@ void dred_config_on_set__auto_hide_cmd_bar(dred_context* pDred);
 void dred_config_on_set__enable_auto_reload(dred_context* pDred);
 
 
-// cmdbar-bg-color
 void dred_config_on_set__cmdbar_bg_color(dred_context* pDred);
-
-// cmdbar-bg-color-active
 void dred_config_on_set__cmdbar_bg_color_active(dred_context* pDred);
-
-// cmdbar-tb-font
 void dred_config_on_set__cmdbar_tb_font(dred_context* pDred);
-
-// cmdbar-text-color
 void dred_config_on_set__cmdbar_text_color(dred_context* pDred);
-
-// cmdbar-text-color-active
 void dred_config_on_set__cmdbar_text_color_active(dred_context* pDred);
-
-// cmdbar-padding-horz
 void dred_config_on_set__cmdbar_padding_horz(dred_context* pDred);
-
-// cmdbar-padding-vert
 void dred_config_on_set__cmdbar_padding_vert(dred_context* pDred);
+void dred_config_on_set__cmdbar_popup_bg_color_active(dred_context* pDred);
+void dred_config_on_set__cmdbar_popup_font(dred_context* pDred);
+void dred_config_on_set__cmdbar_popup_border_width(dred_context* pDred);
+void dred_config_on_set__cmdbar_popup_padding(dred_context* pDred);
 
 
 // Tabs and tab groups are refreshed with a generic function.

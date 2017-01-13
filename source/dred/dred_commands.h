@@ -280,6 +280,9 @@ dr_bool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, const
 // Finds the index of the given command function. Returns -1 if the command could not be found.
 size_t dred_find_command_index(const char* cmdFunc);
 
+// Finds a list of commands that begin with the given string. Returns the count.
+size_t dred_find_commands_starting_with(size_t* pIndexOut, size_t sizeOut, const char* cmdFunc);
+
 
 // Retrieves the next sub-command in the given command string.
 const char* dred_next_command_string(const char* cmdStr, char* cmdOut, size_t cmdOutSize, dred_command_separator* pSeparatorOut);
