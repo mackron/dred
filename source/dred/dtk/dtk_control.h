@@ -3,6 +3,7 @@
 typedef dtk_uint32 dtk_control_type;
 #define DTK_CONTROL_TYPE_EMPTY      0
 #define DTK_CONTROL_TYPE_WINDOW     1
+#define DTK_CONTROL_TYPE_SCROLLBAR  2
 #define DTK_CONTROL_TYPE_CUSTOM     65536
 
 #define DTK_CONTROL_FLAG_HIDDEN                     (1 << 0)
@@ -22,9 +23,6 @@ struct dtk_control
     dtk_int32 absolutePosY;
     dtk_uint32 width;
     dtk_uint32 height;
-
-    // TESTING
-    dtk_font font;
 };
 
 // Initializes a control.
