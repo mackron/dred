@@ -2040,7 +2040,7 @@ dtk_result dtk_window_bring_to_top(dtk_window* pWindow)
 
 dtk_bool32 dtk_window_is_maximized(dtk_window* pWindow)
 {
-    if (pWindow == NULL) return DTK_INVALID_ARGS;
+    if (pWindow == NULL) return DTK_FALSE;
 
     dtk_bool32 result = DTK_FALSE;
 #ifdef DTK_WIN32
@@ -2079,7 +2079,7 @@ dtk_result dtk_window_set_cursor(dtk_window* pWindow, dtk_system_cursor_type cur
 
 dtk_bool32 dtk_window_is_cursor_over(dtk_window* pWindow)
 {
-    if (pWindow == NULL) return DTK_INVALID_ARGS;
+    if (pWindow == NULL) return DTK_FALSE;
 
     dtk_bool32 result = DTK_FALSE;
 #ifdef DTK_WIN32

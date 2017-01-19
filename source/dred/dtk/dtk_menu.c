@@ -1004,7 +1004,7 @@ dtk_result dtk_menu_set_item_checked(dtk_menu* pMenu, dtk_uint32 index, dtk_bool
 
 dtk_bool32 dtk_menu_is_item_checked(dtk_menu* pMenu, dtk_uint32 index)
 {
-    if (pMenu == NULL || !dtk_menu__is_item_index_valid(pMenu, index)) return DTK_INVALID_ARGS;
+    if (pMenu == NULL || !dtk_menu__is_item_index_valid(pMenu, index)) return DTK_FALSE;
     
     dtk_bool32 result = DTK_FALSE;
 #ifdef DTK_WIN32
