@@ -1207,7 +1207,7 @@ dtk_result dtk_set_event_callback(dtk_context* pTK, dtk_event_proc proc)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking)
+dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking, int* pExitCode)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
 
@@ -1223,6 +1223,7 @@ dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking)
     }
 #endif
 
+    if (pExitCode) *pExitCode = pTK->exitCode;
     return result;
 }
 

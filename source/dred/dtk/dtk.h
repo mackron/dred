@@ -407,9 +407,11 @@ dtk_result dtk_set_event_callback(dtk_context* pTK, dtk_event_proc proc);
 // Set <blocking> to DTK_TRUE to block until a message is received. Set to DTK_FALSE to return immediately
 // if no event is in the queue, in which case DTK_NO_EVENT will be returned.
 //
+// <pExitCode> will store the exit code when the loop has been terminated, and can be null. 
+//
 // Thread Safety: UNSAFE
 //   Do not call this from multiple threads. Have a single thread that does all event handling.
-dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking);
+dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking, int* pExitCode);
 
 // Posts an event to the queue which will later handled by _only_ the event handler of the respective control.
 //

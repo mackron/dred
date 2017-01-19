@@ -282,9 +282,8 @@ int dred_platform_run()
 {
     int exitCode = 0;
     for (;;) {
-        dtk_result result = dtk_next_event(g_pTK, DTK_TRUE);  // <-- DTK_TRUE = blocking.
+        dtk_result result = dtk_next_event(g_pTK, DTK_TRUE, &exitCode);  // <-- DTK_TRUE = blocking.
         if (result != DTK_SUCCESS) {
-            exitCode = g_pTK->exitCode; // <-- TODO: This doesn't feel right... Implement an accessor function for this.
             break;
         }
     }
