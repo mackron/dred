@@ -528,7 +528,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                     e.type = DTK_EVENT_CAPTURE_KEYBOARD;
                     dtk__handle_event(&e);
                     pTK->win32.pWindowWithKeyboardFocus = pWindow;
-                    printf("Captured\n");
+                    //printf("Captured\n");
                 }
             }
         } break;
@@ -542,7 +542,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                     e.type = DTK_EVENT_RELEASE_KEYBOARD;
                     dtk__handle_event(&e);
                     pTK->win32.pWindowWithKeyboardFocus = NULL;
-                    printf("Released\n");
+                    //printf("Released\n");
                 }
             }
         } break;
