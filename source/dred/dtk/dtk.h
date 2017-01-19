@@ -102,6 +102,7 @@ typedef int dtk_result;
 #define dtk_zero_object(p)      dtk_zero_memory((p), sizeof(*(p)))
 
 #define dtk_count_of(obj)       (sizeof(obj) / sizeof(obj[0]))
+#define dtk_clamp(x, lo, hi)    (((x) < (lo)) ? (lo) : (((x) > (hi)) ? (hi) : (x)))
 
 #if defined(_MSC_VER)
 #define DTK_INLINE static __inline
@@ -162,6 +163,7 @@ typedef int dtk_event_type;
 #define DTK_EVENT_RELEASE_KEYBOARD      21
 #define DTK_EVENT_CAPTURE_MOUSE         22
 #define DTK_EVENT_RELEASE_MOUSE         23
+#define DTK_EVENT_SCROLLBAR_SCROLL      128
 #define DTK_EVENT_CUSTOM                256
 
 struct dtk_event
@@ -284,6 +286,11 @@ struct dtk_event
         {
             int unused;
         } releaseKeyboard, releaseMouse;
+
+        struct
+        {
+            dtk_uint32 scrollPos;
+        } scrollbar;
 
         struct
         {
