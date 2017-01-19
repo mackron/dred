@@ -285,8 +285,8 @@ dtk_result dtk_uninit_backend_apis__win32(dtk_context* pTK)
 {
     dtk_assert(pTK != NULL);
 
-    FreeLibrary(pTK->win32.hOle32DLL);
-    FreeLibrary(pTK->win32.hComctl32DLL);
+    FreeLibrary((HMODULE)pTK->win32.hOle32DLL);
+    FreeLibrary((HMODULE)pTK->win32.hComctl32DLL);
 
     return DTK_SUCCESS;
 }
@@ -446,7 +446,7 @@ dtk_result dtk_uninit__win32(dtk_context* pTK)
     g_dtkInitCounter_Win32 -= 1;
     if (g_dtkInitCounter_Win32 == 0) {
         dtk_free(pTK->win32.pAccelerators);
-        DestroyAcceleratorTable(pTK->win32.hAccel);
+        DestroyAcceleratorTable((HACCEL)pTK->win32.hAccel);
 
         UnregisterClassA(DTK_WIN32_WINDOW_CLASS_MESSAGING, NULL);
         UnregisterClassA(DTK_WIN32_WINDOW_CLASS_POPUP, NULL);
@@ -481,7 +481,7 @@ dtk_result dtk_next_event__win32(dtk_context* pTK, dtk_bool32 blocking)
 
     // Handle accelerator keys. If an accelerator key is processed with TranslateAccelerator() we do _not_ want to handle
     // the event with TranslateMessage/DispatchMessage.
-    if (TranslateAcceleratorA(msg.hwnd, pTK->win32.hAccel, &msg)) {
+    if (TranslateAcceleratorA(msg.hwnd, (HACCEL)pTK->win32.hAccel, &msg)) {
         return DTK_SUCCESS;
     }
 
@@ -499,7 +499,7 @@ dtk_result dtk_post_local_event__win32(dtk_context* pTK, dtk_event* pEvent)
     }
 
     *pEventCopy = *pEvent;
-    SendMessageA(pTK->win32.hMessagingWindow, DTK_WM_LOCAL, (WPARAM)0, (LPARAM)pEventCopy);
+    SendMessageA((HWND)pTK->win32.hMessagingWindow, DTK_WM_LOCAL, (WPARAM)0, (LPARAM)pEventCopy);
 
     return DTK_SUCCESS;
 }
@@ -517,7 +517,7 @@ dtk_result dtk_post_custom_event__win32(dtk_context* pTK, dtk_control* pControl,
     pEventData->eventID = eventID;
     pEventData->dataSize = dataSize;
     if (pData != NULL && dataSize > 0) memcpy(pEventData->pData, pData, dataSize);
-    SendMessageA(pTK->win32.hMessagingWindow, DTK_WM_CUSTOM, (WPARAM)eventID, (LPARAM)pEventData);
+    SendMessageA((HWND)pTK->win32.hMessagingWindow, DTK_WM_CUSTOM, (WPARAM)eventID, (LPARAM)pEventData);
 
     return DTK_SUCCESS;
 }
@@ -565,7 +565,7 @@ dtk_result dtk_recreate_HACCEL__win32(dtk_context* pTK)
         return DTK_ERROR;
     }
 
-    DestroyAcceleratorTable(pTK->win32.hAccel);
+    DestroyAcceleratorTable((HACCEL)pTK->win32.hAccel);
     pTK->win32.hAccel = hAccel;
 
     dtk_free(pAccels);

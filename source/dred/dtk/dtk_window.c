@@ -87,6 +87,8 @@ static dtk_uint32 dtk_get_mouse_event_state_flags__win32(WPARAM wParam)
     return stateFlags;
 }
 
+// This API is unused for now, but leaving it here in case I need to quickly add it again.
+#if 0
 static ACCEL dtk_win32_to_ACCEL(dtk_key key, uint32_t modifiers, WORD cmd)
 {
     ACCEL a;
@@ -106,7 +108,7 @@ static ACCEL dtk_win32_to_ACCEL(dtk_key key, uint32_t modifiers, WORD cmd)
 
     return a;
 }
-
+#endif
 
 static dtk_uint32 dtk_wm_event_to_mouse_button__win32(UINT msg)
 {

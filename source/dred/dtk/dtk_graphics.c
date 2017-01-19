@@ -353,7 +353,7 @@ dtk_result dtk_surface_init_image__gdi(dtk_context* pTK, dtk_uint32 width, dtk_u
     bmi.bmiHeader.biPlanes      = 1;
     bmi.bmiHeader.biBitCount    = 32;   // Only supporting 32-bit formats.
     bmi.bmiHeader.biCompression = BI_RGB;
-    pSurface->gdi.hBitmap = CreateDIBSection(pTK->win32.hGraphicsDC, &bmi, DIB_RGB_COLORS, (void**)&pSurface->gdi.pBitmapData, NULL, 0);
+    pSurface->gdi.hBitmap = CreateDIBSection((HDC)pTK->win32.hGraphicsDC, &bmi, DIB_RGB_COLORS, (void**)&pSurface->gdi.pBitmapData, NULL, 0);
     if (pSurface->gdi.hBitmap == NULL) {
         return DTK_ERROR;
     }
