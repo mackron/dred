@@ -54,8 +54,8 @@ typedef uint32_t         dtk_uint32;
 typedef int64_t          dtk_int64;
 typedef uint64_t         dtk_uint64;
 #endif
-typedef dtk_int8         dtk_bool8;
-typedef dtk_int32        dtk_bool32;
+typedef dtk_uint8        dtk_bool8;
+typedef dtk_uint32       dtk_bool32;
 #define DTK_TRUE         1
 #define DTK_FALSE        0
 
