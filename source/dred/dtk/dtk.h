@@ -488,4 +488,16 @@ dtk_result dtk_release_keyboard(dtk_context* pTK);
 dtk_control* dtk_get_control_with_keyboard_capture(dtk_context* pTK);
 
 
+// Sets the control that should receive mouse capture.
+//
+// Setting pControl to NULL is equivalent to dtk_release_mouse().
+dtk_result dtk_capture_mouse(dtk_context* pTK, dtk_control* pControl);
+
+// Releases the mouse capture from whatever control currently has the capture.
+dtk_result dtk_release_mouse(dtk_context* pTK);
+
+// Retrieves a pointer to the control with the mouse capture.
+dtk_control* dtk_get_control_with_mouse_capture(dtk_context* pTK);
+
+
 #endif  // DTK_H

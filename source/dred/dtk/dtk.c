@@ -68,6 +68,24 @@
 #define dtk_atomic_exchange_ptr dtk_atomic_exchange_32
 #endif
 
+void dtk__paint_recursive_no_windows(dtk_control* pControl, dtk_event* pEvent)
+{
+    dtk_assert(pControl != NULL);
+    dtk_assert(pEvent != NULL);
+
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        return;
+    }
+
+    dtk_event e = *pEvent;
+    e.pControl = pControl;
+    e.paint.rect = dtk_control_get_absolute_rect(pControl);
+    dtk_handle_local_event(e.pTK, &e);
+
+    for (dtk_control* pChild = pControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
+        dtk__paint_recursive_no_windows(pChild, &e);
+    }
+}
 
 DTK_INLINE dtk_event dtk_event_init(dtk_context* pTK, dtk_event_type type, dtk_control* pControl)
 {
@@ -129,6 +147,13 @@ dtk_result dtk__handle_event(dtk_event* pEvent)
         // handled by the operating system and thus need to be done manually by us.
         switch (pEvent->type)
         {
+            case DTK_EVENT_PAINT:
+            {
+                for (dtk_control* pChild = pEvent->pControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
+                    dtk__paint_recursive_no_windows(pChild, pEvent);
+                }
+            } break;
+
             case DTK_EVENT_MOUSE_MOVE:
             {
                 
@@ -1481,6 +1506,76 @@ dtk_control* dtk_get_control_with_keyboard_capture(dtk_context* pTK)
 {
     if (pTK == NULL) return NULL;
     return pTK->pControlWithKeyboardCapture;
+}
+
+
+dtk_result dtk_capture_mouse(dtk_context* pTK, dtk_control* pControl)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    // Don't do anything if the control already has the capture.
+    if (pTK->pControlWithMouseCapture == pControl) {
+        return DTK_SUCCESS;
+    }
+
+
+    // Make sure the mouse is first cleanly released from whatever control currently has the capture.
+    dtk_result result = dtk_release_mouse(pTK);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    // If pControl is NULL this should just act as a release.
+    if (pControl == NULL) {
+        return DTK_SUCCESS;
+    }
+
+
+    // In order to complete the capture we need to also capture the mouse on the window that owns the control. This must be done
+    // before marking the control as captured and posting the event in order to ensure the window's event handler does not post a
+    // duplicate capture event to pControl.
+    dtk_window* pWindow = dtk_control_get_window(pControl);
+    if (pWindow != NULL) {
+        result = dtk__capture_mouse_window(pTK, pWindow);
+        if (result != DTK_SUCCESS) {
+            return result;
+        }
+    }
+
+    pTK->pControlWithMouseCapture = pControl;
+
+    dtk_event e = dtk_event_init(pTK, DTK_EVENT_CAPTURE_MOUSE, pTK->pControlWithMouseCapture);
+    dtk_post_local_event(pTK, &e);
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_release_mouse(dtk_context* pTK)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    // Just pretend everything was successful if there was already nothing captured.
+    if (pTK->pControlWithMouseCapture == NULL) {
+        return DTK_SUCCESS;
+    }
+
+    dtk_event e = dtk_event_init(pTK, DTK_EVENT_RELEASE_MOUSE, pTK->pControlWithMouseCapture);
+    dtk_post_local_event(pTK, &e);
+
+    pTK->pControlWithMouseCapture = NULL;
+
+    // To complete the release we need to release the keyboard from whatever window has the capture. Note that this _must_ be
+    // done after marking the control as released and posting the event to ensure the window's event handler does not post a
+    // duplicate release event to pControlWithKeyboardCapture.
+    dtk__release_mouse_window(pTK);
+
+    return DTK_SUCCESS;
+}
+
+dtk_control* dtk_get_control_with_mouse_capture(dtk_context* pTK)
+{
+    if (pTK == NULL) return NULL;
+    return pTK->pControlWithMouseCapture;
 }
 
 

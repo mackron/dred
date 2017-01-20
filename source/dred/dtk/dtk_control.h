@@ -71,6 +71,17 @@ dtk_result dtk_control_relative_to_absolute(dtk_control* pControl, dtk_int32* pP
 dtk_result dtk_control_absolute_to_relative(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY);
 
 
+// Retrieves the absolute position and size of a control as a rectangle.
+dtk_rect dtk_control_get_absolute_rect(dtk_control* pControl);
+
+// Retrieves the relative position and size of a control as a rectangle.
+dtk_rect dtk_control_get_relative_rect(dtk_control* pControl);
+
+// Retrieves a rectangle whose left/top coordinates are set to 0 and the right/bottom coordinates are set to
+// the width and height of the control respectively.
+dtk_rect dtk_control_get_local_rect(dtk_control* pControl);
+
+
 // Finds the top level control for the given control.
 dtk_control* dtk_control_find_top_level_control(dtk_control* pControl);
 

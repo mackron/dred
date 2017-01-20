@@ -236,6 +236,43 @@ dtk_result dtk_control_absolute_to_relative(dtk_control* pControl, dtk_int32* pP
 }
 
 
+dtk_rect dtk_control_get_absolute_rect(dtk_control* pControl)
+{
+    if (pControl == NULL) return dtk_rect_init(0, 0, 0, 0);
+    
+    dtk_int32 absolutePosX;
+    dtk_int32 absolutePosY;
+    dtk_control_get_absolute_position(pControl, &absolutePosX, &absolutePosY);
+
+    dtk_uint32 sizeX;
+    dtk_uint32 sizeY;
+    dtk_control_get_size(pControl, &sizeX, &sizeY);
+
+    return dtk_rect_init(absolutePosX, absolutePosY, absolutePosX + (dtk_int32)sizeX, absolutePosY + (dtk_int32)sizeY);
+}
+
+dtk_rect dtk_control_get_relative_rect(dtk_control* pControl)
+{
+    if (pControl == NULL) return dtk_rect_init(0, 0, 0, 0);
+    
+    dtk_int32 relativePosX;
+    dtk_int32 relativePosY;
+    dtk_control_get_relative_position(pControl, &relativePosX, &relativePosY);
+
+    dtk_uint32 sizeX;
+    dtk_uint32 sizeY;
+    dtk_control_get_size(pControl, &sizeX, &sizeY);
+
+    return dtk_rect_init(relativePosX, relativePosY, relativePosX + (dtk_int32)sizeX, relativePosY + (dtk_int32)sizeY);
+}
+
+dtk_rect dtk_control_get_local_rect(dtk_control* pControl)
+{
+    if (pControl == NULL) return dtk_rect_init(0, 0, 0, 0);
+    return dtk_rect_init(0, 0, pControl->width, pControl->height);
+}
+
+
 dtk_control* dtk_control_find_top_level_control(dtk_control* pControl)
 {
     while (pControl != NULL) {
@@ -325,10 +362,7 @@ dtk_bool32 dtk_control_has_keyboard_capture(dtk_control* pControl)
 dtk_result dtk_control_capture_mouse(dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
-
-    // TODO: Implement me.
-    //return dtk_capture_mouse(pControl->pTK, pControl);
-    return DTK_ERROR;
+    return dtk_capture_mouse(pControl->pTK, pControl);
 }
 
 dtk_bool32 dtk_control_has_mouse_capture(dtk_control* pControl)

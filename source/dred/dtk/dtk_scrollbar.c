@@ -26,13 +26,26 @@ dtk_result dtk_scrollbar_set_range(dtk_scrollbar* pScrollbar, dtk_uint32 range)
 {
     if (pScrollbar == NULL) return DTK_INVALID_ARGS;
 
+    if (pScrollbar->range == range) {
+        return DTK_SUCCESS;
+    }
+
+    if (pScrollbar->scrollPos > range) {
+        dtk_scrollbar_scroll_to(pScrollbar, range);
+    }
+
     pScrollbar->range = range;
+
     return DTK_SUCCESS;
 }
 
 dtk_result dtk_scrollbar_set_page(dtk_scrollbar* pScrollbar, dtk_uint32 page)
 {
     if (pScrollbar == NULL) return DTK_INVALID_ARGS;
+
+    if (pScrollbar->page == page) {
+        return DTK_SUCCESS;
+    }
 
     pScrollbar->page = page;
     return DTK_SUCCESS;
@@ -41,6 +54,10 @@ dtk_result dtk_scrollbar_set_page(dtk_scrollbar* pScrollbar, dtk_uint32 page)
 dtk_result dtk_scrollbar_scroll_to(dtk_scrollbar* pScrollbar, dtk_uint32 scrollPos)
 {
     if (pScrollbar == NULL) return DTK_INVALID_ARGS;
+
+    if (pScrollbar->scrollPos == scrollPos) {
+        return DTK_SUCCESS;
+    }
 
     pScrollbar->scrollPos = dtk_clamp(scrollPos, 0, pScrollbar->range);
     return DTK_SUCCESS;
@@ -62,6 +79,7 @@ dtk_bool32 dtk_scrollbar_default_event_handler(dtk_event* pEvent)
     {
         case DTK_EVENT_PAINT:
         {
+            dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_control_get_local_rect(pEvent->pControl), dtk_rgb(64, 64, 64));
         } break;
 
         case DTK_EVENT_SCROLLBAR_SCROLL:
