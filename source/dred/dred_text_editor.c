@@ -461,23 +461,6 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
 
     dred_control_begin_dirty(DRED_CONTROL(pTextEditor));
     {
-        // Highlighting.
-        pTextEditor->highlighter.styles.common.comment.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->config.textEditorScale);
-        pTextEditor->highlighter.styles.common.comment.bgColor = pDred->config.textEditorBGColor;
-        pTextEditor->highlighter.styles.common.comment.fgColor = pDred->config.cppCommentTextColor;
-        dred_text_editor__register_style(pTextEditor, &pTextEditor->highlighter.styles.common.comment);
-
-        pTextEditor->highlighter.styles.common.string.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->config.textEditorScale);
-        pTextEditor->highlighter.styles.common.string.bgColor = pDred->config.textEditorBGColor;
-        pTextEditor->highlighter.styles.common.string.fgColor = pDred->config.cppStringTextColor;
-        dred_text_editor__register_style(pTextEditor, &pTextEditor->highlighter.styles.common.string);
-        
-        pTextEditor->highlighter.styles.common.keyword.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->config.textEditorScale);
-        pTextEditor->highlighter.styles.common.keyword.bgColor = pDred->config.textEditorBGColor;
-        pTextEditor->highlighter.styles.common.keyword.fgColor = pDred->config.cppKeywordTextColor;
-        dred_text_editor__register_style(pTextEditor, &pTextEditor->highlighter.styles.common.keyword);
-
-
         dred_textview_set_font(pTextEditor->pTextView, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
         dred_textview_set_text_color(pTextEditor->pTextView, pDred->config.textEditorTextColor);
         dred_textview_set_cursor_color(pTextEditor->pTextView, pDred->config.textEditorCursorColor);

@@ -68,7 +68,6 @@
 #include "dred_commands.c"
 #include "dred_misc.c"
 #include "dred_stock_themes.c"
-#include "dred_highlighters.c"
 #include "dred_codegen.c"
 #include "dred_package.c"
 #include "dred_package_library.c"

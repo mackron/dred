@@ -105,7 +105,6 @@ extern "C" {
 #include "dred_shortcuts.h"
 #include "dred_editor.h"
 #include "dred_settings_editor.h"
-#include "dred_highlighters.h"
 #include "dred_text_editor.h"
 #include "dred_font.h"
 #include "dred_font_library.h"

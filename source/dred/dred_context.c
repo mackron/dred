@@ -152,6 +152,7 @@ void dred_window_cb__on_main_window_move(dred_window* pWindow, int posX, int pos
 {
     (void)posX;
     (void)posY;
+
     assert(pWindow != NULL);
 
     if (dtk_control_is_visible(DTK_CONTROL(&pWindow->pDred->pCmdBarPopup->pWindow->windowDTK))) {

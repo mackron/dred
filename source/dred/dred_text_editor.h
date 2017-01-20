@@ -19,8 +19,6 @@ struct dred_text_editor
 
     unsigned int iBaseUndoPoint;    // Used to determine whether or no the file has been modified.
     float textScale;
-
-    dred_highlighter highlighter;
 };
 
 
