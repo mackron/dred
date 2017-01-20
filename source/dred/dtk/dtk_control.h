@@ -16,6 +16,10 @@ struct dtk_control
     dtk_context* pTK;
     dtk_event_proc onEvent;
     dtk_control* pParent;
+    dtk_control* pFirstChild;
+    dtk_control* pLastChild;
+    dtk_control* pNextSibling;
+    dtk_control* pPrevSibling;
     void* pUserData;        // For use by the application.
     dtk_control_type type;
     dtk_uint32 flags;       // DTK_CONTROL_FLAG_*

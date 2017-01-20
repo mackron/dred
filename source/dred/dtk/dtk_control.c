@@ -1,5 +1,50 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
+void dtk_control__link_child(dtk_control* pParent, dtk_control* pChild)
+{
+    dtk_assert(pParent != NULL);
+    dtk_assert(pChild != NULL);
+    dtk_assert(pChild->pParent == NULL);    // <-- The child should not already be attached to a parent.
+
+    pChild->pParent = pChild;
+
+    if (pParent->pFirstChild == NULL) {
+        pParent->pFirstChild = pChild;
+        dtk_assert(pParent->pLastChild == NULL);
+    } else {
+        pChild->pPrevSibling = pParent->pLastChild;
+        pChild->pNextSibling = NULL;
+        pChild->pPrevSibling->pNextSibling = pChild;
+    }
+
+    pParent->pLastChild = pChild;
+}
+
+void dtk_control__unlink_child(dtk_control* pParent, dtk_control* pChild)
+{
+    dtk_assert(pParent != NULL);
+    dtk_assert(pChild != NULL);
+    dtk_assert(pChild->pParent == pParent);
+
+    if (pChild->pNextSibling) {
+        pChild->pNextSibling->pPrevSibling = pChild->pPrevSibling;
+    }
+    if (pChild->pPrevSibling) {
+        pChild->pPrevSibling->pNextSibling = pChild->pNextSibling;
+    }
+
+    if (pParent->pLastChild == pChild) {
+        pParent->pLastChild = pChild->pPrevSibling;
+    }
+    if (pParent->pFirstChild == pChild) {
+        pParent->pFirstChild = NULL;
+    }
+
+    pChild->pParent = NULL;
+    pChild->pPrevSibling = NULL;
+    pChild->pNextSibling = NULL;
+}
+
 dtk_result dtk_control_init(dtk_context* pTK, dtk_control* pParent, dtk_control_type type, dtk_event_proc onEvent, dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
@@ -9,7 +54,10 @@ dtk_result dtk_control_init(dtk_context* pTK, dtk_control* pParent, dtk_control_
     pControl->pTK = pTK;
     pControl->type = type;
     pControl->onEvent = onEvent;
-    pControl->pParent = pParent;
+
+    if (pParent != NULL) {
+        dtk_control__link_child(pParent, pControl);
+    }
 
     return DTK_SUCCESS;
 }
@@ -17,6 +65,11 @@ dtk_result dtk_control_init(dtk_context* pTK, dtk_control* pParent, dtk_control_
 dtk_result dtk_control_uninit(dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    if (pControl->pParent != NULL) {
+        dtk_control__unlink_child(pControl->pParent, pControl);
+    }
+
     return DTK_SUCCESS;
 }
 
