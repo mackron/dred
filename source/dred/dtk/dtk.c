@@ -797,7 +797,7 @@ void dtk_log_handler__gtk(const gchar *domain, GLogLevelFlags level, const gchar
     }
 }
 
-#if GLIB_CHECK_VERSION(2, 5, 0)
+#if GLIB_CHECK_VERSION(2, 50, 0)
 GLogWriterOutput dtk_log_writer_handler__gtk(GLogLevelFlags level, const GLogField *fields, gsize fieldCount, gpointer pUserData)
 {
     dtk_context* pTK = (dtk_context*)pUserData;
@@ -858,7 +858,7 @@ dtk_result dtk_init__gtk(dtk_context* pTK)
         g_log_set_handler("GLib", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL, dtk_log_handler__gtk, pTK);
         g_log_set_handler("Gtk",  G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL, dtk_log_handler__gtk, pTK);
 
-#if GLIB_CHECK_VERSION(2, 5, 0)
+#if GLIB_CHECK_VERSION(2, 50, 0)
         g_log_set_writer_func(dtk_log_writer_handler__gtk, pTK, NULL);
 #endif
 
