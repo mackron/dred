@@ -113,6 +113,7 @@ typedef int dtk_result;
 typedef struct dtk_context dtk_context;
 typedef struct dtk_event dtk_event;
 typedef struct dtk_control dtk_control;
+typedef struct dtk_scrollbar dtk_scrollbar;
 typedef struct dtk_window dtk_window;
 typedef struct dtk_menu dtk_menu;
 typedef struct dtk_timer dtk_timer;
