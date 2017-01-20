@@ -1126,7 +1126,7 @@ dtk_result dtk__release_keyboard_window__gtk(dtk_context* pTK)
     (void)pTK;
 
     // From what I can tell I appears there isn't actually a way to ungrab the focus. Passing NULL to gtk_widget_grab_focus() results in an
-    // error, so I'm not quite sure how do it, of if it's event needed...
+    // error, so I'm not quite sure how do it, or if it's event needed...
     return DTK_SUCCESS;
 }
 
