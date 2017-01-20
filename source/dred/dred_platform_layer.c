@@ -463,6 +463,11 @@ void dred_window_get_client_size(dred_window* pWindow, unsigned int* pWidthOut, 
     dtk_window_get_client_size(&pWindow->windowDTK, pWidthOut, pHeightOut);
 }
 
+void dred_window_get_client_position(dred_window* pWindow, int* pPosXOut, int* pPosYOut)
+{
+    dtk_window_get_client_absolute_position(&pWindow->windowDTK, pPosXOut, pPosYOut);
+}
+
 
 void dred_window_move_to_center(dred_window* pWindow)
 {

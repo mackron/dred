@@ -116,6 +116,7 @@ void dred_window_get_position(dred_window* pWindow, int* pPosXOut, int* pPosYOut
 
 // Retrieves the size of the client area of the given window. This does not include the size of the menu.
 void dred_window_get_client_size(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut);
+void dred_window_get_client_position(dred_window* pWindow, int* pPosXOut, int* pPosYOut);
 
 // Center's the given window. If the window has a parent it'll be centered on the parent, otherwise it'll be centered on the monitor.
 void dred_window_move_to_center(dred_window* pWindow);

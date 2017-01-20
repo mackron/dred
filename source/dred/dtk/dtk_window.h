@@ -94,6 +94,9 @@ dtk_result dtk_window_get_absolute_position(dtk_window* pWindow, dtk_int32* pPos
 dtk_result dtk_window_set_relative_position(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY);
 dtk_result dtk_window_get_relative_position(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY);
 
+// Retrieves the absolute position of teh client area of the window.
+dtk_result dtk_window_get_client_absolute_position(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY);
+
 // Center's a window onto it's parent control. If it does not have a parent it'll be centered on the monitor.
 dtk_result dtk_window_move_to_center(dtk_window* pWindow);
 

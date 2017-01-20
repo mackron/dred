@@ -264,7 +264,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         {
             e.type = DTK_EVENT_MOVE;
 
-        #if 1
+        #if 0
             // This technique will use the position of the entire window, including the frame.
             RECT rect;
             GetWindowRect(hWnd, &rect);
@@ -798,7 +798,7 @@ dtk_result dtk_window_set_absolute_position__win32(dtk_window* pWindow, dtk_int3
 
 dtk_result dtk_window_get_absolute_position__win32(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
 {
-#if 0
+#if 1
     // NOTE: This is returning incorrect results for some reason. When fullscreen, it reports an extra 8 pixels
     //       on each side for some reason. Windows 10. http://stackoverflow.com/questions/34139450/getwindowrect-returns-a-size-including-invisible-borders
     RECT rect;
@@ -822,6 +822,20 @@ dtk_result dtk_window_get_absolute_position__win32(dtk_window* pWindow, dtk_int3
     if (pPosY) *pPosY = pt.y;
 #endif
 
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_window_get_client_absolute_position__win32(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
+{
+    POINT pt;
+    pt.x = 0;
+    pt.y = 0;
+    if (!ClientToScreen((HWND)pWindow->win32.hWnd, &pt)) {
+        return DTK_ERROR;
+    }
+
+    if (pPosX) *pPosX = pt.x;
+    if (pPosY) *pPosY = pt.y;
     return DTK_SUCCESS;
 }
 
@@ -1575,6 +1589,13 @@ dtk_result dtk_window_get_absolute_position__gtk(dtk_window* pWindow, dtk_int32*
     return DTK_SUCCESS;
 }
 
+dtk_result dtk_window_get_client_absolute_position__gtk(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
+{
+    if (pPosX) *pPosX = pWindow->control.absolutePosX;
+    if (pPosY) *pPosY = pWindow->control.absolutePosY;
+    return DTK_SUCCESS;
+}
+
 dtk_result dtk_window_move_to_center_of_screen__gtk(dtk_window* pWindow)
 {
     gtk_window_set_position(GTK_WINDOW(pWindow->gtk.pWidget), GTK_WIN_POS_CENTER);
@@ -1974,6 +1995,27 @@ dtk_result dtk_window_set_relative_position(dtk_window* pWindow, dtk_int32 posX,
 dtk_result dtk_window_get_relative_position(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
 {
     return dtk_control_get_relative_position(DTK_CONTROL(pWindow), pPosX, pPosY);
+}
+
+dtk_result dtk_window_get_client_absolute_position(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
+{
+    if (pPosX) *pPosX = 0;
+    if (pPosY) *pPosY = 0;
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_get_client_absolute_position__win32(pWindow, pPosX, pPosY);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_get_client_absolute_position__gtk(pWindow, pPosX, pPosY);
+    }
+#endif
+
+    return result;
 }
 
 dtk_result dtk_window_move_to_center(dtk_window* pWindow)
