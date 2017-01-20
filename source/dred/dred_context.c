@@ -150,14 +150,20 @@ void dred_window_cb__on_main_window_close(dred_window* pWindow)
 
 void dred_window_cb__on_main_window_move(dred_window* pWindow, int posX, int posY)
 {
+    (void)posX;
+    (void)posY;
     assert(pWindow != NULL);
 
     if (dtk_control_is_visible(DTK_CONTROL(&pWindow->pDred->pCmdBarPopup->pWindow->windowDTK))) {
         dred_cmdbar_popup_refresh_position(pWindow->pDred->pCmdBarPopup);
     }
 
-    pWindow->pDred->config.windowPosX = posX;
-    pWindow->pDred->config.windowPosY = posY;
+    int configWindowPosX;
+    int configWindowPosY;
+    dred_window_get_position(pWindow, &configWindowPosX, &configWindowPosY);
+
+    pWindow->pDred->config.windowPosX = configWindowPosX;
+    pWindow->pDred->config.windowPosY = configWindowPosY;
 }
 
 void dred_window_cb__on_main_window_size(dred_control* pControl, float width, float height)
