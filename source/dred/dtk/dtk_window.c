@@ -1684,6 +1684,27 @@ dtk_result dtk_window_set_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu)
     return DTK_SUCCESS;
 }
 
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+typedef struct
+{
+    dtk_int32 posX;
+    dtk_int32 posY;
+} dtk_window_show_popup_menu__gtk__position_cb_data;
+
+void dtk_window_show_popup_menu__gtk__position_cb(GtkMenu* pMenu, gint* pX, gint* pY, gboolean* pPushIn, gpointer pUserData)
+{
+    (void)pMenu;
+
+    dtk_window_show_popup_menu__gtk__position_cb_data* pData = (dtk_window_show_popup_menu__gtk__position_cb_data*)pUserData;
+    dtk_assert(pData != NULL);
+
+    *pX = pData->posX;
+    *pY = pData->posY;
+    *pPushIn = FALSE;
+}
+#endif
+
 dtk_result dtk_window_show_popup_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu, dtk_int32 posX, dtk_int32 posY)
 {
     GtkRequisition size;
@@ -1694,12 +1715,23 @@ dtk_result dtk_window_show_popup_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu,
         gtk_widget_get_preferred_size(GTK_WIDGET(pWindow->gtk.pMenu->gtk.pWidget), NULL, &menubarSize);
     }
 
+#if GTK_CHECK_VERSION(3, 22, 0)
     GdkRectangle rect;
     rect.x = posX;
     rect.y = posY + menubarSize.height;
     rect.width = size.width;
     rect.height = size.height;
     gtk_menu_popup_at_rect(GTK_MENU(pMenu->gtk.pWidget), gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pWidget)), &rect, GDK_GRAVITY_NORTH_WEST, GDK_GRAVITY_NORTH_WEST, NULL);
+#else
+    dtk_int32 windowPosX = pWindow->control.absolutePosX;
+    dtk_int32 windowPosY = pWindow->control.absolutePosY;
+    //dtk_window_get_absolute_position(pWindow, &windowPosX, &windowPosY);
+
+    dtk_window_show_popup_menu__gtk__position_cb_data data;
+    data.posX = posX + windowPosX;
+    data.posY = posY + windowPosY + menubarSize.height;
+    gtk_menu_popup(GTK_MENU(pMenu->gtk.pWidget), NULL, NULL, dtk_window_show_popup_menu__gtk__position_cb, &data, 0, gtk_get_current_event_time());
+#endif
 
     return DTK_SUCCESS;
 }
