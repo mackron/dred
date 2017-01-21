@@ -65,6 +65,10 @@ void dtk__rgba8_bgra8_swap__premul(const void* pSrc, void* pDst, unsigned int wi
 //
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
+
+dtk_result dtk_surface__push_saved_state(dtk_surface* pSurface, dtk_surface_saved_state state);
+dtk_result dtk_surface__pop_saved_state(dtk_surface* pSurface, dtk_surface_saved_state* pState);
+
 #ifdef DTK_WIN32
 // Fonts
 // =====
@@ -378,6 +382,33 @@ dtk_result dtk_surface_uninit__gdi(dtk_surface* pSurface)
         DeleteObject(pSurface->gdi.hBitmap);
     }
 
+    return DTK_SUCCESS;
+}
+
+
+dtk_result dtk_surface_push__gdi(dtk_surface* pSurface)
+{
+    int token = SaveDC((HDC)pSurface->gdi.hDC);
+    if (token == 0) {
+        return DTK_ERROR;
+    }
+
+    dtk_surface_saved_state state;
+    state.gdi.token = token;
+    dtk_surface__push_saved_state(pSurface, state);
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_surface_pop__gdi(dtk_surface* pSurface)
+{
+    dtk_surface_saved_state state;
+    dtk_result result = dtk_surface__pop_saved_state(pSurface, &state);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    RestoreDC((HDC)pSurface->gdi.hDC, state.gdi.token);
     return DTK_SUCCESS;
 }
 
@@ -852,6 +883,20 @@ dtk_result dtk_surface_uninit__cairo(dtk_surface* pSurface)
     return DTK_SUCCESS;
 }
 
+
+dtk_result dtk_surface_push__cairo(dtk_surface* pSurface)
+{
+    cairo_save((cairo_t*)pSurface->cairo.pContext);
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_surface_pop__cairo(dtk_surface* pSurface)
+{
+    cairo_restore((cairo_t*)pSurface->cairo.pContext);
+    return DTK_SUCCESS;
+}
+
+
 void dtk_surface_clear__cairo(dtk_surface* pSurface, dtk_color color)
 {
     cairo_set_source_rgba(pSurface->cairo.pContext, color.r/255.0, color.g/255.0, color.b/255.0, color.a/255.0);
@@ -1218,6 +1263,46 @@ dtk_result dtk_surface_uninit(dtk_surface* pSurface)
     return result;
 }
 
+
+dtk_result dtk_surface_push(dtk_surface* pSurface)
+{
+    if (pSurface == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pSurface->backend == dtk_graphics_backend_gdi) {
+        result = dtk_surface_push__gdi(pSurface);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pSurface->backend == dtk_graphics_backend_cairo) {
+        result = dtk_surface_push__cairo(pSurface);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_surface_pop(dtk_surface* pSurface)
+{
+    if (pSurface == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pSurface->backend == dtk_graphics_backend_gdi) {
+        result = dtk_surface_pop__gdi(pSurface);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pSurface->backend == dtk_graphics_backend_cairo) {
+        result = dtk_surface_pop__cairo(pSurface);
+    }
+#endif
+
+    return result;
+}
+
+
 void dtk_surface_clear(dtk_surface* pSurface, dtk_color color)
 {
     if (pSurface == NULL) return;
@@ -1336,4 +1421,35 @@ void dtk_surface_draw_surface(dtk_surface* pSurface, dtk_surface* pSrcSurface, d
         dtk_surface_draw_surface__cairo(pSurface, pSrcSurface, pArgs);
     }
 #endif
+}
+
+
+dtk_result dtk_surface__push_saved_state(dtk_surface* pSurface, dtk_surface_saved_state state)
+{
+    dtk_assert(pSurface != NULL);
+
+    // TODO: Remove this arbitrary restriction by just making it a heap allocated array.
+    if (pSurface->savedStateStackCount >= dtk_count_of(pSurface->pSavedStateStack)) {
+        return DTK_OUT_OF_RANGE;
+    }
+
+    pSurface->pSavedStateStack[pSurface->savedStateStackCount] = state;
+    pSurface->savedStateStackCount += 1;
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_surface__pop_saved_state(dtk_surface* pSurface, dtk_surface_saved_state* pState)
+{
+    dtk_assert(pSurface != NULL);
+    dtk_assert(pState != NULL);
+    
+    if (pSurface->savedStateStackCount == 0) {
+        return DTK_OUT_OF_RANGE;
+    }
+
+    *pState = pSurface->pSavedStateStack[pSurface->savedStateStackCount-1];
+    pSurface->savedStateStackCount -= 1;
+
+    return DTK_SUCCESS;
 }

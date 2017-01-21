@@ -82,6 +82,31 @@ typedef struct
 
 typedef struct
 {
+    union
+    {
+#ifdef DTK_WIN32
+        struct
+        {
+            int token;
+        } gdi;
+#endif
+#ifdef DTK_GTK
+        struct
+        {
+            int unused;
+        } cairo;
+#endif
+#ifdef DTK_X11
+        struct
+        {
+            int unused;
+        } x11;
+#endif
+    };
+} dtk_surface_saved_state;
+
+typedef struct
+{
     dtk_context* pTK;
     dtk_graphics_backend backend;
     char family[128];
@@ -90,7 +115,7 @@ typedef struct
     dtk_font_slant slant;
     float rotation;
     dtk_uint32 optionFlags;
-    
+
     union
     {
     #ifdef DTK_WIN32
@@ -169,7 +194,10 @@ typedef struct
     dtk_uint32 height;
     dtk_bool32 isTransient : 1;
     dtk_bool32 isImage     : 1;
-    
+    dtk_surface_saved_state pSavedStateStack[32];
+    dtk_uint32 savedStateStackCount;
+    dtk_uint32 savedStateStackCapacity;
+
     union
     {
     #ifdef DTK_WIN32
@@ -214,6 +242,13 @@ dtk_result dtk_surface_init_image(dtk_context* pTK, dtk_uint32 width, dtk_uint32
 
 // Uninitializes a surface.
 dtk_result dtk_surface_uninit(dtk_surface* pSurface);
+
+
+// Saves a copy of the current state for the given surface, which can be restored later with dtk_surface_ppop().
+dtk_result dtk_surface_push(dtk_surface* pSurface);
+
+// Restores the last saved state.
+dtk_result dtk_surface_pop(dtk_surface* pSurface);
 
 
 // Clears the given surface within it's current clipping region.
