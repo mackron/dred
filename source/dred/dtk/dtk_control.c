@@ -6,7 +6,7 @@ void dtk_control__link_child(dtk_control* pParent, dtk_control* pChild)
     dtk_assert(pChild != NULL);
     dtk_assert(pChild->pParent == NULL);    // <-- The child should not already be attached to a parent.
 
-    pChild->pParent = pChild;
+    pChild->pParent = pParent;
 
     if (pParent->pFirstChild == NULL) {
         pParent->pFirstChild = pChild;
@@ -217,7 +217,7 @@ dtk_result dtk_control_set_relative_position(dtk_control* pControl, dtk_int32 po
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
     
-    if (pControl->pParent == NULL) {
+    if (pControl->pParent == NULL || pControl->pParent->type == DTK_CONTROL_TYPE_WINDOW) {
         return dtk_control_set_absolute_position(pControl, posX, posY);
     }
 
@@ -236,7 +236,7 @@ dtk_result dtk_control_get_relative_position(dtk_control* pControl, dtk_int32* p
         return result;
     }
 
-    if (pControl->pParent != NULL) {
+    if (pControl->pParent != NULL && pControl->pParent->type != DTK_CONTROL_TYPE_WINDOW) {
         return dtk_control_absolute_to_relative(pControl->pParent, pPosX, pPosY);
     }
 
