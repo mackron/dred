@@ -4,6 +4,7 @@ typedef dtk_uint32 dtk_control_type;
 #define DTK_CONTROL_TYPE_EMPTY      0
 #define DTK_CONTROL_TYPE_WINDOW     1
 #define DTK_CONTROL_TYPE_SCROLLBAR  2
+#define DTK_CONTROL_TYPE_COUNT      3   // <-- Update this when a new built-in type is added. Also remember to register the default event handler in dtk_init().
 #define DTK_CONTROL_TYPE_CUSTOM     65536
 
 #define DTK_CONTROL_FLAG_HIDDEN                     (1 << 0)

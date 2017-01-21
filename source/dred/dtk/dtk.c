@@ -68,25 +68,6 @@
 #define dtk_atomic_exchange_ptr dtk_atomic_exchange_32
 #endif
 
-void dtk__paint_recursive_no_windows(dtk_control* pControl, dtk_event* pEvent)
-{
-    dtk_assert(pControl != NULL);
-    dtk_assert(pEvent != NULL);
-
-    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
-        return;
-    }
-
-    dtk_event e = *pEvent;
-    e.pControl = pControl;
-    e.paint.rect = dtk_control_get_absolute_rect(pControl);
-    dtk_handle_local_event(e.pTK, &e);
-
-    for (dtk_control* pChild = pControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
-        dtk__paint_recursive_no_windows(pChild, &e);
-    }
-}
-
 DTK_INLINE dtk_event dtk_event_init(dtk_context* pTK, dtk_event_type type, dtk_control* pControl)
 {
     dtk_event e;
@@ -101,73 +82,16 @@ DTK_INLINE dtk_event dtk_event_init(dtk_context* pTK, dtk_event_type type, dtk_c
 dtk_result dtk__handle_event(dtk_event* pEvent)
 {
     dtk_assert(pEvent != NULL);
-    dtk_assert(pEvent->pTK != NULL);
     
-    // Post to the global event handler first.
-    dtk_event_proc onEventGlobal = pEvent->pTK->onEvent;
-    dtk_bool32 propagate = onEventGlobal == NULL || onEventGlobal(pEvent);
-    if (!propagate) {
-        return DTK_SUCCESS;
-    }
-    
-    if (pEvent->pControl == NULL) {
-        return DTK_SUCCESS;
-    }
-    
-    
-    // Some event need special handling before posting to the window's event handler.
-    if (pEvent->pControl->type == DTK_CONTROL_TYPE_WINDOW) {
-        dtk_window* pWindow = DTK_WINDOW(pEvent->pControl);
-        switch (pEvent->type)
-        {
-            case DTK_EVENT_SIZE:
-            {
-                // When a window is resized the drawing surface also needs to be resized.
-                DTK_CONTROL(pWindow)->width  = pEvent->size.width;
-                DTK_CONTROL(pWindow)->height = pEvent->size.height;
-            } break;
-            
-            case DTK_EVENT_MOVE:
-            {
-                DTK_CONTROL(pWindow)->absolutePosX = pEvent->move.x;
-                DTK_CONTROL(pWindow)->absolutePosY = pEvent->move.y;
-            } break;
-    
-            default: break;
-        }
-    
-        dtk_event_proc onEventLocal = DTK_CONTROL(pWindow)->onEvent;
-        propagate = onEventLocal == NULL || onEventLocal(pEvent);
-        if (!propagate) {
-            return DTK_SUCCESS;
-        }
+    dtk_context* pTK = pEvent->pTK;
+    dtk_assert(pTK != NULL);
 
-        // After the window has had the event posted to it we may need to post some related events to controls which are not
-        // handled by the operating system and thus need to be done manually by us.
-        switch (pEvent->type)
-        {
-            case DTK_EVENT_PAINT:
-            {
-                for (dtk_control* pChild = pEvent->pControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
-                    dtk__paint_recursive_no_windows(pChild, pEvent);
-                }
-            } break;
-
-            case DTK_EVENT_MOUSE_MOVE:
-            {
-                
-            } break;
-
-            default: break;
-        }
-    } else {
-        // It's not a window. We just pass the event straight through to the control's event handler.
-        dtk_event_proc onEventLocal = pEvent->pControl->onEvent;
-        if (onEventLocal) {
-            onEventLocal(pEvent);
-        }
+    dtk_event_proc onEventGlobal = pTK->onEvent;
+    if (onEventGlobal == NULL) {
+        onEventGlobal = dtk_default_event_handler;
     }
 
+    onEventGlobal(pEvent);
     return DTK_SUCCESS;
 }
 
@@ -1203,6 +1127,10 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
     }
 #endif
 
+    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_EMPTY    ] = NULL;
+    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_WINDOW   ] = dtk_window_default_event_handler;
+    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_SCROLLBAR] = dtk_scrollbar_default_event_handler;
+
     return result;
 }
 
@@ -1276,6 +1204,10 @@ dtk_result dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent)
     if (pTK == NULL || pEvent == NULL || pEvent->pControl == NULL) return DTK_INVALID_ARGS;
 
     dtk_event_proc onEvent = pEvent->pControl->onEvent;
+    if (onEvent == NULL && pEvent->pControl->type < DTK_CONTROL_TYPE_COUNT) {
+        onEvent = pTK->defaultEventHandlers[pEvent->pControl->type];
+    }
+
     if (onEvent) {
         onEvent(pEvent);
     }
@@ -1314,6 +1246,21 @@ dtk_result dtk_handle_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_
     e.custom.dataSize = dataSize;
     e.custom.pData = pData;
     return dtk__handle_event(&e);
+}
+
+dtk_bool32 dtk_default_event_handler(dtk_event* pEvent)
+{
+    if (pEvent == NULL) return DTK_FALSE;
+
+    dtk_context* pTK = pEvent->pTK;
+    dtk_assert(pTK != NULL);
+
+    dtk_control* pControl = pEvent->pControl;
+    if (pControl == NULL) {
+        return DTK_SUCCESS;
+    }
+
+    return dtk_handle_local_event(pTK, pEvent);
 }
 
 dtk_result dtk_post_quit_event(dtk_context* pTK, int exitCode)

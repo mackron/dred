@@ -350,7 +350,7 @@ static dtk_bool32 dred_dtk_global_event_proc(dtk_event* pEvent)
         default: break;
     }
 
-    return DTK_TRUE;
+    return dtk_default_event_handler(pEvent);
 }
 
 

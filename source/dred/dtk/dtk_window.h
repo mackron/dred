@@ -75,6 +75,10 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_ty
 // Uninitializes a window control.
 dtk_result dtk_window_uninit(dtk_window* pWindow);
 
+// The default event handler for windows.
+dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent);
+
+
 // Sets the title of a window.
 dtk_result dtk_window_set_title(dtk_window* pWindow, const char* title);
 

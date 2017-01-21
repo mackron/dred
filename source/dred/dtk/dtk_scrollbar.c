@@ -22,6 +22,45 @@ dtk_result dtk_scrollbar_uninit(dtk_scrollbar* pScrollbar)
 }
 
 
+dtk_bool32 dtk_scrollbar_default_event_handler(dtk_event* pEvent)
+{
+    if (pEvent == NULL) return DTK_FALSE;
+    dtk_assert(pEvent->pControl != NULL);
+    dtk_assert(pEvent->pControl->type == DTK_CONTROL_TYPE_SCROLLBAR);
+
+    dtk_scrollbar* pScrollbar = DTK_SCROLLBAR(pEvent->pControl);
+
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_PAINT:
+        {
+            //dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_control_get_local_rect(pEvent->pControl), dtk_rgb(64, 64, 64));
+            dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_control_get_absolute_rect(pEvent->pControl), dtk_rgb(64, 64, 64));
+        } break;
+
+        case DTK_EVENT_MOUSE_MOVE:
+        {
+            pScrollbar->isMouseOverThumb = dtk_rect_contains_point(dtk_scrollbar_get_thumb_rect(pScrollbar), pEvent->mouseMove.x, pEvent->mouseMove.y);
+        } break;
+
+        case DTK_EVENT_MOUSE_ENTER:
+        {
+        } break;
+
+        case DTK_EVENT_MOUSE_LEAVE:
+        {
+            pScrollbar->isMouseOverThumb = DTK_FALSE;
+        } break;
+
+        case DTK_EVENT_SCROLLBAR_SCROLL:
+        {
+        } break;
+    }
+
+    return DTK_TRUE;
+}
+
+
 dtk_result dtk_scrollbar_set_range(dtk_scrollbar* pScrollbar, dtk_uint32 range)
 {
     if (pScrollbar == NULL) return DTK_INVALID_ARGS;
@@ -69,23 +108,10 @@ dtk_result dtk_scrollbar_scroll(dtk_scrollbar* pScrollbar, dtk_int32 offset)
     return dtk_scrollbar_scroll_to(pScrollbar, pScrollbar->scrollPos + offset);
 }
 
-dtk_bool32 dtk_scrollbar_default_event_handler(dtk_event* pEvent)
+dtk_rect dtk_scrollbar_get_thumb_rect(dtk_scrollbar* pScrollbar)
 {
-    if (pEvent == NULL) return DTK_FALSE;
-    dtk_assert(pEvent->pControl != NULL);
-    dtk_assert(pEvent->pControl->type == DTK_CONTROL_TYPE_SCROLLBAR);
-
-    switch (pEvent->type)
-    {
-        case DTK_EVENT_PAINT:
-        {
-            dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_control_get_local_rect(pEvent->pControl), dtk_rgb(64, 64, 64));
-        } break;
-
-        case DTK_EVENT_SCROLLBAR_SCROLL:
-        {
-        } break;
-    }
-
-    return DTK_TRUE;
+    if (pScrollbar == NULL) return dtk_rect_init(0, 0, 0, 0);
+    
+    // TODO: Implement me.
+    return dtk_rect_init(0, 0, 0, 0);
 }

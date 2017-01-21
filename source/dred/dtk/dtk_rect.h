@@ -41,3 +41,16 @@ DTK_INLINE dtk_rect dtk_rect_grow(dtk_rect rect, dtk_int32 amount)
         rect.right  + amount,
         rect.bottom + amount);
 }
+
+DTK_INLINE dtk_bool32 dtk_rect_contains_point(dtk_rect rect, dtk_int32 posX, dtk_int32 posY)
+{
+    if (posX < rect.left || posY < rect.top) {
+        return DTK_FALSE;
+    }
+
+    if (posX >= rect.right || posY >= rect.bottom) {
+        return DTK_FALSE;
+    }
+
+    return DTK_TRUE;
+}

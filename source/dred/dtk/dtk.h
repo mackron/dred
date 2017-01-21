@@ -320,7 +320,11 @@ struct dtk_context
     dtk_window* pFirstWindow;
     dtk_control* pControlWithKeyboardCapture;
     dtk_control* pControlWithMouseCapture;
+    dtk_control* pWindowUnderMouse;
+    dtk_int32 lastMousePosX;
+    dtk_int32 lastMousePosY;
     void* pUserData;
+    dtk_event_proc defaultEventHandlers[DTK_CONTROL_TYPE_COUNT];    // The default event handlers for each built-in control type.
 
     union
     {
@@ -405,7 +409,7 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData);
 // Thread Safety: UNSAFE
 dtk_result dtk_uninit(dtk_context* pTK);
 
-// Sets the event handler callback.
+// Sets the global event handler callback.
 //
 // Thread Safety: SAFE
 //   This is implemented as an atomic assignment.
@@ -439,6 +443,11 @@ dtk_result dtk_post_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_ui
 
 // Same as dtk_post_custom_event(), except handles it immediately rather than posting it to the queue.
 dtk_result dtk_handle_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize);
+
+// The default event handler.
+//
+// Applications should call this from their own global event handler.
+dtk_bool32 dtk_default_event_handler(dtk_event* pEvent);
 
 // Posts a quit event to the event queue. This will cause the main loop to terminate and dtk_next_event() to
 // return DTK_QUIT.

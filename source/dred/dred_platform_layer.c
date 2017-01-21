@@ -33,7 +33,7 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
 {
     dred_window* pWindow = (dred_window*)pEvent->pControl->pUserData;
     if (pWindow == NULL) {
-        return DTK_TRUE;
+        return dtk_window_default_event_handler(pEvent);
     }
 
     switch (pEvent->type)
@@ -121,7 +121,7 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
         default: break;
     }
 
-    return DTK_TRUE;
+    return dtk_window_default_event_handler(pEvent);
 }
 
 
