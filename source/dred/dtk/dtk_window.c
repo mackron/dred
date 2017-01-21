@@ -1902,7 +1902,6 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_SIZE:
         {
-            // When a window is resized the drawing surface also needs to be resized.
             DTK_CONTROL(pWindow)->width  = pEvent->size.width;
             DTK_CONTROL(pWindow)->height = pEvent->size.height;
         } break;
