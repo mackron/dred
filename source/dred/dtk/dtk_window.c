@@ -214,7 +214,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
 
         case WM_PAINT:
         {
-#if 0
+#if 1
             PAINTSTRUCT ps;
             HDC hDC = BeginPaint(hWnd, &ps);
             if (hDC != NULL) {
@@ -228,6 +228,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                     e.paint.pSurface = &surface;
                     dtk__handle_event(&e);
 
+                    SelectClipRgn(hDC, NULL);       // Make sure the clip is restored to ensure future paint messages are handled correctly by the operating system.
                     dtk_surface_uninit(&surface);
                 }
 
@@ -1870,8 +1871,13 @@ dtk_bool32 dtk_window__on_paint_control(dtk_control* pControl, dtk_rect* pRelati
     dtk_event* pEvent = (dtk_event*)pUserData;
     dtk_assert(pEvent != NULL);
 
-    //dtk_surface_push(pEvent->paint.pSurface);
-    dtk_surface_set_clip(pEvent->paint.pSurface, dtk_control_relative_to_absolute_rect(pControl, *pRelativeRect));
+    dtk_int32 relativePosX;
+    dtk_int32 relativePosY;
+    dtk_control_get_relative_position(pControl, &relativePosX, &relativePosY);
+
+    dtk_surface_push(pEvent->paint.pSurface);
+    dtk_surface_translate(pEvent->paint.pSurface, relativePosX, relativePosY);
+    dtk_surface_set_clip(pEvent->paint.pSurface, dtk_control_get_local_rect(pControl));
 
     dtk_event e = *pEvent;
     e.pControl = pControl;
@@ -1894,8 +1900,7 @@ dtk_bool32 dtk_window__on_paint_control_finished(dtk_control* pControl, dtk_rect
     dtk_event* pEvent = (dtk_event*)pUserData;
     dtk_assert(pEvent != NULL);
 
-    //dtk_surface_pop(pEvent->paint.pSurface);
-    dtk_surface_set_clip(pEvent->paint.pSurface, dtk_control_relative_to_absolute_rect(pControl, *pRelativeRect));
+    dtk_surface_pop(pEvent->paint.pSurface);
     return DTK_TRUE;
 }
 

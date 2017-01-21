@@ -34,8 +34,7 @@ dtk_bool32 dtk_scrollbar_default_event_handler(dtk_event* pEvent)
     {
         case DTK_EVENT_PAINT:
         {
-            //dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_control_get_local_rect(pEvent->pControl), dtk_rgb(64, 64, 64));
-            dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_control_get_absolute_rect(pEvent->pControl), dtk_rgb(64, 64, 64));
+            dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_control_get_local_rect(pEvent->pControl), dtk_rgb(64, 64, 64));
         } break;
 
         case DTK_EVENT_MOUSE_MOVE:
