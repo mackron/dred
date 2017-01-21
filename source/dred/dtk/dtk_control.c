@@ -127,6 +127,40 @@ dtk_bool32 dtk_control_is_visible(dtk_control* pControl)
     return (pControl->flags & DTK_CONTROL_FLAG_HIDDEN) == 0;
 }
 
+dtk_bool32 dtk_control_is_visible_recursive(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_FALSE;
+
+    if (!dtk_control_is_visible(pControl)) {
+        return DTK_FALSE;
+    }
+
+    if (pControl->pParent) {
+        return dtk_control_is_visible_recursive(pControl->pParent);
+    }
+
+    return DTK_TRUE;
+}
+
+
+void dtk_control_disable_clipping(dtk_control* pControl)
+{
+    if (pControl == NULL) return;
+    pControl->isClippingDisabled = DTK_TRUE;
+}
+
+void dtk_control_enable_clipping(dtk_control* pControl)
+{
+    if (pControl == NULL) return;
+    pControl->isClippingDisabled = DTK_FALSE;
+}
+
+dtk_bool32 dtk_control_is_clipping_enabled(const dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_FALSE;
+    return !pControl->isClippingDisabled;
+}
+
 
 dtk_result dtk_control_set_size(dtk_control* pControl, dtk_uint32 width, dtk_uint32 height)
 {
@@ -272,6 +306,51 @@ dtk_rect dtk_control_get_local_rect(dtk_control* pControl)
     return dtk_rect_init(0, 0, pControl->width, pControl->height);
 }
 
+dtk_rect dtk_control_relative_to_absolute_rect(dtk_control* pControl, dtk_rect relativeRect)
+{
+    if (pControl == NULL) return dtk_rect_init(0, 0, 0, 0);
+    
+    dtk_rect rect = relativeRect;
+    rect.left   += pControl->absolutePosX;
+    rect.top    += pControl->absolutePosY;
+    rect.right  += pControl->absolutePosX;
+    rect.bottom += pControl->absolutePosY;
+    return rect;
+}
+
+dtk_rect dtk_control_absolute_to_relative_rect(dtk_control* pControl, dtk_rect absoluteRect)
+{
+    if (pControl == NULL) return dtk_rect_init(0, 0, 0, 0);
+    
+    dtk_rect rect = absoluteRect;
+    rect.left   -= pControl->absolutePosX;
+    rect.top    -= pControl->absolutePosY;
+    rect.right  -= pControl->absolutePosX;
+    rect.bottom -= pControl->absolutePosY;
+    return rect;
+}
+
+dtk_bool32 dtk_control_clamp_rect(dtk_control* pControl, dtk_rect* pRelativeRect)
+{
+    if (pControl == NULL || pRelativeRect == NULL) return DTK_FALSE;
+
+    if (pRelativeRect->left < 0) {
+        pRelativeRect->left = 0;
+    }
+    if (pRelativeRect->top < 0) {
+        pRelativeRect->top = 0;
+    }
+
+    if (pRelativeRect->right > (dtk_int32)pControl->width) {
+        pRelativeRect->right = (dtk_int32)pControl->width;
+    }
+    if (pRelativeRect->bottom > (dtk_int32)pControl->height) {
+        pRelativeRect->bottom = (dtk_int32)pControl->height;
+    }
+
+    return (pRelativeRect->right - pRelativeRect->left > 0) && (pRelativeRect->bottom - pRelativeRect->top > 0);
+}
+
 
 dtk_control* dtk_control_find_top_level_control(dtk_control* pControl)
 {
@@ -298,6 +377,61 @@ dtk_window* dtk_control_get_window(dtk_control* pControl)
 
     return NULL;
 }
+
+
+dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect relativeRect, dtk_control_visibility_iteration_proc callback, dtk_control_visibility_iteration_proc callbackFinished, void* pUserData)
+{
+    if (pControl == NULL || callback == NULL) return DTK_FALSE;
+
+    if (!dtk_control_is_visible(pControl)) {
+        return DTK_FALSE;
+    }
+
+    dtk_bool32 isRootControlVisible = DTK_FALSE;
+
+    dtk_rect clampedRelativeRect = relativeRect;
+    if (dtk_control_clamp_rect(pControl, &clampedRelativeRect)) {
+        isRootControlVisible = DTK_TRUE;
+    }
+
+    if (isRootControlVisible) {
+        if (!callback(pControl, &clampedRelativeRect, pUserData)) {
+            return DTK_FALSE;
+        }
+    }
+
+
+    for (dtk_control* pChild = pControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
+        dtk_int32 childRelativePosX;
+        dtk_int32 childRelativePosY;
+        dtk_control_get_relative_position(pChild, &childRelativePosX, &childRelativePosY);
+
+        dtk_rect childRect;
+        if (dtk_control_is_clipping_enabled(pChild)) {
+            childRect = clampedRelativeRect;
+        } else {
+            childRect = relativeRect;
+        }
+
+        childRect.left   -= childRelativePosX;
+        childRect.top    -= childRelativePosY;
+        childRect.right  -= childRelativePosX;
+        childRect.bottom -= childRelativePosY;
+        if (!dtk_control_iterate_visible_controls(pChild, childRect, callback, callbackFinished, pUserData)) {
+            return DTK_FALSE;
+        }
+    }
+
+
+    if (isRootControlVisible) {
+        if (callbackFinished) {
+            callbackFinished(pControl, &clampedRelativeRect, pUserData);
+        }
+    }
+
+    return DTK_TRUE;
+}
+
 
 
 dtk_result dtk_control_allow_keyboard_capture(dtk_control* pControl)

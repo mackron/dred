@@ -1775,27 +1775,6 @@ dtk_result dtk_window_redraw__gtk(dtk_window* pWindow, dtk_rect rect)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void dtk_window__paint_recursive(dtk_control* pControl, dtk_event* pEvent)
-{
-    dtk_assert(pControl != NULL);
-    dtk_assert(pEvent != NULL);
-    dtk_assert(pEvent->type == DTK_EVENT_PAINT);
-
-    // A window is not responsible for painting other windows.
-    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
-        return;
-    }
-
-    dtk_event e = *pEvent;
-    e.pControl = pControl;
-    e.paint.rect = dtk_control_get_absolute_rect(pControl);
-    dtk_handle_local_event(e.pTK, &e);
-
-    for (dtk_control* pChild = pControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
-        dtk_window__paint_recursive(pChild, &e);
-    }
-}
-
 dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_event_proc onEvent, dtk_window* pWindow)
 {
     if (pWindow == NULL) return DTK_INVALID_ARGS;
@@ -1878,6 +1857,48 @@ dtk_result dtk_window_uninit(dtk_window* pWindow)
 }
 
 
+dtk_bool32 dtk_window__on_paint_control(dtk_control* pControl, dtk_rect* pRelativeRect, void* pUserData)
+{
+    dtk_assert(pControl != NULL);
+    dtk_assert(pRelativeRect != NULL);
+
+    // Don't draw window controls, but keep iterating.
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        return DTK_TRUE;
+    }
+
+    dtk_event* pEvent = (dtk_event*)pUserData;
+    dtk_assert(pEvent != NULL);
+
+    //dtk_surface_push(pEvent->paint.pSurface);
+    dtk_surface_set_clip(pEvent->paint.pSurface, dtk_control_relative_to_absolute_rect(pControl, *pRelativeRect));
+
+    dtk_event e = *pEvent;
+    e.pControl = pControl;
+    e.paint.rect = *pRelativeRect;
+    dtk_handle_local_event(e.pTK, &e);
+
+    return DTK_TRUE;
+}
+
+dtk_bool32 dtk_window__on_paint_control_finished(dtk_control* pControl, dtk_rect* pRelativeRect, void* pUserData)
+{
+    dtk_assert(pControl != NULL);
+    dtk_assert(pRelativeRect != NULL);
+
+    // Don't draw window controls, but keep iterating.
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        return DTK_TRUE;
+    }
+
+    dtk_event* pEvent = (dtk_event*)pUserData;
+    dtk_assert(pEvent != NULL);
+
+    //dtk_surface_pop(pEvent->paint.pSurface);
+    dtk_surface_set_clip(pEvent->paint.pSurface, dtk_control_relative_to_absolute_rect(pControl, *pRelativeRect));
+    return DTK_TRUE;
+}
+
 dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
 {
     if (pEvent == NULL) return DTK_FALSE;
@@ -1894,10 +1915,7 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
     {
         case DTK_EVENT_PAINT:
         {
-            // The default paint event needs to recursively draw every visible child control.
-            for (dtk_control* pChild = pEvent->pControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
-                dtk_window__paint_recursive(pChild, pEvent);
-            }
+            dtk_control_iterate_visible_controls(DTK_CONTROL(pWindow), pEvent->paint.rect, dtk_window__on_paint_control, dtk_window__on_paint_control_finished, pEvent);
         } break;
 
         case DTK_EVENT_SIZE:

@@ -11,6 +11,10 @@ typedef dtk_uint32 dtk_control_type;
 #define DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE    (1 << 1)
 #define DTK_CONTROL_FLAG_FORBID_MOUSE_CAPTURE       (1 << 2)
 
+// Return false to stop iteration. pRelativeRect is both an input and output property. On output it will be
+// used as the new clipping rectangle for children.
+typedef dtk_bool32 (* dtk_control_visibility_iteration_proc)(dtk_control* pControl, dtk_rect* pRelativeRect, void* pUserData);
+
 #define DTK_CONTROL(p) ((dtk_control*)(p))
 struct dtk_control
 {
@@ -24,6 +28,7 @@ struct dtk_control
     void* pUserData;        // For use by the application.
     dtk_control_type type;
     dtk_uint32 flags;       // DTK_CONTROL_FLAG_*
+    dtk_bool32 isClippingDisabled : 1;
     dtk_int32 absolutePosX;
     dtk_int32 absolutePosY;
     dtk_uint32 width;
@@ -50,6 +55,19 @@ dtk_result dtk_control_hide(dtk_control* pControl);
 
 // Determines whether or not the control is visible.
 dtk_bool32 dtk_control_is_visible(dtk_control* pControl);
+
+// Recursively determines whether or not the control is visible.
+dtk_bool32 dtk_control_is_visible_recursive(dtk_control* pControl);
+
+
+// Disables clipping against the parent for the given element.
+void dtk_control_disable_clipping(dtk_control* pControl);
+
+// Enables clipping against the parent for the given element.
+void dtk_control_enable_clipping(dtk_control* pControl);
+
+// Determines whether or not clipping is enabled for the given element.
+dtk_bool32 dtk_control_is_clipping_enabled(const dtk_control* pControl);
 
 
 // Sets the size of a window.
@@ -82,6 +100,15 @@ dtk_rect dtk_control_get_relative_rect(dtk_control* pControl);
 // the width and height of the control respectively.
 dtk_rect dtk_control_get_local_rect(dtk_control* pControl);
 
+// Converts a relative rectangle to absolute.
+dtk_rect dtk_control_relative_to_absolute_rect(dtk_control* pControl, dtk_rect relativeRect);
+
+// Converts an absolute rectangle to relative.
+dtk_rect dtk_control_absolute_to_relative_rect(dtk_control* pControl, dtk_rect absoluteRect);
+
+// Clamps the given rectangle to a control's rectangle and returns whether or not it is contained within the controls rectangle.
+dtk_bool32 dtk_control_clamp_rect(dtk_control* pControl, dtk_rect* pRelativeRect);
+
 
 // Finds the top level control for the given control.
 dtk_control* dtk_control_find_top_level_control(dtk_control* pControl);
@@ -90,6 +117,15 @@ dtk_control* dtk_control_find_top_level_control(dtk_control* pControl);
 // the hierarchy and returns the first occurance of a dtk_window control. If <pControl> itself is a window,
 // this will return <pControl>.
 dtk_window* dtk_control_get_window(dtk_control* pControl);
+
+
+// Recursively iterates over visible controls, including the given top-level control (pControl).
+//
+// <relativeRect> should be relative to <pControl>
+//
+// If <callback> returns false, iteration will be terminated and false will be returned.
+dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect relativeRect, dtk_control_visibility_iteration_proc callback, dtk_control_visibility_iteration_proc callbackFinished, void* pUserData);
+
 
 
 // Enables the ability for the control to receive keyboard focus (default).
