@@ -129,7 +129,6 @@ dtk_result dtk__handle_event(dtk_event* pEvent)
             
             case DTK_EVENT_MOVE:
             {
-                // TODO: Verify the accuracy of this, especially for Win32 popup windows.
                 DTK_CONTROL(pWindow)->absolutePosX = pEvent->move.x;
                 DTK_CONTROL(pWindow)->absolutePosY = pEvent->move.y;
             } break;
