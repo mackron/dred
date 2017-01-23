@@ -802,9 +802,9 @@ dtk_result dtk_init__gtk(dtk_context* pTK)
         }
 
         // Logging.
-        g_log_set_handler(NULL,   G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL, dtk_log_handler__gtk, pTK);
-        g_log_set_handler("GLib", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL, dtk_log_handler__gtk, pTK);
-        g_log_set_handler("Gtk",  G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL, dtk_log_handler__gtk, pTK);
+        g_log_set_handler(NULL,   (GLogLevelFlags)(G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL), dtk_log_handler__gtk, pTK);
+        g_log_set_handler("GLib", (GLogLevelFlags)(G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL), dtk_log_handler__gtk, pTK);
+        g_log_set_handler("Gtk",  (GLogLevelFlags)(G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL), dtk_log_handler__gtk, pTK);
 
 #if GLIB_CHECK_VERSION(2, 50, 0)
         g_log_set_writer_func(dtk_log_writer_handler__gtk, pTK, NULL);
@@ -1011,7 +1011,7 @@ dtk_result dtk_bind_accelerators__gtk(dtk_context* pTK, dtk_accelerator* pAccele
             pTK->gtk.pAccelerators[index].pClosure = g_cclosure_new(G_CALLBACK(dtk__on_accelerator__gtk), pTK, NULL);
             pTK->gtk.acceleratorCount += 1;
 
-            gtk_accel_group_connect(GTK_ACCEL_GROUP(pTK->gtk.pAccelGroup), keyvalGTK, modifiersGTK, 0, (GClosure*)pTK->gtk.pAccelerators[index].pClosure);
+            gtk_accel_group_connect(GTK_ACCEL_GROUP(pTK->gtk.pAccelGroup), keyvalGTK, modifiersGTK, (GtkAccelFlags)0, (GClosure*)pTK->gtk.pAccelerators[index].pClosure);
         }
     }
 
@@ -1084,9 +1084,9 @@ dtk_result dtk__capture_mouse_window__gtk(dtk_context* pTK, dtk_window* pWindow)
 
 #if (GTK_MAJOR_VERSION >= 3 && GTK_MINOR_VERSION >= 20) // GTK 3.20+
     gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
-        gtk_widget_get_window(pWindow->gtk.pClientArea), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
+        gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pClientArea)), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
 #else
-	gdk_device_grab(gtk_get_current_event_device(), gtk_widget_get_window(pWindow->gtk.pClientArea), GDK_OWNERSHIP_APPLICATION, FALSE,
+	gdk_device_grab(gtk_get_current_event_device(), gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pClientArea)), GDK_OWNERSHIP_APPLICATION, FALSE,
 		GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK, NULL, GDK_CURRENT_TIME);
 #endif
 

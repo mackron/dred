@@ -413,6 +413,13 @@ dtk_result dtk_surface_pop__gdi(dtk_surface* pSurface)
 }
 
 
+dtk_result dtk_surface_translate__gdi(dtk_surface* pSurface, dtk_int32 offsetX, dtk_int32 offsetY)
+{
+    OffsetViewportOrgEx((HDC)pSurface->gdi.hDC, offsetX, offsetY, NULL);
+    return DTK_SUCCESS;
+}
+
+
 void dtk_surface_clear__gdi(dtk_surface* pSurface, dtk_color color)
 {
     SelectObject((HDC)pSurface->gdi.hDC, GetStockObject(NULL_PEN));
@@ -626,16 +633,16 @@ dtk_result dtk_font_init__cairo(dtk_context* pTK, const char* family, float size
     cairo_font_options_t* options = cairo_font_options_create();
     cairo_font_options_set_antialias(options, CAIRO_ANTIALIAS_SUBPIXEL);    // TODO: Control this with optionFlags.
 
-    pFont->cairo.pFont = cairo_scaled_font_create(pFont->cairo.pFace, &fontMatrix, &ctm, options);
+    pFont->cairo.pFont = cairo_scaled_font_create((cairo_font_face_t*)pFont->cairo.pFace, &fontMatrix, &ctm, options);
     if (pFont->cairo.pFont == NULL) {
-        cairo_font_face_destroy(pFont->cairo.pFace);
+        cairo_font_face_destroy((cairo_font_face_t*)pFont->cairo.pFace);
         return DTK_ERROR;
     }
 
 
     // Metrics are cached.
     cairo_font_extents_t fontMetrics;
-    cairo_scaled_font_extents(pFont->cairo.pFont, &fontMetrics);
+    cairo_scaled_font_extents((cairo_scaled_font_t*)pFont->cairo.pFont, &fontMetrics);
 
     pFont->cairo.metrics.ascent     = fontMetrics.ascent;
     pFont->cairo.metrics.descent    = fontMetrics.descent;
@@ -645,7 +652,7 @@ dtk_result dtk_font_init__cairo(dtk_context* pTK, const char* family, float size
     // The width of a space needs to be retrieved via glyph metrics.
     const char space[] = " ";
     cairo_text_extents_t spaceMetrics;
-    cairo_scaled_font_text_extents(pFont->cairo.pFont, space, &spaceMetrics);
+    cairo_scaled_font_text_extents((cairo_scaled_font_t*)pFont->cairo.pFont, space, &spaceMetrics);
     pFont->cairo.metrics.spaceWidth = spaceMetrics.x_advance;
 
     pFont->backend = dtk_graphics_backend_cairo;
@@ -654,8 +661,8 @@ dtk_result dtk_font_init__cairo(dtk_context* pTK, const char* family, float size
 
 dtk_result dtk_font_uninit__cairo(dtk_font* pFont)
 {
-    cairo_scaled_font_destroy(pFont->cairo.pFont);
-    cairo_font_face_destroy(pFont->cairo.pFace);
+    cairo_scaled_font_destroy((cairo_scaled_font_t*)pFont->cairo.pFont);
+    cairo_font_face_destroy((cairo_font_face_t*)pFont->cairo.pFace);
 
     return DTK_SUCCESS;
 }
@@ -683,7 +690,7 @@ dtk_result dtk_font_get_glyph_metrics__cairo(dtk_font* pFont, float scale, dtk_u
 
 
     cairo_text_extents_t glyphExtents;
-    cairo_scaled_font_text_extents(pFont->cairo.pFont, utf8, &glyphExtents);
+    cairo_scaled_font_text_extents((cairo_scaled_font_t*)pFont->cairo.pFont, utf8, &glyphExtents);
 
     pMetrics->width    = glyphExtents.width;
     pMetrics->height   = glyphExtents.height;
@@ -703,7 +710,7 @@ dtk_result dtk_font_measure_string__cairo(dtk_font* pFont, float scale, const ch
     // Cairo expends null terminated strings, however the input string is not guaranteed to be null terminated.
     char* textNT;
     if (textSizeInBytes != (size_t)-1) {
-        textNT = malloc(textSizeInBytes + 1);
+        textNT = (char*)dtk_malloc(textSizeInBytes + 1);
         if (textNT == NULL) {
             return DTK_ERROR;
         }
@@ -715,7 +722,7 @@ dtk_result dtk_font_measure_string__cairo(dtk_font* pFont, float scale, const ch
 
 
     cairo_text_extents_t textMetrics;
-    cairo_scaled_font_text_extents(pFont->cairo.pFont, textNT, &textMetrics);
+    cairo_scaled_font_text_extents((cairo_scaled_font_t*)pFont->cairo.pFont, textNT, &textMetrics);
 
     if (pWidth) {
         *pWidth = textMetrics.x_advance;
@@ -740,7 +747,7 @@ dtk_result dtk_font_get_text_cursor_position_from_point__cairo(dtk_font* pFont, 
 
     cairo_glyph_t* pGlyphs = NULL;
     int glyphCount = 0;
-    cairo_status_t result = cairo_scaled_font_text_to_glyphs(pFont->cairo.pFont, 0, 0, text, textSizeInBytes, &pGlyphs, &glyphCount, NULL, NULL, NULL);
+    cairo_status_t result = cairo_scaled_font_text_to_glyphs((cairo_scaled_font_t*)pFont->cairo.pFont, 0, 0, text, textSizeInBytes, &pGlyphs, &glyphCount, NULL, NULL, NULL);
     if (result != CAIRO_STATUS_SUCCESS) {
         return DTK_ERROR;
     }
@@ -752,7 +759,7 @@ dtk_result dtk_font_get_text_cursor_position_from_point__cairo(dtk_font* pFont, 
     float runningPosX = 0;
     for (int iGlyph = 0; iGlyph < glyphCount; ++iGlyph) {
         cairo_text_extents_t glyphMetrics;
-        cairo_scaled_font_glyph_extents(pFont->cairo.pFont, pGlyphs + iGlyph, 1, &glyphMetrics);
+        cairo_scaled_font_glyph_extents((cairo_scaled_font_t*)pFont->cairo.pFont, pGlyphs + iGlyph, 1, &glyphMetrics);
 
         float glyphLeft  = runningPosX;
         float glyphRight = glyphLeft + glyphMetrics.x_advance;
@@ -798,7 +805,7 @@ dtk_result dtk_font_get_text_cursor_position_from_char__cairo(dtk_font* pFont, f
 
     cairo_glyph_t* pGlyphs = NULL;
     int glyphCount = 0;
-    cairo_status_t result = cairo_scaled_font_text_to_glyphs(pFont->cairo.pFont, 0, 0, text, -1, &pGlyphs, &glyphCount, NULL, NULL, NULL);
+    cairo_status_t result = cairo_scaled_font_text_to_glyphs((cairo_scaled_font_t*)pFont->cairo.pFont, 0, 0, text, -1, &pGlyphs, &glyphCount, NULL, NULL, NULL);
     if (result != CAIRO_STATUS_SUCCESS) {
         return DTK_ERROR;
     }
@@ -812,7 +819,7 @@ dtk_result dtk_font_get_text_cursor_position_from_char__cairo(dtk_font* pFont, f
         }
 
         cairo_text_extents_t glyphMetrics;
-        cairo_scaled_font_glyph_extents(pFont->cairo.pFont, pGlyphs + iGlyph, 1, &glyphMetrics);
+        cairo_scaled_font_glyph_extents((cairo_scaled_font_t*)pFont->cairo.pFont, pGlyphs + iGlyph, 1, &glyphMetrics);
 
         cursorPosX += glyphMetrics.x_advance;
     }
@@ -856,7 +863,7 @@ dtk_result dtk_surface_init_image__cairo(dtk_context* pTK, dtk_uint32 width, dtk
     // TODO: CAIRO_FORMAT_ARGB32 is in native endian, so may want to do a big-endian rgba8 -> argb8 swap.
     dtk__rgba8_bgra8_swap__premul(pImageData, pImageDataARGB, width, height, strideInBytes, srcStrideInBytes);
 
-    cairo_surface_t* pCairoSurface = cairo_image_surface_create_for_data(pImageDataARGB, CAIRO_FORMAT_ARGB32, (int)width, (int)height, (int)width*4);
+    cairo_surface_t* pCairoSurface = cairo_image_surface_create_for_data((unsigned char*)pImageDataARGB, CAIRO_FORMAT_ARGB32, (int)width, (int)height, (int)width*4);
     if (pCairoSurface == NULL) {
         dtk_free(pImageDataARGB);
         return DTK_ERROR;
@@ -897,17 +904,28 @@ dtk_result dtk_surface_pop__cairo(dtk_surface* pSurface)
 }
 
 
+dtk_result dtk_surface_translate__cairo(dtk_surface* pSurface, dtk_int32 offsetX, dtk_int32 offsetY)
+{
+    cairo_translate((cairo_t*)pSurface->cairo.pContext, (double)offsetX, (double)offsetY);
+    return DTK_SUCCESS;
+}
+
+
 void dtk_surface_clear__cairo(dtk_surface* pSurface, dtk_color color)
 {
-    cairo_set_source_rgba(pSurface->cairo.pContext, color.r/255.0, color.g/255.0, color.b/255.0, color.a/255.0);
-    cairo_paint(pSurface->cairo.pContext);
+    cairo_t* cr = (cairo_t*)pSurface->cairo.pContext;
+
+    cairo_set_source_rgba(cr, color.r/255.0, color.g/255.0, color.b/255.0, color.a/255.0);
+    cairo_paint(cr);
 }
 
 void dtk_surface_set_clip__cairo(dtk_surface* pSurface, dtk_rect rect)
 {
-    cairo_reset_clip(pSurface->cairo.pContext);
-    cairo_rectangle(pSurface->cairo.pContext, rect.left, rect.top, (rect.right - rect.left), (rect.bottom - rect.top));
-    cairo_clip(pSurface->cairo.pContext);
+    cairo_t* cr = (cairo_t*)pSurface->cairo.pContext;
+
+    cairo_reset_clip(cr);
+    cairo_rectangle(cr, rect.left, rect.top, (rect.right - rect.left), (rect.bottom - rect.top));
+    cairo_clip(cr);
 }
 
 void dtk_surface_get_clip__cairo(dtk_surface* pSurface, dtk_rect* pRect)
@@ -916,7 +934,7 @@ void dtk_surface_get_clip__cairo(dtk_surface* pSurface, dtk_rect* pRect)
     double top;
     double right;
     double bottom;
-    cairo_clip_extents(pSurface->cairo.pContext, &left, &top, &right, &bottom);
+    cairo_clip_extents((cairo_t*)pSurface->cairo.pContext, &left, &top, &right, &bottom);
 
     pRect->left   = (dtk_int32)left;
     pRect->top    = (dtk_int32)top;
@@ -926,14 +944,16 @@ void dtk_surface_get_clip__cairo(dtk_surface* pSurface, dtk_rect* pRect)
 
 void dtk_surface_draw_rect__cairo(dtk_surface* pSurface, dtk_rect rect, dtk_color color)
 {
-    cairo_set_source_rgba(pSurface->cairo.pContext, color.r/255.0, color.g/255.0, color.b/255.0, color.a/255.0);
-    cairo_rectangle(pSurface->cairo.pContext, rect.left, rect.top, (rect.right - rect.left), (rect.bottom - rect.top));
-    cairo_fill(pSurface->cairo.pContext);
+    cairo_t* cr = (cairo_t*)pSurface->cairo.pContext;
+
+    cairo_set_source_rgba(cr, color.r/255.0, color.g/255.0, color.b/255.0, color.a/255.0);
+    cairo_rectangle(cr, rect.left, rect.top, (rect.right - rect.left), (rect.bottom - rect.top));
+    cairo_fill(cr);
 }
 
 void dtk_surface_draw_rect_outline__cairo(dtk_surface* pSurface, dtk_rect rect, dtk_color color, dtk_int32 outlineWidth)
 {
-    cairo_t* cr = pSurface->cairo.pContext;
+    cairo_t* cr = (cairo_t*)pSurface->cairo.pContext;
 
     cairo_set_source_rgba(cr, color.r/255.0, color.g/255.0, color.b/255.0, color.a/255.0);
 
@@ -952,12 +972,12 @@ void dtk_surface_draw_text__cairo(dtk_surface* pSurface, dtk_font* pFont, float 
 {
     (void)scale;
     
-    cairo_t* cr = pSurface->cairo.pContext;
+    cairo_t* cr = (cairo_t*)pSurface->cairo.pContext;
 
     // Cairo expends null terminated strings, however the input string is not guaranteed to be null terminated.
     char* textNT;
     if (textLength != (size_t)-1) {
-        textNT = dtk_malloc(textLength + 1);
+        textNT = (char*)dtk_malloc(textLength + 1);
         memcpy(textNT, text, textLength);
         textNT[textLength] = '\0';
     } else {
@@ -965,7 +985,7 @@ void dtk_surface_draw_text__cairo(dtk_surface* pSurface, dtk_font* pFont, float 
     }
 
 
-    cairo_set_scaled_font(cr, pFont->cairo.pFont);
+    cairo_set_scaled_font(cr, (cairo_scaled_font_t*)pFont->cairo.pFont);
 
     // Background.
     cairo_text_extents_t textMetrics;
@@ -987,7 +1007,7 @@ void dtk_surface_draw_text__cairo(dtk_surface* pSurface, dtk_font* pFont, float 
 
 void dtk_surface_draw_surface__cairo(dtk_surface* pSurface, dtk_surface* pSrcSurface, dtk_draw_surface_args* pArgs)
 {
-    cairo_t* cr = pSurface->cairo.pContext;
+    cairo_t* cr = (cairo_t*)pSurface->cairo.pContext;
 
     cairo_save(cr);
     cairo_translate(cr, pArgs->dstX, pArgs->dstY);
@@ -1002,19 +1022,19 @@ void dtk_surface_draw_surface__cairo(dtk_surface* pSurface, dtk_surface* pSrcSur
 #if 1
     if (pArgs->foregroundTint.r == 255 && pArgs->foregroundTint.g == 255 && pArgs->foregroundTint.b == 255 && pArgs->foregroundTint.a == 255) {
         cairo_scale(cr, pArgs->dstWidth / pArgs->srcWidth, pArgs->dstHeight / pArgs->srcHeight);
-        cairo_set_source_surface(cr, pSrcSurface->cairo.pSurface, pArgs->srcX, pArgs->srcY);
+        cairo_set_source_surface(cr, (cairo_surface_t*)pSrcSurface->cairo.pSurface, pArgs->srcX, pArgs->srcY);
         cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
         cairo_paint(cr);
     } else {
         // Slower path. The image needs to be tinted. We create a temporary image for this.
         // NOTE: This is incorrect. It's just a temporary solution until I figure out a better way.
-        cairo_surface_t* pTempImageSurface = cairo_surface_create_similar_image(pSrcSurface->cairo.pSurface, CAIRO_FORMAT_ARGB32,
-            cairo_image_surface_get_width(pSrcSurface->cairo.pSurface), cairo_image_surface_get_height(pSrcSurface->cairo.pSurface));
+        cairo_surface_t* pTempImageSurface = cairo_surface_create_similar_image((cairo_surface_t*)pSrcSurface->cairo.pSurface, CAIRO_FORMAT_ARGB32,
+            cairo_image_surface_get_width((cairo_surface_t*)pSrcSurface->cairo.pSurface), cairo_image_surface_get_height((cairo_surface_t*)pSrcSurface->cairo.pSurface));
         if (pTempImageSurface != NULL) {
             cairo_t* cr2 = cairo_create(pTempImageSurface);
 
             cairo_set_operator(cr2, CAIRO_OPERATOR_SOURCE);
-            cairo_set_source_surface(cr2, pSrcSurface->cairo.pSurface, 0, 0);
+            cairo_set_source_surface(cr2, (cairo_surface_t*)pSrcSurface->cairo.pSurface, 0, 0);
             cairo_pattern_set_filter(cairo_get_source(cr2), CAIRO_FILTER_NEAREST);
             cairo_paint(cr2);
 
@@ -1296,6 +1316,26 @@ dtk_result dtk_surface_pop(dtk_surface* pSurface)
 #ifdef DTK_GTK
     if (pSurface->backend == dtk_graphics_backend_cairo) {
         result = dtk_surface_pop__cairo(pSurface);
+    }
+#endif
+
+    return result;
+}
+
+
+dtk_result dtk_surface_translate(dtk_surface* pSurface, dtk_int32 offsetX, dtk_int32 offsetY)
+{
+    if (pSurface == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pSurface->backend == dtk_graphics_backend_gdi) {
+        result = dtk_surface_translate__gdi(pSurface, offsetX, offsetY);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pSurface->backend == dtk_graphics_backend_cairo) {
+        result = dtk_surface_translate__cairo(pSurface, offsetX, offsetY);
     }
 #endif
 

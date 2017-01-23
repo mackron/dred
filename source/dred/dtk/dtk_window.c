@@ -1058,7 +1058,7 @@ GdkModifierType dtk_accelerator_modifiers_to_gtk(dtk_uint32 modifiers)
         result |= GDK_MOD1_MASK;
     }
 
-    return result;
+    return (GdkModifierType)result;
 }
 
 dtk_uint32 dtk_accelerator_modifiers_from_gtk(GdkModifierType modifiers)
@@ -1322,7 +1322,7 @@ static gboolean dtk_window_clientarea__on_mouse_enter__gtk(GtkWidget* pClientAre
     }
 
     pWindow->gtk.isCursorOverClientArea = DTK_TRUE;
-    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pWidget)), pWindow->gtk.pCursor);
+    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pWidget)), GDK_CURSOR(pWindow->gtk.pCursor));
 
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_MOUSE_ENTER, DTK_CONTROL(pWindow));
     dtk__handle_event(&e);
@@ -1520,7 +1520,7 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_wind
     g_object_set_data(G_OBJECT(gtk_widget_get_window(pWidget)), "GtkWindow", pWidget);
 
     // Bind the accelerator group to every window for now.
-    gtk_window_add_accel_group(GTK_WINDOW(pWidget), pTK->gtk.pAccelGroup);
+    gtk_window_add_accel_group(GTK_WINDOW(pWidget), GTK_ACCEL_GROUP(pTK->gtk.pAccelGroup));
 
     return DTK_SUCCESS;
 }
@@ -1543,7 +1543,7 @@ dtk_result dtk_window_set_size__gtk(dtk_window* pWindow, dtk_uint32 width, dtk_u
 {
     if (pWindow->gtk.pMenu != NULL) {
         GtkAllocation alloc;
-        gtk_widget_get_allocation(pWindow->gtk.pMenu->gtk.pWidget, &alloc);
+        gtk_widget_get_allocation(GTK_WIDGET(pWindow->gtk.pMenu->gtk.pWidget), &alloc);
 
         height += alloc.height;
     }
@@ -1566,7 +1566,7 @@ dtk_result dtk_window_get_size__gtk(dtk_window* pWindow, dtk_uint32* pWidth, dtk
 dtk_result dtk_window_get_client_size__gtk(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight)
 {
     GtkAllocation alloc;
-    gtk_widget_get_allocation(pWindow->gtk.pClientArea, &alloc);
+    gtk_widget_get_allocation(GTK_WIDGET(pWindow->gtk.pClientArea), &alloc);
 
     if (pWidth) *pWidth = alloc.width;
     if (pHeight) *pHeight = alloc.height;
@@ -1641,22 +1641,22 @@ dtk_result dtk_window_set_cursor__gtk(dtk_window* pWindow, dtk_system_cursor_typ
     {
         case dtk_system_cursor_type_text:
         {
-            pGTKCursor = pTK->gtk.pCursorIBeam;
+            pGTKCursor = GDK_CURSOR(pTK->gtk.pCursorIBeam);
         } break;
 
         case dtk_system_cursor_type_cross:
         {
-            pGTKCursor = pTK->gtk.pCursorCross;
+            pGTKCursor = GDK_CURSOR(pTK->gtk.pCursorCross);
         } break;
 
         case dtk_system_cursor_type_double_arrow_h:
         {
-            pGTKCursor = pTK->gtk.pCursorDoubleArrowH;
+            pGTKCursor = GDK_CURSOR(pTK->gtk.pCursorDoubleArrowH);
         } break;
 
         case dtk_system_cursor_type_double_arrow_v:
         {
-            pGTKCursor = pTK->gtk.pCursorDoubleArrowV;
+            pGTKCursor = GDK_CURSOR(pTK->gtk.pCursorDoubleArrowV);
         } break;
 
 
@@ -1669,7 +1669,7 @@ dtk_result dtk_window_set_cursor__gtk(dtk_window* pWindow, dtk_system_cursor_typ
         case dtk_system_cursor_type_default:
         default:
         {
-            pGTKCursor = pTK->gtk.pCursorDefault;
+            pGTKCursor = GDK_CURSOR(pTK->gtk.pCursorDefault);
         } break;
     }
 
@@ -1677,7 +1677,7 @@ dtk_result dtk_window_set_cursor__gtk(dtk_window* pWindow, dtk_system_cursor_typ
 
     // If the cursor is currently inside the window it needs to be changed right now.
     if (dtk_window_is_cursor_over(pWindow)) {
-        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pWidget)), pWindow->gtk.pCursor);
+        gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pWidget)), GDK_CURSOR(pWindow->gtk.pCursor));
     }
 
     return DTK_SUCCESS;
@@ -1692,14 +1692,14 @@ dtk_result dtk_window_set_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu)
 {
     // The old menu bar needs to be removed.
     if (pWindow->gtk.pMenu != NULL) {
-        gtk_container_remove(GTK_CONTAINER(pWindow->gtk.pBox), pWindow->gtk.pMenu->gtk.pWidget);
+        gtk_container_remove(GTK_CONTAINER(pWindow->gtk.pBox), GTK_WIDGET(pWindow->gtk.pMenu->gtk.pWidget));
     }
 
     // Add the new menu to the top.
     if (pMenu != NULL) {
-        gtk_box_pack_start(GTK_BOX(pWindow->gtk.pBox), pMenu->gtk.pWidget, FALSE, FALSE, 0);
-        gtk_box_reorder_child(GTK_BOX(pWindow->gtk.pBox), pMenu->gtk.pWidget, 0);
-        gtk_widget_show(pMenu->gtk.pWidget);
+        gtk_box_pack_start(GTK_BOX(pWindow->gtk.pBox), GTK_WIDGET(pMenu->gtk.pWidget), FALSE, FALSE, 0);
+        gtk_box_reorder_child(GTK_BOX(pWindow->gtk.pBox), GTK_WIDGET(pMenu->gtk.pWidget), 0);
+        gtk_widget_show(GTK_WIDGET(pMenu->gtk.pWidget));
     }
 
     pWindow->gtk.pMenu = pMenu;
@@ -1760,10 +1760,10 @@ dtk_result dtk_window_show_popup_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu,
 
 dtk_result dtk_window_redraw__gtk(dtk_window* pWindow, dtk_rect rect)
 {
-    gtk_widget_queue_draw_area(pWindow->gtk.pClientArea, (gint)rect.left, (gint)rect.top, (gint)(rect.right - rect.left), (gint)(rect.bottom - rect.top));
+    gtk_widget_queue_draw_area(GTK_WIDGET(pWindow->gtk.pClientArea), (gint)rect.left, (gint)rect.top, (gint)(rect.right - rect.left), (gint)(rect.bottom - rect.top));
 
     // Redraw immediately.
-    GdkWindow* pGDKWindow = gtk_widget_get_window(pWindow->gtk.pClientArea);
+    GdkWindow* pGDKWindow = gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pClientArea));
     if (pGDKWindow != NULL) {
         gdk_window_process_updates(pGDKWindow, TRUE);
     }

@@ -356,7 +356,7 @@ static gboolean dtk_menu__on_mouse_enter__gtk(GtkWidget* pGTKMenu, GdkEventCross
     dtk_menu* pMenu = (dtk_menu*)pUserData;
     dtk_assert(pMenu != NULL);
 
-    gdk_window_set_cursor(gtk_widget_get_window(pGTKMenu), pMenu->pTK->gtk.pCursorDefault);
+    gdk_window_set_cursor(gtk_widget_get_window(pGTKMenu), GDK_CURSOR(pMenu->pTK->gtk.pCursorDefault));
     return DTK_FALSE;
 }
 
@@ -409,7 +409,7 @@ static void dtk__on_menu_item_activate__gtk(GtkWidget *pItem, gpointer pUserData
 {
     (void)pUserData;
 
-    dtk_menu_item_extra_data__gtk* pItemData = g_object_get_data(G_OBJECT(pItem), DTK_MENU_ITEM_DATA_KEY);
+    dtk_menu_item_extra_data__gtk* pItemData = (dtk_menu_item_extra_data__gtk*)g_object_get_data(G_OBJECT(pItem), DTK_MENU_ITEM_DATA_KEY);
     if (pItemData->blockNextActivateSignal) {
         return;
     }
@@ -537,7 +537,7 @@ dtk_result dtk_menu_insert_item__gtk(dtk_menu* pMenu, dtk_uint32 index, dtk_menu
     gtk_widget_show(pItem);
 
     if (pInfo->pSubMenu != NULL) {
-        gtk_menu_item_set_submenu(GTK_MENU_ITEM(pItem), pInfo->pSubMenu->gtk.pWidget);
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(pItem), GTK_WIDGET(pInfo->pSubMenu->gtk.pWidget));
     }
 
 
@@ -653,12 +653,12 @@ dtk_result dtk_menu_set_item_checked__gtk(dtk_menu* pMenu, dtk_uint32 index, dtk
         return DTK_ERROR;
     }
 
-    dtk_menu_item_extra_data__gtk* pItemData = g_object_get_data(G_OBJECT(pItem), DTK_MENU_ITEM_DATA_KEY);
+    dtk_menu_item_extra_data__gtk* pItemData = (dtk_menu_item_extra_data__gtk*)g_object_get_data(G_OBJECT(pItem), DTK_MENU_ITEM_DATA_KEY);
     if (pItemData->type != dtk_menu_item_type_check) {
         return DTK_INVALID_ARGS;
     }
 
-    if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(pItem)) != checked) {
+    if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(pItem)) != (gboolean)checked) {
         pItemData->blockNextActivateSignal = DTK_TRUE;
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(pItem), checked);
         pItemData->blockNextActivateSignal = DTK_FALSE;
@@ -674,7 +674,7 @@ dtk_bool32 dtk_menu_is_item_checked__gtk(dtk_menu* pMenu, dtk_uint32 index)
         return DTK_FALSE;
     }
 
-    dtk_menu_item_extra_data__gtk* pItemData = g_object_get_data(G_OBJECT(pItem), DTK_MENU_ITEM_DATA_KEY);
+    dtk_menu_item_extra_data__gtk* pItemData = (dtk_menu_item_extra_data__gtk*)g_object_get_data(G_OBJECT(pItem), DTK_MENU_ITEM_DATA_KEY);
     if (pItemData->type != dtk_menu_item_type_check) {
         return DTK_FALSE;
     }

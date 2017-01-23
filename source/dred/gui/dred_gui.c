@@ -2196,13 +2196,13 @@ dr_bool32 dred_control_draw_iteration_callback(dred_control* pControl, dred_rect
     if (pControl->onPaint != NULL)
     {
         // We want to set the initial clipping rectangle before drawing.
-        dred_control_set_clip(pControl, *pRelativeRect, pUserData);
+        dred_control_set_clip(pControl, *pRelativeRect, (dtk_surface*)pUserData);
 
         // We now call the painting function, but only after setting the clipping rectangle.
-        pControl->onPaint(pControl, *pRelativeRect, pUserData);
+        pControl->onPaint(pControl, *pRelativeRect, (dtk_surface*)pUserData);
 
         // The on_paint event handler may have adjusted the clipping rectangle so we need to ensure it's restored.
-        dred_control_set_clip(pControl, *pRelativeRect, pUserData);
+        dred_control_set_clip(pControl, *pRelativeRect, (dtk_surface*)pUserData);
     }
 
     return DR_TRUE;
@@ -2689,9 +2689,9 @@ dr_bool32 dred_control_pass_through_hit_test(dred_control* pControl, float mouse
 
 //// Painting ////
 
-void dred_control_draw_border(dred_control* pControl, float borderWidth, dtk_color color, void* pUserData)
+void dred_control_draw_border(dred_control* pControl, float borderWidth, dtk_color color, dtk_surface* pSurface)
 {
-    dred_control_draw_rect_outline(pControl, dred_control_get_local_rect(pControl), color, borderWidth, pUserData);
+    dred_control_draw_rect_outline(pControl, dred_control_get_local_rect(pControl), color, borderWidth, pSurface);
 }
 
 

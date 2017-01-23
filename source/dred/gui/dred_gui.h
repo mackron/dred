@@ -1130,7 +1130,7 @@ dr_bool32 dred_control_pass_through_hit_test(dred_control* pControl, float mouse
 //// Painting ////
 
 /// Draws a border around the given element.
-void dred_control_draw_border(dred_control* pControl, float borderWidth, dtk_color color, void* pUserData);
+void dred_control_draw_border(dred_control* pControl, float borderWidth, dtk_color color, dtk_surface* pSurface);
 
 
 

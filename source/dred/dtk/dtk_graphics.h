@@ -250,6 +250,9 @@ dtk_result dtk_surface_push(dtk_surface* pSurface);
 // Restores the last saved state.
 dtk_result dtk_surface_pop(dtk_surface* pSurface);
 
+// Moves the origin.
+dtk_result dtk_surface_translate(dtk_surface* pSurface, dtk_int32 offsetX, dtk_int32 offsetY);
+
 
 // Clears the given surface within it's current clipping region.
 void dtk_surface_clear(dtk_surface* pSurface, dtk_color color);

@@ -163,7 +163,7 @@ void dred_cmdbar_popup_refresh_autocomplete(dred_cmdbar_popup* pCmdBarPopup, con
 
     size_t commandCount = dred_find_commands_starting_with(NULL, 0, commandName);
     if (commandCount > pCmdBarPopup->commandIndexCapacity) {
-        size_t* pNewCommandIndices = realloc(pCmdBarPopup->pCommandIndices, commandCount * sizeof(*pNewCommandIndices));
+        size_t* pNewCommandIndices = (size_t*)realloc(pCmdBarPopup->pCommandIndices, commandCount * sizeof(*pNewCommandIndices));
         if (pNewCommandIndices == NULL) {
             return; // Out of memory.
         }

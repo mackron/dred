@@ -1763,7 +1763,7 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
                 if (pTextView->isWantingToDragAndDrop) {
                     size_t selectionLen = drte_view_get_selection_text(pTextView->pView, iHoveredSelection, NULL, 0);
                     if (selectionLen > 0) {
-                        char* pSelectionText = malloc(selectionLen+1);
+                        char* pSelectionText = (char*)malloc(selectionLen+1);
                         if (pSelectionText != NULL) {
                             //printf("Begin dragging...\n");
                             drte_view_get_selection_text(pTextView->pView, iHoveredSelection, pSelectionText, selectionLen+1);

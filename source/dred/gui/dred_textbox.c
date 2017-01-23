@@ -227,7 +227,7 @@ char* dred_textbox_get_text_malloc(dred_textbox* pTextBox)
 {
     size_t len = dred_textbox_get_text(pTextBox, NULL, 0);
     
-    char* str = malloc(len+1);
+    char* str = (char*)malloc(len+1);
     if (str == NULL) {
         return NULL;
     }
