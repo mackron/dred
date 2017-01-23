@@ -155,8 +155,10 @@ void dred_window_cb__on_main_window_move(dred_window* pWindow, int posX, int pos
 
     assert(pWindow != NULL);
 
-    if (dtk_control_is_visible(DTK_CONTROL(&pWindow->pDred->pCmdBarPopup->pWindow->windowDTK))) {
-        dred_cmdbar_popup_refresh_position(pWindow->pDred->pCmdBarPopup);
+    if (pWindow->pDred->pCmdBarPopup != NULL) {
+        if (dtk_control_is_visible(DTK_CONTROL(&pWindow->pDred->pCmdBarPopup->pWindow->windowDTK))) {
+            dred_cmdbar_popup_refresh_position(pWindow->pDred->pCmdBarPopup);
+        }
     }
 
     int configWindowPosX;
@@ -178,8 +180,10 @@ void dred_window_cb__on_main_window_size(dred_control* pControl, float width, fl
 
     dred__update_main_window_layout(pWindow, width, height);
 
-    if (dtk_control_is_visible(DTK_CONTROL(&pWindow->pDred->pCmdBarPopup->pWindow->windowDTK))) {
-        dred_cmdbar_popup_refresh_position(pWindow->pDred->pCmdBarPopup);
+    if (pWindow->pDred->pCmdBarPopup != NULL) {
+        if (dtk_control_is_visible(DTK_CONTROL(&pWindow->pDred->pCmdBarPopup->pWindow->windowDTK))) {
+            dred_cmdbar_popup_refresh_position(pWindow->pDred->pCmdBarPopup);
+        }
     }
 
 
@@ -521,7 +525,9 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
         dred_control_hide(DRED_CONTROL(pDred->pCmdBar));
     }
 
+#ifdef DRED_WIN32
     pDred->pCmdBarPopup = dred_cmdbar_popup_create(pDred);
+#endif
 
 
 
