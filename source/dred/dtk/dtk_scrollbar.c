@@ -39,15 +39,18 @@ dtk_bool32 dtk_scrollbar_default_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_MOUSE_MOVE:
         {
+            printf("MOVE %d %d\n", pEvent->mouseMove.x, pEvent->mouseMove.y);
             pScrollbar->isMouseOverThumb = dtk_rect_contains_point(dtk_scrollbar_get_thumb_rect(pScrollbar), pEvent->mouseMove.x, pEvent->mouseMove.y);
         } break;
 
         case DTK_EVENT_MOUSE_ENTER:
         {
+            printf("ENTER\n");
         } break;
 
         case DTK_EVENT_MOUSE_LEAVE:
         {
+            printf("LEAVE\n");
             pScrollbar->isMouseOverThumb = DTK_FALSE;
         } break;
 

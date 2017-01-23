@@ -117,6 +117,7 @@ typedef struct dtk_scrollbar dtk_scrollbar;
 typedef struct dtk_window dtk_window;
 typedef struct dtk_menu dtk_menu;
 typedef struct dtk_timer dtk_timer;
+typedef enum dtk_system_cursor_type dtk_system_cursor_type;
 
 // The callback function for handing log messages.
 typedef void (* dtk_log_proc)(dtk_context* pTK, const char* message);
@@ -320,7 +321,8 @@ struct dtk_context
     dtk_window* pFirstWindow;
     dtk_control* pControlWithKeyboardCapture;
     dtk_control* pControlWithMouseCapture;
-    dtk_control* pWindowUnderMouse;
+    dtk_window*  pWindowUnderMouse;
+    dtk_control* pControlUnderMouse;    // Used for mouse enter/leave state management.
     dtk_int32 lastMousePosX;
     dtk_int32 lastMousePosY;
     void* pUserData;

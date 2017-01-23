@@ -16,7 +16,7 @@ typedef enum
     dtk_window_type_popup
 } dtk_window_type;
 
-typedef enum
+enum dtk_system_cursor_type
 {
     dtk_system_cursor_type_none,
     dtk_system_cursor_type_default,
@@ -25,7 +25,7 @@ typedef enum
     dtk_system_cursor_type_cross,
     dtk_system_cursor_type_double_arrow_h,
     dtk_system_cursor_type_double_arrow_v,
-} dtk_system_cursor_type;
+};
 
 #define DTK_WINDOW(p) ((dtk_window*)(p))
 struct dtk_window
@@ -43,8 +43,8 @@ struct dtk_window
             /*HCURSOR*/ dtk_handle hCursor; // Used when the window receives WM_SETCURSOR
             dtk_bool32 isCursorOverClientArea;
 
-            // The high-surrogate from a WM_CHAR message. This is used in order to build a surrogate pair from a couple of WM_CHAR messages. When
-            // a WM_CHAR message is received when code point is not a high surrogate, this is set to 0.
+            // The high-surrogate from a WM_CHAR message. This is used to build a surrogate pair from a couple of WM_CHAR messages. When
+            // a WM_CHAR message is received where the code point is not a high surrogate, this is set to 0.
             dtk_uint16 utf16HighSurrogate;
         } win32;
     #endif
@@ -150,3 +150,7 @@ dtk_result dtk_window_show_popup_menu(dtk_window* pWindow, dtk_menu* pMenu, int 
 // If the redrawing is currently being batched, the control will only be redrawn when the batching has
 // completed.
 dtk_result dtk_window_redraw(dtk_window* pWindow, dtk_rect rect);
+
+
+// Finds the control sitting under the mouse, using a window as the root level control.
+dtk_control* dtk_window_find_control_under_point(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY);

@@ -15,11 +15,16 @@ typedef dtk_uint32 dtk_control_type;
 // used as the new clipping rectangle for children.
 typedef dtk_bool32 (* dtk_control_visibility_iteration_proc)(dtk_control* pControl, dtk_rect* pRelativeRect, void* pUserData);
 
+// Used to check if a point is sitting on top of a control. This is intended for controls that have an
+// irregular, non-rectangular shape. Return true if the point is inside the control; false otherwise.
+typedef dtk_bool32 (* dtk_control_hit_test_proc)(dtk_control* pControl, dtk_int32 relativePosX, dtk_int32 relativePosY);
+
 #define DTK_CONTROL(p) ((dtk_control*)(p))
 struct dtk_control
 {
     dtk_context* pTK;
     dtk_event_proc onEvent;
+    dtk_control_hit_test_proc onHitTest;
     dtk_control* pParent;
     dtk_control* pFirstChild;
     dtk_control* pLastChild;
@@ -33,6 +38,7 @@ struct dtk_control
     dtk_int32 absolutePosY;
     dtk_uint32 width;
     dtk_uint32 height;
+    dtk_system_cursor_type cursor;
 };
 
 // Initializes a control.
@@ -46,6 +52,9 @@ dtk_result dtk_control_uninit(dtk_control* pControl);
 
 // Sets the event handler for a control.
 dtk_result dtk_control_set_event_handler(dtk_control* pControl, dtk_event_proc onEvent);
+
+// Sets the function to call when a custom hit-test needs to be used for this control.
+dtk_result dtk_control_set_hit_test_proc(dtk_control* pControl, dtk_control_hit_test_proc onHitTest);
 
 // Shows a control.
 dtk_result dtk_control_show(dtk_control* pControl);
@@ -112,6 +121,31 @@ dtk_bool32 dtk_control_clamp_rect(dtk_control* pControl, dtk_rect* pRelativeRect
 
 // Finds the top level control for the given control.
 dtk_control* dtk_control_find_top_level_control(dtk_control* pControl);
+
+// Determines whether or not the given element is the parent of the other.
+//
+// @remarks
+//     This is not recursive. Use dred_control_is_ancestor() to do a recursive traversal.
+dtk_bool32 dtk_control_is_parent(dtk_control* pParentControl, dtk_control* pChildControl);
+
+// Determines whether or not the given element is a child of the other.
+//
+// @remarks
+//     This is not recursive. Use dred_control_is_descendant() to do a recursive traversal.
+dtk_bool32 dtk_control_is_child(dtk_control* pChildControl, dtk_control* pParentControl);
+
+// Determines whether or not the given element is an ancestor of the other.
+dtk_bool32 dtk_control_is_ancestor(dtk_control* pAncestorControl, dtk_control* pChildControl);
+
+// Determines whether or not the given element is a descendant of the other.
+dtk_bool32 dtk_control_is_descendant(dtk_control* pChildControl, dtk_control* pAncestorControl);
+
+// Determines whether or not the given element is itself or a descendant.
+dtk_bool32 dtk_control_is_self_or_ancestor(dtk_control* pAncestorControl, dtk_control* pChildControl);
+
+// Determines whether or not the given element is itself or a descendant.
+dtk_bool32 dtk_control_is_self_or_descendant(dtk_control* pChildControl, dtk_control* pAncestorControl);
+
 
 // Finds the window that the given control is part of. All this does is performs an updwards traversal of
 // the hierarchy and returns the first occurance of a dtk_window control. If <pControl> itself is a window,

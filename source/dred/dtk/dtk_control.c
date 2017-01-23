@@ -54,6 +54,7 @@ dtk_result dtk_control_init(dtk_context* pTK, dtk_control* pParent, dtk_control_
     pControl->pTK = pTK;
     pControl->type = type;
     pControl->onEvent = onEvent;
+    pControl->cursor = dtk_system_cursor_type_default;
 
     if (pParent != NULL) {
         dtk_control__link_child(pParent, pControl);
@@ -78,6 +79,14 @@ dtk_result dtk_control_set_event_handler(dtk_control* pControl, dtk_event_proc o
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
     dtk_atomic_exchange_ptr(&pControl->onEvent, onEvent);
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_control_set_hit_test_proc(dtk_control* pControl, dtk_control_hit_test_proc onHitTest)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    dtk_atomic_exchange_ptr(&pControl->onHitTest, onHitTest);
     return DTK_SUCCESS;
 }
 
@@ -364,6 +373,53 @@ dtk_control* dtk_control_find_top_level_control(dtk_control* pControl)
 
     return NULL;
 }
+
+dtk_bool32 dtk_control_is_parent(dtk_control* pParentControl, dtk_control* pChildControl)
+{
+    if (pParentControl == NULL || pChildControl == NULL) return DTK_FALSE;
+    return pParentControl == pChildControl->pParent;
+}
+
+dtk_bool32 dtk_control_is_child(dtk_control* pChildControl, dtk_control* pParentControl)
+{
+    if (pParentControl == NULL || pChildControl == NULL) return DTK_FALSE;
+    return dtk_control_is_parent(pParentControl, pChildControl);
+}
+
+dtk_bool32 dtk_control_is_ancestor(dtk_control* pAncestorControl, dtk_control* pChildControl)
+{
+    if (pAncestorControl == NULL || pChildControl == NULL) return DTK_FALSE;
+
+    dtk_control* pParent = pChildControl->pParent;
+    while (pParent != NULL) {
+        if (pParent == pAncestorControl) {
+            return DTK_TRUE;
+        }
+
+        pParent = pParent->pParent;
+    }
+
+    return DTK_FALSE;
+}
+
+dtk_bool32 dtk_control_is_descendant(dtk_control* pChildControl, dtk_control* pAncestorControl)
+{
+    if (pChildControl == NULL || pAncestorControl == NULL) return DTK_FALSE;
+    return dtk_control_is_ancestor(pAncestorControl, pChildControl);
+}
+
+dtk_bool32 dtk_control_is_self_or_ancestor(dtk_control* pAncestorControl, dtk_control* pChildControl)
+{
+    if (pAncestorControl == NULL || pChildControl == NULL) return DTK_FALSE;
+    return pAncestorControl == pChildControl || dtk_control_is_ancestor(pAncestorControl, pChildControl);
+}
+
+dtk_bool32 dtk_control_is_self_or_descendant(dtk_control* pChildControl, dtk_control* pAncestorControl)
+{
+    if (pChildControl == NULL || pAncestorControl == NULL) return DTK_FALSE;
+    return pChildControl == pAncestorControl || dtk_control_is_descendant(pChildControl, pAncestorControl);
+}
+
 
 dtk_window* dtk_control_get_window(dtk_control* pControl)
 {

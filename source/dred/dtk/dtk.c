@@ -131,6 +131,10 @@ dtk_result dtk__release_keyboard_window(dtk_context* pTK);
 dtk_result dtk__capture_mouse_window(dtk_context* pTK, dtk_window* pWindow);
 dtk_result dtk__release_mouse_window(dtk_context* pTK);
 
+// Private event posting APIs.
+void dtk__post_mouse_leave_event_recursive(dtk_context* pTK, dtk_control* pNewControlUnderMouse, dtk_control* pOldControlUnderMouse);
+void dtk__post_mouse_enter_event_recursive(dtk_context* pTK, dtk_control* pNewControlUnderMouse, dtk_control* pOldControlUnderMouse);
+
 #ifdef DTK_WIN32
 typedef BOOL    (WINAPI * DTK_PFN_InitCommonControlsEx)(const LPINITCOMMONCONTROLSEX lpInitCtrls);
 typedef HRESULT (WINAPI * DTK_PFN_OleInitialize)       (LPVOID pvReserved);
@@ -1606,4 +1610,34 @@ dtk_result dtk__release_mouse_window(dtk_context* pTK)
 #endif
 
     return result;
+}
+
+
+void dtk__post_mouse_leave_event_recursive(dtk_context* pTK, dtk_control* pNewControlUnderMouse, dtk_control* pOldControlUnderMouse)
+{
+    dtk_control* pOldAncestor = pOldControlUnderMouse;
+    while (pOldAncestor != NULL) {
+        dtk_bool32 isOldControlUnderMouse = pNewControlUnderMouse == pOldAncestor || dtk_control_is_ancestor(pOldAncestor, pNewControlUnderMouse);
+        if (!isOldControlUnderMouse) {
+            dtk_event e = dtk_event_init(pTK, DTK_EVENT_MOUSE_LEAVE, pOldAncestor);
+            dtk_handle_local_event(pTK, &e);
+        }
+
+        pOldAncestor = pOldAncestor->pParent;
+    }
+}
+
+void dtk__post_mouse_enter_event_recursive(dtk_context* pTK, dtk_control* pNewControlUnderMouse, dtk_control* pOldControlUnderMouse)
+{
+    if (pNewControlUnderMouse == NULL) return;
+
+    if (pNewControlUnderMouse->pParent != NULL) {
+        dtk__post_mouse_enter_event_recursive(pTK, pNewControlUnderMouse->pParent, pOldControlUnderMouse);
+    }
+
+    dtk_bool32 wasNewControlUnderMouse = pOldControlUnderMouse == pNewControlUnderMouse || dtk_control_is_ancestor(pNewControlUnderMouse, pOldControlUnderMouse);
+    if (!wasNewControlUnderMouse) {
+        dtk_event e = dtk_event_init(pTK, DTK_EVENT_MOUSE_ENTER, pNewControlUnderMouse);
+        dtk_handle_local_event(pTK, &e);
+    }
 }

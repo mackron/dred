@@ -1776,6 +1776,34 @@ dtk_result dtk_window_redraw__gtk(dtk_window* pWindow, dtk_rect rect)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void dtk_window__check_and_handle_mouse_enter_and_leave(dtk_window* pWindow, dtk_control* pNewControlUnderMouse)
+{
+    dtk_assert(pWindow != NULL);
+
+    dtk_context* pTK = DTK_CONTROL(pWindow)->pTK;
+    dtk_assert(pTK != NULL);
+    dtk_assert(pTK->pWindowUnderMouse == pWindow);
+
+    dtk_control* pOldControlUnderMouse = pTK->pControlUnderMouse;
+    if (pOldControlUnderMouse != pNewControlUnderMouse) {
+        if (pTK->pControlWithMouseCapture == NULL) {    // <-- We don't change the enter/leave state when a control has captured the mouse.
+            pTK->pControlUnderMouse = pNewControlUnderMouse;
+
+            dtk_system_cursor_type newCursor = dtk_system_cursor_type_default;
+            if (pNewControlUnderMouse != NULL) {
+                newCursor = pNewControlUnderMouse->cursor;
+            }
+
+            // It's intuitive to check that the new cursor is different to the old one before trying to change it, but that is not actually
+            // what we want to do because it's possible that the old and new controls are on different windows.
+            dtk_window_set_cursor(pWindow, newCursor);
+
+            dtk__post_mouse_leave_event_recursive(pTK, pNewControlUnderMouse, pOldControlUnderMouse);
+            dtk__post_mouse_enter_event_recursive(pTK, pNewControlUnderMouse, pOldControlUnderMouse);
+        }
+    }
+}
+
 dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_event_proc onEvent, dtk_window* pWindow)
 {
     if (pWindow == NULL) return DTK_INVALID_ARGS;
@@ -1935,16 +1963,37 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
             DTK_CONTROL(pWindow)->absolutePosY = pEvent->move.y;
         } break;
 
-        case DTK_EVENT_MOUSE_MOVE:
-        {
-            pTK->pWindowUnderMouse = DTK_CONTROL(pWindow);
-            pTK->lastMousePosX = pEvent->mouseMove.x;
-            pTK->lastMousePosY = pEvent->mouseMove.y;
-        } break;
-
         case DTK_EVENT_MOUSE_LEAVE:
         {
+            dtk_window__check_and_handle_mouse_enter_and_leave(pWindow, NULL);
             pTK->pWindowUnderMouse = NULL;
+        } break;
+
+        case DTK_EVENT_MOUSE_MOVE:
+        {
+            pTK->pWindowUnderMouse = pWindow;
+            pTK->lastMousePosX = pEvent->mouseMove.x;
+            pTK->lastMousePosY = pEvent->mouseMove.y;
+
+            dtk_control* pNewControlUnderMouse = dtk_window_find_control_under_point(pWindow, pEvent->mouseMove.x, pEvent->mouseMove.y);
+            dtk_window__check_and_handle_mouse_enter_and_leave(pWindow, pNewControlUnderMouse);
+
+            dtk_control* pEventReceiver = pTK->pControlWithMouseCapture;
+            if (pEventReceiver == NULL) {
+                pEventReceiver = pNewControlUnderMouse;
+            }
+
+            if (pEventReceiver != NULL) {
+                dtk_int32 relativeMousePosX = pEvent->mouseMove.x;
+                dtk_int32 relativeMousePosY = pEvent->mouseMove.y;
+                dtk_control_absolute_to_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+
+                dtk_event e = *pEvent;
+                e.pControl = pEventReceiver;
+                e.mouseMove.x = relativeMousePosX;
+                e.mouseMove.y = relativeMousePosY;
+                dtk_handle_local_event(pTK, &e);
+            }
         } break;
     }
 
@@ -2338,4 +2387,46 @@ dtk_result dtk_window_redraw(dtk_window* pWindow, dtk_rect rect)
 #endif
 
     return result;
+}
+
+
+typedef struct
+{
+    dtk_control* pControlUnderPoint;
+    dtk_int32 posX;
+    dtk_int32 posY;
+} dtk_window__find_control_under_point_iterator_cb__data;
+
+dtk_bool32 dtk_window__find_control_under_point_iterator_cb(dtk_control* pControl, dtk_rect* pRelativeRect, void* pUserData)
+{
+    dtk_window__find_control_under_point_iterator_cb__data* pData = (dtk_window__find_control_under_point_iterator_cb__data*)pUserData;
+    
+    dtk_int32 relativePosX = pData->posX;
+    dtk_int32 relativePosY = pData->posY;
+    dtk_control_absolute_to_relative(pControl, &relativePosX, &relativePosY);
+
+    if (dtk_rect_contains_point(*pRelativeRect, relativePosX, relativePosY)) {
+        if (pControl->onHitTest) {
+            if (pControl->onHitTest(pControl, relativePosX, relativePosY)) {
+                pData->pControlUnderPoint = pControl;
+            }
+        } else {
+            pData->pControlUnderPoint = pControl;
+        }
+    }
+
+    return DTK_TRUE; // Always return DR_TRUE to ensure the entire hierarchy is checked.
+}
+
+dtk_control* dtk_window_find_control_under_point(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY)
+{
+    if (pWindow == NULL) return NULL;
+
+    dtk_window__find_control_under_point_iterator_cb__data data;
+    data.pControlUnderPoint = NULL;
+    data.posX = posX;
+    data.posY = posY;
+    dtk_control_iterate_visible_controls(DTK_CONTROL(pWindow), dtk_control_get_local_rect(DTK_CONTROL(pWindow)), dtk_window__find_control_under_point_iterator_cb, NULL, &data);
+
+    return data.pControlUnderPoint;
 }
