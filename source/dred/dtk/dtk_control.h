@@ -157,8 +157,10 @@ dtk_window* dtk_control_get_window(dtk_control* pControl);
 //
 // <relativeRect> should be relative to <pControl>
 //
-// If <callback> returns false, iteration will be terminated and false will be returned.
-dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect relativeRect, dtk_control_visibility_iteration_proc callback, dtk_control_visibility_iteration_proc callbackFinished, void* pUserData);
+// If <callback> returns false, iteration will be terminated and false will be returned. <callbackPost> is called
+// after <callback> _and_ the controls children. It's used to allow the callbacks to save and restore state for
+// recursive traversals.
+dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect relativeRect, dtk_control_visibility_iteration_proc callback, dtk_control_visibility_iteration_proc callbackPost, void* pUserData);
 
 
 

@@ -435,7 +435,7 @@ dtk_window* dtk_control_get_window(dtk_control* pControl)
 }
 
 
-dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect relativeRect, dtk_control_visibility_iteration_proc callback, dtk_control_visibility_iteration_proc callbackFinished, void* pUserData)
+dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect relativeRect, dtk_control_visibility_iteration_proc callback, dtk_control_visibility_iteration_proc callbackPost, void* pUserData)
 {
     if (pControl == NULL || callback == NULL) return DTK_FALSE;
 
@@ -473,15 +473,15 @@ dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect 
         childRect.top    -= childRelativePosY;
         childRect.right  -= childRelativePosX;
         childRect.bottom -= childRelativePosY;
-        if (!dtk_control_iterate_visible_controls(pChild, childRect, callback, callbackFinished, pUserData)) {
+        if (!dtk_control_iterate_visible_controls(pChild, childRect, callback, callbackPost, pUserData)) {
             return DTK_FALSE;
         }
     }
 
 
     if (isRootControlVisible) {
-        if (callbackFinished) {
-            callbackFinished(pControl, &clampedRelativeRect, pUserData);
+        if (callbackPost) {
+            callbackPost(pControl, &clampedRelativeRect, pUserData);
         }
     }
 
