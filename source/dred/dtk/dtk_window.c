@@ -1782,7 +1782,6 @@ void dtk_window__check_and_handle_mouse_enter_and_leave(dtk_window* pWindow, dtk
 
     dtk_context* pTK = DTK_CONTROL(pWindow)->pTK;
     dtk_assert(pTK != NULL);
-    dtk_assert(pTK->pWindowUnderMouse == pWindow);
 
     dtk_control* pOldControlUnderMouse = pTK->pControlUnderMouse;
     if (pOldControlUnderMouse != pNewControlUnderMouse) {
@@ -1983,7 +1982,7 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
                 pEventReceiver = pNewControlUnderMouse;
             }
 
-            if (pEventReceiver != NULL) {
+            if (pEventReceiver != NULL && pEventReceiver != DTK_CONTROL(pWindow)) {
                 dtk_int32 relativeMousePosX = pEvent->mouseMove.x;
                 dtk_int32 relativeMousePosY = pEvent->mouseMove.y;
                 dtk_control_absolute_to_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
@@ -1995,8 +1994,59 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
                 dtk_handle_local_event(pTK, &e);
             }
         } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_DOWN:
+        case DTK_EVENT_MOUSE_BUTTON_UP:
+        case DTK_EVENT_MOUSE_BUTTON_DBLCLICK:
+        {
+            dtk_control* pEventReceiver = pTK->pControlWithMouseCapture;
+            if (pEventReceiver == NULL) {
+                pEventReceiver = pTK->pControlUnderMouse;
+                if (pEventReceiver == NULL) {
+                    // We'll get here if this message is posted without a prior mouse move event.
+                    pEventReceiver = dtk_window_find_control_under_point(pWindow, pEvent->mouseButton.x, pEvent->mouseButton.y);
+                }
+            }
+
+            if (pEventReceiver != NULL && pEventReceiver != DTK_CONTROL(pWindow)) {
+                dtk_int32 relativeMousePosX = pEvent->mouseMove.x;
+                dtk_int32 relativeMousePosY = pEvent->mouseMove.y;
+                dtk_control_absolute_to_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+
+                dtk_event e = *pEvent;
+                e.pControl = pEventReceiver;
+                e.mouseButton.x = relativeMousePosX;
+                e.mouseButton.y = relativeMousePosY;
+                dtk_handle_local_event(pTK, &e);
+            }
+        } break;
+
+        case DTK_EVENT_MOUSE_WHEEL:
+        {
+            dtk_control* pEventReceiver = pTK->pControlWithMouseCapture;
+            if (pEventReceiver == NULL) {
+                pEventReceiver = pTK->pControlUnderMouse;
+                if (pEventReceiver == NULL) {
+                    // We'll get here if this message is posted without a prior mouse move event.
+                    pEventReceiver = dtk_window_find_control_under_point(pWindow, pEvent->mouseButton.x, pEvent->mouseButton.y);
+                }
+            }
+
+            if (pEventReceiver != NULL && pEventReceiver != DTK_CONTROL(pWindow)) {
+                dtk_int32 relativeMousePosX = pEvent->mouseMove.x;
+                dtk_int32 relativeMousePosY = pEvent->mouseMove.y;
+                dtk_control_absolute_to_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+
+                dtk_event e = *pEvent;
+                e.pControl = pEventReceiver;
+                e.mouseWheel.x = relativeMousePosX;
+                e.mouseWheel.y = relativeMousePosY;
+                dtk_handle_local_event(pTK, &e);
+            }
+        } break;
     }
 
+    // NOTE: Do not call dtk_control_default_event_handler() here. Just return DTK_TRUE directly. Windows are handled in a special way.
     return DTK_TRUE;
 }
 
