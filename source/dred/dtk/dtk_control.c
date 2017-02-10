@@ -74,6 +74,14 @@ dtk_result dtk_control_uninit(dtk_control* pControl)
     return DTK_SUCCESS;
 }
 
+dtk_bool32 dtk_control_default_event_handler(dtk_event* pEvent)
+{
+    if (pEvent == NULL) return DTK_FALSE;
+
+    return DTK_TRUE;
+}
+
+
 dtk_result dtk_control_set_event_handler(dtk_control* pControl, dtk_event_proc onEvent)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;

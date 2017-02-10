@@ -50,6 +50,13 @@ dtk_result dtk_control_init(dtk_context* pTK, dtk_control* pParent, dtk_control_
 // Uninitializes a control.
 dtk_result dtk_control_uninit(dtk_control* pControl);
 
+// The default event handler for a control.
+//
+// Event handler procedures should call this function after handling each event, unless they want to skip the default
+// handling, which is unlikely.
+dtk_bool32 dtk_control_default_event_handler(dtk_event* pEvent);
+
+
 // Sets the event handler for a control.
 dtk_result dtk_control_set_event_handler(dtk_control* pControl, dtk_event_proc onEvent);
 

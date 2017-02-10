@@ -59,7 +59,7 @@ dtk_bool32 dtk_scrollbar_default_event_handler(dtk_event* pEvent)
         } break;
     }
 
-    return DTK_TRUE;
+    return dtk_control_default_event_handler(pEvent);
 }
 
 
