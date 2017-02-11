@@ -2044,6 +2044,17 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
                 dtk_handle_local_event(pTK, &e);
             }
         } break;
+
+        case DTK_EVENT_KEY_DOWN:
+        case DTK_EVENT_KEY_UP:
+        case DTK_EVENT_PRINTABLE_KEY_DOWN:
+        {
+            if (pTK->pControlWithKeyboardCapture != NULL) {
+                dtk_event e = *pEvent;
+                e.pControl = pTK->pControlWithKeyboardCapture;
+                dtk_handle_local_event(pTK, &e);
+            }
+        } break;
     }
 
     // NOTE: Do not call dtk_control_default_event_handler() here. Just return DTK_TRUE directly. Windows are handled in a special way.
