@@ -19,6 +19,9 @@
     #ifdef __linux__
         #define DTK_LINUX
     #endif
+
+    #include <pthread.h>
+    #include <semaphore.h>
 #endif
 
 #ifdef DTK_LINUX
@@ -117,7 +120,17 @@ typedef struct dtk_scrollbar dtk_scrollbar;
 typedef struct dtk_window dtk_window;
 typedef struct dtk_menu dtk_menu;
 typedef struct dtk_timer dtk_timer;
-typedef enum dtk_system_cursor_type dtk_system_cursor_type;
+
+typedef enum
+{
+    dtk_system_cursor_type_none,
+    dtk_system_cursor_type_default,
+    dtk_system_cursor_type_arrow = dtk_system_cursor_type_default,
+    dtk_system_cursor_type_text,
+    dtk_system_cursor_type_cross,
+    dtk_system_cursor_type_double_arrow_h,
+    dtk_system_cursor_type_double_arrow_v,
+} dtk_system_cursor_type;
 
 // The callback function for handing log messages.
 typedef void (* dtk_log_proc)(dtk_context* pTK, const char* message);
@@ -129,6 +142,7 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 
 #include "dtk_rect.h"
 #include "dtk_string.h"
+#include "dtk_threading.h"
 #include "dtk_graphics.h"
 #include "dtk_input.h"
 #include "dtk_accelerators.h"
@@ -138,6 +152,7 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_menu.h"
 #include "dtk_timer.h"
 #include "dtk_clipboard.h"
+#include "dtk_paint_queue.h"
 
 // Event types.
 typedef int dtk_event_type;
@@ -327,6 +342,7 @@ struct dtk_context
     dtk_int32 lastMousePosY;
     void* pUserData;
     dtk_event_proc defaultEventHandlers[DTK_CONTROL_TYPE_COUNT];    // The default event handlers for each built-in control type.
+    dtk_paint_queue paintQueue;
 
     union
     {
@@ -445,6 +461,12 @@ dtk_result dtk_post_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_ui
 
 // Same as dtk_post_custom_event(), except handles it immediately rather than posting it to the queue.
 dtk_result dtk_handle_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize);
+
+// Posts a paint notification to the event queue to let it know there is a pending paint request for a window.
+dtk_result dtk_post_paint_notification_event(dtk_context* pTK, dtk_window* pWindow);
+
+// Handles a paint notification event.
+dtk_result dtk_handle_paint_notification_event(dtk_context* pTK, dtk_window* pWindow);
 
 // The default event handler.
 //

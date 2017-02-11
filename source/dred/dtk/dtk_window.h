@@ -16,17 +16,6 @@ typedef enum
     dtk_window_type_popup
 } dtk_window_type;
 
-enum dtk_system_cursor_type
-{
-    dtk_system_cursor_type_none,
-    dtk_system_cursor_type_default,
-    dtk_system_cursor_type_arrow = dtk_system_cursor_type_default,
-    dtk_system_cursor_type_text,
-    dtk_system_cursor_type_cross,
-    dtk_system_cursor_type_double_arrow_h,
-    dtk_system_cursor_type_double_arrow_v,
-};
-
 #define DTK_WINDOW(p) ((dtk_window*)(p))
 struct dtk_window
 {

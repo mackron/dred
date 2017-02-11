@@ -124,6 +124,20 @@ dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
 }
 
 
+dtk_result dtk_errno_to_result(int err)
+{
+#if 0
+    switch (err)
+    {
+        default: return DTK_ERROR;
+    }
+#endif
+
+    (void)err;
+    return DTK_ERROR;
+}
+
+
 // When capturing the keyboard and mouse on a control it must be completed by capturing the window
 // that owns said control. The functions below are used for this.
 dtk_result dtk__capture_keyboard_window(dtk_context* pTK, dtk_window* pWindow);
@@ -136,6 +150,10 @@ void dtk__post_mouse_leave_event_recursive(dtk_context* pTK, dtk_control* pNewCo
 void dtk__post_mouse_enter_event_recursive(dtk_context* pTK, dtk_control* pNewControlUnderMouse, dtk_control* pOldControlUnderMouse);
 
 #ifdef DTK_WIN32
+#define DTK_WM_LOCAL                (WM_USER + 0)
+#define DTK_WM_CUSTOM               (WM_USER + 1)
+#define DTK_WM_PAINT_NOTIFICATION   (WM_USER + 2)
+
 typedef BOOL    (WINAPI * DTK_PFN_InitCommonControlsEx)(const LPINITCOMMONCONTROLSEX lpInitCtrls);
 typedef HRESULT (WINAPI * DTK_PFN_OleInitialize)       (LPVOID pvReserved);
 typedef void    (WINAPI * DTK_PFN_OleUninitialize)     ();
@@ -146,10 +164,14 @@ typedef BOOL    (WINAPI * DTK_PFN_AlphaBlend)          (HDC hdcDest, int xorigin
 //
 // TODO: Improve this API to make it thread-safe. Consider thread-local storage for the returned buffer.
 wchar_t* dtk__mb_to_wchar__win32(dtk_context* pTK, const char* text, size_t textSizeInBytes, size_t* pCharacterCount);
+
+// Converts a Win32 error code returned by GetLastError to a dtk_result.
+dtk_result dtk_win32_error_to_result(DWORD error);
 #endif
 
 #include "dtk_rect.c"
 #include "dtk_string.c"
+#include "dtk_threading.c"
 #include "dtk_graphics.c"
 #include "dtk_input.c"
 #include "dtk_accelerators.c"
@@ -159,6 +181,7 @@ wchar_t* dtk__mb_to_wchar__win32(dtk_context* pTK, const char* text, size_t text
 #include "dtk_menu.c"
 #include "dtk_timer.c"
 #include "dtk_clipboard.c"
+#include "dtk_paint_queue.c"
 
 typedef struct
 {
@@ -177,9 +200,6 @@ typedef struct
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DTK_WIN32
-#define DTK_WM_LOCAL    (WM_USER + 0)
-#define DTK_WM_CUSTOM   (WM_USER + 1)
-
 static dtk_uint32 g_dtkInitCounter_Win32 = 0;
 
 typedef enum DTK_PROCESS_DPI_AWARENESS {
@@ -452,7 +472,7 @@ dtk_result dtk_post_local_event__win32(dtk_context* pTK, dtk_event* pEvent)
     }
 
     *pEventCopy = *pEvent;
-    SendMessageA((HWND)pTK->win32.hMessagingWindow, DTK_WM_LOCAL, (WPARAM)0, (LPARAM)pEventCopy);
+    PostMessageA((HWND)pTK->win32.hMessagingWindow, DTK_WM_LOCAL, (WPARAM)0, (LPARAM)pEventCopy);
 
     return DTK_SUCCESS;
 }
@@ -470,10 +490,19 @@ dtk_result dtk_post_custom_event__win32(dtk_context* pTK, dtk_control* pControl,
     pEventData->eventID = eventID;
     pEventData->dataSize = dataSize;
     if (pData != NULL && dataSize > 0) memcpy(pEventData->pData, pData, dataSize);
-    SendMessageA((HWND)pTK->win32.hMessagingWindow, DTK_WM_CUSTOM, (WPARAM)eventID, (LPARAM)pEventData);
+    PostMessageA((HWND)pTK->win32.hMessagingWindow, DTK_WM_CUSTOM, (WPARAM)eventID, (LPARAM)pEventData);
 
     return DTK_SUCCESS;
 }
+
+dtk_result dtk_post_paint_notification_event__win32(dtk_context* pTK, dtk_window* pWindow)
+{
+    (void)pTK;
+    PostMessageA((HWND)pWindow->win32.hWnd, DTK_WM_PAINT_NOTIFICATION, (WPARAM)0, (LPARAM)pWindow);
+
+    return DTK_SUCCESS;
+}
+
 
 dtk_result dtk_post_quit_event__win32(dtk_context* pTK, int exitCode)
 {
@@ -683,6 +712,19 @@ fallback:;
 
     if (pCharacterCount != NULL) *pCharacterCount = wcharCount;
     return (wchar_t*)pTK->win32.pCharConvBuffer;
+}
+
+dtk_result dtk_win32_error_to_result(DWORD error)
+{
+#if 0
+    switch (error)
+    {
+        default: return DTK_ERROR;  // Generic error.
+    }
+#endif
+
+    (void)error;
+    return DTK_ERROR;
 }
 #endif
 
@@ -926,6 +968,19 @@ dtk_result dtk_post_custom_event__gtk(dtk_context* pTK, dtk_control* pControl, d
 }
 
 
+static gboolean dtk_post_paint_notification_event_cb__gtk(dtk_window* pWindow)
+{
+    dtk_handle_paint_notification_event(DTK_CONTROL(pWindow)->pTK, pWindow);
+    return FALSE;
+}
+
+dtk_result dtk_post_paint_notification_event__gtk(dtk_context* pTK, dtk_window* pWindow)
+{
+    g_idle_add((GSourceFunc)dtk_post_paint_notification_event_cb__gtk, pWindow);
+    return DTK_SUCCESS;
+}
+
+
 dtk_result dtk_post_quit_event__gtk(dtk_context* pTK, int exitCode)
 {
     // When this is called, there's a chance we're waiting on gtk_main_iteration(). We'll need to
@@ -1130,10 +1185,18 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
         result = dtk_init__gtk(pTK);
     }
 #endif
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
 
     pTK->defaultEventHandlers[DTK_CONTROL_TYPE_EMPTY    ] = NULL;
     pTK->defaultEventHandlers[DTK_CONTROL_TYPE_WINDOW   ] = dtk_window_default_event_handler;
     pTK->defaultEventHandlers[DTK_CONTROL_TYPE_SCROLLBAR] = dtk_scrollbar_default_event_handler;
+
+    result = dtk_paint_queue_init(&pTK->paintQueue);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
 
     return result;
 }
@@ -1141,6 +1204,8 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
 dtk_result dtk_uninit(dtk_context* pTK)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    dtk_paint_queue_uninit(&pTK->paintQueue);
     
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
@@ -1252,6 +1317,38 @@ dtk_result dtk_handle_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_
     return dtk__handle_event(&e);
 }
 
+dtk_result dtk_post_paint_notification_event(dtk_context* pTK, dtk_window* pWindow)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk_post_paint_notification_event__win32(pTK, pWindow);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk_post_paint_notification_event__gtk(pTK, pWindow);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_handle_paint_notification_event(dtk_context* pTK, dtk_window* pWindow)
+{
+    if (pTK == NULL || pWindow == NULL) return DTK_INVALID_ARGS;
+
+    // All we do here is an immediate redraw of the window.
+    dtk_paint_queue_item item;
+    if (dtk_paint_queue_dequeue(&pTK->paintQueue, &item) != DTK_SUCCESS) {
+        return DTK_ERROR;
+    }
+
+    return dtk_window_immediate_redraw(item.pWindow, item.rect);
+}
+
 dtk_bool32 dtk_default_event_handler(dtk_event* pEvent)
 {
     if (pEvent == NULL) return DTK_FALSE;
@@ -1285,6 +1382,7 @@ dtk_result dtk_post_quit_event(dtk_context* pTK, int exitCode)
 
     return result;
 }
+
 
 dtk_result dtk_set_log_callback(dtk_context* pTK, dtk_log_proc proc)
 {

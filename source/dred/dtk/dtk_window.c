@@ -212,6 +212,14 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             dtk__handle_event(&e);
         } return 0;
 
+        case DTK_WM_PAINT_NOTIFICATION:
+        {
+            dtk_window* pPaintWindow = (dtk_window*)lParam;
+            dtk_assert(pPaintWindow == pWindow);
+
+            dtk_handle_paint_notification_event(DTK_CONTROL(pWindow)->pTK, pWindow);
+        } break;
+
         case WM_PAINT:
         {
 #if 1
@@ -2435,8 +2443,9 @@ dtk_result dtk_window_scheduled_redraw(dtk_window* pWindow, dtk_rect rect)
         return DTK_SUCCESS;
     }
 
-    // TODO: Implement this properly. It needs to add the redraw request to a queue, but merge it with any alread-existing requests.
-    return dtk_window_immediate_redraw(pWindow, rect);
+    // When scheduling a redraw, we first enqueue an event into the paint queue. After that we post an event to the main message queue
+    // to let it know there's a pending paint.
+    return dtk_paint_queue_enqueue(&DTK_CONTROL(pWindow)->pTK->paintQueue, pWindow, rect);
 }
 
 dtk_result dtk_window_immediate_redraw(dtk_window* pWindow, dtk_rect rect)
