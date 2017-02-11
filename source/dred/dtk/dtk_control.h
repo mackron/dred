@@ -170,6 +170,26 @@ dtk_window* dtk_control_get_window(dtk_control* pControl);
 dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect relativeRect, dtk_control_visibility_iteration_proc callback, dtk_control_visibility_iteration_proc callbackPost, void* pUserData);
 
 
+// Schedules a redraw of the given control.
+//
+// This API will combine redraws to improve efficiency, but will not execute them immediately. Instead it
+// posts a redraw request to an internal queue which will be handled by the main loop.
+//
+// Use dtk_control_immediate_redraw() to redraw the control immediately. Note, however, that this can be less
+// efficient since it doesn't do batching.
+//
+// Note that redrawing a control will also redraw ancestors and descendants.
+dtk_result dtk_control_scheduled_redraw(dtk_control* pControl, dtk_rect relativeRect);
+
+// Immediately redraws the given control.
+//
+// This API can have some performance issues if you issue a lot of small redraws at once. Consider using
+// dtk_control_scheduled_redraw() in this scenario since that API will automatically combine redraws where
+// possible.
+//
+// Note that redrawing a control will also redraw ancestors and descendants.
+dtk_result dtk_control_immediate_redraw(dtk_control* pControl, dtk_rect relativeRect);
+
 
 // Enables the ability for the control to receive keyboard focus (default).
 dtk_result dtk_control_allow_keyboard_capture(dtk_control* pControl);

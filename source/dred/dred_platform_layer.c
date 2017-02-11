@@ -241,7 +241,7 @@ static void dred_platform__on_global_dirty(dred_control* pControl, dred_rect rel
     absoluteRectDTK.top    = (dtk_int32)absoluteRect.top;
     absoluteRectDTK.right  = (dtk_int32)absoluteRect.right;
     absoluteRectDTK.bottom = (dtk_int32)absoluteRect.bottom;
-    dtk_window_redraw(&pWindow->windowDTK, absoluteRectDTK);
+    dtk_window_immediate_redraw(&pWindow->windowDTK, absoluteRectDTK);
 }
 
 static void dred_platform__on_global_change_cursor(dred_control* pControl, dtk_system_cursor_type cursor)

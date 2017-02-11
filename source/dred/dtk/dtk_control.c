@@ -45,6 +45,26 @@ void dtk_control__unlink_child(dtk_control* pParent, dtk_control* pChild)
     pChild->pNextSibling = NULL;
 }
 
+
+void dtk_control__apply_position_offset_recursive(dtk_control* pControl, dtk_int32 offsetX, dtk_int32 offsetY, dtk_window* pWindow)
+{
+    if (pWindow == NULL) {
+        pWindow = dtk_control_get_window(pControl);
+    }
+
+    dtk_rect oldRect = dtk_control_relative_to_absolute_rect(pControl, dtk_control_get_local_rect(pControl));
+    pControl->absolutePosX += offsetX;
+    pControl->absolutePosY += offsetY;
+    dtk_rect newRect = dtk_control_relative_to_absolute_rect(pControl, dtk_control_get_local_rect(pControl));
+
+    dtk_window_scheduled_redraw(pWindow, dtk_rect_union(oldRect, newRect));
+
+    for (dtk_control* pChild = pControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
+        dtk_control__apply_position_offset_recursive(pChild, offsetX, offsetY, pWindow);
+    }
+}
+
+
 dtk_result dtk_control_init(dtk_context* pTK, dtk_control* pParent, dtk_control_type type, dtk_event_proc onEvent, dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
@@ -77,6 +97,13 @@ dtk_result dtk_control_uninit(dtk_control* pControl)
 dtk_bool32 dtk_control_default_event_handler(dtk_event* pEvent)
 {
     if (pEvent == NULL) return DTK_FALSE;
+
+#if 0
+    switch (pEvent->type)
+    {
+        default: break;
+    }
+#endif
 
     return DTK_TRUE;
 }
@@ -187,8 +214,12 @@ dtk_result dtk_control_set_size(dtk_control* pControl, dtk_uint32 width, dtk_uin
     if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
         return dtk_window_set_size(DTK_WINDOW(pControl), width, height);
     } else {
-        pControl->width = width;
+        dtk_rect oldRect = dtk_control_get_local_rect(pControl);
+        pControl->width  = width;
         pControl->height = height;
+        dtk_rect newRect = dtk_control_get_local_rect(pControl);
+
+        dtk_control_scheduled_redraw(pControl, dtk_rect_union(oldRect, newRect));
     }
 
     return DTK_SUCCESS;
@@ -213,8 +244,30 @@ dtk_result dtk_control_set_absolute_position(dtk_control* pControl, dtk_int32 po
     if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
         return dtk_window_set_absolute_position(DTK_WINDOW(pControl), posX, posY);
     } else {
-        pControl->absolutePosX = posX;
-        pControl->absolutePosY = posY;
+        if (pControl->absolutePosX != posX || pControl->absolutePosY != posY) {
+            dtk_int32 oldRelativePosX;
+            dtk_int32 oldRelativePosY;
+            dtk_control_get_relative_position(pControl, &oldRelativePosX, &oldRelativePosY);
+
+            // Controls use absolute coordinates to define their position so we'll need to recursively update the positions
+            // of each relatively positioned child control. We do not post move events in this case.
+            dtk_int32 offsetX = posX - pControl->absolutePosX;
+            dtk_int32 offsetY = posY - pControl->absolutePosY;
+            dtk_control__apply_position_offset_recursive(pControl, offsetX, offsetY, NULL);   // <-- This does not post move events, but _will_ post paint events.
+            
+            // Post an event _only_ for this control (not descendants, since their relative position will not have changed).
+            dtk_int32 newRelativePosX;
+            dtk_int32 newRelativePosY;
+            dtk_control_get_relative_position(pControl, &newRelativePosX, &newRelativePosY);
+
+            if (newRelativePosX != oldRelativePosX || newRelativePosY != oldRelativePosY) {
+                dtk_event e = dtk_event_init(pControl->pTK, DTK_EVENT_MOVE, pControl);
+                e.move.x = newRelativePosX;
+                e.move.y = newRelativePosY;
+                dtk_post_local_event(pControl->pTK, &e);
+            }
+        }
+
         return DTK_SUCCESS; 
     }
 }
@@ -494,6 +547,41 @@ dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect 
     }
 
     return DTK_TRUE;
+}
+
+
+dtk_result dtk_control_scheduled_redraw(dtk_control* pControl, dtk_rect relativeRect)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    // If the rectangle does not have any volume, just pretend the redraw was successful.
+    if (!dtk_rect_has_volume(relativeRect)) {
+        return DTK_SUCCESS;
+    }
+
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        return dtk_window_scheduled_redraw(DTK_WINDOW(pControl), relativeRect);
+    } else {
+        return dtk_window_scheduled_redraw(dtk_control_get_window(pControl), dtk_control_relative_to_absolute_rect(pControl, relativeRect));
+    }
+
+    
+}
+
+dtk_result dtk_control_immediate_redraw(dtk_control* pControl, dtk_rect relativeRect)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    // If the rectangle does not have any volume, just pretend the redraw was successful.
+    if (!dtk_rect_has_volume(relativeRect)) {
+        return DTK_SUCCESS;
+    }
+
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        return dtk_window_immediate_redraw(DTK_WINDOW(pControl), relativeRect);
+    } else {
+        return dtk_window_immediate_redraw(dtk_control_get_window(pControl), dtk_control_relative_to_absolute_rect(pControl, relativeRect));
+    }
 }
 
 

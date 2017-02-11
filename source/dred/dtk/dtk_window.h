@@ -145,11 +145,15 @@ dtk_result dtk_window_set_menu(dtk_window* pWindow, dtk_menu* pMenu);
 dtk_result dtk_window_show_popup_menu(dtk_window* pWindow, dtk_menu* pMenu, int posX, int posY);
 
 
-// Requests a redraw of the given control.
+// Schedules a redraw of the given window.
 //
-// If the redrawing is currently being batched, the control will only be redrawn when the batching has
-// completed.
-dtk_result dtk_window_redraw(dtk_window* pWindow, dtk_rect rect);
+// This does not immediately redraw the window, but instead stores the redraw request in a queue for execution
+// later via the main loop. The advantage of this over immediate redrawing is that it combines redraws into
+// larger, more monolithic redraws which improves efficiency.
+dtk_result dtk_window_scheduled_redraw(dtk_window* pWindow, dtk_rect rect);
+
+// Immediately redraws a section of the given window.
+dtk_result dtk_window_immediate_redraw(dtk_window* pWindow, dtk_rect rect);
 
 
 // Finds the control sitting under the mouse, using a window as the root level control.

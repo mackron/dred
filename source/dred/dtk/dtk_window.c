@@ -975,7 +975,7 @@ dtk_result dtk_window_show_popup_menu__win32(dtk_window* pWindow, dtk_menu* pMen
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_window_redraw__win32(dtk_window* pWindow, dtk_rect rect)
+dtk_result dtk_window_immediate_redraw__win32(dtk_window* pWindow, dtk_rect rect)
 {
     RECT rectWin32;
     rectWin32.left   = (LONG)rect.left;
@@ -1758,7 +1758,7 @@ dtk_result dtk_window_show_popup_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu,
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_window_redraw__gtk(dtk_window* pWindow, dtk_rect rect)
+dtk_result dtk_window_immediate_redraw__gtk(dtk_window* pWindow, dtk_rect rect)
 {
     gtk_widget_queue_draw_area(GTK_WIDGET(pWindow->gtk.pClientArea), (gint)rect.left, (gint)rect.top, (gint)(rect.right - rect.left), (gint)(rect.bottom - rect.top));
 
@@ -2415,7 +2415,20 @@ dtk_result dtk_window_show_popup_menu(dtk_window* pWindow, dtk_menu* pMenu, int 
 }
 
 
-dtk_result dtk_window_redraw(dtk_window* pWindow, dtk_rect rect)
+dtk_result dtk_window_scheduled_redraw(dtk_window* pWindow, dtk_rect rect)
+{
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    // If the rectangle does not have any volume, just return immediately and pretend it was drawn.
+    if (!dtk_rect_has_volume(rect)) {
+        return DTK_SUCCESS;
+    }
+
+    // TODO: Implement this properly. It needs to add the redraw request to a queue, but merge it with any alread-existing requests.
+    return dtk_window_immediate_redraw(pWindow, rect);
+}
+
+dtk_result dtk_window_immediate_redraw(dtk_window* pWindow, dtk_rect rect)
 {
     if (pWindow == NULL) return DTK_INVALID_ARGS;
     
@@ -2427,12 +2440,12 @@ dtk_result dtk_window_redraw(dtk_window* pWindow, dtk_rect rect)
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
-        result = dtk_window_redraw__win32(pWindow, rect);
+        result = dtk_window_immediate_redraw__win32(pWindow, rect);
     }
 #endif
 #ifdef DTK_GTK
     if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
-        result = dtk_window_redraw__gtk(pWindow, rect);
+        result = dtk_window_immediate_redraw__gtk(pWindow, rect);
     }
 #endif
 

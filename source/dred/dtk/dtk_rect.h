@@ -42,6 +42,15 @@ DTK_INLINE dtk_rect dtk_rect_grow(dtk_rect rect, dtk_int32 amount)
         rect.bottom + amount);
 }
 
+DTK_INLINE dtk_rect dtk_rect_union(dtk_rect rect0, dtk_rect rect1)
+{
+    return dtk_rect_init(
+        (rect0.left   < rect1.left)   ? rect0.left   : rect1.left,
+        (rect0.top    < rect1.top)    ? rect0.top    : rect1.top,
+        (rect0.right  > rect1.right)  ? rect0.right  : rect1.right,
+        (rect0.bottom > rect1.bottom) ? rect0.bottom : rect1.bottom);
+}
+
 DTK_INLINE dtk_bool32 dtk_rect_contains_point(dtk_rect rect, dtk_int32 posX, dtk_int32 posY)
 {
     if (posX < rect.left || posY < rect.top) {
