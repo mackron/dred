@@ -245,7 +245,7 @@ void dred_create_config_file_if_not_exists(const char* fileName, const char* con
 }
 
 
-dred_thread_result DRED_THREADCALL dred_ipc_message_proc(void* pData)
+dtk_thread_result DTK_THREADCALL dred_ipc_message_proc(void* pData)
 {
     dred_context* pDred = (dred_context*)pData;
     assert(pDred != NULL);
@@ -571,7 +571,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
 
     // Create the IPC server pipe last to ensure the context is in a valid when messages are received.
     if (!dr_cmdline_key_exists(&cmdline, "noipc")) {
-        if (dred_thread_create(&pDred->threadIPC, dred_ipc_message_proc, pDred)) {
+        if (dtk_thread_create(&pDred->threadIPC, dred_ipc_message_proc, pDred)) {
         }
     }
 
@@ -607,7 +607,7 @@ void dred_uninit(dred_context* pDred)
     if (dred_ipc_get_pipe_name(pipeName, sizeof(pipeName))) {
         drpipe tempClientPipe;
         drpipe_open_named_client(pipeName, DR_IPC_WRITE, &tempClientPipe);
-        dred_thread_wait(&pDred->threadIPC);
+        dtk_thread_wait(&pDred->threadIPC);
         drpipe_close(tempClientPipe);
     }
 

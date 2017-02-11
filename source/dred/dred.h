@@ -106,7 +106,6 @@ extern "C" {
 #include "dred_types.h"
 #include "dred_events.h"
 #include "dred_string_pool.h"
-#include "dred_threading.h"
 #include "dred_ipc.h"
 #include "dred_dl.h"
 #include "gui/dred_gui.h"

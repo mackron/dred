@@ -13,7 +13,7 @@ struct dred_context
     dred_file logFile;
 
     // The IPC thread.
-    dred_thread threadIPC;
+    dtk_thread threadIPC;
 
     // The main toolkit context. This needs to be initialized before doing pretty much anything.
     dtk_context tk;
