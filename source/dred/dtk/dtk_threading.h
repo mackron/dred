@@ -2,7 +2,7 @@
 
 // Multithreading is implemented differently depending on the platform. Of note is the entry point which is slightly different. The thread
 // entry point needs to be declared like this:
-//     dtk_thread_result dtk_THREADCALL MyThreadEntryProc(void* pData);
+//     dtk_thread_result DTK_THREADCALL MyThreadEntryProc(void* pData);
 
 #ifdef DTK_WIN32
 #ifdef WINAPI
@@ -51,7 +51,7 @@ void dtk_mutex_lock(dtk_mutex* pMutex);
 void dtk_mutex_unlock(dtk_mutex* pMutex);
 
 
-//// Semaphore ///
+//// Semaphore ////
 
 // Creates a semaphore.
 dtk_result dtk_semaphore_init(dtk_semaphore* pSemaphore, int initialValue);
