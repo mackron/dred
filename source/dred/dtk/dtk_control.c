@@ -98,13 +98,6 @@ dtk_bool32 dtk_control_default_event_handler(dtk_event* pEvent)
 {
     if (pEvent == NULL) return DTK_FALSE;
 
-#if 0
-    switch (pEvent->type)
-    {
-        default: break;
-    }
-#endif
-
     return DTK_TRUE;
 }
 
@@ -564,8 +557,6 @@ dtk_result dtk_control_scheduled_redraw(dtk_control* pControl, dtk_rect relative
     } else {
         return dtk_window_scheduled_redraw(dtk_control_get_window(pControl), dtk_control_relative_to_absolute_rect(pControl, relativeRect));
     }
-
-    
 }
 
 dtk_result dtk_control_immediate_redraw(dtk_control* pControl, dtk_rect relativeRect)
