@@ -217,7 +217,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             dtk_window* pPaintWindow = (dtk_window*)lParam;
             dtk_assert(pPaintWindow == pWindow);
 
-            dtk_handle_paint_notification_event(DTK_CONTROL(pWindow)->pTK, pWindow);
+            dtk_handle_paint_notification_event(pTK, pPaintWindow);
         } break;
 
         case WM_PAINT:
@@ -1924,6 +1924,8 @@ dtk_bool32 dtk_window__on_paint_control(dtk_control* pControl, dtk_rect* pRelati
 
 dtk_bool32 dtk_window__on_paint_control_finished(dtk_control* pControl, dtk_rect* pRelativeRect, void* pUserData)
 {
+    (void)pRelativeRect;
+
     dtk_assert(pControl != NULL);
     dtk_assert(pRelativeRect != NULL);
 
