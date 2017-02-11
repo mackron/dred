@@ -126,6 +126,21 @@ dtk_rect dtk_control_absolute_to_relative_rect(dtk_control* pControl, dtk_rect a
 dtk_bool32 dtk_control_clamp_rect(dtk_control* pControl, dtk_rect* pRelativeRect);
 
 
+// Detaches a control from it's parent.
+dtk_result dtk_control_detach(dtk_control* pChildControl);
+
+// Attaches a control to a parent, making it the last child.
+dtk_result dtk_control_append(dtk_control* pChildControl, dtk_control* pParentControl);
+
+// Attaches a control to a parent, making it the first child.
+dtk_result dtk_control_prepend(dtk_control* pChildControl, dtk_control* pParentControl);
+
+// Appends the given control to a sibling.
+dtk_result dtk_control_append_sibling(dtk_control* pControlToAppend, dtk_control* pControlToAppendTo);
+
+// Prepends the given control to a sibling.
+dtk_result dtk_control_prepend_sibling(dtk_control* pControlToPrepend, dtk_control* pControlToPrependTo);
+
 // Finds the top level control for the given control.
 dtk_control* dtk_control_find_top_level_control(dtk_control* pControl);
 

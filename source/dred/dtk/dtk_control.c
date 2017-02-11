@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-void dtk_control__link_child(dtk_control* pParent, dtk_control* pChild)
+void dtk_control__link_child_append(dtk_control* pParent, dtk_control* pChild)
 {
     dtk_assert(pParent != NULL);
     dtk_assert(pChild != NULL);
@@ -18,6 +18,66 @@ void dtk_control__link_child(dtk_control* pParent, dtk_control* pChild)
     }
 
     pParent->pLastChild = pChild;
+}
+
+void dtk_control__link_child_prepend(dtk_control* pParent, dtk_control* pChild)
+{
+    dtk_assert(pParent != NULL);
+    dtk_assert(pChild != NULL);
+    dtk_assert(pChild->pParent == NULL);    // <-- The child should not already be attached to a parent.
+
+    pChild->pParent = pParent;
+
+    if (pParent->pLastChild == NULL) {
+        pParent->pLastChild = pChild;
+        dtk_assert(pParent->pFirstChild == NULL);
+    } else {
+        pChild->pNextSibling = pParent->pFirstChild;
+        pChild->pPrevSibling = NULL;
+        pChild->pNextSibling->pPrevSibling = pChild;
+    }
+
+    pParent->pFirstChild = pChild;
+}
+
+void dtk_control__link_sibling_append(dtk_control* pControlToAppendTo, dtk_control* pControlToAppend)
+{
+    dtk_assert(pControlToAppendTo != NULL);
+    dtk_assert(pControlToAppend != NULL);
+    dtk_assert(pControlToAppend->pParent == NULL);
+
+    pControlToAppend->pParent = pControlToAppendTo->pParent;
+    if (pControlToAppend->pParent != NULL) {
+        pControlToAppend->pNextSibling = pControlToAppendTo->pNextSibling;
+        pControlToAppend->pPrevSibling = pControlToAppendTo;
+
+        pControlToAppendTo->pNextSibling->pPrevSibling = pControlToAppend;
+        pControlToAppendTo->pNextSibling = pControlToAppend;
+
+        if (pControlToAppend->pParent->pLastChild == pControlToAppendTo) {
+            pControlToAppend->pParent->pLastChild = pControlToAppend;
+        }
+    }
+}
+
+void dtk_control__link_sibling_prepend(dtk_control* pControlToPrependTo, dtk_control* pControlToPrepend)
+{
+    dtk_assert(pControlToPrependTo != NULL);
+    dtk_assert(pControlToPrepend != NULL);
+    dtk_assert(pControlToPrepend->pParent == NULL);
+
+    pControlToPrepend->pParent = pControlToPrependTo->pParent;
+    if (pControlToPrepend->pParent != NULL) {
+        pControlToPrepend->pPrevSibling = pControlToPrependTo->pNextSibling;
+        pControlToPrepend->pNextSibling = pControlToPrependTo;
+
+        pControlToPrependTo->pPrevSibling->pNextSibling = pControlToPrepend;
+        pControlToPrependTo->pNextSibling = pControlToPrepend;
+
+        if (pControlToPrepend->pParent->pFirstChild == pControlToPrependTo) {
+            pControlToPrepend->pParent->pFirstChild = pControlToPrepend;
+        }
+    }
 }
 
 void dtk_control__unlink_child(dtk_control* pParent, dtk_control* pChild)
@@ -77,7 +137,7 @@ dtk_result dtk_control_init(dtk_context* pTK, dtk_control* pParent, dtk_control_
     pControl->cursor = dtk_system_cursor_type_default;
 
     if (pParent != NULL) {
-        dtk_control__link_child(pParent, pControl);
+        dtk_control__link_child_append(pParent, pControl);
     }
 
     return DTK_SUCCESS;
@@ -412,6 +472,67 @@ dtk_bool32 dtk_control_clamp_rect(dtk_control* pControl, dtk_rect* pRelativeRect
     }
 
     return (pRelativeRect->right - pRelativeRect->left > 0) && (pRelativeRect->bottom - pRelativeRect->top > 0);
+}
+
+
+dtk_result dtk_control_detach(dtk_control* pChildControl)
+{
+    if (pChildControl == NULL) return DTK_INVALID_ARGS;
+
+    dtk_control* pOldParent = pChildControl->pParent;
+    if (pOldParent == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    dtk_rect oldRect = dtk_control_get_relative_rect(pChildControl);
+    dtk_control__unlink_child(pOldParent, pChildControl);
+    dtk_control_scheduled_redraw(pOldParent, oldRect);
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_control_append(dtk_control* pChildControl, dtk_control* pParentControl)
+{
+    if (pChildControl == NULL || pParentControl == NULL) return DTK_INVALID_ARGS;
+
+    dtk_control_detach(pChildControl);
+    dtk_control__link_child_append(pParentControl, pChildControl);
+    dtk_control_scheduled_redraw(pChildControl, dtk_control_get_local_rect(pChildControl));
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_control_prepend(dtk_control* pChildControl, dtk_control* pParentControl)
+{
+    if (pChildControl == NULL || pParentControl == NULL) return DTK_INVALID_ARGS;
+
+    dtk_control_detach(pChildControl);
+    dtk_control__link_child_prepend(pParentControl, pChildControl);
+    dtk_control_scheduled_redraw(pChildControl, dtk_control_get_local_rect(pChildControl));
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_control_append_sibling(dtk_control* pControlToAppend, dtk_control* pControlToAppendTo)
+{
+    if (pControlToAppend == NULL || pControlToAppendTo) return DTK_INVALID_ARGS;
+
+    dtk_control_detach(pControlToAppend);
+    dtk_control__link_sibling_append(pControlToAppendTo, pControlToAppend);
+    dtk_control_scheduled_redraw(pControlToAppend, dtk_control_get_local_rect(pControlToAppend));
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_control_prepend_sibling(dtk_control* pControlToPrepend, dtk_control* pControlToPrependTo)
+{
+    if (pControlToPrepend == NULL || pControlToPrependTo) return DTK_INVALID_ARGS;
+
+    dtk_control_detach(pControlToPrepend);
+    dtk_control__link_sibling_prepend(pControlToPrependTo, pControlToPrepend);
+    dtk_control_scheduled_redraw(pControlToPrepend, dtk_control_get_local_rect(pControlToPrepend));
+
+    return DTK_SUCCESS;
 }
 
 
