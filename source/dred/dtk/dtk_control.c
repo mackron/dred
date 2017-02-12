@@ -192,7 +192,7 @@ dtk_result dtk_control_show(dtk_control* pControl)
     if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
         result = dtk_window_show(DTK_WINDOW(pControl), DTK_SHOW_NORMAL);
     } else {
-        pControl->flags &= ~DTK_CONTROL_FLAG_HIDDEN;
+        pControl->isHidden = DTK_FALSE;
     }
 
     return result;
@@ -212,7 +212,7 @@ dtk_result dtk_control_hide(dtk_control* pControl)
     if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
         result = dtk_window_hide(DTK_WINDOW(pControl));
     } else {
-        pControl->flags |= DTK_CONTROL_FLAG_HIDDEN;
+        pControl->isHidden = DTK_TRUE;
     }
 
     return result;
@@ -221,7 +221,7 @@ dtk_result dtk_control_hide(dtk_control* pControl)
 dtk_bool32 dtk_control_is_visible(dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_FALSE;
-    return (pControl->flags & DTK_CONTROL_FLAG_HIDDEN) == 0;
+    return !pControl->isHidden;
 }
 
 dtk_bool32 dtk_control_is_visible_recursive(dtk_control* pControl)
@@ -703,11 +703,11 @@ dtk_result dtk_control_allow_keyboard_capture(dtk_control* pControl)
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
     // If keyboard capture is already allowed just pretend it was successful.
-    if ((pControl->flags & DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE) == 0) {
+    if (!pControl->isKeyboardCaptureForbidden) {
         return DTK_SUCCESS;
     }
 
-    pControl->flags &= ~DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE;
+    pControl->isKeyboardCaptureForbidden = DTK_FALSE;
     return DTK_SUCCESS;
 }
 
@@ -716,7 +716,7 @@ dtk_result dtk_control_forbid_keyboard_capture(dtk_control* pControl)
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
     // If keyboard capture is already forbidden just pretend it was successful.
-    if ((pControl->flags & DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE) != 0) {
+    if (pControl->isKeyboardCaptureForbidden) {
         return DTK_SUCCESS;
     }
 
@@ -724,7 +724,7 @@ dtk_result dtk_control_forbid_keyboard_capture(dtk_control* pControl)
         dtk_release_keyboard(pControl->pTK);
     }
 
-    pControl->flags |= DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE;
+    pControl->isKeyboardCaptureForbidden = DTK_TRUE;
     return DTK_SUCCESS;
 }
 
@@ -732,7 +732,7 @@ dtk_bool32 dtk_control_is_keyboard_capture_allowed(dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_FALSE;
 
-    if ((pControl->flags & DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE) != 0) {
+    if (pControl->isKeyboardCaptureForbidden) {
         return DTK_FALSE;
     }
 

@@ -7,10 +7,6 @@ typedef dtk_uint32 dtk_control_type;
 #define DTK_CONTROL_TYPE_COUNT      3   // <-- Update this when a new built-in type is added. Also remember to register the default event handler in dtk_init().
 #define DTK_CONTROL_TYPE_CUSTOM     65536
 
-#define DTK_CONTROL_FLAG_HIDDEN                     (1 << 0)
-#define DTK_CONTROL_FLAG_FORBID_KEYBOARD_CAPTURE    (1 << 1)
-#define DTK_CONTROL_FLAG_FORBID_MOUSE_CAPTURE       (1 << 2)
-
 // Return false to stop iteration. pRelativeRect is both an input and output property. On output it will be
 // used as the new clipping rectangle for children.
 typedef dtk_bool32 (* dtk_control_visibility_iteration_proc)(dtk_control* pControl, dtk_rect* pRelativeRect, void* pUserData);
@@ -32,8 +28,10 @@ struct dtk_control
     dtk_control* pPrevSibling;
     void* pUserData;        // For use by the application.
     dtk_control_type type;
-    dtk_uint32 flags;       // DTK_CONTROL_FLAG_*
-    dtk_bool32 isClippingDisabled : 1;
+    dtk_bool32 isHidden                   : 1;
+    dtk_bool32 isClippingDisabled         : 1;
+    dtk_bool32 isKeyboardCaptureForbidden : 1;
+    dtk_bool32 isMouseCaptureForbidden    : 1;
     dtk_int32 absolutePosX;
     dtk_int32 absolutePosY;
     dtk_uint32 width;

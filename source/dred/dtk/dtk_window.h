@@ -5,10 +5,6 @@
 #define DTK_SHOW_NORMAL         1
 #define DTK_SHOW_MAXIMIZED      2
 
-#define DTK_WINDOW_FLAG_TOPLEVEL    (1 << 0)    // Set when the window is a top-level window.
-#define DTK_WINDOW_FLAG_DIALOG      (1 << 1)    // Set when the window is a dialog.
-#define DTK_WINDOW_FLAG_POPUP       (1 << 2)    // Set when the window is a popup.
-
 typedef enum
 {
     dtk_window_type_toplevel,
@@ -20,8 +16,10 @@ typedef enum
 struct dtk_window
 {
     dtk_control control;
-    dtk_uint32 flags;
     dtk_window* pNextWindow;
+    dtk_bool32 isTopLevel : 1;
+    dtk_bool32 isDialog   : 1;
+    dtk_bool32 isPopup    : 1;
 
     union
     {

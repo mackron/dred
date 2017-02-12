@@ -154,7 +154,7 @@ static HWND dtk_get_root_top_level_HWND(HWND hWnd)
     {
         dtk_window* pWindow = (dtk_window*)GetWindowLongPtrA(hTopLevelWindow, 0);
         if (pWindow != NULL) {
-            if (pWindow->flags & DTK_WINDOW_FLAG_TOPLEVEL) {
+            if (pWindow->isTopLevel) {
                 return hTopLevelWindow;
             }
         }
@@ -1849,20 +1849,20 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_ty
     dtk_window_get_client_size(pWindow, &DTK_CONTROL(pWindow)->width, &DTK_CONTROL(pWindow)->height);
 
     if (type == dtk_window_type_toplevel) {
-        pWindow->flags |= DTK_WINDOW_FLAG_TOPLEVEL;
+        pWindow->isTopLevel = DTK_TRUE;
     }
     if (type == dtk_window_type_dialog) {
-        pWindow->flags |= DTK_WINDOW_FLAG_DIALOG;
+        pWindow->isDialog = DTK_TRUE;
     }
     if (type == dtk_window_type_popup) {
-        pWindow->flags |= DTK_WINDOW_FLAG_POPUP;
+        pWindow->isPopup = DTK_TRUE;
 
         // Popup windows are not currently allowed to receive the keyboard capture.
         dtk_control_forbid_keyboard_capture(DTK_CONTROL(pWindow));
     }
 
     // Window's are not shown by default.
-    DTK_CONTROL(pWindow)->flags |= DTK_CONTROL_FLAG_HIDDEN;
+    DTK_CONTROL(pWindow)->isHidden = DTK_TRUE;
 
     dtk__track_window(pTK, pWindow);
     return DTK_SUCCESS;
@@ -2302,9 +2302,9 @@ dtk_result dtk_window_show(dtk_window* pWindow, int mode)
 
     if (result == DTK_SUCCESS) {
         if (mode == DTK_HIDE) {
-            DTK_CONTROL(pWindow)->flags |=  DTK_CONTROL_FLAG_HIDDEN;
+            DTK_CONTROL(pWindow)->isHidden = DTK_TRUE;
         } else {
-            DTK_CONTROL(pWindow)->flags &= ~DTK_CONTROL_FLAG_HIDDEN;
+            DTK_CONTROL(pWindow)->isHidden = DTK_FALSE;
         }
     }
 
