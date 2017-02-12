@@ -116,7 +116,14 @@ typedef int dtk_result;
 typedef struct dtk_context dtk_context;
 typedef struct dtk_event dtk_event;
 typedef struct dtk_control dtk_control;
+typedef struct dtk_label dtk_label;
+typedef struct dtk_button dtk_button;
+typedef struct dtk_checkbox dtk_checkbox;
+typedef struct dtk_color_button dtk_color_button;
+typedef struct dtk_tabbar dtk_tabbar;
+typedef struct dtk_tabgroup dtk_tabgroup;
 typedef struct dtk_scrollbar dtk_scrollbar;
+typedef struct dtk_textbox dtk_textbox;
 typedef struct dtk_window dtk_window;
 typedef struct dtk_menu dtk_menu;
 typedef struct dtk_timer dtk_timer;
@@ -147,7 +154,14 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_input.h"
 #include "dtk_accelerators.h"
 #include "dtk_control.h"
+#include "dtk_label.h"
+#include "dtk_button.h"
+#include "dtk_checkbox.h"
+#include "dtk_color_button.h"
+#include "dtk_tabbar.h"
+#include "dtk_tabgroup.h"
 #include "dtk_scrollbar.h"
+#include "dtk_textbox.h"
 #include "dtk_window.h"
 #include "dtk_menu.h"
 #include "dtk_timer.h"

@@ -176,7 +176,14 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 #include "dtk_input.c"
 #include "dtk_accelerators.c"
 #include "dtk_control.c"
+#include "dtk_label.c"
+#include "dtk_button.c"
+#include "dtk_checkbox.c"
+#include "dtk_color_button.c"
+#include "dtk_tabbar.c"
+#include "dtk_tabgroup.c"
 #include "dtk_scrollbar.c"
+#include "dtk_textbox.c"
 #include "dtk_window.c"
 #include "dtk_menu.c"
 #include "dtk_timer.c"
@@ -1190,9 +1197,16 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
         return result;
     }
 
-    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_EMPTY    ] = NULL;
-    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_WINDOW   ] = dtk_window_default_event_handler;
-    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_SCROLLBAR] = dtk_scrollbar_default_event_handler;
+    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_EMPTY       ] = NULL;
+    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_WINDOW      ] = dtk_window_default_event_handler;
+    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_LABEL       ] = dtk_label_default_event_handler;
+    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_BUTTON      ] = dtk_button_default_event_handler;
+    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_CHECKBOX    ] = dtk_checkbox_default_event_handler;
+    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_COLOR_BUTTON] = dtk_color_button_default_event_handler;
+    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_TABBAR      ] = dtk_tabbar_default_event_handler;
+    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_TABGROUP    ] = dtk_tabgroup_default_event_handler;
+    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_SCROLLBAR   ] = dtk_scrollbar_default_event_handler;
+    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_TEXTBOX     ] = dtk_textbox_default_event_handler;
 
     result = dtk_paint_queue_init(&pTK->paintQueue);
     if (result != DTK_SUCCESS) {

@@ -2,7 +2,7 @@
 
 dtk_result dtk_scrollbar_init(dtk_context* pTK, dtk_control* pParent, dtk_scrollbar_type type, dtk_event_proc onEvent, dtk_scrollbar* pScrollbar)
 {
-    if (pTK == NULL) return DTK_INVALID_ARGS;
+    if (pScrollbar == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pScrollbar);
 
     dtk_result result = dtk_control_init(pTK, pParent, DTK_CONTROL_TYPE_SCROLLBAR, onEvent, &pScrollbar->control);

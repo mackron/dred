@@ -1,11 +1,18 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
 typedef dtk_uint32 dtk_control_type;
-#define DTK_CONTROL_TYPE_EMPTY      0
-#define DTK_CONTROL_TYPE_WINDOW     1
-#define DTK_CONTROL_TYPE_SCROLLBAR  2
-#define DTK_CONTROL_TYPE_COUNT      3   // <-- Update this when a new built-in type is added. Also remember to register the default event handler in dtk_init().
-#define DTK_CONTROL_TYPE_CUSTOM     65536
+#define DTK_CONTROL_TYPE_EMPTY          0
+#define DTK_CONTROL_TYPE_WINDOW         1
+#define DTK_CONTROL_TYPE_LABEL          2
+#define DTK_CONTROL_TYPE_BUTTON         3
+#define DTK_CONTROL_TYPE_CHECKBOX       4
+#define DTK_CONTROL_TYPE_COLOR_BUTTON   5
+#define DTK_CONTROL_TYPE_TABBAR         6
+#define DTK_CONTROL_TYPE_TABGROUP       7
+#define DTK_CONTROL_TYPE_SCROLLBAR      8
+#define DTK_CONTROL_TYPE_TEXTBOX        9
+#define DTK_CONTROL_TYPE_COUNT          10  // <-- Update this when a new built-in type is added. Also remember to register the default event handler in dtk_init().
+#define DTK_CONTROL_TYPE_CUSTOM         65536
 
 // Return false to stop iteration. pRelativeRect is both an input and output property. On output it will be
 // used as the new clipping rectangle for children.

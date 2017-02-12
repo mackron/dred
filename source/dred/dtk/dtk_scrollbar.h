@@ -18,7 +18,7 @@ struct dtk_scrollbar
     dtk_bool32 isMouseOverThumb : 1;
 };
 
-dtk_result dtk_scrollbar_init(dtk_context* pTK, dtk_control* pParent, dtk_scrollbar_type type, dtk_event_proc onEvent, dtk_scrollbar* pWindow);
+dtk_result dtk_scrollbar_init(dtk_context* pTK, dtk_control* pParent, dtk_scrollbar_type type, dtk_event_proc onEvent, dtk_scrollbar* pScrollbar);
 dtk_result dtk_scrollbar_uninit(dtk_scrollbar* pScrollbar);
 dtk_bool32 dtk_scrollbar_default_event_handler(dtk_event* pEvent);
 dtk_result dtk_scrollbar_set_range(dtk_scrollbar* pScrollbar, dtk_uint32 range);
