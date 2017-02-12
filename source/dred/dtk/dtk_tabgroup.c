@@ -10,6 +10,12 @@ dtk_result dtk_tabgroup_init(dtk_context* pTK, dtk_control* pParent, dtk_event_p
         return result;
     }
 
+    result = dtk_tabbar_init(pTK, DTK_CONTROL(pTabGroup), NULL, &pTabGroup->tabbar);
+    if (result != DTK_SUCCESS) {
+        dtk_control_uninit(&pTabGroup->control);
+        return result;
+    }
+
     return DTK_SUCCESS;
 }
 
@@ -17,7 +23,10 @@ dtk_result dtk_tabgroup_uninit(dtk_tabgroup* pTabGroup)
 {
     if (pTabGroup == NULL) return DTK_INVALID_ARGS;
 
-    return dtk_control_uninit(&pTabGroup->control);
+    dtk_tabbar_uninit(&pTabGroup->tabbar);
+    dtk_control_uninit(&pTabGroup->control);
+
+    return DTK_SUCCESS;
 }
 
 
