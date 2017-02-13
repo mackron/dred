@@ -1715,7 +1715,7 @@ dtk_result dtk_window_set_menu__gtk(dtk_window* pWindow, dtk_menu* pMenu)
 }
 
 
-#if GTK_CHECK_VERSION(3, 22, 0)
+#if !GTK_CHECK_VERSION(3, 22, 0)
 typedef struct
 {
     dtk_int32 posX;

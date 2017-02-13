@@ -10,7 +10,7 @@ dtk_result dtk_tabgroup_init(dtk_context* pTK, dtk_control* pParent, dtk_event_p
         return result;
     }
 
-    result = dtk_tabbar_init(pTK, DTK_CONTROL(pTabGroup), NULL, &pTabGroup->tabbar);
+    result = dtk_tabbar_init(pTK, DTK_CONTROL(pTabGroup), dtk_tabbar_orientation_top, NULL, &pTabGroup->tabbar);
     if (result != DTK_SUCCESS) {
         dtk_control_uninit(&pTabGroup->control);
         return result;
