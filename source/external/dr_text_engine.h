@@ -5165,7 +5165,7 @@ size_t drte_view_move_cursor_to_start_of_word(drte_view* pView, size_t cursorInd
 
 size_t drte_view_get_spaces_to_next_column_from_character(drte_view* pView, size_t iChar)
 {
-    if (pView == NULL || pView->pEngine->text == NULL) {
+    if (pView == NULL) {
         return 0;
     }
 
