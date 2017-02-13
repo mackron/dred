@@ -1803,15 +1803,16 @@ void dred_control_set_absolute_position(dred_control* pControl, float positionX,
 
 void dred_control_get_absolute_position(const dred_control* pControl, float * positionXOut, float * positionYOut)
 {
-    if (pControl != NULL)
-    {
-        if (positionXOut != NULL) {
-            *positionXOut = pControl->absolutePosX;
-        }
+    if (positionXOut != NULL) *positionXOut = 0;
+    if (positionYOut != NULL) *positionYOut = 0;
+    if (pControl == NULL) return;
 
-        if (positionYOut != NULL) {
-            *positionYOut = pControl->absolutePosY;
-        }
+    if (positionXOut != NULL) {
+        *positionXOut = pControl->absolutePosX;
+    }
+
+    if (positionYOut != NULL) {
+        *positionYOut = pControl->absolutePosY;
     }
 }
 

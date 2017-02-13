@@ -1377,7 +1377,10 @@ void dtk_surface_set_clip(dtk_surface* pSurface, dtk_rect rect)
 
 void dtk_surface_get_clip(dtk_surface* pSurface, dtk_rect* pRect)
 {
-    if (pSurface == NULL || pRect == NULL) return;
+    if (pRect == NULL) return;
+    *pRect = dtk_rect_init(0, 0, 0, 0);
+
+    if (pSurface == NULL) return;
 
 #ifdef DTK_WIN32
     if (pSurface->backend == dtk_graphics_backend_gdi) {

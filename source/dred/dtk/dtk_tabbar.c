@@ -62,7 +62,7 @@ dtk_result dtk_tabbar_set_font(dtk_tabbar* pTabBar, dtk_font* pFont)
     pTabBar->pFont = pFont;
 
     if (pTabBar->isAutoResizeEnabled) {
-        //dtk_tabbar_auto_resize_if_enabled(pTabBar);
+        //dtk_tabbar_auto_resize(pTabBar);
     }
     
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
