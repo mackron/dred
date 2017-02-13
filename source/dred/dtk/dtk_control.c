@@ -158,6 +158,14 @@ dtk_bool32 dtk_control_default_event_handler(dtk_event* pEvent)
 {
     if (pEvent == NULL) return DTK_FALSE;
 
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_MOUSE_ENTER:
+        {
+            dtk_window_set_cursor(dtk_control_get_window(pEvent->pControl), pEvent->pControl->cursor);
+        } break;
+    }
+
     return DTK_TRUE;
 }
 
@@ -472,6 +480,38 @@ dtk_bool32 dtk_control_clamp_rect(dtk_control* pControl, dtk_rect* pRelativeRect
     }
 
     return (pRelativeRect->right - pRelativeRect->left > 0) && (pRelativeRect->bottom - pRelativeRect->top > 0);
+}
+
+
+dtk_result dtk_control_set_cursor(dtk_control* pControl, dtk_system_cursor_type cursor)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    pControl->cursor = cursor;
+
+    if (dtk_control_is_under_mouse(pControl)) {
+        dtk_window_set_cursor(dtk_control_get_window(pControl), cursor);
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_system_cursor_type dtk_control_get_cursor(dtk_control* pControl)
+{
+    if (pControl == NULL) return dtk_system_cursor_type_default;
+    return pControl->cursor;
+}
+
+dtk_bool32 dtk_control_is_under_mouse(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_FALSE;
+
+    dtk_window* pWindow = dtk_control_get_window(pControl);
+    if (pWindow != pControl->pTK->pWindowUnderMouse) {
+        return DTK_FALSE;
+    }
+
+    return dtk_window_find_control_under_point(pWindow, pControl->pTK->lastMousePosX, pControl->pTK->lastMousePosY) == pControl;
 }
 
 

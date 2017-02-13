@@ -131,6 +131,17 @@ dtk_rect dtk_control_absolute_to_relative_rect(dtk_control* pControl, dtk_rect a
 dtk_bool32 dtk_control_clamp_rect(dtk_control* pControl, dtk_rect* pRelativeRect);
 
 
+// Sets the cursor to use for this control.
+dtk_result dtk_control_set_cursor(dtk_control* pControl, dtk_system_cursor_type cursor);
+
+// Retrieves the cursor of this control.
+dtk_system_cursor_type dtk_control_get_cursor(dtk_control* pControl);
+
+
+// Determines whether or not this control is under the mouse.
+dtk_bool32 dtk_control_is_under_mouse(dtk_control* pControl);
+
+
 // Detaches a control from it's parent.
 dtk_result dtk_control_detach(dtk_control* pChildControl);
 
