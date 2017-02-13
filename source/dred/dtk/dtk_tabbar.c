@@ -94,11 +94,19 @@ dtk_result dtk_tabbar_set_text_bg_color(dtk_tabbar* pTabBar, dtk_color color)
 dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage, dtk_tabbar_tab** ppTabOut)
 {
 	// TODO: Implement me.
+    (void)pTabBar;
+    (void)text;
+    (void)pTabPage;
+    (void)ppTabOut;
 	return DTK_SUCCESS;
 }
 
 dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage, dtk_tabbar_tab** ppTabOut)
 {
 	// TODO: Implement me.
+    (void)pTabBar;
+    (void)text;
+    (void)pTabPage;
+    (void)ppTabOut;
 	return DTK_SUCCESS;
 }
