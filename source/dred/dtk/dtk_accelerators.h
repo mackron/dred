@@ -23,6 +23,9 @@ DTK_INLINE dtk_accelerator dtk_accelerator_none()
 
 DTK_INLINE dtk_bool32 dtk_accelerator_equal(dtk_accelerator a, dtk_accelerator b)
 {
+    // Normalize tabs.
+    if (a.key == '\t') a.key = DTK_KEY_TAB;
+    if (b.key == '\t') a.key = DTK_KEY_TAB;
     return a.key == b.key && a.modifiers == b.modifiers;
 }
 

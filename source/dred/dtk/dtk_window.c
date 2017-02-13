@@ -1175,7 +1175,7 @@ static gboolean dtk_window__on_key_down__gtk(GtkWidget* pWidget, GdkEventKey* pE
     if ((pEvent->keyval == GDK_KEY_Tab || pEvent->keyval == GDK_KEY_ISO_Left_Tab) && stateFlags != 0) {
         for (size_t i = 0; i < pTK->gtk.acceleratorCount; ++i) {
             dtk_accelerator_gtk* pAccel = &pTK->gtk.pAccelerators[i];
-            if (pAccel->accelerator.key == '\t' && (int)pAccel->accelerator.modifiers == stateFlags) {
+            if ((pAccel->accelerator.key == '\t' || pAccel->accelerator.key == DTK_KEY_TAB) && (int)pAccel->accelerator.modifiers == stateFlags) {
                 dtk_event e;
                 e.type = DTK_EVENT_ACCELERATOR;
                 e.pTK = pTK;
