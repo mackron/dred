@@ -363,7 +363,16 @@ size_t dred_text_editor_get_text(dred_text_editor* pTextEditor, char* pTextOut, 
         return 0;
     }
 
-    return dred_textview_get_text(pTextEditor->pTextView, pTextOut, textOutSize);
+    return drte_engine_get_text(&pTextEditor->engine, pTextOut, textOutSize);
+}
+
+size_t dred_text_editor_get_subtext(dred_text_editor* pTextEditor, size_t characterBeg, size_t characterEnd, char* pTextOut, size_t textOutSize)
+{
+    if (pTextEditor == NULL) {
+        return 0;
+    }
+
+    return drte_engine_get_subtext(&pTextEditor->engine, characterBeg, characterEnd, pTextOut, textOutSize);
 }
 
 size_t dred_text_editor_get_selected_text(dred_text_editor* pTextEditor, char* pTextOut, size_t textOutSize)
@@ -373,6 +382,16 @@ size_t dred_text_editor_get_selected_text(dred_text_editor* pTextEditor, char* p
     }
 
     return dred_textview_get_selected_text(dred_text_editor_get_focused_view(pTextEditor), pTextOut, textOutSize);
+}
+
+
+dr_bool32 dred_text_editor_get_word_under_cursor(dred_text_editor* pTextEditor, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut)
+{
+    if (pTextEditor == NULL) {
+        return 0;
+    }
+
+    return dred_textview_get_word_under_cursor(dred_text_editor_get_focused_view(pTextEditor), cursorIndex, pWordBegOut, pWordEndOut);
 }
 
 
@@ -569,6 +588,15 @@ void dred_text_editor_hide_line_numbers(dred_text_editor* pTextEditor)
     dred_textview_hide_line_numbers(pTextEditor->pTextView);
 }
 
+
+size_t dred_text_editor_get_last_cursor(dred_text_editor* pTextEditor)
+{
+    if (pTextEditor == NULL) {
+        return 0;
+    }
+
+    return dred_textview_get_last_cursor(dred_text_editor_get_focused_view(pTextEditor));
+}
 
 size_t dred_text_editor_get_cursor_line(dred_text_editor* pTextEditor)
 {

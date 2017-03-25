@@ -257,9 +257,20 @@ void dred_textbox_move_cursor_to_start_of_line_by_index(dred_textbox* pTextBox, 
 }
 
 
+dr_bool32 dred_textbox_get_word_under_cursor(dred_textbox* pTextBox, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut)
+{
+    return dred_textview_get_word_under_cursor(DRED_TEXTVIEW(pTextBox), cursorIndex, pWordBegOut, pWordEndOut);
+}
+
+
 dr_bool32 dred_textbox_is_anything_selected(dred_textbox* pTextBox)
 {
     return dred_textview_is_anything_selected(DRED_TEXTVIEW(pTextBox));
+}
+
+void dred_textbox_select(dred_textbox* pTextBox, size_t firstCharacter, size_t lastCharacter)
+{
+    dred_textview_select(DRED_TEXTVIEW(pTextBox), firstCharacter, lastCharacter);
 }
 
 void dred_textbox_select_all(dred_textbox* pTextBox)

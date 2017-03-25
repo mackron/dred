@@ -26,9 +26,13 @@ void dred_cmdbar__get_segment_rects(dred_cmdbar* pCmdBar, dred_rect* pLRect, dre
 {
     dred_rect innerRect = dred_cmdbar__get_inner_rect(pCmdBar);
 
-    float segWidth = (innerRect.right - innerRect.left) / 3;
-    dred_rect lrect = dred_make_rect(innerRect.left, innerRect.top, innerRect.left + segWidth, innerRect.bottom);
-    dred_rect mrect = dred_make_rect(lrect.right, innerRect.top, lrect.right + segWidth, innerRect.bottom);
+    float innerWidth = innerRect.right - innerRect.left;
+    float lwidth = innerWidth * 0.5f;
+    float mwidth = innerWidth * 0.25f;
+    //float rwidth = innerWidth * 0.25f;
+
+    dred_rect lrect = dred_make_rect(innerRect.left, innerRect.top, innerRect.left + lwidth, innerRect.bottom);
+    dred_rect mrect = dred_make_rect(lrect.right, innerRect.top, lrect.right + mwidth, innerRect.bottom);
     dred_rect rrect = dred_make_rect(mrect.right, innerRect.top, innerRect.right, innerRect.bottom);
 
     if (pLRect) *pLRect = lrect;
@@ -461,6 +465,13 @@ char* dred_cmdbar_get_text_malloc(dred_cmdbar* pCmdBar)
 {
     if (pCmdBar == NULL) return 0;
     return dred_textbox_get_text_malloc(pCmdBar->pTextBox);
+}
+
+
+void dred_cmdbar_select_text(dred_cmdbar* pCmdBar, size_t firstCharacter, size_t lastCharacter)
+{
+    if (pCmdBar == NULL) return;
+    dred_textbox_select(pCmdBar->pTextBox, firstCharacter, lastCharacter);
 }
 
 

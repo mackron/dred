@@ -19,8 +19,8 @@
     {"id":"edit.select-all", "key":"CTRL+A",         "cmd":"select-all"},
     {"id":"edit.unindent",   "key":"SHIFT+TAB",      "cmd":"unindent"},
     
-    {"id":"find.find",       "key":"CTRL+F",         "cmd":"cmdbar find "},
-    {"id":"find.replace",    "key":"CTRL+H",         "cmd":"cmdbar replace-all "},
+    {"id":"find.find",       "key":"CTRL+F",         "cmd":"cmdbar-find-prefilled"},
+    {"id":"find.replace",    "key":"CTRL+H",         "cmd":"cmdbar-replace-all-prefilled"},
     {"id":"find.goto",       "key":"CTRL+G",         "cmd":"cmdbar goto "},
     
     {"id":"next-tab",        "key":"CTRL+TAB",       "cmd":"next-tab"},

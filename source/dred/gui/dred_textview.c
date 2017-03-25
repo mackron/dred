@@ -930,6 +930,16 @@ void dred_textview_move_cursor_to_start_of_unwrapped_line_by_index(dred_textview
 }
 
 
+dr_bool32 dred_textview_get_word_under_cursor(dred_textview* pTextView, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut)
+{
+    if (pTextView == NULL) {
+        return DR_FALSE;
+    }
+
+    return drte_view_get_word_under_cursor(pTextView->pView, cursorIndex, pWordBegOut, pWordEndOut);
+}
+
+
 dr_bool32 dred_textview_is_anything_selected(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
@@ -937,6 +947,15 @@ dr_bool32 dred_textview_is_anything_selected(dred_textview* pTextView)
     }
 
     return drte_view_is_anything_selected(pTextView->pView);
+}
+
+void dred_textview_select(dred_textview* pTextView, size_t firstCharacter, size_t lastCharacter)
+{
+    if (pTextView == NULL) {
+        return;
+    }
+
+    drte_view_select(pTextView->pView, firstCharacter, lastCharacter);
 }
 
 void dred_textview_select_all(dred_textview* pTextView)
@@ -1242,6 +1261,14 @@ void dred_textview_clear_undo_stack(dred_textview* pTextView)
     drte_engine_clear_undo_stack(pTextView->pTextEngine);
 }
 
+size_t dred_textview_get_last_cursor(dred_textview* pTextView)
+{
+    if (pTextView == NULL) {
+        return 0;
+    }
+
+    return drte_view_get_last_cursor(pTextView->pView);
+}
 
 size_t dred_textview_get_cursor_line(dred_textview* pTextView)
 {

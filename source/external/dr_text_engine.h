@@ -447,6 +447,9 @@ void drte_engine_set_text(drte_engine* pEngine, const char* text);
 ///     Call this function with <textOut> set to NULL to retieve the required size of <textOut>.
 size_t drte_engine_get_text(drte_engine* pEngine, char* textOut, size_t textOutSize);
 
+// Retrieves a part of the engine's text.
+size_t drte_engine_get_subtext(drte_engine* pEngine, size_t characterBeg, size_t characterEnd, char* textOut, size_t textOutSize);
+
 
 /// Sets the function to call when a region of the text engine needs to be redrawn.
 void drte_engine_set_on_dirty(drte_engine* pEngine, drte_engine_on_dirty_proc proc);
@@ -2256,16 +2259,42 @@ size_t drte_engine_get_text(drte_engine* pEngine, char* textOut, size_t textOutS
         return 0;
     }
 
+    return drte_engine_get_subtext(pEngine, 0, pEngine->textLength, textOut, textOutSize);
+}
+
+size_t drte_engine_get_subtext(drte_engine* pEngine, size_t characterBeg, size_t characterEnd, char* textOut, size_t textOutSize)
+{
+    if (pEngine == NULL) {
+        return 0;
+    }
+
+    // Safety.
+    if (textOut != NULL && textOutSize > 0) {
+        textOut[0] = '\0';
+    }
+
+    if (characterEnd > pEngine->textLength) {
+        return 0;   // Trying to read past the end of the engine's text.
+    }
+
+    size_t subtextLen = (characterEnd - characterBeg);
     if (textOut == NULL) {
-        return pEngine->textLength;
+        return subtextLen;
     }
 
-
-    if (drte__strcpy_s(textOut, textOutSize, (pEngine->text != NULL) ? pEngine->text : "") == 0) {
-        return pEngine->textLength;
+    if (subtextLen == 0) {
+        return 0;
     }
 
-    return 0;   // Error with strcpy_s().
+    if (pEngine->text == NULL) {
+        return 0;   // There is no text...
+    }
+
+    if (drte__strncpy_s(textOut, textOutSize, pEngine->text + characterBeg, subtextLen) == 0) {
+        return subtextLen;
+    }
+
+    return 0;   // Error with strncpy_s().
 }
 
 

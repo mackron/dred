@@ -5,59 +5,62 @@
 
 // BEGIN COMMAND LIST : <command name> <proc> <flags>
 //
-// !                        dred_command__system_command            DRED_CMDBAR_RELEASE_KEYBOARD
-// cmdbar                   dred_command__cmdbar                    DRED_CMDBAR_NO_CLEAR
-// bind                     dred_command__bind                      DRED_CMDBAR_RELEASE_KEYBOARD
-// load-config              dred_command__load_config               DRED_CMDBAR_RELEASE_KEYBOARD
-// set                      dred_command__set                       DRED_CMDBAR_RELEASE_KEYBOARD
-// set-default              dred_command__set_default               DRED_CMDBAR_RELEASE_KEYBOARD
-// show-menu-bar            dred_command__show_menu_bar             DRED_CMDBAR_RELEASE_KEYBOARD
-// hide-menu-bar            dred_command__hide_menu_bar             DRED_CMDBAR_RELEASE_KEYBOARD
-// toggle-menu-bar          dred_command__toggle_menu_bar           DRED_CMDBAR_RELEASE_KEYBOARD
-// show-tab-bar             dred_command__show_tab_bar              DRED_CMDBAR_RELEASE_KEYBOARD
-// hide-tab-bar             dred_command__hide_tab_bar              DRED_CMDBAR_RELEASE_KEYBOARD
-// toggle-tab-bar           dred_command__toggle_tab_bar            DRED_CMDBAR_RELEASE_KEYBOARD
-// enable-auto-hide-cmdbar  dred_command__enable_auto_hide_cmdbar   DRED_CMDBAR_RELEASE_KEYBOARD
-// disable-auto-hide-cmdbar dred_command__disable_auto_hide_cmdbar  DRED_CMDBAR_RELEASE_KEYBOARD
-// toggle-auto-hide-cmdbar  dred_command__toggle_auto_hide_cmdbar   DRED_CMDBAR_RELEASE_KEYBOARD
-// next-tab                 dred_command__next_tab                  DRED_CMDBAR_RELEASE_KEYBOARD
-// prev-tab                 dred_command__prev_tab                  DRED_CMDBAR_RELEASE_KEYBOARD
-// cd                       dred_command__cd                        0
-// new                      dred_command__new                       DRED_CMDBAR_RELEASE_KEYBOARD
-// open                     dred_command__open                      DRED_CMDBAR_RELEASE_KEYBOARD
-// save                     dred_command__save                      DRED_CMDBAR_RELEASE_KEYBOARD
-// save-all                 dred_command__save_all                  DRED_CMDBAR_RELEASE_KEYBOARD
-// save-as                  dred_command__save_as                   DRED_CMDBAR_RELEASE_KEYBOARD
-// close                    dred_command__close                     DRED_CMDBAR_RELEASE_KEYBOARD
-// close-all                dred_command__close_all                 DRED_CMDBAR_RELEASE_KEYBOARD
-// exit                     dred_command__exit                      DRED_CMDBAR_NO_CLEAR
-// quit                     dred_command__exit                      DRED_CMDBAR_NO_CLEAR
-// help                     dred_command__help                      DRED_CMDBAR_RELEASE_KEYBOARD
-// about                    dred_command__about                     DRED_CMDBAR_RELEASE_KEYBOARD
-// settings                 dred_command__settings                  DRED_CMDBAR_RELEASE_KEYBOARD
-// print                    dred_command__print                     DRED_CMDBAR_RELEASE_KEYBOARD
-// reload                   dred_command__reload                    DRED_CMDBAR_RELEASE_KEYBOARD
-// undo                     dred_command__undo                      DRED_CMDBAR_NO_CLEAR
-// redo                     dred_command__redo                      DRED_CMDBAR_NO_CLEAR
-// cut                      dred_command__cut                       DRED_CMDBAR_NO_CLEAR
-// copy                     dred_command__copy                      DRED_CMDBAR_NO_CLEAR
-// paste                    dred_command__paste                     DRED_CMDBAR_NO_CLEAR
-// delete                   dred_command__delete                    DRED_CMDBAR_NO_CLEAR
-// select-all               dred_command__select_all                DRED_CMDBAR_NO_CLEAR
-// goto                     dred_command__goto                      DRED_CMDBAR_RELEASE_KEYBOARD
-// find                     dred_command__find                      DRED_CMDBAR_NO_CLEAR
-// replace                  dred_command__replace                   DRED_CMDBAR_NO_CLEAR
-// replace-all              dred_command__replace_all               DRED_CMDBAR_RELEASE_KEYBOARD
-// show-line-numbers        dred_command__show_line_numbers         DRED_CMDBAR_RELEASE_KEYBOARD
-// hide-line-numbers        dred_command__hide_line_numbers         DRED_CMDBAR_RELEASE_KEYBOARD
-// toggle-line-numbers      dred_command__toggle_line_numbers       DRED_CMDBAR_RELEASE_KEYBOARD
-// toggle-word-wrap         dred_command__toggle_word_wrap          DRED_CMDBAR_RELEASE_KEYBOARD
-// zoom                     dred_command__zoom                      DRED_CMDBAR_RELEASE_KEYBOARD
-// unindent                 dred_command__unindent                  DRED_CMDBAR_RELEASE_KEYBOARD
-// insert-date              dred_command__insert_date               DRED_CMDBAR_RELEASE_KEYBOARD
-// export2cstring           dred_command__export2cstring            DRED_CMDBAR_RELEASE_KEYBOARD
-// add-favourite            dred_command__add_favourite             DRED_CMDBAR_RELEASE_KEYBOARD
-// remove-favourite         dred_command__remove_favourite          DRED_CMDBAR_RELEASE_KEYBOARD
+// !                            dred_command__system_command                DRED_CMDBAR_RELEASE_KEYBOARD
+// cmdbar                       dred_command__cmdbar                        DRED_CMDBAR_NO_CLEAR
+// bind                         dred_command__bind                          DRED_CMDBAR_RELEASE_KEYBOARD
+// load-config                  dred_command__load_config                   DRED_CMDBAR_RELEASE_KEYBOARD
+// set                          dred_command__set                           DRED_CMDBAR_RELEASE_KEYBOARD
+// set-default                  dred_command__set_default                   DRED_CMDBAR_RELEASE_KEYBOARD
+// show-menu-bar                dred_command__show_menu_bar                 DRED_CMDBAR_RELEASE_KEYBOARD
+// hide-menu-bar                dred_command__hide_menu_bar                 DRED_CMDBAR_RELEASE_KEYBOARD
+// toggle-menu-bar              dred_command__toggle_menu_bar               DRED_CMDBAR_RELEASE_KEYBOARD
+// show-tab-bar                 dred_command__show_tab_bar                  DRED_CMDBAR_RELEASE_KEYBOARD
+// hide-tab-bar                 dred_command__hide_tab_bar                  DRED_CMDBAR_RELEASE_KEYBOARD
+// toggle-tab-bar               dred_command__toggle_tab_bar                DRED_CMDBAR_RELEASE_KEYBOARD
+// enable-auto-hide-cmdbar      dred_command__enable_auto_hide_cmdbar       DRED_CMDBAR_RELEASE_KEYBOARD
+// disable-auto-hide-cmdbar     dred_command__disable_auto_hide_cmdbar      DRED_CMDBAR_RELEASE_KEYBOARD
+// toggle-auto-hide-cmdbar      dred_command__toggle_auto_hide_cmdbar       DRED_CMDBAR_RELEASE_KEYBOARD
+// next-tab                     dred_command__next_tab                      DRED_CMDBAR_RELEASE_KEYBOARD
+// prev-tab                     dred_command__prev_tab                      DRED_CMDBAR_RELEASE_KEYBOARD
+// cd                           dred_command__cd                            0
+// new                          dred_command__new                           DRED_CMDBAR_RELEASE_KEYBOARD
+// open                         dred_command__open                          DRED_CMDBAR_RELEASE_KEYBOARD
+// save                         dred_command__save                          DRED_CMDBAR_RELEASE_KEYBOARD
+// save-all                     dred_command__save_all                      DRED_CMDBAR_RELEASE_KEYBOARD
+// save-as                      dred_command__save_as                       DRED_CMDBAR_RELEASE_KEYBOARD
+// close                        dred_command__close                         DRED_CMDBAR_RELEASE_KEYBOARD
+// close-all                    dred_command__close_all                     DRED_CMDBAR_RELEASE_KEYBOARD
+// exit                         dred_command__exit                          DRED_CMDBAR_NO_CLEAR
+// quit                         dred_command__exit                          DRED_CMDBAR_NO_CLEAR
+// help                         dred_command__help                          DRED_CMDBAR_RELEASE_KEYBOARD
+// about                        dred_command__about                         DRED_CMDBAR_RELEASE_KEYBOARD
+// settings                     dred_command__settings                      DRED_CMDBAR_RELEASE_KEYBOARD
+// print                        dred_command__print                         DRED_CMDBAR_RELEASE_KEYBOARD
+// reload                       dred_command__reload                        DRED_CMDBAR_RELEASE_KEYBOARD
+// undo                         dred_command__undo                          DRED_CMDBAR_NO_CLEAR
+// redo                         dred_command__redo                          DRED_CMDBAR_NO_CLEAR
+// cut                          dred_command__cut                           DRED_CMDBAR_NO_CLEAR
+// copy                         dred_command__copy                          DRED_CMDBAR_NO_CLEAR
+// paste                        dred_command__paste                         DRED_CMDBAR_NO_CLEAR
+// delete                       dred_command__delete                        DRED_CMDBAR_NO_CLEAR
+// select-all                   dred_command__select_all                    DRED_CMDBAR_NO_CLEAR
+// goto                         dred_command__goto                          DRED_CMDBAR_RELEASE_KEYBOARD
+// find                         dred_command__find                          DRED_CMDBAR_NO_CLEAR
+// replace                      dred_command__replace                       DRED_CMDBAR_NO_CLEAR
+// replace-all                  dred_command__replace_all                   DRED_CMDBAR_RELEASE_KEYBOARD
+// show-line-numbers            dred_command__show_line_numbers             DRED_CMDBAR_RELEASE_KEYBOARD
+// hide-line-numbers            dred_command__hide_line_numbers             DRED_CMDBAR_RELEASE_KEYBOARD
+// toggle-line-numbers          dred_command__toggle_line_numbers           DRED_CMDBAR_RELEASE_KEYBOARD
+// toggle-word-wrap             dred_command__toggle_word_wrap              DRED_CMDBAR_RELEASE_KEYBOARD
+// zoom                         dred_command__zoom                          DRED_CMDBAR_RELEASE_KEYBOARD
+// unindent                     dred_command__unindent                      DRED_CMDBAR_RELEASE_KEYBOARD
+// insert-date                  dred_command__insert_date                   DRED_CMDBAR_RELEASE_KEYBOARD
+// export2cstring               dred_command__export2cstring                DRED_CMDBAR_RELEASE_KEYBOARD
+// add-favourite                dred_command__add_favourite                 DRED_CMDBAR_RELEASE_KEYBOARD
+// remove-favourite             dred_command__remove_favourite              DRED_CMDBAR_RELEASE_KEYBOARD
+// cmdbar-find-prefilled        dred_command__cmdbar_find_prefilled         DRED_CMDBAR_RELEASE_KEYBOARD
+// cmdbar-replace-prefilled     dred_command__cmdbar_replace_prefilled      DRED_CMDBAR_RELEASE_KEYBOARD
+// cmdbar-replace-all-prefilled dred_command__cmdbar_replace_all_prefilled  DRED_CMDBAR_RELEASE_KEYBOARD
 //
 // END COMMAND LIST
 
@@ -270,6 +273,16 @@ dr_bool32 dred_command__insert_date(dred_context* pDred, const char* value);
 
 // export2cstring
 dr_bool32 dred_command__export2cstring(dred_context* pDred, const char* value);
+
+
+// cmdbar-find-prefilled
+dr_bool32 dred_command__cmdbar_find_prefilled(dred_context* pDred, const char* value);
+
+// cmdbar-replace-prefilled
+dr_bool32 dred_command__cmdbar_replace_prefilled(dred_context* pDred, const char* value);
+
+// cmdbar-replace-all-prefilled
+dr_bool32 dred_command__cmdbar_replace_all_prefilled(dred_context* pDred, const char* value);
 
 
 

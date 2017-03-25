@@ -142,8 +142,16 @@ void dred_textbox_move_cursor_to_end_of_text(dred_textbox* pTextBox);
 // Moves the caret to the beginning of the line at the given index.
 void dred_textbox_move_cursor_to_start_of_line_by_index(dred_textbox* pTextBox, size_t iLine);
 
+
+// Gets the word under the cursor at the given index.
+dr_bool32 dred_textbox_get_word_under_cursor(dred_textbox* pTextBox, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
+
+
 // Determines whether or not anything is selected in the given text box.
 dr_bool32 dred_textbox_is_anything_selected(dred_textbox* pTextBox);
+
+// Selects part of the text in the text box.
+void dred_textbox_select(dred_textbox* pTextBox, size_t firstCharacter, size_t lastCharacter);
 
 // Selects all of the text inside the text box.
 void dred_textbox_select_all(dred_textbox* pTextBox);

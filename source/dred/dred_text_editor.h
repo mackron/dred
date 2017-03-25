@@ -35,8 +35,15 @@ void dred_text_editor_set_text(dred_text_editor* pTextEditor, const char* text);
 // Retrieves a copy of the text.
 size_t dred_text_editor_get_text(dred_text_editor* pTextEditor, char* pTextOut, size_t textOutSize);
 
+// Retrieves a region of text.
+size_t dred_text_editor_get_subtext(dred_text_editor* pTextEditor, size_t characterBeg, size_t characterEnd, char* pTextOut, size_t textOutSize);
+
 // Retrieves the selected text in the currently focused view.
 size_t dred_text_editor_get_selected_text(dred_text_editor* pTextEditor, char* pTextOut, size_t textOutSize);
+
+
+// Retrieves the word under the given cursor.
+dr_bool32 dred_text_editor_get_word_under_cursor(dred_text_editor* pTextEditor, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
 
 
 // Retrieves the currently focused view.
@@ -86,6 +93,8 @@ void dred_text_editor_show_line_numbers(dred_text_editor* pTextEditor);
 // Hides the line numbers.
 void dred_text_editor_hide_line_numbers(dred_text_editor* pTextEditor);
 
+// Retrieves the index of the last cursor.
+size_t dred_text_editor_get_last_cursor(dred_text_editor* pTextEditor);
 
 // Retrieves the index of the line the caret is currently sitting on.
 size_t dred_text_editor_get_cursor_line(dred_text_editor* pTextEditor);

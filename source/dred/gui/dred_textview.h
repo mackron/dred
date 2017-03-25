@@ -274,8 +274,14 @@ void dred_textview_move_cursor_to_start_of_line_by_index(dred_textview* pTextVie
 // Moves the caret to the beginnning of the unwrapped line at the given index.
 void dred_textview_move_cursor_to_start_of_unwrapped_line_by_index(dred_textview* pTextView, size_t iLine);
 
+// Retrieves the word under the cursor at the given index.
+dr_bool32 dred_textview_get_word_under_cursor(dred_textview* pTextView, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
+
 // Determines whether or not anything is selected in the given text box.
 dr_bool32 dred_textview_is_anything_selected(dred_textview* pTextView);
+
+// Selects part of the text in the text box.
+void dred_textview_select(dred_textview* pTextView, size_t firstCharacter, size_t lastCharacter);
 
 // Selects all of the text inside the text box.
 void dred_textview_select_all(dred_textview* pTextView);
@@ -332,6 +338,9 @@ unsigned int dred_textview_get_redo_points_remaining_count(dred_textview* pTextV
 
 // Clears the undo/redo stack.
 void dred_textview_clear_undo_stack(dred_textview* pTextView);
+
+// Retrieves the index of the last cursor.
+size_t dred_textview_get_last_cursor(dred_textview* pTextView);
 
 // Retrieves the index of the line the cursor is current sitting on.
 size_t dred_textview_get_cursor_line(dred_textview* pTextView);
