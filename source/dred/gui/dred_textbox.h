@@ -142,6 +142,9 @@ void dred_textbox_move_cursor_to_end_of_text(dred_textbox* pTextBox);
 // Moves the caret to the beginning of the line at the given index.
 void dred_textbox_move_cursor_to_start_of_line_by_index(dred_textbox* pTextBox, size_t iLine);
 
+// Moves the caret to the end of the given selection.
+void dred_textbox_move_cursor_to_character(dred_textbox* pTextBox, size_t iCursor, size_t iChar);
+
 
 // Gets the word under the cursor at the given index.
 dr_bool32 dred_textbox_get_word_under_cursor(dred_textbox* pTextBox, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
@@ -203,11 +206,14 @@ unsigned int dred_textbox_get_redo_points_remaining_count(dred_textbox* pTextBox
 // Clears the undo/redo stack.
 void dred_textbox_clear_undo_stack(dred_textbox* pTextBox);
 
-// Retrieves the index of the line the cursor is current sitting on.
+// Retrieves the index of the line the cursor is currently sitting on.
 size_t dred_textbox_get_cursor_line(dred_textbox* pTextBox);
 
-// Retrieves the index of the column the cursor is current sitting on.
+// Retrieves the index of the column the cursor is currently sitting on.
 size_t dred_textbox_get_cursor_column(dred_textbox* pTextBox);
+
+// Retrieves the index of the character the cursor is currently sitting on.
+size_t dred_textbox_get_cursor_character(dred_textbox* pTextBox, size_t cursorIndex);
 
 // Retrieves the number of lines in the given text box.
 size_t dred_textbox_get_line_count(dred_textbox* pTextBox);

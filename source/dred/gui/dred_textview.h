@@ -348,6 +348,9 @@ size_t dred_textview_get_cursor_line(dred_textview* pTextView);
 // Retrieves the index of the column the cursor is current sitting on.
 size_t dred_textview_get_cursor_column(dred_textview* pTextView);
 
+// Retrieves the index of the column the cursor is currently sitting on.
+size_t dred_textview_get_cursor_character(dred_textview* pTextView, size_t cursorIndex);
+
 // Retrieves the number of lines in the given text box.
 size_t dred_textview_get_line_count(dred_textview* pTextView);
 

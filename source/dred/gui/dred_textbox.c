@@ -256,6 +256,11 @@ void dred_textbox_move_cursor_to_start_of_line_by_index(dred_textbox* pTextBox, 
     dred_textview_move_cursor_to_start_of_line_by_index(DRED_TEXTVIEW(pTextBox), iLine);
 }
 
+void dred_textbox_move_cursor_to_character(dred_textbox* pTextBox, size_t iCursor, size_t iChar)
+{
+    drte_view_move_cursor_to_character(pTextBox->view.pView, iCursor, iChar);
+}
+
 
 dr_bool32 dred_textbox_get_word_under_cursor(dred_textbox* pTextBox, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut)
 {
@@ -354,10 +359,17 @@ size_t dred_textbox_get_cursor_column(dred_textbox* pTextBox)
     return dred_textview_get_cursor_column(DRED_TEXTVIEW(pTextBox));
 }
 
+size_t dred_textbox_get_cursor_character(dred_textbox* pTextBox, size_t cursorIndex)
+{
+    return dred_textview_get_cursor_character(DRED_TEXTVIEW(pTextBox), cursorIndex);
+}
+
 size_t dred_textbox_get_line_count(dred_textbox* pTextBox)
 {
     return dred_textview_get_line_count(DRED_TEXTVIEW(pTextBox));
 }
+
+
 
 
 dr_bool32 dred_textbox_find_and_select_next(dred_textbox* pTextBox, const char* text)

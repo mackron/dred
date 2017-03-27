@@ -1288,6 +1288,15 @@ size_t dred_textview_get_cursor_column(dred_textview* pTextView)
     return drte_view_get_cursor_column(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
 }
 
+size_t dred_textview_get_cursor_character(dred_textview* pTextView, size_t cursorIndex)
+{
+    if (pTextView == NULL) {
+        return 0;
+    }
+
+    return drte_view_get_cursor_character(pTextView->pView, cursorIndex);
+}
+
 size_t dred_textview_get_line_count(dred_textview* pTextView)
 {
     if (pTextView == NULL) {

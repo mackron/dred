@@ -772,7 +772,7 @@ char* dred__get_selection_or_word_under_cursor_of_text_editor(dred_text_editor* 
 }
 
 // This is a temporary function until a more flexible solution is thought up. All it does is sets the command with a pre-filled variable that is selected.
-dr_bool32 dred__set_cmdbar_command_with_current_selection(dred_context* pDred, const char* command)
+dr_bool32 dred__set_cmdbar_command_with_current_selection(dred_context* pDred, const char* command, dr_bool32 isReplaceMode)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
@@ -783,21 +783,30 @@ dr_bool32 dred__set_cmdbar_command_with_current_selection(dred_context* pDred, c
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char* prefilledText = dred__get_selection_or_word_under_cursor_of_text_editor(DRED_TEXT_EDITOR(pFocusedEditor));
         if (prefilledText != NULL) {
-            fullCommandText = dtk_make_stringf("%s %s", command, prefilledText);
+            if (isReplaceMode) {
+                fullCommandText = dtk_make_stringf("%s \"%s\" \"\"", command, prefilledText);
+            } else {
+                fullCommandText = dtk_make_stringf("%s \"%s\"", command, prefilledText);
+            }
+            
             free(prefilledText);
         } else {
-            fullCommandText = dtk_make_stringf("%s ", command);
+            if (isReplaceMode) {
+                fullCommandText = dtk_make_stringf("%s \"\" \"\"", command);
+            } else {
+                fullCommandText = dtk_make_stringf("%s \"\"", command);
+            }
         }
     } else {
-        fullCommandText = dtk_make_stringf("%s ", command);
+        if (isReplaceMode) {
+            fullCommandText = dtk_make_stringf("%s \"\" \"\"", command);
+        } else {
+            fullCommandText = dtk_make_stringf("%s \"\"", command);
+        }
     }
 
     dred_focus_command_bar_and_set_text(pDred, fullCommandText);
-
-    size_t selectionBeg = strlen(command) + 1;  // +1 for the space between the command and the value.
-    size_t selectionEnd = strlen(fullCommandText);
-    dred_cmdbar_select_text(pDred->pCmdBar, selectionBeg, selectionEnd);
-
+    dred_cmdbar_highlight_argument_by_index(pDred->pCmdBar, 0);
     dtk_free_string(fullCommandText);
 
     return DR_TRUE;
@@ -806,19 +815,19 @@ dr_bool32 dred__set_cmdbar_command_with_current_selection(dred_context* pDred, c
 dr_bool32 dred_command__cmdbar_find_prefilled(dred_context* pDred, const char* value)
 {
     (void)value;
-    return dred__set_cmdbar_command_with_current_selection(pDred, "find");
+    return dred__set_cmdbar_command_with_current_selection(pDred, "find", DR_FALSE);
 }
 
 dr_bool32 dred_command__cmdbar_replace_prefilled(dred_context* pDred, const char* value)
 {
     (void)value;
-    return dred__set_cmdbar_command_with_current_selection(pDred, "replace");
+    return dred__set_cmdbar_command_with_current_selection(pDred, "replace", DR_TRUE);
 }
 
 dr_bool32 dred_command__cmdbar_replace_all_prefilled(dred_context* pDred, const char* value)
 {
     (void)value;
-    return dred__set_cmdbar_command_with_current_selection(pDred, "replace-all");
+    return dred__set_cmdbar_command_with_current_selection(pDred, "replace-all", DR_TRUE);
 }
 
 

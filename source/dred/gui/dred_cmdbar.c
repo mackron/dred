@@ -261,6 +261,15 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dtk_key key, int stateF
             }
         } break;
 
+        case DTK_KEY_TAB:
+        {
+            if (stateFlags & DTK_MODIFIER_SHIFT) {
+                dred_cmdbar_highlight_prev_argument(pCmdBar);
+            } else {
+                dred_cmdbar_highlight_next_argument(pCmdBar);
+            }
+        } break;
+
         default: 
         {
             dred_textview_on_key_down(DRED_CONTROL(pTextBox), key, stateFlags);
@@ -282,8 +291,12 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
-    if (utf32 == '\r' || utf32 == '\n')
-    {
+    // Tabs are handle in a special way for the command bar.
+    if (utf32 == '\t') {
+        return;
+    }
+
+    if (utf32 == '\r' || utf32 == '\n') {
         size_t cmdLen = dred_textbox_get_text(pTextBox, NULL, 0);
         char* cmd = (char*)malloc(cmdLen + 1);
         if (dred_textbox_get_text(pTextBox, cmd, cmdLen + 1) == cmdLen)
@@ -309,9 +322,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
         }
 
         free(cmd);
-    }
-    else
-    {
+    } else {
         dred_textview_on_printable_key_down(DRED_CONTROL(pTextBox), utf32, stateFlags);
     }
 }
@@ -471,7 +482,195 @@ char* dred_cmdbar_get_text_malloc(dred_cmdbar* pCmdBar)
 void dred_cmdbar_select_text(dred_cmdbar* pCmdBar, size_t firstCharacter, size_t lastCharacter)
 {
     if (pCmdBar == NULL) return;
+    dred_textbox_deselect_all(pCmdBar->pTextBox);
     dred_textbox_select(pCmdBar->pTextBox, firstCharacter, lastCharacter);
+    dred_textbox_move_cursor_to_character(pCmdBar->pTextBox, 0, lastCharacter);
+}
+
+
+void dred_cmdbar_highlight_next_argument(dred_cmdbar* pCmdBar)
+{
+    if (pCmdBar == NULL) return;
+
+    unsigned int argumentCount = dred_cmdbar_get_argument_count(pCmdBar);
+    if (argumentCount == 0) {
+        return;
+    }
+    
+    unsigned int currentIndex = dred_cmdbar_get_argument_index_by_cursor(pCmdBar);
+    if (currentIndex == (unsigned int)-1) {
+        currentIndex = 0;
+    } else {
+        currentIndex = (currentIndex + 1) % argumentCount;
+    }
+
+    dred_cmdbar_highlight_argument_by_index(pCmdBar, currentIndex);
+}
+
+void dred_cmdbar_highlight_prev_argument(dred_cmdbar* pCmdBar)
+{
+    if (pCmdBar == NULL) return;
+
+    unsigned int argumentCount = dred_cmdbar_get_argument_count(pCmdBar);
+    if (argumentCount == 0) {
+        return;
+    }
+    
+    unsigned int currentIndex = dred_cmdbar_get_argument_index_by_cursor(pCmdBar);
+    if (currentIndex == (unsigned int)-1) {
+        currentIndex = 0;
+    } else {
+        if (currentIndex > 0) {
+            currentIndex -= 1;
+        } else {
+            currentIndex = argumentCount - 1;
+        }
+    }
+
+    dred_cmdbar_highlight_argument_by_index(pCmdBar, currentIndex);
+}
+
+void dred_cmdbar_highlight_argument_by_index(dred_cmdbar* pCmdBar, unsigned int argumentIndex)
+{
+    if (pCmdBar == NULL) return;
+
+    char* pCmdBarText = dred_cmdbar_get_text_malloc(pCmdBar);
+    if (pCmdBarText == NULL) {
+        return;
+    }
+
+    size_t charBeg;
+    size_t charEnd;
+    if (!dred_cmdbar_get_argument_character_range_by_index(pCmdBar, argumentIndex, &charBeg, &charEnd)) {
+        return; // Didn't find the argument.
+    }
+
+    dred_textbox_deselect_all(pCmdBar->pTextBox);
+
+    // charBeg and charEnd will both include any double quotes. Since double-quotes are useful, we'll try to be smart and
+    // pull the selection region inside the quotes, assuming they exist.
+    size_t argumentLength = charEnd - charBeg;
+    if (argumentLength > 0) {
+        dred_cmdbar_select_text(pCmdBar, charBeg, charEnd);
+    } else {
+        dred_textbox_move_cursor_to_character(pCmdBar->pTextBox, 0, charBeg);
+    }
+    
+    free(pCmdBarText);
+}
+
+unsigned int dred_cmdbar_get_argument_index_by_cursor(dred_cmdbar* pCmdBar)
+{
+    if (pCmdBar == NULL) return (unsigned int)-1;
+    return dred_cmdbar_get_argument_index_by_character_index(pCmdBar, dred_textbox_get_cursor_character(pCmdBar->pTextBox, 0));
+}
+
+unsigned int dred_cmdbar_get_argument_index_by_character_index(dred_cmdbar* pCmdBar, size_t characterIndex)
+{
+    if (pCmdBar == NULL) return (unsigned int)-1;
+    
+    char* pCmdBarText = dred_cmdbar_get_text_malloc(pCmdBar);
+    if (pCmdBarText == NULL) {
+        return (unsigned int)-1;
+    }
+
+    size_t prevTokenEnd = 0;
+
+    unsigned int count = 0;
+    const char* pNextStr = pCmdBarText;
+    for (;;) {
+        char token[4096];
+
+        size_t thisTokenBeg = pNextStr - pCmdBarText;
+        pNextStr = dr_next_token(pNextStr, token, sizeof(token));
+        if (pNextStr == NULL) {
+            break;
+        }
+
+        prevTokenEnd = pNextStr - pCmdBarText;
+        if (characterIndex >= thisTokenBeg && characterIndex <= prevTokenEnd) {
+            break;
+        }
+
+        count += 1;
+    }
+
+    free(pCmdBarText);
+    return count - 1;   // -1 because "count" will include the command name which is not a command. This also naturally returns -1 when the character index is not over an argument.
+}
+
+unsigned int dred_cmdbar_get_argument_count(dred_cmdbar* pCmdBar)
+{
+    if (pCmdBar == NULL) return 0;
+
+    char* pCmdBarText = dred_cmdbar_get_text_malloc(pCmdBar);
+    if (pCmdBarText == NULL) {
+        return 0;
+    }
+
+    unsigned int count = 0;
+    const char* pNextStr = pCmdBarText;
+    for (;;) {
+        char token[4096];
+        pNextStr = dr_next_token(pNextStr, token, sizeof(token));
+        if (pNextStr == NULL) {
+            break;
+        }
+
+        count += 1;
+    }
+
+    free(pCmdBarText);
+
+    // At this point the count contains the total number of tokens. However, one of those tokens is the command name, which is not an argument.
+    if (count == 0) {
+        return 0;
+    }
+    return count - 1;
+}
+
+dr_bool32 dred_cmdbar_get_argument_character_range_by_index(dred_cmdbar* pCmdBar, unsigned int argumentIndex, size_t* pCharBeg, size_t* pCharEnd)
+{
+    if (pCmdBar == NULL) return DR_FALSE;
+
+    // Safety.
+    if (pCharBeg != NULL) *pCharBeg = 0;
+    if (pCharEnd != NULL) *pCharEnd = 0;
+
+    char* pCmdBarText = dred_cmdbar_get_text_malloc(pCmdBar);
+    if (pCmdBarText == NULL) {
+        return DR_FALSE;
+    }
+
+    dr_bool32 foundArgument = DR_FALSE;
+
+    unsigned int count = 0;
+    const char* pNextStr = pCmdBarText;
+    for (;;) {
+        size_t charBeg = dr_ltrim(pNextStr) - pCmdBarText;
+        if (pCmdBarText[charBeg] == '\"') {
+            charBeg += 1;
+        }
+
+        char token[4096];
+        pNextStr = dr_next_token(pNextStr, token, sizeof(token));
+        if (pNextStr == NULL) {
+            break;
+        }
+
+        size_t charEnd = charBeg + strlen(token);
+        if (count == argumentIndex + 1) {   // +1 because the first token will be the command name (not an argument).
+            *pCharBeg = charBeg;
+            *pCharEnd = charEnd;
+            foundArgument = DR_TRUE;
+            break;
+        }
+
+        count += 1;
+    }
+
+    free(pCmdBarText);
+    return foundArgument;
 }
 
 
