@@ -358,6 +358,7 @@ struct dtk_context
     void* pUserData;
     dtk_event_proc defaultEventHandlers[DTK_CONTROL_TYPE_COUNT];    // The default event handlers for each built-in control type.
     dtk_paint_queue paintQueue;
+    dtk_font defaultFont;
 
     union
     {
@@ -546,6 +547,12 @@ dtk_result dtk_release_mouse(dtk_context* pTK);
 
 // Retrieves a pointer to the control with the mouse capture.
 dtk_control* dtk_get_control_with_mouse_capture(dtk_context* pTK);
+
+
+//// Graphics ////
+
+// Retrieves the default font that can be used to draw text. This should only really be used for convenience.
+dtk_font* dtk_get_default_font(dtk_context* pTK);
 
 
 #endif  // DTK_H

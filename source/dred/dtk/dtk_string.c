@@ -1,5 +1,19 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
+char* dtk_make_string(const char* str)
+{
+    if (str == NULL) return NULL;
+    
+    size_t len = strlen(str);
+    char* newStr = (char*)dtk_malloc(len+1);
+    if (newStr == NULL) {
+        return NULL;    // Out of memory.
+    }
+
+    dtk_strcpy_s(newStr, len+1, str);
+    return newStr;
+}
+
 char* dtk_make_stringv(const char* format, va_list args)
 {
     if (format == NULL) return NULL;

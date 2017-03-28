@@ -274,6 +274,9 @@ DTK_INLINE dtk_uint32 dtk_utf32_to_utf8_ch(dtk_uint32 utf32, char* utf8, size_t 
 }
 
 
+// Creates a newly allocated string. Free the string with dtk_free_string().
+char* dtk_make_string(const char* str);
+
 // Creates a formatted string. Free the string with dtk_free_string().
 char* dtk_make_stringv(const char* format, va_list args);
 char* dtk_make_stringf(const char* format, ...);

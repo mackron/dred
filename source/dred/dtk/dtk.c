@@ -1213,6 +1213,10 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
         return result;
     }
 
+    // TODO: Change this depending on the platform. May also want different types of default fonts (UI, monospace, etc.)... Maybe also use the
+    //       notion of system fonts instead?
+    dtk_font_init(pTK, "Courier New", 13, dtk_font_weight_default, dtk_font_slant_none, 0, 0, &pTK->defaultFont);
+
     return result;
 }
 
@@ -1639,6 +1643,15 @@ dtk_control* dtk_get_control_with_mouse_capture(dtk_context* pTK)
 {
     if (pTK == NULL) return NULL;
     return pTK->pControlWithMouseCapture;
+}
+
+
+//// Graphics ////
+
+dtk_font* dtk_get_default_font(dtk_context* pTK)
+{
+    if (pTK == NULL) return NULL;
+    return &pTK->defaultFont;
 }
 
 

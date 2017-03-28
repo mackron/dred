@@ -10,9 +10,11 @@ typedef enum
 
 typedef struct
 {
-    const char* text;
+    char* text;
+    dtk_control* pPage;
 } dtk_tabbar_tab;
 
+#define DTK_TABBAR(p) ((dtk_tabbar*)(p))
 struct dtk_tabbar
 {
     dtk_control control;
@@ -35,5 +37,6 @@ dtk_result dtk_tabbar_set_font(dtk_tabbar* pTabBar, dtk_font* pFont);
 dtk_result dtk_tabbar_set_text_fg_color(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_text_bg_color(dtk_tabbar* pTabBar, dtk_color color);
 
-dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage, dtk_tabbar_tab** ppTabOut);
-dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage, dtk_tabbar_tab** ppTabOut);
+dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage);
+dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage);
+dtk_result dtk_tabbar_remove_tab_by_index(dtk_tabbar* pTabBar, size_t tabIndex);
