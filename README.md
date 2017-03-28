@@ -18,11 +18,21 @@ To compile dred on Unix based platforms use the following command:
     cc source/dred/dred_main.c -o dred `pkg-config --cflags --libs gtk+-3.0` -lm -ldl
 
 
+Features
+========
+
+* Dark and light theme
+* Favourite files
+* Command bar
+* Simple installation process with minimal dependencies
+
+![screenshot](http://dred.io/img/screenshot-1.jpg)
+
 
 License
 =======
 
-    Copyright (C) 2016 David Reid
+    Copyright (C) 2017 David Reid
     
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -41,13 +51,3 @@ License
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
-
-Features
-========
-
-* Dark and light theme
-* Favourite files
-* Command bar
-* Simple installation process with minimal dependencies
-
-![screenshot](http://dred.io/img/screenshot-1.jpg)
