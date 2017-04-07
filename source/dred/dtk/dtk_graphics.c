@@ -72,7 +72,7 @@ dtk_result dtk_surface__pop_saved_state(dtk_surface* pSurface, dtk_surface_saved
 #ifdef DTK_WIN32
 // Fonts
 // =====
-dtk_result dtk_font_init__gdi(dtk_context* pTK, const char* family, float size, dtk_font_weight weight, dtk_font_slant slant, float rotation, dtk_uint32 optionFlags, dtk_font* pFont)
+dtk_result dtk_font_init__gdi(dtk_context* pTK, const char* family, float size, dtk_font_weight weight, dtk_font_slant slant, dtk_uint32 optionFlags, dtk_font* pFont)
 {
     (void)pTK;
 
@@ -102,8 +102,8 @@ dtk_result dtk_font_init__gdi(dtk_context* pTK, const char* family, float size, 
 	logfont.lfItalic      = slantGDI;
 	logfont.lfCharSet     = DEFAULT_CHARSET;
     logfont.lfQuality     = (optionFlags & DTK_FONT_FLAG_NO_CLEARTYPE) ? ANTIALIASED_QUALITY : CLEARTYPE_QUALITY;
-    logfont.lfEscapement  = (LONG)rotation * 10;
-    logfont.lfOrientation = (LONG)rotation * 10;
+    logfont.lfEscapement  = 0;
+    logfont.lfOrientation = 0;
     dtk_strncpy_s(logfont.lfFaceName, sizeof(logfont.lfFaceName), family, _TRUNCATE);
 
     pFont->gdi.hFont = (dtk_handle)CreateFontIndirectA(&logfont);
@@ -341,6 +341,7 @@ dtk_result dtk_surface_init_transient_HDC(dtk_context* pTK, dtk_handle hDC, dtk_
     pSurface->height = height;
     pSurface->isTransient = DTK_TRUE;
     pSurface->gdi.hDC = (HDC)hDC;
+    SetGraphicsMode((HDC)pSurface->gdi.hDC, GM_ADVANCED);    // <-- Needed for world transforms (rotate and scale). TODO: Check that this is needed here and possibly move it to a higher level (such as at window creation time).
 
     return DTK_SUCCESS;
 }
@@ -415,7 +416,41 @@ dtk_result dtk_surface_pop__gdi(dtk_surface* pSurface)
 
 dtk_result dtk_surface_translate__gdi(dtk_surface* pSurface, dtk_int32 offsetX, dtk_int32 offsetY)
 {
-    OffsetViewportOrgEx((HDC)pSurface->gdi.hDC, offsetX, offsetY, NULL);
+    //OffsetViewportOrgEx((HDC)pSurface->gdi.hDC, offsetX, offsetY, NULL);
+
+    XFORM transform = {0};
+    transform.eM11 = 1;
+    transform.eM22 = 1;
+    transform.eDx = (float)offsetX;
+    transform.eDy = (float)offsetY;
+    ModifyWorldTransform((HDC)pSurface->gdi.hDC, &transform, MWT_LEFTMULTIPLY);
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_surface_rotate__gdi(dtk_surface* pSurface, float rotationOffsetInDegrees)
+{
+    float rotationOffsetInRadians = dtk_radiansf(rotationOffsetInDegrees);
+    float c = cosf(rotationOffsetInRadians);
+    float s = sinf(rotationOffsetInRadians);
+
+    XFORM transform = {0};
+    transform.eM11 =  c;
+    transform.eM12 =  s;
+    transform.eM21 = -s;
+    transform.eM22 =  c;
+    ModifyWorldTransform((HDC)pSurface->gdi.hDC, &transform, MWT_LEFTMULTIPLY);
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_surface_scale__gdi(dtk_surface* pSurface, float scaleX, float scaleY)
+{
+    XFORM transform = {0};
+    transform.eM11 = scaleX;
+    transform.eM22 = scaleY;
+    ModifyWorldTransform((HDC)pSurface->gdi.hDC, &transform, MWT_LEFTMULTIPLY);
+
     return DTK_SUCCESS;
 }
 
@@ -604,7 +639,7 @@ void dtk_surface_draw_surface__gdi(dtk_surface* pDstSurface, dtk_surface* pSrcSu
 #ifdef DTK_GTK
 // Fonts
 // =====
-dtk_result dtk_font_init__cairo(dtk_context* pTK, const char* family, float size, dtk_font_weight weight, dtk_font_slant slant, float rotation, dtk_uint32 optionFlags, dtk_font* pFont)
+dtk_result dtk_font_init__cairo(dtk_context* pTK, const char* family, float size, dtk_font_weight weight, dtk_font_slant slant, dtk_uint32 optionFlags, dtk_font* pFont)
 {
     cairo_font_slant_t cairoSlant = CAIRO_FONT_SLANT_NORMAL;
     if (pFont->slant == dtk_font_slant_italic) {
@@ -625,7 +660,6 @@ dtk_result dtk_font_init__cairo(dtk_context* pTK, const char* family, float size
 
     cairo_matrix_t fontMatrix;
     cairo_matrix_init_scale(&fontMatrix, (double)pFont->size, (double)pFont->size);
-    cairo_matrix_rotate(&fontMatrix, pFont->rotation * (3.14159265 / 180.0));
 
     cairo_matrix_t ctm;
     cairo_matrix_init_identity(&ctm);
@@ -910,6 +944,18 @@ dtk_result dtk_surface_translate__cairo(dtk_surface* pSurface, dtk_int32 offsetX
     return DTK_SUCCESS;
 }
 
+dtk_result dtk_surface_rotate__cairo(dtk_surface* pSurface, float rotationOffsetInDegrees)
+{
+    cairo_rotate((cairo_t*)pSurface->cairo.pContext, dtk_radians(rotationOffsetInDegrees));
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_surface_scale__cairo(dtk_surface* pSurface, float scaleX, float scaleY)
+{
+    cairo_scale((cairo_t*)pSurface->cairo.pContext, (double)scaleX, (double)scaleY);
+    return DTK_SUCCESS;
+}
+
 
 void dtk_surface_clear__cairo(dtk_surface* pSurface, dtk_color color)
 {
@@ -1072,7 +1118,7 @@ void dtk_surface_draw_surface__cairo(dtk_surface* pSurface, dtk_surface* pSrcSur
 
 // Fonts
 // =====
-dtk_result dtk_font_init(dtk_context* pTK, const char* family, float size, dtk_font_weight weight, dtk_font_slant slant, float rotation, dtk_uint32 optionFlags, dtk_font* pFont)
+dtk_result dtk_font_init(dtk_context* pTK, const char* family, float size, dtk_font_weight weight, dtk_font_slant slant, dtk_uint32 optionFlags, dtk_font* pFont)
 {
     if (pFont == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pFont);
@@ -1083,21 +1129,20 @@ dtk_result dtk_font_init(dtk_context* pTK, const char* family, float size, dtk_f
     pFont->size = size;
     pFont->weight = weight;
     pFont->slant = slant;
-    pFont->rotation = rotation;
     pFont->optionFlags = optionFlags;
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
         if (result != DTK_SUCCESS) {
-            result = dtk_font_init__gdi(pTK, family, size, weight, slant, rotation, optionFlags, pFont);
+            result = dtk_font_init__gdi(pTK, family, size, weight, slant, optionFlags, pFont);
         }
     }
 #endif
 #ifdef DTK_GTK
     if (pTK->platform == dtk_platform_gtk) {
         if (result != DTK_SUCCESS) {
-            result = dtk_font_init__cairo(pTK, family, size, weight, slant, rotation, optionFlags, pFont);
+            result = dtk_font_init__cairo(pTK, family, size, weight, slant, optionFlags, pFont);
         }
     }
 #endif
@@ -1336,6 +1381,44 @@ dtk_result dtk_surface_translate(dtk_surface* pSurface, dtk_int32 offsetX, dtk_i
 #ifdef DTK_GTK
     if (pSurface->backend == dtk_graphics_backend_cairo) {
         result = dtk_surface_translate__cairo(pSurface, offsetX, offsetY);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_surface_rotate(dtk_surface* pSurface, float rotationOffsetInDegrees)
+{
+    if (pSurface == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pSurface->backend == dtk_graphics_backend_gdi) {
+        result = dtk_surface_rotate__gdi(pSurface, rotationOffsetInDegrees);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pSurface->backend == dtk_graphics_backend_cairo) {
+        result = dtk_surface_rotate__cairo(pSurface, rotationOffsetInDegrees);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_surface_scale(dtk_surface* pSurface, float scaleX, float scaleY)
+{
+    if (pSurface == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pSurface->backend == dtk_graphics_backend_gdi) {
+        result = dtk_surface_scale__gdi(pSurface, scaleX, scaleY);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pSurface->backend == dtk_graphics_backend_cairo) {
+        result = dtk_surface_scale__cairo(pSurface, scaleX, scaleY);
     }
 #endif
 

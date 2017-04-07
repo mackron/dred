@@ -150,6 +150,7 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_rect.h"
 #include "dtk_string.h"
 #include "dtk_threading.h"
+#include "dtk_math.h"
 #include "dtk_graphics.h"
 #include "dtk_input.h"
 #include "dtk_accelerators.h"

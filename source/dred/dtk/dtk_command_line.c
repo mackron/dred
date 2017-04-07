@@ -38,7 +38,7 @@ dtk_cmdline_iterator dtk_cmdline_begin(dtk_cmdline* pCmdLine)
         // Win32 style
         size_t length = strlen(pCmdLine->win32);
         i.win32_payload = (char*)malloc(length + 2);         // +2 for a double null terminator.
-        strcpy_s(i.win32_payload, length + 2, pCmdLine->win32);
+        dtk_strcpy_s(i.win32_payload, length + 2, pCmdLine->win32);
         i.win32_payload[length + 1] = '\0';
 
         i.valueEnd = i.win32_payload;

@@ -113,7 +113,6 @@ typedef struct
     float size;
     dtk_font_weight weight;
     dtk_font_slant slant;
-    float rotation;
     dtk_uint32 optionFlags;
 
     union
@@ -144,7 +143,7 @@ typedef struct
 } dtk_font;
 
 // Initializes a font.
-dtk_result dtk_font_init(dtk_context* pTK, const char* family, float size, dtk_font_weight weight, dtk_font_slant slant, float rotation, dtk_uint32 optionFlags, dtk_font* pFont);
+dtk_result dtk_font_init(dtk_context* pTK, const char* family, float size, dtk_font_weight weight, dtk_font_slant slant, dtk_uint32 optionFlags, dtk_font* pFont);
 
 // Uninitializes a font.
 dtk_result dtk_font_uninit(dtk_font* pFont);
@@ -250,8 +249,14 @@ dtk_result dtk_surface_push(dtk_surface* pSurface);
 // Restores the last saved state.
 dtk_result dtk_surface_pop(dtk_surface* pSurface);
 
-// Moves the origin.
+// Translates the transformation matrix.
 dtk_result dtk_surface_translate(dtk_surface* pSurface, dtk_int32 offsetX, dtk_int32 offsetY);
+
+// Rotates the transformation matrix.
+dtk_result dtk_surface_rotate(dtk_surface* pSurface, float rotationOffsetInDegrees);
+
+// Scales the transformation matrix.
+dtk_result dtk_surface_scale(dtk_surface* pSurface, float scaleX, float scaleY);
 
 
 // Clears the given surface within it's current clipping region.

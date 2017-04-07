@@ -36,16 +36,24 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
         {
             dtk_font* pFont = (pTabBar->pFont != NULL) ? pTabBar->pFont : dtk_get_default_font(pTabBar->control.pTK);
 
-            float penPosX = 0;
+            float penPosX = 20;
+            float penPosY = 40;
             for (size_t iTab = 0; iTab < pTabBar->tabCount; ++iTab) {
                 dtk_tabbar_tab* pTab = &pTabBar->pTabs[iTab];
-                
+
                 float textWidth;
                 float textHeight;
                 dtk_font_measure_string(pFont, 1, pTab->text, strlen(pTab->text), &textWidth, &textHeight);
-                dtk_surface_draw_text(pEvent->paint.pSurface, pFont, 1, pTab->text, strlen(pTab->text), (dtk_int32)penPosX, 0, pTabBar->textFGColor, pTabBar->textBGColor);
+                dtk_surface_draw_text(pEvent->paint.pSurface, pFont, 1, pTab->text, strlen(pTab->text), (dtk_int32)penPosX, (dtk_int32)penPosY, pTabBar->textFGColor, pTabBar->textBGColor);
 
-                penPosX += textWidth;
+                // Tabs are drawn differently depending on orientation.
+                if (pTabBar->orientation == dtk_tabbar_orientation_top || pTabBar->orientation == dtk_tabbar_orientation_bottom) {
+                    // Horizontal tabs.
+                    penPosX += textWidth;
+                } else {
+                    // Vertical tabs.
+                    penPosY += textWidth;
+                }
             }
         } break;
 
@@ -177,12 +185,13 @@ dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_con
 
 dtk_result dtk_tabbar_remove_tab_by_index(dtk_tabbar* pTabBar, size_t tabIndex)
 {
-    if (pTabBar == NULL || pTabBar->tabCount >= tabIndex) return DTK_INVALID_ARGS;
+    if (pTabBar == NULL || pTabBar->tabCount <= tabIndex) return DTK_INVALID_ARGS;
 
     dtk_tabbar_tab_uninit(&pTabBar->pTabs[tabIndex]);
     for (size_t i = tabIndex; i < pTabBar->tabCount-1; ++i) {
         pTabBar->pTabs[i] = pTabBar->pTabs[i+1];
     }
 
+    pTabBar->tabCount -= 1;
     return DTK_SUCCESS;
 }

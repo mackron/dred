@@ -1890,7 +1890,7 @@ void dred__init_print_font(dred_print_data* pPrintData)
 {
     dred_font* pFont = pPrintData->pDred->config.pTextEditorFont;
 
-    if (dtk_font_init(&pPrintData->pDred->tk, pFont->desc.family, pFont->desc.size*pPrintData->scaleY, pFont->desc.weight, pFont->desc.slant, 0, 0, &pPrintData->font) != DTK_SUCCESS) {
+    if (dtk_font_init(&pPrintData->pDred->tk, pFont->desc.family, pFont->desc.size*pPrintData->scaleY, pFont->desc.weight, pFont->desc.slant, 0, &pPrintData->font) != DTK_SUCCESS) {
         return;
     }
 

@@ -275,7 +275,7 @@ typedef void (* dred_gui_draw_round_rect_with_outline_proc) (dred_rect relativeR
 typedef void (* dred_gui_draw_text_proc)                    (dtk_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface);
 typedef void (* dred_gui_draw_image_proc)                   (dtk_surface* pImage, dtk_draw_surface_args* pArgs, dtk_surface* pSurface);
 
-typedef dtk_font* (* dred_gui_create_font_proc)                        (dtk_context* pTK, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, float rotation, unsigned int flags);
+typedef dtk_font* (* dred_gui_create_font_proc)                        (dtk_context* pTK, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, unsigned int flags);
 typedef void              (* dred_gui_delete_font_proc)                        (dtk_font* pFont);
 typedef unsigned int      (* dred_gui_get_font_size_proc)                      (dtk_font* pFont);
 typedef dr_bool32              (* dred_gui_get_font_metrics_proc)                   (dtk_font* pFont, dtk_font_metrics* pMetricsOut);
@@ -344,9 +344,6 @@ struct dred_gui_font
 
     /// The fon't slant.
     dtk_font_slant slant;
-
-    /// The fon't rotation.
-    float rotation;
 
     /// The font's flags. Can be a combination of the following:
     ///   DRED_GUI_FONT_NO_CLEARTYPE
@@ -1069,7 +1066,7 @@ void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dre
 
 
 /// Creates a font resource.
-dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, float rotation, unsigned int flags);
+dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, unsigned int flags);
 
 /// Deletes a font resource.
 void dred_gui_delete_font(dred_gui_font* pFont);

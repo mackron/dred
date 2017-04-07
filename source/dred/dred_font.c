@@ -34,7 +34,7 @@ dred_gui_font* dred_font__create_subfont(dred_font* pFont, unsigned int scaledSi
 
     assert(pFont->subfontCount < pFont->subfontBufferSize);
 
-    dred_gui_font* pGUIFont = dred_gui_create_font(pFont->pDred->pGUI, pFont->desc.family, scaledSize, pFont->desc.weight, pFont->desc.slant, 0, 0);
+    dred_gui_font* pGUIFont = dred_gui_create_font(pFont->pDred->pGUI, pFont->desc.family, scaledSize, pFont->desc.weight, pFont->desc.slant, 0);
     if (pGUIFont == NULL) {
         return NULL;
     }

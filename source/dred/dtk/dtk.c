@@ -1215,7 +1215,7 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
 
     // TODO: Change this depending on the platform. May also want different types of default fonts (UI, monospace, etc.)... Maybe also use the
     //       notion of system fonts instead?
-    dtk_font_init(pTK, "Courier New", 13, dtk_font_weight_default, dtk_font_slant_none, 0, 0, &pTK->defaultFont);
+    dtk_font_init(pTK, "Courier New", 13, dtk_font_weight_default, dtk_font_slant_none, 0, &pTK->defaultFont);
 
     return result;
 }

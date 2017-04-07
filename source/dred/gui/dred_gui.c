@@ -2442,7 +2442,7 @@ void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dre
 }
 
 
-dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, float rotation, unsigned int flags)
+dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, unsigned int flags)
 {
     if (pGUI == NULL) {
         return NULL;
@@ -2453,7 +2453,7 @@ dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned
     }
 
 
-    dtk_font* pInternalFont = pGUI->paintingCallbacks.createFont(&pGUI->pDred->tk, family, size, weight, slant, rotation, flags);
+    dtk_font* pInternalFont = pGUI->paintingCallbacks.createFont(&pGUI->pDred->tk, family, size, weight, slant, flags);
     if (pInternalFont == NULL) {
         return NULL;
     }
@@ -2468,7 +2468,6 @@ dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned
     pFont->size         = size;
     pFont->weight       = weight;
     pFont->slant        = slant;
-    pFont->rotation     = rotation;
     pFont->flags        = flags;
     pFont->pInternalFont = pInternalFont;
 
@@ -2923,7 +2922,7 @@ void dred_control_draw_round_rect_with_outline_dtk(dred_rect, dtk_color, float, 
 void dred_control_draw_text_dtk(dtk_font*, const char*, int, float, float, dtk_color, dtk_color, dtk_surface* pSurface);
 void dred_control_draw_image_dtk(dtk_surface*, dtk_draw_surface_args* pArgs, dtk_surface* pSurface);
 
-dtk_font* dred_gui_create_font_dtk(dtk_context*, const char*, unsigned int, dtk_font_weight, dtk_font_slant, float, unsigned int flags);
+dtk_font* dred_gui_create_font_dtk(dtk_context*, const char*, unsigned int, dtk_font_weight, dtk_font_slant, unsigned int flags);
 void dred_gui_delete_font_dtk(dtk_font*);
 unsigned int dred_gui_get_font_size_dtk(dtk_font*);
 dr_bool32 dred_gui_get_font_metrics_dtk(dtk_font*, dtk_font_metrics*);
@@ -3043,14 +3042,14 @@ void dred_control_draw_image_dtk(dtk_surface* pImage, dtk_draw_surface_args* pAr
 }
 
 
-dtk_font* dred_gui_create_font_dtk(dtk_context* pTK, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, float rotation, unsigned int flags)
+dtk_font* dred_gui_create_font_dtk(dtk_context* pTK, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, unsigned int flags)
 {
     dtk_font* pFont = (dtk_font*)malloc(sizeof(*pFont));
     if (pFont == NULL) {
         return NULL;
     }
 
-    if (dtk_font_init(pTK, family, (float)size, weight, slant, rotation, flags, pFont) != DTK_SUCCESS) {
+    if (dtk_font_init(pTK, family, (float)size, weight, slant, flags, pFont) != DTK_SUCCESS) {
         free(pFont);
         return NULL;
     }
