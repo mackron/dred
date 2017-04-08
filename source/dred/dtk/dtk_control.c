@@ -297,6 +297,18 @@ dtk_result dtk_control_get_size(dtk_control* pControl, dtk_uint32* pWidth, dtk_u
     return DTK_SUCCESS;
 }
 
+dtk_uint32 dtk_control_get_width(dtk_control* pControl)
+{
+    if (pControl == NULL) return 0;
+    return pControl->width;
+}
+
+dtk_uint32 dtk_control_get_height(dtk_control* pControl)
+{
+    if (pControl == NULL) return 0;
+    return pControl->height;
+}
+
 dtk_result dtk_control_set_absolute_position(dtk_control* pControl, dtk_int32 posX, dtk_int32 posY)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;

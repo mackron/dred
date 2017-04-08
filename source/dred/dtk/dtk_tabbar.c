@@ -1,6 +1,111 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_control* pParent, dtk_tabbar_orientation orientation, dtk_event_proc onEvent, dtk_tabbar* pTabBar)
+typedef struct
+{
+    dtk_int32 posX;
+    dtk_int32 posY;
+    dtk_uint32 width;
+    dtk_uint32 height;
+    dtk_tabbar_tab* pTab;
+    dtk_bool32 _isLast;     // Internal use only. Used to indicate whether or not this iterator represents the last tab.
+    dtk_int32 _nextIndex;   // Internal use only.
+} dtk_tabbar__iterator;
+
+dtk_bool32 dtk_tabbar__next_tab(dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIterator)
+{
+    dtk_assert(pTabBar != NULL);
+    dtk_assert(pIterator != NULL);
+
+    if (pIterator->_isLast) {
+        return DTK_FALSE;   // Reached the end of iteration.
+    }
+
+    pIterator->_nextIndex += 1;
+    if ((dtk_uint32)pIterator->_nextIndex+1 == pTabBar->tabCount) {
+        pIterator->_isLast = DTK_TRUE;
+    }
+
+    pIterator->pTab = &pTabBar->pTabs[pIterator->_nextIndex];
+
+    
+    dtk_uint32 prevTabWidth = pIterator->width;
+    dtk_uint32 prevTabHeight = pIterator->height;
+
+    // The size and position of each tab depends on the flow and text direction of the tabbar.
+    float textWidth;
+    float textHeight;
+    dtk_font_measure_string(dtk_tabbar_get_font(pTabBar), 1, pIterator->pTab->text, strlen(pIterator->pTab->text), &textWidth, &textHeight);
+
+    dtk_uint32 nextTabWidth = 0;
+    dtk_uint32 nextTabHeight = 0;
+    switch (pTabBar->textDirection)
+    {
+        case dtk_tabbar_text_direction_horizontal:
+        {
+            nextTabWidth  = (dtk_uint32)textWidth;
+            nextTabHeight = (dtk_uint32)textHeight;
+        } break;
+        case dtk_tabbar_text_direction_vertical:
+        {
+            nextTabWidth  = (dtk_uint32)textHeight;
+            nextTabHeight = (dtk_uint32)textWidth;
+        } break;
+        default: break; // Will never hit this.
+    }
+
+    switch (pTabBar->flow)
+    {
+        case dtk_tabbar_flow_left_to_right:
+        {
+            pIterator->posX = pIterator->posX + prevTabWidth;
+        } break;
+        case dtk_tabbar_flow_top_to_bottom:
+        {
+            pIterator->posY = pIterator->posY + prevTabHeight;
+        } break;
+        case dtk_tabbar_flow_right_to_left:
+        {
+            pIterator->posX = pIterator->posX - nextTabWidth;
+        } break;
+        case dtk_tabbar_flow_bottom_to_top:
+        {
+            pIterator->posY = pIterator->posY - nextTabHeight;
+        } break;
+        default: break; // Will never hit this.
+    }
+
+    pIterator->width  = nextTabWidth;
+    pIterator->height = nextTabHeight;
+
+    return DTK_TRUE;
+}
+
+dtk_bool32 dtk_tabbar__first_tab(dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIterator)
+{
+    dtk_assert(pTabBar != NULL);
+    dtk_assert(pIterator != NULL);
+
+    if (pTabBar->tabCount == 0) {
+        return DTK_FALSE;   // No tabs.
+    }
+
+    dtk_zero_object(pIterator);
+    pIterator->_nextIndex = -1;
+
+    // The initial position depends on the tab flow.
+    if (pTabBar->flow == dtk_tabbar_flow_right_to_left) {
+        pIterator->posX = dtk_control_get_width(DTK_CONTROL(pTabBar));
+    } else if (pTabBar->flow == dtk_tabbar_flow_bottom_to_top) {
+        pIterator->posY = dtk_control_get_height(DTK_CONTROL(pTabBar));
+    }
+
+    return dtk_tabbar__next_tab(pTabBar, pIterator);
+}
+
+
+
+
+dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_control* pParent, dtk_tabbar_flow flow, dtk_tabbar_text_direction textDirection, dtk_event_proc onEvent, dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pTabBar);
@@ -10,7 +115,8 @@ dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_control* pParent, dtk_tabbar_or
         return result;
     }
 
-    pTabBar->orientation = orientation;
+    pTabBar->flow = flow;
+    pTabBar->textDirection = textDirection;
 
     return DTK_SUCCESS;
 }
@@ -34,26 +140,29 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
     {
         case DTK_EVENT_PAINT:
         {
-            dtk_font* pFont = (pTabBar->pFont != NULL) ? pTabBar->pFont : dtk_get_default_font(pTabBar->control.pTK);
+            dtk_font* pFont = dtk_tabbar_get_font(pTabBar);
 
-            float penPosX = 20;
-            float penPosY = 40;
-            for (size_t iTab = 0; iTab < pTabBar->tabCount; ++iTab) {
-                dtk_tabbar_tab* pTab = &pTabBar->pTabs[iTab];
+            dtk_font_metrics fontMetrics;
+            dtk_font_get_metrics(pFont, 1, &fontMetrics);
 
-                float textWidth;
-                float textHeight;
-                dtk_font_measure_string(pFont, 1, pTab->text, strlen(pTab->text), &textWidth, &textHeight);
-                dtk_surface_draw_text(pEvent->paint.pSurface, pFont, 1, pTab->text, strlen(pTab->text), (dtk_int32)penPosX, (dtk_int32)penPosY, pTabBar->textFGColor, pTabBar->textBGColor);
-
-                // Tabs are drawn differently depending on orientation.
-                if (pTabBar->orientation == dtk_tabbar_orientation_top || pTabBar->orientation == dtk_tabbar_orientation_bottom) {
-                    // Horizontal tabs.
-                    penPosX += textWidth;
-                } else {
-                    // Vertical tabs.
-                    penPosY += textWidth;
-                }
+            dtk_tabbar__iterator iterator;
+            if (dtk_tabbar__first_tab(pTabBar, &iterator)) {
+                do
+                {
+                    if (pTabBar->textDirection == dtk_tabbar_text_direction_horizontal) {
+                        // Horizontal text.
+                        dtk_surface_draw_text(pEvent->paint.pSurface, pFont, 1, iterator.pTab->text, strlen(iterator.pTab->text), iterator.posX, iterator.posY, pTabBar->textFGColor, pTabBar->textBGColor);
+                    } else {
+                        // Vertical text.
+                        dtk_surface_push(pEvent->paint.pSurface);
+                        {
+                            dtk_surface_translate(pEvent->paint.pSurface, iterator.posX + fontMetrics.lineHeight, iterator.posY);
+                            dtk_surface_rotate(pEvent->paint.pSurface, 90);
+                            dtk_surface_draw_text(pEvent->paint.pSurface, pFont, 1, iterator.pTab->text, strlen(iterator.pTab->text), 0, 0, pTabBar->textFGColor, pTabBar->textBGColor);
+                        }
+                        dtk_surface_pop(pEvent->paint.pSurface);
+                    }
+                } while (dtk_tabbar__next_tab(pTabBar, &iterator));
             }
         } break;
 
@@ -90,6 +199,12 @@ dtk_result dtk_tabbar_set_font(dtk_tabbar* pTabBar, dtk_font* pFont)
     
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;
+}
+
+dtk_font* dtk_tabbar_get_font(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) return NULL;
+    return (pTabBar->pFont != NULL) ? pTabBar->pFont : dtk_get_default_font(pTabBar->control.pTK);
 }
 
 dtk_result dtk_tabbar_set_text_fg_color(dtk_tabbar* pTabBar, dtk_color color)

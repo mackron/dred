@@ -91,9 +91,11 @@ void dtk_control_enable_clipping(dtk_control* pControl);
 dtk_bool32 dtk_control_is_clipping_enabled(const dtk_control* pControl);
 
 
-// Sets the size of a window.
+// Sets the size of a control.
 dtk_result dtk_control_set_size(dtk_control* pControl, dtk_uint32 width, dtk_uint32 height);
 dtk_result dtk_control_get_size(dtk_control* pControl, dtk_uint32* pWidth, dtk_uint32* pHeight);
+dtk_uint32 dtk_control_get_width(dtk_control* pControl);
+dtk_uint32 dtk_control_get_height(dtk_control* pControl);
 
 // Sets the absolute position of a control.
 dtk_result dtk_control_set_absolute_position(dtk_control* pControl, dtk_int32 posX, dtk_int32 posY);
