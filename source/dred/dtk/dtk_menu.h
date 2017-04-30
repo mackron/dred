@@ -124,3 +124,12 @@ DTK_INLINE dtk_result dtk_menu_set_item_checked_by_id(dtk_menu* pMenu, dtk_uint3
 // Determines whether or not the given menu item is checked.
 dtk_bool32 dtk_menu_is_item_checked(dtk_menu* pMenu, dtk_uint32 index);
 DTK_INLINE dtk_bool32 dtk_menu_is_item_checked_by_id(dtk_menu* pMenu, dtk_uint32 id) { return dtk_menu_is_item_checked(pMenu, dtk_menu_find_item_by_id(pMenu, id)); }
+
+
+
+//// Menu Item Info Helpers ////
+
+// Initializes a menu item info structure.
+dtk_result dtk_menu_item_info_init(dtk_uint32 id, dtk_menu_item_type type, dtk_uint32 stateFlags, dtk_menu* pSubMenu, const char* text, const char* shortcut, void* pUserData, dtk_menu_item_info* pMII);
+dtk_result dtk_menu_item_info_init_simple(dtk_uint32 id, dtk_menu* pSubMenu, const char* text, const char* shortcut, void* pUserData, dtk_menu_item_info* pMII);
+dtk_result dtk_menu_item_info_init_separator(dtk_menu_item_info* pMII);

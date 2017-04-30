@@ -817,6 +817,7 @@ dtk_result dtk_menu_insert_item(dtk_menu* pMenu, dtk_uint32 index, dtk_menu_item
         return DTK_INVALID_ARGS;
     }
 
+    if (pInfo->text == NULL) pInfo->text = "";
     if (pInfo->shortcut == NULL) pInfo->shortcut = "";
 
     dtk_result result = DTK_NO_BACKEND;
@@ -1019,4 +1020,32 @@ dtk_bool32 dtk_menu_is_item_checked(dtk_menu* pMenu, dtk_uint32 index)
 #endif
 
     return result;
+}
+
+
+
+//// Menu Item Info Helpers ////
+
+dtk_result dtk_menu_item_info_init(dtk_uint32 id, dtk_menu_item_type type, dtk_uint32 stateFlags, dtk_menu* pSubMenu, const char* text, const char* shortcut, void* pUserData, dtk_menu_item_info* pMII)
+{
+    if (pMII == NULL) return DTK_INVALID_ARGS;
+
+    pMII->id = id;
+    pMII->type = type;
+    pMII->stateFlags = stateFlags;
+    pMII->pSubMenu = pSubMenu;
+    pMII->text = text;
+    pMII->shortcut = shortcut;
+    pMII->pUserData = pUserData;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_menu_item_info_init_simple(dtk_uint32 id, dtk_menu* pSubMenu, const char* text, const char* shortcut, void* pUserData, dtk_menu_item_info* pMII)
+{
+    return dtk_menu_item_info_init(id, dtk_menu_item_type_normal, 0, pSubMenu, text, shortcut, pUserData, pMII);
+}
+
+dtk_result dtk_menu_item_info_init_separator(dtk_menu_item_info* pMII)
+{
+    return dtk_menu_item_info_init(0, dtk_menu_item_type_separator, 0, NULL, NULL, NULL, NULL, pMII);
 }
