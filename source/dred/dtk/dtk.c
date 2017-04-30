@@ -186,6 +186,7 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 #include "dtk_textbox.c"
 #include "dtk_window.c"
 #include "dtk_menu.c"
+#include "dtk_dialogs.c"
 #include "dtk_timer.c"
 #include "dtk_clipboard.c"
 #include "dtk_paint_queue.c"

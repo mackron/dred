@@ -165,6 +165,7 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_textbox.h"
 #include "dtk_window.h"
 #include "dtk_menu.h"
+#include "dtk_dialogs.h"
 #include "dtk_timer.h"
 #include "dtk_clipboard.h"
 #include "dtk_paint_queue.h"
