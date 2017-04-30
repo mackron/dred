@@ -134,6 +134,7 @@ dtk_key dtk_convert_key_from_win32(WPARAM wParam)
     {
     case VK_BACK:   return DTK_KEY_BACKSPACE;
     case VK_TAB:    return DTK_KEY_TAB;
+    case VK_RETURN: return DTK_KEY_RETURN;
     case VK_SHIFT:  return DTK_KEY_SHIFT;
     case VK_ESCAPE: return DTK_KEY_ESCAPE;
     case VK_PRIOR:  return DTK_KEY_PAGE_UP;
@@ -157,6 +158,7 @@ dtk_key dtk_convert_key_from_win32(WPARAM wParam)
     case VK_F10:    return DTK_KEY_F10;
     case VK_F11:    return DTK_KEY_F11;
     case VK_F12:    return DTK_KEY_F12;
+    case VK_SPACE:  return DTK_KEY_SPACE;
 
     default: break;
     }
@@ -170,6 +172,7 @@ WORD dtk_convert_key_to_win32(dtk_key key)
     {
     case DTK_KEY_BACKSPACE:   return VK_BACK;
     case DTK_KEY_TAB:         return VK_TAB;
+    case DTK_KEY_RETURN:      return VK_RETURN;
     case DTK_KEY_SHIFT:       return VK_SHIFT;
     case DTK_KEY_ESCAPE:      return VK_ESCAPE;
     case DTK_KEY_PAGE_UP:     return VK_PRIOR;
@@ -193,6 +196,7 @@ WORD dtk_convert_key_to_win32(dtk_key key)
     case DTK_KEY_F10:         return VK_F10;
     case DTK_KEY_F11:         return VK_F11;
     case DTK_KEY_F12:         return VK_F12;
+    case DTK_KEY_SPACE:       return VK_SPACE;
 
     default: break;
     }
@@ -216,6 +220,7 @@ dtk_key dtk_convert_key_from_gtk(guint keyval)
     {
     case GDK_KEY_BackSpace: return DTK_KEY_BACKSPACE;
     case GDK_KEY_Tab:       return DTK_KEY_TAB;
+    case GDK_KEY_Return:    return DTK_KEY_RETURN;
     case GDK_KEY_Shift_L:   return DTK_KEY_SHIFT;
     case GDK_KEY_Shift_R:   return DTK_KEY_SHIFT;
     case GDK_KEY_Escape:    return DTK_KEY_ESCAPE;
@@ -240,6 +245,7 @@ dtk_key dtk_convert_key_from_gtk(guint keyval)
     case GDK_KEY_F10:       return DTK_KEY_F10;
     case GDK_KEY_F11:       return DTK_KEY_F11;
     case GDK_KEY_F12:       return DTK_KEY_F12;
+    case GDK_KEY_space:     return DTK_KEY_SPACE;
 
     default: break;
     }
@@ -257,6 +263,7 @@ guint dtk_convert_key_to_gtk(dtk_key key)
     {
     case DTK_KEY_BACKSPACE:   return GDK_KEY_BackSpace;
     case DTK_KEY_TAB:         return GDK_KEY_Tab;
+    case DTK_KEY_RETURN:      return GDK_KEY_Return;
     case DTK_KEY_SHIFT:       return GDK_KEY_Shift_L;
     //case DTK_KEY_SHIFT:       return GDK_KEY_Shift_R;
     case DTK_KEY_ESCAPE:      return GDK_KEY_Escape;
@@ -281,6 +288,7 @@ guint dtk_convert_key_to_gtk(dtk_key key)
     case DTK_KEY_F10:         return GDK_KEY_F10;
     case DTK_KEY_F11:         return GDK_KEY_F11;
     case DTK_KEY_F12:         return GDK_KEY_F12;
+    case DTK_KEY_SPACE:       return GDK_KEY_space;
 
     default: break;
     }

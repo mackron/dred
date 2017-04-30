@@ -23,6 +23,7 @@
 typedef dtk_uint32 dtk_key;
 #define DTK_KEY_BACKSPACE              0xff08
 #define DTK_KEY_TAB                    0xff09
+#define DTK_KEY_RETURN                 0xff0d
 #define DTK_KEY_SHIFT                  0xff10
 #define DTK_KEY_ESCAPE                 0xff1b
 #define DTK_KEY_PAGE_UP                0xff55
@@ -46,6 +47,7 @@ typedef dtk_uint32 dtk_key;
 #define DTK_KEY_F10                    0xffc7
 #define DTK_KEY_F11                    0xffc8
 #define DTK_KEY_F12                    0xffc9
+#define DTK_KEY_SPACE                  0x020
 
 // Converts a key to a string, returning the length of the string.
 size_t dtk_key_to_string(dtk_key key, char* strOut, size_t strOutSize);
