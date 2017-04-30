@@ -60,7 +60,42 @@ dtk_dialog_result dtk_message_box__win32(dtk_window* pParentWindow, const char* 
 #ifdef DTK_GTK
 dtk_dialog_result dtk_message_box__gtk(dtk_window* pParentWindow, const char* text, const char* title, dtk_dialog_buttons buttons)
 {
-    // TODO: Implement me.
+    GtkWidget* pDialog = gtk_message_dialog_new((pParentWindow == NULL) ? NULL : GTK_WINDOW(pParentWindow->gtk.pWidget), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_OTHER, GTK_BUTTONS_NONE, text);
+    gtk_window_set_title(GTK_WINDOW(pDialog), title);
+
+    // Buttons.
+    switch (buttons)
+    {
+        case DTK_DIALOG_BUTTONS_OKCANCEL:
+        {
+            gtk_dialog_add_button(GTK_DIALOG(pDialog), "OK", DTK_DIALOG_RESULT_OK);
+            gtk_dialog_add_button(GTK_DIALOG(pDialog), "Cancel", DTK_DIALOG_RESULT_CANCEL);
+        } break;
+
+        case DTK_DIALOG_BUTTONS_YESNO:
+        {
+            gtk_dialog_add_button(GTK_DIALOG(pDialog), "Yes", DTK_DIALOG_RESULT_YES);
+            gtk_dialog_add_button(GTK_DIALOG(pDialog), "No", DTK_DIALOG_RESULT_NO);
+        } break;
+
+        case DTK_DIALOG_BUTTONS_YESNOCANCEL:
+        {
+            gtk_dialog_add_button(GTK_DIALOG(pDialog), "Yes", DTK_DIALOG_RESULT_YES);
+            gtk_dialog_add_button(GTK_DIALOG(pDialog), "No", DTK_DIALOG_RESULT_NO);
+            gtk_dialog_add_button(GTK_DIALOG(pDialog), "Cancel", DTK_DIALOG_RESULT_CANCEL);
+        } break;
+
+        case DTK_DIALOG_BUTTONS_OK:
+        default: 
+        {
+            gtk_dialog_add_button(GTK_DIALOG(pDialog), "OK", DTK_DIALOG_RESULT_OK);
+        } break;
+    }
+
+    dtk_dialog_result dialogResult = (dtk_dialog_result)gtk_dialog_run(GTK_DIALOG(pDialog));
+    gtk_widget_destroy(pDialog);
+
+    return dialogResult;
 }
 #endif
 
