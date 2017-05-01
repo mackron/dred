@@ -170,6 +170,22 @@ dtk_bool32 dtk_control_default_event_handler(dtk_event* pEvent)
 }
 
 
+dtk_result dtk_control_post_event(dtk_control* pControl, dtk_event* pEvent)
+{
+    if (pControl == NULL || pEvent == NULL) return DTK_INVALID_ARGS;
+
+    // pEvent->pControl can either be NULL or pControl.
+    if (pEvent->pControl != NULL) {
+        if (pEvent->pControl != pControl) {
+            return DTK_INVALID_ARGS;
+        }
+    } else {
+        pEvent->pControl = pControl;
+    }
+    
+    return dtk_post_local_event(pControl->pTK, pEvent);
+}
+
 dtk_result dtk_control_set_event_handler(dtk_control* pControl, dtk_event_proc onEvent)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;

@@ -460,7 +460,7 @@ void dtk_surface_clear__gdi(dtk_surface* pSurface, dtk_color color)
     SelectObject((HDC)pSurface->gdi.hDC, GetStockObject(NULL_PEN));
     SelectObject((HDC)pSurface->gdi.hDC, GetStockObject(DC_BRUSH));
     SetDCBrushColor((HDC)pSurface->gdi.hDC, RGB(color.r, color.g, color.b));
-    Rectangle((HDC)pSurface->gdi.hDC, 0, 0, (int)pSurface->width+1, (int)pSurface->height+1);
+    Rectangle((HDC)pSurface->gdi.hDC, 0, 0, (int)pSurface->width, (int)pSurface->height);
 }
 
 void dtk_surface_set_clip__gdi(dtk_surface* pSurface, dtk_rect rect)
@@ -485,7 +485,7 @@ void dtk_surface_draw_rect__gdi(dtk_surface* pSurface, dtk_rect rect, dtk_color 
     SelectObject((HDC)pSurface->gdi.hDC, GetStockObject(NULL_PEN));
     SelectObject((HDC)pSurface->gdi.hDC, GetStockObject(DC_BRUSH));
     SetDCBrushColor((HDC)pSurface->gdi.hDC, RGB(color.r, color.g, color.b));
-    Rectangle((HDC)pSurface->gdi.hDC, rect.left, rect.top, rect.right + 1, rect.bottom + 1);
+    Rectangle((HDC)pSurface->gdi.hDC, rect.left, rect.top, rect.right, rect.bottom);
 }
 
 void dtk_surface_draw_rect_outline__gdi(dtk_surface* pSurface, dtk_rect rect, dtk_color color, dtk_int32 outlineWidth)
@@ -499,10 +499,10 @@ void dtk_surface_draw_rect_outline__gdi(dtk_surface* pSurface, dtk_rect rect, dt
     // Now draw the rectangle. The documentation for this says that the width and height is 1 pixel less when the pen is null. Therefore we will
     // increase the width and height by 1 since we have got the pen set to null.
 
-    Rectangle(hDC, rect.left,                 rect.top,                   rect.left  + outlineWidth + 1, rect.bottom + 1);              // Left.
-    Rectangle(hDC, rect.right - outlineWidth, rect.top,                   rect.right + 1,                rect.bottom + 1);              // Right.
-    Rectangle(hDC, rect.left  + outlineWidth, rect.top,                   rect.right - outlineWidth + 1, rect.top + outlineWidth + 1);  // Top
-    Rectangle(hDC, rect.left  + outlineWidth, rect.bottom - outlineWidth, rect.right - outlineWidth + 1, rect.bottom + 1);              // Bottom
+    Rectangle(hDC, rect.left,                 rect.top,                   rect.left  + outlineWidth, rect.bottom);              // Left.
+    Rectangle(hDC, rect.right - outlineWidth, rect.top,                   rect.right,                rect.bottom);              // Right.
+    Rectangle(hDC, rect.left  + outlineWidth, rect.top,                   rect.right - outlineWidth, rect.top + outlineWidth);  // Top
+    Rectangle(hDC, rect.left  + outlineWidth, rect.bottom - outlineWidth, rect.right - outlineWidth, rect.bottom);              // Bottom
 }
 
 void dtk_surface_draw_text__gdi(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32 posX, dtk_int32 posY, dtk_color fgColor, dtk_color bgColor)
@@ -565,7 +565,7 @@ void dtk_surface_draw_surface__gdi(dtk_surface* pDstSurface, dtk_surface* pSrcSu
         SelectObject(hIntermediateDC, GetStockObject(NULL_PEN));
         SelectObject(hIntermediateDC, GetStockObject(DC_BRUSH));
         SetDCBrushColor(hIntermediateDC, RGB(pArgs->backgroundColor.r, pArgs->backgroundColor.g, pArgs->backgroundColor.b));
-        Rectangle(hIntermediateDC, 0, 0, pArgs->srcWidth+1, pArgs->srcHeight+1);
+        Rectangle(hIntermediateDC, 0, 0, pArgs->srcWidth, pArgs->srcHeight);
 
         BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
         if (pSrcSurface->pTK->win32.AlphaBlend) {

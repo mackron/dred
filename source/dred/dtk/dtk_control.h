@@ -62,6 +62,9 @@ dtk_result dtk_control_uninit(dtk_control* pControl);
 dtk_bool32 dtk_control_default_event_handler(dtk_event* pEvent);
 
 
+// Posts an event for this control.
+dtk_result dtk_control_post_event(dtk_control* pControl, dtk_event* pEvent);
+
 // Sets the event handler for a control.
 dtk_result dtk_control_set_event_handler(dtk_control* pControl, dtk_event_proc onEvent);
 
