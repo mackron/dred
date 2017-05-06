@@ -360,8 +360,6 @@ static dtk_bool32 dred_dtk_global_event_proc(dtk_event* pEvent)
 
 dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_library* pPackageLibrary)
 {
-    // TODO: USE dred_error() AND FAMILY FOR PRINTING CRITICAL ERRORS INSTEAD OF printf()
-
     int windowPosX;
     int windowPosY;
     unsigned int windowWidth;
@@ -491,7 +489,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
 
     pDred->pMainWindow = dred_window_create(pDred);
     if (pDred->pMainWindow == NULL) {
-        printf("Failed to create main window.");
+        dred_error(pDred, "Failed to create main window.");
         goto on_error;
     }
 
@@ -503,13 +501,13 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     // The main tab group container.
     pDred->pMainTabGroupContainer = &pDred->mainTabGroupContainer;
     if (!dred_tabgroup_container_init(pDred->pMainTabGroupContainer, pDred, pDred->pMainWindow->pRootGUIControl)) {
-        printf("Failed to create main tab group container.\n");
+        dred_error(pDred, "Failed to create main tab group container.\n");
         goto on_error;
     }
 
     pDred->pMainTabGroup = &pDred->mainTabGroup;
     if (!dred_tabgroup_init(pDred->pMainTabGroup, pDred, DRED_CONTROL(pDred->pMainTabGroupContainer))) {
-        printf("Failed to create main tab group.\n");
+        dred_error(pDred, "Failed to create main tab group.\n");
         goto on_error;
     }
 
@@ -517,7 +515,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     // The command bar. Ensure this is given a valid initial size.
     pDred->pCmdBar = &pDred->cmdBar;
     if (!dred_cmdbar_init(pDred->pCmdBar, pDred, pDred->pMainWindow->pRootGUIControl)) {
-        printf("Failed to create command bar.\n");
+        dred_error(pDred, "Failed to create command bar.\n");
         goto on_error;
     }
 
