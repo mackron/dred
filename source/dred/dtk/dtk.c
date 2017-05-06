@@ -1288,9 +1288,9 @@ dtk_result dtk_post_local_event(dtk_context* pTK, dtk_event* pEvent)
     return result;
 }
 
-dtk_result dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent)
+dtk_bool32 dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent)
 {
-    if (pTK == NULL || pEvent == NULL || pEvent->pControl == NULL) return DTK_INVALID_ARGS;
+    if (pTK == NULL || pEvent == NULL || pEvent->pControl == NULL) return DTK_FALSE;
 
     dtk_event_proc onEvent = pEvent->pControl->onEvent;
     if (onEvent == NULL && pEvent->pControl->type < DTK_CONTROL_TYPE_COUNT) {
@@ -1298,10 +1298,10 @@ dtk_result dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent)
     }
 
     if (onEvent) {
-        onEvent(pEvent);
+        return onEvent(pEvent);
     }
 
-    return DTK_SUCCESS;
+    return DTK_FALSE;
 }
 
 dtk_result dtk_post_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)

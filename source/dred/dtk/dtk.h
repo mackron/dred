@@ -199,6 +199,7 @@ typedef int dtk_event_type;
 #define DTK_EVENT_RELEASE_MOUSE             23
 #define DTK_EVENT_SCROLLBAR_SCROLL          128
 #define DTK_EVENT_TABBAR_CHANGE_TAB         133
+#define DTK_EVENT_TABGROUP_CHANGE_TAB       134
 #define DTK_EVENT_CUSTOM                    256
 
 struct dtk_event
@@ -332,6 +333,12 @@ struct dtk_event
             dtk_int32 newTabIndex;
             dtk_int32 oldTabIndex;
         } tabbar;
+
+        struct
+        {
+            dtk_int32 newTabIndex;
+            dtk_int32 oldTabIndex;
+        } tabgroup;
 
         struct
         {
@@ -474,8 +481,9 @@ dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking, int* pExitCode)
 // To handle the event immediately, use dtk_handle_control_event().
 dtk_result dtk_post_local_event(dtk_context* pTK, dtk_event* pEvent);
 
-// Same as dtk_post_local_event(), except handles it immediately instead of posting it to the queue.
-dtk_result dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent);
+// Same as dtk_post_local_event(), except handles it immediately instead of posting it to the queue. The return
+// value is the value returned by the event handler.
+dtk_bool32 dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent);
 
 // Posts a custom event.
 //

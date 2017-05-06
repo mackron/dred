@@ -291,12 +291,19 @@ dtk_result dtk_control_set_size(dtk_control* pControl, dtk_uint32 width, dtk_uin
     if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
         return dtk_window_set_size(DTK_WINDOW(pControl), width, height);
     } else {
-        dtk_rect oldRect = dtk_control_get_local_rect(pControl);
-        pControl->width  = width;
-        pControl->height = height;
-        dtk_rect newRect = dtk_control_get_local_rect(pControl);
+        if (pControl->width != width || pControl->height != height) {
+            dtk_rect oldRect = dtk_control_get_local_rect(pControl);
+            pControl->width  = width;
+            pControl->height = height;
+            dtk_rect newRect = dtk_control_get_local_rect(pControl);
 
-        dtk_control_scheduled_redraw(pControl, dtk_rect_union(oldRect, newRect));
+            dtk_control_scheduled_redraw(pControl, dtk_rect_union(oldRect, newRect));
+
+            dtk_event e = dtk_event_init(pControl->pTK, DTK_EVENT_SIZE, pControl);
+            e.size.width  = pControl->width;
+            e.size.height = pControl->height;
+            dtk_post_local_event(pControl->pTK, &e);
+        }
     }
 
     return DTK_SUCCESS;

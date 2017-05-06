@@ -351,7 +351,7 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
         default: break;
     }
 
-    return DTK_TRUE;
+    return dtk_control_default_event_handler(pEvent);
 }
 
 
