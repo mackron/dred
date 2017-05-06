@@ -1,16 +1,16 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
 // dred_get_config_folder_path()
-dr_bool32 dred_get_config_folder_path(char* pathOut, size_t pathOutSize);
+dr_bool32 dred_get_config_folder_path(dred_context* pDred, char* pathOut, size_t pathOutSize);
 
 // dred_get_config_path()
-dr_bool32 dred_get_config_path(char* pathOut, size_t pathOutSize);
+dr_bool32 dred_get_config_path(dred_context* pDred, char* pathOut, size_t pathOutSize);
 
 // dred_get_log_folder_path()
-dr_bool32 dred_get_log_folder_path(char* pathOut, size_t pathOutSize);
+dr_bool32 dred_get_log_folder_path(dred_context* pDred, char* pathOut, size_t pathOutSize);
 
 // dred_get_log_path()
-dr_bool32 dred_get_log_path(char* pathOut, size_t pathOutSize);
+dr_bool32 dred_get_log_path(dred_context* pDred, char* pathOut, size_t pathOutSize);
 
 // dred_get_packages_folder_path()
 dr_bool32 dred_get_packages_folder_path(char* pathOut, size_t pathOutSize);

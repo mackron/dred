@@ -96,6 +96,9 @@ struct dred_context
 
     // Whether or not the application is running in silent mode.
     dr_bool32 isTerminalOutputDisabled;
+
+    // Whether or not we're running in portable mode.
+    dr_bool32 isPortable;
 };
 
 // dred_init

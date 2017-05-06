@@ -1,35 +1,51 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-dr_bool32 dred_get_config_folder_path(char* pathOut, size_t pathOutSize)
+dr_bool32 dred_get_config_folder_path(dred_context* pDred, char* pathOut, size_t pathOutSize)
 {
-    if (!dr_get_config_folder_path(pathOut, pathOutSize)) {
-        return DR_FALSE;
-    }
+    if (pDred != NULL && !pDred->isPortable) {
+        if (!dr_get_config_folder_path(pathOut, pathOutSize)) {
+            return DR_FALSE;
+        }
 
-    return drpath_append(pathOut, pathOutSize, "dred");
+        return drpath_append(pathOut, pathOutSize, "dred");
+    } else {
+        if (!dr_get_executable_directory_path(pathOut, pathOutSize)) {
+            return DR_FALSE;
+        }
+
+        return drpath_append(pathOut, pathOutSize, "config");
+    }
 }
 
-dr_bool32 dred_get_config_path(char* pathOut, size_t pathOutSize)
+dr_bool32 dred_get_config_path(dred_context* pDred, char* pathOut, size_t pathOutSize)
 {
-    if (!dred_get_config_folder_path(pathOut, pathOutSize)) {
+    if (!dred_get_config_folder_path(pDred, pathOut, pathOutSize)) {
         return DR_FALSE;
     }
 
     return drpath_append(pathOut, pathOutSize, ".dred");
 }
 
-dr_bool32 dred_get_log_folder_path(char* pathOut, size_t pathOutSize)
+dr_bool32 dred_get_log_folder_path(dred_context* pDred, char* pathOut, size_t pathOutSize)
 {
-    if (!dr_get_log_folder_path(pathOut, pathOutSize)) {
-        return DR_FALSE;
-    }
+    if (pDred != NULL && !pDred->isPortable) {
+        if (!dr_get_log_folder_path(pathOut, pathOutSize)) {
+            return DR_FALSE;
+        }
 
-    return drpath_append(pathOut, pathOutSize, "dred");
+        return drpath_append(pathOut, pathOutSize, "dred");
+    } else {
+        if (!dr_get_executable_directory_path(pathOut, pathOutSize)) {
+            return DR_FALSE;
+        }
+
+        return drpath_append(pathOut, pathOutSize, "logs");
+    }
 }
 
-dr_bool32 dred_get_log_path(char* pathOut, size_t pathOutSize)
+dr_bool32 dred_get_log_path(dred_context* pDred, char* pathOut, size_t pathOutSize)
 {
-    if (!dred_get_log_folder_path(pathOut, pathOutSize)) {
+    if (!dred_get_log_folder_path(pDred, pathOut, pathOutSize)) {
         return DR_FALSE;
     }
 

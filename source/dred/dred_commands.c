@@ -98,7 +98,7 @@ dr_bool32 dred_command__load_config(dred_context* pDred, const char* value)
         // If the path is relative and the file does not exist relative to the current directory, try making it relative to
         // the user config directory.
         char configPath[DRED_MAX_PATH];
-        if (dred_get_config_folder_path(configPath, sizeof(configPath))) {
+        if (dred_get_config_folder_path(pDred, configPath, sizeof(configPath))) {
             char pathAbsolute[DRED_MAX_PATH];
             if (drpath_append_and_clean(pathAbsolute, sizeof(pathAbsolute), configPath, path)) {
                 return dred_load_config(pDred, pathAbsolute);
