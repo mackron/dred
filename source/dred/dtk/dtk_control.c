@@ -247,7 +247,7 @@ dtk_result dtk_control_hide(dtk_control* pControl)
 dtk_bool32 dtk_control_is_visible(dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_FALSE;
-    return !pControl->isHidden;
+    return pControl->isHidden == DTK_FALSE;
 }
 
 dtk_bool32 dtk_control_is_visible_recursive(dtk_control* pControl)
@@ -695,12 +695,12 @@ dtk_window* dtk_control_get_window(dtk_control* pControl)
 }
 
 
-dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect relativeRect, dtk_control_visibility_iteration_proc callback, dtk_control_visibility_iteration_proc callbackPost, void* pUserData)
+dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect relativeRect, dtk_control_visibility_iteration_proc callback, dtk_control_visibility_iteration_proc callbackPost, dtk_uint32 options, void* pUserData)
 {
     if (pControl == NULL || callback == NULL) return DTK_FALSE;
 
     if (!dtk_control_is_visible(pControl)) {
-        return DTK_FALSE;
+        return DTK_TRUE;
     }
 
     dtk_bool32 isRootControlVisible = DTK_FALSE;
@@ -718,6 +718,10 @@ dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect 
 
     dtk_bool32 result = DTK_TRUE;
     for (dtk_control* pChild = pControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
+        if (pChild->type == DTK_CONTROL_TYPE_WINDOW && (options & DTK_CONTROL_ITERATION_SKIP_WINDOWS) != 0) {
+            continue;
+        }
+
         dtk_int32 childRelativePosX;
         dtk_int32 childRelativePosY;
         dtk_control_get_relative_position(pChild, &childRelativePosX, &childRelativePosY);
@@ -733,7 +737,8 @@ dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect 
         childRect.top    -= childRelativePosY;
         childRect.right  -= childRelativePosX;
         childRect.bottom -= childRelativePosY;
-        if (!dtk_control_iterate_visible_controls(pChild, childRect, callback, callbackPost, pUserData)) {
+        dtk_bool32 childResult = dtk_control_iterate_visible_controls(pChild, childRect, callback, callbackPost, options, pUserData);
+        if (childResult == DTK_FALSE && (options & DTK_CONTROL_ITERATION_ALWAYS_INCLUDE_CHILDREN) == 0) {
             result = DTK_FALSE;
             break;
         }

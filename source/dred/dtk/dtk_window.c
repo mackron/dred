@@ -1957,7 +1957,7 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
     {
         case DTK_EVENT_PAINT:
         {
-            dtk_control_iterate_visible_controls(DTK_CONTROL(pWindow), pEvent->paint.rect, dtk_window__on_paint_control, dtk_window__on_paint_control_finished, pEvent);
+            dtk_control_iterate_visible_controls(DTK_CONTROL(pWindow), pEvent->paint.rect, dtk_window__on_paint_control, dtk_window__on_paint_control_finished, DTK_CONTROL_ITERATION_SKIP_WINDOWS | DTK_CONTROL_ITERATION_ALWAYS_INCLUDE_CHILDREN, pEvent);
         } break;
 
         case DTK_EVENT_SIZE:
@@ -2515,7 +2515,7 @@ dtk_control* dtk_window_find_control_under_point(dtk_window* pWindow, dtk_int32 
     data.pWindow = pWindow;
     data.posX = posX;
     data.posY = posY;
-    dtk_control_iterate_visible_controls(DTK_CONTROL(pWindow), dtk_control_get_local_rect(DTK_CONTROL(pWindow)), dtk_window__find_control_under_point_iterator_cb, NULL, &data);
+    dtk_control_iterate_visible_controls(DTK_CONTROL(pWindow), dtk_control_get_local_rect(DTK_CONTROL(pWindow)), dtk_window__find_control_under_point_iterator_cb, NULL, DTK_CONTROL_ITERATION_SKIP_WINDOWS, &data);
 
     return data.pControlUnderPoint;
 }

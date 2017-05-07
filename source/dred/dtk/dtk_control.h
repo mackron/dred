@@ -14,6 +14,9 @@ typedef dtk_uint32 dtk_control_type;
 #define DTK_CONTROL_TYPE_COUNT          10  // <-- Update this when a new built-in type is added. Also remember to register the default event handler in dtk_init().
 #define DTK_CONTROL_TYPE_CUSTOM         65536
 
+#define DTK_CONTROL_ITERATION_SKIP_WINDOWS              (1 << 0)    // When set, skips over children that a window controls. Needed for painting.
+#define DTK_CONTROL_ITERATION_ALWAYS_INCLUDE_CHILDREN   (1 << 1)    // When set, always iterates over remaining children when the callback for a child returns false. Needed for painting. When unset, iteration will terminate immediately as soon as false is returned from a callback.
+
 // Return false to stop iteration. pRelativeRect is both an input and output property. On output it will be
 // used as the new clipping rectangle for children.
 typedef dtk_bool32 (* dtk_control_visibility_iteration_proc)(dtk_control* pControl, dtk_rect* pRelativeRect, void* pUserData);
@@ -206,7 +209,9 @@ dtk_window* dtk_control_get_window(dtk_control* pControl);
 // If <callback> returns false, iteration will be terminated and false will be returned. <callbackPost> is called
 // after <callback> _and_ the controls children. It's used to allow the callbacks to save and restore state for
 // recursive traversals.
-dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect relativeRect, dtk_control_visibility_iteration_proc callback, dtk_control_visibility_iteration_proc callbackPost, void* pUserData);
+//
+// <options> is any combination of DTK_CONTROL_ITERATION_*.
+dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect relativeRect, dtk_control_visibility_iteration_proc callback, dtk_control_visibility_iteration_proc callbackPost, dtk_uint32 options, void* pUserData);
 
 
 // Schedules a redraw of the given control.

@@ -401,7 +401,7 @@ struct dred_control
     //dtk_system_cursor_type cursor;
 
     /// Boolean flags.
-    unsigned int flags;
+    //unsigned int flags;
 
     // The region of the element that's dirty.
     //dred_rect dirtyRect;
