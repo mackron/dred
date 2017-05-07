@@ -325,7 +325,7 @@ dr_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred
     }
 
     memset(pTextView, 0, sizeof(*pTextView));
-    if (!dred_control_init(DRED_CONTROL(pTextView), pDred, pParent, DRED_CONTROL_TYPE_TEXTVIEW)) {
+    if (!dred_control_init(DRED_CONTROL(pTextView), pDred, pParent, NULL, DRED_CONTROL_TYPE_TEXTVIEW)) {
         return DR_FALSE;
     }
 
@@ -370,7 +370,7 @@ dr_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred
     dred_scrollbar_set_on_scroll(pTextView->pHorzScrollbar, dred_textview__on_hscroll);
 
     pTextView->pLineNumbers = &pTextView->lineNumbers;
-    dred_control_init(pTextView->pLineNumbers, pDred, DRED_CONTROL(pTextView), "dred.common.linenumbers");
+    dred_control_init(pTextView->pLineNumbers, pDred, DRED_CONTROL(pTextView), NULL, "dred.common.linenumbers");
     dred_control_hide(pTextView->pLineNumbers);
     dred_control_set_on_mouse_move(pTextView->pLineNumbers, dred_textview__on_mouse_move_line_numbers);
     dred_control_set_on_mouse_button_down(pTextView->pLineNumbers, dred_textview__on_mouse_button_down_line_numbers);
@@ -471,7 +471,7 @@ void dred_textview_uninit(dred_textview* pTextView)
     }
 
     // Keyboard focus needs to be released first. If we don't do this we'll not free delete the internal timer.
-    if (dred_control_has_keyboard_capture(DRED_CONTROL(pTextView))) {
+    if (dtk_control_has_keyboard_capture(DTK_CONTROL(pTextView))) {
         dred_gui_release_keyboard(dred_control_get_gui(DRED_CONTROL(pTextView)));
     }
 
@@ -520,7 +520,7 @@ void dred_textview_set_font(dred_textview* pTextView, dred_gui_font* pFont)
         return;
     }
 
-    dred_control_begin_dirty(DRED_CONTROL(pTextView));
+    //dred_control_begin_dirty(DRED_CONTROL(pTextView));
     {
         //drte_engine_set_default_font(pTextView->pTextEngine, pFont);
         pTextView->defaultStyle.pFont = pFont;
@@ -536,7 +536,7 @@ void dred_textview_set_font(dred_textview* pTextView, dred_gui_font* pFont)
         dred_textview__on_vscroll(pTextView->pVertScrollbar, dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar));
         dred_textview__refresh_scrollbars(pTextView);
     }
-    dred_control_end_dirty(DRED_CONTROL(pTextView));
+    //dred_control_end_dirty(DRED_CONTROL(pTextView));
 }
 
 dred_gui_font* dred_textview_get_font(dred_textview* pTextView)
@@ -1209,11 +1209,11 @@ dr_bool32 dred_textview_undo(dred_textview* pTextView)
     }
 
     dr_bool32 result;
-    dred_control_begin_dirty(DRED_CONTROL(pTextView));
+    //dred_control_begin_dirty(DRED_CONTROL(pTextView));
     {
         result = drte_engine_undo(pTextView->pTextEngine);
     }
-    dred_control_end_dirty(DRED_CONTROL(pTextView));
+    //dred_control_end_dirty(DRED_CONTROL(pTextView));
 
     return result;
 }
@@ -1225,11 +1225,11 @@ dr_bool32 dred_textview_redo(dred_textview* pTextView)
     }
 
     dr_bool32 result;
-    dred_control_begin_dirty(DRED_CONTROL(pTextView));
+    //dred_control_begin_dirty(DRED_CONTROL(pTextView));
     {
         result =  drte_engine_redo(pTextView->pTextEngine);
     }
-    dred_control_end_dirty(DRED_CONTROL(pTextView));
+    //dred_control_end_dirty(DRED_CONTROL(pTextView));
 
     return result;
 }
@@ -1744,7 +1744,7 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
     float mousePosXRelativeToTextArea = (float)relativeMousePosX - offsetX;
     float mousePosYRelativeToTextArea = (float)relativeMousePosY - offsetY;
 
-    if (dred_gui_get_element_with_mouse_capture(dred_control_get_gui(pControl)) == pControl)
+    if (dtk_control_has_mouse_capture(DTK_CONTROL(pControl)))
     {
         drte_view_begin_dirty(pTextView->pView);
         {
@@ -1903,7 +1903,7 @@ void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, i
     {
         pTextView->isDoingRectangleSelect = DR_FALSE;
 
-        if (dred_gui_get_element_with_mouse_capture(pControl->pGUI) == pControl)
+        if (dtk_control_has_mouse_capture(DTK_CONTROL(pControl)))
         {
             // When we first pressed the mouse we may have started a new selection. If we never ended up selecting anything we'll want to
             // cancel that selection.
@@ -2307,7 +2307,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
         return;
     }
 
-    dred_control_begin_dirty(pControl);
+    //dred_control_begin_dirty(pControl);
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
         drte_view_begin_dirty(pTextView->pView);
@@ -2419,7 +2419,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
         drte_view_end_dirty(pTextView->pView);
     }
     drte_engine_commit_undo_point(pTextView->pTextEngine);
-    dred_control_end_dirty(pControl);
+    //dred_control_end_dirty(pControl);
 }
 
 
@@ -2844,12 +2844,12 @@ void dred_textview__on_mouse_move_line_numbers(dred_control* pLineNumbers, int r
 {
     (void)relativeMousePosX;
 
-    dred_textview* pTextView = DRED_TEXTVIEW(dred_control_get_parent(pLineNumbers));
+    dred_textview* pTextView = DRED_TEXTVIEW(dtk_control_get_parent(DTK_CONTROL(pLineNumbers)));
     assert(pTextView != NULL);
 
     if ((stateFlags & DTK_MODIFIER_MOUSE_BUTTON_LEFT) != 0)
     {
-        if (dred_gui_get_element_with_mouse_capture(pLineNumbers->pGUI) == pLineNumbers)
+        if (dtk_control_has_mouse_capture(DTK_CONTROL(pLineNumbers)))
         {
             // We just move the cursor around based on the line number we've moved over.
 
@@ -2902,7 +2902,7 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
     (void)relativeMousePosX;
     (void)stateFlags;
 
-    dred_textview* pTextView = DRED_TEXTVIEW(dred_control_get_parent(pLineNumbers));
+    dred_textview* pTextView = DRED_TEXTVIEW(dtk_control_get_parent(DTK_CONTROL(pLineNumbers)));
     assert(pTextView != NULL);
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT)
@@ -2953,7 +2953,7 @@ void dred_textview__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, 
     (void)stateFlags;
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
-        if (dred_control_has_mouse_capture(pLineNumbers)) {
+        if (dtk_control_has_mouse_capture(DTK_CONTROL(pLineNumbers))) {
             dred_gui_release_mouse(pLineNumbers->pGUI);
         }
     }
@@ -2995,7 +2995,7 @@ void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect 
 {
     (void)relativeRect;
 
-    dred_textview* pTextView = DRED_TEXTVIEW(dred_control_get_parent(pLineNumbers));
+    dred_textview* pTextView = DRED_TEXTVIEW(dtk_control_get_parent(DTK_CONTROL(pLineNumbers)));
     assert(pTextView != NULL);
 
     float lineNumbersWidth  = dred_control_get_width(pLineNumbers) - (pTextView->padding*2) - pTextView->lineNumbersPaddingRight;
@@ -3017,7 +3017,7 @@ void dred_textview__refresh_line_numbers(dred_textview* pTextView)
     assert(pTextView != NULL);
 
     dred_rect lineNumbersRectOld = dred_control_get_local_rect(pTextView->pLineNumbers);
-    dred_control_begin_dirty(pTextView->pLineNumbers);
+    //dred_control_begin_dirty(pTextView->pLineNumbers);
 
     float lineNumbersWidth = 0;
     if (dred_control_is_visible(pTextView->pLineNumbers)) {
@@ -3037,5 +3037,5 @@ void dred_textview__refresh_line_numbers(dred_textview* pTextView)
 
     // Force a redraw just to be sure everything is in a valid state.
     dred_control_dirty(DRED_CONTROL(pTextView), dred_rect_union(lineNumbersRectOld, dred_control_get_local_rect(pTextView->pLineNumbers)));
-    dred_control_end_dirty(pTextView->pLineNumbers);
+    //dred_control_end_dirty(pTextView->pLineNumbers);
 }

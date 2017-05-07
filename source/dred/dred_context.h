@@ -179,7 +179,7 @@ dred_tab* dred_get_focused_tab(dred_context* pDred);
 dred_editor* dred_get_focused_editor(dred_context* pDred);
 
 // Retrieves the element with the keyboard capture, if any.
-dred_control* dred_get_element_with_keyboard_capture(dred_context* pDred);
+dtk_control* dred_get_element_with_keyboard_capture(dred_context* pDred);
 
 
 // Retrieves the control type of the editor to use for a file with the extension of the given file path.

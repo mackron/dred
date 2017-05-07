@@ -9,7 +9,7 @@ dr_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dred_contr
 
     memset(pEditor, 0, sizeof(*pEditor));
 
-    if (!dred_control_init(DRED_CONTROL(pEditor), pDred, pParent, type)) {
+    if (!dred_control_init(DRED_CONTROL(pEditor), pDred, pParent, NULL, type)) {
         free(pEditor);
         return DR_FALSE;
     }

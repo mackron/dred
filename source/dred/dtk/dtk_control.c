@@ -217,6 +217,7 @@ dtk_result dtk_control_show(dtk_control* pControl)
         result = dtk_window_show(DTK_WINDOW(pControl), DTK_SHOW_NORMAL);
     } else {
         pControl->isHidden = DTK_FALSE;
+        dtk_control_scheduled_redraw(pControl, dtk_control_get_local_rect(pControl));
     }
 
     return result;
@@ -237,6 +238,7 @@ dtk_result dtk_control_hide(dtk_control* pControl)
         result = dtk_window_hide(DTK_WINDOW(pControl));
     } else {
         pControl->isHidden = DTK_TRUE;
+        dtk_control_scheduled_redraw(pControl, dtk_control_get_local_rect(pControl));
     }
 
     return result;
@@ -268,12 +270,14 @@ void dtk_control_disable_clipping(dtk_control* pControl)
 {
     if (pControl == NULL) return;
     pControl->isClippingDisabled = DTK_TRUE;
+    dtk_control_scheduled_redraw(pControl, dtk_control_get_local_rect(pControl));
 }
 
 void dtk_control_enable_clipping(dtk_control* pControl)
 {
     if (pControl == NULL) return;
     pControl->isClippingDisabled = DTK_FALSE;
+    dtk_control_scheduled_redraw(pControl, dtk_control_get_local_rect(pControl));
 }
 
 dtk_bool32 dtk_control_is_clipping_enabled(const dtk_control* pControl)
@@ -670,6 +674,12 @@ dtk_bool32 dtk_control_is_self_or_descendant(dtk_control* pChildControl, dtk_con
     return pChildControl == pAncestorControl || dtk_control_is_descendant(pChildControl, pAncestorControl);
 }
 
+dtk_control* dtk_control_get_parent(dtk_control* pControl)
+{
+    if (pControl == NULL) return NULL;
+    return pControl->pParent;
+}
+
 
 dtk_window* dtk_control_get_window(dtk_control* pControl)
 {
@@ -706,7 +716,7 @@ dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect 
         }
     }
 
-
+    dtk_bool32 result = DTK_TRUE;
     for (dtk_control* pChild = pControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
         dtk_int32 childRelativePosX;
         dtk_int32 childRelativePosY;
@@ -724,10 +734,10 @@ dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect 
         childRect.right  -= childRelativePosX;
         childRect.bottom -= childRelativePosY;
         if (!dtk_control_iterate_visible_controls(pChild, childRect, callback, callbackPost, pUserData)) {
-            return DTK_FALSE;
+            result = DTK_FALSE;
+            break;
         }
     }
-
 
     if (isRootControlVisible) {
         if (callbackPost) {
@@ -735,7 +745,7 @@ dtk_bool32 dtk_control_iterate_visible_controls(dtk_control* pControl, dtk_rect 
         }
     }
 
-    return DTK_TRUE;
+    return result;
 }
 
 
@@ -842,4 +852,37 @@ dtk_bool32 dtk_control_has_mouse_capture(dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_FALSE;
     return pControl == pControl->pTK->pControlWithMouseCapture;
+}
+
+
+dtk_bool32 dtk_control_is_point_inside_bounds(dtk_control* pControl, dtk_int32 absolutePosX, dtk_int32 absolutePosY)
+{
+    if (pControl == NULL) return DTK_FALSE;
+
+    if (absolutePosX < pControl->absolutePosX ||
+        absolutePosX < pControl->absolutePosY) {
+        return DTK_FALSE;
+    }
+
+    if (absolutePosX >= pControl->absolutePosX + (dtk_int32)pControl->width ||
+        absolutePosY >= pControl->absolutePosY + (dtk_int32)pControl->height) {
+        return DTK_FALSE;
+    }
+
+    return DTK_TRUE;
+}
+
+dtk_bool32 dtk_control_is_point_inside(dtk_control* pControl, dtk_int32 absolutePosX, dtk_int32 absolutePosY)
+{
+    if (!dtk_control_is_point_inside_bounds(pControl, absolutePosX, absolutePosY)) {
+        return DTK_FALSE;
+    }
+
+    // It is valid for onHitTest to be null, in which case we use the default hit test which assumes the element is just a rectangle
+    // equal to the size of it's bounds. It's equivalent to onHitTest always returning DR_TRUE.
+    if (pControl->onHitTest) {
+        return pControl->onHitTest(pControl, absolutePosX - pControl->absolutePosX, absolutePosY - pControl->absolutePosY);
+    }
+
+    return DTK_TRUE;
 }

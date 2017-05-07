@@ -314,6 +314,7 @@ static dtk_bool32 dred_dtk_global_event_proc(dtk_event* pEvent)
 
     switch (pEvent->type)
     {
+
         case DTK_EVENT_ACCELERATOR:
         {
             dred_on_accelerator((dred_context*)pEvent->pTK->pUserData, dtk_accelerator_init(pEvent->accelerator.key, pEvent->accelerator.modifiers, pEvent->accelerator.id));
@@ -986,13 +987,13 @@ dred_editor* dred_get_focused_editor(dred_context* pDred)
     return DRED_EDITOR(pControl);
 }
 
-dred_control* dred_get_element_with_keyboard_capture(dred_context* pDred)
+dtk_control* dred_get_element_with_keyboard_capture(dred_context* pDred)
 {
     if (pDred == NULL) {
         return NULL;
     }
 
-    dred_control* pControl = dred_gui_get_element_with_keyboard_capture(pDred->pGUI);
+    dtk_control* pControl = dtk_get_control_with_keyboard_capture(&pDred->tk);
     if (pControl == NULL) {
         pControl = pDred->pMainWindow->pControlWithKeyboardCapture;
     }
@@ -1094,11 +1095,11 @@ dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, cons
         return DR_FALSE;   // TODO: This means there is no tab group so one need to be created.
     }
 
-    dred_control_begin_dirty(DRED_CONTROL(pTabGroup));
+    //dred_control_begin_dirty(DRED_CONTROL(pTabGroup));
     {
         dred_editor* pEditor = dred_create_editor_by_type(pDred, pTabGroup, editorType, filePathAbsolute);
         if (pEditor == NULL) {
-            dred_control_end_dirty(DRED_CONTROL(pTabGroup));
+            //dred_control_end_dirty(DRED_CONTROL(pTabGroup));
             return DR_FALSE;
         }
 
@@ -1109,7 +1110,7 @@ dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, cons
         dred_tab* pTab = dred_tabgroup_prepend_tab(pTabGroup, NULL, DRED_CONTROL(pEditor));
         if (pTab == NULL) {
             dred_delete_editor_by_type(pEditor);
-            dred_control_end_dirty(DRED_CONTROL(pTabGroup));
+            //dred_control_end_dirty(DRED_CONTROL(pTabGroup));
             return DR_FALSE;
         }
         dred__refresh_editor_tab_text(pEditor, pTab);
@@ -1128,7 +1129,7 @@ dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, cons
             }
         }
     }
-    dred_control_end_dirty(DRED_CONTROL(pTabGroup));
+    //dred_control_end_dirty(DRED_CONTROL(pTabGroup));
 
 
     // The file should be added to the recent file list. This is done by adding it to the config and then refreshing the menu.

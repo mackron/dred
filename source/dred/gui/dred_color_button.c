@@ -96,7 +96,7 @@ void dtk_colorbutton__on_mouse_move(dred_control* pControl, int mousePosX, int m
         return;
     }
 
-    if (dred_control_has_mouse_capture(pControl)) {
+    if (dtk_control_has_mouse_capture(DTK_CONTROL(pControl))) {
         pButton->isMouseOver = (mousePosX >= 0 && mousePosX < dred_control_get_width(pControl)) && (mousePosY >= 0 && mousePosY < dred_control_get_height(pControl));
         dred_control_dirty(pControl, dred_control_get_local_rect(pControl));
     }
@@ -114,7 +114,7 @@ void dtk_colorbutton__on_mouse_button_down(dred_control* pControl, int mouseButt
     }
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
-        if (!dred_control_has_mouse_capture(pControl)) {
+        if (!dtk_control_has_mouse_capture(DTK_CONTROL(pControl))) {
             dred_gui_capture_mouse(pControl);
 
             // Redraw to show the pressed state.
@@ -138,7 +138,7 @@ void dtk_colorbutton__on_mouse_button_up(dred_control* pControl, int mouseButton
     }
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
-        if (dred_control_has_mouse_capture(pControl)) {
+        if (dtk_control_has_mouse_capture(DTK_CONTROL(pControl))) {
             dred_gui_release_mouse(dred_control_get_gui(pControl));
             
             // Show a color picker.
@@ -185,7 +185,7 @@ dr_bool32 dtk_colorbutton_init(dtk_colorbutton* pButton, dred_context* pDred, dr
     }
 
     memset(pButton, 0, sizeof(*pButton));
-    if (!dred_control_init(DRED_CONTROL(pButton), pDred, pParent, DRED_CONTROL_TYPE_COLOR_BUTTON)) {
+    if (!dred_control_init(DRED_CONTROL(pButton), pDred, pParent, NULL, DRED_CONTROL_TYPE_COLOR_BUTTON)) {
         return DR_FALSE;
     }
 

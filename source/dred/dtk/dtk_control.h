@@ -189,6 +189,9 @@ dtk_bool32 dtk_control_is_self_or_ancestor(dtk_control* pAncestorControl, dtk_co
 // Determines whether or not the given element is itself or a descendant.
 dtk_bool32 dtk_control_is_self_or_descendant(dtk_control* pChildControl, dtk_control* pAncestorControl);
 
+// Retrieves a pointer to the parent control.
+dtk_control* dtk_control_get_parent(dtk_control* pControl);
+
 
 // Finds the window that the given control is part of. All this does is performs an updwards traversal of
 // the hierarchy and returns the first occurance of a dtk_window control. If <pControl> itself is a window,
@@ -253,3 +256,12 @@ dtk_result dtk_control_capture_mouse(dtk_control* pControl);
 
 // Helper function for determining whether or not the given control has the mouse capture.
 dtk_bool32 dtk_control_has_mouse_capture(dtk_control* pControl);
+
+
+// Determines whether or not the given point, in absolute coordinates, is inside the bounds of the control. This does not
+// perform a hit test, but instead only checks the bounds. Use dtk_control_is_point_inside() to also check against the hit
+// test callback.
+dtk_bool32 dtk_control_is_point_inside_bounds(dtk_control* pControl, dtk_int32 absolutePosX, dtk_int32 absolutePosY);
+
+// The same as dtk_control_is_point_inside_bounds(), except also checks against the hit test callback.
+dtk_bool32 dtk_control_is_point_inside(dtk_control* pControl, dtk_int32 absolutePosX, dtk_int32 absolutePosY);

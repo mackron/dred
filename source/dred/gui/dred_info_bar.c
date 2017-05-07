@@ -96,7 +96,7 @@ dr_bool32 dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_
     }
 
     memset(pInfoBar, 0, sizeof(*pInfoBar));
-    if (!dred_control_init(DRED_CONTROL(pInfoBar), pDred, pParent, DRED_CONTROL_TYPE_INFO_BAR)) {
+    if (!dred_control_init(DRED_CONTROL(pInfoBar), pDred, pParent, NULL, DRED_CONTROL_TYPE_INFO_BAR)) {
         return DR_FALSE;
     }
 

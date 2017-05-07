@@ -16,7 +16,7 @@ void dred_button__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
 
 
     dtk_color bgColor = pButton->bgColor;
-    if (dred_control_has_mouse_capture(DRED_CONTROL(pButton))) {
+    if (dtk_control_has_mouse_capture(DTK_CONTROL(pButton))) {
         bgColor = pButton->bgColorHovered;
         if (pButton->isMouseOver) {
             bgColor = pButton->bgColorPressed;
@@ -74,7 +74,7 @@ void dred_button__on_mouse_move(dred_control* pControl, int mousePosX, int mouse
     dred_button* pButton = DRED_BUTTON(pControl);
     assert(pButton != NULL);
 
-    if (dred_control_has_mouse_capture(DRED_CONTROL(pButton))) {
+    if (dtk_control_has_mouse_capture(DTK_CONTROL(pButton))) {
         pButton->isMouseOver = (mousePosX >= 0 && mousePosX < dred_control_get_width(DRED_CONTROL(pButton))) && (mousePosY >= 0 && mousePosY < dred_control_get_height(DRED_CONTROL(pButton)));
         dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
     }
@@ -90,7 +90,7 @@ void dred_button__on_mouse_button_down(dred_control* pControl, int mouseButton, 
     assert(pButton != NULL);
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
-        if (!dred_control_has_mouse_capture(DRED_CONTROL(pButton))) {
+        if (!dtk_control_has_mouse_capture(DTK_CONTROL(pButton))) {
             dred_gui_capture_mouse(DRED_CONTROL(pButton));
 
             // Redraw to show the pressed state.
@@ -109,7 +109,7 @@ void dred_button__on_mouse_button_up(dred_control* pControl, int mouseButton, in
     assert(pButton != NULL);
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
-        if (dred_control_has_mouse_capture(DRED_CONTROL(pButton))) {
+        if (dtk_control_has_mouse_capture(DTK_CONTROL(pButton))) {
             dred_gui_release_mouse(dred_control_get_gui(DRED_CONTROL(pButton)));
 
             if (pButton->onPressed && dred_control_is_under_mouse(DRED_CONTROL(pButton))) {
@@ -153,7 +153,7 @@ dr_bool32 dred_button_init(dred_button* pButton, dred_context* pDred, dred_contr
     }
 
     memset(pButton, 0, sizeof(*pButton));
-    if (!dred_control_init(DRED_CONTROL(pButton), pDred, pParent, DRED_CONTROL_TYPE_BUTTON)) {
+    if (!dred_control_init(DRED_CONTROL(pButton), pDred, pParent, NULL, DRED_CONTROL_TYPE_BUTTON)) {
         return DR_FALSE;
     }
 

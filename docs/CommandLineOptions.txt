@@ -4,3 +4,7 @@
 --noipc
   Disables interprocess communication between different instances of dred. When this is set, the
   instance will not set itself up as a server and will not try to communicate with any other instance.
+  
+--portable, --no-portable
+  Enables or disables portable mode, respectively. When enabled, configs, logs, etc. are all loaded
+  and saved relative to the executable. Non-portable mode uses the users directory for configs, etc.

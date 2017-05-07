@@ -172,9 +172,9 @@ dr_bool32 dred_config_load_file(dred_config* pConfig, const char* filePath, dred
 
     // Loading a config file can result in a lot of style changes, especially when loading theme files. To speed this up we
     // need to batch painting operations.
-    if (pConfig->pDred->pMainWindow != NULL) {
-        dred_control_begin_dirty(pConfig->pDred->pMainWindow->pRootGUIControl);
-    }
+    //if (pConfig->pDred->pMainWindow != NULL) {
+    //    dred_control_begin_dirty(pConfig->pDred->pMainWindow->pRootGUIControl);
+    //}
 
     dred_config_load_file__data data;
     data.pConfig = pConfig;
@@ -184,9 +184,9 @@ dr_bool32 dred_config_load_file(dred_config* pConfig, const char* filePath, dred
     data.file = file;
     dr_parse_key_value_pairs(dred_config_load_file__on_read, dred_config_load_file__on_pair, dred_config_load_file__on_error, &data);
 
-    if (pConfig->pDred->pMainWindow != NULL) {
-        dred_control_end_dirty(pConfig->pDred->pMainWindow->pRootGUIControl);
-    }
+    //if (pConfig->pDred->pMainWindow != NULL) {
+    //    dred_control_end_dirty(pConfig->pDred->pMainWindow->pRootGUIControl);
+    //}
 
     dred_file_close(file);
     return DR_TRUE;

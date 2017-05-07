@@ -14,7 +14,7 @@ dtk_context* g_pTK = NULL;
 // Helper for creating the root GUI element of a window.
 dr_bool32 dred_platform__init_root_gui_element(dred_control* pControl, dred_context* pDred, dred_window* pWindow)
 {
-    if (!dred_control_init(pControl, pDred, NULL, "RootGUIControl")) {
+    if (!dred_control_init(pControl, pDred, NULL, DTK_CONTROL(&pWindow->windowDTK), "RootGUIControl")) {
         return DR_FALSE;
     }
 
@@ -40,7 +40,7 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
     {
         case DTK_EVENT_PAINT:
         {
-            dred_control_draw(pWindow->pRootGUIControl, dred_make_rect((float)pEvent->paint.rect.left, (float)pEvent->paint.rect.top, (float)pEvent->paint.rect.right, (float)pEvent->paint.rect.bottom), pEvent->paint.pSurface);
+            //dred_control_draw(pWindow->pRootGUIControl, dred_make_rect((float)pEvent->paint.rect.left, (float)pEvent->paint.rect.top, (float)pEvent->paint.rect.right, (float)pEvent->paint.rect.bottom), pEvent->paint.pSurface);
         } break;
 
         case DTK_EVENT_CLOSE:
@@ -188,71 +188,71 @@ dr_bool32 dred_begin_drag_and_drop__gtk(dred_data_type dataType, const void* pDa
 //
 //////////////////////////////////////////////////////////////////
 
-static void dred_platform__on_global_capture_mouse(dred_control* pControl)
-{
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL) {
-        dtk__capture_mouse_window(&pWindow->pDred->tk, &pWindow->windowDTK);
-    }
-}
+//static void dred_platform__on_global_capture_mouse(dred_control* pControl)
+//{
+//    dred_window* pWindow = dred_get_control_window(pControl);
+//    if (pWindow != NULL) {
+//        dtk__capture_mouse_window(&pWindow->pDred->tk, &pWindow->windowDTK);
+//    }
+//}
 
-static void dred_platform__on_global_release_mouse(dred_control* pControl)
-{
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL) {
-        dtk__release_mouse_window(&pWindow->pDred->tk);
-    }
-}
+//static void dred_platform__on_global_release_mouse(dred_control* pControl)
+//{
+//    dred_window* pWindow = dred_get_control_window(pControl);
+//    if (pWindow != NULL) {
+//        dtk__release_mouse_window(&pWindow->pDred->tk);
+//    }
+//}
 
-static void dred_platform__on_global_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
-{
-    (void)pPrevCapturedControl;
+//static void dred_platform__on_global_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
+//{
+//    (void)pPrevCapturedControl;
+//
+//    dred_window* pWindow = dred_get_control_window(pControl);
+//    if (pWindow != NULL) {
+//        pWindow->pControlWithKeyboardCapture = pControl;
+//        dtk__capture_keyboard_window(&pWindow->pDred->tk, &pWindow->windowDTK);
+//    }
+//}
+//
+//static void dred_platform__on_global_release_keyboard(dred_control* pControl, dred_control* pNewCapturedControl)
+//{
+//    dred_window* pWindow = dred_get_control_window(pControl);
+//    if (pWindow != NULL) {
+//        dred_window* pNewWindow = dred_get_control_window(pNewCapturedControl);
+//        if (pWindow != pNewWindow) {
+//            dtk__release_keyboard_window(&pWindow->pDred->tk);
+//        }
+//    }
+//}
 
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL) {
-        pWindow->pControlWithKeyboardCapture = pControl;
-        dtk__capture_keyboard_window(&pWindow->pDred->tk, &pWindow->windowDTK);
-    }
-}
+//static void dred_platform__on_global_dirty(dred_control* pControl, dred_rect relativeRect)
+//{
+//    dred_window* pWindow = dred_get_control_window(pControl);
+//    if (pWindow == NULL) {
+//        return;
+//    }
+//
+//    dred_rect absoluteRect = relativeRect;
+//    dred_make_rect_absolute(pControl, &absoluteRect);
+//
+//    dtk_rect absoluteRectDTK;
+//    absoluteRectDTK.left   = (dtk_int32)absoluteRect.left;
+//    absoluteRectDTK.top    = (dtk_int32)absoluteRect.top;
+//    absoluteRectDTK.right  = (dtk_int32)absoluteRect.right;
+//    absoluteRectDTK.bottom = (dtk_int32)absoluteRect.bottom;
+//    dtk_window_immediate_redraw(&pWindow->windowDTK, absoluteRectDTK);
+//}
 
-static void dred_platform__on_global_release_keyboard(dred_control* pControl, dred_control* pNewCapturedControl)
-{
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow != NULL) {
-        dred_window* pNewWindow = dred_get_control_window(pNewCapturedControl);
-        if (pWindow != pNewWindow) {
-            dtk__release_keyboard_window(&pWindow->pDred->tk);
-        }
-    }
-}
-
-static void dred_platform__on_global_dirty(dred_control* pControl, dred_rect relativeRect)
-{
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow == NULL) {
-        return;
-    }
-
-    dred_rect absoluteRect = relativeRect;
-    dred_make_rect_absolute(pControl, &absoluteRect);
-
-    dtk_rect absoluteRectDTK;
-    absoluteRectDTK.left   = (dtk_int32)absoluteRect.left;
-    absoluteRectDTK.top    = (dtk_int32)absoluteRect.top;
-    absoluteRectDTK.right  = (dtk_int32)absoluteRect.right;
-    absoluteRectDTK.bottom = (dtk_int32)absoluteRect.bottom;
-    dtk_window_immediate_redraw(&pWindow->windowDTK, absoluteRectDTK);
-}
-
-static void dred_platform__on_global_change_cursor(dred_control* pControl, dtk_system_cursor_type cursor)
-{
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow == NULL) {
-        return;
-    }
-
-    dred_window_set_cursor(pWindow, cursor);
-}
+//static void dred_platform__on_global_change_cursor(dred_control* pControl, dtk_system_cursor_type cursor)
+//{
+//    dred_window* pWindow = dred_get_control_window(pControl);
+//    if (pWindow == NULL) {
+//        return;
+//    }
+//
+//    dred_window_set_cursor(pWindow, cursor);
+//}
 
 void dred_platform__on_delete_gui_element(dred_control* pControl)
 {
@@ -261,7 +261,7 @@ void dred_platform__on_delete_gui_element(dred_control* pControl)
         return;
     }
 
-    if (pWindow->pControlWithKeyboardCapture == pControl) {
+    if (pWindow->pControlWithKeyboardCapture == DTK_CONTROL(pControl)) {
         pWindow->pControlWithKeyboardCapture = NULL;
     }
 }
@@ -298,12 +298,12 @@ void dred_platform_post_quit_message(int resultCode)
 
 void dred_platform_bind_gui(dred_gui* pGUI)
 {
-    dred_gui_set_global_on_capture_mouse(pGUI, dred_platform__on_global_capture_mouse);
-    dred_gui_set_global_on_release_mouse(pGUI, dred_platform__on_global_release_mouse);
-    dred_gui_set_global_on_capture_keyboard(pGUI, dred_platform__on_global_capture_keyboard);
-    dred_gui_set_global_on_release_keyboard(pGUI, dred_platform__on_global_release_keyboard);
-    dred_gui_set_global_on_dirty(pGUI, dred_platform__on_global_dirty);
-    dred_gui_set_global_on_change_cursor(pGUI, dred_platform__on_global_change_cursor);
+    //dred_gui_set_global_on_capture_mouse(pGUI, dred_platform__on_global_capture_mouse);
+    //dred_gui_set_global_on_release_mouse(pGUI, dred_platform__on_global_release_mouse);
+    //dred_gui_set_global_on_capture_keyboard(pGUI, dred_platform__on_global_capture_keyboard);
+    //dred_gui_set_global_on_release_keyboard(pGUI, dred_platform__on_global_release_keyboard);
+    //dred_gui_set_global_on_dirty(pGUI, dred_platform__on_global_dirty);
+    //dred_gui_set_global_on_change_cursor(pGUI, dred_platform__on_global_change_cursor);
     dred_gui_set_on_delete_element(pGUI, dred_platform__on_delete_gui_element);
 }
 
@@ -656,7 +656,7 @@ void dred_window_on_mouse_leave(dred_window* pWindow)
         pWindow->onMouseLeave(pWindow);
     }
 
-    dred_gui_post_inbound_event_mouse_leave(pWindow->pRootGUIControl);
+    //dred_gui_post_inbound_event_mouse_leave(pWindow->pRootGUIControl);
 }
 
 void dred_window_on_mouse_move(dred_window* pWindow, int mousePosX, int mousePosY, unsigned int stateFlags)
@@ -665,7 +665,7 @@ void dred_window_on_mouse_move(dred_window* pWindow, int mousePosX, int mousePos
         pWindow->onMouseMove(pWindow, mousePosX, mousePosY, stateFlags);
     }
 
-    dred_gui_post_inbound_event_mouse_move(pWindow->pRootGUIControl, mousePosX, mousePosY, stateFlags);
+    //dred_gui_post_inbound_event_mouse_move(pWindow->pRootGUIControl, mousePosX, mousePosY, stateFlags);
 }
 
 void dred_window_on_mouse_button_down(dred_window* pWindow, int mouseButton, int mousePosX, int mousePosY, unsigned int stateFlags)
@@ -674,7 +674,7 @@ void dred_window_on_mouse_button_down(dred_window* pWindow, int mouseButton, int
         pWindow->onMouseButtonDown(pWindow, mouseButton, mousePosX, mousePosY, stateFlags);
     }
 
-    dred_gui_post_inbound_event_mouse_button_down(pWindow->pRootGUIControl, mouseButton, mousePosX, mousePosY, stateFlags);
+    //dred_gui_post_inbound_event_mouse_button_down(pWindow->pRootGUIControl, mouseButton, mousePosX, mousePosY, stateFlags);
 }
 
 void dred_window_on_mouse_button_up(dred_window* pWindow, int mouseButton, int mousePosX, int mousePosY, unsigned int stateFlags)
@@ -683,7 +683,7 @@ void dred_window_on_mouse_button_up(dred_window* pWindow, int mouseButton, int m
         pWindow->onMouseButtonUp(pWindow, mouseButton, mousePosX, mousePosY, stateFlags);
     }
 
-    dred_gui_post_inbound_event_mouse_button_up(pWindow->pRootGUIControl, mouseButton, mousePosX, mousePosY, stateFlags);
+    //dred_gui_post_inbound_event_mouse_button_up(pWindow->pRootGUIControl, mouseButton, mousePosX, mousePosY, stateFlags);
 }
 
 void dred_window_on_mouse_button_dblclick(dred_window* pWindow, int mouseButton, int mousePosX, int mousePosY, unsigned int stateFlags)
@@ -692,7 +692,7 @@ void dred_window_on_mouse_button_dblclick(dred_window* pWindow, int mouseButton,
         pWindow->onMouseButtonDblClick(pWindow, mouseButton, mousePosX, mousePosY, stateFlags);
     }
 
-    dred_gui_post_inbound_event_mouse_button_dblclick(pWindow->pRootGUIControl, mouseButton, mousePosX, mousePosY, stateFlags);
+    //dred_gui_post_inbound_event_mouse_button_dblclick(pWindow->pRootGUIControl, mouseButton, mousePosX, mousePosY, stateFlags);
 }
 
 void dred_window_on_mouse_wheel(dred_window* pWindow, int delta, int mousePosX, int mousePosY, unsigned int stateFlags)
@@ -701,7 +701,7 @@ void dred_window_on_mouse_wheel(dred_window* pWindow, int delta, int mousePosX, 
         pWindow->onMouseWheel(pWindow, delta, mousePosX, mousePosY, stateFlags);
     }
 
-    dred_gui_post_inbound_event_mouse_wheel(pWindow->pRootGUIControl, delta, mousePosX, mousePosY, stateFlags);
+    //dred_gui_post_inbound_event_mouse_wheel(pWindow->pRootGUIControl, delta, mousePosX, mousePosY, stateFlags);
 }
 
 void dred_window_on_key_down(dred_window* pWindow, dtk_key key, unsigned int stateFlags)
@@ -710,9 +710,9 @@ void dred_window_on_key_down(dred_window* pWindow, dtk_key key, unsigned int sta
         pWindow->onKeyDown(pWindow, key, stateFlags);
     }
 
-    if (pWindow->pRootGUIControl) {
-        dred_gui_post_inbound_event_key_down(pWindow->pRootGUIControl->pGUI, key, stateFlags);
-    }
+    //if (pWindow->pRootGUIControl) {
+    //    dred_gui_post_inbound_event_key_down(pWindow->pRootGUIControl->pGUI, key, stateFlags);
+    //}
 }
 
 void dred_window_on_key_up(dred_window* pWindow, dtk_key key, unsigned int stateFlags)
@@ -721,9 +721,9 @@ void dred_window_on_key_up(dred_window* pWindow, dtk_key key, unsigned int state
         pWindow->onKeyUp(pWindow, key, stateFlags);
     }
 
-    if (pWindow->pRootGUIControl) {
+    /*if (pWindow->pRootGUIControl) {
         dred_gui_post_inbound_event_key_up(pWindow->pRootGUIControl->pGUI, key, stateFlags);
-    }
+    }*/
 }
 
 void dred_window_on_printable_key_down(dred_window* pWindow, unsigned int character, unsigned int stateFlags)
@@ -732,9 +732,9 @@ void dred_window_on_printable_key_down(dred_window* pWindow, unsigned int charac
         pWindow->onPrintableKeyDown(pWindow, character, stateFlags);
     }
 
-    if (pWindow->pRootGUIControl) {
+    /*if (pWindow->pRootGUIControl) {
         dred_gui_post_inbound_event_printable_key_down(pWindow->pRootGUIControl->pGUI, character, stateFlags);
-    }
+    }*/
 }
 
 void dred_window_on_focus(dred_window* pWindow)
@@ -744,9 +744,9 @@ void dred_window_on_focus(dred_window* pWindow)
     }
 
     // Make sure the GUI element is given the keyboard capture if it hasn't already got it.
-    if (!dred_control_has_keyboard_capture(pWindow->pControlWithKeyboardCapture)) {
+    /*if (!dred_control_has_keyboard_capture(pWindow->pControlWithKeyboardCapture)) {
         dred_gui_capture_keyboard(pWindow->pControlWithKeyboardCapture);
-    }
+    }*/
 }
 
 void dred_window_on_unfocus(dred_window* pWindow)
@@ -756,9 +756,9 @@ void dred_window_on_unfocus(dred_window* pWindow)
     }
 
     // Make sure the GUI element is released of the keyboard capture, but don't clear the variable.
-    if (dred_control_has_keyboard_capture(pWindow->pControlWithKeyboardCapture)) {
+    /*if (dred_control_has_keyboard_capture(pWindow->pControlWithKeyboardCapture)) {
         dred_gui_release_keyboard(pWindow->pDred->pGUI);
-    }
+    }*/
 }
 
 void dred_window_on_ipc_message(dred_window* pWindow, unsigned int messageID, const void* pMessageData)
@@ -778,7 +778,14 @@ void dred_window__stock_event__hide_on_close(dred_window* pWindow)
 
 dred_window* dred_get_control_window(dred_control* pControl)
 {
-    if (pControl == NULL) {
+    dtk_window* pWindow = dtk_control_get_window(DTK_CONTROL(pControl));
+    if (pWindow == NULL) {
+        return NULL;
+    }
+
+    return (dred_window*)pWindow;
+
+    /*if (pControl == NULL) {
         return NULL;
     }
 
@@ -791,7 +798,7 @@ dred_window* dred_get_control_window(dred_control* pControl)
         return NULL;
     }
 
-    return (dred_window*)pRootGUIControl->pUserData;
+    return (dred_window*)pRootGUIControl->pUserData;*/
 }
 
 

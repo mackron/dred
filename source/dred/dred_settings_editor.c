@@ -276,7 +276,7 @@ void dred_settings__btn_choose_font__on_pressed(dred_button* pButton)
 
 void dred_settings_editor_page__on_mouse_enter(dred_control* pPageControl)
 {
-    dred_settings_editor* pSettingsEditor = DRED_SETTINGS_EDITOR(dred_control_get_parent(pPageControl));
+    dred_settings_editor* pSettingsEditor = DRED_SETTINGS_EDITOR(dtk_control_get_parent(DTK_CONTROL(pPageControl)));
 
     assert(pSettingsEditor != NULL);
 
@@ -302,7 +302,7 @@ dr_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred
 
     strcpy_s(pPage->title, sizeof(pPage->title), title);
     pPage->pGUIControl = &pPage->control;
-    if (!dred_control_init(pPage->pGUIControl, pDred, pParent, "dred.settings.page")) {
+    if (!dred_control_init(pPage->pGUIControl, pDred, pParent, NULL, "dred.settings.page")) {
         return DR_FALSE;
     }
 

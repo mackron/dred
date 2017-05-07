@@ -45,7 +45,7 @@ dr_bool32 dred_scrollbar_init(dred_scrollbar* pScrollbar, dred_context* pDred, d
         return DR_FALSE;
     }
 
-    if (!dred_control_init(DRED_CONTROL(pScrollbar), pDred, pParent, DRED_CONTROL_TYPE_SCROLLBAR)) {
+    if (!dred_control_init(DRED_CONTROL(pScrollbar), pDred, pParent, NULL, DRED_CONTROL_TYPE_SCROLLBAR)) {
         return DR_FALSE;
     }
 
@@ -534,9 +534,11 @@ void dred_scrollbar_on_mouse_button_up(dred_control* pControl, int button, int r
         return;
     }
 
+    dtk_context* pTK = &pControl->pGUI->pDred->tk;
+
     if (button == DTK_MOUSE_BUTTON_LEFT)
     {
-        if (pScrollbar->thumbPressed && dred_gui_get_element_with_mouse_capture(dred_control_get_gui(pControl)) == pControl)
+        if (pScrollbar->thumbPressed && dtk_get_control_with_mouse_capture(pTK) == DTK_CONTROL(pControl))
         {
             dred_gui_release_mouse(dred_control_get_gui(pControl));
             pScrollbar->thumbPressed = DR_FALSE;

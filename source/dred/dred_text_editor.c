@@ -66,7 +66,7 @@ void dred_text_editor_textview__on_mouse_wheel(dred_control* pControl, int delta
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);
 
-    dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dred_control_get_parent(pControl));
+    dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DTK_CONTROL(pControl)));
     if (pTextEditor == NULL) {
         return;
     }
@@ -101,7 +101,7 @@ void dred_text_editor_textview__on_mouse_button_up(dred_control* pControl, int m
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);
 
-    dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dred_control_get_parent(pControl));
+    dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DTK_CONTROL(pControl)));
     if (pTextEditor == NULL) {
         return;
     }
@@ -118,7 +118,7 @@ void dred_text_editor_textview__on_mouse_button_up(dred_control* pControl, int m
 
 void dred_text_editor_textview__on_cursor_move(dred_textview* pTextView)
 {
-    dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dred_control_get_parent(DRED_CONTROL(pTextView)));
+    dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DTK_CONTROL(pTextView)));
     assert(pTextEditor != NULL);
 
     dred_update_info_bar(dred_control_get_context(DRED_CONTROL(pTextEditor)), DRED_CONTROL(pTextEditor));
@@ -129,7 +129,7 @@ void dred_text_editor_textview__on_capture_keyboard(dred_control* pControl, dred
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);
 
-    dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dred_control_get_parent(pControl));
+    dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DTK_CONTROL(pControl)));
     if (pTextEditor == NULL) {
         return;
     }
@@ -157,7 +157,7 @@ void dred_text_editor_engine__on_text_changed(drte_engine* pTextEngine)
 
 void dred_text_editor_engine__on_undo_point_changed(drte_engine* pTextEngine, unsigned int iUndoPoint)
 {
-    //dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dred_control_get_parent(DRED_CONTROL(pTextView)));
+    //dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DRED_CONTROL(pTextView)));
     dred_text_editor* pTextEditor = (dred_text_editor*)pTextEngine->pUserData;
     if (pTextEditor == NULL) {
         return;
@@ -478,7 +478,7 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextEditor));
     assert(pDred != NULL);
 
-    dred_control_begin_dirty(DRED_CONTROL(pTextEditor));
+    //dred_control_begin_dirty(DRED_CONTROL(pTextEditor));
     {
         dred_textview_set_font(pTextEditor->pTextView, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
         dred_textview_set_text_color(pTextEditor->pTextView, pDred->config.textEditorTextColor);
@@ -528,7 +528,7 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
 
         dred_text_editor_set_text_scale(pTextEditor, pDred->config.textEditorScale);
     }
-    dred_control_end_dirty(DRED_CONTROL(pTextEditor));
+    //dred_control_end_dirty(DRED_CONTROL(pTextEditor));
 }
 
 void dred_text_editor_set_highlighter(dred_text_editor* pTextEditor, const char* lang)
@@ -689,11 +689,11 @@ dr_bool32 dred_text_editor_find_and_replace_all(dred_text_editor* pTextEditor, c
     }
 
     dr_bool32 result = DR_FALSE;
-    dred_control_begin_dirty(DRED_CONTROL(pTextEditor));
+    //dred_control_begin_dirty(DRED_CONTROL(pTextEditor));
     {
         result = dred_textview_find_and_replace_all(pTextEditor->pTextView, text, replacement);
     }
-    dred_control_end_dirty(DRED_CONTROL(pTextEditor));
+    //dred_control_end_dirty(DRED_CONTROL(pTextEditor));
     return result;
 }
 

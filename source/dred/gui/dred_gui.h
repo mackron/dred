@@ -356,24 +356,27 @@ struct dred_gui_font
 
 struct dred_control
 {
+    // The base DTK control.
+    dtk_control baseControl;
+
     /// A pointer to the context that owns this element. This should never be null for valid elements.
     dred_gui* pGUI;
 
 
     /// A pointer to the parent element. This can be null in which case this element is the parent.
-    dred_control* pParent;
+    //dred_control* pParent;
 
     /// A pointer to the first child element.
-    dred_control* pFirstChild;
+    //dred_control* pFirstChild;
 
     /// A pointer to the last child element.
-    dred_control* pLastChild;
+    //dred_control* pLastChild;
 
     /// A pointer to the next sibling element.
-    dred_control* pNextSibling;
+    //dred_control* pNextSibling;
 
     /// A pointer ot the previous sibing element.
-    dred_control* pPrevSibling;
+    //dred_control* pPrevSibling;
 
 
     /// The type of the element, as a string. This is only every used by the host application, and is intended to be used as way
@@ -382,26 +385,26 @@ struct dred_control
 
 
     /// The absolute position of the element on the x axis. A position of 0 is the left side of the surface it is attached to.
-    float absolutePosX;
+    //float absolutePosX;
 
     /// The absolute position of the element on the y axis. A position of 0 is the top of the surface it is attached to.
-    float absolutePosY;
+    //float absolutePosY;
 
     /// The width of the element.
-    float width;
+    //float width;
 
     /// The height of the element.
-    float height;
+    //float height;
 
 
     /// The cursor. Defaults to drge_cursor_default.
-    dtk_system_cursor_type cursor;
+    //dtk_system_cursor_type cursor;
 
     /// Boolean flags.
     unsigned int flags;
 
     // The region of the element that's dirty.
-    dred_rect dirtyRect;
+    //dred_rect dirtyRect;
 
 
     /// The function to call when the element's relative position moves.
@@ -477,52 +480,52 @@ struct dred_gui
 
     /// The inbound event counter. This is incremented with dred_gui__begin_inbound_event() and decremented with
     /// dred_gui__end_inbound_event(). We use this to determine whether or not an inbound event is being processed.
-    int inboundEventCounter;
+    //int inboundEventCounter;
 
     /// The outbound event counter that we use as the "lock" for outbound events. All outbound events are posted from
     /// inbound events, and all inbound events are already synchronized so we don't need to use a mutex. This is mainly
     /// used as a way to check for erroneous outbound event generation.
-    int outboundEventLockCounter;
+    //int outboundEventLockCounter;
 
     /// A pointer to the element that is sitting directly under the mouse. This is updated on every inbound mouse move event
     /// and is used for determining when a mouse enter/leave event needs to be posted.
-    dred_control* pControlUnderMouse;
+    //dred_control* pControlUnderMouse;
 
     /// A pointer to the element with the mouse capture.
-    dred_control* pControlWithMouseCapture;
+    //dred_control* pControlWithMouseCapture;
 
     /// A pointer to the element with the keyboard focus.
-    dred_control* pControlWithKeyboardCapture;
+    //dred_control* pControlWithKeyboardCapture;
 
     /// A pointer to the element that wants the keyboard focus. If for some reason an element isn't able to immediately
     /// capture the keyboard (such as while in the middle of a release_keyboard event handler) this will be set to that
     /// particular element. This will then be used to capture the keyboard at a later time when it is able.
-    dred_control* pControlWantingKeyboardCapture;
+    //dred_control* pControlWantingKeyboardCapture;
 
     /// The current cursor.
-    dtk_system_cursor_type currentCursor;
+    //dtk_system_cursor_type currentCursor;
 
     /// Boolean flags.
-    unsigned int flags;
+    //unsigned int flags;
 
 
     /// The global event callback to call when an element is marked as dirty.
-    dred_gui_on_dirty_proc onGlobalDirty;
+    //dred_gui_on_dirty_proc onGlobalDirty;
 
     /// The global event handler to call when an element captures the mouse.
-    dred_gui_on_capture_mouse_proc onGlobalCaptureMouse;
+    //dred_gui_on_capture_mouse_proc onGlobalCaptureMouse;
 
     /// The global event handler to call when an element releases the mouse.
-    dred_gui_on_release_mouse_proc onGlobalReleaseMouse;
+    //dred_gui_on_release_mouse_proc onGlobalReleaseMouse;
 
     /// The global event handler to call when an element captures the keyboard.
-    dred_gui_on_capture_keyboard_proc onGlobalCaptureKeyboard;
+    //dred_gui_on_capture_keyboard_proc onGlobalCaptureKeyboard;
 
     /// The global event handler to call when an element releases the keyboard.
-    dred_gui_on_release_keyboard_proc onGlobalReleaseKeyboard;
+    //dred_gui_on_release_keyboard_proc onGlobalReleaseKeyboard;
 
     /// The global event handler to call when the system cursor needs to change.
-    dred_gui_on_change_cursor_proc onChangeCursor;
+    //dred_gui_on_change_cursor_proc onChangeCursor;
 
     /// The function to call when an element is deleted.
     dred_gui_on_delete_element_proc onDeleteControl;
@@ -534,26 +537,26 @@ struct dred_gui
 
 
     /// A pointer to the top level element that was passed in from the last inbound mouse move event.
-    dred_control* pLastMouseMoveTopLevelControl;
+    //dred_control* pLastMouseMoveTopLevelControl;
 
     /// The position of the mouse that was passed in from the last inbound mouse move event.
-    float lastMouseMovePosX;
-    float lastMouseMovePosY;
+    //float lastMouseMovePosX;
+    //float lastMouseMovePosY;
 
 
     // A pointer to the list of dirty elements.
-    dred_control** ppDirtyControls;
+    //dred_control** ppDirtyControls;
 
     // The size of the buffer containing the dirty elements.
-    size_t dirtyControlBufferSize;
+    //size_t dirtyControlBufferSize;
 
     // The number of dirty top-level elements.
-    size_t dirtyControlCount;
+    //size_t dirtyControlCount;
 
     /// The counter to use when determining whether or not an on_dirty event needs to be posted. This is incremented with
     /// dred_control__begin_auto_dirty() and decremented with dred_control__end_auto_dirty(). When the counter is decremented and hits
     /// zero, the on_dirty event will be posted.
-    unsigned int dirtyCounter;
+    //unsigned int dirtyCounter;
 };
 
 
@@ -580,34 +583,34 @@ void dred_gui_uninit(dred_gui* pGUI);
 /// @remarks
 ///     The intention behind this event is to allow the application to let dr_gui know that the mouse have left the window. Since dr_gui does
 ///     not have any notion of a window it must rely on the host application to notify it.
-void dred_gui_post_inbound_event_mouse_leave(dred_control* pTopLevelControl);
-
-/// Posts a mouse move inbound event.
-void dred_gui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int mousePosX, int mousePosY, int stateFlags);
-
-/// Posts a mouse button down inbound event.
-void dred_gui_post_inbound_event_mouse_button_down(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
-
-/// Posts a mouse button up inbound event.
-void dred_gui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
-
-/// Posts a mouse button double-clicked inbound event.
-void dred_gui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
-
-/// Posts a mouse wheel inbound event.
-void dred_gui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
-
-/// Posts a key down inbound event.
-void dred_gui_post_inbound_event_key_down(dred_gui* pGUI, dtk_key key, int stateFlags);
-
-/// Posts a key up inbound event.
-void dred_gui_post_inbound_event_key_up(dred_gui* pGUI, dtk_key key, int stateFlags);
-
-/// Posts a printable key down inbound event.
-///
-/// @remarks
-///     The \c character argument should be a UTF-32 code point.
-void dred_gui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int character, int stateFlags);
+//void dred_gui_post_inbound_event_mouse_leave(dred_control* pTopLevelControl);
+//
+///// Posts a mouse move inbound event.
+//void dred_gui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int mousePosX, int mousePosY, int stateFlags);
+//
+///// Posts a mouse button down inbound event.
+//void dred_gui_post_inbound_event_mouse_button_down(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+//
+///// Posts a mouse button up inbound event.
+//void dred_gui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+//
+///// Posts a mouse button double-clicked inbound event.
+//void dred_gui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+//
+///// Posts a mouse wheel inbound event.
+//void dred_gui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags);
+//
+///// Posts a key down inbound event.
+//void dred_gui_post_inbound_event_key_down(dred_gui* pGUI, dtk_key key, int stateFlags);
+//
+///// Posts a key up inbound event.
+//void dred_gui_post_inbound_event_key_up(dred_gui* pGUI, dtk_key key, int stateFlags);
+//
+///// Posts a printable key down inbound event.
+/////
+///// @remarks
+/////     The \c character argument should be a UTF-32 code point.
+//void dred_gui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int character, int stateFlags);
 
 
 /// Registers the global on_dirty event callback.
@@ -615,7 +618,7 @@ void dred_gui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int
 /// @remarks
 ///     This is called whenever a region of an element is marked as dirty and allows an application to mark the region of the
 ///     container window as dirty to trigger an operating system level repaint of the window.
-void dred_gui_set_global_on_dirty(dred_gui* pGUI, dred_gui_on_dirty_proc onDirty);
+//void dred_gui_set_global_on_dirty(dred_gui* pGUI, dred_gui_on_dirty_proc onDirty);
 
 /// Registers the global on_capture_mouse event callback.
 ///
@@ -625,7 +628,7 @@ void dred_gui_set_global_on_dirty(dred_gui* pGUI, dred_gui_on_dirty_proc onDirty
 ///     @par
 ///     The advantage of using a global event callback is that it can be set once at the context level rather than many times
 ///     at the element level.
-void dred_gui_set_global_on_capture_mouse(dred_gui* pGUI, dred_gui_on_capture_mouse_proc onCaptureMouse);
+//void dred_gui_set_global_on_capture_mouse(dred_gui* pGUI, dred_gui_on_capture_mouse_proc onCaptureMouse);
 
 /// Registers the global on_release_mouse event callback.
 ///
@@ -635,7 +638,7 @@ void dred_gui_set_global_on_capture_mouse(dred_gui* pGUI, dred_gui_on_capture_mo
 ///     @par
 ///     The advantage of using a global event callback is that it can be set once at the context level rather than many times
 ///     at the element level.
-void dred_gui_set_global_on_release_mouse(dred_gui* pGUI, dred_gui_on_release_mouse_proc onReleaseMouse);
+//void dred_gui_set_global_on_release_mouse(dred_gui* pGUI, dred_gui_on_release_mouse_proc onReleaseMouse);
 
 /// Registers the global on_capture_keyboard event callback.
 ///
@@ -645,7 +648,7 @@ void dred_gui_set_global_on_release_mouse(dred_gui* pGUI, dred_gui_on_release_mo
 ///     @par
 ///     The advantage of using a global event callback is that it can be set once at the context level rather than many times
 ///     at the element level.
-void dred_gui_set_global_on_capture_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onCaptureKeyboard);
+//void dred_gui_set_global_on_capture_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onCaptureKeyboard);
 
 /// Registers the global on_release_keyboard event callback.
 ///
@@ -655,13 +658,13 @@ void dred_gui_set_global_on_capture_keyboard(dred_gui* pGUI, dred_gui_on_capture
 ///     @par
 ///     The advantage of using a global event callback is that it can be set once at the context level rather than many times
 ///     at the element level.
-void dred_gui_set_global_on_release_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onReleaseKeyboard);
+//void dred_gui_set_global_on_release_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onReleaseKeyboard);
 
 /// Sets the global on_change_cursor event callback.
 ///
 /// @remarks
 ///     This is called whenever the operating system needs to change the cursor.
-void dred_gui_set_global_on_change_cursor(dred_gui* pGUI, dred_gui_on_change_cursor_proc onChangeCursor);
+//void dred_gui_set_global_on_change_cursor(dred_gui* pGUI, dred_gui_on_change_cursor_proc onChangeCursor);
 
 /// Sets the function to call when an element is deleted.
 void dred_gui_set_on_delete_element(dred_gui* pGUI, dred_gui_on_delete_element_proc onDeleteControl);
@@ -677,7 +680,7 @@ void dred_gui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog);
 // Controls
 
 /// Creates an element.
-dr_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, const char* type);
+dr_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, dtk_control* pDTKParent, const char* type);
 
 /// Deletes and element.
 void dred_control_uninit(dred_control* pControl);
@@ -743,16 +746,16 @@ void dred_control_capture_mouse(dred_control* pControl) { dred_gui_capture_mouse
 void dred_gui_release_mouse(dred_gui* pGUI);
 
 /// Releases the mouse capture without posting the local-scoped event.
-void dred_gui_release_mouse_no_local_notify(dred_gui* pGUI);
+//void dred_gui_release_mouse_no_local_notify(dred_gui* pGUI);
 
 /// Releases the mouse capture without posting the global-scoped event. Should only be used in very specific cases, usually in combination with awkward interop with the window system.
-void dred_gui_release_mouse_no_global_notify(dred_gui* pGUI);
+//void dred_gui_release_mouse_no_global_notify(dred_gui* pGUI);
 
 /// Retrieves a pointer to the element with the mouse capture.
-dred_control* dred_gui_get_element_with_mouse_capture(dred_gui* pGUI);
+//dred_control* dred_gui_get_element_with_mouse_capture(dred_gui* pGUI);
 
 /// Determines whether or not the given element has the mouse capture.
-dr_bool32 dred_control_has_mouse_capture(dred_control* pControl);
+//dr_bool32 dred_control_has_mouse_capture(dred_control* pControl);
 
 
 /// Sets the element that should receive all future keyboard related events.
@@ -766,16 +769,16 @@ void dred_control_capture_keyboard(dred_control* pControl) { dred_gui_capture_ke
 void dred_gui_release_keyboard(dred_gui* pGUI);
 
 /// Releases the keyboard capture without posting the global-scoped event.
-void dred_gui_release_keyboard_no_local_notify(dred_gui* pGUI);
+//void dred_gui_release_keyboard_no_local_notify(dred_gui* pGUI);
 
 /// Releases the keyboard capture without posting the global-scoped event. Should only be used in very specific cases, usually in combination with awkward interop with the window system.
-void dred_gui_release_keyboard_no_global_notify(dred_gui* pGUI);
+//void dred_gui_release_keyboard_no_global_notify(dred_gui* pGUI);
 
 /// Retrieves a pointer to the element with the keyboard capture.
-dred_control* dred_gui_get_element_with_keyboard_capture(dred_gui* pGUI);
+//dred_control* dred_gui_get_element_with_keyboard_capture(dred_gui* pGUI);
 
 /// Determines whether or not the given element has the keyboard capture.
-dr_bool32 dred_control_has_keyboard_capture(dred_control* pControl);
+//dr_bool32 dred_control_has_keyboard_capture(dred_control* pControl);
 
 
 /// Sets the cursor to use when the mouse enters the given GUI element.
@@ -865,7 +868,7 @@ dr_bool32 dred_control_is_point_inside_bounds(const dred_control* pControl, floa
 dr_bool32 dred_control_is_point_inside(dred_control* pControl, float absolutePosX, float absolutePosY);
 
 /// Finds the element under the given point taking mouse pass-through and hit testing into account.
-dred_control* dred_gui_find_control_under_point(dred_control* pTopLevelControl, float absolutePosX, float absolutePosY);
+//dtk_control* dred_gui_find_control_under_point(dred_control* pTopLevelControl, float absolutePosX, float absolutePosY);
 
 /// Determines whether or not the given element is currently sitting directly under the mouse.
 dr_bool32 dred_control_is_under_mouse(dred_control* pTopLevelControl);
@@ -875,7 +878,7 @@ dr_bool32 dred_control_is_under_mouse(dred_control* pTopLevelControl);
 //// Hierarchy ////
 
 // Retrieves the parent of the given element.
-dred_control* dred_control_get_parent(dred_control* pChildControl);
+//dred_control* dtk_control_get_parent(dred_control* pChildControl);
 
 /// Detaches the given element from it's parent.
 void dred_control_detach(dred_control* pChildControl);
@@ -896,7 +899,7 @@ void dred_control_prepend_sibling(dred_control* pControlToPrepend, dred_control*
 ///
 /// @remarks
 ///     If pControl is the top level element, the return value will be pControl.
-dred_control* dred_control_find_top_level_control(dred_control* pControl);
+dtk_control* dred_control_find_top_level_control(dred_control* pControl);
 
 /// Determines whether or not the given element is the parent of the other.
 ///
@@ -989,32 +992,32 @@ dr_bool32 dred_gui_register_painting_callbacks(dred_gui* pGUI, dred_gui_painting
 ///     @par
 ///     The iteration callback function takes a pointer to a rectangle structure that represents the visible portion of the
 ///     element. This pointer can be modified by the callback to create an adjusted rectangle which can be used for clipping.
-dr_bool32 dred_control_iterate_visible_elements(dred_control* pParentControl, dred_rect relativeRect, dred_gui_visible_iteration_proc callback, void* pUserData);
+//dr_bool32 dred_control_iterate_visible_elements(dred_control* pParentControl, dred_rect relativeRect, dred_gui_visible_iteration_proc callback, void* pUserData);
 
 
 /// Disable's automatic dirtying of elements.
-void dred_gui_disable_auto_dirty(dred_gui* pGUI);
+//void dred_gui_disable_auto_dirty(dred_gui* pGUI);
 
 /// Enable's automatic dirtying of elements.
-void dred_gui_enable_auto_dirty(dred_gui* pGUI);
+//void dred_gui_enable_auto_dirty(dred_gui* pGUI);
 
 /// Determines whether or not automatic dirtying is enabled.
-dr_bool32 dred_gui_is_auto_dirty_enabled(dred_gui* pGUI);
+//dr_bool32 dred_gui_is_auto_dirty_enabled(dred_gui* pGUI);
 
 
 /// Begins accumulating a dirty rectangle.
 ///
 /// Returns a pointer to the top level element that was made dirty.
-dred_control* dred_control_begin_dirty(dred_control* pControl);
+//dred_control* dred_control_begin_dirty(dred_control* pControl);
 
 /// Ends accumulating a dirty rectangle, and requests a redraw from the backend if the counter reaches zero.
-void dred_control_end_dirty(dred_control* pControl);
+//void dred_control_end_dirty(dred_control* pControl);
 
 /// Marks a region of the given element as dirty.
 ///
 /// @remarks
 ///     This will not redraw the element immediately, but instead post a paint event.
-void dred_control_dirty(dred_control* pControl, dred_rect relativeRect);
+//void dred_control_dirty(dred_control* pControl, dred_rect relativeRect);
 
 
 /// Draws the given element.
@@ -1026,7 +1029,7 @@ void dred_control_dirty(dred_control* pControl, dred_rect relativeRect);
 ///     This will call painting event handlers which will give the application time to do custom drawing.
 ///     @par
 ///     When using easy_draw to do drawing, pPaintData must be set to a pointer to the relevant easydraw_surface object.
-void dred_control_draw(dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
+//void dred_control_draw(dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
 
 /// Retrieves the current clipping rectangle.
 void dred_control_get_clip(dred_control* pControl, dred_rect* pRelativeRect, dtk_surface* pSurface);

@@ -17,6 +17,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#define DTK_CONTROL_TYPE_DRED   DTK_CONTROL_TYPE_CUSTOM + 1     // <-- Temporary until dred_control is removed entirely.
 
 // Context Flags
 #define IS_AUTO_DIRTY_DISABLED              (1U << 1)
@@ -67,27 +68,27 @@ void dred_control__prepend_sibling_without_detach(dred_control* pControlToPrepen
 
 
 /// Begins accumulating an invalidation rectangle.
-void dred_control__begin_auto_dirty(dred_control* pControl);
+//void dred_control__begin_auto_dirty(dred_control* pControl);
 
 /// Ends accumulating the invalidation rectangle and posts on_dirty is auto-dirty is enabled.
-void dred_control__end_auto_dirty(dred_control* pControl);
+//void dred_control__end_auto_dirty(dred_control* pControl);
 
 /// Marks the given region of the given top level element as dirty, but only if automatic dirtying is enabled.
 ///
 /// @remarks
 ///     This is equivalent to dred_control__begin_auto_dirty() immediately followed by dred_control__end_auto_dirty().
-void dred_control__auto_dirty(dred_control* pTopLevelControl, dred_rect rect);
+//void dred_control__auto_dirty(dred_control* pTopLevelControl, dred_rect rect);
 
 
 /// Recursively applies the given offset to the absolute positions of the children of the given element.
 ///
 /// @remarks
 ///     This is called when the absolute position of an element is changed.
-void dred_control__apply_offset_to_children_recursive(dred_control* pParentControl, float offsetX, float offsetY);
+//void dred_control__apply_offset_to_children_recursive(dred_control* pParentControl, float offsetX, float offsetY);
 
 
 /// The function to call when the mouse may have entered into a new element.
-void dred_gui__update_mouse_enter_and_leave_state(dred_gui* pGUI, dred_control* pNewControlUnderMouse);
+//void dred_gui__update_mouse_enter_and_leave_state(dred_gui* pGUI, dred_control* pNewControlUnderMouse);
 
 
 /// Functions for posting outbound events.
@@ -117,7 +118,7 @@ void dred_control__post_outbound_event_release_keyboard_global(dred_control* pCo
 /// Posts a log message.
 void dred_gui__log(dred_gui* pGUI, const char* message);
 
-
+#if 0
 void dred_control__detach_without_redraw(dred_control* pControl)
 {
     if (pControl->pParent != NULL) {
@@ -241,8 +242,9 @@ void dred_control__prepend_sibling_without_detach(dred_control* pControlToPrepen
     dred_control__prepend_sibling_without_detach_or_redraw(pControlToPrepend, pControlToPrependTo);
     dred_control__auto_dirty(pControlToPrepend, dred_make_rect(0, 0, pControlToPrepend->width, pControlToPrepend->height));
 }
+#endif
 
-
+#if 0
 void dred_control__begin_auto_dirty(dred_control* pControl)
 {
     assert(pControl           != NULL);
@@ -274,23 +276,24 @@ void dred_control__auto_dirty(dred_control* pControl, dred_rect relativeRect)
         dred_control_dirty(pControl, relativeRect);
     }
 }
+#endif
 
 
-void dred_gui__change_cursor(dred_control* pControl, dtk_system_cursor_type cursor)
-{
-    if (pControl == NULL || pControl->pGUI == NULL) {
-        return;
-    }
+//void dred_gui__change_cursor(dred_control* pControl, dtk_system_cursor_type cursor)
+//{
+//    if (pControl == NULL || pControl->pGUI == NULL) {
+//        return;
+//    }
+//
+//    pControl->pGUI->currentCursor = cursor;
+//
+//    if (pControl->pGUI->onChangeCursor) {
+//        pControl->pGUI->onChangeCursor(pControl, cursor);
+//    }
+//}
 
-    pControl->pGUI->currentCursor = cursor;
 
-    if (pControl->pGUI->onChangeCursor) {
-        pControl->pGUI->onChangeCursor(pControl, cursor);
-    }
-}
-
-
-
+#if 0
 void dred_control__apply_offset_to_children_recursive(dred_control* pParentControl, float offsetX, float offsetY)
 {
     assert(pParentControl != NULL);
@@ -308,7 +311,9 @@ void dred_control__apply_offset_to_children_recursive(dred_control* pParentContr
         dred_control__end_auto_dirty(pParentControl);
     }
 }
+#endif
 
+#if 0
 DRED_GUI_PRIVATE void dred_gui__post_on_mouse_leave_recursive(dred_gui* pGUI, dred_control* pNewControlUnderMouse, dred_control* pOldControlUnderMouse)
 {
     (void)pGUI;
@@ -343,44 +348,45 @@ DRED_GUI_PRIVATE void dred_gui__post_on_mouse_enter_recursive(dred_gui* pGUI, dr
         dred_control__post_outbound_event_mouse_enter(pNewControlUnderMouse);
     }
 }
+#endif
 
-void dred_gui__update_mouse_enter_and_leave_state(dred_gui* pGUI, dred_control* pNewControlUnderMouse)
-{
-    if (pGUI == NULL) {
-        return;
-    }
-
-    dred_control* pOldControlUnderMouse = pGUI->pControlUnderMouse;
-    if (pOldControlUnderMouse != pNewControlUnderMouse)
-    {
-        // We don't change the enter and leave state if an element is capturing the mouse.
-        if (pGUI->pControlWithMouseCapture == NULL)
-        {
-            pGUI->pControlUnderMouse = pNewControlUnderMouse;
-
-            dtk_system_cursor_type newCursor = dtk_system_cursor_type_default;
-            if (pNewControlUnderMouse != NULL) {
-                newCursor = pNewControlUnderMouse->cursor;
-            }
-
-
-            // It's intuitive to check that the new cursor is different to the old one before trying to change it, but that is not actually
-            // what we want to do. We'll let the event handler manage it themselves because it's possible the window manager might do some
-            // window-specific cursor management and the old and new elements are on different windows.
-            dred_gui__change_cursor(pNewControlUnderMouse, newCursor);
-
-
-
-            // The the event handlers below, remember that ancestors are considered hovered if a descendant is the element under the mouse.
-
-            // on_mouse_leave
-            dred_gui__post_on_mouse_leave_recursive(pGUI, pNewControlUnderMouse, pOldControlUnderMouse);
-
-            // on_mouse_enter
-            dred_gui__post_on_mouse_enter_recursive(pGUI, pNewControlUnderMouse, pOldControlUnderMouse);
-        }
-    }
-}
+//void dred_gui__update_mouse_enter_and_leave_state(dred_gui* pGUI, dred_control* pNewControlUnderMouse)
+//{
+//    if (pGUI == NULL) {
+//        return;
+//    }
+//
+//    dred_control* pOldControlUnderMouse = pGUI->pControlUnderMouse;
+//    if (pOldControlUnderMouse != pNewControlUnderMouse)
+//    {
+//        // We don't change the enter and leave state if an element is capturing the mouse.
+//        if (pGUI->pControlWithMouseCapture == NULL)
+//        {
+//            pGUI->pControlUnderMouse = pNewControlUnderMouse;
+//
+//            dtk_system_cursor_type newCursor = dtk_system_cursor_type_default;
+//            if (pNewControlUnderMouse != NULL) {
+//                newCursor = pNewControlUnderMouse->cursor;
+//            }
+//
+//
+//            // It's intuitive to check that the new cursor is different to the old one before trying to change it, but that is not actually
+//            // what we want to do. We'll let the event handler manage it themselves because it's possible the window manager might do some
+//            // window-specific cursor management and the old and new elements are on different windows.
+//            dred_gui__change_cursor(pNewControlUnderMouse, newCursor);
+//
+//
+//
+//            // The the event handlers below, remember that ancestors are considered hovered if a descendant is the element under the mouse.
+//
+//            // on_mouse_leave
+//            dred_gui__post_on_mouse_leave_recursive(pGUI, pNewControlUnderMouse, pOldControlUnderMouse);
+//
+//            // on_mouse_enter
+//            dred_gui__post_on_mouse_enter_recursive(pGUI, pNewControlUnderMouse, pOldControlUnderMouse);
+//        }
+//    }
+//}
 
 
 void dred_control__post_outbound_event_move(dred_control* pControl, float newRelativePosX, float newRelativePosY)
@@ -475,12 +481,12 @@ void dred_control__post_outbound_event_dirty(dred_control* pControl, dred_rect r
     }
 }
 
-void dred_control__post_outbound_event_dirty_global(dred_control* pControl, dred_rect relativeRect)
-{
-    if (pControl->pGUI->onGlobalDirty) {
-        pControl->pGUI->onGlobalDirty(pControl, relativeRect);
-    }
-}
+//void dred_control__post_outbound_event_dirty_global(dred_control* pControl, dred_rect relativeRect)
+//{
+//    if (pControl->pGUI->onGlobalDirty) {
+//        pControl->pGUI->onGlobalDirty(pControl, relativeRect);
+//    }
+//}
 
 void dred_control__post_outbound_event_capture_mouse(dred_control* pControl)
 {
@@ -489,12 +495,12 @@ void dred_control__post_outbound_event_capture_mouse(dred_control* pControl)
     }
 }
 
-void dred_control__post_outbound_event_capture_mouse_global(dred_control* pControl)
-{
-    if (pControl->pGUI->onGlobalCaptureMouse) {
-        pControl->pGUI->onGlobalCaptureMouse(pControl);
-    }
-}
+//void dred_control__post_outbound_event_capture_mouse_global(dred_control* pControl)
+//{
+//    if (pControl->pGUI->onGlobalCaptureMouse) {
+//        pControl->pGUI->onGlobalCaptureMouse(pControl);
+//    }
+//}
 
 void dred_control__post_outbound_event_release_mouse(dred_control* pControl)
 {
@@ -503,12 +509,12 @@ void dred_control__post_outbound_event_release_mouse(dred_control* pControl)
     }
 }
 
-void dred_control__post_outbound_event_release_mouse_global(dred_control* pControl)
-{
-    if (pControl->pGUI->onGlobalReleaseMouse) {
-        pControl->pGUI->onGlobalReleaseMouse(pControl);
-    }
-}
+//void dred_control__post_outbound_event_release_mouse_global(dred_control* pControl)
+//{
+//    if (pControl->pGUI->onGlobalReleaseMouse) {
+//        pControl->pGUI->onGlobalReleaseMouse(pControl);
+//    }
+//}
 
 
 void dred_control__post_outbound_event_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
@@ -518,12 +524,12 @@ void dred_control__post_outbound_event_capture_keyboard(dred_control* pControl, 
     }
 }
 
-void dred_control__post_outbound_event_capture_keyboard_global(dred_control* pControl, dred_control* pPrevCapturedControl)
-{
-    if (pControl->pGUI->onGlobalCaptureKeyboard) {
-        pControl->pGUI->onGlobalCaptureKeyboard(pControl, pPrevCapturedControl);
-    }
-}
+//void dred_control__post_outbound_event_capture_keyboard_global(dred_control* pControl, dred_control* pPrevCapturedControl)
+//{
+//    if (pControl->pGUI->onGlobalCaptureKeyboard) {
+//        pControl->pGUI->onGlobalCaptureKeyboard(pControl, pPrevCapturedControl);
+//    }
+//}
 
 void dred_control__post_outbound_event_release_keyboard(dred_control* pControl, dred_control* pNewCapturedControl)
 {
@@ -532,12 +538,12 @@ void dred_control__post_outbound_event_release_keyboard(dred_control* pControl, 
     }
 }
 
-void dred_control__post_outbound_event_release_keyboard_global(dred_control* pControl, dred_control* pNewCapturedControl)
-{
-    if (pControl->pGUI->onGlobalReleaseKeyboard) {
-        pControl->pGUI->onGlobalReleaseKeyboard(pControl, pNewCapturedControl);
-    }
-}
+//void dred_control__post_outbound_event_release_keyboard_global(dred_control* pControl, dred_control* pNewCapturedControl)
+//{
+//    if (pControl->pGUI->onGlobalReleaseKeyboard) {
+//        pControl->pGUI->onGlobalReleaseKeyboard(pControl, pNewCapturedControl);
+//    }
+//}
 
 
 void dred_gui__log(dred_gui* pGUI, const char* message)
@@ -562,7 +568,7 @@ dr_bool32 dred_gui_init(dred_gui* pGUI, dred_context* pDred)
 
     memset(pGUI, 0, sizeof(*pGUI));
     pGUI->pDred = pDred;
-    pGUI->currentCursor = dtk_system_cursor_type_default;
+    //pGUI->currentCursor = dtk_system_cursor_type_default;
 
     return DR_TRUE;
 }
@@ -575,23 +581,23 @@ void dred_gui_uninit(dred_gui* pGUI)
 
 
     // Make sure the mouse capture is released.
-    if (pGUI->pControlWithMouseCapture != NULL)
-    {
-        dred_gui__log(pGUI, "WARNING: Deleting the GUI context while an element still has the mouse capture.");
-        dred_gui_release_mouse(pGUI);
-    }
+    //if (pGUI->pControlWithMouseCapture != NULL)
+    //{
+    //    dred_gui__log(pGUI, "WARNING: Deleting the GUI context while an element still has the mouse capture.");
+    //    dred_gui_release_mouse(pGUI);
+    //}
 
-    // Make sure the keyboard capture is released.
-    if (pGUI->pControlWithKeyboardCapture != NULL)
-    {
-        dred_gui__log(pGUI, "WARNING: Deleting the GUI context while an element still has the keyboard capture.");
-        dred_gui_release_keyboard(pGUI);
-    }
+    //// Make sure the keyboard capture is released.
+    //if (pGUI->pControlWithKeyboardCapture != NULL)
+    //{
+    //    dred_gui__log(pGUI, "WARNING: Deleting the GUI context while an element still has the keyboard capture.");
+    //    dred_gui_release_keyboard(pGUI);
+    //}
 
 
-    if (pGUI->ppDirtyControls != NULL) {
-        free(pGUI->ppDirtyControls);
-    }
+    //if (pGUI->ppDirtyControls != NULL) {
+    //    free(pGUI->ppDirtyControls);
+    //}
 }
 
 
@@ -599,240 +605,240 @@ void dred_gui_uninit(dred_gui* pGUI)
 /////////////////////////////////////////////////////////////////
 // Events
 
-void dred_gui_post_inbound_event_mouse_leave(dred_control* pTopLevelControl)
-{
-    if (pTopLevelControl == NULL) {
-        return;
-    }
+//void dred_gui_post_inbound_event_mouse_leave(dred_control* pTopLevelControl)
+//{
+//    if (pTopLevelControl == NULL) {
+//        return;
+//    }
+//
+//    dred_gui* pGUI = pTopLevelControl->pGUI;
+//    if (pGUI == NULL) {
+//        return;
+//    }
+//
+//    // We assume that the control that was previously under the mouse was either pTopLevelControl itself or one of it's descendants.
+//    dred_gui__update_mouse_enter_and_leave_state(pGUI, NULL);
+//}
+//
+//void dred_gui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int mousePosX, int mousePosY, int stateFlags)
+//{
+//    if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
+//        return;
+//    }
+//
+//
+//    // A pointer to the top level element that was passed in from the last inbound mouse move event.
+//    pTopLevelControl->pGUI->pLastMouseMoveTopLevelControl = pTopLevelControl;
+//
+//    // The position of the mouse that was passed in from the last inbound mouse move event.
+//    pTopLevelControl->pGUI->lastMouseMovePosX = (float)mousePosX;
+//    pTopLevelControl->pGUI->lastMouseMovePosY = (float)mousePosY;
+//
+//
+//
+//    // The first thing we need to do is find the new element that's sitting under the mouse.
+//    dred_control* pNewControlUnderMouse = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
+//
+//    // Now that we know which element is sitting under the mouse we need to check if the mouse has entered into a new element.
+//    dred_gui__update_mouse_enter_and_leave_state(pTopLevelControl->pGUI, pNewControlUnderMouse);
+//
+//
+//    dred_control* pEventReceiver = pTopLevelControl->pGUI->pControlWithMouseCapture;
+//    if (pEventReceiver == NULL)
+//    {
+//        pEventReceiver = pNewControlUnderMouse;
+//    }
+//
+//    if (pEventReceiver != NULL)
+//    {
+//        float relativeMousePosX = (float)mousePosX;
+//        float relativeMousePosY = (float)mousePosY;
+//        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+//
+//        dred_control__post_outbound_event_mouse_move(pEventReceiver, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+//    }
+//}
+//
+//void dred_gui_post_inbound_event_mouse_button_down(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+//{
+//    if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
+//        return;
+//    }
+//
+//    dred_gui* pGUI = pTopLevelControl->pGUI;
+//
+//    dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
+//    if (pEventReceiver == NULL) {
+//        pEventReceiver = pGUI->pControlUnderMouse;
+//        if (pEventReceiver == NULL) {
+//            // We'll get here if this message is posted without a prior mouse move event.
+//            pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
+//        }
+//    }
+//
+//    if (pEventReceiver != NULL) {
+//        float relativeMousePosX = (float)mousePosX;
+//        float relativeMousePosY = (float)mousePosY;
+//        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+//
+//        dred_control__post_outbound_event_mouse_button_down(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+//    }
+//}
+//
+//void dred_gui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+//{
+//    if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
+//        return;
+//    }
+//
+//    dred_gui* pGUI = pTopLevelControl->pGUI;
+//
+//    dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
+//    if (pEventReceiver == NULL) {
+//        pEventReceiver = pGUI->pControlUnderMouse;
+//        if (pEventReceiver == NULL) {
+//            // We'll get here if this message is posted without a prior mouse move event.
+//            pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
+//        }
+//    }
+//
+//    if (pEventReceiver != NULL) {
+//        float relativeMousePosX = (float)mousePosX;
+//        float relativeMousePosY = (float)mousePosY;
+//        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+//
+//        dred_control__post_outbound_event_mouse_button_up(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+//    }
+//}
+//
+//void dred_gui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+//{
+//    if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
+//        return;
+//    }
+//
+//    dred_gui* pGUI = pTopLevelControl->pGUI;
+//
+//    dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
+//    if (pEventReceiver == NULL) {
+//        pEventReceiver = pGUI->pControlUnderMouse;
+//        if (pEventReceiver == NULL) {
+//            // We'll get here if this message is posted without a prior mouse move event.
+//            pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
+//        }
+//    }
+//
+//    if (pEventReceiver != NULL) {
+//        float relativeMousePosX = (float)mousePosX;
+//        float relativeMousePosY = (float)mousePosY;
+//        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+//
+//        dred_control__post_outbound_event_mouse_button_dblclick(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+//    }
+//}
+//
+//void dred_gui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int delta, int mousePosX, int mousePosY, int stateFlags)
+//{
+//    if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
+//        return;
+//    }
+//
+//    dred_gui* pGUI = pTopLevelControl->pGUI;
+//
+//    dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
+//    if (pEventReceiver == NULL) {
+//        pEventReceiver = pGUI->pControlUnderMouse;
+//        if (pEventReceiver == NULL) {
+//            // We'll get here if this message is posted without a prior mouse move event.
+//            pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
+//        }
+//    }
+//
+//    if (pEventReceiver != NULL) {
+//        float relativeMousePosX = (float)mousePosX;
+//        float relativeMousePosY = (float)mousePosY;
+//        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+//
+//        dred_control__post_outbound_event_mouse_wheel(pEventReceiver, delta, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
+//    }
+//}
+//
+//void dred_gui_post_inbound_event_key_down(dred_gui* pGUI, dtk_key key, int stateFlags)
+//{
+//    if (pGUI == NULL) {
+//        return;
+//    }
+//
+//    if (pGUI->pControlWithKeyboardCapture != NULL) {
+//        dred_control__post_outbound_event_key_down(pGUI->pControlWithKeyboardCapture, key, stateFlags);
+//    }
+//}
+//
+//void dred_gui_post_inbound_event_key_up(dred_gui* pGUI, dtk_key key, int stateFlags)
+//{
+//    if (pGUI == NULL) {
+//        return;
+//    }
+//
+//    if (pGUI->pControlWithKeyboardCapture != NULL) {
+//        dred_control__post_outbound_event_key_up(pGUI->pControlWithKeyboardCapture, key, stateFlags);
+//    }
+//}
+//
+//void dred_gui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int character, int stateFlags)
+//{
+//    if (pGUI == NULL) {
+//        return;
+//    }
+//
+//    if (pGUI->pControlWithKeyboardCapture != NULL) {
+//        dred_control__post_outbound_event_printable_key_down(pGUI->pControlWithKeyboardCapture, character, stateFlags);
+//    }
+//}
 
-    dred_gui* pGUI = pTopLevelControl->pGUI;
-    if (pGUI == NULL) {
-        return;
-    }
-
-    // We assume that the control that was previously under the mouse was either pTopLevelControl itself or one of it's descendants.
-    dred_gui__update_mouse_enter_and_leave_state(pGUI, NULL);
-}
-
-void dred_gui_post_inbound_event_mouse_move(dred_control* pTopLevelControl, int mousePosX, int mousePosY, int stateFlags)
-{
-    if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
-        return;
-    }
 
 
-    // A pointer to the top level element that was passed in from the last inbound mouse move event.
-    pTopLevelControl->pGUI->pLastMouseMoveTopLevelControl = pTopLevelControl;
+//void dred_gui_set_global_on_dirty(dred_gui * pGUI, dred_gui_on_dirty_proc onDirty)
+//{
+//    if (pGUI != NULL) {
+//        pGUI->onGlobalDirty = onDirty;
+//    }
+//}
 
-    // The position of the mouse that was passed in from the last inbound mouse move event.
-    pTopLevelControl->pGUI->lastMouseMovePosX = (float)mousePosX;
-    pTopLevelControl->pGUI->lastMouseMovePosY = (float)mousePosY;
+//void dred_gui_set_global_on_capture_mouse(dred_gui* pGUI, dred_gui_on_capture_mouse_proc onCaptureMouse)
+//{
+//    if (pGUI != NULL) {
+//        pGUI->onGlobalCaptureMouse = onCaptureMouse;
+//    }
+//}
 
+//void dred_gui_set_global_on_release_mouse(dred_gui* pGUI, dred_gui_on_release_mouse_proc onReleaseMouse)
+//{
+//    if (pGUI != NULL) {
+//        pGUI->onGlobalReleaseMouse = onReleaseMouse;
+//    }
+//}
 
+//void dred_gui_set_global_on_capture_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onCaptureKeyboard)
+//{
+//    if (pGUI != NULL) {
+//        pGUI->onGlobalCaptureKeyboard = onCaptureKeyboard;
+//    }
+//}
+//
+//void dred_gui_set_global_on_release_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onReleaseKeyboard)
+//{
+//    if (pGUI != NULL) {
+//        pGUI->onGlobalReleaseKeyboard = onReleaseKeyboard;
+//    }
+//}
 
-    // The first thing we need to do is find the new element that's sitting under the mouse.
-    dred_control* pNewControlUnderMouse = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
-
-    // Now that we know which element is sitting under the mouse we need to check if the mouse has entered into a new element.
-    dred_gui__update_mouse_enter_and_leave_state(pTopLevelControl->pGUI, pNewControlUnderMouse);
-
-
-    dred_control* pEventReceiver = pTopLevelControl->pGUI->pControlWithMouseCapture;
-    if (pEventReceiver == NULL)
-    {
-        pEventReceiver = pNewControlUnderMouse;
-    }
-
-    if (pEventReceiver != NULL)
-    {
-        float relativeMousePosX = (float)mousePosX;
-        float relativeMousePosY = (float)mousePosY;
-        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
-
-        dred_control__post_outbound_event_mouse_move(pEventReceiver, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
-    }
-}
-
-void dred_gui_post_inbound_event_mouse_button_down(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
-{
-    if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
-        return;
-    }
-
-    dred_gui* pGUI = pTopLevelControl->pGUI;
-
-    dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
-    if (pEventReceiver == NULL) {
-        pEventReceiver = pGUI->pControlUnderMouse;
-        if (pEventReceiver == NULL) {
-            // We'll get here if this message is posted without a prior mouse move event.
-            pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
-        }
-    }
-
-    if (pEventReceiver != NULL) {
-        float relativeMousePosX = (float)mousePosX;
-        float relativeMousePosY = (float)mousePosY;
-        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
-
-        dred_control__post_outbound_event_mouse_button_down(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
-    }
-}
-
-void dred_gui_post_inbound_event_mouse_button_up(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
-{
-    if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
-        return;
-    }
-
-    dred_gui* pGUI = pTopLevelControl->pGUI;
-
-    dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
-    if (pEventReceiver == NULL) {
-        pEventReceiver = pGUI->pControlUnderMouse;
-        if (pEventReceiver == NULL) {
-            // We'll get here if this message is posted without a prior mouse move event.
-            pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
-        }
-    }
-
-    if (pEventReceiver != NULL) {
-        float relativeMousePosX = (float)mousePosX;
-        float relativeMousePosY = (float)mousePosY;
-        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
-
-        dred_control__post_outbound_event_mouse_button_up(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
-    }
-}
-
-void dred_gui_post_inbound_event_mouse_button_dblclick(dred_control* pTopLevelControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
-{
-    if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
-        return;
-    }
-
-    dred_gui* pGUI = pTopLevelControl->pGUI;
-
-    dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
-    if (pEventReceiver == NULL) {
-        pEventReceiver = pGUI->pControlUnderMouse;
-        if (pEventReceiver == NULL) {
-            // We'll get here if this message is posted without a prior mouse move event.
-            pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
-        }
-    }
-
-    if (pEventReceiver != NULL) {
-        float relativeMousePosX = (float)mousePosX;
-        float relativeMousePosY = (float)mousePosY;
-        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
-
-        dred_control__post_outbound_event_mouse_button_dblclick(pEventReceiver, mouseButton, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
-    }
-}
-
-void dred_gui_post_inbound_event_mouse_wheel(dred_control* pTopLevelControl, int delta, int mousePosX, int mousePosY, int stateFlags)
-{
-    if (pTopLevelControl == NULL || pTopLevelControl->pGUI == NULL) {
-        return;
-    }
-
-    dred_gui* pGUI = pTopLevelControl->pGUI;
-
-    dred_control* pEventReceiver = pGUI->pControlWithMouseCapture;
-    if (pEventReceiver == NULL) {
-        pEventReceiver = pGUI->pControlUnderMouse;
-        if (pEventReceiver == NULL) {
-            // We'll get here if this message is posted without a prior mouse move event.
-            pEventReceiver = dred_gui_find_control_under_point(pTopLevelControl, (float)mousePosX, (float)mousePosY);
-        }
-    }
-
-    if (pEventReceiver != NULL) {
-        float relativeMousePosX = (float)mousePosX;
-        float relativeMousePosY = (float)mousePosY;
-        dred_make_point_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
-
-        dred_control__post_outbound_event_mouse_wheel(pEventReceiver, delta, (int)relativeMousePosX, (int)relativeMousePosY, stateFlags);
-    }
-}
-
-void dred_gui_post_inbound_event_key_down(dred_gui* pGUI, dtk_key key, int stateFlags)
-{
-    if (pGUI == NULL) {
-        return;
-    }
-
-    if (pGUI->pControlWithKeyboardCapture != NULL) {
-        dred_control__post_outbound_event_key_down(pGUI->pControlWithKeyboardCapture, key, stateFlags);
-    }
-}
-
-void dred_gui_post_inbound_event_key_up(dred_gui* pGUI, dtk_key key, int stateFlags)
-{
-    if (pGUI == NULL) {
-        return;
-    }
-
-    if (pGUI->pControlWithKeyboardCapture != NULL) {
-        dred_control__post_outbound_event_key_up(pGUI->pControlWithKeyboardCapture, key, stateFlags);
-    }
-}
-
-void dred_gui_post_inbound_event_printable_key_down(dred_gui* pGUI, unsigned int character, int stateFlags)
-{
-    if (pGUI == NULL) {
-        return;
-    }
-
-    if (pGUI->pControlWithKeyboardCapture != NULL) {
-        dred_control__post_outbound_event_printable_key_down(pGUI->pControlWithKeyboardCapture, character, stateFlags);
-    }
-}
-
-
-
-void dred_gui_set_global_on_dirty(dred_gui * pGUI, dred_gui_on_dirty_proc onDirty)
-{
-    if (pGUI != NULL) {
-        pGUI->onGlobalDirty = onDirty;
-    }
-}
-
-void dred_gui_set_global_on_capture_mouse(dred_gui* pGUI, dred_gui_on_capture_mouse_proc onCaptureMouse)
-{
-    if (pGUI != NULL) {
-        pGUI->onGlobalCaptureMouse = onCaptureMouse;
-    }
-}
-
-void dred_gui_set_global_on_release_mouse(dred_gui* pGUI, dred_gui_on_release_mouse_proc onReleaseMouse)
-{
-    if (pGUI != NULL) {
-        pGUI->onGlobalReleaseMouse = onReleaseMouse;
-    }
-}
-
-void dred_gui_set_global_on_capture_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onCaptureKeyboard)
-{
-    if (pGUI != NULL) {
-        pGUI->onGlobalCaptureKeyboard = onCaptureKeyboard;
-    }
-}
-
-void dred_gui_set_global_on_release_keyboard(dred_gui* pGUI, dred_gui_on_capture_keyboard_proc onReleaseKeyboard)
-{
-    if (pGUI != NULL) {
-        pGUI->onGlobalReleaseKeyboard = onReleaseKeyboard;
-    }
-}
-
-void dred_gui_set_global_on_change_cursor(dred_gui* pGUI, dred_gui_on_change_cursor_proc onChangeCursor)
-{
-    if (pGUI != NULL) {
-        pGUI->onChangeCursor = onChangeCursor;
-    }
-}
+//void dred_gui_set_global_on_change_cursor(dred_gui* pGUI, dred_gui_on_change_cursor_proc onChangeCursor)
+//{
+//    if (pGUI != NULL) {
+//        pGUI->onChangeCursor = onChangeCursor;
+//    }
+//}
 
 void dred_gui_set_on_delete_element(dred_gui* pGUI, dred_gui_on_delete_element_proc onDeleteControl)
 {
@@ -853,27 +859,153 @@ void dred_gui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog)
 /////////////////////////////////////////////////////////////////
 // Controls
 
-dr_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, const char* type)
+dtk_bool32 dred_control_event_handler(dtk_event* pEvent)
 {
-    if (pControl == NULL || pDred == NULL) {
-        return DR_FALSE;
+    dtk_control* pControl = pEvent->pControl;
+    dred_control* pDredControl = (dred_control*)pControl->pUserData;
+
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_PAINT:
+        {
+            dred_rect rect = dred_make_rect(
+                (float)pEvent->paint.rect.left,
+                (float)pEvent->paint.rect.top,
+                (float)pEvent->paint.rect.right,
+                (float)pEvent->paint.rect.bottom
+            );
+            
+            if (pDredControl->onPaint) {
+                pDredControl->onPaint(pDredControl, rect, pEvent->paint.pSurface);
+            }
+
+            //dred_control__post_outbound_event_paint(pDredControl, rect);
+        } break;
+
+        case DTK_EVENT_SIZE:
+        {
+            dred_control__post_outbound_event_size(pDredControl, (float)pEvent->size.width, (float)pEvent->size.height);
+        } break;
+
+        case DTK_EVENT_MOVE:
+        {
+            dred_control__post_outbound_event_move(pDredControl, (float)pEvent->move.x, (float)pEvent->move.y);
+        } break;
+
+        /*case DTK_EVENT_SHOW:
+        {
+            dred_control__post_outbound_event_show(pDredControl);
+        } break;
+
+        case DTK_EVENT_HIDE:
+        {
+            dred_control__post_outbound_event_hide(pDredControl);
+        } break;*/
+
+        case DTK_EVENT_MOUSE_LEAVE:
+        {
+            dred_control__post_outbound_event_mouse_leave(pDredControl);
+        } break;
+
+        case DTK_EVENT_MOUSE_ENTER:
+        {
+            dred_control__post_outbound_event_mouse_enter(pDredControl);
+        } break;
+
+        case DTK_EVENT_MOUSE_MOVE:
+        {
+            dred_control__post_outbound_event_mouse_move(pDredControl, pEvent->mouseMove.x, pEvent->mouseMove.y, pEvent->mouseMove.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_DOWN:
+        {
+            dred_control__post_outbound_event_mouse_button_down(pDredControl, pEvent->mouseButton.button, pEvent->mouseButton.x, pEvent->mouseButton.y, pEvent->mouseButton.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_UP:
+        {
+            dred_control__post_outbound_event_mouse_button_up(pDredControl, pEvent->mouseButton.button, pEvent->mouseButton.x, pEvent->mouseButton.y, pEvent->mouseButton.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_DBLCLICK:
+        {
+            dred_control__post_outbound_event_mouse_button_dblclick(pDredControl, pEvent->mouseButton.button, pEvent->mouseButton.x, pEvent->mouseButton.y, pEvent->mouseButton.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_WHEEL:
+        {
+            dred_control__post_outbound_event_mouse_wheel(pDredControl, pEvent->mouseWheel.delta, pEvent->mouseWheel.x, pEvent->mouseWheel.y, pEvent->mouseWheel.state);
+        } break;
+
+        case DTK_EVENT_KEY_DOWN:
+        {
+            dred_control__post_outbound_event_key_down(pDredControl, pEvent->keyDown.key, pEvent->keyDown.state);
+        } break;
+
+        case DTK_EVENT_KEY_UP:
+        {
+            dred_control__post_outbound_event_key_down(pDredControl, pEvent->keyUp.key, pEvent->keyUp.state);
+        } break;
+
+        case DTK_EVENT_PRINTABLE_KEY_DOWN:
+        {
+            dred_control__post_outbound_event_printable_key_down(pDredControl, pEvent->printableKeyDown.utf32, pEvent->printableKeyDown.state);
+        } break;
+
+        case DTK_EVENT_CAPTURE_KEYBOARD:
+        {
+            dred_window* pWindow = (dred_window*)dtk_control_get_window(pControl);
+            pWindow->pControlWithKeyboardCapture = pControl;
+            dred_control__post_outbound_event_capture_keyboard(pDredControl, NULL);
+        } break;
+
+        case DTK_EVENT_RELEASE_KEYBOARD:
+        {
+            dred_control__post_outbound_event_release_keyboard(pDredControl, NULL);
+        } break;
+
+        case DTK_EVENT_CAPTURE_MOUSE:
+        {
+            dred_control__post_outbound_event_capture_mouse(pDredControl);
+        } break;
+
+        case DTK_EVENT_RELEASE_MOUSE:
+        {
+            dred_control__post_outbound_event_release_mouse(pDredControl);
+        } break;
+
+        default: break;
     }
 
+    return dtk_control_default_event_handler(pEvent);
+}
+
+dr_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, dtk_control* pDTKParent, const char* type)
+{
+    if (pControl == NULL || pDred == NULL) return DR_FALSE;
     memset(pControl, 0, sizeof(*pControl));
+
+
+    if (dtk_control_init(&pDred->tk, (pParent != NULL) ? &pParent->baseControl : pDTKParent, DTK_CONTROL_TYPE_DRED, dred_control_event_handler, &pControl->baseControl) != DTK_SUCCESS) {
+        return DTK_FALSE;
+    }
+    pControl->baseControl.pUserData = pControl;
+
+    
     pControl->pGUI = pDred->pGUI;
-    pControl->pParent = pParent;
-    pControl->cursor = dtk_system_cursor_type_default;
-    pControl->dirtyRect = dred_make_inside_out_rect();
+    //pControl->pParent = pParent;
+    //pControl->cursor = dtk_system_cursor_type_default;
+    //pControl->dirtyRect = dred_make_inside_out_rect();
 
     // Add to the the hierarchy.
-    dred_control__append_without_detach_or_redraw(pControl, pControl->pParent);
+    //dred_control__append_without_detach_or_redraw(pControl, pControl->pParent);
 
 
     // Have the element positioned at 0,0 relative to the parent by default.
-    if (pParent != NULL) {
+    /*if (pParent != NULL) {
         pControl->absolutePosX = pParent->absolutePosX;
         pControl->absolutePosY = pParent->absolutePosY;
-    }
+    }*/
 
     dred_control_set_type(pControl, type);
     return DR_TRUE;
@@ -897,7 +1029,7 @@ void dred_control_uninit(dred_control* pControl)
         pGUI->onDeleteControl(pControl);
     }
 
-
+#if 0
     // If this was element is marked as the one that was last under the mouse it needs to be unset.
     dr_bool32 needsMouseUpdate = DR_FALSE;
     if (pGUI->pControlUnderMouse == pControl) {
@@ -969,6 +1101,9 @@ void dred_control_uninit(dred_control* pControl)
     if (pParent) {
         dred_control_dirty(pParent, relativeRect);
     }
+#endif
+
+    dtk_control_uninit(&pControl->baseControl);
 }
 
 
@@ -1031,31 +1166,44 @@ dr_bool32 dred_is_control_type_of_type(const char* type, const char* base)
 
 void dred_control_hide(dred_control* pControl)
 {
+#if 0
     if (pControl != NULL) {
         pControl->flags |= IS_CONTROL_HIDDEN;
         dred_control__auto_dirty(pControl, dred_control_get_local_rect(pControl));
     }
+#endif
+
+    dtk_control_hide(DTK_CONTROL(pControl));
 }
 
 void dred_control_show(dred_control* pControl)
 {
+#if 0
     if (pControl != NULL) {
         pControl->flags &= ~IS_CONTROL_HIDDEN;
         dred_control__auto_dirty(pControl, dred_control_get_local_rect(pControl));
     }
+#endif
+
+    dtk_control_show(DTK_CONTROL(pControl));
 }
 
 dr_bool32 dred_control_is_visible(const dred_control* pControl)
 {
+#if 0
     if (pControl != NULL) {
         return (pControl->flags & IS_CONTROL_HIDDEN) == 0;
     }
 
     return DR_FALSE;
+#endif
+
+    return dtk_control_is_visible(DTK_CONTROL(pControl));
 }
 
 dr_bool32 dred_control_is_visible_recursive(const dred_control* pControl)
 {
+#if 0
     if (dred_control_is_visible(pControl))
     {
         assert(pControl->pParent != NULL);
@@ -1066,36 +1214,55 @@ dr_bool32 dred_control_is_visible_recursive(const dred_control* pControl)
     }
 
     return DR_FALSE;
+#endif
+
+    return dtk_control_is_visible_recursive(DTK_CONTROL(pControl));
 }
 
 
 void dred_control_disable_clipping(dred_control* pControl)
 {
+#if 0
     if (pControl != NULL) {
         pControl->flags |= IS_CONTROL_CLIPPING_DISABLED;
     }
+#endif
+
+    dtk_control_disable_clipping(DTK_CONTROL(pControl));
 }
 
 void dred_control_enable_clipping(dred_control* pControl)
 {
+#if 0
     if (pControl != NULL) {
         pControl->flags &= ~IS_CONTROL_CLIPPING_DISABLED;
     }
+#endif
+
+    dtk_control_enable_clipping(DTK_CONTROL(pControl));
 }
 
 dr_bool32 dred_control_is_clipping_enabled(const dred_control* pControl)
 {
+#if 0
     if (pControl != NULL) {
         return (pControl->flags & IS_CONTROL_CLIPPING_DISABLED) == 0;
     }
 
     return DR_TRUE;
+#endif
+
+    return dtk_control_is_clipping_enabled(DTK_CONTROL(pControl));
 }
 
 
 
 void dred_gui_capture_mouse(dred_control* pControl)
 {
+    if (pControl == NULL) return;
+    dtk_capture_mouse(&pControl->pGUI->pDred->tk, DTK_CONTROL(pControl));
+
+#if 0
     if (pControl == NULL) {
         return;
     }
@@ -1123,10 +1290,15 @@ void dred_gui_capture_mouse(dred_control* pControl)
             dred_control__post_outbound_event_capture_mouse_global(pControl);
         }
     }
+#endif
 }
 
 void dred_gui_release_mouse(dred_gui* pGUI)
 {
+    if (pGUI == NULL) return;
+    dtk_release_mouse(&pGUI->pDred->tk);
+
+#if 0
     if (pGUI == NULL || pGUI->pControlWithMouseCapture == NULL) {
         return;
     }
@@ -1142,8 +1314,10 @@ void dred_gui_release_mouse(dred_gui* pGUI)
 
     // After releasing the mouse the cursor may be sitting on top of a different element - we want to recheck that.
     dred_gui__update_mouse_enter_and_leave_state(pGUI, dred_gui_find_control_under_point(pGUI->pLastMouseMoveTopLevelControl, pGUI->lastMouseMovePosX, pGUI->lastMouseMovePosY));
+#endif
 }
 
+#if 0
 void dred_gui_release_mouse_no_local_notify(dred_gui* pGUI)
 {
     if (pGUI == NULL) {
@@ -1172,55 +1346,59 @@ void dred_gui_release_mouse_no_global_notify(dred_gui* pGUI)
     dred_gui_release_mouse(pGUI);
     pGUI->onGlobalReleaseMouse = prevProc;
 }
+#endif
 
-dred_control* dred_gui_get_element_with_mouse_capture(dred_gui* pGUI)
-{
-    if (pGUI == NULL) {
-        return NULL;
-    }
+//dred_control* dred_gui_get_element_with_mouse_capture(dred_gui* pGUI)
+//{
+//    if (pGUI == NULL) {
+//        return NULL;
+//    }
+//
+//    return pGUI->pControlWithMouseCapture;
+//}
+//
+//dr_bool32 dred_control_has_mouse_capture(dred_control* pControl)
+//{
+//    if (pControl == NULL) {
+//        return DR_FALSE;
+//    }
+//
+//    return dred_gui_get_element_with_mouse_capture(pControl->pGUI) == pControl;
+//}
 
-    return pGUI->pControlWithMouseCapture;
-}
 
-dr_bool32 dred_control_has_mouse_capture(dred_control* pControl)
-{
-    if (pControl == NULL) {
-        return DR_FALSE;
-    }
-
-    return dred_gui_get_element_with_mouse_capture(pControl->pGUI) == pControl;
-}
-
-
-DRED_GUI_PRIVATE void dred_gui_release_keyboard_private(dred_gui* pGUI, dred_control* pNewCapturedControl)
-{
-    assert(pGUI != NULL);
-
-    // It is reasonable to expect that an application will want to change keyboard focus from within the release_keyboard
-    // event handler. The problem with this is that is can cause a infinite dependency chain. We need to handle that case
-    // by setting a flag that keeps track of whether or not we are in the middle of a release_keyboard event. At the end
-    // we look at the element that want's the keyboard focuse and explicitly capture it at the end.
-
-    pGUI->flags |= IS_RELEASING_KEYBOARD;
-    {
-        dred_control* pPrevCapturedControl = pGUI->pControlWithKeyboardCapture;
-        pGUI->pControlWithKeyboardCapture = NULL;
-
-        dred_control__post_outbound_event_release_keyboard(pPrevCapturedControl, pNewCapturedControl);
-
-        //if (pNewCapturedControl != NULL) {
-            dred_control__post_outbound_event_release_keyboard_global(pPrevCapturedControl, pNewCapturedControl);
-        //}
-    }
-    pGUI->flags &= ~IS_RELEASING_KEYBOARD;
-
-    // Explicitly capture the keyboard.
-    dred_gui_capture_keyboard(pGUI->pControlWantingKeyboardCapture);
-    pGUI->pControlWantingKeyboardCapture = NULL;
-}
+//DRED_GUI_PRIVATE void dred_gui_release_keyboard_private(dred_gui* pGUI, dred_control* pNewCapturedControl)
+//{
+//    assert(pGUI != NULL);
+//
+//    // It is reasonable to expect that an application will want to change keyboard focus from within the release_keyboard
+//    // event handler. The problem with this is that is can cause a infinite dependency chain. We need to handle that case
+//    // by setting a flag that keeps track of whether or not we are in the middle of a release_keyboard event. At the end
+//    // we look at the element that want's the keyboard focuse and explicitly capture it at the end.
+//
+//    pGUI->flags |= IS_RELEASING_KEYBOARD;
+//    {
+//        dred_control* pPrevCapturedControl = pGUI->pControlWithKeyboardCapture;
+//        pGUI->pControlWithKeyboardCapture = NULL;
+//
+//        dred_control__post_outbound_event_release_keyboard(pPrevCapturedControl, pNewCapturedControl);
+//
+//        //if (pNewCapturedControl != NULL) {
+//            dred_control__post_outbound_event_release_keyboard_global(pPrevCapturedControl, pNewCapturedControl);
+//        //}
+//    }
+//    pGUI->flags &= ~IS_RELEASING_KEYBOARD;
+//
+//    // Explicitly capture the keyboard.
+//    dred_gui_capture_keyboard(pGUI->pControlWantingKeyboardCapture);
+//    pGUI->pControlWantingKeyboardCapture = NULL;
+//}
 
 void dred_gui_capture_keyboard(dred_control* pControl)
 {
+    dtk_capture_keyboard(DTK_CONTROL(pControl)->pTK, DTK_CONTROL(pControl));
+
+#if 0
     if (pControl == NULL) {
         return;
     }
@@ -1259,67 +1437,75 @@ void dred_gui_capture_keyboard(dred_control* pControl)
             dred_control__post_outbound_event_capture_keyboard_global(pControl, pPrevControlWithKeyboardCapture);
         }
     }
+#endif
 }
 
 void dred_gui_release_keyboard(dred_gui* pGUI)
 {
+    dtk_release_keyboard(&pGUI->pDred->tk);
+
+#if 0
     if (pGUI == NULL) {
         return;
     }
 
     dred_gui_release_keyboard_private(pGUI, NULL);
+#endif
 }
 
-void dred_gui_release_keyboard_no_local_notify(dred_gui* pGUI)
-{
-    if (pGUI == NULL) {
-        return;
-    }
+//void dred_gui_release_keyboard_no_local_notify(dred_gui* pGUI)
+//{
+//    if (pGUI == NULL) {
+//        return;
+//    }
+//
+//    dred_control* pControl = pGUI->pControlWithMouseCapture;
+//    if (pControl == NULL) {
+//        return;
+//    }
+//
+//    dred_gui_on_release_keyboard_proc prevProc = pControl->onReleaseKeyboard;
+//    pControl->onReleaseKeyboard = NULL;
+//    dred_gui_release_keyboard(pGUI);
+//    pControl->onReleaseKeyboard = prevProc;
+//}
+//
+//void dred_gui_release_keyboard_no_global_notify(dred_gui* pGUI)
+//{
+//    if (pGUI == NULL) {
+//        return;
+//    }
+//
+//    dred_gui_on_release_keyboard_proc prevProc = pGUI->onGlobalReleaseKeyboard;
+//    pGUI->onGlobalReleaseKeyboard = NULL;
+//    dred_gui_release_keyboard(pGUI);
+//    pGUI->onGlobalReleaseKeyboard = prevProc;
+//}
 
-    dred_control* pControl = pGUI->pControlWithMouseCapture;
-    if (pControl == NULL) {
-        return;
-    }
-
-    dred_gui_on_release_keyboard_proc prevProc = pControl->onReleaseKeyboard;
-    pControl->onReleaseKeyboard = NULL;
-    dred_gui_release_keyboard(pGUI);
-    pControl->onReleaseKeyboard = prevProc;
-}
-
-void dred_gui_release_keyboard_no_global_notify(dred_gui* pGUI)
-{
-    if (pGUI == NULL) {
-        return;
-    }
-
-    dred_gui_on_release_keyboard_proc prevProc = pGUI->onGlobalReleaseKeyboard;
-    pGUI->onGlobalReleaseKeyboard = NULL;
-    dred_gui_release_keyboard(pGUI);
-    pGUI->onGlobalReleaseKeyboard = prevProc;
-}
-
-dred_control* dred_gui_get_element_with_keyboard_capture(dred_gui* pGUI)
-{
-    if (pGUI == NULL) {
-        return NULL;
-    }
-
-    return pGUI->pControlWithKeyboardCapture;
-}
-
-dr_bool32 dred_control_has_keyboard_capture(dred_control* pControl)
-{
-    if (pControl == NULL) {
-        return DR_FALSE;
-    }
-
-    return dred_gui_get_element_with_keyboard_capture(pControl->pGUI) == pControl;
-}
+//dred_control* dred_gui_get_element_with_keyboard_capture(dred_gui* pGUI)
+//{
+//    if (pGUI == NULL) {
+//        return NULL;
+//    }
+//
+//    return pGUI->pControlWithKeyboardCapture;
+//}
+//
+//dr_bool32 dred_control_has_keyboard_capture(dred_control* pControl)
+//{
+//    if (pControl == NULL) {
+//        return DR_FALSE;
+//    }
+//
+//    return dred_gui_get_element_with_keyboard_capture(pControl->pGUI) == pControl;
+//}
 
 
 void dred_control_set_cursor(dred_control* pControl, dtk_system_cursor_type cursor)
 {
+    dtk_control_set_cursor(DTK_CONTROL(pControl), cursor);
+
+#if 0
     if (pControl == NULL) {
         return;
     }
@@ -1329,15 +1515,20 @@ void dred_control_set_cursor(dred_control* pControl, dtk_system_cursor_type curs
     if (dred_control_is_under_mouse(pControl) && pControl->pGUI->currentCursor != cursor) {
         dred_gui__change_cursor(pControl, cursor);
     }
+#endif
 }
 
 dtk_system_cursor_type dred_control_get_cursor(dred_control* pControl)
 {
+    return dtk_control_get_cursor(DTK_CONTROL(pControl));
+
+#if 0
     if (pControl == NULL) {
         return dtk_system_cursor_type_none;
     }
 
     return pControl->cursor;
+#endif
 }
 
 void dred_control_show_popup_menu(dred_control* pControl, dtk_menu* pMenu, int relativePosX, int relativePosY)
@@ -1497,6 +1688,9 @@ void dred_control_set_on_release_keyboard(dred_control* pControl, dred_gui_on_re
 
 dr_bool32 dred_control_is_point_inside_bounds(const dred_control* pControl, float absolutePosX, float absolutePosY)
 {
+    return dtk_control_is_point_inside_bounds(DTK_CONTROL(pControl), (dtk_int32)absolutePosX, (dtk_int32)absolutePosY);
+
+#if 0
     if (absolutePosX < pControl->absolutePosX ||
         absolutePosX < pControl->absolutePosY)
     {
@@ -1510,10 +1704,14 @@ dr_bool32 dred_control_is_point_inside_bounds(const dred_control* pControl, floa
     }
 
     return DR_TRUE;
+#endif
 }
 
 dr_bool32 dred_control_is_point_inside(dred_control* pControl, float absolutePosX, float absolutePosY)
 {
+    return dtk_control_is_point_inside(DTK_CONTROL(pControl), (dtk_int32)absolutePosX, (dtk_int32)absolutePosY);
+    
+#if 0
     if (dred_control_is_point_inside_bounds(pControl, absolutePosX, absolutePosY))
     {
         // It is valid for onHitTest to be null, in which case we use the default hit test which assumes the element is just a rectangle
@@ -1527,10 +1725,11 @@ dr_bool32 dred_control_is_point_inside(dred_control* pControl, float absolutePos
     }
 
     return DR_FALSE;
+#endif
 }
 
 
-
+#if 0
 typedef struct
 {
     dred_control* pControlUnderPoint;
@@ -1565,46 +1764,56 @@ dr_bool32 dred_gui_find_control_under_point_iterator(dred_control* pControl, dre
     // Always return DR_TRUE to ensure the entire hierarchy is checked.
     return DR_TRUE;
 }
+#endif
 
-dred_control* dred_gui_find_control_under_point(dred_control* pTopLevelControl, float absolutePosX, float absolutePosY)
-{
-    if (pTopLevelControl == NULL) {
-        return NULL;
-    }
-
-    dred_gui_find_control_under_point_data data;
-    data.pControlUnderPoint = NULL;
-    data.absolutePosX = absolutePosX;
-    data.absolutePosY = absolutePosY;
-    dred_control_iterate_visible_elements(pTopLevelControl, dred_control_get_absolute_rect(pTopLevelControl), dred_gui_find_control_under_point_iterator, &data);
-
-    return data.pControlUnderPoint;
-}
+//dtk_control* dred_gui_find_control_under_point(dred_control* pTopLevelControl, float absolutePosX, float absolutePosY)
+//{
+//    return dtk_window_find_control_under_point(dtk_control_get_window(DTK_CONTROL(pTopLevelControl)), (dtk_int32)absolutePosX, (dtk_int32)absolutePosY);
+//
+//#if 0
+//    if (pTopLevelControl == NULL) {
+//        return NULL;
+//    }
+//
+//    dred_gui_find_control_under_point_data data;
+//    data.pControlUnderPoint = NULL;
+//    data.absolutePosX = absolutePosX;
+//    data.absolutePosY = absolutePosY;
+//    dred_control_iterate_visible_elements(pTopLevelControl, dred_control_get_absolute_rect(pTopLevelControl), dred_gui_find_control_under_point_iterator, &data);
+//
+//    return data.pControlUnderPoint;
+//#endif
+//}
 
 dr_bool32 dred_control_is_under_mouse(dred_control* pControl)
 {
+    return dtk_control_is_under_mouse(DTK_CONTROL(pControl));
+
+#if 0
     if (pControl == NULL) {
         return DR_FALSE;
     }
 
     return dred_gui_find_control_under_point(pControl->pGUI->pLastMouseMoveTopLevelControl, pControl->pGUI->lastMouseMovePosX, pControl->pGUI->lastMouseMovePosY) == pControl;
+#endif
 }
 
 
 
 //// Hierarchy ////
 
-dred_control* dred_control_get_parent(dred_control* pChildControl)
-{
-    if (pChildControl == NULL) {
-        return NULL;
-    }
-
-    return pChildControl->pParent;
-}
+//dred_control* dtk_control_get_parent(dred_control* pChildControl)
+//{
+//    if (pChildControl == NULL) {
+//        return NULL;
+//    }
+//
+//    return pChildControl->pParent;
+//}
 
 void dred_control_detach(dred_control* pChildControl)
 {
+#if 0
     if (pChildControl == NULL) {
         return;
     }
@@ -1619,10 +1828,14 @@ void dred_control_detach(dred_control* pChildControl)
     if (pOldParent != NULL) {
         dred_control__auto_dirty(pOldParent, dred_control_get_relative_rect(pOldParent));
     }
+#endif
+
+    dtk_control_detach(DTK_CONTROL(pChildControl));
 }
 
 void dred_control_append(dred_control* pChildControl, dred_control* pParentControl)
 {
+#if 0
     if (pChildControl == NULL) {
         return;
     }
@@ -1641,10 +1854,16 @@ void dred_control_append(dred_control* pChildControl, dred_control* pParentContr
     if (pParentControl != NULL) {
         dred_control__append_without_detach(pChildControl, pParentControl);
     }
+#endif
+
+    dtk_control_append(DTK_CONTROL(pChildControl), DTK_CONTROL(pParentControl));
 }
 
 void dred_control_prepend(dred_control* pChildControl, dred_control* pParentControl)
 {
+    dtk_control_prepend(DTK_CONTROL(pChildControl), DTK_CONTROL(pParentControl));
+
+#if 0
     if (pChildControl == NULL) {
         return;
     }
@@ -1661,10 +1880,14 @@ void dred_control_prepend(dred_control* pChildControl, dred_control* pParentCont
     if (pParentControl != NULL) {
         dred_control__prepend_without_detach(pChildControl, pParentControl);
     }
+#endif
 }
 
 void dred_control_append_sibling(dred_control* pControlToAppend, dred_control* pControlToAppendTo)
 {
+    dtk_control_append_sibling(DTK_CONTROL(pControlToAppend), DTK_CONTROL(pControlToAppendTo));
+
+#if 0
     if (pControlToAppend == NULL || pControlToAppendTo == NULL) {
         return;
     }
@@ -1679,10 +1902,14 @@ void dred_control_append_sibling(dred_control* pControlToAppend, dred_control* p
 
     // Now we need to attach the element such that it comes just after pControlToAppendTo
     dred_control__append_sibling_without_detach(pControlToAppend, pControlToAppendTo);
+#endif
 }
 
 void dred_control_prepend_sibling(dred_control* pControlToPrepend, dred_control* pControlToPrependTo)
 {
+    dtk_control_prepend_sibling(DTK_CONTROL(pControlToPrepend), DTK_CONTROL(pControlToPrependTo));
+
+#if 0
     if (pControlToPrepend == NULL || pControlToPrependTo == NULL) {
         return;
     }
@@ -1697,10 +1924,14 @@ void dred_control_prepend_sibling(dred_control* pControlToPrepend, dred_control*
 
     // Now we need to attach the element such that it comes just after pControlToPrependTo
     dred_control__prepend_sibling_without_detach(pControlToPrepend, pControlToPrependTo);
+#endif
 }
 
-dred_control* dred_control_find_top_level_control(dred_control* pControl)
+dtk_control* dred_control_find_top_level_control(dred_control* pControl)
 {
+    return dtk_control_find_top_level_control(DTK_CONTROL(pControl));
+
+#if 0
     if (pControl == NULL) {
         return NULL;
     }
@@ -1710,15 +1941,20 @@ dred_control* dred_control_find_top_level_control(dred_control* pControl)
     }
 
     return pControl;
+#endif
 }
 
 dr_bool32 dred_control_is_parent(dred_control* pParentControl, dred_control* pChildControl)
 {
+    return dtk_control_is_parent(DTK_CONTROL(pParentControl), DTK_CONTROL(pChildControl));
+
+#if 0
     if (pParentControl == NULL || pChildControl == NULL) {
         return DR_FALSE;
     }
 
     return pParentControl == pChildControl->pParent;
+#endif
 }
 
 dr_bool32 dred_control_is_child(dred_control* pChildControl, dred_control* pParentControl)
@@ -1728,6 +1964,9 @@ dr_bool32 dred_control_is_child(dred_control* pChildControl, dred_control* pPare
 
 dr_bool32 dred_control_is_ancestor(dred_control* pAncestorControl, dred_control* pChildControl)
 {
+    return dtk_control_is_ancestor(DTK_CONTROL(pAncestorControl), DTK_CONTROL(pChildControl));
+    
+#if 0
     if (pAncestorControl == NULL || pChildControl == NULL) {
         return DR_FALSE;
     }
@@ -1744,6 +1983,7 @@ dr_bool32 dred_control_is_ancestor(dred_control* pAncestorControl, dred_control*
 
 
     return DR_FALSE;
+#endif
 }
 
 dr_bool32 dred_control_is_descendant(dred_control* pChildControl, dred_control* pAncestorControl)
@@ -1767,42 +2007,52 @@ dr_bool32 dred_control_is_self_or_descendant(dred_control* pChildControl, dred_c
 
 void dred_control_set_absolute_position(dred_control* pControl, float positionX, float positionY)
 {
-    if (pControl != NULL)
+    if (pControl == NULL) return;
+    dtk_control_set_absolute_position(DTK_CONTROL(pControl), (dtk_int32)positionX, (dtk_int32)positionY);
+
+#if 0
+    if (pControl->absolutePosX != positionX || pControl->absolutePosY != positionY)
     {
-        if (pControl->absolutePosX != positionX || pControl->absolutePosY != positionY)
+        float oldRelativePosX = dred_control_get_relative_position_x(pControl);
+        float oldRelativePosY = dred_control_get_relative_position_y(pControl);
+
+        dred_control__begin_auto_dirty(pControl);
         {
-            float oldRelativePosX = dred_control_get_relative_position_x(pControl);
-            float oldRelativePosY = dred_control_get_relative_position_y(pControl);
+            dred_control__auto_dirty(pControl, dred_control_get_local_rect(pControl));     // <-- Previous rectangle.
 
-            dred_control__begin_auto_dirty(pControl);
-            {
-                dred_control__auto_dirty(pControl, dred_control_get_local_rect(pControl));     // <-- Previous rectangle.
+            float offsetX = positionX - pControl->absolutePosX;
+            float offsetY = positionY - pControl->absolutePosY;
 
-                float offsetX = positionX - pControl->absolutePosX;
-                float offsetY = positionY - pControl->absolutePosY;
-
-                pControl->absolutePosX = positionX;
-                pControl->absolutePosY = positionY;
-                dred_control__auto_dirty(pControl, dred_control_get_local_rect(pControl));     // <-- New rectangle.
+            pControl->absolutePosX = positionX;
+            pControl->absolutePosY = positionY;
+            dred_control__auto_dirty(pControl, dred_control_get_local_rect(pControl));     // <-- New rectangle.
 
 
-                float newRelativePosX = dred_control_get_relative_position_x(pControl);
-                float newRelativePosY = dred_control_get_relative_position_y(pControl);
+            float newRelativePosX = dred_control_get_relative_position_x(pControl);
+            float newRelativePosY = dred_control_get_relative_position_y(pControl);
 
-                if (newRelativePosX != oldRelativePosX || newRelativePosY != oldRelativePosY) {
-                    dred_control__post_outbound_event_move(pControl, newRelativePosX, newRelativePosY);
-                }
-
-
-                dred_control__apply_offset_to_children_recursive(pControl, offsetX, offsetY);
+            if (newRelativePosX != oldRelativePosX || newRelativePosY != oldRelativePosY) {
+                dred_control__post_outbound_event_move(pControl, newRelativePosX, newRelativePosY);
             }
-            dred_control__end_auto_dirty(pControl);
+
+
+            dred_control__apply_offset_to_children_recursive(pControl, offsetX, offsetY);
         }
+        dred_control__end_auto_dirty(pControl);
     }
+#endif
 }
 
 void dred_control_get_absolute_position(const dred_control* pControl, float * positionXOut, float * positionYOut)
 {
+    dtk_int32 x;
+    dtk_int32 y;
+    dtk_control_get_absolute_position(DTK_CONTROL(pControl), &x, &y);
+
+    if (positionXOut) *positionXOut = (float)x;
+    if (positionYOut) *positionYOut = (float)y;
+    
+#if 0
     if (positionXOut != NULL) *positionXOut = 0;
     if (positionYOut != NULL) *positionYOut = 0;
     if (pControl == NULL) return;
@@ -1814,40 +2064,62 @@ void dred_control_get_absolute_position(const dred_control* pControl, float * po
     if (positionYOut != NULL) {
         *positionYOut = pControl->absolutePosY;
     }
+#endif
 }
 
 float dred_control_get_absolute_position_x(const dred_control* pControl)
 {
+    if (pControl == NULL) return 0.0f;
+    return (float)pControl->baseControl.absolutePosX;
+
+#if 0
     if (pControl != NULL) {
         return pControl->absolutePosX;
     }
 
     return 0.0f;
+#endif
 }
 
 float dred_control_get_absolute_position_y(const dred_control* pControl)
 {
+    if (pControl == NULL) return 0.0f;
+    return (float)pControl->baseControl.absolutePosY;
+
+#if 0
     if (pControl != NULL) {
         return pControl->absolutePosY;
     }
 
     return 0.0f;
+#endif
 }
 
 
 void dred_control_set_relative_position(dred_control* pControl, float relativePosX, float relativePosY)
 {
-    if (pControl != NULL) {
-        if (pControl->pParent != NULL) {
-            dred_control_set_absolute_position(pControl, pControl->pParent->absolutePosX + relativePosX, pControl->pParent->absolutePosY + relativePosY);
-        } else {
-            dred_control_set_absolute_position(pControl, relativePosX, relativePosY);
-        }
+    if (pControl == NULL) return;
+    dtk_control_set_relative_position(DTK_CONTROL(pControl), (dtk_int32)relativePosX, (dtk_int32)relativePosY);
+
+#if 0
+    if (pControl->pParent != NULL) {
+        dred_control_set_absolute_position(pControl, pControl->pParent->absolutePosX + relativePosX, pControl->pParent->absolutePosY + relativePosY);
+    } else {
+        dred_control_set_absolute_position(pControl, relativePosX, relativePosY);
     }
+#endif
 }
 
 void dred_control_get_relative_position(const dred_control* pControl, float* positionXOut, float* positionYOut)
 {
+    dtk_int32 x;
+    dtk_int32 y;
+    dtk_control_get_relative_position(DTK_CONTROL(pControl), &x, &y);
+
+    if (positionXOut) *positionXOut = (float)x;
+    if (positionYOut) *positionYOut = (float)y;
+
+#if 0
     if (pControl != NULL)
     {
         if (pControl->pParent != NULL)
@@ -1871,10 +2143,16 @@ void dred_control_get_relative_position(const dred_control* pControl, float* pos
             }
         }
     }
+#endif
 }
 
 float dred_control_get_relative_position_x(const dred_control* pControl)
 {
+    float x;
+    dred_control_get_relative_position(pControl, &x, NULL);
+    return x;
+
+#if 0
     if (pControl != NULL) {
         if (pControl->pParent != NULL) {
             return pControl->absolutePosX - pControl->pParent->absolutePosX;
@@ -1884,10 +2162,16 @@ float dred_control_get_relative_position_x(const dred_control* pControl)
     }
 
     return 0;
+#endif
 }
 
 float dred_control_get_relative_position_y(const dred_control* pControl)
 {
+    float y;
+    dred_control_get_relative_position(pControl, NULL, &y);
+    return y;
+
+#if 0
     if (pControl != NULL) {
         if (pControl->pParent != NULL) {
             return pControl->absolutePosY - pControl->pParent->absolutePosY;
@@ -1897,32 +2181,43 @@ float dred_control_get_relative_position_y(const dred_control* pControl)
     }
 
     return 0;
+#endif
 }
 
 
 void dred_control_set_size(dred_control* pControl, float width, float height)
 {
-    if (pControl != NULL)
+    if (pControl == NULL) return;
+    dtk_control_set_size(DTK_CONTROL(pControl), (dtk_uint32)width, (dtk_uint32)height);
+
+#if 0
+    if (pControl->width != width || pControl->height != height)
     {
-        if (pControl->width != width || pControl->height != height)
+        dred_control__begin_auto_dirty(pControl);
         {
-            dred_control__begin_auto_dirty(pControl);
-            {
-                dred_control__auto_dirty(pControl, dred_control_get_local_rect(pControl));     // <-- Previous rectangle.
+            dred_control__auto_dirty(pControl, dred_control_get_local_rect(pControl));     // <-- Previous rectangle.
 
-                pControl->width  = width;
-                pControl->height = height;
-                dred_control__auto_dirty(pControl, dred_control_get_local_rect(pControl));     // <-- New rectangle.
+            pControl->width  = width;
+            pControl->height = height;
+            dred_control__auto_dirty(pControl, dred_control_get_local_rect(pControl));     // <-- New rectangle.
 
-                dred_control__post_outbound_event_size(pControl, width, height);
-            }
-            dred_control__end_auto_dirty(pControl);
+            dred_control__post_outbound_event_size(pControl, width, height);
         }
+        dred_control__end_auto_dirty(pControl);
     }
+#endif
 }
 
 void dred_control_get_size(const dred_control* pControl, float* widthOut, float* heightOut)
 {
+    dtk_uint32 sizeX;
+    dtk_uint32 sizeY;
+    dtk_control_get_size(DTK_CONTROL(pControl), &sizeX, &sizeY);
+
+    if (widthOut)  *widthOut  = (float)sizeX;
+    if (heightOut) *heightOut = (float)sizeY;
+
+#if 0
     if (pControl != NULL) {
         if (widthOut) *widthOut = pControl->width;
         if (heightOut) *heightOut = pControl->height;
@@ -1930,29 +2225,47 @@ void dred_control_get_size(const dred_control* pControl, float* widthOut, float*
         if (widthOut) *widthOut = 0;
         if (heightOut) *heightOut = 0;
     }
+#endif
 }
 
 float dred_control_get_width(const dred_control * pControl)
 {
+    return (float)pControl->baseControl.width;
+
+#if 0
     if (pControl != NULL) {
         return pControl->width;
     }
 
     return 0;
+#endif
 }
 
 float dred_control_get_height(const dred_control * pControl)
 {
+    return (float)pControl->baseControl.height;
+
+#if 0
     if (pControl != NULL) {
         return pControl->height;
     }
 
     return 0;
+#endif
 }
 
 
 dred_rect dred_control_get_absolute_rect(const dred_control* pControl)
 {
+    dtk_rect rect = dtk_control_get_absolute_rect(DTK_CONTROL(pControl));
+    return dred_make_rect(
+        (float)rect.left,
+        (float)rect.top,
+        (float)rect.right,
+        (float)rect.bottom
+    );
+
+#if 0
     dred_rect rect;
     if (pControl != NULL)
     {
@@ -1970,10 +2283,20 @@ dred_rect dred_control_get_absolute_rect(const dred_control* pControl)
     }
 
     return rect;
+#endif
 }
 
 dred_rect dred_control_get_relative_rect(const dred_control* pControl)
 {
+    dtk_rect rect = dtk_control_get_relative_rect(DTK_CONTROL(pControl));
+    return dred_make_rect(
+        (float)rect.left,
+        (float)rect.top,
+        (float)rect.right,
+        (float)rect.bottom
+    );
+
+#if 0
     dred_rect rect;
     if (pControl != NULL)
     {
@@ -1991,10 +2314,20 @@ dred_rect dred_control_get_relative_rect(const dred_control* pControl)
     }
 
     return rect;
+#endif
 }
 
 dred_rect dred_control_get_local_rect(const dred_control* pControl)
 {
+    dtk_rect rect = dtk_control_get_local_rect(DTK_CONTROL(pControl));
+    return dred_make_rect(
+        (float)rect.left,
+        (float)rect.top,
+        (float)rect.right,
+        (float)rect.bottom
+    );
+
+#if 0
     dred_rect rect;
     rect.left = 0;
     rect.top  = 0;
@@ -2011,6 +2344,7 @@ dred_rect dred_control_get_local_rect(const dred_control* pControl)
     }
 
     return rect;
+#endif
 }
 
 
@@ -2028,7 +2362,7 @@ dr_bool32 dred_gui_register_painting_callbacks(dred_gui* pGUI, dred_gui_painting
     return DR_TRUE;
 }
 
-
+#if 0
 dr_bool32 dred_control_iterate_visible_elements(dred_control* pParentControl, dred_rect relativeRect, dred_gui_visible_iteration_proc callback, void* pUserData)
 {
     if (pParentControl == NULL) {
@@ -2079,31 +2413,32 @@ dr_bool32 dred_control_iterate_visible_elements(dred_control* pParentControl, dr
 
     return DR_TRUE;
 }
+#endif
 
-void dred_gui_disable_auto_dirty(dred_gui* pGUI)
-{
-    if (pGUI != NULL) {
-        pGUI->flags |= IS_AUTO_DIRTY_DISABLED;
-    }
-}
+//void dred_gui_disable_auto_dirty(dred_gui* pGUI)
+//{
+//    if (pGUI != NULL) {
+//        pGUI->flags |= IS_AUTO_DIRTY_DISABLED;
+//    }
+//}
+//
+//void dred_gui_enable_auto_dirty(dred_gui* pGUI)
+//{
+//    if (pGUI != NULL) {
+//        pGUI->flags &= ~IS_AUTO_DIRTY_DISABLED;
+//    }
+//}
+//
+//dr_bool32 dred_gui_is_auto_dirty_enabled(dred_gui* pGUI)
+//{
+//    if (pGUI != NULL) {
+//        return (pGUI->flags & IS_AUTO_DIRTY_DISABLED) == 0;
+//    }
+//
+//    return DR_FALSE;
+//}
 
-void dred_gui_enable_auto_dirty(dred_gui* pGUI)
-{
-    if (pGUI != NULL) {
-        pGUI->flags &= ~IS_AUTO_DIRTY_DISABLED;
-    }
-}
-
-dr_bool32 dred_gui_is_auto_dirty_enabled(dred_gui* pGUI)
-{
-    if (pGUI != NULL) {
-        return (pGUI->flags & IS_AUTO_DIRTY_DISABLED) == 0;
-    }
-
-    return DR_FALSE;
-}
-
-
+#if 0
 dred_control* dred_control_begin_dirty(dred_control* pControl)
 {
     if (pControl == NULL) {
@@ -2162,13 +2497,14 @@ void dred_control_end_dirty(dred_control* pControl)
     if (pGUI->dirtyCounter == 0)
     {
         for (size_t i = 0; i < pGUI->dirtyControlCount; ++i) {
-            dred_control__post_outbound_event_dirty_global(pGUI->ppDirtyControls[i], pGUI->ppDirtyControls[i]->dirtyRect);
+            dtk_control_immediate_redraw(DTK_CONTROL(pGUI->ppDirtyControls[i]), dtk_rect_init_dred(pGUI->ppDirtyControls[i]->dirtyRect));
             pGUI->ppDirtyControls[i]->dirtyRect = dred_make_inside_out_rect();
         }
 
         pGUI->dirtyControlCount = 0;
     }
 }
+#endif
 
 void dred_control_dirty(dred_control* pControl, dred_rect relativeRect)
 {
@@ -2176,9 +2512,12 @@ void dred_control_dirty(dred_control* pControl, dred_rect relativeRect)
         return;
     }
 
+    dtk_control_scheduled_redraw(DTK_CONTROL(pControl), dtk_rect_init_dred(relativeRect));
+
     //dred_gui* pGUI = pControl->pGUI;
     //assert(pGUI != NULL);
 
+#if 0
     dred_control* pTopLevelControl = dred_control_begin_dirty(pControl);
     if (pTopLevelControl == NULL) {
         return;
@@ -2186,9 +2525,11 @@ void dred_control_dirty(dred_control* pControl, dred_rect relativeRect)
 
     pTopLevelControl->dirtyRect = dred_rect_union(pTopLevelControl->dirtyRect, dred_make_rect_absolute(pControl, &relativeRect));
     dred_control_end_dirty(pControl);
+#endif
 }
 
 
+#if 0
 dr_bool32 dred_control_draw_iteration_callback(dred_control* pControl, dred_rect* pRelativeRect, void* pUserData)
 {
     assert(pControl      != NULL);
@@ -2211,7 +2552,10 @@ dr_bool32 dred_control_draw_iteration_callback(dred_control* pControl, dred_rect
 
 void dred_control_draw(dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface)
 {
-    if (pControl == NULL) {
+    (void)pSurface;
+    dtk_control_immediate_redraw(DTK_CONTROL(pControl), dtk_rect_init_dred(relativeRect));
+
+    /*if (pControl == NULL) {
         return;
     }
 
@@ -2220,8 +2564,9 @@ void dred_control_draw(dred_control* pControl, dred_rect relativeRect, dtk_surfa
         return;
     }
 
-    dred_control_iterate_visible_elements(pControl, relativeRect, dred_control_draw_iteration_callback, pSurface);
+    dred_control_iterate_visible_elements(pControl, relativeRect, dred_control_draw_iteration_callback, pSurface);*/
 }
+#endif
 
 void dred_control_get_clip(dred_control* pControl, dred_rect* pRelativeRect, dtk_surface* pSurface)
 {
@@ -2232,7 +2577,7 @@ void dred_control_get_clip(dred_control* pControl, dred_rect* pRelativeRect, dtk
     pControl->pGUI->paintingCallbacks.getClip(pRelativeRect, pSurface);
 
     // The clip returned by the drawing callback will be absolute so we'll need to convert that to relative.
-    dred_make_rect_relative(pControl, pRelativeRect);
+    //dred_make_rect_relative(pControl, pRelativeRect);
 }
 
 void dred_control_set_clip(dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface)
@@ -2251,10 +2596,10 @@ void dred_control_set_clip(dred_control* pControl, dred_rect relativeRect, dtk_s
         relativeRect.bottom = relativeRect.top;
     }
 
-    dred_rect absoluteRect = relativeRect;
-    dred_make_rect_absolute(pControl, &absoluteRect);
+    //dred_rect absoluteRect = relativeRect;
+    //dred_make_rect_absolute(pControl, &absoluteRect);
 
-    pControl->pGUI->paintingCallbacks.setClip(absoluteRect, pSurface);
+    pControl->pGUI->paintingCallbacks.setClip(relativeRect, pSurface);
 }
 
 void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dtk_color color, dtk_surface* pSurface)
@@ -2265,10 +2610,10 @@ void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dtk_
 
     assert(pControl->pGUI != NULL);
 
-    dred_rect absoluteRect = relativeRect;
-    dred_make_rect_absolute(pControl, &absoluteRect);
+    //dred_rect absoluteRect = relativeRect;
+    //dred_make_rect_absolute(pControl, &absoluteRect);
 
-    pControl->pGUI->paintingCallbacks.drawRect(absoluteRect, color, pSurface);
+    pControl->pGUI->paintingCallbacks.drawRect(relativeRect, color, pSurface);
 }
 
 void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_surface* pSurface)
@@ -2279,10 +2624,10 @@ void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRe
 
     assert(pControl->pGUI != NULL);
 
-    dred_rect absoluteRect = relativeRect;
-    dred_make_rect_absolute(pControl, &absoluteRect);
+    //dred_rect absoluteRect = relativeRect;
+    //dred_make_rect_absolute(pControl, &absoluteRect);
 
-    pControl->pGUI->paintingCallbacks.drawRectOutline(absoluteRect, color, outlineWidth, pSurface);
+    pControl->pGUI->paintingCallbacks.drawRectOutline(relativeRect, color, outlineWidth, pSurface);
 }
 
 void dred_control_draw_rect_with_outline(dred_control * pControl, dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface)
@@ -2293,10 +2638,10 @@ void dred_control_draw_rect_with_outline(dred_control * pControl, dred_rect rela
 
     assert(pControl->pGUI != NULL);
 
-    dred_rect absoluteRect = relativeRect;
-    dred_make_rect_absolute(pControl, &absoluteRect);
+    //dred_rect absoluteRect = relativeRect;
+    //dred_make_rect_absolute(pControl, &absoluteRect);
 
-    pControl->pGUI->paintingCallbacks.drawRectWithOutline(absoluteRect, color, outlineWidth, outlineColor, pSurface);
+    pControl->pGUI->paintingCallbacks.drawRectWithOutline(relativeRect, color, outlineWidth, outlineColor, pSurface);
 }
 
 void dred_control_draw_round_rect(dred_control* pControl, dred_rect relativeRect, dtk_color color, float radius, dtk_surface* pSurface)
@@ -2307,10 +2652,10 @@ void dred_control_draw_round_rect(dred_control* pControl, dred_rect relativeRect
 
     assert(pControl->pGUI != NULL);
 
-    dred_rect absoluteRect = relativeRect;
-    dred_make_rect_absolute(pControl, &absoluteRect);
+    //dred_rect absoluteRect = relativeRect;
+    //dred_make_rect_absolute(pControl, &absoluteRect);
 
-    pControl->pGUI->paintingCallbacks.drawRoundRect(absoluteRect, color, radius, pSurface);
+    pControl->pGUI->paintingCallbacks.drawRoundRect(relativeRect, color, radius, pSurface);
 }
 
 void dred_control_draw_round_rect_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_surface* pSurface)
@@ -2321,10 +2666,10 @@ void dred_control_draw_round_rect_outline(dred_control* pControl, dred_rect rela
 
     assert(pControl->pGUI != NULL);
 
-    dred_rect absoluteRect = relativeRect;
-    dred_make_rect_absolute(pControl, &absoluteRect);
+    //dred_rect absoluteRect = relativeRect;
+    //dred_make_rect_absolute(pControl, &absoluteRect);
 
-    pControl->pGUI->paintingCallbacks.drawRoundRectOutline(absoluteRect, color, radius, outlineWidth, pSurface);
+    pControl->pGUI->paintingCallbacks.drawRoundRectOutline(relativeRect, color, radius, outlineWidth, pSurface);
 }
 
 void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface)
@@ -2335,10 +2680,10 @@ void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect
 
     assert(pControl->pGUI != NULL);
 
-    dred_rect absoluteRect = relativeRect;
-    dred_make_rect_absolute(pControl, &absoluteRect);
+    //dred_rect absoluteRect = relativeRect;
+    //dred_make_rect_absolute(pControl, &absoluteRect);
 
-    pControl->pGUI->paintingCallbacks.drawRoundRectWithOutline(absoluteRect, color, radius, outlineWidth, outlineColor, pSurface);
+    pControl->pGUI->paintingCallbacks.drawRoundRectWithOutline(relativeRect, color, radius, outlineWidth, outlineColor, pSurface);
 }
 
 void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface)
@@ -2349,11 +2694,11 @@ void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const 
 
     assert(pControl->pGUI != NULL);
 
-    float absolutePosX = posX;
-    float absolutePosY = posY;
-    dred_make_point_absolute(pControl, &absolutePosX, &absolutePosY);
+    //float absolutePosX = posX;
+    //float absolutePosY = posY;
+    //dred_make_point_absolute(pControl, &absolutePosX, &absolutePosY);
 
-    pControl->pGUI->paintingCallbacks.drawText(pFont->pInternalFont, text, textLengthInBytes, absolutePosX, absolutePosY, color, backgroundColor, pSurface);
+    pControl->pGUI->paintingCallbacks.drawText(pFont->pInternalFont, text, textLengthInBytes, posX, posY, color, backgroundColor, pSurface);
 }
 
 void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_draw_image_args* pArgs, dtk_surface* pSurface)
@@ -2364,8 +2709,8 @@ void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dre
 
     assert(pControl->pGUI != NULL);
 
-    dred_make_point_absolute(pControl, &pArgs->dstX, &pArgs->dstY);
-    dred_make_point_absolute(pControl, &pArgs->dstBoundsX, &pArgs->dstBoundsY);
+    //dred_make_point_absolute(pControl, &pArgs->dstX, &pArgs->dstY);
+    //dred_make_point_absolute(pControl, &pArgs->dstBoundsX, &pArgs->dstBoundsY);
 
     if ((pArgs->options & DRED_GUI_IMAGE_ALIGN_CENTER) != 0)
     {
@@ -2671,8 +3016,8 @@ void dred_gui_get_image_size(dred_gui_image* pImage, unsigned int* pWidthOut, un
 
 void dred_control_on_size_fit_children_to_parent(dred_control* pControl, float newWidth, float newHeight)
 {
-    for (dred_control* pChild = pControl->pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
-        dred_control_set_size(pChild, newWidth, newHeight);
+    for (dtk_control* pChild = pControl->baseControl.pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
+        dtk_control_set_size(pChild, (dtk_int32)newWidth, (dtk_int32)newHeight);
     }
 }
 
@@ -2741,7 +3086,18 @@ dr_bool32 dred_clamp_rect_to_element(const dred_control* pControl, dred_rect* pR
         return DR_FALSE;
     }
 
+    dtk_rect rect = dtk_rect_init_dred(*pRelativeRect);
+    dtk_bool32 result = dtk_control_clamp_rect(DTK_CONTROL(pControl), &rect);
+    
+    pRelativeRect->left   = (float)rect.left;
+    pRelativeRect->top    = (float)rect.top;
+    pRelativeRect->right  = (float)rect.right;
+    pRelativeRect->bottom = (float)rect.bottom;
 
+    return result;
+
+
+#if 0
     if (pRelativeRect->left < 0) {
         pRelativeRect->left = 0;
     }
@@ -2758,6 +3114,7 @@ dr_bool32 dred_clamp_rect_to_element(const dred_control* pControl, dred_rect* pR
 
 
     return (pRelativeRect->right - pRelativeRect->left > 0) && (pRelativeRect->bottom - pRelativeRect->top > 0);
+#endif
 }
 
 dred_rect dred_make_rect_relative(const dred_control* pControl, dred_rect* pRect)
@@ -2766,10 +3123,10 @@ dred_rect dred_make_rect_relative(const dred_control* pControl, dred_rect* pRect
         return dred_make_rect(0, 0, 0, 0);
     }
 
-    pRect->left   -= pControl->absolutePosX;
-    pRect->top    -= pControl->absolutePosY;
-    pRect->right  -= pControl->absolutePosX;
-    pRect->bottom -= pControl->absolutePosY;
+    pRect->left   -= pControl->baseControl.absolutePosX;
+    pRect->top    -= pControl->baseControl.absolutePosY;
+    pRect->right  -= pControl->baseControl.absolutePosX;
+    pRect->bottom -= pControl->baseControl.absolutePosY;
 
     return *pRect;
 }
@@ -2780,10 +3137,10 @@ dred_rect dred_make_rect_absolute(const dred_control * pControl, dred_rect * pRe
         return dred_make_rect(0, 0, 0, 0);
     }
 
-    pRect->left   += pControl->absolutePosX;
-    pRect->top    += pControl->absolutePosY;
-    pRect->right  += pControl->absolutePosX;
-    pRect->bottom += pControl->absolutePosY;
+    pRect->left   += pControl->baseControl.absolutePosX;
+    pRect->top    += pControl->baseControl.absolutePosY;
+    pRect->right  += pControl->baseControl.absolutePosX;
+    pRect->bottom += pControl->baseControl.absolutePosY;
 
     return *pRect;
 }
@@ -2793,11 +3150,11 @@ void dred_make_point_relative(const dred_control* pControl, float* positionX, fl
     if (pControl != NULL)
     {
         if (positionX != NULL) {
-            *positionX -= pControl->absolutePosX;
+            *positionX -= pControl->baseControl.absolutePosX;
         }
 
         if (positionY != NULL) {
-            *positionY -= pControl->absolutePosY;
+            *positionY -= pControl->baseControl.absolutePosY;
         }
     }
 }
@@ -2807,11 +3164,11 @@ void dred_make_point_absolute(const dred_control* pControl, float* positionX, fl
     if (pControl != NULL)
     {
         if (positionX != NULL) {
-            *positionX += pControl->absolutePosX;
+            *positionX += pControl->baseControl.absolutePosX;
         }
 
         if (positionY != NULL) {
-            *positionY += pControl->absolutePosY;
+            *positionY += pControl->baseControl.absolutePosY;
         }
     }
 }

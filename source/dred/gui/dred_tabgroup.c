@@ -73,7 +73,7 @@ void dred_tabgroup__on_paint(dred_control* pControl, dred_rect rect, dtk_surface
 void dred_tabbar__on_tab_activated(dred_tabbar* pTabBar, dred_tab* pTab, dred_tab* pOldActiveTab)
 {
     // The tab group is the parent of the tab bar.
-    dred_tabgroup* pTabGroup = DRED_TABGROUP(dred_control_get_parent(DRED_CONTROL(pTabBar)));
+    dred_tabgroup* pTabGroup = DRED_TABGROUP(dtk_control_get_parent(DTK_CONTROL(pTabBar)));
     if (pTabGroup == NULL) {
         return;
     }
@@ -92,7 +92,7 @@ void dred_tabbar__on_tab_activated(dred_tabbar* pTabBar, dred_tab* pTab, dred_ta
 void dred_tabbar__on_tab_deactivated(dred_tabbar* pTabBar, dred_tab* pTab, dred_tab* pNewActiveTab)
 {
     // The tab group is the parent of the tab bar.
-    dred_tabgroup* pTabGroup = DRED_TABGROUP(dred_control_get_parent(DRED_CONTROL(pTabBar)));
+    dred_tabgroup* pTabGroup = DRED_TABGROUP(dtk_control_get_parent(DTK_CONTROL(pTabBar)));
     if (pTabGroup == NULL) {
         return;
     }
@@ -103,7 +103,7 @@ void dred_tabbar__on_tab_deactivated(dred_tabbar* pTabBar, dred_tab* pTab, dred_
     }
 
     dred_control_hide(pControl);
-    if (dred_control_has_keyboard_capture(pControl)) {
+    if (dtk_control_has_keyboard_capture(DTK_CONTROL(pControl))) {
         dred_release_keyboard(dred_control_get_context(pControl));
     }
 
@@ -112,7 +112,7 @@ void dred_tabbar__on_tab_deactivated(dred_tabbar* pTabBar, dred_tab* pTab, dred_
 
 void dred_tabbar__on_tab_close(dred_tabbar* pTabBar, dred_tab* pTab)
 {
-    dred_tabgroup* pTabGroup = DRED_TABGROUP(dred_control_get_parent(DRED_CONTROL(pTabBar)));
+    dred_tabgroup* pTabGroup = DRED_TABGROUP(dtk_control_get_parent(DTK_CONTROL(pTabBar)));
     if (pTabGroup == NULL) {
         return;
     }
@@ -125,7 +125,7 @@ void dred_tabbar__on_tab_mouse_button_up(dred_tabbar* pTabBar, dred_tab* pTab, i
     (void)pTab;
     (void)stateFlags;
 
-    dred_tabgroup* pTabGroup = DRED_TABGROUP(dred_control_get_parent(DRED_CONTROL(pTabBar)));
+    dred_tabgroup* pTabGroup = DRED_TABGROUP(dtk_control_get_parent(DTK_CONTROL(pTabBar)));
     if (pTabGroup == NULL) {
         return;
     }
@@ -155,7 +155,7 @@ dr_bool32 dred_tabgroup_init(dred_tabgroup* pTabGroup, dred_context* pDred, dred
     memset(pTabGroup, 0, sizeof(*pTabGroup));
 
 
-    if (!dred_control_init(DRED_CONTROL(pTabGroup), pDred, pParent, DRED_CONTROL_TYPE_TABGROUP)) {
+    if (!dred_control_init(DRED_CONTROL(pTabGroup), pDred, pParent, NULL, DRED_CONTROL_TYPE_TABGROUP)) {
         return DR_FALSE;
     }
 

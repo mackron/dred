@@ -2478,6 +2478,7 @@ dtk_result dtk_window_immediate_redraw(dtk_window* pWindow, dtk_rect rect)
 typedef struct
 {
     dtk_control* pControlUnderPoint;
+    dtk_window* pWindow;
     dtk_int32 posX;
     dtk_int32 posY;
 } dtk_window__find_control_under_point_iterator_cb__data;
@@ -2488,7 +2489,9 @@ dtk_bool32 dtk_window__find_control_under_point_iterator_cb(dtk_control* pContro
     
     dtk_int32 relativePosX = pData->posX;
     dtk_int32 relativePosY = pData->posY;
-    dtk_control_absolute_to_relative(pControl, &relativePosX, &relativePosY);
+    if (pControl != DTK_CONTROL(pData->pWindow)) {
+        dtk_control_absolute_to_relative(pControl, &relativePosX, &relativePosY);
+    }
 
     if (dtk_rect_contains_point(*pRelativeRect, relativePosX, relativePosY)) {
         if (pControl->onHitTest) {
@@ -2509,6 +2512,7 @@ dtk_control* dtk_window_find_control_under_point(dtk_window* pWindow, dtk_int32 
 
     dtk_window__find_control_under_point_iterator_cb__data data;
     data.pControlUnderPoint = NULL;
+    data.pWindow = pWindow;
     data.posX = posX;
     data.posY = posY;
     dtk_control_iterate_visible_controls(DTK_CONTROL(pWindow), dtk_control_get_local_rect(DTK_CONTROL(pWindow)), dtk_window__find_control_under_point_iterator_cb, NULL, &data);

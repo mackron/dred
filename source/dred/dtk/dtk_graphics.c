@@ -409,7 +409,8 @@ dtk_result dtk_surface_pop__gdi(dtk_surface* pSurface)
         return result;
     }
 
-    RestoreDC((HDC)pSurface->gdi.hDC, state.gdi.token);
+    //RestoreDC((HDC)pSurface->gdi.hDC, state.gdi.token);
+    RestoreDC((HDC)pSurface->gdi.hDC, -1);
     return DTK_SUCCESS;
 }
 
@@ -565,7 +566,7 @@ void dtk_surface_draw_surface__gdi(dtk_surface* pDstSurface, dtk_surface* pSrcSu
         SelectObject(hIntermediateDC, GetStockObject(NULL_PEN));
         SelectObject(hIntermediateDC, GetStockObject(DC_BRUSH));
         SetDCBrushColor(hIntermediateDC, RGB(pArgs->backgroundColor.r, pArgs->backgroundColor.g, pArgs->backgroundColor.b));
-        Rectangle(hIntermediateDC, 0, 0, pArgs->srcWidth, pArgs->srcHeight);
+        Rectangle(hIntermediateDC, 0, 0, pArgs->srcWidth+1, pArgs->srcHeight+1);    // <-- +1 to the width and height because we are using a NULL pen and are not using advanced mode on hIntermediateDC.
 
         BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
         if (pSrcSurface->pTK->win32.AlphaBlend) {

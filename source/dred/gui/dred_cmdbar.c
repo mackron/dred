@@ -129,7 +129,7 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dred_control* p
     dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
     assert(pTextBox != NULL);
 
-    dred_cmdbar* pCmdBar = DRED_CMDBAR(dred_control_get_parent(DRED_CONTROL(pTextBox)));
+    dred_cmdbar* pCmdBar = DRED_CMDBAR(dtk_control_get_parent(DTK_CONTROL(pTextBox)));
     assert(pCmdBar != NULL);
 
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
@@ -169,7 +169,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dred_control* p
     dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
     assert(pTextBox != NULL);
 
-    dred_cmdbar* pCmdBar = DRED_CMDBAR(dred_control_get_parent(DRED_CONTROL(pTextBox)));
+    dred_cmdbar* pCmdBar = DRED_CMDBAR(dtk_control_get_parent(DTK_CONTROL(pTextBox)));
     assert(pCmdBar != NULL);
 
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
@@ -214,7 +214,7 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dtk_key key, int stateF
     assert(pTextBox != NULL);
 
     // The parent is the command bar.
-    dred_cmdbar* pCmdBar = DRED_CMDBAR(dred_control_get_parent(DRED_CONTROL(pTextBox)));
+    dred_cmdbar* pCmdBar = DRED_CMDBAR(dtk_control_get_parent(DTK_CONTROL(pTextBox)));
     assert(pCmdBar != NULL);
 
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
@@ -285,7 +285,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
     assert(pTextBox != NULL);
 
     // The parent is the command bar.
-    dred_cmdbar* pCmdBar = DRED_CMDBAR(dred_control_get_parent(DRED_CONTROL(pTextBox)));
+    dred_cmdbar* pCmdBar = DRED_CMDBAR(dtk_control_get_parent(DTK_CONTROL(pTextBox)));
     assert(pCmdBar != NULL);
 
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
@@ -330,7 +330,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
 void dred_cmdbar_tb__on_text_changed(dred_textbox* pTextBox)
 {
     // The parent is the command bar.
-    dred_cmdbar* pCmdBar = DRED_CMDBAR(dred_control_get_parent(DRED_CONTROL(pTextBox)));
+    dred_cmdbar* pCmdBar = DRED_CMDBAR(dtk_control_get_parent(DTK_CONTROL(pTextBox)));
     assert(pCmdBar != NULL);
 
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
@@ -366,8 +366,8 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
 
     float cmdbarHeight = dr_max(textboxHeight, dr_max(messageHeight, infobarHeight)) + (pDred->config.cmdbarPaddingY*pDred->uiScale*2);
     float cmdbarWidth = 0;
-    if (dred_control_get_parent(DRED_CONTROL(pCmdBar)) != NULL) {
-        cmdbarWidth = dred_control_get_width(dred_control_get_parent(DRED_CONTROL(pCmdBar)));
+    if (dtk_control_get_parent(DTK_CONTROL(pCmdBar)) != NULL) {
+        cmdbarWidth = (float)dtk_control_get_width(dtk_control_get_parent(DTK_CONTROL(pCmdBar)));
     }
     dred_control_set_size(DRED_CONTROL(pCmdBar), cmdbarWidth, cmdbarHeight);
 
@@ -383,7 +383,7 @@ dr_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_contr
     }
 
     memset(pCmdBar, 0, sizeof(*pCmdBar));
-    if (!dred_control_init(DRED_CONTROL(pCmdBar), pDred, pParent, DRED_CONTROL_TYPE_CMDBAR)) {
+    if (!dred_control_init(DRED_CONTROL(pCmdBar), pDred, pParent, NULL, DRED_CONTROL_TYPE_CMDBAR)) {
         return DR_FALSE;
     }
 
@@ -680,7 +680,7 @@ dr_bool32 dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
         return DR_FALSE;
     }
 
-    return dred_control_has_keyboard_capture(DRED_CONTROL(pCmdBar->pTextBox));
+    return dtk_control_has_keyboard_capture(DTK_CONTROL(pCmdBar->pTextBox));
 }
 
 
