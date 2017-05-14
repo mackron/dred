@@ -92,12 +92,7 @@ dtk_result dtk__normalize_event(dtk_event* pEvent)  // DTK_CANCELLED if the even
         if (pEvent->pControl == pGarbageControl) {
             pEvent->pControl = NULL;
             pEvent->type = DTK_EVENT_NONE;
-            printf("EVENT CANCELLED\n");
             return DTK_CANCELLED;
-        }
-
-        if (pEvent->type == DTK_EVENT_RELEASE_KEYBOARD) {
-            printf("TESITNG\n");
         }
 
         switch (pEvent->type)
