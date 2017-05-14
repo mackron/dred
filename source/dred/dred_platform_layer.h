@@ -82,7 +82,7 @@ struct dred_window
 
     // A pointer to the GUI element that belongs to this window that should be given the keyboard capture when this window
     // receives focus.
-    dtk_control* pControlWithKeyboardCapture;
+    //dtk_control* pControlWithKeyboardCapture;
 
     // Whether or not the menu is being shown.
     dr_bool32 isShowingMenu;

@@ -86,6 +86,47 @@ dtk_result dtk__handle_event(dtk_event* pEvent)
     dtk_context* pTK = pEvent->pTK;
     dtk_assert(pTK != NULL);
 
+    // If there's any garbage the event will need to be normalized before executing. If the event references a garbaged control it
+    // needs to be cancelled.
+    dtk_uint32 garbageCount = dtk_garbage_queue_get_count(&pTK->garbageQueue);
+    if (garbageCount > 0) {
+        dtk_control* pGarbageControl = dtk_garbage_queue_get_next_garbage_control(&pTK->garbageQueue);
+        if (pEvent->pControl == pGarbageControl) {
+            pEvent->pControl = NULL;
+            pEvent->type = DTK_EVENT_NONE;
+            return DTK_CANCELLED;
+        }
+
+        switch (pEvent->type)
+        {
+            case DTK_EVENT_CAPTURE_KEYBOARD:
+            {
+                if (pEvent->captureKeyboard.pOldCapturedControl == pGarbageControl) {
+                    pEvent->captureKeyboard.pOldCapturedControl = NULL;
+                }
+            } break;
+            case DTK_EVENT_RELEASE_KEYBOARD:
+            {
+                if (pEvent->releaseKeyboard.pNewCapturedControl == pGarbageControl) {
+                    pEvent->releaseKeyboard.pNewCapturedControl = NULL;
+                }
+            } break;
+
+            case DTK_EVENT_CAPTURE_MOUSE:
+            {
+                if (pEvent->captureMouse.pOldCapturedControl == pGarbageControl) {
+                    pEvent->captureMouse.pOldCapturedControl = NULL;
+                }
+            } break;
+            case DTK_EVENT_RELEASE_MOUSE:
+            {
+                if (pEvent->releaseMouse.pNewCapturedControl == pGarbageControl) {
+                    pEvent->releaseMouse.pNewCapturedControl = NULL;
+                }
+            } break;
+        }
+    }
+
     dtk_event_proc onEventGlobal = pTK->onEvent;
     if (onEventGlobal == NULL) {
         onEventGlobal = dtk_default_event_handler;
@@ -150,9 +191,10 @@ void dtk__post_mouse_leave_event_recursive(dtk_context* pTK, dtk_control* pNewCo
 void dtk__post_mouse_enter_event_recursive(dtk_context* pTK, dtk_control* pNewControlUnderMouse, dtk_control* pOldControlUnderMouse);
 
 #ifdef DTK_WIN32
-#define DTK_WM_LOCAL                (WM_USER + 0)
-#define DTK_WM_CUSTOM               (WM_USER + 1)
-#define DTK_WM_PAINT_NOTIFICATION   (WM_USER + 2)
+#define DTK_WM_LOCAL                        (WM_USER + 0)
+#define DTK_WM_CUSTOM                       (WM_USER + 1)
+#define DTK_WM_PAINT_NOTIFICATION           (WM_USER + 2)
+#define DTK_WM_GARBAGE_DEQUEUE_NOTIFICATION (WM_USER + 3)
 
 typedef BOOL    (WINAPI * DTK_PFN_InitCommonControlsEx)(const LPINITCOMMONCONTROLSEX lpInitCtrls);
 typedef HRESULT (WINAPI * DTK_PFN_OleInitialize)       (LPVOID pvReserved);
@@ -190,6 +232,7 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 #include "dtk_timer.c"
 #include "dtk_clipboard.c"
 #include "dtk_paint_queue.c"
+#include "dtk_garbage_queue.c"
 #include "dtk_command_line.c"
 
 typedef struct
@@ -333,6 +376,11 @@ LRESULT CALLBACK dtk_MessagingWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam
             dtk_free(pEventData);
         } break;
 
+        case DTK_WM_GARBAGE_DEQUEUE_NOTIFICATION:
+        {
+            dtk_handle_garbage_dequeue_notification_event((dtk_context*)wParam, (dtk_control*)lParam);
+        } break;
+
         default: break;
     }
 
@@ -459,6 +507,9 @@ dtk_result dtk_next_event__win32(dtk_context* pTK, dtk_bool32 blocking)
         if (result == 0) {
             return DTK_NO_EVENT;
         }
+        if (msg.message == WM_QUIT) {
+            return DTK_QUIT;
+        }
     }
 
     // Handle accelerator keys. If an accelerator key is processed with TranslateAccelerator() we do _not_ want to handle
@@ -509,6 +560,12 @@ dtk_result dtk_post_paint_notification_event__win32(dtk_context* pTK, dtk_window
     (void)pTK;
     PostMessageA((HWND)pWindow->win32.hWnd, DTK_WM_PAINT_NOTIFICATION, (WPARAM)0, (LPARAM)pWindow);
 
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_post_garbage_dequeue_notification_event__win32(dtk_context* pTK, dtk_control* pControl)
+{
+    PostMessageA((HWND)pTK->win32.hMessagingWindow, DTK_WM_GARBAGE_DEQUEUE_NOTIFICATION, (WPARAM)pTK, (LPARAM)pControl);
     return DTK_SUCCESS;
 }
 
@@ -651,10 +708,7 @@ dtk_result dtk__capture_keyboard_window__win32(dtk_context* pTK, dtk_window* pWi
 {
     (void)pTK;
 
-    if (pTK->win32.pWindowWithKeyboardFocus != pWindow) {
-        SetFocus((HWND)pWindow->win32.hWnd);
-    }
-
+    SetFocus((HWND)pWindow->win32.hWnd);
     return DTK_SUCCESS;
 }
 
@@ -990,6 +1044,33 @@ dtk_result dtk_post_paint_notification_event__gtk(dtk_context* pTK, dtk_window* 
 }
 
 
+typedef struct
+{
+    dtk_context* pTK;
+    dtk_ptr pControl;  // <-- Do _not_ dereference!
+} dtk_post_garbage_dequeue_notification_event_cb_data;
+
+static gboolean dtk_post_garbage_dequeue_notification_event_cb__gtk(dtk_post_garbage_dequeue_notification_event_cb_data* pData)
+{
+    dtk_handle_garbage_dequeue_notification_event(pData->pTK, (dtk_control*)pData->pControl);
+    return FALSE;
+}
+
+dtk_result dtk_post_garbage_dequeue_notification_event__gtk(dtk_context* pTK, dtk_control* pControl)
+{
+    dtk_post_garbage_dequeue_notification_event_cb_data* pData = (dtk_post_garbage_dequeue_notification_event_cb_data*)dtk_calloc(sizeof(*pData), 1);
+    if (pData == NULL) {
+        return DTK_OUT_OF_MEMORY;
+    }
+
+    pData->pTK = pTK;
+    pData->pControl = pControl;
+
+    g_idle_add((GSourceFunc)dtk_post_garbage_dequeue_notification_event_cb__gtk, pData);
+    return DTK_SUCCESS;
+}
+
+
 dtk_result dtk_post_quit_event__gtk(dtk_context* pTK, int exitCode)
 {
     // When this is called, there's a chance we're waiting on gtk_main_iteration(). We'll need to
@@ -1141,8 +1222,8 @@ dtk_result dtk__release_keyboard_window__gtk(dtk_context* pTK)
 {
     (void)pTK;
 
-    // From what I can tell I appears there isn't actually a way to ungrab the focus. Passing NULL to gtk_widget_grab_focus() results in an
-    // error, so I'm not quite sure how do it, or if it's event needed...
+    // From what I can tell it appears there isn't actually a way to ungrab the focus. Passing NULL to gtk_widget_grab_focus() results in an
+    // error, so I'm not quite sure how do it, or if it's even needed...
     return DTK_SUCCESS;
 }
 
@@ -1151,25 +1232,36 @@ dtk_result dtk__capture_mouse_window__gtk(dtk_context* pTK, dtk_window* pWindow)
     (void)pTK;
 
 #if (GTK_MAJOR_VERSION >= 3 && GTK_MINOR_VERSION >= 20) // GTK 3.20+
-    gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
-        gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pClientArea)), GDK_SEAT_CAPABILITY_POINTER, FALSE, NULL, NULL, NULL, NULL);
+    GdkDevice* pPointerDevice = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+    gdk_seat_grab(gdk_device_get_seat(pPointerDevice),
+        gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pClientArea)), GDK_SEAT_CAPABILITY_ALL_POINTING, FALSE, NULL, NULL, NULL, NULL);
 #else
-	gdk_device_grab(gtk_get_current_event_device(), gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pClientArea)), GDK_OWNERSHIP_APPLICATION, FALSE,
+    GdkDevice* pPointerDevice = gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_display_get_default()));
+	gdk_device_grab(pPointerDevice, gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pClientArea)), GDK_OWNERSHIP_APPLICATION, FALSE,
 		GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK, NULL, GDK_CURRENT_TIME);
 #endif
+
+    // NOTE: Unlike dtk__release_mouse_window__gtk() below, we don't manually post the event here. Instead, it is done generically in dtk__capture_mouse_window().
 
     return DTK_SUCCESS;
 }
 
 dtk_result dtk__release_mouse_window__gtk(dtk_context* pTK)
 {
-    (void)pTK;
-
 #if (GTK_MAJOR_VERSION >= 3 && GTK_MINOR_VERSION >= 20) // GTK 3.20+
-    gdk_seat_ungrab(gdk_display_get_default_seat(gdk_display_get_default()));
+    GdkDevice* pPointerDevice = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+    gdk_seat_ungrab(gdk_device_get_seat(pPointerDevice));
 #else
-	gdk_device_ungrab(gtk_get_current_event_device(), GDK_CURRENT_TIME);
+    GdkDevice* pPointerDevice = gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_display_get_default()));
+	gdk_device_ungrab(pPointerDevice, GDK_CURRENT_TIME);
 #endif
+
+    // GTK/GDK is a little bit different when it comes to when the mouse release event is posted to the window compared to Win32. It appears
+    // to not post the event when the device is ungrab explicitly (possibly because I'm doing something wrong, but I don't know what). To
+    // work around this we just post it manually.
+    dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_MOUSE, DTK_CONTROL(pTK->pWindowWithMouseCapture));
+    eRelease.releaseMouse.pNewCapturedControl = NULL;
+    dtk_post_local_event(pTK, &eRelease);
 
     return DTK_SUCCESS;
 }
@@ -1214,6 +1306,11 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
         return result;
     }
 
+    result = dtk_garbage_queue_init(&pTK->garbageQueue);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
     // TODO: Change this depending on the platform. May also want different types of default fonts (UI, monospace, etc.)... Maybe also use the
     //       notion of system fonts instead?
     dtk_font_init(pTK, "Courier New", 13, dtk_font_weight_default, dtk_font_slant_none, 0, &pTK->defaultFont);
@@ -1225,6 +1322,7 @@ dtk_result dtk_uninit(dtk_context* pTK)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
 
+    dtk_garbage_queue_uninit(&pTK->garbageQueue);
     dtk_paint_queue_uninit(&pTK->paintQueue);
     
 #ifdef DTK_WIN32
@@ -1273,6 +1371,10 @@ dtk_result dtk_post_local_event(dtk_context* pTK, dtk_event* pEvent)
 {
     if (pTK == NULL || pEvent == NULL || pEvent->pControl == NULL) return DTK_INVALID_ARGS;
 
+    if (pEvent->pControl->isUninitialized) {
+        return DTK_INVALID_ARGS;    // Cannot post an event for controls that are being uninitialised.
+    }
+
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
@@ -1292,6 +1394,10 @@ dtk_bool32 dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent)
 {
     if (pTK == NULL || pEvent == NULL || pEvent->pControl == NULL) return DTK_FALSE;
 
+    if (pEvent->pControl->isUninitialized) {
+        return DTK_FALSE;    // Cannot post an event for controls that are being uninitialised.
+    }
+
     dtk_event_proc onEvent = pEvent->pControl->onEvent;
     if (onEvent == NULL && pEvent->pControl->type < DTK_CONTROL_TYPE_COUNT) {
         onEvent = pTK->defaultEventHandlers[pEvent->pControl->type];
@@ -1307,6 +1413,10 @@ dtk_bool32 dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent)
 dtk_result dtk_post_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    if (pControl != NULL && pControl->isUninitialized) {
+        return DTK_INVALID_ARGS;    // Cannot post an event for controls that are being uninitialised.
+    }
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
@@ -1326,6 +1436,10 @@ dtk_result dtk_post_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_ui
 dtk_result dtk_handle_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    if (pControl != NULL && pControl->isUninitialized) {
+        return DTK_INVALID_ARGS;    // Cannot post an event for controls that are being uninitialised.
+    }
 
     dtk_event e;
     e.type = DTK_EVENT_CUSTOM;
@@ -1367,6 +1481,46 @@ dtk_result dtk_handle_paint_notification_event(dtk_context* pTK, dtk_window* pWi
     }
 
     return dtk_window_immediate_redraw(item.pWindow, item.rect);
+}
+
+dtk_result dtk_post_garbage_dequeue_notification_event(dtk_context* pTK, dtk_control* pControl)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk_post_garbage_dequeue_notification_event__win32(pTK, pControl);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk_post_garbage_dequeue_notification_event__gtk(pTK, pControl);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_handle_garbage_dequeue_notification_event(dtk_context* pTK, dtk_control* pControl)
+{
+    if (pTK == NULL || pControl == NULL) return DTK_INVALID_ARGS;
+
+    // All we do here is remove the garbage control (pControl) from the garbage queue, which should _always_ be the next control
+    // in the queue.
+    dtk_control* pDequeuedControl;
+    if (dtk_garbage_queue_dequeue(&pTK->garbageQueue, &pDequeuedControl) != DTK_SUCCESS) {
+        return DTK_ERROR;
+    }
+
+    // The next garbage control should always be the same as pControl. Note that the assert and run-time check is intentional just
+    // for safety.
+    dtk_assert(pControl == pDequeuedControl);
+    if (pControl != pDequeuedControl) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
 }
 
 dtk_bool32 dtk_default_event_handler(dtk_event* pEvent)
@@ -1506,68 +1660,66 @@ dtk_result dtk_capture_keyboard(dtk_context* pTK, dtk_control* pControl)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
 
+    dtk_control* pOldCapturedControl = pTK->pControlWithKeyboardCapture;
+    dtk_control* pNewCapturedControl = pControl;
+
     // Don't do anything if the control already has the capture.
-    if (pTK->pControlWithKeyboardCapture == pControl) {
+    if (pOldCapturedControl == pNewCapturedControl) {
         return DTK_SUCCESS;
     }
 
     // The control must be allowed to receive capture.
-    if (pControl != NULL && dtk_control_is_keyboard_capture_allowed(pControl)) {
+    if (pControl != NULL && !dtk_control_is_keyboard_capture_allowed(pControl)) {
         return DTK_INVALID_ARGS;
     }
 
 
-    // Make sure the keyboard is first cleanly released from whatever control currently has the capture.
-    dtk_result result = dtk_release_keyboard(pTK);
-    if (result != DTK_SUCCESS) {
-        return result;
-    }
-
-    // If pControl is NULL this should just act as a release.
-    if (pControl == NULL) {
-        return DTK_SUCCESS;
-    }
-
-
-    // In order to complete the capture we need to also capture the keyboard on the window that owns the control. This must be done
-    // before marking the control as captured and posting the event in order to ensure the window's event handler does not post a
-    // duplicate capture event to pControl.
-    dtk_window* pWindow = dtk_control_get_window(pControl);
-    if (pWindow != NULL) {
-        result = dtk__capture_keyboard_window(pTK, pWindow);
-        if (result != DTK_SUCCESS) {
-            return result;
-        }
-    }
+    // To complete the change of focus we need to change the focus of the window's that own the controls. If the previous and next
+    // focused window is the same, we just ignore it. Otherwise we change it.
+    dtk_window* pOldCapturedWindow = pTK->pWindowWithKeyboardCapture;
+    dtk_window* pNewCapturedWindow = dtk_control_get_window(pNewCapturedControl);
 
     pTK->pControlWithKeyboardCapture = pControl;
 
-    dtk_event e = dtk_event_init(pTK, DTK_EVENT_CAPTURE_KEYBOARD, pTK->pControlWithKeyboardCapture);
-    dtk_post_local_event(pTK, &e);
+    if (pNewCapturedWindow != NULL) {
+        pNewCapturedWindow->pLastDescendantWithKeyboardFocus = pNewCapturedControl;
+    }
+
+
+    // In order to complete the capture we need to post events to the respective controls. There are two places where events
+    // are posted: from this function, and from the window's capture event handler. Thus, if the window is different we just
+    // leave the event posting to the window's event handler. On the other hand, if the window is the same, we just post the
+    // events from here.
+    if (pOldCapturedWindow != pNewCapturedWindow) {
+        // The window is different. Do the event posting from the window event handlers.
+        if (pNewCapturedWindow != NULL) {
+            dtk_result result = dtk__capture_keyboard_window(pTK, pNewCapturedWindow);
+            if (result != DTK_SUCCESS) {
+                return result;
+            }
+        } else {
+            dtk_result result = dtk__release_keyboard_window(pTK);
+            if (result != DTK_SUCCESS) {
+                return result;
+            }
+        }
+    } else {
+        // The window is the same. Do the event posting right here.
+        dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_KEYBOARD, pOldCapturedControl);
+        eRelease.releaseKeyboard.pNewCapturedControl = pNewCapturedControl;
+        dtk_post_local_event(pTK, &eRelease);   // <-- TODO: Should we check if this returns false, and if so, cancel the the focus change?
+
+        dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_KEYBOARD, pNewCapturedControl);
+        eCapture.captureKeyboard.pOldCapturedControl = pOldCapturedControl;
+        dtk_post_local_event(pTK, &eCapture);
+    }
 
     return DTK_SUCCESS;
 }
 
 dtk_result dtk_release_keyboard(dtk_context* pTK)
 {
-    if (pTK == NULL) return DTK_INVALID_ARGS;
-
-    // Just pretend everything was successful if there was already nothing captured.
-    if (pTK->pControlWithKeyboardCapture == NULL) {
-        return DTK_SUCCESS;
-    }
-
-    dtk_event e = dtk_event_init(pTK, DTK_EVENT_RELEASE_KEYBOARD, pTK->pControlWithKeyboardCapture);
-    dtk_post_local_event(pTK, &e);
-
-    pTK->pControlWithKeyboardCapture = NULL;
-
-    // To complete the release we need to release the keyboard from whatever window has the capture. Note that this _must_ be
-    // done after marking the control as released and posting the event to ensure the window's event handler does not post a
-    // duplicate release event to pControlWithKeyboardCapture.
-    dtk__release_keyboard_window(pTK);
-
-    return DTK_SUCCESS;
+    return dtk_capture_keyboard(pTK, NULL);
 }
 
 dtk_control* dtk_get_control_with_keyboard_capture(dtk_context* pTK)
@@ -1666,6 +1818,10 @@ dtk_result dtk__capture_keyboard_window(dtk_context* pTK, dtk_window* pWindow)
     dtk_assert(pTK != NULL);
     dtk_assert(pWindow != NULL);
 
+    if (pTK->pWindowWithKeyboardCapture == pWindow) {
+        return DTK_SUCCESS; // This window already has the keyboard capture.
+    }
+
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
@@ -1716,6 +1872,10 @@ dtk_result dtk__capture_mouse_window(dtk_context* pTK, dtk_window* pWindow)
         result = dtk__capture_mouse_window__gtk(pTK, pWindow);
     }
 #endif
+
+    dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_MOUSE, DTK_CONTROL(pWindow));
+    eCapture.captureMouse.pOldCapturedControl = pTK->pControlWithMouseCapture;
+    dtk_post_local_event(pTK, &eCapture);
 
     return result;
 }

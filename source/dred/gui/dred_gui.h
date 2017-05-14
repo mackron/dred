@@ -257,8 +257,8 @@ typedef void (* dred_gui_on_dirty_proc)                (dred_control* pControl, 
 typedef dr_bool32 (* dred_gui_on_hittest_proc)              (dred_control* pControl, float relativePosX, float relativePosY);
 typedef void (* dred_gui_on_capture_mouse_proc)        (dred_control* pControl);
 typedef void (* dred_gui_on_release_mouse_proc)        (dred_control* pControl);
-typedef void (* dred_gui_on_capture_keyboard_proc)     (dred_control* pControl, dred_control* pPrevCapturedControl);
-typedef void (* dred_gui_on_release_keyboard_proc)     (dred_control* pControl, dred_control* pNewCapturedControl);
+typedef void (* dred_gui_on_capture_keyboard_proc)     (dred_control* pControl, dtk_control* pPrevCapturedControl);
+typedef void (* dred_gui_on_release_keyboard_proc)     (dred_control* pControl, dtk_control* pNewCapturedControl);
 typedef void (* dred_gui_on_change_cursor_proc)        (dred_control* pControl, dtk_system_cursor_type cursor);
 typedef void (* dred_gui_on_delete_element_proc)       (dred_control* pControl);
 typedef void (* dred_gui_on_log)                       (dred_gui* pGUI, const char* message);

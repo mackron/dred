@@ -110,10 +110,10 @@ void dred_control__post_outbound_event_capture_mouse(dred_control* pControl);
 void dred_control__post_outbound_event_capture_mouse_global(dred_control* pControl);
 void dred_control__post_outbound_event_release_mouse(dred_control* pControl);
 void dred_control__post_outbound_event_release_mouse_global(dred_control* pControl);
-void dred_control__post_outbound_event_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl);
-void dred_control__post_outbound_event_capture_keyboard_global(dred_control* pControl, dred_control* pPrevCapturedControl);
-void dred_control__post_outbound_event_release_keyboard(dred_control* pControl, dred_control* pNewCapturedControl);
-void dred_control__post_outbound_event_release_keyboard_global(dred_control* pControl, dred_control* pNewCapturedControl);
+void dred_control__post_outbound_event_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl);
+void dred_control__post_outbound_event_capture_keyboard_global(dred_control* pControl, dtk_control* pPrevCapturedControl);
+void dred_control__post_outbound_event_release_keyboard(dred_control* pControl, dtk_control* pNewCapturedControl);
+void dred_control__post_outbound_event_release_keyboard_global(dred_control* pControl, dtk_control* pNewCapturedControl);
 
 /// Posts a log message.
 void dred_gui__log(dred_gui* pGUI, const char* message);
@@ -517,7 +517,7 @@ void dred_control__post_outbound_event_release_mouse(dred_control* pControl)
 //}
 
 
-void dred_control__post_outbound_event_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
+void dred_control__post_outbound_event_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
 {
     if (pControl->onCaptureKeyboard) {
         pControl->onCaptureKeyboard(pControl, pPrevCapturedControl);
@@ -531,7 +531,7 @@ void dred_control__post_outbound_event_capture_keyboard(dred_control* pControl, 
 //    }
 //}
 
-void dred_control__post_outbound_event_release_keyboard(dred_control* pControl, dred_control* pNewCapturedControl)
+void dred_control__post_outbound_event_release_keyboard(dred_control* pControl, dtk_control* pNewCapturedControl)
 {
     if (pControl->onReleaseKeyboard) {
         pControl->onReleaseKeyboard(pControl, pNewCapturedControl);
@@ -944,7 +944,7 @@ dtk_bool32 dred_control_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_KEY_UP:
         {
-            dred_control__post_outbound_event_key_down(pDredControl, pEvent->keyUp.key, pEvent->keyUp.state);
+            dred_control__post_outbound_event_key_up(pDredControl, pEvent->keyUp.key, pEvent->keyUp.state);
         } break;
 
         case DTK_EVENT_PRINTABLE_KEY_DOWN:
@@ -954,14 +954,12 @@ dtk_bool32 dred_control_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_CAPTURE_KEYBOARD:
         {
-            dred_window* pWindow = (dred_window*)dtk_control_get_window(pControl);
-            pWindow->pControlWithKeyboardCapture = pControl;
-            dred_control__post_outbound_event_capture_keyboard(pDredControl, NULL);
+            dred_control__post_outbound_event_capture_keyboard(pDredControl, pEvent->captureKeyboard.pOldCapturedControl);
         } break;
 
         case DTK_EVENT_RELEASE_KEYBOARD:
         {
-            dred_control__post_outbound_event_release_keyboard(pDredControl, NULL);
+            dred_control__post_outbound_event_release_keyboard(pDredControl, pEvent->releaseKeyboard.pNewCapturedControl);
         } break;
 
         case DTK_EVENT_CAPTURE_MOUSE:

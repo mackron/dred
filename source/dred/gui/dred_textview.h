@@ -475,10 +475,10 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
 void dred_textview_on_paint(dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
 
 // on_capture_keyboard
-void dred_textview_on_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl);
+void dred_textview_on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl);
 
 // on_release_keyboard
-void dred_textview_on_release_keyboard(dred_control* pControl, dred_control* pNewCapturedControl);
+void dred_textview_on_release_keyboard(dred_control* pControl, dtk_control* pNewCapturedControl);
 
 // on_capture_mouse
 void dred_textview_on_capture_mouse(dred_control* pControl);

@@ -467,7 +467,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                     stateFlags |= DTK_KEY_STATE_AUTO_REPEATED;
                 }
 
-                e.pControl = DTK_CONTROL(pTK->win32.pWindowWithKeyboardFocus);
+                e.pControl = DTK_CONTROL(pTK->pWindowWithKeyboardCapture);
                 e.type = DTK_EVENT_KEY_DOWN;
                 e.keyDown.key = dtk_convert_key_from_win32(wParam);
                 e.keyDown.state = stateFlags;
@@ -478,7 +478,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         case WM_KEYUP:
         {
             if (!dtk_is_win32_mouse_button_key_code(wParam)) {
-                e.pControl = DTK_CONTROL(pTK->win32.pWindowWithKeyboardFocus);
+                e.pControl = DTK_CONTROL(pTK->pWindowWithKeyboardCapture);
                 e.type = DTK_EVENT_KEY_UP;
                 e.keyUp.key = dtk_convert_key_from_win32(wParam);
                 e.keyUp.state = dtk_get_modifier_key_state_flags__win32();
@@ -517,7 +517,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                         stateFlags |= DTK_KEY_STATE_AUTO_REPEATED;
                     }
 
-                    e.pControl = DTK_CONTROL(pTK->win32.pWindowWithKeyboardFocus);
+                    e.pControl = DTK_CONTROL(pTK->pWindowWithKeyboardCapture);
                     e.type = DTK_EVENT_PRINTABLE_KEY_DOWN;
                     e.printableKeyDown.utf32 = character;
                     e.printableKeyDown.state = stateFlags;
@@ -534,28 +534,47 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         case WM_SETFOCUS:
         {
             // Only receive focus if the window is allowed to receive the keyboard capture.
-            if (pWindow != pTK->win32.pWindowWithKeyboardFocus) {
+            if (pTK->pWindowWithKeyboardCapture != pWindow) {
                 if (dtk_control_is_keyboard_capture_allowed(e.pControl)) {
                     e.type = DTK_EVENT_CAPTURE_KEYBOARD;
                     dtk__handle_event(&e);
-                    pTK->win32.pWindowWithKeyboardFocus = pWindow;
-                    //printf("Captured\n");
+                    //printf("Captured Window: %d %d %d\n", pWindow->isTopLevel, pWindow->isDialog, pWindow->isPopup);
                 }
             }
         } break;
 
         case WM_KILLFOCUS:
         {
-            // Do not release the keyboard if the next window is not allowed to receive it.
+            // There's a few issues with releasing keyboard focus with Win32. First, the internally focused window may not be the _actual_
+            // focused window from the perspective of DTK because it may have been disallowed keyboard focus. In this case, from DTK's
+            // perspective, it was never focused in the first place and should never receive a release event.
             HWND hNewFocusedWnd = (HWND)wParam;
-            if (pWindow == pTK->win32.pWindowWithKeyboardFocus || hNewFocusedWnd == NULL) {
-                if (hNewFocusedWnd == NULL || dtk_control_is_keyboard_capture_allowed((dtk_control*)GetWindowLongPtrA(hNewFocusedWnd, 0))) {
+            if (hNewFocusedWnd == NULL) {
+                // In this case it means the newly focused window is not part of this instance. It means an entirely different program has
+                // probably got focus. In this case, just kill the focus of the window that currently has the keyboard capture.
+                e.type = DTK_EVENT_RELEASE_KEYBOARD;
+                e.pControl = DTK_CONTROL(pTK->pWindowWithKeyboardCapture);
+                dtk__handle_event(&e);
+            } else {
+                // In this case it means the newly focused window _is_ part of this instance. If the newly focused window is not allowed to
+                // receive keyboard capture, do _not_ post a release event (because there will be no corresponding capture event).
+                dtk_control* pOldFocusedWindow = (dtk_control*)pWindow;
+                dtk_control* pNewFocusedWindow = (dtk_control*)GetWindowLongPtrA(hNewFocusedWnd, 0);
+                if (pTK->pWindowWithKeyboardCapture == pWindow && dtk_control_is_keyboard_capture_allowed(pNewFocusedWindow)) {
                     e.type = DTK_EVENT_RELEASE_KEYBOARD;
+                    e.pControl = pOldFocusedWindow;
                     dtk__handle_event(&e);
-                    pTK->win32.pWindowWithKeyboardFocus = NULL;
-                    //printf("Released\n");
+                    //printf("Released Window: %d %d %d\n", pWindow->isTopLevel, pWindow->isDialog, pWindow->isPopup);
                 }
             }
+        } break;
+
+        case WM_CAPTURECHANGED:
+        {
+            // This message is posted to the window that has _lost_ the mouse capture. Since mouse capture is always explicit, the capture
+            // event is never handled through the Win32 event handler, and is instead posted manually from dtk__capture_mouse_window().
+            e.type = DTK_EVENT_RELEASE_MOUSE;
+            dtk__handle_event(&e);
         } break;
 
 
@@ -598,8 +617,8 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         } break;
 
 
-        // The WM_NCACTIVATE and WM_ACTIVATE events below are used for making it so the main top level does not lose
-        // it's activation visual style when a child popup window is activated. We use popup windows for things like
+        // The WM_NCACTIVATE and WM_ACTIVATE events below are used for making it so the main top level window does not
+        // lose it's activation visual style when a child popup window is activated. We use popup windows for things like
         // combo box drop-downs and auto-complete popups which don't look right if the parent window loses activation.
         //
         // Look at http://www.catch22.net/tuts/docking-toolbars-part-1 for a detailed explanation of this.
@@ -1266,6 +1285,7 @@ static gboolean dtk_window__on_lose_focus__gtk(GtkWidget* pWidget, GdkEventFocus
 
 
 
+
 static gboolean dtk_window_clientarea__on_draw__gtk(GtkWidget* pClientArea, cairo_t* cr, gpointer pUserData)
 {
     dtk_window* pWindow = (dtk_window*)pUserData;
@@ -1444,6 +1464,31 @@ static gboolean dtk_window_clientarea__on_mouse_wheel__gtk(GtkWidget* pClientAre
     return DTK_TRUE;
 }
 
+static gboolean dtk_window_clientarea__on_grab_broken__gtk(GtkWidget* pWidget, GdkEventGrabBroken* pEvent, gpointer pUserData)
+{
+    (void)pWidget;
+
+    // Only using this for mouse grabs.
+    if (pEvent->keyboard == TRUE) {
+        return DTK_FALSE;
+    }
+
+    // We only care about implicit broken grabs. Explicit ungrabs have their respective events posted manually.
+    if (pEvent->implicit == TRUE) {
+        return DTK_FALSE;
+    }
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return DTK_TRUE;
+    }
+
+    dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_RELEASE_MOUSE, DTK_CONTROL(pWindow));
+    dtk__handle_event(&e);
+
+    return DTK_FALSE;
+}
+
 
 dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_window* pWindow)
 {
@@ -1469,6 +1514,7 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_wind
     g_signal_connect(pClientArea, "button-press-event",   G_CALLBACK(dtk_window_clientarea__on_mouse_button_down__gtk), pWindow);     // Mouse button down.
     g_signal_connect(pClientArea, "button-release-event", G_CALLBACK(dtk_window_clientarea__on_mouse_button_up__gtk),   pWindow);     // Mouse button up.
     g_signal_connect(pClientArea, "scroll-event",         G_CALLBACK(dtk_window_clientarea__on_mouse_wheel__gtk),       pWindow);     // Mouse wheel.
+    g_signal_connect(pClientArea, "grab-broken-event",    G_CALLBACK(dtk_window_clientarea__on_grab_broken__gtk),       pWindow);     // Grab broken event (for mouse grabs)
     
     // Box container. This is used to laying out the menu bar and client area.
     GtkWidget* pBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -2063,6 +2109,54 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
                 dtk_event e = *pEvent;
                 e.pControl = pTK->pControlWithKeyboardCapture;
                 dtk_handle_local_event(pTK, &e);
+            }
+        } break;
+
+        case DTK_EVENT_CAPTURE_KEYBOARD:
+        {
+            pTK->pWindowWithKeyboardCapture = pWindow;
+            if (pWindow->pLastDescendantWithKeyboardFocus != NULL) {
+                pTK->pControlWithKeyboardCapture = pWindow->pLastDescendantWithKeyboardFocus;
+
+                dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_KEYBOARD, pWindow->pLastDescendantWithKeyboardFocus);
+                eCapture.captureKeyboard.pOldCapturedControl = pTK->pControlWithKeyboardCapture;
+                dtk_handle_local_event(pTK, &eCapture);
+            }
+        } break;
+
+        case DTK_EVENT_RELEASE_KEYBOARD:
+        {
+            pTK->pWindowWithKeyboardCapture = NULL;
+            if (pWindow->pLastDescendantWithKeyboardFocus != NULL) {
+                pTK->pControlWithKeyboardCapture = NULL;
+                
+                dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_KEYBOARD, pWindow->pLastDescendantWithKeyboardFocus);
+                eRelease.releaseKeyboard.pNewCapturedControl = NULL;
+                dtk_handle_local_event(pTK, &eRelease);
+            }
+        } break;
+
+        case DTK_EVENT_CAPTURE_MOUSE:
+        {
+            pTK->pWindowWithMouseCapture = pWindow;
+            if (pWindow->pLastDescendantWithMouseCapture != NULL) {
+                pTK->pControlWithMouseCapture = pWindow->pLastDescendantWithMouseCapture;
+
+                dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_MOUSE, pWindow->pLastDescendantWithMouseCapture);
+                eCapture.captureMouse.pOldCapturedControl = pTK->pControlWithMouseCapture;
+                dtk_post_local_event(pTK, &eCapture);   // Note that we post the event rather than handle it straight away because we need to ensure the event handler does not change the capture mid-event-handling due to a restriction with Win32 (and possibly others).
+            }
+        } break;
+
+        case DTK_EVENT_RELEASE_MOUSE:
+        {
+            pTK->pWindowWithMouseCapture = NULL;
+            if (pWindow->pLastDescendantWithMouseCapture != NULL) {
+                pTK->pControlWithMouseCapture = NULL;
+                
+                dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_MOUSE, pWindow->pLastDescendantWithMouseCapture);
+                eRelease.releaseMouse.pNewCapturedControl = NULL;
+                dtk_post_local_event(pTK, &eRelease);   // Note that we post the event rather than handle it straight away because we need to ensure the event handler does not change the capture mid-event-handling due to a restriction with Win32 (and possibly others).
             }
         } break;
     }

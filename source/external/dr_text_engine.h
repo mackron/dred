@@ -1075,6 +1075,7 @@ static drte_region drte_region_normalize(drte_region region)
     return drte_region_swap_characters(region);
 }
 
+#if 0
 // strcpy_s()
 static int drte__strcpy_s(char* dst, size_t dstSizeInBytes, const char* src)
 {
@@ -1106,6 +1107,7 @@ static int drte__strcpy_s(char* dst, size_t dstSizeInBytes, const char* src)
     return ERANGE;
 #endif
 }
+#endif
 
 // strncpy_s()
 int drte__strncpy_s(char* dst, size_t dstSizeInBytes, const char* src, size_t count)

@@ -17,6 +17,8 @@ struct dtk_window
 {
     dtk_control control;
     dtk_window* pNextWindow;
+    dtk_control* pLastDescendantWithKeyboardFocus;
+    dtk_control* pLastDescendantWithMouseCapture;
     dtk_bool32 isTopLevel : 1;
     dtk_bool32 isDialog   : 1;
     dtk_bool32 isPopup    : 1;

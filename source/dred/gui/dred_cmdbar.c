@@ -70,7 +70,7 @@ void dred_cmdbar__on_size(dred_control* pControl, float newWidth, float newHeigh
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
-void dred_cmdbar__on_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
+void dred_cmdbar__on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
 {
     (void)pPrevCapturedControl;
 
@@ -122,10 +122,8 @@ void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
     dred_control_draw_text(DRED_CONTROL(pCmdBar), pMessageFont, pCmdBar->message, (int)strlen(pCmdBar->message), messageLeft, messageTop, pDred->config.cmdbarTextColor, bgcolor, pSurface);
 }
 
-void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
+void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
 {
-    (void)pPrevCapturedControl;
-
     dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
     assert(pTextBox != NULL);
 
@@ -162,10 +160,8 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dred_control* p
     dred_textview_on_capture_keyboard(DRED_CONTROL(pTextBox), pPrevCapturedControl);
 }
 
-void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dred_control* pNextCapturedControl)
+void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dtk_control* pNextCapturedControl)
 {
-    (void)pNextCapturedControl;
-
     dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
     assert(pTextBox != NULL);
 
@@ -178,7 +174,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dred_control* p
     
 
     // If the element being captured is the inner text box, just ignore it and pretend that we're not actually losing focus.
-    if (dred_control_is_descendant(pNextCapturedControl, DRED_CONTROL(pCmdBar->pTextBox))) {
+    if (dtk_control_is_descendant(pNextCapturedControl, DTK_CONTROL(pCmdBar->pTextBox))) {
         return;
     }
 

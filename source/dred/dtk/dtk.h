@@ -76,6 +76,7 @@ typedef int dtk_result;
 #define DTK_NO_BACKEND              -4
 #define DTK_FAILED_TO_INIT_BACKEND  -5
 #define DTK_OUT_OF_RANGE            -6
+#define DTK_CANCELLED               -7
 #define DTK_QUIT                    -1024   // Returned by dtk_next_event() when a quit message is received.
 
 // Standard library stuff.
@@ -169,6 +170,7 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_timer.h"
 #include "dtk_clipboard.h"
 #include "dtk_paint_queue.h"
+#include "dtk_garbage_queue.h"
 #include "dtk_command_line.h"
 
 // Event types.
@@ -315,12 +317,12 @@ struct dtk_event
 
         struct
         {
-            int unused;
+            dtk_control* pOldCapturedControl;
         } captureKeyboard, captureMouse;
 
         struct
         {
-            int unused;
+            dtk_control* pNewCapturedControl;
         } releaseKeyboard, releaseMouse;
 
         struct
@@ -365,15 +367,18 @@ struct dtk_context
     dtk_log_proc onLog;
     int exitCode;
     dtk_window* pFirstWindow;
+    dtk_window* pWindowWithKeyboardCapture;     // This is set in the window's DTK_CAPTURE_KEYBOARD / DTK_RELEASE_KEYBOARD event handlers in dtk_window_default_event_handler()
+    dtk_window* pWindowWithMouseCapture;        // ^^^
     dtk_control* pControlWithKeyboardCapture;
     dtk_control* pControlWithMouseCapture;
     dtk_window*  pWindowUnderMouse;
-    dtk_control* pControlUnderMouse;    // Used for mouse enter/leave state management.
+    dtk_control* pControlUnderMouse;            // Used for mouse enter/leave state management.
     dtk_int32 lastMousePosX;
     dtk_int32 lastMousePosY;
     void* pUserData;
     dtk_event_proc defaultEventHandlers[DTK_CONTROL_TYPE_COUNT];    // The default event handlers for each built-in control type.
     dtk_paint_queue paintQueue;
+    dtk_garbage_queue garbageQueue;
     dtk_font defaultFont;
 
     union
@@ -410,8 +415,6 @@ struct dtk_context
 
             dtk_int32* pGlyphCache;                 // The cache of glyph character positions. Used by the graphics sub-system.
             size_t glyphCacheSize;
-
-            dtk_window* pWindowWithKeyboardFocus;
         } win32;
 #endif
 #ifdef DTK_GTK
@@ -500,6 +503,12 @@ dtk_result dtk_post_paint_notification_event(dtk_context* pTK, dtk_window* pWind
 
 // Handles a paint notification event.
 dtk_result dtk_handle_paint_notification_event(dtk_context* pTK, dtk_window* pWindow);
+
+// Posts a garbage dequeue notification to the event queue to let it know that a garbage control needs to be dequeued from the garbage queue.
+dtk_result dtk_post_garbage_dequeue_notification_event(dtk_context* pTK, dtk_control* pControl);
+
+// Handles a garbage dequeue notification event.
+dtk_result dtk_handle_garbage_dequeue_notification_event(dtk_context* pTK, dtk_control* pControl);
 
 // The default event handler.
 //

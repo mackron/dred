@@ -470,7 +470,7 @@ void dred_textview_uninit(dred_textview* pTextView)
         return;
     }
 
-    // Keyboard focus needs to be released first. If we don't do this we'll not free delete the internal timer.
+    // Keyboard focus needs to be released first. If we don't do this we'll not free the internal timer.
     if (dtk_control_has_keyboard_capture(DTK_CONTROL(pTextView))) {
         dred_gui_release_keyboard(dred_control_get_gui(DRED_CONTROL(pTextView)));
     }
@@ -2603,7 +2603,7 @@ void dred_textview__on_timer(dtk_timer* pTimer, void* pUserData)
     dred_textview_step(pTextView, 100);
 }
 
-void dred_textview_on_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
+void dred_textview_on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
 {
     (void)pPrevCapturedControl;
 
@@ -2620,7 +2620,7 @@ void dred_textview_on_capture_keyboard(dred_control* pControl, dred_control* pPr
     }
 }
 
-void dred_textview_on_release_keyboard(dred_control* pControl, dred_control* pNewCapturedControl)
+void dred_textview_on_release_keyboard(dred_control* pControl, dtk_control* pNewCapturedControl)
 {
     (void)pNewCapturedControl;
 

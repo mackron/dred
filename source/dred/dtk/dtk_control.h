@@ -42,6 +42,7 @@ struct dtk_control
     dtk_bool32 isClippingDisabled         : 1;
     dtk_bool32 isKeyboardCaptureForbidden : 1;
     dtk_bool32 isMouseCaptureForbidden    : 1;
+    dtk_bool32 isUninitialized            : 1;
     dtk_int32 absolutePosX;
     dtk_int32 absolutePosY;
     dtk_uint32 width;
@@ -56,6 +57,10 @@ struct dtk_control
 dtk_result dtk_control_init(dtk_context* pTK, dtk_control* pParent, dtk_control_type type, dtk_event_proc onEvent, dtk_control* pControl);
 
 // Uninitializes a control.
+//
+// This is not thread safe. Also, this will call flush the event queue by calling dtk_next_event() to ensure there
+// are no pending events that will be handled after the control has been uninitialized. Thus, you should call this
+// on the same thread as you run the main event queue.
 dtk_result dtk_control_uninit(dtk_control* pControl);
 
 // The default event handler for a control.

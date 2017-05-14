@@ -260,10 +260,6 @@ void dred_platform__on_delete_gui_element(dred_control* pControl)
     if (pWindow == NULL) {
         return;
     }
-
-    if (pWindow->pControlWithKeyboardCapture == DTK_CONTROL(pControl)) {
-        pWindow->pControlWithKeyboardCapture = NULL;
-    }
 }
 
 
@@ -427,7 +423,7 @@ void dred_window_set_title(dred_window* pWindow, const char* title)
 
 void dred_window_set_size(dred_window* pWindow, unsigned int newWidth, unsigned int newHeight)
 {
-    if (pWindow == NULL);
+    if (pWindow == NULL) return;
     dtk_window_set_size(&pWindow->windowDTK, newWidth, newHeight);
 }
 

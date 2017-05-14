@@ -995,7 +995,7 @@ dtk_control* dred_get_element_with_keyboard_capture(dred_context* pDred)
 
     dtk_control* pControl = dtk_get_control_with_keyboard_capture(&pDred->tk);
     if (pControl == NULL) {
-        pControl = pDred->pMainWindow->pControlWithKeyboardCapture;
+        pControl = pDred->pMainWindow->windowDTK.pLastDescendantWithKeyboardFocus;
     }
 
     return pControl;

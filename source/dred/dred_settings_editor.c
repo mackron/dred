@@ -113,7 +113,7 @@ void dred_settings_editor__on_size(dred_control* pControl, float newWidth, float
     
 }
 
-void dred_settings_editor__on_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
+void dred_settings_editor__on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
 {
     (void)pControl;
     (void)pPrevCapturedControl;

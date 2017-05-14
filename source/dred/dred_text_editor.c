@@ -33,7 +33,7 @@ void dred_text_editor__on_size(dred_control* pControl, float newWidth, float new
     dred_control_set_size(DRED_CONTROL(pTextView), newWidth, newHeight);
 }
 
-void dred_text_editor__on_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
+void dred_text_editor__on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
 {
     (void)pPrevCapturedControl;
 
@@ -124,7 +124,7 @@ void dred_text_editor_textview__on_cursor_move(dred_textview* pTextView)
     dred_update_info_bar(dred_control_get_context(DRED_CONTROL(pTextEditor)), DRED_CONTROL(pTextEditor));
 }
 
-void dred_text_editor_textview__on_capture_keyboard(dred_control* pControl, dred_control* pPrevCapturedControl)
+void dred_text_editor_textview__on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
 {
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);

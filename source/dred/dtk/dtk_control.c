@@ -147,10 +147,22 @@ dtk_result dtk_control_uninit(dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
+    if (dtk_control_has_keyboard_capture(pControl)) {
+        dtk_release_keyboard(pControl->pTK);
+    }
+    if (dtk_control_has_mouse_capture(pControl)) {
+        dtk_release_mouse(pControl->pTK);
+    }
+
     if (pControl->pParent != NULL) {
         dtk_control__unlink_child(pControl->pParent, pControl);
     }
 
+    pControl->isUninitialized = DTK_TRUE;   // <-- Make sure this is set before flushing the event queue.
+
+    // Here is where mark the control as garbage. We do this by enqueing it to the garbage queue. While enqueued, any events
+    // that reference this control will be nullified. Note that beyond this point the control cannot be dereferenced.
+    dtk_garbage_queue_enqueue(&pControl->pTK->garbageQueue, pControl);
     return DTK_SUCCESS;
 }
 
