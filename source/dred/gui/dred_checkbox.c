@@ -1,6 +1,6 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-dred_rect dred_checkbox__get_box_rect(dred_checkbox* pCheckbox)
+dtk_rect dred_checkbox__get_box_rect(dred_checkbox* pCheckbox)
 {
     // The size of the box is based on the size of the font.
     assert(pCheckbox != NULL);
@@ -8,9 +8,30 @@ dred_rect dred_checkbox__get_box_rect(dred_checkbox* pCheckbox)
     dtk_font_metrics metrics;
     dred_gui_get_font_metrics(pCheckbox->pSubFont, &metrics);
 
-    float posX = 0;
-    float posY = (dred_control_get_height(DRED_CONTROL(pCheckbox)) - metrics.lineHeight) / 2;
-    return dred_make_rect(posX, posY, posX + metrics.lineHeight, posY + metrics.lineHeight);
+    dtk_rect checkboxRect = dtk_control_get_local_rect(DTK_CONTROL(pCheckbox));
+
+    dtk_rect rect;
+    rect.left = 0;
+    rect.top  = ((dtk_int32)dtk_control_get_height(DTK_CONTROL(pCheckbox)) - metrics.lineHeight) / 2;
+    rect.right = rect.left + metrics.lineHeight;
+    rect.bottom = rect.top + metrics.lineHeight;
+
+    // Clip.
+    if (rect.top    < 0)                   rect.top    = 0;
+    if (rect.left   < 0)                   rect.left   = 0;
+    if (rect.right  > checkboxRect.right)  rect.right  = checkboxRect.right;
+    if (rect.bottom > checkboxRect.bottom) rect.bottom = checkboxRect.bottom;
+
+    // Make it square.
+    dtk_int32 boxSizeX = rect.right - rect.left;
+    dtk_int32 boxSizeY = rect.bottom - rect.top;
+    if (boxSizeX != boxSizeY) {
+        boxSizeX = boxSizeY = dtk_min(boxSizeX, boxSizeY);
+        rect.right  = rect.left + boxSizeX;
+        rect.bottom = rect.top  + boxSizeY;
+    }
+
+    return rect;
 }
 
 void dred_checkbox__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
@@ -38,14 +59,14 @@ void dred_checkbox__on_paint(dred_control* pControl, dred_rect rect, dtk_surface
         boxBGColor = pCheckbox->boxBGColorHovered;
     }
 
-    dred_rect bgrect = dred_control_get_local_rect(DRED_CONTROL(pCheckbox));
-    dred_rect boxRect = dred_checkbox__get_box_rect(pCheckbox);
+    dtk_rect bgrect = dtk_control_get_local_rect(DTK_CONTROL(pCheckbox));
+    dtk_rect boxRect = dred_checkbox__get_box_rect(pCheckbox);
 
-    dred_control_draw_rect_outline(pControl, boxRect, pCheckbox->boxBorderColor, pCheckbox->borderWidth, pSurface);
-    dred_control_draw_rect(pControl, dred_grow_rect(boxRect, -pCheckbox->borderWidth), boxBGColor, pSurface);
+    dtk_surface_draw_rect_outline(pSurface, boxRect, pCheckbox->boxBorderColor, (dtk_int32)pCheckbox->borderWidth);
+    dtk_surface_draw_rect(pSurface, dtk_rect_grow(boxRect, -(dtk_int32)pCheckbox->borderWidth), boxBGColor);
 
     if (pCheckbox->isChecked) {
-        dred_control_draw_rect(pControl, dred_grow_rect(boxRect, -pCheckbox->borderWidth - 2), pCheckbox->checkColor, pSurface);
+        dtk_surface_draw_rect(pSurface, dtk_rect_grow(boxRect, -(dtk_int32)pCheckbox->borderWidth - 2), pCheckbox->checkColor);
     }
 
 
@@ -59,10 +80,10 @@ void dred_checkbox__on_paint(dred_control* pControl, dred_rect rect, dtk_surface
     dred_control_draw_text(pControl, pCheckbox->pSubFont, pCheckbox->text, (int)strlen(pCheckbox->text), textPosX, textPosY, pCheckbox->textColor, pCheckbox->bgColor, pSurface);
 
     // Background
-    dred_control_draw_rect(pControl, dred_make_rect(boxRect.right, boxRect.top, boxRect.right + pCheckbox->padding, boxRect.bottom), pCheckbox->bgColor, pSurface);    // Padding bettween checkbox and text.
-    dred_control_draw_rect(pControl, dred_make_rect(bgrect.left, bgrect.top, bgrect.right, boxRect.top), pCheckbox->bgColor, pSurface);
-    dred_control_draw_rect(pControl, dred_make_rect(bgrect.left, boxRect.bottom, bgrect.right, bgrect.bottom), pCheckbox->bgColor, pSurface);
-    dred_control_draw_rect(pControl, dred_make_rect(textPosX + textWidth, boxRect.top, bgrect.right, boxRect.bottom), pCheckbox->bgColor, pSurface);
+    dred_control_draw_rect(pControl, dred_make_rect((float)boxRect.right,        (float)boxRect.top,    (float)boxRect.right + pCheckbox->padding, (float)boxRect.bottom), pCheckbox->bgColor, pSurface);    // Padding bettween checkbox and text.
+    dred_control_draw_rect(pControl, dred_make_rect((float)bgrect.left,          (float)bgrect.top,     (float)bgrect.right,                       (float)boxRect.top),    pCheckbox->bgColor, pSurface);
+    dred_control_draw_rect(pControl, dred_make_rect((float)bgrect.left,          (float)boxRect.bottom, (float)bgrect.right,                       (float)bgrect.bottom),  pCheckbox->bgColor, pSurface);
+    dred_control_draw_rect(pControl, dred_make_rect((float)textPosX + textWidth, (float)boxRect.top,    (float)bgrect.right,                       (float)boxRect.bottom), pCheckbox->bgColor, pSurface);
 }
 
 void dred_checkbox__on_mouse_enter(dred_control* pControl)
@@ -160,8 +181,8 @@ void dred_checkbox__refresh_layout(dred_checkbox* pCheckbox)
         float textHeight;
         dred_gui_measure_string(pCheckbox->pSubFont, pCheckbox->text, strlen(pCheckbox->text), &textWidth, &textHeight);
 
-        dred_rect boxRect = dred_checkbox__get_box_rect(pCheckbox);
-        float boxWidth = (boxRect.right - boxRect.left);
+        dtk_rect boxRect = dred_checkbox__get_box_rect(pCheckbox);
+        dtk_int32 boxWidth = (boxRect.right - boxRect.left);
 
         dred_control_set_size(DRED_CONTROL(pCheckbox), textWidth + boxWidth + pCheckbox->padding, textHeight);
     }
@@ -369,7 +390,8 @@ void dred_checkbox_set_checked(dred_checkbox* pCheckbox, dr_bool32 checked, dr_b
         }
     }
 
-    dred_control_dirty(DRED_CONTROL(pCheckbox), dred_checkbox__get_box_rect(pCheckbox));
+    //dred_control_dirty(DRED_CONTROL(pCheckbox), dred_checkbox__get_box_rect(pCheckbox));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCheckbox), dred_checkbox__get_box_rect(pCheckbox));
 }
 
 dr_bool32 dred_is_checked(dred_checkbox* pCheckbox)

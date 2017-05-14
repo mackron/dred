@@ -1,18 +1,37 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
-dred_rect dtk_colorbutton__get_box_rect(dtk_colorbutton* pButton)
+dtk_rect dtk_colorbutton__get_box_rect(dtk_colorbutton* pButton)
 {
-    // The size of the box is based on the size of the font.
-    assert(pButton != NULL);
-
+    /// The size of the box is based on the size of the font.
     assert(pButton != NULL);
     
     dtk_font_metrics metrics;
     dred_gui_get_font_metrics(pButton->pSubFont, &metrics);
 
-    float posX = 0;
-    float posY = (dred_control_get_height(DRED_CONTROL(pButton)) - metrics.lineHeight) / 2;
-    return dred_make_rect(posX, posY, posX + metrics.lineHeight, posY + metrics.lineHeight);
+    dtk_rect checkboxRect = dtk_control_get_local_rect(DTK_CONTROL(pButton));
+
+    dtk_rect rect;
+    rect.left = 0;
+    rect.top  = ((dtk_int32)dtk_control_get_height(DTK_CONTROL(pButton)) - metrics.lineHeight) / 2;
+    rect.right = rect.left + metrics.lineHeight;
+    rect.bottom = rect.top + metrics.lineHeight;
+
+    // Clip.
+    if (rect.top    < 0)                   rect.top    = 0;
+    if (rect.left   < 0)                   rect.left   = 0;
+    if (rect.right  > checkboxRect.right)  rect.right  = checkboxRect.right;
+    if (rect.bottom > checkboxRect.bottom) rect.bottom = checkboxRect.bottom;
+
+    // Make it square.
+    dtk_int32 boxSizeX = rect.right - rect.left;
+    dtk_int32 boxSizeY = rect.bottom - rect.top;
+    if (boxSizeX != boxSizeY) {
+        boxSizeX = boxSizeY = dtk_min(boxSizeX, boxSizeY);
+        rect.right  = rect.left + boxSizeX;
+        rect.bottom = rect.top  + boxSizeY;
+    }
+
+    return rect;
 }
 
 void dtk_colorbutton__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
@@ -40,11 +59,11 @@ void dtk_colorbutton__on_paint(dred_control* pControl, dred_rect rect, dtk_surfa
         boxBGColor = pButton->boxBGColorHovered;
     }*/
 
-    dred_rect bgrect = dred_control_get_local_rect(DRED_CONTROL(pButton));
-    dred_rect boxRect = dtk_colorbutton__get_box_rect(pButton);
+    dtk_rect bgrect = dtk_control_get_local_rect(DTK_CONTROL(pButton));
+    dtk_rect boxRect = dtk_colorbutton__get_box_rect(pButton);
 
-    dred_control_draw_rect_outline(pControl, boxRect, pButton->boxBorderColor, pButton->borderWidth, pSurface);
-    dred_control_draw_rect(pControl, dred_grow_rect(boxRect, -pButton->borderWidth), pButton->color, pSurface);
+    dtk_surface_draw_rect_outline(pSurface, boxRect, pButton->boxBorderColor, (dtk_int32)pButton->borderWidth);
+    dtk_surface_draw_rect(pSurface, dtk_rect_grow(boxRect, -(dtk_int32)pButton->borderWidth), pButton->color);
 
 
     // The text is positioned to the right of the box, and centered vertically.
@@ -57,10 +76,10 @@ void dtk_colorbutton__on_paint(dred_control* pControl, dred_rect rect, dtk_surfa
     dred_control_draw_text(pControl, pButton->pSubFont, pButton->text, (int)strlen(pButton->text), textPosX, textPosY, pButton->textColor, bgColor, pSurface);
 
     // Background
-    dred_control_draw_rect(pControl, dred_make_rect(boxRect.right, boxRect.top, boxRect.right + pButton->padding, boxRect.bottom), bgColor, pSurface);    // Padding bettween colorbutton and text.
-    dred_control_draw_rect(pControl, dred_make_rect(bgrect.left, bgrect.top, bgrect.right, boxRect.top), bgColor, pSurface);
-    dred_control_draw_rect(pControl, dred_make_rect(bgrect.left, boxRect.bottom, bgrect.right, bgrect.bottom), bgColor, pSurface);
-    dred_control_draw_rect(pControl, dred_make_rect(textPosX + textWidth, boxRect.top, bgrect.right, boxRect.bottom), bgColor, pSurface);
+    dred_control_draw_rect(pControl, dred_make_rect((float)boxRect.right,        (float)boxRect.top,    (float)boxRect.right + pButton->padding, (float)boxRect.bottom), bgColor, pSurface);    // Padding bettween checkbox and text.
+    dred_control_draw_rect(pControl, dred_make_rect((float)bgrect.left,          (float)bgrect.top,     (float)bgrect.right,                     (float)boxRect.top),    bgColor, pSurface);
+    dred_control_draw_rect(pControl, dred_make_rect((float)bgrect.left,          (float)boxRect.bottom, (float)bgrect.right,                     (float)bgrect.bottom),  bgColor, pSurface);
+    dred_control_draw_rect(pControl, dred_make_rect((float)textPosX + textWidth, (float)boxRect.top,    (float)bgrect.right,                     (float)boxRect.bottom), bgColor, pSurface);
 }
 
 void dtk_colorbutton__on_mouse_enter(dred_control* pControl)
@@ -167,8 +186,8 @@ void dtk_colorbutton__refresh_layout(dtk_colorbutton* pButton)
         float textHeight;
         dred_gui_measure_string(pButton->pSubFont, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
 
-        dred_rect boxRect = dtk_colorbutton__get_box_rect(pButton);
-        float boxWidth = (boxRect.right - boxRect.left);
+        dtk_rect boxRect = dtk_colorbutton__get_box_rect(pButton);
+        dtk_int32 boxWidth = (boxRect.right - boxRect.left);
 
         dred_control_set_size(DRED_CONTROL(pButton), textWidth + boxWidth + pButton->padding, textHeight);
     }
