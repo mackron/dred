@@ -2071,10 +2071,11 @@ void dred_textview_on_key_down(dred_control* pControl, dtk_key key, int stateFla
             dred_textview_do_backspace(pTextView, stateFlags);
         } break;
 
-        case DTK_KEY_DELETE:
-        {
-            dred_textview_do_delete(pTextView, stateFlags);
-        } break;
+        // NOTE: Don't handle the delete key here - it will be done by the accelerator. Will need to re-add this when we turn this into a generic control, though.
+        //case DTK_KEY_DELETE:
+        //{
+        //    dred_textview_do_delete(pTextView, stateFlags);
+        //} break;
 
 
         case DTK_KEY_ARROW_LEFT:
