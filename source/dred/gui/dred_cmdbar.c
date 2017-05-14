@@ -22,18 +22,18 @@ void dred_cmdbar__get_inner_size(dred_cmdbar* pCmdBar, float* pWidthOut, float* 
     if (pHeightOut) *pHeightOut = innerRect.bottom - innerRect.top;
 }
 
-void dred_cmdbar__get_segment_rects(dred_cmdbar* pCmdBar, dred_rect* pLRect, dred_rect* pMRect, dred_rect* pRRect)
+void dred_cmdbar__get_segment_rects(dred_cmdbar* pCmdBar, dtk_rect* pLRect, dtk_rect* pMRect, dtk_rect* pRRect)
 {
-    dred_rect innerRect = dred_cmdbar__get_inner_rect(pCmdBar);
+    dtk_rect innerRect = dtk_rect_init_dred(dred_cmdbar__get_inner_rect(pCmdBar));
 
-    float innerWidth = innerRect.right - innerRect.left;
-    float lwidth = innerWidth * 0.5f;
-    float mwidth = innerWidth * 0.25f;
+    dtk_int32 innerWidth = innerRect.right - innerRect.left;
+    dtk_int32 lwidth = (dtk_int32)(innerWidth * 0.5f);
+    dtk_int32 mwidth = (dtk_int32)(innerWidth * 0.25f);
     //float rwidth = innerWidth * 0.25f;
 
-    dred_rect lrect = dred_make_rect(innerRect.left, innerRect.top, innerRect.left + lwidth, innerRect.bottom);
-    dred_rect mrect = dred_make_rect(lrect.right, innerRect.top, lrect.right + mwidth, innerRect.bottom);
-    dred_rect rrect = dred_make_rect(mrect.right, innerRect.top, innerRect.right, innerRect.bottom);
+    dtk_rect lrect = dtk_rect_init(innerRect.left, innerRect.top, innerRect.left + lwidth, innerRect.bottom);
+    dtk_rect mrect = dtk_rect_init(lrect.right, innerRect.top, lrect.right + mwidth, innerRect.bottom);
+    dtk_rect rrect = dtk_rect_init(mrect.right, innerRect.top, innerRect.right, innerRect.bottom);
 
     if (pLRect) *pLRect = lrect;
     if (pMRect) *pMRect = mrect;
@@ -46,16 +46,16 @@ void dred_cmdbar__update_layouts_of_inner_controls(dred_cmdbar* pCmdBar)
     assert(pCmdBar != NULL);
 
     // Controls need to be resized based on their rectangles.
-    dred_rect lrect;
-    dred_rect mrect;
-    dred_rect rrect;
+    dtk_rect lrect;
+    dtk_rect mrect;
+    dtk_rect rrect;
     dred_cmdbar__get_segment_rects(pCmdBar, &lrect, &mrect, &rrect);
 
-    dred_control_set_relative_position(DRED_CONTROL(pCmdBar->pTextBox), lrect.left, lrect.top);
-    dred_control_set_size(DRED_CONTROL(pCmdBar->pTextBox), lrect.right - lrect.left, lrect.bottom - lrect.top);
+    dtk_control_set_relative_position(DTK_CONTROL(pCmdBar->pTextBox), lrect.left, lrect.top);
+    dtk_control_set_size(DTK_CONTROL(pCmdBar->pTextBox), lrect.right - lrect.left, lrect.bottom - lrect.top);
     
-    dred_control_set_relative_position(DRED_CONTROL(pCmdBar->pInfoBar), rrect.left, rrect.top);
-    dred_control_set_size(DRED_CONTROL(pCmdBar->pInfoBar), rrect.right - rrect.left, rrect.bottom - rrect.top);
+    dtk_control_set_relative_position(DTK_CONTROL(pCmdBar->pInfoBar), rrect.left, rrect.top);
+    dtk_control_set_size(DTK_CONTROL(pCmdBar->pInfoBar), rrect.right - rrect.left, rrect.bottom - rrect.top);
 }
 
 
@@ -106,11 +106,11 @@ void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
 
 
     // Message.
-    dred_rect lrect;
-    dred_rect mrect;
-    dred_rect rrect;
+    dtk_rect lrect;
+    dtk_rect mrect;
+    dtk_rect rrect;
     dred_cmdbar__get_segment_rects(pCmdBar, &lrect, &mrect, &rrect);
-    dred_control_draw_rect(DRED_CONTROL(pCmdBar), mrect, bgcolor, pSurface);
+    dtk_surface_draw_rect(pSurface, mrect, bgcolor);
 
     dred_gui_font* pMessageFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
 
