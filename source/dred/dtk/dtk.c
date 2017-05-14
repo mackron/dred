@@ -1779,63 +1779,70 @@ dtk_result dtk_capture_mouse(dtk_context* pTK, dtk_control* pControl)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
 
+    dtk_control* pOldCapturedControl = pTK->pControlWithMouseCapture;
+    dtk_control* pNewCapturedControl = pControl;
+
     // Don't do anything if the control already has the capture.
-    if (pTK->pControlWithMouseCapture == pControl) {
+    if (pOldCapturedControl == pNewCapturedControl) {
         return DTK_SUCCESS;
     }
 
-
-    // Make sure the mouse is first cleanly released from whatever control currently has the capture.
-    dtk_result result = dtk_release_mouse(pTK);
-    if (result != DTK_SUCCESS) {
-        return result;
-    }
-
-    // If pControl is NULL this should just act as a release.
-    if (pControl == NULL) {
-        return DTK_SUCCESS;
+    // The control must be allowed to receive capture.
+    if (pControl != NULL && !dtk_control_is_mouse_capture_allowed(pControl)) {
+        return DTK_INVALID_ARGS;
     }
 
 
-    // In order to complete the capture we need to also capture the mouse on the window that owns the control. This must be done
-    // before marking the control as captured and posting the event in order to ensure the window's event handler does not post a
-    // duplicate capture event to pControl.
-    dtk_window* pWindow = dtk_control_get_window(pControl);
-    if (pWindow != NULL) {
-        result = dtk__capture_mouse_window(pTK, pWindow);
-        if (result != DTK_SUCCESS) {
-            return result;
-        }
-    }
+    // To complete the change of focus we need to change the focus of the window's that own the controls. If the previous and next
+    // focused window is the same, we just ignore it. Otherwise we change it.
+    dtk_window* pOldCapturedWindow = pTK->pWindowWithMouseCapture;
+    dtk_window* pNewCapturedWindow = dtk_control_get_window(pNewCapturedControl);
 
     pTK->pControlWithMouseCapture = pControl;
 
-    dtk_event e = dtk_event_init(pTK, DTK_EVENT_CAPTURE_MOUSE, pTK->pControlWithMouseCapture);
-    dtk_post_local_event(pTK, &e);
+    if (pNewCapturedWindow != NULL) {
+        pNewCapturedWindow->pLastDescendantWithMouseCapture = pNewCapturedControl;
+    }
+
+
+    // In order to complete the capture we need to post events to the respective controls. There are two places where events
+    // are posted: from this function, and from the window's capture event handler. Thus, if the window is different we just
+    // leave the event posting to the window's event handler. On the other hand, if the window is the same, we just post the
+    // events from here.
+    if (pOldCapturedWindow != pNewCapturedWindow) {
+        // The window is different. Do the event posting from the window event handlers.
+        if (pNewCapturedWindow != NULL) {
+            dtk_result result = dtk__capture_mouse_window(pTK, pNewCapturedWindow);
+            if (result != DTK_SUCCESS) {
+                return result;
+            }
+        } else {
+            dtk_result result = dtk__release_mouse_window(pTK);
+            if (result != DTK_SUCCESS) {
+                return result;
+            }
+        }
+    } else {
+        // The window is the same. Do the event posting right here.
+        if (pOldCapturedControl != NULL) {
+            dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_MOUSE, pOldCapturedControl);
+            eRelease.releaseMouse.pNewCapturedControl = pNewCapturedControl;
+            dtk_post_local_event(pTK, &eRelease);   // <-- TODO: Should we check if this returns false, and if so, cancel the the focus change?
+        }
+
+        if (pNewCapturedControl != NULL) {
+            dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_MOUSE, pNewCapturedControl);
+            eCapture.captureMouse.pOldCapturedControl = pOldCapturedControl;
+            dtk_post_local_event(pTK, &eCapture);
+        }
+    }
 
     return DTK_SUCCESS;
 }
 
 dtk_result dtk_release_mouse(dtk_context* pTK)
 {
-    if (pTK == NULL) return DTK_INVALID_ARGS;
-
-    // Just pretend everything was successful if there was already nothing captured.
-    if (pTK->pControlWithMouseCapture == NULL) {
-        return DTK_SUCCESS;
-    }
-
-    dtk_event e = dtk_event_init(pTK, DTK_EVENT_RELEASE_MOUSE, pTK->pControlWithMouseCapture);
-    dtk_post_local_event(pTK, &e);
-
-    pTK->pControlWithMouseCapture = NULL;
-
-    // To complete the release we need to release the keyboard from whatever window has the capture. Note that this _must_ be
-    // done after marking the control as released and posting the event to ensure the window's event handler does not post a
-    // duplicate release event to pControlWithKeyboardCapture.
-    dtk__release_mouse_window(pTK);
-
-    return DTK_SUCCESS;
+    return dtk_capture_mouse(pTK, NULL);
 }
 
 dtk_control* dtk_get_control_with_mouse_capture(dtk_context* pTK)

@@ -846,6 +846,51 @@ dtk_bool32 dtk_control_is_keyboard_capture_allowed(dtk_control* pControl)
     return DTK_TRUE;
 }
 
+dtk_result dtk_control_allow_mouse_capture(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    // If mouse capture is already allowed just pretend it was successful.
+    if (!pControl->isMouseCaptureForbidden) {
+        return DTK_SUCCESS;
+    }
+
+    pControl->isMouseCaptureForbidden = DTK_FALSE;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_control_forbid_mouse_capture(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    // If mouse capture is already forbidden just pretend it was successful.
+    if (pControl->isMouseCaptureForbidden) {
+        return DTK_SUCCESS;
+    }
+
+    if (dtk_control_has_mouse_capture(pControl)) {
+        dtk_release_mouse(pControl->pTK);
+    }
+
+    pControl->isMouseCaptureForbidden = DTK_TRUE;
+    return DTK_SUCCESS;
+}
+
+dtk_bool32 dtk_control_is_mouse_capture_allowed(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_FALSE;
+
+    if (pControl->isMouseCaptureForbidden) {
+        return DTK_FALSE;
+    }
+
+    if (pControl->pParent != NULL) {
+        return dtk_control_is_mouse_capture_allowed(pControl->pParent);
+    }
+
+    return DTK_TRUE;
+}
+
 
 dtk_result dtk_control_capture_keyboard(dtk_control* pControl)
 {

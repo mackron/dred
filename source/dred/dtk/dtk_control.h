@@ -253,6 +253,19 @@ dtk_result dtk_control_forbid_keyboard_capture(dtk_control* pControl);
 // This is recursive because capture allowance depends on the ancestory.
 dtk_bool32 dtk_control_is_keyboard_capture_allowed(dtk_control* pControl);
 
+// Enables the ability for the control to receive mouse focus (default).
+dtk_result dtk_control_allow_mouse_capture(dtk_control* pControl);
+
+// Disables the ability for the control to receive mouse focus.
+//
+// If the control has the mouse focus at the time this is called, it will be unfocused.
+dtk_result dtk_control_forbid_mouse_capture(dtk_control* pControl);
+
+// Determines whether or not the control has the ability to receive mouse focus.
+//
+// This is recursive because capture allowance depends on the ancestory.
+dtk_bool32 dtk_control_is_mouse_capture_allowed(dtk_control* pControl);
+
 
 // Helper function for giving a control the keyboard capture. This will fail if keyboard capture is forbidden for the control.
 dtk_result dtk_control_capture_keyboard(dtk_control* pControl);
