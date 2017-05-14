@@ -160,9 +160,10 @@ dtk_result dtk_control_uninit(dtk_control* pControl)
 
     pControl->isUninitialized = DTK_TRUE;   // <-- Make sure this is set before flushing the event queue.
 
-    // Here is where mark the control as garbage. We do this by enqueing it to the garbage queue. While enqueued, any events
-    // that reference this control will be nullified. Note that beyond this point the control cannot be dereferenced.
-    dtk_garbage_queue_enqueue(&pControl->pTK->garbageQueue, pControl);
+    // Flush the event queue before returning. The reason this is required is to ensure there are no pending events in the
+    // queue that refer to this control. If we don't do this, it's possible for the event to be handled after this control
+    // has been uninitialized which probably means a crash.
+    dtk_flush_event_queue(pControl->pTK);
     return DTK_SUCCESS;
 }
 

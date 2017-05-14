@@ -479,6 +479,17 @@ dtk_result dtk_set_event_callback(dtk_context* pTK, dtk_event_proc proc);
 //   Do not call this from multiple threads. Have a single thread that does all event handling.
 dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking, int* pExitCode);
 
+// Flushes the event queue by handling any events currently sitting in the event queue.
+//
+// This will not remove any quit messages from the queue. The rationale for this is to ensure the application's
+// main loop is given the opportunity to handle it and terminate the application.
+//
+// An event queue flush is performed whenever a control is uninitialized to ensure there are no lingering events
+// that refer to an uninitialized control.
+//
+// This is non-blocking, but should be considered inefficient. 
+void dtk_flush_event_queue(dtk_context* pTK);
+
 // Posts an event to the queue which will later handled by _only_ the event handler of the respective control.
 //
 // To handle the event immediately, use dtk_handle_control_event().

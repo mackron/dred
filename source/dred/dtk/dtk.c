@@ -79,22 +79,25 @@ DTK_INLINE dtk_event dtk_event_init(dtk_context* pTK, dtk_event_type type, dtk_c
     return e;
 }
 
-dtk_result dtk__handle_event(dtk_event* pEvent)
+dtk_result dtk__normalize_event(dtk_event* pEvent)  // DTK_CANCELLED if the event should be cancelled.
 {
     dtk_assert(pEvent != NULL);
-    
+
     dtk_context* pTK = pEvent->pTK;
     dtk_assert(pTK != NULL);
 
-    // If there's any garbage the event will need to be normalized before executing. If the event references a garbaged control it
-    // needs to be cancelled.
     dtk_uint32 garbageCount = dtk_garbage_queue_get_count(&pTK->garbageQueue);
     if (garbageCount > 0) {
         dtk_control* pGarbageControl = dtk_garbage_queue_get_next_garbage_control(&pTK->garbageQueue);
         if (pEvent->pControl == pGarbageControl) {
             pEvent->pControl = NULL;
             pEvent->type = DTK_EVENT_NONE;
+            printf("EVENT CANCELLED\n");
             return DTK_CANCELLED;
+        }
+
+        if (pEvent->type == DTK_EVENT_RELEASE_KEYBOARD) {
+            printf("TESITNG\n");
         }
 
         switch (pEvent->type)
@@ -125,6 +128,23 @@ dtk_result dtk__handle_event(dtk_event* pEvent)
                 }
             } break;
         }
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_handle_global_event(dtk_event* pEvent)
+{
+    dtk_assert(pEvent != NULL);
+    
+    dtk_context* pTK = pEvent->pTK;
+    dtk_assert(pTK != NULL);
+
+    // If there's any garbage the event will need to be normalized before executing. If the event references a garbaged control it
+    // needs to be cancelled.
+    dtk_result result = dtk__normalize_event(pEvent);
+    if (result != DTK_SUCCESS) {
+        return result;
     }
 
     dtk_event_proc onEventGlobal = pTK->onEvent;
@@ -1127,7 +1147,7 @@ static gboolean dtk__on_accelerator__gtk(GtkAccelGroup *pAccelGroup, GObject *ac
         e.accelerator.key = pTK->gtk.pAccelerators[index].accelerator.key;
         e.accelerator.modifiers = pTK->gtk.pAccelerators[index].accelerator.modifiers;
         e.accelerator.id = pTK->gtk.pAccelerators[index].accelerator.id;
-        dtk__handle_event(&e);
+        dtk_handle_global_event(&e);
     }
 
     return DTK_TRUE;    // Returning true here is important because it ensures the accelerator is handled only once.
@@ -1367,6 +1387,22 @@ dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking, int* pExitCode)
     return result;
 }
 
+void dtk_flush_event_queue(dtk_context* pTK)
+{
+    int exitCode;
+    for (;;) {
+        dtk_result result = dtk_next_event(pTK, DTK_FALSE, &exitCode);
+        if (result == DTK_NO_EVENT) {
+            break;
+        }
+
+        // Put the quit event back to the queue so the application's main loop can handle it.
+        if (result == DTK_QUIT) {
+            dtk_post_quit_event(pTK, exitCode);
+        }
+    }
+}
+
 dtk_result dtk_post_local_event(dtk_context* pTK, dtk_event* pEvent)
 {
     if (pTK == NULL || pEvent == NULL || pEvent->pControl == NULL) return DTK_INVALID_ARGS;
@@ -1394,8 +1430,14 @@ dtk_bool32 dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent)
 {
     if (pTK == NULL || pEvent == NULL || pEvent->pControl == NULL) return DTK_FALSE;
 
+    // Make sure the event is cancelled if the associated control has been uninitialized.
+    dtk_result result = dtk__normalize_event(pEvent);
+    if (result != DTK_SUCCESS) {
+        return DTK_FALSE;   // The event was probably cancelled.
+    }
+
     if (pEvent->pControl->isUninitialized) {
-        return DTK_FALSE;    // Cannot post an event for controls that are being uninitialised.
+        return DTK_FALSE;   // Cannot post an event for controls that are being uninitialised.
     }
 
     dtk_event_proc onEvent = pEvent->pControl->onEvent;
@@ -1448,7 +1490,7 @@ dtk_result dtk_handle_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_
     e.custom.id = eventID;
     e.custom.dataSize = dataSize;
     e.custom.pData = pData;
-    return dtk__handle_event(&e);
+    return dtk_handle_global_event(&e);
 }
 
 dtk_result dtk_post_paint_notification_event(dtk_context* pTK, dtk_window* pWindow)
@@ -1705,13 +1747,17 @@ dtk_result dtk_capture_keyboard(dtk_context* pTK, dtk_control* pControl)
         }
     } else {
         // The window is the same. Do the event posting right here.
-        dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_KEYBOARD, pOldCapturedControl);
-        eRelease.releaseKeyboard.pNewCapturedControl = pNewCapturedControl;
-        dtk_post_local_event(pTK, &eRelease);   // <-- TODO: Should we check if this returns false, and if so, cancel the the focus change?
+        if (pOldCapturedControl != NULL) {
+            dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_KEYBOARD, pOldCapturedControl);
+            eRelease.releaseKeyboard.pNewCapturedControl = pNewCapturedControl;
+            dtk_post_local_event(pTK, &eRelease);   // <-- TODO: Should we check if this returns false, and if so, cancel the the focus change?
+        }
 
-        dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_KEYBOARD, pNewCapturedControl);
-        eCapture.captureKeyboard.pOldCapturedControl = pOldCapturedControl;
-        dtk_post_local_event(pTK, &eCapture);
+        if (pNewCapturedControl != NULL) {
+            dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_KEYBOARD, pNewCapturedControl);
+            eCapture.captureKeyboard.pOldCapturedControl = pOldCapturedControl;
+            dtk_post_local_event(pTK, &eCapture);
+        }
     }
 
     return DTK_SUCCESS;

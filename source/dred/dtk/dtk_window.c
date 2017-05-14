@@ -209,7 +209,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         case WM_CLOSE:
         {
             e.type = DTK_EVENT_CLOSE;
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         } return 0;
 
         case DTK_WM_PAINT_NOTIFICATION:
@@ -234,7 +234,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                     e.paint.rect.right = ps.rcPaint.right;
                     e.paint.rect.bottom = ps.rcPaint.bottom;
                     e.paint.pSurface = &surface;
-                    dtk__handle_event(&e);
+                    dtk_handle_global_event(&e);
 
                     SelectClipRgn(hDC, NULL);       // Make sure the clip is restored to ensure future paint messages are handled correctly by the operating system.
                     dtk_surface_uninit(&surface);
@@ -253,7 +253,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                     e.paint.rect.right = rect.right;
                     e.paint.rect.bottom = rect.bottom;
                     e.paint.pSurface = &surface;
-                    dtk__handle_event(&e);
+                    dtk_handle_global_event(&e);
 
                     dtk_surface_uninit(&surface);
                 }
@@ -266,7 +266,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.type = DTK_EVENT_SIZE;
             e.size.width  = LOWORD(lParam);
             e.size.height = HIWORD(lParam);
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         } break;
 
         case WM_MOVE:
@@ -285,7 +285,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.move.y = DTK_GET_Y_LPARAM(lParam);
         #endif
 
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         } break;
 
 
@@ -297,11 +297,11 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
 
             if ((pWindowPos->flags & SWP_HIDEWINDOW) != 0) {
                 e.type = DTK_EVENT_HIDE;
-                dtk__handle_event(&e);
+                dtk_handle_global_event(&e);
             }
             if ((pWindowPos->flags & SWP_SHOWWINDOW) != 0) {
                 e.type = DTK_EVENT_SHOW;
-                dtk__handle_event(&e);
+                dtk_handle_global_event(&e);
             }
         } break;
 
@@ -311,7 +311,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             pWindow->win32.isCursorOverClientArea = DTK_FALSE;
 
             e.type = DTK_EVENT_MOUSE_LEAVE;
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         } break;
 
         case WM_MOUSEMOVE:
@@ -319,7 +319,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             if (!pWindow->win32.isCursorOverClientArea) {
                 pWindow->win32.isCursorOverClientArea = DTK_TRUE;
                 e.type = DTK_EVENT_MOUSE_ENTER;
-                dtk__handle_event(&e);
+                dtk_handle_global_event(&e);
 
                 dtk_track_mouse_leave_event__win32(hWnd);
             }
@@ -328,7 +328,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseMove.x = DTK_GET_X_LPARAM(lParam);
             e.mouseMove.y = DTK_GET_Y_LPARAM(lParam);
             e.mouseMove.state = dtk_get_mouse_event_state_flags__win32(wParam);
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         } break;
 
     // Uncomment this to enable mouse button events in the non-client area of the window. This is inconsistent with other backends, however.
@@ -347,7 +347,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
             e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam) | dtk_get_mouse_button_modifier_flag(e.mouseButton.button);
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         } break;
 
         case WM_NCLBUTTONUP:
@@ -364,7 +364,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
             e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         } break;
 
         case WM_NCLBUTTONDBLCLK:
@@ -382,10 +382,10 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
             e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam) | dtk_get_mouse_button_modifier_flag(e.mouseButton.button);
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
 
             e.type = DTK_EVENT_MOUSE_BUTTON_DBLCLICK;
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         } break;
     #endif
 
@@ -402,7 +402,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
             e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam) | dtk_get_mouse_button_modifier_flag(e.mouseButton.button);
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         } break;
 
         case WM_LBUTTONUP:
@@ -418,7 +418,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
             e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam);
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         } break;
 
         case WM_LBUTTONDBLCLK:
@@ -435,10 +435,10 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseButton.y = p.y;
             e.mouseButton.button = dtk_wm_event_to_mouse_button__win32(msg);
             e.mouseButton.state = dtk_get_mouse_event_state_flags__win32(wParam) | dtk_get_mouse_button_modifier_flag(e.mouseButton.button);
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
 
             e.type = DTK_EVENT_MOUSE_BUTTON_DBLCLICK;
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         } break;
 
         case WM_MOUSEWHEEL:
@@ -455,7 +455,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             e.mouseWheel.y = p.y;
             e.mouseWheel.delta = delta;
             e.mouseWheel.state = dtk_get_mouse_event_state_flags__win32(wParam);
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         } break;
 
 
@@ -471,7 +471,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.type = DTK_EVENT_KEY_DOWN;
                 e.keyDown.key = dtk_convert_key_from_win32(wParam);
                 e.keyDown.state = stateFlags;
-                dtk__handle_event(&e);
+                dtk_handle_global_event(&e);
             }
         } break;
 
@@ -482,7 +482,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.type = DTK_EVENT_KEY_UP;
                 e.keyUp.key = dtk_convert_key_from_win32(wParam);
                 e.keyUp.state = dtk_get_modifier_key_state_flags__win32();
-                dtk__handle_event(&e);
+                dtk_handle_global_event(&e);
             }
         } break;
 
@@ -524,7 +524,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
 
                     int repeatCount = lParam & 0x0000FFFF;
                     for (int i = 0; i < repeatCount; ++i) {
-                        dtk__handle_event(&e);
+                        dtk_handle_global_event(&e);
                     }
                 }
             }
@@ -537,7 +537,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             if (pTK->pWindowWithKeyboardCapture != pWindow) {
                 if (dtk_control_is_keyboard_capture_allowed(e.pControl)) {
                     e.type = DTK_EVENT_CAPTURE_KEYBOARD;
-                    dtk__handle_event(&e);
+                    dtk_handle_global_event(&e);
                     //printf("Captured Window: %d %d %d\n", pWindow->isTopLevel, pWindow->isDialog, pWindow->isPopup);
                 }
             }
@@ -554,7 +554,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 // probably got focus. In this case, just kill the focus of the window that currently has the keyboard capture.
                 e.type = DTK_EVENT_RELEASE_KEYBOARD;
                 e.pControl = DTK_CONTROL(pTK->pWindowWithKeyboardCapture);
-                dtk__handle_event(&e);
+                dtk_handle_global_event(&e);
             } else {
                 // In this case it means the newly focused window _is_ part of this instance. If the newly focused window is not allowed to
                 // receive keyboard capture, do _not_ post a release event (because there will be no corresponding capture event).
@@ -563,7 +563,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 if (pTK->pWindowWithKeyboardCapture == pWindow && dtk_control_is_keyboard_capture_allowed(pNewFocusedWindow)) {
                     e.type = DTK_EVENT_RELEASE_KEYBOARD;
                     e.pControl = pOldFocusedWindow;
-                    dtk__handle_event(&e);
+                    dtk_handle_global_event(&e);
                     //printf("Released Window: %d %d %d\n", pWindow->isTopLevel, pWindow->isDialog, pWindow->isPopup);
                 }
             }
@@ -574,7 +574,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             // This message is posted to the window that has _lost_ the mouse capture. Since mouse capture is always explicit, the capture
             // event is never handled through the Win32 event handler, and is instead posted manually from dtk__capture_mouse_window().
             e.type = DTK_EVENT_RELEASE_MOUSE;
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         } break;
 
 
@@ -586,7 +586,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.accelerator.key       = e.pTK->win32.pAccelerators[acceleratorIndex].key;
                 e.accelerator.modifiers = e.pTK->win32.pAccelerators[acceleratorIndex].modifiers;
                 e.accelerator.id        = e.pTK->win32.pAccelerators[acceleratorIndex].id;
-                dtk__handle_event(&e);
+                dtk_handle_global_event(&e);
             }
         } break;
 
@@ -604,7 +604,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 e.menu.pMenu = pMenu;
                 e.menu.itemIndex = (dtk_uint32)wParam;
                 dtk_menu_get_item_id(pMenu, e.menu.itemIndex, &e.menu.itemID);
-                dtk__handle_event(&e);
+                dtk_handle_global_event(&e);
             }
         } break;
 
@@ -1124,7 +1124,7 @@ static gboolean dtk_window__on_close__gtk(GtkWidget* pWidget, GdkEvent* pEvent, 
     if (pWindow == NULL) return DTK_TRUE;
     
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_CLOSE, DTK_CONTROL(pWindow));
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
     
     return DTK_TRUE;
 }
@@ -1141,7 +1141,7 @@ static gboolean dtk_window__on_configure__gtk(GtkWidget* pWidget, GdkEventConfig
         dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_MOVE, DTK_CONTROL(pWindow));
         e.move.x = pEvent->x;
         e.move.y = pEvent->y;
-        dtk__handle_event(&e);
+        dtk_handle_global_event(&e);
     }
 
     return DTK_FALSE;
@@ -1157,7 +1157,7 @@ static void dtk_window__on_hide__gtk(GtkWidget* pWidget, gpointer pUserData)
     }
 
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_HIDE, DTK_CONTROL(pWindow));
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 }
 
 static void dtk_window__on_show__gtk(GtkWidget* pWidget, gpointer pUserData)
@@ -1170,7 +1170,7 @@ static void dtk_window__on_show__gtk(GtkWidget* pWidget, gpointer pUserData)
     }
 
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_SHOW, DTK_CONTROL(pWindow));
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 
     gtk_widget_grab_focus(GTK_WIDGET(pWidget)); // <-- Is this needed?
 }
@@ -1202,7 +1202,7 @@ static gboolean dtk_window__on_key_down__gtk(GtkWidget* pWidget, GdkEventKey* pE
                 e.accelerator.key = pTK->gtk.pAccelerators[i].accelerator.key;
                 e.accelerator.modifiers = pTK->gtk.pAccelerators[i].accelerator.modifiers;
                 e.accelerator.id = pTK->gtk.pAccelerators[i].accelerator.id;
-                dtk__handle_event(&e);
+                dtk_handle_global_event(&e);
                 return DTK_FALSE;
             }
         }
@@ -1211,7 +1211,7 @@ static gboolean dtk_window__on_key_down__gtk(GtkWidget* pWidget, GdkEventKey* pE
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_KEY_DOWN, DTK_CONTROL(pWindow));
     e.keyDown.key = dtk_convert_key_from_gtk(pEvent->keyval);
     e.keyDown.state = stateFlags;
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 
 
     // Printable keys. These are posted as UTF-32 code points.
@@ -1227,7 +1227,7 @@ static gboolean dtk_window__on_key_down__gtk(GtkWidget* pWidget, GdkEventKey* pE
             e.type = DTK_EVENT_PRINTABLE_KEY_DOWN;
             e.printableKeyDown.utf32 = utf32;
             e.printableKeyDown.state = stateFlags;
-            dtk__handle_event(&e);
+            dtk_handle_global_event(&e);
         }
     }
 
@@ -1246,7 +1246,7 @@ static gboolean dtk_window__on_key_up__gtk(GtkWidget* pWidget, GdkEventKey* pEve
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_KEY_UP, DTK_CONTROL(pWindow));
     e.keyUp.key = dtk_convert_key_from_gtk(pEvent->keyval);
     e.keyUp.state = dtk_get_modifier_state_flags__gtk(pEvent->state);
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 
     return DTK_FALSE;
 }
@@ -1262,7 +1262,7 @@ static gboolean dtk_window__on_receive_focus__gtk(GtkWidget* pWidget, GdkEventFo
     }
 
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_CAPTURE_KEYBOARD, DTK_CONTROL(pWindow));
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 
     return DTK_FALSE;
 }
@@ -1278,7 +1278,7 @@ static gboolean dtk_window__on_lose_focus__gtk(GtkWidget* pWidget, GdkEventFocus
     }
 
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_RELEASE_KEYBOARD, DTK_CONTROL(pWindow));
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 
     return DTK_FALSE;
 }
@@ -1308,7 +1308,7 @@ static gboolean dtk_window_clientarea__on_draw__gtk(GtkWidget* pClientArea, cair
     e.paint.rect.right = clipRight;
     e.paint.rect.bottom = clipBottom;
     e.paint.pSurface = &surface;
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
     
     dtk_surface_uninit(&surface);
     return DTK_FALSE;
@@ -1330,7 +1330,7 @@ static gboolean dtk_window_clientarea__on_configure__gtk(GtkWidget* pClientArea,
         dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_SIZE, DTK_CONTROL(pWindow));
         e.size.width = pEvent->width;
         e.size.height = pEvent->height;
-        dtk__handle_event(&e);
+        dtk_handle_global_event(&e);
 
         // Invalidate the window to force a redraw.
         gtk_widget_queue_draw(pClientArea);
@@ -1353,7 +1353,7 @@ static gboolean dtk_window_clientarea__on_mouse_enter__gtk(GtkWidget* pClientAre
     gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pWidget)), GDK_CURSOR(pWindow->gtk.pCursor));
 
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_MOUSE_ENTER, DTK_CONTROL(pWindow));
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 
     return DTK_FALSE;
 }
@@ -1371,7 +1371,7 @@ static gboolean dtk_window_clientarea__on_mouse_leave__gtk(GtkWidget* pClientAre
     pWindow->gtk.isCursorOverClientArea = DTK_FALSE;
 
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_MOUSE_LEAVE, DTK_CONTROL(pWindow));
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 
     return DTK_TRUE;
 }
@@ -1389,7 +1389,7 @@ static gboolean dtk_window_clientarea__on_mouse_move__gtk(GtkWidget* pClientArea
     e.mouseMove.x = pEvent->x;
     e.mouseMove.y = pEvent->y;
     e.mouseMove.state = dtk_get_modifier_state_flags__gtk(pEvent->state);
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 
     return DTK_FALSE;
 }
@@ -1414,7 +1414,7 @@ static gboolean dtk_window_clientarea__on_mouse_button_down__gtk(GtkWidget* pCli
     e.mouseButton.y = pEvent->y;
     e.mouseButton.button = dtk_from_gtk_mouse_button(pEvent->button);
     e.mouseButton.state = dtk_get_modifier_state_flags__gtk(pEvent->state);
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 
     return DTK_TRUE;
 }
@@ -1433,7 +1433,7 @@ static gboolean dtk_window_clientarea__on_mouse_button_up__gtk(GtkWidget* pClien
     e.mouseButton.y = pEvent->y;
     e.mouseButton.button = dtk_from_gtk_mouse_button(pEvent->button);
     e.mouseButton.state = dtk_get_modifier_state_flags__gtk(pEvent->state);
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 
     return DTK_TRUE;
 }
@@ -1459,7 +1459,7 @@ static gboolean dtk_window_clientarea__on_mouse_wheel__gtk(GtkWidget* pClientAre
     e.mouseWheel.y = pEvent->y;
     e.mouseWheel.delta = (dtk_int32)delta_y;
     e.mouseWheel.state = dtk_get_modifier_state_flags__gtk(pEvent->state);
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 
     return DTK_TRUE;
 }
@@ -1484,7 +1484,7 @@ static gboolean dtk_window_clientarea__on_grab_broken__gtk(GtkWidget* pWidget, G
     }
 
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_RELEASE_MOUSE, DTK_CONTROL(pWindow));
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 
     return DTK_FALSE;
 }

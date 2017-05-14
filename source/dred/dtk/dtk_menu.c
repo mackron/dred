@@ -476,7 +476,7 @@ static void dtk__on_menu_item_activate__gtk(GtkWidget *pItem, gpointer pUserData
     e.menu.pMenu = pItemData->pMenu;
     e.menu.itemIndex = itemIndex;
     e.menu.itemID = pItemData->id;
-    dtk__handle_event(&e);
+    dtk_handle_global_event(&e);
 }
 
 dtk_result dtk_menu_insert_item__gtk(dtk_menu* pMenu, dtk_uint32 index, dtk_menu_item_info* pInfo)

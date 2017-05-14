@@ -318,6 +318,38 @@ dr_bool32 dred_textview__insert_tab_at_cursor(dred_textview* pTextView, size_t i
 }
 
 
+void dred_textview__on_timer(dtk_timer* pTimer, void* pUserData)
+{
+    (void)pTimer;
+
+    dred_textview* pTextView = (dred_textview*)pUserData;
+    assert(pTextView != NULL);
+
+    dred_textview_step(pTextView, 100);
+}
+
+void dred_textview__create_timer(dred_textview* pTextView)
+{
+    dtk_assert(pTextView != NULL);
+
+    if (pTextView->pTimer == NULL) {
+        pTextView->pTimer = (dtk_timer*)malloc(sizeof(*pTextView->pTimer));
+        dtk_timer_init(DTK_CONTROL(pTextView)->pTK, 100, dred_textview__on_timer, pTextView, pTextView->pTimer);
+    }
+}
+
+void dred_textview__delete_timer(dred_textview* pTextView)
+{
+    dtk_assert(pTextView != NULL);
+
+    if (pTextView->pTimer != NULL) {
+        dtk_timer_uninit(pTextView->pTimer);
+        free(pTextView->pTimer);
+        pTextView->pTimer = NULL;
+    }
+}
+
+
 dr_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_control* pParent, drte_engine* pTextEngine)
 {
     if (pTextView == NULL || pTextEngine == NULL) {
@@ -470,10 +502,7 @@ void dred_textview_uninit(dred_textview* pTextView)
         return;
     }
 
-    // Keyboard focus needs to be released first. If we don't do this we'll not free the internal timer.
-    if (dtk_control_has_keyboard_capture(DTK_CONTROL(pTextView))) {
-        dred_gui_release_keyboard(dred_control_get_gui(DRED_CONTROL(pTextView)));
-    }
+    dred_textview__delete_timer(pTextView);
 
     if (pTextView->pLineNumbers) {
         dred_control_uninit(pTextView->pLineNumbers);
@@ -2593,15 +2622,7 @@ void dred_textview_on_paint(dred_control* pControl, dred_rect relativeRect, dtk_
     drte_view_paint(pTextView->pView, dred_rect_to_drte(dred_offset_rect(dred_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top)), pSurface);
 }
 
-void dred_textview__on_timer(dtk_timer* pTimer, void* pUserData)
-{
-    (void)pTimer;
 
-    dred_textview* pTextView = (dred_textview*)pUserData;
-    assert(pTextView != NULL);
-
-    dred_textview_step(pTextView, 100);
-}
 
 void dred_textview_on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
 {
@@ -2613,11 +2634,7 @@ void dred_textview_on_capture_keyboard(dred_control* pControl, dtk_control* pPre
     }
 
     drte_view_show_cursors(pTextView->pView);
-
-    if (pTextView->pTimer == NULL) {
-        pTextView->pTimer = (dtk_timer*)malloc(sizeof(*pTextView->pTimer));
-        dtk_timer_init(&pControl->pGUI->pDred->tk, 100, dred_textview__on_timer, pTextView, pTextView->pTimer);
-    }
+    dred_textview__create_timer(pTextView);
 }
 
 void dred_textview_on_release_keyboard(dred_control* pControl, dtk_control* pNewCapturedControl)
@@ -2630,12 +2647,7 @@ void dred_textview_on_release_keyboard(dred_control* pControl, dtk_control* pNew
     }
 
     drte_view_hide_cursors(pTextView->pView);
-
-    if (pTextView->pTimer != NULL) {
-        dtk_timer_uninit(pTextView->pTimer);
-        free(pTextView->pTimer);
-        pTextView->pTimer = NULL;
-    }
+    dred_textview__delete_timer(pTextView);
 }
 
 void dred_textview_on_capture_mouse(dred_control* pControl)
