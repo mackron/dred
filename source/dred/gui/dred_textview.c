@@ -1712,15 +1712,15 @@ void dred_textview_on_size(dred_control* pControl, float newWidth, float newHeig
     float containerHeight;
     dred_textview__calculate_text_engine_container_size(pTextView, &containerWidth, &containerHeight);
 
-    if (containerWidth != newWidth || containerHeight != newHeight) {
-        drte_view_set_size(pTextView->pView, containerWidth, containerHeight);
+    drte_view_set_size(pTextView->pView, containerWidth, containerHeight);
 
-        // Scrollbars need to be refreshed first.
-        dred_textview__refresh_scrollbars(pTextView);
+    // Scrollbars need to be refreshed first.
+    dred_textview__refresh_scrollbars(pTextView);
 
-        // Line numbers need to be refreshed.
-        dred_textview__refresh_line_numbers(pTextView);
-    }
+    // Line numbers need to be refreshed.
+    dred_textview__refresh_line_numbers(pTextView);
+
+    dtk_control_scheduled_redraw(DTK_CONTROL(pControl), dtk_control_get_local_rect(DTK_CONTROL(pControl)));
 }
 
 void dred_textview__select_rectangle(dred_textview* pTextView, drte_rect rect)
