@@ -416,6 +416,8 @@ void dred_tabbar_resize_by_tabs(dred_tabbar* pTabBar)
 
     float maxWidth  = 0;
     float maxHeight = 0;
+
+#if 0
     if (pTabBar->pFirstTab == NULL) {
         // There are no tabs. Set initial size based on the line height of the font.
         dtk_font_metrics fontMetrics;
@@ -436,10 +438,18 @@ void dred_tabbar_resize_by_tabs(dred_tabbar* pTabBar)
             maxHeight = (tabHeight > maxHeight) ? tabHeight : maxHeight;
         }
     }
+#endif
+
+    dtk_font_metrics fontMetrics;
+    if (dred_gui_get_font_metrics(pTabBar->pFont, &fontMetrics)) {
+        if (pTabBar->orientation == dred_tabbar_orientation_top || pTabBar->orientation == dred_tabbar_orientation_bottom) {
+            maxHeight = fontMetrics.lineHeight + (pTabBar->tabPadding*2);
+        } else {
+            maxWidth = fontMetrics.lineHeight + (pTabBar->tabPadding*2);
+        }
+    }
 
     
-
-
     if (pTabBar->orientation == dred_tabbar_orientation_top || pTabBar->orientation == dred_tabbar_orientation_bottom) {
         dred_control_set_size(DRED_CONTROL(pTabBar), dred_control_get_width(DRED_CONTROL(pTabBar)), maxHeight);
     } else {
@@ -798,7 +808,6 @@ void dred_tabbar_on_paint(dred_control* pControl, dred_rect relativeClippingRect
     float tabbarHeight = 0;
     dred_control_get_size(pControl, &tabbarWidth, &tabbarHeight);
 
-
     // Each tab.
     float runningPosX = 0;
     float runningPosY = 0;
@@ -949,7 +958,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
         dred_control_draw_image(DRED_CONTROL(pTabBar), pTabBar->pCloseButtonImage, &args, pSurface);
 
 
-        /// Space between the text and the padding.
+        // Space between the text and the padding.
         dred_control_draw_rect(DRED_CONTROL(pTabBar), dred_make_rect(textPosX + textWidth, textPosY, closeButtonPosX, textPosY + textHeight), bgcolor, pSurface);
     }
 }
