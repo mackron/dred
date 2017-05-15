@@ -5,7 +5,6 @@ typedef struct
     dred_window* pWindow;
     dred_gui_image* pLogo;
     dred_button closeButton;
-    dr_bool32 isShowing;
 } dred_about_dialog;
 
 dred_about_dialog* dred_about_dialog_create(dred_context* pDred);

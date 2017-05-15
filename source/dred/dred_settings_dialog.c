@@ -64,7 +64,6 @@ void dred_settings_dialog_show(dred_settings_dialog* pDialog)
 
     dred_window_move_to_center(pDialog->pWindow);
     dred_window_show(pDialog->pWindow);
-    pDialog->isShowing = DR_TRUE;
 }
 
 void dred_settings_dialog_hide(dred_settings_dialog* pDialog)
@@ -74,7 +73,6 @@ void dred_settings_dialog_hide(dred_settings_dialog* pDialog)
     }
 
     dred_window_hide(pDialog->pWindow);
-    pDialog->isShowing = DR_FALSE;
 }
 
 dr_bool32 dred_settings_dialog_is_showing(dred_settings_dialog* pDialog)
@@ -83,7 +81,7 @@ dr_bool32 dred_settings_dialog_is_showing(dred_settings_dialog* pDialog)
         return DR_FALSE;
     }
 
-    return pDialog->isShowing;
+    return dtk_control_is_visible(DTK_CONTROL(&pDialog->pWindow->windowDTK));
 }
 
 void dred_settings_dialog_refresh_styling(dred_settings_dialog* pDialog)

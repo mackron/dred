@@ -4,7 +4,6 @@ typedef struct
 {
     dred_window* pWindow;
     dred_settings_editor* pSettingsEditor;
-    dr_bool32 isShowing;
 } dred_settings_dialog;
 
 dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred);
