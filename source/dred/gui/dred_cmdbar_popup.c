@@ -114,8 +114,8 @@ void dred_cmdbar_popup_refresh_position(dred_cmdbar_popup* pCmdBarPopup)
 
     unsigned int popupSizeX;
     unsigned int popupSizeY;
-    dred_window_get_size(pCmdBarPopup->pWindow, &popupSizeX, &popupSizeY);
-    dred_window_set_position(pCmdBarPopup->pWindow, (int)(mainWindowPosX + cmdbarPosX), (int)(mainWindowPosY + cmdbarPosY - popupSizeY));
+    dtk_window_get_size(&pCmdBarPopup->pWindow->windowDTK, &popupSizeX, &popupSizeY);
+    dtk_window_set_relative_position(&pCmdBarPopup->pWindow->windowDTK, (int)(/*mainWindowPosX + */cmdbarPosX), (int)(/*mainWindowPosY + */cmdbarPosY - popupSizeY));
 }
 
 

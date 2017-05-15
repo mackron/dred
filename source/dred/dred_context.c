@@ -534,9 +534,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
         dred_control_hide(DRED_CONTROL(pDred->pCmdBar));
     }
 
-#ifdef DRED_WIN32
     pDred->pCmdBarPopup = dred_cmdbar_popup_create(pDred);
-#endif
 
 
 

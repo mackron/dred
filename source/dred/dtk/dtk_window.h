@@ -45,9 +45,12 @@ struct dtk_window
             /*GtkWidget**/ dtk_ptr pClientArea;
             /*GdkCursor**/ dtk_ptr pCursor;
             dtk_menu* pMenu;
-            int configureClientWidth;     // The size of the client area based on the last "configure" event. This is used to know whether or not the event is for a move or size.
-            int configureClientHeight;    // ^
-            dtk_bool32 isCursorOverClientArea;
+            int configureClientWidth;       // The size of the client area based on the last "configure" event. This is used to know whether or not the event is for a move or size.
+            int configureClientHeight;      // ^
+            dtk_int32 desiredPositionX;     // Used when a window want's to move while invisible. When the window is made visible, it will be positioned based on this if repositionOnShow is set.
+            dtk_int32 desiredPositionY; 
+            dtk_bool32 isCursorOverClientArea : 1;
+            dtk_bool32 repositionOnShow : 1;
         } gtk;
     #endif
     #ifdef DTK_X11
@@ -80,15 +83,15 @@ dtk_result dtk_window_get_size(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint
 dtk_result dtk_window_get_client_size(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight);
 
 // Sets the absolute position of a window. This will position it relative to the screen.
-dtk_result dtk_window_set_absolute_position(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY);
-dtk_result dtk_window_get_absolute_position(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY);
+dtk_result dtk_window_set_absolute_position(dtk_window* pWindow, dtk_int32 screenPosX, dtk_int32 screenPosY);
+dtk_result dtk_window_get_absolute_position(dtk_window* pWindow, dtk_int32* pScreenPosX, dtk_int32* pScreenPosY);
 
 // Sets the position of a window.
 dtk_result dtk_window_set_relative_position(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY);
 dtk_result dtk_window_get_relative_position(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY);
 
-// Retrieves the absolute position of teh client area of the window.
-dtk_result dtk_window_get_client_absolute_position(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY);
+// Retrieves the absolute position of the client area of the window.
+dtk_result dtk_window_get_client_absolute_position(dtk_window* pWindow, dtk_int32* pScreenPosX, dtk_int32* pScreenPosY);
 
 // Center's a window onto it's parent control. If it does not have a parent it'll be centered on the monitor.
 dtk_result dtk_window_move_to_center(dtk_window* pWindow);

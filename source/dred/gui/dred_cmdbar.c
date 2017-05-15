@@ -150,11 +150,8 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dtk_control* pP
     dred_control_dirty(DRED_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));
 
 
-// TODO: Fix the command bar popup for GTK.
-#ifdef DRED_WIN32
     // Show the popup window.
     dred_cmdbar_popup_show(pDred->pCmdBarPopup);
-#endif
 
     // Fall through to the default handler.
     dred_textview_on_capture_keyboard(DRED_CONTROL(pTextBox), pPrevCapturedControl);
@@ -178,10 +175,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dtk_control* pN
         return;
     }
 
-// TODO: Fix the command bar popup for GTK.
-#ifdef DRED_WIN32
     dred_cmdbar_popup_hide(pDred->pCmdBarPopup);
-#endif
 
     // Deactivate unfocused styles.
     dred_textbox_set_text_color(pCmdBar->pTextBox, pDred->config.cmdbarTextColor);

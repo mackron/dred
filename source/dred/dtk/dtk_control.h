@@ -116,6 +116,9 @@ dtk_result dtk_control_get_absolute_position(dtk_control* pControl, dtk_int32* p
 dtk_result dtk_control_set_relative_position(dtk_control* pControl, dtk_int32 posX, dtk_int32 posY);
 dtk_result dtk_control_get_relative_position(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY);
 
+// Retrieves the screen position of a control.
+dtk_result dtk_control_get_screen_position(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY);
+
 // Converts a relative position to absolute. On input, the position represents the relative position. Out output they
 // will be set to the absolute position.
 dtk_result dtk_control_relative_to_absolute(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY);

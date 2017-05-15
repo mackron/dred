@@ -809,11 +809,9 @@ dtk_result dtk_window_get_client_size__win32(dtk_window* pWindow, dtk_uint32* pW
     return dtk_window_get_size__win32(pWindow, pWidth, pHeight);
 }
 
-dtk_result dtk_window_set_absolute_position__win32(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY)
+dtk_result dtk_window_set_absolute_position__win32(dtk_window* pWindow, dtk_int32 screenPosX, dtk_int32 screenPosY)
 {
     // The absolute position of window's is relative to the screen.
-    dtk_int32 screenPosX = posX;
-    dtk_int32 screenPosY = posY;
     if (!SetWindowPos((HWND)pWindow->win32.hWnd, NULL, screenPosX, screenPosY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE)) {
         return DTK_ERROR;
     }
@@ -824,7 +822,7 @@ dtk_result dtk_window_set_absolute_position__win32(dtk_window* pWindow, dtk_int3
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_window_get_absolute_position__win32(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
+dtk_result dtk_window_get_absolute_position__win32(dtk_window* pWindow, dtk_int32* pScreenPosX, dtk_int32* pScreenPosY)
 {
 #if 1
     // NOTE: This is returning incorrect results for some reason. When fullscreen, it reports an extra 8 pixels
@@ -836,8 +834,8 @@ dtk_result dtk_window_get_absolute_position__win32(dtk_window* pWindow, dtk_int3
 
     MapWindowPoints(HWND_DESKTOP, GetParent((HWND)pWindow->win32.hWnd), (LPPOINT) &rect, 2);
 
-    if (pPosX) *pPosX = rect.left;
-    if (pPosY) *pPosY = rect.top;
+    if (pScreenPosX) *pScreenPosX = rect.left;
+    if (pScreenPosY) *pScreenPosY = rect.top;
 #else
     POINT pt;
     pt.x = 0;
@@ -846,14 +844,14 @@ dtk_result dtk_window_get_absolute_position__win32(dtk_window* pWindow, dtk_int3
         return DTK_ERROR;
     }
 
-    if (pPosX) *pPosX = pt.x;
-    if (pPosY) *pPosY = pt.y;
+    if (pScreenPosX) *pScreenPosX = pt.x;
+    if (pScreenPosY) *pScreenPosY = pt.y;
 #endif
 
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_window_get_client_absolute_position__win32(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
+dtk_result dtk_window_get_client_absolute_position__win32(dtk_window* pWindow, dtk_int32* pScreenPosX, dtk_int32* pScreenPosY)
 {
     POINT pt;
     pt.x = 0;
@@ -862,8 +860,8 @@ dtk_result dtk_window_get_client_absolute_position__win32(dtk_window* pWindow, d
         return DTK_ERROR;
     }
 
-    if (pPosX) *pPosX = pt.x;
-    if (pPosY) *pPosY = pt.y;
+    if (pScreenPosX) *pScreenPosX = pt.x;
+    if (pScreenPosY) *pScreenPosY = pt.y;
     return DTK_SUCCESS;
 }
 
@@ -1171,6 +1169,11 @@ static void dtk_window__on_show__gtk(GtkWidget* pWidget, gpointer pUserData)
 
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_SHOW, DTK_CONTROL(pWindow));
     dtk_handle_global_event(&e);
+
+    if (pWindow->gtk.repositionOnShow) {
+        gtk_window_move(GTK_WINDOW(pWidget), pWindow->gtk.desiredPositionX, pWindow->gtk.desiredPositionY);
+        pWindow->gtk.repositionOnShow = DTK_FALSE;
+    }
 
     gtk_widget_grab_focus(GTK_WIDGET(pWidget)); // <-- Is this needed?
 }
@@ -1552,6 +1555,11 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_wind
         gtk_widget_set_size_request(GTK_WIDGET(pWidget), (gint)width, (gint)height);
         gtk_window_set_type_hint(GTK_WINDOW(pWidget), GDK_WINDOW_TYPE_HINT_DIALOG);
         gtk_window_set_skip_taskbar_hint(GTK_WINDOW(pWidget), TRUE);
+    } else if (type == dtk_window_type_popup) {
+        gtk_window_set_resizable(GTK_WINDOW(pWidget), TRUE);
+        gtk_widget_set_size_request(GTK_WIDGET(pWidget), (gint)width, (gint)height);
+        gtk_window_set_type_hint(GTK_WINDOW(pWidget), GDK_WINDOW_TYPE_HINT_DOCK);
+        gtk_window_set_skip_taskbar_hint(GTK_WINDOW(pWidget), TRUE);
     }
     
     g_signal_connect(pWidget, "delete-event",      G_CALLBACK(dtk_window__on_close__gtk),         pWindow);     // Close
@@ -1627,27 +1635,40 @@ dtk_result dtk_window_get_client_size__gtk(dtk_window* pWindow, dtk_uint32* pWid
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_window_set_absolute_position__gtk(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY)
+dtk_result dtk_window_set_absolute_position__gtk(dtk_window* pWindow, dtk_int32 screenPosX, dtk_int32 screenPosY)
 {
-    gtk_window_move(GTK_WINDOW(pWindow->gtk.pWidget), (gint)posX, (gint)posY);
+    gtk_window_move(GTK_WINDOW(pWindow->gtk.pWidget), (gint)screenPosX, (gint)screenPosY);
+
+    if (!gtk_widget_get_visible(pWindow->gtk.pWidget)) {
+        pWindow->gtk.repositionOnShow = DTK_TRUE;
+        pWindow->gtk.desiredPositionX = screenPosX;
+        pWindow->gtk.desiredPositionY = screenPosY;
+    }
+
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_window_get_absolute_position__gtk(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
+dtk_result dtk_window_get_absolute_position__gtk(dtk_window* pWindow, dtk_int32* pScreenPosX, dtk_int32* pScreenPosY)
 {
     gint posX = 0;
     gint posY = 0;
     gtk_window_get_position(GTK_WINDOW(pWindow->gtk.pWidget), &posX, &posY);
 
-    if (pPosX) *pPosX = (dtk_int32)posX;
-    if (pPosY) *pPosY = (dtk_int32)posY;
+    if (pScreenPosX) *pScreenPosX = (dtk_int32)posX;
+    if (pScreenPosY) *pScreenPosY = (dtk_int32)posY;
     return DTK_SUCCESS;
 }
 
 dtk_result dtk_window_get_client_absolute_position__gtk(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
 {
+    GtkAllocation alloc;
+    dtk_zero_object(&alloc);
+    if (pWindow->gtk.pMenu != NULL) {
+        gtk_widget_get_allocation(GTK_WIDGET(pWindow->gtk.pMenu->gtk.pWidget), &alloc);
+    }
+
     if (pPosX) *pPosX = pWindow->control.absolutePosX;
-    if (pPosY) *pPosY = pWindow->control.absolutePosY;
+    if (pPosY) *pPosY = pWindow->control.absolutePosY + alloc.height;
     return DTK_SUCCESS;
 }
 
@@ -1891,7 +1912,7 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_ty
     // Make sure the position attributes of the structure are updated.
     dtk_window_get_absolute_position(pWindow, &DTK_CONTROL(pWindow)->absolutePosX, &DTK_CONTROL(pWindow)->absolutePosY);
 
-    // The size needs to be set to the client of the client.
+    // The size needs to be set to that of the client area.
     dtk_window_get_client_size(pWindow, &DTK_CONTROL(pWindow)->width, &DTK_CONTROL(pWindow)->height);
 
     if (type == dtk_window_type_toplevel) {
@@ -2257,54 +2278,101 @@ dtk_result dtk_window_get_client_size(dtk_window* pWindow, dtk_uint32* pWidth, d
     return result;
 }
 
-dtk_result dtk_window_set_absolute_position(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY)
+dtk_result dtk_window_set_absolute_position(dtk_window* pWindow, dtk_int32 screenPosX, dtk_int32 screenPosY)
 {
     if (pWindow == NULL) return DTK_INVALID_ARGS;
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
-        result = dtk_window_set_absolute_position__win32(pWindow, posX, posY);
+        result = dtk_window_set_absolute_position__win32(pWindow, screenPosX, screenPosY);
     }
 #endif
 #ifdef DTK_GTK
     if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
-        result = dtk_window_set_absolute_position__gtk(pWindow, posX, posY);
+        result = dtk_window_set_absolute_position__gtk(pWindow, screenPosX, screenPosY);
     }
 #endif
 
     return result;
 }
 
-dtk_result dtk_window_get_absolute_position(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
+dtk_result dtk_window_get_absolute_position(dtk_window* pWindow, dtk_int32* pScreenPosX, dtk_int32* pScreenPosY)
 {
-    if (pPosX) *pPosX = 0;
-    if (pPosY) *pPosY = 0;
+    if (pScreenPosX) *pScreenPosX = 0;
+    if (pScreenPosY) *pScreenPosY = 0;
     if (pWindow == NULL) return DTK_INVALID_ARGS;
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
-        result = dtk_window_get_absolute_position__win32(pWindow, pPosX, pPosY);
+        result = dtk_window_get_absolute_position__win32(pWindow, pScreenPosX, pScreenPosY);
     }
 #endif
 #ifdef DTK_GTK
     if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
-        result = dtk_window_get_absolute_position__gtk(pWindow, pPosX, pPosY);
+        result = dtk_window_get_absolute_position__gtk(pWindow, pScreenPosX, pScreenPosY);
     }
 #endif
 
     return result;
 }
 
-dtk_result dtk_window_set_relative_position(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY)
+dtk_result dtk_window_set_relative_position(dtk_window* pWindow, dtk_int32 relativePosX, dtk_int32 relativePosY)
 {
-    return dtk_control_set_relative_position(DTK_CONTROL(pWindow), posX, posY);
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk_control* pParent = dtk_control_get_parent(DTK_CONTROL(pWindow));
+    if (pParent == NULL) {
+        return dtk_window_set_absolute_position(pWindow, relativePosX, relativePosY);
+    }
+
+    // The relative position of a window needs to be relative to it's parent, but positioned in screen coordinates.
+    dtk_assert(pParent != NULL);
+
+    dtk_int32 parentScreenPosX = 0;
+    dtk_int32 parentScreenPosY = 0;
+    if (pParent->type == DTK_CONTROL_TYPE_WINDOW) {
+        dtk_result result = dtk_window_get_client_absolute_position(DTK_WINDOW(pParent), &parentScreenPosX, &parentScreenPosY);
+        if (result != DTK_SUCCESS) {
+            return result;
+        }
+    } else {
+        dtk_result result = dtk_control_get_screen_position(pParent, &parentScreenPosX, &parentScreenPosY);
+        if (result != DTK_SUCCESS) {
+            return result;
+        }
+    }
+    
+    return dtk_window_set_absolute_position(pWindow, parentScreenPosX + relativePosX, parentScreenPosY + relativePosY);
 }
 
-dtk_result dtk_window_get_relative_position(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)
+dtk_result dtk_window_get_relative_position(dtk_window* pWindow, dtk_int32* pRelativePosX, dtk_int32* pRelativePosY)
 {
-    return dtk_control_get_relative_position(DTK_CONTROL(pWindow), pPosX, pPosY);
+    dtk_control* pParent = dtk_control_get_parent(DTK_CONTROL(pWindow));
+    if (pParent == NULL) {
+        return dtk_window_get_absolute_position(pWindow, pRelativePosX, pRelativePosY);
+    }
+
+    dtk_assert(pParent != NULL);
+
+    dtk_int32 parentScreenPosX = 0;
+    dtk_int32 parentScreenPosY = 0;
+    if (pParent->type == DTK_CONTROL_TYPE_WINDOW) {
+        dtk_result result = dtk_window_get_client_absolute_position(DTK_WINDOW(pParent), &parentScreenPosX, &parentScreenPosY);
+        if (result != DTK_SUCCESS) {
+            return result;
+        }
+    } else {
+        dtk_result result = dtk_control_get_screen_position(pParent, &parentScreenPosX, &parentScreenPosY);
+        if (result != DTK_SUCCESS) {
+            return result;
+        }
+    }
+
+    if (pRelativePosX) *pRelativePosX = DTK_CONTROL(pWindow)->absolutePosX - parentScreenPosX;
+    if (pRelativePosY) *pRelativePosY = DTK_CONTROL(pWindow)->absolutePosY - parentScreenPosY;
+    return DTK_SUCCESS;
 }
 
 dtk_result dtk_window_get_client_absolute_position(dtk_window* pWindow, dtk_int32* pPosX, dtk_int32* pPosY)

@@ -399,8 +399,17 @@ dtk_result dtk_control_get_absolute_position(dtk_control* pControl, dtk_int32* p
 dtk_result dtk_control_set_relative_position(dtk_control* pControl, dtk_int32 posX, dtk_int32 posY)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    // Window controls are handled differently.
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        return dtk_window_set_relative_position(DTK_WINDOW(pControl), posX, posY);
+    }
     
-    if (pControl->pParent == NULL || pControl->pParent->type == DTK_CONTROL_TYPE_WINDOW) {
+    if (pControl->pParent == NULL) {
+        return dtk_control_set_absolute_position(pControl, posX, posY);
+    }
+
+    if (pControl->pParent->type == DTK_CONTROL_TYPE_WINDOW) {
         return dtk_control_set_absolute_position(pControl, posX, posY);
     }
 
@@ -408,21 +417,53 @@ dtk_result dtk_control_set_relative_position(dtk_control* pControl, dtk_int32 po
     return dtk_control_set_absolute_position(pControl, posX, posY);
 }
 
-dtk_result dtk_control_get_relative_position(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY)
+dtk_result dtk_control_get_relative_position(dtk_control* pControl, dtk_int32* pRelativePosX, dtk_int32* pRelativePosY)
 {
-    if (pPosX) *pPosX = 0;  // Safety.
-    if (pPosY) *pPosY = 0;  // ^
+    if (pRelativePosX) *pRelativePosX = 0;  // Safety.
+    if (pRelativePosY) *pRelativePosY = 0;  // ^
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
-    dtk_result result = dtk_control_get_absolute_position(pControl, pPosX, pPosY);
+    // Window controls are handled differently.
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        return dtk_window_get_relative_position(DTK_WINDOW(pControl), pRelativePosX, pRelativePosY);
+    }
+
+    dtk_result result = dtk_control_get_absolute_position(pControl, pRelativePosX, pRelativePosY);
     if (result != DTK_SUCCESS) {
         return result;
     }
 
     if (pControl->pParent != NULL && pControl->pParent->type != DTK_CONTROL_TYPE_WINDOW) {
-        return dtk_control_absolute_to_relative(pControl->pParent, pPosX, pPosY);
+        return dtk_control_absolute_to_relative(pControl->pParent, pRelativePosX, pRelativePosY);
     }
 
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_control_get_screen_position(dtk_control* pControl, dtk_int32* pPosX, dtk_int32* pPosY)
+{
+    if (pPosX) *pPosX = 0;  // Safety.
+    if (pPosY) *pPosY = 0;  // ^
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        return dtk_window_get_absolute_position(DTK_WINDOW(pControl), pPosX, pPosY);
+    }
+
+    dtk_window* pWindow = dtk_control_get_window(pControl);
+    if (pWindow == NULL) {
+        return dtk_control_get_absolute_position(pControl, pPosX, pPosY);   // <-- The control is not attached to a window, so just fall back to it's absolute position.
+    }
+
+    dtk_int32 windowClientScreenPosX;
+    dtk_int32 windowClientScreenPosY;
+    dtk_result result = dtk_window_get_client_absolute_position(pWindow, &windowClientScreenPosX, &windowClientScreenPosY);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    if (pPosX) *pPosX = windowClientScreenPosX + pControl->absolutePosX;
+    if (pPosY) *pPosY = windowClientScreenPosY + pControl->absolutePosY;
     return DTK_SUCCESS;
 }
 
@@ -433,7 +474,7 @@ dtk_result dtk_control_relative_to_absolute(dtk_control* pControl, dtk_int32* pP
     dtk_int32 absolutePosX = 0;
     dtk_int32 absolutePosY = 0;
     dtk_control_get_absolute_position(pControl, &absolutePosX, &absolutePosY);
-
+    
     if (pPosX) *pPosX += absolutePosX;
     if (pPosY) *pPosY += absolutePosY;
     return DTK_SUCCESS;
