@@ -170,7 +170,7 @@ dtk_result dtk_menu_set_item_text__win32(dtk_menu* pMenu, dtk_uint32 index, cons
     dtk_split_menu_item_text__win32(currentText, parsedText, parsedShortcut);
 
     char textWithShortcut[256];
-    if (dtk_string_is_null_or_empty(parsedShortcut)) {
+    if (!dtk_string_is_null_or_empty(parsedShortcut)) {
         size_t shortcutLen = strlen(parsedShortcut);
         dtk_strncpy_s(textWithShortcut, sizeof(textWithShortcut)-shortcutLen-1, text,           _TRUNCATE);
         dtk_strncat_s(textWithShortcut, sizeof(textWithShortcut)-shortcutLen,   "\t",           _TRUNCATE);
@@ -203,7 +203,7 @@ dtk_result dtk_menu_set_item_shortcut__win32(dtk_menu* pMenu, dtk_uint32 index, 
     dtk_split_menu_item_text__win32(currentText, parsedText, parsedShortcut);
 
     char textWithShortcut[256];
-    if (dtk_string_is_null_or_empty(parsedShortcut)) {
+    if (!dtk_string_is_null_or_empty(parsedShortcut)) {
         size_t shortcutLen = strlen(parsedShortcut);
         dtk_strncpy_s(textWithShortcut, sizeof(textWithShortcut)-shortcutLen-1, parsedText, _TRUNCATE);
         dtk_strncat_s(textWithShortcut, sizeof(textWithShortcut)-shortcutLen,   "\t",       _TRUNCATE);

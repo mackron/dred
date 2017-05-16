@@ -272,7 +272,7 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
     
     // Header file.
     fwrite_string(pFileOutH, "\n\n");
-    fprintf(pFileOutH, "#define DRED_STOCK_MENU_ITEM_COUNT %u\n", stb_sb_count(context.pAllItems)+2);   // +2 to include NONE and SEPARATOR
+    fprintf(pFileOutH, "#define DRED_ACTUAL_STOCK_MENU_ITEM_COUNT %u\n", stb_sb_count(context.pAllItems)+2);   // +2 to include NONE and SEPARATOR
     fwrite_string(pFileOutH, "#define DRED_MENU_ITEM_ID_NONE 0\n");
     fwrite_string(pFileOutH, "#define DRED_MENU_ITEM_ID_SEPARATOR 1\n");
     int nextID = 2;
@@ -297,7 +297,7 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
     dtk_uint32 userID = theme0ID + DRED_MAX_THEMES;
     fprintf(pFileOutH, "#define DRED_MENU_ITEM_ID_USER %d\n", userID);
 
-    fprintf(pFileOutH, "\n#define DRED_STOCK_MENU_ITEM_ID_COUNT %d\n", nextID);
+    fprintf(pFileOutH, "\n#define DRED_STOCK_MENU_ITEM_COUNT %d\n", nextID);
 
     fwrite_string(pFileOutH, "\n");
     fwrite_string(pFileOutH, "typedef struct\n{\n");
@@ -311,6 +311,8 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
 
             fprintf(pFileOutH, "    dtk_menu %s;\n", formattedName);
         }
+
+        fprintf(pFileOutH, "    dtk_menu* pMenus[%d];\n", stb_sb_count(context.pAllMenus));
     }
     fwrite_string(pFileOutH, "} dred_stock_menus;\n\n");
 
@@ -341,6 +343,7 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
             dred_build__format_menu_name(pMenu->id, formattedName);
 
             fprintf(pFileOut, "\n");
+            fprintf(pFileOut, "    pDred->menus.pMenus[%d] = &pDred->menus.%s;\n", iMenu, formattedName);
             fprintf(pFileOut, "    dtk_menu_init(&pDred->tk, dtk_menu_type_%s, &pDred->menus.%s);\n    {", pMenu->type, formattedName);
             for (int iItem = 0; iItem < stb_sb_count(pMenu->pItemsIndices); ++iItem) {
                 dred_build__menu_item* pItem = &context.pAllItems[pMenu->pItemsIndices[iItem]];
@@ -393,6 +396,8 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
                 fprintf(pFileOut, "\n");
             }
         }
+
+
 
         free(pMenuOrder);
     }

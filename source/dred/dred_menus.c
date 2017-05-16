@@ -123,7 +123,7 @@ void dred_refresh_favourite_files_menu(dred_context* pDred)
 
 dr_bool32 dred_is_stock_menu_item_id(dtk_uint32 id)
 {
-    if (id < DRED_STOCK_MENU_ITEM_ID_COUNT) {
+    if (id < DRED_STOCK_MENU_ITEM_COUNT) {
         return DR_TRUE;
     }
 
@@ -207,12 +207,14 @@ dred_result dred_menu_item_table_unbind(dred_menu_item_table* pTable, dtk_uint32
 
     size_t index;
     if (dred_menu_item_table_find(pTable, id, &index)) {
-        assert(index >= DRED_STOCK_MENU_ITEM_ID_COUNT);
+        assert(index >= DRED_STOCK_MENU_ITEM_COUNT);
         
         for (size_t i = index; i < pTable->count-1; ++i) {
             pTable->pItems[i] = pTable->pItems[i+1];
         }
         pTable->count -= 1;
+
+        return DRED_SUCCESS;
     }
 
     return DRED_ERROR;  // Not found.

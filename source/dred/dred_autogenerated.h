@@ -122,7 +122,7 @@ dtk_color cppKeywordTextColor;
 #define DRED_SHORTCUT_NAME_EXIT "exit"
 
 
-#define DRED_STOCK_MENU_ITEM_COUNT 82
+#define DRED_ACTUAL_STOCK_MENU_ITEM_COUNT 82
 #define DRED_MENU_ITEM_ID_NONE 0
 #define DRED_MENU_ITEM_ID_SEPARATOR 1
 #define DRED_MENU_ITEM_ID_GENERIC_HELP_ABOUT 2
@@ -194,7 +194,7 @@ dtk_color cppKeywordTextColor;
 #define DRED_MENU_ITEM_ID_THEME_0 1162
 #define DRED_MENU_ITEM_ID_USER 2186
 
-#define DRED_STOCK_MENU_ITEM_ID_COUNT 66
+#define DRED_STOCK_MENU_ITEM_COUNT 66
 
 typedef struct
 {
@@ -213,5 +213,6 @@ typedef struct
     dtk_menu text;
     dtk_menu textPopup;
     dtk_menu tabpopup;
+    dtk_menu* pMenus[15];
 } dred_stock_menus;
 

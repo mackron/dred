@@ -75,18 +75,41 @@ dr_bool32 dred_command__bind(dred_context* pDred, const char* value)
     char shortcutName[256];
     dred_shortcut shortcut;
     char commandStr[4096];
-    if (dred_parse_bind_command(value, shortcutName, sizeof(shortcutName), &shortcut, commandStr, sizeof(commandStr))) {
-        size_t existingIndex;
-        if (dred_shortcut_table_find_by_name(&pDred->shortcutTable, shortcutName, &existingIndex)) {
-            dred_shortcut_table_replace_by_index(&pDred->shortcutTable, existingIndex, shortcutName, commandStr, shortcut.acceleratorCount, shortcut.accelerators);
-
-            dred_menu_item_table_update_bindings_by_shortcut_name(&pDred->menuItemTable, shortcutName, commandStr);
-        }
-
-        return DR_TRUE;
+    if (!dred_parse_bind_command(value, shortcutName, sizeof(shortcutName), &shortcut, commandStr, sizeof(commandStr))) {
+        return DR_FALSE;
     }
 
-    return DR_FALSE;
+    size_t existingIndex;
+    if (dred_shortcut_table_find_by_name(&pDred->shortcutTable, shortcutName, &existingIndex)) {
+        dred_shortcut_table_replace_by_index(&pDred->shortcutTable, existingIndex, shortcutName, commandStr, shortcut.acceleratorCount, shortcut.accelerators);
+
+        char shortcutStr[256];
+        size_t shortcutIndex;
+        if (dred_shortcut_table_find_by_name(&pDred->shortcutTable, shortcutName, &shortcutIndex)) {
+            dred_shortcut_to_string(pDred->shortcutTable.pShortcuts[shortcutIndex], shortcutStr, sizeof(shortcutStr));
+        } else {
+            shortcutStr[0] = '\0';
+        }
+
+        // Any menu items that use the shortcut name need to have their shortcut updated.
+        for (size_t iItem = 0; iItem < pDred->menuItemTable.count; ++iItem) {
+            dred_menu_item_data* pItem = &pDred->menuItemTable.pItems[iItem];
+            if (strcmp(dred_string_pool_cstr(&pDred->stringPool, pItem->shortcutStrOffset), shortcutName) == 0) {
+                pItem->commandStrOffset = dred_string_pool_find_or_add(&pDred->stringPool, commandStr);
+
+                // The menu item needs to have it's shortcut string updated.
+                for (size_t iMenu = 0; iMenu < dtk_count_of(pDred->menus.pMenus); ++iMenu) {
+                    dtk_menu* pMenu = pDred->menus.pMenus[iMenu];
+                    dtk_uint32 itemIndex = dtk_menu_find_item_by_id(pMenu, pItem->id);
+                    if (itemIndex != (dtk_uint32)-1) {
+                        dtk_menu_set_item_shortcut(pMenu, itemIndex, shortcutStr);
+                    }
+                }
+            }
+        }
+    }
+
+    return DR_TRUE;
 }
 
 dr_bool32 dred_command__load_config(dred_context* pDred, const char* value)
