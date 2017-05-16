@@ -554,6 +554,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     }
     if (!pDred->config.useDefaultWindowPos) {
         dred_window_set_position(pDred->pMainWindow, windowPosX, windowPosY);
+        dtk_window_move_into_view(&pDred->pMainWindow->windowDTK);  // <-- This just makes sure the window is in view in case the config has an erroneous position setting.
     }
 
     // We only want to use the default window position on first run.

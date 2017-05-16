@@ -700,6 +700,19 @@ dtk_result dtk_unbind_accelerator__win32(dtk_context* pTK, dtk_accelerator accel
 }
 
 
+dtk_result dtk_get_screen_size__win32(dtk_context* pTK, dtk_uint32* pSizeX, dtk_uint32* pSizeY)
+{
+    assert(pTK != NULL);
+    (void)pTK;
+
+    HDC hDC = GetDC(NULL);
+    if (pSizeX) *pSizeX = GetDeviceCaps(hDC, HORZRES);
+    if (pSizeY) *pSizeY = GetDeviceCaps(hDC, VERTRES);
+
+    return DTK_SUCCESS;
+}
+
+
 dtk_result dtk_get_base_dpi__win32(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut)
 {
     (void)pTK;
@@ -713,8 +726,9 @@ dtk_result dtk_get_system_dpi__win32(dtk_context* pTK, int* pDPIXOut, int* pDPIY
 {
     (void)pTK;
 
-    if (pDPIXOut != NULL) *pDPIXOut = GetDeviceCaps(GetDC(NULL), LOGPIXELSX);
-    if (pDPIYOut != NULL) *pDPIYOut = GetDeviceCaps(GetDC(NULL), LOGPIXELSY);
+    HDC hDC = GetDC(NULL);
+    if (pDPIXOut != NULL) *pDPIXOut = GetDeviceCaps(hDC, LOGPIXELSX);
+    if (pDPIYOut != NULL) *pDPIYOut = GetDeviceCaps(hDC, LOGPIXELSY);
     return DTK_SUCCESS;
 }
 
@@ -1204,6 +1218,51 @@ dtk_result dtk_unbind_accelerator__gtk(dtk_context* pTK, dtk_accelerator acceler
 }
 
 
+dtk_result dtk_get_screen_size__gtk(dtk_context* pTK, dtk_uint32* pSizeX, dtk_uint32* pSizeY)
+{
+    assert(pTK != NULL);
+    (void)pTK;
+
+    // Naturally, GTK has deprecated it's simple APIs and replaced them with complex ones. *sigh*
+#if GTK_CHECK_VERSION(3, 22, 0)
+    // 3.22+ (Monitor API)
+    //
+    // With the monitor API we will iterate over each monitor attached to the default display and union each of their
+    // rectangles to determine the full screen size.
+    GdkDisplay* pDisplay = gdk_display_get_default();
+    if (pDisplay == NULL) {
+        return DTK_NO_DISPLAY;
+    }
+
+    dtk_rect screenRect = dtk_rect_init(0, 0, 0, 0);
+
+    gint monitorCount = gdk_display_get_n_monitors(pDisplay);
+    for (gint iMonitor = 0; iMonitor < monitorCount; ++iMonitor) {
+        GdkMonitor* pMonitor = gdk_display_get_monitor(pDisplay, iMonitor);
+        if (pMonitor != NULL) {
+            GdkRectangle monitorRect;
+            gdk_monitor_get_geometry(pMonitor, &monitorRect);
+            screenRect = dtk_rect_union(screenRect, dtk_rect_init(monitorRect.x, monitorRect.y, monitorRect.x + monitorRect.width, monitorRect.y + monitorRect.height));
+        }
+    }
+
+    if (pSizeX) *pSizeX = (dtk_uint32)(screenRect.right - screenRect.left);
+    if (pSizeY) *pSizeY = (dtk_uint32)(screenRect.bottom - screenRect.top);
+#else
+    // < 3.22 (Screen API)
+    GdkScreen* pScreen = gdk_screen_get_default();
+    if (pScreen == NULL) {
+        return DTK_NO_SCREEN;
+    }
+
+    if (pSizeX) *pSizeX = (dtk_uint32)gdk_screen_get_width(pScreen);
+    if (pSizeY) *pSizeY = (dtk_uint32)gdk_screen_get_height(pScreen);
+#endif
+
+    return DTK_SUCCESS;
+}
+
+
 dtk_result dtk_get_base_dpi__gtk(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut)
 {
     (void)pTK;
@@ -1647,6 +1706,27 @@ dtk_result dtk_unbind_accelerator(dtk_context* pTK, dtk_accelerator accelerator)
 #endif
 
     return result;
+}
+
+dtk_result dtk_get_screen_size(dtk_context* pTK, dtk_uint32* pSizeX, dtk_uint32* pSizeY)
+{
+    if (pSizeX) *pSizeX = 0;
+    if (pSizeY) *pSizeY = 0;
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk_get_screen_size__win32(pTK, pSizeX, pSizeY);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk_get_screen_size__gtk(pTK, pSizeX, pSizeY);
+    }
+#endif
+
+    return DTK_SUCCESS;
 }
 
 

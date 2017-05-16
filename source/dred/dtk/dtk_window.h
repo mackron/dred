@@ -96,6 +96,12 @@ dtk_result dtk_window_get_client_absolute_position(dtk_window* pWindow, dtk_int3
 // Center's a window onto it's parent control. If it does not have a parent it'll be centered on the monitor.
 dtk_result dtk_window_move_to_center(dtk_window* pWindow);
 
+// Determines whether or not the given window is visible on a screen.
+dtk_bool32 dtk_window_is_in_view(dtk_window* pWindow);
+
+// Checks if the given window is visible on the screen, and if not, moves it onto the screen.
+dtk_result dtk_window_move_into_view(dtk_window* pWindow);
+
 
 // Retrieves the rectangle of the client area of the given window.
 //

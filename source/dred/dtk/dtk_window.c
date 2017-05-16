@@ -870,7 +870,7 @@ dtk_result dtk_window_move_to_center_of_screen__win32(dtk_window* pWindow)
     MONITORINFO mi;
     ZeroMemory(&mi, sizeof(mi));
     mi.cbSize = sizeof(MONITORINFO);
-    if (!GetMonitorInfoA(MonitorFromWindow((HWND)pWindow->win32.hWnd, 0), &mi)) {
+    if (!GetMonitorInfoA(MonitorFromWindow((HWND)pWindow->win32.hWnd, MONITOR_DEFAULTTONEAREST), &mi)) {
         return DTK_ERROR;
     }
 
@@ -884,6 +884,37 @@ dtk_result dtk_window_move_to_center_of_screen__win32(dtk_window* pWindow)
     return dtk_window_set_absolute_position(pWindow, (screenSizeX - windowSizeX)/2, (screenSizeY - windowSizeY)/2);
 }
 
+#if 0
+dtk_bool32 dtk_window_is_in_view__win32(dtk_window* pWindow)
+{
+    dtk_assert(pWindow != NULL);
+
+    // Just compare the position of the window to the screen.
+    RECT rect;
+    GetWindowRect((HWND)pWindow->win32.hWnd, &rect);
+
+    if (rect.right < 0 || rect.bottom < 0) {
+        return DTK_FALSE;
+    }
+
+
+    MONITORINFO mi;
+    ZeroMemory(&mi, sizeof(mi));
+    mi.cbSize = sizeof(MONITORINFO);
+    if (!GetMonitorInfoA(MonitorFromWindow((HWND)pWindow->win32.hWnd, 0), &mi)) {
+        return DTK_FALSE;
+    }
+
+    LONG screenSizeX = mi.rcMonitor.right - mi.rcMonitor.left;
+    LONG screenSizeY = mi.rcMonitor.bottom - mi.rcMonitor.top;
+
+    if (rect.left > screenSizeX || rect.top > screenSizeY) {
+        return DTK_FALSE;
+    }
+
+    return DTK_TRUE;
+}
+#endif
 
 dtk_result dtk_window_show__win32(dtk_window* pWindow, int mode)
 {
@@ -1678,6 +1709,7 @@ dtk_result dtk_window_move_to_center_of_screen__gtk(dtk_window* pWindow)
     return DTK_SUCCESS;
 }
 
+
 dtk_result dtk_window_show__gtk(dtk_window* pWindow, int mode)
 {
     if (mode == DTK_HIDE) {
@@ -2431,6 +2463,54 @@ dtk_result dtk_window_move_to_center(dtk_window* pWindow)
 
         return result;
     }
+}
+
+dtk_bool32 dtk_window_is_in_view(dtk_window* pWindow)
+{
+    if (pWindow == NULL) return DTK_FALSE;
+
+    dtk_rect rect = dtk_control_get_absolute_rect(DTK_CONTROL(pWindow));
+    if (rect.right < 0 || rect.bottom < 0) {
+        return DTK_FALSE;
+    }
+
+    dtk_uint32 screenSizeX;
+    dtk_uint32 screenSizeY;
+    dtk_result result = dtk_get_screen_size(DTK_CONTROL(pWindow)->pTK, &screenSizeX, &screenSizeY);
+    if (result != DTK_SUCCESS) {
+        return DTK_FALSE;
+    }
+
+    if (rect.left > (dtk_int32)screenSizeX || rect.top > (dtk_int32)screenSizeY) {
+        return DTK_FALSE;
+    }
+
+    return DTK_TRUE;
+
+#if 0
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_is_in_view__win32(pWindow);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_is_in_view__gtk(pWindow);
+    }
+#endif
+
+    return result;
+#endif
+}
+
+dtk_result dtk_window_move_into_view(dtk_window* pWindow)
+{
+    if (dtk_window_is_in_view(pWindow)) {
+        return DTK_SUCCESS; // The window is already in view.
+    }
+
+    return dtk_window_move_to_center(pWindow);
 }
 
 

@@ -77,6 +77,8 @@ typedef int dtk_result;
 #define DTK_FAILED_TO_INIT_BACKEND  -5
 #define DTK_OUT_OF_RANGE            -6
 #define DTK_CANCELLED               -7
+#define DTK_NO_DISPLAY              -256
+#define DTK_NO_SCREEN               -257
 #define DTK_QUIT                    -1024   // Returned by dtk_next_event() when a quit message is received.
 
 // Standard library stuff.
@@ -551,6 +553,12 @@ dtk_result dtk_bind_accelerators(dtk_context* pTK, dtk_accelerator* pAccelerator
 
 // Unbinds an accelerator.
 dtk_result dtk_unbind_accelerator(dtk_context* pTK, dtk_accelerator accelerator);
+
+
+//// Screens and Monitors ////
+
+// Retrieves the dimensions of the main screen in pixels. This is _not_ scaled.
+dtk_result dtk_get_screen_size(dtk_context* pTK, dtk_uint32* pSizeX, dtk_uint32* pSizeY);
 
 
 //// DPI Scaling ////
