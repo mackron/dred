@@ -1,0 +1,21 @@
+1. DTK ARCHITECTURE
+===================
+
+1.1 Restricted Shortcuts
+------------------------
+Some keys and key combinations cannot be used for shortcuts because they are common shortcuts for
+many different standard tasks. For example, the Delete key is a very common key that serves many
+different purposes and is thus unable to be used as a shortcut. The following shortcuts cannot be
+bound:
+
+  * Delete
+  * Tab
+  * Shift + Tab
+  
+The technical reason for this is that it greatly just simplifies the design of the shortcut binding
+system. The way shortcuts work is such that when a shortcut is pressed, the operating system will
+block the posting of those key stroke events to the window. For example, if "Shift + Tab" is bound
+to a command, when the user presses that key combination, the command will be executed, but because
+the operating system detected a shortcut key press, it will prevent those key events from being
+posted to the focused control. If that control happens to be a text box, that text box won't be able
+to handle the Shift+Tab unindent feature.

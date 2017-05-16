@@ -2071,11 +2071,10 @@ void dred_textview_on_key_down(dred_control* pControl, dtk_key key, int stateFla
             dred_textview_do_backspace(pTextView, stateFlags);
         } break;
 
-        // NOTE: Don't handle the delete key here - it will be done by the accelerator. Will need to re-add this when we turn this into a generic control, though.
-        //case DTK_KEY_DELETE:
-        //{
-        //    dred_textview_do_delete(pTextView, stateFlags);
-        //} break;
+        case DTK_KEY_DELETE:
+        {
+            dred_textview_do_delete(pTextView, stateFlags);
+        } break;
 
 
         case DTK_KEY_ARROW_LEFT:
@@ -2346,35 +2345,42 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
             //   - If multiple lines are selected, they need to be block-indented
             //     - Otherwise they need to be inserted like any other character, unless...
             //   - If tabs-to-spaces is enabled, tabs need to be converted to spaces.
+            //   - If the Shift key is down, it needs to be unindented.
             //
             // The tab key is handled for each cursor.
-            for (size_t iCursor = 0; iCursor < pTextView->cursorCount; ++iCursor) {
-                dr_bool32 isDoingBlockIndent = DR_FALSE;
+            if ((stateFlags & DTK_MODIFIER_SHIFT) == 0) {
+                // Regular tab.
+                for (size_t iCursor = 0; iCursor < pTextView->cursorCount; ++iCursor) {
+                    dr_bool32 isDoingBlockIndent = DR_FALSE;
 
-                size_t iSelection;
-                dr_bool32 isSomethingSelected = dred_textview__get_cursor_selection(pTextView, iCursor, &iSelection);
-                if (isSomethingSelected) {
-                    //isDoingBlockIndent = drte_view_get_selection_first_line(pTextView->pView, iSelection) != drte_view_get_selection_last_line(pTextView->pView, iSelection);
-                    isDoingBlockIndent = DR_TRUE;
-                }
-
-                if (isDoingBlockIndent) {
-                    // A block indent is done by simply inserting a tab at the beginning of each selected line.
-                    size_t iLineBeg = drte_view_get_selection_first_line(pTextView->pView, iSelection);
-                    size_t iLineEnd = drte_view_get_selection_last_line(pTextView->pView, iSelection);
-
-                    for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
-                        dred_textview__insert_tab(pTextView, drte_view_get_line_first_character(pTextView->pView, NULL, iLine));
-                    }
-                } else {
-                    // We're not doing a block indent so we just insert a tab at the cursor like normal.
+                    size_t iSelection;
+                    dr_bool32 isSomethingSelected = dred_textview__get_cursor_selection(pTextView, iCursor, &iSelection);
                     if (isSomethingSelected) {
-                        drte_view_delete_selection_text(pTextView->pView, iSelection);
-                        drte_view_cancel_selection(pTextView->pView, iSelection);
+                        //isDoingBlockIndent = drte_view_get_selection_first_line(pTextView->pView, iSelection) != drte_view_get_selection_last_line(pTextView->pView, iSelection);
+                        isDoingBlockIndent = DR_TRUE;
                     }
 
-                    dred_textview__insert_tab_at_cursor(pTextView, iCursor);
+                    if (isDoingBlockIndent) {
+                        // A block indent is done by simply inserting a tab at the beginning of each selected line.
+                        size_t iLineBeg = drte_view_get_selection_first_line(pTextView->pView, iSelection);
+                        size_t iLineEnd = drte_view_get_selection_last_line(pTextView->pView, iSelection);
+
+                        for (size_t iLine = iLineBeg; iLine <= iLineEnd; ++iLine) {
+                            dred_textview__insert_tab(pTextView, drte_view_get_line_first_character(pTextView->pView, NULL, iLine));
+                        }
+                    } else {
+                        // We're not doing a block indent so we just insert a tab at the cursor like normal.
+                        if (isSomethingSelected) {
+                            drte_view_delete_selection_text(pTextView->pView, iSelection);
+                            drte_view_cancel_selection(pTextView->pView, iSelection);
+                        }
+
+                        dred_textview__insert_tab_at_cursor(pTextView, iCursor);
+                    }
                 }
+            } else {
+                // Shift + Tab (unindent).
+                dred_textview_unindent_selected_blocks(pTextView);
             }
         } else {
             if (drte_view_is_anything_selected(pTextView->pView)) {

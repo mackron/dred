@@ -1674,6 +1674,31 @@ dtk_result dtk_bind_accelerators(dtk_context* pTK, dtk_accelerator* pAccelerator
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
 
+    // Short shortcuts are forbidden as per DevNote 1.1 (Restricted Shortcuts). In this case we just zero out the accelerator.
+    for (dtk_uint32 i = 0; i < count; ++i) {
+        dtk_accelerator* pAccelerator = &pAccelerators[i];
+
+        dtk_bool32 shouldAcceleratorBeCleared = DTK_FALSE;
+        if (pAccelerator->key == DTK_KEY_TAB || pAccelerator->key == '\t') {
+            if (pAccelerator->modifiers == 0) {
+                shouldAcceleratorBeCleared = DTK_TRUE;  // Tab
+            }
+            if (pAccelerator->modifiers == DTK_MODIFIER_SHIFT) {
+                shouldAcceleratorBeCleared = DTK_TRUE;  // Shift + Tab
+            }
+        }
+        if (pAccelerator->key == DTK_KEY_DELETE) {
+            if (pAccelerator->modifiers == 0) {
+                shouldAcceleratorBeCleared = DTK_TRUE;  // Delete
+            }
+        }
+
+        if (shouldAcceleratorBeCleared) {
+            dtk_zero_object(pAccelerator);
+        }
+    }
+
+
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
