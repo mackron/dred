@@ -94,6 +94,10 @@ dtk_result dtk_menu_remove_all_items(dtk_menu* pMenu);
 dtk_result dtk_menu_set_item_text(dtk_menu* pMenu, dtk_uint32 index, const char* text);
 DTK_INLINE dtk_result dtk_menu_set_item_text_by_id(dtk_menu* pMenu, dtk_uint32 id, const char* text) { return dtk_menu_set_item_text(pMenu, dtk_menu_find_item_by_id(pMenu, id), text); }
 
+// Sets the shortcut of a menu item.
+dtk_result dtk_menu_set_item_shortcut(dtk_menu* pMenu, dtk_uint32 index, const char* shortcut);
+DTK_INLINE dtk_result dtk_menu_set_item_shortcut_by_id(dtk_menu* pMenu, dtk_uint32 id, const char* shortcut) { return dtk_menu_set_item_shortcut(pMenu, dtk_menu_find_item_by_id(pMenu, id), shortcut); }
+
 // Retrieves the user data of the menu item at the given index.
 dtk_result dtk_menu_get_item_user_data(dtk_menu* pMenu, dtk_uint32 index, void** ppUserData);
 DTK_INLINE dtk_result dtk_menu_get_item_user_data_by_id(dtk_menu* pMenu, dtk_uint32 id, void** ppUserData) { return dtk_menu_get_item_user_data(pMenu, dtk_menu_find_item_by_id(pMenu, id), ppUserData); }

@@ -218,6 +218,20 @@ dred_result dred_menu_item_table_unbind(dred_menu_item_table* pTable, dtk_uint32
     return DRED_ERROR;  // Not found.
 }
 
+dred_result dred_menu_item_table_update_bindings_by_shortcut_name(dred_menu_item_table* pTable, const char* shortcutName, const char* commandStr)
+{
+    if (pTable == NULL) return DRED_INVALID_ARGS;
+
+    for (size_t iItem = 0; iItem < pTable->count; ++iItem) {
+        dred_menu_item_data* pItem = &pTable->pItems[iItem];
+        if (strcmp(dred_string_pool_cstr(&pTable->pDred->stringPool, pItem->shortcutStrOffset), shortcutName) == 0) {
+            pItem->commandStrOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, commandStr);
+        }
+    }
+
+    return DTK_SUCCESS;
+}
+
 const char* dred_menu_item_table_get_command(dred_menu_item_table* pTable, dtk_uint32 id)
 {
     size_t index;

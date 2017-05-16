@@ -79,6 +79,8 @@ dr_bool32 dred_command__bind(dred_context* pDred, const char* value)
         size_t existingIndex;
         if (dred_shortcut_table_find_by_name(&pDred->shortcutTable, shortcutName, &existingIndex)) {
             dred_shortcut_table_replace_by_index(&pDred->shortcutTable, existingIndex, shortcutName, commandStr, shortcut.acceleratorCount, shortcut.accelerators);
+
+            dred_menu_item_table_update_bindings_by_shortcut_name(&pDred->menuItemTable, shortcutName, commandStr);
         }
 
         return DR_TRUE;

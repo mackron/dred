@@ -273,6 +273,60 @@ DTK_INLINE dtk_uint32 dtk_utf32_to_utf8_ch(dtk_uint32 utf32, char* utf8, size_t 
     return utf8ByteCount;
 }
 
+DTK_INLINE dtk_bool32 dtk_is_whitespace(dtk_uint32 utf32)
+{
+    return utf32 == ' ' || utf32 == '\t' || utf32 == '\n' || utf32 == '\v' || utf32 == '\f' || utf32 == '\r';
+}
+
+DTK_INLINE const char* dtk_ltrim(const char* str)
+{
+    if (str == NULL) {
+        return NULL;
+    }
+
+    while (str[0] != '\0' && !(str[0] != ' ' && str[0] != '\t' && str[0] != '\n' && str[0] != '\v' && str[0] != '\f' && str[0] != '\r')) {
+        str += 1;
+    }
+
+    return str;
+}
+
+DTK_INLINE const char* dtk_rtrim(const char* str)
+{
+    if (str == NULL) {
+        return NULL;
+    }
+
+    const char* rstr = str;
+    while (str[0] != '\0') {
+        if (dtk_is_whitespace(str[0])) {
+            str += 1;
+            continue;
+        }
+
+        str += 1;
+        rstr = str;
+    }
+
+    return rstr;
+}
+
+DTK_INLINE void dtk_trim(char* str)
+{
+    if (str == NULL) {
+        return;
+    }
+
+    const char* lstr = dtk_ltrim(str);
+    const char* rstr = dtk_rtrim(lstr);
+
+    if (lstr > str) {
+        memmove(str, lstr, rstr-lstr);
+    }
+
+    str[rstr-lstr] = '\0';
+}
+
 
 // Creates a newly allocated string. Free the string with dtk_free_string().
 char* dtk_make_string(const char* str);

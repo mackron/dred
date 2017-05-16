@@ -126,15 +126,97 @@ dtk_result dtk_menu_remove_item__win32(dtk_menu* pMenu, dtk_uint32 index)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_menu_set_item_text__win32(dtk_menu* pMenu, dtk_uint32 index, const char* text)
+void dtk_split_menu_item_text__win32(const char* fullText, char text[256], char shortcut[256])
 {
+    text[0] = '\0';
+    shortcut[0] = '\0';
+
+    dtk_strcpy_s(text, 256, fullText);
+    char* searchResult = strchr(text, '\t');
+    if (searchResult != NULL) {
+        searchResult[0] = '\0';
+        dtk_strcpy_s(shortcut, 256, searchResult + 1); // <-- +1 to skip past the tab character.
+        dtk_trim(shortcut);
+    }
+}
+
+dtk_uint32 dtk_menu_get_item_text__win32(dtk_menu* pMenu, dtk_uint32 index, char* text, size_t textBufferSize)
+{
+    dtk_assert(pMenu != NULL);
+
     MENUITEMINFOA mii;
     dtk_zero_object(&mii);
     mii.cbSize = sizeof(mii);
     mii.fMask = MIIM_FTYPE | MIIM_STRING;
     mii.fType = MFT_STRING;
-    mii.cch = (UINT)strlen(text);
-    mii.dwTypeData = (LPSTR)text;
+    mii.dwTypeData = text;
+    mii.cch = (UINT)textBufferSize;
+    BOOL wasSuccessful = GetMenuItemInfoA((HMENU)pMenu->win32.hMenu, index, TRUE, &mii);
+    if (!wasSuccessful) {
+        return 0;
+    }
+
+    return mii.cch;
+}
+
+dtk_result dtk_menu_set_item_text__win32(dtk_menu* pMenu, dtk_uint32 index, const char* text)
+{
+    // The text needs to include the shortcut. The shortcut is part of the text of the menu item and is separated by a tab.
+    char currentText[256];
+    dtk_menu_get_item_text__win32(pMenu, index, currentText, sizeof(currentText));
+
+    char parsedText[256];
+    char parsedShortcut[256];
+    dtk_split_menu_item_text__win32(currentText, parsedText, parsedShortcut);
+
+    char textWithShortcut[256];
+    if (dtk_string_is_null_or_empty(parsedShortcut)) {
+        size_t shortcutLen = strlen(parsedShortcut);
+        dtk_strncpy_s(textWithShortcut, sizeof(textWithShortcut)-shortcutLen-1, text,           _TRUNCATE);
+        dtk_strncat_s(textWithShortcut, sizeof(textWithShortcut)-shortcutLen,   "\t",           _TRUNCATE);
+        dtk_strncat_s(textWithShortcut, sizeof(textWithShortcut),               parsedShortcut, _TRUNCATE);
+    }
+
+    MENUITEMINFOA mii;
+    dtk_zero_object(&mii);
+    mii.cbSize = sizeof(mii);
+    mii.fMask = MIIM_FTYPE | MIIM_STRING;
+    mii.fType = MFT_STRING;
+    mii.cch = (UINT)strlen(textWithShortcut);
+    mii.dwTypeData = (LPSTR)textWithShortcut;
+    BOOL wasSuccessful = SetMenuItemInfoA((HMENU)pMenu->win32.hMenu, index, TRUE, &mii);
+    if (!wasSuccessful) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_menu_set_item_shortcut__win32(dtk_menu* pMenu, dtk_uint32 index, const char* shortcut)
+{
+    // The text and shortcut are combined into the same property internally.
+    char currentText[256];
+    dtk_menu_get_item_text__win32(pMenu, index, currentText, sizeof(currentText));
+
+    char parsedText[256];
+    char parsedShortcut[256];
+    dtk_split_menu_item_text__win32(currentText, parsedText, parsedShortcut);
+
+    char textWithShortcut[256];
+    if (dtk_string_is_null_or_empty(parsedShortcut)) {
+        size_t shortcutLen = strlen(parsedShortcut);
+        dtk_strncpy_s(textWithShortcut, sizeof(textWithShortcut)-shortcutLen-1, parsedText, _TRUNCATE);
+        dtk_strncat_s(textWithShortcut, sizeof(textWithShortcut)-shortcutLen,   "\t",       _TRUNCATE);
+        dtk_strncat_s(textWithShortcut, sizeof(textWithShortcut),               shortcut,   _TRUNCATE);
+    }
+
+    MENUITEMINFOA mii;
+    dtk_zero_object(&mii);
+    mii.cbSize = sizeof(mii);
+    mii.fMask = MIIM_FTYPE | MIIM_STRING;
+    mii.fType = MFT_STRING;
+    mii.cch = (UINT)strlen(textWithShortcut);
+    mii.dwTypeData = (LPSTR)textWithShortcut;
     BOOL wasSuccessful = SetMenuItemInfoA((HMENU)pMenu->win32.hMenu, index, TRUE, &mii);
     if (!wasSuccessful) {
         return DTK_ERROR;
@@ -600,6 +682,34 @@ dtk_result dtk_menu_set_item_text__gtk(dtk_menu* pMenu, dtk_uint32 index, const 
     return DTK_SUCCESS;
 }
 
+dtk_result dtk_menu_set_item_shortcut__gtk(dtk_menu* pMenu, dtk_uint32 index, const char* shortcut)
+{
+    GtkWidget* pItem = dtk_menu__get_item_widget_by_index__gtk(pMenu, index);
+    if (pItem == NULL) {
+        return DTK_ERROR;
+    }
+
+    GtkWidget* pGTKAccelLabel = gtk_bin_get_child(GTK_BIN(pItem));
+        
+    dtk_accelerator accelerators[2];
+    dtk_uint32 acceleratorCount = dtk_count_of(accelerators);
+    if (dtk_accelerator_parse_chord(shortcut, accelerators, &acceleratorCount) == DTK_SUCCESS) {
+        if (acceleratorCount == 1) {
+            guint keyGTK = dtk_convert_key_to_gtk(accelerators[0].key);
+            GdkModifierType modifiersGTK = dtk_accelerator_modifiers_to_gtk(accelerators[0].modifiers);
+            gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), keyGTK, modifiersGTK);
+        } else {
+            gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), 0, 0);
+            return DTK_ERROR;
+        }
+    } else {
+        gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), 0, 0);
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+}
+
 dtk_result dtk_menu_get_item_user_data__gtk(dtk_menu* pMenu, dtk_uint32 index, void** ppUserData)
 {
     GtkWidget* pItem = dtk_menu__get_item_widget_by_index__gtk(pMenu, index);
@@ -905,6 +1015,25 @@ dtk_result dtk_menu_set_item_text(dtk_menu* pMenu, dtk_uint32 index, const char*
 #ifdef DTK_GTK
     if (pMenu->pTK->platform == dtk_platform_gtk) {
         result = dtk_menu_set_item_text__gtk(pMenu, index, text);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_menu_set_item_shortcut(dtk_menu* pMenu, dtk_uint32 index, const char* shortcut)
+{
+    if (pMenu == NULL || !dtk_menu__is_item_index_valid(pMenu, index)) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pMenu->pTK->platform == dtk_platform_win32) {
+        result = dtk_menu_set_item_shortcut__win32(pMenu, index, shortcut);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pMenu->pTK->platform == dtk_platform_gtk) {
+        result = dtk_menu_set_item_shortcut__gtk(pMenu, index, shortcut);
     }
 #endif
 
