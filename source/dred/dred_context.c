@@ -34,6 +34,15 @@ void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float
     }
 }
 
+void dred__update_background_layout(dred_context* pDred, dtk_control* pBackgroundControl, float parentWidth, float parentHeight)
+{
+    if (pBackgroundControl == NULL) {
+        return;
+    }
+
+    dtk_control_set_size(pBackgroundControl, (dtk_uint32)parentWidth, (dtk_uint32)(parentHeight - dred__get_cmd_bar_height(pDred)));
+}
+
 void dred__update_main_window_layout(dred_window* pWindow, float windowWidth, float windowHeight)
 {
     dred_context* pDred = pWindow->pDred;
@@ -41,6 +50,7 @@ void dred__update_main_window_layout(dred_window* pWindow, float windowWidth, fl
 
     dred__update_main_tab_group_container_layout(pDred, pDred->pMainTabGroupContainer, windowWidth, windowHeight);
     dred__update_cmdbar_layout(pDred, pDred->pCmdBar, windowWidth, windowHeight);
+    dred__update_background_layout(pDred, &pDred->backgroundControl, windowWidth, windowHeight);
 }
 
 
@@ -307,6 +317,22 @@ dtk_thread_result DTK_THREADCALL dred_ipc_message_proc(void* pData)
 }
 
 
+static dtk_bool32 dred_background_control_event_handler(dtk_event* pEvent)
+{
+    dred_context* pDred = (dred_context*)pEvent->pTK->pUserData;
+    assert(pDred != NULL);
+
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_PAINT:
+        {
+            dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_control_get_local_rect(pEvent->pControl), pDred->config.tabgroupBGColor);
+        } break;
+    }
+
+    return dtk_control_default_event_handler(pEvent);
+}
+
 static dtk_bool32 dred_dtk_global_event_proc(dtk_event* pEvent)
 {
     dred_context* pDred = (dred_context*)pEvent->pTK->pUserData;
@@ -507,6 +533,14 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
     pDred->pMainWindow->onMove = dred_window_cb__on_main_window_move;
     dred_control_set_on_size(pDred->pMainWindow->pRootGUIControl, dred_window_cb__on_main_window_size);
+
+
+    if (dtk_control_init(&pDred->tk, DTK_CONTROL(pDred->pMainWindow->pRootGUIControl), DTK_CONTROL_TYPE_EMPTY, dred_background_control_event_handler, &pDred->backgroundControl) != DTK_SUCCESS) {
+        dred_error(pDred, "Failed to create background control.\n");
+        goto on_error;
+    }
+
+    dtk_control_hide(&pDred->backgroundControl);
 
 
     // The main tab group container.
@@ -1091,7 +1125,7 @@ dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, cons
     // Before creating the editor we'll want to identify the tab group to attach it to.
     dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
     if (pTabGroup == NULL) {
-        return DR_FALSE;   // TODO: This means there is no tab group so one need to be created.
+        return DR_FALSE;   // TODO: This means there is no tab group so one needs to be created.
     }
 
     //dred_control_begin_dirty(DRED_CONTROL(pTabGroup));
@@ -1137,6 +1171,11 @@ dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, cons
         dred_refresh_recent_files_menu(pDred);
     }
 
+
+    // Make sure the tab group is visible.
+    dtk_control_hide(&pDred->backgroundControl);
+    dtk_control_show(DTK_CONTROL(pTabGroup)->pParent);
+
     return DR_TRUE;
 }
 
@@ -1168,6 +1207,8 @@ void dred_close_tab(dred_context* pDred, dred_tab* pTab)
 
     // If after closing the tab there are no other active tabs, activate the command bar.
     if (dred_get_focused_tab(pDred) == NULL) {
+        dtk_control_hide(DTK_CONTROL(pDred->pMainTabGroupContainer));
+        dtk_control_show(&pDred->backgroundControl);
         dred_focus_command_bar(pDred);
     }
 }

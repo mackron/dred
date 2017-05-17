@@ -65,6 +65,9 @@ struct dred_context
     dred_settings_dialog* pSettingsDialog;
 
 
+    // The background control that's displayed when there is nothing open.
+    dtk_control backgroundControl;
+
     // The main tab group container. This is the root container where all other sub-containers will be placed.
     dred_tabgroup_container mainTabGroupContainer;
     dred_tabgroup_container* pMainTabGroupContainer;
