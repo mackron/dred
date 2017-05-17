@@ -1254,6 +1254,9 @@ static gboolean dtk_window__on_key_down__gtk(GtkWidget* pWidget, GdkEventKey* pE
         if (pEvent->keyval == GDK_KEY_KP_Enter) {
             utf32 = '\r';
         }
+        if (pEvent->keyval == GDK_KEY_KP_Tab || pEvent->keyval == GDK_KEY_ISO_Left_Tab || pEvent->keyval == GDK_KEY_Tab) {
+            utf32 = '\t';
+        }
     }
 
     if (utf32 != 0 && (stateFlags & DTK_MODIFIER_CTRL) == 0 && (stateFlags & DTK_MODIFIER_ALT) == 0) {
