@@ -218,34 +218,36 @@ dtk_key dtk_convert_key_from_gtk(guint keyval)
 {
     switch (keyval)
     {
-    case GDK_KEY_BackSpace: return DTK_KEY_BACKSPACE;
-    case GDK_KEY_Tab:       return DTK_KEY_TAB;
-    case GDK_KEY_Return:    return DTK_KEY_RETURN;
-    case GDK_KEY_Shift_L:   return DTK_KEY_SHIFT;
-    case GDK_KEY_Shift_R:   return DTK_KEY_SHIFT;
-    case GDK_KEY_Escape:    return DTK_KEY_ESCAPE;
-    case GDK_KEY_Page_Up:   return DTK_KEY_PAGE_UP;
-    case GDK_KEY_Page_Down: return DTK_KEY_PAGE_DOWN;
-    case GDK_KEY_End:       return DTK_KEY_END;
-    case GDK_KEY_Home:      return DTK_KEY_HOME;
-    case GDK_KEY_Left:      return DTK_KEY_ARROW_LEFT;
-    case GDK_KEY_Up:        return DTK_KEY_ARROW_UP;
-    case GDK_KEY_Right:     return DTK_KEY_ARROW_RIGHT;
-    case GDK_KEY_Down:      return DTK_KEY_ARROW_DOWN;
-    case GDK_KEY_Delete:    return DTK_KEY_DELETE;
-    case GDK_KEY_F1:        return DTK_KEY_F1;
-    case GDK_KEY_F2:        return DTK_KEY_F2;
-    case GDK_KEY_F3:        return DTK_KEY_F3;
-    case GDK_KEY_F4:        return DTK_KEY_F4;
-    case GDK_KEY_F5:        return DTK_KEY_F5;
-    case GDK_KEY_F6:        return DTK_KEY_F6;
-    case GDK_KEY_F7:        return DTK_KEY_F7;
-    case GDK_KEY_F8:        return DTK_KEY_F8;
-    case GDK_KEY_F9:        return DTK_KEY_F9;
-    case GDK_KEY_F10:       return DTK_KEY_F10;
-    case GDK_KEY_F11:       return DTK_KEY_F11;
-    case GDK_KEY_F12:       return DTK_KEY_F12;
-    case GDK_KEY_space:     return DTK_KEY_SPACE;
+    case GDK_KEY_BackSpace:    return DTK_KEY_BACKSPACE;
+    case GDK_KEY_Tab:          return DTK_KEY_TAB;
+    case GDK_KEY_ISO_Left_Tab: return DTK_KEY_TAB;
+    case GDK_KEY_KP_Tab:       return DTK_KEY_TAB;
+    case GDK_KEY_Return:       return DTK_KEY_RETURN;
+    case GDK_KEY_Shift_L:      return DTK_KEY_SHIFT;
+    case GDK_KEY_Shift_R:      return DTK_KEY_SHIFT;
+    case GDK_KEY_Escape:       return DTK_KEY_ESCAPE;
+    case GDK_KEY_Page_Up:      return DTK_KEY_PAGE_UP;
+    case GDK_KEY_Page_Down:    return DTK_KEY_PAGE_DOWN;
+    case GDK_KEY_End:          return DTK_KEY_END;
+    case GDK_KEY_Home:         return DTK_KEY_HOME;
+    case GDK_KEY_Left:         return DTK_KEY_ARROW_LEFT;
+    case GDK_KEY_Up:           return DTK_KEY_ARROW_UP;
+    case GDK_KEY_Right:        return DTK_KEY_ARROW_RIGHT;
+    case GDK_KEY_Down:         return DTK_KEY_ARROW_DOWN;
+    case GDK_KEY_Delete:       return DTK_KEY_DELETE;
+    case GDK_KEY_F1:           return DTK_KEY_F1;
+    case GDK_KEY_F2:           return DTK_KEY_F2;
+    case GDK_KEY_F3:           return DTK_KEY_F3;
+    case GDK_KEY_F4:           return DTK_KEY_F4;
+    case GDK_KEY_F5:           return DTK_KEY_F5;
+    case GDK_KEY_F6:           return DTK_KEY_F6;
+    case GDK_KEY_F7:           return DTK_KEY_F7;
+    case GDK_KEY_F8:           return DTK_KEY_F8;
+    case GDK_KEY_F9:           return DTK_KEY_F9;
+    case GDK_KEY_F10:          return DTK_KEY_F10;
+    case GDK_KEY_F11:          return DTK_KEY_F11;
+    case GDK_KEY_F12:          return DTK_KEY_F12;
+    case GDK_KEY_space:        return DTK_KEY_SPACE;
 
     default: break;
     }
