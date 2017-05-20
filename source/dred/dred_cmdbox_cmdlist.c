@@ -68,7 +68,7 @@ void dred_cmdbox_cmdlist__refresh_layout(dred_cmdbox_cmdlist* pCmdList)
     dtk_control_set_relative_position(DTK_CONTROL(&pCmdList->scrollbar), scrollbarPosX, scrollbarPosY);
 }
 
-void dtk_cmdbox_cmdlist__scroll_to_highlighted_item(dred_cmdbox_cmdlist* pCmdList)
+void dred_cmdbox_cmdlist__scroll_to_highlighted_item(dred_cmdbox_cmdlist* pCmdList)
 {
     dtk_assert(pCmdList != NULL);
 
@@ -261,6 +261,7 @@ dred_result dred_cmdbox_cmdlist_update_list(dred_cmdbox_cmdlist* pCmdList, const
 
     // A change in commands will change the structure of the scrollbar.
     dred_cmdbox_cmdlist__update_scrollbar(pCmdList);
+    dred_cmdbox_cmdlist__scroll_to_highlighted_item(pCmdList);
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pCmdList), dtk_control_get_local_rect(DTK_CONTROL(pCmdList)));
     return DTK_SUCCESS;
@@ -271,7 +272,7 @@ dred_result dred_cmdbox_cmdlist_highlight_next_item(dred_cmdbox_cmdlist* pCmdLis
     if (pCmdList == NULL) return DRED_INVALID_ARGS;
 
     pCmdList->selectedItemIndex = (pCmdList->selectedItemIndex + 1) % pCmdList->commandIndexCount;
-    dtk_cmdbox_cmdlist__scroll_to_highlighted_item(pCmdList);
+    dred_cmdbox_cmdlist__scroll_to_highlighted_item(pCmdList);
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pCmdList), dtk_control_get_local_rect(DTK_CONTROL(pCmdList)));
     return DTK_SUCCESS;
@@ -292,7 +293,7 @@ dred_result dred_cmdbox_cmdlist_highlight_prev_item(dred_cmdbox_cmdlist* pCmdLis
         }
     }
 
-    dtk_cmdbox_cmdlist__scroll_to_highlighted_item(pCmdList);
+    dred_cmdbox_cmdlist__scroll_to_highlighted_item(pCmdList);
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pCmdList), dtk_control_get_local_rect(DTK_CONTROL(pCmdList)));
     return DTK_SUCCESS;

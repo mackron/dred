@@ -66,14 +66,12 @@ void dred_cmdbar__update_manual_text_entry(dred_cmdbar* pCmdBar)
     pCmdBar->manualTextEntry = NULL;
 
     size_t textLen = dred_textview_get_text(pTextView, NULL, 0);
-    if (textLen > 0) {
-        pCmdBar->manualTextEntry = (char*)dtk_malloc(textLen + 1);
-        if (pCmdBar->manualTextEntry == NULL) {
-            return;     // Out of memory.
-        }
-
-        dred_textview_get_text(pTextView, pCmdBar->manualTextEntry, textLen+1);
+    pCmdBar->manualTextEntry = (char*)dtk_malloc(textLen + 1);
+    if (pCmdBar->manualTextEntry == NULL) {
+        return;     // Out of memory.
     }
+
+    dred_textview_get_text(pTextView, pCmdBar->manualTextEntry, textLen+1);
 }
 
 dtk_bool32 dred_cmdbar__does_manual_text_entry_contain_whole_command_name(dred_cmdbar* pCmdBar)
