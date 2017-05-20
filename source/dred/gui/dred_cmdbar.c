@@ -295,9 +295,10 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dtk_key key, int stateF
         case DTK_KEY_ARROW_DOWN:
         {
             if (pCmdBar->iPrevCommand > 0) {
-                if (dred_cmdbar_set_text_to_previous_command(pCmdBar, pCmdBar->iPrevCommand - 1)) {
-                    pCmdBar->iPrevCommand -= 1;
-                }
+                pCmdBar->iPrevCommand -= 1;
+                if (pCmdBar->iPrevCommand > 0) {
+                    dred_cmdbar_set_text_to_previous_command(pCmdBar, pCmdBar->iPrevCommand - 1);
+                }                
             }
 
             if (pCmdBar->iPrevCommand == 0) {
