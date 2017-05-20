@@ -176,7 +176,7 @@ dtk_bool32 dred_cmbox_cmdlist_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_MOUSE_WHEEL:
         {
-            dred_scrollbar_scroll(&pCmdList->scrollbar, -pEvent->mouseWheel.delta);
+            dred_scrollbar_scroll(&pCmdList->scrollbar, -pEvent->mouseWheel.delta * dred_scrollbar_get_mouse_wheel_scale(&pCmdList->scrollbar));
         } break;
 
         default: break;
