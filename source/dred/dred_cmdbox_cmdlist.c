@@ -10,6 +10,33 @@ dtk_rect dred_cmdbox_cmdlist__calculate_content_rect(dred_cmdbox_cmdlist* pCmdLi
     return rect;
 }
 
+dtk_bool32 dred_cmdbox_cmdlist__find_line_index_under_point(dred_cmdbox_cmdlist* pCmdList, dtk_int32 x, dtk_int32 y, dtk_uint32* pIndex)
+{
+    dtk_assert(pCmdList != NULL);
+    dtk_assert(pIndex != NULL);
+
+    dtk_rect contentRect = dred_cmdbox_cmdlist__calculate_content_rect(pCmdList);
+    if (x < 0 || y < 0) {
+        return DTK_FALSE;
+    }
+    if (x > contentRect.right || y > contentRect.bottom) {
+        return DTK_FALSE;
+    }
+
+    dtk_font_metrics fontMetrics;
+    dtk_font_get_metrics(dtk_get_default_font(&pCmdList->pDred->tk), pCmdList->pDred->uiScale, &fontMetrics);
+
+    dtk_uint32 lineIndexUnscrolled = y / fontMetrics.lineHeight;
+    dtk_uint32 lineIndex = lineIndexUnscrolled + dred_scrollbar_get_scroll_position(&pCmdList->scrollbar);
+
+    if (lineIndex >= pCmdList->commandIndexCount) {
+        return DTK_FALSE;
+    }
+
+    *pIndex = lineIndex;
+    return DTK_TRUE;
+}
+
 
 void dred_cmdbox_cmdlist__update_scrollbar(dred_cmdbox_cmdlist* pCmdList)
 {
@@ -82,8 +109,15 @@ dtk_bool32 dred_cmbox_cmdlist_event_handler(dtk_event* pEvent)
                 float stringSizeY;
                 dtk_font_measure_string(pFont, uiScale, text, textLength, &stringSizeX, &stringSizeY);
 
-                dtk_surface_draw_text(pEvent->paint.pSurface, dtk_get_default_font(&pDred->tk), uiScale, text, textLength, penPosX, penPosY, dtk_rgb(0, 0, 0), pDred->config.cmdbarPopupBGColor);
-                dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_rect_init((dtk_int32)stringSizeX, penPosY, innerRect.right, penPosY + fontMetrics.lineHeight), pDred->config.cmdbarPopupBGColor);
+                dtk_color bgColor = pDred->config.cmdbarPopupBGColor;
+                if (pCmdList->selectedItemIndex == i) {
+                    bgColor = dtk_rgb(192, 192, 192);   // TODO: Replace this with a config variable.
+                }
+
+                dtk_color fgColor = dtk_rgb(0, 0, 0);   // TODO: Replace this with a config variable.
+
+                dtk_surface_draw_text(pEvent->paint.pSurface, dtk_get_default_font(&pDred->tk), uiScale, text, textLength, penPosX, penPosY, fgColor, bgColor);
+                dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_rect_init((dtk_int32)stringSizeX, penPosY, innerRect.right, penPosY + fontMetrics.lineHeight), bgColor);
 
                 penPosY += fontMetrics.lineHeight;
 
@@ -102,6 +136,27 @@ dtk_bool32 dred_cmbox_cmdlist_event_handler(dtk_event* pEvent)
         {
             dred_cmdbox_cmdlist__update_scrollbar(pCmdList);
             dred_cmdbox_cmdlist__refresh_layout(pCmdList);
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_DOWN:
+        {
+            dtk_uint32 itemIndex;
+            if (dred_cmdbox_cmdlist__find_line_index_under_point(pCmdList, pEvent->mouseButton.x, pEvent->mouseButton.y, &itemIndex)) {
+                pCmdList->selectedItemIndex = itemIndex;
+                dtk_control_scheduled_redraw(DTK_CONTROL(pCmdList), dtk_control_get_local_rect(DTK_CONTROL(pCmdList)));
+            }
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_DBLCLICK:
+        {
+            dtk_uint32 itemIndex;
+            if (dred_cmdbox_cmdlist__find_line_index_under_point(pCmdList, pEvent->mouseButton.x, pEvent->mouseButton.y, &itemIndex)) {
+                char* newText = dtk_make_stringf("%s ", g_CommandNames[pCmdList->pCommandIndices[itemIndex]]);
+                dred_set_command_bar_text(pCmdList->pDred, newText);
+                dtk_free_string(newText);
+
+                dtk_control_scheduled_redraw(DTK_CONTROL(pCmdList), dtk_control_get_local_rect(DTK_CONTROL(pCmdList)));
+            }
         } break;
 
         case DTK_EVENT_MOUSE_WHEEL:
@@ -172,6 +227,9 @@ dred_result dred_cmdbox_cmdlist_update_list(dred_cmdbox_cmdlist* pCmdList, const
     pCmdList->commandIndexCount = commandCount;
     dred_find_commands_starting_with(pCmdList->pCommandIndices, pCmdList->commandIndexCapacity, commandName);
 
+
+    // Reset the seleted line to ensure the index is valid.
+    pCmdList->selectedItemIndex = 0;
 
     // A change in commands will change the structure of the scrollbar.
     dred_cmdbox_cmdlist__update_scrollbar(pCmdList);

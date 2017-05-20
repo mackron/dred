@@ -6,6 +6,7 @@ typedef struct
     dred_context* pDred;
     dred_scrollbar scrollbar;   // Always created, but dynamically shown and hidden depending on the list.
     char* runningText;          // Used to determine which commands should be listed.
+    dtk_uint32 selectedItemIndex;
 
     size_t* pCommandIndices;
     size_t commandIndexCount;
