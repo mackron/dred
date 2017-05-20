@@ -391,13 +391,13 @@ dr_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred
     dred_control_set_on_release_mouse(DRED_CONTROL(pTextView), dred_textview_on_release_mouse);
 
     pTextView->pVertScrollbar = &pTextView->vertScrollbar;
-    dred_scrollbar_init(pTextView->pVertScrollbar, pDred, DRED_CONTROL(pTextView), dred_scrollbar_orientation_vertical);
+    dred_scrollbar_init(pTextView->pVertScrollbar, pDred, DTK_CONTROL(pTextView), dred_scrollbar_orientation_vertical);
     DRED_CONTROL(pTextView->pVertScrollbar)->pUserData = pTextView;
     dred_scrollbar_set_on_scroll(pTextView->pVertScrollbar, dred_textview__on_vscroll);
     dred_scrollbar_set_mouse_wheel_scele(pTextView->pVertScrollbar, 3);
 
     pTextView->pHorzScrollbar = &pTextView->horzScrollbar;
-    dred_scrollbar_init(pTextView->pHorzScrollbar, pDred, DRED_CONTROL(pTextView), dred_scrollbar_orientation_horizontal);
+    dred_scrollbar_init(pTextView->pHorzScrollbar, pDred, DTK_CONTROL(pTextView), dred_scrollbar_orientation_horizontal);
     DRED_CONTROL(pTextView->pHorzScrollbar)->pUserData = pTextView;
     dred_scrollbar_set_on_scroll(pTextView->pHorzScrollbar, dred_textview__on_hscroll);
 

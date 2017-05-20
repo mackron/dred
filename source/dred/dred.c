@@ -47,6 +47,8 @@
 #include "gui/dred_info_bar.c"
 #include "gui/dred_cmdbar_popup.c"
 #include "gui/dred_cmdbar.c"
+#include "dred_cmdbox_cmdlist.c"
+#include "dred_cmdbox.c"
 #include "dred_fs.c"
 #include "dred_alias_map.c"
 #include "dred_config.c"

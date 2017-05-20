@@ -1,5 +1,20 @@
 // Copyright (C) 2016 David Reid. See included LICENSE file.
 
+void dred_cmdbar_popup__refresh_cmdbox_layout(dred_cmdbar_popup* pCmdBarPopup, dtk_uint32 popupSizeX, dtk_uint32 popupSizeY)
+{
+    dred_context* pDred = pCmdBarPopup->pDred;
+    dtk_int32 padding     = (dtk_int32)(pDred->config.cmdbarPopupPadding     * pDred->uiScale);
+    dtk_int32 borderWidth = (dtk_int32)(pDred->config.cmdbarPopupBorderWidth * pDred->uiScale);
+
+    dtk_int32 cmdboxPosX = borderWidth + padding;
+    dtk_int32 cmdboxPosY = borderWidth + padding;
+    dtk_control_set_relative_position(DTK_CONTROL(&pCmdBarPopup->cmdlist), cmdboxPosX, cmdboxPosY);
+
+    dtk_uint32 cmdboxSizeX = (dtk_uint32)((dtk_int32)popupSizeX - (borderWidth + padding)*2);
+    dtk_uint32 cmdboxSizeY = (dtk_uint32)((dtk_int32)popupSizeY - (borderWidth + padding)*2);
+    dtk_control_set_size(DTK_CONTROL(&pCmdBarPopup->cmdlist), cmdboxSizeX, cmdboxSizeY);
+}
+
 void dred_cmdbar_popup__on_size(dred_control* pControl, float newWidth, float newHeight)
 {
     (void)newWidth;
@@ -10,7 +25,10 @@ void dred_cmdbar_popup__on_size(dred_control* pControl, float newWidth, float ne
         return;
     }
 
-    // Do something...
+    dred_cmdbar_popup* pCmdBarPopup = (dred_cmdbar_popup*)pWindow->pUserData;
+    assert(pCmdBarPopup != NULL);
+
+    dred_cmdbar_popup__refresh_cmdbox_layout(pCmdBarPopup, (dtk_uint32)newWidth, (dtk_uint32)newHeight);
 }
 
 void dred_cmdbar_popup__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
@@ -31,9 +49,12 @@ void dred_cmdbar_popup__on_paint(dred_control* pControl, dred_rect rect, dtk_sur
     float uiScale = (float)pDred->uiScale;
 
     dred_rect popupRect = dred_control_get_local_rect(pControl);
+    dred_control_draw_rect_outline(pControl, popupRect, pDred->config.cmdbarBGColorActive, pDred->config.cmdbarPopupBorderWidth*uiScale, pSurface);
 
-    dred_control_draw_rect_with_outline(pControl, popupRect, pDred->config.cmdbarPopupBGColor, pDred->config.cmdbarPopupBorderWidth*uiScale, pDred->config.cmdbarBGColorActive, pSurface);
+    popupRect = dred_grow_rect(popupRect, -pDred->config.cmdbarPopupBorderWidth*uiScale);
+    dred_control_draw_rect_outline(pControl, popupRect, pDred->config.cmdbarPopupBGColor, pDred->config.cmdbarPopupPadding*uiScale, pSurface);
 
+#if 0
     dred_rect innerRect = popupRect;
     innerRect = dred_grow_rect(innerRect, -pDred->config.cmdbarPopupBorderWidth*uiScale);
     innerRect = dred_grow_rect(innerRect, -pDred->config.cmdbarPopupPadding*uiScale);
@@ -53,6 +74,7 @@ void dred_cmdbar_popup__on_paint(dred_control* pControl, dred_rect rect, dtk_sur
             break;
         }
     }
+#endif
 }
 
 dred_cmdbar_popup* dred_cmdbar_popup_create(dred_context* pDred)
@@ -71,6 +93,16 @@ dred_cmdbar_popup* dred_cmdbar_popup_create(dred_context* pDred)
         free(pCmdBarPopup);
         return NULL;
     }
+
+    dred_result result = dred_cmdbox_cmdlist_init(pDred, DTK_CONTROL(pCmdBarPopup->pWindow->pRootGUIControl), &pCmdBarPopup->cmdlist);
+    if (result != DTK_SUCCESS) {
+        dred_window_delete(pCmdBarPopup->pWindow);
+        free(pCmdBarPopup);
+        return NULL;
+    }
+
+
+
 
     pCmdBarPopup->pFont = dred_font_acquire_subfont(pDred->config.cmdbarPopupFont, (float)pDred->uiScale);
     
@@ -136,7 +168,11 @@ void dred_cmdbar_popup_refresh_styling(dred_cmdbar_popup* pCmdBarPopup)
     pCmdBarPopup->pFont = dred_font_acquire_subfont(pDred->config.cmdbarPopupFont, (float)pDred->uiScale);
     
 
-
+    // The cmdbox control needs to be repositioned and resized based on the new padding and border sizes.
+    dtk_uint32 popupSizeX;
+    dtk_uint32 popupSizeY;
+    dtk_control_get_size(DTK_CONTROL(&pCmdBarPopup->pWindow->windowDTK), &popupSizeX, &popupSizeY);
+    dred_cmdbar_popup__refresh_cmdbox_layout(pCmdBarPopup, popupSizeX, popupSizeY);
 
     // Redraw.
     dred_control_dirty(pCmdBarPopup->pWindow->pRootGUIControl, dred_control_get_local_rect(pCmdBarPopup->pWindow->pRootGUIControl));
@@ -146,7 +182,10 @@ void dred_cmdbar_popup_refresh_styling(dred_cmdbar_popup* pCmdBarPopup)
 void dred_cmdbar_popup_refresh_autocomplete(dred_cmdbar_popup* pCmdBarPopup, const char* runningText)
 {
     if (pCmdBarPopup == NULL) return;
+    dred_cmdbox_cmdlist_update_list(&pCmdBarPopup->cmdlist, runningText);
 
+
+#if 0
     dred_context* pDred = pCmdBarPopup->pDred;
     if (pDred == NULL) {
         return;
@@ -174,8 +213,8 @@ void dred_cmdbar_popup_refresh_autocomplete(dred_cmdbar_popup* pCmdBarPopup, con
 
     pCmdBarPopup->commandIndexCount = commandCount;
     dred_find_commands_starting_with(pCmdBarPopup->pCommandIndices, pCmdBarPopup->commandIndexCapacity, commandName);
+#endif
 
-
-    // Redraw.
+    // Redraw?
     dred_control_dirty(pCmdBarPopup->pWindow->pRootGUIControl, dred_control_get_local_rect(pCmdBarPopup->pWindow->pRootGUIControl));
 }

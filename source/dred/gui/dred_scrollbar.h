@@ -81,7 +81,7 @@ struct dred_scrollbar
 
 
 /// Creates a scrollbar element.
-dr_bool32 dred_scrollbar_init(dred_scrollbar* pScrollbar, dred_context* pDred, dred_control* pParent, dred_scrollbar_orientation orientation);
+dr_bool32 dred_scrollbar_init(dred_scrollbar* pScrollbar, dred_context* pDred, dtk_control* pParent, dred_scrollbar_orientation orientation);
 
 /// Deletes the given scrollbar element.
 void dred_scrollbar_uninit(dred_scrollbar* pScrollbar);

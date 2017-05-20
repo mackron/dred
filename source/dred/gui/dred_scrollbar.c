@@ -39,13 +39,13 @@ DRED_GUI_PRIVATE int dred_scrollbar_maxi(int x, int y)
 }
 
 
-dr_bool32 dred_scrollbar_init(dred_scrollbar* pScrollbar, dred_context* pDred, dred_control* pParent, dred_scrollbar_orientation orientation)
+dr_bool32 dred_scrollbar_init(dred_scrollbar* pScrollbar, dred_context* pDred, dtk_control* pParent, dred_scrollbar_orientation orientation)
 {
     if (pScrollbar == NULL || orientation == dred_scrollbar_orientation_none) {
         return DR_FALSE;
     }
 
-    if (!dred_control_init(DRED_CONTROL(pScrollbar), pDred, pParent, NULL, DRED_CONTROL_TYPE_SCROLLBAR)) {
+    if (!dred_control_init(DRED_CONTROL(pScrollbar), pDred, NULL, pParent, DRED_CONTROL_TYPE_SCROLLBAR)) {
         return DR_FALSE;
     }
 

@@ -9,6 +9,8 @@ typedef struct
     size_t commandIndexCapacity;
     dred_gui_font* pFont;
     dr_bool32 showOnlyFirstCommand : 1;
+
+    dred_cmdbox_cmdlist cmdlist;
 } dred_cmdbar_popup;
 
 dred_cmdbar_popup* dred_cmdbar_popup_create(dred_context* pDred);
