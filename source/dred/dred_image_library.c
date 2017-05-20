@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 
 dr_bool32 dred_image_library_init__stock_images(dred_image_library* pLibrary)

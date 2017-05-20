@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 #define DRED_PACKAGE_FEATURE_EDITOR             (1 << 0)
 #define DRED_PACKAGE_FEATURE_CMDLINE_FUNCTION   (1 << 1)

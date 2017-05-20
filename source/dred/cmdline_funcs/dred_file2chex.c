@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 // Command: dred -f file2chex [Input File Name] [Options]
 //    -n OutputVariableName : Specifies the name the name of the output variable. Defaults to "FileData"

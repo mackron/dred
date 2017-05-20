@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 char* dred_codegen_buffer_to_c_array(const unsigned char* buffer, size_t size, const char* variableName)
 {

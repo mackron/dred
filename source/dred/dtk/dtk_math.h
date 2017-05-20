@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 #define DTK_PI       3.14159265358979323846
 #define DTK_PIF      3.14159265358979323846f

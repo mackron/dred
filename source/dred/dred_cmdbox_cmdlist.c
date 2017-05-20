@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 dtk_rect dred_cmdbox_cmdlist__calculate_content_rect(dred_cmdbox_cmdlist* pCmdList)
 {

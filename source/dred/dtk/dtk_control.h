@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 typedef dtk_uint32 dtk_control_type;
 #define DTK_CONTROL_TYPE_EMPTY          0

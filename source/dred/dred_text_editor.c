@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 dred_textview* dred_text_editor__get_textview(dred_text_editor* pTextEditor)
 {

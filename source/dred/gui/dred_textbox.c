@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 void dred_textbox__engine_on_text_changed(drte_engine* pTextEngine)
 {

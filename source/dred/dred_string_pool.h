@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 // The idea of a string pool is to simplify memory management of strings and to support the ability to
 // re-use those strings. When referencing a string in a string pool, it is done so with an offset

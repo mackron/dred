@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 dr_bool32 dred_ipc_post_message(drpipe clientPipe, uint32_t message, const void* pData, size_t dataSize)
 {

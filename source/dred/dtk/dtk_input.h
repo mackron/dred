@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 // Modifier flags. These will be passed to the "state" flags for mouse and key events.
 #define DTK_MODIFIER_MOUSE_BUTTON_LEFT      (1 << 0)

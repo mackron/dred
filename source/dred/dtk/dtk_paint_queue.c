@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 dtk_result dtk_paint_queue_init(dtk_paint_queue* pQueue)
 {

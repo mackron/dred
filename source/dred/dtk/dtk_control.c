@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 void dtk_control__link_child_append(dtk_control* pParent, dtk_control* pChild)
 {

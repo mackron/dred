@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 // Multithreading is implemented differently depending on the platform. Of note is the entry point which is slightly different. The thread
 // entry point needs to be declared like this:

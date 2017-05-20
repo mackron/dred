@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 typedef dtk_int32 dtk_dialog_result;
 #define DTK_DIALOG_RESULT_OK        1

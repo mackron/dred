@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 void dred_button__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
 {

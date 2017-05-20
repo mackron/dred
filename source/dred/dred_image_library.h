@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 // BEGIN STOCK IMAGE LIST : <source file> <id name> <base width> <base height>
 //

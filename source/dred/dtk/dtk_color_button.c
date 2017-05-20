@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 dtk_result dtk_color_button_init(dtk_context* pTK, dtk_control* pParent, dtk_event_proc onEvent, dtk_color_button* pColorButton)
 {

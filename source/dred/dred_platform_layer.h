@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 #define DRED_MESSAGE_BOX_YES     1
 #define DRED_MESSAGE_BOX_NO      2

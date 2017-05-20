@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 // This is set to a pointer to the dtk_context object that was passed to dred_platform_init() and is only temporary
 // while working on the integration phase. Later on this source file will be removed entirely.

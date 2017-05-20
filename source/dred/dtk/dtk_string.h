@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 // Determines whether or not the given string is null or empty.
 DTK_INLINE dtk_bool32 dtk_string_is_null_or_empty(const char* str)

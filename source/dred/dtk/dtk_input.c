@@ -1,4 +1,4 @@
-// Copyright (C) 2016 David Reid. See included LICENSE file.
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 static size_t dtk_strcpy_len(char* dst, size_t dstSize, const char* src)
 {
