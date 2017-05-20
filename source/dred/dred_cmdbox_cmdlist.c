@@ -168,6 +168,7 @@ dtk_bool32 dred_cmbox_cmdlist_event_handler(dtk_event* pEvent)
             if (dred_cmdbox_cmdlist__find_line_index_under_point(pCmdList, pEvent->mouseButton.x, pEvent->mouseButton.y, &itemIndex)) {
                 char* newText = dtk_make_stringf("%s ", g_CommandNames[pCmdList->pCommandIndices[itemIndex]]);
                 dred_set_command_bar_text(pCmdList->pDred, newText);
+                dred_cmdbox_cmdlist_update_list(pCmdList, newText);
                 dtk_free_string(newText);
 
                 dtk_control_scheduled_redraw(DTK_CONTROL(pCmdList), dtk_control_get_local_rect(DTK_CONTROL(pCmdList)));
