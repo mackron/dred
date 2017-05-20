@@ -8,9 +8,9 @@ typedef struct
     char* runningText;          // Used to determine which commands should be listed.
     dtk_uint32 selectedItemIndex;
 
-    size_t* pCommandIndices;
-    size_t commandIndexCount;
-    size_t commandIndexCapacity;
+    dtk_uint32* pCommandIndices;
+    dtk_uint32 commandIndexCount;
+    dtk_uint32 commandIndexCapacity;
     dtk_bool32 showOnlyFirstCommand : 1;
 } dred_cmdbox_cmdlist;
 

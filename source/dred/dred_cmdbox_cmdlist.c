@@ -50,7 +50,7 @@ void dred_cmdbox_cmdlist__update_scrollbar(dred_cmdbox_cmdlist* pCmdList)
     dtk_font_get_metrics(dtk_get_default_font(&pCmdList->pDred->tk), 1, &fontMetrics);
 
     dtk_uint32 pageSize = contentHeight / fontMetrics.lineHeight;
-    dred_scrollbar_set_range_and_page_size(&pCmdList->scrollbar, 0, pCmdList->commandIndexCount, pageSize);
+    dred_scrollbar_set_range_and_page_size(&pCmdList->scrollbar, 0, (dtk_int32)pCmdList->commandIndexCount, (dtk_int32)pageSize);
 }
 
 void dred_cmdbox_cmdlist__refresh_layout(dred_cmdbox_cmdlist* pCmdList)
@@ -234,9 +234,9 @@ dred_result dred_cmdbox_cmdlist_update_list(dred_cmdbox_cmdlist* pCmdList, const
         pCmdList->showOnlyFirstCommand = DR_TRUE;
     }
 
-    size_t commandCount = dred_find_commands_starting_with(NULL, 0, commandName);
+    dtk_uint32 commandCount = (dtk_uint32)dred_find_commands_starting_with(NULL, 0, commandName);
     if (commandCount > pCmdList->commandIndexCapacity) {
-        size_t* pNewCommandIndices = (size_t*)dtk_realloc(pCmdList->pCommandIndices, commandCount * sizeof(*pNewCommandIndices));
+        dtk_uint32* pNewCommandIndices = (dtk_uint32*)dtk_realloc(pCmdList->pCommandIndices, commandCount * sizeof(*pNewCommandIndices));
         if (pNewCommandIndices == NULL) {
             return DTK_OUT_OF_MEMORY;
         }
@@ -250,7 +250,7 @@ dred_result dred_cmdbox_cmdlist_update_list(dred_cmdbox_cmdlist* pCmdList, const
 
     pCmdList->selectedItemIndex = 0;
     if (oldSelectedCommandIndex != (size_t)-1 && pCmdList->commandIndexCount > 0) {
-        for (size_t i = 0; i < pCmdList->commandIndexCount; ++i) {
+        for (dtk_uint32 i = 0; i < pCmdList->commandIndexCount; ++i) {
             if (pCmdList->pCommandIndices[i] == oldSelectedCommandIndex) {
                 pCmdList->selectedItemIndex = i;
                 break;

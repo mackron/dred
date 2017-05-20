@@ -43,8 +43,8 @@ void dred_cmdbar_popup__on_paint(dred_control* pControl, dred_rect rect, dtk_sur
     dred_context* pDred = pWindow->pDred;
     assert(pDred != NULL);
 
-    dred_cmdbar_popup* pCmdBarPopup = (dred_cmdbar_popup*)pWindow->pUserData;
-    assert(pCmdBarPopup != NULL);
+    //dred_cmdbar_popup* pCmdBarPopup = (dred_cmdbar_popup*)pWindow->pUserData;
+    //assert(pCmdBarPopup != NULL);
 
     float uiScale = (float)pDred->uiScale;
 

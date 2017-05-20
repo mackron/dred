@@ -891,35 +891,35 @@ dr_bool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, const
     return DR_TRUE;
 }
 
-size_t dred_find_command_index(const char* cmdFunc)
+dtk_uint32 dred_find_command_index(const char* cmdFunc)
 {
     // The command names are stored in a single pool of memory.
     if (cmdFunc[0] == '!') {
         return 0;
     }
 
-    for (size_t i = 0; i < DRED_COMMAND_COUNT; ++i) {
+    for (dtk_uint32 i = 0; i < DRED_COMMAND_COUNT; ++i) {
         if (strcmp(cmdFunc, g_CommandNames[i]) == 0) {
             return i;
         }
     }
 
-    return (size_t)-1;
+    return (dtk_uint32)-1;
 }
 
 int dred_find_commands_starting_with_qsort_comp(const void* a, const void* b)
 {
-    size_t indexA = *(size_t*)a;
-    size_t indexB = *(size_t*)b;
+    dtk_uint32 indexA = *(dtk_uint32*)a;
+    dtk_uint32 indexB = *(dtk_uint32*)b;
     return strcmp(g_CommandNames[indexA], g_CommandNames[indexB]);
 }
 
-size_t dred_find_commands_starting_with(size_t* pIndexOut, size_t sizeOut, const char* cmdFunc)
+dtk_uint32 dred_find_commands_starting_with(dtk_uint32* pIndexOut, size_t sizeOut, const char* cmdFunc)
 {
     if (sizeOut == 0 && pIndexOut != NULL) return 0;
 
-    size_t count = 0;
-    for (size_t i = 0; i < DRED_COMMAND_COUNT; ++i) {
+    dtk_uint32 count = 0;
+    for (dtk_uint32 i = 0; i < DRED_COMMAND_COUNT; ++i) {
         if (dred_string_is_null_or_empty(cmdFunc) || strncmp(g_CommandNames[i], cmdFunc, strlen(cmdFunc)) == 0) {
             if (count < sizeOut) {
                 pIndexOut[count] = i;
@@ -930,7 +930,7 @@ size_t dred_find_commands_starting_with(size_t* pIndexOut, size_t sizeOut, const
     }
 
     if (pIndexOut != NULL) {
-        qsort(pIndexOut, count, sizeof(size_t), dred_find_commands_starting_with_qsort_comp);
+        qsort(pIndexOut, count, sizeof(dtk_uint32), dred_find_commands_starting_with_qsort_comp);
     }
 
     return count;

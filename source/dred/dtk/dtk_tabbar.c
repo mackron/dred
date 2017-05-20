@@ -454,7 +454,7 @@ dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_cont
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
 
     if (pTabBar->tabCount == pTabBar->tabCapacity) {
-        size_t newTabCapacity = (pTabBar->tabCapacity == 0) ? 1 : pTabBar->tabCapacity * 2;
+        dtk_uint32 newTabCapacity = (pTabBar->tabCapacity == 0) ? 1 : pTabBar->tabCapacity * 2;
         dtk_tabbar_tab* pNewTabs = (dtk_tabbar_tab*)realloc(pTabBar->pTabs, sizeof(*pNewTabs) * newTabCapacity);
         if (pNewTabs == NULL) {
             return DTK_OUT_OF_MEMORY;
@@ -477,7 +477,7 @@ dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_con
 	if (pTabBar == NULL) return DTK_INVALID_ARGS;
 
     if (pTabBar->tabCount == pTabBar->tabCapacity) {
-        size_t newTabCapacity = (pTabBar->tabCapacity == 0) ? 1 : pTabBar->tabCapacity * 2;
+        dtk_uint32 newTabCapacity = (pTabBar->tabCapacity == 0) ? 1 : pTabBar->tabCapacity * 2;
         dtk_tabbar_tab* pNewTabs = (dtk_tabbar_tab*)malloc(sizeof(*pNewTabs) * newTabCapacity);
         if (pNewTabs == NULL) {
             return DTK_OUT_OF_MEMORY;
