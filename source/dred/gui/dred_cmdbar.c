@@ -309,7 +309,7 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dtk_key key, int stateF
             // We first need to determine what it is exactly we're tabbing through. If we have not yet completed the command name, we cycle through
             // the possible commands. Otherwise, we cycle through the arguments. To determine whether or not the user has completed the command name,
             // we just search for a whitespace character.
-            if (!dred_cmdbar__does_manual_text_entry_contain_whole_command_name(pCmdBar)) {
+            if (pCmdBar->manualTextEntry != NULL && !dred_cmdbar__does_manual_text_entry_contain_whole_command_name(pCmdBar)) {
                 // Cycle through commands.
                 if (stateFlags & DTK_MODIFIER_SHIFT) {
                     dred_cmdbox_cmdlist_highlight_prev_item(&pDred->pCmdBarPopup->cmdlist);
