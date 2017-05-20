@@ -58,6 +58,60 @@ void dred_cmdbar__update_layouts_of_inner_controls(dred_cmdbar* pCmdBar)
     dtk_control_set_size(DTK_CONTROL(pCmdBar->pInfoBar), rrect.right - rrect.left, rrect.bottom - rrect.top);
 }
 
+void dred_cmdbar__update_manual_text_entry(dred_cmdbar* pCmdBar)
+{
+    dred_textview* pTextView = DRED_TEXTVIEW(pCmdBar->pTextBox);
+
+    dtk_free(pCmdBar->manualTextEntry);
+    pCmdBar->manualTextEntry = NULL;
+
+    size_t textLen = dred_textview_get_text(pTextView, NULL, 0);
+    if (textLen > 0) {
+        pCmdBar->manualTextEntry = (char*)dtk_malloc(textLen + 1);
+        if (pCmdBar->manualTextEntry == NULL) {
+            return;     // Out of memory.
+        }
+
+        dred_textview_get_text(pTextView, pCmdBar->manualTextEntry, textLen+1);
+    }
+}
+
+dtk_bool32 dred_cmdbar__does_manual_text_entry_contain_whole_command_name(dred_cmdbar* pCmdBar)
+{
+    dtk_assert(pCmdBar != NULL);
+    
+    if (pCmdBar->manualTextEntry == NULL) {
+        return DTK_FALSE;
+    }
+
+    const char* pSearchResult = dr_first_whitespace(pCmdBar->manualTextEntry);
+    if (pSearchResult == NULL || pSearchResult[0] == '\0') {
+        return DTK_FALSE;
+    }
+
+    return DTK_TRUE;
+}
+
+void dred_cmdbar__update_text_based_on_autocomplete(dred_cmdbar* pCmdBar)
+{
+    if (!dred_cmdbar__does_manual_text_entry_contain_whole_command_name(pCmdBar)) {
+        // The text of the command bar needs to be set to the whole command name, with the trailing section highlighted.
+        dred_cmdbox_cmdlist* pCmdList = &pCmdBar->pDred->pCmdBarPopup->cmdlist;
+
+        const char* wholeCommandText = dred_cmdbox_cmdlist_get_highlighted_command_name(pCmdList);
+        if (wholeCommandText == NULL) {
+            return;
+        }
+
+        // The call to dred_cmdbar_set_text() will reset the manual text entry, so it'll need to be restored.
+        char* manualTextEntryCopy = dtk_make_string(pCmdBar->manualTextEntry);
+        dred_cmdbar_set_text(pCmdBar, wholeCommandText);
+        if (manualTextEntryCopy != NULL) {
+            pCmdBar->manualTextEntry = manualTextEntryCopy;
+        }
+    }
+}
+
 
 void dred_cmdbar__on_size(dred_control* pControl, float newWidth, float newHeight)
 {
@@ -253,16 +307,36 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dtk_key key, int stateF
 
         case DTK_KEY_TAB:
         {
-            if (stateFlags & DTK_MODIFIER_SHIFT) {
-                dred_cmdbar_highlight_prev_argument(pCmdBar);
+            // We first need to determine what it is exactly we're tabbing through. If we have not yet completed the command name, we cycle through
+            // the possible commands. Otherwise, we cycle through the arguments. To determine whether or not the user has completed the command name,
+            // we just search for a whitespace character.
+            if (!dred_cmdbar__does_manual_text_entry_contain_whole_command_name(pCmdBar)) {
+                // Cycle through commands.
+                if (stateFlags & DTK_MODIFIER_SHIFT) {
+                    dred_cmdbox_cmdlist_highlight_prev_item(&pDred->pCmdBarPopup->cmdlist);
+                } else {
+                    dred_cmdbox_cmdlist_highlight_next_item(&pDred->pCmdBarPopup->cmdlist);
+                }
+
+                dred_cmdbar__update_text_based_on_autocomplete(pCmdBar);
             } else {
-                dred_cmdbar_highlight_next_argument(pCmdBar);
+                // Cycle through parameters.
+                if (stateFlags & DTK_MODIFIER_SHIFT) {
+                    dred_cmdbar_highlight_prev_argument(pCmdBar);
+                } else {
+                    dred_cmdbar_highlight_next_argument(pCmdBar);
+                }
             }
         } break;
 
         default: 
         {
             dred_textview_on_key_down(DRED_CONTROL(pTextBox), key, stateFlags);
+
+            if (key == DTK_KEY_DELETE || key == DTK_KEY_BACKSPACE) {
+                dred_cmdbar__update_manual_text_entry(pCmdBar);
+                dred_cmdbar_popup_refresh_autocomplete(pDred->pCmdBarPopup, pCmdBar->manualTextEntry);
+            }
         } break;
     }
 }
@@ -314,6 +388,8 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
         free(cmd);
     } else {
         dred_textview_on_printable_key_down(DRED_CONTROL(pTextBox), utf32, stateFlags);
+        dred_cmdbar__update_manual_text_entry(pCmdBar);
+        dred_cmdbar_popup_refresh_autocomplete(pDred->pCmdBarPopup, pCmdBar->manualTextEntry);
     }
 }
 
@@ -326,14 +402,17 @@ void dred_cmdbar_tb__on_text_changed(dred_textbox* pTextBox)
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
+    if (pCmdBar->manualTextEntry == NULL) {
+        char* pText = dred_textbox_get_text_malloc(pTextBox);
+        if (pText == NULL) {
+            return;
+        }
 
-    char* pText = dred_textbox_get_text_malloc(pTextBox);
-    if (pText == NULL) {
-        return;
+        dred_cmdbar_popup_refresh_autocomplete(pDred->pCmdBarPopup, pText);
+        free(pText);
+    } else {
+        dred_cmdbar_popup_refresh_autocomplete(pDred->pCmdBarPopup, pCmdBar->manualTextEntry);
     }
-
-    dred_cmdbar_popup_refresh_autocomplete(pDred->pCmdBarPopup, pText);
-    free(pText);
 }
 
 void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
@@ -422,6 +501,7 @@ void dred_cmdbar_uninit(dred_cmdbar* pCmdBar)
 
     dred_textbox_uninit(pCmdBar->pTextBox);
     free(pCmdBar->workingCommand);
+    free(pCmdBar->manualTextEntry);
 
     dred_control_uninit(DRED_CONTROL(pCmdBar));
 }
@@ -440,6 +520,9 @@ void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text)
     dred_textbox_deselect_all(pCmdBar->pTextBox);
     dred_textbox_set_text(pCmdBar->pTextBox, text);
     dred_textbox_move_cursor_to_end_of_text(pCmdBar->pTextBox);
+
+    dtk_free(pCmdBar->manualTextEntry);
+    pCmdBar->manualTextEntry = NULL;
 }
 
 dr_bool32 dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigned int iPrevCommand)

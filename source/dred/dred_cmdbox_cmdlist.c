@@ -203,6 +203,11 @@ dred_result dred_cmdbox_cmdlist_update_list(dred_cmdbox_cmdlist* pCmdList, const
         runningText = "";
     }
 
+    size_t oldSelectedCommandIndex = (size_t)-1;
+    if (pCmdList->commandIndexCount > pCmdList->selectedItemIndex) {
+        oldSelectedCommandIndex = pCmdList->pCommandIndices[pCmdList->selectedItemIndex];
+    }
+
 
     char commandName[256];
     const char* params = dr_next_token(runningText, commandName, sizeof(commandName));
@@ -227,13 +232,60 @@ dred_result dred_cmdbox_cmdlist_update_list(dred_cmdbox_cmdlist* pCmdList, const
     pCmdList->commandIndexCount = commandCount;
     dred_find_commands_starting_with(pCmdList->pCommandIndices, pCmdList->commandIndexCapacity, commandName);
 
-
-    // Reset the seleted line to ensure the index is valid.
     pCmdList->selectedItemIndex = 0;
+    if (oldSelectedCommandIndex != (size_t)-1 && pCmdList->commandIndexCount > 0) {
+        for (size_t i = 0; i < pCmdList->commandIndexCount; ++i) {
+            if (pCmdList->pCommandIndices[i] == oldSelectedCommandIndex) {
+                pCmdList->selectedItemIndex = i;
+                break;
+            }
+        }
+    }
+
 
     // A change in commands will change the structure of the scrollbar.
     dred_cmdbox_cmdlist__update_scrollbar(pCmdList);
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pCmdList), dtk_control_get_local_rect(DTK_CONTROL(pCmdList)));
     return DTK_SUCCESS;
+}
+
+dred_result dred_cmdbox_cmdlist_highlight_next_item(dred_cmdbox_cmdlist* pCmdList)
+{
+    if (pCmdList == NULL) return DRED_INVALID_ARGS;
+
+    pCmdList->selectedItemIndex = (pCmdList->selectedItemIndex + 1) % pCmdList->commandIndexCount;
+
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdList), dtk_control_get_local_rect(DTK_CONTROL(pCmdList)));
+    return DTK_SUCCESS;
+}
+
+dred_result dred_cmdbox_cmdlist_highlight_prev_item(dred_cmdbox_cmdlist* pCmdList)
+{
+    if (pCmdList == NULL) return DRED_INVALID_ARGS;
+
+    // Loop back to the start if necessary.
+    if (pCmdList->selectedItemIndex > 0) {
+        pCmdList->selectedItemIndex -= 1;
+    } else {
+        if (pCmdList->commandIndexCount > 0) {
+            pCmdList->selectedItemIndex = pCmdList->commandIndexCount-1;
+        } else {
+            pCmdList->selectedItemIndex = 0;
+        }
+    }
+
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdList), dtk_control_get_local_rect(DTK_CONTROL(pCmdList)));
+    return DTK_SUCCESS;
+}
+
+const char* dred_cmdbox_cmdlist_get_highlighted_command_name(dred_cmdbox_cmdlist* pCmdList)
+{
+    if (pCmdList == NULL) return NULL;
+
+    if (pCmdList->selectedItemIndex < pCmdList->commandIndexCount) {
+        return g_CommandNames[pCmdList->pCommandIndices[pCmdList->selectedItemIndex]];
+    }
+
+    return NULL;
 }

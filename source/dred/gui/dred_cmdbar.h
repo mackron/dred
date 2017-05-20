@@ -22,6 +22,7 @@ struct dred_cmdbar
     dred_info_bar* pInfoBar;
     unsigned int iPrevCommand;
     char* workingCommand;
+    char* manualTextEntry;  // Used for the tab and arrow key autocomplete stuff.
 };
 
 
