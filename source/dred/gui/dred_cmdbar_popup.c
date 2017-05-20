@@ -102,8 +102,6 @@ dred_cmdbar_popup* dred_cmdbar_popup_create(dred_context* pDred)
     }
 
 
-
-
     pCmdBarPopup->pFont = dred_font_acquire_subfont(pDred->config.cmdbarPopupFont, (float)pDred->uiScale);
     
     pCmdBarPopup->pWindow->pUserData = pCmdBarPopup;
@@ -120,13 +118,17 @@ void dred_cmdbar_popup_delete(dred_cmdbar_popup* pCmdBarPopup)
 
 void dred_cmdbar_popup_show(dred_cmdbar_popup* pCmdBarPopup)
 {
-    char* pCmdBarText = dred_cmdbar_get_text_malloc(pCmdBarPopup->pDred->pCmdBar);
+    dred_cmdbar* pCmdBar = pCmdBarPopup->pDred->pCmdBar;
+    if (pCmdBar->manualTextEntry != NULL) {
+        dred_cmdbar_popup_refresh_autocomplete(pCmdBarPopup, pCmdBar->manualTextEntry);
+    } else {
+        char* pCmdBarText = dred_cmdbar_get_text_malloc(pCmdBarPopup->pDred->pCmdBar);
+        dred_cmdbar_popup_refresh_autocomplete(pCmdBarPopup, pCmdBarText);
+        free(pCmdBarText);
+    }
 
     dred_cmdbar_popup_refresh_position(pCmdBarPopup);
-    dred_cmdbar_popup_refresh_autocomplete(pCmdBarPopup, pCmdBarText);
     dred_window_show(pCmdBarPopup->pWindow);
-
-    free(pCmdBarText);
 }
 
 void dred_cmdbar_popup_hide(dred_cmdbar_popup* pCmdBarPopup)

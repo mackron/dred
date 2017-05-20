@@ -104,7 +104,7 @@ void dred_cmdbar__update_text_based_on_autocomplete(dred_cmdbar* pCmdBar)
         }
 
         // The call to dred_cmdbar_set_text() will reset the manual text entry, so it'll need to be restored.
-        char* manualTextEntryCopy = dtk_make_string(pCmdBar->manualTextEntry);
+        char* manualTextEntryCopy = dtk_make_string((pCmdBar->manualTextEntry != NULL) ? pCmdBar->manualTextEntry : "");
         dred_cmdbar_set_text(pCmdBar, wholeCommandText);
         if (manualTextEntryCopy != NULL) {
             pCmdBar->manualTextEntry = manualTextEntryCopy;
@@ -320,6 +320,7 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dtk_key key, int stateF
                 }
 
                 dred_cmdbar__update_text_based_on_autocomplete(pCmdBar);
+                dred_cmdbar_popup_refresh_autocomplete(pDred->pCmdBarPopup, pCmdBar->manualTextEntry);
             } else {
                 // Cycle through parameters.
                 if (stateFlags & DTK_MODIFIER_SHIFT) {
