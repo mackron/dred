@@ -108,7 +108,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, dtk_sur
 
 
     const char* versionStr = "dred version " DRED_VERSION_STRING;
-    const char* copyrightStr = "Copyright \xC2\xA9 2016 David Reid";
+    const char* copyrightStr = "Copyright \xC2\xA9 2017 David Reid";
     dred_font_release_subfont(pWindow->pDred->config.pUIFont, pFont);
 
     penPosX = (8*uiScale);
