@@ -68,6 +68,21 @@ void dred_cmdbox_cmdlist__refresh_layout(dred_cmdbox_cmdlist* pCmdList)
     dtk_control_set_relative_position(DTK_CONTROL(&pCmdList->scrollbar), scrollbarPosX, scrollbarPosY);
 }
 
+void dtk_cmdbox_cmdlist__scroll_to_highlighted_item(dred_cmdbox_cmdlist* pCmdList)
+{
+    dtk_assert(pCmdList != NULL);
+
+    dtk_uint32 scrollPos = (dtk_uint32)dred_scrollbar_get_scroll_position(&pCmdList->scrollbar);
+    dtk_uint32 pageSize = (dtk_uint32)dred_scrollbar_get_page_size(&pCmdList->scrollbar);
+
+    if (pCmdList->selectedItemIndex < scrollPos) {
+        dred_scrollbar_scroll_to(&pCmdList->scrollbar, pCmdList->selectedItemIndex);
+    } else if (pCmdList->selectedItemIndex > scrollPos + (pageSize - 1)) {
+        dred_scrollbar_scroll_to(&pCmdList->scrollbar, pCmdList->selectedItemIndex - pageSize + 1);
+    }
+}
+
+
 void dred_cmdbox_cmdlist__on_scroll(dred_scrollbar* pScrollbar, int scrollPos)
 {
     (void)scrollPos;
@@ -255,6 +270,7 @@ dred_result dred_cmdbox_cmdlist_highlight_next_item(dred_cmdbox_cmdlist* pCmdLis
     if (pCmdList == NULL) return DRED_INVALID_ARGS;
 
     pCmdList->selectedItemIndex = (pCmdList->selectedItemIndex + 1) % pCmdList->commandIndexCount;
+    dtk_cmdbox_cmdlist__scroll_to_highlighted_item(pCmdList);
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pCmdList), dtk_control_get_local_rect(DTK_CONTROL(pCmdList)));
     return DTK_SUCCESS;
@@ -274,6 +290,8 @@ dred_result dred_cmdbox_cmdlist_highlight_prev_item(dred_cmdbox_cmdlist* pCmdLis
             pCmdList->selectedItemIndex = 0;
         }
     }
+
+    dtk_cmdbox_cmdlist__scroll_to_highlighted_item(pCmdList);
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pCmdList), dtk_control_get_local_rect(DTK_CONTROL(pCmdList)));
     return DTK_SUCCESS;
