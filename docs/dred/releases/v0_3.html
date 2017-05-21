@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>dred - A fast, lightweight, cross-platform text editor.</title>
+    <meta name="description" content="dred is a fast, lightweight cross-platform text editor.">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="icon" href="../../../img/favicon.png">
+    <style>
+body{
+    font-family:sans-serif;
+    font-size:11pt;
+    line-height:18pt;
+    background-color:#390000;
+}
+
+a {
+    text-decoration:none;
+    color:#28f;
+}
+a:hover {
+    text-decoration:underline;
+    color:#26d;
+}
+
+.a-download {
+    text-decoration:none;
+    color:#ddd;
+    border:solid 1px #000;
+    border-radius:4px;
+    padding:16px 32px;
+    background-color:#720000;
+}
+.a-download:hover {
+    background-color:#610000;
+    text-decoration:none;
+    color:#ddd;
+}
+
+.a-sublink {
+    font-size:11pt;
+}
+
+#preview {
+    font-family:monospace;
+    font-size:10pt;
+    text-align:left;
+}
+
+.footer-links {
+    margin:        0px;
+    margin-bottom: 10px;
+    padding: 0px;
+}
+.footer-links li {
+    display: inline;
+    padding: 0 2px;
+}
+.footer-links li:first-child {
+    padding-left: 0;
+}
+
+.feature-header {
+    color:#666;
+    font-size: 24pt;
+    font-weight:bold;
+}
+.feature-header2 {
+    color:#444;
+    font-size: 1.5em;
+    font-weight:bold;
+    /*margin-bottom:1em;*/
+    line-height: 1em;
+    text-align:left;
+}
+
+.header-link-table {
+}
+.header-link-table td {
+    padding:0.5em 0;
+    padding-right:2em;
+    vertical-align:center;
+}
+.header-link-table a {
+    color:#e0d7cf;
+    text-decoration:none;
+}
+.header-link-table a:hover {
+    color:#ffffff;
+}
+
+.footer-link {
+    color:#e0d7cf;
+    text-decoration:none;
+}
+.footer-link:hover {
+    color:#ffffff;
+}
+    </style>
+</head>
+
+<body style="margin:0; padding:0">
+    <div style="background-color:#720000; color:#bfa792;">
+        <div style="max-width:75%; width:100%; margin:0 auto;">
+            <table class="header-link-table" style="">
+                <tr>
+                    <td style="padding:0; width:100%; text-align:left;">
+                        <table class="header-link-table" style="">
+                            <tr>
+                                <td style="vertical-align:center; padding-right:2em;"><a href="../../../index.html"><img src="../../../img/logo1_large_white.png" style="height:24px; min-width:100%;"></a></td>
+                                <td><a href="../../../download.html">Downloads</a></td>
+                                <td><a href="../../../screenshots.html">Screenshots</a></td>
+                                <td><a href="../../../docs/dred/index.html">Documentation</a></td>
+                            </tr>
+                        </table>    
+                    </td>
+                    <td style="padding:0; width:25%; text-align:right; vertical-align:center;">
+                        <a style="padding:0;" href="https://twitter.com/drsoft_dred"><img src="../../../img/twitter_white.png" style="padding:0; height:32px; width:32px;"></a>
+                    </td>
+                    <td style="padding:0; width:25%; text-align:right; vertical-align:center;">
+                        <a style="padding:0;" href="https://github.com/dr-soft/dred"><img src="../../../img/github_white.png" style="padding:0; height:24px; width:24px;"></a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div style="background-color:#fff; text-align:center; padding-top:1em;">
+        <h1>Version 0.3 Release Notes</h1>
+        <div style="background-color:#fff; margin:0 auto; width:66%; padding:2em; text-align:left;">
+            <div>
+                <b>Command Bar Improvements</b>
+                <div>
+                    <ul>
+                        <li>Simple auto-complete<br/>
+                            <img src="../../../img/releases/v0_3/cmdbar_autocomplete.gif" style="border:solid 2px #000">
+                        </li>
+                        <li>You can now cycle through the arguments of a command with the tab key. Use Shift+Tab to cycle in reverse.
+                        </li>
+                        <li>
+                            The "find", "replace" and "replace-all" shortcuts have been improved so that they are pre-filled
+                            with the currently selected text.<br/>
+                            <img src="../../../img/releases/v0_3/cmdbar_paramcycle.gif" style="border:solid 2px #000">
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div style="margin-top:2em;">
+                <b>Favourite Files</b>
+                <div>
+                    You can now add and remove files from a simple list of favourites which be accessed from the File menu.<br/>
+                    <img src="../../../img/releases/v0_3/favourites1.png" style="border:solid 2px #000">
+                </div>
+            </div>
+            
+            <div style="margin-top:2em;">
+                <b>Miscellaneous Improvements and Bug Fixes</b>
+                <div>
+                    <ul>
+                        <li>Improved painting performance.</li>
+                        <li>Improved the "goto" command so that it scrolls to the line if it's out of view.</li>
+                        <li>Improved the saving process to prevent breaking hard links on Linux.</li>
+                        <li>Removed some flickering when opening a file.</li>
+                        <li>The "bind" command will now update the shortcut string on relevant menu items.</li>
+                        <li>Changed the default shortcut for "replace-all" to "CTRL+H".</li>
+                        <li>Add support for portable mode. Enable this with the "portable" command line switch. When enabled, config and log files
+                            will be loaded and saved relative to the executable rather than the user directory.
+                        </li>
+                        <li>Fixed a bug where the "find" command would not deselect previous selections.</li>
+                        <li>Fixed a crash when double clicking on an empty text document.</li>
+                        <li>Fixed a bug where the tab key would not work on a blank file.</li>
+                        <li>Fixed a crash when performing an undo/redo operation on the command bar.</li>
+                        <li>Fixed a bug where menu item events were not getting handled correctly.</li>
+                        <li>Fixed the "goto" command when used with word wrap enabled. <a href="https://github.com/dr-soft/dred/issues/2">Issue #2</a>.</li>
+                        <li>Fixed a bug with block indenting.</li>
+                        <li>Fixed some bugs with word deletion (CTRL+Backspace/Delete).</li>
+                        <li>Fixed some erros with word selection.</li>
+                        <li>Fixed a bug when selecting historic commands on the command bar with the up and down arrow keys.</li>
+                        <li>Fixed a bug where it was possible for the main window to load out of view.</li>
+                        <li>Fixed a graphics bug where an empty tab bar was being drawn when no files are open.</li>
+                        <li>C++ compilation fixes.</li>
+                        <li>Very early support for OSX. This has not been thoroughly tested.</li>
+                        <li>... and much more!</li>
+                    </ul>
+                    
+                    <i>Windows Only</i>
+                    <ul>
+                        <li>The Windows build no longer requires linking to ole32.lib, comctl32.lib or msimg32.lib.</li>
+                    </ul>
+                    
+                    <i>Linux and GTK Only</i>
+                    <ul>
+                        <li>Popup menus are now positioned correctly.</li>
+                        <li>Improved memory usage.<br/>
+                            <img src="../../../img/releases/v0_3/memory_compare.png" style="border:solid 2px #000">
+                        </li>
+                        <li>Improved text quality.<br/>
+                            <img id="img-text-compare" src="../../../img/releases/v0_3/text_compare_00.png" style="border:solid 2px #000">
+                        </li>
+                        <li>Improved compatibility with older versions of GTK.</li>
+                        <li>Removed dependency on librt.</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="margin-top:2em;">
+                <b>Source Code Improvements</b>
+                <div>
+                    Version 0.3 introduces a new toolkit called DTK (dred toolkit) which is designed for light weight, traditional desktop
+                    applications. Benefits of this toolkit include:
+                    <ul>
+                        <li>Small a light weight.</li>
+                        <li>Easy to compile. The entire source code for DTK is compiled as a single translation unit (dtk.c) and requires linking
+                            to only necessary platform-specific libraries such as GTK.
+                        </li>
+                        <li>Written entirely in C.</li>
+                        <li>Improved control/widget and event handling infrastructure.
+                            <ul>
+                                <li>Windows are treated just like any other control and are no longer special entities.</li>
+                                <li>Events are now handled through a central event queue rather than callbacks.</li>
+                            </ul>
+                        </li>
+                        <li>Improved painting performance.
+                            <ul>
+                                <li>
+                                    Controls can be redrawn immediately or scheduled for later. Scheduling redraws improves performance because
+                                    it gives the toolkit an opportunity batch drawing.
+                                </li>
+                                <li>
+                                    Painting on GTK has been improved. Previously, painting was done to an intermediary surface and then copied
+                                    onto the window. The toolkit will now draw directly to the window. This also saves on a bit of memory.
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    Many more features and improvements are in the pipline for DTK, including common controls, better high DPI
+                    support, drag-and-drop, and much more.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var textCompareImages = new Array;
+        textCompareImages[0] = "../../../img/releases/v0_3/text_compare_00.png";
+        textCompareImages[1] = "../../../img/releases/v0_3/text_compare_01.png";
+        setInterval(function() {ChangeTextCompareImage()}, 1000);
+        
+        nextTextCompareImageIndex = 1;
+        function ChangeTextCompareImage() {
+            document.getElementById('img-text-compare').src = textCompareImages[nextTextCompareImageIndex];
+            if (nextTextCompareImageIndex<1) {
+                nextTextCompareImageIndex+=1;
+            } else if (nextTextCompareImageIndex=1) {
+                nextTextCompareImageIndex=0;
+            }
+        }
+    </script>
+
+    <table style="margin:0 auto; padding:1em 0px; text-align:center;">
+        <tr>
+            <td style="vertical-align:center;"><a style="padding:0;" href="https://twitter.com/drsoft_dred"><img src="../../../img/twitter_white.png" style="padding:0; height:32px; width:32px;"></a></td>
+            <td style="vertical-align:center;"><a style="padding:0;" href="https://github.com/dr-soft/dred"><img src="../../../img/github_white.png" style="padding:0; height:24px; width:24px;"></a></td>
+        </tr>
+    </table>
+
+    <div style="color:#e0d7cf; font-size:9pt; padding:2em 0px; text-align:center;">
+        Copyright &copy; 2017 David Reid<br/>
+        Developed by David Reid - <a class="footer-link" href="mailto:davidreidsoftware@gmail.com">davidreidsoftware@gmail.com</a>
+    </div>
+
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-81135233-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+</body>
+</html>

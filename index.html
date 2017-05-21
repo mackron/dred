@@ -6,9 +6,96 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <link rel="icon" href="img/favicon.png">
-    <link rel="stylesheet" type="text/css" href="css/main.css" />
-	
     <style>
+body{
+    font-family:sans-serif;
+    font-size:11pt;
+    line-height:18pt;
+    background-color:#390000;
+}
+
+a {
+    text-decoration:none;
+    color:#28f;
+}
+a:hover {
+    text-decoration:underline;
+    color:#26d;
+}
+
+.a-download {
+    text-decoration:none;
+    color:#ddd;
+    border:solid 1px #000;
+    border-radius:4px;
+    padding:16px 32px;
+    background-color:#720000;
+}
+.a-download:hover {
+    background-color:#610000;
+    text-decoration:none;
+    color:#ddd;
+}
+
+.a-sublink {
+    font-size:11pt;
+}
+
+#preview {
+    font-family:monospace;
+    font-size:10pt;
+    text-align:left;
+}
+
+.footer-links {
+    margin:        0px;
+    margin-bottom: 10px;
+    padding: 0px;
+}
+.footer-links li {
+    display: inline;
+    padding: 0 2px;
+}
+.footer-links li:first-child {
+    padding-left: 0;
+}
+
+.feature-header {
+    color:#666;
+    font-size: 24pt;
+    font-weight:bold;
+}
+.feature-header2 {
+    color:#444;
+    font-size: 1.5em;
+    font-weight:bold;
+    /*margin-bottom:1em;*/
+    line-height: 1em;
+    text-align:left;
+}
+
+.header-link-table {
+}
+.header-link-table td {
+    padding:0.5em 0;
+    padding-right:2em;
+    vertical-align:center;
+}
+.header-link-table a {
+    color:#e0d7cf;
+    text-decoration:none;
+}
+.header-link-table a:hover {
+    color:#ffffff;
+}
+
+.footer-link {
+    color:#e0d7cf;
+    text-decoration:none;
+}
+.footer-link:hover {
+    color:#ffffff;
+}
     </style>
 </head>
 
@@ -23,7 +110,7 @@
                                 <td style="vertical-align:center; padding-right:2em;"><a href="index.html"><img src="img/logo1_large_white.png" style="height:24px; min-width:100%;"></a></td>
                                 <td><a href="download.html">Downloads</a></td>
                                 <td><a href="screenshots.html">Screenshots</a></td>
-                                <td><a href="docs/dred">Documentation</a></td>
+                                <td><a href="docs/dred/index.html">Documentation</a></td>
                             </tr>
                         </table>    
                     </td>
@@ -41,7 +128,10 @@
         <div><img src="img/logo1_large.png" style="width:auto; height:auto; min-height:70px;"></div>
         <div style="padding:16px; color:#333; font-size:14pt;">A fast, lightweight, cross-platform text editor.</div>
 		<div style="margin-top:32px;">
-            <a class="a-download" href="download.html">Download</a>
+            <a class="a-download" href="https://github.com/dr-soft/dred/releases/download/0.3/dred.exe">Download for Windows (32-bit)</a>
+        </div>
+        <div style="margin-top:0.75em;">
+            <a href="download.html" style="font-size:9pt;">Other Downloads</a>
         </div>
 		<!--
         <div style="margin-top:32px;">
@@ -178,7 +268,7 @@
     </table>
 
     <div style="color:#e0d7cf; font-size:9pt; padding:2em 0px; text-align:center;">
-        Copyright &copy; 2016 David Reid<br/>
+        Copyright &copy; 2017 David Reid<br/>
         Developed by David Reid - <a class="footer-link" href="mailto:davidreidsoftware@gmail.com">davidreidsoftware@gmail.com</a>
     </div>
 

@@ -6,9 +6,96 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <link rel="icon" href="../../img/favicon.png">
-    <link rel="stylesheet" type="text/css" href="../../css/main.css" />
-	
     <style>
+body{
+    font-family:sans-serif;
+    font-size:11pt;
+    line-height:18pt;
+    background-color:#390000;
+}
+
+a {
+    text-decoration:none;
+    color:#28f;
+}
+a:hover {
+    text-decoration:underline;
+    color:#26d;
+}
+
+.a-download {
+    text-decoration:none;
+    color:#ddd;
+    border:solid 1px #000;
+    border-radius:4px;
+    padding:16px 32px;
+    background-color:#720000;
+}
+.a-download:hover {
+    background-color:#610000;
+    text-decoration:none;
+    color:#ddd;
+}
+
+.a-sublink {
+    font-size:11pt;
+}
+
+#preview {
+    font-family:monospace;
+    font-size:10pt;
+    text-align:left;
+}
+
+.footer-links {
+    margin:        0px;
+    margin-bottom: 10px;
+    padding: 0px;
+}
+.footer-links li {
+    display: inline;
+    padding: 0 2px;
+}
+.footer-links li:first-child {
+    padding-left: 0;
+}
+
+.feature-header {
+    color:#666;
+    font-size: 24pt;
+    font-weight:bold;
+}
+.feature-header2 {
+    color:#444;
+    font-size: 1.5em;
+    font-weight:bold;
+    /*margin-bottom:1em;*/
+    line-height: 1em;
+    text-align:left;
+}
+
+.header-link-table {
+}
+.header-link-table td {
+    padding:0.5em 0;
+    padding-right:2em;
+    vertical-align:center;
+}
+.header-link-table a {
+    color:#e0d7cf;
+    text-decoration:none;
+}
+.header-link-table a:hover {
+    color:#ffffff;
+}
+
+.footer-link {
+    color:#e0d7cf;
+    text-decoration:none;
+}
+.footer-link:hover {
+    color:#ffffff;
+}
     </style>
 </head>
 
@@ -23,7 +110,7 @@
                                 <td style="vertical-align:center; padding-right:2em;"><a href="../../index.html"><img src="../../img/logo1_large_white.png" style="height:24px; min-width:100%;"></a></td>
                                 <td><a href="../../download.html">Downloads</a></td>
                                 <td><a href="../../screenshots.html">Screenshots</a></td>
-                                <td><a href="../../docs/dred">Documentation</a></td>
+                                <td><a href="../../docs/dred/index.html">Documentation</a></td>
                             </tr>
                         </table>    
                     </td>
@@ -42,6 +129,8 @@
             <li><a href="../../docs/dred/commands.html">Command List</a></li>
             <li>|</li>
             <li><a href="../../docs/dred/configs.html">Config Variable List</a></li>
+            <li>|</li>
+            <li><a href="../../docs/dred/releases/index.html">Releases Notes</a></li>
         </ul>
         <div style="background-color:#fff; margin:0 auto; width:66%; padding:2em; text-align:left;">
             <h2>Special config commands</h2>
@@ -72,7 +161,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show the tab bar.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -82,7 +171,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show the menu bar.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -92,7 +181,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show the command bar at all times. If this is set to false it will be shown only when it has keyboard focus.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
         </table>
     </div>
@@ -102,7 +191,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not dirty files will automatically be reloaded. When disabled, reloading requires manual reloading via the "reload" command.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -112,7 +201,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Internal use only. Used to determine whether or not the operation system should decide where to place the main window.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -162,7 +251,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not the window is maximized.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
         </table>
     </div>
@@ -251,6 +340,46 @@
     cmdbar-padding-vert
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">The amount of padding to apply to the command bar on the top and bottom sides.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>float</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 2</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cmdbar-popup-bg-color" class="cfg-title">
+    cmdbar-popup-bg-color
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The background color of the auto-complete popup box for the command bar.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 224 224 224</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cmdbar-popup-font" class="cfg-title">
+    cmdbar-popup-font
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The font to use in the auto-complete popup box for the command bar.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>font</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> system-font-ui</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cmdbar-popup-border-width" class="cfg-title">
+    cmdbar-popup-border-width
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The width of the border for the auto-complete popup box.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>float</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 2</td></tr>
+        </table>
+    </div>
+</div>
+<div id="cmdbar-popup-padding" class="cfg-title">
+    cmdbar-popup-padding
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The padding to apply between the border and the contents of the auto-complete popup box for the command bar.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
             <tr><td>Type:</td><td>float</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> 2</td></tr>
@@ -352,7 +481,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show the close button on tabs.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -442,7 +571,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show line numbers.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
         </table>
     </div>
@@ -532,7 +661,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show the horizontal scrollbar on text editors.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -542,7 +671,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show the vertical scrollbar on text editors.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -552,7 +681,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not the text editor can scroll past the last line.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -562,7 +691,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not tabs are converted to spaces.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
         </table>
     </div>
@@ -592,7 +721,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not automatic indenting is enabled for when the user creates a new line.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -602,7 +731,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not word wrap should be enabled.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -612,7 +741,7 @@
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not drag-and-drop should be enabled for text editors.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>bool</td></tr>
+            <tr><td>Type:</td><td>dr_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
         </table>
     </div>
@@ -660,7 +789,7 @@
     </table>
 
     <div style="color:#e0d7cf; font-size:9pt; padding:2em 0px; text-align:center;">
-        Copyright &copy; 2016 David Reid<br/>
+        Copyright &copy; 2017 David Reid<br/>
         Developed by David Reid - <a class="footer-link" href="mailto:davidreidsoftware@gmail.com">davidreidsoftware@gmail.com</a>
     </div>
 
