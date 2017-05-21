@@ -156,3 +156,7 @@ dtk_result dtk_window_immediate_redraw(dtk_window* pWindow, dtk_rect rect);
 
 // Finds the control sitting under the mouse, using a window as the root level control.
 dtk_control* dtk_window_find_control_under_point(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY);
+
+// Updates the state that determines which controls have changed mouse enter/leave states. The return value a
+// pointer to the control that is sitting directly under the mouse.
+dtk_control* dtk_window_refresh_mouse_enter_leave_state(dtk_window* pWindow, dtk_int32 mousePosX, dtk_int32 mousePosY);

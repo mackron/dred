@@ -147,6 +147,38 @@ dtk_result dtk_control_uninit(dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
+    dtk_context* pTK = pControl->pTK;
+
+    if (pControl->pTK->pControlUnderMouse == pControl) {
+        pControl->pTK->pControlUnderMouse = NULL;
+    }
+
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        if (pControl->pTK->pWindowUnderMouse == DTK_WINDOW(pControl)) {
+            pControl->pTK->pWindowUnderMouse = NULL;
+            pControl->pTK->pControlUnderMouse = NULL;
+        }
+    } else {
+        dtk_window* pWindow = dtk_control_get_window(pControl);
+        if (pWindow != NULL && pControl->pTK->pWindowUnderMouse == pWindow) {
+            dtk_control* pNewControlUnderMouse = dtk_window_refresh_mouse_enter_leave_state(pWindow, pTK->lastMousePosX, pTK->lastMousePosY);
+
+            dtk_control* pEventReceiver = pTK->pControlWithMouseCapture;
+            if (pEventReceiver == NULL) {
+                pEventReceiver = pNewControlUnderMouse;
+            }
+
+            if (pEventReceiver != NULL && pEventReceiver != DTK_CONTROL(pWindow)) {
+                // Mouse move.
+                dtk_event e = dtk_event_init(pTK, DTK_EVENT_MOUSE_MOVE, pEventReceiver);
+                e.mouseMove.x = pTK->lastMousePosX;
+                e.mouseMove.y = pTK->lastMousePosY;
+                dtk_control_absolute_to_relative(pEventReceiver, &e.mouseMove.x, &e.mouseMove.y);
+                dtk_handle_local_event(pTK, &e);
+            }
+        }
+    }
+
     if (dtk_control_has_keyboard_capture(pControl)) {
         dtk_release_keyboard(pControl->pTK);
     }

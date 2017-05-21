@@ -884,38 +884,6 @@ dtk_result dtk_window_move_to_center_of_screen__win32(dtk_window* pWindow)
     return dtk_window_set_absolute_position(pWindow, (screenSizeX - windowSizeX)/2, (screenSizeY - windowSizeY)/2);
 }
 
-#if 0
-dtk_bool32 dtk_window_is_in_view__win32(dtk_window* pWindow)
-{
-    dtk_assert(pWindow != NULL);
-
-    // Just compare the position of the window to the screen.
-    RECT rect;
-    GetWindowRect((HWND)pWindow->win32.hWnd, &rect);
-
-    if (rect.right < 0 || rect.bottom < 0) {
-        return DTK_FALSE;
-    }
-
-
-    MONITORINFO mi;
-    ZeroMemory(&mi, sizeof(mi));
-    mi.cbSize = sizeof(MONITORINFO);
-    if (!GetMonitorInfoA(MonitorFromWindow((HWND)pWindow->win32.hWnd, 0), &mi)) {
-        return DTK_FALSE;
-    }
-
-    LONG screenSizeX = mi.rcMonitor.right - mi.rcMonitor.left;
-    LONG screenSizeY = mi.rcMonitor.bottom - mi.rcMonitor.top;
-
-    if (rect.left > screenSizeX || rect.top > screenSizeY) {
-        return DTK_FALSE;
-    }
-
-    return DTK_TRUE;
-}
-#endif
-
 dtk_result dtk_window_show__win32(dtk_window* pWindow, int mode)
 {
     int nCmdShow[] = {
@@ -2086,8 +2054,7 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
             pTK->lastMousePosX = pEvent->mouseMove.x;
             pTK->lastMousePosY = pEvent->mouseMove.y;
 
-            dtk_control* pNewControlUnderMouse = dtk_window_find_control_under_point(pWindow, pEvent->mouseMove.x, pEvent->mouseMove.y);
-            dtk_window__check_and_handle_mouse_enter_and_leave(pWindow, pNewControlUnderMouse);
+            dtk_control* pNewControlUnderMouse = dtk_window_refresh_mouse_enter_leave_state(pWindow, pEvent->mouseMove.x, pEvent->mouseMove.y);
 
             dtk_control* pEventReceiver = pTK->pControlWithMouseCapture;
             if (pEventReceiver == NULL) {
@@ -2489,22 +2456,6 @@ dtk_bool32 dtk_window_is_in_view(dtk_window* pWindow)
     }
 
     return DTK_TRUE;
-
-#if 0
-    dtk_result result = DTK_NO_BACKEND;
-#ifdef DTK_WIN32
-    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
-        result = dtk_window_is_in_view__win32(pWindow);
-    }
-#endif
-#ifdef DTK_GTK
-    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
-        result = dtk_window_is_in_view__gtk(pWindow);
-    }
-#endif
-
-    return result;
-#endif
 }
 
 dtk_result dtk_window_move_into_view(dtk_window* pWindow)
@@ -2763,4 +2714,14 @@ dtk_control* dtk_window_find_control_under_point(dtk_window* pWindow, dtk_int32 
     dtk_control_iterate_visible_controls(DTK_CONTROL(pWindow), dtk_control_get_local_rect(DTK_CONTROL(pWindow)), dtk_window__find_control_under_point_iterator_cb, NULL, DTK_CONTROL_ITERATION_SKIP_WINDOWS, &data);
 
     return data.pControlUnderPoint;
+}
+
+dtk_control* dtk_window_refresh_mouse_enter_leave_state(dtk_window* pWindow, dtk_int32 mousePosX, dtk_int32 mousePosY)
+{
+    if (pWindow == NULL) return NULL;
+
+    dtk_control* pNewControlUnderMouse = dtk_window_find_control_under_point(pWindow, mousePosX, mousePosY);
+    dtk_window__check_and_handle_mouse_enter_and_leave(pWindow, pNewControlUnderMouse);
+
+    return pNewControlUnderMouse;
 }
