@@ -383,6 +383,10 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
                 free(pCmdBar->workingCommand);
                 pCmdBar->workingCommand = NULL;
             }
+            if (pCmdBar->manualTextEntry) {
+                free(pCmdBar->manualTextEntry);
+                pCmdBar->manualTextEntry = NULL;
+            }
         }
 
         free(cmd);
