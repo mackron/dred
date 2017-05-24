@@ -206,6 +206,8 @@ typedef int dtk_event_type;
 #define DTK_EVENT_SCROLLBAR_SCROLL          128
 #define DTK_EVENT_TABBAR_CHANGE_TAB         133
 #define DTK_EVENT_TABGROUP_CHANGE_TAB       134
+#define DTK_EVENT_CHANGE_KEYBOARD_CAPTURE   254     // A special event used internally for handling keyboard capture changes.
+#define DTK_EVENT_CHANGE_MOUSE_CAPTURE      255     // ^^^
 #define DTK_EVENT_CUSTOM                    256
 
 struct dtk_event
@@ -322,7 +324,7 @@ struct dtk_event
         struct
         {
             dtk_control* pOldCapturedControl;
-        } captureKeyboard, captureMouse;
+        } captureKeyboard, captureMouse, changeKeyboardCapture, changeMouseCapture;
 
         struct
         {
@@ -373,6 +375,7 @@ struct dtk_context
     dtk_window* pFirstWindow;
     dtk_window* pWindowWithKeyboardCapture;     // This is set in the window's DTK_CAPTURE_KEYBOARD / DTK_RELEASE_KEYBOARD event handlers in dtk_window_default_event_handler()
     dtk_window* pWindowWithMouseCapture;        // ^^^
+    dtk_control* pControlWantingKeyboardCapture;
     dtk_control* pControlWithKeyboardCapture;
     dtk_control* pControlWithMouseCapture;
     dtk_window*  pWindowUnderMouse;

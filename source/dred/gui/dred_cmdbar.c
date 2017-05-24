@@ -220,7 +220,6 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dtk_control* pN
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
-    
 
     // If the element being captured is the inner text box, just ignore it and pretend that we're not actually losing focus.
     if (dtk_control_is_descendant(pNextCapturedControl, DTK_CONTROL(pCmdBar->pTextBox))) {
@@ -371,7 +370,6 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
             if ((command.flags & DRED_CMDBAR_NO_CLEAR) == 0) {
                 dred_textbox_set_text(pTextBox, "");
             }
-
             if ((command.flags & DRED_CMDBAR_RELEASE_KEYBOARD) != 0) {
                 dred_unfocus_command_bar(dred_control_get_context(DRED_CONTROL(pCmdBar)));
             }

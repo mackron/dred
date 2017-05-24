@@ -68,6 +68,17 @@
 #define dtk_atomic_exchange_ptr dtk_atomic_exchange_32
 #endif
 
+// When capturing the keyboard and mouse on a control it must be completed by capturing the window
+// that owns said control. The functions below are used for this.
+dtk_result dtk__capture_keyboard_window(dtk_context* pTK, dtk_window* pWindow);
+dtk_result dtk__release_keyboard_window(dtk_context* pTK);
+dtk_result dtk__capture_mouse_window(dtk_context* pTK, dtk_window* pWindow);
+dtk_result dtk__release_mouse_window(dtk_context* pTK);
+
+// Private event posting APIs.
+void dtk__post_mouse_leave_event_recursive(dtk_context* pTK, dtk_control* pNewControlUnderMouse, dtk_control* pOldControlUnderMouse);
+void dtk__post_mouse_enter_event_recursive(dtk_context* pTK, dtk_control* pNewControlUnderMouse, dtk_control* pOldControlUnderMouse);
+
 DTK_INLINE dtk_event dtk_event_init(dtk_context* pTK, dtk_event_type type, dtk_control* pControl)
 {
     dtk_event e;
@@ -79,50 +90,57 @@ DTK_INLINE dtk_event dtk_event_init(dtk_context* pTK, dtk_event_type type, dtk_c
     return e;
 }
 
-dtk_result dtk__normalize_event(dtk_event* pEvent)  // DTK_CANCELLED if the event should be cancelled.
+dtk_result dtk__preprocess_event(dtk_event* pEvent)  // Returns DTK_CANCELLED if the event should be cancelled.
 {
     dtk_assert(pEvent != NULL);
 
     dtk_context* pTK = pEvent->pTK;
     dtk_assert(pTK != NULL);
 
-    dtk_uint32 garbageCount = dtk_garbage_queue_get_count(&pTK->garbageQueue);
-    if (garbageCount > 0) {
-        dtk_control* pGarbageControl = dtk_garbage_queue_get_next_garbage_control(&pTK->garbageQueue);
-        if (pEvent->pControl == pGarbageControl) {
-            pEvent->pControl = NULL;
-            pEvent->type = DTK_EVENT_NONE;
+    // If the event is a capture change, make sure some of the state is updated. Capture changes are _always_
+    // posted as a DTK_EVENT_CAPTURE_KEYBOARD event. When a release event is required it will be posted from
+    // here.
+    if (pEvent->type == DTK_EVENT_CHANGE_KEYBOARD_CAPTURE) {
+        dtk_control* pOldCapturedControl = pTK->pControlWithKeyboardCapture;
+        dtk_control* pNewCapturedControl = pEvent->pControl;
+
+        // Don't do anything if the captured control isn't changing.
+        if (pOldCapturedControl == pNewCapturedControl) {
             return DTK_CANCELLED;
         }
 
-        switch (pEvent->type)
-        {
-            case DTK_EVENT_CAPTURE_KEYBOARD:
-            {
-                if (pEvent->captureKeyboard.pOldCapturedControl == pGarbageControl) {
-                    pEvent->captureKeyboard.pOldCapturedControl = NULL;
-                }
-            } break;
-            case DTK_EVENT_RELEASE_KEYBOARD:
-            {
-                if (pEvent->releaseKeyboard.pNewCapturedControl == pGarbageControl) {
-                    pEvent->releaseKeyboard.pNewCapturedControl = NULL;
-                }
-            } break;
+        pTK->pControlWithKeyboardCapture = pNewCapturedControl;
 
-            case DTK_EVENT_CAPTURE_MOUSE:
-            {
-                if (pEvent->captureMouse.pOldCapturedControl == pGarbageControl) {
-                    pEvent->captureMouse.pOldCapturedControl = NULL;
-                }
-            } break;
-            case DTK_EVENT_RELEASE_MOUSE:
-            {
-                if (pEvent->releaseMouse.pNewCapturedControl == pGarbageControl) {
-                    pEvent->releaseMouse.pNewCapturedControl = NULL;
-                }
-            } break;
+        // If the window is different then we'll need to change the keyboard focus on those too.
+        dtk_window* pOldCapturedWindow = dtk_control_get_window(pOldCapturedControl);
+        dtk_window* pNewCapturedWindow = dtk_control_get_window(pNewCapturedControl);
+
+        if (pNewCapturedWindow != NULL) {
+            if (pNewCapturedControl != DTK_CONTROL(pNewCapturedWindow)) {
+                pNewCapturedWindow->pLastDescendantWithKeyboardFocus = pNewCapturedControl;
+            } else {
+                pNewCapturedWindow->pLastDescendantWithKeyboardFocus = NULL;
+            }
         }
+
+        if (pOldCapturedControl != NULL) {
+            dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_KEYBOARD, pOldCapturedControl);
+            eRelease.releaseKeyboard.pNewCapturedControl = pNewCapturedControl;
+            dtk_handle_local_event(pTK, &eRelease);
+        }
+
+        if (pNewCapturedControl != NULL) {
+            dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_KEYBOARD, pNewCapturedControl);
+            eCapture.captureKeyboard.pOldCapturedControl = pOldCapturedControl;
+            dtk_handle_local_event(pTK, &eCapture);
+        }
+
+        // If the windows are different make sure the new one is given capture.
+        if (pOldCapturedWindow != pNewCapturedWindow) {
+            dtk__capture_keyboard_window(pTK, pNewCapturedWindow);
+        }
+
+        return DTK_CANCELLED;   // <-- The keyboard capture/release events are always handled from this function or the window's event handlers.
     }
 
     return DTK_SUCCESS;
@@ -137,7 +155,7 @@ dtk_result dtk_handle_global_event(dtk_event* pEvent)
 
     // If there's any garbage the event will need to be normalized before executing. If the event references a garbaged control it
     // needs to be cancelled.
-    dtk_result result = dtk__normalize_event(pEvent);
+    dtk_result result = dtk__preprocess_event(pEvent);
     if (result != DTK_SUCCESS) {
         return result;
     }
@@ -193,17 +211,6 @@ dtk_result dtk_errno_to_result(int err)
     return DTK_ERROR;
 }
 
-
-// When capturing the keyboard and mouse on a control it must be completed by capturing the window
-// that owns said control. The functions below are used for this.
-dtk_result dtk__capture_keyboard_window(dtk_context* pTK, dtk_window* pWindow);
-dtk_result dtk__release_keyboard_window(dtk_context* pTK);
-dtk_result dtk__capture_mouse_window(dtk_context* pTK, dtk_window* pWindow);
-dtk_result dtk__release_mouse_window(dtk_context* pTK);
-
-// Private event posting APIs.
-void dtk__post_mouse_leave_event_recursive(dtk_context* pTK, dtk_control* pNewControlUnderMouse, dtk_control* pOldControlUnderMouse);
-void dtk__post_mouse_enter_event_recursive(dtk_context* pTK, dtk_control* pNewControlUnderMouse, dtk_control* pOldControlUnderMouse);
 
 #ifdef DTK_WIN32
 #define DTK_WM_LOCAL                        (WM_USER + 0)
@@ -1485,7 +1492,7 @@ dtk_bool32 dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent)
     if (pTK == NULL || pEvent == NULL || pEvent->pControl == NULL) return DTK_FALSE;
 
     // Make sure the event is cancelled if the associated control has been uninitialized.
-    dtk_result result = dtk__normalize_event(pEvent);
+    dtk_result result = dtk__preprocess_event(pEvent);
     if (result != DTK_SUCCESS) {
         return DTK_FALSE;   // The event was probably cancelled.
     }
@@ -1802,65 +1809,16 @@ dtk_result dtk_capture_keyboard(dtk_context* pTK, dtk_control* pControl)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
 
-    dtk_control* pOldCapturedControl = pTK->pControlWithKeyboardCapture;
-    dtk_control* pNewCapturedControl = pControl;
-
-    // Don't do anything if the control already has the capture.
-    if (pOldCapturedControl == pNewCapturedControl) {
-        return DTK_SUCCESS;
-    }
-
     // The control must be allowed to receive capture.
     if (pControl != NULL && !dtk_control_is_keyboard_capture_allowed(pControl)) {
         return DTK_INVALID_ARGS;
     }
 
-
-    // To complete the change of focus we need to change the focus of the window's that own the controls. If the previous and next
-    // focused window is the same, we just ignore it. Otherwise we change it.
-    dtk_window* pOldCapturedWindow = pTK->pWindowWithKeyboardCapture;
-    dtk_window* pNewCapturedWindow = dtk_control_get_window(pNewCapturedControl);
-
-    pTK->pControlWithKeyboardCapture = pControl;
-
-    if (pNewCapturedWindow != NULL) {
-        pNewCapturedWindow->pLastDescendantWithKeyboardFocus = pNewCapturedControl;
-    }
-
-
-    // In order to complete the capture we need to post events to the respective controls. There are two places where events
-    // are posted: from this function, and from the window's capture event handler. Thus, if the window is different we just
-    // leave the event posting to the window's event handler. On the other hand, if the window is the same, we just post the
-    // events from here.
-    if (pOldCapturedWindow != pNewCapturedWindow) {
-        // The window is different. Do the event posting from the window event handlers.
-        if (pNewCapturedWindow != NULL) {
-            dtk_result result = dtk__capture_keyboard_window(pTK, pNewCapturedWindow);
-            if (result != DTK_SUCCESS) {
-                return result;
-            }
-        } else {
-            dtk_result result = dtk__release_keyboard_window(pTK);
-            if (result != DTK_SUCCESS) {
-                return result;
-            }
-        }
-    } else {
-        // The window is the same. Do the event posting right here.
-        if (pOldCapturedControl != NULL) {
-            dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_KEYBOARD, pOldCapturedControl);
-            eRelease.releaseKeyboard.pNewCapturedControl = pNewCapturedControl;
-            dtk_post_local_event(pTK, &eRelease);   // <-- TODO: Should we check if this returns false, and if so, cancel the the focus change?
-        }
-
-        if (pNewCapturedControl != NULL) {
-            dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_KEYBOARD, pNewCapturedControl);
-            eCapture.captureKeyboard.pOldCapturedControl = pOldCapturedControl;
-            dtk_post_local_event(pTK, &eCapture);
-        }
-    }
-
-    return DTK_SUCCESS;
+    // All we do here is post a capture event. When the event is taken off the event queue and about to be handled, it will
+    // be transformed based on the state at that point in time. Look at dtk__preprocess_event().
+    dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CHANGE_KEYBOARD_CAPTURE, pControl);
+    eCapture.captureKeyboard.pOldCapturedControl = NULL;
+    return dtk_post_local_event(pTK, &eCapture);
 }
 
 dtk_result dtk_release_keyboard(dtk_context* pTK)
@@ -1879,6 +1837,12 @@ dtk_result dtk_capture_mouse(dtk_context* pTK, dtk_control* pControl)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
 
+    // The control must be allowed to receive capture.
+    if (pControl != NULL && !dtk_control_is_mouse_capture_allowed(pControl)) {
+        return DTK_INVALID_ARGS;
+    }
+
+
     dtk_control* pOldCapturedControl = pTK->pControlWithMouseCapture;
     dtk_control* pNewCapturedControl = pControl;
 
@@ -1886,12 +1850,6 @@ dtk_result dtk_capture_mouse(dtk_context* pTK, dtk_control* pControl)
     if (pOldCapturedControl == pNewCapturedControl) {
         return DTK_SUCCESS;
     }
-
-    // The control must be allowed to receive capture.
-    if (pControl != NULL && !dtk_control_is_mouse_capture_allowed(pControl)) {
-        return DTK_INVALID_ARGS;
-    }
-
 
     // To complete the change of focus we need to change the focus of the window's that own the controls. If the previous and next
     // focused window is the same, we just ignore it. Otherwise we change it.
@@ -1975,6 +1933,12 @@ dtk_result dtk__capture_keyboard_window(dtk_context* pTK, dtk_window* pWindow)
         return DTK_SUCCESS; // This window already has the keyboard capture.
     }
 
+    if (pTK->pWindowWithKeyboardCapture != NULL) {
+        pTK->pWindowWithKeyboardCapture->isNextKeyboardReleaseExplicit = DTK_TRUE;
+    }
+
+    pWindow->isNextKeyboardCaptureExplicit = DTK_TRUE;
+
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
@@ -1993,6 +1957,10 @@ dtk_result dtk__capture_keyboard_window(dtk_context* pTK, dtk_window* pWindow)
 dtk_result dtk__release_keyboard_window(dtk_context* pTK)
 {
     dtk_assert(pTK != NULL);
+
+    if (pTK->pWindowWithKeyboardCapture != NULL) {
+        pTK->pWindowWithKeyboardCapture->isNextKeyboardReleaseExplicit = DTK_TRUE;
+    }
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32

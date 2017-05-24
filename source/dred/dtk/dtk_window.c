@@ -537,8 +537,15 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             if (pTK->pWindowWithKeyboardCapture != pWindow) {
                 if (dtk_control_is_keyboard_capture_allowed(e.pControl)) {
                     e.type = DTK_EVENT_CAPTURE_KEYBOARD;
+                    
+                    HWND hOldFocusedWnd = (HWND)wParam;
+                    if (hOldFocusedWnd == NULL) {
+                        e.captureKeyboard.pOldCapturedControl = NULL;
+                    } else {
+                        e.captureKeyboard.pOldCapturedControl = (dtk_control*)GetWindowLongPtrA(hOldFocusedWnd, 0);
+                    }
+                    
                     dtk_handle_global_event(&e);
-                    //printf("Captured Window: %d %d %d\n", pWindow->isTopLevel, pWindow->isDialog, pWindow->isPopup);
                 }
             }
         } break;
@@ -554,6 +561,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 // probably got focus. In this case, just kill the focus of the window that currently has the keyboard capture.
                 e.type = DTK_EVENT_RELEASE_KEYBOARD;
                 e.pControl = DTK_CONTROL(pTK->pWindowWithKeyboardCapture);
+                e.releaseKeyboard.pNewCapturedControl = NULL;
                 dtk_handle_global_event(&e);
             } else {
                 // In this case it means the newly focused window _is_ part of this instance. If the newly focused window is not allowed to
@@ -563,8 +571,8 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 if (pTK->pWindowWithKeyboardCapture == pWindow && dtk_control_is_keyboard_capture_allowed(pNewFocusedWindow)) {
                     e.type = DTK_EVENT_RELEASE_KEYBOARD;
                     e.pControl = pOldFocusedWindow;
+                    e.releaseKeyboard.pNewCapturedControl = pNewFocusedWindow;
                     dtk_handle_global_event(&e);
-                    //printf("Released Window: %d %d %d\n", pWindow->isTopLevel, pWindow->isDialog, pWindow->isPopup);
                 }
             }
         } break;
@@ -2128,7 +2136,7 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
         case DTK_EVENT_KEY_UP:
         case DTK_EVENT_PRINTABLE_KEY_DOWN:
         {
-            if (pTK->pControlWithKeyboardCapture != NULL) {
+            if (pTK->pControlWithKeyboardCapture != NULL && pTK->pControlWithKeyboardCapture != DTK_CONTROL(pWindow)) {
                 dtk_event e = *pEvent;
                 e.pControl = pTK->pControlWithKeyboardCapture;
                 dtk_handle_local_event(pTK, &e);
@@ -2138,25 +2146,36 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
         case DTK_EVENT_CAPTURE_KEYBOARD:
         {
             pTK->pWindowWithKeyboardCapture = pWindow;
-            if (pWindow->pLastDescendantWithKeyboardFocus != NULL) {
-                pTK->pControlWithKeyboardCapture = pWindow->pLastDescendantWithKeyboardFocus;
+            if (!pWindow->isNextKeyboardCaptureExplicit) {
+                if (pWindow->pLastDescendantWithKeyboardFocus != NULL) {
+                    pTK->pControlWithKeyboardCapture = pWindow->pLastDescendantWithKeyboardFocus;
 
-                dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_KEYBOARD, pWindow->pLastDescendantWithKeyboardFocus);
-                eCapture.captureKeyboard.pOldCapturedControl = pTK->pControlWithKeyboardCapture;
-                dtk_handle_local_event(pTK, &eCapture);
+                    dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_KEYBOARD, pWindow->pLastDescendantWithKeyboardFocus);
+                    eCapture.captureKeyboard.pOldCapturedControl = pTK->pControlWithKeyboardCapture;
+                    dtk_handle_local_event(pTK, &eCapture);
+                }
             }
+
+            pWindow->isNextKeyboardCaptureExplicit = DTK_FALSE;
         } break;
 
         case DTK_EVENT_RELEASE_KEYBOARD:
         {
             pTK->pWindowWithKeyboardCapture = NULL;
-            if (pWindow->pLastDescendantWithKeyboardFocus != NULL) {
-                pTK->pControlWithKeyboardCapture = NULL;
-                
-                dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_KEYBOARD, pWindow->pLastDescendantWithKeyboardFocus);
-                eRelease.releaseKeyboard.pNewCapturedControl = NULL;
-                dtk_handle_local_event(pTK, &eRelease);
+
+            // If the this keyboard release was explicit there is no need to post an event. If it was implicit (done by the operating
+            // system in response to a window focus change or whatnot) we need to make sure we release the control with keyboard focus.
+            if (!pWindow->isNextKeyboardReleaseExplicit) {
+                if (pWindow->pLastDescendantWithKeyboardFocus != NULL) {
+                    pTK->pControlWithKeyboardCapture = NULL;
+
+                    dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_KEYBOARD, pWindow->pLastDescendantWithKeyboardFocus);
+                    eRelease.releaseKeyboard.pNewCapturedControl = NULL;
+                    dtk_handle_local_event(pTK, &eRelease);
+                }
             }
+
+            pWindow->isNextKeyboardReleaseExplicit = DTK_FALSE;
         } break;
 
         case DTK_EVENT_CAPTURE_MOUSE:

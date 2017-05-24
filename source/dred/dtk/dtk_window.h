@@ -22,6 +22,10 @@ struct dtk_window
     dtk_bool32 isTopLevel : 1;
     dtk_bool32 isDialog   : 1;
     dtk_bool32 isPopup    : 1;
+    dtk_bool32 isNextKeyboardCaptureExplicit : 1;   // Set to true when the keyboard capture is explicitly set.
+    dtk_bool32 isNextKeyboardReleaseExplicit : 1;
+    dtk_bool32 isNextMouseCaptureExplicit    : 1;
+    dtk_bool32 isNextMouseReleaseExplicit    : 1;
 
     union
     {

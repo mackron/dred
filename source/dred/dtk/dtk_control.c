@@ -149,46 +149,63 @@ dtk_result dtk_control_uninit(dtk_control* pControl)
 
     dtk_context* pTK = pControl->pTK;
 
-    if (pControl->pTK->pControlUnderMouse == pControl) {
-        pControl->pTK->pControlUnderMouse = NULL;
-    }
-
     if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
-        if (pControl->pTK->pWindowUnderMouse == DTK_WINDOW(pControl)) {
-            pControl->pTK->pWindowUnderMouse = NULL;
-            pControl->pTK->pControlUnderMouse = NULL;
+        if (pTK->pWindowUnderMouse == DTK_WINDOW(pControl)) {
+            pTK->pWindowUnderMouse = NULL;
+            pTK->pControlUnderMouse = NULL;
+        }
+        if (pTK->pWindowWithKeyboardCapture == DTK_WINDOW(pControl)) {
+            pTK->pWindowWithKeyboardCapture = NULL;
+            pTK->pControlWithKeyboardCapture = NULL;
+        }
+        if (pTK->pWindowWithMouseCapture == DTK_WINDOW(pControl)) {
+            pTK->pWindowWithMouseCapture = NULL;
+            pTK->pControlWithMouseCapture = NULL;
         }
     } else {
         dtk_window* pWindow = dtk_control_get_window(pControl);
-        if (pWindow != NULL && pControl->pTK->pWindowUnderMouse == pWindow) {
-            dtk_control* pNewControlUnderMouse = dtk_window_refresh_mouse_enter_leave_state(pWindow, pTK->lastMousePosX, pTK->lastMousePosY);
+        if (pWindow != NULL) {
+            if (pTK->pWindowUnderMouse == pWindow) {
+                dtk_control* pNewControlUnderMouse = dtk_window_refresh_mouse_enter_leave_state(pWindow, pTK->lastMousePosX, pTK->lastMousePosY);
 
-            dtk_control* pEventReceiver = pTK->pControlWithMouseCapture;
-            if (pEventReceiver == NULL) {
-                pEventReceiver = pNewControlUnderMouse;
-            }
+                dtk_control* pEventReceiver = pTK->pControlWithMouseCapture;
+                if (pEventReceiver == NULL) {
+                    pEventReceiver = pNewControlUnderMouse;
+                }
 
-            if (pEventReceiver != NULL && pEventReceiver != DTK_CONTROL(pWindow)) {
-                // Mouse move.
-                dtk_event e = dtk_event_init(pTK, DTK_EVENT_MOUSE_MOVE, pEventReceiver);
-                e.mouseMove.x = pTK->lastMousePosX;
-                e.mouseMove.y = pTK->lastMousePosY;
-                dtk_control_absolute_to_relative(pEventReceiver, &e.mouseMove.x, &e.mouseMove.y);
-                dtk_handle_local_event(pTK, &e);
+                if (pEventReceiver != NULL && pEventReceiver != DTK_CONTROL(pWindow)) {
+                    // Mouse move.
+                    dtk_event e = dtk_event_init(pTK, DTK_EVENT_MOUSE_MOVE, pEventReceiver);
+                    e.mouseMove.x = pTK->lastMousePosX;
+                    e.mouseMove.y = pTK->lastMousePosY;
+                    dtk_control_absolute_to_relative(pEventReceiver, &e.mouseMove.x, &e.mouseMove.y);
+                    dtk_handle_local_event(pTK, &e);
+                }
             }
+        }
+
+        if (pTK->pControlUnderMouse == pControl) {
+            pTK->pControlUnderMouse = NULL;
+        }
+        if (pTK->pControlWithKeyboardCapture == pControl) {
+            pTK->pControlWithKeyboardCapture = NULL;
+        }
+        if (pTK->pControlWithMouseCapture == pControl) {
+            pTK->pControlWithMouseCapture = NULL;
         }
     }
 
-    if (dtk_control_has_keyboard_capture(pControl)) {
-        dtk_release_keyboard(pControl->pTK);
-    }
-    if (dtk_control_has_mouse_capture(pControl)) {
-        dtk_release_mouse(pControl->pTK);
-    }
+    //if (dtk_control_has_keyboard_capture(pControl)) {
+    //    dtk_release_keyboard(pControl->pTK);
+    //}
+    //if (dtk_control_has_mouse_capture(pControl)) {
+    //    dtk_release_mouse(pControl->pTK);
+    //}
 
     if (pControl->pParent != NULL) {
         dtk_control__unlink_child(pControl->pParent, pControl);
     }
+
 
     pControl->isUninitialized = DTK_TRUE;   // <-- Make sure this is set before flushing the event queue.
 

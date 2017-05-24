@@ -974,7 +974,7 @@ int main(int argc, char** argv)
 
 
     // Website. (Temporarily disabled until the performance issue is resolved.)
-    dred_build__generate_website(g_CommandVars, g_ConfigVars);
+    //dred_build__generate_website(g_CommandVars, g_ConfigVars);
 
 
     return 0;
