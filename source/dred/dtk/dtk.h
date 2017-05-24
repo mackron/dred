@@ -324,7 +324,7 @@ struct dtk_event
         struct
         {
             dtk_control* pOldCapturedControl;
-        } captureKeyboard, captureMouse, changeKeyboardCapture, changeMouseCapture;
+        } captureKeyboard, captureMouse;
 
         struct
         {

@@ -2181,25 +2181,33 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
         case DTK_EVENT_CAPTURE_MOUSE:
         {
             pTK->pWindowWithMouseCapture = pWindow;
-            if (pWindow->pLastDescendantWithMouseCapture != NULL) {
-                pTK->pControlWithMouseCapture = pWindow->pLastDescendantWithMouseCapture;
+            if (!pWindow->isNextMouseCaptureExplicit) {
+                if (pWindow->pLastDescendantWithMouseCapture != NULL) {
+                    pTK->pControlWithMouseCapture = pWindow->pLastDescendantWithMouseCapture;
 
-                dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_MOUSE, pWindow->pLastDescendantWithMouseCapture);
-                eCapture.captureMouse.pOldCapturedControl = pTK->pControlWithMouseCapture;
-                dtk_post_local_event(pTK, &eCapture);   // Note that we post the event rather than handle it straight away because we need to ensure the event handler does not change the capture mid-event-handling due to a restriction with Win32 (and possibly others).
+                    dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_MOUSE, pWindow->pLastDescendantWithMouseCapture);
+                    eCapture.captureMouse.pOldCapturedControl = pTK->pControlWithMouseCapture;
+                    dtk_post_local_event(pTK, &eCapture);   // Note that we post the event rather than handle it straight away because we need to ensure the event handler does not change the capture mid-event-handling due to a restriction with Win32 (and possibly others).
+                }
             }
+
+            pWindow->isNextMouseCaptureExplicit = DTK_FALSE;
         } break;
 
         case DTK_EVENT_RELEASE_MOUSE:
         {
             pTK->pWindowWithMouseCapture = NULL;
-            if (pWindow->pLastDescendantWithMouseCapture != NULL) {
-                pTK->pControlWithMouseCapture = NULL;
+            if (!pWindow->isNextMouseReleaseExplicit) {
+                if (pWindow->pLastDescendantWithMouseCapture != NULL) {
+                    pTK->pControlWithMouseCapture = NULL;
                 
-                dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_MOUSE, pWindow->pLastDescendantWithMouseCapture);
-                eRelease.releaseMouse.pNewCapturedControl = NULL;
-                dtk_post_local_event(pTK, &eRelease);   // Note that we post the event rather than handle it straight away because we need to ensure the event handler does not change the capture mid-event-handling due to a restriction with Win32 (and possibly others).
+                    dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_MOUSE, pWindow->pLastDescendantWithMouseCapture);
+                    eRelease.releaseMouse.pNewCapturedControl = NULL;
+                    dtk_post_local_event(pTK, &eRelease);   // Note that we post the event rather than handle it straight away because we need to ensure the event handler does not change the capture mid-event-handling due to a restriction with Win32 (and possibly others).
+                }
             }
+
+            pWindow->isNextMouseReleaseExplicit = DTK_FALSE;
         } break;
     }
 
