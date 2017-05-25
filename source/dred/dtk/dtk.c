@@ -1655,7 +1655,7 @@ dtk_result dtk_bind_accelerators(dtk_context* pTK, dtk_accelerator* pAccelerator
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
 
-    // Short shortcuts are forbidden as per DevNote 1.1 (Restricted Shortcuts). In this case we just zero out the accelerator.
+    // Some shortcuts are forbidden as per DevNote 1.1 (Restricted Shortcuts). In this case we just zero out the accelerator.
     for (dtk_uint32 i = 0; i < count; ++i) {
         dtk_accelerator* pAccelerator = &pAccelerators[i];
 
