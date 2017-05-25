@@ -1,5 +1,10 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
+// This controls the size of the subfont cache, and should rarely need to be larger than 2. Must be at least 2.
+#ifndef DTK_MAX_CACHED_SUBFONT_COUNT
+#define DTK_MAX_CACHED_SUBFONT_COUNT    4
+#endif
+
 typedef enum
 {
     dtk_graphics_backend_gdi,
@@ -107,6 +112,35 @@ typedef struct
 
 typedef struct
 {
+    dtk_int32 sizeInTens;
+
+    union
+    {
+#ifdef DTK_WIN32
+        struct
+        {
+            /*HFONT*/ dtk_handle hFont;
+            dtk_font_metrics metrics;   // Font metrics retrieval is slow with GDI, so we cache.
+        } gdi;
+#endif
+#ifdef DTK_GTK
+        struct
+        {
+            /*cairo_scaled_font_t**/ dtk_ptr pFont;
+            dtk_font_metrics metrics;   // We cache font metrics on the Cairo backend for efficiency.
+        } cairo;
+#endif
+#ifdef DTK_X11
+        struct
+        {
+            int unused;
+        } x11;
+#endif
+    };
+} dtk_subfont;
+
+typedef struct
+{
     dtk_context* pTK;
     dtk_graphics_backend backend;
     char family[128];
@@ -114,14 +148,18 @@ typedef struct
     dtk_font_weight weight;
     dtk_font_slant slant;
     dtk_uint32 optionFlags;
+    dtk_uint32 cachedSubfontCount;
+    dtk_subfont cachedSubfonts[DTK_MAX_CACHED_SUBFONT_COUNT];   // A sub-font of the base size is always cached and always at position 0.
+    dtk_uint32 oldestCachedFontIndex;
 
     union
     {
     #ifdef DTK_WIN32
         struct
         {
-            /*HFONT*/ dtk_handle hFont;
-            dtk_font_metrics metrics;   // Font metrics retrieval is slow with GDI, so we cache.
+            ///*HFONT*/ dtk_handle hFont;
+            //dtk_font_metrics metrics;   // Font metrics retrieval is slow with GDI, so we cache.
+            int unused;
         } gdi;
     #endif
     #ifdef DTK_GTK
@@ -129,8 +167,8 @@ typedef struct
         {
             /*cairo_font_face_t**/ dtk_ptr pFace;
 
-            /*cairo_scaled_font_t**/ dtk_ptr pFont;
-            dtk_font_metrics metrics;   // We cache font metrics on the Cairo backend for efficiency.
+            ///*cairo_scaled_font_t**/ dtk_ptr pFont;
+            //dtk_font_metrics metrics;   // We cache font metrics on the Cairo backend for efficiency.
         } cairo;
     #endif
     #ifdef DTK_X11

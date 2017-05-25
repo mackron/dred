@@ -58,6 +58,100 @@ void dtk__rgba8_bgra8_swap__premul(const void* pSrc, void* pDst, unsigned int wi
     }
 }
 
+// Creates a new subfont.
+dtk_result dtk_font__init_subfont(dtk_font* pFont, float scale, dtk_subfont* pSubfont);
+dtk_result dtk_font__uninit_subfont(dtk_font* pFont, dtk_subfont* pSubfont);
+
+// Function used for consistently and reliably converting a scale to a size in tenths.
+dtk_int32 dtk_font__convert_scale_to_size_in_tens(dtk_font* pFont, float scale)
+{
+    dtk_assert(pFont != NULL);
+    dtk_assert(scale > 0);
+
+    return (dtk_int32)(pFont->size * scale) * 10;
+}
+
+// Retrieves a cached subfont of the given scale. Returns NULL if the font with the specified scale does not exist.
+dtk_subfont* dtk_font__get_cached_subfont(dtk_font* pFont, float scale)
+{
+    dtk_assert(pFont != NULL);
+    dtk_assert(scale > 0);
+
+    dtk_int32 sizeInTens = dtk_font__convert_scale_to_size_in_tens(pFont, scale);
+    dtk_assert(sizeInTens > 0);
+
+    for (dtk_uint32 i = 0; i < pFont->cachedSubfontCount; ++i) {
+        if (pFont->cachedSubfonts[i].sizeInTens == sizeInTens) {
+            return &pFont->cachedSubfonts[i];
+        }
+    }
+
+    return NULL;
+}
+
+// Acquires a new subfont and caches it.
+dtk_subfont* dtk_font__acquire_subfont(dtk_font* pFont, float scale)
+{
+    dtk_assert(pFont != NULL);
+    dtk_assert(scale > 0);
+
+    // First check if the scaled font is cached.
+    dtk_subfont* pSubfont = dtk_font__get_cached_subfont(pFont, scale);
+    if (pSubfont != NULL) {
+        return pSubfont;
+    }
+
+    // If we get here it means the subfont is not cached. We'll now need to kick one of the cached sub-fonts out.
+    if (pFont->cachedSubfontCount == 0) {
+        // This is a special case. It means we are acquiring the base subfont, which must always have a scale of 1.
+        dtk_assert(scale == 1);
+        pSubfont = &pFont->cachedSubfonts[0];
+        if (dtk_font__init_subfont(pFont, scale, pSubfont) != DTK_SUCCESS) {
+            return NULL;
+        }
+
+        pFont->cachedSubfontCount = 1;
+        pFont->oldestCachedFontIndex = 1;
+    } else {
+        // The base subfont has already been cached. We need to make sure this one is never kicked out of the cache.
+        if (pFont->cachedSubfontCount < DTK_MAX_CACHED_SUBFONT_COUNT) {
+            // There's room in the cache so no need to kick anything out yet.
+            pSubfont = &pFont->cachedSubfonts[pFont->cachedSubfontCount];
+            if (dtk_font__init_subfont(pFont, scale, pSubfont) != DTK_SUCCESS) {
+                return NULL;
+            }
+
+            pFont->cachedSubfontCount += 1;
+        } else {
+            // There's no room in the cache. The oldest one needs to be removed.
+            dtk_uint32 subfontIndex = pFont->oldestCachedFontIndex;
+            pSubfont = &pFont->cachedSubfonts[subfontIndex];
+            dtk_font__uninit_subfont(pFont, pSubfont);
+            if (dtk_font__init_subfont(pFont, scale, pSubfont) != DTK_SUCCESS) {
+                // Because we have just uninitialized the oldest subfont our entire cache is corrupted. We need to
+                // reset the entire thing, making sure we leave the base font in place.
+                for (dtk_uint32 i = 1; i < subfontIndex; ++i) {
+                    dtk_font__uninit_subfont(pFont, &pFont->cachedSubfonts[i]);
+                }
+                for (dtk_uint32 i = subfontIndex+1; i < pFont->cachedSubfontCount; ++i) {
+                    dtk_font__uninit_subfont(pFont, &pFont->cachedSubfonts[i]);
+                }
+
+                pFont->cachedSubfontCount = 1;
+                pFont->oldestCachedFontIndex = 1;
+                return NULL;
+            }
+
+            pFont->oldestCachedFontIndex += 1;
+            if (pFont->oldestCachedFontIndex >= pFont->cachedSubfontCount) {
+                pFont->oldestCachedFontIndex = 1;
+            }
+        }
+    }
+
+    return pSubfont;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -72,12 +166,15 @@ dtk_result dtk_surface__pop_saved_state(dtk_surface* pSurface, dtk_surface_saved
 #ifdef DTK_WIN32
 // Fonts
 // =====
-dtk_result dtk_font_init__gdi(dtk_context* pTK, const char* family, float size, dtk_font_weight weight, dtk_font_slant slant, dtk_uint32 optionFlags, dtk_font* pFont)
+dtk_result dtk_font__init_subfont__win32(dtk_font* pFont, float scale, dtk_subfont* pSubfont)
 {
-    (void)pTK;
+    dtk_assert(pFont != NULL);
+    dtk_assert(scale > 0);
+
+    dtk_context* pTK = pFont->pTK;
 
     LONG weightGDI = FW_REGULAR;
-    switch (weight)
+    switch (pFont->weight)
     {
     case dtk_font_weight_medium:      weightGDI = FW_MEDIUM;     break;
     case dtk_font_weight_thin:        weightGDI = FW_THIN;       break;
@@ -91,75 +188,104 @@ dtk_result dtk_font_init__gdi(dtk_context* pTK, const char* family, float size, 
     }
 
 	BYTE slantGDI = FALSE;
-    if (slant == dtk_font_slant_italic || slant == dtk_font_slant_oblique) {
+    if (pFont->slant == dtk_font_slant_italic || pFont->slant == dtk_font_slant_oblique) {
         slantGDI = TRUE;
     }
 
 	LOGFONTA logfont;
 	memset(&logfont, 0, sizeof(logfont));
-    logfont.lfHeight      = -(LONG)size;
+    logfont.lfHeight      = -(LONG)(pFont->size * scale);
 	logfont.lfWeight      = weightGDI;
 	logfont.lfItalic      = slantGDI;
 	logfont.lfCharSet     = DEFAULT_CHARSET;
-    logfont.lfQuality     = (optionFlags & DTK_FONT_FLAG_NO_CLEARTYPE) ? ANTIALIASED_QUALITY : CLEARTYPE_QUALITY;
+    logfont.lfQuality     = (pFont->optionFlags & DTK_FONT_FLAG_NO_CLEARTYPE) ? ANTIALIASED_QUALITY : CLEARTYPE_QUALITY;
     logfont.lfEscapement  = 0;
     logfont.lfOrientation = 0;
-    dtk_strncpy_s(logfont.lfFaceName, sizeof(logfont.lfFaceName), family, _TRUNCATE);
+    dtk_strncpy_s(logfont.lfFaceName, sizeof(logfont.lfFaceName), pFont->family, _TRUNCATE);
 
-    pFont->gdi.hFont = (dtk_handle)CreateFontIndirectA(&logfont);
-    if (pFont->gdi.hFont == NULL) {
+    pSubfont->gdi.hFont = (dtk_handle)CreateFontIndirectA(&logfont);
+    if (pSubfont->gdi.hFont == NULL) {
         return DTK_ERROR;
     }
 
 
     // Retrieving font metrics is quite slow with GDI so we'll cache it.
-    HGDIOBJ hPrevFont = SelectObject((HDC)pTK->win32.hGraphicsDC, (HFONT)pFont->gdi.hFont);
+    HGDIOBJ hPrevFont = SelectObject((HDC)pTK->win32.hGraphicsDC, (HFONT)pSubfont->gdi.hFont);
     {
         TEXTMETRIC metrics;
         GetTextMetrics((HDC)pTK->win32.hGraphicsDC, &metrics);
-        pFont->gdi.metrics.ascent     = metrics.tmAscent;
-        pFont->gdi.metrics.descent    = metrics.tmDescent;
-        pFont->gdi.metrics.lineHeight = metrics.tmHeight;
+        pSubfont->gdi.metrics.ascent     = metrics.tmAscent;
+        pSubfont->gdi.metrics.descent    = metrics.tmDescent;
+        pSubfont->gdi.metrics.lineHeight = metrics.tmHeight;
 
         const MAT2 transform = {{0, 1}, {0, 0}, {0, 0}, {0, 1}};        // <-- Identity matrix
 
         GLYPHMETRICS spaceMetrics;
         DWORD bitmapBufferSize = GetGlyphOutlineW((HDC)pTK->win32.hGraphicsDC, ' ', GGO_NATIVE, &spaceMetrics, 0, NULL, &transform);
         if (bitmapBufferSize == GDI_ERROR) {
-			pFont->gdi.metrics.spaceWidth = 4;
+			pSubfont->gdi.metrics.spaceWidth = 4;
         } else {
-            pFont->gdi.metrics.spaceWidth = spaceMetrics.gmCellIncX;
+            pSubfont->gdi.metrics.spaceWidth = spaceMetrics.gmCellIncX;
         }
     }
     SelectObject((HDC)pTK->win32.hGraphicsDC, hPrevFont);
 
 
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_font__uninit_subfont__win32(dtk_font* pFont, dtk_subfont* pSubfont)
+{
+    dtk_assert(pFont != NULL);
+    dtk_assert(pSubfont != NULL);
+
+    (void)pFont;
+    DeleteObject((HGDIOBJ)pSubfont->gdi.hFont);
+    
+    return DTK_SUCCESS;
+}
+
+
+dtk_result dtk_font_init__gdi(dtk_context* pTK, const char* family, float size, dtk_font_weight weight, dtk_font_slant slant, dtk_uint32 optionFlags, dtk_font* pFont)
+{
+    // Everything with GDI fonts is done as part of the sub-font system.
+    (void)pTK;
+    (void)family;
+    (void)size;
+    (void)weight;
+    (void)slant;
+    (void)optionFlags;
+    
     pFont->backend = dtk_graphics_backend_gdi;
     return DTK_SUCCESS;
 }
 
 dtk_result dtk_font_uninit__gdi(dtk_font* pFont)
 {
-    DeleteObject((HGDIOBJ)pFont->gdi.hFont);
+    (void)pFont;
     return DTK_SUCCESS;
 }
 
 dtk_result dtk_font_get_metrics__gdi(dtk_font* pFont, float scale, dtk_font_metrics* pMetrics)
 {
-    // TODO: Select the sub-font from the scale.
-    (void)scale;
+    dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
+    if (pSubfont == NULL) {
+        return DTK_ERROR;
+    }
 
-    *pMetrics = pFont->gdi.metrics;
+    *pMetrics = pSubfont->gdi.metrics;
     return DTK_SUCCESS;
 }
 
 dtk_result dtk_font_get_glyph_metrics__gdi(dtk_font* pFont, float scale, dtk_uint32 utf32, dtk_glyph_metrics* pMetrics)
 {
-    // TODO: Select the sub-font from the scale.
-    (void)scale;
+    dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
+    if (pSubfont == NULL) {
+        return DTK_ERROR;
+    }
 
     dtk_result result = DTK_ERROR;
-    HGDIOBJ hPrevFont = SelectObject((HDC)pFont->pTK->win32.hGraphicsDC, (HFONT)pFont->gdi.hFont);
+    HGDIOBJ hPrevFont = SelectObject((HDC)pFont->pTK->win32.hGraphicsDC, (HFONT)pSubfont->gdi.hFont);
     {
         const MAT2 transform = {{0, 1}, {0, 0}, {0, 0}, {0, 1}};        // <-- Identity matrix
 
@@ -194,11 +320,13 @@ dtk_result dtk_font_get_glyph_metrics__gdi(dtk_font* pFont, float scale, dtk_uin
 
 dtk_result dtk_font_measure_string__gdi(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float* pWidth, float* pHeight)
 {
-    // TODO: Select the sub-font from the scale.
-    (void)scale;
+    dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
+    if (pSubfont == NULL) {
+        return DTK_ERROR;
+    }
 
     dtk_result result = DTK_ERROR;
-    HGDIOBJ hPrevFont = SelectObject((HDC)pFont->pTK->win32.hGraphicsDC, (HFONT)pFont->gdi.hFont);
+    HGDIOBJ hPrevFont = SelectObject((HDC)pFont->pTK->win32.hGraphicsDC, (HFONT)pSubfont->gdi.hFont);
     {
         size_t textWLength;
         wchar_t* textW = dtk__mb_to_wchar__win32(pFont->pTK, text, textSizeInBytes, &textWLength);
@@ -218,11 +346,13 @@ dtk_result dtk_font_measure_string__gdi(dtk_font* pFont, float scale, const char
 
 dtk_result dtk_font_get_text_cursor_position_from_point__gdi(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosX, size_t* pCharacterIndex)
 {
-    // TODO: Select the sub-font from the scale.
-    (void)scale;
+    dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
+    if (pSubfont == NULL) {
+        return DTK_ERROR;
+    }
 
     dtk_result result = DTK_ERROR;
-    HGDIOBJ hPrevFont = SelectObject((HDC)pFont->pTK->win32.hGraphicsDC, (HFONT)pFont->gdi.hFont);
+    HGDIOBJ hPrevFont = SelectObject((HDC)pFont->pTK->win32.hGraphicsDC, (HFONT)pSubfont->gdi.hFont);
     {
         GCP_RESULTSW results;
         ZeroMemory(&results, sizeof(results));
@@ -288,11 +418,13 @@ dtk_result dtk_font_get_text_cursor_position_from_point__gdi(dtk_font* pFont, fl
 
 dtk_result dtk_font_get_text_cursor_position_from_char__gdi(dtk_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosX)
 {
-    // TODO: Select the sub-font from the scale.
-    (void)scale;
+    dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
+    if (pSubfont == NULL) {
+        return DTK_ERROR;
+    }
 
     dtk_result result = DTK_ERROR;
-    HGDIOBJ hPrevFont = SelectObject((HDC)pFont->pTK->win32.hGraphicsDC, (HFONT)pFont->gdi.hFont);
+    HGDIOBJ hPrevFont = SelectObject((HDC)pFont->pTK->win32.hGraphicsDC, (HFONT)pSubfont->gdi.hFont);
     {
         GCP_RESULTSW results;
         ZeroMemory(&results, sizeof(results));
@@ -508,15 +640,17 @@ void dtk_surface_draw_rect_outline__gdi(dtk_surface* pSurface, dtk_rect rect, dt
 
 void dtk_surface_draw_text__gdi(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32 posX, dtk_int32 posY, dtk_color fgColor, dtk_color bgColor)
 {
-    // TODO: Select the closest sub-font based on the scale.
-    (void)scale;
+    dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
+    if (pSubfont == NULL) {
+        return;
+    }
 
     HDC hDC = (HDC)pSurface->gdi.hDC;    // For ease of use.
 
     size_t textWLength;
     wchar_t* textW = dtk__mb_to_wchar__win32(pSurface->pTK, text, textSizeInBytes, &textWLength);
     if (textW != NULL) {
-        SelectObject(hDC, (HFONT)pFont->gdi.hFont);
+        SelectObject(hDC, (HFONT)pSubfont->gdi.hFont);
 
         UINT options = 0;
         RECT rect = {0, 0, 0, 0};
@@ -640,6 +774,58 @@ void dtk_surface_draw_surface__gdi(dtk_surface* pDstSurface, dtk_surface* pSrcSu
 #ifdef DTK_GTK
 // Fonts
 // =====
+dtk_result dtk_font__init_subfont__cairo(dtk_font* pFont, float scale, dtk_subfont* pSubfont)
+{
+    dtk_assert(pFont != NULL);
+    dtk_assert(scale > 0);
+
+
+    cairo_matrix_t fontMatrix;
+    cairo_matrix_init_scale(&fontMatrix, (double)(pFont->size * scale), (double)(pFont->size * scale));
+
+    cairo_matrix_t ctm;
+    cairo_matrix_init_identity(&ctm);
+
+    cairo_font_options_t* options = cairo_font_options_create();
+    cairo_font_options_set_antialias(options, CAIRO_ANTIALIAS_SUBPIXEL);    // TODO: Control this with optionFlags.
+
+    pSubfont->cairo.pFont = cairo_scaled_font_create((cairo_font_face_t*)pFont->cairo.pFace, &fontMatrix, &ctm, options);
+    if (pSubfont->cairo.pFont == NULL) {
+        cairo_font_face_destroy((cairo_font_face_t*)pFont->cairo.pFace);
+        return DTK_ERROR;
+    }
+
+
+    // Metrics are cached.
+    cairo_font_extents_t fontMetrics;
+    cairo_scaled_font_extents((cairo_scaled_font_t*)pSubfont->cairo.pFont, &fontMetrics);
+
+    pSubfont->cairo.metrics.ascent     = fontMetrics.ascent;
+    pSubfont->cairo.metrics.descent    = fontMetrics.descent;
+    //pSubfont->cairo.metrics.lineHeight = fontMetrics.height;
+    pSubfont->cairo.metrics.lineHeight = fontMetrics.ascent + fontMetrics.descent;
+
+    // The width of a space needs to be retrieved via glyph metrics.
+    const char space[] = " ";
+    cairo_text_extents_t spaceMetrics;
+    cairo_scaled_font_text_extents((cairo_scaled_font_t*)pSubfont->cairo.pFont, space, &spaceMetrics);
+    pSubfont->cairo.metrics.spaceWidth = spaceMetrics.x_advance;
+
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_font__uninit_subfont__cairo(dtk_font* pFont, dtk_subfont* pSubfont)
+{
+    dtk_assert(pFont != NULL);
+    dtk_assert(pSubfont != NULL);
+
+    (void)pFont;
+    cairo_scaled_font_destroy((cairo_scaled_font_t*)pSubfont->cairo.pFont);
+    
+    return DTK_SUCCESS;
+}
+
 dtk_result dtk_font_init__cairo(dtk_context* pTK, const char* family, float size, dtk_font_weight weight, dtk_font_slant slant, dtk_uint32 optionFlags, dtk_font* pFont)
 {
     cairo_font_slant_t cairoSlant = CAIRO_FONT_SLANT_NORMAL;
@@ -659,44 +845,12 @@ dtk_result dtk_font_init__cairo(dtk_context* pTK, const char* family, float size
         return DTK_ERROR;
     }
 
-    cairo_matrix_t fontMatrix;
-    cairo_matrix_init_scale(&fontMatrix, (double)pFont->size, (double)pFont->size);
-
-    cairo_matrix_t ctm;
-    cairo_matrix_init_identity(&ctm);
-
-    cairo_font_options_t* options = cairo_font_options_create();
-    cairo_font_options_set_antialias(options, CAIRO_ANTIALIAS_SUBPIXEL);    // TODO: Control this with optionFlags.
-
-    pFont->cairo.pFont = cairo_scaled_font_create((cairo_font_face_t*)pFont->cairo.pFace, &fontMatrix, &ctm, options);
-    if (pFont->cairo.pFont == NULL) {
-        cairo_font_face_destroy((cairo_font_face_t*)pFont->cairo.pFace);
-        return DTK_ERROR;
-    }
-
-
-    // Metrics are cached.
-    cairo_font_extents_t fontMetrics;
-    cairo_scaled_font_extents((cairo_scaled_font_t*)pFont->cairo.pFont, &fontMetrics);
-
-    pFont->cairo.metrics.ascent     = fontMetrics.ascent;
-    pFont->cairo.metrics.descent    = fontMetrics.descent;
-    //pFont->cairo.metrics.lineHeight = fontMetrics.height;
-    pFont->cairo.metrics.lineHeight = fontMetrics.ascent + fontMetrics.descent;
-
-    // The width of a space needs to be retrieved via glyph metrics.
-    const char space[] = " ";
-    cairo_text_extents_t spaceMetrics;
-    cairo_scaled_font_text_extents((cairo_scaled_font_t*)pFont->cairo.pFont, space, &spaceMetrics);
-    pFont->cairo.metrics.spaceWidth = spaceMetrics.x_advance;
-
     pFont->backend = dtk_graphics_backend_cairo;
     return DTK_SUCCESS;
 }
 
 dtk_result dtk_font_uninit__cairo(dtk_font* pFont)
 {
-    cairo_scaled_font_destroy((cairo_scaled_font_t*)pFont->cairo.pFont);
     cairo_font_face_destroy((cairo_font_face_t*)pFont->cairo.pFace);
 
     return DTK_SUCCESS;
@@ -704,17 +858,21 @@ dtk_result dtk_font_uninit__cairo(dtk_font* pFont)
 
 dtk_result dtk_font_get_metrics__cairo(dtk_font* pFont, float scale, dtk_font_metrics* pMetrics)
 {
-    // TODO: Select the sub-font from the scale.
-    (void)scale;
+    dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
+    if (pSubfont == NULL) {
+        return DTK_ERROR;
+    }
 
-    *pMetrics = pFont->cairo.metrics;
+    *pMetrics = pSubfont->cairo.metrics;
     return DTK_SUCCESS;
 }
 
 dtk_result dtk_font_get_glyph_metrics__cairo(dtk_font* pFont, float scale, dtk_uint32 utf32, dtk_glyph_metrics* pMetrics)
 {
-    // TODO: Select the sub-font from the scale.
-    (void)scale;
+    dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
+    if (pSubfont == NULL) {
+        return DTK_ERROR;
+    }
 
     // The UTF-32 code point needs to be converted to a UTF-8 character.
     char utf8[16];
@@ -725,7 +883,7 @@ dtk_result dtk_font_get_glyph_metrics__cairo(dtk_font* pFont, float scale, dtk_u
 
 
     cairo_text_extents_t glyphExtents;
-    cairo_scaled_font_text_extents((cairo_scaled_font_t*)pFont->cairo.pFont, utf8, &glyphExtents);
+    cairo_scaled_font_text_extents((cairo_scaled_font_t*)pSubfont->cairo.pFont, utf8, &glyphExtents);
 
     pMetrics->width    = glyphExtents.width;
     pMetrics->height   = glyphExtents.height;
@@ -739,8 +897,10 @@ dtk_result dtk_font_get_glyph_metrics__cairo(dtk_font* pFont, float scale, dtk_u
 
 dtk_result dtk_font_measure_string__cairo(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float* pWidth, float* pHeight)
 {
-    // TODO: Select the sub-font from the scale.
-    (void)scale;
+    dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
+    if (pSubfont == NULL) {
+        return DTK_ERROR;
+    }
 
     // Cairo expends null terminated strings, however the input string is not guaranteed to be null terminated.
     char* textNT;
@@ -757,14 +917,14 @@ dtk_result dtk_font_measure_string__cairo(dtk_font* pFont, float scale, const ch
 
 
     cairo_text_extents_t textMetrics;
-    cairo_scaled_font_text_extents((cairo_scaled_font_t*)pFont->cairo.pFont, textNT, &textMetrics);
+    cairo_scaled_font_text_extents((cairo_scaled_font_t*)pSubfont->cairo.pFont, textNT, &textMetrics);
 
     if (pWidth) {
         *pWidth = textMetrics.x_advance;
     }
     if (pHeight) {
         //*pHeight = textMetrics.height;
-        *pHeight = pFont->cairo.metrics.ascent + pFont->cairo.metrics.descent;
+        *pHeight = pSubfont->cairo.metrics.ascent + pSubfont->cairo.metrics.descent;
     }
 
 
@@ -777,12 +937,14 @@ dtk_result dtk_font_measure_string__cairo(dtk_font* pFont, float scale, const ch
 
 dtk_result dtk_font_get_text_cursor_position_from_point__cairo(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosX, size_t* pCharacterIndex)
 {
-    // TODO: Select the sub-font from the scale.
-    (void)scale;
+    dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
+    if (pSubfont == NULL) {
+        return DTK_ERROR;
+    }
 
     cairo_glyph_t* pGlyphs = NULL;
     int glyphCount = 0;
-    cairo_status_t result = cairo_scaled_font_text_to_glyphs((cairo_scaled_font_t*)pFont->cairo.pFont, 0, 0, text, textSizeInBytes, &pGlyphs, &glyphCount, NULL, NULL, NULL);
+    cairo_status_t result = cairo_scaled_font_text_to_glyphs((cairo_scaled_font_t*)pSubfont->cairo.pFont, 0, 0, text, textSizeInBytes, &pGlyphs, &glyphCount, NULL, NULL, NULL);
     if (result != CAIRO_STATUS_SUCCESS) {
         return DTK_ERROR;
     }
@@ -794,7 +956,7 @@ dtk_result dtk_font_get_text_cursor_position_from_point__cairo(dtk_font* pFont, 
     float runningPosX = 0;
     for (int iGlyph = 0; iGlyph < glyphCount; ++iGlyph) {
         cairo_text_extents_t glyphMetrics;
-        cairo_scaled_font_glyph_extents((cairo_scaled_font_t*)pFont->cairo.pFont, pGlyphs + iGlyph, 1, &glyphMetrics);
+        cairo_scaled_font_glyph_extents((cairo_scaled_font_t*)pSubfont->cairo.pFont, pGlyphs + iGlyph, 1, &glyphMetrics);
 
         float glyphLeft  = runningPosX;
         float glyphRight = glyphLeft + glyphMetrics.x_advance;
@@ -835,12 +997,14 @@ dtk_result dtk_font_get_text_cursor_position_from_point__cairo(dtk_font* pFont, 
 
 dtk_result dtk_font_get_text_cursor_position_from_char__cairo(dtk_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosX)
 {
-    // TODO: Select the sub-font from the scale.
-    (void)scale;
+    dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
+    if (pSubfont == NULL) {
+        return DTK_ERROR;
+    }
 
     cairo_glyph_t* pGlyphs = NULL;
     int glyphCount = 0;
-    cairo_status_t result = cairo_scaled_font_text_to_glyphs((cairo_scaled_font_t*)pFont->cairo.pFont, 0, 0, text, -1, &pGlyphs, &glyphCount, NULL, NULL, NULL);
+    cairo_status_t result = cairo_scaled_font_text_to_glyphs((cairo_scaled_font_t*)pSubfont->cairo.pFont, 0, 0, text, -1, &pGlyphs, &glyphCount, NULL, NULL, NULL);
     if (result != CAIRO_STATUS_SUCCESS) {
         return DTK_ERROR;
     }
@@ -854,7 +1018,7 @@ dtk_result dtk_font_get_text_cursor_position_from_char__cairo(dtk_font* pFont, f
         }
 
         cairo_text_extents_t glyphMetrics;
-        cairo_scaled_font_glyph_extents((cairo_scaled_font_t*)pFont->cairo.pFont, pGlyphs + iGlyph, 1, &glyphMetrics);
+        cairo_scaled_font_glyph_extents((cairo_scaled_font_t*)pSubfont->cairo.pFont, pGlyphs + iGlyph, 1, &glyphMetrics);
 
         cursorPosX += glyphMetrics.x_advance;
     }
@@ -1017,7 +1181,10 @@ void dtk_surface_draw_rect_outline__cairo(dtk_surface* pSurface, dtk_rect rect, 
 
 void dtk_surface_draw_text__cairo(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textLength, dtk_int32 posX, dtk_int32 posY, dtk_color fgColor, dtk_color bgColor)
 {
-    (void)scale;
+    dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
+    if (pSubfont == NULL) {
+        return;
+    }
     
     cairo_t* cr = (cairo_t*)pSurface->cairo.pContext;
 
@@ -1032,17 +1199,17 @@ void dtk_surface_draw_text__cairo(dtk_surface* pSurface, dtk_font* pFont, float 
     }
 
 
-    cairo_set_scaled_font(cr, (cairo_scaled_font_t*)pFont->cairo.pFont);
+    cairo_set_scaled_font(cr, (cairo_scaled_font_t*)pSubfont->cairo.pFont);
 
     // Background.
     cairo_text_extents_t textMetrics;
     cairo_text_extents(cr, textNT, &textMetrics);
     cairo_set_source_rgba(cr, bgColor.r / 255.0, bgColor.g / 255.0, bgColor.b / 255.0, bgColor.a / 255.0);
-    cairo_rectangle(cr, posX, posY, textMetrics.x_advance, pFont->cairo.metrics.lineHeight);
+    cairo_rectangle(cr, posX, posY, textMetrics.x_advance, pSubfont->cairo.metrics.lineHeight);
     cairo_fill(cr);
 
     // Text.
-    cairo_move_to(cr, posX, posY + pFont->cairo.metrics.ascent);
+    cairo_move_to(cr, posX, posY + pSubfont->cairo.metrics.ascent);
     cairo_set_source_rgba(cr, fgColor.r / 255.0, fgColor.g / 255.0, fgColor.b / 255.0, fgColor.a / 255.0);
     cairo_show_text(cr, textNT);
 
@@ -1119,6 +1286,54 @@ void dtk_surface_draw_surface__cairo(dtk_surface* pSurface, dtk_surface* pSrcSur
 
 // Fonts
 // =====
+dtk_result dtk_font__init_subfont(dtk_font* pFont, float scale, dtk_subfont* pSubfont)
+{
+    dtk_assert(pFont != NULL);
+    dtk_assert(scale > 0);
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pFont->pTK->platform == dtk_platform_win32) {
+        if (result != DTK_SUCCESS) {
+            result = dtk_font__init_subfont__win32(pFont, scale, pSubfont);
+        }
+    }
+#endif
+#ifdef DTK_GTK
+    if (pFont->pTK->platform == dtk_platform_gtk) {
+        if (result != DTK_SUCCESS) {
+            result = dtk_font__init_subfont__cairo(pFont, scale, pSubfont);
+        }
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_font__uninit_subfont(dtk_font* pFont, dtk_subfont* pSubfont)
+{
+    dtk_assert(pFont != NULL);
+    dtk_assert(pSubfont != NULL);
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pFont->pTK->platform == dtk_platform_win32) {
+        if (result != DTK_SUCCESS) {
+            result = dtk_font__uninit_subfont__win32(pFont, pSubfont);
+        }
+    }
+#endif
+#ifdef DTK_GTK
+    if (pFont->pTK->platform == dtk_platform_gtk) {
+        if (result != DTK_SUCCESS) {
+            result = dtk_font__uninit_subfont__cairo(pFont, pSubfont);
+        }
+    }
+#endif
+
+    return result;
+}
+
 dtk_result dtk_font_init(dtk_context* pTK, const char* family, float size, dtk_font_weight weight, dtk_font_slant slant, dtk_uint32 optionFlags, dtk_font* pFont)
 {
     if (pFont == NULL) return DTK_INVALID_ARGS;
@@ -1147,6 +1362,9 @@ dtk_result dtk_font_init(dtk_context* pTK, const char* family, float size, dtk_f
         }
     }
 #endif
+
+    // Item 0 in the cache is always the sub font that represents the base size.
+    dtk_font__acquire_subfont(pFont, 1.0f);
 
     return result;
 }
