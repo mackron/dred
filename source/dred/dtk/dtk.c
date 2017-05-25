@@ -267,7 +267,6 @@ dtk_result dtk_errno_to_result(int err)
 #define DTK_WM_LOCAL                        (WM_USER + 0)
 #define DTK_WM_CUSTOM                       (WM_USER + 1)
 #define DTK_WM_PAINT_NOTIFICATION           (WM_USER + 2)
-#define DTK_WM_GARBAGE_DEQUEUE_NOTIFICATION (WM_USER + 3)
 
 typedef BOOL    (WINAPI * DTK_PFN_InitCommonControlsEx)(const LPINITCOMMONCONTROLSEX lpInitCtrls);
 typedef HRESULT (WINAPI * DTK_PFN_OleInitialize)       (LPVOID pvReserved);
@@ -305,7 +304,6 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 #include "dtk_timer.c"
 #include "dtk_clipboard.c"
 #include "dtk_paint_queue.c"
-#include "dtk_garbage_queue.c"
 #include "dtk_command_line.c"
 
 typedef struct
@@ -447,11 +445,6 @@ LRESULT CALLBACK dtk_MessagingWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam
 
             dtk_handle_custom_event(pEventData->pTK, pEventData->pControl, pEventData->eventID, pEventData->pData, pEventData->dataSize);
             dtk_free(pEventData);
-        } break;
-
-        case DTK_WM_GARBAGE_DEQUEUE_NOTIFICATION:
-        {
-            dtk_handle_garbage_dequeue_notification_event((dtk_context*)wParam, (dtk_control*)lParam);
         } break;
 
         default: break;
@@ -633,12 +626,6 @@ dtk_result dtk_post_paint_notification_event__win32(dtk_context* pTK, dtk_window
     (void)pTK;
     PostMessageA((HWND)pWindow->win32.hWnd, DTK_WM_PAINT_NOTIFICATION, (WPARAM)0, (LPARAM)pWindow);
 
-    return DTK_SUCCESS;
-}
-
-dtk_result dtk_post_garbage_dequeue_notification_event__win32(dtk_context* pTK, dtk_control* pControl)
-{
-    PostMessageA((HWND)pTK->win32.hMessagingWindow, DTK_WM_GARBAGE_DEQUEUE_NOTIFICATION, (WPARAM)pTK, (LPARAM)pControl);
     return DTK_SUCCESS;
 }
 
@@ -1131,33 +1118,6 @@ dtk_result dtk_post_paint_notification_event__gtk(dtk_context* pTK, dtk_window* 
 }
 
 
-typedef struct
-{
-    dtk_context* pTK;
-    dtk_ptr pControl;  // <-- Do _not_ dereference!
-} dtk_post_garbage_dequeue_notification_event_cb_data;
-
-static gboolean dtk_post_garbage_dequeue_notification_event_cb__gtk(dtk_post_garbage_dequeue_notification_event_cb_data* pData)
-{
-    dtk_handle_garbage_dequeue_notification_event(pData->pTK, (dtk_control*)pData->pControl);
-    return FALSE;
-}
-
-dtk_result dtk_post_garbage_dequeue_notification_event__gtk(dtk_context* pTK, dtk_control* pControl)
-{
-    dtk_post_garbage_dequeue_notification_event_cb_data* pData = (dtk_post_garbage_dequeue_notification_event_cb_data*)dtk_calloc(sizeof(*pData), 1);
-    if (pData == NULL) {
-        return DTK_OUT_OF_MEMORY;
-    }
-
-    pData->pTK = pTK;
-    pData->pControl = pControl;
-
-    g_idle_add((GSourceFunc)dtk_post_garbage_dequeue_notification_event_cb__gtk, pData);
-    return DTK_SUCCESS;
-}
-
-
 dtk_result dtk_post_quit_event__gtk(dtk_context* pTK, int exitCode)
 {
     // When this is called, there's a chance we're waiting on gtk_main_iteration(). We'll need to
@@ -1438,11 +1398,6 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
         return result;
     }
 
-    result = dtk_garbage_queue_init(&pTK->garbageQueue);
-    if (result != DTK_SUCCESS) {
-        return result;
-    }
-
     // TODO: Change this depending on the platform. May also want different types of default fonts (UI, monospace, etc.)... Maybe also use the
     //       notion of system fonts instead?
     dtk_font_init(pTK, "Courier New", 13, dtk_font_weight_default, dtk_font_slant_none, 0, &pTK->defaultFont);
@@ -1454,7 +1409,6 @@ dtk_result dtk_uninit(dtk_context* pTK)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
 
-    dtk_garbage_queue_uninit(&pTK->garbageQueue);
     dtk_paint_queue_uninit(&pTK->paintQueue);
     
 #ifdef DTK_WIN32
@@ -1643,45 +1597,6 @@ dtk_result dtk_handle_paint_notification_event(dtk_context* pTK, dtk_window* pWi
     return dtk_window_immediate_redraw(item.pWindow, item.rect);
 }
 
-dtk_result dtk_post_garbage_dequeue_notification_event(dtk_context* pTK, dtk_control* pControl)
-{
-    if (pTK == NULL) return DTK_INVALID_ARGS;
-
-    dtk_result result = DTK_NO_BACKEND;
-#ifdef DTK_WIN32
-    if (pTK->platform == dtk_platform_win32) {
-        result = dtk_post_garbage_dequeue_notification_event__win32(pTK, pControl);
-    }
-#endif
-#ifdef DTK_GTK
-    if (pTK->platform == dtk_platform_gtk) {
-        result = dtk_post_garbage_dequeue_notification_event__gtk(pTK, pControl);
-    }
-#endif
-
-    return result;
-}
-
-dtk_result dtk_handle_garbage_dequeue_notification_event(dtk_context* pTK, dtk_control* pControl)
-{
-    if (pTK == NULL || pControl == NULL) return DTK_INVALID_ARGS;
-
-    // All we do here is remove the garbage control (pControl) from the garbage queue, which should _always_ be the next control
-    // in the queue.
-    dtk_control* pDequeuedControl;
-    if (dtk_garbage_queue_dequeue(&pTK->garbageQueue, &pDequeuedControl) != DTK_SUCCESS) {
-        return DTK_ERROR;
-    }
-
-    // The next garbage control should always be the same as pControl. Note that the assert and run-time check is intentional just
-    // for safety.
-    dtk_assert(pControl == pDequeuedControl);
-    if (pControl != pDequeuedControl) {
-        return DTK_ERROR;
-    }
-
-    return DTK_SUCCESS;
-}
 
 dtk_bool32 dtk_default_event_handler(dtk_event* pEvent)
 {

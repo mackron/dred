@@ -174,7 +174,6 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_timer.h"
 #include "dtk_clipboard.h"
 #include "dtk_paint_queue.h"
-#include "dtk_garbage_queue.h"
 #include "dtk_command_line.h"
 
 // Event types.
@@ -385,7 +384,6 @@ struct dtk_context
     void* pUserData;
     dtk_event_proc defaultEventHandlers[DTK_CONTROL_TYPE_COUNT];    // The default event handlers for each built-in control type.
     dtk_paint_queue paintQueue;
-    dtk_garbage_queue garbageQueue;
     dtk_font defaultFont;
 
     union
@@ -521,12 +519,6 @@ dtk_result dtk_post_paint_notification_event(dtk_context* pTK, dtk_window* pWind
 
 // Handles a paint notification event.
 dtk_result dtk_handle_paint_notification_event(dtk_context* pTK, dtk_window* pWindow);
-
-// Posts a garbage dequeue notification to the event queue to let it know that a garbage control needs to be dequeued from the garbage queue.
-dtk_result dtk_post_garbage_dequeue_notification_event(dtk_context* pTK, dtk_control* pControl);
-
-// Handles a garbage dequeue notification event.
-dtk_result dtk_handle_garbage_dequeue_notification_event(dtk_context* pTK, dtk_control* pControl);
 
 // The default event handler.
 //
