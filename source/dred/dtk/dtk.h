@@ -558,11 +558,9 @@ dtk_result dtk_get_screen_size(dtk_context* pTK, dtk_uint32* pSizeX, dtk_uint32*
 
 //// DPI Scaling ////
 
-// Retrieves the base system DPI to use as a reference when calculating DPI scaling.
-dtk_result dtk_get_base_dpi(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut);
+// Retrieves the base DPI scaling factor.
+float dtk_get_dpi_scale(dtk_context* pTK);
 
-// Retrieves the system-wide DPI.
-dtk_result dtk_get_system_dpi(dtk_context* pTK, int* pDPIXOut, int* pDPIYOut);
 
 
 //// Input ////
