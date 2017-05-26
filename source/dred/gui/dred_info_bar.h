@@ -12,7 +12,7 @@ struct dred_info_bar
     // The base control.
     dred_control control;
 
-    dred_gui_font* pFont;
+    dtk_font* pFont;
     int type;
     char lineStr[32];
     char colStr[32];

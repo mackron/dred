@@ -16,7 +16,6 @@ struct dtk_colorbutton
 
     char text[64];
     dred_font* pFont;
-    dred_gui_font* pSubFont;
     dtk_color textColor;
     dtk_color bgColor;
     dtk_color bgColorHovered;

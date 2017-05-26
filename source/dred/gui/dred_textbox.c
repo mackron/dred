@@ -60,15 +60,26 @@ drte_engine* dred_textbox_get_engine(dred_textbox* pTextBox)
 }
 
 
-void dred_textbox_set_font(dred_textbox* pTextBox, dred_gui_font* pFont)
+void dred_textbox_set_font(dred_textbox* pTextBox, dtk_font* pFont)
 {
     dred_textview_set_font(DRED_TEXTVIEW(pTextBox), pFont);
 }
 
-dred_gui_font* dred_textbox_get_font(dred_textbox* pTextBox)
+dtk_font* dred_textbox_get_font(dred_textbox* pTextBox)
 {
     return dred_textview_get_font(DRED_TEXTVIEW(pTextBox));
 }
+
+void dred_textbox_set_font_scale(dred_textbox* pTextBox, float scale)
+{
+    dred_textview_set_scale(DRED_TEXTVIEW(pTextBox), scale);
+}
+
+float dred_textbox_get_font_scale(dred_textbox* pTextBox)
+{
+    return dred_textview_get_scale(DRED_TEXTVIEW(pTextBox));
+}
+
 
 void dred_textbox_set_text_color(dred_textbox* pTextBox, dtk_color color)
 {

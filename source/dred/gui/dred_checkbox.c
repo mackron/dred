@@ -6,7 +6,7 @@ dtk_rect dred_checkbox__get_box_rect(dred_checkbox* pCheckbox)
     assert(pCheckbox != NULL);
     
     dtk_font_metrics metrics;
-    dred_gui_get_font_metrics(pCheckbox->pSubFont, &metrics);
+    dtk_font_get_metrics(&pCheckbox->pFont->fontDTK, DRED_CONTROL(pCheckbox)->pGUI->pDred->uiScale, &metrics);
 
     dtk_rect checkboxRect = dtk_control_get_local_rect(DTK_CONTROL(pCheckbox));
 
@@ -73,11 +73,11 @@ void dred_checkbox__on_paint(dred_control* pControl, dred_rect rect, dtk_surface
     // The text is positioned to the right of the box, and centered vertically.
     float textWidth;
     float textHeight;
-    dred_gui_measure_string(pCheckbox->pSubFont, pCheckbox->text, strlen(pCheckbox->text), &textWidth, &textHeight);
+    dtk_font_measure_string(&pCheckbox->pFont->fontDTK, DRED_CONTROL(pCheckbox)->pGUI->pDred->uiScale, pCheckbox->text, strlen(pCheckbox->text), &textWidth, &textHeight);
 
     float textPosX = boxRect.right + pCheckbox->padding;
     float textPosY = roundf(dred_control_get_height(pControl) - textHeight) / 2;
-    dred_control_draw_text(pControl, pCheckbox->pSubFont, pCheckbox->text, (int)strlen(pCheckbox->text), textPosX, textPosY, pCheckbox->textColor, pCheckbox->bgColor, pSurface);
+    dred_control_draw_text(pControl, &pCheckbox->pFont->fontDTK, DRED_CONTROL(pCheckbox)->pGUI->pDred->uiScale, pCheckbox->text, (int)strlen(pCheckbox->text), textPosX, textPosY, pCheckbox->textColor, pCheckbox->bgColor, pSurface);
 
     // Background
     dred_control_draw_rect(pControl, dred_make_rect((float)boxRect.right,        (float)boxRect.top,    (float)boxRect.right + pCheckbox->padding, (float)boxRect.bottom), pCheckbox->bgColor, pSurface);    // Padding bettween checkbox and text.
@@ -179,7 +179,7 @@ void dred_checkbox__refresh_layout(dred_checkbox* pCheckbox)
     if (pCheckbox->isAutoSizeEnabled) {
         float textWidth;
         float textHeight;
-        dred_gui_measure_string(pCheckbox->pSubFont, pCheckbox->text, strlen(pCheckbox->text), &textWidth, &textHeight);
+        dtk_font_measure_string(&pCheckbox->pFont->fontDTK, DRED_CONTROL(pCheckbox)->pGUI->pDred->uiScale, pCheckbox->text, strlen(pCheckbox->text), &textWidth, &textHeight);
 
         dtk_rect boxRect = dred_checkbox__get_box_rect(pCheckbox);
         dtk_int32 boxWidth = (boxRect.right - boxRect.left);
@@ -205,7 +205,6 @@ dr_bool32 dred_checkbox_init(dred_checkbox* pCheckbox, dred_context* pDred, dred
 
     strncpy_s(pCheckbox->text, sizeof(pCheckbox->text), text, _TRUNCATE);
     pCheckbox->pFont = pDred->config.pUIFont;
-    pCheckbox->pSubFont = dred_font_acquire_subfont(pCheckbox->pFont, pDred->uiScale);
     pCheckbox->textColor = dred_rgb(0, 0, 0);
     pCheckbox->bgColor = dred_rgb(255, 255, 255);
     pCheckbox->boxBGColor = dred_rgb(224, 224, 224);
@@ -238,7 +237,6 @@ void dred_checkbox_uninit(dred_checkbox* pCheckbox)
         return;
     }
 
-    dred_font_release_subfont(pCheckbox->pFont, pCheckbox->pSubFont);
     dred_control_uninit(DRED_CONTROL(pCheckbox));
 }
 
@@ -289,11 +287,7 @@ void dred_checkbox_set_font(dred_checkbox* pCheckbox, dred_font* pFont)
         return;
     }
 
-    dred_font_release_subfont(pCheckbox->pFont, pCheckbox->pSubFont);
-
     pCheckbox->pFont = pFont;
-    pCheckbox->pSubFont = dred_font_acquire_subfont(pCheckbox->pFont, dred_control_get_context(DRED_CONTROL(pCheckbox))->uiScale);
-
     dred_checkbox__refresh_layout(pCheckbox);
 }
 

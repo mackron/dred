@@ -58,7 +58,7 @@ void dred_cmdbox_cmdlist__refresh_layout(dred_cmdbox_cmdlist* pCmdList)
     dtk_assert(pCmdList != NULL);
 
     // Update the size of the scrollbar first.
-    dtk_uint32 scrollbarSizeX = 16;     // TODO: Make this a variable. Need some kind of standard scrollbar size.
+    dtk_uint32 scrollbarSizeX = (dtk_uint32)(pCmdList->pDred->config.textEditorSBSize * pCmdList->pDred->uiScale);
     dtk_uint32 scrollbarSizeY = dtk_control_get_height(DTK_CONTROL(pCmdList));
     dtk_control_set_size(DTK_CONTROL(&pCmdList->scrollbar), scrollbarSizeX, scrollbarSizeY);
 

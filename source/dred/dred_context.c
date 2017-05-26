@@ -1785,9 +1785,9 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerW
     strcpy_s(pDescOut->family, sizeof(pDescOut->family), lf.lfFaceName);
 
     if (lf.lfHeight < 0) {
-        pDescOut->size = -lf.lfHeight;
+        pDescOut->size = (float)-lf.lfHeight;
     } else {
-        pDescOut->size = lf.lfHeight;
+        pDescOut->size = (float)lf.lfHeight;
     }
 
     pDescOut->weight = dtk_font_weight_default;
@@ -1810,7 +1810,6 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerW
     }
 
     pDescOut->flags = 0;
-    pDescOut->rotation = 0;
 
     return DR_TRUE;
 #endif
@@ -1986,22 +1985,22 @@ void dred__on_paint_text_for_printing(drte_engine* pTextEngine, drte_view* pView
     dtk_surface_draw_text(&pPrintData->paintSurface, &pPrintData->font, 1, text, (int)textLength, (dtk_int32)posX, (dtk_int32)posY, dtk_rgb(0, 0, 0), dtk_rgba(0, 0, 0, 0));
 }
 
-void dred__on_measure_string_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut)
+void dred__on_measure_string_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, float scale, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut)
 {
     (void)pTextEngine;
-    dtk_font_measure_string((dtk_font*)styleToken, 1, text, textLength, pWidthOut, pHeightOut);
+    dtk_font_measure_string((dtk_font*)styleToken, scale, text, textLength, pWidthOut, pHeightOut);
 }
 
-void dred__on_get_cursor_position_from_point_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+void dred__on_get_cursor_position_from_point_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     (void)pTextEngine;
-    dtk_font_get_text_cursor_position_from_point((dtk_font*)styleToken, 1, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
+    dtk_font_get_text_cursor_position_from_point((dtk_font*)styleToken, scale, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
 }
 
-void dred__on_get_cursor_position_from_char_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+void dred__on_get_cursor_position_from_char_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
     (void)pTextEngine;
-    dtk_font_get_text_cursor_position_from_char((dtk_font*)styleToken, 1, text, characterIndex, pTextCursorPosXOut);
+    dtk_font_get_text_cursor_position_from_char((dtk_font*)styleToken, scale, text, characterIndex, pTextCursorPosXOut);
 }
 
 void dred__print_page(dred_print_data* pPrintData, size_t iPage)
@@ -2586,7 +2585,6 @@ dred_font* dred__load_system_font_ui(dred_context* pDred)
 {
     dred_font_desc fontDesc;
     fontDesc.flags = 0;
-    fontDesc.rotation = 0;
 
 #ifdef _WIN32
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Segoe UI");
@@ -2629,14 +2627,13 @@ dred_font* dred__load_system_font_ui(dred_context* pDred)
     #endif
 #endif
 
-    return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
+    return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.flags);
 }
 
 dred_font* dred__load_system_font_mono(dred_context* pDred)
 {
     dred_font_desc fontDesc;
     fontDesc.flags = 0;
-    fontDesc.rotation = 0;
 
 #ifdef _WIN32
     strcpy_s(fontDesc.family, sizeof(fontDesc.family), "Consolas");
@@ -2711,7 +2708,7 @@ dred_font* dred__load_system_font_mono(dred_context* pDred)
     #endif
 #endif
 
-    return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
+    return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.flags);
 }
 
 dred_font* dred_parse_and_load_font(dred_context* pDred, const char* value)
@@ -2729,7 +2726,6 @@ dred_font* dred_parse_and_load_font(dred_context* pDred, const char* value)
     // no slant.
     dred_font_desc fontDesc;
     fontDesc.flags = 0;
-    fontDesc.rotation = 0;
     fontDesc.weight = dtk_font_weight_normal;
     fontDesc.slant = dtk_font_slant_none;
 
@@ -2746,7 +2742,7 @@ dred_font* dred_parse_and_load_font(dred_context* pDred, const char* value)
         return pDred->config.pUIFont;
     }
 
-    int size = atoi(token);
+    float size = (float)atof(token);
     if (size < 0) {
         size = -size;
     }
@@ -2766,7 +2762,7 @@ dred_font* dred_parse_and_load_font(dred_context* pDred, const char* value)
     }
 
 
-    return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.rotation, fontDesc.flags);
+    return dred_font_library_create_font(&pDred->fontLibrary, fontDesc.family, fontDesc.size, fontDesc.weight, fontDesc.slant, fontDesc.flags);
 }
 
 

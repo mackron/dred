@@ -2684,7 +2684,7 @@ void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect
     pControl->pGUI->paintingCallbacks.drawRoundRectWithOutline(relativeRect, color, radius, outlineWidth, outlineColor, pSurface);
 }
 
-void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface)
+void dred_control_draw_text(dred_control* pControl, dtk_font* pFont, float scale, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface)
 {
     if (pControl == NULL || pFont == NULL) {
         return;
@@ -2696,7 +2696,7 @@ void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const 
     //float absolutePosY = posY;
     //dred_make_point_absolute(pControl, &absolutePosX, &absolutePosY);
 
-    pControl->pGUI->paintingCallbacks.drawText(pFont->pInternalFont, text, textLengthInBytes, posX, posY, color, backgroundColor, pSurface);
+    pControl->pGUI->paintingCallbacks.drawText(pFont, scale, text, textLengthInBytes, posX, posY, color, backgroundColor, pSurface);
 }
 
 void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_draw_image_args* pArgs, dtk_surface* pSurface)
@@ -2837,7 +2837,7 @@ void dred_gui_delete_font(dred_gui_font* pFont)
     free(pFont);
 }
 
-dr_bool32 dred_gui_get_font_metrics(dred_gui_font* pFont, dtk_font_metrics* pMetricsOut)
+dr_bool32 dred_gui_get_font_metrics(dred_gui_font* pFont, float scale, dtk_font_metrics* pMetricsOut)
 {
     if (pFont == NULL || pMetricsOut == NULL) {
         return DR_FALSE;
@@ -2849,10 +2849,10 @@ dr_bool32 dred_gui_get_font_metrics(dred_gui_font* pFont, dtk_font_metrics* pMet
         return DR_FALSE;
     }
 
-    return pFont->pGUI->paintingCallbacks.getFontMetrics(pFont->pInternalFont, pMetricsOut);
+    return pFont->pGUI->paintingCallbacks.getFontMetrics(pFont->pInternalFont, scale, pMetricsOut);
 }
 
-dr_bool32 dred_gui_get_glyph_metrics(dred_gui_font* pFont, unsigned int utf32, dtk_glyph_metrics* pMetricsOut)
+dr_bool32 dred_gui_get_glyph_metrics(dred_gui_font* pFont, float scale, unsigned int utf32, dtk_glyph_metrics* pMetricsOut)
 {
     if (pFont == NULL || pMetricsOut == NULL) {
         return DR_FALSE;
@@ -2864,10 +2864,10 @@ dr_bool32 dred_gui_get_glyph_metrics(dred_gui_font* pFont, unsigned int utf32, d
         return DR_FALSE;
     }
 
-    return pFont->pGUI->paintingCallbacks.getGlyphMetrics(pFont->pInternalFont, utf32, pMetricsOut);
+    return pFont->pGUI->paintingCallbacks.getGlyphMetrics(pFont->pInternalFont, scale, utf32, pMetricsOut);
 }
 
-dr_bool32 dred_gui_measure_string(dred_gui_font* pFont, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut)
+dr_bool32 dred_gui_measure_string(dred_gui_font* pFont, float scale, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut)
 {
     if (pFont == NULL) {
         return DR_FALSE;
@@ -2876,7 +2876,7 @@ dr_bool32 dred_gui_measure_string(dred_gui_font* pFont, const char* text, size_t
     if (text == NULL || textLengthInBytes == 0)
     {
         dtk_font_metrics metrics;
-        if (!dred_gui_get_font_metrics(pFont, &metrics)) {
+        if (!dred_gui_get_font_metrics(pFont, scale, &metrics)) {
             return DR_FALSE;
         }
 
@@ -2898,10 +2898,10 @@ dr_bool32 dred_gui_measure_string(dred_gui_font* pFont, const char* text, size_t
         return DR_FALSE;
     }
 
-    return pFont->pGUI->paintingCallbacks.measureString(pFont->pInternalFont, text, textLengthInBytes, pWidthOut, pHeightOut);
+    return pFont->pGUI->paintingCallbacks.measureString(pFont->pInternalFont, scale, text, textLengthInBytes, pWidthOut, pHeightOut);
 }
 
-dr_bool32 dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+dr_bool32 dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     if (pFont == NULL) {
         return DR_FALSE;
@@ -2910,13 +2910,13 @@ dr_bool32 dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, con
     assert(pFont->pGUI != NULL);
 
     if (pFont->pGUI->paintingCallbacks.getTextCursorPositionFromPoint) {
-        return pFont->pGUI->paintingCallbacks.getTextCursorPositionFromPoint(pFont->pInternalFont, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
+        return pFont->pGUI->paintingCallbacks.getTextCursorPositionFromPoint(pFont->pInternalFont, scale, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
     }
 
     return DR_FALSE;
 }
 
-dr_bool32 dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+dr_bool32 dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
     if (pFont == NULL) {
         return DR_FALSE;
@@ -2925,7 +2925,7 @@ dr_bool32 dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, cons
     assert(pFont->pGUI != NULL);
 
     if (pFont->pGUI->paintingCallbacks.getTextCursorPositionFromChar) {
-        return pFont->pGUI->paintingCallbacks.getTextCursorPositionFromChar(pFont->pInternalFont, text, characterIndex, pTextCursorPosXOut);
+        return pFont->pGUI->paintingCallbacks.getTextCursorPositionFromChar(pFont->pInternalFont, scale, text, characterIndex, pTextCursorPosXOut);
     }
 
     return DR_FALSE;
@@ -3274,17 +3274,17 @@ void dred_control_draw_rect_with_outline_dtk(dred_rect, dtk_color, float, dtk_co
 void dred_control_draw_round_rect_dtk(dred_rect, dtk_color, float, dtk_surface* pSurface);
 void dred_control_draw_round_rect_outline_dtk(dred_rect, dtk_color, float, float, dtk_surface* pSurface);
 void dred_control_draw_round_rect_with_outline_dtk(dred_rect, dtk_color, float, float, dtk_color, dtk_surface* pSurface);
-void dred_control_draw_text_dtk(dtk_font*, const char*, int, float, float, dtk_color, dtk_color, dtk_surface* pSurface);
+void dred_control_draw_text_dtk(dtk_font*, float scale, const char*, int, float, float, dtk_color, dtk_color, dtk_surface* pSurface);
 void dred_control_draw_image_dtk(dtk_surface*, dtk_draw_surface_args* pArgs, dtk_surface* pSurface);
 
 dtk_font* dred_gui_create_font_dtk(dtk_context*, const char*, unsigned int, dtk_font_weight, dtk_font_slant, unsigned int flags);
 void dred_gui_delete_font_dtk(dtk_font*);
 unsigned int dred_gui_get_font_size_dtk(dtk_font*);
-dr_bool32 dred_gui_get_font_metrics_dtk(dtk_font*, dtk_font_metrics*);
-dr_bool32 dred_gui_get_glyph_metrics_dtk(dtk_font*, unsigned int, dtk_glyph_metrics*);
-dr_bool32 dred_gui_measure_string_dtk(dtk_font*, const char*, size_t, float*, float*);
-dr_bool32 dred_gui_get_text_cursor_position_from_point_dtk(dtk_font*, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-dr_bool32 dred_gui_get_text_cursor_position_from_char_dtk(dtk_font*, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+dr_bool32 dred_gui_get_font_metrics_dtk(dtk_font*, float, dtk_font_metrics*);
+dr_bool32 dred_gui_get_glyph_metrics_dtk(dtk_font*, float, unsigned int, dtk_glyph_metrics*);
+dr_bool32 dred_gui_measure_string_dtk(dtk_font*, float, const char*, size_t, float*, float*);
+dr_bool32 dred_gui_get_text_cursor_position_from_point_dtk(dtk_font*, float, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+dr_bool32 dred_gui_get_text_cursor_position_from_char_dtk(dtk_font*, float, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 dtk_surface* dred_gui_create_image_dtk(dtk_context*, unsigned int width, unsigned int height, unsigned int stride, const void* pImageData);
 void dred_gui_delete_image_dtk(dtk_surface*);
@@ -3317,7 +3317,7 @@ void dred_gui_register_dtk_callbacks(dred_gui* pGUI)
 
     callbacks.createFont                     = dred_gui_create_font_dtk;
     callbacks.deleteFont                     = dred_gui_delete_font_dtk;
-    callbacks.getFontSize                    = dred_gui_get_font_size_dtk;
+    //callbacks.getFontSize                    = dred_gui_get_font_size_dtk;
     callbacks.getFontMetrics                 = dred_gui_get_font_metrics_dtk;
     callbacks.getGlyphMetrics                = dred_gui_get_glyph_metrics_dtk;
     callbacks.measureString                  = dred_gui_measure_string_dtk;
@@ -3386,9 +3386,9 @@ void dred_control_draw_round_rect_with_outline_dtk(dred_rect rect, dtk_color col
     dtk_surface_draw_rect_with_outline(pSurface, dtk_rect_init_dred(rect), dtk_color_init_dred(color), (dtk_int32)outlineWidth, dtk_color_init_dred(outlineColor));
 }
 
-void dred_control_draw_text_dtk(dtk_font* pFont, const char* text, int textSizeInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface)
+void dred_control_draw_text_dtk(dtk_font* pFont, float scale, const char* text, int textSizeInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface)
 {
-    dtk_surface_draw_text(pSurface, pFont, 1, text, textSizeInBytes, (dtk_int32)posX, (dtk_int32)posY, dtk_color_init_dred(color), dtk_color_init_dred(backgroundColor));
+    dtk_surface_draw_text(pSurface, pFont, scale, text, textSizeInBytes, (dtk_int32)posX, (dtk_int32)posY, dtk_color_init_dred(color), dtk_color_init_dred(backgroundColor));
 }
 
 void dred_control_draw_image_dtk(dtk_surface* pImage, dtk_draw_surface_args* pArgs, dtk_surface* pSurface)
@@ -3423,31 +3423,31 @@ unsigned int dred_gui_get_font_size_dtk(dtk_font* pFont)
     return (unsigned int)pFont->size;
 }
 
-dr_bool32 dred_gui_get_font_metrics_dtk(dtk_font* pFont, dtk_font_metrics* pMetricsOut)
+dr_bool32 dred_gui_get_font_metrics_dtk(dtk_font* pFont, float scale, dtk_font_metrics* pMetricsOut)
 {
     assert(pMetricsOut != NULL);
-    return dtk_font_get_metrics(pFont, 1, pMetricsOut) == DTK_SUCCESS;
+    return dtk_font_get_metrics(pFont, scale, pMetricsOut) == DTK_SUCCESS;
 }
 
-dr_bool32 dred_gui_get_glyph_metrics_dtk(dtk_font* pFont, unsigned int utf32, dtk_glyph_metrics* pMetricsOut)
+dr_bool32 dred_gui_get_glyph_metrics_dtk(dtk_font* pFont, float scale, unsigned int utf32, dtk_glyph_metrics* pMetricsOut)
 {
     assert(pMetricsOut != NULL);
-    return dtk_font_get_glyph_metrics(pFont, 1, utf32, pMetricsOut) == DTK_SUCCESS;
+    return dtk_font_get_glyph_metrics(pFont, scale, utf32, pMetricsOut) == DTK_SUCCESS;
 }
 
-dr_bool32 dred_gui_measure_string_dtk(dtk_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
+dr_bool32 dred_gui_measure_string_dtk(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
 {
-    return dtk_font_measure_string(pFont, 1, text, textSizeInBytes, pWidthOut, pHeightOut) == DTK_SUCCESS;
+    return dtk_font_measure_string(pFont, scale, text, textSizeInBytes, pWidthOut, pHeightOut) == DTK_SUCCESS;
 }
 
-dr_bool32 dred_gui_get_text_cursor_position_from_point_dtk(dtk_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+dr_bool32 dred_gui_get_text_cursor_position_from_point_dtk(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
-    return dtk_font_get_text_cursor_position_from_point(pFont, 1, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut) == DTK_SUCCESS;
+    return dtk_font_get_text_cursor_position_from_point(pFont, scale, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut) == DTK_SUCCESS;
 }
 
-dr_bool32 dred_gui_get_text_cursor_position_from_char_dtk(dtk_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+dr_bool32 dred_gui_get_text_cursor_position_from_char_dtk(dtk_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
-    return dtk_font_get_text_cursor_position_from_char(pFont, 1, text, characterIndex, pTextCursorPosXOut) == DTK_SUCCESS;
+    return dtk_font_get_text_cursor_position_from_char(pFont, scale, text, characterIndex, pTextCursorPosXOut) == DTK_SUCCESS;
 }
 
 

@@ -32,10 +32,16 @@ drte_engine* dred_textbox_get_engine(dred_textbox* pTextBox);
 
 
 // Sets the font to use with the given text box.
-void dred_textbox_set_font(dred_textbox* pTextBox, dred_gui_font* pFont);
+void dred_textbox_set_font(dred_textbox* pTextBox, dtk_font* pFont);
 
 // Retrieves the font being used with the given text box.
-dred_gui_font* dred_textbox_get_font(dred_textbox* pTextBox);
+dtk_font* dred_textbox_get_font(dred_textbox* pTextBox);
+
+// Sets the scale of the font of the text box.
+void dred_textbox_set_font_scale(dred_textbox* pTextBox, float scale);
+
+// Retrieves the scale of the font to use with the text box.
+float dred_textbox_get_font_scale(dred_textbox* pTextBox);
 
 // Sets the color of the text in teh given text box.
 void dred_textbox_set_text_color(dred_textbox* pTextBox, dtk_color color);

@@ -7,7 +7,7 @@ typedef struct
     size_t* pCommandIndices;
     size_t commandIndexCount;
     size_t commandIndexCapacity;
-    dred_gui_font* pFont;
+    dtk_font* pFont;
     dr_bool32 showOnlyFirstCommand : 1;
 
     dred_cmdbox_cmdlist cmdlist;

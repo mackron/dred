@@ -53,7 +53,8 @@ struct dred_tabbar
 
 
     /// The default font to use for tab bar items.
-    dred_gui_font* pFont;
+    //dred_gui_font* pFont;
+    dtk_font* pFont;
 
     /// The default color to use for tab bar item text.
     dtk_color tabTextColor;
@@ -153,10 +154,10 @@ dred_tabbar_orientation dred_tabbar_get_orientation(dred_tabbar* pTabBar);
 
 
 /// Sets the default font to use for tabs.
-void dred_tabbar_set_font(dred_tabbar* pTabBar, dred_gui_font* pFont);
+void dred_tabbar_set_font(dred_tabbar* pTabBar, dtk_font* pFont);
 
 /// Retrieves the default font to use for tabs.
-dred_gui_font* dred_tabbar_get_font(dred_tabbar* pTabBar);
+dtk_font* dred_tabbar_get_font(dred_tabbar* pTabBar);
 
 // Sets the color of the text to use on tabs.
 void dred_tabbar_set_text_color(dred_tabbar* pTabBar, dtk_color color);

@@ -34,11 +34,11 @@ void dred_button__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
 
     float textWidth;
     float textHeight;
-    dred_gui_measure_string(pButton->pSubFont, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
+    dtk_font_measure_string(&pButton->pFont->fontDTK, pDred->uiScale, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
 
     float textPosX = roundf(((bgrect.right - bgrect.left) - textWidth) / 2);
     float textPosY = roundf(((bgrect.bottom - bgrect.top) - textHeight) / 2);
-    dred_control_draw_text(DRED_CONTROL(pButton), pButton->pSubFont, pButton->text, (int)strlen(pButton->text), textPosX, textPosY, pButton->textColor, bgColor, pSurface);
+    dred_control_draw_text(DRED_CONTROL(pButton), &pButton->pFont->fontDTK, pDred->uiScale, pButton->text, (int)strlen(pButton->text), textPosX, textPosY, pButton->textColor, bgColor, pSurface);
     
     // Make sure the background does not overdraw the text.
     dred_control_draw_rect(DRED_CONTROL(pButton), dred_make_rect(bgrect.left, bgrect.top, textPosX, bgrect.bottom), bgColor, pSurface);
@@ -136,7 +136,7 @@ void dred_button__refresh_layout(dred_button* pButton)
     if (pButton->isAutoSizeEnabled) {
         float textWidth;
         float textHeight;
-        dred_gui_measure_string(pButton->pSubFont, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
+        dtk_font_measure_string(&pButton->pFont->fontDTK, DRED_CONTROL(pButton)->pGUI->pDred->uiScale, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
 
         dred_control_set_size(DRED_CONTROL(pButton), textWidth + (pButton->paddingHorz*2), textHeight + (pButton->paddingVert*2));
     }
@@ -159,7 +159,6 @@ dr_bool32 dred_button_init(dred_button* pButton, dred_context* pDred, dred_contr
 
     strncpy_s(pButton->text, sizeof(pButton->text), text, _TRUNCATE);
     pButton->pFont = pDred->config.pUIFont;
-    pButton->pSubFont = dred_font_acquire_subfont(pButton->pFont, pDred->uiScale);
     pButton->textColor = dred_rgb(32, 32, 32);
     pButton->bgColor = dred_rgb(224, 224, 224);
     pButton->bgColorHovered = dred_rgb(224, 240, 255);
@@ -186,7 +185,6 @@ dr_bool32 dred_button_init(dred_button* pButton, dred_context* pDred, dred_contr
 
 void dred_button_uninit(dred_button* pButton)
 {
-    dred_font_release_subfont(pButton->pFont, pButton->pSubFont);
     dred_control_uninit(DRED_CONTROL(pButton));
 }
 
@@ -237,10 +235,7 @@ void dred_button_set_font(dred_button* pButton, dred_font* pFont)
         return;
     }
 
-    dred_font_release_subfont(pButton->pFont, pButton->pSubFont);
-
     pButton->pFont = pFont;
-    pButton->pSubFont = dred_font_acquire_subfont(pButton->pFont, dred_control_get_context(DRED_CONTROL(pButton))->uiScale);
 
     dred_button__refresh_layout(pButton);
 }

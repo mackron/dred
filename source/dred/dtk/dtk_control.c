@@ -195,13 +195,6 @@ dtk_result dtk_control_uninit(dtk_control* pControl)
         }
     }
 
-    //if (dtk_control_has_keyboard_capture(pControl)) {
-    //    dtk_release_keyboard(pControl->pTK);
-    //}
-    //if (dtk_control_has_mouse_capture(pControl)) {
-    //    dtk_release_mouse(pControl->pTK);
-    //}
-
     if (pControl->pParent != NULL) {
         dtk_control__unlink_child(pControl->pParent, pControl);
     }

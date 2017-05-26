@@ -6,7 +6,7 @@ dtk_rect dtk_colorbutton__get_box_rect(dtk_colorbutton* pButton)
     assert(pButton != NULL);
     
     dtk_font_metrics metrics;
-    dred_gui_get_font_metrics(pButton->pSubFont, &metrics);
+    dtk_font_get_metrics(&pButton->pFont->fontDTK, DRED_CONTROL(pButton)->pGUI->pDred->uiScale, &metrics);
 
     dtk_rect checkboxRect = dtk_control_get_local_rect(DTK_CONTROL(pButton));
 
@@ -69,11 +69,11 @@ void dtk_colorbutton__on_paint(dred_control* pControl, dred_rect rect, dtk_surfa
     // The text is positioned to the right of the box, and centered vertically.
     float textWidth;
     float textHeight;
-    dred_gui_measure_string(pButton->pSubFont, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
+    dtk_font_measure_string(&pButton->pFont->fontDTK, DRED_CONTROL(pButton)->pGUI->pDred->uiScale, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
 
     float textPosX = boxRect.right + pButton->padding;
     float textPosY = roundf(dred_control_get_height(pControl) - textHeight) / 2;
-    dred_control_draw_text(pControl, pButton->pSubFont, pButton->text, (int)strlen(pButton->text), textPosX, textPosY, pButton->textColor, bgColor, pSurface);
+    dred_control_draw_text(pControl, &pButton->pFont->fontDTK, DRED_CONTROL(pButton)->pGUI->pDred->uiScale, pButton->text, (int)strlen(pButton->text), textPosX, textPosY, pButton->textColor, bgColor, pSurface);
 
     // Background
     dred_control_draw_rect(pControl, dred_make_rect((float)boxRect.right,        (float)boxRect.top,    (float)boxRect.right + pButton->padding, (float)boxRect.bottom), bgColor, pSurface);    // Padding bettween checkbox and text.
@@ -184,7 +184,7 @@ void dtk_colorbutton__refresh_layout(dtk_colorbutton* pButton)
     if (pButton->isAutoSizeEnabled) {
         float textWidth;
         float textHeight;
-        dred_gui_measure_string(pButton->pSubFont, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
+        dtk_font_measure_string(&pButton->pFont->fontDTK, DRED_CONTROL(pButton)->pGUI->pDred->uiScale, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
 
         dtk_rect boxRect = dtk_colorbutton__get_box_rect(pButton);
         dtk_int32 boxWidth = (boxRect.right - boxRect.left);
@@ -210,7 +210,6 @@ dr_bool32 dtk_colorbutton_init(dtk_colorbutton* pButton, dred_context* pDred, dr
 
     strncpy_s(pButton->text, sizeof(pButton->text), text, _TRUNCATE);
     pButton->pFont = pDred->config.pUIFont;
-    pButton->pSubFont = dred_font_acquire_subfont(pButton->pFont, pDred->uiScale);
     pButton->textColor = dred_rgb(0, 0, 0);
     pButton->bgColor = dred_rgb(255, 255, 255);
     pButton->bgColorHovered = dred_rgb(224, 240, 255);
@@ -241,7 +240,6 @@ void dtk_colorbutton_uninit(dtk_colorbutton* pButton)
         return;
     }
 
-    dred_font_release_subfont(pButton->pFont, pButton->pSubFont);
     dred_control_uninit(DRED_CONTROL(pButton));
 }
 
@@ -292,11 +290,7 @@ void dtk_colorbutton_set_font(dtk_colorbutton* pButton, dred_font* pFont)
         return;
     }
 
-    dred_font_release_subfont(pButton->pFont, pButton->pSubFont);
-
     pButton->pFont = pFont;
-    pButton->pSubFont = dred_font_acquire_subfont(pButton->pFont, dred_control_get_context(DRED_CONTROL(pButton))->uiScale);
-
     dtk_colorbutton__refresh_layout(pButton);
 }
 

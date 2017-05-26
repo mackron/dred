@@ -8,6 +8,7 @@
                     <ul>
                         <li>Fixed a bug with autocomplete where the popup box would not be filled correctly after executing a command.</li>
                         <li>Fixed a bug where the command bar would not be relieved of the keyboard focus when opening any kind of dialog box via a command.</li>
+                        <li>DPI fixes and improvements.</li>
                         <li>... and much more!</li>
                     </ul>
                     
@@ -26,6 +27,12 @@
             <div style="margin-top:2em;">
                 <b>Source Code Improvements</b>
                 <div>
+                    <ul>
+                        <li>Improved the font scaling system. The new system removes the old acquire/unacquire system for sub-fonts and replace it with a system
+                            where each of the relevant font and text painting APIs take a scale. The handling of font scaling is now done internally by DTK rather
+                            than by dred. The advantage to this new system is that it greatly simplifies font management.
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>

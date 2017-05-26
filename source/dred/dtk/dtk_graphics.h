@@ -157,8 +157,6 @@ typedef struct
     #ifdef DTK_WIN32
         struct
         {
-            ///*HFONT*/ dtk_handle hFont;
-            //dtk_font_metrics metrics;   // Font metrics retrieval is slow with GDI, so we cache.
             int unused;
         } gdi;
     #endif
@@ -166,9 +164,6 @@ typedef struct
         struct
         {
             /*cairo_font_face_t**/ dtk_ptr pFace;
-
-            ///*cairo_scaled_font_t**/ dtk_ptr pFont;
-            //dtk_font_metrics metrics;   // We cache font metrics on the Cairo backend for efficiency.
         } cairo;
     #endif
     #ifdef DTK_X11

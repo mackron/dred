@@ -169,7 +169,7 @@ typedef struct
 {
     dtk_color bgColor;
     dtk_color fgColor;
-    dred_gui_font* pFont;
+    dtk_font* pFont;
 } dred_text_style;
 
 typedef struct
@@ -272,17 +272,17 @@ typedef void (* dred_gui_draw_rect_with_outline_proc)       (dred_rect relativeR
 typedef void (* dred_gui_draw_round_rect_proc)              (dred_rect relativeRect, dtk_color color, float radius, dtk_surface* pSurface);
 typedef void (* dred_gui_draw_round_rect_outline_proc)      (dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_surface* pSurface);
 typedef void (* dred_gui_draw_round_rect_with_outline_proc) (dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_text_proc)                    (dtk_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_text_proc)                    (dtk_font* pFont, float scale, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface);
 typedef void (* dred_gui_draw_image_proc)                   (dtk_surface* pImage, dtk_draw_surface_args* pArgs, dtk_surface* pSurface);
 
 typedef dtk_font* (* dred_gui_create_font_proc)                        (dtk_context* pTK, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, unsigned int flags);
 typedef void              (* dred_gui_delete_font_proc)                        (dtk_font* pFont);
 typedef unsigned int      (* dred_gui_get_font_size_proc)                      (dtk_font* pFont);
-typedef dr_bool32              (* dred_gui_get_font_metrics_proc)                   (dtk_font* pFont, dtk_font_metrics* pMetricsOut);
-typedef dr_bool32              (* dred_gui_get_glyph_metrics_proc)                  (dtk_font* pFont, unsigned int utf32, dtk_glyph_metrics* pMetricsOut);
-typedef dr_bool32              (* dred_gui_measure_string_proc)                     (dtk_font* pFont, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
-typedef dr_bool32              (* dred_gui_get_text_cursor_position_from_point_proc)(dtk_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-typedef dr_bool32              (* dred_gui_get_text_cursor_position_from_char_proc) (dtk_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+typedef dr_bool32              (* dred_gui_get_font_metrics_proc)                   (dtk_font* pFont, float scale, dtk_font_metrics* pMetricsOut);
+typedef dr_bool32              (* dred_gui_get_glyph_metrics_proc)                  (dtk_font* pFont, float scale, unsigned int utf32, dtk_glyph_metrics* pMetricsOut);
+typedef dr_bool32              (* dred_gui_measure_string_proc)                     (dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
+typedef dr_bool32              (* dred_gui_get_text_cursor_position_from_point_proc)(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+typedef dr_bool32              (* dred_gui_get_text_cursor_position_from_char_proc) (dtk_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 typedef dtk_surface*     (* dred_gui_create_image_proc)            (dtk_context* pTK, unsigned int width, unsigned int height, unsigned int stride, const void* pImageData);
 typedef void                  (* dred_gui_delete_image_proc)            (dtk_surface* pImage);
@@ -307,7 +307,7 @@ struct dred_gui_painting_callbacks
 
     dred_gui_create_font_proc                         createFont;
     dred_gui_delete_font_proc                         deleteFont;
-    dred_gui_get_font_size_proc                       getFontSize;
+    //dred_gui_get_font_size_proc                       getFontSize;
     dred_gui_get_font_metrics_proc                    getFontMetrics;
     dred_gui_get_glyph_metrics_proc                   getGlyphMetrics;
     dred_gui_measure_string_proc                      measureString;
@@ -1062,7 +1062,7 @@ void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect
 ///     calls to this function.
 ///     @par
 ///     \c textSizeInBytes can be -1 in which case the text string is treated as null terminated.
-void dred_control_draw_text(dred_control* pControl, dred_gui_font* pFont, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface);
+void dred_control_draw_text(dred_control* pControl, dtk_font* pFont, float scale, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface);
 
 /// Draws an image.
 void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_draw_image_args* pArgs, dtk_surface* pSurface);
@@ -1075,22 +1075,22 @@ dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned
 void dred_gui_delete_font(dred_gui_font* pFont);
 
 /// Retrieves the metrics of the given font.
-dr_bool32 dred_gui_get_font_metrics(dred_gui_font* pFont, dtk_font_metrics* pMetricsOut);
+dr_bool32 dred_gui_get_font_metrics(dred_gui_font* pFont, float scale, dtk_font_metrics* pMetricsOut);
 
 /// Retrieves the metrics of the glyph for the given character when rendered with the given font.
-dr_bool32 dred_gui_get_glyph_metrics(dred_gui_font* pFont, unsigned int utf32, dtk_glyph_metrics* pMetricsOut);
+dr_bool32 dred_gui_get_glyph_metrics(dred_gui_font* pFont, float scale, unsigned int utf32, dtk_glyph_metrics* pMetricsOut);
 
 /// Retrieves the dimensions of the given string when drawn with the given font.
 ///
 /// @remarks
 ///     When the length of the text is 0, the width will be set to 0 and the height will be set to the line height.
-dr_bool32 dred_gui_measure_string(dred_gui_font* pFont, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut);
+dr_bool32 dred_gui_measure_string(dred_gui_font* pFont, float scale, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut);
 
 /// Retrieves the position to place a text cursor based on the given point for the given string when drawn with the given font.
-dr_bool32 dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+dr_bool32 dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
 
 /// Retrieves the position to palce a text cursor based on the character at the given index for the given string when drawn with the given font.
-dr_bool32 dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+dr_bool32 dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 
 

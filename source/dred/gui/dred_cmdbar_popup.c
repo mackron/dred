@@ -102,7 +102,7 @@ dred_cmdbar_popup* dred_cmdbar_popup_create(dred_context* pDred)
     }
 
 
-    pCmdBarPopup->pFont = dred_font_acquire_subfont(pDred->config.cmdbarPopupFont, (float)pDred->uiScale);
+    pCmdBarPopup->pFont = &pDred->config.cmdbarPopupFont->fontDTK;
     
     pCmdBarPopup->pWindow->pUserData = pCmdBarPopup;
     dred_control_set_on_size(pCmdBarPopup->pWindow->pRootGUIControl, dred_cmdbar_popup__on_size);
@@ -163,11 +163,10 @@ void dred_cmdbar_popup_refresh_styling(dred_cmdbar_popup* pCmdBarPopup)
     }
 
     if (pCmdBarPopup->pFont) {
-        dred_font_release_subfont(pDred->config.cmdbarPopupFont, pCmdBarPopup->pFont);
         pCmdBarPopup->pFont = NULL;
     }
 
-    pCmdBarPopup->pFont = dred_font_acquire_subfont(pDred->config.cmdbarPopupFont, (float)pDred->uiScale);
+    pCmdBarPopup->pFont = &pDred->config.cmdbarPopupFont->fontDTK;
     
 
     // The cmdbox control needs to be repositioned and resized based on the new padding and border sizes.

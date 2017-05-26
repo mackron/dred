@@ -218,7 +218,7 @@ void dred_tabgroup_refresh_styling(dred_tabgroup* pTabGroup)
     dred_tabbar_set_tab_background_color(pTabGroup->pTabBar, pDred->config.tabBGColorInvactive);
     dred_tabbar_set_tab_background_color_active(pTabGroup->pTabBar, pDred->config.tabBGColorActive);
     dred_tabbar_set_tab_background_color_hovered(pTabGroup->pTabBar, pDred->config.tabBGColorHovered);
-    dred_tabbar_set_font(pTabGroup->pTabBar, dred_font_acquire_subfont(pDred->config.tabFont, pDred->uiScale));
+    dred_tabbar_set_font(pTabGroup->pTabBar, &pDred->config.tabFont->fontDTK);
     dred_tabbar_set_text_color(pTabGroup->pTabBar, pDred->config.tabTextColor);
     dred_tabbar_set_text_color_active(pTabGroup->pTabBar, pDred->config.tabTextColorActive);
     dred_tabbar_set_text_color_hovered(pTabGroup->pTabBar, pDred->config.tabTextColorHovered);

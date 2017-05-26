@@ -91,7 +91,7 @@ void dred_textview__refresh_style(dred_textview* pTextView)
     assert(pTextView != NULL);
 
     dtk_font_metrics fontMetrics;
-    dred_gui_get_font_metrics(pTextView->defaultStyle.pFont, &fontMetrics);
+    dtk_font_get_metrics(pTextView->defaultStyle.pFont, pTextView->pView->scale, &fontMetrics);
 
     // Default.
     drte_engine_register_style_token(pTextView->pTextEngine, (drte_style_token)&pTextView->defaultStyle, drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth));
@@ -110,22 +110,22 @@ void dred_textview__refresh_style(dred_textview* pTextView)
 }
 
 
-void dred_textview_engine__on_measure_string_proc(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut)
+void dred_textview_engine__on_measure_string_proc(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut)
 {
     (void)pEngine;
-    dred_gui_measure_string(((dred_text_style*)styleToken)->pFont, text, textLength, pWidthOut, pHeightOut);
+    dtk_font_measure_string(((dred_text_style*)styleToken)->pFont, scale, text, textLength, pWidthOut, pHeightOut);
 }
 
-void dred_textview_engine__on_get_cursor_position_from_point(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+void dred_textview_engine__on_get_cursor_position_from_point(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     (void)pEngine;
-    dred_gui_get_text_cursor_position_from_point(((dred_text_style*)styleToken)->pFont, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
+    dtk_font_get_text_cursor_position_from_point(((dred_text_style*)styleToken)->pFont, scale, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
 }
 
-void dred_textview_engine__on_get_cursor_position_from_char(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+void dred_textview_engine__on_get_cursor_position_from_char(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
 {
     (void)pEngine;
-    dred_gui_get_text_cursor_position_from_char(((dred_text_style*)styleToken)->pFont, text, characterIndex, pTextCursorPosXOut);
+    dtk_font_get_text_cursor_position_from_char(((dred_text_style*)styleToken)->pFont, scale, text, characterIndex, pTextCursorPosXOut);
 }
 
 
@@ -415,23 +415,23 @@ dr_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred
     pTextView->pTextEngine->onGetCursorPositionFromChar = dred_textview_engine__on_get_cursor_position_from_char;
 
 
-    pTextView->defaultStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTextView->defaultStyle.pFont = &pDred->config.pTextEditorFont->fontDTK;
     pTextView->defaultStyle.bgColor = dred_rgb(64, 64, 64);
     pTextView->defaultStyle.fgColor = dred_rgb(0, 0, 0);
 
-    pTextView->selectionStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTextView->selectionStyle.pFont = &pDred->config.pTextEditorFont->fontDTK;
     pTextView->selectionStyle.bgColor = dred_rgb(64, 128, 192);
     pTextView->selectionStyle.fgColor = dred_rgb(0, 0, 0);
 
-    pTextView->activeLineStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTextView->activeLineStyle.pFont = &pDred->config.pTextEditorFont->fontDTK;
     pTextView->activeLineStyle.bgColor = dred_rgb(64, 64, 64);
     pTextView->activeLineStyle.fgColor = dred_rgb(0, 0, 0);
 
-    pTextView->cursorStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTextView->cursorStyle.pFont = &pDred->config.pTextEditorFont->fontDTK;
     pTextView->cursorStyle.bgColor = dred_rgb(0, 0, 0);
     pTextView->cursorStyle.fgColor = dred_rgb(0, 0, 0);
 
-    pTextView->lineNumbersStyle.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
+    pTextView->lineNumbersStyle.pFont = &pDred->config.pTextEditorFont->fontDTK;
     pTextView->lineNumbersStyle.bgColor = dred_rgb(64, 64, 64);
     pTextView->lineNumbersStyle.fgColor = dred_rgb(80, 160, 192);
 
@@ -543,7 +543,7 @@ drte_engine* dred_textview_get_engine(dred_textview* pTextView)
 }
 
 
-void dred_textview_set_font(dred_textview* pTextView, dred_gui_font* pFont)
+void dred_textview_set_font(dred_textview* pTextView, dtk_font* pFont)
 {
     if (pTextView == NULL) {
         return;
@@ -568,13 +568,37 @@ void dred_textview_set_font(dred_textview* pTextView, dred_gui_font* pFont)
     //dred_control_end_dirty(DRED_CONTROL(pTextView));
 }
 
-dred_gui_font* dred_textview_get_font(dred_textview* pTextView)
+dtk_font* dred_textview_get_font(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return NULL;
     }
 
     return pTextView->defaultStyle.pFont;
+}
+
+void dred_textview_set_scale(dred_textview* pTextView, float scale)
+{
+    if (pTextView == NULL) return;
+    pTextView->pView->scale = scale;
+
+    dred_textview__refresh_style(pTextView);
+
+    // The font used for line numbers are tied to the main font at the moment.
+    dred_textview__refresh_line_numbers(pTextView);
+
+    // Emulate a scroll to ensure the scroll position is pinned to a line.
+    dred_textview__on_vscroll(pTextView->pVertScrollbar, dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar));
+    dred_textview__refresh_scrollbars(pTextView);
+}
+
+float dred_textview_get_scale(dred_textview* pTextView)
+{
+    if (pTextView == NULL) return 1;
+    dtk_assert(pTextView->pView != NULL);
+
+    return pTextView->pView->scale;
+    
 }
 
 void dred_textview_set_text_color(dred_textview* pTextView, dtk_color color)
@@ -2486,7 +2510,7 @@ void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_view* pV
     float offsetY;
     dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
-    dred_control_draw_text(DRED_CONTROL(pTextView), pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, (dtk_surface*)pPaintData);
+    dred_control_draw_text(DRED_CONTROL(pTextView), pStyleFG->pFont, pView->scale, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, (dtk_surface*)pPaintData);
 }
 
 void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_view* pView, drte_rect rect)
@@ -3007,7 +3031,7 @@ void dred_textview__on_paint_text_line_numbers(drte_engine* pEngine, drte_view* 
     float offsetX = pTextView->padding;
     float offsetY = pTextView->padding;
 
-    dred_control_draw_text(pTextView->pLineNumbers, pStyleFG->pFont, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, (dtk_surface*)pPaintData);
+    dred_control_draw_text(pTextView->pLineNumbers, pStyleFG->pFont, pView->scale, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, (dtk_surface*)pPaintData);
 }
 
 void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect relativeRect, dtk_surface* pSurface)

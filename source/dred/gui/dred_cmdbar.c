@@ -164,14 +164,14 @@ void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
     dred_cmdbar__get_segment_rects(pCmdBar, &lrect, &mrect, &rrect);
     dtk_surface_draw_rect(pSurface, mrect, bgcolor);
 
-    dred_gui_font* pMessageFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
+    dtk_font* pMessageFont = &pDred->config.pUIFont->fontDTK;
 
     dtk_font_metrics messageFontMetrics;
-    dred_gui_get_font_metrics(pMessageFont, &messageFontMetrics);
+    dtk_font_get_metrics(pMessageFont, pDred->uiScale, &messageFontMetrics);
 
     float messageLeft = mrect.left + (4*pDred->uiScale);
     float messageTop  = (((mrect.bottom - mrect.top) - messageFontMetrics.lineHeight) / 2) + scaledPaddingY;
-    dred_control_draw_text(DRED_CONTROL(pCmdBar), pMessageFont, pCmdBar->message, (int)strlen(pCmdBar->message), messageLeft, messageTop, pDred->config.cmdbarTextColor, bgcolor, pSurface);
+    dred_control_draw_text(DRED_CONTROL(pCmdBar), pMessageFont, pDred->uiScale, pCmdBar->message, (int)strlen(pCmdBar->message), messageLeft, messageTop, pDred->config.cmdbarTextColor, bgcolor, pSurface);
 }
 
 void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
@@ -424,12 +424,12 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
 
 
     dtk_font_metrics fontMetricsTB;
-    dred_gui_get_font_metrics(dred_textbox_get_font(pCmdBar->pTextBox), &fontMetricsTB);
+    dtk_font_get_metrics(dred_textbox_get_font(pCmdBar->pTextBox), pDred->uiScale, &fontMetricsTB);
 
-    dred_gui_font* pMessageFont = dred_font_acquire_subfont(pDred->config.pUIFont, pDred->uiScale);
+    dtk_font* pMessageFont = &pDred->config.pUIFont->fontDTK;
 
     dtk_font_metrics fontMetricsMsg;
-    dred_gui_get_font_metrics(pMessageFont, &fontMetricsMsg);
+    dtk_font_get_metrics(pMessageFont, pDred->uiScale, &fontMetricsMsg);
 
     float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(pCmdBar->pTextBox)*2;
     float messageHeight = (float)fontMetricsMsg.lineHeight;
@@ -805,7 +805,8 @@ void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
     }
 
     // Textbox.
-    dred_textbox_set_font(pCmdBar->pTextBox, dred_font_acquire_subfont(pDred->config.pCmdbarTBFont, pDred->uiScale));
+    dred_textbox_set_font(pCmdBar->pTextBox, &pDred->config.pCmdbarTBFont->fontDTK);
+    dred_textbox_set_font_scale(pCmdBar->pTextBox, pDred->uiScale);
 
     if (dred_cmdbar_has_keyboard_focus(pCmdBar)) {
         dred_textbox_set_text_color(pCmdBar->pTextBox, pDred->config.cmdbarTextColorActive);

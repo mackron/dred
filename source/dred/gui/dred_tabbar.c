@@ -123,7 +123,7 @@ dred_tabbar_orientation dred_tabbar_get_orientation(dred_tabbar* pTabBar)
 }
 
 
-void dred_tabbar_set_font(dred_tabbar* pTabBar, dred_gui_font* pFont)
+void dred_tabbar_set_font(dred_tabbar* pTabBar, dtk_font* pFont)
 {
     if (pTabBar == NULL) {
         return;
@@ -139,7 +139,7 @@ void dred_tabbar_set_font(dred_tabbar* pTabBar, dred_gui_font* pFont)
     dred_control_dirty(DRED_CONTROL(pTabBar), dred_control_get_local_rect(DRED_CONTROL(pTabBar)));
 }
 
-dred_gui_font* dred_tabbar_get_font(dred_tabbar* pTabBar)
+dtk_font* dred_tabbar_get_font(dred_tabbar* pTabBar)
 {
     if (pTabBar == NULL) {
         return NULL;
@@ -441,7 +441,7 @@ void dred_tabbar_resize_by_tabs(dred_tabbar* pTabBar)
 #endif
 
     dtk_font_metrics fontMetrics;
-    if (dred_gui_get_font_metrics(pTabBar->pFont, &fontMetrics)) {
+    if (dtk_font_get_metrics(pTabBar->pFont, DRED_CONTROL(pTabBar)->pGUI->pDred->uiScale, &fontMetrics) == DTK_SUCCESS) {
         if (pTabBar->orientation == dred_tabbar_orientation_top || pTabBar->orientation == dred_tabbar_orientation_bottom) {
             maxHeight = fontMetrics.lineHeight + (pTabBar->tabPadding*2);
         } else {
@@ -858,7 +858,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, d
     float textHeight = 0;
 
     if (pTab != NULL) {
-        dred_gui_measure_string(pTabBar->pFont, pTab->text, strlen(pTab->text), &textWidth, &textHeight);
+        dtk_font_measure_string(pTabBar->pFont, DRED_CONTROL(pTabBar)->pGUI->pDred->uiScale, pTab->text, strlen(pTab->text), &textWidth, &textHeight);
     }
 
 
@@ -918,7 +918,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
     float textPosX = offsetX + pTabBar->tabPadding;
     float textPosY = offsetY + pTabBar->tabPadding;
     if (pTab != NULL) {
-        dred_control_draw_text(DRED_CONTROL(pTabBar), pTabBar->pFont, pTab->text, (int)strlen(pTab->text), textPosX, textPosY, textColor, bgcolor, pSurface);
+        dred_control_draw_text(DRED_CONTROL(pTabBar), pTabBar->pFont, DRED_CONTROL(pTabBar)->pGUI->pDred->uiScale, pTab->text, (int)strlen(pTab->text), textPosX, textPosY, textColor, bgcolor, pSurface);
     }
 
 
@@ -928,7 +928,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
         float textWidth  = 0;
         float textHeight = 0;
         if (pTab != NULL) {
-            dred_gui_measure_string(pTabBar->pFont, pTab->text, strlen(pTab->text), &textWidth, &textHeight);
+            dtk_font_measure_string(pTabBar->pFont, DRED_CONTROL(pTabBar)->pGUI->pDred->uiScale, pTab->text, strlen(pTab->text), &textWidth, &textHeight);
         }
 
         float closeButtonPosX = textPosX + textWidth + pTabBar->closeButtonPaddingLeft;

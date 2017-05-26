@@ -81,9 +81,9 @@ typedef struct
 } drte_rect;
 
 
-typedef void   (* drte_engine_on_measure_string_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut);
-typedef void   (* drte_engine_on_get_cursor_position_from_point_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-typedef void   (* drte_engine_on_get_cursor_position_from_char_proc)(drte_engine* pEngine, drte_style_token styleToken, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+typedef void   (* drte_engine_on_measure_string_proc)(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut);
+typedef void   (* drte_engine_on_get_cursor_position_from_point_proc)(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+typedef void   (* drte_engine_on_get_cursor_position_from_char_proc)(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 typedef dr_bool32   (* drte_engine_on_get_next_highlight_proc)(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData);
 
 typedef void   (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData);
@@ -196,6 +196,10 @@ struct drte_view
 
     // The number of active selection regions. When this is 0, nothing is selected.
     size_t selectionCount;
+
+
+    // The text scale.
+    float scale;
 
 
     // Application defined data.
@@ -1614,7 +1618,7 @@ float drte_engine__measure_segment(drte_view* pView, drte_segment* pSegment)
             float unused;
             drte_style_token fgStyleToken = drte_engine__get_style_token(pEngine, pSegment->fgStyleSlot);
             if (pEngine->onMeasureString && fgStyleToken) {
-                pEngine->onMeasureString(pEngine, fgStyleToken, pEngine->text + pSegment->iCharBeg, pSegment->iCharEnd - pSegment->iCharBeg, &segmentWidth, &unused);
+                pEngine->onMeasureString(pEngine, fgStyleToken, pView->scale, pEngine->text + pSegment->iCharBeg, pSegment->iCharEnd - pSegment->iCharBeg, &segmentWidth, &unused);
             }
         }
     }
@@ -3613,7 +3617,7 @@ static void drte_view__refresh_word_wrapping(drte_view* pView)
                             float unused = 0;
                             size_t iChar = iLineCharBeg;
                             if (pView->pEngine->onGetCursorPositionFromPoint) {
-                                pView->pEngine->onGetCursorPositionFromPoint(pView->pEngine, drte_engine__get_style_token(pView->pEngine, segment.fgStyleSlot), pView->pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg,
+                                pView->pEngine->onGetCursorPositionFromPoint(pView->pEngine, drte_engine__get_style_token(pView->pEngine, segment.fgStyleSlot), pView->scale, pView->pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg,
                                     segment.width, pView->sizeX - runningWidth, &unused, &iChar);
                             }
 
@@ -3679,6 +3683,7 @@ drte_view* drte_view_create(drte_engine* pEngine)
     pView->pEngine = pEngine;
     pView->tabSizeInSpaces = 4;
     pView->cursorWidth = 1;
+    pView->scale = 1;
     
     pView->_id = drte_engine__acquire_view_id(pEngine);
     pView->_accumulatedDirtyRect = drte_make_inside_out_rect();
@@ -4013,7 +4018,7 @@ void drte_view_paint_line_numbers(drte_view* pView, float lineNumbersWidth, floa
             float textWidth = 0;
             float textHeight = 0;
             if (pView->pEngine->onMeasureString && fgStyleToken) {
-                pView->pEngine->onMeasureString(pView->pEngine, fgStyleToken, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
+                pView->pEngine->onMeasureString(pView->pEngine, fgStyleToken, pView->scale, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
             }
 
             float textLeft = lineNumbersWidth - textWidth;
@@ -4139,7 +4144,7 @@ void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCa
                     // TODO: Grab a copy of the string rather than a direct offset.
                     drte_style_token fgStyleToken = drte_engine__get_style_token(pView->pEngine, segment.fgStyleSlot);
                     if (pView->pEngine->onGetCursorPositionFromChar && fgStyleToken != 0) {
-                        pView->pEngine->onGetCursorPositionFromChar(pView->pEngine, fgStyleToken, pView->pEngine->text + segment.iCharBeg, characterIndex - segment.iCharBeg, &posX);
+                        pView->pEngine->onGetCursorPositionFromChar(pView->pEngine, fgStyleToken, pView->scale, pView->pEngine->text + segment.iCharBeg, characterIndex - segment.iCharBeg, &posX);
                         posX += segment.posX;
                     }
                 }
@@ -4212,7 +4217,7 @@ dr_bool32 drte_view_get_character_under_point_relative_to_text(drte_view* pView,
 
                     drte_style_token fgStyleToken = drte_engine__get_style_token(pView->pEngine, segment.fgStyleSlot);
                     if (pView->pEngine->onGetCursorPositionFromPoint) {
-                        pView->pEngine->onGetCursorPositionFromPoint(pView->pEngine, fgStyleToken, pView->pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg, segment.width, inputPosXRelativeToText - segment.posX, OUT &unused, OUT &iCharTemp);
+                        pView->pEngine->onGetCursorPositionFromPoint(pView->pEngine, fgStyleToken, pView->scale, pView->pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg, segment.width, inputPosXRelativeToText - segment.posX, OUT &unused, OUT &iCharTemp);
                         iChar = segment.iCharBeg + iCharTemp;
                     }
                 }
@@ -4777,7 +4782,7 @@ dr_bool32 drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, size
 
                     drte_style_token fgStyleToken = drte_engine__get_style_token(pView->pEngine, segment.fgStyleSlot);
                     if (pView->pEngine->onGetCursorPositionFromPoint) {
-                        pView->pEngine->onGetCursorPositionFromPoint(pView->pEngine, fgStyleToken, pView->pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg, segment.width, posXRelativeToText - segment.posX, OUT &unused, OUT &iChar);
+                        pView->pEngine->onGetCursorPositionFromPoint(pView->pEngine, fgStyleToken, pView->scale, pView->pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg, segment.width, posXRelativeToText - segment.posX, OUT &unused, OUT &iChar);
                         pView->pCursors[cursorIndex].iCharAbs = segment.iCharBeg + iChar;
                     }
                 }

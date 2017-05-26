@@ -151,10 +151,16 @@ drte_engine* dred_textview_get_engine(dred_textview* pTextView);
 
 
 // Sets the font to use with the given text box.
-void dred_textview_set_font(dred_textview* pTextView, dred_gui_font* pFont);
+void dred_textview_set_font(dred_textview* pTextView, dtk_font* pFont);
 
 // Retrieves the font being used with the given text box.
-dred_gui_font* dred_textview_get_font(dred_textview* pTextView);
+dtk_font* dred_textview_get_font(dred_textview* pTextView);
+
+// Sets the scale of the text view.
+void dred_textview_set_scale(dred_textview* pTextView, float scale);
+
+// Retrieves the scale of the text view.
+float dred_textview_get_scale(dred_textview* pTextView);
 
 // Sets the color of the text in teh given text box.
 void dred_textview_set_text_color(dred_textview* pTextView, dtk_color color);

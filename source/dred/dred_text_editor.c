@@ -12,7 +12,7 @@ dred_textview* dred_text_editor__get_textview(dred_text_editor* pTextEditor)
 void dred_text_editor__register_style(dred_text_editor* pTextEditor, dred_text_style* pStyle)
 {
     dtk_font_metrics fontMetrics;
-    dred_gui_get_font_metrics(pStyle->pFont, &fontMetrics);
+    dtk_font_get_metrics(pStyle->pFont, dred_textview_get_scale(pTextEditor->pTextView), &fontMetrics);
 
     drte_font_metrics drteFontMetrics = drte_font_metrics_create(fontMetrics.ascent, fontMetrics.descent, fontMetrics.lineHeight, fontMetrics.spaceWidth);
     drte_engine_register_style_token(dred_textview_get_engine(dred_text_editor__get_textview(pTextEditor)), (drte_style_token)pStyle, drteFontMetrics);
@@ -480,7 +480,8 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
 
     //dred_control_begin_dirty(DRED_CONTROL(pTextEditor));
     {
-        dred_textview_set_font(pTextEditor->pTextView, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale));    // TODO: <-- This font needs to be unacquired.
+        dred_textview_set_font(pTextEditor->pTextView, &pDred->config.pTextEditorFont->fontDTK);
+        dred_textview_set_scale(pTextEditor->pTextView, pDred->uiScale);
         dred_textview_set_text_color(pTextEditor->pTextView, pDred->config.textEditorTextColor);
         dred_textview_set_cursor_color(pTextEditor->pTextView, pDred->config.textEditorCursorColor);
         dred_textview_set_background_color(pTextEditor->pTextView, pDred->config.textEditorBGColor);
@@ -566,7 +567,8 @@ void dred_text_editor_set_font(dred_text_editor* pTextEditor, dred_font* pFont)
         return;
     }
 
-    dred_textview_set_font(pTextEditor->pTextView, dred_font_acquire_subfont(pFont, pFont->pDred->uiScale));
+    dred_textview_set_font(pTextEditor->pTextView, &pFont->fontDTK);
+    dred_textview_set_scale(pTextEditor->pTextView, pFont->pDred->uiScale);
 }
 
 
@@ -710,7 +712,8 @@ void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, float textSc
     pTextEditor->textScale = dr_clamp(textScale, 0.1f, 4.0f);
     dred_textview_set_line_numbers_width(pTextEditor->pTextView, (48 + pDred->config.textEditorLineNumbersPadding) * pDred->uiScale * pTextEditor->textScale);
     dred_textview_set_line_numbers_padding(pTextEditor->pTextView, pDred->config.textEditorLineNumbersPadding * pDred->uiScale * pTextEditor->textScale);
-    dred_textview_set_font(pTextEditor->pTextView, dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale * pTextEditor->textScale));    // TODO: <-- This font needs to be unacquired.
+    dred_textview_set_font(pTextEditor->pTextView, &pDred->config.pTextEditorFont->fontDTK);
+    dred_textview_set_scale(pTextEditor->pTextView, pDred->uiScale * pTextEditor->textScale);
     dred_textview_set_cursor_width(pTextEditor->pTextView, pDred->config.textEditorCursorWidth * pDred->uiScale * pTextEditor->textScale);
 }
 

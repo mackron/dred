@@ -37,7 +37,7 @@ struct dred_settings_editor
     
 
     // The font to use for everything.
-    dred_gui_font* pFont;
+    dtk_font* pFont;
 
     // The width of the side panel.
     float sidePanelWidth;
