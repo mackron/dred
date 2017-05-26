@@ -1,39 +1,5 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
-dtk_monitor dtk_monitor__init_null()
-{
-    dtk_monitor monitor;
-    dtk_zero_object(&monitor);
-
-#ifdef DTK_WIN32
-    monitor.win32.hMonitor = NULL;
-#endif
-#ifdef DTK_GTK
-    #if GTK_CHECK_VERSION(3, 22, 0)
-        monitor.gtk.pMonitor = NULL;
-    #else
-        monitor.gtk.iMonitor = -1;
-    #endif
-#endif
-
-    return monitor;
-}
-
-dtk_bool32 dtk_monitor__is_null(dtk_monitor monitor)
-{
-#ifdef DTK_WIN32
-    return monitor.win32.hMonitor == NULL;
-#endif
-#ifdef DTK_GTK
-    #if GTK_CHECK_VERSION(3, 22, 0)
-        return monitor.gtk.pMonitor == NULL;
-    #else
-        return monitor.gtk.iMonitor == -1;
-    #endif
-#endif
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -119,12 +85,21 @@ dtk_monitor dtk_get_monitor_by_point__win32(dtk_context* pTK, dtk_int32 x, dtk_i
     return dtk_monitor__init_HMONITOR(MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST));
 }
 
-float dtk_monitor_get_dpi_scale__win32(dtk_context* pTK, dtk_monitor monitor)
+dtk_rect dtk_monitor_get_rect__win32(dtk_context* pTK, dtk_monitor monitor)
 {
-    if (dtk_monitor__is_null(monitor)) {
-        return 1;
+    (void)pTK;
+
+    MONITORINFO mi;
+    mi.cbSize = sizeof(mi);
+    if (!GetMonitorInfoW((HMONITOR)monitor.win32.hMonitor, &mi)) {
+        return dtk_rect_init(0, 0, 0, 0);
     }
 
+    return dtk_rect_init(mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right, mi.rcMonitor.bottom);
+}
+
+float dtk_monitor_get_dpi_scale__win32(dtk_context* pTK, dtk_monitor monitor)
+{
     dtk_bool32 fallBackToSystemDPI = DTK_FALSE;
 
     HMODULE hSHCoreDLL = LoadLibraryW(L"shcore.dll");
@@ -133,7 +108,7 @@ float dtk_monitor_get_dpi_scale__win32(dtk_context* pTK, dtk_monitor monitor)
         if (_GetDpiForMonitor != NULL) {
             UINT dpiX;
             UINT dpiY;
-            if (_GetDpiForMonitor(monitor.win32.hMonitor, DTK_MDT_DEFAULT, &dpiX, &dpiY) == S_OK) {
+            if (_GetDpiForMonitor((HMONITOR)monitor.win32.hMonitor, DTK_MDT_DEFAULT, &dpiX, &dpiY) == S_OK) {
                 (void)dpiY;     // We aren't using the Y DPI for now. This is just for simplicity because it's so rare that the X and Y DPIs would differ.
                 return dpiX / 96.0f;
             } else {
@@ -197,7 +172,7 @@ dtk_monitor dtk_get_monitor_by_window__gtk(dtk_context* pTK, dtk_window* pWindow
     (void)pTK;
     dtk_assert(pWindow != NULL);
 
-    dtk_monitor monitor = dtk_monitor__init_null();
+    dtk_monitor monitor = dtk_monitor_null();
 #if GTK_CHECK_VERSION(3, 22, 0)
     monitor.gtk.pMonitor = gdk_display_get_monitor_at_window(gdk_display_get_default(), gtk_widget_get_window(pWindow->gtk.pWidget));
 #else
@@ -211,7 +186,7 @@ dtk_monitor dtk_get_monitor_by_point__gtk(dtk_context* pTK, dtk_int32 x, dtk_int
 {
     (void)pTK;
 
-    dtk_monitor monitor = dtk_monitor__init_null();
+    dtk_monitor monitor = dtk_monitor_null();
 #if GTK_CHECK_VERSION(3, 22, 0)
     monitor.gtk.pMonitor = gdk_display_get_monitor_at_point(gdk_display_get_default(), x, y);
 #else
@@ -219,6 +194,21 @@ dtk_monitor dtk_get_monitor_by_point__gtk(dtk_context* pTK, dtk_int32 x, dtk_int
 #endif
 
     return monitor;
+}
+
+dtk_rect dtk_monitor_get_rect__gtk(dtk_context* pTK, dtk_monitor monitor)
+{
+    (void)pTK;
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+    GdkRectangle rect;
+    gdk_monitor_get_geometry((GdkMonitor*)monitor.gtk.pMonitor, &rect);
+    return dtk_rect_init(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height);
+#else
+    GdkRectangle rect;
+    gdk_screen_get_monitor_geometry(gdk_display_get_default_screen(gdk_display_get_default()), monitor.gtk.iMonitor, &rect);
+    return dtk_rect_init(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height);
+#endif
 }
 
 float dtk_monitor_get_dpi_scale__gtk(dtk_context* pTK, dtk_monitor monitor)
@@ -233,6 +223,40 @@ float dtk_monitor_get_dpi_scale__gtk(dtk_context* pTK, dtk_monitor monitor)
 }
 #endif
 
+
+
+dtk_monitor dtk_monitor_null()
+{
+    dtk_monitor monitor;
+    dtk_zero_object(&monitor);
+
+#ifdef DTK_WIN32
+    monitor.win32.hMonitor = NULL;
+#endif
+#ifdef DTK_GTK
+    #if GTK_CHECK_VERSION(3, 22, 0)
+        monitor.gtk.pMonitor = NULL;
+    #else
+        monitor.gtk.iMonitor = -1;
+    #endif
+#endif
+
+    return monitor;
+}
+
+dtk_bool32 dtk_monitor_is_null(dtk_monitor monitor)
+{
+#ifdef DTK_WIN32
+    return monitor.win32.hMonitor == NULL;
+#endif
+#ifdef DTK_GTK
+    #if GTK_CHECK_VERSION(3, 22, 0)
+        return monitor.gtk.pMonitor == NULL;
+    #else
+        return monitor.gtk.iMonitor == -1;
+    #endif
+#endif
+}
 
 dtk_uint32 dtk_get_monitor_count(dtk_context* pTK)
 {
@@ -255,9 +279,9 @@ dtk_uint32 dtk_get_monitor_count(dtk_context* pTK)
 
 dtk_monitor dtk_get_monitor_by_index(dtk_context* pTK, dtk_uint32 index)
 {
-    if (pTK == NULL) return dtk_monitor__init_null();
+    if (pTK == NULL) return dtk_monitor_null();
 
-    dtk_monitor monitor = dtk_monitor__init_null();
+    dtk_monitor monitor = dtk_monitor_null();
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
         monitor = dtk_get_monitor_by_index__win32(pTK, index);
@@ -274,9 +298,9 @@ dtk_monitor dtk_get_monitor_by_index(dtk_context* pTK, dtk_uint32 index)
 
 dtk_monitor dtk_get_monitor_by_window(dtk_context* pTK, dtk_window* pWindow)
 {
-    if (pTK == NULL) return dtk_monitor__init_null();
+    if (pTK == NULL) return dtk_monitor_null();
 
-    dtk_monitor monitor = dtk_monitor__init_null();
+    dtk_monitor monitor = dtk_monitor_null();
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
         monitor = dtk_get_monitor_by_window__win32(pTK, pWindow);
@@ -293,9 +317,9 @@ dtk_monitor dtk_get_monitor_by_window(dtk_context* pTK, dtk_window* pWindow)
 
 dtk_monitor dtk_get_monitor_by_point(dtk_context* pTK, dtk_int32 x, dtk_int32 y)
 {
-    if (pTK == NULL) return dtk_monitor__init_null();
+    if (pTK == NULL) return dtk_monitor_null();
 
-    dtk_monitor monitor = dtk_monitor__init_null();
+    dtk_monitor monitor = dtk_monitor_null();
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
         monitor = dtk_get_monitor_by_point__win32(pTK, x, y);
@@ -310,9 +334,37 @@ dtk_monitor dtk_get_monitor_by_point(dtk_context* pTK, dtk_int32 x, dtk_int32 y)
     return monitor;
 }
 
+dtk_bool32 dtk_monitor_equal(dtk_monitor monitorA, dtk_monitor monitorB)
+{
+    return memcmp(&monitorA, &monitorB, sizeof(dtk_monitor)) == 0;
+}
+
+dtk_rect dtk_monitor_get_rect(dtk_context* pTK, dtk_monitor monitor)
+{
+    if (pTK == NULL || dtk_monitor_is_null(monitor)) return dtk_rect_init(0, 0, 0, 0);
+
+    dtk_rect rect = dtk_rect_init(0, 0, 0, 0);
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        rect = dtk_monitor_get_rect__win32(pTK, monitor);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        rect = dtk_monitor_get_rect__gtk(pTK, monitor);
+    }
+#endif
+
+    return rect;
+}
+
 float dtk_monitor_get_dpi_scale(dtk_context* pTK, dtk_monitor monitor)
 {
     if (pTK == NULL) return 1;
+
+    if (dtk_monitor_is_null(monitor)) {
+        return 1;
+    }
 
     float scale = 0;
 #ifdef DTK_WIN32

@@ -203,6 +203,7 @@ typedef int dtk_event_type;
 #define DTK_EVENT_RELEASE_KEYBOARD          21
 #define DTK_EVENT_CAPTURE_MOUSE             22
 #define DTK_EVENT_RELEASE_MOUSE             23
+#define DTK_EVENT_DPI_CHANGED               24
 #define DTK_EVENT_SCROLLBAR_SCROLL          128
 #define DTK_EVENT_TABBAR_CHANGE_TAB         133
 #define DTK_EVENT_TABGROUP_CHANGE_TAB       134
@@ -330,6 +331,15 @@ struct dtk_event
         {
             dtk_control* pNewCapturedControl;
         } releaseKeyboard, releaseMouse;
+
+        struct
+        {
+            float newDPIScale;
+            dtk_int32 suggestedPosX;        // <-- Absolute position.
+            dtk_int32 suggestedPosY;
+            dtk_uint32 suggestedWidth;
+            dtk_uint32 suggestedHeight;
+        } dpiChanged;
 
         struct
         {

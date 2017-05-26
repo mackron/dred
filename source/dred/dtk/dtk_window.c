@@ -720,7 +720,16 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
 
         case 0x02E0: // WM_DPICHANGED
         {
-            // TODO: Do something... maybe update an internal DPI scaling factor in dtk_window?
+            // MSDN recommends settings the position and size of the window based on the RECT passed in vai lParam:
+            //     https://msdn.microsoft.com/en-us/library/windows/desktop/dn312083(v=vs.85).aspx
+
+            RECT* pNewRect = (RECT*)lParam;
+            e.type = DTK_EVENT_DPI_CHANGED;
+            e.dpiChanged.newDPIScale     = LOWORD(wParam) / 96.0f;
+            e.dpiChanged.suggestedPosX   = pNewRect->left;
+            e.dpiChanged.suggestedPosY   = pNewRect->top;
+            e.dpiChanged.suggestedWidth  = pNewRect->right - pNewRect->left;
+            e.dpiChanged.suggestedHeight = pNewRect->bottom - pNewRect->top;
         } break;
         
         default: break;
@@ -1894,6 +1903,47 @@ void dtk_window__check_and_handle_mouse_enter_and_leave(dtk_window* pWindow, dtk
     }
 }
 
+void dtk_window__get_and_set_monitor(dtk_window* pWindow)
+{
+    dtk_context* pTK = DTK_CONTROL(pWindow)->pTK;
+
+    dtk_monitor oldMonitor = pWindow->monitor;
+    dtk_monitor newMonitor = dtk_get_monitor_by_window(pTK, pWindow);
+    if (!dtk_monitor_equal(oldMonitor, newMonitor)) {
+        // The monitor has changed. Make sure the DPI scaling is updated.
+        pWindow->monitor = newMonitor;
+
+        float oldDPIScale = pWindow->dpiScale;
+        float newDPIScale = dtk_monitor_get_dpi_scale(DTK_CONTROL(pWindow)->pTK, pWindow->monitor);
+        if (oldDPIScale != newDPIScale) {
+            dtk_event e = dtk_event_init(pTK, DTK_EVENT_DPI_CHANGED, DTK_CONTROL(pWindow));
+            e.dpiChanged.newDPIScale = newDPIScale;
+            dtk_window_get_absolute_position(pWindow, &e.dpiChanged.suggestedPosX, &e.dpiChanged.suggestedPosY);
+
+            dtk_uint32 currentWidth;
+            dtk_uint32 currentHeight;
+            dtk_window_get_size(pWindow, &currentWidth, &currentHeight);
+            
+            float suggestionScale = newDPIScale / oldDPIScale;
+            e.dpiChanged.suggestedWidth  = (dtk_uint32)(currentWidth  * suggestionScale);
+            e.dpiChanged.suggestedHeight = (dtk_uint32)(currentHeight * suggestionScale);
+
+            // The suggested position needs to be compensated for the size difference. The way this is done depends on the position of
+            // the old monitor relative to the new one.
+            dtk_rect oldMonitorRect = dtk_monitor_get_rect(pTK, oldMonitor);
+            dtk_rect newMonitorRect = dtk_monitor_get_rect(pTK, newMonitor);
+            if (oldMonitorRect.left > newMonitorRect.left) {
+                e.dpiChanged.suggestedPosX = e.dpiChanged.suggestedPosX - ((dtk_int32)e.dpiChanged.suggestedWidth - (dtk_int32)currentWidth);
+            }
+            if (oldMonitorRect.top > newMonitorRect.top) {
+                e.dpiChanged.suggestedPosY = e.dpiChanged.suggestedPosY - ((dtk_int32)e.dpiChanged.suggestedHeight - (dtk_int32)currentHeight);
+            }
+
+            dtk_post_local_event(DTK_CONTROL(pWindow)->pTK, &e);
+        }
+    }
+}
+
 dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_event_proc onEvent, dtk_window* pWindow)
 {
     if (pWindow == NULL) return DTK_INVALID_ARGS;
@@ -1943,6 +1993,9 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_ty
         // Popup windows are not currently allowed to receive the keyboard capture.
         dtk_control_forbid_keyboard_capture(DTK_CONTROL(pWindow));
     }
+
+    // The window is not currently on a monitor. It will be set to the appropriate monitor after window has been shown.
+    pWindow->monitor = dtk_monitor_null();
 
     // Window's are not shown by default.
     DTK_CONTROL(pWindow)->isHidden = DTK_TRUE;
@@ -2043,6 +2096,11 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
             dtk_control_iterate_visible_controls(DTK_CONTROL(pWindow), pEvent->paint.rect, dtk_window__on_paint_control, dtk_window__on_paint_control_finished, DTK_CONTROL_ITERATION_SKIP_WINDOWS | DTK_CONTROL_ITERATION_ALWAYS_INCLUDE_CHILDREN, pEvent);
         } break;
 
+        case DTK_EVENT_SHOW:
+        {
+            dtk_window__get_and_set_monitor(pWindow);
+        } break;
+
         case DTK_EVENT_SIZE:
         {
             DTK_CONTROL(pWindow)->width  = pEvent->size.width;
@@ -2053,6 +2111,9 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
         {
             DTK_CONTROL(pWindow)->absolutePosX = pEvent->move.x;
             DTK_CONTROL(pWindow)->absolutePosY = pEvent->move.y;
+
+            // If the monitor the window is sitting on has changed we'll want to update the local DPI scaling factor.
+            dtk_window__get_and_set_monitor(pWindow);
         } break;
 
         case DTK_EVENT_MOUSE_LEAVE:
@@ -2213,6 +2274,12 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
             }
 
             pWindow->isNextMouseReleaseExplicit = DTK_FALSE;
+        } break;
+
+        case DTK_EVENT_DPI_CHANGED:
+        {
+            pWindow->dpiScale = pEvent->dpiChanged.newDPIScale;
+            dtk_window__get_and_set_monitor(pWindow);   // <-- The DPI change may have been a result in a change in monitor.
         } break;
     }
 

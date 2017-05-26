@@ -1032,3 +1032,15 @@ dtk_bool32 dtk_control_is_point_inside(dtk_control* pControl, dtk_int32 absolute
 
     return DTK_TRUE;
 }
+
+
+float dtk_control_get_dpi_scale(dtk_control* pControl)
+{
+    if (pControl == NULL) return 1;
+
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        return DTK_WINDOW(pControl)->dpiScale;
+    }
+
+    return dtk_control_get_dpi_scale(pControl->pParent);
+}

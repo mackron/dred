@@ -26,6 +26,8 @@ struct dtk_window
     dtk_bool32 isNextKeyboardReleaseExplicit : 1;
     dtk_bool32 isNextMouseCaptureExplicit    : 1;
     dtk_bool32 isNextMouseReleaseExplicit    : 1;
+    dtk_monitor monitor;                            // The monitor the window is currently sitting on. Used for DPI scaling. Initially set in dtk_window_init(), and then update whenever the window moves.
+    float dpiScale;                                 // The cached DPI scale. This is used in painting routines so it's important it's available for fast access.
 
     union
     {

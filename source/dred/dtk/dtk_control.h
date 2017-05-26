@@ -291,3 +291,9 @@ dtk_bool32 dtk_control_is_point_inside_bounds(dtk_control* pControl, dtk_int32 a
 
 // The same as dtk_control_is_point_inside_bounds(), except also checks against the hit test callback.
 dtk_bool32 dtk_control_is_point_inside(dtk_control* pControl, dtk_int32 absolutePosX, dtk_int32 absolutePosY);
+
+
+// Retrieves the DPI scale to use with this control.
+//
+// The return value for this will be based on the DPI scale of the window that owns it.
+float dtk_control_get_dpi_scale(dtk_control* pControl);
