@@ -717,6 +717,11 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
                 }
             }
         } break;
+
+        case 0x02E0: // WM_DPICHANGED
+        {
+            // TODO: Do something... maybe update an internal DPI scaling factor in dtk_window?
+        } break;
         
         default: break;
     }

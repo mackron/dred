@@ -268,6 +268,23 @@ dtk_result dtk_errno_to_result(int err)
 #define DTK_WM_CUSTOM                       (WM_USER + 1)
 #define DTK_WM_PAINT_NOTIFICATION           (WM_USER + 2)
 
+typedef enum DTK_PROCESS_DPI_AWARENESS {
+    DTK_PROCESS_DPI_UNAWARE = 0,
+    DTK_PROCESS_SYSTEM_DPI_AWARE = 1,
+    DTK_PROCESS_PER_MONITOR_DPI_AWARE = 2
+} DTK_PROCESS_DPI_AWARENESS;
+
+typedef enum DTK_MONITOR_DPI_TYPE {
+    DTK_MDT_EFFECTIVE_DPI = 0,
+    DTK_MDT_ANGULAR_DPI = 1,
+    DTK_MDT_RAW_DPI = 2,
+    DTK_MDT_DEFAULT = DTK_MDT_EFFECTIVE_DPI
+} DTK_MONITOR_DPI_TYPE;
+
+typedef BOOL    (__stdcall * DTK_PFN_SetProcessDPIAware)     (void);
+typedef HRESULT (__stdcall * DTK_PFN_SetProcessDpiAwareness) (DTK_PROCESS_DPI_AWARENESS);
+typedef HRESULT (__stdcall * DTK_PFN_GetDpiForMonitor)       (HMONITOR hmonitor, DTK_MONITOR_DPI_TYPE dpiType, UINT *dpiX, UINT *dpiY);
+
 typedef BOOL    (WINAPI * DTK_PFN_InitCommonControlsEx)(const LPINITCOMMONCONTROLSEX lpInitCtrls);
 typedef HRESULT (WINAPI * DTK_PFN_OleInitialize)       (LPVOID pvReserved);
 typedef void    (WINAPI * DTK_PFN_OleUninitialize)     ();
@@ -286,6 +303,7 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 #include "dtk_rect.c"
 #include "dtk_string.c"
 #include "dtk_threading.c"
+#include "dtk_monitor.c"
 #include "dtk_graphics.c"
 #include "dtk_input.c"
 #include "dtk_accelerators.c"
@@ -324,23 +342,6 @@ typedef struct
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DTK_WIN32
 static dtk_uint32 g_dtkInitCounter_Win32 = 0;
-
-typedef enum DTK_PROCESS_DPI_AWARENESS {
-    DTK_PROCESS_DPI_UNAWARE = 0,
-    DTK_PROCESS_SYSTEM_DPI_AWARE = 1,
-    DTK_PROCESS_PER_MONITOR_DPI_AWARE = 2
-} DTK_PROCESS_DPI_AWARENESS;
-
-typedef enum DTK_MONITOR_DPI_TYPE {
-    DTK_MDT_EFFECTIVE_DPI = 0,
-    DTK_MDT_ANGULAR_DPI = 1,
-    DTK_MDT_RAW_DPI = 2,
-    DTK_MDT_DEFAULT = DTK_MDT_EFFECTIVE_DPI
-} DTK_MONITOR_DPI_TYPE;
-
-typedef BOOL    (__stdcall * DTK_PFN_SetProcessDPIAware)     (void);
-typedef HRESULT (__stdcall * DTK_PFN_SetProcessDpiAwareness) (DTK_PROCESS_DPI_AWARENESS);
-typedef HRESULT (__stdcall * DTK_PFN_GetDpiForMonitor)       (HMONITOR hmonitor, DTK_MONITOR_DPI_TYPE dpiType, UINT *dpiX, UINT *dpiY);
 
 void dtk_make_dpi_aware__win32()
 {
@@ -1272,11 +1273,7 @@ float dtk_get_dpi_scale__gtk(dtk_context* pTK)
 {
     if (pTK == NULL) return 1;
 
-    // TODO: Implement me.
-    //
-    // Things to consider:
-    // - GdkMonitor (new in 3.22)
-    // - GdkScreen (much is deprecated in favour of the monitor API in 3.22 - need to think about compatibility with older versions of GTK.)
+    // Not really sure if GTK has any notion of a system wide DPI scale.
     return 1;
 }
 
