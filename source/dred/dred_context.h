@@ -84,13 +84,6 @@ struct dred_context
     dred_cmdbar_popup* pCmdBarPopup;
 
 
-    // The scale to apply for normal system DPI scaling. Usually this will be the same as UI scale, but not always.
-    float dpiScale;
-
-    // The UI scale. All UI elements need to be scaled by this amount.
-    float uiScale;
-
-
     // Whether or not the context is initialized.
     dr_bool32 isInitialized;
 
@@ -307,6 +300,9 @@ void dred_show_settings_dialog(dred_context* pDred);
 // to the size or visibility state of the command bar.
 void dred_update_main_window_layout(dred_context* pDred);
 
+// Updates the layout and styling of the entire UI. This will be called for global changes to the UI such as changes to DPI scaling.
+void dred_refresh_gui(dred_context* pDred);
+
 
 // Sets the text of the command bar.
 void dred_set_command_bar_text(dred_context* pDred, const char* text);
@@ -417,3 +413,13 @@ void dred_on_accelerator(dred_context* pDred, dtk_accelerator accelerator);
 
 // Called from the main loop in the platform layer when an IPC message is received.
 void dred_on_ipc_message(dred_context* pDred, unsigned int messageID, const void* pMessageData);
+
+
+// Retrieves a pointer to the dred_context from the given DTK control.
+//
+// This function assumes the control was created from the dtk_context object that is owned by the dred_context object.
+dred_context* dred_get_context_from_control(dtk_control* pControl);
+
+// Retrieves the UI scale for use with the given control. This is based on the DPI scaling of the window
+// that owns the control and dred's "ui-scale" config variable.
+float dred_get_control_ui_scale(dred_context* pDred, dtk_control* pControl);

@@ -337,6 +337,11 @@ void dred_config_push_recent_cmd(dred_config* pConfig, const char* cmd)
 
 // Set handlers.
 
+void dred_config_on_set__ui_scale(dred_context* pDred)
+{
+    dred_refresh_gui(pDred);
+}
+
 void dred_config_on_set__ui_font(dred_context* pDred)
 {
     // Everything that uses the UI font needs to be updated.

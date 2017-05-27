@@ -41,33 +41,35 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dtk_surface* 
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pInfoBar));
     assert(pDred != NULL);
 
+    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pInfoBar));
+
     dred_control_draw_rect(DRED_CONTROL(pInfoBar), dred_control_get_local_rect(DRED_CONTROL(pInfoBar)), dred_info_bar__get_bg_color(pInfoBar), pSurface);
 
 
-    float padding = 32*pDred->uiScale;
-    float paddingRight = pDred->config.cmdbarPaddingX*pDred->uiScale;
+    float padding = 32*uiScale;
+    float paddingRight = pDred->config.cmdbarPaddingX*uiScale;
 
     dtk_font* pFont = &pDred->config.pUIFont->fontDTK;
     if (pFont != NULL) {
         dtk_font_metrics fontMetrics;
-        dtk_font_get_metrics(pFont, pDred->uiScale, &fontMetrics);
+        dtk_font_get_metrics(pFont, uiScale, &fontMetrics);
 
         // The text info will be right-aligned so we need to measure first.
         float lineStrWidth;
-        dtk_font_measure_string(pFont, pDred->uiScale, pInfoBar->lineStr, strlen(pInfoBar->lineStr), &lineStrWidth, NULL);
+        dtk_font_measure_string(pFont, uiScale, pInfoBar->lineStr, strlen(pInfoBar->lineStr), &lineStrWidth, NULL);
 
         float colStrWidth;
-        dtk_font_measure_string(pFont, pDred->uiScale, pInfoBar->colStr, strlen(pInfoBar->colStr), &colStrWidth, NULL);
+        dtk_font_measure_string(pFont, uiScale, pInfoBar->colStr, strlen(pInfoBar->colStr), &colStrWidth, NULL);
 
         float totalWidth = lineStrWidth + padding + colStrWidth + paddingRight;
 
         
         float textPosX = dred_control_get_width(DRED_CONTROL(pInfoBar)) - totalWidth;
         float textPosY = (dred_control_get_height(DRED_CONTROL(pInfoBar)) - fontMetrics.lineHeight) / 2;
-        dred_control_draw_text(DRED_CONTROL(pInfoBar), pFont, pDred->uiScale, pInfoBar->lineStr, (int)strlen(pInfoBar->lineStr), textPosX, textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pSurface);
+        dred_control_draw_text(DRED_CONTROL(pInfoBar), pFont, uiScale, pInfoBar->lineStr, (int)strlen(pInfoBar->lineStr), textPosX, textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pSurface);
 
         textPosX += lineStrWidth + padding;
-        dred_control_draw_text(DRED_CONTROL(pInfoBar), pFont, pDred->uiScale, pInfoBar->colStr, (int)strlen(pInfoBar->colStr), textPosX, textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pSurface);
+        dred_control_draw_text(DRED_CONTROL(pInfoBar), pFont, uiScale, pInfoBar->colStr, (int)strlen(pInfoBar->colStr), textPosX, textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pSurface);
     }
 }
 
@@ -109,10 +111,11 @@ dr_bool32 dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_
     pInfoBar->colStr[0] = '\0';
     pInfoBar->zoomStr[0] = '\0';
 
+    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pInfoBar));
 
     // The height of the command bar is based on the size of the font.
     dtk_font_metrics fontMetrics;
-    dtk_font_get_metrics(pInfoBar->pFont, pDred->uiScale, &fontMetrics);
+    dtk_font_get_metrics(pInfoBar->pFont, uiScale, &fontMetrics);
     dred_control_set_size(DRED_CONTROL(pInfoBar), 0, (float)fontMetrics.lineHeight);
 
 
@@ -158,13 +161,15 @@ void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar)
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pInfoBar));
     assert(pDred != NULL);
 
+    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pInfoBar));
+
     dtk_font* pNewFont = &pDred->config.pUIFont->fontDTK;
     if (pNewFont != NULL) {
         pInfoBar->pFont = pNewFont;
 
         // The height of the command bar is based on the size of the font.
         dtk_font_metrics fontMetrics;
-        dtk_font_get_metrics(pInfoBar->pFont, pDred->uiScale, &fontMetrics);
+        dtk_font_get_metrics(pInfoBar->pFont, uiScale, &fontMetrics);
         dred_control_set_size(DRED_CONTROL(pInfoBar), dred_control_get_width(DRED_CONTROL(pInfoBar)), (float)fontMetrics.lineHeight);
     }
 

@@ -8,7 +8,16 @@
                     <ul>
                         <li>Fixed a bug with autocomplete where the popup box would not be filled correctly after executing a command.</li>
                         <li>Fixed a bug where the command bar would not be relieved of the keyboard focus when opening any kind of dialog box via a command.</li>
-                        <li>DPI fixes and improvements.</li>
+                        <li>DPI fixes and improvements.
+                            <ul>
+                                <li>(Windows) Changes to DPI scaling settings are now automatically applied to dred dynamically at run-time:
+                                    <img src="{{ relative-path "img/releases/v0_4/dynamic_dpi.gif" }}" style="border:solid 2px #000">
+                                </li>
+                                <li>The "ui-scale" setting is now applied immediately without the need for a restart. This setting stacks with the system DPI setting.
+                                    <img src="{{ relative-path "img/releases/v0_4/dynamic_uiscale.gif" }}" style="border:solid 2px #000">
+                                </li>
+                            </ul>
+                        </li>
                         <li>... and much more!</li>
                     </ul>
                     

@@ -1,5 +1,8 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
+#define DRED_SETTINGS_DIALOG_BASE_SIZE_X    720
+#define DRED_SETTINGS_DIALOG_BASE_SIZE_Y    480
+
 void dred_settings_dialog__on_window_close(dred_window* pWindow)
 {
     // Just hide the window. The main context will delete it for real at close time.
@@ -18,7 +21,9 @@ dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred)
         return NULL;
     }
 
-    pDialog->pWindow = dred_window_create_dialog(pDred->pMainWindow, "Settings", (unsigned int)(720*pDred->uiScale), (unsigned int)(480*pDred->uiScale));
+    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pDred->pMainWindow));
+
+    pDialog->pWindow = dred_window_create_dialog(pDred->pMainWindow, "Settings", (unsigned int)(DRED_SETTINGS_DIALOG_BASE_SIZE_X*uiScale), (unsigned int)(DRED_SETTINGS_DIALOG_BASE_SIZE_Y*uiScale));
     if (pDialog->pWindow == NULL) {
         free(pDialog);
         return NULL;
@@ -89,6 +94,12 @@ void dred_settings_dialog_refresh_styling(dred_settings_dialog* pDialog)
     if (pDialog == NULL) {
         return;
     }
+
+    float uiScale = dred_get_control_ui_scale(pDialog->pWindow->pDred, DTK_CONTROL(pDialog->pWindow));
+    dtk_uint32 windowWidth  = (dtk_uint32)(DRED_SETTINGS_DIALOG_BASE_SIZE_X*uiScale);
+    dtk_uint32 windowHeight = (dtk_uint32)(DRED_SETTINGS_DIALOG_BASE_SIZE_Y*uiScale);
+    dtk_window_set_size(DTK_WINDOW(pDialog->pWindow), windowWidth, windowHeight);
+    dtk_window_move_to_center(DTK_WINDOW(pDialog->pWindow));
 
     dred_settings_editor_refresh_styling(pDialog->pSettingsEditor);
 }

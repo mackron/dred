@@ -436,16 +436,6 @@ dr_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred
     pTextView->lineNumbersStyle.fgColor = dred_rgb(80, 160, 192);
 
 
-    // Test styling.
-    /*pTextView->testStyle0.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
-    pTextView->testStyle0.bgColor = dred_rgb(64, 64, 64);
-    pTextView->testStyle0.fgColor = dred_rgb(64, 160, 255);
-
-    pTextView->testStyle1.pFont = dred_font_acquire_subfont(pDred->config.pTextEditorFont, pDred->uiScale);
-    pTextView->testStyle1.bgColor = dred_rgb(64, 64, 64);
-    pTextView->testStyle1.fgColor = dred_rgb(64, 192, 92);*/
-
-
     // Register the styles with the text engine.
     dred_textview__refresh_style(pTextView);
 

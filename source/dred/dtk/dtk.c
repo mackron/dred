@@ -354,15 +354,15 @@ void dtk_make_dpi_aware__win32()
         DTK_PFN_SetProcessDpiAwareness _SetProcessDpiAwareness = (DTK_PFN_SetProcessDpiAwareness)GetProcAddress(hSHCoreDLL, "SetProcessDpiAwareness");
         if (_SetProcessDpiAwareness != NULL) {
             if (_SetProcessDpiAwareness(DTK_PROCESS_PER_MONITOR_DPI_AWARE) != S_OK) {
-                fallBackToDiscouragedAPI = DTK_FALSE;
+                fallBackToDiscouragedAPI = DTK_TRUE;
             }
         } else {
-            fallBackToDiscouragedAPI = DTK_FALSE;
+            fallBackToDiscouragedAPI = DTK_TRUE;
         }
 
         FreeLibrary(hSHCoreDLL);
     } else {
-        fallBackToDiscouragedAPI = DTK_FALSE;
+        fallBackToDiscouragedAPI = DTK_TRUE;
     }
 
     if (fallBackToDiscouragedAPI) {

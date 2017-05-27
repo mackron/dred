@@ -14,6 +14,8 @@ void dred_button__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
         return;
     }
 
+    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pControl));
+
 
     dtk_color bgColor = pButton->bgColor;
     if (dtk_control_has_mouse_capture(DTK_CONTROL(pButton))) {
@@ -34,11 +36,11 @@ void dred_button__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
 
     float textWidth;
     float textHeight;
-    dtk_font_measure_string(&pButton->pFont->fontDTK, pDred->uiScale, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
+    dtk_font_measure_string(&pButton->pFont->fontDTK, uiScale, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
 
     float textPosX = roundf(((bgrect.right - bgrect.left) - textWidth) / 2);
     float textPosY = roundf(((bgrect.bottom - bgrect.top) - textHeight) / 2);
-    dred_control_draw_text(DRED_CONTROL(pButton), &pButton->pFont->fontDTK, pDred->uiScale, pButton->text, (int)strlen(pButton->text), textPosX, textPosY, pButton->textColor, bgColor, pSurface);
+    dred_control_draw_text(DRED_CONTROL(pButton), &pButton->pFont->fontDTK, uiScale, pButton->text, (int)strlen(pButton->text), textPosX, textPosY, pButton->textColor, bgColor, pSurface);
     
     // Make sure the background does not overdraw the text.
     dred_control_draw_rect(DRED_CONTROL(pButton), dred_make_rect(bgrect.left, bgrect.top, textPosX, bgrect.bottom), bgColor, pSurface);
@@ -133,10 +135,12 @@ void dred_button__refresh_layout(dred_button* pButton)
         return;
     }
 
+    float uiScale = dred_get_control_ui_scale(DRED_CONTROL(pButton)->pGUI->pDred, DTK_CONTROL(pButton));
+
     if (pButton->isAutoSizeEnabled) {
         float textWidth;
         float textHeight;
-        dtk_font_measure_string(&pButton->pFont->fontDTK, DRED_CONTROL(pButton)->pGUI->pDred->uiScale, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
+        dtk_font_measure_string(&pButton->pFont->fontDTK, uiScale, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
 
         dred_control_set_size(DRED_CONTROL(pButton), textWidth + (pButton->paddingHorz*2), textHeight + (pButton->paddingVert*2));
     }

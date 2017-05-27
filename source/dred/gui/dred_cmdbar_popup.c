@@ -3,8 +3,10 @@
 void dred_cmdbar_popup__refresh_cmdbox_layout(dred_cmdbar_popup* pCmdBarPopup, dtk_uint32 popupSizeX, dtk_uint32 popupSizeY)
 {
     dred_context* pDred = pCmdBarPopup->pDred;
-    dtk_int32 padding     = (dtk_int32)(pDred->config.cmdbarPopupPadding     * pDred->uiScale);
-    dtk_int32 borderWidth = (dtk_int32)(pDred->config.cmdbarPopupBorderWidth * pDred->uiScale);
+    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pCmdBarPopup->pWindow));
+
+    dtk_int32 padding     = (dtk_int32)(pDred->config.cmdbarPopupPadding     * uiScale);
+    dtk_int32 borderWidth = (dtk_int32)(pDred->config.cmdbarPopupBorderWidth * uiScale);
 
     dtk_int32 cmdboxPosX = borderWidth + padding;
     dtk_int32 cmdboxPosY = borderWidth + padding;
@@ -46,7 +48,7 @@ void dred_cmdbar_popup__on_paint(dred_control* pControl, dred_rect rect, dtk_sur
     //dred_cmdbar_popup* pCmdBarPopup = (dred_cmdbar_popup*)pWindow->pUserData;
     //assert(pCmdBarPopup != NULL);
 
-    float uiScale = (float)pDred->uiScale;
+    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pControl));
 
     dred_rect popupRect = dred_control_get_local_rect(pControl);
     dred_control_draw_rect_outline(pControl, popupRect, pDred->config.cmdbarBGColorActive, pDred->config.cmdbarPopupBorderWidth*uiScale, pSurface);

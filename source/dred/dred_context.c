@@ -16,6 +16,7 @@ void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabg
     }
 
     dred_control_set_size(DRED_CONTROL(pContainer), parentWidth, parentHeight - dred__get_cmd_bar_height(pDred));
+    dred_tabgroup_refresh_styling(pDred->pMainTabGroup);
 }
 
 void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float parentWidth, float parentHeight)
@@ -31,6 +32,7 @@ void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float
 
     if (pDred->pCmdBarPopup != NULL) {
         dred_window_set_size(pDred->pCmdBarPopup->pWindow, (int)parentWidth, 300);
+        dred_cmdbar_popup_refresh_styling(pDred->pCmdBarPopup);
     }
 }
 
@@ -384,6 +386,29 @@ static dtk_bool32 dred_dtk_global_event_proc(dtk_event* pEvent)
     return dtk_default_event_handler(pEvent);
 }
 
+static dtk_bool32 dred_main_window_event_handler(dtk_event* pEvent)
+{
+    dtk_window* pWindow = DTK_WINDOW(pEvent->pControl);
+    dred_context* pDred = (dred_context*)pEvent->pTK->pUserData;
+
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_DPI_CHANGED:
+        {
+            dtk_window_set_absolute_position(pWindow, pEvent->dpiChanged.suggestedPosX, pEvent->dpiChanged.suggestedPosY);
+            dtk_window_set_size(pWindow, pEvent->dpiChanged.suggestedWidth, pEvent->dpiChanged.suggestedHeight);
+
+            dred_refresh_gui(pDred);
+
+            dtk_control_scheduled_redraw(DTK_CONTROL(pWindow), dtk_control_get_local_rect(DTK_CONTROL(pWindow)));
+        } break;
+
+        default: break;
+    }
+
+    return dred_dtk_window_event_handler(pEvent);
+}
+
 
 dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_library* pPackageLibrary)
 {
@@ -432,11 +457,6 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
 
     // Open the log file first to ensure we're able to log as soon as possible.
     pDred->logFile = dred__open_log_file(pDred);
-
-
-    // Grab the system DPI scaling early so it can be used to correctly size GUI elements at initialization time.
-    pDred->dpiScale = dtk_get_dpi_scale(&pDred->tk);
-    pDred->uiScale = pDred->dpiScale;
 
 
     // The GUI.
@@ -492,10 +512,6 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
 
     dred_load_config(pDred, ".dred");
 
-    // The UI scale will be known only after loading the configs.
-    pDred->uiScale = pDred->dpiScale * pDred->config.uiScale;
-
-
 
     // Stock menus should be initialized after the shortcut table and configs because it will need access to the initial shortcut bindings
     // and recent files.
@@ -513,13 +529,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
 
 
     // The main window.
-    windowPosX = pDred->config.windowPosX;
-    windowPosY = pDred->config.windowPosY;
-    windowWidth =  (unsigned int)(pDred->config.windowWidth*pDred->dpiScale);
-    windowHeight = (unsigned int)(pDred->config.windowHeight*pDred->dpiScale);
-    showWindowMaximized = pDred->config.windowMaximized;
-
-    pDred->pMainWindow = dred_window_create(pDred);
+    pDred->pMainWindow = dred_window_create(pDred, dred_main_window_event_handler);
     if (pDred->pMainWindow == NULL) {
         dred_error(pDred, "Failed to create main window.");
         goto on_error;
@@ -570,6 +580,12 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     // Show the window last to ensure child GUI elements have been initialized and in a valid state. This should be done before
     // opening the files passed on the command line, however, because the window needs to be shown in order for it to receive
     // keyboard focus.
+    windowPosX = pDred->config.windowPosX;
+    windowPosY = pDred->config.windowPosY;
+    windowWidth =  (unsigned int)(pDred->config.windowWidth  * dtk_control_get_dpi_scale(DTK_CONTROL(pDred->pMainWindow)));
+    windowHeight = (unsigned int)(pDred->config.windowHeight * dtk_control_get_dpi_scale(DTK_CONTROL(pDred->pMainWindow)));
+    showWindowMaximized = pDred->config.windowMaximized;
+
     dred_window_set_title(pDred->pMainWindow, "dred");
     dred_window_set_menu(pDred->pMainWindow, &pDred->menus.nothingopen);
     dred_window_set_size(pDred->pMainWindow, windowWidth, windowHeight);
@@ -2302,6 +2318,26 @@ void dred_update_main_window_layout(dred_context* pDred)
     dred__update_main_window_layout(pDred->pMainWindow, (float)windowWidth, (float)windowHeight);
 }
 
+void dred_refresh_gui(dred_context* pDred)
+{
+    if (pDred == NULL) return;
+
+    dred_cmdbar_refresh_styling(&pDred->cmdBar);
+    dred_settings_dialog_refresh_styling(pDred->pSettingsDialog);
+    dred_about_dialog_refresh_layout(pDred->pAboutDialog);
+    dred_update_main_window_layout(pDred);
+
+    // Any open editors need to have their layouts updated.
+    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
+        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+            dred_control* pControl = dred_tab_get_control(pTab);
+            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
+                dred_text_editor_refresh_styling(DRED_TEXT_EDITOR(pControl));
+            }
+        }
+    }
+}
+
 
 void dred_set_command_bar_text(dred_context* pDred, const char* text)
 {
@@ -2908,4 +2944,17 @@ void dred_on_ipc_message(dred_context* pDred, unsigned int messageID, const void
             dred_warningf(pDred, "Received unknown IPC message: %d\n", messageID);
         } break;
     }
+}
+
+
+dred_context* dred_get_context_from_control(dtk_control* pControl)
+{
+    if (pControl == NULL) return NULL;
+    return (dred_context*)pControl->pTK->pUserData;
+}
+
+float dred_get_control_ui_scale(dred_context* pDred, dtk_control* pControl)
+{
+    if (pDred == NULL) return 1;
+    return dtk_control_get_dpi_scale(pControl) * pDred->config.uiScale;
 }

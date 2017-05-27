@@ -23,8 +23,10 @@ dtk_bool32 dred_cmdbox_cmdlist__find_line_index_under_point(dred_cmdbox_cmdlist*
         return DTK_FALSE;
     }
 
+    float uiScale = dred_get_control_ui_scale(pCmdList->pDred, DTK_CONTROL(pCmdList));
+
     dtk_font_metrics fontMetrics;
-    dtk_font_get_metrics(dtk_get_default_font(&pCmdList->pDred->tk), pCmdList->pDred->uiScale, &fontMetrics);
+    dtk_font_get_metrics(dtk_get_default_font(&pCmdList->pDred->tk), uiScale, &fontMetrics);
 
     dtk_uint32 lineIndexUnscrolled = y / fontMetrics.lineHeight;
     dtk_uint32 lineIndex = lineIndexUnscrolled + dred_scrollbar_get_scroll_position(&pCmdList->scrollbar);
@@ -57,8 +59,10 @@ void dred_cmdbox_cmdlist__refresh_layout(dred_cmdbox_cmdlist* pCmdList)
 {
     dtk_assert(pCmdList != NULL);
 
+    float uiScale = dred_get_control_ui_scale(pCmdList->pDred, DTK_CONTROL(pCmdList));
+
     // Update the size of the scrollbar first.
-    dtk_uint32 scrollbarSizeX = (dtk_uint32)(pCmdList->pDred->config.textEditorSBSize * pCmdList->pDred->uiScale);
+    dtk_uint32 scrollbarSizeX = (dtk_uint32)(pCmdList->pDred->config.textEditorSBSize * uiScale);
     dtk_uint32 scrollbarSizeY = dtk_control_get_height(DTK_CONTROL(pCmdList));
     dtk_control_set_size(DTK_CONTROL(&pCmdList->scrollbar), scrollbarSizeX, scrollbarSizeY);
 
@@ -101,7 +105,7 @@ dtk_bool32 dred_cmbox_cmdlist_event_handler(dtk_event* pEvent)
         case DTK_EVENT_PAINT:
         {
             dred_context* pDred = pCmdList->pDred;
-            float uiScale = pDred->uiScale;
+            float uiScale = dred_get_control_ui_scale(pCmdList->pDred, DTK_CONTROL(pCmdList));;
 
             // The rectangle we draw inside of depends on whether or not the scrollbar is visible.
             dtk_rect contentRect = dred_cmdbox_cmdlist__calculate_content_rect(pCmdList);

@@ -478,10 +478,12 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextEditor));
     assert(pDred != NULL);
 
+    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pTextEditor));
+
     //dred_control_begin_dirty(DRED_CONTROL(pTextEditor));
     {
         dred_textview_set_font(pTextEditor->pTextView, &pDred->config.pTextEditorFont->fontDTK);
-        dred_textview_set_scale(pTextEditor->pTextView, pDred->uiScale);
+        dred_textview_set_scale(pTextEditor->pTextView, uiScale);
         dred_textview_set_text_color(pTextEditor->pTextView, pDred->config.textEditorTextColor);
         dred_textview_set_cursor_color(pTextEditor->pTextView, pDred->config.textEditorCursorColor);
         dred_textview_set_background_color(pTextEditor->pTextView, pDred->config.textEditorBGColor);
@@ -496,7 +498,7 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
         dred_textview_set_scrollbar_thumb_color(pTextEditor->pTextView, pDred->config.textEditorSBThumbColor);
         dred_textview_set_scrollbar_thumb_color_hovered(pTextEditor->pTextView, pDred->config.textEditorSBThumbColorHovered);
         dred_textview_set_scrollbar_thumb_color_pressed(pTextEditor->pTextView, pDred->config.textEditorSBThumbColorPressed);
-        dred_textview_set_scrollbar_size(pTextEditor->pTextView, pDred->config.textEditorSBSize * pDred->uiScale);
+        dred_textview_set_scrollbar_size(pTextEditor->pTextView, pDred->config.textEditorSBSize * uiScale);
         if (pDred->config.textEditorShowScrollbarHorz) {
             dred_textview_enable_horizontal_scrollbar(pTextEditor->pTextView);
         } else {
@@ -567,8 +569,10 @@ void dred_text_editor_set_font(dred_text_editor* pTextEditor, dred_font* pFont)
         return;
     }
 
+    float uiScale = dred_get_control_ui_scale(pFont->pDred, DTK_CONTROL(pTextEditor));
+
     dred_textview_set_font(pTextEditor->pTextView, &pFont->fontDTK);
-    dred_textview_set_scale(pTextEditor->pTextView, pFont->pDred->uiScale);
+    dred_textview_set_scale(pTextEditor->pTextView, uiScale);
 }
 
 
@@ -709,12 +713,14 @@ void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, float textSc
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextEditor));
     assert(pDred != NULL);
 
+    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pTextEditor));
+
     pTextEditor->textScale = dr_clamp(textScale, 0.1f, 4.0f);
-    dred_textview_set_line_numbers_width(pTextEditor->pTextView, (48 + pDred->config.textEditorLineNumbersPadding) * pDred->uiScale * pTextEditor->textScale);
-    dred_textview_set_line_numbers_padding(pTextEditor->pTextView, pDred->config.textEditorLineNumbersPadding * pDred->uiScale * pTextEditor->textScale);
+    dred_textview_set_line_numbers_width(pTextEditor->pTextView, (48 + pDred->config.textEditorLineNumbersPadding) * uiScale * pTextEditor->textScale);
+    dred_textview_set_line_numbers_padding(pTextEditor->pTextView, pDred->config.textEditorLineNumbersPadding * uiScale * pTextEditor->textScale);
     dred_textview_set_font(pTextEditor->pTextView, &pDred->config.pTextEditorFont->fontDTK);
-    dred_textview_set_scale(pTextEditor->pTextView, pDred->uiScale * pTextEditor->textScale);
-    dred_textview_set_cursor_width(pTextEditor->pTextView, pDred->config.textEditorCursorWidth * pDred->uiScale * pTextEditor->textScale);
+    dred_textview_set_scale(pTextEditor->pTextView, uiScale * pTextEditor->textScale);
+    dred_textview_set_cursor_width(pTextEditor->pTextView, pDred->config.textEditorCursorWidth * uiScale * pTextEditor->textScale);
 }
 
 void dred_text_editor_unindent_selected_blocks(dred_text_editor* pTextEditor)

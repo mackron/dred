@@ -370,6 +370,9 @@ dred_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar)
         return dred_make_rect(0, 0, 0, 0);
     }
 
+    float scale = dred_get_control_ui_scale(dred_get_context_from_control(DTK_CONTROL(pScrollbar)), DTK_CONTROL(pScrollbar));
+    float thumbPadding = pScrollbar->thumbPadding * scale;
+
     dred_rect rect = {0, 0, 0, 0};
     rect.left = pScrollbar->thumbPadding;
     rect.top  = pScrollbar->thumbPadding;
@@ -377,18 +380,18 @@ dred_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar)
     if (pScrollbar->orientation == dred_scrollbar_orientation_vertical)
     {
         // Vertical.
-        rect.left   = pScrollbar->thumbPadding;
-        rect.right  = dred_control_get_width(DRED_CONTROL(pScrollbar)) - pScrollbar->thumbPadding;
-        rect.top    = pScrollbar->thumbPadding + pScrollbar->thumbPos;
+        rect.left   = thumbPadding;
+        rect.right  = dred_control_get_width(DRED_CONTROL(pScrollbar)) - thumbPadding;
+        rect.top    = thumbPadding + pScrollbar->thumbPos;
         rect.bottom = rect.top + pScrollbar->thumbSize;
     }
     else
     {
         // Horizontal.
-        rect.left   = pScrollbar->thumbPadding + pScrollbar->thumbPos;
+        rect.left   = thumbPadding + pScrollbar->thumbPos;
         rect.right  = rect.left + pScrollbar->thumbSize;
-        rect.top    = pScrollbar->thumbPadding;
-        rect.bottom = dred_control_get_height(DRED_CONTROL(pScrollbar)) - pScrollbar->thumbPadding;
+        rect.top    = thumbPadding;
+        rect.bottom = dred_control_get_height(DRED_CONTROL(pScrollbar)) - thumbPadding;
     }
 
     return rect;

@@ -13,3 +13,4 @@ void dred_about_dialog_delete(dred_about_dialog* pDialog);
 void dred_about_dialog_show(dred_about_dialog* pDialog);
 void dred_about_dialog_hide(dred_about_dialog* pDialog);
 dr_bool32 dred_about_dialog_is_showing(dred_about_dialog* pDialog);
+void dred_about_dialog_refresh_layout(dred_about_dialog* pDialog);

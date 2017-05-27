@@ -37,7 +37,7 @@
 //   Whether or not the window is maximized.
 //
 //
-// ui-scale uiScale float none 1
+// ui-scale uiScale float dred_config_on_set__ui_scale 1
 //   The scale of the UI. The total scale of UI elements is equal to the DPI scaling multiplied by this value.
 //
 // ui-font pUIFont font dred_config_on_set__ui_font system-font-ui
@@ -265,6 +265,9 @@ void dred_config_push_recent_cmd(dred_config* pConfig, const char* cmd);
 
 
 // Set handlers.
+
+// ui-scale
+void dred_config_on_set__ui_scale(dred_context* pDred);
 
 // ui-font
 void dred_config_on_set__ui_font(dred_context* pDred);

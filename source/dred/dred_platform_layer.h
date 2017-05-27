@@ -22,6 +22,9 @@ void dred_platform_bind_gui(dred_gui* pGUI);
 // Connects the platform-specific logging system to dred's logging system.
 void dred_platform_bind_logging(dred_context* pDred);
 
+// The default event handler for windows. Temporary.
+dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent);
+
 
 //// Windows ////
 typedef void (* dred_window_on_close_proc)             (dred_window* pWindow);
@@ -92,7 +95,7 @@ struct dred_window
 };
 
 // Creates a top-level window.
-dred_window* dred_window_create(dred_context* pDred);
+dred_window* dred_window_create(dred_context* pDred, dtk_event_proc onEvent);
 
 // Creates a dialog window.
 dred_window* dred_window_create_dialog(dred_window* pParentWindow, const char* title, unsigned int width, unsigned int height);

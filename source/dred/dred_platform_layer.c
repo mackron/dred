@@ -4,32 +4,7 @@
 // while working on the integration phase. Later on this source file will be removed entirely.
 dtk_context* g_pTK = NULL;
 
-
-//////////////////////////////////////////////////////////////////
-//
-// Private Cross Platform
-//
-//////////////////////////////////////////////////////////////////
-
-// Helper for creating the root GUI element of a window.
-dr_bool32 dred_platform__init_root_gui_element(dred_control* pControl, dred_context* pDred, dred_window* pWindow)
-{
-    if (!dred_control_init(pControl, pDred, NULL, DTK_CONTROL(&pWindow->windowDTK), "RootGUIControl")) {
-        return DR_FALSE;
-    }
-
-    pControl->pUserData = pWindow;
-
-    unsigned int width;
-    unsigned int height;
-    dred_window_get_client_size(pWindow, &width, &height);
-    dred_control_set_size(pControl, (float)width, (float)height);
-
-    return DR_TRUE;
-}
-
-// Event handler for windows.
-static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
+dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
 {
     dred_window* pWindow = (dred_window*)pEvent->pControl->pUserData;
     if (pWindow == NULL) {
@@ -122,6 +97,31 @@ static dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
     }
 
     return dtk_window_default_event_handler(pEvent);
+}
+
+
+
+//////////////////////////////////////////////////////////////////
+//
+// Private Cross Platform
+//
+//////////////////////////////////////////////////////////////////
+
+// Helper for creating the root GUI element of a window.
+dr_bool32 dred_platform__init_root_gui_element(dred_control* pControl, dred_context* pDred, dred_window* pWindow)
+{
+    if (!dred_control_init(pControl, pDred, NULL, DTK_CONTROL(&pWindow->windowDTK), "RootGUIControl")) {
+        return DR_FALSE;
+    }
+
+    pControl->pUserData = pWindow;
+
+    unsigned int width;
+    unsigned int height;
+    dred_window_get_client_size(pWindow, &width, &height);
+    dred_control_set_size(pControl, (float)width, (float)height);
+
+    return DR_TRUE;
 }
 
 
@@ -331,7 +331,7 @@ dr_bool32 dred_window_create__post_setup(dred_context* pDred, dred_window* pWind
     return DR_TRUE;
 }
 
-dred_window* dred_window_create(dred_context* pDred)
+dred_window* dred_window_create(dred_context* pDred, dtk_event_proc onEvent)
 {
     if (pDred == NULL) return NULL;
 
@@ -340,7 +340,7 @@ dred_window* dred_window_create(dred_context* pDred)
         return NULL;
     }
 
-    if (dtk_window_init(&pDred->tk, NULL, dtk_window_type_toplevel, "dred", 1280, 1024, dred_dtk_window_event_handler, &pWindow->windowDTK) != DTK_SUCCESS) {
+    if (dtk_window_init(&pDred->tk, NULL, dtk_window_type_toplevel, "dred", 1280, 1024, (onEvent != NULL) ? onEvent : dred_dtk_window_event_handler, &pWindow->windowDTK) != DTK_SUCCESS) {
         free(pWindow);
         return NULL;
     }

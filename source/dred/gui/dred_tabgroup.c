@@ -212,9 +212,11 @@ void dred_tabgroup_refresh_styling(dred_tabgroup* pTabGroup)
         return;
     }
 
+    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pTabGroup));
+
 
     // Update tab bar.
-    dred_tabbar_set_tab_padding(pTabGroup->pTabBar, pDred->config.tabPadding * pDred->uiScale);
+    dred_tabbar_set_tab_padding(pTabGroup->pTabBar, pDred->config.tabPadding * uiScale);
     dred_tabbar_set_tab_background_color(pTabGroup->pTabBar, pDred->config.tabBGColorInvactive);
     dred_tabbar_set_tab_background_color_active(pTabGroup->pTabBar, pDred->config.tabBGColorActive);
     dred_tabbar_set_tab_background_color_hovered(pTabGroup->pTabBar, pDred->config.tabBGColorHovered);
@@ -222,8 +224,8 @@ void dred_tabgroup_refresh_styling(dred_tabgroup* pTabGroup)
     dred_tabbar_set_text_color(pTabGroup->pTabBar, pDred->config.tabTextColor);
     dred_tabbar_set_text_color_active(pTabGroup->pTabBar, pDred->config.tabTextColorActive);
     dred_tabbar_set_text_color_hovered(pTabGroup->pTabBar, pDred->config.tabTextColorHovered);
-    dred_tabbar_set_close_button_left_padding(pTabGroup->pTabBar, 6 * pDred->uiScale);
-    dred_tabbar_set_close_button_image(pTabGroup->pTabBar, dred_image_acquire_subimage(pDred->config.pImageCross, pDred->uiScale));
+    dred_tabbar_set_close_button_left_padding(pTabGroup->pTabBar, 6 * uiScale);
+    dred_tabbar_set_close_button_image(pTabGroup->pTabBar, dred_image_acquire_subimage(pDred->config.pImageCross, uiScale));
     dred_tabbar_set_close_button_color(pTabGroup->pTabBar, pDred->config.tabCloseButtonColor);
     if (pDred->config.tabShowCloseButton) {
         dred_tabbar_show_close_buttons(pTabGroup->pTabBar);

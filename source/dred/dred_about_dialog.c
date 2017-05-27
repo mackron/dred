@@ -43,10 +43,12 @@ void dred_about_dialog__on_size(dred_control* pControl, float newWidth, float ne
     dred_context* pDred = pWindow->pDred;
     assert(pDialog != NULL);
 
+    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pDialog->pWindow));
+
     // The close button needs to be repositioned.
     dred_control_set_relative_position(DRED_CONTROL(&pDialog->closeButton),
-        newWidth - dred_control_get_width(DRED_CONTROL(&pDialog->closeButton)) - 8*pDred->uiScale,
-        newHeight - dred_control_get_height(DRED_CONTROL(&pDialog->closeButton)) - 8*pDred->uiScale);
+        newWidth  - dred_control_get_width (DRED_CONTROL(&pDialog->closeButton)) - 8*uiScale,
+        newHeight - dred_control_get_height(DRED_CONTROL(&pDialog->closeButton)) - 8*uiScale);
 }
 
 void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
@@ -64,7 +66,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, dtk_sur
     dred_context* pDred = dred_control_get_context(pControl);
     assert(pDred != NULL);
 
-    float uiScale = (float)pWindow->pDred->uiScale;
+    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pControl));
 
     dred_rect dialogRect = dred_control_get_local_rect(pControl);
 
@@ -183,6 +185,25 @@ void dred_about_dialog__btn_close__on_pressed(dred_button* pButton)
     dred_about_dialog__on_window_close(pWindow);
 }
 
+static dtk_bool32 dred_about_dialog_window_event_handler(dtk_event* pEvent)
+{
+    dred_window* pWindow = (dred_window*)pEvent->pControl;
+    dred_about_dialog* pDialog = (dred_about_dialog*)pWindow->pUserData;
+
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_DPI_CHANGED:
+        {
+            dred_about_dialog_refresh_layout(pDialog);
+        } break;
+
+        default: break;
+    }
+
+    return dred_dtk_window_event_handler(pEvent);
+}
+
+
 dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
 {
     if (pDred == NULL) {
@@ -194,8 +215,10 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
         return NULL;
     }
 
-    unsigned int windowWidth = (unsigned int)(480*pDred->uiScale);
-    unsigned int windowHeight = (unsigned int)(360*pDred->uiScale);
+    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pDred->pMainWindow));
+
+    unsigned int windowWidth  = (unsigned int)(480*uiScale);
+    unsigned int windowHeight = (unsigned int)(360*uiScale);
 
     pDialog->pWindow = dred_window_create_dialog(pDred->pMainWindow, "About", windowWidth, windowHeight);
     if (pDialog->pWindow == NULL) {
@@ -219,10 +242,9 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
 
     dred_button_init(&pDialog->closeButton, pDred, pDialog->pWindow->pRootGUIControl, "Close");
     dred_button_set_on_pressed(&pDialog->closeButton, dred_about_dialog__btn_close__on_pressed);
-    dred_button_set_padding(&pDialog->closeButton, 32*pDred->uiScale, 6*pDred->uiScale);
-    dred_control_set_relative_position(DRED_CONTROL(&pDialog->closeButton),
-        windowWidth - dred_control_get_width(DRED_CONTROL(&pDialog->closeButton)) - 8*pDred->uiScale,
-        windowHeight - dred_control_get_height(DRED_CONTROL(&pDialog->closeButton)) - 8*pDred->uiScale);
+    dred_about_dialog_refresh_layout(pDialog);
+
+    
 
     return pDialog;
 }
@@ -269,4 +291,25 @@ dr_bool32 dred_about_dialog_is_showing(dred_about_dialog* pDialog)
     }
 
     return dtk_control_is_visible(DTK_CONTROL(&pDialog->pWindow->windowDTK));
+}
+
+
+void dred_about_dialog_refresh_layout(dred_about_dialog* pDialog)
+{
+    if (pDialog == NULL) return;
+
+    float uiScale = dred_get_control_ui_scale(pDialog->pWindow->pDred, DTK_CONTROL(pDialog->pWindow));
+    //float uiScale = dred_get_control_ui_scale(pDialog->pWindow->pDred, DTK_CONTROL(pDialog->pWindow->pDred->pMainWindow));
+
+    dtk_uint32 windowWidth  = (dtk_uint32)(480*uiScale);
+    dtk_uint32 windowHeight = (dtk_uint32)(360*uiScale);
+    dtk_window_set_size(DTK_WINDOW(pDialog->pWindow), windowWidth, windowHeight);
+    dtk_window_move_to_center(DTK_WINDOW(pDialog->pWindow));
+
+    dred_button_set_padding(&pDialog->closeButton, 32*uiScale, 6*uiScale);
+    dred_control_set_relative_position(DRED_CONTROL(&pDialog->closeButton),
+        windowWidth  - dred_control_get_width (DRED_CONTROL(&pDialog->closeButton)) - 8*uiScale,
+        windowHeight - dred_control_get_height(DRED_CONTROL(&pDialog->closeButton)) - 8*uiScale);
+
+    dtk_control_scheduled_redraw(DTK_CONTROL(pDialog->pWindow), dtk_control_get_local_rect(DTK_CONTROL(pDialog->pWindow)));
 }

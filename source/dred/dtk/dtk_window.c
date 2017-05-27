@@ -722,14 +722,16 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
         {
             // MSDN recommends settings the position and size of the window based on the RECT passed in vai lParam:
             //     https://msdn.microsoft.com/en-us/library/windows/desktop/dn312083(v=vs.85).aspx
+            pWindow->dpiScale = LOWORD(wParam) / 96.0f;
 
             RECT* pNewRect = (RECT*)lParam;
             e.type = DTK_EVENT_DPI_CHANGED;
-            e.dpiChanged.newDPIScale     = LOWORD(wParam) / 96.0f;
+            e.dpiChanged.newDPIScale     = pWindow->dpiScale;
             e.dpiChanged.suggestedPosX   = pNewRect->left;
             e.dpiChanged.suggestedPosY   = pNewRect->top;
             e.dpiChanged.suggestedWidth  = pNewRect->right - pNewRect->left;
             e.dpiChanged.suggestedHeight = pNewRect->bottom - pNewRect->top;
+            dtk_handle_global_event(&e);
         } break;
         
         default: break;
@@ -1916,6 +1918,8 @@ void dtk_window__get_and_set_monitor(dtk_window* pWindow)
         float oldDPIScale = pWindow->dpiScale;
         float newDPIScale = dtk_monitor_get_dpi_scale(DTK_CONTROL(pWindow)->pTK, pWindow->monitor);
         if (oldDPIScale != newDPIScale) {
+            pWindow->dpiScale = newDPIScale;
+
             dtk_event e = dtk_event_init(pTK, DTK_EVENT_DPI_CHANGED, DTK_CONTROL(pWindow));
             e.dpiChanged.newDPIScale = newDPIScale;
             dtk_window_get_absolute_position(pWindow, &e.dpiChanged.suggestedPosX, &e.dpiChanged.suggestedPosY);
@@ -1995,7 +1999,8 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_ty
     }
 
     // The window is not currently on a monitor. It will be set to the appropriate monitor after window has been shown.
-    pWindow->monitor = dtk_monitor_null();
+    pWindow->monitor = dtk_get_monitor_by_window(pTK, pWindow);
+    pWindow->dpiScale = dtk_monitor_get_dpi_scale(pTK, pWindow->monitor);
 
     // Window's are not shown by default.
     DTK_CONTROL(pWindow)->isHidden = DTK_TRUE;
@@ -2514,8 +2519,8 @@ dtk_result dtk_window_move_to_center(dtk_window* pWindow)
             return DTK_ERROR;
         }
 
-        dtk_int32 newRelativePosX = (parentSizeX - sizeX)/2;
-        dtk_int32 newRelativePosY = (parentSizeY - sizeY)/2;
+        dtk_int32 newRelativePosX = ((dtk_int32)parentSizeX - (dtk_int32)sizeX)/2;
+        dtk_int32 newRelativePosY = ((dtk_int32)parentSizeY - (dtk_int32)sizeY)/2;
         return dtk_window_set_relative_position(pWindow, newRelativePosX, newRelativePosY);
     } else {
         dtk_result result = DTK_NO_BACKEND;
