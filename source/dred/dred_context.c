@@ -599,8 +599,8 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     // keyboard focus.
     windowPosX = pDred->config.windowPosX;
     windowPosY = pDred->config.windowPosY;
-    windowWidth =  (unsigned int)(pDred->config.windowWidth  * dtk_control_get_scaling_factor(DTK_CONTROL(pDred->pMainWindow)));
-    windowHeight = (unsigned int)(pDred->config.windowHeight * dtk_control_get_scaling_factor(DTK_CONTROL(pDred->pMainWindow)));
+    windowWidth =  (unsigned int)pDred->config.windowWidth;
+    windowHeight = (unsigned int)pDred->config.windowHeight;
     showWindowMaximized = pDred->config.windowMaximized;
 
     dred_window_set_title(pDred->pMainWindow, "dred");
