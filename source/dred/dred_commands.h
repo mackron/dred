@@ -56,6 +56,7 @@
 // unindent                     dred_command__unindent                      DRED_CMDBAR_RELEASE_KEYBOARD
 // insert-date                  dred_command__insert_date                   DRED_CMDBAR_RELEASE_KEYBOARD
 // export2cstring               dred_command__export2cstring                DRED_CMDBAR_RELEASE_KEYBOARD
+// clear-recent-files           dred_command__clear_recent_files            DRED_CMDBAR_RELEASE_KEYBOARD
 // add-favourite                dred_command__add_favourite                 DRED_CMDBAR_RELEASE_KEYBOARD
 // remove-favourite             dred_command__remove_favourite              DRED_CMDBAR_RELEASE_KEYBOARD
 // cmdbar-find-prefilled        dred_command__cmdbar_find_prefilled         DRED_CMDBAR_RELEASE_KEYBOARD
@@ -202,6 +203,9 @@ dr_bool32 dred_command__print(dred_context* pDred, const char* value);
 //
 // Reloads the currently focused file.
 dr_bool32 dred_command__reload(dred_context* pDred, const char* value);
+
+// clear-recent-files
+dr_bool32 dred_command__clear_recent_files(dred_context* pDred, const char* value);
 
 // add-favourite
 dr_bool32 dred_command__add_favourite(dred_context* pDred, const char* value);

@@ -251,6 +251,7 @@ void dred_config_set_default(dred_config* pConfig, const char* name);
 
 // Pushes a new recent file to the end of the list.
 void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolutePath);
+void dred_config_clear_recent_files(dred_config* pConfig);
 
 // Pushes a new favourite file to the end of the list.
 void dred_config_push_favourite_file(dred_config* pConfig, const char* fileAbsolutePath);

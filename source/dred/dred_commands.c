@@ -353,6 +353,16 @@ dr_bool32 dred_command__reload(dred_context* pDred, const char* value)
     return DR_TRUE;
 }
 
+dr_bool32 dred_command__clear_recent_files(dred_context* pDred, const char* value)
+{
+    (void)value;
+
+    dred_config_clear_recent_files(&pDred->config);
+    dred_refresh_recent_files_menu(pDred);
+
+    return DR_TRUE;
+}
+
 dr_bool32 dred_command__add_favourite(dred_context* pDred, const char* value)
 {
     const char* absolutePath = value;

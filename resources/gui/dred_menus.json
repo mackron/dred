@@ -31,6 +31,8 @@
         {"id":"nothingopen.file.open.recent", "text":"Open Recent", "submenu":"recent-files"},
         {"id":"nothingopen.file.open.favourite", "text":"Open Favourite", "submenu":"favourite-files"},
         {"id":"separator"},
+        {"id":"nothingopen.file.clearrecentfiles", "text":"Clear Recent Files", "cmd":"clear-recent-files"},
+        {"id":"separator"},
         {"id":"nothingopen.file.exit", "text":"E&xit", "shortcut":"exit"}
     ]},
     
@@ -55,6 +57,8 @@
         {"id":"separator"},
         {"id":"text.file.addfavourite", "text":"Add to Favourites", "cmd":"add-favourite"},
         {"id":"text.file.removefavourite", "text":"Remove from Favourites", "cmd":"remove-favourite"},
+        {"id":"separator"},
+        {"id":"text.file.clearrecentfiles", "text":"Clear Recent Files", "cmd":"clear-recent-files"},
         {"id":"separator"},
         {"id":"text.file.save", "text":"&Save", "shortcut":"file.save"},
         {"id":"text.file.saveas", "text":"Save &As", "cmd":"save-as"},

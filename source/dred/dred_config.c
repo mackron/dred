@@ -251,6 +251,11 @@ void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolute
     pConfig->recentFileCount += 1;
 }
 
+void dred_config_clear_recent_files(dred_config* pConfig)
+{
+    pConfig->recentFileCount = 0;
+}
+
 void dred_config_push_favourite_file(dred_config* pConfig, const char* fileAbsolutePath)
 {
     if (pConfig == NULL) {
