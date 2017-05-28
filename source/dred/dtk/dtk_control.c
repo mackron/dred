@@ -1044,3 +1044,11 @@ float dtk_control_get_scaling_factor(dtk_control* pControl)
 
     return dtk_control_get_scaling_factor(pControl->pParent);
 }
+
+dtk_result dtk_control_refresh_layout(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    dtk_event e = dtk_event_init(pControl->pTK, DTK_EVENT_REFRESH_LAYOUT, pControl);
+    return dtk_handle_local_event(pControl->pTK, &e);
+}

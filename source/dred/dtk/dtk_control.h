@@ -297,3 +297,8 @@ dtk_bool32 dtk_control_is_point_inside(dtk_control* pControl, dtk_int32 absolute
 //
 // The return value for this will be based on the DPI scale of the window that owns it.
 float dtk_control_get_scaling_factor(dtk_control* pControl);
+
+// Handles the DTK_EVENT_REFRESH_LAYOUT event for the given control.
+//
+// A layout refresh should be used to re-position and re-size child elements of the control.
+dtk_result dtk_control_refresh_layout(dtk_control* pControl);

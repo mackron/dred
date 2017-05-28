@@ -679,8 +679,11 @@ void dred_gui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog);
 /////////////////////////////////////////////////////////////////
 // Controls
 
+// The default event handler for dred_control's.
+dtk_bool32 dred_control_event_handler(dtk_event* pEvent);
+
 /// Creates an element.
-dr_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, dtk_control* pDTKParent, const char* type);
+dr_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, dtk_control* pDTKParent, const char* type, dtk_event_proc onEvent);
 
 /// Deletes and element.
 void dred_control_uninit(dred_control* pControl);

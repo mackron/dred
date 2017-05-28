@@ -200,7 +200,7 @@ dr_bool32 dred_checkbox_init(dred_checkbox* pCheckbox, dred_context* pDred, dred
     }
 
     memset(pCheckbox, 0, sizeof(*pCheckbox));
-    if (!dred_control_init(DRED_CONTROL(pCheckbox), pDred, pParent, NULL, DRED_CONTROL_TYPE_CHECKBOX)) {
+    if (!dred_control_init(DRED_CONTROL(pCheckbox), pDred, pParent, NULL, DRED_CONTROL_TYPE_CHECKBOX, NULL)) {
         return DR_FALSE;
     }
 

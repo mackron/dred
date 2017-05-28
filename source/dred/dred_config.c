@@ -339,7 +339,7 @@ void dred_config_push_recent_cmd(dred_config* pConfig, const char* cmd)
 
 void dred_config_on_set__ui_scale(dred_context* pDred)
 {
-    dred_refresh_gui(pDred);
+    dred_refresh_layout(pDred);
 }
 
 void dred_config_on_set__ui_font(dred_context* pDred)

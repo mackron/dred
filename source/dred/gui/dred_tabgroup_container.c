@@ -20,7 +20,7 @@ dr_bool32 dred_tabgroup_container_init(dred_tabgroup_container* pContainer, dred
 
     memset(pContainer, 0, sizeof(*pContainer));
 
-    if (!dred_control_init(DRED_CONTROL(pContainer), pDred, pParent, NULL, DRED_CONTROL_TYPE_TABGROUP_CONTAINER)) {
+    if (!dred_control_init(DRED_CONTROL(pContainer), pDred, pParent, NULL, DRED_CONTROL_TYPE_TABGROUP_CONTAINER, NULL)) {
         return DR_FALSE;
     }
 

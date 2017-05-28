@@ -300,7 +300,7 @@ dr_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred
 
     strcpy_s(pPage->title, sizeof(pPage->title), title);
     pPage->pGUIControl = &pPage->control;
-    if (!dred_control_init(pPage->pGUIControl, pDred, pParent, NULL, "dred.settings.page")) {
+    if (!dred_control_init(pPage->pGUIControl, pDred, pParent, NULL, "dred.settings.page", NULL)) {
         return DR_FALSE;
     }
 
@@ -469,7 +469,7 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_cont
         return NULL;
     }
 
-    if (!dred_editor_init(DRED_EDITOR(pSettingsEditor), pDred, pParent, DRED_CONTROL_TYPE_SETTINGS_EDITOR, 0, 0, filePathAbsolute)) {
+    if (!dred_editor_init(DRED_EDITOR(pSettingsEditor), pDred, pParent, DRED_CONTROL_TYPE_SETTINGS_EDITOR, NULL, 0, 0, filePathAbsolute)) {
         free(pSettingsEditor);
         return NULL;
     }

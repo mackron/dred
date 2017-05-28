@@ -357,7 +357,7 @@ dr_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred
     }
 
     memset(pTextView, 0, sizeof(*pTextView));
-    if (!dred_control_init(DRED_CONTROL(pTextView), pDred, pParent, NULL, DRED_CONTROL_TYPE_TEXTVIEW)) {
+    if (!dred_control_init(DRED_CONTROL(pTextView), pDred, pParent, NULL, DRED_CONTROL_TYPE_TEXTVIEW, NULL)) {
         return DR_FALSE;
     }
 
@@ -402,7 +402,7 @@ dr_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred
     dred_scrollbar_set_on_scroll(pTextView->pHorzScrollbar, dred_textview__on_hscroll);
 
     pTextView->pLineNumbers = &pTextView->lineNumbers;
-    dred_control_init(pTextView->pLineNumbers, pDred, DRED_CONTROL(pTextView), NULL, "dred.common.linenumbers");
+    dred_control_init(pTextView->pLineNumbers, pDred, DRED_CONTROL(pTextView), NULL, "dred.common.linenumbers", NULL);
     dred_control_hide(pTextView->pLineNumbers);
     dred_control_set_on_mouse_move(pTextView->pLineNumbers, dred_textview__on_mouse_move_line_numbers);
     dred_control_set_on_mouse_button_down(pTextView->pLineNumbers, dred_textview__on_mouse_button_down_line_numbers);

@@ -152,7 +152,7 @@ dr_bool32 dred_button_init(dred_button* pButton, dred_context* pDred, dred_contr
     }
 
     memset(pButton, 0, sizeof(*pButton));
-    if (!dred_control_init(DRED_CONTROL(pButton), pDred, pParent, NULL, DRED_CONTROL_TYPE_BUTTON)) {
+    if (!dred_control_init(DRED_CONTROL(pButton), pDred, pParent, NULL, DRED_CONTROL_TYPE_BUTTON, NULL)) {
         return DR_FALSE;
     }
 

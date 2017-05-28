@@ -1,6 +1,6 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
-dr_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dred_control* pParent, const char* type, float sizeX, float sizeY, const char* filePathAbsolute)
+dr_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dred_control* pParent, const char* type, dtk_event_proc onEvent, float sizeX, float sizeY, const char* filePathAbsolute)
 {
     if (!dred_is_control_type_of_type(type, DRED_CONTROL_TYPE_EDITOR)) {
         dred_errorf(pDred, "[DEVELOPER ERROR] Attempting to create an editor that is not of an editor type (%s).", type);
@@ -9,7 +9,7 @@ dr_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dred_contr
 
     memset(pEditor, 0, sizeof(*pEditor));
 
-    if (!dred_control_init(DRED_CONTROL(pEditor), pDred, pParent, NULL, type)) {
+    if (!dred_control_init(DRED_CONTROL(pEditor), pDred, pParent, NULL, type, onEvent)) {
         free(pEditor);
         return DR_FALSE;
     }

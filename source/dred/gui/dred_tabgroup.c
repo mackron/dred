@@ -155,7 +155,7 @@ dr_bool32 dred_tabgroup_init(dred_tabgroup* pTabGroup, dred_context* pDred, dred
     memset(pTabGroup, 0, sizeof(*pTabGroup));
 
 
-    if (!dred_control_init(DRED_CONTROL(pTabGroup), pDred, pParent, NULL, DRED_CONTROL_TYPE_TABGROUP)) {
+    if (!dred_control_init(DRED_CONTROL(pTabGroup), pDred, pParent, NULL, DRED_CONTROL_TYPE_TABGROUP, NULL)) {
         return DR_FALSE;
     }
 

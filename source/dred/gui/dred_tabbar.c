@@ -51,7 +51,7 @@ dr_bool32 dred_tabbar_init(dred_tabbar* pTabBar, dred_context* pDred, dred_contr
     memset(pTabBar, 0, sizeof(*pTabBar));
 
 
-    if (!dred_control_init(DRED_CONTROL(pTabBar), pDred, pParent, NULL, DRED_CONTROL_TYPE_TABBAR)) {
+    if (!dred_control_init(DRED_CONTROL(pTabBar), pDred, pParent, NULL, DRED_CONTROL_TYPE_TABBAR, NULL)) {
         return DR_FALSE;
     }
 

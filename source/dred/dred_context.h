@@ -301,7 +301,7 @@ void dred_show_settings_dialog(dred_context* pDred);
 void dred_update_main_window_layout(dred_context* pDred);
 
 // Updates the layout and styling of the entire UI. This will be called for global changes to the UI such as changes to DPI scaling.
-void dred_refresh_gui(dred_context* pDred);
+void dred_refresh_layout(dred_context* pDred);
 
 
 // Sets the text of the command bar.

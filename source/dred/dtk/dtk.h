@@ -207,6 +207,7 @@ typedef int dtk_event_type;
 #define DTK_EVENT_SCROLLBAR_SCROLL          128
 #define DTK_EVENT_TABBAR_CHANGE_TAB         133
 #define DTK_EVENT_TABGROUP_CHANGE_TAB       134
+#define DTK_EVENT_REFRESH_LAYOUT            252     // A special event that's used to indicate to a control that it needs to refresh the layout of it's children and inner elements.
 #define DTK_EVENT_APPLICATION_SCALE         253     // A special event for retrieving an application-defined scaling factor for GUI elements.
 #define DTK_EVENT_CHANGE_KEYBOARD_CAPTURE   254     // A special event used internally for handling keyboard capture changes.
 #define DTK_EVENT_CHANGE_MOUSE_CAPTURE      255     // ^^^
@@ -341,6 +342,11 @@ struct dtk_event
             dtk_uint32 suggestedWidth;
             dtk_uint32 suggestedHeight;
         } dpiChanged;
+
+        struct
+        {
+            int unused;
+        } refreshInnerLayout;
 
         struct
         {

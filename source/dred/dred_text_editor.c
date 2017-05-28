@@ -254,6 +254,23 @@ dr_bool32 dred_text_editor__on_reload(dred_editor* pEditor)
     return DR_TRUE;
 }
 
+dtk_bool32 dred_text_editor_event_handler(dtk_event* pEvent)
+{
+    dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(pEvent->pControl);
+
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_REFRESH_LAYOUT:
+        {
+            dred_text_editor_refresh_styling(pTextEditor);
+        } break;
+
+        default: break;
+    }
+
+    return dred_control_event_handler(pEvent);
+}
+
 dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pParent, float sizeX, float sizeY, const char* filePathAbsolute)
 {
     dred_text_editor* pTextEditor = (dred_text_editor*)calloc(1, sizeof(*pTextEditor));
@@ -261,7 +278,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pPa
         return NULL;
     }
 
-    if (!dred_editor_init(DRED_EDITOR(pTextEditor), pDred, pParent, DRED_CONTROL_TYPE_TEXT_EDITOR, sizeX, sizeY, filePathAbsolute)) {
+    if (!dred_editor_init(DRED_EDITOR(pTextEditor), pDred, pParent, DRED_CONTROL_TYPE_TEXT_EDITOR, dred_text_editor_event_handler, sizeX, sizeY, filePathAbsolute)) {
         free(pTextEditor);
         return NULL;
     }

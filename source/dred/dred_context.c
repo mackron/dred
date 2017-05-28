@@ -402,9 +402,22 @@ static dtk_bool32 dred_main_window_event_handler(dtk_event* pEvent)
             dtk_window_set_absolute_position(pWindow, pEvent->dpiChanged.suggestedPosX, pEvent->dpiChanged.suggestedPosY);
             dtk_window_set_size(pWindow, pEvent->dpiChanged.suggestedWidth, pEvent->dpiChanged.suggestedHeight);
 
-            dred_refresh_gui(pDred);
+            dred_refresh_layout(pDred);
 
             dtk_control_scheduled_redraw(DTK_CONTROL(pWindow), dtk_control_get_local_rect(DTK_CONTROL(pWindow)));
+        } break;
+
+        case DTK_EVENT_REFRESH_LAYOUT:
+        {
+            dred_cmdbar_refresh_styling(&pDred->cmdBar);
+            dred_update_main_window_layout(pDred);
+
+            // Any open editors need to have their layouts updated.
+            for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
+                for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
+                    dtk_control_refresh_layout(DTK_CONTROL(dred_tab_get_control(pTab)));
+                }
+            }
         } break;
 
         default: break;
@@ -2322,24 +2335,13 @@ void dred_update_main_window_layout(dred_context* pDred)
     dred__update_main_window_layout(pDred->pMainWindow, (float)windowWidth, (float)windowHeight);
 }
 
-void dred_refresh_gui(dred_context* pDred)
+void dred_refresh_layout(dred_context* pDred)
 {
     if (pDred == NULL) return;
+    dtk_control_refresh_layout(DTK_CONTROL(pDred->pMainWindow));
 
-    dred_cmdbar_refresh_styling(&pDred->cmdBar);
     dred_settings_dialog_refresh_styling(pDred->pSettingsDialog);
     dred_about_dialog_refresh_layout(pDred->pAboutDialog);
-    dred_update_main_window_layout(pDred);
-
-    // Any open editors need to have their layouts updated.
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
-        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
-            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
-                dred_text_editor_refresh_styling(DRED_TEXT_EDITOR(pControl));
-            }
-        }
-    }
 }
 
 

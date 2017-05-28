@@ -458,7 +458,7 @@ dr_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_contr
     }
 
     memset(pCmdBar, 0, sizeof(*pCmdBar));
-    if (!dred_control_init(DRED_CONTROL(pCmdBar), pDred, pParent, NULL, DRED_CONTROL_TYPE_CMDBAR)) {
+    if (!dred_control_init(DRED_CONTROL(pCmdBar), pDred, pParent, NULL, DRED_CONTROL_TYPE_CMDBAR, NULL)) {
         return DR_FALSE;
     }
 

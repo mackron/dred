@@ -45,7 +45,7 @@ dr_bool32 dred_scrollbar_init(dred_scrollbar* pScrollbar, dred_context* pDred, d
         return DR_FALSE;
     }
 
-    if (!dred_control_init(DRED_CONTROL(pScrollbar), pDred, NULL, pParent, DRED_CONTROL_TYPE_SCROLLBAR)) {
+    if (!dred_control_init(DRED_CONTROL(pScrollbar), pDred, NULL, pParent, DRED_CONTROL_TYPE_SCROLLBAR, NULL)) {
         return DR_FALSE;
     }
 

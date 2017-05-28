@@ -110,7 +110,7 @@ dtk_bool32 dred_dtk_window_event_handler(dtk_event* pEvent)
 // Helper for creating the root GUI element of a window.
 dr_bool32 dred_platform__init_root_gui_element(dred_control* pControl, dred_context* pDred, dred_window* pWindow)
 {
-    if (!dred_control_init(pControl, pDred, NULL, DTK_CONTROL(&pWindow->windowDTK), "RootGUIControl")) {
+    if (!dred_control_init(pControl, pDred, NULL, DTK_CONTROL(&pWindow->windowDTK), "RootGUIControl", NULL)) {
         return DR_FALSE;
     }
 

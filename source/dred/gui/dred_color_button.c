@@ -210,7 +210,7 @@ dr_bool32 dtk_colorbutton_init(dtk_colorbutton* pButton, dred_context* pDred, dr
     }
 
     memset(pButton, 0, sizeof(*pButton));
-    if (!dred_control_init(DRED_CONTROL(pButton), pDred, pParent, NULL, DRED_CONTROL_TYPE_COLOR_BUTTON)) {
+    if (!dred_control_init(DRED_CONTROL(pButton), pDred, pParent, NULL, DRED_CONTROL_TYPE_COLOR_BUTTON, NULL)) {
         return DR_FALSE;
     }
 
