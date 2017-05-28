@@ -272,16 +272,16 @@ dr_bool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFil
 unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* message, const char* title);
 
 // Shows the font picker dialog. Returns DR_TRUE if the user chose a font, DR_FALSE if they hit the cancel button or an error occurs.
-dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut);
+dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut);
 
 // Shows the color picker dialog. Returns DR_TRUE if the user chose a color, DR_FALSE if they hit the cancel button or an error occurs.
-dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut);
+dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut);
 
 // Shows the "Print" dialog box.
 //
 // This is a little different to other platform-specific dialog boxes in that it performs the full printing operation from start
 // to finish. It does not
-dr_bool32 dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_print_info* pInfoOut);
+dr_bool32 dred_show_print_dialog(dred_context* pDred, dtk_window* pOwnerWindow, dred_print_info* pInfoOut);
 
 
 

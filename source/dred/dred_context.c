@@ -1487,10 +1487,10 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTab
     // Check for special built-in editors first.
     dred_editor* pEditor = NULL;
     if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-        pEditor = DRED_EDITOR(dred_text_editor_create(pDred, DRED_CONTROL(pTabGroup), sizeX, sizeY, filePathAbsolute));
+        pEditor = DRED_EDITOR(dred_text_editor_create(pDred, DTK_CONTROL(pTabGroup), sizeX, sizeY, filePathAbsolute));
     }
     if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_SETTINGS_EDITOR)) {
-        pEditor = DRED_EDITOR(dred_settings_editor_create(pDred, DRED_CONTROL(pTabGroup), filePathAbsolute));
+        pEditor = DRED_EDITOR(dred_settings_editor_create(pDred, DTK_CONTROL(pTabGroup), filePathAbsolute));
     }
 
     // Try loading from external packages if it's an unknown extension.
@@ -1507,7 +1507,7 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTab
 
     // Fall back to a text editor if it's an unknown extension.
     if (pEditor == NULL) {
-        pEditor = DRED_EDITOR(dred_text_editor_create(pDred, DRED_CONTROL(pTabGroup), sizeX, sizeY, filePathAbsolute));
+        pEditor = DRED_EDITOR(dred_text_editor_create(pDred, DTK_CONTROL(pTabGroup), sizeX, sizeY, filePathAbsolute));
     }
 
     return pEditor;
@@ -1758,14 +1758,14 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
 #endif
 }
 
-dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut)
+dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut)
 {
     if (pDred == NULL || pDescOut == NULL) {
         return DR_FALSE;
     }
 
     if (pOwnerWindow == NULL) {
-        pOwnerWindow = pDred->pMainWindow;
+        pOwnerWindow = DTK_WINDOW(pDred->pMainWindow);
     }
 
 
@@ -1801,8 +1801,8 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerW
     CHOOSEFONTA cf;
     ZeroMemory(&cf, sizeof(cf));
     cf.lStructSize = sizeof(cf);
-    cf.hwndOwner = (HWND)pOwnerWindow->windowDTK.win32.hWnd;
-    cf.hDC = GetDC((HWND)pOwnerWindow->windowDTK.win32.hWnd);
+    cf.hwndOwner = (HWND)pOwnerWindow->win32.hWnd;
+    cf.hDC = GetDC((HWND)pOwnerWindow->win32.hWnd);
     cf.lpLogFont = &lf;
     cf.Flags = CF_INITTOLOGFONTSTRUCT | CF_BOTH;
 
@@ -1845,7 +1845,7 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerW
 #ifdef DRED_GTK
     (void)pDefaultFontDesc;
 
-    GtkWidget* dialog = gtk_font_chooser_dialog_new(NULL, GTK_WINDOW(pDred->pMainWindow->windowDTK.gtk.pWidget));
+    GtkWidget* dialog = gtk_font_chooser_dialog_new(NULL, GTK_WINDOW(pOwnerWindow->gtk.pWidget));
     if (dialog == NULL) {
         return DR_FALSE;
     }
@@ -1882,14 +1882,14 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dred_window* pOwnerW
 #endif
 }
 
-dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut)
+dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut)
 {
     if (pDred == NULL || pColorOut == NULL) {
         return DR_FALSE;
     }
 
     if (pOwnerWindow == NULL) {
-        pOwnerWindow = pDred->pMainWindow;
+        pOwnerWindow = DTK_WINDOW(pDred->pMainWindow);
     }
 
 #ifdef DRED_WIN32
@@ -1903,7 +1903,7 @@ dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwner
     CHOOSECOLORA cc;
     ZeroMemory(&cc, sizeof(cc));
     cc.lStructSize = sizeof(cc);
-    cc.hwndOwner = (HWND)pOwnerWindow->windowDTK.win32.hWnd;
+    cc.hwndOwner = (HWND)pOwnerWindow->win32.hWnd;
     cc.rgbResult = RGB(initialColor.r, initialColor.g, initialColor.b);
     cc.lpCustColors = prevcolors;
     cc.Flags = CC_RGBINIT | CC_ANYCOLOR | CC_FULLOPEN;
@@ -1921,7 +1921,7 @@ dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dred_window* pOwner
 #endif
 
 #ifdef DRED_GTK
-    GtkWidget* dialog = gtk_color_chooser_dialog_new(NULL, GTK_WINDOW(pOwnerWindow->windowDTK.gtk.pWidget));
+    GtkWidget* dialog = gtk_color_chooser_dialog_new(NULL, GTK_WINDOW(pOwnerWindow->gtk.pWidget));
     if (dialog == NULL) {
         return DR_FALSE;
     }
@@ -2083,14 +2083,14 @@ void dred_gtk__on_draw_page(GtkPrintOperation *pPrint, GtkPrintContext *context,
 }
 #endif
 
-dr_bool32 dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow, dred_print_info* pInfoOut)
+dr_bool32 dred_show_print_dialog(dred_context* pDred, dtk_window* pOwnerWindow, dred_print_info* pInfoOut)
 {
     if (pDred == NULL || pInfoOut == NULL) {
         return DR_FALSE;
     }
 
     if (pOwnerWindow == NULL) {
-        pOwnerWindow = pDred->pMainWindow;
+        pOwnerWindow = DTK_WINDOW(pDred->pMainWindow);
     }
 
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
@@ -2141,7 +2141,7 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow,
     PRINTDLGA pd;
     ZeroMemory(&pd, sizeof(pd));
     pd.lStructSize = sizeof(pd);
-    pd.hwndOwner = (HWND)pOwnerWindow->windowDTK.win32.hWnd;
+    pd.hwndOwner = (HWND)pOwnerWindow->win32.hWnd;
     pd.Flags = PD_RETURNDC;
     if (!PrintDlgA(&pd)) {
         return DR_FALSE;
@@ -2243,7 +2243,7 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dred_window* pOwnerWindow,
     g_signal_connect(pPrint, "begin_print", G_CALLBACK(dred_gtk__on_begin_print), &printData);
     g_signal_connect(pPrint, "draw_page", G_CALLBACK(dred_gtk__on_draw_page), &printData);
 
-    GtkPrintOperationResult printResult = gtk_print_operation_run(pPrint, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, GTK_WINDOW(pOwnerWindow->windowDTK.gtk.pWidget), NULL);
+    GtkPrintOperationResult printResult = gtk_print_operation_run(pPrint, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, GTK_WINDOW(pOwnerWindow->gtk.pWidget), NULL);
     if (printResult != GTK_PRINT_OPERATION_RESULT_APPLY) {
         g_object_unref(pPrint);
         g_object_unref(pSettings);

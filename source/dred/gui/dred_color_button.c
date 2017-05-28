@@ -152,7 +152,7 @@ void dtk_colorbutton__on_mouse_button_up(dred_control* pControl, int mouseButton
     (void)mousePosY;
     (void)stateFlags;
 
-    dred_window* pOwnerWindow = dred_get_control_window(pControl);
+    dtk_window* pOwnerWindow = dtk_control_get_window(DTK_CONTROL(pControl));
     assert(pOwnerWindow != NULL);
 
     dtk_colorbutton* pButton = DRED_COLOR_BUTTON(pControl);
@@ -160,13 +160,15 @@ void dtk_colorbutton__on_mouse_button_up(dred_control* pControl, int mouseButton
         return;
     }
 
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pButton));
+
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
         if (dtk_control_has_mouse_capture(DTK_CONTROL(pControl))) {
             dred_gui_release_mouse(dred_control_get_gui(pControl));
             
             // Show a color picker.
             dtk_color newColor;
-            if (dred_show_color_picker_dialog(pOwnerWindow->pDred, pOwnerWindow, pButton->color, &newColor)) {
+            if (dred_show_color_picker_dialog(pDred, pOwnerWindow, pButton->color, &newColor)) {
                 dtk_colorbutton_set_color(pButton, newColor, DR_FALSE);
                 dred_control_dirty(pControl, dred_control_get_local_rect(pControl));
             }

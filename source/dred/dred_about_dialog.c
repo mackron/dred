@@ -40,7 +40,7 @@ void dred_about_dialog__btn_close__on_pressed(dred_button* pButton)
     dtk_window_close(pWindow);
 }
 
-static dtk_bool32 dred_about_dialog_window_event_handler(dtk_event* pEvent)
+static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
 {
     dred_about_dialog* pDialog = (dred_about_dialog*)pEvent->pControl;
     dred_context* pDred = dred_get_context_from_control(pEvent->pControl);
@@ -180,7 +180,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     dtk_uint32 windowWidth  = (dtk_uint32)(480*uiScale);
     dtk_uint32 windowHeight = (dtk_uint32)(360*uiScale);
 
-    dtk_result result = dtk_window_init(&pDred->tk, DTK_CONTROL(pDred->pMainWindow), dtk_window_type_dialog, "About", windowWidth, windowHeight, dred_about_dialog_window_event_handler, &pDialog->window);
+    dtk_result result = dtk_window_init(&pDred->tk, DTK_CONTROL(pDred->pMainWindow), dtk_window_type_dialog, "About", windowWidth, windowHeight, dred_about_dialog_event_handler, &pDialog->window);
     if (result != DTK_SUCCESS) {
         free(pDialog);
         return NULL;

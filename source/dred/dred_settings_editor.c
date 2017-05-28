@@ -253,12 +253,12 @@ void dred_settings__btn_close__on_pressed(dred_button* pButton)
 
 void dred_settings__btn_choose_font__on_pressed(dred_button* pButton)
 {
-    dred_window* pWindow = dred_get_control_window(DRED_CONTROL(pButton));
+    dtk_window* pWindow = dtk_control_get_window(DTK_CONTROL(pButton));
     if (pWindow == NULL) {
         return; // Should never hit this, but leaving here for sanity.
     }
 
-    dred_context* pDred = pWindow->pDred;
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pButton));
 
     dred_font_desc fontDesc;
     if (!dred_show_font_picker_dialog(pDred, pWindow, &pDred->config.pTextEditorFont->desc, &fontDesc)) {
@@ -462,7 +462,7 @@ dr_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pSe
 }
 
 
-dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_control* pParent, const char* filePathAbsolute)
+dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dtk_control* pParent, const char* filePathAbsolute)
 {
     dred_settings_editor* pSettingsEditor = (dred_settings_editor*)calloc(1, sizeof(*pSettingsEditor));
     if (pSettingsEditor == NULL) {

@@ -2,7 +2,7 @@
 
 typedef struct
 {
-    dred_window* pWindow;
+    dtk_window window;
     dred_settings_editor* pSettingsEditor;
 } dred_settings_dialog;
 

@@ -271,7 +271,7 @@ dtk_bool32 dred_text_editor_event_handler(dtk_event* pEvent)
     return dred_control_event_handler(pEvent);
 }
 
-dred_text_editor* dred_text_editor_create(dred_context* pDred, dred_control* pParent, float sizeX, float sizeY, const char* filePathAbsolute)
+dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pParent, float sizeX, float sizeY, const char* filePathAbsolute)
 {
     dred_text_editor* pTextEditor = (dred_text_editor*)calloc(1, sizeof(*pTextEditor));
     if (pTextEditor == NULL) {
