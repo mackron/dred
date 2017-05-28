@@ -88,6 +88,7 @@ void dred_settings_editor__refresh_layout(dred_settings_editor* pSettingsEditor)
     for (int i = 0; i < sideButtonsCount; ++i) {
         dred_control_set_relative_position(pSettingsEditor->pages[i].pGUIControl, posX, posY);
         dred_control_set_size(pSettingsEditor->pages[i].pGUIControl, sizeX, sizeY);
+        dtk_control_refresh_layout(DTK_CONTROL(pSettingsEditor->pages[i].pGUIControl));
     }
 }
 
@@ -291,7 +292,7 @@ void dred_settings_editor_page__on_paint(dred_control* pPageControl, dred_rect r
     dred_control_draw_rect(pPageControl, dred_control_get_local_rect(pPageControl), dred_rgb(255, 255, 255), pSurface);
 }
 
-dr_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_control* pParent, const char* title)
+dr_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_control* pParent, dtk_event_proc onEvent, const char* title)
 {
     assert(pPage != NULL);
     assert(pDred != NULL);
@@ -300,7 +301,7 @@ dr_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred
 
     strcpy_s(pPage->title, sizeof(pPage->title), title);
     pPage->pGUIControl = &pPage->control;
-    if (!dred_control_init(pPage->pGUIControl, pDred, pParent, NULL, "dred.settings.page", NULL)) {
+    if (!dred_control_init(pPage->pGUIControl, pDred, pParent, NULL, "dred.settings.page", onEvent)) {
         return DR_FALSE;
     }
 
@@ -309,6 +310,43 @@ dr_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred
     dred_control_set_on_paint(pPage->pGUIControl, dred_settings_editor_page__on_paint);
 
     return DR_TRUE;
+}
+
+
+dtk_bool32 dred_settings_editor_general_page_event_handler(dtk_event* pEvent)
+{
+    dred_settings_editor* pSettingsEditor = (dred_settings_editor*)pEvent->pControl->pParent;
+
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_REFRESH_LAYOUT:
+        {
+            float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
+
+            dtk_font_metrics fontMetrics;
+            dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &fontMetrics);
+
+            float penPosX = 8*uiScale;
+            float penPosY = 8*uiScale;
+
+            dred_checkbox_set_padding(&pSettingsEditor->cbShowTabBar, 4*uiScale);
+            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowTabBar), penPosX, penPosY);
+            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowTabBar)) + (6*uiScale);
+            dred_checkbox_auto_size(&pSettingsEditor->cbShowTabBar);
+
+            dred_checkbox_set_padding(&pSettingsEditor->cbShowMenuBar, 4*uiScale);
+            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowMenuBar), penPosX, penPosY);
+            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowMenuBar)) + (6*uiScale);
+            dred_checkbox_auto_size(&pSettingsEditor->cbShowMenuBar);
+
+            dred_checkbox_set_padding(&pSettingsEditor->cbAutoHideCmdBar, 4*uiScale);
+            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar), penPosX, penPosY);
+            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar)) + (6*uiScale);
+            dred_checkbox_auto_size(&pSettingsEditor->cbAutoHideCmdBar);
+        } break;
+    }
+
+    return dred_control_event_handler(pEvent);
 }
 
 dr_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSettingsEditor)
@@ -320,7 +358,7 @@ dr_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSettin
 
     dred_settings_editor_page* pPage = &pSettingsEditor->pages[DRED_SETTINGS_EDITOR_PAGE_GENERAL];
 
-    if (!dred_settings_editor__init_page(pPage, pDred, DRED_CONTROL(pSettingsEditor), "General")) {
+    if (!dred_settings_editor__init_page(pPage, pDred, DRED_CONTROL(pSettingsEditor), dred_settings_editor_general_page_event_handler, "General")) {
         return DR_FALSE;
     }
 
@@ -353,6 +391,47 @@ dr_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSettin
     return DR_TRUE;
 }
 
+
+dtk_bool32 dred_settings_editor_theme_page_event_handler(dtk_event* pEvent)
+{
+    dred_settings_editor* pSettingsEditor = (dred_settings_editor*)pEvent->pControl->pParent;
+
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_REFRESH_LAYOUT:
+        {
+            float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
+
+            dtk_font_metrics fontMetrics;
+            dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &fontMetrics);
+
+            float penPosX = 8*uiScale;
+            float penPosY = 8*uiScale;
+
+            dred_button_set_padding(&pSettingsEditor->fontButton, 16*uiScale, 6*uiScale);
+            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->fontButton), penPosX, penPosY);
+            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->fontButton)) + (6*uiScale);
+
+            dtk_colorbutton_set_padding(&pSettingsEditor->textColorButton, 4*uiScale);
+            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->textColorButton), penPosX, penPosY);
+            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale);
+            dtk_colorbutton_auto_size(&pSettingsEditor->textColorButton);
+
+            dtk_colorbutton_set_padding(&pSettingsEditor->bgColorButton, 4*uiScale);
+            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->bgColorButton), penPosX, penPosY);
+            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->bgColorButton)) + (6*uiScale);
+            dtk_colorbutton_auto_size(&pSettingsEditor->bgColorButton);
+
+            dtk_colorbutton_set_padding(&pSettingsEditor->lineColorButton, 4*uiScale);
+            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->lineColorButton), penPosX, penPosY);
+            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->lineColorButton)) + (6*uiScale);
+            dtk_colorbutton_auto_size(&pSettingsEditor->lineColorButton);
+        } break;
+    }
+
+    return dred_control_event_handler(pEvent);
+}
+
 dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettingsEditor)
 {
     assert(pSettingsEditor != NULL);
@@ -362,7 +441,7 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
 
     dred_settings_editor_page* pPage = &pSettingsEditor->pages[DRED_SETTINGS_EDITOR_PAGE_THEME];
 
-    if (!dred_settings_editor__init_page(pPage, pDred, DRED_CONTROL(pSettingsEditor), "Theme")) {
+    if (!dred_settings_editor__init_page(pPage, pDred, DRED_CONTROL(pSettingsEditor), dred_settings_editor_theme_page_event_handler, "Theme")) {
         return DR_FALSE;
     }
 
@@ -425,6 +504,38 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
     return DR_TRUE;
 }
 
+
+dtk_bool32 dred_settings_editor_text_editor_page_event_handler(dtk_event* pEvent)
+{
+    dred_settings_editor* pSettingsEditor = (dred_settings_editor*)pEvent->pControl->pParent;
+
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_REFRESH_LAYOUT:
+        {
+            float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
+
+            dtk_font_metrics fontMetrics;
+            dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &fontMetrics);
+
+            float penPosX = 8*uiScale;
+            float penPosY = 8*uiScale;
+
+            dred_checkbox_set_padding(&pSettingsEditor->cbTabsToSpaces, 4*uiScale);
+            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbTabsToSpaces), penPosX, penPosY);
+            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbTabsToSpaces)) + (6*uiScale);
+            dred_checkbox_auto_size(&pSettingsEditor->cbTabsToSpaces);
+
+            dred_checkbox_set_padding(&pSettingsEditor->cbShowLineNumbers, 4*uiScale);
+            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers), penPosX, penPosY);
+            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers)) + (6*uiScale);
+            dred_checkbox_auto_size(&pSettingsEditor->cbShowLineNumbers);
+        } break;
+    }
+
+    return dred_control_event_handler(pEvent);
+}
+
 dr_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pSettingsEditor)
 {
     assert(pSettingsEditor != NULL);
@@ -434,7 +545,7 @@ dr_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pSe
 
     dred_settings_editor_page* pPage = &pSettingsEditor->pages[DRED_SETTINGS_EDITOR_PAGE_TEXT_EDITOR];
 
-    if (!dred_settings_editor__init_page(pPage, pDred, DRED_CONTROL(pSettingsEditor), "Text Editor")) {
+    if (!dred_settings_editor__init_page(pPage, pDred, DRED_CONTROL(pSettingsEditor), dred_settings_editor_text_editor_page_event_handler, "Text Editor")) {
         return DR_FALSE;
     }
 

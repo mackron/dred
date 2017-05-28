@@ -277,6 +277,15 @@ void dred_checkbox_disable_auto_size(dred_checkbox* pCheckbox)
     dred_checkbox__refresh_layout(pCheckbox);
 }
 
+void dred_checkbox_auto_size(dred_checkbox* pCheckbox)
+{
+    if (pCheckbox == NULL) {
+        return;
+    }
+
+    dred_checkbox__refresh_layout(pCheckbox);
+}
+
 
 void dred_checkbox_set_font(dred_checkbox* pCheckbox, dred_font* pFont)
 {

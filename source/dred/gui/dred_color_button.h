@@ -37,6 +37,7 @@ void dtk_colorbutton_uninit(dtk_colorbutton* pButton);
 void dtk_colorbutton_set_text(dtk_colorbutton* pButton, const char* text);
 void dtk_colorbutton_enable_auto_size(dtk_colorbutton* pButton);
 void dtk_colorbutton_disable_auto_size(dtk_colorbutton* pButton);
+void dtk_colorbutton_auto_size(dtk_colorbutton* pButton);
 
 void dtk_colorbutton_set_font(dtk_colorbutton* pButton, dred_font* pFont);
 void dtk_colorbutton_set_background_color(dtk_colorbutton* pButton, dtk_color color);

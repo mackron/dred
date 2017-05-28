@@ -287,6 +287,15 @@ void dtk_colorbutton_disable_auto_size(dtk_colorbutton* pButton)
     dtk_colorbutton__refresh_layout(pButton);
 }
 
+void dtk_colorbutton_auto_size(dtk_colorbutton* pButton)
+{
+    if (pButton == NULL) {
+        return;
+    }
+
+    dtk_colorbutton__refresh_layout(pButton);
+}
+
 
 void dtk_colorbutton_set_font(dtk_colorbutton* pButton, dred_font* pFont)
 {
