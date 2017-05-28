@@ -51,6 +51,22 @@ DTK_INLINE dtk_rect dtk_rect_union(dtk_rect rect0, dtk_rect rect1)
         (rect0.bottom > rect1.bottom) ? rect0.bottom : rect1.bottom);
 }
 
+DTK_INLINE dtk_rect dtk_rect_move_to_center(dtk_rect rect, dtk_rect bounds)
+{
+    dtk_int32 rectSizeX = rect.right - rect.left;
+    dtk_int32 rectSizeY = rect.bottom - rect.top;
+
+    dtk_int32 boundsSizeX = bounds.right - bounds.left;
+    dtk_int32 boundsSizeY = bounds.bottom - bounds.top;
+
+    dtk_rect centered;
+    centered.left   = bounds.left + (boundsSizeX - rectSizeX)/2;
+    centered.top    = bounds.top  + (boundsSizeY - rectSizeY)/2;
+    centered.right  = centered.left + rectSizeX;
+    centered.bottom = centered.top  + rectSizeY;
+    return centered;
+}
+
 DTK_INLINE dtk_bool32 dtk_rect_contains_point(dtk_rect rect, dtk_int32 posX, dtk_int32 posY)
 {
     if (posX < rect.left || posY < rect.top) {

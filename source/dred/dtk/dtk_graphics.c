@@ -1712,6 +1712,31 @@ void dtk_surface_draw_rect(dtk_surface* pSurface, dtk_rect rect, dtk_color color
 #endif
 }
 
+void dtk_surface_draw_outer_rect(dtk_surface* pSurface, dtk_rect outer, dtk_rect inner, dtk_color color)
+{
+    if (pSurface == NULL) return;
+
+    // Left.
+    if (outer.left < inner.left) {
+        dtk_surface_draw_rect(pSurface, dtk_rect_init(outer.left, outer.top, inner.left, outer.bottom), color);
+    }
+
+    // Right.
+    if (outer.right > inner.right) {
+        dtk_surface_draw_rect(pSurface, dtk_rect_init(inner.right, outer.top, outer.right, outer.bottom), color);
+    }
+
+    // Top.
+    if (outer.top < inner.top) {
+        dtk_surface_draw_rect(pSurface, dtk_rect_init(inner.left, outer.top, inner.right, inner.top), color);
+    }
+
+    // Bottom.
+    if (outer.bottom > inner.bottom) {
+        dtk_surface_draw_rect(pSurface, dtk_rect_init(inner.left, inner.bottom, inner.right, outer.bottom), color);
+    }
+}
+
 void dtk_surface_draw_rect_outline(dtk_surface* pSurface, dtk_rect rect, dtk_color color, dtk_int32 outlineWidth)
 {
     if (pSurface == NULL || outlineWidth <= 0) return;

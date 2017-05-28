@@ -44,12 +44,14 @@ void dred_cmdbox_cmdlist__update_scrollbar(dred_cmdbox_cmdlist* pCmdList)
 {
     dtk_assert(pCmdList != NULL);
 
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdList));
+
     // The page size is based on the number of line items that can fit on the main content area.
     dtk_rect contentRect = dred_cmdbox_cmdlist__calculate_content_rect(pCmdList);
     dtk_uint32 contentHeight = contentRect.bottom - contentRect.top;
 
     dtk_font_metrics fontMetrics;
-    dtk_font_get_metrics(dtk_get_default_font(&pCmdList->pDred->tk), 1, &fontMetrics);
+    dtk_font_get_metrics(dtk_get_default_font(&pCmdList->pDred->tk), uiScale, &fontMetrics);
 
     dtk_uint32 pageSize = contentHeight / fontMetrics.lineHeight;
     dred_scrollbar_set_range_and_page_size(&pCmdList->scrollbar, 0, (dtk_int32)pCmdList->commandIndexCount, (dtk_int32)pageSize);
@@ -105,7 +107,7 @@ dtk_bool32 dred_cmbox_cmdlist_event_handler(dtk_event* pEvent)
         case DTK_EVENT_PAINT:
         {
             dred_context* pDred = pCmdList->pDred;
-            float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdList));;
+            float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdList));
 
             // The rectangle we draw inside of depends on whether or not the scrollbar is visible.
             dtk_rect contentRect = dred_cmdbox_cmdlist__calculate_content_rect(pCmdList);

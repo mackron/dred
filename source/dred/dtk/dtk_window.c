@@ -785,6 +785,12 @@ dtk_result dtk_window_uninit__win32(dtk_window* pWindow)
     return DTK_SUCCESS;
 }
 
+dtk_result dtk_window_close__win32(dtk_window* pWindow)
+{
+    PostMessageW((HWND)pWindow->win32.hWnd, WM_CLOSE, 0, 0);
+    return DTK_SUCCESS;
+}
+
 dtk_result dtk_window_set_title__win32(dtk_window* pWindow, const char* title)
 {
     if (!SetWindowTextA((HWND)pWindow->win32.hWnd, title)) {
@@ -1621,6 +1627,14 @@ dtk_result dtk_window_uninit__gtk(dtk_window* pWindow)
     return DTK_SUCCESS;
 }
 
+dtk_result dtk_window_close__gtk(dtk_window* pWindow)
+{
+    GValue returnValue;
+    g_signal_emit_by_name(pWindow->gtk.pWidget, "delete-event", NULL, &returnValue);
+
+    return DTK_SUCCESS;
+}
+
 dtk_result dtk_window_set_title__gtk(dtk_window* pWindow, const char* title)
 {
     gtk_window_set_title(GTK_WINDOW(pWindow->gtk.pWidget), title);
@@ -2290,6 +2304,26 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
 
     // NOTE: Do not call dtk_control_default_event_handler() here. Just return DTK_TRUE directly. Windows are handled in a special way.
     return DTK_TRUE;
+}
+
+
+dtk_result dtk_window_close(dtk_window* pWindow)
+{
+    if (pWindow == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_win32) {
+        result = dtk_window_close__win32(pWindow);
+    }
+#endif
+#ifdef DTK_GTK
+    if (DTK_CONTROL(pWindow)->pTK->platform == dtk_platform_gtk) {
+        result = dtk_window_close__gtk(pWindow);
+    }
+#endif
+
+    return result;
 }
 
 

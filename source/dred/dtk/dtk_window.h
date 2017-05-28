@@ -76,6 +76,11 @@ dtk_result dtk_window_uninit(dtk_window* pWindow);
 // The default event handler for windows.
 dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent);
 
+// Closes the given window.
+//
+// This will post a close event to the window.
+dtk_result dtk_window_close(dtk_window* pWindow);
+
 
 // Sets the title of a window.
 dtk_result dtk_window_set_title(dtk_window* pWindow, const char* title);

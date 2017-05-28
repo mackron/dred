@@ -374,7 +374,7 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
     float penPosX = 8*uiScale;
     float penPosY = 8*uiScale;
 
-    if (!dred_button_init(&pSettingsEditor->fontButton, pDred, pPage->pGUIControl, "Choose Font...")) {
+    if (!dred_button_init(&pSettingsEditor->fontButton, pDred, DTK_CONTROL(pPage->pGUIControl), "Choose Font...")) {
         dred_control_uninit(pPage->pGUIControl);
         return DR_FALSE;
     }
@@ -490,7 +490,7 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_cont
     dred_settings_editor__init_page__theme(pSettingsEditor);
     dred_settings_editor__init_page__text_editor(pSettingsEditor);
 
-    if (!dred_button_init(&pSettingsEditor->closeButton, pDred, DRED_CONTROL(pSettingsEditor), "Close")) {
+    if (!dred_button_init(&pSettingsEditor->closeButton, pDred, DTK_CONTROL(pSettingsEditor), "Close")) {
         dred_editor_uninit(DRED_EDITOR(pSettingsEditor));
         return NULL;
     }

@@ -27,7 +27,7 @@ struct dred_button
     dred_button_on_pressed_proc onPressed;
 };
 
-dr_bool32 dred_button_init(dred_button* pButton, dred_context* pDred, dred_control* pParent, const char* text);
+dr_bool32 dred_button_init(dred_button* pButton, dred_context* pDred, dtk_control* pParent, const char* text);
 void dred_button_uninit(dred_button* pButton);
 
 void dred_button_set_text(dred_button* pButton, const char* text);

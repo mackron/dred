@@ -374,8 +374,8 @@ dred_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar)
     float thumbPadding = pScrollbar->thumbPadding * scale;
 
     dred_rect rect = {0, 0, 0, 0};
-    rect.left = pScrollbar->thumbPadding;
-    rect.top  = pScrollbar->thumbPadding;
+    rect.left = thumbPadding;
+    rect.top  = thumbPadding;
 
     if (pScrollbar->orientation == dred_scrollbar_orientation_vertical)
     {
@@ -662,10 +662,12 @@ DRED_GUI_PRIVATE float dred_scrollbar_get_track_size(dred_scrollbar* pScrollbar)
 {
     assert(pScrollbar != NULL);
 
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pScrollbar));
+
     if (pScrollbar->orientation == dred_scrollbar_orientation_vertical) {
-        return dred_control_get_height(DRED_CONTROL(pScrollbar)) - (pScrollbar->thumbPadding*2);
+        return dred_control_get_height(DRED_CONTROL(pScrollbar)) - (pScrollbar->thumbPadding*2 * uiScale);
     } else {
-        return dred_control_get_width(DRED_CONTROL(pScrollbar)) - (pScrollbar->thumbPadding*2);
+        return dred_control_get_width(DRED_CONTROL(pScrollbar)) - (pScrollbar->thumbPadding*2 * uiScale);
     }
 }
 
@@ -676,7 +678,6 @@ DRED_GUI_PRIVATE void dred_scrollbar_make_relative_to_thumb(dred_scrollbar* pScr
     if (pPosX != NULL) {
         *pPosX -= thumbRect.left;
     }
-
     if (pPosY != NULL) {
         *pPosY -= thumbRect.top;
     }

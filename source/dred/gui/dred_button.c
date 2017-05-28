@@ -145,14 +145,14 @@ void dred_button__refresh_layout(dred_button* pButton)
     dred_control_dirty(DRED_CONTROL(pButton), dred_control_get_local_rect(DRED_CONTROL(pButton)));
 }
 
-dr_bool32 dred_button_init(dred_button* pButton, dred_context* pDred, dred_control* pParent, const char* text)
+dr_bool32 dred_button_init(dred_button* pButton, dred_context* pDred, dtk_control* pParent, const char* text)
 {
     if (pButton == NULL) {
         return DR_FALSE;
     }
 
     memset(pButton, 0, sizeof(*pButton));
-    if (!dred_control_init(DRED_CONTROL(pButton), pDred, pParent, NULL, DRED_CONTROL_TYPE_BUTTON, NULL)) {
+    if (!dred_control_init(DRED_CONTROL(pButton), pDred, NULL, pParent, DRED_CONTROL_TYPE_BUTTON, NULL)) {
         return DR_FALSE;
     }
 

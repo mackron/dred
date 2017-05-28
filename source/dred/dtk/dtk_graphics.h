@@ -307,6 +307,9 @@ void dtk_surface_get_clip(dtk_surface* pSurface, dtk_rect* pRect);
 // Draws a quad onto the given surface.
 void dtk_surface_draw_rect(dtk_surface* pSurface, dtk_rect rect, dtk_color color);
 
+// Draws the outer quad, with the inner quad clipped out.
+void dtk_surface_draw_outer_rect(dtk_surface* pSurface, dtk_rect outer, dtk_rect inner, dtk_color color);
+
 // Draws the outline of a rectangle.
 void dtk_surface_draw_rect_outline(dtk_surface* pSurface, dtk_rect rect, dtk_color color, dtk_int32 outlineWidth);
 
