@@ -296,4 +296,4 @@ dtk_bool32 dtk_control_is_point_inside(dtk_control* pControl, dtk_int32 absolute
 // Retrieves the DPI scale to use with this control.
 //
 // The return value for this will be based on the DPI scale of the window that owns it.
-float dtk_control_get_dpi_scale(dtk_control* pControl);
+float dtk_control_get_scaling_factor(dtk_control* pControl);

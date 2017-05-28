@@ -420,6 +420,3 @@ void dred_on_ipc_message(dred_context* pDred, unsigned int messageID, const void
 // This function assumes the control was created from the dtk_context object that is owned by the dred_context object.
 dred_context* dred_get_context_from_control(dtk_control* pControl);
 
-// Retrieves the UI scale for use with the given control. This is based on the DPI scaling of the window
-// that owns the control and dred's "ui-scale" config variable.
-float dred_get_control_ui_scale(dred_context* pDred, dtk_control* pControl);

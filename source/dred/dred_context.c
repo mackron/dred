@@ -342,6 +342,10 @@ static dtk_bool32 dred_dtk_global_event_proc(dtk_event* pEvent)
 
     switch (pEvent->type)
     {
+        case DTK_EVENT_APPLICATION_SCALE:
+        {
+            pEvent->applicationScale.scale = pDred->config.uiScale;
+        } return DTK_FALSE; // Don't break here! Return false to ensure the default event handler is not run.
 
         case DTK_EVENT_ACCELERATOR:
         {
@@ -582,8 +586,8 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     // keyboard focus.
     windowPosX = pDred->config.windowPosX;
     windowPosY = pDred->config.windowPosY;
-    windowWidth =  (unsigned int)(pDred->config.windowWidth  * dtk_control_get_dpi_scale(DTK_CONTROL(pDred->pMainWindow)));
-    windowHeight = (unsigned int)(pDred->config.windowHeight * dtk_control_get_dpi_scale(DTK_CONTROL(pDred->pMainWindow)));
+    windowWidth =  (unsigned int)(pDred->config.windowWidth  * dtk_control_get_scaling_factor(DTK_CONTROL(pDred->pMainWindow)));
+    windowHeight = (unsigned int)(pDred->config.windowHeight * dtk_control_get_scaling_factor(DTK_CONTROL(pDred->pMainWindow)));
     showWindowMaximized = pDred->config.windowMaximized;
 
     dred_window_set_title(pDred->pMainWindow, "dred");
@@ -2951,10 +2955,4 @@ dred_context* dred_get_context_from_control(dtk_control* pControl)
 {
     if (pControl == NULL) return NULL;
     return (dred_context*)pControl->pTK->pUserData;
-}
-
-float dred_get_control_ui_scale(dred_context* pDred, dtk_control* pControl)
-{
-    if (pDred == NULL) return 1;
-    return dtk_control_get_dpi_scale(pControl) * pDred->config.uiScale;
 }

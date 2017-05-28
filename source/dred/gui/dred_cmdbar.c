@@ -5,7 +5,7 @@ dred_rect dred_cmdbar__get_inner_rect(dred_cmdbar* pCmdBar)
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pCmdBar));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBar));
 
     float cmdbarWidth;
     float cmdbarHeight;
@@ -144,7 +144,7 @@ void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pCmdBar));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBar));
     dred_rect localRect = dred_control_get_local_rect(DRED_CONTROL(pCmdBar));
 
     dtk_color bgcolor = pDred->config.cmdbarBGColor;
@@ -425,7 +425,7 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pCmdBar));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBar));
 
     dtk_font_metrics fontMetricsTB;
     dtk_font_get_metrics(dred_textbox_get_font(pCmdBar->pTextBox), uiScale, &fontMetricsTB);
@@ -810,7 +810,7 @@ void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
 
     // Textbox.
     dred_textbox_set_font(pCmdBar->pTextBox, &pDred->config.pCmdbarTBFont->fontDTK);
-    dred_textbox_set_font_scale(pCmdBar->pTextBox, dred_get_control_ui_scale(pDred, DTK_CONTROL(pCmdBar)));
+    dred_textbox_set_font_scale(pCmdBar->pTextBox, dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBar)));
 
     if (dred_cmdbar_has_keyboard_focus(pCmdBar)) {
         dred_textbox_set_text_color(pCmdBar->pTextBox, pDred->config.cmdbarTextColorActive);

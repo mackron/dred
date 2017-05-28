@@ -5,10 +5,7 @@ dtk_rect dtk_colorbutton__get_box_rect(dtk_colorbutton* pButton)
     // The size of the box is based on the size of the font.
     assert(pButton != NULL);
 
-    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pButton));
-    dtk_assert(pDred != NULL);
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pButton));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pButton));
     
     dtk_font_metrics metrics;
     dtk_font_get_metrics(&pButton->pFont->fontDTK, uiScale, &metrics);
@@ -53,7 +50,7 @@ void dtk_colorbutton__on_paint(dred_control* pControl, dred_rect rect, dtk_surfa
         return;
     }
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pButton));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pButton));
 
     // Draw the box first.
     dtk_color bgColor = pButton->bgColor;
@@ -188,10 +185,7 @@ void dtk_colorbutton__refresh_layout(dtk_colorbutton* pButton)
         return;
     }
 
-    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pButton));
-    dtk_assert(pDred != NULL);
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pButton));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pButton));
 
     if (pButton->isAutoSizeEnabled) {
         float textWidth;

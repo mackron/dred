@@ -5,10 +5,7 @@ dtk_rect dred_checkbox__get_box_rect(dred_checkbox* pCheckbox)
     // The size of the box is based on the size of the font.
     assert(pCheckbox != NULL);
 
-    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCheckbox));
-    dtk_assert(pDred != NULL);
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pCheckbox));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCheckbox));
     
     dtk_font_metrics metrics;
     dtk_font_get_metrics(&pCheckbox->pFont->fontDTK, uiScale, &metrics);
@@ -48,12 +45,7 @@ void dred_checkbox__on_paint(dred_control* pControl, dred_rect rect, dtk_surface
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(pControl);
-    if (pDred == NULL) {
-        return;
-    }
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pCheckbox));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCheckbox));
 
     // Draw the box first.
     dtk_color boxBGColor = pCheckbox->boxBGColor;
@@ -183,10 +175,7 @@ void dred_checkbox__refresh_layout(dred_checkbox* pCheckbox)
         return;
     }
 
-    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCheckbox));
-    dtk_assert(pDred != NULL);
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pCheckbox));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCheckbox));
 
     if (pCheckbox->isAutoSizeEnabled) {
         float textWidth;

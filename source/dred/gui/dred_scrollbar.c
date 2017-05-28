@@ -370,7 +370,7 @@ dred_rect dred_scrollbar_get_thumb_rect(dred_scrollbar* pScrollbar)
         return dred_make_rect(0, 0, 0, 0);
     }
 
-    float scale = dred_get_control_ui_scale(dred_get_context_from_control(DTK_CONTROL(pScrollbar)), DTK_CONTROL(pScrollbar));
+    float scale = dtk_control_get_scaling_factor(DTK_CONTROL(pScrollbar));
     float thumbPadding = pScrollbar->thumbPadding * scale;
 
     dred_rect rect = {0, 0, 0, 0};

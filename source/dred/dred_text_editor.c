@@ -478,7 +478,7 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextEditor));
     assert(pDred != NULL);
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pTextEditor));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTextEditor));
 
     //dred_control_begin_dirty(DRED_CONTROL(pTextEditor));
     {
@@ -569,7 +569,7 @@ void dred_text_editor_set_font(dred_text_editor* pTextEditor, dred_font* pFont)
         return;
     }
 
-    float uiScale = dred_get_control_ui_scale(pFont->pDred, DTK_CONTROL(pTextEditor));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTextEditor));
 
     dred_textview_set_font(pTextEditor->pTextView, &pFont->fontDTK);
     dred_textview_set_scale(pTextEditor->pTextView, uiScale);
@@ -713,7 +713,7 @@ void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, float textSc
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextEditor));
     assert(pDred != NULL);
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pTextEditor));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTextEditor));
 
     pTextEditor->textScale = dr_clamp(textScale, 0.1f, 4.0f);
     dred_textview_set_line_numbers_width(pTextEditor->pTextView, (48 + pDred->config.textEditorLineNumbersPadding) * uiScale * pTextEditor->textScale);

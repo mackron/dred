@@ -124,7 +124,7 @@ float dtk_monitor_get_dpi_scale__win32(dtk_context* pTK, dtk_monitor monitor)
     FreeLibrary(hSHCoreDLL);
 
     if (fallBackToSystemDPI) {
-        return dtk_get_dpi_scale(pTK);
+        return dtk_get_system_dpi_scale(pTK);
     }
 
     // Should never get here...

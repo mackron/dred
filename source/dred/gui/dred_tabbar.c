@@ -440,10 +440,7 @@ void dred_tabbar_resize_by_tabs(dred_tabbar* pTabBar)
     }
 #endif
 
-    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pTabBar));
-    dtk_assert(pDred != NULL);
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pTabBar));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTabBar));
 
     dtk_font_metrics fontMetrics;
     if (dtk_font_get_metrics(pTabBar->pFont, uiScale, &fontMetrics) == DTK_SUCCESS) {
@@ -859,10 +856,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, d
         return;
     }
 
-    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pTabBar));
-    dtk_assert(pDred != NULL);
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pTabBar));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTabBar));
 
     float textWidth  = 0;
     float textHeight = 0;
@@ -897,10 +891,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
         return;
     }
 
-    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pTabBar));
-    dtk_assert(pDred != NULL);
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pTabBar));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTabBar));
 
     // Background.
     dtk_color bgcolor = pTabBar->tabBackgroundColor;

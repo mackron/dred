@@ -9,12 +9,7 @@ void dred_button__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pButton));
-    if (pDred == NULL) {
-        return;
-    }
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pControl));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pControl));
 
 
     dtk_color bgColor = pButton->bgColor;
@@ -135,7 +130,7 @@ void dred_button__refresh_layout(dred_button* pButton)
         return;
     }
 
-    float uiScale = dred_get_control_ui_scale(DRED_CONTROL(pButton)->pGUI->pDred, DTK_CONTROL(pButton));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pButton));
 
     if (pButton->isAutoSizeEnabled) {
         float textWidth;

@@ -41,7 +41,7 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dtk_surface* 
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pInfoBar));
     assert(pDred != NULL);
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pInfoBar));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pInfoBar));
 
     dred_control_draw_rect(DRED_CONTROL(pInfoBar), dred_control_get_local_rect(DRED_CONTROL(pInfoBar)), dred_info_bar__get_bg_color(pInfoBar), pSurface);
 
@@ -111,7 +111,7 @@ dr_bool32 dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_
     pInfoBar->colStr[0] = '\0';
     pInfoBar->zoomStr[0] = '\0';
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pInfoBar));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pInfoBar));
 
     // The height of the command bar is based on the size of the font.
     dtk_font_metrics fontMetrics;
@@ -161,7 +161,7 @@ void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar)
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pInfoBar));
     assert(pDred != NULL);
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pInfoBar));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pInfoBar));
 
     dtk_font* pNewFont = &pDred->config.pUIFont->fontDTK;
     if (pNewFont != NULL) {

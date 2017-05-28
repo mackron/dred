@@ -1581,12 +1581,15 @@ dtk_bool32 dtk_default_event_handler(dtk_event* pEvent)
     dtk_context* pTK = pEvent->pTK;
     dtk_assert(pTK != NULL);
 
-#if 0
-    dtk_control* pControl = pEvent->pControl;
-    if (pControl == NULL) {
-        return DTK_SUCCESS;
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_APPLICATION_SCALE:
+        {
+            pEvent->applicationScale.scale = 1;
+        } return DTK_FALSE; // <-- Don't break here! Return straight away because we don't care about handling this locally.
+
+        default: break;
     }
-#endif
 
     return dtk_handle_local_event(pTK, pEvent);
 }
@@ -1714,7 +1717,7 @@ dtk_result dtk_get_screen_size(dtk_context* pTK, dtk_uint32* pSizeX, dtk_uint32*
 
 //// DPI Scaling ////
 
-float dtk_get_dpi_scale(dtk_context* pTK)
+float dtk_get_system_dpi_scale(dtk_context* pTK)
 {
     if (pTK == NULL) return 1;
 
@@ -1731,6 +1734,17 @@ float dtk_get_dpi_scale(dtk_context* pTK)
 #endif
 
     return scale;
+}
+
+float dtk_get_application_scaling_factor(dtk_context* pTK)
+{
+    if (pTK == NULL) return 1;
+
+    dtk_event e = dtk_event_init(pTK, DTK_EVENT_APPLICATION_SCALE, NULL);
+    e.applicationScale.scale = 1;
+    dtk_handle_global_event(&e);
+
+    return e.applicationScale.scale;
 }
 
 

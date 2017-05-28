@@ -15,10 +15,7 @@ dred_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSett
 {
     assert(pSettingsEditor != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pSettingsEditor));
-    assert(pSettingsEditor != NULL);
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pSettingsEditor));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
     float posX = pSettingsEditor->sidePanelWidth;
     float posY = dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - (dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton))) - (8*uiScale * 2);
@@ -34,7 +31,7 @@ int dred_settings_editor__get_side_panel_btn_index_under_point(dred_settings_edi
         return -1;
     }
 
-    float uiScale = dred_get_control_ui_scale(DRED_CONTROL(pSettingsEditor)->pGUI->pDred, DTK_CONTROL(pSettingsEditor));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
     dtk_font_metrics metrics;
     dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &metrics);
@@ -79,10 +76,7 @@ void dred_settings_editor__refresh_layout(dred_settings_editor* pSettingsEditor)
 {
     assert(pSettingsEditor != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pSettingsEditor));
-    assert(pSettingsEditor != NULL);
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pSettingsEditor));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
     float posX = pSettingsEditor->sidePanelWidth;
     float posY = 0;
@@ -107,9 +101,7 @@ void dred_settings_editor__on_size(dred_control* pControl, float newWidth, float
     dred_settings_editor* pSettingsEditor = DRED_SETTINGS_EDITOR(pControl);
     assert(pSettingsEditor != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pSettingsEditor));
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pSettingsEditor));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
     dred_settings_editor__refresh_layout(pSettingsEditor);
 
@@ -175,10 +167,7 @@ void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, dtk_
     dred_settings_editor* pSettingsEditor = DRED_SETTINGS_EDITOR(pControl);
     assert(pSettingsEditor != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pSettingsEditor));
-    assert(pDred != NULL);
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pSettingsEditor));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
     dred_rect sideRect = dred_settings_editor__get_side_panel_rect(pSettingsEditor);
 
@@ -335,7 +324,7 @@ dr_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSettin
         return DR_FALSE;
     }
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pSettingsEditor));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
     dtk_font_metrics fontMetrics;
     dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &fontMetrics);
@@ -377,7 +366,7 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
         return DR_FALSE;
     }
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pSettingsEditor));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
     dtk_font_metrics fontMetrics;
     dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &fontMetrics);
@@ -449,7 +438,7 @@ dr_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pSe
         return DR_FALSE;
     }
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pSettingsEditor));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
     dtk_font_metrics fontMetrics;
     dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &fontMetrics);
@@ -485,7 +474,7 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dred_cont
         return NULL;
     }
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pSettingsEditor));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
     pSettingsEditor->pFont = &pDred->config.pUIFont->fontDTK;
     pSettingsEditor->sidePanelWidth = 200*uiScale;
@@ -551,7 +540,7 @@ void dred_settings_editor_refresh_styling(dred_settings_editor* pSettingsEditor)
         return;
     }
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pSettingsEditor));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
 
     pSettingsEditor->pFont = &pDred->config.pUIFont->fontDTK;

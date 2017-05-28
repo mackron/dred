@@ -40,10 +40,7 @@ void dred_about_dialog__on_size(dred_control* pControl, float newWidth, float ne
     dred_about_dialog* pDialog = (dred_about_dialog*)pWindow->pUserData;
     assert(pDialog != NULL);
 
-    dred_context* pDred = pWindow->pDred;
-    assert(pDialog != NULL);
-
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pDialog->pWindow));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pDialog->pWindow));
 
     // The close button needs to be repositioned.
     dred_control_set_relative_position(DRED_CONTROL(&pDialog->closeButton),
@@ -66,7 +63,7 @@ void dred_about_dialog__on_paint(dred_control* pControl, dred_rect rect, dtk_sur
     dred_context* pDred = dred_control_get_context(pControl);
     assert(pDred != NULL);
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pControl));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pControl));
 
     dred_rect dialogRect = dred_control_get_local_rect(pControl);
 
@@ -215,7 +212,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
         return NULL;
     }
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pDred->pMainWindow));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pDred->pMainWindow));
 
     unsigned int windowWidth  = (unsigned int)(480*uiScale);
     unsigned int windowHeight = (unsigned int)(360*uiScale);
@@ -298,7 +295,7 @@ void dred_about_dialog_refresh_layout(dred_about_dialog* pDialog)
 {
     if (pDialog == NULL) return;
 
-    float uiScale = dred_get_control_ui_scale(pDialog->pWindow->pDred, DTK_CONTROL(pDialog->pWindow));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pDialog->pWindow));
     //float uiScale = dred_get_control_ui_scale(pDialog->pWindow->pDred, DTK_CONTROL(pDialog->pWindow->pDred->pMainWindow));
 
     dtk_uint32 windowWidth  = (dtk_uint32)(480*uiScale);

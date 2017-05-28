@@ -212,7 +212,7 @@ void dred_tabgroup_refresh_styling(dred_tabgroup* pTabGroup)
         return;
     }
 
-    float uiScale = dred_get_control_ui_scale(pDred, DTK_CONTROL(pTabGroup));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTabGroup));
 
 
     // Update tab bar.

@@ -207,6 +207,7 @@ typedef int dtk_event_type;
 #define DTK_EVENT_SCROLLBAR_SCROLL          128
 #define DTK_EVENT_TABBAR_CHANGE_TAB         133
 #define DTK_EVENT_TABGROUP_CHANGE_TAB       134
+#define DTK_EVENT_APPLICATION_SCALE         253     // A special event for retrieving an application-defined scaling factor for GUI elements.
 #define DTK_EVENT_CHANGE_KEYBOARD_CAPTURE   254     // A special event used internally for handling keyboard capture changes.
 #define DTK_EVENT_CHANGE_MOUSE_CAPTURE      255     // ^^^
 #define DTK_EVENT_CUSTOM                    256
@@ -340,6 +341,11 @@ struct dtk_event
             dtk_uint32 suggestedWidth;
             dtk_uint32 suggestedHeight;
         } dpiChanged;
+
+        struct
+        {
+            float scale;                    // <-- Set by the event handler.
+        } applicationScale;
 
         struct
         {
@@ -570,7 +576,10 @@ dtk_result dtk_get_screen_size(dtk_context* pTK, dtk_uint32* pSizeX, dtk_uint32*
 //// DPI Scaling ////
 
 // Retrieves the base DPI scaling factor.
-float dtk_get_dpi_scale(dtk_context* pTK);
+float dtk_get_system_dpi_scale(dtk_context* pTK);
+
+// Retrieves an application-defined scaling factor for GUI elements.
+float dtk_get_application_scaling_factor(dtk_context* pTK);
 
 
 
