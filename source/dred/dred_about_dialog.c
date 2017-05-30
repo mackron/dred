@@ -189,7 +189,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     pDialog->pLogo = dred_gui_create_image(pDred->pGUI, g_LogoBannerImage.width, g_LogoBannerImage.height, g_LogoBannerImage.width*4, g_LogoBannerImage.pixel_data);
 
     dtk_window_get_client_size(DTK_WINDOW(pDialog), &windowWidth, &windowHeight);
-    dtk_button_init(&pDred->tk, DTK_CONTROL(pDialog), "Close", &pDialog->closeButton);
+    dtk_button_init(&pDred->tk, DTK_CONTROL(pDialog), NULL, "Close", &pDialog->closeButton);
     dtk_button_set_on_pressed(&pDialog->closeButton, dred_about_dialog__btn_close__on_pressed);
     dred_about_dialog_refresh_layout(pDialog);
 

@@ -117,12 +117,12 @@ void dtk_button__refresh_layout(dtk_button* pButton)
 }
 
 
-dtk_result dtk_button_init(dtk_context* pTK, dtk_control* pParent, const char* text, dtk_button* pButton)
+dtk_result dtk_button_init(dtk_context* pTK, dtk_control* pParent, dtk_event_proc onEvent, const char* text, dtk_button* pButton)
 {
     if (pButton == NULL) return DR_FALSE;
     dtk_zero_object(pButton);
 
-    dtk_result result = dtk_control_init(pTK, pParent, DTK_CONTROL_TYPE_BUTTON, dtk_button_default_event_handler, DTK_CONTROL(pButton));
+    dtk_result result = dtk_control_init(pTK, pParent, DTK_CONTROL_TYPE_BUTTON, onEvent, DTK_CONTROL(pButton));
     if (result != DTK_SUCCESS) {
         return result;
     }
