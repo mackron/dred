@@ -111,7 +111,7 @@ extern "C" {
 #include "gui/dred_gui.h"
 #include "gui/dred_scrollbar.h"
 #include "gui/dred_tabbar.h"
-#include "gui/dred_button.h"
+//#include "gui/dred_button.h"
 #include "gui/dred_color_button.h"
 #include "gui/dred_checkbox.h"
 #include "gui/dred_tabgroup.h"

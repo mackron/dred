@@ -18,7 +18,7 @@ struct dred_settings_editor
     dred_editor editor;
 
 
-    dred_button closeButton;
+    dtk_button closeButton;
 
     // General
     dred_checkbox cbShowTabBar;
@@ -26,7 +26,7 @@ struct dred_settings_editor
     dred_checkbox cbAutoHideCmdBar;
 
     // Theme
-    dred_button fontButton;
+    dtk_button fontButton;
     dtk_colorbutton textColorButton;
     dtk_colorbutton bgColorButton;
     dtk_colorbutton lineColorButton;

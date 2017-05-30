@@ -144,6 +144,13 @@ typedef enum
     dtk_system_cursor_type_double_arrow_v,
 } dtk_system_cursor_type;
 
+typedef enum
+{
+    dtk_application_font_type_ui,
+    dtk_application_font_type_monospace,
+    dtk_application_font_type_default = dtk_application_font_type_ui
+} dtk_application_font_type;
+
 // The callback function for handing log messages.
 typedef void (* dtk_log_proc)(dtk_context* pTK, const char* message);
 
@@ -204,10 +211,12 @@ typedef int dtk_event_type;
 #define DTK_EVENT_CAPTURE_MOUSE             22
 #define DTK_EVENT_RELEASE_MOUSE             23
 #define DTK_EVENT_DPI_CHANGED               24
-#define DTK_EVENT_SCROLLBAR_SCROLL          128
+#define DTK_EVENT_BUTTON_PRESSED            128
+#define DTK_EVENT_SCROLLBAR_SCROLL          129
 #define DTK_EVENT_TABBAR_CHANGE_TAB         133
 #define DTK_EVENT_TABGROUP_CHANGE_TAB       134
-#define DTK_EVENT_REFRESH_LAYOUT            252     // A special event that's used to indicate to a control that it needs to refresh the layout of it's children and inner elements.
+#define DTK_EVENT_REFRESH_LAYOUT            251     // A special event that's used to indicate to a control that it needs to refresh the layout of it's children and inner elements.
+#define DTK_EVENT_APPLICATION_FONT          252     // A special event for retrieving an application-defined font for certain categories.
 #define DTK_EVENT_APPLICATION_SCALE         253     // A special event for retrieving an application-defined scaling factor for GUI elements.
 #define DTK_EVENT_CHANGE_KEYBOARD_CAPTURE   254     // A special event used internally for handling keyboard capture changes.
 #define DTK_EVENT_CHANGE_MOUSE_CAPTURE      255     // ^^^
@@ -350,8 +359,20 @@ struct dtk_event
 
         struct
         {
+            // TODO: Add a variable for allowing DTK to choose a category of font (UI, Monospace, etc.)
+            dtk_uint32 type;                // <-- DTK_APPLICATION_FONT_TYPE_*.
+            dtk_font* pFont;                // <-- Set by the event handler.
+        } applicationFont;
+
+        struct
+        {
             float scale;                    // <-- Set by the event handler.
         } applicationScale;
+
+        struct
+        {
+            int unused;
+        } button;
 
         struct
         {
@@ -407,7 +428,10 @@ struct dtk_context
     void* pUserData;
     dtk_event_proc defaultEventHandlers[DTK_CONTROL_TYPE_COUNT];    // The default event handlers for each built-in control type.
     dtk_paint_queue paintQueue;
-    dtk_font defaultFont;
+    dtk_font uiFont;
+    dtk_font monospaceFont;
+    dtk_bool32 isUIFontInitialized        : 1;
+    dtk_bool32 isMonospaceFontInitialized : 1;
 
     union
     {
@@ -617,8 +641,14 @@ dtk_control* dtk_get_control_with_mouse_capture(dtk_context* pTK);
 
 //// Graphics ////
 
-// Retrieves the default font that can be used to draw text. This should only really be used for convenience.
-dtk_font* dtk_get_default_font(dtk_context* pTK);
+// Retrieves the default font for UI elements.
+dtk_font* dtk_get_ui_font(dtk_context* pTK);
+
+// Retrieves the default monospace font.
+//
+// This will first try retrieving the font from the application. If the application does not define a monospace font, it
+// will be based on the operating system.
+dtk_font* dtk_get_monospace_font(dtk_context* pTK);
 
 
 #endif  // DTK_H

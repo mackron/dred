@@ -30,7 +30,7 @@ static const struct {
   "\0\0\377\0\0\0\377\0\0\0\377\0\0\0\377\0\0\0\377",
 };
 
-void dred_about_dialog__btn_close__on_pressed(dred_button* pButton)
+void dred_about_dialog__btn_close__on_pressed(dtk_button* pButton)
 {
     dtk_window* pWindow = dtk_control_get_window(DTK_CONTROL(pButton));
     if (pWindow == NULL) {
@@ -189,8 +189,8 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     pDialog->pLogo = dred_gui_create_image(pDred->pGUI, g_LogoBannerImage.width, g_LogoBannerImage.height, g_LogoBannerImage.width*4, g_LogoBannerImage.pixel_data);
 
     dtk_window_get_client_size(DTK_WINDOW(pDialog), &windowWidth, &windowHeight);
-    dred_button_init(&pDialog->closeButton, pDred, DTK_CONTROL(pDialog), "Close");
-    dred_button_set_on_pressed(&pDialog->closeButton, dred_about_dialog__btn_close__on_pressed);
+    dtk_button_init(&pDred->tk, DTK_CONTROL(pDialog), "Close", &pDialog->closeButton);
+    dtk_button_set_on_pressed(&pDialog->closeButton, dred_about_dialog__btn_close__on_pressed);
     dred_about_dialog_refresh_layout(pDialog);
 
     return pDialog;
@@ -202,7 +202,7 @@ void dred_about_dialog_delete(dred_about_dialog* pDialog)
         return;
     }
 
-    dred_button_uninit(&pDialog->closeButton);
+    dtk_button_uninit(&pDialog->closeButton);
 
     dred_gui_delete_image(pDialog->pLogo);
     pDialog->pLogo = NULL;
@@ -249,7 +249,7 @@ void dred_about_dialog_refresh_inner_layout(dred_about_dialog* pDialog)
     dtk_uint32 windowHeight;
     dtk_window_get_client_size(DTK_WINDOW(pDialog), &windowWidth, &windowHeight);
 
-    dred_button_set_padding(&pDialog->closeButton, 32*uiScale, 6*uiScale);
+    dtk_button_set_padding(&pDialog->closeButton, (dtk_int32)(32*uiScale), (dtk_int32)(6*uiScale));
     dtk_control_set_relative_position(DTK_CONTROL(&pDialog->closeButton),
         (dtk_int32)((dtk_int32)windowWidth  - (dtk_int32)dtk_control_get_width (DTK_CONTROL(&pDialog->closeButton)) - 8*uiScale),
         (dtk_int32)((dtk_int32)windowHeight - (dtk_int32)dtk_control_get_height(DTK_CONTROL(&pDialog->closeButton)) - 8*uiScale));

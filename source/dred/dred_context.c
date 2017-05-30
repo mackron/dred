@@ -342,6 +342,23 @@ static dtk_bool32 dred_dtk_global_event_proc(dtk_event* pEvent)
 
     switch (pEvent->type)
     {
+        case DTK_EVENT_APPLICATION_FONT:
+        {
+            switch (pEvent->applicationFont.type)
+            {
+                case dtk_application_font_type_monospace:
+                {
+                    pEvent->applicationFont.pFont = &pDred->config.pSystemFontMono->fontDTK;
+                } break;
+                
+                case dtk_application_font_type_ui:
+                default:
+                {
+                    pEvent->applicationFont.pFont = &pDred->config.pUIFont->fontDTK;
+                } break;
+            }
+        } return DTK_FALSE; // Don't break here! Return false to ensure the default event handler is not run.
+
         case DTK_EVENT_APPLICATION_SCALE:
         {
             pEvent->applicationScale.scale = pDred->config.uiScale;

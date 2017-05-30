@@ -851,6 +851,38 @@ dtk_result dtk_win32_error_to_result(DWORD error)
     (void)error;
     return DTK_ERROR;
 }
+
+
+dtk_result dtk_init_default_font_by_type__win32(dtk_context* pTK, dtk_application_font_type type, dtk_font* pFont)
+{
+    dtk_assert(pTK != NULL);
+    dtk_assert(pFont != NULL);
+
+    switch (type)
+    {
+        case dtk_application_font_type_monospace:
+        {
+            // Use Consolas by default, except for when XP is being used in which case we'll use Courier New.
+            OSVERSIONINFOEXA version;
+            ZeroMemory(&version, sizeof(version));
+            version.dwOSVersionInfoSize = sizeof(version);
+            version.dwMajorVersion = 5;
+            if (VerifyVersionInfoA(&version, VER_MAJORVERSION, VerSetConditionMask(0, VER_MAJORVERSION, VER_LESS_EQUAL))) {
+                // XP
+                return dtk_font_init(pTK, "Courier New", 13, dtk_font_weight_normal, dtk_font_slant_none, 0, pFont);
+            } else {
+                // Vista+
+                return dtk_font_init(pTK, "Consolas", 13, dtk_font_weight_normal, dtk_font_slant_none, 0, pFont);
+            }
+        };
+
+        case dtk_application_font_type_ui:
+        default:
+        {
+            return dtk_font_init(pTK, "Segoe UI", 12, dtk_font_weight_normal, dtk_font_slant_none, 0, pFont);
+        };
+    }
+}
 #endif
 
 
@@ -1333,6 +1365,120 @@ dtk_result dtk__release_mouse_window__gtk(dtk_context* pTK)
 
     return DTK_SUCCESS;
 }
+
+
+dtk_font_weight dtk_font_weight_from_pango(PangoWeight weight)
+{
+    if (weight == PANGO_WEIGHT_THIN) {
+        return dtk_font_weight_thin;
+    } else if (weight == PANGO_WEIGHT_ULTRALIGHT) {
+        return dtk_font_weight_extra_light;
+    } else if (weight == PANGO_WEIGHT_LIGHT) {
+        return dtk_font_weight_light;
+    } else if (weight == PANGO_WEIGHT_SEMILIGHT) {
+        return dtk_font_weight_semi_light;
+    } else if (weight == PANGO_WEIGHT_BOOK) {
+        return dtk_font_weight_book;
+    } else if (weight == PANGO_WEIGHT_NORMAL) {
+        return dtk_font_weight_normal;
+    } else if (weight == PANGO_WEIGHT_MEDIUM) {
+        return dtk_font_weight_medium;
+    } else if (weight == PANGO_WEIGHT_SEMIBOLD) {
+        return dtk_font_weight_semi_bold;
+    } else if (weight == PANGO_WEIGHT_BOLD) {
+        return dtk_font_weight_bold;
+    } else if (weight == PANGO_WEIGHT_ULTRABOLD) {
+        return dtk_font_weight_extra_bold;
+    } else if (weight == PANGO_WEIGHT_HEAVY) {
+        return dtk_font_weight_heavy;
+    } else if (weight == PANGO_WEIGHT_ULTRAHEAVY) {
+        return dtk_font_weight_extra_heavy;
+    } else {
+        return dtk_font_weight_normal;
+    }
+}
+
+dtk_font_slant dtk_font_slant_from_pango(PangoStyle slant)
+{
+    if (slant == PANGO_STYLE_OBLIQUE) {
+        return dtk_font_slant_oblique;
+    } else if (slant == PANGO_STYLE_ITALIC) {
+        return dtk_font_slant_italic;
+    } else {
+        return dtk_font_slant_none;
+    }
+}
+
+dtk_result dtk_font_init_from_pango_description(dtk_context* pTK, PangoFontDescription* pPangoDesc, dtk_font* pFont)
+{
+    dtk_assert(pTK != NULL);
+    dtk_assert(pPangoDesc != NULL);
+    dtk_assert(pFont != NULL);
+
+    const char* family = pango_font_description_get_family(pPangoDesc);
+
+    gint size = pango_font_description_get_size(pPangoDesc);
+    if (size > 0) {
+        if (!pango_font_description_get_size_is_absolute(pPangoDesc)) {
+            size = (unsigned int)(size/PANGO_SCALE * (96.0/72.0));
+        }
+    }
+
+    dtk_font_weight weight = dtk_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
+    dtk_font_slant slant   = dtk_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
+
+    return dtk_font_init(pTK, family, size, weight, slant, 0, pFont);
+}
+
+dtk_result dtk_init_default_font_by_type__gtk(dtk_context* pTK, dtk_application_font_type type, dtk_font* pFont)
+{
+    dtk_assert(pTK != NULL);
+    dtk_assert(pFont != NULL);
+
+    switch (type)
+    {
+        case dtk_application_font_type_monospace:
+        {
+            dtk_result result = DTK_ERROR;
+
+            GSettings* settings = g_settings_new("org.gnome.desktop.interface");
+            if (settings != NULL) {
+                char* fontName = g_settings_get_string(settings, "monospace-font-name");
+                if (fontName != NULL) {
+                    PangoFontDescription* pPangoDesc = pango_font_description_from_string(fontName);
+                    if (pPangoDesc != NULL) {
+                        result = dtk_font_init_from_pango_description(pTK, pPangoDesc, pFont);
+                        pango_font_description_free(pPangoDesc);
+                    }
+                }
+
+                g_object_unref(settings);
+            }
+        };
+
+        case dtk_application_font_type_ui:
+        default:
+        {
+            dtk_result result = DTK_ERROR;
+            GSettings* settings = g_settings_new("org.gnome.desktop.interface");
+            if (settings != NULL) {
+                char* fontName = g_settings_get_string(settings, "font-name");
+                if (fontName != NULL) {
+                    PangoFontDescription* pPangoDesc = pango_font_description_from_string(fontName);
+                    if (pPangoDesc != NULL) {
+                        result = dtk_font_init_from_pango_description(pTK, pPangoDesc, pFont);
+                        pango_font_description_free(pPangoDesc);
+                    }
+                }
+
+                g_object_unref(settings);
+            }
+        };
+    }
+
+    // Should never get here.
+    return DTK_ERROR;
+}
 #endif
 
 dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
@@ -1374,16 +1520,19 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
         return result;
     }
 
-    // TODO: Change this depending on the platform. May also want different types of default fonts (UI, monospace, etc.)... Maybe also use the
-    //       notion of system fonts instead?
-    dtk_font_init(pTK, "Courier New", 13, dtk_font_weight_default, dtk_font_slant_none, 0, &pTK->defaultFont);
-
     return result;
 }
 
 dtk_result dtk_uninit(dtk_context* pTK)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    if (pTK->isMonospaceFontInitialized) {
+        dtk_font_uninit(&pTK->monospaceFont);
+    }
+    if (pTK->isUIFontInitialized) {
+        dtk_font_uninit(&pTK->uiFont);
+    }
 
     dtk_paint_queue_uninit(&pTK->paintQueue);
     
@@ -1807,10 +1956,80 @@ dtk_control* dtk_get_control_with_mouse_capture(dtk_context* pTK)
 
 //// Graphics ////
 
-dtk_font* dtk_get_default_font(dtk_context* pTK)
+dtk_result dtk_init_default_font_by_type(dtk_context* pTK, dtk_application_font_type type, dtk_font* pFont)
+{
+    dtk_assert(pTK != NULL);
+    dtk_assert(pFont != NULL);
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk_init_default_font_by_type__win32(pTK, type, pFont);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk_init_default_font_by_type__gtk(pTK, type, pFont);
+    }
+#endif
+
+    return result;
+}
+
+dtk_font* dtk__get_application_font_by_type(dtk_context* pTK, dtk_application_font_type type)
+{
+    dtk_assert(pTK != NULL);
+    
+    dtk_event e = dtk_event_init(pTK, DTK_EVENT_APPLICATION_FONT, NULL);
+    e.applicationFont.type = type;
+    e.applicationFont.pFont = NULL;
+    dtk_handle_global_event(&e);
+
+    return e.applicationFont.pFont;
+}
+
+dtk_font* dtk_get_ui_font(dtk_context* pTK)
 {
     if (pTK == NULL) return NULL;
-    return &pTK->defaultFont;
+
+    dtk_font* pFont = dtk__get_application_font_by_type(pTK, dtk_application_font_type_ui);
+    if (pFont != NULL) {
+        return pFont;
+    }
+
+    if (!pTK->isUIFontInitialized) {
+        dtk_result result = dtk_init_default_font_by_type(pTK, dtk_application_font_type_ui, &pTK->uiFont);
+        if (result != DTK_SUCCESS) {
+            return NULL;
+        }
+
+        pTK->isUIFontInitialized = DTK_TRUE;
+        pFont = &pTK->uiFont;
+    }
+
+    return pFont;
+}
+
+dtk_font* dtk_get_monospace_font(dtk_context* pTK)
+{
+    if (pTK == NULL) return NULL;
+
+    dtk_font* pFont = dtk__get_application_font_by_type(pTK, dtk_application_font_type_monospace);
+    if (pFont != NULL) {
+        return pFont;
+    }
+
+    if (!pTK->isUIFontInitialized) {
+        dtk_result result = dtk_init_default_font_by_type(pTK, dtk_application_font_type_monospace, &pTK->monospaceFont);
+        if (result != DTK_SUCCESS) {
+            return NULL;
+        }
+
+        pTK->isUIFontInitialized = DTK_TRUE;
+        pFont = &pTK->monospaceFont;
+    }
+
+    return pFont;
 }
 
 

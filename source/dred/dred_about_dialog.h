@@ -4,7 +4,7 @@ typedef struct
 {
     dtk_window window;
     dred_gui_image* pLogo;
-    dred_button closeButton;
+    dtk_button closeButton;
 } dred_about_dialog;
 
 dred_about_dialog* dred_about_dialog_create(dred_context* pDred);

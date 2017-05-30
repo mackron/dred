@@ -37,7 +37,7 @@
 #include "gui/dred_gui.c"
 #include "gui/dred_scrollbar.c"
 #include "gui/dred_tabbar.c"
-#include "gui/dred_button.c"
+//#include "gui/dred_button.c"
 #include "gui/dred_color_button.c"
 #include "gui/dred_checkbox.c"
 #include "gui/dred_tabgroup.c"

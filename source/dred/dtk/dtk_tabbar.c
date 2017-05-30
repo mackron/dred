@@ -372,7 +372,7 @@ dtk_result dtk_tabbar_set_font(dtk_tabbar* pTabBar, dtk_font* pFont)
 dtk_font* dtk_tabbar_get_font(dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return NULL;
-    return (pTabBar->pFont != NULL) ? pTabBar->pFont : dtk_get_default_font(pTabBar->control.pTK);
+    return (pTabBar->pFont != NULL) ? pTabBar->pFont : dtk_get_ui_font(pTabBar->control.pTK);
 }
 
 dtk_result dtk_tabbar_set_text_color(dtk_tabbar* pTabBar, dtk_color color)

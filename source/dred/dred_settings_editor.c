@@ -247,12 +247,12 @@ void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, dtk_
 }
 
 
-void dred_settings__btn_close__on_pressed(dred_button* pButton)
+void dred_settings__btn_close__on_pressed(dtk_button* pButton)
 {
-    dred_settings_dialog_hide(dred_control_get_context(DRED_CONTROL(pButton))->pSettingsDialog);
+    dred_settings_dialog_hide(dred_get_context_from_control(DTK_CONTROL(pButton))->pSettingsDialog);
 }
 
-void dred_settings__btn_choose_font__on_pressed(dred_button* pButton)
+void dred_settings__btn_choose_font__on_pressed(dtk_button* pButton)
 {
     dtk_window* pWindow = dtk_control_get_window(DTK_CONTROL(pButton));
     if (pWindow == NULL) {
@@ -408,7 +408,7 @@ dtk_bool32 dred_settings_editor_theme_page_event_handler(dtk_event* pEvent)
             float penPosX = 8*uiScale;
             float penPosY = 8*uiScale;
 
-            dred_button_set_padding(&pSettingsEditor->fontButton, 16*uiScale, 6*uiScale);
+            dtk_button_set_padding(&pSettingsEditor->fontButton, (dtk_int32)(16*uiScale), (dtk_int32)(6*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->fontButton), penPosX, penPosY);
             penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->fontButton)) + (6*uiScale);
 
@@ -453,15 +453,14 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
     float penPosX = 8*uiScale;
     float penPosY = 8*uiScale;
 
-    if (!dred_button_init(&pSettingsEditor->fontButton, pDred, DTK_CONTROL(pPage->pGUIControl), "Choose Font...")) {
+    if (dtk_button_init(&pDred->tk, DTK_CONTROL(pPage->pGUIControl), "Choose Font...", &pSettingsEditor->fontButton) != DTK_SUCCESS) {
         dred_control_uninit(pPage->pGUIControl);
         return DR_FALSE;
     }
 
-    dred_button_set_on_pressed(&pSettingsEditor->fontButton, dred_settings__btn_choose_font__on_pressed);
-    dred_button_set_padding(&pSettingsEditor->fontButton, 16*uiScale, 6*uiScale);
+    dtk_button_set_on_pressed(&pSettingsEditor->fontButton, dred_settings__btn_choose_font__on_pressed);
+    dtk_button_set_padding(&pSettingsEditor->fontButton, (dtk_int32)(16*uiScale), (dtk_int32)(6*uiScale));
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->fontButton), penPosX, penPosY);
-
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->fontButton)) + (6*uiScale);
 
 
@@ -473,9 +472,7 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
     dtk_colorbutton_set_bind_to_config_var(&pSettingsEditor->textColorButton, "texteditor-text-color");
     dtk_colorbutton_set_padding(&pSettingsEditor->textColorButton, 4*uiScale);
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->textColorButton), penPosX, penPosY);
-
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale);
-
 
 
     if (!dtk_colorbutton_init(&pSettingsEditor->bgColorButton, pDred, pPage->pGUIControl, "Background color", pDred->config.textEditorBGColor)) {
@@ -486,7 +483,6 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
     dtk_colorbutton_set_bind_to_config_var(&pSettingsEditor->bgColorButton, "texteditor-bg-color");
     dtk_colorbutton_set_padding(&pSettingsEditor->bgColorButton, 4*uiScale);
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->bgColorButton), penPosX, penPosY);
-
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale);
 
 
@@ -498,7 +494,6 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
     dtk_colorbutton_set_bind_to_config_var(&pSettingsEditor->lineColorButton, "texteditor-active-line-color");
     dtk_colorbutton_set_padding(&pSettingsEditor->lineColorButton, 4*uiScale);
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->lineColorButton), penPosX, penPosY);
-
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale);
 
     return DR_TRUE;
@@ -601,13 +596,13 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dtk_contr
     dred_settings_editor__init_page__theme(pSettingsEditor);
     dred_settings_editor__init_page__text_editor(pSettingsEditor);
 
-    if (!dred_button_init(&pSettingsEditor->closeButton, pDred, DTK_CONTROL(pSettingsEditor), "Close")) {
+    if (dtk_button_init(&pDred->tk, DTK_CONTROL(pSettingsEditor), "Close", &pSettingsEditor->closeButton) != DTK_SUCCESS) {
         dred_editor_uninit(DRED_EDITOR(pSettingsEditor));
         return NULL;
     }
 
-    dred_button_set_on_pressed(&pSettingsEditor->closeButton, dred_settings__btn_close__on_pressed);
-    dred_button_set_padding(&pSettingsEditor->closeButton, 32*uiScale, 6*uiScale);
+    dtk_button_set_on_pressed(&pSettingsEditor->closeButton, dred_settings__btn_close__on_pressed);
+    dtk_button_set_padding(&pSettingsEditor->closeButton, (dtk_int32)(32*uiScale), (dtk_int32)(6*uiScale));
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->closeButton),
         dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - dred_control_get_width(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale,
         dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale);

@@ -26,7 +26,7 @@ dtk_bool32 dred_cmdbox_cmdlist__find_line_index_under_point(dred_cmdbox_cmdlist*
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdList));
 
     dtk_font_metrics fontMetrics;
-    dtk_font_get_metrics(dtk_get_default_font(&pCmdList->pDred->tk), uiScale, &fontMetrics);
+    dtk_font_get_metrics(dtk_get_ui_font(&pCmdList->pDred->tk), uiScale, &fontMetrics);
 
     dtk_uint32 lineIndexUnscrolled = y / fontMetrics.lineHeight;
     dtk_uint32 lineIndex = lineIndexUnscrolled + dred_scrollbar_get_scroll_position(&pCmdList->scrollbar);
@@ -51,7 +51,7 @@ void dred_cmdbox_cmdlist__update_scrollbar(dred_cmdbox_cmdlist* pCmdList)
     dtk_uint32 contentHeight = contentRect.bottom - contentRect.top;
 
     dtk_font_metrics fontMetrics;
-    dtk_font_get_metrics(dtk_get_default_font(&pCmdList->pDred->tk), uiScale, &fontMetrics);
+    dtk_font_get_metrics(dtk_get_ui_font(&pCmdList->pDred->tk), uiScale, &fontMetrics);
 
     dtk_uint32 pageSize = contentHeight / fontMetrics.lineHeight;
     dred_scrollbar_set_range_and_page_size(&pCmdList->scrollbar, 0, (dtk_int32)pCmdList->commandIndexCount, (dtk_int32)pageSize);
@@ -116,12 +116,12 @@ dtk_bool32 dred_cmbox_cmdlist_event_handler(dtk_event* pEvent)
             dtk_surface_set_clip(pEvent->paint.pSurface, innerRect);
 
             dtk_font_metrics fontMetrics;
-            dtk_font_get_metrics(dtk_get_default_font(&pCmdList->pDred->tk), uiScale, &fontMetrics);
+            dtk_font_get_metrics(dtk_get_ui_font(&pCmdList->pDred->tk), uiScale, &fontMetrics);
 
             dtk_int32 penPosX = 0;
             dtk_int32 penPosY = -dred_scrollbar_get_scroll_position(&pCmdList->scrollbar) * fontMetrics.lineHeight;
             for (size_t i = 0; i < pCmdList->commandIndexCount; ++i) {
-                dtk_font* pFont = dtk_get_default_font(&pDred->tk);
+                dtk_font* pFont = dtk_get_ui_font(&pDred->tk);
 
                 const char* text = g_CommandNames[pCmdList->pCommandIndices[i]];
                 size_t textLength = strlen(text);
@@ -137,7 +137,7 @@ dtk_bool32 dred_cmbox_cmdlist_event_handler(dtk_event* pEvent)
 
                 dtk_color fgColor = dtk_rgb(0, 0, 0);   // TODO: Replace this with a config variable.
 
-                dtk_surface_draw_text(pEvent->paint.pSurface, dtk_get_default_font(&pDred->tk), uiScale, text, textLength, penPosX, penPosY, fgColor, bgColor);
+                dtk_surface_draw_text(pEvent->paint.pSurface, dtk_get_ui_font(&pDred->tk), uiScale, text, textLength, penPosX, penPosY, fgColor, bgColor);
                 dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_rect_init((dtk_int32)stringSizeX, penPosY, innerRect.right, penPosY + fontMetrics.lineHeight), bgColor);
 
                 penPosY += fontMetrics.lineHeight;
