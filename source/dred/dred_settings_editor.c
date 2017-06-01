@@ -329,20 +329,20 @@ dtk_bool32 dred_settings_editor_general_page_event_handler(dtk_event* pEvent)
             float penPosX = 8*uiScale;
             float penPosY = 8*uiScale;
 
-            dred_checkbox_set_padding(&pSettingsEditor->cbShowTabBar, 4*uiScale);
+            dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowTabBar), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowTabBar), penPosX, penPosY);
             penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowTabBar)) + (6*uiScale);
-            dred_checkbox_auto_size(&pSettingsEditor->cbShowTabBar);
+            dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbShowTabBar));
 
-            dred_checkbox_set_padding(&pSettingsEditor->cbShowMenuBar, 4*uiScale);
+            dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowMenuBar), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowMenuBar), penPosX, penPosY);
             penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowMenuBar)) + (6*uiScale);
-            dred_checkbox_auto_size(&pSettingsEditor->cbShowMenuBar);
+            dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbShowMenuBar));
 
-            dred_checkbox_set_padding(&pSettingsEditor->cbAutoHideCmdBar, 4*uiScale);
+            dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbAutoHideCmdBar), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar), penPosX, penPosY);
             penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar)) + (6*uiScale);
-            dred_checkbox_auto_size(&pSettingsEditor->cbAutoHideCmdBar);
+            dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbAutoHideCmdBar));
         } break;
     }
 
@@ -370,21 +370,21 @@ dr_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSettin
     float penPosX = 8*uiScale;
     float penPosY = 8*uiScale;
 
-    dred_checkbox_init(&pSettingsEditor->cbShowTabBar, pDred, pPage->pGUIControl, "Show Tab Bar", pDred->config.showTabBar);
+    dred_checkbox_init(pDred, DTK_CONTROL(pPage->pGUIControl), "Show Tab Bar", pDred->config.showTabBar, &pSettingsEditor->cbShowTabBar);
     dred_checkbox_set_bind_to_config_var(&pSettingsEditor->cbShowTabBar, "show-tab-bar");
-    dred_checkbox_set_padding(&pSettingsEditor->cbShowTabBar, 4*uiScale);
+    dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowTabBar), (dtk_int32)(4*uiScale));
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowTabBar), penPosX, penPosY);
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowTabBar)) + (6*uiScale);
 
-    dred_checkbox_init(&pSettingsEditor->cbShowMenuBar, pDred, pPage->pGUIControl, "Show Menu Bar", pDred->config.showMenuBar);
+    dred_checkbox_init(pDred, DTK_CONTROL(pPage->pGUIControl), "Show Menu Bar", pDred->config.showMenuBar, &pSettingsEditor->cbShowMenuBar);
     dred_checkbox_set_bind_to_config_var(&pSettingsEditor->cbShowMenuBar, "show-menu-bar");
-    dred_checkbox_set_padding(&pSettingsEditor->cbShowMenuBar, 4*uiScale);
+    dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowMenuBar), (dtk_int32)(4*uiScale));
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowMenuBar), penPosX, penPosY);
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowMenuBar)) + (6*uiScale);
 
-    dred_checkbox_init(&pSettingsEditor->cbAutoHideCmdBar, pDred, pPage->pGUIControl, "Auto-hide Command Bar", pDred->config.autoHideCmdBar);
+    dred_checkbox_init(pDred, DTK_CONTROL(pPage->pGUIControl), "Auto-hide Command Bar", pDred->config.autoHideCmdBar, &pSettingsEditor->cbAutoHideCmdBar);
     dred_checkbox_set_bind_to_config_var(&pSettingsEditor->cbAutoHideCmdBar, "auto-hide-cmd-bar");
-    dred_checkbox_set_padding(&pSettingsEditor->cbAutoHideCmdBar, 4*uiScale);
+    dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbAutoHideCmdBar), (dtk_int32)(4*uiScale));
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar), penPosX, penPosY);
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar)) + (6*uiScale);
 
@@ -516,15 +516,15 @@ dtk_bool32 dred_settings_editor_text_editor_page_event_handler(dtk_event* pEvent
             float penPosX = 8*uiScale;
             float penPosY = 8*uiScale;
 
-            dred_checkbox_set_padding(&pSettingsEditor->cbTabsToSpaces, 4*uiScale);
+            dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbTabsToSpaces), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbTabsToSpaces), penPosX, penPosY);
             penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbTabsToSpaces)) + (6*uiScale);
-            dred_checkbox_auto_size(&pSettingsEditor->cbTabsToSpaces);
+            dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbTabsToSpaces));
 
-            dred_checkbox_set_padding(&pSettingsEditor->cbShowLineNumbers, 4*uiScale);
+            dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowLineNumbers), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers), penPosX, penPosY);
             penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers)) + (6*uiScale);
-            dred_checkbox_auto_size(&pSettingsEditor->cbShowLineNumbers);
+            dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbShowLineNumbers));
         } break;
     }
 
@@ -552,15 +552,15 @@ dr_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pSe
     float penPosX = 8*uiScale;
     float penPosY = 8*uiScale;
 
-    dred_checkbox_init(&pSettingsEditor->cbTabsToSpaces, pDred, pPage->pGUIControl, "Convert tabs to spaces", pDred->config.textEditorTabsToSpacesEnabled);
+    dred_checkbox_init(pDred, DTK_CONTROL(pPage->pGUIControl), "Convert tabs to spaces", pDred->config.textEditorTabsToSpacesEnabled, &pSettingsEditor->cbTabsToSpaces);
     dred_checkbox_set_bind_to_config_var(&pSettingsEditor->cbTabsToSpaces, "texteditor-enable-tabs-to-spaces");
-    dred_checkbox_set_padding(&pSettingsEditor->cbTabsToSpaces, 4*uiScale);
+    dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbTabsToSpaces), (dtk_int32)(4*uiScale));
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbTabsToSpaces), penPosX, penPosY);
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbTabsToSpaces)) + (6*uiScale);
 
-    dred_checkbox_init(&pSettingsEditor->cbShowLineNumbers, pDred, pPage->pGUIControl, "Show line numbers", pDred->config.textEditorShowLineNumbers);
+    dred_checkbox_init(pDred, DTK_CONTROL(pPage->pGUIControl), "Show line numbers", pDred->config.textEditorShowLineNumbers, &pSettingsEditor->cbShowLineNumbers);
     dred_checkbox_set_bind_to_config_var(&pSettingsEditor->cbShowLineNumbers, "texteditor-show-line-numbers");
-    dred_checkbox_set_padding(&pSettingsEditor->cbShowLineNumbers, 4*uiScale);
+    dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowLineNumbers), (dtk_int32)(4*uiScale));
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers), penPosX, penPosY);
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers)) + (6*uiScale);
     

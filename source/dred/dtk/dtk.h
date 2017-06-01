@@ -212,7 +212,8 @@ typedef int dtk_event_type;
 #define DTK_EVENT_RELEASE_MOUSE             23
 #define DTK_EVENT_DPI_CHANGED               24
 #define DTK_EVENT_BUTTON_PRESSED            128
-#define DTK_EVENT_SCROLLBAR_SCROLL          129
+#define DTK_EVENT_CHECKBOX_CHECK_CHANGED    129
+#define DTK_EVENT_SCROLLBAR_SCROLL          132
 #define DTK_EVENT_TABBAR_CHANGE_TAB         133
 #define DTK_EVENT_TABGROUP_CHANGE_TAB       134
 #define DTK_EVENT_REFRESH_LAYOUT            251     // A special event that's used to indicate to a control that it needs to refresh the layout of it's children and inner elements.
