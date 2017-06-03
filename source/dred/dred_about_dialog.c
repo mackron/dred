@@ -177,8 +177,8 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pDred->pMainWindow));
 
-    dtk_uint32 windowWidth  = (dtk_uint32)(480*uiScale);
-    dtk_uint32 windowHeight = (dtk_uint32)(360*uiScale);
+    dtk_int32 windowWidth  = (dtk_int32)(480*uiScale);
+    dtk_int32 windowHeight = (dtk_int32)(360*uiScale);
 
     dtk_result result = dtk_window_init(&pDred->tk, DTK_CONTROL(pDred->pMainWindow), dtk_window_type_dialog, "About", windowWidth, windowHeight, dred_about_dialog_event_handler, &pDialog->window);
     if (result != DTK_SUCCESS) {
@@ -245,8 +245,8 @@ void dred_about_dialog_refresh_inner_layout(dred_about_dialog* pDialog)
 {
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pDialog));
 
-    dtk_uint32 windowWidth;
-    dtk_uint32 windowHeight;
+    dtk_int32 windowWidth;
+    dtk_int32 windowHeight;
     dtk_window_get_client_size(DTK_WINDOW(pDialog), &windowWidth, &windowHeight);
 
     dtk_button_set_padding(&pDialog->closeButton, (dtk_int32)(32*uiScale), (dtk_int32)(6*uiScale));

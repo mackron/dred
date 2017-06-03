@@ -2209,8 +2209,8 @@ void dred_control_set_size(dred_control* pControl, float width, float height)
 
 void dred_control_get_size(const dred_control* pControl, float* widthOut, float* heightOut)
 {
-    dtk_uint32 sizeX;
-    dtk_uint32 sizeY;
+    dtk_int32 sizeX;
+    dtk_int32 sizeY;
     dtk_control_get_size(DTK_CONTROL(pControl), &sizeX, &sizeY);
 
     if (widthOut)  *widthOut  = (float)sizeX;

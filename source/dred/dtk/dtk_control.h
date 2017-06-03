@@ -45,8 +45,8 @@ struct dtk_control
     dtk_bool32 isUninitialized            : 1;
     dtk_int32 absolutePosX;
     dtk_int32 absolutePosY;
-    dtk_uint32 width;
-    dtk_uint32 height;
+    dtk_int32 width;
+    dtk_int32 height;
     dtk_system_cursor_type cursor;
 };
 
@@ -103,10 +103,10 @@ dtk_bool32 dtk_control_is_clipping_enabled(const dtk_control* pControl);
 
 
 // Sets the size of a control.
-dtk_result dtk_control_set_size(dtk_control* pControl, dtk_uint32 width, dtk_uint32 height);
-dtk_result dtk_control_get_size(dtk_control* pControl, dtk_uint32* pWidth, dtk_uint32* pHeight);
-dtk_uint32 dtk_control_get_width(dtk_control* pControl);
-dtk_uint32 dtk_control_get_height(dtk_control* pControl);
+dtk_result dtk_control_set_size(dtk_control* pControl, dtk_int32 width, dtk_int32 height);
+dtk_result dtk_control_get_size(dtk_control* pControl, dtk_int32* pWidth, dtk_int32* pHeight);
+dtk_int32 dtk_control_get_width(dtk_control* pControl);
+dtk_int32 dtk_control_get_height(dtk_control* pControl);
 
 // Sets the absolute position of a control.
 dtk_result dtk_control_set_absolute_position(dtk_control* pControl, dtk_int32 posX, dtk_int32 posY);

@@ -740,7 +740,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
     return DefWindowProcA(hWnd, msg, wParam, lParam);
 }
 
-dtk_result dtk_window_init__win32(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_window* pWindow)
+dtk_result dtk_window_init__win32(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_int32 width, dtk_int32 height, dtk_window* pWindow)
 {
     (void)pTK;
 
@@ -800,7 +800,7 @@ dtk_result dtk_window_set_title__win32(dtk_window* pWindow, const char* title)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_window_set_size__win32(dtk_window* pWindow, dtk_uint32 width, dtk_uint32 height)
+dtk_result dtk_window_set_size__win32(dtk_window* pWindow, dtk_int32 width, dtk_int32 height)
 {
     RECT windowRect;
     RECT clientRect;
@@ -822,7 +822,7 @@ dtk_result dtk_window_set_size__win32(dtk_window* pWindow, dtk_uint32 width, dtk
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_window_get_size__win32(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight)
+dtk_result dtk_window_get_size__win32(dtk_window* pWindow, dtk_int32* pWidth, dtk_int32* pHeight)
 {
     RECT rect;
     if (!GetClientRect((HWND)pWindow->win32.hWnd, &rect)) {
@@ -834,7 +834,7 @@ dtk_result dtk_window_get_size__win32(dtk_window* pWindow, dtk_uint32* pWidth, d
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_window_get_client_size__win32(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight)
+dtk_result dtk_window_get_client_size__win32(dtk_window* pWindow, dtk_int32* pWidth, dtk_int32* pHeight)
 {
     return dtk_window_get_size__win32(pWindow, pWidth, pHeight);
 }
@@ -907,8 +907,8 @@ dtk_result dtk_window_move_to_center_of_screen__win32(dtk_window* pWindow)
     LONG screenSizeX = mi.rcMonitor.right - mi.rcMonitor.left;
     LONG screenSizeY = mi.rcMonitor.bottom - mi.rcMonitor.top;
 
-    dtk_uint32 windowSizeX;
-    dtk_uint32 windowSizeY;
+    dtk_int32 windowSizeX;
+    dtk_int32 windowSizeY;
     dtk_window_get_size(pWindow, &windowSizeX, &windowSizeY);
 
     return dtk_window_set_absolute_position(pWindow, (screenSizeX - windowSizeX)/2, (screenSizeY - windowSizeY)/2);
@@ -1525,7 +1525,7 @@ static gboolean dtk_window_clientarea__on_grab_broken__gtk(GtkWidget* pWidget, G
 }
 
 
-dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_window* pWindow)
+dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_int32 width, dtk_int32 height, dtk_window* pWindow)
 {
     // Client area. This is where everything is drawn.
     GtkWidget* pClientArea = gtk_drawing_area_new();
@@ -1641,7 +1641,7 @@ dtk_result dtk_window_set_title__gtk(dtk_window* pWindow, const char* title)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_window_set_size__gtk(dtk_window* pWindow, dtk_uint32 width, dtk_uint32 height)
+dtk_result dtk_window_set_size__gtk(dtk_window* pWindow, dtk_int32 width, dtk_int32 height)
 {
     if (pWindow->gtk.pMenu != NULL) {
         GtkAllocation alloc;
@@ -1650,27 +1650,27 @@ dtk_result dtk_window_set_size__gtk(dtk_window* pWindow, dtk_uint32 width, dtk_u
         height += alloc.height;
     }
 
-    gtk_window_resize(GTK_WINDOW(pWindow->gtk.pWidget), (int)width, (int)height);
+    gtk_window_resize(GTK_WINDOW(pWindow->gtk.pWidget), width, height);
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_window_get_size__gtk(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight)
+dtk_result dtk_window_get_size__gtk(dtk_window* pWindow, dtk_int32* pWidth, dtk_int32* pHeight)
 {
     gint width;
     gint height;
     gtk_window_get_size(GTK_WINDOW(pWindow->gtk.pWidget), &width, &height);
 
-    if (pWidth) *pWidth = width;
+    if (pWidth)  *pWidth  = width;
     if (pHeight) *pHeight = height;
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_window_get_client_size__gtk(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight)
+dtk_result dtk_window_get_client_size__gtk(dtk_window* pWindow, dtk_int32* pWidth, dtk_int32* pHeight)
 {
     GtkAllocation alloc;
     gtk_widget_get_allocation(GTK_WIDGET(pWindow->gtk.pClientArea), &alloc);
 
-    if (pWidth) *pWidth = alloc.width;
+    if (pWidth)  *pWidth  = alloc.width;
     if (pHeight) *pHeight = alloc.height;
     return DTK_SUCCESS;
 }
@@ -1938,13 +1938,13 @@ void dtk_window__get_and_set_monitor(dtk_window* pWindow)
             e.dpiChanged.newDPIScale = newDPIScale;
             dtk_window_get_absolute_position(pWindow, &e.dpiChanged.suggestedPosX, &e.dpiChanged.suggestedPosY);
 
-            dtk_uint32 currentWidth;
-            dtk_uint32 currentHeight;
+            dtk_int32 currentWidth;
+            dtk_int32 currentHeight;
             dtk_window_get_size(pWindow, &currentWidth, &currentHeight);
             
             float suggestionScale = newDPIScale / oldDPIScale;
-            e.dpiChanged.suggestedWidth  = (dtk_uint32)(currentWidth  * suggestionScale);
-            e.dpiChanged.suggestedHeight = (dtk_uint32)(currentHeight * suggestionScale);
+            e.dpiChanged.suggestedWidth  = (dtk_int32)(currentWidth  * suggestionScale);
+            e.dpiChanged.suggestedHeight = (dtk_int32)(currentHeight * suggestionScale);
 
             // The suggested position needs to be compensated for the size difference. The way this is done depends on the position of
             // the old monitor relative to the new one.
@@ -1962,7 +1962,7 @@ void dtk_window__get_and_set_monitor(dtk_window* pWindow)
     }
 }
 
-dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_event_proc onEvent, dtk_window* pWindow)
+dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_int32 width, dtk_int32 height, dtk_event_proc onEvent, dtk_window* pWindow)
 {
     if (pWindow == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pWindow);
@@ -2351,7 +2351,7 @@ dtk_result dtk_window_set_title(dtk_window* pWindow, const char* title)
 }
 
 
-dtk_result dtk_window_set_size(dtk_window* pWindow, dtk_uint32 width, dtk_uint32 height)
+dtk_result dtk_window_set_size(dtk_window* pWindow, dtk_int32 width, dtk_int32 height)
 {
     if (pWindow == NULL) return DTK_INVALID_ARGS;
     if (width  == 0) width  = 1;
@@ -2376,7 +2376,7 @@ dtk_result dtk_window_set_size(dtk_window* pWindow, dtk_uint32 width, dtk_uint32
     return result;
 }
 
-dtk_result dtk_window_get_size(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight)
+dtk_result dtk_window_get_size(dtk_window* pWindow, dtk_int32* pWidth, dtk_int32* pHeight)
 {
     if (pWidth) *pWidth = 0;
     if (pHeight) *pHeight = 0;
@@ -2397,7 +2397,7 @@ dtk_result dtk_window_get_size(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint
     return result;
 }
 
-dtk_result dtk_window_get_client_size(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight)
+dtk_result dtk_window_get_client_size(dtk_window* pWindow, dtk_int32* pWidth, dtk_int32* pHeight)
 {
     if (pWidth) *pWidth = 0;
     if (pHeight) *pHeight = 0;
@@ -2541,20 +2541,20 @@ dtk_result dtk_window_move_to_center(dtk_window* pWindow)
     if (pWindow == NULL) return DTK_INVALID_ARGS;
 
     if (DTK_CONTROL(pWindow)->pParent) {
-        dtk_uint32 parentSizeX;
-        dtk_uint32 parentSizeY;
+        dtk_int32 parentSizeX;
+        dtk_int32 parentSizeY;
         if (dtk_control_get_size(DTK_CONTROL(pWindow)->pParent, &parentSizeX, &parentSizeY) != DTK_SUCCESS) {
             return DTK_ERROR;
         }
 
-        dtk_uint32 sizeX;
-        dtk_uint32 sizeY;
+        dtk_int32 sizeX;
+        dtk_int32 sizeY;
         if (dtk_window_get_size(pWindow, &sizeX, &sizeY) != DTK_SUCCESS) {
             return DTK_ERROR;
         }
 
-        dtk_int32 newRelativePosX = ((dtk_int32)parentSizeX - (dtk_int32)sizeX)/2;
-        dtk_int32 newRelativePosY = ((dtk_int32)parentSizeY - (dtk_int32)sizeY)/2;
+        dtk_int32 newRelativePosX = (parentSizeX - sizeX)/2;
+        dtk_int32 newRelativePosY = (parentSizeY - sizeY)/2;
         return dtk_window_set_relative_position(pWindow, newRelativePosX, newRelativePosY);
     } else {
         dtk_result result = DTK_NO_BACKEND;

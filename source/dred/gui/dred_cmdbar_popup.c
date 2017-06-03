@@ -148,8 +148,8 @@ void dred_cmdbar_popup_refresh_position(dred_cmdbar_popup* pCmdBarPopup)
     float cmdbarPosY;
     dred_control_get_absolute_position(DRED_CONTROL(pCmdBarPopup->pDred->pCmdBar), &cmdbarPosX, &cmdbarPosY);
 
-    unsigned int popupSizeX;
-    unsigned int popupSizeY;
+    dtk_int32 popupSizeX;
+    dtk_int32 popupSizeY;
     dtk_window_get_size(&pCmdBarPopup->pWindow->windowDTK, &popupSizeX, &popupSizeY);
     dtk_window_set_relative_position(&pCmdBarPopup->pWindow->windowDTK, (int)(/*mainWindowPosX + */cmdbarPosX), (int)(/*mainWindowPosY + */cmdbarPosY - popupSizeY));
 }
@@ -172,8 +172,8 @@ void dred_cmdbar_popup_refresh_styling(dred_cmdbar_popup* pCmdBarPopup)
     
 
     // The cmdbox control needs to be repositioned and resized based on the new padding and border sizes.
-    dtk_uint32 popupSizeX;
-    dtk_uint32 popupSizeY;
+    dtk_int32 popupSizeX;
+    dtk_int32 popupSizeY;
     dtk_control_get_size(DTK_CONTROL(&pCmdBarPopup->pWindow->windowDTK), &popupSizeX, &popupSizeY);
     dred_cmdbar_popup__refresh_cmdbox_layout(pCmdBarPopup, popupSizeX, popupSizeY);
 

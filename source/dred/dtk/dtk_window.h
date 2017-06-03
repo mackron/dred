@@ -68,7 +68,7 @@ struct dtk_window
 };
 
 // Initializes a window control.
-dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_uint32 width, dtk_uint32 height, dtk_event_proc onEvent, dtk_window* pWindow);
+dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_int32 width, dtk_int32 height, dtk_event_proc onEvent, dtk_window* pWindow);
 
 // Uninitializes a window control.
 dtk_result dtk_window_uninit(dtk_window* pWindow);
@@ -87,11 +87,11 @@ dtk_result dtk_window_set_title(dtk_window* pWindow, const char* title);
 
 
 // Sets the size of a window.
-dtk_result dtk_window_set_size(dtk_window* pWindow, dtk_uint32 width, dtk_uint32 height);
-dtk_result dtk_window_get_size(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight);
+dtk_result dtk_window_set_size(dtk_window* pWindow, dtk_int32 width, dtk_int32 height);
+dtk_result dtk_window_get_size(dtk_window* pWindow, dtk_int32* pWidth, dtk_int32* pHeight);
 
 // Retrieves the size of the client are of a window. This does not include the size of the menu.
-dtk_result dtk_window_get_client_size(dtk_window* pWindow, dtk_uint32* pWidth, dtk_uint32* pHeight);
+dtk_result dtk_window_get_client_size(dtk_window* pWindow, dtk_int32* pWidth, dtk_int32* pHeight);
 
 // Sets the absolute position of a window. This will position it relative to the screen.
 dtk_result dtk_window_set_absolute_position(dtk_window* pWindow, dtk_int32 screenPosX, dtk_int32 screenPosY);

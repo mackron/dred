@@ -429,10 +429,16 @@ void dred_window_set_size(dred_window* pWindow, unsigned int newWidth, unsigned 
 
 void dred_window_get_size(dred_window* pWindow, unsigned int* pWidthOut, unsigned int* pHeightOut)
 {
-    if (pWidthOut) *pWidthOut = 0;
+    if (pWidthOut)  *pWidthOut  = 0;
     if (pHeightOut) *pHeightOut = 0;
     if (pWindow == NULL) return;
-    dtk_window_get_size(&pWindow->windowDTK, pWidthOut, pHeightOut);
+
+    dtk_int32 width;
+    dtk_int32 height;
+    dtk_window_get_size(&pWindow->windowDTK, &width, &height);
+
+    if (pWidthOut)  *pWidthOut  = (unsigned int)width;
+    if (pHeightOut) *pHeightOut = (unsigned int)height;
 }
 
 
@@ -456,7 +462,13 @@ void dred_window_get_client_size(dred_window* pWindow, unsigned int* pWidthOut, 
     if (pWidthOut) *pWidthOut = 0;
     if (pHeightOut) *pHeightOut = 0;
     if (pWindow == NULL) return;
-    dtk_window_get_client_size(&pWindow->windowDTK, pWidthOut, pHeightOut);
+
+    dtk_int32 width;
+    dtk_int32 height;
+    dtk_window_get_client_size(&pWindow->windowDTK, &width, &height);
+
+    if (pWidthOut)  *pWidthOut  = (unsigned int)width;
+    if (pHeightOut) *pHeightOut = (unsigned int)height;
 }
 
 void dred_window_get_client_position(dred_window* pWindow, int* pPosXOut, int* pPosYOut)

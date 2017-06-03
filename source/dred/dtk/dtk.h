@@ -264,8 +264,8 @@ struct dtk_event
 
         struct
         {
-            dtk_uint32 width;
-            dtk_uint32 height;
+            dtk_int32 width;
+            dtk_int32 height;
         } size;
 
         struct
@@ -350,8 +350,8 @@ struct dtk_event
             float newDPIScale;
             dtk_int32 suggestedPosX;        // <-- Absolute position.
             dtk_int32 suggestedPosY;
-            dtk_uint32 suggestedWidth;
-            dtk_uint32 suggestedHeight;
+            dtk_int32 suggestedWidth;
+            dtk_int32 suggestedHeight;
         } dpiChanged;
 
         struct

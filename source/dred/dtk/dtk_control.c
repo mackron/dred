@@ -349,7 +349,7 @@ dtk_bool32 dtk_control_is_clipping_enabled(const dtk_control* pControl)
 }
 
 
-dtk_result dtk_control_set_size(dtk_control* pControl, dtk_uint32 width, dtk_uint32 height)
+dtk_result dtk_control_set_size(dtk_control* pControl, dtk_int32 width, dtk_int32 height)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
@@ -375,24 +375,24 @@ dtk_result dtk_control_set_size(dtk_control* pControl, dtk_uint32 width, dtk_uin
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_control_get_size(dtk_control* pControl, dtk_uint32* pWidth, dtk_uint32* pHeight)
+dtk_result dtk_control_get_size(dtk_control* pControl, dtk_int32* pWidth, dtk_int32* pHeight)
 {
-    if (pWidth) *pWidth = 0;
+    if (pWidth)  *pWidth  = 0;
     if (pHeight) *pHeight = 0;
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
-    if (pWidth) *pWidth = pControl->width;
+    if (pWidth)  *pWidth  = pControl->width;
     if (pHeight) *pHeight = pControl->height;
     return DTK_SUCCESS;
 }
 
-dtk_uint32 dtk_control_get_width(dtk_control* pControl)
+dtk_int32 dtk_control_get_width(dtk_control* pControl)
 {
     if (pControl == NULL) return 0;
     return pControl->width;
 }
 
-dtk_uint32 dtk_control_get_height(dtk_control* pControl)
+dtk_int32 dtk_control_get_height(dtk_control* pControl)
 {
     if (pControl == NULL) return 0;
     return pControl->height;
@@ -551,11 +551,11 @@ dtk_rect dtk_control_get_absolute_rect(dtk_control* pControl)
     dtk_int32 absolutePosY;
     dtk_control_get_absolute_position(pControl, &absolutePosX, &absolutePosY);
 
-    dtk_uint32 sizeX;
-    dtk_uint32 sizeY;
+    dtk_int32 sizeX;
+    dtk_int32 sizeY;
     dtk_control_get_size(pControl, &sizeX, &sizeY);
 
-    return dtk_rect_init(absolutePosX, absolutePosY, absolutePosX + (dtk_int32)sizeX, absolutePosY + (dtk_int32)sizeY);
+    return dtk_rect_init(absolutePosX, absolutePosY, absolutePosX + sizeX, absolutePosY + sizeY);
 }
 
 dtk_rect dtk_control_get_relative_rect(dtk_control* pControl)
@@ -566,11 +566,11 @@ dtk_rect dtk_control_get_relative_rect(dtk_control* pControl)
     dtk_int32 relativePosY;
     dtk_control_get_relative_position(pControl, &relativePosX, &relativePosY);
 
-    dtk_uint32 sizeX;
-    dtk_uint32 sizeY;
+    dtk_int32 sizeX;
+    dtk_int32 sizeY;
     dtk_control_get_size(pControl, &sizeX, &sizeY);
 
-    return dtk_rect_init(relativePosX, relativePosY, relativePosX + (dtk_int32)sizeX, relativePosY + (dtk_int32)sizeY);
+    return dtk_rect_init(relativePosX, relativePosY, relativePosX + sizeX, relativePosY + sizeY);
 }
 
 dtk_rect dtk_control_get_local_rect(dtk_control* pControl)

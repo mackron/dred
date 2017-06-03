@@ -62,8 +62,8 @@ dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred)
 		return NULL;
     }
 
-    dtk_uint32 clientSizeX;
-    dtk_uint32 clientSizeY;
+    dtk_int32 clientSizeX;
+    dtk_int32 clientSizeY;
     dtk_window_get_client_size(DTK_WINDOW(pDialog), &clientSizeX, &clientSizeY);
     dtk_control_set_size(DTK_CONTROL(pDialog->pSettingsEditor), clientSizeX, clientSizeY);
 

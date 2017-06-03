@@ -38,8 +38,8 @@ dtk_rect dtk_tabgroup__calculate_container_rect(dtk_tabgroup* pTabGroup)
     dtk_rect tabbarRect = dtk_control_get_relative_rect(DTK_CONTROL(&pTabGroup->tabbar));
     dtk_rect containerRect = dtk_rect_init(0, 0, 0, 0);
 
-    dtk_uint32 tabgroupWidth;
-    dtk_uint32 tabgroupHeight;
+    dtk_int32 tabgroupWidth;
+    dtk_int32 tabgroupHeight;
     dtk_control_get_size(DTK_CONTROL(pTabGroup), &tabgroupWidth, &tabgroupHeight);
 
     switch (pTabGroup->tabbarEdge)
@@ -92,8 +92,8 @@ void dtk_tabgroup__refresh_tabbar_layout(dtk_tabgroup* pTabGroup)
     dtk_uint32 tabbarWidth = 0;
     dtk_uint32 tabbarHeight = 0;
 
-    dtk_uint32 tabgroupWidth;
-    dtk_uint32 tabgroupHeight;
+    dtk_int32 tabgroupWidth;
+    dtk_int32 tabgroupHeight;
     dtk_control_get_size(DTK_CONTROL(pTabGroup), &tabgroupWidth, &tabgroupHeight);
 
     switch (pTabGroup->tabbarEdge)
