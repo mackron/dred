@@ -1307,6 +1307,7 @@ dtk_result dtk_font__init_subfont(dtk_font* pFont, float scale, dtk_subfont* pSu
     }
 #endif
 
+    pSubfont->sizeInTens = dtk_font__convert_scale_to_size_in_tens(pFont, scale);
     return result;
 }
 
