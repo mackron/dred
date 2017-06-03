@@ -1504,17 +1504,6 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
         return result;
     }
 
-    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_EMPTY       ] = NULL;
-    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_WINDOW      ] = dtk_window_default_event_handler;
-    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_LABEL       ] = dtk_label_default_event_handler;
-    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_BUTTON      ] = dtk_button_default_event_handler;
-    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_CHECKBOX    ] = dtk_checkbox_default_event_handler;
-    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_COLOR_BUTTON] = dtk_color_button_default_event_handler;
-    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_TABBAR      ] = dtk_tabbar_default_event_handler;
-    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_TABGROUP    ] = dtk_tabgroup_default_event_handler;
-    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_SCROLLBAR   ] = dtk_scrollbar_default_event_handler;
-    pTK->defaultEventHandlers[DTK_CONTROL_TYPE_TEXTBOX     ] = dtk_textbox_default_event_handler;
-
     result = dtk_paint_queue_init(&pTK->paintQueue);
     if (result != DTK_SUCCESS) {
         return result;
@@ -1638,10 +1627,6 @@ dtk_bool32 dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent)
     }
 
     dtk_event_proc onEvent = pEvent->pControl->onEvent;
-    if (onEvent == NULL && pEvent->pControl->type < DTK_CONTROL_TYPE_COUNT) {
-        onEvent = pTK->defaultEventHandlers[pEvent->pControl->type];
-    }
-
     if (onEvent) {
         return onEvent(pEvent);
     }

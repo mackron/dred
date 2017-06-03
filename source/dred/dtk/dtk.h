@@ -438,7 +438,6 @@ struct dtk_context
     dtk_int32 lastMousePosX;
     dtk_int32 lastMousePosY;
     void* pUserData;
-    dtk_event_proc defaultEventHandlers[DTK_CONTROL_TYPE_COUNT];    // The default event handlers for each built-in control type.
     dtk_paint_queue paintQueue;
     dtk_font uiFont;
     dtk_font monospaceFont;

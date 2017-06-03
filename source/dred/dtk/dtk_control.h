@@ -11,7 +11,6 @@ typedef dtk_uint32 dtk_control_type;
 #define DTK_CONTROL_TYPE_TABGROUP       7
 #define DTK_CONTROL_TYPE_SCROLLBAR      8
 #define DTK_CONTROL_TYPE_TEXTBOX        9
-#define DTK_CONTROL_TYPE_COUNT          10  // <-- Update this when a new built-in type is added. Also remember to register the default event handler in dtk_init().
 #define DTK_CONTROL_TYPE_CUSTOM         65536
 
 #define DTK_CONTROL_ITERATION_SKIP_WINDOWS              (1 << 0)    // When set, skips over children that a window controls. Needed for painting.
