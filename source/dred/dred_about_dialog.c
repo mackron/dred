@@ -180,7 +180,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     dtk_int32 windowWidth  = (dtk_int32)(480*uiScale);
     dtk_int32 windowHeight = (dtk_int32)(360*uiScale);
 
-    dtk_result result = dtk_window_init(&pDred->tk, DTK_CONTROL(pDred->pMainWindow), dtk_window_type_dialog, "About", windowWidth, windowHeight, dred_about_dialog_event_handler, &pDialog->window);
+    dtk_result result = dtk_window_init(&pDred->tk, dred_about_dialog_event_handler, DTK_CONTROL(pDred->pMainWindow), dtk_window_type_dialog, "About", windowWidth, windowHeight, &pDialog->window);
     if (result != DTK_SUCCESS) {
         free(pDialog);
         return NULL;
@@ -189,7 +189,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     pDialog->pLogo = dred_gui_create_image(pDred->pGUI, g_LogoBannerImage.width, g_LogoBannerImage.height, g_LogoBannerImage.width*4, g_LogoBannerImage.pixel_data);
 
     dtk_window_get_client_size(DTK_WINDOW(pDialog), &windowWidth, &windowHeight);
-    dtk_button_init(&pDred->tk, DTK_CONTROL(pDialog), NULL, "Close", &pDialog->closeButton);
+    dtk_button_init(&pDred->tk, NULL, DTK_CONTROL(pDialog), "Close", &pDialog->closeButton);
     dtk_button_set_on_pressed(&pDialog->closeButton, dred_about_dialog__btn_close__on_pressed);
     dred_about_dialog_refresh_layout(pDialog);
 

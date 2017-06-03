@@ -5,7 +5,7 @@ dtk_result dtk_label_init(dtk_context* pTK, dtk_control* pParent, dtk_event_proc
     if (pLabel == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pLabel);
 
-    dtk_result result = dtk_control_init(pTK, pParent, DTK_CONTROL_TYPE_LABEL, onEvent, &pLabel->control);
+    dtk_result result = dtk_control_init(pTK, DTK_CONTROL_TYPE_LABEL, onEvent, pParent, &pLabel->control);
     if (result != DTK_SUCCESS) {
         return result;
     }

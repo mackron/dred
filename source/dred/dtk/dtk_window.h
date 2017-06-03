@@ -68,7 +68,7 @@ struct dtk_window
 };
 
 // Initializes a window control.
-dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_int32 width, dtk_int32 height, dtk_event_proc onEvent, dtk_window* pWindow);
+dtk_result dtk_window_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_window_type type, const char* title, dtk_int32 width, dtk_int32 height, dtk_window* pWindow);
 
 // Uninitializes a window control.
 dtk_result dtk_window_uninit(dtk_window* pWindow);

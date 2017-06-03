@@ -17,6 +17,6 @@ struct dtk_tabgroup
     dtk_tabgroup_tabbar_edge tabbarEdge;
 };
 
-dtk_result dtk_tabgroup_init(dtk_context* pTK, dtk_control* pParent, dtk_tabgroup_tabbar_edge tabbarEdge, dtk_tabbar_flow tabbarFlow, dtk_tabbar_text_direction tabbarTextDirection, dtk_event_proc onEvent, dtk_tabgroup* pTabGroup);
+dtk_result dtk_tabgroup_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_tabgroup_tabbar_edge tabbarEdge, dtk_tabbar_flow tabbarFlow, dtk_tabbar_text_direction tabbarTextDirection, dtk_tabgroup* pTabGroup);
 dtk_result dtk_tabgroup_uninit(dtk_tabgroup* pTabGroup);
 dtk_bool32 dtk_tabgroup_default_event_handler(dtk_event* pEvent);

@@ -1962,7 +1962,7 @@ void dtk_window__get_and_set_monitor(dtk_window* pWindow)
     }
 }
 
-dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_int32 width, dtk_int32 height, dtk_event_proc onEvent, dtk_window* pWindow)
+dtk_result dtk_window_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_window_type type, const char* title, dtk_int32 width, dtk_int32 height, dtk_window* pWindow)
 {
     if (pWindow == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pWindow);
@@ -1971,7 +1971,7 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_control* pParent, dtk_window_ty
     if (width  == 0) width  = 1;
     if (height == 0) height = 1;
     
-    dtk_result result = dtk_control_init(pTK, pParent, DTK_CONTROL_TYPE_WINDOW, onEvent, DTK_CONTROL(pWindow));
+    dtk_result result = dtk_control_init(pTK, DTK_CONTROL_TYPE_WINDOW, (onEvent != NULL) ? onEvent : dtk_window_default_event_handler, pParent, DTK_CONTROL(pWindow));
     if (result != DTK_SUCCESS) {
         return result;
     }

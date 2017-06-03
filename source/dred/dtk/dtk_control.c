@@ -125,7 +125,7 @@ void dtk_control__apply_position_offset_recursive(dtk_control* pControl, dtk_int
 }
 
 
-dtk_result dtk_control_init(dtk_context* pTK, dtk_control* pParent, dtk_control_type type, dtk_event_proc onEvent, dtk_control* pControl)
+dtk_result dtk_control_init(dtk_context* pTK, dtk_control_type type, dtk_event_proc onEvent, dtk_control* pParent, dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pControl);

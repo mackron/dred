@@ -574,7 +574,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     dred_control_set_on_size(pDred->pMainWindow->pRootGUIControl, dred_window_cb__on_main_window_size);
 
 
-    if (dtk_control_init(&pDred->tk, DTK_CONTROL(pDred->pMainWindow->pRootGUIControl), DTK_CONTROL_TYPE_EMPTY, dred_background_control_event_handler, &pDred->backgroundControl) != DTK_SUCCESS) {
+    if (dtk_control_init(&pDred->tk, DTK_CONTROL_TYPE_EMPTY, dred_background_control_event_handler, DTK_CONTROL(pDred->pMainWindow->pRootGUIControl), &pDred->backgroundControl) != DTK_SUCCESS) {
         dred_error(pDred, "Failed to create background control.\n");
         goto on_error;
     }

@@ -155,12 +155,12 @@ void dtk_checkbox__refresh_layout(dtk_checkbox* pCheckbox)
     dtk_control_scheduled_redraw(DTK_CONTROL(pCheckbox), dtk_control_get_local_rect(DTK_CONTROL(pCheckbox)));
 }
 
-dtk_result dtk_checkbox_init(dtk_context* pTK, dtk_control* pParent, dtk_event_proc onEvent, const char* text, dtk_bool32 checked, dtk_checkbox* pCheckbox)
+dtk_result dtk_checkbox_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, const char* text, dtk_bool32 checked, dtk_checkbox* pCheckbox)
 {
     if (pCheckbox == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pCheckbox);
 
-    dtk_result result = dtk_control_init(pTK, pParent, DTK_CONTROL_TYPE_CHECKBOX, onEvent, &pCheckbox->control);
+    dtk_result result = dtk_control_init(pTK, DTK_CONTROL_TYPE_CHECKBOX, (onEvent != NULL) ? onEvent : dtk_checkbox_default_event_handler, pParent, &pCheckbox->control);
     if (result != DTK_SUCCESS) {
         return result;
     }

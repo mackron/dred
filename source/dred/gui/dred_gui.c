@@ -985,7 +985,7 @@ dr_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_co
     memset(pControl, 0, sizeof(*pControl));
 
 
-    if (dtk_control_init(&pDred->tk, (pParent != NULL) ? &pParent->baseControl : pDTKParent, DTK_CONTROL_TYPE_DRED, (onEvent != NULL) ? onEvent : dred_control_event_handler, &pControl->baseControl) != DTK_SUCCESS) {
+    if (dtk_control_init(&pDred->tk, DTK_CONTROL_TYPE_DRED, (onEvent != NULL) ? onEvent : dred_control_event_handler, (pParent != NULL) ? &pParent->baseControl : pDTKParent, &pControl->baseControl) != DTK_SUCCESS) {
         return DTK_FALSE;
     }
     //pControl->baseControl.pUserData = pControl;

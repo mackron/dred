@@ -24,7 +24,7 @@ dtk_result dred_checkbox_init(dred_context* pDred, dtk_control* pParent, const c
     if (pCheckbox == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pCheckbox);
 
-    dtk_result result = dtk_checkbox_init(&pDred->tk, pParent, dred_checkbox_event_handler, text, checked, &pCheckbox->checkboxDTK);
+    dtk_result result = dtk_checkbox_init(&pDred->tk, dred_checkbox_event_handler, pParent, text, checked, &pCheckbox->checkboxDTK);
     if (result != DTK_SUCCESS) {
         return result;
     }

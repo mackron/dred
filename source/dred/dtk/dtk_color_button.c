@@ -149,12 +149,12 @@ void dtk_color_button__refresh_layout(dtk_color_button* pButton)
     dtk_control_scheduled_redraw(DTK_CONTROL(pButton), dtk_control_get_local_rect(DTK_CONTROL(pButton)));
 }
 
-dtk_result dtk_color_button_init(dtk_context* pTK, dtk_control* pParent, dtk_event_proc onEvent, const char* text, dtk_color color, dtk_color_button* pButton)
+dtk_result dtk_color_button_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, const char* text, dtk_color color, dtk_color_button* pButton)
 {
     if (pButton == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pButton);
 
-    dtk_result result = dtk_control_init(pTK, pParent, DTK_CONTROL_TYPE_COLOR_BUTTON, (onEvent != NULL) ? onEvent : dtk_color_button_default_event_handler, &pButton->control);
+    dtk_result result = dtk_control_init(pTK, DTK_CONTROL_TYPE_COLOR_BUTTON, (onEvent != NULL) ? onEvent : dtk_color_button_default_event_handler, pParent, &pButton->control);
     if (result != DTK_SUCCESS) {
         return result;
     }

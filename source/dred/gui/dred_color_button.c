@@ -26,7 +26,7 @@ dtk_result dred_color_button_init(dred_context* pDred, dtk_control* pParent, con
     if (pButton == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pButton);
 
-    dtk_result result = dtk_color_button_init(&pDred->tk, pParent, dred_color_button_event_handler, text, color, &pButton->buttonDTK);
+    dtk_result result = dtk_color_button_init(&pDred->tk, dred_color_button_event_handler, pParent, text, color, &pButton->buttonDTK);
     if (result != DTK_SUCCESS) {
         return result;
     }

@@ -23,7 +23,7 @@ struct dtk_checkbox
     dtk_checkbox_on_check_changed_proc onCheckChanged;
 };
 
-dtk_result dtk_checkbox_init(dtk_context* pTK, dtk_control* pParent, dtk_event_proc onEvent, const char* text, dtk_bool32 checked, dtk_checkbox* pCheckbox);
+dtk_result dtk_checkbox_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, const char* text, dtk_bool32 checked, dtk_checkbox* pCheckbox);
 dtk_result dtk_checkbox_uninit(dtk_checkbox* pCheckbox);
 dtk_bool32 dtk_checkbox_default_event_handler(dtk_event* pEvent);
 

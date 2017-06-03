@@ -340,7 +340,7 @@ dred_window* dred_window_create(dred_context* pDred, dtk_event_proc onEvent)
         return NULL;
     }
 
-    if (dtk_window_init(&pDred->tk, NULL, dtk_window_type_toplevel, "dred", 1280, 1024, (onEvent != NULL) ? onEvent : dred_dtk_window_event_handler, &pWindow->windowDTK) != DTK_SUCCESS) {
+    if (dtk_window_init(&pDred->tk, (onEvent != NULL) ? onEvent : dred_dtk_window_event_handler, NULL, dtk_window_type_toplevel, "dred", 1280, 1024, &pWindow->windowDTK) != DTK_SUCCESS) {
         free(pWindow);
         return NULL;
     }
@@ -363,7 +363,7 @@ dred_window* dred_window_create_dialog(dred_window* pParentWindow, const char* t
         return NULL;
     }
 
-    if (dtk_window_init(pParentWindow->windowDTK.control.pTK, DTK_CONTROL(&pParentWindow->windowDTK), dtk_window_type_dialog, title, width, height, dred_dtk_window_event_handler, &pWindow->windowDTK) != DTK_SUCCESS) {
+    if (dtk_window_init(pParentWindow->windowDTK.control.pTK, dred_dtk_window_event_handler, DTK_CONTROL(&pParentWindow->windowDTK), dtk_window_type_dialog, title, width, height, &pWindow->windowDTK) != DTK_SUCCESS) {
         free(pWindow);
         return NULL;
     }
@@ -386,7 +386,7 @@ dred_window* dred_window_create_popup(dred_window* pParentWindow, unsigned int w
         return NULL;
     }
 
-    if (dtk_window_init(pParentWindow->windowDTK.control.pTK, DTK_CONTROL(&pParentWindow->windowDTK), dtk_window_type_popup, "", width, height, dred_dtk_window_event_handler, &pWindow->windowDTK) != DTK_SUCCESS) {
+    if (dtk_window_init(pParentWindow->windowDTK.control.pTK, dred_dtk_window_event_handler, DTK_CONTROL(&pParentWindow->windowDTK), dtk_window_type_popup, "", width, height, &pWindow->windowDTK) != DTK_SUCCESS) {
         free(pWindow);
         return NULL;
     }

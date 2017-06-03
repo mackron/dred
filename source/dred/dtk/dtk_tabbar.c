@@ -183,12 +183,12 @@ void dtk_tabbar__unset_active_tab(dtk_tabbar* pTabBar)
 
 
 
-dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_control* pParent, dtk_tabbar_flow flow, dtk_tabbar_text_direction textDirection, dtk_event_proc onEvent, dtk_tabbar* pTabBar)
+dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_tabbar_flow flow, dtk_tabbar_text_direction textDirection, dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pTabBar);
 
-    dtk_result result = dtk_control_init(pTK, pParent, DTK_CONTROL_TYPE_TABBAR, onEvent, &pTabBar->control);
+    dtk_result result = dtk_control_init(pTK, DTK_CONTROL_TYPE_TABBAR, (onEvent != NULL) ? onEvent : dtk_tabbar_default_event_handler, pParent, &pTabBar->control);
     if (result != DTK_SUCCESS) {
         return result;
     }

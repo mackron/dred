@@ -197,12 +197,12 @@ dred_result dred_cmdbox_cmdlist_init(dred_context* pDred, dtk_control* pParent, 
     if (pCmdList == NULL) return DRED_INVALID_ARGS;
     pCmdList->pDred = pDred;
 
-    dtk_result result = dtk_control_init(&pDred->tk, pParent, DTK_CONTROL_TYPE_EMPTY, dred_cmbox_cmdlist_event_handler, DTK_CONTROL(pCmdList));
+    dtk_result result = dtk_control_init(&pDred->tk, DTK_CONTROL_TYPE_EMPTY, dred_cmbox_cmdlist_event_handler, pParent, DTK_CONTROL(pCmdList));
     if (result != DTK_SUCCESS) {
         return result;
     }
 
-    result = dtk_scrollbar_init(&pDred->tk, DTK_CONTROL(pCmdList), NULL, dtk_scrollbar_orientation_vertical, &pCmdList->scrollbar);
+    result = dtk_scrollbar_init(&pDred->tk, NULL, DTK_CONTROL(pCmdList), dtk_scrollbar_orientation_vertical, &pCmdList->scrollbar);
     if (result != DTK_SUCCESS) {
         return result;
     }

@@ -177,12 +177,12 @@ void dtk_scrollbar__on_paint(dtk_scrollbar* pScrollbar, dtk_rect rect, dtk_surfa
 
 
 
-dtk_result dtk_scrollbar_init(dtk_context* pTK, dtk_control* pParent, dtk_event_proc onEvent, dtk_scrollbar_orientation orientation, dtk_scrollbar* pScrollbar)
+dtk_result dtk_scrollbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_scrollbar_orientation orientation, dtk_scrollbar* pScrollbar)
 {
     if (pScrollbar == NULL || orientation == dtk_scrollbar_orientation_none) return DTK_INVALID_ARGS;
     dtk_zero_object(pScrollbar);
 
-    dtk_result result = dtk_control_init(pTK, pParent, DTK_CONTROL_TYPE_SCROLLBAR, (onEvent != NULL) ? onEvent : dtk_scrollbar_default_event_handler, &pScrollbar->control);
+    dtk_result result = dtk_control_init(pTK, DTK_CONTROL_TYPE_SCROLLBAR, (onEvent != NULL) ? onEvent : dtk_scrollbar_default_event_handler, pParent, &pScrollbar->control);
     if (result != DTK_SUCCESS) {
         return result;
     }

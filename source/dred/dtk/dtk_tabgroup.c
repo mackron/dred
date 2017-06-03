@@ -163,12 +163,17 @@ dtk_bool32 dtk_tabgroup_tabbar_event_handler(dtk_event* pEvent)
         case DTK_EVENT_SIZE:
         {
             // The position and/or size of the container will have changed in response to the tabbar changing size.
-            dtk_tabgroup__refresh_container_layout(pTabGroup);
+            dtk_control_refresh_layout(DTK_CONTROL(pTabGroup));
         } break;
 
         case DTK_EVENT_MOVE:
         {
             // The postiion and/or size of the container will have changed.
+            dtk_control_refresh_layout(DTK_CONTROL(pTabGroup));
+        } break;
+
+        case DTK_EVENT_REFRESH_LAYOUT:
+        {
             dtk_tabgroup__refresh_container_layout(pTabGroup);
         } break;
 
@@ -191,24 +196,24 @@ dtk_bool32 dtk_tabgroup_container_event_handler(dtk_event* pEvent)
     return dtk_control_default_event_handler(pEvent);
 }
 
-dtk_result dtk_tabgroup_init(dtk_context* pTK, dtk_control* pParent, dtk_tabgroup_tabbar_edge tabbarEdge, dtk_tabbar_flow tabbarFlow, dtk_tabbar_text_direction tabbarTextDirection, dtk_event_proc onEvent, dtk_tabgroup* pTabGroup)
+dtk_result dtk_tabgroup_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_tabgroup_tabbar_edge tabbarEdge, dtk_tabbar_flow tabbarFlow, dtk_tabbar_text_direction tabbarTextDirection, dtk_tabgroup* pTabGroup)
 {
     if (pTabGroup == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pTabGroup);
     pTabGroup->tabbarEdge = tabbarEdge;
 
-    dtk_result result = dtk_control_init(pTK, pParent, DTK_CONTROL_TYPE_TABGROUP, onEvent, &pTabGroup->control);
+    dtk_result result = dtk_control_init(pTK, DTK_CONTROL_TYPE_TABGROUP, (onEvent != NULL) ? onEvent : dtk_tabgroup_default_event_handler, pParent, &pTabGroup->control);
     if (result != DTK_SUCCESS) {
         return result;
     }
 
-    result = dtk_tabbar_init(pTK, DTK_CONTROL(pTabGroup), tabbarFlow, tabbarTextDirection, dtk_tabgroup_tabbar_event_handler, &pTabGroup->tabbar);
+    result = dtk_tabbar_init(pTK, dtk_tabgroup_tabbar_event_handler, DTK_CONTROL(pTabGroup), tabbarFlow, tabbarTextDirection, &pTabGroup->tabbar);
     if (result != DTK_SUCCESS) {
         dtk_control_uninit(&pTabGroup->control);
         return result;
     }
 
-    result = dtk_control_init(pTK, DTK_CONTROL(pTabGroup), DTK_CONTROL_TYPE_EMPTY, dtk_tabgroup_container_event_handler, &pTabGroup->container);
+    result = dtk_control_init(pTK, DTK_CONTROL_TYPE_EMPTY, dtk_tabgroup_container_event_handler, pParent, &pTabGroup->container);
     if (result != DTK_SUCCESS) {
         dtk_tabbar_uninit(&pTabGroup->tabbar);
         dtk_control_uninit(&pTabGroup->control);
@@ -242,6 +247,11 @@ dtk_bool32 dtk_tabgroup_default_event_handler(dtk_event* pEvent)
     switch (pEvent->type)
     {
         case DTK_EVENT_SIZE:
+        {
+            dtk_control_refresh_layout(pEvent->pControl);
+        } break;
+
+        case DTK_EVENT_REFRESH_LAYOUT:
         {
             dtk_tabgroup__refresh_layout(pTabGroup);
         } break;

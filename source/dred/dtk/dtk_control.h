@@ -54,7 +54,7 @@ struct dtk_control
 //
 // Once initialized, the location of the control in memory cannot be changed. The reason for this is that a pointer
 // to the control is used for managing the hierarchy and referencing.
-dtk_result dtk_control_init(dtk_context* pTK, dtk_control* pParent, dtk_control_type type, dtk_event_proc onEvent, dtk_control* pControl);
+dtk_result dtk_control_init(dtk_context* pTK, dtk_control_type type, dtk_event_proc onEvent, dtk_control* pParent, dtk_control* pControl);
 
 // Uninitializes a control.
 //

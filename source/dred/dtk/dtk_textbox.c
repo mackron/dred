@@ -5,7 +5,7 @@ dtk_result dtk_textbox_init(dtk_context* pTK, dtk_control* pParent, dtk_event_pr
     if (pTextBox == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pTextBox);
 
-    dtk_result result = dtk_control_init(pTK, pParent, DTK_CONTROL_TYPE_TEXTBOX, onEvent, &pTextBox->control);
+    dtk_result result = dtk_control_init(pTK, DTK_CONTROL_TYPE_TEXTBOX, onEvent, pParent, &pTextBox->control);
     if (result != DTK_SUCCESS) {
         return result;
     }

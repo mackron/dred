@@ -37,7 +37,7 @@ struct dtk_scrollbar
 
 
 // Creates a scrollbar element.
-dtk_result dtk_scrollbar_init(dtk_context* pTK, dtk_control* pParent, dtk_event_proc onEvent, dtk_scrollbar_orientation orientation, dtk_scrollbar* pScrollbar);
+dtk_result dtk_scrollbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_scrollbar_orientation orientation, dtk_scrollbar* pScrollbar);
 
 // Deletes the given scrollbar element.
 dtk_result dtk_scrollbar_uninit(dtk_scrollbar* pScrollbar);
