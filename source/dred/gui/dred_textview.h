@@ -46,12 +46,12 @@ struct dred_textview
 
 
     /// The vertical scrollbar.
-    dred_scrollbar vertScrollbar;
-    dred_scrollbar* pVertScrollbar;
+    dtk_scrollbar vertScrollbar;
+    dtk_scrollbar* pVertScrollbar;
 
     /// The horizontal scrollbar.
-    dred_scrollbar horzScrollbar;
-    dred_scrollbar* pHorzScrollbar;
+    dtk_scrollbar horzScrollbar;
+    dtk_scrollbar* pHorzScrollbar;
 
     /// The line numbers element.
     dred_control lineNumbers;
@@ -391,10 +391,10 @@ void dred_textview_disable_horizontal_scrollbar(dred_textview* pTextView);
 void dred_textview_enable_horizontal_scrollbar(dred_textview* pTextView);
 
 // Retrieves the vertical scrollbar.
-dred_scrollbar* dred_textview_get_vertical_scrollbar(dred_textview* pTextView);
+dtk_scrollbar* dred_textview_get_vertical_scrollbar(dred_textview* pTextView);
 
 // Retrieves the horizontal scrollbar.
-dred_scrollbar* dred_textview_get_horizontal_scrollbar(dred_textview* pTextView);
+dtk_scrollbar* dred_textview_get_horizontal_scrollbar(dred_textview* pTextView);
 
 // Sets the size of both the vertical and horizontal scrollbars.
 void dred_textview_set_scrollbar_size(dred_textview* pTextView, float size);

@@ -430,12 +430,12 @@ void dred_textbox_enable_horizontal_scrollbar(dred_textbox* pTextBox)
     dred_textview_enable_horizontal_scrollbar(DRED_TEXTVIEW(pTextBox));
 }
 
-dred_scrollbar* dred_textbox_get_vertical_scrollbar(dred_textbox* pTextBox)
+dtk_scrollbar* dred_textbox_get_vertical_scrollbar(dred_textbox* pTextBox)
 {
     return dred_textview_get_vertical_scrollbar(DRED_TEXTVIEW(pTextBox));
 }
 
-dred_scrollbar* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox)
+dtk_scrollbar* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox)
 {
     return dred_textview_get_horizontal_scrollbar(DRED_TEXTVIEW(pTextBox));
 }

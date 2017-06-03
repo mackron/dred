@@ -149,7 +149,7 @@ dr_bool32 dred_tabbar_init(dred_tabbar* pTabBar, dred_context* pDred, dred_contr
 void dred_tabbar_uninit(dred_tabbar* pTabBar);
 
 
-/// Retrieves the orientation of the given scrollbar.
+/// Retrieves the orientation of the given tabbar.
 dred_tabbar_orientation dred_tabbar_get_orientation(dred_tabbar* pTabBar);
 
 

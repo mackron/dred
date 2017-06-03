@@ -466,7 +466,7 @@ struct dred_control
 
 
     // Application-defined data.
-    void* pUserData;
+    //void* pUserData;
 };
 
 struct dred_gui

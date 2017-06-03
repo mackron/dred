@@ -114,7 +114,7 @@ dr_bool32 dred_platform__init_root_gui_element(dred_control* pControl, dred_cont
         return DR_FALSE;
     }
 
-    pControl->pUserData = pWindow;
+    DTK_CONTROL(pControl)->pUserData = pWindow;
 
     unsigned int width;
     unsigned int height;

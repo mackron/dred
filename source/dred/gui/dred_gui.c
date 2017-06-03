@@ -862,7 +862,8 @@ void dred_gui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog)
 dtk_bool32 dred_control_event_handler(dtk_event* pEvent)
 {
     dtk_control* pControl = pEvent->pControl;
-    dred_control* pDredControl = (dred_control*)pControl->pUserData;
+    dred_control* pDredControl = DRED_CONTROL(pControl);
+    //dred_control* pDredControl = (dred_control*)pControl->pUserData;
 
     switch (pEvent->type)
     {
@@ -987,7 +988,7 @@ dr_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_co
     if (dtk_control_init(&pDred->tk, (pParent != NULL) ? &pParent->baseControl : pDTKParent, DTK_CONTROL_TYPE_DRED, (onEvent != NULL) ? onEvent : dred_control_event_handler, &pControl->baseControl) != DTK_SUCCESS) {
         return DTK_FALSE;
     }
-    pControl->baseControl.pUserData = pControl;
+    //pControl->baseControl.pUserData = pControl;
 
     
     pControl->pGUI = pDred->pGUI;

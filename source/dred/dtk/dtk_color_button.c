@@ -229,6 +229,13 @@ dtk_bool32 dtk_color_button_default_event_handler(dtk_event* pEvent)
             dtk_color_button__refresh_layout(pButton);
         } break;
 
+        case DTK_EVENT_COLOR_BUTTON_COLOR_CHANGED:
+        {
+            if (pButton->onColorChanged) {
+                pButton->onColorChanged(pButton, pEvent->colorButton.color);
+            }
+        } break;
+
         default: break;
     }
 

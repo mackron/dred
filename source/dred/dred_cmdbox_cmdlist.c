@@ -29,7 +29,7 @@ dtk_bool32 dred_cmdbox_cmdlist__find_line_index_under_point(dred_cmdbox_cmdlist*
     dtk_font_get_metrics(dtk_get_ui_font(&pCmdList->pDred->tk), uiScale, &fontMetrics);
 
     dtk_uint32 lineIndexUnscrolled = y / fontMetrics.lineHeight;
-    dtk_uint32 lineIndex = lineIndexUnscrolled + dred_scrollbar_get_scroll_position(&pCmdList->scrollbar);
+    dtk_uint32 lineIndex = lineIndexUnscrolled + dtk_scrollbar_get_scroll_position(&pCmdList->scrollbar);
 
     if (lineIndex >= pCmdList->commandIndexCount) {
         return DTK_FALSE;
@@ -54,7 +54,7 @@ void dred_cmdbox_cmdlist__update_scrollbar(dred_cmdbox_cmdlist* pCmdList)
     dtk_font_get_metrics(dtk_get_ui_font(&pCmdList->pDred->tk), uiScale, &fontMetrics);
 
     dtk_uint32 pageSize = contentHeight / fontMetrics.lineHeight;
-    dred_scrollbar_set_range_and_page_size(&pCmdList->scrollbar, 0, (dtk_int32)pCmdList->commandIndexCount, (dtk_int32)pageSize);
+    dtk_scrollbar_set_range_and_page_size(&pCmdList->scrollbar, 0, (dtk_int32)pCmdList->commandIndexCount, (dtk_int32)pageSize);
 }
 
 void dred_cmdbox_cmdlist__refresh_layout(dred_cmdbox_cmdlist* pCmdList)
@@ -78,18 +78,18 @@ void dred_cmdbox_cmdlist__scroll_to_highlighted_item(dred_cmdbox_cmdlist* pCmdLi
 {
     dtk_assert(pCmdList != NULL);
 
-    dtk_uint32 scrollPos = (dtk_uint32)dred_scrollbar_get_scroll_position(&pCmdList->scrollbar);
-    dtk_uint32 pageSize = (dtk_uint32)dred_scrollbar_get_page_size(&pCmdList->scrollbar);
+    dtk_uint32 scrollPos = (dtk_uint32)dtk_scrollbar_get_scroll_position(&pCmdList->scrollbar);
+    dtk_uint32 pageSize = (dtk_uint32)dtk_scrollbar_get_page_size(&pCmdList->scrollbar);
 
     if (pCmdList->selectedItemIndex < scrollPos) {
-        dred_scrollbar_scroll_to(&pCmdList->scrollbar, pCmdList->selectedItemIndex);
+        dtk_scrollbar_scroll_to(&pCmdList->scrollbar, pCmdList->selectedItemIndex);
     } else if (pCmdList->selectedItemIndex > scrollPos + (pageSize - 1)) {
-        dred_scrollbar_scroll_to(&pCmdList->scrollbar, pCmdList->selectedItemIndex - pageSize + 1);
+        dtk_scrollbar_scroll_to(&pCmdList->scrollbar, pCmdList->selectedItemIndex - pageSize + 1);
     }
 }
 
 
-void dred_cmdbox_cmdlist__on_scroll(dred_scrollbar* pScrollbar, int scrollPos)
+void dred_cmdbox_cmdlist__on_scroll(dtk_scrollbar* pScrollbar, int scrollPos)
 {
     (void)scrollPos;
 
@@ -119,7 +119,7 @@ dtk_bool32 dred_cmbox_cmdlist_event_handler(dtk_event* pEvent)
             dtk_font_get_metrics(dtk_get_ui_font(&pCmdList->pDred->tk), uiScale, &fontMetrics);
 
             dtk_int32 penPosX = 0;
-            dtk_int32 penPosY = -dred_scrollbar_get_scroll_position(&pCmdList->scrollbar) * fontMetrics.lineHeight;
+            dtk_int32 penPosY = -dtk_scrollbar_get_scroll_position(&pCmdList->scrollbar) * fontMetrics.lineHeight;
             for (size_t i = 0; i < pCmdList->commandIndexCount; ++i) {
                 dtk_font* pFont = dtk_get_ui_font(&pDred->tk);
 
@@ -183,7 +183,7 @@ dtk_bool32 dred_cmbox_cmdlist_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_MOUSE_WHEEL:
         {
-            dred_scrollbar_scroll(&pCmdList->scrollbar, -pEvent->mouseWheel.delta * dred_scrollbar_get_mouse_wheel_scale(&pCmdList->scrollbar));
+            dtk_scrollbar_scroll(&pCmdList->scrollbar, -pEvent->mouseWheel.delta * dtk_scrollbar_get_mouse_wheel_scale(&pCmdList->scrollbar));
         } break;
 
         default: break;
@@ -202,11 +202,12 @@ dred_result dred_cmdbox_cmdlist_init(dred_context* pDred, dtk_control* pParent, 
         return result;
     }
 
-    if (!dred_scrollbar_init(&pCmdList->scrollbar, pDred, DTK_CONTROL(pCmdList), dred_scrollbar_orientation_vertical)) {
-        return DTK_ERROR;
+    result = dtk_scrollbar_init(&pDred->tk, DTK_CONTROL(pCmdList), NULL, dtk_scrollbar_orientation_vertical, &pCmdList->scrollbar);
+    if (result != DTK_SUCCESS) {
+        return result;
     }
 
-    dred_scrollbar_set_on_scroll(&pCmdList->scrollbar, dred_cmdbox_cmdlist__on_scroll);
+    dtk_scrollbar_set_on_scroll(&pCmdList->scrollbar, dred_cmdbox_cmdlist__on_scroll);
 
     return DTK_SUCCESS;
 }

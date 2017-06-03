@@ -66,9 +66,9 @@ void dred_textview__refresh_horizontal_scrollbar(dred_textview* pTextView);
 void dred_textview__move_cursor_left(dred_textview* pTextView, size_t iCursor, int stateFlags);
 void dred_textview__move_cursor_right(dred_textview* pTextView, size_t iCursor, int stateFlags);
 
-void dred_textview__on_vscroll(dred_scrollbar* pSBControl, int scrollPos)
+void dred_textview__on_vscroll(dtk_scrollbar* pSBControl, int scrollPos)
 {
-    dred_textview* pTextView = (dred_textview*)DRED_CONTROL(pSBControl)->pUserData;
+    dred_textview* pTextView = (dred_textview*)DTK_CONTROL(pSBControl)->pUserData;
     assert(pTextView != NULL);
 
     drte_view_set_inner_offset_y(pTextView->pView, -drte_view_get_line_pos_y(pTextView->pView, scrollPos));
@@ -78,9 +78,9 @@ void dred_textview__on_vscroll(dred_scrollbar* pSBControl, int scrollPos)
     dred_control_dirty(pTextView->pLineNumbers, dred_control_get_local_rect(pTextView->pLineNumbers));
 }
 
-void dred_textview__on_hscroll(dred_scrollbar* pSBControl, int scrollPos)
+void dred_textview__on_hscroll(dtk_scrollbar* pSBControl, int scrollPos)
 {
-    dred_textview* pTextView = (dred_textview*)DRED_CONTROL(pSBControl)->pUserData;
+    dred_textview* pTextView = (dred_textview*)DTK_CONTROL(pSBControl)->pUserData;
     assert(pTextView != NULL);
 
     drte_view_set_inner_offset_x(pTextView->pView, (float)-scrollPos);
@@ -391,15 +391,15 @@ dr_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred
     dred_control_set_on_release_mouse(DRED_CONTROL(pTextView), dred_textview_on_release_mouse);
 
     pTextView->pVertScrollbar = &pTextView->vertScrollbar;
-    dred_scrollbar_init(pTextView->pVertScrollbar, pDred, DTK_CONTROL(pTextView), dred_scrollbar_orientation_vertical);
-    DRED_CONTROL(pTextView->pVertScrollbar)->pUserData = pTextView;
-    dred_scrollbar_set_on_scroll(pTextView->pVertScrollbar, dred_textview__on_vscroll);
-    dred_scrollbar_set_mouse_wheel_scele(pTextView->pVertScrollbar, 3);
+    dtk_scrollbar_init(&pDred->tk, DTK_CONTROL(pTextView), NULL, dtk_scrollbar_orientation_vertical, pTextView->pVertScrollbar);
+    DTK_CONTROL(pTextView->pVertScrollbar)->pUserData = pTextView;
+    dtk_scrollbar_set_on_scroll(pTextView->pVertScrollbar, dred_textview__on_vscroll);
+    dtk_scrollbar_set_mouse_wheel_scale(pTextView->pVertScrollbar, 3);
 
     pTextView->pHorzScrollbar = &pTextView->horzScrollbar;
-    dred_scrollbar_init(pTextView->pHorzScrollbar, pDred, DTK_CONTROL(pTextView), dred_scrollbar_orientation_horizontal);
-    DRED_CONTROL(pTextView->pHorzScrollbar)->pUserData = pTextView;
-    dred_scrollbar_set_on_scroll(pTextView->pHorzScrollbar, dred_textview__on_hscroll);
+    dtk_scrollbar_init(&pDred->tk, DTK_CONTROL(pTextView), NULL, dtk_scrollbar_orientation_horizontal, pTextView->pHorzScrollbar);
+    DTK_CONTROL(pTextView->pHorzScrollbar)->pUserData = pTextView;
+    dtk_scrollbar_set_on_scroll(pTextView->pHorzScrollbar, dred_textview__on_hscroll);
 
     pTextView->pLineNumbers = &pTextView->lineNumbers;
     dred_control_init(pTextView->pLineNumbers, pDred, DRED_CONTROL(pTextView), NULL, "dred.common.linenumbers", NULL);
@@ -500,12 +500,12 @@ void dred_textview_uninit(dred_textview* pTextView)
     }
 
     if (pTextView->pHorzScrollbar) {
-        dred_scrollbar_uninit(pTextView->pHorzScrollbar);
+        dtk_scrollbar_uninit(pTextView->pHorzScrollbar);
         pTextView->pHorzScrollbar = NULL;
     }
 
     if (pTextView->pVertScrollbar) {
-        dred_scrollbar_uninit(pTextView->pVertScrollbar);
+        dtk_scrollbar_uninit(pTextView->pVertScrollbar);
         pTextView->pVertScrollbar = NULL;
     }
 
@@ -552,7 +552,7 @@ void dred_textview_set_font(dred_textview* pTextView, dtk_font* pFont)
         dred_textview__refresh_line_numbers(pTextView);
 
         // Emulate a scroll to ensure the scroll position is pinned to a line.
-        dred_textview__on_vscroll(pTextView->pVertScrollbar, dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar));
+        dred_textview__on_vscroll(pTextView->pVertScrollbar, dtk_scrollbar_get_scroll_position(pTextView->pVertScrollbar));
         dred_textview__refresh_scrollbars(pTextView);
     }
     //dred_control_end_dirty(DRED_CONTROL(pTextView));
@@ -578,7 +578,7 @@ void dred_textview_set_scale(dred_textview* pTextView, float scale)
     dred_textview__refresh_line_numbers(pTextView);
 
     // Emulate a scroll to ensure the scroll position is pinned to a line.
-    dred_textview__on_vscroll(pTextView->pVertScrollbar, dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar));
+    dred_textview__on_vscroll(pTextView->pVertScrollbar, dtk_scrollbar_get_scroll_position(pTextView->pVertScrollbar));
     dred_textview__refresh_scrollbars(pTextView);
 }
 
@@ -798,8 +798,8 @@ void dred_textview_set_scrollbar_track_color(dred_textview* pTextView, dtk_color
         return;
     }
 
-    dred_scrollbar_set_track_color(pTextView->pHorzScrollbar, color);
-    dred_scrollbar_set_track_color(pTextView->pVertScrollbar, color);
+    dtk_scrollbar_set_track_color(pTextView->pHorzScrollbar, color);
+    dtk_scrollbar_set_track_color(pTextView->pVertScrollbar, color);
 }
 
 void dred_textview_set_scrollbar_thumb_color(dred_textview* pTextView, dtk_color color)
@@ -808,8 +808,8 @@ void dred_textview_set_scrollbar_thumb_color(dred_textview* pTextView, dtk_color
         return;
     }
 
-    dred_scrollbar_set_default_thumb_color(pTextView->pHorzScrollbar, color);
-    dred_scrollbar_set_default_thumb_color(pTextView->pVertScrollbar, color);
+    dtk_scrollbar_set_default_thumb_color(pTextView->pHorzScrollbar, color);
+    dtk_scrollbar_set_default_thumb_color(pTextView->pVertScrollbar, color);
 }
 
 void dred_textview_set_scrollbar_thumb_color_hovered(dred_textview* pTextView, dtk_color color)
@@ -818,8 +818,8 @@ void dred_textview_set_scrollbar_thumb_color_hovered(dred_textview* pTextView, d
         return;
     }
 
-    dred_scrollbar_set_hovered_thumb_color(pTextView->pHorzScrollbar, color);
-    dred_scrollbar_set_hovered_thumb_color(pTextView->pVertScrollbar, color);
+    dtk_scrollbar_set_hovered_thumb_color(pTextView->pHorzScrollbar, color);
+    dtk_scrollbar_set_hovered_thumb_color(pTextView->pVertScrollbar, color);
 }
 
 void dred_textview_set_scrollbar_thumb_color_pressed(dred_textview* pTextView, dtk_color color)
@@ -828,8 +828,8 @@ void dred_textview_set_scrollbar_thumb_color_pressed(dred_textview* pTextView, d
         return;
     }
 
-    dred_scrollbar_set_pressed_thumb_color(pTextView->pHorzScrollbar, color);
-    dred_scrollbar_set_pressed_thumb_color(pTextView->pVertScrollbar, color);
+    dtk_scrollbar_set_pressed_thumb_color(pTextView->pHorzScrollbar, color);
+    dtk_scrollbar_set_pressed_thumb_color(pTextView->pVertScrollbar, color);
 }
 
 
@@ -1409,8 +1409,8 @@ dr_bool32 dred_textview_find_and_replace_all(dred_textview* pTextView, const cha
 
     size_t originalCursorLine = drte_view_get_cursor_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
     size_t originalCursorPos = drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)) - drte_view_get_line_first_character(pTextView->pView, NULL, originalCursorLine);
-    int originalScrollPosX = dred_scrollbar_get_scroll_position(pTextView->pHorzScrollbar);
-    int originalScrollPosY = dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar);
+    int originalScrollPosX = dtk_scrollbar_get_scroll_position(pTextView->pHorzScrollbar);
+    int originalScrollPosY = dtk_scrollbar_get_scroll_position(pTextView->pVertScrollbar);
 
     dr_bool32 wasTextChanged = DR_FALSE;
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
@@ -1451,8 +1451,8 @@ dr_bool32 dred_textview_find_and_replace_all(dred_textview* pTextView, const cha
 
 
     // The scroll positions may have moved so we'll need to restore them.
-    dred_scrollbar_scroll_to(pTextView->pHorzScrollbar, originalScrollPosX);
-    dred_scrollbar_scroll_to(pTextView->pVertScrollbar, originalScrollPosY);
+    dtk_scrollbar_scroll_to(pTextView->pHorzScrollbar, originalScrollPosX);
+    dtk_scrollbar_scroll_to(pTextView->pVertScrollbar, originalScrollPosY);
 
     return wasTextChanged;
 }
@@ -1527,7 +1527,7 @@ void dred_textview_enable_horizontal_scrollbar(dred_textview* pTextView)
     }
 }
 
-dred_scrollbar* dred_textview_get_vertical_scrollbar(dred_textview* pTextView)
+dtk_scrollbar* dred_textview_get_vertical_scrollbar(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return NULL;
@@ -1536,7 +1536,7 @@ dred_scrollbar* dred_textview_get_vertical_scrollbar(dred_textview* pTextView)
     return pTextView->pVertScrollbar;
 }
 
-dred_scrollbar* dred_textview_get_horizontal_scrollbar(dred_textview* pTextView)
+dtk_scrollbar* dred_textview_get_horizontal_scrollbar(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return NULL;
@@ -1586,8 +1586,8 @@ dr_bool32 dred_textview_is_line_in_view(dred_textview* pTextView, size_t iLine)
         return DR_FALSE;
     }
 
-    dr_uint64 scrollPosTop = dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar);
-    dr_uint64 scrollPosBot = scrollPosTop + dred_scrollbar_get_page_size(pTextView->pVertScrollbar);
+    dr_uint64 scrollPosTop = dtk_scrollbar_get_scroll_position(pTextView->pVertScrollbar);
+    dr_uint64 scrollPosBot = scrollPosTop + dtk_scrollbar_get_page_size(pTextView->pVertScrollbar);
     if (iLine >= scrollPosTop && iLine < scrollPosBot) {
         return DR_TRUE;
     }
@@ -1622,7 +1622,7 @@ void dred_textview_center_on_cursor(dred_textview* pTextView)
         return;
     }
 
-    dred_scrollbar_scroll_to(pTextView->pVertScrollbar, (int)(dred_textview_get_cursor_line(pTextView) - (dred_scrollbar_get_page_size(pTextView->pVertScrollbar)/2)));
+    dtk_scrollbar_scroll_to(pTextView->pVertScrollbar, (int)(dred_textview_get_cursor_line(pTextView) - (dtk_scrollbar_get_page_size(pTextView->pVertScrollbar)/2)));
 }
 
 
@@ -2037,7 +2037,7 @@ void dred_textview_on_mouse_wheel(dred_control* pControl, int delta, int relativ
         return;
     }
 
-    dred_scrollbar_scroll(pTextView->pVertScrollbar, -delta * dred_scrollbar_get_mouse_wheel_scale(pTextView->pVertScrollbar));
+    dtk_scrollbar_scroll(pTextView->pVertScrollbar, -delta * dtk_scrollbar_get_mouse_wheel_scale(pTextView->pVertScrollbar));
 }
 
 void dred_textview__move_cursor_left(dred_textview* pTextView, size_t iCursor, int stateFlags)
@@ -2277,12 +2277,12 @@ void dred_textview_on_key_down(dred_control* pControl, dtk_key key, int stateFla
                 }
             }
 
-            int scrollOffset = dred_scrollbar_get_page_size(pTextView->pVertScrollbar);
+            int scrollOffset = dtk_scrollbar_get_page_size(pTextView->pVertScrollbar);
             if ((stateFlags & DTK_MODIFIER_CTRL) == 0) {
-                dred_scrollbar_scroll(pTextView->pVertScrollbar, -scrollOffset);
+                dtk_scrollbar_scroll(pTextView->pVertScrollbar, -scrollOffset);
             }
 
-            drte_view_move_cursor_y(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), -dred_scrollbar_get_page_size(pTextView->pVertScrollbar));
+            drte_view_move_cursor_y(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), -dtk_scrollbar_get_page_size(pTextView->pVertScrollbar));
 
             if (isShiftDown) {
                 drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
@@ -2305,16 +2305,16 @@ void dred_textview_on_key_down(dred_control* pControl, dtk_key key, int stateFla
                 }
             }
 
-            int scrollOffset = dred_scrollbar_get_page_size(pTextView->pVertScrollbar);
+            int scrollOffset = dtk_scrollbar_get_page_size(pTextView->pVertScrollbar);
             if (scrollOffset > (int)(drte_view_get_line_count(pTextView->pView) - drte_view_get_cursor_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)))) {
                 scrollOffset = 0;
             }
 
             if ((stateFlags & DTK_MODIFIER_CTRL) == 0) {
-                dred_scrollbar_scroll(pTextView->pVertScrollbar, scrollOffset);
+                dtk_scrollbar_scroll(pTextView->pVertScrollbar, scrollOffset);
             }
 
-            drte_view_move_cursor_y(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), dred_scrollbar_get_page_size(pTextView->pVertScrollbar));
+            drte_view_move_cursor_y(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), dtk_scrollbar_get_page_size(pTextView->pVertScrollbar));
 
             if (isShiftDown) {
                 drte_view_set_selection_end_point(pTextView->pView, drte_view_get_cursor_character(pTextView->pView, drte_view_get_last_cursor(pTextView->pView)));
@@ -2536,13 +2536,13 @@ void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* p
 
     // If the cursor is above or below the container, we need to scroll vertically.
     int iLine = (int)drte_view_get_cursor_line(pTextView->pView, drte_view_get_last_cursor(pTextView->pView));
-    if (iLine < dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar)) {
-        dred_scrollbar_scroll_to(pTextView->pVertScrollbar, iLine);
+    if (iLine < dtk_scrollbar_get_scroll_position(pTextView->pVertScrollbar)) {
+        dtk_scrollbar_scroll_to(pTextView->pVertScrollbar, iLine);
     }
 
-    int iBottomLine = dred_scrollbar_get_scroll_position(pTextView->pVertScrollbar) + dred_scrollbar_get_page_size(pTextView->pVertScrollbar) - 1;
+    int iBottomLine = dtk_scrollbar_get_scroll_position(pTextView->pVertScrollbar) + dtk_scrollbar_get_page_size(pTextView->pVertScrollbar) - 1;
     if (iLine >= iBottomLine) {
-        dred_scrollbar_scroll_to(pTextView->pVertScrollbar, iLine - (dred_scrollbar_get_page_size(pTextView->pVertScrollbar) - 1) + 1);
+        dtk_scrollbar_scroll_to(pTextView->pVertScrollbar, iLine - (dtk_scrollbar_get_page_size(pTextView->pVertScrollbar) - 1) + 1);
     }
 
 
@@ -2554,10 +2554,10 @@ void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* p
     float cursorWidth = drte_view_get_cursor_width(pTextView->pView);
 
     if (cursorPosX < 0) {
-        dred_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_view_get_inner_offset_x(pTextView->pView)));
+        dtk_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_view_get_inner_offset_x(pTextView->pView)));
     }
     if (cursorPosX >= drte_view_get_size_x(pTextView->pView)) {
-        dred_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_view_get_inner_offset_x(pTextView->pView) - drte_view_get_size_x(pTextView->pView)) + (int)cursorWidth);
+        dtk_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_view_get_inner_offset_x(pTextView->pView) - drte_view_get_size_x(pTextView->pView)) + (int)cursorWidth);
     }
 
 
@@ -2722,14 +2722,14 @@ void dred_textview__calculate_text_engine_container_size(dred_textview* pTextVie
 
     if (pTextView != NULL)
     {
-        float horzScrollbarSize = 0;
-        if (dred_control_is_visible(DRED_CONTROL(pTextView->pHorzScrollbar))) {
-            horzScrollbarSize = dred_control_get_height(DRED_CONTROL(pTextView->pHorzScrollbar));
+        dtk_int32 horzScrollbarSize = 0;
+        if (dtk_control_is_visible(DTK_CONTROL(pTextView->pHorzScrollbar))) {
+            horzScrollbarSize = dtk_control_get_height(DTK_CONTROL(pTextView->pHorzScrollbar));
         }
 
-        float vertScrollbarSize = 0;
-        if (dred_control_is_visible(DRED_CONTROL(pTextView->pVertScrollbar))) {
-            vertScrollbarSize = dred_control_get_width(DRED_CONTROL(pTextView->pVertScrollbar));
+        dtk_int32 vertScrollbarSize = 0;
+        if (dtk_control_is_visible(DTK_CONTROL(pTextView->pVertScrollbar))) {
+            vertScrollbarSize = dtk_control_get_width(DTK_CONTROL(pTextView->pVertScrollbar));
         }
 
         float lineNumbersWidth = 0;
@@ -2785,16 +2785,16 @@ void dred_textview__refresh_horizontal_scrollbar(dred_textview* pTextView)
     float textWidth = drte_view_get_visible_line_width(pTextView->pView);
     float containerWidth;
     drte_view_get_size(pTextView->pView, &containerWidth, NULL);
-    dred_scrollbar_set_range_and_page_size(pTextView->pHorzScrollbar, 0, (int)textWidth, (int)containerWidth);
+    dtk_scrollbar_set_range_and_page_size(pTextView->pHorzScrollbar, 0, (int)textWidth, (int)containerWidth);
 
-    if (dred_scrollbar_is_thumb_visible(pTextView->pHorzScrollbar)) {
-        if (!dred_control_is_visible(DRED_CONTROL(pTextView->pHorzScrollbar))) {
-            dred_control_show(DRED_CONTROL(pTextView->pHorzScrollbar));
+    if (dtk_scrollbar_is_thumb_visible(pTextView->pHorzScrollbar)) {
+        if (!dtk_control_is_visible(DTK_CONTROL(pTextView->pHorzScrollbar))) {
+            dtk_control_show(DTK_CONTROL(pTextView->pHorzScrollbar));
             dred_textview__refresh_line_numbers(pTextView);
         }
     } else {
-        if (dred_control_is_visible(DRED_CONTROL(pTextView->pHorzScrollbar))) {
-            dred_control_hide(DRED_CONTROL(pTextView->pHorzScrollbar));
+        if (dtk_control_is_visible(DTK_CONTROL(pTextView->pHorzScrollbar))) {
+            dtk_control_hide(DTK_CONTROL(pTextView->pHorzScrollbar));
             dred_textview__refresh_line_numbers(pTextView);
         }
     }
@@ -2813,15 +2813,15 @@ void dred_textview__refresh_scrollbar_ranges(dred_textview* pTextView)
         extraScroll = drte_view_get_visible_line_count(pTextView->pView) - 1 - 1;  // -1 to make the range 0 based. -1 to ensure at least one line is visible.
     }
 
-    dred_scrollbar_set_range_and_page_size(pTextView->pVertScrollbar, 0, (int)(lineCount + extraScroll), (int)pageSize);
+    dtk_scrollbar_set_range_and_page_size(pTextView->pVertScrollbar, 0, (int)(lineCount + extraScroll), (int)pageSize);
 
-    if (dred_scrollbar_is_thumb_visible(pTextView->pVertScrollbar)) {
-        if (!dred_control_is_visible(DRED_CONTROL(pTextView->pVertScrollbar))) {
-            dred_control_show(DRED_CONTROL(pTextView->pVertScrollbar));
+    if (dtk_scrollbar_is_thumb_visible(pTextView->pVertScrollbar)) {
+        if (!dtk_control_is_visible(DTK_CONTROL(pTextView->pVertScrollbar))) {
+            dtk_control_show(DTK_CONTROL(pTextView->pVertScrollbar));
         }
     } else {
-        if (dred_control_is_visible(DRED_CONTROL(pTextView->pVertScrollbar))) {
-            dred_control_hide(DRED_CONTROL(pTextView->pVertScrollbar));
+        if (dtk_control_is_visible(DTK_CONTROL(pTextView->pVertScrollbar))) {
+            dtk_control_hide(DTK_CONTROL(pTextView->pVertScrollbar));
         }
     }
 
@@ -2834,19 +2834,19 @@ void dred_textview__refresh_scrollbar_layouts(dred_textview* pTextView)
 {
     assert(pTextView != NULL);
 
-    float offsetLeft   = pTextView->borderWidth;
-    float offsetTop    = pTextView->borderWidth;
-    float offsetRight  = pTextView->borderWidth;
-    float offsetBottom = pTextView->borderWidth;
+    dtk_int32 offsetLeft   = (dtk_int32)pTextView->borderWidth;
+    dtk_int32 offsetTop    = (dtk_int32)pTextView->borderWidth;
+    dtk_int32 offsetRight  = (dtk_int32)pTextView->borderWidth;
+    dtk_int32 offsetBottom = (dtk_int32)pTextView->borderWidth;
 
-    float scrollbarSizeH = (dred_scrollbar_is_thumb_visible(pTextView->pHorzScrollbar) && pTextView->isHorzScrollbarEnabled) ? pTextView->horzScrollbarSize : 0;
-    float scrollbarSizeV = (dred_scrollbar_is_thumb_visible(pTextView->pVertScrollbar) && pTextView->isVertScrollbarEnabled) ? pTextView->vertScrollbarSize : 0;
+    dtk_uint32 scrollbarSizeH = (dtk_uint32)((dtk_scrollbar_is_thumb_visible(pTextView->pHorzScrollbar) && pTextView->isHorzScrollbarEnabled) ? pTextView->horzScrollbarSize : 0);
+    dtk_uint32 scrollbarSizeV = (dtk_uint32)((dtk_scrollbar_is_thumb_visible(pTextView->pVertScrollbar) && pTextView->isVertScrollbarEnabled) ? pTextView->vertScrollbarSize : 0);
 
-    dred_control_set_size(DRED_CONTROL(pTextView->pVertScrollbar), scrollbarSizeV, dred_control_get_height(DRED_CONTROL(pTextView)) /*- scrollbarSizeH*/ - (offsetTop + offsetBottom));
-    dred_control_set_size(DRED_CONTROL(pTextView->pHorzScrollbar), dred_control_get_width(DRED_CONTROL(pTextView)) - scrollbarSizeV - (offsetLeft + offsetRight), scrollbarSizeH);
+    dtk_control_set_size(DTK_CONTROL(pTextView->pVertScrollbar), scrollbarSizeV, dtk_control_get_height(DTK_CONTROL(pTextView)) /*- scrollbarSizeH*/ - (offsetTop + offsetBottom));
+    dtk_control_set_size(DTK_CONTROL(pTextView->pHorzScrollbar), dtk_control_get_width(DTK_CONTROL(pTextView)) - scrollbarSizeV - (offsetLeft + offsetRight), scrollbarSizeH);
 
-    dred_control_set_relative_position(DRED_CONTROL(pTextView->pVertScrollbar), dred_control_get_width(DRED_CONTROL(pTextView)) - scrollbarSizeV - offsetRight, offsetTop);
-    dred_control_set_relative_position(DRED_CONTROL(pTextView->pHorzScrollbar), offsetLeft, dred_control_get_height(DRED_CONTROL(pTextView)) - scrollbarSizeH - offsetBottom);
+    dtk_control_set_relative_position(DTK_CONTROL(pTextView->pVertScrollbar), dtk_control_get_width(DTK_CONTROL(pTextView)) - scrollbarSizeV - offsetRight, offsetTop);
+    dtk_control_set_relative_position(DTK_CONTROL(pTextView->pHorzScrollbar), offsetLeft, dtk_control_get_height(DTK_CONTROL(pTextView)) - scrollbarSizeH - offsetBottom);
 
 
     // A change in the layout of the horizontal scrollbar will affect the layout of the line numbers.
@@ -2857,19 +2857,23 @@ dred_rect dred_textview__get_scrollbar_dead_space_rect(dred_textview* pTextView)
 {
     assert(pTextView != NULL);
 
-    float offsetLeft   = pTextView->borderWidth;
-    float offsetTop    = pTextView->borderWidth;
-    float offsetRight  = pTextView->borderWidth;
-    float offsetBottom = pTextView->borderWidth;
+    dtk_int32 offsetLeft   = (dtk_int32)pTextView->borderWidth;
+    dtk_int32 offsetTop    = (dtk_int32)pTextView->borderWidth;
+    dtk_int32 offsetRight  = (dtk_int32)pTextView->borderWidth;
+    dtk_int32 offsetBottom = (dtk_int32)pTextView->borderWidth;
 
-    float scrollbarSizeH = (dred_control_is_visible(DRED_CONTROL(pTextView->pHorzScrollbar)) && pTextView->isHorzScrollbarEnabled) ? dred_control_get_width(DRED_CONTROL(pTextView->pHorzScrollbar)) : 0;
-    float scrollbarSizeV = (dred_control_is_visible(DRED_CONTROL(pTextView->pVertScrollbar)) && pTextView->isHorzScrollbarEnabled) ? dred_control_get_height(DRED_CONTROL(pTextView->pVertScrollbar)) : 0;
+    dtk_uint32 scrollbarSizeH = (dtk_uint32)((dtk_control_is_visible(DTK_CONTROL(pTextView->pHorzScrollbar)) && pTextView->isHorzScrollbarEnabled) ? dtk_control_get_width( DTK_CONTROL(pTextView->pHorzScrollbar)) : 0);
+    dtk_uint32 scrollbarSizeV = (dtk_uint32)((dtk_control_is_visible(DTK_CONTROL(pTextView->pVertScrollbar)) && pTextView->isHorzScrollbarEnabled) ? dtk_control_get_height(DTK_CONTROL(pTextView->pVertScrollbar)) : 0);
 
     if (scrollbarSizeH == 0 && scrollbarSizeV == 0) {
         return dred_make_rect(0, 0, 0, 0);
     }
 
-    return dred_make_rect(scrollbarSizeH + offsetLeft, scrollbarSizeV + offsetTop, dred_control_get_width(DRED_CONTROL(pTextView)) - offsetRight, dred_control_get_height(DRED_CONTROL(pTextView)) - offsetBottom);
+    return dred_make_rect(
+        (float)(scrollbarSizeH + offsetLeft),
+        (float)(scrollbarSizeV + offsetTop),
+        dred_control_get_width(DRED_CONTROL(pTextView)) - offsetRight,
+        dred_control_get_height(DRED_CONTROL(pTextView)) - offsetBottom);
 }
 
 
@@ -3057,7 +3061,7 @@ void dred_textview__refresh_line_numbers(dred_textview* pTextView)
         lineNumbersWidth = pTextView->lineNumbersWidth;
     }
 
-    float scrollbarHeight = dred_control_is_visible(DRED_CONTROL(pTextView->pHorzScrollbar)) ? dred_control_get_height(DRED_CONTROL(pTextView->pHorzScrollbar)) : 0;
+    float scrollbarHeight = (float)(dtk_control_is_visible(DTK_CONTROL(pTextView->pHorzScrollbar)) ? dtk_control_get_height(DTK_CONTROL(pTextView->pHorzScrollbar)) : 0);
     dred_control_set_size(pTextView->pLineNumbers, lineNumbersWidth, dred_control_get_height(DRED_CONTROL(pTextView)) - scrollbarHeight);
 
 

@@ -255,10 +255,10 @@ void dred_textbox_disable_horizontal_scrollbar(dred_textbox* pTextBox);
 void dred_textbox_enable_horizontal_scrollbar(dred_textbox* pTextBox);
 
 // Retrieves the vertical scrollbar.
-dred_scrollbar* dred_textbox_get_vertical_scrollbar(dred_textbox* pTextBox);
+dtk_scrollbar* dred_textbox_get_vertical_scrollbar(dred_textbox* pTextBox);
 
 // Retrieves the horizontal scrollbar.
-dred_scrollbar* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox);
+dtk_scrollbar* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox);
 
 // Sets the size of both the vertical and horizontal scrollbars.
 void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, float size);

@@ -79,3 +79,12 @@ DTK_INLINE dtk_bool32 dtk_rect_contains_point(dtk_rect rect, dtk_int32 posX, dtk
 
     return DTK_TRUE;
 }
+
+DTK_INLINE dtk_bool32 dtk_rect_equal(dtk_rect rect0, dtk_rect rect1)
+{
+    return
+        rect0.left   == rect1.left  &&
+        rect0.top    == rect1.top   &&
+        rect0.right  == rect1.right &&
+        rect0.bottom == rect1.bottom;
+}

@@ -49,6 +49,7 @@ dtk_dialog_result dtk_message_box__win32(dtk_window* pParentWindow, const char* 
 
 dtk_dialog_result dtk_show_color_picker_dialog__win32(dtk_context* pTK, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut)
 {
+    (void)pTK;
     dtk_assert(pTK != NULL);
 
     static COLORREF prevcolors[16] = {
