@@ -412,20 +412,20 @@ dtk_bool32 dred_settings_editor_theme_page_event_handler(dtk_event* pEvent)
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->fontButton), penPosX, penPosY);
             penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->fontButton)) + (6*uiScale);
 
-            dtk_colorbutton_set_padding(&pSettingsEditor->textColorButton, 4*uiScale);
+            dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->textColorButton), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->textColorButton), penPosX, penPosY);
             penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale);
-            dtk_colorbutton_auto_size(&pSettingsEditor->textColorButton);
+            dtk_color_button_auto_size(DTK_COLOR_BUTTON(&pSettingsEditor->textColorButton));
 
-            dtk_colorbutton_set_padding(&pSettingsEditor->bgColorButton, 4*uiScale);
+            dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->bgColorButton), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->bgColorButton), penPosX, penPosY);
             penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->bgColorButton)) + (6*uiScale);
-            dtk_colorbutton_auto_size(&pSettingsEditor->bgColorButton);
+            dtk_color_button_auto_size(DTK_COLOR_BUTTON(&pSettingsEditor->bgColorButton));
 
-            dtk_colorbutton_set_padding(&pSettingsEditor->lineColorButton, 4*uiScale);
+            dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->lineColorButton), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->lineColorButton), penPosX, penPosY);
             penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->lineColorButton)) + (6*uiScale);
-            dtk_colorbutton_auto_size(&pSettingsEditor->lineColorButton);
+            dtk_color_button_auto_size(DTK_COLOR_BUTTON(&pSettingsEditor->lineColorButton));
         } break;
     }
 
@@ -464,35 +464,35 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->fontButton)) + (6*uiScale);
 
 
-    if (!dtk_colorbutton_init(&pSettingsEditor->textColorButton, pDred, pPage->pGUIControl, "Text color", pDred->config.textEditorTextColor)) {
+    if (dred_color_button_init(pDred, DTK_CONTROL(pPage->pGUIControl), "Text color", pDred->config.textEditorTextColor, &pSettingsEditor->textColorButton) != DTK_SUCCESS) {
         dred_control_uninit(pPage->pGUIControl);
         return DR_FALSE;
     }
 
-    dtk_colorbutton_set_bind_to_config_var(&pSettingsEditor->textColorButton, "texteditor-text-color");
-    dtk_colorbutton_set_padding(&pSettingsEditor->textColorButton, 4*uiScale);
+    dred_color_button_set_bind_to_config_var(&pSettingsEditor->textColorButton, "texteditor-text-color");
+    dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->textColorButton), (dtk_int32)(4*uiScale));
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->textColorButton), penPosX, penPosY);
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale);
 
 
-    if (!dtk_colorbutton_init(&pSettingsEditor->bgColorButton, pDred, pPage->pGUIControl, "Background color", pDred->config.textEditorBGColor)) {
+    if (dred_color_button_init(pDred, DTK_CONTROL(pPage->pGUIControl), "Background color", pDred->config.textEditorBGColor, &pSettingsEditor->bgColorButton) != DTK_SUCCESS) {
         dred_control_uninit(pPage->pGUIControl);
         return DR_FALSE;
     }
 
-    dtk_colorbutton_set_bind_to_config_var(&pSettingsEditor->bgColorButton, "texteditor-bg-color");
-    dtk_colorbutton_set_padding(&pSettingsEditor->bgColorButton, 4*uiScale);
+    dred_color_button_set_bind_to_config_var(&pSettingsEditor->bgColorButton, "texteditor-bg-color");
+    dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->bgColorButton), (dtk_int32)(4*uiScale));
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->bgColorButton), penPosX, penPosY);
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale);
 
 
-    if (!dtk_colorbutton_init(&pSettingsEditor->lineColorButton, pDred, pPage->pGUIControl, "Active line color", pDred->config.textEditorActiveLineColor)) {
+    if (dred_color_button_init(pDred, DTK_CONTROL(pPage->pGUIControl), "Active line color", pDred->config.textEditorActiveLineColor, &pSettingsEditor->lineColorButton) != DTK_SUCCESS) {
         dred_control_uninit(pPage->pGUIControl);
         return DR_FALSE;
     }
 
-    dtk_colorbutton_set_bind_to_config_var(&pSettingsEditor->lineColorButton, "texteditor-active-line-color");
-    dtk_colorbutton_set_padding(&pSettingsEditor->lineColorButton, 4*uiScale);
+    dred_color_button_set_bind_to_config_var(&pSettingsEditor->lineColorButton, "texteditor-active-line-color");
+    dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->lineColorButton), (dtk_int32)(4*uiScale));
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->lineColorButton), penPosX, penPosY);
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale);
 

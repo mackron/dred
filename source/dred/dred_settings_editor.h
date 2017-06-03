@@ -27,9 +27,9 @@ struct dred_settings_editor
 
     // Theme
     dtk_button fontButton;
-    dtk_colorbutton textColorButton;
-    dtk_colorbutton bgColorButton;
-    dtk_colorbutton lineColorButton;
+    dred_color_button textColorButton;
+    dred_color_button bgColorButton;
+    dred_color_button lineColorButton;
 
     // Text Editor
     dred_checkbox cbTabsToSpaces;
