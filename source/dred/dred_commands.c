@@ -891,8 +891,8 @@ dr_bool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, const
         return DR_FALSE;
     }
 
-    size_t index = dred_find_command_index(func);
-    if (index == (size_t)-1) {
+    dtk_uint32 index = dred_find_command_index(func);
+    if (index == (dtk_uint32)-1) {
         return DR_FALSE;
     }
 
