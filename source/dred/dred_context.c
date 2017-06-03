@@ -1285,7 +1285,7 @@ void dred_close_tab_with_confirmation(dred_context* pDred, dred_tab* pTab)
         }
 
         unsigned int result = dred_show_yesnocancel_dialog(pDred, msg, "Save changes?");
-        if (result == DRED_MESSAGE_BOX_YES) {
+        if (result == DTK_DIALOG_RESULT_YES) {
             if (!dred__save_editor(pEditor, NULL, pTab)) {
                 char newFilePath[DRED_MAX_PATH];
                 if (!dred_show_save_file_dialog(pDred, filePath, newFilePath, sizeof(newFilePath))) {
@@ -1294,7 +1294,7 @@ void dred_close_tab_with_confirmation(dred_context* pDred, dred_tab* pTab)
                 dred_editor_save(pEditor, newFilePath);
             }
             dred_close_tab(pDred, pTab);
-        } else if (result == DRED_MESSAGE_BOX_NO) {
+        } else if (result == DTK_DIALOG_RESULT_NO) {
             dred_close_tab(pDred, pTab);
         }
     } else {
@@ -1325,11 +1325,11 @@ dr_bool32 dred_close_all_tabs_with_confirmation(dred_context* pDred)
     // If there's any modified files we need to show a dialog box.
     if (dred_are_any_open_files_modified(pDred)) {
         unsigned int result = dred_show_yesnocancel_dialog(pDred, "You have unsaved changes. Save changes?", "Save changes?");
-        if (result == DRED_MESSAGE_BOX_YES) {
+        if (result == DTK_DIALOG_RESULT_YES) {
             if (!dred_save_all_open_files_with_saveas(pDred)) {
                 return DR_TRUE;
             }
-        } else if (result == DRED_MESSAGE_BOX_CANCEL) {
+        } else if (result == DTK_DIALOG_RESULT_CANCEL) {
             return DR_FALSE;
         }
     }
@@ -1726,12 +1726,12 @@ dr_bool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFil
 #endif
 }
 
-unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* message, const char* title)
+dtk_dialog_result dred_show_yesnocancel_dialog(dred_context* pDred, const char* message, const char* title)
 {
-    if (pDred == NULL) {
-        return 0;
-    }
+    if (pDred == NULL) return 0;
+    return dtk_message_box(DTK_WINDOW(pDred->pMainWindow), message, title, DTK_DIALOG_BUTTONS_YESNOCANCEL);
 
+#if 0
     // TODO: Move this to the platform layer.
 #ifdef _WIN32
     int result = MessageBoxA((HWND)pDred->pMainWindow->windowDTK.win32.hWnd, message, title, MB_YESNOCANCEL);
@@ -1772,6 +1772,7 @@ unsigned int dred_show_yesnocancel_dialog(dred_context* pDred, const char* messa
     gtk_widget_destroy(dialog);
 
     return result;
+#endif
 #endif
 }
 
@@ -1899,21 +1900,17 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dtk_window* pOwnerWi
 #endif
 }
 
-dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut)
+dtk_dialog_result dred_show_color_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut)
 {
     if (pDred == NULL || pColorOut == NULL) {
-        return DR_FALSE;
+        return 0;
     }
 
     if (pOwnerWindow == NULL) {
         pOwnerWindow = DTK_WINDOW(pDred->pMainWindow);
     }
 
-    if (dtk_show_color_picker_dialog(&pDred->tk, pOwnerWindow, initialColor, pColorOut) != DTK_DIALOG_RESULT_OK) {
-        return DR_FALSE;
-    }
-
-    return DR_TRUE;
+    return dtk_show_color_picker_dialog(&pDred->tk, pOwnerWindow, initialColor, pColorOut);
 }
 
 

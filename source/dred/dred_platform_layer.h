@@ -1,9 +1,5 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
-#define DRED_MESSAGE_BOX_YES     1
-#define DRED_MESSAGE_BOX_NO      2
-#define DRED_MESSAGE_BOX_CANCEL  3
-
 // Initializes the platform layer. Should be the first function to be called.
 dr_bool32 dred_platform_init(dtk_context* pTK);
 
