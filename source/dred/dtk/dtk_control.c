@@ -182,6 +182,13 @@ dtk_result dtk_control_uninit(dtk_control* pControl)
                     dtk_handle_local_event(pTK, &e);
                 }
             }
+
+            if (pWindow->pLastDescendantWithKeyboardFocus == pControl) {
+                pWindow->pLastDescendantWithKeyboardFocus = NULL;
+            }
+            if (pWindow->pLastDescendantWithMouseCapture == pControl) {
+                pWindow->pLastDescendantWithMouseCapture = NULL;
+            }
         }
 
         if (pTK->pControlUnderMouse == pControl) {
