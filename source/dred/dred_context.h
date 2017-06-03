@@ -280,7 +280,7 @@ dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dtk_window* pOwnerW
 // Shows the "Print" dialog box.
 //
 // This is a little different to other platform-specific dialog boxes in that it performs the full printing operation from start
-// to finish. It does not
+// to finish.
 dr_bool32 dred_show_print_dialog(dred_context* pDred, dtk_window* pOwnerWindow, dred_print_info* pInfoOut);
 
 

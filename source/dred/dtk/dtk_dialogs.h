@@ -14,3 +14,6 @@ typedef dtk_uint32 dtk_dialog_buttons;
 
 // Shows a message box.
 dtk_dialog_result dtk_message_box(dtk_window* pParentWindow, const char* text, const char* title, dtk_dialog_buttons buttons);
+
+// Shows the color picker dialog. Returns DTK_DIALOG_RESULT_OK if the user chose a color, DTK_DIALOG_RESULT_CANCEL if they hit the cancel button or an error occurs.
+dtk_dialog_result dtk_show_color_picker_dialog(dtk_context* pTK, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut);

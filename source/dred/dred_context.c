@@ -1909,58 +1909,11 @@ dr_bool32 dred_show_color_picker_dialog(dred_context* pDred, dtk_window* pOwnerW
         pOwnerWindow = DTK_WINDOW(pDred->pMainWindow);
     }
 
-#ifdef DRED_WIN32
-    static COLORREF prevcolors[16] = {
-        RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255),
-        RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255),
-        RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255),
-        RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255),
-    };
-
-    CHOOSECOLORA cc;
-    ZeroMemory(&cc, sizeof(cc));
-    cc.lStructSize = sizeof(cc);
-    cc.hwndOwner = (HWND)pOwnerWindow->win32.hWnd;
-    cc.rgbResult = RGB(initialColor.r, initialColor.g, initialColor.b);
-    cc.lpCustColors = prevcolors;
-    cc.Flags = CC_RGBINIT | CC_ANYCOLOR | CC_FULLOPEN;
-
-    if (!ChooseColorA(&cc)) {
+    if (dtk_show_color_picker_dialog(&pDred->tk, pOwnerWindow, initialColor, pColorOut) != DTK_DIALOG_RESULT_OK) {
         return DR_FALSE;
     }
-
-    pColorOut->r = GetRValue(cc.rgbResult);
-    pColorOut->g = GetGValue(cc.rgbResult);
-    pColorOut->b = GetBValue(cc.rgbResult);
-    pColorOut->a = 255;
 
     return DR_TRUE;
-#endif
-
-#ifdef DRED_GTK
-    GtkWidget* dialog = gtk_color_chooser_dialog_new(NULL, GTK_WINDOW(pOwnerWindow->gtk.pWidget));
-    if (dialog == NULL) {
-        return DR_FALSE;
-    }
-
-    GdkRGBA rgba;
-    rgba.red   = initialColor.r / 255.0;
-    rgba.green = initialColor.g / 255.0;
-    rgba.blue  = initialColor.b / 255.0;
-    rgba.alpha = initialColor.a / 255.0;
-    gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(dialog), &rgba);
-
-    gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-
-    gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(dialog), &rgba);
-    pColorOut->r = (uint8_t)(rgba.red * 255);
-    pColorOut->g = (uint8_t)(rgba.green * 255);
-    pColorOut->b = (uint8_t)(rgba.blue * 255);
-    pColorOut->a = (uint8_t)(rgba.alpha * 255);
-
-    gtk_widget_destroy(dialog);
-    return result == GTK_RESPONSE_OK;
-#endif
 }
 
 

@@ -46,6 +46,37 @@ dtk_dialog_result dtk_message_box__win32(dtk_window* pParentWindow, const char* 
 {
     return dtk_convert_dialog_result_from_win32(MessageBoxA((pParentWindow == NULL) ? NULL : (HWND)pParentWindow->win32.hWnd, text, title, dtk_convert_dialog_buttons_to_win32(buttons)));
 }
+
+dtk_dialog_result dtk_show_color_picker_dialog__win32(dtk_context* pTK, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut)
+{
+    dtk_assert(pTK != NULL);
+
+    static COLORREF prevcolors[16] = {
+        RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255),
+        RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255),
+        RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255),
+        RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255), RGB(255, 255, 255),
+    };
+
+    CHOOSECOLORA cc;
+    ZeroMemory(&cc, sizeof(cc));
+    cc.lStructSize = sizeof(cc);
+    cc.hwndOwner = (HWND)pOwnerWindow->win32.hWnd;
+    cc.rgbResult = RGB(initialColor.r, initialColor.g, initialColor.b);
+    cc.lpCustColors = prevcolors;
+    cc.Flags = CC_RGBINIT | CC_ANYCOLOR | CC_FULLOPEN;
+
+    if (!ChooseColorA(&cc)) {
+        return DTK_DIALOG_RESULT_CANCEL;
+    }
+
+    pColorOut->r = GetRValue(cc.rgbResult);
+    pColorOut->g = GetGValue(cc.rgbResult);
+    pColorOut->b = GetBValue(cc.rgbResult);
+    pColorOut->a = 255;
+
+    return DTK_DIALOG_RESULT_OK;
+}
 #endif
 
 
@@ -97,6 +128,37 @@ dtk_dialog_result dtk_message_box__gtk(dtk_window* pParentWindow, const char* te
 
     return dialogResult;
 }
+
+dtk_dialog_result dtk_show_color_picker_dialog__gtk(dtk_context* pTK, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut)
+{
+    GtkWidget* dialog = gtk_color_chooser_dialog_new(NULL, GTK_WINDOW(pOwnerWindow->gtk.pWidget));
+    if (dialog == NULL) {
+        return DTK_DIALOG_RESULT_CANCEL;
+    }
+
+    GdkRGBA rgba;
+    rgba.red   = initialColor.r / 255.0;
+    rgba.green = initialColor.g / 255.0;
+    rgba.blue  = initialColor.b / 255.0;
+    rgba.alpha = initialColor.a / 255.0;
+    gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(dialog), &rgba);
+
+    gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+
+    gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(dialog), &rgba);
+    pColorOut->r = (uint8_t)(rgba.red   * 255);
+    pColorOut->g = (uint8_t)(rgba.green * 255);
+    pColorOut->b = (uint8_t)(rgba.blue  * 255);
+    pColorOut->a = (uint8_t)(rgba.alpha * 255);
+
+    gtk_widget_destroy(dialog);
+
+    if (result == GTK_RESPONSE_OK) {
+        return DTK_DIALOG_RESULT_OK;
+    } else {
+        return DTK_DIALOG_RESULT_CANCEL;
+    }
+}
 #endif
 
 
@@ -114,5 +176,17 @@ dtk_dialog_result dtk_message_box(dtk_window* pParentWindow, const char* text, c
 #endif
 #ifdef DTK_GTK
     return dtk_message_box__gtk(pParentWindow, text, title, buttons);
+#endif
+}
+
+dtk_dialog_result dtk_show_color_picker_dialog(dtk_context* pTK, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut)
+{
+    if (pTK == NULL) return DTK_DIALOG_RESULT_CANCEL;
+   
+#ifdef DTK_WIN32
+    return dtk_show_color_picker_dialog__win32(pTK, pOwnerWindow, initialColor, pColorOut);
+#endif
+#ifdef DTK_GTK
+    return dtk_show_color_picker_dialog__gtk(pTK, pOwnerWindow, initialColor, pColorOut);
 #endif
 }
