@@ -108,8 +108,8 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
             float penPosY = bannerRect.bottom - (fontMetrics.lineHeight*1.5f);
 
             const char* linkStr = "http://dred.io";
-
-            float linkWidth;
+            
+            dtk_int32 linkWidth;
             dtk_font_measure_string(pFont, uiScale, linkStr, strlen(linkStr), &linkWidth, NULL);
             dtk_surface_draw_text(pEvent->paint.pSurface, pFont, uiScale, linkStr, (int)strlen(linkStr), (dtk_int32)((dialogRect.right - dialogRect.left) - linkWidth) / 2, (dtk_int32)penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255));
 

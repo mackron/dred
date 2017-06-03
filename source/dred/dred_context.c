@@ -1980,7 +1980,7 @@ void dred__on_paint_text_for_printing(drte_engine* pTextEngine, drte_view* pView
     dtk_surface_draw_text(&pPrintData->paintSurface, &pPrintData->font, 1, text, (int)textLength, (dtk_int32)posX, (dtk_int32)posY, dtk_rgb(0, 0, 0), dtk_rgba(0, 0, 0, 0));
 }
 
-void dred__on_measure_string_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, float scale, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut)
+void dred__on_measure_string_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, float scale, const char* text, size_t textLength, dtk_int32* pWidthOut, dtk_int32* pHeightOut)
 {
     (void)pTextEngine;
     dtk_font_measure_string((dtk_font*)styleToken, scale, text, textLength, pWidthOut, pHeightOut);

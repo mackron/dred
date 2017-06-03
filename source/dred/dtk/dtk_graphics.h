@@ -192,7 +192,7 @@ dtk_result dtk_font_get_glyph_metrics(dtk_font* pFont, float scale, dtk_uint32 u
 // Retrieves the dimensions of a given string when drawn with the given font at the given scale.
 //
 // NOTE: This API is tempoarary until an improved Unicode implementation is done.
-dtk_result dtk_font_measure_string(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float* pWidth, float* pHeight);
+dtk_result dtk_font_measure_string(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32* pWidth, dtk_int32* pHeight);
 
 // Retrieves the position to place a text cursor based on the given point for the given string when drawn with the given font.
 //

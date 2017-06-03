@@ -65,19 +65,19 @@ void dtk_checkbox__on_paint(dtk_checkbox* pCheckbox, dtk_rect rect, dtk_surface*
 
 
     // The text is positioned to the right of the box, and centered vertically.
-    float textWidth;
-    float textHeight;
+    dtk_int32 textWidth;
+    dtk_int32 textHeight;
     dtk_font_measure_string(pCheckbox->pFont, uiScale, pCheckbox->text, strlen(pCheckbox->text), &textWidth, &textHeight);
 
     dtk_int32 textPosX = boxRect.right + pCheckbox->padding;
-    dtk_int32 textPosY = (dtk_control_get_height(DTK_CONTROL(pCheckbox)) - (dtk_int32)textHeight) / 2;
+    dtk_int32 textPosY = (dtk_control_get_height(DTK_CONTROL(pCheckbox)) - textHeight) / 2;
     dtk_surface_draw_text(pSurface, pCheckbox->pFont, uiScale, pCheckbox->text, strlen(pCheckbox->text), textPosX, textPosY, pCheckbox->textColor, pCheckbox->bgColor);
 
     // Background
-    dtk_surface_draw_rect(pSurface, dtk_rect_init(boxRect.right,                   boxRect.top,    boxRect.right + pCheckbox->padding, boxRect.bottom), pCheckbox->bgColor);    // Padding bettween checkbox and text.
-    dtk_surface_draw_rect(pSurface, dtk_rect_init(bgrect.left,                     bgrect.top,     bgrect.right,                       boxRect.top),    pCheckbox->bgColor);
-    dtk_surface_draw_rect(pSurface, dtk_rect_init(bgrect.left,                     boxRect.bottom, bgrect.right,                       bgrect.bottom),  pCheckbox->bgColor);
-    dtk_surface_draw_rect(pSurface, dtk_rect_init(textPosX + (dtk_int32)textWidth, boxRect.top,    bgrect.right,                       boxRect.bottom), pCheckbox->bgColor);
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(boxRect.right,        boxRect.top,    boxRect.right + pCheckbox->padding, boxRect.bottom), pCheckbox->bgColor);    // Padding bettween checkbox and text.
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(bgrect.left,          bgrect.top,     bgrect.right,                       boxRect.top),    pCheckbox->bgColor);
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(bgrect.left,          boxRect.bottom, bgrect.right,                       bgrect.bottom),  pCheckbox->bgColor);
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(textPosX + textWidth, boxRect.top,    bgrect.right,                       boxRect.bottom), pCheckbox->bgColor);
 }
 
 void dtk_checkbox__on_mouse_enter(dtk_checkbox* pCheckbox)
@@ -142,14 +142,14 @@ void dtk_checkbox__refresh_layout(dtk_checkbox* pCheckbox)
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCheckbox));
 
     if (pCheckbox->isAutoSizeEnabled) {
-        float textWidth;
-        float textHeight;
+        dtk_int32 textWidth;
+        dtk_int32 textHeight;
         dtk_font_measure_string(pCheckbox->pFont, uiScale, pCheckbox->text, strlen(pCheckbox->text), &textWidth, &textHeight);
 
         dtk_rect boxRect = dtk_checkbox__get_box_rect(pCheckbox);
         dtk_int32 boxWidth = (boxRect.right - boxRect.left);
 
-        dtk_control_set_size(DTK_CONTROL(pCheckbox), (dtk_int32)textWidth + boxWidth + pCheckbox->padding, (dtk_int32)textHeight);
+        dtk_control_set_size(DTK_CONTROL(pCheckbox), textWidth + boxWidth + pCheckbox->padding, textHeight);
     }
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pCheckbox), dtk_control_get_local_rect(DTK_CONTROL(pCheckbox)));

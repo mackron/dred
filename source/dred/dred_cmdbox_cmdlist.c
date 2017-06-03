@@ -126,8 +126,8 @@ dtk_bool32 dred_cmbox_cmdlist_event_handler(dtk_event* pEvent)
                 const char* text = g_CommandNames[pCmdList->pCommandIndices[i]];
                 size_t textLength = strlen(text);
 
-                float stringSizeX;
-                float stringSizeY;
+                dtk_int32 stringSizeX;
+                dtk_int32 stringSizeY;
                 dtk_font_measure_string(pFont, uiScale, text, textLength, &stringSizeX, &stringSizeY);
 
                 dtk_color bgColor = pDred->config.cmdbarPopupBGColor;

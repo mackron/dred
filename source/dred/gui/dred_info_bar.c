@@ -55,10 +55,10 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dtk_surface* 
         dtk_font_get_metrics(pFont, uiScale, &fontMetrics);
 
         // The text info will be right-aligned so we need to measure first.
-        float lineStrWidth;
+        dtk_int32 lineStrWidth;
         dtk_font_measure_string(pFont, uiScale, pInfoBar->lineStr, strlen(pInfoBar->lineStr), &lineStrWidth, NULL);
 
-        float colStrWidth;
+        dtk_int32 colStrWidth;
         dtk_font_measure_string(pFont, uiScale, pInfoBar->colStr, strlen(pInfoBar->colStr), &colStrWidth, NULL);
 
         float totalWidth = lineStrWidth + padding + colStrWidth + paddingRight;

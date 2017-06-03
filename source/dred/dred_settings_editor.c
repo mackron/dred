@@ -196,8 +196,8 @@ void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, dtk_
             borderColor = pSettingsEditor->sidePanelBtnGBColorHovered;
         }
 
-        float textSizeX;
-        float textSizeY;
+        dtk_int32 textSizeX;
+        dtk_int32 textSizeY;
         dtk_font_measure_string(pSettingsEditor->pFont, uiScale, pSettingsEditor->pages[i].title, strlen(pSettingsEditor->pages[i].title), &textSizeX, &textSizeY);
 
         float textPosX = penPosX + 8*uiScale;

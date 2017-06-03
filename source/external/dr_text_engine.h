@@ -81,7 +81,7 @@ typedef struct
 } drte_rect;
 
 
-typedef void   (* drte_engine_on_measure_string_proc)(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut);
+typedef void   (* drte_engine_on_measure_string_proc)(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textLength, int* pWidthOut, int* pHeightOut);
 typedef void   (* drte_engine_on_get_cursor_position_from_point_proc)(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
 typedef void   (* drte_engine_on_get_cursor_position_from_char_proc)(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 typedef dr_bool32   (* drte_engine_on_get_next_highlight_proc)(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData);
@@ -1601,7 +1601,7 @@ float drte_engine__measure_segment(drte_view* pView, drte_segment* pSegment)
     assert(pEngine != NULL);
 
 
-    float segmentWidth = 0;
+    dtk_int32 segmentWidth = 0;
     if (pSegment->iCharEnd > pSegment->iCharBeg) {
         uint32_t c = drte_engine_get_utf32(pEngine, pSegment->iCharBeg);
         if (c == '\t') {
@@ -1610,12 +1610,12 @@ float drte_engine__measure_segment(drte_view* pView, drte_segment* pSegment)
             size_t tabCount = pSegment->iCharEnd - pSegment->iCharBeg;
             float nextTabPos = (float)((int)(pSegment->posX / tabWidth) + 1) * tabWidth;
             float distanceToNextTab = nextTabPos - pSegment->posX;
-            segmentWidth = distanceToNextTab + ((tabCount-1) * tabWidth);
+            segmentWidth = (dtk_int32)(distanceToNextTab + ((tabCount-1) * tabWidth));
         } else if (pSegment->iCharBeg == pSegment->iLineCharEnd) {
             segmentWidth = 0;
         } else {
             // It's normal text. We need to refer to the backend for measuring.
-            float unused;
+            dtk_int32 unused;
             drte_style_token fgStyleToken = drte_engine__get_style_token(pEngine, pSegment->fgStyleSlot);
             if (pEngine->onMeasureString && fgStyleToken) {
                 pEngine->onMeasureString(pEngine, fgStyleToken, pView->scale, pEngine->text + pSegment->iCharBeg, pSegment->iCharEnd - pSegment->iCharBeg, &segmentWidth, &unused);
@@ -1623,7 +1623,7 @@ float drte_engine__measure_segment(drte_view* pView, drte_segment* pSegment)
         }
     }
 
-    return segmentWidth;
+    return (float)segmentWidth;
 }
 
 dr_bool32 drte_engine__next_segment(drte_view* pView, drte_segment* pSegment)
@@ -4015,8 +4015,8 @@ void drte_view_paint_line_numbers(drte_view* pView, float lineNumbersWidth, floa
             char iLineStr[64];
             snprintf(iLineStr, sizeof(iLineStr), "%d", (int)lineNumber);   // TODO: drte_string_to_int(). This snprintf() has shown up in profiling so best fix this.
 
-            float textWidth = 0;
-            float textHeight = 0;
+            dtk_int32 textWidth = 0;
+            dtk_int32 textHeight = 0;
             if (pView->pEngine->onMeasureString && fgStyleToken) {
                 pView->pEngine->onMeasureString(pView->pEngine, fgStyleToken, pView->scale, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
             }

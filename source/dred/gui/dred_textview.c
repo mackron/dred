@@ -110,7 +110,7 @@ void dred_textview__refresh_style(dred_textview* pTextView)
 }
 
 
-void dred_textview_engine__on_measure_string_proc(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textLength, float* pWidthOut, float* pHeightOut)
+void dred_textview_engine__on_measure_string_proc(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textLength, dtk_int32* pWidthOut, dtk_int32* pHeightOut)
 {
     (void)pEngine;
     dtk_font_measure_string(((dred_text_style*)styleToken)->pFont, scale, text, textLength, pWidthOut, pHeightOut);

@@ -858,8 +858,8 @@ DRED_GUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, d
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTabBar));
 
-    float textWidth  = 0;
-    float textHeight = 0;
+    dtk_int32 textWidth  = 0;
+    dtk_int32 textHeight = 0;
 
     if (pTab != NULL) {
         dtk_font_measure_string(pTabBar->pFont, uiScale, pTab->text, strlen(pTab->text), &textWidth, &textHeight);
@@ -931,8 +931,8 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
     // Close button.
     if (pTabBar->isShowingCloseButton && pTabBar->pCloseButtonImage != NULL)
     {
-        float textWidth  = 0;
-        float textHeight = 0;
+        dtk_int32 textWidth  = 0;
+        dtk_int32 textHeight = 0;
         if (pTab != NULL) {
             dtk_font_measure_string(pTabBar->pFont, uiScale, pTab->text, strlen(pTab->text), &textWidth, &textHeight);
         }
@@ -945,8 +945,8 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
         dred_gui_get_image_size(pTabBar->pCloseButtonImage, &iconWidth, &iconHeight);
 
         dred_gui_draw_image_args args;
-        args.dstX            = closeButtonPosX;
-        args.dstY            = closeButtonPosY;
+        args.dstX            = (float)closeButtonPosX;
+        args.dstY            = (float)closeButtonPosY;
         args.dstWidth        = (float)iconWidth;
         args.dstHeight       = (float)iconHeight;
         args.srcX            = 0;
@@ -965,7 +965,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
 
 
         // Space between the text and the padding.
-        dred_control_draw_rect(DRED_CONTROL(pTabBar), dred_make_rect(textPosX + textWidth, textPosY, closeButtonPosX, textPosY + textHeight), bgcolor, pSurface);
+        dred_control_draw_rect(DRED_CONTROL(pTabBar), dred_make_rect(textPosX + textWidth, textPosY, (float)closeButtonPosX, textPosY + textHeight), bgcolor, pSurface);
     }
 }
 

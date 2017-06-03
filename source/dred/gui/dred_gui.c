@@ -2868,7 +2868,7 @@ dr_bool32 dred_gui_get_glyph_metrics(dred_gui_font* pFont, float scale, unsigned
     return pFont->pGUI->paintingCallbacks.getGlyphMetrics(pFont->pInternalFont, scale, utf32, pMetricsOut);
 }
 
-dr_bool32 dred_gui_measure_string(dred_gui_font* pFont, float scale, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut)
+dr_bool32 dred_gui_measure_string(dred_gui_font* pFont, float scale, const char* text, size_t textLengthInBytes, dtk_int32* pWidthOut, dtk_int32* pHeightOut)
 {
     if (pFont == NULL) {
         return DR_FALSE;
@@ -2885,7 +2885,7 @@ dr_bool32 dred_gui_measure_string(dred_gui_font* pFont, float scale, const char*
             *pWidthOut = 0;
         }
         if (pHeightOut) {
-            *pHeightOut = (float)metrics.lineHeight;
+            *pHeightOut = metrics.lineHeight;
         }
 
         return DR_TRUE;
@@ -3283,7 +3283,7 @@ void dred_gui_delete_font_dtk(dtk_font*);
 unsigned int dred_gui_get_font_size_dtk(dtk_font*);
 dr_bool32 dred_gui_get_font_metrics_dtk(dtk_font*, float, dtk_font_metrics*);
 dr_bool32 dred_gui_get_glyph_metrics_dtk(dtk_font*, float, unsigned int, dtk_glyph_metrics*);
-dr_bool32 dred_gui_measure_string_dtk(dtk_font*, float, const char*, size_t, float*, float*);
+dr_bool32 dred_gui_measure_string_dtk(dtk_font*, float, const char*, size_t, dtk_int32*, dtk_int32*);
 dr_bool32 dred_gui_get_text_cursor_position_from_point_dtk(dtk_font*, float, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
 dr_bool32 dred_gui_get_text_cursor_position_from_char_dtk(dtk_font*, float, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
@@ -3436,7 +3436,7 @@ dr_bool32 dred_gui_get_glyph_metrics_dtk(dtk_font* pFont, float scale, unsigned 
     return dtk_font_get_glyph_metrics(pFont, scale, utf32, pMetricsOut) == DTK_SUCCESS;
 }
 
-dr_bool32 dred_gui_measure_string_dtk(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut)
+dr_bool32 dred_gui_measure_string_dtk(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32* pWidthOut, dtk_int32* pHeightOut)
 {
     return dtk_font_measure_string(pFont, scale, text, textSizeInBytes, pWidthOut, pHeightOut) == DTK_SUCCESS;
 }

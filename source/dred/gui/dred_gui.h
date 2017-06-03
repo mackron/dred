@@ -280,7 +280,7 @@ typedef void              (* dred_gui_delete_font_proc)                        (
 typedef unsigned int      (* dred_gui_get_font_size_proc)                      (dtk_font* pFont);
 typedef dr_bool32              (* dred_gui_get_font_metrics_proc)                   (dtk_font* pFont, float scale, dtk_font_metrics* pMetricsOut);
 typedef dr_bool32              (* dred_gui_get_glyph_metrics_proc)                  (dtk_font* pFont, float scale, unsigned int utf32, dtk_glyph_metrics* pMetricsOut);
-typedef dr_bool32              (* dred_gui_measure_string_proc)                     (dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float* pWidthOut, float* pHeightOut);
+typedef dr_bool32              (* dred_gui_measure_string_proc)                     (dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32* pWidthOut, dtk_int32* pHeightOut);
 typedef dr_bool32              (* dred_gui_get_text_cursor_position_from_point_proc)(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
 typedef dr_bool32              (* dred_gui_get_text_cursor_position_from_char_proc) (dtk_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
@@ -1087,7 +1087,7 @@ dr_bool32 dred_gui_get_glyph_metrics(dred_gui_font* pFont, float scale, unsigned
 ///
 /// @remarks
 ///     When the length of the text is 0, the width will be set to 0 and the height will be set to the line height.
-dr_bool32 dred_gui_measure_string(dred_gui_font* pFont, float scale, const char* text, size_t textLengthInBytes, float* pWidthOut, float* pHeightOut);
+dr_bool32 dred_gui_measure_string(dred_gui_font* pFont, float scale, const char* text, size_t textLengthInBytes, dtk_int32* pWidthOut, dtk_int32* pHeightOut);
 
 /// Retrieves the position to place a text cursor based on the given point for the given string when drawn with the given font.
 dr_bool32 dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);

@@ -318,7 +318,7 @@ dtk_result dtk_font_get_glyph_metrics__gdi(dtk_font* pFont, float scale, dtk_uin
     return result;
 }
 
-dtk_result dtk_font_measure_string__gdi(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float* pWidth, float* pHeight)
+dtk_result dtk_font_measure_string__gdi(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32* pWidth, dtk_int32* pHeight)
 {
     dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
     if (pSubfont == NULL) {
@@ -333,8 +333,8 @@ dtk_result dtk_font_measure_string__gdi(dtk_font* pFont, float scale, const char
         if (textW != NULL) {
             SIZE sizeWin32;
             if (GetTextExtentPoint32W((HDC)pFont->pTK->win32.hGraphicsDC, textW, (int)textWLength, &sizeWin32)) {
-                if (pWidth)  *pWidth  = (float)sizeWin32.cx;
-                if (pHeight) *pHeight = (float)sizeWin32.cy;
+                if (pWidth)  *pWidth  = (dtk_int32)sizeWin32.cx;
+                if (pHeight) *pHeight = (dtk_int32)sizeWin32.cy;
                 result = DTK_SUCCESS;
             }
         }
@@ -895,7 +895,7 @@ dtk_result dtk_font_get_glyph_metrics__cairo(dtk_font* pFont, float scale, dtk_u
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_font_measure_string__cairo(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float* pWidth, float* pHeight)
+dtk_result dtk_font_measure_string__cairo(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32* pWidth, dtk_int32* pHeight)
 {
     dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
     if (pSubfont == NULL) {
@@ -920,11 +920,11 @@ dtk_result dtk_font_measure_string__cairo(dtk_font* pFont, float scale, const ch
     cairo_scaled_font_text_extents((cairo_scaled_font_t*)pSubfont->cairo.pFont, textNT, &textMetrics);
 
     if (pWidth) {
-        *pWidth = textMetrics.x_advance;
+        *pWidth = (dtk_int32)textMetrics.x_advance;
     }
     if (pHeight) {
         //*pHeight = textMetrics.height;
-        *pHeight = pSubfont->cairo.metrics.ascent + pSubfont->cairo.metrics.descent;
+        *pHeight = (dtk_int32)(pSubfont->cairo.metrics.ascent + pSubfont->cairo.metrics.descent);
     }
 
 
@@ -1433,7 +1433,7 @@ dtk_result dtk_font_get_glyph_metrics(dtk_font* pFont, float scale, dtk_uint32 u
     return result;
 }
 
-dtk_result dtk_font_measure_string(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float* pWidth, float* pHeight)
+dtk_result dtk_font_measure_string(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32* pWidth, dtk_int32* pHeight)
 {
     if (pWidth) *pWidth = 0;
     if (pHeight) *pHeight = 0;

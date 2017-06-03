@@ -6,23 +6,23 @@ typedef struct
     dtk_int32 posY;
     dtk_uint32 width;
     dtk_uint32 height;
-    float textWidth;
-    float textHeight;
+    dtk_int32 textWidth;
+    dtk_int32 textHeight;
     dtk_tabbar_tab* pTab;
-    dtk_bool32 _isLast;         // Internal use only. Used to indicate whether or not this iterator represents the last tab.
-    dtk_int32 _nextIndex;       // Internal use only.
-    float _longestTextWidth;    // Internal use only.
+    dtk_bool32 _isLast;             // Internal use only. Used to indicate whether or not this iterator represents the last tab.
+    dtk_int32 _nextIndex;           // Internal use only.
+    dtk_int32 _longestTextWidth;    // Internal use only.
 } dtk_tabbar__iterator;
 
-float dtk_tabbar__find_longest_tab_text(dtk_tabbar* pTabBar)
+dtk_int32 dtk_tabbar__find_longest_tab_text(dtk_tabbar* pTabBar)
 {
-    float longestWidth = 0;
+    dtk_int32 longestWidth = 0;
 
     for (dtk_uint32 iTab = 0; iTab < pTabBar->tabCount; ++iTab) {
         dtk_tabbar_tab* pTab = &pTabBar->pTabs[iTab];
 
-        float textWidth;
-        float textHeight;
+        dtk_int32 textWidth;
+        dtk_int32 textHeight;
         dtk_font_measure_string(dtk_tabbar_get_font(pTabBar), 1, pTab->text, strlen(pTab->text), &textWidth, &textHeight);
 
         if (longestWidth < textWidth) {
@@ -56,8 +56,8 @@ dtk_bool32 dtk_tabbar__next_tab(dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIter
     dtk_uint32 prevTabHeight = pIterator->height;
 
     // The size and position of each tab depends on the flow and text direction of the tabbar.
-    float textWidth;
-    float textHeight;
+    dtk_int32 textWidth;
+    dtk_int32 textHeight;
     dtk_font_measure_string(dtk_tabbar_get_font(pTabBar), 1, pIterator->pTab->text, strlen(pIterator->pTab->text), &textWidth, &textHeight);
     pIterator->textWidth  = textWidth;       // <-- Set these before the adjustment below. Want this to measure the actual text and not the excess from stretching.
     pIterator->textHeight = textHeight;
