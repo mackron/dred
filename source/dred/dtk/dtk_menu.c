@@ -654,8 +654,8 @@ dtk_result dtk_menu_remove_item__gtk(dtk_menu* pMenu, dtk_uint32 index)
         return DTK_ERROR;
     }
 
-    gtk_widget_destroy(pItem);
     free(g_object_get_data(G_OBJECT(pItem), DTK_MENU_ITEM_DATA_KEY));
+    gtk_widget_destroy(pItem);
 
     dtk_assert(pMenu->gtk.itemCount > 0);
     pMenu->gtk.itemCount -= 1;

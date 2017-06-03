@@ -43,9 +43,10 @@ void dred_refresh_recent_files_menu(dred_context* pDred)
         }
     } else {
         // Remove excess.
+        dtk_uint32 iItemToRemove = newCount;
         for (dtk_uint32 iItem = newCount; iItem < oldCount; ++iItem) {
-            dtk_menu_remove_item(&pDred->menus.recentFiles, iItem);
             dred_menu_item_table_unbind(&pDred->menuItemTable, DRED_MENU_ITEM_ID_RECENT_FILE_0 + iItem);
+            dtk_menu_remove_item(&pDred->menus.recentFiles, iItemToRemove);
         }
     }
 
@@ -102,9 +103,10 @@ void dred_refresh_favourite_files_menu(dred_context* pDred)
         }
     } else {
         // Remove excess.
+        dtk_uint32 iItemToRemove = newCount;
         for (dtk_uint32 iItem = newCount; iItem < oldCount; ++iItem) {
-            dtk_menu_remove_item(&pDred->menus.favouriteFiles, iItem);
             dred_menu_item_table_unbind(&pDred->menuItemTable, DRED_MENU_ITEM_ID_FAVOURITE_FILE_0 + iItem);
+            dtk_menu_remove_item(&pDred->menus.favouriteFiles, iItemToRemove);
         }
     }
 
