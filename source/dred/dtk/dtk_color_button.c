@@ -332,7 +332,7 @@ void dtk_color_button_set_color(dtk_color_button* pButton, dtk_color color, dtk_
 
     dtk_event e = dtk_event_init(DTK_CONTROL(pButton)->pTK, DTK_EVENT_COLOR_BUTTON_COLOR_CHANGED, DTK_CONTROL(pButton));
     e.colorButton.color = color;
-    dtk_post_local_event(e.pTK, &e);
+    dtk_post_local_event(&e);
 }
 
 dtk_color dtk_color_button_get_color(dtk_color_button* pButton)

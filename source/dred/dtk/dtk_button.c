@@ -88,7 +88,7 @@ void dtk_button__on_mouse_button_up(dtk_button* pButton, int mouseButton, int mo
 
             if (dtk_control_is_under_mouse(DTK_CONTROL(pButton))) {
                 dtk_event e = dtk_event_init(DTK_CONTROL(pButton)->pTK, DTK_EVENT_BUTTON_PRESSED, DTK_CONTROL(pButton));
-                dtk_post_local_event(e.pTK, &e);
+                dtk_post_local_event(&e);
             }
         }
     }

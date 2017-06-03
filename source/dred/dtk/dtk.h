@@ -556,11 +556,11 @@ void dtk_flush_event_queue(dtk_context* pTK);
 // Posts an event to the queue which will later handled by _only_ the event handler of the respective control.
 //
 // To handle the event immediately, use dtk_handle_control_event().
-dtk_result dtk_post_local_event(dtk_context* pTK, dtk_event* pEvent);
+dtk_result dtk_post_local_event(dtk_event* pEvent);
 
 // Same as dtk_post_local_event(), except handles it immediately instead of posting it to the queue. The return
 // value is the value returned by the event handler.
-dtk_bool32 dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent);
+dtk_bool32 dtk_handle_local_event(dtk_event* pEvent);
 
 // Posts a custom event.
 //

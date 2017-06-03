@@ -179,7 +179,7 @@ dtk_result dtk_control_uninit(dtk_control* pControl)
                     e.mouseMove.x = pTK->lastMousePosX;
                     e.mouseMove.y = pTK->lastMousePosY;
                     dtk_control_absolute_to_relative(pEventReceiver, &e.mouseMove.x, &e.mouseMove.y);
-                    dtk_handle_local_event(pTK, &e);
+                    dtk_handle_local_event(&e);
                 }
             }
 
@@ -245,7 +245,7 @@ dtk_result dtk_control_post_event(dtk_control* pControl, dtk_event* pEvent)
         pEvent->pControl = pControl;
     }
     
-    return dtk_post_local_event(pControl->pTK, pEvent);
+    return dtk_post_local_event(pEvent);
 }
 
 dtk_result dtk_control_set_event_handler(dtk_control* pControl, dtk_event_proc onEvent)
@@ -368,7 +368,7 @@ dtk_result dtk_control_set_size(dtk_control* pControl, dtk_int32 width, dtk_int3
             dtk_event e = dtk_event_init(pControl->pTK, DTK_EVENT_SIZE, pControl);
             e.size.width  = pControl->width;
             e.size.height = pControl->height;
-            dtk_post_local_event(pControl->pTK, &e);
+            dtk_post_local_event(&e);
         }
     }
 
@@ -426,7 +426,7 @@ dtk_result dtk_control_set_absolute_position(dtk_control* pControl, dtk_int32 po
                 dtk_event e = dtk_event_init(pControl->pTK, DTK_EVENT_MOVE, pControl);
                 e.move.x = newRelativePosX;
                 e.move.y = newRelativePosY;
-                dtk_post_local_event(pControl->pTK, &e);
+                dtk_post_local_event(&e);
             }
         }
 
@@ -1057,5 +1057,5 @@ dtk_result dtk_control_refresh_layout(dtk_control* pControl)
     if (pControl == NULL) return DTK_INVALID_ARGS;
 
     dtk_event e = dtk_event_init(pControl->pTK, DTK_EVENT_REFRESH_LAYOUT, pControl);
-    return dtk_handle_local_event(pControl->pTK, &e);
+    return dtk_handle_local_event(&e);
 }

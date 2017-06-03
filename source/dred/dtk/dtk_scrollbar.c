@@ -416,7 +416,7 @@ void dtk_scrollbar_scroll_to(dtk_scrollbar* pScrollbar, dtk_int32 newScrollPos)
 
         dtk_event e = dtk_event_init(DTK_CONTROL(pScrollbar)->pTK, DTK_EVENT_SCROLLBAR_SCROLL, DTK_CONTROL(pScrollbar));
         e.scrollbar.scrollPos = pScrollbar->scrollPos;
-        dtk_post_local_event(e.pTK, &e);
+        dtk_post_local_event(&e);
     }
 }
 

@@ -126,13 +126,13 @@ dtk_result dtk__preprocess_event(dtk_event* pEvent)  // Returns DTK_CANCELLED if
         if (pOldCapturedControl != NULL) {
             dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_KEYBOARD, pOldCapturedControl);
             eRelease.releaseKeyboard.pNewCapturedControl = pNewCapturedControl;
-            dtk_handle_local_event(pTK, &eRelease);
+            dtk_handle_local_event(&eRelease);
         }
 
         if (pNewCapturedControl != NULL) {
             dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_KEYBOARD, pNewCapturedControl);
             eCapture.captureKeyboard.pOldCapturedControl = pOldCapturedControl;
-            dtk_handle_local_event(pTK, &eCapture);
+            dtk_handle_local_event(&eCapture);
         }
 
         // If the windows are different make sure the new one is given capture.
@@ -173,13 +173,13 @@ dtk_result dtk__preprocess_event(dtk_event* pEvent)  // Returns DTK_CANCELLED if
         if (pOldCapturedControl != NULL) {
             dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_MOUSE, pOldCapturedControl);
             eRelease.releaseMouse.pNewCapturedControl = pNewCapturedControl;
-            dtk_handle_local_event(pTK, &eRelease);
+            dtk_handle_local_event(&eRelease);
         }
 
         if (pNewCapturedControl != NULL) {
             dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_MOUSE, pNewCapturedControl);
             eCapture.captureMouse.pOldCapturedControl = pOldCapturedControl;
-            dtk_handle_local_event(pTK, &eCapture);
+            dtk_handle_local_event(&eCapture);
         }
 
         // If the windows are different make sure the new one is given capture.
@@ -435,7 +435,7 @@ LRESULT CALLBACK dtk_MessagingWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam
             dtk_event* pEvent = (dtk_event*)lParam;
             dtk_assert(pEvent != NULL);
 
-            dtk_handle_local_event(pEvent->pTK, pEvent);
+            dtk_handle_local_event(pEvent);
             dtk_free(pEvent);
         } break;
 
@@ -591,15 +591,18 @@ dtk_result dtk_next_event__win32(dtk_context* pTK, dtk_bool32 blocking)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_post_local_event__win32(dtk_context* pTK, dtk_event* pEvent)
+dtk_result dtk_post_local_event__win32(dtk_event* pEvent)
 {
+    dtk_assert(pEvent != NULL);
+    dtk_assert(pEvent->pTK != NULL);
+
     dtk_event* pEventCopy = (dtk_event*)dtk_malloc(sizeof(*pEventCopy));
     if (pEventCopy == NULL) {
         return DTK_OUT_OF_MEMORY;
     }
 
     *pEventCopy = *pEvent;
-    PostMessageA((HWND)pTK->win32.hMessagingWindow, DTK_WM_LOCAL, (WPARAM)0, (LPARAM)pEventCopy);
+    PostMessageA((HWND)pEvent->pTK->win32.hMessagingWindow, DTK_WM_LOCAL, (WPARAM)0, (LPARAM)pEventCopy);
 
     return DTK_SUCCESS;
 }
@@ -1077,13 +1080,13 @@ dtk_result dtk_next_event__gtk(dtk_context* pTK, dtk_bool32 blocking)
 
 static gboolean dtk_post_local_event_cb__gtk(dtk_event* pEvent)
 {
-    dtk_handle_local_event(pEvent->pTK, pEvent);
+    dtk_handle_local_event(pEvent);
 
     dtk_free(pEvent);
     return FALSE;
 }
 
-dtk_result dtk_post_local_event__gtk(dtk_context* pTK, dtk_event* pEvent)
+dtk_result dtk_post_local_event__gtk(dtk_event* pEvent)
 {
     // We need a copy of the data.
     dtk_event* pEventCopy = (dtk_event*)dtk_malloc(sizeof(*pEventCopy));
@@ -1361,7 +1364,7 @@ dtk_result dtk__release_mouse_window__gtk(dtk_context* pTK)
     // work around this we just post it manually.
     dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_MOUSE, DTK_CONTROL(pTK->pWindowWithMouseCapture));
     eRelease.releaseMouse.pNewCapturedControl = NULL;
-    dtk_post_local_event(pTK, &eRelease);
+    dtk_post_local_event(&eRelease);
 
     return DTK_SUCCESS;
 }
@@ -1583,9 +1586,9 @@ void dtk_flush_event_queue(dtk_context* pTK)
     }
 }
 
-dtk_result dtk_post_local_event(dtk_context* pTK, dtk_event* pEvent)
+dtk_result dtk_post_local_event(dtk_event* pEvent)
 {
-    if (pTK == NULL || pEvent == NULL) return DTK_INVALID_ARGS;
+    if (pEvent == NULL || pEvent->pTK == NULL) return DTK_INVALID_ARGS;
 
     if (pEvent->pControl != NULL && pEvent->pControl->isUninitialized) {
         return DTK_INVALID_ARGS;    // Cannot post an event for controls that are being uninitialised.
@@ -1593,22 +1596,22 @@ dtk_result dtk_post_local_event(dtk_context* pTK, dtk_event* pEvent)
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
-    if (pTK->platform == dtk_platform_win32) {
-        result = dtk_post_local_event__win32(pTK, pEvent);
+    if (pEvent->pTK->platform == dtk_platform_win32) {
+        result = dtk_post_local_event__win32(pEvent);
     }
 #endif
 #ifdef DTK_GTK
-    if (pTK->platform == dtk_platform_gtk) {
-        result = dtk_post_local_event__gtk(pTK, pEvent);
+    if (pEvent->pTK->platform == dtk_platform_gtk) {
+        result = dtk_post_local_event__gtk(pEvent);
     }
 #endif
 
     return result;
 }
 
-dtk_bool32 dtk_handle_local_event(dtk_context* pTK, dtk_event* pEvent)
+dtk_bool32 dtk_handle_local_event(dtk_event* pEvent)
 {
-    if (pTK == NULL || pEvent == NULL) return DTK_FALSE;
+    if (pEvent == NULL || pEvent->pTK == NULL) return DTK_FALSE;
 
     // Make sure the event is cancelled if the associated control has been uninitialized.
     dtk_result result = dtk__preprocess_event(pEvent);
@@ -1725,7 +1728,7 @@ dtk_bool32 dtk_default_event_handler(dtk_event* pEvent)
         default: break;
     }
 
-    return dtk_handle_local_event(pTK, pEvent);
+    return dtk_handle_local_event(pEvent);
 }
 
 dtk_result dtk_post_quit_event(dtk_context* pTK, int exitCode)
@@ -1897,7 +1900,7 @@ dtk_result dtk_capture_keyboard(dtk_context* pTK, dtk_control* pControl)
     // All we do here is post a capture change event. When the event is taken off the event queue and about to be handled, it will
     // be transformed based on the state at that point in time. Look at dtk__preprocess_event().
     dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CHANGE_KEYBOARD_CAPTURE, pControl);
-    return dtk_post_local_event(pTK, &eCapture);
+    return dtk_post_local_event(&eCapture);
 }
 
 dtk_result dtk_release_keyboard(dtk_context* pTK)
@@ -1924,7 +1927,7 @@ dtk_result dtk_capture_mouse(dtk_context* pTK, dtk_control* pControl)
     // All we do here is post a capture change event. When the event is taken off the event queue and about to be handled, it will
     // be transformed based on the state at that point in time. Look at dtk__preprocess_event().
     dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CHANGE_MOUSE_CAPTURE, pControl);
-    return dtk_post_local_event(pTK, &eCapture);
+    return dtk_post_local_event(&eCapture);
 }
 
 dtk_result dtk_release_mouse(dtk_context* pTK)
@@ -2105,7 +2108,7 @@ dtk_result dtk__capture_mouse_window(dtk_context* pTK, dtk_window* pWindow)
 
     dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_MOUSE, DTK_CONTROL(pWindow));
     eCapture.captureMouse.pOldCapturedControl = pTK->pControlWithMouseCapture;
-    dtk_post_local_event(pTK, &eCapture);
+    dtk_post_local_event(&eCapture);
 
     return result;
 }
@@ -2141,7 +2144,7 @@ void dtk__post_mouse_leave_event_recursive(dtk_context* pTK, dtk_control* pNewCo
         dtk_bool32 isOldControlUnderMouse = pNewControlUnderMouse == pOldAncestor || dtk_control_is_ancestor(pOldAncestor, pNewControlUnderMouse);
         if (!isOldControlUnderMouse) {
             dtk_event e = dtk_event_init(pTK, DTK_EVENT_MOUSE_LEAVE, pOldAncestor);
-            dtk_handle_local_event(pTK, &e);
+            dtk_handle_local_event(&e);
         }
 
         pOldAncestor = pOldAncestor->pParent;
@@ -2159,6 +2162,6 @@ void dtk__post_mouse_enter_event_recursive(dtk_context* pTK, dtk_control* pNewCo
     dtk_bool32 wasNewControlUnderMouse = pOldControlUnderMouse == pNewControlUnderMouse || dtk_control_is_ancestor(pNewControlUnderMouse, pOldControlUnderMouse);
     if (!wasNewControlUnderMouse) {
         dtk_event e = dtk_event_init(pTK, DTK_EVENT_MOUSE_ENTER, pNewControlUnderMouse);
-        dtk_handle_local_event(pTK, &e);
+        dtk_handle_local_event(&e);
     }
 }

@@ -355,7 +355,7 @@ void dtk_checkbox_set_checked(dtk_checkbox* pCheckbox, dtk_bool32 checked, dtk_b
     if (!blockEvent) {
         dtk_event e = dtk_event_init(DTK_CONTROL(pCheckbox)->pTK, DTK_EVENT_CHECKBOX_CHECK_CHANGED, DTK_CONTROL(pCheckbox));
         e.checkbox.checked = checked;
-        dtk_post_local_event(e.pTK, &e);
+        dtk_post_local_event(&e);
     }
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pCheckbox), dtk_checkbox__get_box_rect(pCheckbox));

@@ -1957,7 +1957,7 @@ void dtk_window__get_and_set_monitor(dtk_window* pWindow)
                 e.dpiChanged.suggestedPosY = e.dpiChanged.suggestedPosY - ((dtk_int32)e.dpiChanged.suggestedHeight - (dtk_int32)currentHeight);
             }
 
-            dtk_post_local_event(DTK_CONTROL(pWindow)->pTK, &e);
+            dtk_post_local_event(&e);
         }
     }
 }
@@ -2072,7 +2072,7 @@ dtk_bool32 dtk_window__on_paint_control(dtk_control* pControl, dtk_rect* pRelati
     dtk_event e = *pEvent;
     e.pControl = pControl;
     e.paint.rect = *pRelativeRect;
-    dtk_handle_local_event(e.pTK, &e);
+    dtk_handle_local_event(&e);
 
     return DTK_TRUE;
 }
@@ -2163,7 +2163,7 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
                 e.pControl = pEventReceiver;
                 e.mouseMove.x = relativeMousePosX;
                 e.mouseMove.y = relativeMousePosY;
-                dtk_handle_local_event(pTK, &e);
+                dtk_handle_local_event(&e);
             }
         } break;
 
@@ -2189,7 +2189,7 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
                 e.pControl = pEventReceiver;
                 e.mouseButton.x = relativeMousePosX;
                 e.mouseButton.y = relativeMousePosY;
-                dtk_handle_local_event(pTK, &e);
+                dtk_handle_local_event(&e);
             }
         } break;
 
@@ -2213,7 +2213,7 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
                 e.pControl = pEventReceiver;
                 e.mouseWheel.x = relativeMousePosX;
                 e.mouseWheel.y = relativeMousePosY;
-                dtk_handle_local_event(pTK, &e);
+                dtk_handle_local_event(&e);
             }
         } break;
 
@@ -2224,7 +2224,7 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
             if (pTK->pControlWithKeyboardCapture != NULL && pTK->pControlWithKeyboardCapture != DTK_CONTROL(pWindow)) {
                 dtk_event e = *pEvent;
                 e.pControl = pTK->pControlWithKeyboardCapture;
-                dtk_handle_local_event(pTK, &e);
+                dtk_handle_local_event(&e);
             }
         } break;
 
@@ -2237,7 +2237,7 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
 
                     dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_KEYBOARD, pWindow->pLastDescendantWithKeyboardFocus);
                     eCapture.captureKeyboard.pOldCapturedControl = pTK->pControlWithKeyboardCapture;
-                    dtk_handle_local_event(pTK, &eCapture);
+                    dtk_handle_local_event(&eCapture);
                 }
             }
 
@@ -2256,7 +2256,7 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
 
                     dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_KEYBOARD, pWindow->pLastDescendantWithKeyboardFocus);
                     eRelease.releaseKeyboard.pNewCapturedControl = NULL;
-                    dtk_handle_local_event(pTK, &eRelease);
+                    dtk_handle_local_event(&eRelease);
                 }
             }
 
@@ -2272,7 +2272,7 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
 
                     dtk_event eCapture = dtk_event_init(pTK, DTK_EVENT_CAPTURE_MOUSE, pWindow->pLastDescendantWithMouseCapture);
                     eCapture.captureMouse.pOldCapturedControl = pTK->pControlWithMouseCapture;
-                    dtk_post_local_event(pTK, &eCapture);   // Note that we post the event rather than handle it straight away because we need to ensure the event handler does not change the capture mid-event-handling due to a restriction with Win32 (and possibly others).
+                    dtk_post_local_event(&eCapture);   // Note that we post the event rather than handle it straight away because we need to ensure the event handler does not change the capture mid-event-handling due to a restriction with Win32 (and possibly others).
                 }
             }
 
@@ -2288,7 +2288,7 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
                 
                     dtk_event eRelease = dtk_event_init(pTK, DTK_EVENT_RELEASE_MOUSE, pWindow->pLastDescendantWithMouseCapture);
                     eRelease.releaseMouse.pNewCapturedControl = NULL;
-                    dtk_post_local_event(pTK, &eRelease);   // Note that we post the event rather than handle it straight away because we need to ensure the event handler does not change the capture mid-event-handling due to a restriction with Win32 (and possibly others).
+                    dtk_post_local_event(&eRelease);   // Note that we post the event rather than handle it straight away because we need to ensure the event handler does not change the capture mid-event-handling due to a restriction with Win32 (and possibly others).
                 }
             }
 

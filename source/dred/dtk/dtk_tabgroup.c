@@ -155,7 +155,7 @@ dtk_bool32 dtk_tabgroup_tabbar_event_handler(dtk_event* pEvent)
             e.type = DTK_EVENT_TABGROUP_CHANGE_TAB;
             e.tabgroup.oldTabIndex = e.tabbar.oldTabIndex;
             e.tabgroup.newTabIndex = e.tabbar.newTabIndex;
-            if (!dtk_handle_local_event(pEvent->pTK, &e)) {
+            if (!dtk_handle_local_event(&e)) {
                 return DTK_FALSE;
             }
         } break;
