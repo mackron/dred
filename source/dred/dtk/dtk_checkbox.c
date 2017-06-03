@@ -254,9 +254,7 @@ void dtk_checkbox_set_text(dtk_checkbox* pCheckbox, const char* text)
 
 void dtk_checkbox_enable_auto_size(dtk_checkbox* pCheckbox)
 {
-    if (pCheckbox == NULL) {
-        return;
-    }
+    if (pCheckbox == NULL) return;
 
     pCheckbox->isAutoSizeEnabled = DR_TRUE;
     dtk_checkbox__refresh_layout(pCheckbox);
@@ -264,20 +262,15 @@ void dtk_checkbox_enable_auto_size(dtk_checkbox* pCheckbox)
 
 void dtk_checkbox_disable_auto_size(dtk_checkbox* pCheckbox)
 {
-    if (pCheckbox == NULL) {
-        return;
-    }
+    if (pCheckbox == NULL) return;
 
     pCheckbox->isAutoSizeEnabled = DR_FALSE;
-
     dtk_checkbox__refresh_layout(pCheckbox);
 }
 
 void dtk_checkbox_auto_size(dtk_checkbox* pCheckbox)
 {
-    if (pCheckbox == NULL) {
-        return;
-    }
+    if (pCheckbox == NULL) return;
 
     dtk_checkbox__refresh_layout(pCheckbox);
 }
@@ -285,9 +278,7 @@ void dtk_checkbox_auto_size(dtk_checkbox* pCheckbox)
 
 void dtk_checkbox_set_font(dtk_checkbox* pCheckbox, dtk_font* pFont)
 {
-    if (pCheckbox == NULL) {
-        return;
-    }
+    if (pCheckbox == NULL) return;
 
     if (pCheckbox->pFont == pFont) {
         return;
@@ -299,9 +290,7 @@ void dtk_checkbox_set_font(dtk_checkbox* pCheckbox, dtk_font* pFont)
 
 void dtk_checkbox_set_background_color(dtk_checkbox* pCheckbox, dtk_color color)
 {
-    if (pCheckbox == NULL) {
-        return;
-    }
+    if (pCheckbox == NULL) return;
 
     pCheckbox->bgColor = color;
     dtk_control_scheduled_redraw(DTK_CONTROL(pCheckbox), dtk_control_get_local_rect(DTK_CONTROL(pCheckbox)));
@@ -325,12 +314,9 @@ void dtk_checkbox_set_border_width(dtk_checkbox* pCheckbox, dtk_int32 width)
 
 void dtk_checkbox_set_padding(dtk_checkbox* pCheckbox, dtk_int32 padding)
 {
-    if (pCheckbox == NULL) {
-        return;
-    }
+    if (pCheckbox == NULL) return;
 
     pCheckbox->padding = padding;
-
     dtk_checkbox__refresh_layout(pCheckbox);
 }
 
@@ -347,9 +333,7 @@ void dtk_checkbox_uncheck(dtk_checkbox* pCheckbox)
 
 void dtk_checkbox_toggle(dtk_checkbox* pCheckbox)
 {
-    if (pCheckbox == NULL) {
-        return;
-    }
+    if (pCheckbox == NULL) return;
     
     if (pCheckbox->isChecked) {
         dtk_checkbox_uncheck(pCheckbox);
@@ -379,19 +363,13 @@ void dtk_checkbox_set_checked(dtk_checkbox* pCheckbox, dtk_bool32 checked, dtk_b
 
 dtk_bool32 dtk_checkbox_is_checked(dtk_checkbox* pCheckbox)
 {
-    if (pCheckbox == NULL) {
-        return DR_FALSE;
-    }
-
+    if (pCheckbox == NULL) return DR_FALSE;
     return pCheckbox->isChecked;
 }
 
 
 void dtk_checkbox_set_on_check_changed(dtk_checkbox* pCheckbox, dtk_checkbox_on_check_changed_proc proc)
 {
-    if (pCheckbox == NULL) {
-        return;
-    }
-
+    if (pCheckbox == NULL) return;
     pCheckbox->onCheckChanged = proc;
 }
