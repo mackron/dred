@@ -1,5 +1,7 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #define DR_IMPLEMENTATION
 #include "../../../../dr_libs/dr.h"
 
@@ -7,12 +9,6 @@
 #include "../external/gb_string.h"
 
 #include "../external/stretchy_buffer.h"
-
-#define NANOSVG_ALL_COLOR_KEYWORDS
-#define NANOSVG_IMPLEMENTATION
-#include "../external/nanosvg.h"
-#define NANOSVGRAST_IMPLEMENTATION
-#include "../external/nanosvgrast.h"
 
 #define DR_WEBGEN_IMPLEMENTATION
 #include "../../../dr_webgen/dr_webgen.h"

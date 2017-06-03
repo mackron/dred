@@ -300,6 +300,22 @@ wchar_t* dtk__mb_to_wchar__win32(dtk_context* pTK, const char* text, size_t text
 dtk_result dtk_win32_error_to_result(DWORD error);
 #endif
 
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable:4456)   // declaration of 'name' hides previous local declaration
+    #pragma warning(disable:4201)   // nonstandard extension used: nameless struct/union
+    #pragma warning(disable:4204)   // nonstandard extension used: non-constant aggregate initializer
+    #pragma warning(disable:4702)   // unreachable code
+#endif
+#define NANOSVG_ALL_COLOR_KEYWORDS
+#define NANOSVG_IMPLEMENTATION
+#include "nanosvg.h"
+#define NANOSVGRAST_IMPLEMENTATION
+#include "nanosvgrast.h"
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif
+
 #include "dtk_rect.c"
 #include "dtk_string.c"
 #include "dtk_threading.c"

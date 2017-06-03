@@ -159,6 +159,9 @@ typedef void (* dtk_log_proc)(dtk_context* pTK, const char* message);
 // almost always want to return true.
 typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 
+#include "nanosvg.h"
+#include "nanosvgrast.h"
+
 #include "dtk_rect.h"
 #include "dtk_string.h"
 #include "dtk_threading.h"
