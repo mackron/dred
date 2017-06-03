@@ -2541,7 +2541,7 @@ void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* p
     }
 
     int iBottomLine = dtk_scrollbar_get_scroll_position(pTextView->pVertScrollbar) + dtk_scrollbar_get_page_size(pTextView->pVertScrollbar) - 1;
-    if (iLine >= iBottomLine) {
+    if (iBottomLine >= 0 && iLine >= iBottomLine) {
         dtk_scrollbar_scroll_to(pTextView->pVertScrollbar, iLine - (dtk_scrollbar_get_page_size(pTextView->pVertScrollbar) - 1) + 1);
     }
 
@@ -2552,12 +2552,13 @@ void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* p
     drte_view_get_cursor_position(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), &cursorPosX, &cursorPosY);
 
     float cursorWidth = drte_view_get_cursor_width(pTextView->pView);
+    float viewSizeX = drte_view_get_size_x(pTextView->pView);
 
     if (cursorPosX < 0) {
         dtk_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_view_get_inner_offset_x(pTextView->pView)));
     }
-    if (cursorPosX >= drte_view_get_size_x(pTextView->pView)) {
-        dtk_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_view_get_inner_offset_x(pTextView->pView) - drte_view_get_size_x(pTextView->pView)) + (int)cursorWidth);
+    if (cursorPosX >= viewSizeX && viewSizeX > 0) {
+        dtk_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_view_get_inner_offset_x(pTextView->pView) - viewSizeX) + (int)cursorWidth);
     }
 
 
@@ -2839,8 +2840,8 @@ void dred_textview__refresh_scrollbar_layouts(dred_textview* pTextView)
     dtk_int32 offsetRight  = (dtk_int32)pTextView->borderWidth;
     dtk_int32 offsetBottom = (dtk_int32)pTextView->borderWidth;
 
-    dtk_uint32 scrollbarSizeH = (dtk_uint32)((dtk_scrollbar_is_thumb_visible(pTextView->pHorzScrollbar) && pTextView->isHorzScrollbarEnabled) ? pTextView->horzScrollbarSize : 0);
-    dtk_uint32 scrollbarSizeV = (dtk_uint32)((dtk_scrollbar_is_thumb_visible(pTextView->pVertScrollbar) && pTextView->isVertScrollbarEnabled) ? pTextView->vertScrollbarSize : 0);
+    dtk_int32 scrollbarSizeH = (dtk_int32)((dtk_scrollbar_is_thumb_visible(pTextView->pHorzScrollbar) && pTextView->isHorzScrollbarEnabled) ? pTextView->horzScrollbarSize : 0);
+    dtk_int32 scrollbarSizeV = (dtk_int32)((dtk_scrollbar_is_thumb_visible(pTextView->pVertScrollbar) && pTextView->isVertScrollbarEnabled) ? pTextView->vertScrollbarSize : 0);
 
     dtk_control_set_size(DTK_CONTROL(pTextView->pVertScrollbar), scrollbarSizeV, dtk_control_get_height(DTK_CONTROL(pTextView)) /*- scrollbarSizeH*/ - (offsetTop + offsetBottom));
     dtk_control_set_size(DTK_CONTROL(pTextView->pHorzScrollbar), dtk_control_get_width(DTK_CONTROL(pTextView)) - scrollbarSizeV - (offsetLeft + offsetRight), scrollbarSizeH);
@@ -2862,8 +2863,8 @@ dred_rect dred_textview__get_scrollbar_dead_space_rect(dred_textview* pTextView)
     dtk_int32 offsetRight  = (dtk_int32)pTextView->borderWidth;
     dtk_int32 offsetBottom = (dtk_int32)pTextView->borderWidth;
 
-    dtk_uint32 scrollbarSizeH = (dtk_uint32)((dtk_control_is_visible(DTK_CONTROL(pTextView->pHorzScrollbar)) && pTextView->isHorzScrollbarEnabled) ? dtk_control_get_width( DTK_CONTROL(pTextView->pHorzScrollbar)) : 0);
-    dtk_uint32 scrollbarSizeV = (dtk_uint32)((dtk_control_is_visible(DTK_CONTROL(pTextView->pVertScrollbar)) && pTextView->isHorzScrollbarEnabled) ? dtk_control_get_height(DTK_CONTROL(pTextView->pVertScrollbar)) : 0);
+    dtk_int32 scrollbarSizeH = ((dtk_control_is_visible(DTK_CONTROL(pTextView->pHorzScrollbar)) && pTextView->isHorzScrollbarEnabled) ? dtk_control_get_width( DTK_CONTROL(pTextView->pHorzScrollbar)) : 0);
+    dtk_int32 scrollbarSizeV = ((dtk_control_is_visible(DTK_CONTROL(pTextView->pVertScrollbar)) && pTextView->isHorzScrollbarEnabled) ? dtk_control_get_height(DTK_CONTROL(pTextView->pVertScrollbar)) : 0);
 
     if (scrollbarSizeH == 0 && scrollbarSizeV == 0) {
         return dred_make_rect(0, 0, 0, 0);
