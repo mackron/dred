@@ -34,16 +34,10 @@ static dtk_bool32 dred_settings_dialog_event_handler(dtk_event* pEvent)
     return dtk_window_default_event_handler(pEvent);
 }
 
-dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred)
+dtk_result dred_settings_dialog_init(dred_context* pDred, dred_settings_dialog* pDialog)
 {
-    if (pDred == NULL) {
-        return NULL;
-    }
-
-    dred_settings_dialog* pDialog = (dred_settings_dialog*)calloc(1, sizeof(*pDialog));
-    if (pDialog == NULL) {
-        return NULL;
-    }
+    if (pDred == NULL) return DTK_INVALID_ARGS;
+    dtk_zero_object(pDialog);
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(&pDred->mainWindow));
 
@@ -51,15 +45,13 @@ dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred)
     dtk_uint32 sizeY = (unsigned int)(DRED_SETTINGS_DIALOG_BASE_SIZE_Y*uiScale);
     dtk_result result = dtk_window_init(&pDred->tk, dred_settings_dialog_event_handler, DTK_CONTROL(&pDred->mainWindow), dtk_window_type_dialog, "Settings", sizeX, sizeY, &pDialog->window);
     if (result != DTK_SUCCESS) {
-        free(pDialog);
-        return NULL;
+        return result;
     }
 
     pDialog->pSettingsEditor = dred_settings_editor_create(pDred, DTK_CONTROL(pDialog), NULL);
     if (pDialog->pSettingsEditor == NULL) {
         dtk_window_uninit(DTK_WINDOW(pDialog));
-        free(pDialog);
-		return NULL;
+		return DTK_ERROR;
     }
 
     dtk_int32 clientSizeX;
@@ -67,20 +59,17 @@ dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred)
     dtk_window_get_client_size(DTK_WINDOW(pDialog), &clientSizeX, &clientSizeY);
     dtk_control_set_size(DTK_CONTROL(pDialog->pSettingsEditor), clientSizeX, clientSizeY);
 
-
-    return pDialog;
+    return DTK_SUCCESS;
 }
 
-void dred_settings_dialog_delete(dred_settings_dialog* pDialog)
+dtk_result dred_settings_dialog_uninit(dred_settings_dialog* pDialog)
 {
-    if (pDialog == NULL) {
-        return;
-    }
+    if (pDialog == NULL) return DTK_INVALID_ARGS;
 
     dred_settings_editor_delete(pDialog->pSettingsEditor);
 
     dtk_window_uninit(DTK_WINDOW(pDialog));
-    free(pDialog);
+    return DTK_SUCCESS;
 }
 
 

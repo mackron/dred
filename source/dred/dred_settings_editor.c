@@ -249,7 +249,7 @@ void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, dtk_
 
 void dred_settings__btn_close__on_pressed(dtk_button* pButton)
 {
-    dred_settings_dialog_hide(dred_get_context_from_control(DTK_CONTROL(pButton))->pSettingsDialog);
+    dred_settings_dialog_hide(&dred_get_context_from_control(DTK_CONTROL(pButton))->settingsDialog);
 }
 
 void dred_settings__btn_choose_font__on_pressed(dtk_button* pButton)

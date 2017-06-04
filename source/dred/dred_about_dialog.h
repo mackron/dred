@@ -7,8 +7,8 @@ typedef struct
     dtk_button closeButton;
 } dred_about_dialog;
 
-dred_about_dialog* dred_about_dialog_create(dred_context* pDred);
-void dred_about_dialog_delete(dred_about_dialog* pDialog);
+dtk_result dred_about_dialog_init(dred_context* pDred, dred_about_dialog* pDialog);
+dtk_result dred_about_dialog_uninit(dred_about_dialog* pDialog);
 
 void dred_about_dialog_show(dred_about_dialog* pDialog);
 void dred_about_dialog_hide(dred_about_dialog* pDialog);

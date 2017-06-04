@@ -703,11 +703,8 @@ void dred_uninit(dred_context* pDred)
         drpipe_close(tempClientPipe);
     }
 
-
-    if (pDred->pAboutDialog) {
-        dred_about_dialog_delete(pDred->pAboutDialog);
-    }
-
+    dred_about_dialog_uninit(pDred->pAboutDialog);
+    dred_settings_dialog_uninit(pDred->pSettingsDialog);
 
     dred_cmdbar_uninit(&pDred->cmdBar);
     dred_tabgroup_uninit(&pDred->mainTabGroup);
@@ -2205,18 +2202,19 @@ void dred_show_about_dialog(dred_context* pDred)
         return;
     }
 
+    if (pDred->pAboutDialog == NULL) {
+        dtk_result result = dred_about_dialog_init(pDred, &pDred->aboutDialog);
+        if (result != DTK_SUCCESS) {
+            return;
+        }
+
+        pDred->pAboutDialog = &pDred->aboutDialog;
+    }
+
     if (dred_about_dialog_is_showing(pDred->pAboutDialog)) {
         return;
     }
 
-    if (pDred->pAboutDialog == NULL) {
-        pDred->pAboutDialog = dred_about_dialog_create(pDred);
-        if (pDred->pAboutDialog == NULL) {
-            return;
-        }
-    }
-
-    assert(pDred->pAboutDialog != NULL);
     dred_about_dialog_show(pDred->pAboutDialog);
 }
 
@@ -2226,18 +2224,19 @@ void dred_show_settings_dialog(dred_context* pDred)
         return;
     }
 
+    if (pDred->pSettingsDialog == NULL) {
+        dtk_result result = dred_settings_dialog_init(pDred, &pDred->settingsDialog);
+        if (result != DTK_SUCCESS) {
+            return;
+        }
+
+        pDred->pSettingsDialog = &pDred->settingsDialog;
+    }
+
     if (dred_settings_dialog_is_showing(pDred->pSettingsDialog)) {
         return;
     }
 
-    if (pDred->pSettingsDialog == NULL) {
-        pDred->pSettingsDialog = dred_settings_dialog_create(pDred);
-        if (pDred->pSettingsDialog == NULL) {
-            return;
-        }
-    }
-
-    assert(pDred->pSettingsDialog != NULL);
     dred_settings_dialog_show(pDred->pSettingsDialog);
 }
 

@@ -55,7 +55,7 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
         case DTK_EVENT_CLOSE:
         {
             dtk_assert(pDred->pAboutDialog == pDialog);
-            dred_about_dialog_delete(pDred->pAboutDialog);
+            dred_about_dialog_uninit(pDred->pAboutDialog);
             pDred->pAboutDialog = NULL;
         } return DTK_FALSE;
 
@@ -164,16 +164,10 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
 }
 
 
-dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
+dtk_result dred_about_dialog_init(dred_context* pDred, dred_about_dialog* pDialog)
 {
-    if (pDred == NULL) {
-        return NULL;
-    }
-
-    dred_about_dialog* pDialog = (dred_about_dialog*)calloc(1, sizeof(*pDialog));
-    if (pDialog == NULL) {
-        return NULL;
-    }
+    if (pDred == NULL) return DTK_INVALID_ARGS;
+    dtk_zero_object(pDialog);
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(&pDred->mainWindow));
 
@@ -182,8 +176,7 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
 
     dtk_result result = dtk_window_init(&pDred->tk, dred_about_dialog_event_handler, DTK_CONTROL(&pDred->mainWindow), dtk_window_type_dialog, "About", windowWidth, windowHeight, &pDialog->window);
     if (result != DTK_SUCCESS) {
-        free(pDialog);
-        return NULL;
+        return result;
     }
 
     pDialog->pLogo = dred_gui_create_image(pDred->pGUI, g_LogoBannerImage.width, g_LogoBannerImage.height, g_LogoBannerImage.width*4, g_LogoBannerImage.pixel_data);
@@ -193,14 +186,12 @@ dred_about_dialog* dred_about_dialog_create(dred_context* pDred)
     dtk_button_set_on_pressed(&pDialog->closeButton, dred_about_dialog__btn_close__on_pressed);
     dred_about_dialog_refresh_layout(pDialog);
 
-    return pDialog;
+    return DTK_SUCCESS;
 }
 
-void dred_about_dialog_delete(dred_about_dialog* pDialog)
+dtk_result dred_about_dialog_uninit(dred_about_dialog* pDialog)
 {
-    if (pDialog == NULL) {
-        return;
-    }
+    if (pDialog == NULL) return DTK_INVALID_ARGS;
 
     dtk_button_uninit(&pDialog->closeButton);
 
@@ -208,7 +199,7 @@ void dred_about_dialog_delete(dred_about_dialog* pDialog)
     pDialog->pLogo = NULL;
 
     dtk_window_uninit(DTK_WINDOW(pDialog));
-    free(pDialog);
+    return DTK_SUCCESS;
 }
 
 

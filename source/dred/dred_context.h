@@ -27,7 +27,7 @@ struct dred_context
 
     // The main GUI context.
     dred_gui gui;
-    dred_gui* pGUI; // <-- This is always set to &gui and exists for convenience.
+    dred_gui* pGUI; // <-- This is always set to &gui and exists for convenience.   // TODO: Remove this.
 
 
     // The font library. This just manages fonts to make it easier to avoid loading duplicate fonts.
@@ -63,10 +63,12 @@ struct dred_context
 
 
     // The about window.
-    dred_about_dialog* pAboutDialog;    // TODO: Remove this pointer and replace with an actual object.
+    dred_about_dialog aboutDialog;
+    dred_about_dialog* pAboutDialog;        // Lazily initialized. Set to NULL by default, and then set to &aboutDialog after it's been initialized.
 
     // The settings dialog window.
-    dred_settings_dialog* pSettingsDialog;  // TODO: Remove this pointer and replace with an actual object.
+    dred_settings_dialog settingsDialog;
+    dred_settings_dialog* pSettingsDialog;  // Lazily initialized. Set to NULL by default, and then set to &aboutDialog after it's been initialized.
 
 
     // The background control that's displayed when there is nothing open.
@@ -85,20 +87,12 @@ struct dred_context
     dred_cmdbar_popup cmdbarPopup;
 
 
-    // Whether or not the context is initialized.
-    dr_bool32 isInitialized;
-
-    // Whether or not the context is closing. This is used to terminate loops.
-    dr_bool32 isClosing;
-
-    // Whether or not the application is running in silent mode.
-    dr_bool32 isTerminalOutputDisabled;
-
-    // Whether or not we're running in portable mode.
-    dr_bool32 isPortable;
-
-    // Whether or not the main menu is being shown.
-    dtk_bool32 isShowingMainMenu;
+    
+    dtk_bool32 isInitialized               : 1; // Whether or not the context is initialized.
+    dtk_bool32 isClosing                   : 1; // Whether or not the context is closing. This is used to terminate loops.
+    dtk_bool32 isTerminalOutputDisabled    : 1; // Whether or not the application is running in silent mode.
+    dtk_bool32 isPortable                  : 1; // Whether or not we're running in portable mode.
+    dtk_bool32 isShowingMainMenu           : 1; // Whether or not the main menu is being shown.
 };
 
 // dred_init
