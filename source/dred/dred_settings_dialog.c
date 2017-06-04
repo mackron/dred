@@ -45,11 +45,11 @@ dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred)
         return NULL;
     }
 
-    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pDred->pMainWindow));
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(&pDred->mainWindow));
 
     dtk_uint32 sizeX = (unsigned int)(DRED_SETTINGS_DIALOG_BASE_SIZE_X*uiScale);
     dtk_uint32 sizeY = (unsigned int)(DRED_SETTINGS_DIALOG_BASE_SIZE_Y*uiScale);
-    dtk_result result = dtk_window_init(&pDred->tk, dred_settings_dialog_event_handler, DTK_CONTROL(pDred->pMainWindow), dtk_window_type_dialog, "Settings", sizeX, sizeY, &pDialog->window);
+    dtk_result result = dtk_window_init(&pDred->tk, dred_settings_dialog_event_handler, DTK_CONTROL(&pDred->mainWindow), dtk_window_type_dialog, "Settings", sizeX, sizeY, &pDialog->window);
     if (result != DTK_SUCCESS) {
         free(pDialog);
         return NULL;

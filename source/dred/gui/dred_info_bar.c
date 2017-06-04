@@ -12,7 +12,7 @@ dtk_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pInfoBar));
     assert(pDred != NULL);
 
-    if (dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
+    if (dred_cmdbar_has_keyboard_focus(&pDred->cmdBar)) {
         return pDred->config.cmdbarBGColorActive;
     } else {
         return pDred->config.cmdbarBGColor;
@@ -24,7 +24,7 @@ dtk_color dred_info_bar__get_text_color(dred_info_bar* pInfoBar)
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pInfoBar));
     assert(pDred != NULL);
 
-    if (dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
+    if (dred_cmdbar_has_keyboard_focus(&pDred->cmdBar)) {
         return pDred->config.cmdbarTextColorActive;
     } else {
         return pDred->config.cmdbarTextColor;

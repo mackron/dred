@@ -96,7 +96,7 @@ void dred_cmdbar__update_text_based_on_autocomplete(dred_cmdbar* pCmdBar)
 {
     if (!dred_cmdbar__does_manual_text_entry_contain_whole_command_name(pCmdBar)) {
         // The text of the command bar needs to be set to the whole command name, with the trailing section highlighted.
-        dred_cmdbox_cmdlist* pCmdList = &pCmdBar->pDred->pCmdBarPopup->cmdlist;
+        dred_cmdbox_cmdlist* pCmdList = &pCmdBar->pDred->cmdbarPopup.cmdlist;
 
         const char* wholeCommandText = dred_cmdbox_cmdlist_get_highlighted_command_name(pCmdList);
         if (wholeCommandText == NULL) {
@@ -206,7 +206,7 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dtk_control* pP
 
 
     // Show the popup window.
-    dred_cmdbar_popup_show(pDred->pCmdBarPopup);
+    dred_cmdbar_popup_show(&pDred->cmdbarPopup);
 
     // Fall through to the default handler.
     dred_textview_on_capture_keyboard(DRED_CONTROL(pTextBox), pPrevCapturedControl);
@@ -229,7 +229,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dtk_control* pN
         return;
     }
 
-    dred_cmdbar_popup_hide(pDred->pCmdBarPopup);
+    dred_cmdbar_popup_hide(&pDred->cmdbarPopup);
 
     // Deactivate unfocused styles.
     dred_textbox_set_text_color(pCmdBar->pTextBox, pDred->config.cmdbarTextColor);
@@ -314,13 +314,13 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dtk_key key, int stateF
             if (pCmdBar->manualTextEntry != NULL && !dred_cmdbar__does_manual_text_entry_contain_whole_command_name(pCmdBar)) {
                 // Cycle through commands.
                 if (stateFlags & DTK_MODIFIER_SHIFT) {
-                    dred_cmdbox_cmdlist_highlight_prev_item(&pDred->pCmdBarPopup->cmdlist);
+                    dred_cmdbox_cmdlist_highlight_prev_item(&pDred->cmdbarPopup.cmdlist);
                 } else {
-                    dred_cmdbox_cmdlist_highlight_next_item(&pDred->pCmdBarPopup->cmdlist);
+                    dred_cmdbox_cmdlist_highlight_next_item(&pDred->cmdbarPopup.cmdlist);
                 }
 
                 dred_cmdbar__update_text_based_on_autocomplete(pCmdBar);
-                dred_cmdbar_popup_refresh_autocomplete(pDred->pCmdBarPopup, pCmdBar->manualTextEntry);
+                dred_cmdbar_popup_refresh_autocomplete(&pDred->cmdbarPopup, pCmdBar->manualTextEntry);
             } else {
                 // Cycle through parameters.
                 if (stateFlags & DTK_MODIFIER_SHIFT) {
@@ -337,7 +337,7 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dtk_key key, int stateF
 
             if (key == DTK_KEY_DELETE || key == DTK_KEY_BACKSPACE) {
                 dred_cmdbar__update_manual_text_entry(pCmdBar);
-                dred_cmdbar_popup_refresh_autocomplete(pDred->pCmdBarPopup, pCmdBar->manualTextEntry);
+                dred_cmdbar_popup_refresh_autocomplete(&pDred->cmdbarPopup, pCmdBar->manualTextEntry);
             }
         } break;
     }
@@ -394,7 +394,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
     } else {
         dred_textview_on_printable_key_down(DRED_CONTROL(pTextBox), utf32, stateFlags);
         dred_cmdbar__update_manual_text_entry(pCmdBar);
-        dred_cmdbar_popup_refresh_autocomplete(pDred->pCmdBarPopup, pCmdBar->manualTextEntry);
+        dred_cmdbar_popup_refresh_autocomplete(&pDred->cmdbarPopup, pCmdBar->manualTextEntry);
     }
 }
 
@@ -413,10 +413,10 @@ void dred_cmdbar_tb__on_text_changed(dred_textbox* pTextBox)
             return;
         }
 
-        dred_cmdbar_popup_refresh_autocomplete(pDred->pCmdBarPopup, pText);
+        dred_cmdbar_popup_refresh_autocomplete(&pDred->cmdbarPopup, pText);
         free(pText);
     } else {
-        dred_cmdbar_popup_refresh_autocomplete(pDred->pCmdBarPopup, pCmdBar->manualTextEntry);
+        dred_cmdbar_popup_refresh_autocomplete(&pDred->cmdbarPopup, pCmdBar->manualTextEntry);
     }
 }
 

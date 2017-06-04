@@ -350,7 +350,7 @@ void dred_config_on_set__ui_scale(dred_context* pDred)
 void dred_config_on_set__ui_font(dred_context* pDred)
 {
     // Everything that uses the UI font needs to be updated.
-    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+    dred_cmdbar_refresh_styling(&pDred->cmdBar);
     dred_settings_dialog_refresh_styling(pDred->pSettingsDialog);
 
     // The UI font may have resulted in the main window's layout becoming invalid.
@@ -385,7 +385,7 @@ void dred_config_on_set__show_menu_bar(dred_context* pDred)
 void dred_config_on_set__auto_hide_cmd_bar(dred_context* pDred)
 {
     if (pDred->config.autoHideCmdBar) {
-        if (!dred_cmdbar_has_keyboard_focus(pDred->pCmdBar)) {
+        if (!dred_cmdbar_has_keyboard_focus(&pDred->cmdBar)) {
             dred_hide_command_bar(pDred);
         }
     } else {
@@ -404,60 +404,60 @@ void dred_config_on_set__enable_auto_reload(dred_context* pDred)
 
 void dred_config_on_set__cmdbar_bg_color(dred_context* pDred)
 {
-    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+    dred_cmdbar_refresh_styling(&pDred->cmdBar);
 }
 
 void dred_config_on_set__cmdbar_bg_color_active(dred_context* pDred)
 {
-    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+    dred_cmdbar_refresh_styling(&pDred->cmdBar);
 }
 
 void dred_config_on_set__cmdbar_tb_font(dred_context* pDred)
 {
-    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+    dred_cmdbar_refresh_styling(&pDred->cmdBar);
     dred_update_main_window_layout(pDred);
 }
 
 void dred_config_on_set__cmdbar_text_color(dred_context* pDred)
 {
-    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+    dred_cmdbar_refresh_styling(&pDred->cmdBar);
 }
 
 void dred_config_on_set__cmdbar_text_color_active(dred_context* pDred)
 {
-    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+    dred_cmdbar_refresh_styling(&pDred->cmdBar);
 }
 
 void dred_config_on_set__cmdbar_padding_horz(dred_context* pDred)
 {
-    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+    dred_cmdbar_refresh_styling(&pDred->cmdBar);
     dred_update_main_window_layout(pDred);
 }
 
 void dred_config_on_set__cmdbar_padding_vert(dred_context* pDred)
 {
-    dred_cmdbar_refresh_styling(pDred->pCmdBar);
+    dred_cmdbar_refresh_styling(&pDred->cmdBar);
     dred_update_main_window_layout(pDred);
 }
 
 void dred_config_on_set__cmdbar_popup_bg_color_active(dred_context* pDred)
 {
-    dred_cmdbar_popup_refresh_styling(pDred->pCmdBarPopup);
+    dred_cmdbar_popup_refresh_styling(&pDred->cmdbarPopup);
 }
 
 void dred_config_on_set__cmdbar_popup_font(dred_context* pDred)
 {
-    dred_cmdbar_popup_refresh_styling(pDred->pCmdBarPopup);
+    dred_cmdbar_popup_refresh_styling(&pDred->cmdbarPopup);
 }
 
 void dred_config_on_set__cmdbar_popup_border_width(dred_context* pDred)
 {
-    dred_cmdbar_popup_refresh_styling(pDred->pCmdBarPopup);
+    dred_cmdbar_popup_refresh_styling(&pDred->cmdbarPopup);
 }
 
 void dred_config_on_set__cmdbar_popup_padding(dred_context* pDred)
 {
-    dred_cmdbar_popup_refresh_styling(pDred->pCmdBarPopup);
+    dred_cmdbar_popup_refresh_styling(&pDred->cmdbarPopup);
 }
 
 

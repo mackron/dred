@@ -57,9 +57,8 @@ struct dred_context
 
     // The main window.
     dtk_window mainWindow;
-    dtk_window* pMainWindow;    // TODO: Remove this. This is just a pointer to mainWindow for backwards compatibility.
 
-    // The menu currently being shown on the main window.
+    // The menu currently being shown on the main window. This will be set to one of the menus in the "menus" property.
     dtk_menu* pMainMenu;
 
 
@@ -75,19 +74,15 @@ struct dred_context
 
     // The main tab group container. This is the root container where all other sub-containers will be placed.
     dred_tabgroup_container mainTabGroupContainer;
-    dred_tabgroup_container* pMainTabGroupContainer;    // TODO: Remove this.
 
     // The main tab group. This is actually temporary until support for multiple tab groups (splitting) is implemented.
     dred_tabgroup mainTabGroup;
-    dred_tabgroup* pMainTabGroup;   // TODO: Remove this.
 
     // The command bar. This is is the control that runs along the bottom of the main window.
     dred_cmdbar cmdBar;
-    dred_cmdbar* pCmdBar;   // TODO: Remove this.
 
     // The command bar auto-complete popup window.
     dred_cmdbar_popup cmdbarPopup;
-    dred_cmdbar_popup* pCmdBarPopup;    // TODO: Remove this.
 
 
     // Whether or not the context is initialized.

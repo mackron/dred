@@ -263,7 +263,7 @@ dr_bool32 dred_command__open(dred_context* pDred, const char* value)
         dred_show_open_file_dialog(pDred);
     } else {
         if (!dred_open_file(pDred, fileName)) {
-            dred_cmdbar_set_message(pDred->pCmdBar, "Failed to open file.");
+            dred_cmdbar_set_message(&pDred->cmdBar, "Failed to open file.");
             return DR_FALSE;
         }
     }
@@ -571,7 +571,7 @@ dr_bool32 dred_command__find(dred_context* pDred, const char* value)
         if (dr_next_token(value, query, sizeof(query)) != NULL) {
             dred_text_editor_deselect_all_in_focused_view(DRED_TEXT_EDITOR(pFocusedEditor));
             if (!dred_text_editor_find_and_select_next(DRED_TEXT_EDITOR(pFocusedEditor), query)) {
-                dred_cmdbar_set_message(pDred->pCmdBar, "No results found.");
+                dred_cmdbar_set_message(&pDred->cmdBar, "No results found.");
                 return DR_FALSE;
             }
 
@@ -597,7 +597,7 @@ dr_bool32 dred_command__replace(dred_context* pDred, const char* value)
             value = dr_next_token(value, replacement, sizeof(replacement));
             if (value != NULL) {
                 if (!dred_text_editor_find_and_replace_next(DRED_TEXT_EDITOR(pFocusedEditor), query, replacement)) {
-                    dred_cmdbar_set_message(pDred->pCmdBar, "No results found.");
+                    dred_cmdbar_set_message(&pDred->cmdBar, "No results found.");
                     return DR_FALSE;
                 }
 
@@ -624,7 +624,7 @@ dr_bool32 dred_command__replace_all(dred_context* pDred, const char* value)
             value = dr_next_token(value, replacement, sizeof(replacement));
             if (value != NULL) {
                 if (!dred_text_editor_find_and_replace_all(DRED_TEXT_EDITOR(pFocusedEditor), query, replacement)) {
-                    dred_cmdbar_set_message(pDred->pCmdBar, "No results found.");
+                    dred_cmdbar_set_message(&pDred->cmdBar, "No results found.");
                     return DR_FALSE;
                 }
 
@@ -841,7 +841,7 @@ dr_bool32 dred__set_cmdbar_command_with_current_selection(dred_context* pDred, c
     }
 
     dred_focus_command_bar_and_set_text(pDred, fullCommandText);
-    dred_cmdbar_highlight_argument_by_index(pDred->pCmdBar, 0);
+    dred_cmdbar_highlight_argument_by_index(&pDred->cmdBar, 0);
     dtk_free_string(fullCommandText);
 
     return DR_TRUE;
