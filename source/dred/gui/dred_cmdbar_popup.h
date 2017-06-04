@@ -1,9 +1,10 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
+#define DRED_CMDBAR_POPUP(p) ((dred_cmdbar_popup*)(p))
 typedef struct
 {
-    dred_context* pDred;
-    dred_window* pWindow;
+    dtk_window window;
+    dred_context* pDred;    // TODO: Remove this. Replace with dred_get_context_from_control().
     size_t* pCommandIndices;
     size_t commandIndexCount;
     size_t commandIndexCapacity;
@@ -13,8 +14,8 @@ typedef struct
     dred_cmdbox_cmdlist cmdlist;
 } dred_cmdbar_popup;
 
-dred_cmdbar_popup* dred_cmdbar_popup_create(dred_context* pDred);
-void dred_cmdbar_popup_delete(dred_cmdbar_popup* pCmdBarPopup);
+dtk_result dred_cmdbar_popup_init(dred_context* pDred, dred_cmdbar_popup* pCmdBarPopup);
+dtk_result dred_cmdbar_popup_uninit(dred_cmdbar_popup* pCmdBarPopup);
 
 void dred_cmdbar_popup_show(dred_cmdbar_popup* pCmdBarPopup);
 void dred_cmdbar_popup_hide(dred_cmdbar_popup* pCmdBarPopup);

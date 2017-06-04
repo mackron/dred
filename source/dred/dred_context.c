@@ -31,7 +31,7 @@ void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, dtk_i
     dtk_control_set_relative_position(DTK_CONTROL(pCmdBar), 0, parentHeight - dred__get_cmd_bar_height(pDred));
 
     if (pDred->pCmdBarPopup != NULL) {
-        dred_window_set_size(pDred->pCmdBarPopup->pWindow, (int)parentWidth, 300);
+        dtk_window_set_size(DTK_WINDOW(pDred->pCmdBarPopup), parentWidth, 300);
         dred_cmdbar_popup_refresh_styling(pDred->pCmdBarPopup);
     }
 }
@@ -171,7 +171,7 @@ void dred_window_cb__on_main_window_move(dtk_window* pWindow, int posX, int posY
     dtk_assert(pDred != NULL);
 
     if (pDred->pCmdBarPopup != NULL) {
-        if (dtk_control_is_visible(DTK_CONTROL(&pDred->pCmdBarPopup->pWindow->windowDTK))) {
+        if (dtk_control_is_visible(DTK_CONTROL(pDred->pCmdBarPopup))) {
             dred_cmdbar_popup_refresh_position(pDred->pCmdBarPopup);
         }
     }
@@ -197,7 +197,7 @@ void dred_window_cb__on_main_window_size(dtk_control* pControl, dtk_int32 width,
     dred__update_main_window_layout(pWindow, width, height);
 
     if (pDred->pCmdBarPopup != NULL) {
-        if (dtk_control_is_visible(DTK_CONTROL(&pDred->pCmdBarPopup->pWindow->windowDTK))) {
+        if (dtk_control_is_visible(DTK_CONTROL(pDred->pCmdBarPopup))) {
             dred_cmdbar_popup_refresh_position(pDred->pCmdBarPopup);
         }
     }
@@ -629,7 +629,12 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
         dred_control_hide(DRED_CONTROL(pDred->pCmdBar));
     }
 
-    pDred->pCmdBarPopup = dred_cmdbar_popup_create(pDred);
+    pDred->pCmdBarPopup = &pDred->cmdbarPopup;
+    result = dred_cmdbar_popup_init(pDred, pDred->pCmdBarPopup);
+    if (result != DTK_SUCCESS) {
+        dred_error(pDred, "Failed to create command bar popup.\n");
+        goto on_error;
+    }
 
 
 

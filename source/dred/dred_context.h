@@ -86,7 +86,8 @@ struct dred_context
     dred_cmdbar* pCmdBar;   // TODO: Remove this.
 
     // The command bar auto-complete popup window.
-    dred_cmdbar_popup* pCmdBarPopup;    // TODO: Replace this with an object.
+    dred_cmdbar_popup cmdbarPopup;
+    dred_cmdbar_popup* pCmdBarPopup;    // TODO: Remove this.
 
 
     // Whether or not the context is initialized.
