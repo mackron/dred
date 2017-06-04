@@ -1059,3 +1059,21 @@ dtk_result dtk_control_refresh_layout(dtk_control* pControl)
     dtk_event e = dtk_event_init(pControl->pTK, DTK_EVENT_REFRESH_LAYOUT, pControl);
     return dtk_handle_local_event(&e);
 }
+
+
+dtk_result dtk_control_show_popup_menu(dtk_control* pControl, dtk_menu* pMenu, dtk_int32 relativePosX, dtk_int32 relativePosY)
+{
+    if (pControl == NULL || pMenu == NULL) return DTK_INVALID_ARGS;
+
+    if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
+        return dtk_window_show_popup_menu(DTK_WINDOW(pControl), pMenu, relativePosX, relativePosY);
+    }
+
+    dtk_window* pWindow = dtk_control_get_window(DTK_CONTROL(pControl));
+    if (pWindow == NULL) {
+        return DTK_INVALID_ARGS;    // The control is not owned by a window.
+    }
+
+    dtk_control_relative_to_absolute(pControl, &relativePosX, &relativePosY);
+    return dtk_window_show_popup_menu(pWindow, pMenu, relativePosX, relativePosX);
+}

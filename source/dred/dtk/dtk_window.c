@@ -1009,7 +1009,7 @@ dtk_result dtk_window_set_menu__win32(dtk_window* pWindow, dtk_menu* pMenu)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_window_show_popup_menu__win32(dtk_window* pWindow, dtk_menu* pMenu, int posX, int posY)
+dtk_result dtk_window_show_popup_menu__win32(dtk_window* pWindow, dtk_menu* pMenu, dtk_int32 posX, dtk_int32 posY)
 {
     POINT screenCoords;
     screenCoords.x = posX;
@@ -2746,7 +2746,7 @@ dtk_result dtk_window_set_menu(dtk_window* pWindow, dtk_menu* pMenu)
     return result;
 }
 
-dtk_result dtk_window_show_popup_menu(dtk_window* pWindow, dtk_menu* pMenu, int posX, int posY)
+dtk_result dtk_window_show_popup_menu(dtk_window* pWindow, dtk_menu* pMenu, dtk_int32 posX, dtk_int32 posY)
 {
     if (pWindow == NULL || pMenu == NULL) return DTK_INVALID_ARGS;
 

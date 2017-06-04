@@ -151,7 +151,7 @@ dtk_bool32 dtk_window_is_cursor_over(dtk_window* pWindow);
 dtk_result dtk_window_set_menu(dtk_window* pWindow, dtk_menu* pMenu);
 
 // Shows a popup menu on the given window.
-dtk_result dtk_window_show_popup_menu(dtk_window* pWindow, dtk_menu* pMenu, int posX, int posY);
+dtk_result dtk_window_show_popup_menu(dtk_window* pWindow, dtk_menu* pMenu, dtk_int32 posX, dtk_int32 posY);
 
 
 // Schedules a redraw of the given window.

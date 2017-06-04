@@ -1532,18 +1532,7 @@ dtk_system_cursor_type dred_control_get_cursor(dred_control* pControl)
 
 void dred_control_show_popup_menu(dred_control* pControl, dtk_menu* pMenu, int relativePosX, int relativePosY)
 {
-    if (pControl == NULL || pMenu == NULL) {
-        return;
-    }
-
-    dred_window* pWindow = dred_get_control_window(pControl);
-    if (pWindow == NULL) {
-        return;
-    }
-
-    int mousePosXWindow = relativePosX + (int)dred_control_get_absolute_position_x(pControl);
-    int mousePosYWindow = relativePosY + (int)dred_control_get_absolute_position_y(pControl);
-    dred_window_show_popup_menu(pWindow, pMenu, mousePosXWindow, mousePosYWindow);
+    dtk_control_show_popup_menu(DTK_CONTROL(pControl), pMenu, relativePosX, relativePosY);
 }
 
 

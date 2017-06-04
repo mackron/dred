@@ -301,3 +301,7 @@ float dtk_control_get_scaling_factor(dtk_control* pControl);
 //
 // A layout refresh should be used to re-position and re-size child elements of the control.
 dtk_result dtk_control_refresh_layout(dtk_control* pControl);
+
+
+// Shows a popup menu on the window that owns the given control, positioning it relative to the control.
+dtk_result dtk_control_show_popup_menu(dtk_control* pControl, dtk_menu* pMenu, dtk_int32 relativePosX, dtk_int32 relativePosY);

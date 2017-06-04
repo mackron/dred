@@ -154,13 +154,13 @@ void dred__on_editor_unmodified(dred_editor* pEditor)
 }
 
 
-void dred_window_cb__on_main_window_close(dtk_window* pWindow)
+void dred__on_main_window_close(dtk_window* pWindow)
 {
     dtk_assert(pWindow != NULL);
     dred_close(dred_get_context_from_control(DTK_CONTROL(pWindow)));
 }
 
-void dred_window_cb__on_main_window_move(dtk_window* pWindow, int posX, int posY)
+void dred__on_main_window_move(dtk_window* pWindow, int posX, int posY)
 {
     (void)posX;
     (void)posY;
@@ -184,14 +184,9 @@ void dred_window_cb__on_main_window_move(dtk_window* pWindow, int posX, int posY
     pDred->config.windowPosY = configWindowPosY;
 }
 
-void dred_window_cb__on_main_window_size(dtk_control* pControl, dtk_int32 width, dtk_int32 height)
+void dred__on_main_window_size(dtk_window* pWindow, dtk_int32 width, dtk_int32 height)
 {
-    dtk_window* pWindow = dtk_control_get_window(pControl);
-    if (pWindow == NULL) {
-        return;
-    }
-
-    dred_context* pDred = dred_get_context_from_control(pControl);
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pWindow));
     dtk_assert(pDred != NULL);
 
     dred__update_main_window_layout(pWindow, width, height);
@@ -305,7 +300,7 @@ dtk_thread_result DTK_THREADCALL dred_ipc_message_proc(void* pData)
 
                 default:
                 {
-                    dred_window_send_ipc_message_event(&pDred->mainWindow, header.message, pMsgData, header.size);
+                    dtk_post_custom_event(&pDred->tk, DTK_CONTROL(&pDred->mainWindow), header.message, pMsgData, header.size);
                 } break;
             }
 
@@ -420,17 +415,17 @@ static dtk_bool32 dred_main_window_event_handler(dtk_event* pEvent)
     {
         case DTK_EVENT_SIZE:
         {
-            dred_window_cb__on_main_window_size(DTK_CONTROL(pWindow), pEvent->size.width, pEvent->size.height);
+            dred__on_main_window_size(pWindow, pEvent->size.width, pEvent->size.height);
         } break;
 
         case DTK_EVENT_MOVE:
         {
-            dred_window_cb__on_main_window_move(pWindow, pEvent->move.x, pEvent->move.y);
+            dred__on_main_window_move(pWindow, pEvent->move.x, pEvent->move.y);
         } break;
 
         case DTK_EVENT_CLOSE:
         {
-            dred_window_cb__on_main_window_close(pWindow);
+            dred__on_main_window_close(pWindow);
         } break;
 
         case DTK_EVENT_DPI_CHANGED:
@@ -589,11 +584,6 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
         dred_error(pDred, "Failed to create main window.");
         goto on_error;
     }
-
-    //pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
-    //pDred->pMainWindow->onMove = dred_window_cb__on_main_window_move;
-    //dred_control_set_on_size(pDred->pMainWindow->pRootGUIControl, dred_window_cb__on_main_window_size);
-
 
     if (dtk_control_init(&pDred->tk, DTK_CONTROL_TYPE_EMPTY, dred_background_control_event_handler, DTK_CONTROL(&pDred->mainWindow), &pDred->backgroundControl) != DTK_SUCCESS) {
         dred_error(pDred, "Failed to create background control.\n");
