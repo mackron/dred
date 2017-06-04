@@ -647,6 +647,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     windowHeight = (unsigned int)pDred->config.windowHeight;
     showWindowMaximized = pDred->config.windowMaximized;
 
+    dred_set_main_menu(pDred, &pDred->menus.nothingopen);   // <-- The menu needs to be set before setting the window size.
     dtk_window_set_title(pDred->pMainWindow, "dred");
     dtk_window_set_size(pDred->pMainWindow, windowWidth, windowHeight);
     if (showWindowMaximized) {
@@ -662,13 +663,9 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
         dtk_window_move_into_view(pDred->pMainWindow);  // <-- This just makes sure the window is in view in case the config has an erroneous position setting.
     }
 
-    dred_set_main_menu(pDred, &pDred->menus.nothingopen);
-
-
+    
     // We only want to use the default window position on first run.
     pDred->config.useDefaultWindowPos = DR_FALSE;
-
-
 
 
     // Load initial files from the command line.
