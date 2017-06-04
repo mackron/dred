@@ -1726,50 +1726,6 @@ dtk_dialog_result dred_show_yesnocancel_dialog(dred_context* pDred, const char* 
 {
     if (pDred == NULL) return 0;
     return dtk_message_box(DTK_WINDOW(&pDred->mainWindow), message, title, DTK_DIALOG_BUTTONS_YESNOCANCEL);
-
-#if 0
-    // TODO: Move this to the platform layer.
-#ifdef _WIN32
-    int result = MessageBoxA((HWND)pDred->pMainWindow->windowDTK.win32.hWnd, message, title, MB_YESNOCANCEL);
-    switch (result)
-    {
-        case IDCANCEL: return DRED_MESSAGE_BOX_CANCEL;
-        case IDYES:    return DRED_MESSAGE_BOX_YES;
-        case IDNO:     return DRED_MESSAGE_BOX_NO;
-
-        default: break;
-    }
-
-    return 0;
-#else
-    GtkWidget* dialog = gtk_message_dialog_new(GTK_WINDOW(pDred->pMainWindow->windowDTK.gtk.pWidget), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, "%s", message);
-    if (dialog == NULL) {
-        return 0;
-    }
-
-    gtk_window_set_title(GTK_WINDOW(dialog), title);
-
-    GtkWidget* pYes = gtk_dialog_add_button(GTK_DIALOG(dialog), "Yes", DRED_MESSAGE_BOX_YES);
-    if (pYes != NULL) {
-    }
-
-    GtkWidget* pNo = gtk_dialog_add_button(GTK_DIALOG(dialog), "No", DRED_MESSAGE_BOX_NO);
-    if (pNo != NULL) {
-        gtk_widget_set_margin_start(pNo, 8);
-    }
-
-    GtkWidget* pCancel = gtk_dialog_add_button(GTK_DIALOG(dialog), "Cancel", DRED_MESSAGE_BOX_CANCEL);
-    if (pCancel != NULL) {
-        gtk_widget_set_margin_start(pCancel, 8);
-
-    }
-
-    gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-
-    return result;
-#endif
-#endif
 }
 
 dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut)
