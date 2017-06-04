@@ -4,7 +4,6 @@
 typedef struct
 {
     dtk_window window;
-    dred_context* pDred;    // TODO: Remove this. Replace with dred_get_context_from_control().
     size_t* pCommandIndices;
     size_t commandIndexCount;
     size_t commandIndexCapacity;

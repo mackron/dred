@@ -2,7 +2,7 @@
 
 void dred_cmdbar_popup__refresh_cmdbox_layout(dred_cmdbar_popup* pCmdBarPopup, dtk_int32 popupSizeX, dtk_int32 popupSizeY)
 {
-    dred_context* pDred = pCmdBarPopup->pDred;
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBarPopup));
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBarPopup));
 
     dtk_int32 padding     = (dtk_int32)(pDred->config.cmdbarPopupPadding     * uiScale);
@@ -26,7 +26,7 @@ void dred_cmdbar_popup__on_paint(dred_cmdbar_popup* pCmdBarPopup, dtk_rect rect,
 {
     (void)rect;
 
-    dred_context* pDred = pCmdBarPopup->pDred;
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBarPopup));
     assert(pDred != NULL);
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBarPopup));
@@ -73,8 +73,6 @@ dtk_result dred_cmdbar_popup_init(dred_context* pDred, dred_cmdbar_popup* pCmdBa
     if (pDred == NULL || pCmdBarPopup == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pCmdBarPopup);
 
-    pCmdBarPopup->pDred = pDred;
-
     dtk_result result = dtk_window_init(&pDred->tk, dred_cmdbar_popup_event_handler, DTK_CONTROL(&pDred->mainWindow), dtk_window_type_popup, "", 0, 0, &pCmdBarPopup->window);
     if (result != DTK_SUCCESS) {
         return result;
@@ -106,11 +104,14 @@ dtk_result dred_cmdbar_popup_uninit(dred_cmdbar_popup* pCmdBarPopup)
 
 void dred_cmdbar_popup_show(dred_cmdbar_popup* pCmdBarPopup)
 {
-    dred_cmdbar* pCmdBar = &pCmdBarPopup->pDred->cmdBar;
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBarPopup));
+    dtk_assert(pDred != NULL);
+
+    dred_cmdbar* pCmdBar = &pDred->cmdBar;
     if (pCmdBar->manualTextEntry != NULL) {
         dred_cmdbar_popup_refresh_autocomplete(pCmdBarPopup, pCmdBar->manualTextEntry);
     } else {
-        char* pCmdBarText = dred_cmdbar_get_text_malloc(&pCmdBarPopup->pDred->cmdBar);
+        char* pCmdBarText = dred_cmdbar_get_text_malloc(&pDred->cmdBar);
         dred_cmdbar_popup_refresh_autocomplete(pCmdBarPopup, pCmdBarText);
         free(pCmdBarText);
     }
@@ -126,13 +127,16 @@ void dred_cmdbar_popup_hide(dred_cmdbar_popup* pCmdBarPopup)
 
 void dred_cmdbar_popup_refresh_position(dred_cmdbar_popup* pCmdBarPopup)
 {
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBarPopup));
+    dtk_assert(pDred != NULL);
+
     int mainWindowPosX;
     int mainWindowPosY;
-    dtk_window_get_client_absolute_position(&pCmdBarPopup->pDred->mainWindow, &mainWindowPosX, &mainWindowPosY);
+    dtk_window_get_client_absolute_position(&pDred->mainWindow, &mainWindowPosX, &mainWindowPosY);
 
     dtk_int32 cmdbarPosX;
     dtk_int32 cmdbarPosY;
-    dtk_control_get_absolute_position(DTK_CONTROL(&pCmdBarPopup->pDred->cmdBar), &cmdbarPosX, &cmdbarPosY);
+    dtk_control_get_absolute_position(DTK_CONTROL(&pDred->cmdBar), &cmdbarPosX, &cmdbarPosY);
 
     dtk_int32 popupSizeX;
     dtk_int32 popupSizeY;
@@ -145,7 +149,7 @@ void dred_cmdbar_popup_refresh_styling(dred_cmdbar_popup* pCmdBarPopup)
 {
     if (pCmdBarPopup == NULL) return;
 
-    dred_context* pDred = pCmdBarPopup->pDred;
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBarPopup));
     if (pDred == NULL) {
         return;
     }
