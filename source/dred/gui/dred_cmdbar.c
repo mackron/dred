@@ -53,16 +53,16 @@ void dred_cmdbar__update_layouts_of_inner_controls(dred_cmdbar* pCmdBar)
     dtk_rect rrect;
     dred_cmdbar__get_segment_rects(pCmdBar, &lrect, &mrect, &rrect);
 
-    dtk_control_set_relative_position(DTK_CONTROL(pCmdBar->pTextBox), lrect.left, lrect.top);
-    dtk_control_set_size(DTK_CONTROL(pCmdBar->pTextBox), lrect.right - lrect.left, lrect.bottom - lrect.top);
+    dtk_control_set_relative_position(DTK_CONTROL(&pCmdBar->textBox), lrect.left, lrect.top);
+    dtk_control_set_size(DTK_CONTROL(&pCmdBar->textBox), lrect.right - lrect.left, lrect.bottom - lrect.top);
     
-    dtk_control_set_relative_position(DTK_CONTROL(pCmdBar->pInfoBar), rrect.left, rrect.top);
-    dtk_control_set_size(DTK_CONTROL(pCmdBar->pInfoBar), rrect.right - rrect.left, rrect.bottom - rrect.top);
+    dtk_control_set_relative_position(DTK_CONTROL(&pCmdBar->infoBar), rrect.left, rrect.top);
+    dtk_control_set_size(DTK_CONTROL(&pCmdBar->infoBar), rrect.right - rrect.left, rrect.bottom - rrect.top);
 }
 
 void dred_cmdbar__update_manual_text_entry(dred_cmdbar* pCmdBar)
 {
-    dred_textview* pTextView = DRED_TEXTVIEW(pCmdBar->pTextBox);
+    dred_textview* pTextView = DRED_TEXTVIEW(&pCmdBar->textBox);
 
     dtk_free(pCmdBar->manualTextEntry);
     pCmdBar->manualTextEntry = NULL;
@@ -95,8 +95,11 @@ dtk_bool32 dred_cmdbar__does_manual_text_entry_contain_whole_command_name(dred_c
 void dred_cmdbar__update_text_based_on_autocomplete(dred_cmdbar* pCmdBar)
 {
     if (!dred_cmdbar__does_manual_text_entry_contain_whole_command_name(pCmdBar)) {
+        dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBar));
+        dtk_assert(pDred != NULL);
+
         // The text of the command bar needs to be set to the whole command name, with the trailing section highlighted.
-        dred_cmdbox_cmdlist* pCmdList = &pCmdBar->pDred->cmdbarPopup.cmdlist;
+        dred_cmdbox_cmdlist* pCmdList = &pDred->cmdbarPopup.cmdlist;
 
         const char* wholeCommandText = dred_cmdbox_cmdlist_get_highlighted_command_name(pCmdList);
         if (wholeCommandText == NULL) {
@@ -131,7 +134,7 @@ void dred_cmdbar__on_capture_keyboard(dred_control* pControl, dtk_control* pPrev
     dred_cmdbar* pCmdBar = DRED_CMDBAR(pControl);
     assert(pCmdBar != NULL);
 
-    dred_gui_capture_keyboard(DRED_CONTROL(pCmdBar->pTextBox));
+    dred_gui_capture_keyboard(DRED_CONTROL(&pCmdBar->textBox));
 }
 
 void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
@@ -189,10 +192,10 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dtk_control* pP
     assert(pDred != NULL);
 
     // Activate the focused styles.
-    dred_textbox_set_text_color(pCmdBar->pTextBox, pDred->config.cmdbarTextColorActive);
-    dred_textbox_set_cursor_color(pCmdBar->pTextBox, pDred->config.cmdbarTextColorActive);
-    dred_textbox_set_background_color(pCmdBar->pTextBox, pDred->config.cmdbarBGColorActive);
-    dred_textbox_set_active_line_background_color(pCmdBar->pTextBox, pDred->config.cmdbarBGColorActive);
+    dred_textbox_set_text_color(&pCmdBar->textBox, pDred->config.cmdbarTextColorActive);
+    dred_textbox_set_cursor_color(&pCmdBar->textBox, pDred->config.cmdbarTextColorActive);
+    dred_textbox_set_background_color(&pCmdBar->textBox, pDred->config.cmdbarBGColorActive);
+    dred_textbox_set_active_line_background_color(&pCmdBar->textBox, pDred->config.cmdbarBGColorActive);
 
     // If auto-hiding is enabled we need to show the command bar.
     if (pDred->config.autoHideCmdBar) {
@@ -225,17 +228,17 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dtk_control* pN
 
 
     // If the element being captured is the inner text box, just ignore it and pretend that we're not actually losing focus.
-    if (dtk_control_is_descendant(pNextCapturedControl, DTK_CONTROL(pCmdBar->pTextBox))) {
+    if (dtk_control_is_descendant(pNextCapturedControl, DTK_CONTROL(&pCmdBar->textBox))) {
         return;
     }
 
     dred_cmdbar_popup_hide(&pDred->cmdbarPopup);
 
     // Deactivate unfocused styles.
-    dred_textbox_set_text_color(pCmdBar->pTextBox, pDred->config.cmdbarTextColor);
-    dred_textbox_set_cursor_color(pCmdBar->pTextBox, pDred->config.cmdbarTextColor);
-    dred_textbox_set_background_color(pCmdBar->pTextBox, pDred->config.cmdbarBGColor);
-    dred_textbox_set_active_line_background_color(pCmdBar->pTextBox, pDred->config.cmdbarBGColor);
+    dred_textbox_set_text_color(&pCmdBar->textBox, pDred->config.cmdbarTextColor);
+    dred_textbox_set_cursor_color(&pCmdBar->textBox, pDred->config.cmdbarTextColor);
+    dred_textbox_set_background_color(&pCmdBar->textBox, pDred->config.cmdbarBGColor);
+    dred_textbox_set_active_line_background_color(&pCmdBar->textBox, pDred->config.cmdbarBGColor);
     
 
     // If auto-hiding is enabled we need to hide the command bar.
@@ -428,16 +431,16 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBar));
 
     dtk_font_metrics fontMetricsTB;
-    dtk_font_get_metrics(dred_textbox_get_font(pCmdBar->pTextBox), uiScale, &fontMetricsTB);
+    dtk_font_get_metrics(dred_textbox_get_font(&pCmdBar->textBox), uiScale, &fontMetricsTB);
 
     dtk_font* pMessageFont = &pDred->config.pUIFont->fontDTK;
 
     dtk_font_metrics fontMetricsMsg;
     dtk_font_get_metrics(pMessageFont, uiScale, &fontMetricsMsg);
 
-    float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(pCmdBar->pTextBox)*2;
+    float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(&pCmdBar->textBox)*2;
     float messageHeight = (float)fontMetricsMsg.lineHeight;
-    float infobarHeight = (float)dred_control_get_height(DRED_CONTROL(pCmdBar->pInfoBar));
+    float infobarHeight = (float)dred_control_get_height(DRED_CONTROL(&pCmdBar->infoBar));
 
     float cmdbarHeight = dr_max(textboxHeight, dr_max(messageHeight, infobarHeight)) + (pDred->config.cmdbarPaddingY*uiScale*2);
     float cmdbarWidth = 0;
@@ -462,18 +465,14 @@ dr_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dtk_contro
         return DR_FALSE;
     }
 
-
-    pCmdBar->pDred = pDred;
-
-    pCmdBar->pTextBox = &pCmdBar->textBox;
-    if (!dred_textbox_init(pCmdBar->pTextBox, pDred, DRED_CONTROL(pCmdBar))) {
+    if (!dred_textbox_init(&pCmdBar->textBox, pDred, DRED_CONTROL(pCmdBar))) {
         dred_control_uninit(DRED_CONTROL(pCmdBar));
         return DR_FALSE;
     }
 
-    dred_textbox_disable_horizontal_scrollbar(pCmdBar->pTextBox);
-    dred_textbox_disable_vertical_scrollbar(pCmdBar->pTextBox);
-    dred_textbox_set_on_text_changed(pCmdBar->pTextBox, dred_cmdbar_tb__on_text_changed);
+    dred_textbox_disable_horizontal_scrollbar(&pCmdBar->textBox);
+    dred_textbox_disable_vertical_scrollbar(&pCmdBar->textBox);
+    dred_textbox_set_on_text_changed(&pCmdBar->textBox, dred_cmdbar_tb__on_text_changed);
 
     // Events.
     dred_control_set_on_size(DRED_CONTROL(pCmdBar), dred_cmdbar__on_size);
@@ -481,17 +480,16 @@ dr_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dtk_contro
     dred_control_set_on_paint(DRED_CONTROL(pCmdBar), dred_cmdbar__on_paint);
 
     // Text box event overrides.
-    dred_control_set_on_capture_keyboard(DRED_CONTROL(pCmdBar->pTextBox), dred_cmdbar_tb__on_capture_keyboard);
-    dred_control_set_on_release_keyboard(DRED_CONTROL(pCmdBar->pTextBox), dred_cmdbar_tb__on_release_keyboard);
-    dred_control_set_on_key_down(DRED_CONTROL(pCmdBar->pTextBox), dred_cmdbar_tb__on_key_down);
-    dred_control_set_on_printable_key_down(DRED_CONTROL(pCmdBar->pTextBox), dred_cmdbar_tb__on_printable_key_down);
+    dred_control_set_on_capture_keyboard(DRED_CONTROL(&pCmdBar->textBox), dred_cmdbar_tb__on_capture_keyboard);
+    dred_control_set_on_release_keyboard(DRED_CONTROL(&pCmdBar->textBox), dred_cmdbar_tb__on_release_keyboard);
+    dred_control_set_on_key_down(DRED_CONTROL(&pCmdBar->textBox), dred_cmdbar_tb__on_key_down);
+    dred_control_set_on_printable_key_down(DRED_CONTROL(&pCmdBar->textBox), dred_cmdbar_tb__on_printable_key_down);
 
     strcpy_s(pCmdBar->message, sizeof(pCmdBar->message), "");
 
 
     // The info bar.
-    pCmdBar->pInfoBar = &pCmdBar->infoBar;
-    dred_info_bar_init(pCmdBar->pInfoBar, pDred, DRED_CONTROL(pCmdBar));
+    dred_info_bar_init(&pCmdBar->infoBar, pDred, DRED_CONTROL(pCmdBar));
 
 
 
@@ -505,7 +503,7 @@ void dred_cmdbar_uninit(dred_cmdbar* pCmdBar)
         return;
     }
 
-    dred_textbox_uninit(pCmdBar->pTextBox);
+    dred_textbox_uninit(&pCmdBar->textBox);
     free(pCmdBar->workingCommand);
     free(pCmdBar->manualTextEntry);
 
@@ -523,9 +521,9 @@ void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text)
         text = "";
     }
 
-    dred_textbox_deselect_all(pCmdBar->pTextBox);
-    dred_textbox_set_text(pCmdBar->pTextBox, text);
-    dred_textbox_move_cursor_to_end_of_text(pCmdBar->pTextBox);
+    dred_textbox_deselect_all(&pCmdBar->textBox);
+    dred_textbox_set_text(&pCmdBar->textBox, text);
+    dred_textbox_move_cursor_to_end_of_text(&pCmdBar->textBox);
 
     dtk_free(pCmdBar->manualTextEntry);
     pCmdBar->manualTextEntry = NULL;
@@ -537,33 +535,36 @@ dr_bool32 dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigne
         return DR_FALSE;
     }
 
-    if (iPrevCommand >= pCmdBar->pDred->config.recentCommandsCount) {
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBar));
+    dtk_assert(pDred != NULL);
+
+    if (iPrevCommand >= pDred->config.recentCommandsCount) {
         return DR_FALSE;
     }
 
-    dred_cmdbar_set_text(pCmdBar, pCmdBar->pDred->config.recentCommands[iPrevCommand]);
+    dred_cmdbar_set_text(pCmdBar, pDred->config.recentCommands[iPrevCommand]);
     return DR_TRUE;
 }
 
 size_t dred_cmdbar_get_text(dred_cmdbar* pCmdBar, char* pTextOut, size_t textOutSize)
 {
     if (pCmdBar == NULL) return 0;
-    return dred_textbox_get_text(pCmdBar->pTextBox, pTextOut, textOutSize);
+    return dred_textbox_get_text(&pCmdBar->textBox, pTextOut, textOutSize);
 }
 
 char* dred_cmdbar_get_text_malloc(dred_cmdbar* pCmdBar)
 {
     if (pCmdBar == NULL) return 0;
-    return dred_textbox_get_text_malloc(pCmdBar->pTextBox);
+    return dred_textbox_get_text_malloc(&pCmdBar->textBox);
 }
 
 
 void dred_cmdbar_select_text(dred_cmdbar* pCmdBar, size_t firstCharacter, size_t lastCharacter)
 {
     if (pCmdBar == NULL) return;
-    dred_textbox_deselect_all(pCmdBar->pTextBox);
-    dred_textbox_select(pCmdBar->pTextBox, firstCharacter, lastCharacter);
-    dred_textbox_move_cursor_to_character(pCmdBar->pTextBox, 0, lastCharacter);
+    dred_textbox_deselect_all(&pCmdBar->textBox);
+    dred_textbox_select(&pCmdBar->textBox, firstCharacter, lastCharacter);
+    dred_textbox_move_cursor_to_character(&pCmdBar->textBox, 0, lastCharacter);
 }
 
 
@@ -624,7 +625,7 @@ void dred_cmdbar_highlight_argument_by_index(dred_cmdbar* pCmdBar, unsigned int 
         return; // Didn't find the argument.
     }
 
-    dred_textbox_deselect_all(pCmdBar->pTextBox);
+    dred_textbox_deselect_all(&pCmdBar->textBox);
 
     // charBeg and charEnd will both include any double quotes. Since double-quotes are useful, we'll try to be smart and
     // pull the selection region inside the quotes, assuming they exist.
@@ -632,7 +633,7 @@ void dred_cmdbar_highlight_argument_by_index(dred_cmdbar* pCmdBar, unsigned int 
     if (argumentLength > 0) {
         dred_cmdbar_select_text(pCmdBar, charBeg, charEnd);
     } else {
-        dred_textbox_move_cursor_to_character(pCmdBar->pTextBox, 0, charBeg);
+        dred_textbox_move_cursor_to_character(&pCmdBar->textBox, 0, charBeg);
     }
     
     free(pCmdBarText);
@@ -641,7 +642,7 @@ void dred_cmdbar_highlight_argument_by_index(dred_cmdbar* pCmdBar, unsigned int 
 unsigned int dred_cmdbar_get_argument_index_by_cursor(dred_cmdbar* pCmdBar)
 {
     if (pCmdBar == NULL) return (unsigned int)-1;
-    return dred_cmdbar_get_argument_index_by_character_index(pCmdBar, dred_textbox_get_cursor_character(pCmdBar->pTextBox, 0));
+    return dred_cmdbar_get_argument_index_by_character_index(pCmdBar, dred_textbox_get_cursor_character(&pCmdBar->textBox, 0));
 }
 
 unsigned int dred_cmdbar_get_argument_index_by_character_index(dred_cmdbar* pCmdBar, size_t characterIndex)
@@ -759,7 +760,7 @@ dr_bool32 dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
         return DR_FALSE;
     }
 
-    return dtk_control_has_keyboard_capture(DTK_CONTROL(pCmdBar->pTextBox));
+    return dtk_control_has_keyboard_capture(DTK_CONTROL(&pCmdBar->textBox));
 }
 
 
@@ -794,7 +795,7 @@ void dred_cmdbar_update_info_bar(dred_cmdbar* pCmdBar, dred_control* pControl)
         return;
     }
 
-    dred_info_bar_update(pCmdBar->pInfoBar, pControl);
+    dred_info_bar_update(&pCmdBar->infoBar, pControl);
 }
 
 void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
@@ -809,23 +810,23 @@ void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
     }
 
     // Textbox.
-    dred_textbox_set_font(pCmdBar->pTextBox, &pDred->config.pCmdbarTBFont->fontDTK);
-    dred_textbox_set_font_scale(pCmdBar->pTextBox, dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBar)));
+    dred_textbox_set_font(&pCmdBar->textBox, &pDred->config.pCmdbarTBFont->fontDTK);
+    dred_textbox_set_font_scale(&pCmdBar->textBox, dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBar)));
 
     if (dred_cmdbar_has_keyboard_focus(pCmdBar)) {
-        dred_textbox_set_text_color(pCmdBar->pTextBox, pDred->config.cmdbarTextColorActive);
-        dred_textbox_set_cursor_color(pCmdBar->pTextBox, pDred->config.cmdbarTextColorActive);
-        dred_textbox_set_background_color(pCmdBar->pTextBox, pDred->config.cmdbarBGColorActive);
-        dred_textbox_set_active_line_background_color(pCmdBar->pTextBox, pDred->config.cmdbarBGColorActive);
+        dred_textbox_set_text_color(&pCmdBar->textBox, pDred->config.cmdbarTextColorActive);
+        dred_textbox_set_cursor_color(&pCmdBar->textBox, pDred->config.cmdbarTextColorActive);
+        dred_textbox_set_background_color(&pCmdBar->textBox, pDred->config.cmdbarBGColorActive);
+        dred_textbox_set_active_line_background_color(&pCmdBar->textBox, pDred->config.cmdbarBGColorActive);
     } else {
-        dred_textbox_set_text_color(pCmdBar->pTextBox, pDred->config.cmdbarTextColor);
-        dred_textbox_set_cursor_color(pCmdBar->pTextBox, pDred->config.cmdbarTextColor);
-        dred_textbox_set_background_color(pCmdBar->pTextBox, pDred->config.cmdbarBGColor);
-        dred_textbox_set_active_line_background_color(pCmdBar->pTextBox, pDred->config.cmdbarBGColor);
+        dred_textbox_set_text_color(&pCmdBar->textBox, pDred->config.cmdbarTextColor);
+        dred_textbox_set_cursor_color(&pCmdBar->textBox, pDred->config.cmdbarTextColor);
+        dred_textbox_set_background_color(&pCmdBar->textBox, pDred->config.cmdbarBGColor);
+        dred_textbox_set_active_line_background_color(&pCmdBar->textBox, pDred->config.cmdbarBGColor);
     }
 
     // Info bar.
-    dred_info_bar_refresh_styling(pCmdBar->pInfoBar);
+    dred_info_bar_refresh_styling(&pCmdBar->infoBar);
 
 
     // The command bar may need to be resized.

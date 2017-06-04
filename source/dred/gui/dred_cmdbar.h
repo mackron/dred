@@ -5,21 +5,15 @@
 #define DRED_CONTROL_TYPE_CMDBAR   "dred.cmdbar"
 
 typedef struct dred_cmdbar dred_cmdbar;
-#define DRED_CMDBAR(a) ((dred_cmdbar*)(a))
 
+#define DRED_CMDBAR(a) ((dred_cmdbar*)(a))
 struct dred_cmdbar
 {
-    // The base control.
     dred_control control;
-
-    dred_context* pDred;    // TODO: Remove this.
-
     dred_textbox textBox;
-    dred_textbox* pTextBox;
 
     char message[256];
     dred_info_bar infoBar;
-    dred_info_bar* pInfoBar;
     unsigned int iPrevCommand;
     char* workingCommand;
     char* manualTextEntry;  // Used for the tab and arrow key autocomplete stuff.

@@ -473,7 +473,7 @@ dtk_result dtk_surface_init_transient_HDC(dtk_context* pTK, dtk_handle hDC, dtk_
     pSurface->height = height;
     pSurface->isTransient = DTK_TRUE;
     pSurface->gdi.hDC = (HDC)hDC;
-    SetGraphicsMode((HDC)pSurface->gdi.hDC, GM_ADVANCED);    // <-- Needed for world transforms (rotate and scale). TODO: Check that this is needed here and possibly move it to a higher level (such as at window creation time).
+    SetGraphicsMode((HDC)pSurface->gdi.hDC, GM_ADVANCED);    // <-- Needed for world transforms (rotate and scale).
 
     return DTK_SUCCESS;
 }

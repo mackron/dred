@@ -364,7 +364,6 @@ struct dtk_event
 
         struct
         {
-            // TODO: Add a variable for allowing DTK to choose a category of font (UI, Monospace, etc.)
             dtk_uint32 type;                // <-- DTK_APPLICATION_FONT_TYPE_*.
             dtk_font* pFont;                // <-- Set by the event handler.
         } applicationFont;
