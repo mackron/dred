@@ -30,10 +30,8 @@ void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, dtk_i
     dtk_control_set_size(DTK_CONTROL(pCmdBar), parentWidth, dtk_control_get_height(DTK_CONTROL(pCmdBar)));
     dtk_control_set_relative_position(DTK_CONTROL(pCmdBar), 0, parentHeight - dred__get_cmd_bar_height(pDred));
 
-    if (&pDred->cmdbarPopup != NULL) {
-        dtk_window_set_size(DTK_WINDOW(&pDred->cmdbarPopup), parentWidth, 300);
-        dred_cmdbar_popup_refresh_styling(&pDred->cmdbarPopup);
-    }
+    dtk_window_set_size(DTK_WINDOW(&pDred->cmdbarPopup), parentWidth, 300);
+    dred_cmdbar_popup_refresh_styling(&pDred->cmdbarPopup);
 }
 
 void dred__update_background_layout(dred_context* pDred, dtk_control* pBackgroundControl, dtk_int32 parentWidth, dtk_int32 parentHeight)
@@ -170,10 +168,8 @@ void dred__on_main_window_move(dtk_window* pWindow, int posX, int posY)
     dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pWindow));
     dtk_assert(pDred != NULL);
 
-    if (&pDred->cmdbarPopup != NULL) {
-        if (dtk_control_is_visible(DTK_CONTROL(&pDred->cmdbarPopup))) {
-            dred_cmdbar_popup_refresh_position(&pDred->cmdbarPopup);
-        }
+    if (dtk_control_is_visible(DTK_CONTROL(&pDred->cmdbarPopup))) {
+        dred_cmdbar_popup_refresh_position(&pDred->cmdbarPopup);
     }
 
     dtk_int32 configWindowPosX;
@@ -191,10 +187,8 @@ void dred__on_main_window_size(dtk_window* pWindow, dtk_int32 width, dtk_int32 h
 
     dred__update_main_window_layout(pWindow, width, height);
 
-    if (&pDred->cmdbarPopup != NULL) {
-        if (dtk_control_is_visible(DTK_CONTROL(&pDred->cmdbarPopup))) {
-            dred_cmdbar_popup_refresh_position(&pDred->cmdbarPopup);
-        }
+    if (dtk_control_is_visible(DTK_CONTROL(&pDred->cmdbarPopup))) {
+        dred_cmdbar_popup_refresh_position(&pDred->cmdbarPopup);
     }
 
 
@@ -454,9 +448,14 @@ static dtk_bool32 dred_main_window_event_handler(dtk_event* pEvent)
         default: break;
     }
 
-    return dred_dtk_window_event_handler(pEvent);
+    return dtk_window_default_event_handler(pEvent);
 }
 
+void dred_dtk_log_callback(dtk_context* pTK, const char* message)
+{
+    dred_context* pDred = (dred_context*)pTK->pUserData;
+    dred_log(pDred, message);
+}
 
 dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_library* pPackageLibrary)
 {
@@ -474,8 +473,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
         return DTK_FALSE;
     }
 
-    dred_platform_init(&pDred->tk); // <-- This is only temporary while DTK is being integrated.
-
+    dtk_set_log_callback(&pDred->tk, dred_dtk_log_callback);
 
     // The string pool is initialized with data from the pre-build tool. It contains strings for stock shortcuts, menus, etc.
     dred_string_pool_init(&pDred->stringPool, (const char*)g_InitialStringPoolData, sizeof(g_InitialStringPoolData));
@@ -513,10 +511,6 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     if (!dred_gui_init_dtk(pDred->pGUI, pDred)) {
         goto on_error;
     }
-
-    // The GUI needs to be linked to the window system.
-    dred_platform_bind_gui(pDred->pGUI);
-    dred_platform_bind_logging(pDred);
 
 
     // The font library. This needs to be initialized before loading any fonts and configs.
@@ -745,7 +739,15 @@ int dred_run(dred_context* pDred)
         return -1;
     }
 
-    return dred_platform_run();
+    int exitCode = 0;
+    for (;;) {
+        dtk_result result = dtk_next_event(&pDred->tk, DTK_TRUE, &exitCode);  // <-- DTK_TRUE = blocking.
+        if (result != DTK_SUCCESS) {
+            break;
+        }
+    }
+
+    return exitCode;
 }
 
 void dred_close(dred_context* pDred)
@@ -763,7 +765,7 @@ void dred_close(dred_context* pDred)
     dred_save_dredprivate(pDred);
 
     // Terminate from the main loop.
-    dred_platform_post_quit_message(0);
+    dtk_post_quit_event(&pDred->tk, 0);
 }
 
 
@@ -1692,7 +1694,7 @@ dr_bool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFil
 
     return DR_TRUE;
 #else
-    GtkWidget* dialog = gtk_file_chooser_dialog_new("Save As", GTK_WINDOW(pDred->mainWindow.windowDTK.gtk.pWidget), GTK_FILE_CHOOSER_ACTION_SAVE,
+    GtkWidget* dialog = gtk_file_chooser_dialog_new("Save As", GTK_WINDOW(pDred->mainWindow.gtk.pWidget), GTK_FILE_CHOOSER_ACTION_SAVE,
         "_Save",   GTK_RESPONSE_ACCEPT,
         "_Cancel", GTK_RESPONSE_CANCEL, NULL);
     if (dialog == NULL) {

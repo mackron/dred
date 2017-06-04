@@ -160,7 +160,7 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
         default: break;
     }
 
-    return dred_dtk_window_event_handler(pEvent);
+    return dtk_window_default_event_handler(pEvent);
 }
 
 

@@ -147,7 +147,6 @@ int dred_main(dr_cmdline cmdline)
 #endif
 
     dred_uninit(&dred);
-    dred_platform_uninit();
     return result;
 }
 

@@ -31,7 +31,7 @@ static dtk_bool32 dred_settings_dialog_event_handler(dtk_event* pEvent)
         } break;
     }
 
-    return dred_dtk_window_event_handler(pEvent);
+    return dtk_window_default_event_handler(pEvent);
 }
 
 dred_settings_dialog* dred_settings_dialog_create(dred_context* pDred)

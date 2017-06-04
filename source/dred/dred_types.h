@@ -1,7 +1,6 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
 typedef struct dred_context dred_context;
-typedef struct dred_window dred_window; // TODO: Remove this.
 typedef struct dred_shortcut dred_shortcut;
 typedef struct dred_shortcut_table dred_shortcut_table;
 typedef struct dred_font dred_font;
