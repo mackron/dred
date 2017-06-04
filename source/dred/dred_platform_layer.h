@@ -94,10 +94,10 @@ struct dred_window
 dred_window* dred_window_create(dred_context* pDred, dtk_event_proc onEvent);
 
 // Creates a dialog window.
-dred_window* dred_window_create_dialog(dred_window* pParentWindow, const char* title, unsigned int width, unsigned int height);
+dred_window* dred_window_create_dialog(dtk_window* pParentWindow, const char* title, unsigned int width, unsigned int height);
 
 // Creates a popup window.
-dred_window* dred_window_create_popup(dred_window* pParentWindow, unsigned int width, unsigned int height);
+dred_window* dred_window_create_popup(dtk_window* pParentWindow, unsigned int width, unsigned int height);
 
 // Deletes a window.
 void dred_window_delete(dred_window* pWindow);
@@ -140,19 +140,19 @@ dr_bool32 dred_window_is_cursor_over(dred_window* pWindow);
 void dred_window_set_menu(dred_window* pWindow, dtk_menu* pMenu);
 
 // Hides the menu for the given window.
-void dred_window_hide_menu(dred_window* pWindow);
+//void dred_window_hide_menu(dred_window* pWindow);
 
 // Shows the menu for the given window.
-void dred_window_show_menu(dred_window* pWindow);
+//void dred_window_show_menu(dred_window* pWindow);
 
 // Determines whether or not the menu is being shown for the given window.
-dr_bool32 dred_window_is_showing_menu(dred_window* pWindow);
+//dr_bool32 dred_window_is_showing_menu(dred_window* pWindow);
 
 // Shows a popup menu on the given window.
 void dred_window_show_popup_menu(dred_window* pWindow, dtk_menu* pMenu, int posX, int posY);
 
 // Sends an IPC message to the event queue for the given window.
-void dred_window_send_ipc_message_event(dred_window* pWindow, unsigned int messageID, const void* pMessageData, size_t messageDataSize);
+void dred_window_send_ipc_message_event(dtk_window* pWindow, unsigned int messageID, const void* pMessageData, size_t messageDataSize);
 
 
 // Event posting.

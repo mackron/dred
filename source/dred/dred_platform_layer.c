@@ -354,7 +354,7 @@ dred_window* dred_window_create(dred_context* pDred, dtk_event_proc onEvent)
     return pWindow;
 }
 
-dred_window* dred_window_create_dialog(dred_window* pParentWindow, const char* title, unsigned int width, unsigned int height)
+dred_window* dred_window_create_dialog(dtk_window* pParentWindow, const char* title, unsigned int width, unsigned int height)
 {
     if (pParentWindow == NULL) return NULL; // All dialog windows must be tied to a parent.
 
@@ -363,12 +363,12 @@ dred_window* dred_window_create_dialog(dred_window* pParentWindow, const char* t
         return NULL;
     }
 
-    if (dtk_window_init(pParentWindow->windowDTK.control.pTK, dred_dtk_window_event_handler, DTK_CONTROL(&pParentWindow->windowDTK), dtk_window_type_dialog, title, width, height, &pWindow->windowDTK) != DTK_SUCCESS) {
+    if (dtk_window_init(DTK_CONTROL(pParentWindow)->pTK, dred_dtk_window_event_handler, DTK_CONTROL(pParentWindow), dtk_window_type_dialog, title, width, height, &pWindow->windowDTK) != DTK_SUCCESS) {
         free(pWindow);
         return NULL;
     }
 
-    if (!dred_window_create__post_setup(pParentWindow->pDred, pWindow)) {
+    if (!dred_window_create__post_setup(dred_get_context_from_control(DTK_CONTROL(pParentWindow)), pWindow)) {
         dtk_window_uninit(&pWindow->windowDTK);
         free(pWindow);
         return NULL;
@@ -377,7 +377,7 @@ dred_window* dred_window_create_dialog(dred_window* pParentWindow, const char* t
     return pWindow;
 }
 
-dred_window* dred_window_create_popup(dred_window* pParentWindow, unsigned int width, unsigned int height)
+dred_window* dred_window_create_popup(dtk_window* pParentWindow, unsigned int width, unsigned int height)
 {
     if (pParentWindow == NULL) return NULL; // All popup windows must be tied to a parent.
 
@@ -386,12 +386,12 @@ dred_window* dred_window_create_popup(dred_window* pParentWindow, unsigned int w
         return NULL;
     }
 
-    if (dtk_window_init(pParentWindow->windowDTK.control.pTK, dred_dtk_window_event_handler, DTK_CONTROL(&pParentWindow->windowDTK), dtk_window_type_popup, "", width, height, &pWindow->windowDTK) != DTK_SUCCESS) {
+    if (dtk_window_init(DTK_CONTROL(pParentWindow)->pTK, dred_dtk_window_event_handler, DTK_CONTROL(pParentWindow), dtk_window_type_popup, "", width, height, &pWindow->windowDTK) != DTK_SUCCESS) {
         free(pWindow);
         return NULL;
     }
 
-    if (!dred_window_create__post_setup(pParentWindow->pDred, pWindow)) {
+    if (!dred_window_create__post_setup(dred_get_context_from_control(DTK_CONTROL(pParentWindow)), pWindow)) {
         dtk_window_uninit(&pWindow->windowDTK);
         free(pWindow);
         return NULL;
@@ -548,6 +548,7 @@ void dred_window_set_menu(dred_window* pWindow, dtk_menu* pMenu)
     pWindow->pMenu = pMenu;
 }
 
+#if 0
 void dred_window_hide_menu(dred_window* pWindow)
 {
     if (pWindow == NULL) return;
@@ -581,6 +582,7 @@ dr_bool32 dred_window_is_showing_menu(dred_window* pWindow)
     if (pWindow == NULL) return DR_FALSE;
     return pWindow->isShowingMenu;
 }
+#endif
 
 void dred_window_show_popup_menu(dred_window* pWindow, dtk_menu* pMenu, int posX, int posY)
 {
@@ -588,10 +590,10 @@ void dred_window_show_popup_menu(dred_window* pWindow, dtk_menu* pMenu, int posX
     dtk_window_show_popup_menu(&pWindow->windowDTK, pMenu, posX, posY);
 }
 
-void dred_window_send_ipc_message_event(dred_window* pWindow, unsigned int messageID, const void* pMessageData, size_t messageDataSize)
+void dred_window_send_ipc_message_event(dtk_window* pWindow, unsigned int messageID, const void* pMessageData, size_t messageDataSize)
 {
     if (pWindow == NULL) return;
-    dtk_post_custom_event(DTK_CONTROL(&pWindow->windowDTK)->pTK, DTK_CONTROL(&pWindow->windowDTK), messageID, pMessageData, messageDataSize);
+    dtk_post_custom_event(DTK_CONTROL(pWindow)->pTK, DTK_CONTROL(pWindow), messageID, pMessageData, messageDataSize);
 }
 
 

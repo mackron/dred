@@ -22,7 +22,7 @@ struct dred_tabgroup_container
 
 
 // dred_tabgroup_container_create()
-dr_bool32 dred_tabgroup_container_init(dred_tabgroup_container* pContainer, dred_context* pDred, dred_control* pParent);
+dr_bool32 dred_tabgroup_container_init(dred_tabgroup_container* pContainer, dred_context* pDred, dtk_control* pParent);
 
 // dred_tabgroup_container_delete()
 void dred_tabgroup_container_uninit(dred_tabgroup_container* pContainer);

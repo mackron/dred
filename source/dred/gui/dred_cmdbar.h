@@ -27,7 +27,7 @@ struct dred_cmdbar
 
 
 // dred_cmdbar_create()
-dr_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_control* pParent);
+dr_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dtk_control* pParent);
 
 // dred_cmdbar_delete()
 void dred_cmdbar_uninit(dred_cmdbar* pCmdBar);

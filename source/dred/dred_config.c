@@ -376,9 +376,9 @@ void dred_config_on_set__show_tab_bar(dred_context* pDred)
 void dred_config_on_set__show_menu_bar(dred_context* pDred)
 {
     if (pDred->config.showMenuBar) {
-        dred_window_show_menu(pDred->pMainWindow);
+        dred_show_main_menu(pDred);
     } else {
-        dred_window_hide_menu(pDred->pMainWindow);
+        dred_hide_main_menu(pDred);
     }
 }
 

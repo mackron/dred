@@ -56,13 +56,18 @@ struct dred_context
 
 
     // The main window.
-    dred_window* pMainWindow;
+    dtk_window mainWindow;
+    dtk_window* pMainWindow;    // TODO: Remove this. This is just a pointer to mainWindow for backwards compatibility.
+
+    // The menu currently being shown on the main window.
+    dtk_menu* pMainMenu;
+
 
     // The about window.
-    dred_about_dialog* pAboutDialog;
+    dred_about_dialog* pAboutDialog;    // TODO: Remove this pointer and replace with an actual object.
 
     // The settings dialog window.
-    dred_settings_dialog* pSettingsDialog;
+    dred_settings_dialog* pSettingsDialog;  // TODO: Remove this pointer and replace with an actual object.
 
 
     // The background control that's displayed when there is nothing open.
@@ -70,18 +75,18 @@ struct dred_context
 
     // The main tab group container. This is the root container where all other sub-containers will be placed.
     dred_tabgroup_container mainTabGroupContainer;
-    dred_tabgroup_container* pMainTabGroupContainer;
+    dred_tabgroup_container* pMainTabGroupContainer;    // TODO: Remove this.
 
     // The main tab group. This is actually temporary until support for multiple tab groups (splitting) is implemented.
     dred_tabgroup mainTabGroup;
-    dred_tabgroup* pMainTabGroup;
+    dred_tabgroup* pMainTabGroup;   // TODO: Remove this.
 
     // The command bar. This is is the control that runs along the bottom of the main window.
     dred_cmdbar cmdBar;
-    dred_cmdbar* pCmdBar;
+    dred_cmdbar* pCmdBar;   // TODO: Remove this.
 
     // The command bar auto-complete popup window.
-    dred_cmdbar_popup* pCmdBarPopup;
+    dred_cmdbar_popup* pCmdBarPopup;    // TODO: Replace this with an object.
 
 
     // Whether or not the context is initialized.
@@ -95,6 +100,9 @@ struct dred_context
 
     // Whether or not we're running in portable mode.
     dr_bool32 isPortable;
+
+    // Whether or not the main menu is being shown.
+    dtk_bool32 isShowingMainMenu;
 };
 
 // dred_init
@@ -175,7 +183,7 @@ dred_tab* dred_get_focused_tab(dred_context* pDred);
 dred_editor* dred_get_focused_editor(dred_context* pDred);
 
 // Retrieves the element with the keyboard capture, if any.
-dtk_control* dred_get_element_with_keyboard_capture(dred_context* pDred);
+dtk_control* dred_get_control_with_keyboard_capture(dred_context* pDred);
 
 
 // Retrieves the control type of the editor to use for a file with the extension of the given file path.
@@ -420,3 +428,15 @@ void dred_on_ipc_message(dred_context* pDred, unsigned int messageID, const void
 // This function assumes the control was created from the dtk_context object that is owned by the dred_context object.
 dred_context* dred_get_context_from_control(dtk_control* pControl);
 
+
+// Sets the main menu.
+void dred_set_main_menu(dred_context* pDred, dtk_menu* pMenu);
+
+// Shows the main menu.
+void dred_show_main_menu(dred_context* pDred);
+
+// Hides the main menu.
+void dred_hide_main_menu(dred_context* pDred);
+
+// Determines whether or not the main menu is being shown.
+dtk_bool32 dred_is_showing_main_menu(dred_context* pDred);

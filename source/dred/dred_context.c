@@ -1,25 +1,25 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
-float dred__get_cmd_bar_height(dred_context* pDred)
+dtk_int32 dred__get_cmd_bar_height(dred_context* pDred)
 {
-    if (pDred == NULL || !dred_control_is_visible(DRED_CONTROL(pDred->pCmdBar))) {
+    if (pDred == NULL || !dtk_control_is_visible(DTK_CONTROL(pDred->pCmdBar))) {
         return 0;
     }
 
-    return dred_control_get_height(DRED_CONTROL(pDred->pCmdBar));
+    return dtk_control_get_height(DTK_CONTROL(pDred->pCmdBar));
 }
 
-void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabgroup_container* pContainer, float parentWidth, float parentHeight)
+void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabgroup_container* pContainer, dtk_int32 parentWidth, dtk_int32 parentHeight)
 {
     if (pContainer == NULL) {
         return;
     }
 
-    dred_control_set_size(DRED_CONTROL(pContainer), parentWidth, parentHeight - dred__get_cmd_bar_height(pDred));
+    dtk_control_set_size(DTK_CONTROL(pContainer), parentWidth, parentHeight - dred__get_cmd_bar_height(pDred));
     dred_tabgroup_refresh_styling(pDred->pMainTabGroup);
 }
 
-void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float parentWidth, float parentHeight)
+void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, dtk_int32 parentWidth, dtk_int32 parentHeight)
 {
     (void)pDred;
 
@@ -27,8 +27,8 @@ void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float
         return;
     }
 
-    dred_control_set_size(DRED_CONTROL(pCmdBar), parentWidth, dred_control_get_height(DRED_CONTROL(pCmdBar)));
-    dred_control_set_relative_position(DRED_CONTROL(pCmdBar), 0, parentHeight - dred__get_cmd_bar_height(pDred));
+    dtk_control_set_size(DTK_CONTROL(pCmdBar), parentWidth, dtk_control_get_height(DTK_CONTROL(pCmdBar)));
+    dtk_control_set_relative_position(DTK_CONTROL(pCmdBar), 0, parentHeight - dred__get_cmd_bar_height(pDred));
 
     if (pDred->pCmdBarPopup != NULL) {
         dred_window_set_size(pDred->pCmdBarPopup->pWindow, (int)parentWidth, 300);
@@ -36,18 +36,18 @@ void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, float
     }
 }
 
-void dred__update_background_layout(dred_context* pDred, dtk_control* pBackgroundControl, float parentWidth, float parentHeight)
+void dred__update_background_layout(dred_context* pDred, dtk_control* pBackgroundControl, dtk_int32 parentWidth, dtk_int32 parentHeight)
 {
     if (pBackgroundControl == NULL) {
         return;
     }
 
-    dtk_control_set_size(pBackgroundControl, (dtk_uint32)parentWidth, (dtk_uint32)(parentHeight - dred__get_cmd_bar_height(pDred)));
+    dtk_control_set_size(pBackgroundControl, parentWidth, (parentHeight - dred__get_cmd_bar_height(pDred)));
 }
 
-void dred__update_main_window_layout(dred_window* pWindow, float windowWidth, float windowHeight)
+void dred__update_main_window_layout(dtk_window* pWindow, dtk_int32 windowWidth, dtk_int32 windowHeight)
 {
-    dred_context* pDred = pWindow->pDred;
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pWindow));
     assert(pDred != NULL);
 
     dred__update_main_tab_group_container_layout(pDred, pDred->pMainTabGroupContainer, windowWidth, windowHeight);
@@ -97,7 +97,7 @@ void dred__update_window_title(dred_context* pDred)
         strcpy_s(formattedTitle, sizeof(formattedTitle), "dred");
     }
 
-    dred_window_set_title(pDred->pMainWindow, formattedTitle);
+    dtk_window_set_title(pDred->pMainWindow, formattedTitle);
 }
 
 void dred__refresh_editor_tab_text(dred_editor* pEditor, dred_tab* pTab)
@@ -154,59 +154,63 @@ void dred__on_editor_unmodified(dred_editor* pEditor)
 }
 
 
-void dred_window_cb__on_main_window_close(dred_window* pWindow)
+void dred_window_cb__on_main_window_close(dtk_window* pWindow)
 {
-    assert(pWindow != NULL);
-    dred_close(pWindow->pDred);
+    dtk_assert(pWindow != NULL);
+    dred_close(dred_get_context_from_control(DTK_CONTROL(pWindow)));
 }
 
-void dred_window_cb__on_main_window_move(dred_window* pWindow, int posX, int posY)
+void dred_window_cb__on_main_window_move(dtk_window* pWindow, int posX, int posY)
 {
     (void)posX;
     (void)posY;
 
-    assert(pWindow != NULL);
+    dtk_assert(pWindow != NULL);
+    
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pWindow));
+    dtk_assert(pDred != NULL);
 
-    if (pWindow->pDred->pCmdBarPopup != NULL) {
-        if (dtk_control_is_visible(DTK_CONTROL(&pWindow->pDred->pCmdBarPopup->pWindow->windowDTK))) {
-            dred_cmdbar_popup_refresh_position(pWindow->pDred->pCmdBarPopup);
+    if (pDred->pCmdBarPopup != NULL) {
+        if (dtk_control_is_visible(DTK_CONTROL(&pDred->pCmdBarPopup->pWindow->windowDTK))) {
+            dred_cmdbar_popup_refresh_position(pDred->pCmdBarPopup);
         }
     }
 
-    int configWindowPosX;
-    int configWindowPosY;
-    dred_window_get_position(pWindow, &configWindowPosX, &configWindowPosY);
+    dtk_int32 configWindowPosX;
+    dtk_int32 configWindowPosY;
+    dtk_window_get_absolute_position(pWindow, &configWindowPosX, &configWindowPosY);
 
-    pWindow->pDred->config.windowPosX = configWindowPosX;
-    pWindow->pDred->config.windowPosY = configWindowPosY;
+    pDred->config.windowPosX = configWindowPosX;
+    pDred->config.windowPosY = configWindowPosY;
 }
 
-void dred_window_cb__on_main_window_size(dred_control* pControl, float width, float height)
+void dred_window_cb__on_main_window_size(dtk_control* pControl, dtk_int32 width, dtk_int32 height)
 {
-    (void)height;
-
-    dred_window* pWindow = dred_get_control_window(pControl);
+    dtk_window* pWindow = dtk_control_get_window(pControl);
     if (pWindow == NULL) {
         return;
     }
 
+    dred_context* pDred = dred_get_context_from_control(pControl);
+    dtk_assert(pDred != NULL);
+
     dred__update_main_window_layout(pWindow, width, height);
 
-    if (pWindow->pDred->pCmdBarPopup != NULL) {
-        if (dtk_control_is_visible(DTK_CONTROL(&pWindow->pDred->pCmdBarPopup->pWindow->windowDTK))) {
-            dred_cmdbar_popup_refresh_position(pWindow->pDred->pCmdBarPopup);
+    if (pDred->pCmdBarPopup != NULL) {
+        if (dtk_control_is_visible(DTK_CONTROL(&pDred->pCmdBarPopup->pWindow->windowDTK))) {
+            dred_cmdbar_popup_refresh_position(pDred->pCmdBarPopup);
         }
     }
 
 
     // The config needs to be updated so that it's settings are serialized.
-    unsigned int windowWidth;
-    unsigned int windowHeight;
-    dred_window_get_size(pWindow, &windowWidth, &windowHeight);
+    dtk_int32 windowWidth;
+    dtk_int32 windowHeight;
+    dtk_window_get_size(pWindow, &windowWidth, &windowHeight);
 
-    pWindow->pDred->config.windowWidth = windowWidth;
-    pWindow->pDred->config.windowHeight = windowHeight;
-    pWindow->pDred->config.windowMaximized = dred_window_is_maximized(pWindow);
+    pDred->config.windowWidth     = windowWidth;
+    pDred->config.windowHeight    = windowHeight;
+    pDred->config.windowMaximized = dtk_window_is_maximized(pWindow);
 }
 
 
@@ -414,6 +418,21 @@ static dtk_bool32 dred_main_window_event_handler(dtk_event* pEvent)
 
     switch (pEvent->type)
     {
+        case DTK_EVENT_SIZE:
+        {
+            dred_window_cb__on_main_window_size(DTK_CONTROL(pWindow), pEvent->size.width, pEvent->size.height);
+        } break;
+
+        case DTK_EVENT_MOVE:
+        {
+            dred_window_cb__on_main_window_move(pWindow, pEvent->move.x, pEvent->move.y);
+        } break;
+
+        case DTK_EVENT_CLOSE:
+        {
+            dred_window_cb__on_main_window_close(pWindow);
+        } break;
+
         case DTK_EVENT_DPI_CHANGED:
         {
             dtk_window_set_absolute_position(pWindow, pEvent->dpiChanged.suggestedPosX, pEvent->dpiChanged.suggestedPosY);
@@ -481,6 +500,8 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     if (dr_cmdline_key_exists(&cmdline, "no-portable")) {
         pDred->isPortable = DTK_FALSE;
     }
+
+    pDred->isShowingMainMenu = DTK_TRUE;
 
 
     // Make sure the user's config directory exists.
@@ -563,18 +584,19 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
 
 
     // The main window.
-    pDred->pMainWindow = dred_window_create(pDred, dred_main_window_event_handler);
-    if (pDred->pMainWindow == NULL) {
+    pDred->pMainWindow = &pDred->mainWindow;
+    dtk_result result = dtk_window_init(&pDred->tk, dred_main_window_event_handler, NULL, dtk_window_type_toplevel, "dred", 1280, 1024, &pDred->mainWindow);
+    if (result != DTK_SUCCESS) {
         dred_error(pDred, "Failed to create main window.");
         goto on_error;
     }
 
-    pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
-    pDred->pMainWindow->onMove = dred_window_cb__on_main_window_move;
-    dred_control_set_on_size(pDred->pMainWindow->pRootGUIControl, dred_window_cb__on_main_window_size);
+    //pDred->pMainWindow->onClose = dred_window_cb__on_main_window_close;
+    //pDred->pMainWindow->onMove = dred_window_cb__on_main_window_move;
+    //dred_control_set_on_size(pDred->pMainWindow->pRootGUIControl, dred_window_cb__on_main_window_size);
 
 
-    if (dtk_control_init(&pDred->tk, DTK_CONTROL_TYPE_EMPTY, dred_background_control_event_handler, DTK_CONTROL(pDred->pMainWindow->pRootGUIControl), &pDred->backgroundControl) != DTK_SUCCESS) {
+    if (dtk_control_init(&pDred->tk, DTK_CONTROL_TYPE_EMPTY, dred_background_control_event_handler, DTK_CONTROL(pDred->pMainWindow), &pDred->backgroundControl) != DTK_SUCCESS) {
         dred_error(pDred, "Failed to create background control.\n");
         goto on_error;
     }
@@ -584,7 +606,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
 
     // The main tab group container.
     pDred->pMainTabGroupContainer = &pDred->mainTabGroupContainer;
-    if (!dred_tabgroup_container_init(pDred->pMainTabGroupContainer, pDred, pDred->pMainWindow->pRootGUIControl)) {
+    if (!dred_tabgroup_container_init(pDred->pMainTabGroupContainer, pDred, DTK_CONTROL(pDred->pMainWindow))) {
         dred_error(pDred, "Failed to create main tab group container.\n");
         goto on_error;
     }
@@ -598,7 +620,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
 
     // The command bar. Ensure this is given a valid initial size.
     pDred->pCmdBar = &pDred->cmdBar;
-    if (!dred_cmdbar_init(pDred->pCmdBar, pDred, pDred->pMainWindow->pRootGUIControl)) {
+    if (!dred_cmdbar_init(pDred->pCmdBar, pDred, DTK_CONTROL(pDred->pMainWindow))) {
         dred_error(pDred, "Failed to create command bar.\n");
         goto on_error;
     }
@@ -620,21 +642,23 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     windowHeight = (unsigned int)pDred->config.windowHeight;
     showWindowMaximized = pDred->config.windowMaximized;
 
-    dred_window_set_title(pDred->pMainWindow, "dred");
-    dred_window_set_menu(pDred->pMainWindow, &pDred->menus.nothingopen);
-    dred_window_set_size(pDred->pMainWindow, windowWidth, windowHeight);
+    dtk_window_set_title(pDred->pMainWindow, "dred");
+    dtk_window_set_size(pDred->pMainWindow, windowWidth, windowHeight);
     if (showWindowMaximized) {
-        dred_window_show_maximized(pDred->pMainWindow);
+        dtk_window_show(pDred->pMainWindow, DTK_SHOW_MAXIMIZED);
     } else {
-        dred_window_show(pDred->pMainWindow);
+        dtk_window_show(pDred->pMainWindow, DTK_SHOW_NORMAL);
     }
     if (!pDred->config.showMenuBar) {
-        dred_window_hide_menu(pDred->pMainWindow);
+        dred_hide_main_menu(pDred);
     }
     if (!pDred->config.useDefaultWindowPos) {
-        dred_window_set_position(pDred->pMainWindow, windowPosX, windowPosY);
-        dtk_window_move_into_view(&pDred->pMainWindow->windowDTK);  // <-- This just makes sure the window is in view in case the config has an erroneous position setting.
+        dtk_window_set_absolute_position(pDred->pMainWindow, windowPosX, windowPosY);
+        dtk_window_move_into_view(pDred->pMainWindow);  // <-- This just makes sure the window is in view in case the config has an erroneous position setting.
     }
+
+    dred_set_main_menu(pDred, &pDred->menus.nothingopen);
+
 
     // We only want to use the default window position on first run.
     pDred->config.useDefaultWindowPos = DR_FALSE;
@@ -719,7 +743,7 @@ void dred_uninit(dred_context* pDred)
     dred_menu_item_table_uninit(&pDred->menuItemTable);
 
     if (pDred->pMainWindow) {
-        dred_window_delete(pDred->pMainWindow);
+        dtk_window_uninit(pDred->pMainWindow);
     }
 
     dred_config_uninit(&pDred->config);
@@ -1065,18 +1089,13 @@ dred_editor* dred_get_focused_editor(dred_context* pDred)
     return DRED_EDITOR(pControl);
 }
 
-dtk_control* dred_get_element_with_keyboard_capture(dred_context* pDred)
+dtk_control* dred_get_control_with_keyboard_capture(dred_context* pDred)
 {
     if (pDred == NULL) {
         return NULL;
     }
 
-    dtk_control* pControl = dtk_get_control_with_keyboard_capture(&pDred->tk);
-    if (pControl == NULL) {
-        pControl = pDred->pMainWindow->windowDTK.pLastDescendantWithKeyboardFocus;
-    }
-
-    return pControl;
+    return dtk_get_control_with_keyboard_capture(&pDred->tk);
 }
 
 
@@ -1606,7 +1625,7 @@ void dred_show_open_file_dialog(dred_context* pDred)
     OPENFILENAMEA ofn;
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = (HWND)pDred->pMainWindow->windowDTK.win32.hWnd;
+    ofn.hwndOwner = (HWND)pDred->pMainWindow->win32.hWnd;
     ofn.lpstrFile = filePaths;
     ofn.nMaxFile = sizeof(filePaths);
     ofn.lpstrFilter = "All\0*.*\0Text Files\0*.txt\0";
@@ -1686,7 +1705,7 @@ dr_bool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFil
     OPENFILENAMEA ofn;
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = (HWND)pDred->pMainWindow->windowDTK.win32.hWnd;
+    ofn.hwndOwner = (HWND)pDred->pMainWindow->win32.hWnd;
     ofn.lpstrFile = absolutePathOut;
     ofn.nMaxFile = (DWORD)absolutePathOutSize;
     ofn.lpstrFilter = "All\0*.*\0";
@@ -2296,10 +2315,10 @@ void dred_update_main_window_layout(dred_context* pDred)
         return;
     }
 
-    unsigned int windowWidth;
-    unsigned int windowHeight;
-    dred_window_get_client_size(pDred->pMainWindow, &windowWidth, &windowHeight);
-    dred__update_main_window_layout(pDred->pMainWindow, (float)windowWidth, (float)windowHeight);
+    dtk_int32 windowWidth;
+    dtk_int32 windowHeight;
+    dtk_window_get_client_size(DTK_WINDOW(pDred->pMainWindow), &windowWidth, &windowHeight);
+    dred__update_main_window_layout(DTK_WINDOW(pDred->pMainWindow), windowWidth, windowHeight);
 }
 
 void dred_refresh_layout(dred_context* pDred)
@@ -2826,9 +2845,9 @@ void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab, dred_tab* pOldAc
         dred__update_window_title(pDred);
 
         if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-            dred_window_set_menu(pDred->pMainWindow, &pDred->menus.text);
+            dred_set_main_menu(pDred, &pDred->menus.text);
         } else {
-            dred_window_set_menu(pDred->pMainWindow, &pDred->menus.nothingopen);
+            dred_set_main_menu(pDred, &pDred->menus.nothingopen);
         }
 
         if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
@@ -2853,8 +2872,8 @@ void dred_on_tab_deactivated(dred_context* pDred, dred_tab* pTab, dred_tab* pNew
     }
 
     if (pNewActiveTab == NULL && dred_tab_get_tabgroup(pTab) == dred_get_focused_tabgroup(pDred)) {
-        dred_window_set_menu(pDred->pMainWindow, &pDred->menus.nothingopen);
-        dred_window_set_title(pDred->pMainWindow, "dred");
+        dred_set_main_menu(pDred, &pDred->menus.nothingopen);
+        dtk_window_set_title(pDred->pMainWindow, "dred");
         dred_update_info_bar(pDred, NULL);
     }
 }
@@ -2904,7 +2923,7 @@ void dred_on_ipc_message(dred_context* pDred, unsigned int messageID, const void
     {
         case DRED_IPC_MESSAGE_ACTIVATE:
         {
-            dred_window_bring_to_top(pDred->pMainWindow);
+            dtk_window_bring_to_top(pDred->pMainWindow);
         } break;
 
         case DRED_IPC_MESSAGE_OPEN:
@@ -2924,4 +2943,43 @@ dred_context* dred_get_context_from_control(dtk_control* pControl)
 {
     if (pControl == NULL) return NULL;
     return (dred_context*)pControl->pTK->pUserData;
+}
+
+
+void dred_set_main_menu(dred_context* pDred, dtk_menu* pMenu)
+{
+    if (pDred == NULL) return;
+    pDred->pMainMenu = pMenu;
+
+    if (pDred->isShowingMainMenu) {
+        dtk_window_set_menu(pDred->pMainWindow, pDred->pMainMenu);
+    }
+}
+
+void dred_show_main_menu(dred_context* pDred)
+{
+    if (pDred == NULL) return;
+    if (dred_is_showing_main_menu(pDred)) {
+        return;
+    }
+
+    dtk_window_set_menu(pDred->pMainWindow, pDred->pMainMenu);
+    pDred->isShowingMainMenu = DR_TRUE;
+}
+
+void dred_hide_main_menu(dred_context* pDred)
+{
+    if (pDred == NULL) return;
+    if (!dred_is_showing_main_menu(pDred)) {
+        return;
+    }
+
+    dtk_window_set_menu(pDred->pMainWindow, NULL);
+    pDred->isShowingMainMenu = DR_FALSE;
+}
+
+dtk_bool32 dred_is_showing_main_menu(dred_context* pDred)
+{
+    if (pDred == NULL) return DTK_FALSE;
+    return pDred->isShowingMainMenu;
 }

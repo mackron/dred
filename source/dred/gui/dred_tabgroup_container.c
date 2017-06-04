@@ -12,7 +12,7 @@ void dred_tabgroup_container__on_size(dred_control* pControl, float newWidth, fl
     }
 }
 
-dr_bool32 dred_tabgroup_container_init(dred_tabgroup_container* pContainer, dred_context* pDred, dred_control* pParent)
+dr_bool32 dred_tabgroup_container_init(dred_tabgroup_container* pContainer, dred_context* pDred, dtk_control* pParent)
 {
     if (pContainer == NULL) {
         return DR_FALSE;
@@ -20,7 +20,7 @@ dr_bool32 dred_tabgroup_container_init(dred_tabgroup_container* pContainer, dred
 
     memset(pContainer, 0, sizeof(*pContainer));
 
-    if (!dred_control_init(DRED_CONTROL(pContainer), pDred, pParent, NULL, DRED_CONTROL_TYPE_TABGROUP_CONTAINER, NULL)) {
+    if (!dred_control_init(DRED_CONTROL(pContainer), pDred, NULL, pParent, DRED_CONTROL_TYPE_TABGROUP_CONTAINER, NULL)) {
         return DR_FALSE;
     }
 

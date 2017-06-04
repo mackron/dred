@@ -406,7 +406,7 @@ dr_bool32 dred_command__undo(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedControl = (dred_control*)dred_get_element_with_keyboard_capture(pDred);
+    dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
     if (pFocusedControl == NULL) {
         return DR_TRUE;
     }
@@ -423,7 +423,7 @@ dr_bool32 dred_command__redo(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedControl = (dred_control*)dred_get_element_with_keyboard_capture(pDred);
+    dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
     if (pFocusedControl == NULL) {
         return DR_FALSE;
     }
@@ -447,7 +447,7 @@ dr_bool32 dred_command__copy(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedControl = (dred_control*)dred_get_element_with_keyboard_capture(pDred);
+    dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
     if (pFocusedControl == NULL) {
         return DR_TRUE;
     }
@@ -473,7 +473,7 @@ dr_bool32 dred_command__paste(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedControl = (dred_control*)dred_get_element_with_keyboard_capture(pDred);
+    dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
     if (pFocusedControl == NULL) {
         return DR_FALSE;
     }
@@ -503,7 +503,7 @@ dr_bool32 dred_command__delete(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedControl = (dred_control*)dred_get_element_with_keyboard_capture(pDred);
+    dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
     if (pFocusedControl == NULL) {
         return DR_FALSE;
     }
@@ -520,7 +520,7 @@ dr_bool32 dred_command__select_all(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedControl = (dred_control*)dred_get_element_with_keyboard_capture(pDred);
+    dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
     if (pFocusedControl == NULL) {
         return DR_FALSE;
     }

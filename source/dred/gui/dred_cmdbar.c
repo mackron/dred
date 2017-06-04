@@ -451,14 +451,14 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
-dr_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dred_control* pParent)
+dr_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dtk_control* pParent)
 {
     if (pCmdBar == NULL) {
         return DR_FALSE;
     }
 
     memset(pCmdBar, 0, sizeof(*pCmdBar));
-    if (!dred_control_init(DRED_CONTROL(pCmdBar), pDred, pParent, NULL, DRED_CONTROL_TYPE_CMDBAR, NULL)) {
+    if (!dred_control_init(DRED_CONTROL(pCmdBar), pDred, NULL, pParent, DRED_CONTROL_TYPE_CMDBAR, NULL)) {
         return DR_FALSE;
     }
 

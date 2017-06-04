@@ -142,7 +142,7 @@ void dred_cmdbar_popup_refresh_position(dred_cmdbar_popup* pCmdBarPopup)
 {
     int mainWindowPosX;
     int mainWindowPosY;
-    dred_window_get_client_position(pCmdBarPopup->pDred->pMainWindow, &mainWindowPosX, &mainWindowPosY);
+    dtk_window_get_client_absolute_position(pCmdBarPopup->pDred->pMainWindow, &mainWindowPosX, &mainWindowPosY);
 
     float cmdbarPosX;
     float cmdbarPosY;
