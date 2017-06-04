@@ -377,9 +377,23 @@ dr_bool32 dred_command__add_favourite(dred_context* pDred, const char* value)
         return DR_FALSE;
     }
 
-    // TODO: If absolutePath is relative, make it absolute based on the current directory.
+    if (drpath_is_absolute(absolutePath)) {
+        // The path is absolute.
+        return dred_add_favourite(pDred, absolutePath);
+    } else {
+        // The path is relative. Make it absolute.
+        char currentDirectory[DRED_MAX_PATH];
+        if (dr_get_current_directory(currentDirectory, sizeof(currentDirectory)) == NULL) {
+            return DR_FALSE;
+        }
 
-    return dred_add_favourite(pDred, absolutePath);
+        char actualAbsolutePath[DRED_MAX_PATH];
+        if (!drpath_to_absolute(absolutePath, currentDirectory, actualAbsolutePath, sizeof(actualAbsolutePath))) {
+            return DR_FALSE;
+        }
+
+        return dred_add_favourite(pDred, actualAbsolutePath);
+    }
 }
 
 dr_bool32 dred_command__remove_favourite(dred_context* pDred, const char* value)
@@ -396,9 +410,23 @@ dr_bool32 dred_command__remove_favourite(dred_context* pDred, const char* value)
         return DR_FALSE;
     }
 
-    // TODO: If absolutePath is relative, make it absolute based on the current directory.
+    if (drpath_is_absolute(absolutePath)) {
+        // The path is absolute.
+        return dred_remove_favourite(pDred, absolutePath);
+    } else {
+        // The path is relative. Make it absolute.
+        char currentDirectory[DRED_MAX_PATH];
+        if (dr_get_current_directory(currentDirectory, sizeof(currentDirectory)) == NULL) {
+            return DR_FALSE;
+        }
 
-    return dred_remove_favourite(pDred, absolutePath);
+        char actualAbsolutePath[DRED_MAX_PATH];
+        if (!drpath_to_absolute(absolutePath, currentDirectory, actualAbsolutePath, sizeof(actualAbsolutePath))) {
+            return DR_FALSE;
+        }
+
+        return dred_remove_favourite(pDred, actualAbsolutePath);
+    }
 }
 
 
