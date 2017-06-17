@@ -1731,9 +1731,6 @@ dtk_bool32 dtk_default_event_handler(dtk_event* pEvent)
 {
     if (pEvent == NULL) return DTK_FALSE;
 
-    dtk_context* pTK = pEvent->pTK;
-    dtk_assert(pTK != NULL);
-
     switch (pEvent->type)
     {
         case DTK_EVENT_APPLICATION_SCALE:
