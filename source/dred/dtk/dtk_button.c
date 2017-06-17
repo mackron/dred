@@ -40,13 +40,13 @@ void dtk_button__on_paint(dtk_button* pButton, dtk_rect rect, dtk_surface* pSurf
 
 void dtk_button__on_mouse_enter(dtk_button* pButton)
 {
-    pButton->isMouseOver = DR_TRUE;
+    pButton->isMouseOver = DTK_TRUE;
     dtk_control_scheduled_redraw(DTK_CONTROL(pButton), dtk_control_get_local_rect(DTK_CONTROL(pButton)));
 }
 
 void dtk_button__on_mouse_leave(dtk_button* pButton)
 {
-    pButton->isMouseOver = DR_FALSE;
+    pButton->isMouseOver = DTK_FALSE;
     dtk_control_scheduled_redraw(DTK_CONTROL(pButton), dtk_control_get_local_rect(DTK_CONTROL(pButton)));
 }
 
@@ -119,7 +119,7 @@ void dtk_button__refresh_layout(dtk_button* pButton)
 
 dtk_result dtk_button_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, const char* text, dtk_button* pButton)
 {
-    if (pButton == NULL) return DR_FALSE;
+    if (pButton == NULL) return DTK_FALSE;
     dtk_zero_object(pButton);
 
     dtk_result result = dtk_control_init(pTK, DTK_CONTROL_TYPE_BUTTON, (onEvent != NULL) ? onEvent : dtk_button_default_event_handler, pParent, DTK_CONTROL(pButton));
@@ -137,7 +137,7 @@ dtk_result dtk_button_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control
     pButton->borderWidth = 1;
     pButton->paddingHorz = 16;
     pButton->paddingVert = 4;
-    pButton->isAutoSizeEnabled = DR_TRUE;
+    pButton->isAutoSizeEnabled = DTK_TRUE;
 
     dtk_button__refresh_layout(pButton);
 
@@ -221,7 +221,7 @@ void dtk_button_enable_auto_size(dtk_button* pButton)
 {
     if (pButton == NULL) return;
 
-    pButton->isAutoSizeEnabled = DR_TRUE;
+    pButton->isAutoSizeEnabled = DTK_TRUE;
     dtk_button__refresh_layout(pButton);
 }
 
@@ -229,7 +229,7 @@ void dtk_button_disable_auto_size(dtk_button* pButton)
 {
     if (pButton == NULL) return;
 
-    pButton->isAutoSizeEnabled = DR_FALSE;
+    pButton->isAutoSizeEnabled = DTK_FALSE;
     dtk_button__refresh_layout(pButton);
 }
 

@@ -82,13 +82,13 @@ void dtk_checkbox__on_paint(dtk_checkbox* pCheckbox, dtk_rect rect, dtk_surface*
 
 void dtk_checkbox__on_mouse_enter(dtk_checkbox* pCheckbox)
 {
-    pCheckbox->isMouseOver = DR_TRUE;
+    pCheckbox->isMouseOver = DTK_FALSE;
     dtk_control_scheduled_redraw(DTK_CONTROL(pCheckbox), dtk_control_get_local_rect(DTK_CONTROL(pCheckbox)));
 }
 
 void dtk_checkbox__on_mouse_leave(dtk_checkbox* pCheckbox)
 {
-    pCheckbox->isMouseOver = DR_FALSE;
+    pCheckbox->isMouseOver = DTK_FALSE;
     dtk_control_scheduled_redraw(DTK_CONTROL(pCheckbox), dtk_control_get_local_rect(DTK_CONTROL(pCheckbox)));
 }
 
@@ -176,7 +176,7 @@ dtk_result dtk_checkbox_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_contr
     pCheckbox->checkColor = dtk_rgb(64, 128, 64);
     pCheckbox->borderWidth = 1;
     pCheckbox->padding = 4;
-    pCheckbox->isAutoSizeEnabled = DR_TRUE;
+    pCheckbox->isAutoSizeEnabled = DTK_FALSE;
     pCheckbox->isChecked = checked;
 
     dtk_checkbox__refresh_layout(pCheckbox);
@@ -256,7 +256,7 @@ void dtk_checkbox_enable_auto_size(dtk_checkbox* pCheckbox)
 {
     if (pCheckbox == NULL) return;
 
-    pCheckbox->isAutoSizeEnabled = DR_TRUE;
+    pCheckbox->isAutoSizeEnabled = DTK_FALSE;
     dtk_checkbox__refresh_layout(pCheckbox);
 }
 
@@ -264,7 +264,7 @@ void dtk_checkbox_disable_auto_size(dtk_checkbox* pCheckbox)
 {
     if (pCheckbox == NULL) return;
 
-    pCheckbox->isAutoSizeEnabled = DR_FALSE;
+    pCheckbox->isAutoSizeEnabled = DTK_FALSE;
     dtk_checkbox__refresh_layout(pCheckbox);
 }
 
@@ -323,12 +323,12 @@ void dtk_checkbox_set_padding(dtk_checkbox* pCheckbox, dtk_int32 padding)
 
 void dtk_checkbox_check(dtk_checkbox* pCheckbox)
 {
-    dtk_checkbox_set_checked(pCheckbox, DR_TRUE, DR_FALSE);
+    dtk_checkbox_set_checked(pCheckbox, DTK_FALSE, DTK_FALSE);
 }
 
 void dtk_checkbox_uncheck(dtk_checkbox* pCheckbox)
 {
-    dtk_checkbox_set_checked(pCheckbox, DR_FALSE, DR_FALSE);
+    dtk_checkbox_set_checked(pCheckbox, DTK_FALSE, DTK_FALSE);
 }
 
 void dtk_checkbox_toggle(dtk_checkbox* pCheckbox)
@@ -363,7 +363,7 @@ void dtk_checkbox_set_checked(dtk_checkbox* pCheckbox, dtk_bool32 checked, dtk_b
 
 dtk_bool32 dtk_checkbox_is_checked(dtk_checkbox* pCheckbox)
 {
-    if (pCheckbox == NULL) return DR_FALSE;
+    if (pCheckbox == NULL) return DTK_FALSE;
     return pCheckbox->isChecked;
 }
 

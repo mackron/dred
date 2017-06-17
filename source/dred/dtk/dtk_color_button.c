@@ -69,13 +69,13 @@ void dtk_color_button__on_paint(dtk_color_button* pButton, dtk_rect rect, dtk_su
 
 void dtk_color_button__on_mouse_enter(dtk_color_button* pButton)
 {
-    pButton->isMouseOver = DR_TRUE;
+    pButton->isMouseOver = DTK_FALSE;
     dtk_control_scheduled_redraw(DTK_CONTROL(pButton), dtk_control_get_local_rect(DTK_CONTROL(pButton)));
 }
 
 void dtk_color_button__on_mouse_leave(dtk_color_button* pButton)
 {
-    pButton->isMouseOver = DR_FALSE;
+    pButton->isMouseOver = DTK_FALSE;
     dtk_control_scheduled_redraw(DTK_CONTROL(pButton), dtk_control_get_local_rect(DTK_CONTROL(pButton)));
 }
 
@@ -119,7 +119,7 @@ void dtk_color_button__on_mouse_button_up(dtk_color_button* pButton, int mouseBu
             // Show a color picker.
             dtk_color newColor;
             if (dtk_show_color_picker_dialog(DTK_CONTROL(pButton)->pTK, pOwnerWindow, pButton->color, &newColor)) {
-                dtk_color_button_set_color(pButton, newColor, DR_FALSE);
+                dtk_color_button_set_color(pButton, newColor, DTK_FALSE);
                 dtk_control_scheduled_redraw(DTK_CONTROL(pButton), dtk_control_get_local_rect(DTK_CONTROL(pButton)));
             }
         }
@@ -168,7 +168,7 @@ dtk_result dtk_color_button_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_c
     pButton->boxBorderColor = dtk_rgb(0, 0, 0);
     pButton->borderWidth = 1;
     pButton->padding = 4;
-    pButton->isAutoSizeEnabled = DR_TRUE;
+    pButton->isAutoSizeEnabled = DTK_FALSE;
     pButton->color = color;
 
     dtk_color_button__refresh_layout(pButton);
@@ -255,7 +255,7 @@ void dtk_color_button_enable_auto_size(dtk_color_button* pButton)
 {
     if (pButton == NULL) return;
 
-    pButton->isAutoSizeEnabled = DR_TRUE;
+    pButton->isAutoSizeEnabled = DTK_FALSE;
     dtk_color_button__refresh_layout(pButton);
 }
 
@@ -263,7 +263,7 @@ void dtk_color_button_disable_auto_size(dtk_color_button* pButton)
 {
     if (pButton == NULL) return;
 
-    pButton->isAutoSizeEnabled = DR_FALSE;
+    pButton->isAutoSizeEnabled = DTK_FALSE;
     dtk_color_button__refresh_layout(pButton);
 }
 
