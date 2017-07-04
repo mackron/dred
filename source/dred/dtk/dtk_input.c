@@ -1,14 +1,5 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
-static size_t dtk_strcpy_len(char* dst, size_t dstSize, const char* src)
-{
-    if (dtk_strcpy_s(dst, dstSize, src) == 0) {
-        return strlen(dst);
-    }
-
-    return 0;
-}
-
 size_t dtk_key_to_string(dtk_key key, char* strOut, size_t strOutSize)
 {
     if (strOut == NULL || strOutSize == 0) {

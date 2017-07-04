@@ -318,6 +318,7 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 
 #include "dtk_rect.c"
 #include "dtk_string.c"
+#include "dtk_io.c"
 #include "dtk_threading.c"
 #include "dtk_monitor.c"
 #include "dtk_graphics.c"

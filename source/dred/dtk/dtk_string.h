@@ -12,6 +12,23 @@ DTK_INLINE dtk_bool32 dtk_string_is_null_or_empty(const char* str)
     #endif
 #endif
 
+DTK_INLINE char* dtk_strcpy(char* dst, const char* src)
+{
+#ifdef _MSC_VER
+    if (dst == NULL) return NULL;
+
+    // If the source string is null, just pretend it's an empty string. I don't believe this is standard behaviour of strcpy(), but I prefer it.
+    if (src == NULL) {
+        src = "\0";
+    }
+
+    while (*dst++ = *src++);
+    return dst;
+#else
+    return strcpy(dst, src);
+#endif
+}
+
 DTK_INLINE int dtk_strcpy_s(char* dst, size_t dstSizeInBytes, const char* src)
 {
 #ifdef _MSC_VER
@@ -170,6 +187,15 @@ DTK_INLINE int dtk_strncat_s(char* dst, size_t dstSizeInBytes, const char* src, 
 
     return 0;
 #endif
+}
+
+DTK_INLINE size_t dtk_strcpy_len(char* dst, size_t dstSize, const char* src)
+{
+    if (dtk_strcpy_s(dst, dstSize, src) == 0) {
+        return strlen(dst);
+    }
+
+    return 0;
 }
 
 DTK_INLINE int dtk_stricmp(const char* string1, const char* string2)

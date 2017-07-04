@@ -77,6 +77,7 @@ typedef int dtk_result;
 #define DTK_FAILED_TO_INIT_BACKEND  -5
 #define DTK_OUT_OF_RANGE            -6
 #define DTK_CANCELLED               -7
+#define DTK_FAILED_TO_OPEN_DIALOG   -8
 #define DTK_NO_DISPLAY              -256
 #define DTK_NO_SCREEN               -257
 #define DTK_QUIT                    -1024   // Returned by dtk_next_event() when a quit message is received.
@@ -164,6 +165,7 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 
 #include "dtk_rect.h"
 #include "dtk_string.h"
+#include "dtk_io.h"
 #include "dtk_threading.h"
 #include "dtk_math.h"
 #include "dtk_monitor.h"
