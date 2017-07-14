@@ -300,7 +300,7 @@ dtk_dialog_result dtk_show_open_file_dialog__win32(dtk_window* pParentWindow, dt
         if (pppSelectedFilePaths) *pppSelectedFilePaths = ppItemPointers;
     } else {
         // Single file.
-        size_t outputBufferSize = sizeof(char*)*2 + strlen(filePaths);
+        size_t outputBufferSize = sizeof(char*)*2 + strlen(filePaths) + 1;
         char* pOutputBuffer = (char*)dtk_malloc(outputBufferSize);
         if (pOutputBuffer == NULL) {
             dtk_free(pFilter);
