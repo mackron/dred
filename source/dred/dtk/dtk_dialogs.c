@@ -169,7 +169,12 @@ dtk_dialog_result dtk_show_open_file_dialog__win32(dtk_window* pParentWindow, dt
 
     // Limit to 32K for the moment. Too big for the stack? Consider allocating something larger on the heap if this becomes an issue.
     char filePaths[32768];
-    filePaths[0] = '\0';
+    if (pOptions->pDefaultPath != NULL) {
+        dtk_strcpy_s(filePaths, sizeof(filePaths), pOptions->pDefaultPath);
+    } else {
+        filePaths[0] = '\0';
+    }
+    
 
     // Filter. This is inefficient due to the realloc()'s, but it's not too much of a big deal because it'll be drowned out by the amount of
     // time it takes for Windows to actually show the dialog. This can be improved later if need be - happy for contributions!
@@ -402,6 +407,141 @@ dtk_dialog_result dtk_show_color_picker_dialog__gtk(dtk_context* pTK, dtk_window
         return DTK_DIALOG_RESULT_CANCEL;
     }
 }
+
+dtk_dialog_result dtk_show_open_file_dialog__gtk(dtk_window* pParentWindow, dtk_open_file_dialog_options* pOptions, char*** pppSelectedFilePaths)
+{
+    GtkWidget* dialog = gtk_file_chooser_dialog_new("Save As", (pParentWindow == NULL) ? NULL : GTK_WINDOW(pParentWindow->gtk.pWidget), GTK_FILE_CHOOSER_ACTION_OPEN,
+        "_Open",   GTK_RESPONSE_ACCEPT,
+        "_Cancel", GTK_RESPONSE_CANCEL, NULL);
+    if (dialog == NULL) {
+        return DTK_FALSE;
+    }
+
+    gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), pOptions->multiSelect);
+    //gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), pOptions->overwriteConfirmation);
+
+    if (!dtk_string_is_null_or_empty(pOptions->pDefaultPath)) {
+        gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog), pOptions->pDefaultPath);
+    }
+
+
+    // Filters.
+    const char** ppNextFilter = pOptions->ppExtensionFilters;
+    for (;;) {
+        const char* pName = ppNextFilter[0];
+        if (pName == NULL) {
+            break;
+        }
+
+        const char* pExtensions = ppNextFilter[1];
+        if (pExtensions == NULL) {
+            break;
+        }
+
+        GtkFileFilter* pFilterGTK = gtk_file_filter_new();
+        if (pFilterGTK == NULL) {
+            break;
+        }
+
+        // Name.
+        char* pPatternsStr = NULL;
+        if (pExtensions[0] != '\0') {
+            char* pTemp = dtk_make_string(pExtensions);
+            char* pToken = strtok(pTemp, " ,");
+            while (pToken != NULL) {
+                pPatternsStr = dtk_append_stringf(pPatternsStr, "*.%s", pToken);
+                pToken = strtok(NULL, " ,");
+            }
+            dtk_free_string(pTemp);
+        } else {
+            pPatternsStr = dtk_make_string("*.*");
+        }
+
+        char* pNameWithPatterns = dtk_make_stringf("%s (%s)", pName, pPatternsStr);
+        gtk_file_filter_set_name(pFilterGTK, pNameWithPatterns);
+        dtk_free_string(pNameWithPatterns);
+        dtk_free_string(pPatternsStr);
+        
+        // Patterns.
+        if (pExtensions[0] != '\0') {
+            char* pTemp = dtk_make_string(pExtensions);
+            char* pToken = strtok(pTemp, " ,");
+            while (pToken != NULL) {
+                char* pPattern = dtk_make_stringf("*.%s", pToken);
+                gtk_file_filter_add_pattern(pFilterGTK, pPattern);
+                dtk_free_string(pPattern);
+                pToken = strtok(NULL, " ,");
+            }
+            dtk_free_string(pTemp);
+        } else {
+            gtk_file_filter_add_pattern(pFilterGTK, "*.*");
+        }
+
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), pFilterGTK);
+        ppNextFilter += 2;
+    }
+
+
+    dtk_dialog_result result = DTK_DIALOG_RESULT_CANCEL;
+    GSList* pResultList = NULL;
+
+    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (response == GTK_RESPONSE_ACCEPT) {
+        pResultList = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
+        if (pResultList == NULL) {
+            result = DTK_ERROR;
+            goto done;
+        }
+
+        // We build the list in two passes. The first pass just calculates the size of the output list so we know how much memory to allocated. The second pass extracts the data.
+        dtk_uint32 fileCount = 0;
+        size_t outputBufferSize = sizeof(char*);
+        for (GSList* pNextItem = pResultList; pNextItem != NULL; pNextItem = pNextItem->next) {
+            const char* pFilePath = (const char*)pNextItem->data;
+            outputBufferSize += sizeof(char*) + strlen(pFilePath) + 1;  // +1 for null terminator.
+            fileCount += 1;
+        }
+
+        char* pOutputBuffer = (char*)dtk_malloc(outputBufferSize);
+        if (pOutputBuffer == NULL) {
+            result = DTK_OUT_OF_MEMORY;
+            goto done;
+        }
+
+        char** ppItemPointers = (char**)pOutputBuffer;
+        size_t runningOffset = sizeof(char*) * (fileCount+1);    // +1 for the null-terminating item.
+
+        dtk_uint32 iFile = 0;
+        for (GSList* pNextItem = pResultList; pNextItem != NULL; pNextItem = pNextItem->next) {
+            const char* pFilePath = (const char*)pNextItem->data;
+            size_t filePathLen = strlen(pFilePath);
+
+            ppItemPointers[iFile] = (pOutputBuffer + runningOffset);
+            dtk_strcpy(ppItemPointers[iFile], pFilePath);
+
+            runningOffset += filePathLen + 1;
+            iFile += 1;
+        }
+        ppItemPointers[fileCount] = NULL; // <-- The null terminating item.
+
+        if (pppSelectedFilePaths) *pppSelectedFilePaths = ppItemPointers;
+        result = DTK_DIALOG_RESULT_OK;
+    } else if (response == GTK_RESPONSE_ACCEPT) {
+        result = DTK_DIALOG_RESULT_CANCEL;
+    } else {
+        result = DTK_ERROR;
+    }
+
+
+done:
+    for (GSList* pNextItem = pResultList; pNextItem != NULL; pNextItem = pNextItem->next) {
+        g_free(pNextItem->data);
+    }
+    g_slist_free(pResultList);
+
+    gtk_widget_destroy(dialog);
+    return result;
+}
 #endif
 
 
@@ -450,6 +590,6 @@ dtk_dialog_result dtk_show_open_file_dialog(dtk_window* pParentWindow, dtk_open_
     return dtk_show_open_file_dialog__win32(pParentWindow, pOptions, pppSelectedFilePaths);
 #endif
 #ifdef DTK_GTK
-    // TODO: Implement me.
+    return dtk_show_open_file_dialog__gtk(pParentWindow, pOptions, pppSelectedFilePaths);
 #endif
 }

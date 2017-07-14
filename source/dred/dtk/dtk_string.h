@@ -14,7 +14,6 @@ DTK_INLINE dtk_bool32 dtk_string_is_null_or_empty(const char* str)
 
 DTK_INLINE char* dtk_strcpy(char* dst, const char* src)
 {
-#ifdef _MSC_VER
     if (dst == NULL) return NULL;
 
     // If the source string is null, just pretend it's an empty string. I don't believe this is standard behaviour of strcpy(), but I prefer it.
@@ -22,6 +21,7 @@ DTK_INLINE char* dtk_strcpy(char* dst, const char* src)
         src = "\0";
     }
 
+#ifdef _MSC_VER
     while (*dst++ = *src++);
     return dst;
 #else
@@ -354,12 +354,27 @@ DTK_INLINE void dtk_trim(char* str)
 }
 
 
+
+typedef char* dtk_string;
+
 // Creates a newly allocated string. Free the string with dtk_free_string().
-char* dtk_make_string(const char* str);
+dtk_string dtk_make_string(const char* str);
 
 // Creates a formatted string. Free the string with dtk_free_string().
-char* dtk_make_stringv(const char* format, va_list args);
-char* dtk_make_stringf(const char* format, ...);
+dtk_string dtk_make_stringv(const char* format, va_list args);
+dtk_string dtk_make_stringf(const char* format, ...);
+
+// Appends a string to another dtk_string.
+//
+// This free's "lstr". Use this API like so: "lstr = dtk_append_string(lstr, rstr)". It works the same way as realloc().
+//
+// Use dtk_make_stringf("%s%s", str1, str2) to append to C-style strings together. An optimized solution for this may be implemented in the future.
+dtk_string dtk_append_string(dtk_string lstr, const char* rstr);
+
+// Appends a formatted string to another dtk_string.
+dtk_string dtk_append_stringv(dtk_string lstr, const char* format, va_list args);
+dtk_string dtk_append_stringf(dtk_string lstr, const char* format, ...);
+
 
 // Frees a string created by dtk_make_string*()
-void dtk_free_string(char* str);
+void dtk_free_string(dtk_string str);

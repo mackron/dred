@@ -1,6 +1,6 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
-char* dtk_make_string(const char* str)
+dtk_string dtk_make_string(const char* str)
 {
     if (str == NULL) return NULL;
     
@@ -14,9 +14,9 @@ char* dtk_make_string(const char* str)
     return newStr;
 }
 
-char* dtk_make_stringv(const char* format, va_list args)
+dtk_string dtk_make_stringv(const char* format, va_list args)
 {
-    if (format == NULL) return NULL;
+    if (format == NULL) format = "";
 
     va_list args2;
     va_copy(args2, args);
@@ -47,8 +47,10 @@ char* dtk_make_stringv(const char* format, va_list args)
     return str;
 }
 
-char* dtk_make_stringf(const char* format, ...)
+dtk_string dtk_make_stringf(const char* format, ...)
 {
+    if (format == NULL) format = "";
+
     va_list args;
     va_start(args, format);
 
@@ -58,7 +60,54 @@ char* dtk_make_stringf(const char* format, ...)
     return str;
 }
 
-void dtk_free_string(char* str)
+dtk_string dtk_append_string(dtk_string lstr, const char* rstr)
+{
+    if (rstr == NULL) {
+        rstr = "";
+    }
+
+    if (lstr == NULL) {
+        return dtk_make_string(rstr);
+    }
+
+    size_t lstrLen = strlen(lstr);
+    size_t rstrLen = strlen(rstr);
+    char* str = (char*)dtk_realloc(lstr, lstrLen + rstrLen + 1);
+    if (str == NULL) {
+        return NULL;
+    }
+
+    memcpy(str + lstrLen, rstr, rstrLen);
+    str[lstrLen + rstrLen] = '\0';
+
+    return str;
+}
+
+dtk_string dtk_append_stringv(dtk_string lstr, const char* format, va_list args)
+{
+    dtk_string rstr = dtk_make_stringv(format, args);
+    if (rstr == NULL) {
+        return NULL;    // Probably out of memory.
+    }
+
+    char* str = dtk_append_string(lstr, rstr);
+
+    dtk_free_string(rstr);
+    return str;
+}
+
+dtk_string dtk_append_stringf(dtk_string lstr, const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+
+    char* str = dtk_append_stringv(lstr, format, args);
+
+    va_end(args);
+    return str;
+}
+
+void dtk_free_string(dtk_string str)
 {
     dtk_free(str);
 }

@@ -16,6 +16,7 @@ typedef struct
 {
     dtk_bool32 fileMustExist;
     dtk_bool32 multiSelect;
+    const char* pDefaultPath;
     const char** ppExtensionFilters;    // An array of null-terminated string pairs: {"Name of Filter", "Extension"}. Example: {"All, "", "Text Files", "txt,cfg,ini", "Images", "jpg,jpeg,png,tga", NULL}
 } dtk_open_file_dialog_options;
 

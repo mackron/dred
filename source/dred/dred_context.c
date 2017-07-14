@@ -1592,75 +1592,29 @@ void dred_show_open_file_dialog(dred_context* pDred)
         return;
     }
 
-#ifdef _WIN32
-    char filePaths[4096];
-    filePaths[0] = '\0';
+    const char* pFilters[] = {
+        "All Files", "",
+        NULL
+    };
 
-    OPENFILENAMEA ofn;
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = (HWND)pDred->mainWindow.win32.hWnd;
-    ofn.lpstrFile = filePaths;
-    ofn.nMaxFile = sizeof(filePaths);
-    ofn.lpstrFilter = "All\0*.*\0Text Files\0*.txt\0";
-    ofn.nFilterIndex = 1;
-    ofn.Flags = OFN_EXPLORER | OFN_ALLOWMULTISELECT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
-    if (!GetOpenFileNameA(&ofn)) {
+    dtk_open_file_dialog_options options;
+    dtk_zero_object(&options);
+    options.fileMustExist = DTK_TRUE;
+    options.multiSelect = DTK_TRUE;
+    options.ppExtensionFilters = pFilters;
+
+    char** ppSelectedFilePaths;
+    dtk_dialog_result result = dtk_show_open_file_dialog(&pDred->mainWindow, &options, &ppSelectedFilePaths);
+    if (result != DTK_DIALOG_RESULT_OK) {
         return;
     }
 
-    // We need to determine whether or not mutliple files were selected. GetOpenFileName doesn't seem to provide a good way to
-    // determine this so we need to figure this out ourselves. They way we do it is to check if the first entry is a directory
-    // or a file. If it's a directory it means multiple files were selected.
-    const char* directoryPath = filePaths;
-    if (dr_directory_exists(directoryPath))
-    {
-        // Multiple files were selected.
-        const char* nextFilePath = directoryPath + strlen(directoryPath) + 1;
-        while (nextFilePath[0] != '\0') {
-            char absolutePath[DRED_MAX_PATH];
-            if (drpath_copy_and_append(absolutePath, sizeof(absolutePath), directoryPath, nextFilePath)) {
-                dred_open_file(pDred, absolutePath);
-            }
-
-            nextFilePath += strlen(nextFilePath) + 1;
-        }
-    }
-    else
-    {
-        // Only a single file was selected.
-        dred_open_file(pDred, filePaths);
-    }
-#else
-    GtkWidget* dialog = gtk_file_chooser_dialog_new("Open", GTK_WINDOW(pDred->mainWindow.gtk.pWidget), GTK_FILE_CHOOSER_ACTION_OPEN,
-        "_Open",   GTK_RESPONSE_ACCEPT,
-        "_Cancel", GTK_RESPONSE_CANCEL, NULL);
-    if (dialog == NULL) {
-        return;
+    for (size_t iFile = 0; ppSelectedFilePaths[iFile] != NULL; iFile += 1) {
+        printf("File: %s\n", ppSelectedFilePaths[iFile]);
+        dred_open_file(pDred, ppSelectedFilePaths[iFile]);
     }
 
-    gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), TRUE);
-
-    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
-    if (response == GTK_RESPONSE_ACCEPT) {
-        GSList* list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
-        if (list != NULL) {
-            while(list != NULL) {
-                char* filename = (char*)list->data;
-                if (filename != NULL && filename[0] != '\0') {
-                    dred_open_file(pDred, filename);
-                }
-
-                g_free(filename);
-                list = list->next;
-            }
-
-            g_slist_free(list);
-        }
-    }
-
-    gtk_widget_destroy(dialog);
-#endif
+    dtk_free(ppSelectedFilePaths);
 }
 
 dr_bool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath, char* absolutePathOut, size_t absolutePathOutSize)
