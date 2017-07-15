@@ -1610,7 +1610,6 @@ void dred_show_open_file_dialog(dred_context* pDred)
     }
 
     for (size_t iFile = 0; ppSelectedFilePaths[iFile] != NULL; iFile += 1) {
-        printf("File: %s\n", ppSelectedFilePaths[iFile]);
         dred_open_file(pDred, ppSelectedFilePaths[iFile]);
     }
 

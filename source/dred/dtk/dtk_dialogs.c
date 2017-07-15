@@ -324,7 +324,6 @@ dtk_dialog_result dtk_show_open_file_dialog__win32(dtk_window* pParentWindow, dt
     dtk_free(pFilter);
     return DTK_DIALOG_RESULT_OK;
 }
-
 #endif
 
 
