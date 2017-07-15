@@ -1174,6 +1174,23 @@ static gboolean dtk_window__on_configure__gtk(GtkWidget* pWidget, GdkEventConfig
     return DTK_FALSE;
 }
 
+static void dtk_window__on_size_allocate__gtk(GtkWidget *pWidget, GtkAllocation *pAllocation, gpointer pUserData)
+{
+    (void)pAllocation;
+
+    gint width;
+    gint height;
+    gtk_window_get_size(GTK_WINDOW(pWidget), &width, &height);
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return;
+    }
+
+    pWindow->gtk.windowWidth = (dtk_int32)width;
+    pWindow->gtk.windowHeight = (dtk_int32)height;
+}
+
 static void dtk_window__on_hide__gtk(GtkWidget* pWidget, gpointer pUserData)
 {
     (void)pWidget;
@@ -1576,11 +1593,11 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_wind
         GDK_KEY_RELEASE_MASK    |
         GDK_FOCUS_CHANGE_MASK);
 
-
     
     gtk_window_set_title(GTK_WINDOW(pWidget), title);
     if (type == dtk_window_type_toplevel) {
         gtk_window_set_resizable(GTK_WINDOW(pWidget), TRUE);
+        gtk_window_set_default_size(GTK_WINDOW(pWidget), (gint)width, (gint)height);
         gtk_window_resize(GTK_WINDOW(pWidget), (gint)width, (gint)height);
     } else if (type == dtk_window_type_dialog) {
         gtk_window_set_resizable(GTK_WINDOW(pWidget), FALSE);
@@ -1595,7 +1612,8 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_wind
     }
     
     g_signal_connect(pWidget, "delete-event",      G_CALLBACK(dtk_window__on_close__gtk),         pWindow);     // Close
-    g_signal_connect(pWidget, "configure-event",   G_CALLBACK(dtk_window__on_configure__gtk),     pWindow);     // Size/Move
+    g_signal_connect(pWidget, "configure-event",   G_CALLBACK(dtk_window__on_configure__gtk),     pWindow);     // Size/Move (only used for move).
+    g_signal_connect(pWidget, "size-allocate",     G_CALLBACK(dtk_window__on_size_allocate__gtk), pWindow);     // Size
     g_signal_connect(pWidget, "hide",              G_CALLBACK(dtk_window__on_hide__gtk),          pWindow);     // Hide.
     g_signal_connect(pWidget, "show",              G_CALLBACK(dtk_window__on_show__gtk),          pWindow);     // Show.
     g_signal_connect(pWidget, "key-press-event",   G_CALLBACK(dtk_window__on_key_down__gtk),      pWindow);     // Key down.
@@ -1650,18 +1668,14 @@ dtk_result dtk_window_set_size__gtk(dtk_window* pWindow, dtk_int32 width, dtk_in
         height += alloc.height;
     }
 
-    gtk_window_resize(GTK_WINDOW(pWindow->gtk.pWidget), width, height);
+    gtk_window_resize(GTK_WINDOW(pWindow->gtk.pWidget), (gint)width, (gint)height);
     return DTK_SUCCESS;
 }
 
 dtk_result dtk_window_get_size__gtk(dtk_window* pWindow, dtk_int32* pWidth, dtk_int32* pHeight)
 {
-    gint width;
-    gint height;
-    gtk_window_get_size(GTK_WINDOW(pWindow->gtk.pWidget), &width, &height);
-
-    if (pWidth)  *pWidth  = width;
-    if (pHeight) *pHeight = height;
+    if (pWidth)  *pWidth  = pWindow->gtk.windowWidth;
+    if (pHeight) *pHeight = pWindow->gtk.windowHeight;
     return DTK_SUCCESS;
 }
 

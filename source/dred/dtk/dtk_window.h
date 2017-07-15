@@ -51,9 +51,11 @@ struct dtk_window
             /*GtkWidget**/ dtk_ptr pClientArea;
             /*GdkCursor**/ dtk_ptr pCursor;
             dtk_menu* pMenu;
-            int configureClientWidth;       // The size of the client area based on the last "configure" event. This is used to know whether or not the event is for a move or size.
-            int configureClientHeight;      // ^
-            dtk_int32 desiredPositionX;     // Used when a window want's to move while invisible. When the window is made visible, it will be positioned based on this if repositionOnShow is set.
+            dtk_int32 configureClientWidth;         // The size of the client area based on the last "configure" event. This is used to know whether or not the event is for a move or size.
+            dtk_int32 configureClientHeight;        // ^
+            dtk_int32 windowWidth;                  // Set from the "size-allocate" event and returned by dtk_window_get_size().
+            dtk_int32 windowHeight;                 // ^
+            dtk_int32 desiredPositionX;             // Used when a window want's to move while invisible. When the window is made visible, it will be positioned based on this if repositionOnShow is set.
             dtk_int32 desiredPositionY; 
             dtk_bool32 isCursorOverClientArea : 1;
             dtk_bool32 repositionOnShow : 1;
