@@ -1586,10 +1586,10 @@ dr_bool32 dred_check_if_focused_file_is_dirty_and_reload(dred_context* pDred)
 }
 
 
-void dred_show_open_file_dialog(dred_context* pDred)
+dtk_dialog_result dred_show_open_file_dialog(dred_context* pDred)
 {
     if (pDred == NULL) {
-        return;
+        return DTK_INVALID_ARGS;
     }
 
     const char* pFilters[] = {
@@ -1606,7 +1606,7 @@ void dred_show_open_file_dialog(dred_context* pDred)
     char** ppSelectedFilePaths;
     dtk_dialog_result result = dtk_show_open_file_dialog(&pDred->mainWindow, &options, &ppSelectedFilePaths);
     if (result != DTK_DIALOG_RESULT_OK) {
-        return;
+        return result;
     }
 
     for (size_t iFile = 0; ppSelectedFilePaths[iFile] != NULL; iFile += 1) {
@@ -1614,6 +1614,7 @@ void dred_show_open_file_dialog(dred_context* pDred)
     }
 
     dtk_free(ppSelectedFilePaths);
+    return result;
 }
 
 dr_bool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath, char* absolutePathOut, size_t absolutePathOutSize)
