@@ -95,10 +95,10 @@ typedef int dtk_result;
 #define dtk_malloc(sz)          malloc(sz);
 #endif
 #ifndef dtk_calloc
-#define dtk_calloc(c, sz)       calloc(c, sz)
+#define dtk_calloc(c, sz)       calloc((c), (sz))
 #endif
 #ifndef dtk_realloc
-#define dtk_realloc(p, sz)      realloc(p, sz)
+#define dtk_realloc(p, sz)      realloc((p), (sz))
 #endif
 #ifndef dtk_free
 #define dtk_free(p)             free(p)
