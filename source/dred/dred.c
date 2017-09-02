@@ -23,9 +23,6 @@
 #define DR_TEXT_ENGINE_IMPLEMENTATION
 #include "../external/dr_text_engine.h"
 
-#define GB_STRING_IMPLEMENTATION
-#include "../external/gb_string.h"
-
 #include "../external/json.c"
 
 // dred source files.

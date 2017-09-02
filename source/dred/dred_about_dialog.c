@@ -139,7 +139,6 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
 
             static const char* credits[] = {
                 "    dr_libs (https://github.com/mackron/dr_libs)",
-                "    gb_string (https://github.com/gingerBill/gb)",
                 "    nanosvg (https://github.com/memononen/nanosvg)"
             };
 

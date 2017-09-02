@@ -17,8 +17,8 @@ void dred_alias_map_uninit(dred_alias_map* pMap)
     }
 
     for (size_t i = 0; i < pMap->count; ++i) {
-        gb_free_string(pMap->keys[i]);
-        gb_free_string(pMap->values[i]);
+        dtk_free_string(pMap->keys[i]);
+        dtk_free_string(pMap->values[i]);
     }
 
     free(pMap->keys);
@@ -55,8 +55,8 @@ void dred_alias_map_add(dred_alias_map* pMap, const char* key, const char* value
 
     assert(pMap->count < pMap->bufferSize);
 
-    pMap->keys[pMap->count] = gb_make_string(key);
-    pMap->values[pMap->count] = gb_make_string(value);
+    pMap->keys[pMap->count] = dtk_make_string(key);
+    pMap->values[pMap->count] = dtk_make_string(value);
     pMap->count += 1;
 }
 
@@ -76,8 +76,8 @@ void dred_alias_map_remove_by_index(dred_alias_map* pMap, size_t index)
         return;
     }
 
-    gb_free_string(pMap->keys[index]);
-    gb_free_string(pMap->values[index]);
+    dtk_free_string(pMap->keys[index]);
+    dtk_free_string(pMap->values[index]);
     
     if (pMap->count > 1) {
         for (size_t i = index; i < pMap->count-1; ++i) {

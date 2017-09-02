@@ -5,8 +5,8 @@
 #define DR_IMPLEMENTATION
 #include "../../../../dr_libs/dr.h"
 
-#define GB_STRING_IMPLEMENTATION
-#include "../external/gb_string.h"
+//#define GB_STRING_IMPLEMENTATION
+//#include "../external/gb_string.h"
 
 #include "../external/stretchy_buffer.h"
 
@@ -175,7 +175,7 @@ void get_config_var_default_value(unsigned int type, char* valueOut, size_t valu
         return;
     }
     if (type == CONFIG_VAR_TYPE_STRING) {
-        strcpy_s(valueOut, valueOutSize, "gb_make_string(\"\")");
+        strcpy_s(valueOut, valueOutSize, "dtk_make_string(\"\")");
         return;
     }
     if (type == CONFIG_VAR_TYPE_FONT) {
@@ -211,7 +211,7 @@ void parse_config_var_value(unsigned int type, const char* valueIn, char* valueO
         return;
     }
     if (type == CONFIG_VAR_TYPE_STRING) {
-        snprintf(valueOut, valueOutSize, "gb_make_string(\"%s\")", str);
+        snprintf(valueOut, valueOutSize, "dtk_make_string(\"%s\")", str);
         return;
     }
     if (type == CONFIG_VAR_TYPE_FONT) {
@@ -254,18 +254,18 @@ char* write_image_data_rgba8(char* output, unsigned int* pCurrentByteColumn, con
         for (unsigned int x = 0; x < width; ++x) {
             for (unsigned int c = 0; c < 4; ++c) {
                 if (currentByteColumn == 0) {
-                    output = gb_append_cstring(output, "\n    ");
+                    output = dtk_append_string(output, "\n    ");
                 }
 
                 uint8_t b = pImageData[y*stride + x*4 + c];
                 byteStr[2] = ((b >>  4) + '0'); if (byteStr[2] > '9') byteStr[2] += 7;
                 byteStr[3] = ((b & 0xF) + '0'); if (byteStr[3] > '9') byteStr[3] += 7;
-                output = gb_append_cstring(output, byteStr);
+                output = dtk_append_string(output, byteStr);
 
                 currentByteColumn = (currentByteColumn + 1) % BYTES_PER_ROW;
 
                 if (y+1 != height || x+1 != width || c+1 != 4) {
-                    output = gb_append_cstring(output, ",");
+                    output = dtk_append_string(output, ",");
                 }
             }
         }
@@ -280,25 +280,25 @@ char* stringify_string_pool_data(dred_string_pool* pStringPool)
     unsigned int currentByteColumn = 0;
     char byteStr[5] = {'0', 'x', '0', '0', '\0'};
 
-    char* output = gb_make_string("const unsigned char g_InitialStringPoolData[] = {");
+    char* output = dtk_make_string("const unsigned char g_InitialStringPoolData[] = {");
     for (size_t i = 0; i < pStringPool->byteCount; ++i) {
         if (currentByteColumn == 0) {
-            output = gb_append_cstring(output, "\n    ");
+            output = dtk_append_string(output, "\n    ");
         }
 
         uint8_t b = (uint8_t)pStringPool->pData[i];
         byteStr[2] = ((b >>  4) + '0'); if (byteStr[2] > '9') byteStr[2] += 7;
         byteStr[3] = ((b & 0xF) + '0'); if (byteStr[3] > '9') byteStr[3] += 7;
-        output = gb_append_cstring(output, byteStr);
+        output = dtk_append_string(output, byteStr);
 
         currentByteColumn = (currentByteColumn + 1) % BYTES_PER_ROW;
 
         if (i < pStringPool->byteCount-1) {
-            output = gb_append_cstring(output, ",");
+            output = dtk_append_string(output, ",");
         }
     }
 
-    output = gb_append_cstring(output, "\n};\n");
+    output = dtk_append_string(output, "\n};\n");
     return output;
 }
 
@@ -330,9 +330,9 @@ void generate_commands_list(FILE* pFileOut)
 
 
 
-    char* CommandNamePool = gb_make_string("const char g_CommandNamePool[] = ");
-    char* CommandNames    = gb_make_string("const char* g_CommandNames[] = {\n");
-    char* Commands        = gb_make_string("dred_command g_Commands[] = {\n");
+    char* CommandNamePool = dtk_make_string("const char g_CommandNamePool[] = ");
+    char* CommandNames    = dtk_make_string("const char* g_CommandNames[] = {\n");
+    char* Commands        = dtk_make_string("dred_command g_Commands[] = {\n");
 
     size_t runningNameLength = 0;
     int commandCount = 0;
@@ -371,13 +371,13 @@ void generate_commands_list(FILE* pFileOut)
 
 
         snprintf(line, sizeof(line), "\n    \"%s\\0\"", command.name);
-        CommandNamePool = gb_append_cstring(CommandNamePool, line);
+        CommandNamePool = dtk_append_string(CommandNamePool, line);
 
         snprintf(line, sizeof(line), "    g_CommandNamePool + %d,\n", (int)runningNameLength);
-        CommandNames = gb_append_cstring(CommandNames, line);
+        CommandNames = dtk_append_string(CommandNames, line);
 
         snprintf(line, sizeof(line), "    {%s, %s},\n", command.proc, command.flags);
-        Commands = gb_append_cstring(Commands, line);
+        Commands = dtk_append_string(Commands, line);
 
 
 
@@ -393,9 +393,9 @@ void generate_commands_list(FILE* pFileOut)
     snprintf(line, sizeof(line), "#define DRED_COMMAND_COUNT %d\n\n", commandCount);
     fwrite_string(pFileOut, line);
 
-    CommandNamePool = gb_append_cstring(CommandNamePool, ";\n\n");
-    CommandNames    = gb_append_cstring(CommandNames,    "};\n\n");
-    Commands        = gb_append_cstring(Commands,        "};\n\n");
+    CommandNamePool = dtk_append_string(CommandNamePool, ";\n\n");
+    CommandNames    = dtk_append_string(CommandNames,    "};\n\n");
+    Commands        = dtk_append_string(Commands,        "};\n\n");
 
     fwrite_string(pFileOut, CommandNamePool);
     fwrite_string(pFileOut, CommandNames);
@@ -489,8 +489,8 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
     snprintf(line, sizeof(line), "#define DRED_STOCK_IMAGE_SCALE_COUNT %d\n\n", (int)STOCK_IMAGE_SCALE_COUNT);
     fwrite_string(pFileOut, line);
 
-    char* StockImageData = gb_make_string("const uint8_t g_StockImageData[] = {");
-    char* StockImages    = gb_make_string("const dred_image_desc g_StockImages[DRED_STOCK_IMAGE_COUNT][DRED_STOCK_IMAGE_SCALE_COUNT] = {");
+    char* StockImageData = dtk_make_string("const uint8_t g_StockImageData[] = {");
+    char* StockImages    = dtk_make_string("const dred_image_desc g_StockImages[DRED_STOCK_IMAGE_COUNT][DRED_STOCK_IMAGE_SCALE_COUNT] = {");
 
     unsigned int currentByteColumn = 0;
     unsigned int runningDataOffset = 0;
@@ -502,12 +502,12 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
         snprintf(line, sizeof(line), "#define %s %d\n", pStockImage->id, iStockImage);
         fwrite_string(pFileOutH, line);
 
-        char* imageStr = gb_make_string("");
+        char* imageStr = dtk_make_string("");
         if (iStockImage > 0) {
-            imageStr = gb_append_cstring(imageStr, ",");
+            imageStr = dtk_append_string(imageStr, ",");
         }
 
-        imageStr = gb_append_cstring(imageStr, "\n    {");
+        imageStr = dtk_append_string(imageStr, "\n    {");
 
 
         // Load the image and rasterize it.
@@ -540,11 +540,11 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
             unsigned int scaledHeight = (unsigned int)(pStockImage->baseHeight * scale);
 
             if (iScale > 0) {
-                imageStr = gb_append_cstring(imageStr, ",\n     ");
+                imageStr = dtk_append_string(imageStr, ",\n     ");
             }
 
             snprintf(line, sizeof(line), "{%.1ff, %d, %d, g_StockImageData + %d}", scale, scaledWidth, scaledHeight, runningDataOffset);
-            imageStr = gb_append_cstring(imageStr, line);
+            imageStr = dtk_append_string(imageStr, line);
 
             
             nsvgRasterize(pSVGRast, pSVGImage, 0, 0, scaledWidth / pSVGImage->width, pImageData, (int)svgWidth, (int)svgHeight, (int)svgWidth*4);
@@ -552,7 +552,7 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
             
             StockImageData = write_image_data_rgba8(StockImageData, &currentByteColumn, pImageData, scaledWidth, scaledHeight, svgWidth*4);
             if (iStockImage+1 != imageCount || iScale+1 != STOCK_IMAGE_SCALE_COUNT) {
-                StockImageData = gb_append_cstring(StockImageData, ",");
+                StockImageData = dtk_append_string(StockImageData, ",");
             }
 
             runningDataOffset += (scaledWidth * scaledHeight * 4);
@@ -564,16 +564,16 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
         free(pImageData);
 
 
-        imageStr = gb_append_cstring(imageStr, "}");
+        imageStr = dtk_append_string(imageStr, "}");
 
-        StockImages = gb_append_cstring(StockImages, imageStr);
-        gb_free_string(imageStr);
+        StockImages = dtk_append_string(StockImages, imageStr);
+        dtk_free_string(imageStr);
     }
 
-    StockImageData = gb_append_cstring(StockImageData, "\n};\n\n");
+    StockImageData = dtk_append_string(StockImageData, "\n};\n\n");
     fwrite_string(pFileOut, StockImageData);
 
-    StockImages = gb_append_cstring(StockImages, "\n};\n\n");
+    StockImages = dtk_append_string(StockImages, "\n};\n\n");
     fwrite_string(pFileOut, StockImages);
 }
 
@@ -625,14 +625,14 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
         // previous variable. Documentation is designated with 3 spaces.
         if (lineBeg[0] == ' ' && lineBeg[1] == ' ' && lineBeg[2] == ' ') {
             if (var.documentation == NULL) {
-                var.documentation = gb_make_string(lineBeg + 3);
+                var.documentation = dtk_make_string(lineBeg + 3);
             } else {
-                var.documentation = gb_append_cstring(var.documentation, " ");
-                var.documentation = gb_append_cstring(var.documentation, lineBeg + 3);
+                var.documentation = dtk_append_string(var.documentation, " ");
+                var.documentation = dtk_append_string(var.documentation, lineBeg + 3);
             }
         } else if (lineBeg[0] == '\n') {
             if (var.documentation) {
-                var.documentation = gb_append_cstring(var.documentation, "\n");
+                var.documentation = dtk_append_string(var.documentation, "\n");
             }
         } else if (lineBeg[0] >= 32 && lineBeg[0] < 126) {
             // It's a new variable. If we were parsing a variable earlier the old one will need to be added.
@@ -690,66 +690,66 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
     }
     
 
-    char* declarationsOutput = gb_make_string("\n\n#define DRED_CONFIG_VARIABLE_DECLARATIONS");
+    char* declarationsOutput = dtk_make_string("\n\n#define DRED_CONFIG_VARIABLE_DECLARATIONS");
     for (int iVar = 0; iVar < stb_sb_count(g_ConfigVars); ++iVar) {
         config_var* pVar = &g_ConfigVars[iVar];
-        declarationsOutput = gb_append_cstring(declarationsOutput, " \\\n");
-        declarationsOutput = gb_append_cstring(declarationsOutput, config_var_type_to_string(pVar->type));
-        declarationsOutput = gb_append_cstring(declarationsOutput, " ");
-        declarationsOutput = gb_append_cstring(declarationsOutput, pVar->varname);
-        declarationsOutput = gb_append_cstring(declarationsOutput, ";");
+        declarationsOutput = dtk_append_string(declarationsOutput, " \\\n");
+        declarationsOutput = dtk_append_string(declarationsOutput, config_var_type_to_string(pVar->type));
+        declarationsOutput = dtk_append_string(declarationsOutput, " ");
+        declarationsOutput = dtk_append_string(declarationsOutput, pVar->varname);
+        declarationsOutput = dtk_append_string(declarationsOutput, ";");
     }
-    declarationsOutput = gb_append_cstring(declarationsOutput, "\n");   // <-- Need this new-line character to prevent a warning in GCC.
+    declarationsOutput = dtk_append_string(declarationsOutput, "\n");   // <-- Need this new-line character to prevent a warning in GCC.
     fwrite_string(pFileOutH, declarationsOutput);
 
 
-    char* funcOutput = gb_make_string("\n\nvoid dred_config_init_variables__autogenerated(dred_config* pConfig)\n{\n");
+    char* funcOutput = dtk_make_string("\n\nvoid dred_config_init_variables__autogenerated(dred_config* pConfig)\n{\n");
     for (int iVar = 0; iVar < stb_sb_count(g_ConfigVars); ++iVar) {
         config_var* pVar = &g_ConfigVars[iVar];
-        funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = ");
-        funcOutput = gb_append_cstring(funcOutput, pVar->defaultValue);
-        funcOutput = gb_append_cstring(funcOutput, ";\n");
+        funcOutput = dtk_append_string(funcOutput, "    pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, " = ");
+        funcOutput = dtk_append_string(funcOutput, pVar->defaultValue);
+        funcOutput = dtk_append_string(funcOutput, ";\n");
     }
-    funcOutput = gb_append_cstring(funcOutput, "}");
+    funcOutput = dtk_append_string(funcOutput, "}");
     fwrite_string(pFileOut, funcOutput);
-    gb_free_string(funcOutput);
+    dtk_free_string(funcOutput);
 
 
-    funcOutput = gb_make_string("\n\nvoid dred_config_uninit_variables__autogenerated(dred_config* pConfig)\n{\n");
+    funcOutput = dtk_make_string("\n\nvoid dred_config_uninit_variables__autogenerated(dred_config* pConfig)\n{\n");
     for (int iVar = 0; iVar < stb_sb_count(g_ConfigVars); ++iVar) {
         config_var* pVar = &g_ConfigVars[iVar];
         switch (pVar->type)
         {
             case CONFIG_VAR_TYPE_STRING:
             {
-                funcOutput = gb_append_cstring(funcOutput, "    gb_free_string(pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ");\n");
-                funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = NULL;\n");
+                funcOutput = dtk_append_string(funcOutput, "    dtk_free_string(pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, ");\n");
+                funcOutput = dtk_append_string(funcOutput, "    pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, " = NULL;\n");
             } break;
 
             case CONFIG_VAR_TYPE_FONT:
             {
-                funcOutput = gb_append_cstring(funcOutput, "    dred_font_library_delete_font(&pConfig->pDred->fontLibrary, pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ");\n");
-                funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = NULL;\n");
+                funcOutput = dtk_append_string(funcOutput, "    dred_font_library_delete_font(&pConfig->pDred->fontLibrary, pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, ");\n");
+                funcOutput = dtk_append_string(funcOutput, "    pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, " = NULL;\n");
             } break;
 
             case CONFIG_VAR_TYPE_IMAGE:
             {
-                funcOutput = gb_append_cstring(funcOutput, "    dred_image_library_delete_image(&pConfig->pDred->imageLibrary, pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ");\n");
-                funcOutput = gb_append_cstring(funcOutput, "    pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = NULL;\n");
+                funcOutput = dtk_append_string(funcOutput, "    dred_image_library_delete_image(&pConfig->pDred->imageLibrary, pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, ");\n");
+                funcOutput = dtk_append_string(funcOutput, "    pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, " = NULL;\n");
             } break;
 
             default: break;
         }
     }
-    funcOutput = gb_append_cstring(funcOutput, "}");
+    funcOutput = dtk_append_string(funcOutput, "}");
     fwrite_string(pFileOut, funcOutput);
-    gb_free_string(funcOutput);
+    dtk_free_string(funcOutput);
 
 
 
-    funcOutput = gb_make_string("\n\nvoid dred_config_write_to_file__autogenerated(dred_config* pConfig, dred_file file)\n{\n");
-    funcOutput = gb_append_cstring(funcOutput, "    char tempbuf[4096];\n\n");
-    funcOutput = gb_append_cstring(funcOutput, "    char tempbuf2[4096];\n\n");
+    funcOutput = dtk_make_string("\n\nvoid dred_config_write_to_file__autogenerated(dred_config* pConfig, dred_file file)\n{\n");
+    funcOutput = dtk_append_string(funcOutput, "    char tempbuf[4096];\n\n");
+    funcOutput = dtk_append_string(funcOutput, "    char tempbuf2[4096];\n\n");
     for (int iVar = 0; iVar < stb_sb_count(g_ConfigVars); ++iVar) {
         config_var* pVar = &g_ConfigVars[iVar];
 
@@ -757,32 +757,32 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
         {
             case CONFIG_VAR_TYPE_INTEGER:
             {
-                funcOutput = gb_append_cstring(funcOutput, "    snprintf(tempbuf, sizeof(tempbuf), \""); funcOutput = gb_append_cstring(funcOutput, pVar->name); funcOutput = gb_append_cstring(funcOutput, " %d\\n\", ");
-                funcOutput = gb_append_cstring(funcOutput, "pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ");\n");
+                funcOutput = dtk_append_string(funcOutput, "    snprintf(tempbuf, sizeof(tempbuf), \""); funcOutput = dtk_append_string(funcOutput, pVar->name); funcOutput = dtk_append_string(funcOutput, " %d\\n\", ");
+                funcOutput = dtk_append_string(funcOutput, "pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, ");\n");
             } break;
 
             case CONFIG_VAR_TYPE_FLOAT:
             {
-                funcOutput = gb_append_cstring(funcOutput, "    snprintf(tempbuf, sizeof(tempbuf), \""); funcOutput = gb_append_cstring(funcOutput, pVar->name); funcOutput = gb_append_cstring(funcOutput, " %f\\n\", ");
-                funcOutput = gb_append_cstring(funcOutput, "pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ");\n");
+                funcOutput = dtk_append_string(funcOutput, "    snprintf(tempbuf, sizeof(tempbuf), \""); funcOutput = dtk_append_string(funcOutput, pVar->name); funcOutput = dtk_append_string(funcOutput, " %f\\n\", ");
+                funcOutput = dtk_append_string(funcOutput, "pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, ");\n");
             } break;
 
             case CONFIG_VAR_TYPE_BOOL:
             {
-                funcOutput = gb_append_cstring(funcOutput, "    snprintf(tempbuf, sizeof(tempbuf), \""); funcOutput = gb_append_cstring(funcOutput, pVar->name); funcOutput = gb_append_cstring(funcOutput, " %s\\n\", ");
-                funcOutput = gb_append_cstring(funcOutput, "pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " ? \"true\" : \"false\");\n");
+                funcOutput = dtk_append_string(funcOutput, "    snprintf(tempbuf, sizeof(tempbuf), \""); funcOutput = dtk_append_string(funcOutput, pVar->name); funcOutput = dtk_append_string(funcOutput, " %s\\n\", ");
+                funcOutput = dtk_append_string(funcOutput, "pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, " ? \"true\" : \"false\");\n");
             } break;
 
             case CONFIG_VAR_TYPE_STRING:
             {
-                funcOutput = gb_append_cstring(funcOutput, "    snprintf(tempbuf, sizeof(tempbuf), \""); funcOutput = gb_append_cstring(funcOutput, pVar->name); funcOutput = gb_append_cstring(funcOutput, " \\\"%s\\\"\\n\", ");
-                funcOutput = gb_append_cstring(funcOutput, "pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ");\n");
+                funcOutput = dtk_append_string(funcOutput, "    snprintf(tempbuf, sizeof(tempbuf), \""); funcOutput = dtk_append_string(funcOutput, pVar->name); funcOutput = dtk_append_string(funcOutput, " \\\"%s\\\"\\n\", ");
+                funcOutput = dtk_append_string(funcOutput, "pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, ");\n");
             } break;
 
             case CONFIG_VAR_TYPE_FONT:
             {
-                funcOutput = gb_append_cstring(funcOutput, "    dred_font_to_string(pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ", tempbuf2, sizeof(tempbuf2));\n");
-                funcOutput = gb_append_cstring(funcOutput, "    snprintf(tempbuf, sizeof(tempbuf), \""); funcOutput = gb_append_cstring(funcOutput, pVar->name); funcOutput = gb_append_cstring(funcOutput, " %s\\n\", tempbuf2);\n");
+                funcOutput = dtk_append_string(funcOutput, "    dred_font_to_string(pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, ", tempbuf2, sizeof(tempbuf2));\n");
+                funcOutput = dtk_append_string(funcOutput, "    snprintf(tempbuf, sizeof(tempbuf), \""); funcOutput = dtk_append_string(funcOutput, pVar->name); funcOutput = dtk_append_string(funcOutput, " %s\\n\", tempbuf2);\n");
             } break;
 
             case CONFIG_VAR_TYPE_IMAGE:
@@ -791,122 +791,122 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
 
             case CONFIG_VAR_TYPE_COLOR:
             {
-                funcOutput = gb_append_cstring(funcOutput, "    snprintf(tempbuf, sizeof(tempbuf), \""); funcOutput = gb_append_cstring(funcOutput, pVar->name); funcOutput = gb_append_cstring(funcOutput, " %d %d %d %d\\n\", ");
-                funcOutput = gb_append_cstring(funcOutput, "pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ".r, ");
-                funcOutput = gb_append_cstring(funcOutput, "pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ".g, ");
-                funcOutput = gb_append_cstring(funcOutput, "pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ".b, ");
-                funcOutput = gb_append_cstring(funcOutput, "pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, ".a");
-                funcOutput = gb_append_cstring(funcOutput, ");\n");
+                funcOutput = dtk_append_string(funcOutput, "    snprintf(tempbuf, sizeof(tempbuf), \""); funcOutput = dtk_append_string(funcOutput, pVar->name); funcOutput = dtk_append_string(funcOutput, " %d %d %d %d\\n\", ");
+                funcOutput = dtk_append_string(funcOutput, "pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, ".r, ");
+                funcOutput = dtk_append_string(funcOutput, "pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, ".g, ");
+                funcOutput = dtk_append_string(funcOutput, "pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, ".b, ");
+                funcOutput = dtk_append_string(funcOutput, "pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, ".a");
+                funcOutput = dtk_append_string(funcOutput, ");\n");
             } break;
 
             default: break;
         }
 
-        funcOutput = gb_append_cstring(funcOutput, "    dred_file_write_string(file, tempbuf);\n\n");
+        funcOutput = dtk_append_string(funcOutput, "    dred_file_write_string(file, tempbuf);\n\n");
     }
-    funcOutput = gb_append_cstring(funcOutput, "}\n\n");
+    funcOutput = dtk_append_string(funcOutput, "}\n\n");
     fwrite_string(pFileOut, funcOutput);
 
 
 
-    funcOutput = gb_make_string("\n\nvoid dred_config_set__autogenerated(dred_config* pConfig, const char* key, const char* value)\n{\n");
+    funcOutput = dtk_make_string("\n\nvoid dred_config_set__autogenerated(dred_config* pConfig, const char* key, const char* value)\n{\n");
     for (int iVar = 0; iVar < stb_sb_count(g_ConfigVars); ++iVar) {
         config_var* pVar = &g_ConfigVars[iVar];
 
-        funcOutput = gb_append_cstring(funcOutput, "    if (strcmp(key, \"");
-        funcOutput = gb_append_cstring(funcOutput, pVar->name);
-        funcOutput = gb_append_cstring(funcOutput, "\") == 0) {\n");
+        funcOutput = dtk_append_string(funcOutput, "    if (strcmp(key, \"");
+        funcOutput = dtk_append_string(funcOutput, pVar->name);
+        funcOutput = dtk_append_string(funcOutput, "\") == 0) {\n");
 
         switch (pVar->type)
         {
             case CONFIG_VAR_TYPE_INTEGER:
             {
-                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
-                funcOutput = gb_append_cstring(funcOutput, " = atoi(value);\n");
+                funcOutput = dtk_append_string(funcOutput, "        pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname);
+                funcOutput = dtk_append_string(funcOutput, " = atoi(value);\n");
             } break;
 
             case CONFIG_VAR_TYPE_FLOAT:
             {
-                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
-                funcOutput = gb_append_cstring(funcOutput, " = (float)atof(value);\n");
+                funcOutput = dtk_append_string(funcOutput, "        pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname);
+                funcOutput = dtk_append_string(funcOutput, " = (float)atof(value);\n");
             } break;
 
             case CONFIG_VAR_TYPE_BOOL:
             {
-                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
-                funcOutput = gb_append_cstring(funcOutput, " = dred_parse_bool(value);\n");
+                funcOutput = dtk_append_string(funcOutput, "        pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname);
+                funcOutput = dtk_append_string(funcOutput, " = dred_parse_bool(value);\n");
             } break;
 
             case CONFIG_VAR_TYPE_STRING:
             {
-                funcOutput = gb_append_cstring(funcOutput, "        gb_free_string(pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
-                funcOutput = gb_append_cstring(funcOutput, ");\n");
-                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
-                funcOutput = gb_append_cstring(funcOutput, " = gb_make_string(value);\n");
+                funcOutput = dtk_append_string(funcOutput, "        dtk_free_string(pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname);
+                funcOutput = dtk_append_string(funcOutput, ");\n");
+                funcOutput = dtk_append_string(funcOutput, "        pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname);
+                funcOutput = dtk_append_string(funcOutput, " = dtk_make_string(value);\n");
             } break;
 
             case CONFIG_VAR_TYPE_FONT:
             {
-                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
-                funcOutput = gb_append_cstring(funcOutput, " = dred_parse_and_load_font(pConfig->pDred, value);\n");
+                funcOutput = dtk_append_string(funcOutput, "        pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname);
+                funcOutput = dtk_append_string(funcOutput, " = dred_parse_and_load_font(pConfig->pDred, value);\n");
             } break;
 
             case CONFIG_VAR_TYPE_IMAGE:
             {
                 // TODO: Implement this properly once a proper imaging system is ready.
-                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
-                funcOutput = gb_append_cstring(funcOutput, " = NULL;\n");
+                funcOutput = dtk_append_string(funcOutput, "        pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname);
+                funcOutput = dtk_append_string(funcOutput, " = NULL;\n");
             } break;
 
             case CONFIG_VAR_TYPE_COLOR:
             {
-                funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
-                funcOutput = gb_append_cstring(funcOutput, " = dred_parse_color(value);\n");
+                funcOutput = dtk_append_string(funcOutput, "        pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname);
+                funcOutput = dtk_append_string(funcOutput, " = dred_parse_color(value);\n");
             } break;
 
             default: break;
         }
 
         if (pVar->setCallback[0] != '\0' && strcmp(pVar->setCallback, "none") != 0) {
-            funcOutput = gb_append_cstring(funcOutput, "        if (pConfig->pDred->isInitialized) ");
-            funcOutput = gb_append_cstring(funcOutput, pVar->setCallback);
-            funcOutput = gb_append_cstring(funcOutput, "(pConfig->pDred);\n");
+            funcOutput = dtk_append_string(funcOutput, "        if (pConfig->pDred->isInitialized) ");
+            funcOutput = dtk_append_string(funcOutput, pVar->setCallback);
+            funcOutput = dtk_append_string(funcOutput, "(pConfig->pDred);\n");
         }
 
-        funcOutput = gb_append_cstring(funcOutput, "        return;\n    }\n");
+        funcOutput = dtk_append_string(funcOutput, "        return;\n    }\n");
     }
-    funcOutput = gb_append_cstring(funcOutput, "\n    dred_warningf(pConfig->pDred, \"Unknown config variable: %s\\n\", key);\n");
-    funcOutput = gb_append_cstring(funcOutput, "}\n\n");
+    funcOutput = dtk_append_string(funcOutput, "\n    dred_warningf(pConfig->pDred, \"Unknown config variable: %s\\n\", key);\n");
+    funcOutput = dtk_append_string(funcOutput, "}\n\n");
     fwrite_string(pFileOut, funcOutput);
 
 
-    funcOutput = gb_make_string("\n\nvoid dred_config_set_default__autogenerated(dred_config* pConfig, const char* key)\n{\n");
+    funcOutput = dtk_make_string("\n\nvoid dred_config_set_default__autogenerated(dred_config* pConfig, const char* key)\n{\n");
     for (int iVar = 0; iVar < stb_sb_count(g_ConfigVars); ++iVar) {
         config_var* pVar = &g_ConfigVars[iVar];
 
-        funcOutput = gb_append_cstring(funcOutput, "    if (strcmp(key, \"");
-        funcOutput = gb_append_cstring(funcOutput, pVar->name);
-        funcOutput = gb_append_cstring(funcOutput, "\") == 0) {\n");
+        funcOutput = dtk_append_string(funcOutput, "    if (strcmp(key, \"");
+        funcOutput = dtk_append_string(funcOutput, pVar->name);
+        funcOutput = dtk_append_string(funcOutput, "\") == 0) {\n");
 
         // For strings, the previous string needs to be free'd first.
         if (pVar->type == CONFIG_VAR_TYPE_STRING) {
-            funcOutput = gb_append_cstring(funcOutput, "        gb_free_string(pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname);
-            funcOutput = gb_append_cstring(funcOutput, ");\n");
+            funcOutput = dtk_append_string(funcOutput, "        dtk_free_string(pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname);
+            funcOutput = dtk_append_string(funcOutput, ");\n");
         }
 
-        funcOutput = gb_append_cstring(funcOutput, "        pConfig->"); funcOutput = gb_append_cstring(funcOutput, pVar->varname); funcOutput = gb_append_cstring(funcOutput, " = ");
-        funcOutput = gb_append_cstring(funcOutput, pVar->defaultValue);
-        funcOutput = gb_append_cstring(funcOutput, ";\n");
+        funcOutput = dtk_append_string(funcOutput, "        pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname); funcOutput = dtk_append_string(funcOutput, " = ");
+        funcOutput = dtk_append_string(funcOutput, pVar->defaultValue);
+        funcOutput = dtk_append_string(funcOutput, ";\n");
 
         if (pVar->setCallback[0] != '\0' && strcmp(pVar->setCallback, "none") != 0) {
-            funcOutput = gb_append_cstring(funcOutput, "        if (pConfig->pDred->isInitialized) ");
-            funcOutput = gb_append_cstring(funcOutput, pVar->setCallback);
-            funcOutput = gb_append_cstring(funcOutput, "(pConfig->pDred);\n");
+            funcOutput = dtk_append_string(funcOutput, "        if (pConfig->pDred->isInitialized) ");
+            funcOutput = dtk_append_string(funcOutput, pVar->setCallback);
+            funcOutput = dtk_append_string(funcOutput, "(pConfig->pDred);\n");
         }
 
-        funcOutput = gb_append_cstring(funcOutput, "        return;\n    }\n");
+        funcOutput = dtk_append_string(funcOutput, "        return;\n    }\n");
     }
-    funcOutput = gb_append_cstring(funcOutput, "}\n\n");
+    funcOutput = dtk_append_string(funcOutput, "}\n\n");
     fwrite_string(pFileOut, funcOutput);
 }
 
@@ -962,7 +962,7 @@ int main(int argc, char** argv)
     // The main string pool.
     char* stringPoolStr = stringify_string_pool_data(&stringPool);
     fprintf(pFileOut, "%s", stringPoolStr);
-    gb_free_string(stringPoolStr);
+    dtk_free_string(stringPoolStr);
 
 
     fclose(pFileOut);
@@ -970,7 +970,7 @@ int main(int argc, char** argv)
 
 
     // Website. (Temporarily disabled until the performance issue is resolved.)
-    //dred_build__generate_website(g_CommandVars, g_ConfigVars);
+    dred_build__generate_website(g_CommandVars, g_ConfigVars);
 
 
     return 0;

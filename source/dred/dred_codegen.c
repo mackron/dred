@@ -70,46 +70,46 @@ char* dred_codegen_buffer_to_c_string(const unsigned char* buffer, size_t size, 
     const char* input = (const char*)buffer;
     const char* indent = "";
 
-    char* output = gb_make_string(""); 
+    char* output = dtk_make_string("");
 
     // Don't include the variable declaration if no variable name was specified.
     if (variableName != NULL) {
         indent = "    ";
-        output = gb_make_string("static const char* ");
-        output = gb_append_cstring(output, variableName);
-        output = gb_append_cstring(output, " = {\n");
+        output = dtk_make_string("static const char* ");
+        output = dtk_append_string(output, variableName);
+        output = dtk_append_string(output, " = {\n");
     }
 
-    output = gb_append_cstring(gb_append_cstring(output, indent), "\"");   // <-- Begin the first line with a double-quote.
+    output = dtk_append_string(dtk_append_string(output, indent), "\"");   // <-- Begin the first line with a double-quote.
     {
         // At the momement all we're doing is wrapping each line with " ... \n", but later on we'll want to do
         // proper tab formatting and UTF-8 conversion.
         for (unsigned int ichar = 0; ichar < size; ++ichar) {
             switch (input[ichar]) {
-                case '\n': output = gb_append_cstring(output, "\\n"); output = gb_append_cstring(output, "\"\n"); output = gb_append_cstring(gb_append_cstring(output, indent), "\""); break;  // <-- Terminate the line with a double-quote and place the double-quote for the following line.
-                case '\r': output = gb_append_cstring(output, "\\r"); break;
-                case '\t': output = gb_append_cstring(output, "\\t"); break;
-                case '\"': output = gb_append_cstring(output, "\\\""); break;
-                case '\\': output = gb_append_cstring(output, "\\\\"); break;
+                case '\n': output = dtk_append_string(output, "\\n"); output = dtk_append_string(output, "\"\n"); output = dtk_append_string(dtk_append_string(output, indent), "\""); break;  // <-- Terminate the line with a double-quote and place the double-quote for the following line.
+                case '\r': output = dtk_append_string(output, "\\r"); break;
+                case '\t': output = dtk_append_string(output, "\\t"); break;
+                case '\"': output = dtk_append_string(output, "\\\""); break;
+                case '\\': output = dtk_append_string(output, "\\\\"); break;
                 default:
                 {
                     // TODO: Check for non-ASCII characters and add support for UTF-8 hex characters.
-                    output = gb_append_string_length(output, &input[ichar], 1);  
+                    output = dtk_append_string_length(output, &input[ichar], 1);  
                 } break;
             }
         }
     }
-    output = gb_append_cstring(output, "\"");   // <-- End the last line with a double-quote.
+    output = dtk_append_string(output, "\"");   // <-- End the last line with a double-quote.
     if (variableName != NULL) {
-        output = gb_append_cstring(output, "\n};");
+        output = dtk_append_string(output, "\n};");
     }
 
     // The documentation for this function says to release the returned pointer with free(), however since we
     // used gb_string to construct it. Therefore we need to make a copy of the string before returning.
-    gbUsize outputLength = gb_string_length(output);
+    size_t outputLength = dtk_string_length(output);
     char* actualOutput = (char*)malloc(outputLength + 1);
     memcpy(actualOutput, output, outputLength + 1); // +1 for null terminator.
 
-    gb_free_string(output);
+    dtk_free_string(output);
     return actualOutput;
 }

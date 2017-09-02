@@ -60,6 +60,19 @@ dtk_string dtk_make_stringf(const char* format, ...)
     return str;
 }
 
+dtk_string dtk_make_string_length(const char* str, size_t strLen)
+{
+    if (str == NULL) return NULL;
+    
+    char* newStr = (char*)dtk_malloc(strLen+1);
+    if (newStr == NULL) {
+        return NULL;    // Out of memory.
+    }
+
+    dtk_strncpy_s(newStr, strLen+1, str, strLen);
+    return newStr;
+}
+
 dtk_string dtk_append_string(dtk_string lstr, const char* rstr)
 {
     if (rstr == NULL) {
@@ -70,7 +83,7 @@ dtk_string dtk_append_string(dtk_string lstr, const char* rstr)
         return dtk_make_string(rstr);
     }
 
-    size_t lstrLen = strlen(lstr);
+    size_t lstrLen = dtk_string_length(lstr);
     size_t rstrLen = strlen(rstr);
     char* str = (char*)dtk_realloc(lstr, lstrLen + rstrLen + 1);
     if (str == NULL) {
@@ -105,6 +118,33 @@ dtk_string dtk_append_stringf(dtk_string lstr, const char* format, ...)
 
     va_end(args);
     return str;
+}
+
+dtk_string dtk_append_string_length(dtk_string lstr, const char* rstr, size_t rstrLen)
+{
+    if (rstr == NULL) {
+        rstr = "";
+    }
+
+    if (lstr == NULL) {
+        return dtk_make_string(rstr);
+    }
+
+    size_t lstrLen = dtk_string_length(lstr);
+    char* str = (char*)dtk_realloc(lstr, lstrLen + rstrLen + 1);
+    if (str == NULL) {
+        return NULL;
+    }
+
+    dtk_strncat_s(str, lstrLen + rstrLen + 1, rstr, rstrLen);
+    str[lstrLen + rstrLen] = '\0';
+
+    return str;
+}
+
+size_t dtk_string_length(dtk_string str)
+{
+    return strlen(str);
 }
 
 void dtk_free_string(dtk_string str)

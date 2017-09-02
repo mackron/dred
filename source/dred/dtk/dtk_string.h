@@ -364,6 +364,9 @@ dtk_string dtk_make_string(const char* str);
 dtk_string dtk_make_stringv(const char* format, va_list args);
 dtk_string dtk_make_stringf(const char* format, ...);
 
+// Creates a newly allocated string, restricting it to a maximum length.
+dtk_string dtk_make_string_length(const char* str, size_t strLen);
+
 // Appends a string to another dtk_string.
 //
 // This free's "lstr". Use this API like so: "lstr = dtk_append_string(lstr, rstr)". It works the same way as realloc().
@@ -374,6 +377,13 @@ dtk_string dtk_append_string(dtk_string lstr, const char* rstr);
 // Appends a formatted string to another dtk_string.
 dtk_string dtk_append_stringv(dtk_string lstr, const char* format, va_list args);
 dtk_string dtk_append_stringf(dtk_string lstr, const char* format, ...);
+
+// Same as dtk_append_string(), except restricts it to a maximum number of characters and does not require the input
+// string to be null terminated.
+dtk_string dtk_append_string_length(dtk_string lstr, const char* rstr, size_t rstrLen);
+
+// Retrieves the length of the given string.
+size_t dtk_string_length(dtk_string str);
 
 
 // Frees a string created by dtk_make_string*()
