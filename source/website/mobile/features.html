@@ -1,0 +1,87 @@
+{{ include "mobile/dred-header.html" }}
+    <div style="background-color:#FFF; text-align:center;">
+        <div style="border-bottom:solid 1px #ccc; padding:1em; margin-bottom:1em;">
+        dred is a fast, ultra lightweight alternative to other modern text editors.
+        </div>
+
+        <div style="font-size:9pt; margin-bottom:2em; line-height:1.2em;">
+            <img src="{{ relative-path "img/light-weight-1.png" }}"><br/>
+            <div style="margin-top:0em; padding:0em 3em;">
+                dred is less than 1MB, a single executable, and uses less memory than most other popular text editors.
+            </div>
+        </div>
+        <div style="font-size:9pt; margin-bottom:2em; line-height:1.2em;">
+            <img src="{{ relative-path "img/multiedit-1.gif" }}"><br/>
+            <div style="margin-top:0em; padding:0em 3em;">
+                Select and edit multiple sections at the same time. Stop wasting time making the same changes multiple times.
+            </div>
+        </div>
+        <div style="font-size:9pt; margin-bottom:2em; line-height:1.2em;">
+            <img src="{{ relative-path "img/theme-1.gif" }}"><br/>
+            <div style="margin-top:0em; padding:0em 3em;">
+                dred has a simple but powerful configuration system. Configs are stored in plain text files which are easily edited.
+            </div>
+        </div>
+        <div style="font-size:9pt; margin-bottom:2em; line-height:1.2em;">
+            <img src="{{ relative-path "img/cmdbar-1.gif" }}"><br/>
+            <div style="margin-top:0em; padding:0em 3em;">
+                Execute complex commands using dred's command bar. Just hit escape to toggle activation of the command bar.
+            </div>
+        </div>
+        
+        <div style="margin-top:1em; padding:1em 3em; border-top:solid 1px #ccc;">
+            <div style="color:#944; font-size:18pt; font-weight:bold; margin-bottom:0.5em; margin-top:1em;">Fast and Lightweight</div>
+			<div style="text-align:center;">
+    			dred's load times are almost instant, and it uses about the same amount of memory as Notepad on Windows. It's also
+    			less than 500KB and the portable version is a single executable.
+			</div>
+            <div style="color:#944; font-size:18pt; font-weight:bold; margin-bottom:0.5em; margin-top:2em;">Cross Platform</div>
+			<div style="text-align:center;">
+    			dred currently supports Linux (GTK+ 3) and Windows, with a heavy focus on keeping the look and feel of text editing
+                consistent across each platform.
+			</div>
+            <div style="color:#944; font-size:18pt; font-weight:bold; margin-bottom:0.5em; margin-top:2em;">Simple</div>
+			<div style="text-align:center;">
+    			dred get's out of the way and lets you get on with the job. There's no annoying, usless junk floating around on the UI
+    			so you can focus on what's important - editing text.
+			</div>
+        </div>
+        
+        <div style="border-top:solid 1px #ccc; margin-top:1em; padding:1em 3em;">
+            <div style="text-align:center; font-size:14pt; font-weight:bold;">
+			    And best of all, it's free and open-source!
+			</div>
+			<div style="font-size:12pt; margin-top:0em;">
+			    You can find dred on <a href="https://github.com/dr-soft/dred">GitHub</a>!
+			</div>
+        </div>
+        
+        <div style="border-top:solid 1px #ccc; margin-top:0em; padding:1em 2em; text-align:left;">
+            <div style="text-align:center; font-size:14pt;">Additional Features</div>
+            <ul>
+				<li>Bash-style command bar (ESC to activate)</li>
+                <li>Recent files history</li>
+				<li>Detection and reloading of externally modified files</li>
+                <li>Have multiple files open at a time</li>
+				<li>Printing</li>
+				<li>Word wrap</li>
+                <li>Block indent/unindent (Tab, Shift+Tab)</li>
+                <li>Automatic indentation</li>
+                <li>Unlimited undo/redo</li>
+                <li>Line numbers</li>
+                <li>Configurable tab stops</li>
+				<li>Custom key bindings:
+                    <ul>
+                        <li>Example: <code>bind "Compile" "CTRL+F9" "!gcc %"</code></li>
+                    </ul>
+                </li>
+                <li>Find and replace</li>
+				<li>Goto line</li>
+                <li>Support for both Windows and Unix line endings</li>
+                <li>Zooming (Ctrl + Mouse Wheel)</li>
+                <li>Support for inserting the current date and time</li>
+                <li>DPI awareness on Windows</li>
+            </ul>
+        </div>
+    </div>
+{{ include "mobile/dred-footer.html" }}
