@@ -15,6 +15,36 @@ dtk_bool32 dtk_is_directory__win32(const char* path)
     DWORD attributes = GetFileAttributesA(path);
     return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
+
+char* dtk_get_current_directory__win32()
+{
+    DWORD len = GetCurrentDirectoryA(0, NULL);
+    if (len == 0) {
+        return NULL;
+    }
+
+    char* pDir = (char*)dtk_malloc(len);
+    if (pDir == NULL) {
+        return NULL;    // Out of memory.
+    }
+
+    len = GetCurrentDirectoryA(len, pDir);
+    if (len == 0) {
+        dtk_free(pDir);
+        return NULL;
+    }
+
+    return pDir;
+}
+
+dtk_result dtk_set_current_directory__win32(const char* path)
+{
+    if (SetCurrentDirectoryA(path) == 0) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+}
 #endif
 
 
@@ -36,6 +66,36 @@ dtk_bool32 dtk_is_directory__posix(const char* path)
     }
 
     return (info.st_mode & S_IFDIR) != 0;
+}
+
+char* dtk_get_current_directory__posix()
+{
+    char* pDirTemp = getcwd(NULL, 0);
+    if (pDir == NULL) {
+        return NULL;
+    }
+
+    // Unfortunately getcwd() explicitly uses malloc() for the allocation, however we require the caller
+    // to free with dtk_free(). To ensure correctness, we need to allocate it again :(
+    size_t len = strlen(pDirTemp);
+    char* pDir = (char*)dtk_malloc(len + 1);
+    if (pDir == NULL) {
+        return NULL;    // Out of memory.
+    }
+
+    dtk_strcpy(pDir, pDirTemp);
+    free(pDirTemp);
+
+    return pDir;
+}
+
+dtk_result dtk_set_current_directory__posix(const char* path)
+{
+    if (chdir(path) != 0) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
 }
 #endif
 
@@ -79,7 +139,7 @@ static dtk_result dtk_open_and_read_file_with_extra_data(const char* filePath, s
     }
 
     fseek(pFile, 0, SEEK_END);
-    dr_uint64 fileSize = ftell(pFile);
+    dtk_uint64 fileSize = ftell(pFile);
     fseek(pFile, 0, SEEK_SET);
 
     if (fileSize + extraBytes > SIZE_MAX) {
@@ -123,7 +183,7 @@ dtk_result dtk_open_and_read_file(const char* filePath, size_t* pFileSizeOut, vo
 dtk_result dtk_open_and_read_text_file(const char* filePath, size_t* pFileSizeOut, char** ppFileData)
 {
     char* pFileData;
-    dtk_result result = dtk_open_and_read_file_with_extra_data(filePath, pFileSizeOut, &pFileData, 1);
+    dtk_result result = dtk_open_and_read_file_with_extra_data(filePath, pFileSizeOut, (void**)&pFileData, 1);
     if (result != DTK_SUCCESS) {
         return result;
     }
@@ -185,4 +245,25 @@ dtk_bool32 dtk_is_directory(const char* path)
 #endif
 }
 
+
+
+char* dtk_get_current_directory()
+{
+#ifdef DTK_WIN32
+    return dtk_get_current_directory__win32();
+#endif
+#ifdef DTK_POSIX
+    return dtk_get_current_directory__posix();
+#endif
+}
+
+dtk_result dtk_set_current_directory(const char* path)
+{
+#ifdef DTK_WIN32
+    return dtk_set_current_directory__win32(path);
+#endif
+#ifdef DTK_POSIX
+    return dtk_set_current_directory__posix(path);
+#endif
+}
 

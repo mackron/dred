@@ -15,3 +15,10 @@ dtk_result dtk_open_and_write_text_file(const char* filePath, const char* text);
 
 // Checks if the given path is an existing directory.
 dtk_bool32 dtk_is_directory(const char* path);
+
+
+// Retrieves the current directory. Free the returned string with dtk_free(). Returns NULL on error.
+char* dtk_get_current_directory();
+
+// Sets the current directory.
+dtk_result dtk_set_current_directory(const char* path);
