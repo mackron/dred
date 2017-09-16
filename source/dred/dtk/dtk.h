@@ -78,6 +78,10 @@ typedef int dtk_result;
 #define DTK_OUT_OF_RANGE            -6
 #define DTK_CANCELLED               -7
 #define DTK_FAILED_TO_OPEN_DIALOG   -8
+#define DTK_FAILED_TO_OPEN_FILE     -9
+#define DTK_FAILED_TO_READ_FILE     -10
+#define DTK_FAILED_TO_WRITE_FILE    -11
+#define DTK_FILE_TOO_BIG            -12
 #define DTK_NO_DISPLAY              -256
 #define DTK_NO_SCREEN               -257
 #define DTK_QUIT                    -1024   // Returned by dtk_next_event() when a quit message is received.
