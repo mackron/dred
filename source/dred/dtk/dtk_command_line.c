@@ -312,3 +312,19 @@ void dtk_free_argv(char** argv)
 
     dtk_free(argv);
 }
+
+char* dtk_argv_get_value(int argc, char** argv, const char* key)
+{
+    // Naive at the moment.
+    for (int i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], key) == 0) {
+            if (i+1 < argc) {
+                return argv[i+1];
+            } else {
+                return NULL;
+            }
+        }
+    }
+
+    return NULL;
+}
