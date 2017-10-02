@@ -16,6 +16,14 @@ dtk_bool32 dtk_is_directory__win32(const char* path)
     return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
 
+dtk_bool32 dtk_file_exists__win32(const char* filePath)
+{
+    dtk_assert(filePath != NULL);
+
+    DWORD attributes = GetFileAttributesA(filePath);
+    return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
+}
+
 char* dtk_get_current_directory__win32()
 {
     DWORD len = GetCurrentDirectoryA(0, NULL);
@@ -66,6 +74,18 @@ dtk_bool32 dtk_is_directory__posix(const char* path)
     }
 
     return (info.st_mode & S_IFDIR) != 0;
+}
+
+dtk_bool32 dtk_file_exists__posix(const char* filePath)
+{
+    dtk_assert(filePath != NULL);
+
+    struct stat info;
+    if (stat(filePath, &info) != 0) {
+        return DTK_FALSE;   // Likely the folder doesn't exist.
+    }
+
+    return (info.st_mode & S_IFDIR) == 0;
 }
 
 char* dtk_get_current_directory__posix()
@@ -242,6 +262,18 @@ dtk_bool32 dtk_is_directory(const char* path)
 #endif
 #ifdef DTK_POSIX
     return dtk_is_directory__posix(path);
+#endif
+}
+
+dtk_bool32 dtk_file_exists(const char* filePath)
+{
+    if (filePath == NULL) return DTK_FALSE;
+
+#ifdef DTK_WIN32
+    return dtk_file_exists__win32(filePath);
+#endif
+#ifdef DTK_POSIX
+    return dtk_file_exists__posix(filePath);
 #endif
 }
 
