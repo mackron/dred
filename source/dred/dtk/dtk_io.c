@@ -278,6 +278,191 @@ dtk_bool32 dtk_file_exists(const char* filePath)
 }
 
 
+dtk_result dtk_delete_file(const char* filePath)
+{
+    if (filePath == NULL) return DTK_INVALID_ARGS;
+
+    // TODO: Return proper error codes, especially DTK_DOES_NOT_EXIST.
+
+#ifdef DTK_WIN32
+    if (DeleteFileA(filePath) == 0) {
+        DWORD error = GetLastError();
+        switch (error) {
+            case ERROR_FILE_NOT_FOUND: return DTK_DOES_NOT_EXIST;
+            default: break;
+        }
+
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+#endif
+#ifdef DTK_POSIX
+    if (remove(filePath) != 0) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+#endif
+}
+
+dtk_result dtk_mkdir(const char* directoryPath)
+{
+    if (directoryPath == NULL) return DTK_INVALID_ARGS;
+
+    // TODO: Return proper error codes.
+
+#ifdef DTK_WIN32
+    if (CreateDirectoryA(directoryPath, NULL) == 0) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+#endif
+#ifdef DTK_POSIX
+    if (mkdir(directoryPath, 0777) != 0) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+#endif
+}
+
+dtk_result dtk_mkdir_recursive(const char* directoryPath)
+{
+    if (directoryPath == NULL || directoryPath[0] == '\0') {
+        return DTK_INVALID_ARGS;
+    }
+
+    // TODO: Don't restrict this to 4096 characters.
+
+    // All we need to do is iterate over every segment in the path and try creating the directory.
+    char runningPath[4096];
+    dtk_zero_memory(runningPath, sizeof(runningPath));
+
+    size_t i = 0;
+    for (;;) {
+        if (i >= sizeof(runningPath)-1) {
+            return DTK_PATH_TOO_LONG;   // Path is too long.
+        }
+
+        if (directoryPath[0] == '\0' || directoryPath[0] == '/' || directoryPath[0] == '\\') {
+            if (runningPath[0] != '\0' && !(runningPath[1] == ':' && runningPath[2] == '\0')) {   // <-- If the running path is empty, it means we're trying to create the root directory.
+                if (!dtk_directory_exists(runningPath)) {
+                    dtk_result result = dtk_mkdir(runningPath);
+                    if (result != DTK_SUCCESS) {
+                        return result;
+                    }
+                }
+            }
+
+            runningPath[i++] = '/';
+            runningPath[i]   = '\0';
+
+            if (directoryPath[0] == '\0') {
+                break;
+            }
+        } else {
+            runningPath[i++] = directoryPath[0];
+        }
+
+        directoryPath += 1;
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_bool32 dtk_iterate_files(const char* directory, dtk_bool32 recursive, dtk_iterate_files_proc proc, void* pUserData)
+{
+#ifdef _WIN32
+    char searchQuery[MAX_PATH];
+    dtk_strcpy_s(searchQuery, sizeof(searchQuery), directory);
+
+    unsigned int searchQueryLength = (unsigned int)strlen(searchQuery);
+    if (searchQueryLength >= MAX_PATH - 3) {
+        return DTK_FALSE;    // Path is too long.
+    }
+
+    searchQuery[searchQueryLength + 0] = '\\';
+    searchQuery[searchQueryLength + 1] = '*';
+    searchQuery[searchQueryLength + 2] = '\0';
+
+    WIN32_FIND_DATAA ffd;
+    HANDLE hFind = FindFirstFileA(searchQuery, &ffd);
+    if (hFind == INVALID_HANDLE_VALUE) {
+        return DTK_FALSE; // Failed to begin search.
+    }
+
+    do
+    {
+        // Skip past "." and ".." directories.
+        if (strcmp(ffd.cFileName, ".") == 0 || strcmp(ffd.cFileName, "..") == 0) {
+            continue;
+        }
+
+        char filePath[MAX_PATH];
+        dtk_strcpy_s(filePath, sizeof(filePath), directory);
+        dtk_strcat_s(filePath, sizeof(filePath), "/");
+        dtk_strcat_s(filePath, sizeof(filePath), ffd.cFileName);
+
+        if (!proc(filePath, pUserData)) {
+            return DTK_FALSE;
+        }
+
+        if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+            if (recursive) {
+                if (!dtk_iterate_files(filePath, recursive, proc, pUserData)) {
+                    return DTK_FALSE;
+                }
+            }
+        }
+
+    } while (FindNextFileA(hFind, &ffd));
+
+    FindClose(hFind);
+#else
+    DIR* dir = opendir(directory);
+    if (dir == NULL) {
+        return DTK_FALSE;
+    }
+
+    struct dirent* info = NULL;
+    while ((info = readdir(dir)) != NULL)
+    {
+        // Skip past "." and ".." directories.
+        if (strcmp(info->d_name, ".") == 0 || strcmp(info->d_name, "..") == 0) {
+            continue;
+        }
+
+        char filePath[4096];
+        dtk_strcpy_s(filePath, sizeof(filePath), directory);
+        dtk_strcat_s(filePath, sizeof(filePath), "/");
+        dtk_strcat_s(filePath, sizeof(filePath), info->d_name);
+
+        struct stat fileinfo;
+        if (stat(filePath, &fileinfo) != 0) {
+            continue;
+        }
+
+        if (!proc(filePath, pUserData)) {
+            return DTK_FALSE;
+        }
+
+        if (fileinfo.st_mode & S_IFDIR) {
+            if (recursive) {
+                if (!dtk_iterate_files(filePath, recursive, proc, pUserData)) {
+                    return DTK_FALSE;
+                }
+            }
+        }
+    }
+
+    closedir(dir);
+#endif
+
+    return DTK_TRUE;
+}
+
 
 char* dtk_get_current_directory()
 {

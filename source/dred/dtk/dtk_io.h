@@ -26,6 +26,24 @@ dtk_bool32 dtk_file_exists(const char* filePath);
 // This will return DR_FALSE if the path points to a file.
 DTK_INLINE dtk_bool32 dtk_directory_exists(const char* directoryPath) { return dtk_is_directory(directoryPath); }
 
+// Deletes the file at the given path.
+//
+// This uses remove() on POSIX platforms and DeleteFile() on Windows platforms.
+dtk_result dtk_delete_file(const char* filePath);
+
+// Cross-platform wrapper for creating a directory.
+dtk_result dtk_mkdir(const char* directoryPath);
+
+// Recursively creates a directory.
+dtk_result dtk_mkdir_recursive(const char* directoryPath);
+
+
+// Callback function for file iteration.
+typedef dtk_bool32 (* dtk_iterate_files_proc)(const char* filePath, void* pUserData);
+
+// Iterates over every file and folder of the given directory.
+dtk_bool32 dtk_iterate_files(const char* directory, dtk_bool32 recursive, dtk_iterate_files_proc proc, void* pUserData);
+
 
 // Retrieves the current directory. Free the returned string with dtk_free(). Returns NULL on error.
 char* dtk_get_current_directory();
