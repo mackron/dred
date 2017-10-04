@@ -91,7 +91,7 @@ dtk_bool32 dtk_file_exists__posix(const char* filePath)
 char* dtk_get_current_directory__posix()
 {
     char* pDirTemp = getcwd(NULL, 0);
-    if (pDir == NULL) {
+    if (pDirTemp == NULL) {
         return NULL;
     }
 
