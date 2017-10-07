@@ -357,6 +357,11 @@ DTK_INLINE void dtk_trim(char* str)
 
 typedef char* dtk_string;
 
+// Allocates the memory for a string, including the null terminator.
+//
+// Use this API if you want to allocate memory for the string, but you want to fill it with raw data yourself.
+dtk_string dtk_malloc_string(size_t sizeInBytesIncludingNullTerminator);
+
 // Creates a newly allocated string. Free the string with dtk_free_string().
 dtk_string dtk_make_string(const char* str);
 

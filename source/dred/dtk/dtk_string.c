@@ -1,5 +1,14 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
+dtk_string dtk_malloc_string(size_t sizeInBytesIncludingNullTerminator)
+{
+    if (sizeInBytesIncludingNullTerminator == 0) {
+        return NULL;
+    }
+
+    return (dtk_string)dtk_calloc(sizeInBytesIncludingNullTerminator, 1);   // Use calloc() to ensure it's null terminated.
+}
+
 dtk_string dtk_make_string(const char* str)
 {
     if (str == NULL) return NULL;

@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <ctype.h>  // For toupper()
 #include <math.h>   // For ceil(), round(), etc.
+#include <time.h>   // For time(), etc.
 #include <stdio.h>  // For sprintf() and family.
 
 #if !defined(DTK_64BIT) && !defined(DTK_32BIT)
@@ -318,6 +319,8 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 
 #include "dtk_rect.c"
 #include "dtk_string.c"
+#include "dtk_path.c"
+#include "dtk_time.c"
 #include "dtk_io.c"
 #include "dtk_threading.c"
 #include "dtk_monitor.c"
