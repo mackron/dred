@@ -264,7 +264,7 @@ dr_bool32 dred_check_if_focused_file_is_dirty_and_reload(dred_context* pDred);
 dtk_dialog_result dred_show_open_file_dialog(dred_context* pDred);
 
 // Shows the Save File dialog.
-dr_bool32 dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath, char* absolutePathOut, size_t absolutePathOutSize);
+dtk_dialog_result dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath, char* absolutePathOut, size_t absolutePathOutSize);
 
 // Shows a yes/no/cancel dialog and returns the result as DTK_DIALOG_RESULT_YES, DTK_DIALOG_RESULT_NO or DTK_DIALOG_RESULT_CANCEL.
 dtk_dialog_result dred_show_yesnocancel_dialog(dred_context* pDred, const char* message, const char* title);
