@@ -79,6 +79,81 @@ dtk_dialog_result dtk_show_color_picker_dialog__win32(dtk_context* pTK, dtk_wind
     return DTK_DIALOG_RESULT_OK;
 }
 
+dtk_dialog_result dtk_show_font_picker_dialog__win32(dtk_context* pTK, dtk_window* pOwnerWindow, const dtk_font_desc* pDefaultFontDesc, dtk_font_desc* pDescOut)
+{
+    (void)pTK;
+    dtk_assert(pTK != NULL);
+
+    LOGFONTA lf;
+    ZeroMemory(&lf, sizeof(lf));
+    lf.lfHeight = -13;
+    lf.lfWeight = FW_REGULAR;
+    lf.lfItalic = FALSE;
+
+    if (pDefaultFontDesc != NULL) {
+        strncpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), pDefaultFontDesc->family, _TRUNCATE);
+        lf.lfHeight = -(LONG)pDefaultFontDesc->size;
+
+        switch (pDefaultFontDesc->weight)
+        {
+        case dtk_font_weight_medium:      lf.lfWeight = FW_MEDIUM;     break;
+        case dtk_font_weight_thin:        lf.lfWeight = FW_THIN;       break;
+        case dtk_font_weight_extra_light: lf.lfWeight = FW_EXTRALIGHT; break;
+        case dtk_font_weight_light:       lf.lfWeight = FW_LIGHT;      break;
+        case dtk_font_weight_semi_bold:   lf.lfWeight = FW_SEMIBOLD;   break;
+        case dtk_font_weight_bold:        lf.lfWeight = FW_BOLD;       break;
+        case dtk_font_weight_extra_bold:  lf.lfWeight = FW_EXTRABOLD;  break;
+        case dtk_font_weight_heavy:       lf.lfWeight = FW_HEAVY;      break;
+        default: break;
+        }
+
+        if (pDefaultFontDesc->slant == dtk_font_slant_italic || pDefaultFontDesc->slant == dtk_font_slant_oblique) {
+            lf.lfItalic = TRUE;
+        }
+    }
+
+    CHOOSEFONTA cf;
+    ZeroMemory(&cf, sizeof(cf));
+    cf.lStructSize = sizeof(cf);
+    cf.hwndOwner = (pOwnerWindow == NULL) ? NULL : (HWND)pOwnerWindow->win32.hWnd;
+    cf.hDC = GetDC((pOwnerWindow == NULL) ? NULL : (HWND)pOwnerWindow->win32.hWnd);
+    cf.lpLogFont = &lf;
+    cf.Flags = CF_INITTOLOGFONTSTRUCT | CF_BOTH;
+
+    if (!ChooseFontA(&cf)) {
+        return DTK_DIALOG_RESULT_CANCEL;
+    }
+
+    strcpy_s(pDescOut->family, sizeof(pDescOut->family), lf.lfFaceName);
+
+    if (lf.lfHeight < 0) {
+        pDescOut->size = (float)-lf.lfHeight;
+    } else {
+        pDescOut->size = (float)lf.lfHeight;
+    }
+
+    pDescOut->weight = dtk_font_weight_default;
+    switch (lf.lfWeight)
+    {
+    case FW_MEDIUM:     pDescOut->weight = dtk_font_weight_medium;      break;
+    case FW_THIN:       pDescOut->weight = dtk_font_weight_thin;        break;
+    case FW_EXTRALIGHT: pDescOut->weight = dtk_font_weight_extra_light; break;
+    case FW_LIGHT:      pDescOut->weight = dtk_font_weight_light;       break;
+    case FW_SEMIBOLD:   pDescOut->weight = dtk_font_weight_semi_bold;   break;
+    case FW_BOLD:       pDescOut->weight = dtk_font_weight_bold;        break;
+    case FW_EXTRABOLD:  pDescOut->weight = dtk_font_weight_extra_bold;  break;
+    case FW_HEAVY:      pDescOut->weight = dtk_font_weight_heavy;       break;
+    default: break;
+    }
+
+    pDescOut->slant = dtk_font_slant_none;
+    if (lf.lfItalic) {
+        pDescOut->slant = dtk_font_slant_italic;
+    }
+
+    return DTK_DIALOG_RESULT_OK;
+}
+
 
 // Converts the given extensions filter string to the format required by OPENFILENAME and SAVEFILENAME
 //
@@ -444,7 +519,7 @@ dtk_dialog_result dtk_message_box__gtk(dtk_window* pParentWindow, const char* te
 
 dtk_dialog_result dtk_show_color_picker_dialog__gtk(dtk_context* pTK, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut)
 {
-    GtkWidget* dialog = gtk_color_chooser_dialog_new(NULL, GTK_WINDOW(pOwnerWindow->gtk.pWidget));
+    GtkWidget* dialog = gtk_color_chooser_dialog_new(NULL, (pOwnerWindow == NULL) ? NULL : GTK_WINDOW(pOwnerWindow->gtk.pWidget));
     if (dialog == NULL) {
         return DTK_DIALOG_RESULT_CANCEL;
     }
@@ -466,6 +541,50 @@ dtk_dialog_result dtk_show_color_picker_dialog__gtk(dtk_context* pTK, dtk_window
 
     gtk_widget_destroy(dialog);
 
+    if (result == GTK_RESPONSE_OK) {
+        return DTK_DIALOG_RESULT_OK;
+    } else {
+        return DTK_DIALOG_RESULT_CANCEL;
+    }
+}
+
+dtk_dialog_result dtk_show_font_picker_dialog__gtk(dtk_context* pTK, dtk_window* pOwnerWindow, const dtk_font_desc* pDefaultFontDesc, dtk_font_desc* pDescOut)
+{
+    (void)pDefaultFontDesc;
+
+    GtkWidget* dialog = gtk_font_chooser_dialog_new(NULL, (pOwnerWindow == NULL) ? NULL : GTK_WINDOW(pOwnerWindow->gtk.pWidget));
+    if (dialog == NULL) {
+        return DTK_ERROR;
+    }
+
+    gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+
+    gchar* pangoFontStr = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(dialog));
+    if (pangoFontStr == NULL) {
+        gtk_widget_destroy(dialog);
+        return DTK_ERROR;
+    }
+
+    PangoFontDescription* pPangoDesc = pango_font_description_from_string(pangoFontStr);
+    if (pPangoDesc != NULL) {
+        strcpy_s(pDescOut->family, sizeof(pDescOut->family), pango_font_description_get_family(pPangoDesc));
+
+        gint size = pango_font_description_get_size(pPangoDesc);
+        if (size > 0) {
+            if (pango_font_description_get_size_is_absolute(pPangoDesc)) {
+                pDescOut->size = size;
+            } else {
+                pDescOut->size = (unsigned int)(size/PANGO_SCALE * (96.0/72.0));
+            }
+        }
+
+        pDescOut->slant = dred_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
+        pDescOut->weight = dred_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
+
+        pango_font_description_free(pPangoDesc);
+    }
+
+    gtk_widget_destroy(dialog);
     if (result == GTK_RESPONSE_OK) {
         return DTK_DIALOG_RESULT_OK;
     } else {
@@ -737,13 +856,25 @@ dtk_dialog_result dtk_message_box(dtk_window* pParentWindow, const char* text, c
 
 dtk_dialog_result dtk_show_color_picker_dialog(dtk_context* pTK, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut)
 {
-    if (pTK == NULL) return DTK_DIALOG_RESULT_CANCEL;
+    if (pTK == NULL) return DTK_INVALID_ARGS;
    
 #ifdef DTK_WIN32
     return dtk_show_color_picker_dialog__win32(pTK, pOwnerWindow, initialColor, pColorOut);
 #endif
 #ifdef DTK_GTK
     return dtk_show_color_picker_dialog__gtk(pTK, pOwnerWindow, initialColor, pColorOut);
+#endif
+}
+
+dtk_dialog_result dtk_show_font_picker_dialog(dtk_context* pTK, dtk_window* pOwnerWindow, const dtk_font_desc* pDefaultFontDesc, dtk_font_desc* pDescOut)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+#ifdef DTK_WIN32
+    return dtk_show_font_picker_dialog__win32(pTK, pOwnerWindow, pDefaultFontDesc, pDescOut);
+#endif
+#ifdef DTK_GTK
+    return dtk_show_font_picker_dialog__gtk(pTK, pOwnerWindow, pDefaultFontDesc, pDescOut);
 #endif
 }
 

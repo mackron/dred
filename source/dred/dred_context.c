@@ -1661,122 +1661,26 @@ dtk_dialog_result dred_show_font_picker_dialog(dred_context* pDred, dtk_window* 
         pOwnerWindow = DTK_WINDOW(&pDred->mainWindow);
     }
 
+    dtk_dialog_result result = DTK_DIALOG_RESULT_OK;
 
-#ifdef DRED_WIN32
-    LOGFONTA lf;
-    ZeroMemory(&lf, sizeof(lf));
-    lf.lfHeight = -13;
-    lf.lfWeight = FW_REGULAR;
-    lf.lfItalic = FALSE;
-
-    if (pDefaultFontDesc != NULL) {
-        strncpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), pDefaultFontDesc->family, _TRUNCATE);
-        lf.lfHeight = -(LONG)pDefaultFontDesc->size;
-
-        switch (pDefaultFontDesc->weight)
-        {
-        case dtk_font_weight_medium:      lf.lfWeight = FW_MEDIUM;     break;
-        case dtk_font_weight_thin:        lf.lfWeight = FW_THIN;       break;
-        case dtk_font_weight_extra_light: lf.lfWeight = FW_EXTRALIGHT; break;
-        case dtk_font_weight_light:       lf.lfWeight = FW_LIGHT;      break;
-        case dtk_font_weight_semi_bold:   lf.lfWeight = FW_SEMIBOLD;   break;
-        case dtk_font_weight_bold:        lf.lfWeight = FW_BOLD;       break;
-        case dtk_font_weight_extra_bold:  lf.lfWeight = FW_EXTRABOLD;  break;
-        case dtk_font_weight_heavy:       lf.lfWeight = FW_HEAVY;      break;
-        default: break;
-        }
-
-        if (pDefaultFontDesc->slant == dtk_font_slant_italic || pDefaultFontDesc->slant == dtk_font_slant_oblique) {
-            lf.lfItalic = TRUE;
-        }
-    }
-
-    CHOOSEFONTA cf;
-    ZeroMemory(&cf, sizeof(cf));
-    cf.lStructSize = sizeof(cf);
-    cf.hwndOwner = (HWND)pOwnerWindow->win32.hWnd;
-    cf.hDC = GetDC((HWND)pOwnerWindow->win32.hWnd);
-    cf.lpLogFont = &lf;
-    cf.Flags = CF_INITTOLOGFONTSTRUCT | CF_BOTH;
-
-    if (!ChooseFontA(&cf)) {
-        return DTK_DIALOG_RESULT_CANCEL;
-    }
-
-    strcpy_s(pDescOut->family, sizeof(pDescOut->family), lf.lfFaceName);
-
-    if (lf.lfHeight < 0) {
-        pDescOut->size = (float)-lf.lfHeight;
+    dtk_font_desc descOut;
+    if (pDefaultFontDesc == NULL) {
+        result = dtk_show_font_picker_dialog(&pDred->tk, pOwnerWindow, NULL, &descOut);
     } else {
-        pDescOut->size = (float)lf.lfHeight;
+        dtk_font_desc defaultFontDesc;
+        strcpy_s(defaultFontDesc.family, sizeof(defaultFontDesc.family), pDefaultFontDesc->family);
+        defaultFontDesc.size = pDefaultFontDesc->size;
+        defaultFontDesc.weight = pDefaultFontDesc->weight;
+        defaultFontDesc.slant = pDefaultFontDesc->slant;
+        result = dtk_show_font_picker_dialog(&pDred->tk, pOwnerWindow, &defaultFontDesc, &descOut);
     }
 
-    pDescOut->weight = dtk_font_weight_default;
-    switch (lf.lfWeight)
-    {
-    case FW_MEDIUM:     pDescOut->weight = dtk_font_weight_medium;      break;
-    case FW_THIN:       pDescOut->weight = dtk_font_weight_thin;        break;
-    case FW_EXTRALIGHT: pDescOut->weight = dtk_font_weight_extra_light; break;
-    case FW_LIGHT:      pDescOut->weight = dtk_font_weight_light;       break;
-    case FW_SEMIBOLD:   pDescOut->weight = dtk_font_weight_semi_bold;   break;
-    case FW_BOLD:       pDescOut->weight = dtk_font_weight_bold;        break;
-    case FW_EXTRABOLD:  pDescOut->weight = dtk_font_weight_extra_bold;  break;
-    case FW_HEAVY:      pDescOut->weight = dtk_font_weight_heavy;       break;
-    default: break;
-    }
-
-    pDescOut->slant = dtk_font_slant_none;
-    if (lf.lfItalic) {
-        pDescOut->slant = dtk_font_slant_italic;
-    }
-
+    strcpy_s(pDescOut->family, sizeof(pDescOut->family), descOut.family);
+    pDescOut->size = descOut.size;
+    pDescOut->weight = descOut.weight;
+    pDescOut->slant = descOut.slant;
     pDescOut->flags = 0;
-
-    return DTK_DIALOG_RESULT_OK;
-#endif
-
-#ifdef DRED_GTK
-    (void)pDefaultFontDesc;
-
-    GtkWidget* dialog = gtk_font_chooser_dialog_new(NULL, GTK_WINDOW(pOwnerWindow->gtk.pWidget));
-    if (dialog == NULL) {
-        return DTK_ERROR;
-    }
-
-    gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-
-    gchar* pangoFontStr = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(dialog));
-    if (pangoFontStr == NULL) {
-        gtk_widget_destroy(dialog);
-        return DTK_ERROR;
-    }
-
-    PangoFontDescription* pPangoDesc = pango_font_description_from_string(pangoFontStr);
-    if (pPangoDesc != NULL) {
-        strcpy_s(pDescOut->family, sizeof(pDescOut->family), pango_font_description_get_family(pPangoDesc));
-
-        gint size = pango_font_description_get_size(pPangoDesc);
-        if (size > 0) {
-            if (pango_font_description_get_size_is_absolute(pPangoDesc)) {
-                pDescOut->size = size;
-            } else {
-                pDescOut->size = (unsigned int)(size/PANGO_SCALE * (96.0/72.0));
-            }
-        }
-
-        pDescOut->slant = dred_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
-        pDescOut->weight = dred_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
-
-        pango_font_description_free(pPangoDesc);
-    }
-
-    gtk_widget_destroy(dialog);
-    if (result == GTK_RESPONSE_OK) {
-        return DTK_DIALOG_RESULT_OK;
-    } else {
-        return DTK_DIALOG_RESULT_CANCEL;
-    }
-#endif
+    return result;
 }
 
 dtk_dialog_result dred_show_color_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut)
