@@ -262,7 +262,7 @@ void dred_settings__btn_choose_font__on_pressed(dtk_button* pButton)
     dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pButton));
 
     dred_font_desc fontDesc;
-    if (!dred_show_font_picker_dialog(pDred, pWindow, &pDred->config.pTextEditorFont->desc, &fontDesc)) {
+    if (dred_show_font_picker_dialog(pDred, pWindow, &pDred->config.pTextEditorFont->desc, &fontDesc) != DTK_DIALOG_RESULT_OK) {
         return;
     }
 

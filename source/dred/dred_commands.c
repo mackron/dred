@@ -343,7 +343,7 @@ dr_bool32 dred_command__print(dred_context* pDred, const char* value)
     (void)value;
 
     dred_print_info printInfo;
-    return dred_show_print_dialog(pDred, NULL, &printInfo);
+    return dred_show_print_dialog(pDred, NULL, &printInfo) == DTK_DIALOG_RESULT_OK;
 }
 
 dr_bool32 dred_command__reload(dred_context* pDred, const char* value)

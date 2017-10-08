@@ -1651,10 +1651,10 @@ dtk_dialog_result dred_show_yesnocancel_dialog(dred_context* pDred, const char* 
     return dtk_message_box(DTK_WINDOW(&pDred->mainWindow), message, title, DTK_DIALOG_BUTTONS_YESNOCANCEL);
 }
 
-dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut)
+dtk_dialog_result dred_show_font_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut)
 {
     if (pDred == NULL || pDescOut == NULL) {
-        return DR_FALSE;
+        return DTK_INVALID_ARGS;
     }
 
     if (pOwnerWindow == NULL) {
@@ -1700,7 +1700,7 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dtk_window* pOwnerWi
     cf.Flags = CF_INITTOLOGFONTSTRUCT | CF_BOTH;
 
     if (!ChooseFontA(&cf)) {
-        return DR_FALSE;
+        return DTK_DIALOG_RESULT_CANCEL;
     }
 
     strcpy_s(pDescOut->family, sizeof(pDescOut->family), lf.lfFaceName);
@@ -1732,7 +1732,7 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dtk_window* pOwnerWi
 
     pDescOut->flags = 0;
 
-    return DR_TRUE;
+    return DTK_DIALOG_RESULT_OK;
 #endif
 
 #ifdef DRED_GTK
@@ -1740,7 +1740,7 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dtk_window* pOwnerWi
 
     GtkWidget* dialog = gtk_font_chooser_dialog_new(NULL, GTK_WINDOW(pOwnerWindow->gtk.pWidget));
     if (dialog == NULL) {
-        return DR_FALSE;
+        return DTK_ERROR;
     }
 
     gint result = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -1748,7 +1748,7 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dtk_window* pOwnerWi
     gchar* pangoFontStr = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(dialog));
     if (pangoFontStr == NULL) {
         gtk_widget_destroy(dialog);
-        return DR_FALSE;
+        return DTK_ERROR;
     }
 
     PangoFontDescription* pPangoDesc = pango_font_description_from_string(pangoFontStr);
@@ -1771,7 +1771,11 @@ dr_bool32 dred_show_font_picker_dialog(dred_context* pDred, dtk_window* pOwnerWi
     }
 
     gtk_widget_destroy(dialog);
-    return result == GTK_RESPONSE_OK;
+    if (result == GTK_RESPONSE_OK) {
+        return DTK_DIALOG_RESULT_OK;
+    } else {
+        return DTK_DIALOG_RESULT_CANCEL;
+    }
 #endif
 }
 
@@ -1925,10 +1929,10 @@ void dred_gtk__on_draw_page(GtkPrintOperation *pPrint, GtkPrintContext *context,
 }
 #endif
 
-dr_bool32 dred_show_print_dialog(dred_context* pDred, dtk_window* pOwnerWindow, dred_print_info* pInfoOut)
+dtk_dialog_result dred_show_print_dialog(dred_context* pDred, dtk_window* pOwnerWindow, dred_print_info* pInfoOut)
 {
     if (pDred == NULL || pInfoOut == NULL) {
-        return DR_FALSE;
+        return DTK_INVALID_ARGS;
     }
 
     if (pOwnerWindow == NULL) {
@@ -1937,12 +1941,12 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dtk_window* pOwnerWindow, 
 
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
-        return DR_FALSE;
+        return DTK_ERROR;
     }
 
-    // Just return DR_FALSE if the focused editor does not support printing.
+    // Just return an error if the focused editor does not support printing.
     if (!dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-        return DR_FALSE;   // Focused editor does not support printing.
+        return DTK_ERROR;   // Focused editor does not support printing.
     }
 
 
@@ -1971,7 +1975,7 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dtk_window* pOwnerWindow, 
     char* text = (char*)malloc(textLength + 1);
     if (text == NULL) {
         drte_engine_uninit(&printData.textEngine);
-        return DR_FALSE;
+        return DTK_OUT_OF_MEMORY;
     }
 
     dred_text_editor_get_text(DRED_TEXT_EDITOR(pFocusedEditor), text, textLength+1);
@@ -1986,7 +1990,7 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dtk_window* pOwnerWindow, 
     pd.hwndOwner = (HWND)pOwnerWindow->win32.hWnd;
     pd.Flags = PD_RETURNDC;
     if (!PrintDlgA(&pd)) {
-        return DR_FALSE;
+        return DTK_DIALOG_RESULT_CANCEL;
     }
 
     HDC hPrintDC = pd.hDC;
@@ -2010,7 +2014,7 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dtk_window* pOwnerWindow, 
     printData.scaleY    = GetDeviceCaps(hPrintDC, LOGPIXELSY) / 72.0f;
 
     if (dtk_surface_init_transient_HDC(&pDred->tk, hPrintDC, physicalWidth, physicalHeight, &printData.paintSurface) != DTK_SUCCESS) {
-        return DR_FALSE;
+        return DTK_ERROR;
     }
 
     dred__init_print_font(&printData);
@@ -2023,7 +2027,7 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dtk_window* pOwnerWindow, 
     di.cbSize = sizeof(di);
     di.lpszDocName = dred_editor_get_file_path(dred_get_focused_editor(pDred));
     if (StartDocA(hPrintDC, &di) <= 0) {
-        return DR_FALSE;
+        return DTK_ERROR;
     }
 
     // Pages.
@@ -2061,13 +2065,13 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dtk_window* pOwnerWindow, 
 
     if (pd.hDevMode != NULL) GlobalFree(pd.hDevMode);
     if (pd.hDevNames != NULL) GlobalFree(pd.hDevNames);
-    return DR_TRUE;
+    return DTK_DIALOG_RESULT_OK;
 #endif
 
 #ifdef DRED_GTK
     GtkPrintOperation* pPrint = gtk_print_operation_new();
     if (pPrint == NULL) {
-        return DR_FALSE;
+        return DTK_ERROR;
     }
 
     // TODO: Set default settings based on previous settings.
@@ -2089,7 +2093,7 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dtk_window* pOwnerWindow, 
     if (printResult != GTK_PRINT_OPERATION_RESULT_APPLY) {
         g_object_unref(pPrint);
         g_object_unref(pSettings);
-        return DR_FALSE;
+        return DTK_DIALOG_RESULT_CANCEL;
     }
 
     // Save settings so the next print operation can have it's default settings set to the previous print settings.
@@ -2117,7 +2121,7 @@ dr_bool32 dred_show_print_dialog(dred_context* pDred, dtk_window* pOwnerWindow, 
 
     g_object_unref(pSettings);
     g_object_unref(pPrint);
-    return DR_TRUE;
+    return DTK_DIALOG_RESULT_OK;
 #endif
 }
 
