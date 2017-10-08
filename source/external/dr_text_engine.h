@@ -4311,10 +4311,9 @@ size_t drte_view_get_page_count(drte_view* pView)
     size_t linesPerPage = drte_view_get_line_count_per_page(pView);
 
     size_t pageCount = lineCount / linesPerPage;
-    if (pageCount == 0) {
-        pageCount = 1;  // Always at least one page.
-    }
 
+    // Don't forget the last page. We use a mod operation for this to ensure we don't add a blank page
+    // in the case that the last line is sitting on the last line of the last printed page.
     if (lineCount % linesPerPage != 0) {
         pageCount += 1;
     }
