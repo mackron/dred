@@ -1669,6 +1669,9 @@ dtk_result dtk_window_set_size__gtk(dtk_window* pWindow, dtk_int32 width, dtk_in
     }
 
     gtk_window_resize(GTK_WINDOW(pWindow->gtk.pWidget), (gint)width, (gint)height);
+    pWindow->gtk.windowWidth  = width;
+    pWindow->gtk.windowHeight = height;
+
     return DTK_SUCCESS;
 }
 
