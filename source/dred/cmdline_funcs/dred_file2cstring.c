@@ -1,7 +1,7 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
 // Command: dred -f file2cstring [Input File Name] [Options]
-//    -n OutputVariableName : Specifies the name the name of the output variable. Defaults to "FileData"
+//    -n OutputVariableName : Specifies the name of the output variable. Defaults to "FileData"
 //
 // Implementation: dred_file2cstring
 
