@@ -144,6 +144,7 @@ extern "C" {
 #include "dred_codegen.h"
 #include "dred_package.h"
 #include "dred_package_library.h"
+#include "cmdline_funcs/dred_main_f.h"
 #ifdef __cplusplus
 }
 #endif

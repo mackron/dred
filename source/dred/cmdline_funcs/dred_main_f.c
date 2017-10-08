@@ -1,3 +1,4 @@
+// Copyright (C) 2017 David Reid. See included LICENSE file.
 
 typedef int (* dred_cmdline_func_proc)(int argc, char** argv);
 

@@ -6,6 +6,7 @@
 // BEGIN COMMAND LIST : <command name> <proc> <flags>
 //
 // !                            dred_command__system_command                DRED_CMDBAR_RELEASE_KEYBOARD
+// f                            dred_command__cmdline_func                  DRED_CMDBAR_RELEASE_KEYBOARD
 // cmdbar                       dred_command__cmdbar                        DRED_CMDBAR_NO_CLEAR
 // bind                         dred_command__bind                          DRED_CMDBAR_RELEASE_KEYBOARD
 // load-config                  dred_command__load_config                   DRED_CMDBAR_RELEASE_KEYBOARD
@@ -89,6 +90,9 @@ struct dred_command
 
 // Handles the "!" command.
 dr_bool32 dred_command__system_command(dred_context* pDred, const char* value);
+
+// Handles the "@" command, which is used for executing command line functions.
+dr_bool32 dred_command__cmdline_func(dred_context* pDred, const char* value);
 
 // cmdbar
 //

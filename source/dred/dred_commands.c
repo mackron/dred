@@ -1,5 +1,6 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
+// TODO: Change this to a dynamically expanded string allocated on the heap.
 static dr_bool32 dred__preprocess_system_command(dred_context* pDred, const char* cmd, char* cmdOut, size_t cmdOutSize)
 {
     // Currently, the only symbols we're expanding is the enescaped "%" character, which is expanded to the relative
@@ -62,6 +63,24 @@ dr_bool32 dred_command__system_command(dred_context* pDred, const char* value)
     } else {
         return system(value) == 0;
     }
+}
+
+dr_bool32 dred_command__cmdline_func(dred_context* pDred, const char* value)
+{
+    int argc;
+    char** argv;
+
+    char valueExpanded[4096];
+    if (dred__preprocess_system_command(pDred, value, valueExpanded, sizeof(valueExpanded))) {
+        argc = dtk_winmain_to_argv(valueExpanded, &argv);
+    } else {
+        argc = dtk_winmain_to_argv(value, &argv);
+    }
+
+    int result = dred_main_f_argv(argc, argv);
+
+    dtk_free_argv(argv);
+    return (result == 0) ? DR_TRUE : DR_FALSE;
 }
 
 dr_bool32 dred_command__cmdbar(dred_context* pDred, const char* value)
