@@ -20,6 +20,12 @@ typedef struct
     const char** ppExtensionFilters;    // An array of null-terminated string pairs: {"Name of Filter", "Extension"}. Example: {"All, "", "Text Files", "txt,cfg,ini", "Images", "jpg,jpeg,png,tga", NULL}
 } dtk_open_file_dialog_options;
 
+typedef struct
+{
+    const char* pDefaultPath;
+    const char** ppExtensionFilters;    // See note in the dtk_open_file_dialog_options struct.
+} dtk_save_file_dialog_options;
+
 
 // Shows a message box.
 dtk_dialog_result dtk_message_box(dtk_window* pParentWindow, const char* text, const char* title, dtk_dialog_buttons buttons);
@@ -32,3 +38,6 @@ dtk_dialog_result dtk_show_color_picker_dialog(dtk_context* pTK, dtk_window* pOw
 //
 // The returned list of strings is null terminated.
 dtk_dialog_result dtk_show_open_file_dialog(dtk_window* pParentWindow, dtk_open_file_dialog_options* pOptions, char*** pppSelectedFilePaths);
+
+// Shows a save file dialog.
+dtk_dialog_result dtk_show_save_file_dialog(dtk_window* pParentWindow, dtk_save_file_dialog_options* pOptions, char** ppSelectedFilePath);

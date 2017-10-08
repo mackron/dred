@@ -161,27 +161,21 @@ char* dtk_convert_file_dialog_extensions_filter_string_to_win32(const char* pExt
     return pExtensionsWin32;
 }
 
-dtk_dialog_result dtk_show_open_file_dialog__win32(dtk_window* pParentWindow, dtk_open_file_dialog_options* pOptions, char*** pppSelectedFilePaths)
+// Converts the given DTK-style extension filters to the format required by OPENFILENAME and SAVEFILENAME.
+//
+// Example:
+//     Input:  {"All, "", "Text Files", "txt,csv", NULL}
+//     Output: "All (*.*)\0*.*\0Text Files (*.txt,*.csv)\0*.txt;*.csv\0"
+//
+// Free the returned string with dtk_free(). If NULL is returned, it means out of memory.
+char* dtk_convert_file_dialog_filters_to_win32(const char** ppExtensionFilters)
 {
-    dtk_assert(pOptions != NULL);
-
-    // Example filter for OPENFILENAME: "All (*.*)\0*.*\0Text Files (*.txt,*.csv)\0*.txt;*.csv\0";
-
-    // Limit to 32K for the moment. Too big for the stack? Consider allocating something larger on the heap if this becomes an issue.
-    char filePaths[32768];
-    if (pOptions->pDefaultPath != NULL) {
-        dtk_strcpy_s(filePaths, sizeof(filePaths), pOptions->pDefaultPath);
-    } else {
-        filePaths[0] = '\0';
-    }
-    
-
-    // Filter. This is inefficient due to the realloc()'s, but it's not too much of a big deal because it'll be drowned out by the amount of
+    // This is inefficient due to the realloc()'s, but it's not too much of a big deal because it'll be drowned out by the amount of
     // time it takes for Windows to actually show the dialog. This can be improved later if need be - happy for contributions!
     char* pFilter = NULL;
     size_t filterLen = 0;
 
-    const char** ppNextFilter = pOptions->ppExtensionFilters;
+    const char** ppNextFilter = ppExtensionFilters;
     for (;;) {
         const char* pName = ppNextFilter[0];
         if (pName == NULL) {
@@ -197,7 +191,7 @@ dtk_dialog_result dtk_show_open_file_dialog__win32(dtk_window* pParentWindow, dt
         char* pExtensionsFilterWin32 = dtk_convert_file_dialog_extensions_filter_string_to_win32(pExtensions, &extensionsFilterWin32Len);
         if (pExtensionsFilterWin32 == NULL) {
             dtk_free(pExtensionsFilterWin32);
-            return DTK_OUT_OF_MEMORY;
+            return NULL;
         }
 
         size_t nameLen = strlen(pName);
@@ -208,7 +202,7 @@ dtk_dialog_result dtk_show_open_file_dialog__win32(dtk_window* pParentWindow, dt
         if (pNewFilter == NULL) {
             dtk_free(pFilter);
             dtk_free(pExtensionsFilterWin32);
-            return DTK_OUT_OF_MEMORY;
+            return NULL;
         }
         pFilter = pNewFilter;
 
@@ -229,11 +223,33 @@ dtk_dialog_result dtk_show_open_file_dialog__win32(dtk_window* pParentWindow, dt
     char* pNewFilter = (char*)dtk_realloc(pFilter, filterLen + 1);
     if (pNewFilter == NULL) {
         dtk_free(pFilter);
-        return DTK_OUT_OF_MEMORY;
+        return NULL;
     }
     pFilter = pNewFilter;
     pFilter[filterLen] = '\0';
 
+    return pFilter;
+}
+
+dtk_dialog_result dtk_show_open_file_dialog__win32(dtk_window* pParentWindow, dtk_open_file_dialog_options* pOptions, char*** pppSelectedFilePaths)
+{
+    dtk_assert(pOptions != NULL);
+
+    // Example filter for OPENFILENAME: "All (*.*)\0*.*\0Text Files (*.txt,*.csv)\0*.txt;*.csv\0";
+
+    // Limit to 32K for the moment. Too big for the stack? Consider allocating something larger on the heap if this becomes an issue.
+    char filePaths[32768];
+    if (pOptions->pDefaultPath != NULL) {
+        dtk_strcpy_s(filePaths, sizeof(filePaths), pOptions->pDefaultPath);
+    } else {
+        filePaths[0] = '\0';
+    }
+    
+    // Filter.
+    char* pFilter = dtk_convert_file_dialog_filters_to_win32(pOptions->ppExtensionFilters);
+    if (pFilter == NULL) {
+        return DTK_OUT_OF_MEMORY;
+    }
 
     OPENFILENAMEA ofn;
     ZeroMemory(&ofn, sizeof(ofn));
@@ -322,6 +338,56 @@ dtk_dialog_result dtk_show_open_file_dialog__win32(dtk_window* pParentWindow, dt
     }
 
     dtk_free(pFilter);
+    return DTK_DIALOG_RESULT_OK;
+}
+
+dtk_dialog_result dtk_show_save_file_dialog__win32(dtk_window* pParentWindow, dtk_save_file_dialog_options* pOptions, char** ppSelectedFilePath)
+{
+    dtk_assert(pOptions != NULL);
+
+    // Limit to 32K for the moment. Too big for the stack? Consider allocating something larger on the heap if this becomes an issue.
+    char filePath[32768];
+    if (pOptions->pDefaultPath != NULL) {
+        dtk_strcpy_s(filePath, sizeof(filePath), dtk_path_file_name(pOptions->pDefaultPath));
+    } else {
+        filePath[0] = '\0';
+    }
+
+    // Filter.
+    char* pFilter = dtk_convert_file_dialog_filters_to_win32(pOptions->ppExtensionFilters);
+    if (pFilter == NULL) {
+        return DTK_OUT_OF_MEMORY;
+    }
+
+    OPENFILENAMEA ofn;
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = (pParentWindow == NULL) ? NULL : (HWND)pParentWindow->win32.hWnd;
+    ofn.lpstrFile = filePath;
+    ofn.nMaxFile = sizeof(filePath);
+    ofn.lpstrFilter = pFilter;
+    ofn.nFilterIndex = 1;
+    ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+    if (!GetSaveFileNameA(&ofn)) {
+        dtk_free(pFilter);
+        return DTK_DIALOG_RESULT_CANCEL;
+    }
+
+    dtk_free(pFilter);
+
+    // Output.
+    size_t selectedFilePathLen = strlen(filePath);
+    char* pSelectedFilePath = (char*)dtk_malloc(selectedFilePathLen + 1);
+    if (pSelectedFilePath == NULL) {
+        return DTK_OUT_OF_MEMORY;    // Out of memory.
+    }
+
+    strcpy_s(pSelectedFilePath, selectedFilePathLen+1, filePath);
+
+    if (ppSelectedFilePath) {
+        *ppSelectedFilePath = pSelectedFilePath;
+    }
+
     return DTK_DIALOG_RESULT_OK;
 }
 #endif
@@ -413,11 +479,10 @@ dtk_dialog_result dtk_show_open_file_dialog__gtk(dtk_window* pParentWindow, dtk_
         "_Open",   GTK_RESPONSE_ACCEPT,
         "_Cancel", GTK_RESPONSE_CANCEL, NULL);
     if (dialog == NULL) {
-        return DTK_FALSE;
+        return DTK_ERROR;
     }
 
     gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), pOptions->multiSelect);
-    //gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), pOptions->overwriteConfirmation);
 
     if (!dtk_string_is_null_or_empty(pOptions->pDefaultPath)) {
         gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog), pOptions->pDefaultPath);
@@ -525,7 +590,7 @@ dtk_dialog_result dtk_show_open_file_dialog__gtk(dtk_window* pParentWindow, dtk_
 
         if (pppSelectedFilePaths) *pppSelectedFilePaths = ppItemPointers;
         result = DTK_DIALOG_RESULT_OK;
-    } else if (response == GTK_RESPONSE_ACCEPT) {
+    } else if (response == GTK_RESPONSE_CANCEL) {
         result = DTK_DIALOG_RESULT_CANCEL;
     } else {
         result = DTK_ERROR;
@@ -538,6 +603,115 @@ done:
     }
     g_slist_free(pResultList);
 
+    gtk_widget_destroy(dialog);
+    return result;
+}
+
+dtk_dialog_result dtk_show_save_file_dialog__gtk(dtk_window* pParentWindow, dtk_save_file_dialog_options* pOptions, char** ppSelectedFilePath)
+{
+    GtkWidget* dialog = gtk_file_chooser_dialog_new("Save As", (pParentWindow == NULL) ? NULL : GTK_WINDOW(pParentWindow->gtk.pWidget), GTK_FILE_CHOOSER_ACTION_SAVE,
+        "_Save",   GTK_RESPONSE_ACCEPT,
+        "_Cancel", GTK_RESPONSE_CANCEL, NULL);
+    if (dialog == NULL) {
+        return DTK_ERROR;
+    }
+
+    gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+
+    if (!dtk_string_is_null_or_empty(pOptions->pDefaultPath)) {
+        gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog), pOptions->pDefaultPath);
+    }
+
+    // Filters.
+    const char** ppNextFilter = pOptions->ppExtensionFilters;
+    for (;;) {
+        const char* pName = ppNextFilter[0];
+        if (pName == NULL) {
+            break;
+        }
+
+        const char* pExtensions = ppNextFilter[1];
+        if (pExtensions == NULL) {
+            break;
+        }
+
+        GtkFileFilter* pFilterGTK = gtk_file_filter_new();
+        if (pFilterGTK == NULL) {
+            break;
+        }
+
+        // Name.
+        char* pPatternsStr = NULL;
+        if (pExtensions[0] != '\0') {
+            char* pTemp = dtk_make_string(pExtensions);
+            char* pToken = strtok(pTemp, " ,");
+            while (pToken != NULL) {
+                pPatternsStr = dtk_append_stringf(pPatternsStr, "*.%s", pToken);
+                pToken = strtok(NULL, " ,");
+            }
+            dtk_free_string(pTemp);
+        } else {
+            pPatternsStr = dtk_make_string("*.*");
+        }
+
+        char* pNameWithPatterns = dtk_make_stringf("%s (%s)", pName, pPatternsStr);
+        gtk_file_filter_set_name(pFilterGTK, pNameWithPatterns);
+        dtk_free_string(pNameWithPatterns);
+        dtk_free_string(pPatternsStr);
+        
+        // Patterns.
+        if (pExtensions[0] != '\0') {
+            char* pTemp = dtk_make_string(pExtensions);
+            char* pToken = strtok(pTemp, " ,");
+            while (pToken != NULL) {
+                char* pPattern = dtk_make_stringf("*.%s", pToken);
+                gtk_file_filter_add_pattern(pFilterGTK, pPattern);
+                dtk_free_string(pPattern);
+                pToken = strtok(NULL, " ,");
+            }
+            dtk_free_string(pTemp);
+        } else {
+            gtk_file_filter_add_pattern(pFilterGTK, "*.*");
+        }
+
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), pFilterGTK);
+        ppNextFilter += 2;
+    }
+
+    dtk_dialog_result result = DTK_DIALOG_RESULT_CANCEL;
+
+    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (response == GTK_RESPONSE_ACCEPT) {
+        char* filenameGTK = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+        if (filenameGTK == NULL) {
+            result = DTK_OUT_OF_MEMORY;
+            goto done;
+        }
+
+        // The output string needs to be freed with dtk_free() which means we need to make another copy using dtk_malloc().
+        size_t selectedFilePathLen = strlen(filenameGTK);
+        char* pSelectedFilePath = (char*)dtk_malloc(selectedFilePathLen + 1);
+        if (pSelectedFilePath == NULL) {
+            g_free(filenameGTK);
+            result = DTK_OUT_OF_MEMORY;    // Out of memory.
+            goto done;
+        }
+
+        strcpy_s(pSelectedFilePath, selectedFilePathLen+1, filenameGTK);
+
+        if (ppSelectedFilePath) {
+            *ppSelectedFilePath = pSelectedFilePath;
+        }
+
+        g_free(filenameGTK);
+        result = DTK_DIALOG_RESULT_OK;
+    } else if (response == GTK_RESPONSE_CANCEL) {   
+        result = DTK_DIALOG_RESULT_CANCEL;
+    } else {
+        result = DTK_ERROR;
+    }
+
+done:
     gtk_widget_destroy(dialog);
     return result;
 }
@@ -590,5 +764,23 @@ dtk_dialog_result dtk_show_open_file_dialog(dtk_window* pParentWindow, dtk_open_
 #endif
 #ifdef DTK_GTK
     return dtk_show_open_file_dialog__gtk(pParentWindow, pOptions, pppSelectedFilePaths);
+#endif
+}
+
+dtk_dialog_result dtk_show_save_file_dialog(dtk_window* pParentWindow, dtk_save_file_dialog_options* pOptions, char** ppSelectedFilePath)
+{
+    if (ppSelectedFilePath != NULL) *ppSelectedFilePath = NULL;
+
+    dtk_save_file_dialog_options defaultOptions;
+    dtk_zero_object(&defaultOptions);
+    if (pOptions == NULL) {
+        pOptions = &defaultOptions;
+    }
+
+#ifdef DTK_WIN32
+    return dtk_show_save_file_dialog__win32(pParentWindow, pOptions, ppSelectedFilePath);
+#endif
+#ifdef DTK_GTK
+    return dtk_show_save_file_dialog__gtk(pParentWindow, pOptions, ppSelectedFilePath);
 #endif
 }
