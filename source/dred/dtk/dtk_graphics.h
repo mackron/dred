@@ -69,6 +69,14 @@ typedef enum
 
 typedef struct
 {
+    char family[128];
+    float size;
+    dtk_font_weight weight;
+    dtk_font_slant slant;
+} dtk_font_desc;
+
+typedef struct
+{
     dtk_int32 ascent;
     dtk_int32 descent;
     dtk_int32 lineHeight;
@@ -177,6 +185,9 @@ typedef struct
 
 // Initializes a font.
 dtk_result dtk_font_init(dtk_context* pTK, const char* family, float size, dtk_font_weight weight, dtk_font_slant slant, dtk_uint32 optionFlags, dtk_font* pFont);
+
+// Initializes a font from a dtk_font_desc object.
+dtk_result dtk_font_init_from_desc(dtk_context* pTK, dtk_font_desc* pDesc, dtk_uint32 optionFlags, dtk_font* pFont);
 
 // Uninitializes a font.
 dtk_result dtk_font_uninit(dtk_font* pFont);

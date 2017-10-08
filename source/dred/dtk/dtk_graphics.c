@@ -1370,6 +1370,13 @@ dtk_result dtk_font_init(dtk_context* pTK, const char* family, float size, dtk_f
     return result;
 }
 
+dtk_result dtk_font_init_from_desc(dtk_context* pTK, dtk_font_desc* pDesc, dtk_uint32 optionFlags, dtk_font* pFont)
+{
+    if (pDesc == NULL) return DTK_INVALID_ARGS;
+
+    return dtk_font_init(pTK, pDesc->family, pDesc->size, pDesc->weight, pDesc->slant, optionFlags, pFont);
+}
+
 dtk_result dtk_font_uninit(dtk_font* pFont)
 {
     if (pFont == NULL) return DTK_INVALID_ARGS;
