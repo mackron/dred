@@ -83,9 +83,8 @@ typedef int dtk_result;
 #define DTK_FAILED_TO_WRITE_FILE    -11
 #define DTK_FILE_TOO_BIG            -12
 #define DTK_PATH_TOO_LONG           -13
-#define DTK_NAME_TOO_LONG           -14
-#define DTK_DOES_NOT_EXIST          -15
-#define DTK_ALREADY_EXISTS          -16
+#define DTK_DOES_NOT_EXIST          -14
+#define DTK_ALREADY_EXISTS          -15
 #define DTK_NO_DISPLAY              -256
 #define DTK_NO_SCREEN               -257
 #define DTK_QUIT                    -1024   // Returned by dtk_next_event() when a quit message is received.
@@ -376,7 +375,7 @@ struct dtk_event
 
         struct
         {
-            dtk_uint32 type;                // <-- DTK_APPLICATION_FONT_TYPE_*.
+            dtk_application_font_type type;
             dtk_font* pFont;                // <-- Set by the event handler.
         } applicationFont;
 

@@ -1771,7 +1771,7 @@ void dtk_surface_draw_rect_with_outline(dtk_surface* pSurface, dtk_rect rect, dt
 
 void dtk_surface_draw_text(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textLength, dtk_int32 posX, dtk_int32 posY, dtk_color fgColor, dtk_color bgColor)
 {
-    if (pSurface == NULL) return;
+    if (pSurface == NULL || pFont == NULL) return;
 
 #ifdef DTK_WIN32
     if (pSurface->backend == dtk_graphics_backend_gdi) {

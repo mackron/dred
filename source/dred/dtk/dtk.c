@@ -80,6 +80,9 @@ dtk_result dtk__release_mouse_window(dtk_context* pTK);
 void dtk__post_mouse_leave_event_recursive(dtk_context* pTK, dtk_control* pNewControlUnderMouse, dtk_control* pOldControlUnderMouse);
 void dtk__post_mouse_enter_event_recursive(dtk_context* pTK, dtk_control* pNewControlUnderMouse, dtk_control* pOldControlUnderMouse);
 
+// Miscellaneous private API declarations.
+dtk_result dtk__init_default_font_by_type(dtk_context* pTK, dtk_application_font_type type, dtk_font* pFont);
+
 DTK_INLINE dtk_event dtk_event_init(dtk_context* pTK, dtk_event_type type, dtk_control* pControl)
 {
     dtk_event e;
@@ -1735,12 +1738,53 @@ dtk_bool32 dtk_default_event_handler(dtk_event* pEvent)
 {
     if (pEvent == NULL) return DTK_FALSE;
 
+    dtk_context* pTK = pEvent->pTK;
+    dtk_assert(pTK != NULL);
+
     switch (pEvent->type)
     {
         case DTK_EVENT_APPLICATION_SCALE:
         {
             pEvent->applicationScale.scale = 1;
         } return DTK_FALSE; // <-- Don't break here! Return straight away because we don't care about handling this locally.
+
+        case DTK_EVENT_APPLICATION_FONT:
+        {
+            switch (pEvent->applicationFont.type)
+            {
+                case dtk_application_font_type_ui:
+                {
+                    if (pTK->isUIFontInitialized) {
+                        pEvent->applicationFont.pFont = &pTK->uiFont;
+                    } else {
+                        dtk_result result = dtk__init_default_font_by_type(pTK, pEvent->applicationFont.type, &pTK->uiFont);
+                        if (result == DTK_SUCCESS) {
+                            pTK->isUIFontInitialized = DTK_TRUE;
+                            pEvent->applicationFont.pFont = &pTK->uiFont;
+                        } else {
+                            // Error initiializing font.
+                        }
+                    }
+                } break;
+
+                case dtk_application_font_type_monospace:
+                {
+                    if (pTK->isMonospaceFontInitialized) {
+                        pEvent->applicationFont.pFont = &pTK->monospaceFont;
+                    } else {
+                        dtk_result result = dtk__init_default_font_by_type(pTK, pEvent->applicationFont.type, &pTK->monospaceFont);
+                        if (result == DTK_SUCCESS) {
+                            pTK->isMonospaceFontInitialized = DTK_TRUE;
+                            pEvent->applicationFont.pFont = &pTK->monospaceFont;
+                        } else {
+                            // Error initializing font.
+                        }
+                    }
+                } break;
+
+                default: break;
+            }
+        } return DTK_FALSE;
 
         default: break;
     }
@@ -1961,7 +2005,7 @@ dtk_control* dtk_get_control_with_mouse_capture(dtk_context* pTK)
 
 //// Graphics ////
 
-dtk_result dtk_init_default_font_by_type(dtk_context* pTK, dtk_application_font_type type, dtk_font* pFont)
+dtk_result dtk__init_default_font_by_type(dtk_context* pTK, dtk_application_font_type type, dtk_font* pFont)
 {
     dtk_assert(pTK != NULL);
     dtk_assert(pFont != NULL);
@@ -1985,6 +2029,8 @@ dtk_font* dtk__get_application_font_by_type(dtk_context* pTK, dtk_application_fo
 {
     dtk_assert(pTK != NULL);
     
+    // Application fonts are retrieved via the global event handler so that applications can be given the opportunity
+    // to customize these fonts.
     dtk_event e = dtk_event_init(pTK, DTK_EVENT_APPLICATION_FONT, NULL);
     e.applicationFont.type = type;
     e.applicationFont.pFont = NULL;
@@ -1996,45 +2042,13 @@ dtk_font* dtk__get_application_font_by_type(dtk_context* pTK, dtk_application_fo
 dtk_font* dtk_get_ui_font(dtk_context* pTK)
 {
     if (pTK == NULL) return NULL;
-
-    dtk_font* pFont = dtk__get_application_font_by_type(pTK, dtk_application_font_type_ui);
-    if (pFont != NULL) {
-        return pFont;
-    }
-
-    if (!pTK->isUIFontInitialized) {
-        dtk_result result = dtk_init_default_font_by_type(pTK, dtk_application_font_type_ui, &pTK->uiFont);
-        if (result != DTK_SUCCESS) {
-            return NULL;
-        }
-
-        pTK->isUIFontInitialized = DTK_TRUE;
-        pFont = &pTK->uiFont;
-    }
-
-    return pFont;
+    return dtk__get_application_font_by_type(pTK, dtk_application_font_type_ui);
 }
 
 dtk_font* dtk_get_monospace_font(dtk_context* pTK)
 {
     if (pTK == NULL) return NULL;
-
-    dtk_font* pFont = dtk__get_application_font_by_type(pTK, dtk_application_font_type_monospace);
-    if (pFont != NULL) {
-        return pFont;
-    }
-
-    if (!pTK->isUIFontInitialized) {
-        dtk_result result = dtk_init_default_font_by_type(pTK, dtk_application_font_type_monospace, &pTK->monospaceFont);
-        if (result != DTK_SUCCESS) {
-            return NULL;
-        }
-
-        pTK->isUIFontInitialized = DTK_TRUE;
-        pFont = &pTK->monospaceFont;
-    }
-
-    return pFont;
+    return dtk__get_application_font_by_type(pTK, dtk_application_font_type_monospace);
 }
 
 
