@@ -248,6 +248,7 @@ size_t dtk_path_remove_extension(char* pathOut, size_t pathOutSize, const char* 
 
 // Creates a copy of the given string and removes the extension.
 size_t dtk_path_remove_file_name(char* pathOut, size_t pathOutSize, const char* path);
+size_t dtk_path_remove_file_name_in_place(char* path);
 
 
 // Converts an absolute path to a relative path.

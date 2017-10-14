@@ -2052,6 +2052,95 @@ dtk_font* dtk_get_monospace_font(dtk_context* pTK)
 }
 
 
+
+
+//// Known Folders ////
+
+#ifdef DTK_WIN32
+size_t dtk_get_executable_path__win32(char* pathOut, size_t pathOutSize)
+{
+    // Unfortunately on Win32 it looks like GetModuleFileName does not support the pattern of passing in NULL as
+    // the output buffer to get the initial length. To work around this I'm just going to use a stack allocated
+    // buffer as an intermediary.
+    if (pathOut == NULL) {
+        char buffer[32768];
+        DWORD len = GetModuleFileNameA(NULL, buffer, sizeof(buffer));
+        if (len == 0) {
+            return 0;
+        }
+
+        if (len == pathOutSize) {
+            return 0;   // The path is too long to fit into our stack allocated buffer.
+        }
+
+        return len + 1;
+    } else {
+        DWORD len = GetModuleFileNameA(NULL, pathOut, (DWORD)pathOutSize);
+        if (len == 0) {
+            return 0;
+        }
+
+        // Force null termination in the event that the output buffer is too small.
+        if (len == pathOutSize) {
+            pathOut[len-1] = '\0';
+        }
+
+        // Back slashes need to be normalized to forward.
+        dtk_path_to_forward_slashes(pathOut);
+        return len + 1;
+    }
+}
+#endif
+
+#ifdef DTK_POSIX
+size_t dtk_get_executable_path__posix(char* pathOut, size_t pathOutSize)
+{
+    ssize_t len = readlink("/proc/self/exe", pathOut, pathOutSize);
+    if (len == -1) {
+        return 0;
+    }
+
+    // Make sure there's room for the null terminator.
+    if ((size_t)len == pathOutSize && len > 0) {
+        len -= 1;
+    }
+
+    // Ensure the path is null terminated.
+    if (pathOut != NULL && pathOutSize > len) {
+        pathOut[len] = '\0';
+    }
+    
+    return len + 1;
+}
+#endif
+
+size_t dtk_get_executable_path(char* pathOut, size_t pathOutSize)
+{
+    if (pathOut != NULL && pathOutSize > 0) {
+        pathOut[0] = '\0';
+    }
+
+#ifdef DTK_WIN32
+    return dtk_get_executable_path__win32(pathOut, pathOutSize);
+#endif
+#ifdef DTK_POSIX
+    return dtk_get_executable_path__posix(pathOut, pathOutSize);
+#endif
+}
+
+size_t dtk_get_executable_directory_path(char* pathOut, size_t pathOutSize)
+{
+    char exePath[32768];
+    size_t exePathLen = dtk_get_executable_path(exePath, sizeof(exePath));
+    if (exePathLen == 0) {
+        return 0;
+    }
+
+    return dtk_path_remove_file_name(pathOut, pathOutSize, exePath);
+}
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Internal APIs

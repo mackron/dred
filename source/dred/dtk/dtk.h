@@ -675,4 +675,19 @@ dtk_font* dtk_get_ui_font(dtk_context* pTK);
 dtk_font* dtk_get_monospace_font(dtk_context* pTK);
 
 
+//// Known Folders ////
+
+// Retrieves the full path of the executable.
+//
+// The return value is the length of the returned string, including the null terminator. Returns 0 on error.
+size_t dtk_get_executable_path(char* pathOut, size_t pathOutSize);
+
+// Retrieves the directory of the executable.
+//
+// The return value is the length of the returned string, including the null terminator. Returns 0 on error.
+//
+// The returned string will not include the name of the executable.
+size_t dtk_get_executable_directory_path(char* pathOut, size_t pathOutSize);
+
+
 #endif  // DTK_H

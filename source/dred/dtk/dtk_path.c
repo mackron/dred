@@ -721,6 +721,43 @@ size_t dtk_path_remove_file_name(char* pathOut, size_t pathOutSize, const char* 
     }
 }
 
+size_t dtk_path_remove_file_name_in_place(char* path)
+{
+    if (path == NULL) {
+        return 0;
+    }
+
+    // We just create an iterator that starts at the last segment. We then move back one and place a null terminator at the end of
+    // that segment. That will ensure the resulting path is not left with a slash.
+    dtk_path_iterator iLast;
+    if (!dtk_path_last(path, &iLast)) {
+        return 0;   // The path is empty.
+    }
+
+    // Don't remove root segments.
+    if (dtk_path_is_root_segment(iLast)) {
+        return 0;
+    }
+
+    // If the last segment (the file name portion of the path) is the only segment, just return an empty string. Otherwise we copy
+    // up to the end of the second last segment.
+    dtk_path_iterator iSecondLast = iLast;
+    if (dtk_path_prev(&iSecondLast)) {
+        size_t pathOutLength;
+        if (dtk_path_is_unix_style_root_segment(iSecondLast)) {
+            pathOutLength = iLast.segment.offset;
+        } else {
+            pathOutLength = iSecondLast.segment.offset + iSecondLast.segment.length;
+        }
+
+        path[pathOutLength] = '\0';
+        return pathOutLength + 1;
+    } else {
+        path[0] = 0;
+        return 1;   // Return 1 because we need to include the null terminator.
+    }
+}
+
 
 size_t dtk_path_to_relative(char* pathOut, size_t pathOutSize, const char* absolutePathToMakeRelative, const char* absolutePathToMakeRelativeTo)
 {

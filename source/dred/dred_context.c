@@ -1,5 +1,30 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
+size_t dred__get_portable_config_path(char* pathOut, size_t pathOutSize)
+{
+    char path[32768];
+    size_t pathLen = dtk_get_executable_directory_path(path, sizeof(path));
+    if (pathLen == 0) {
+        return DTK_FALSE;
+    }
+
+    return dtk_path_append(pathOut, pathOutSize, path, "portable.dred");
+}
+
+#if 0
+dtk_bool32 dred__is_portable_config_present()
+{
+    // We look in the executable's directory for a "portable.dred" file.
+    char path[32768];
+    size_t pathLen = dred__get_portable_config_path(path, sizeof(path));
+    if (pathLen == 0) {
+        return DTK_FALSE;
+    }
+
+    return dtk_file_exists(path);
+}
+#endif
+
 dtk_int32 dred__get_cmd_bar_height(dred_context* pDred)
 {
     if (pDred == NULL || !dtk_control_is_visible(DTK_CONTROL(&pDred->cmdBar))) {
@@ -485,14 +510,25 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     pDred->pPackageLibrary = pPackageLibrary;
 
 #ifdef DRED_PORTABLE
-    pDred->isPortable = DTK_TRUE
+    pDred->isPortable = DTK_TRUE;
 #endif
+
+    // If "portable.dred" is present in the same directory as the executable we assume the user wants to run in portable mode.
+    dtk_bool32 hasPortableConfig = DTK_FALSE;
+    char portableConfigPath[32768];
+    if (dred__get_portable_config_path(portableConfigPath, sizeof(portableConfigPath)) != 0) {
+        hasPortableConfig = dtk_file_exists(portableConfigPath);
+        pDred->isPortable = DTK_TRUE;
+    }
+
+    // The command line can be used to override the presence of portable.dred
     if (dr_cmdline_key_exists(&cmdline, "portable")) {
         pDred->isPortable = DTK_TRUE;
     }
     if (dr_cmdline_key_exists(&cmdline, "no-portable")) {
         pDred->isPortable = DTK_FALSE;
     }
+
 
     pDred->isShowingMainMenu = DTK_TRUE;
 
@@ -539,22 +575,30 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
 
     // Config
     //
-    // The config is loaded in 4 stages. The first initializes it to it's default values, the second loads the .dredprivate file from the main
-    // user directory, the third reads the .dred file from the main user directory, and the4th loads the .dred file sitting in the working directory.
-    dred_config_init(&pDred->config, pDred);
+    // The config is loaded in several stages:
+    //   1) The config is initialized to it's defaults.
+    //   2) The .dredprivate file is loaded.
+    //   3) The .dred file from the main user directory is loaded.
+    //   4) If the application is running in portable mode the "portable.dred" file is loaded, if present.
+    //   5) The .dred file sitting in the working directory is loaded.
+    dred_config_init(&pDred->config, pDred);                // 1
 
     char configPath[DRED_MAX_PATH];
     if (dred_get_config_path(pDred, configPath, sizeof(configPath))) {
         char configPathPrivate[DRED_MAX_PATH];
         strcpy_s(configPathPrivate, sizeof(configPathPrivate), configPath);
         strcat_s(configPathPrivate, sizeof(configPathPrivate), "private");
-        dred_load_config(pDred, configPathPrivate);
-        dred_load_config(pDred, configPath);
+        dred_load_config(pDred, configPathPrivate);         // 2
+        dred_load_config(pDred, configPath);                // 3
+        if (hasPortableConfig) {
+            dred_load_config(pDred, portableConfigPath);    // 4
+        }
     } else {
         dred_warning(pDred, "Failed to load .dred config file from user directory. The most likely cause of this is that the path is too long.");
     }
 
-    dred_load_config(pDred, ".dred");
+    dred_load_config(pDred, ".dred");                       // 5
+
 
 
     // Stock menus should be initialized after the shortcut table and configs because it will need access to the initial shortcut bindings
