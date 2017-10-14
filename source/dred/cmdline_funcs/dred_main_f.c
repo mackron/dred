@@ -14,7 +14,7 @@ static dred_cmdline_func_mapping g_BuiltInCmdLineFuncs[] = {
 };
 
 
-int dred_main_f_argv(int argc, char** argv)
+int dred_main_f_exec(int argc, char** argv)
 {
     // The first argument should be the name of the function. If it's a built-in function we just
     // handle it directly. Otherwise we need to check extensions.
@@ -36,18 +36,10 @@ int dred_main_f_argv(int argc, char** argv)
     return -4;
 }
 
-int dred_main_f(dr_cmdline cmdline)
+int dred_main_f(int argc, char** argv)
 {
     // This function will be called when the -f command line option is specified. This option is used
-    // for executing a command-line function. It is possible for extensions to implemente custom
-    // command line functions, so to make it easier for them we want to convert the command line to
-    // argc/argv style, starting from the name of the function.
-
-    char** argv;
-    int argc = dr_cmdline_to_argv(&cmdline, &argv);
-    if (argc == 0) {
-        return -1;  // There was an error parsing the command line.
-    }
+    // for executing a command-line function.
 
     if (argc < 3) {
         return -2;  // Not enough arguments on the command line.
@@ -66,11 +58,5 @@ int dred_main_f(dr_cmdline cmdline)
         return -3;  // Couldn't find the "-f" argument.
     }
 
-
-    int result = dred_main_f_argv(argc - f_index, argv + f_index);
-
-
-    // Free the command line arguments that were created with dr_cmdline_to_argv().
-    dr_free_argv(argv);
-    return result;
+    return dred_main_f_exec(argc - f_index, argv + f_index);
 }

@@ -17,19 +17,19 @@
 
 #include "dred.c"
 
-dr_bool32 dred_parse_cmdline__post_startup_files_to_server(const char* key, const char* value, void* pUserData)
+dtk_bool32 dred_parse_cmdline__post_startup_files_to_server(const char* key, const char* value, void* pUserData)
 {
     dtk_pipe client = (dtk_pipe)pUserData;
 
     if (key == NULL) {
         dred_ipc_post_message(client, DRED_IPC_MESSAGE_OPEN, value, strlen(value)+1);   // +1 for null terminator.
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred__try_opening_existing_process(dr_cmdline cmdline)
+dr_bool32 dred__try_opening_existing_process(int argc, char** argv)
 {
     char pipeName[256];
     if (!dred_ipc_get_pipe_name(pipeName, sizeof(pipeName))) {
@@ -43,7 +43,7 @@ dr_bool32 dred__try_opening_existing_process(dr_cmdline cmdline)
         dred_ipc_post_message(client, DRED_IPC_MESSAGE_ACTIVATE, NULL, 0);
 
         // After activating the server we need to let it know which files to open.
-        dr_parse_cmdline(&cmdline, dred_parse_cmdline__post_startup_files_to_server, client);
+        dtk_argv_parse(argc, argv, dred_parse_cmdline__post_startup_files_to_server, client);
 
         // The server should be notified of the file, so we just need to return now.
         dred_ipc_post_message(client, DRED_IPC_MESSAGE_TERMINATOR, NULL, 0);
@@ -56,25 +56,25 @@ dr_bool32 dred__try_opening_existing_process(dr_cmdline cmdline)
 }
 
 
-int dred_main(dr_cmdline cmdline)
+int main(int argc, char** argv)
 {
     // Packages need to be loaded first.
     dred_package_library packages;
     dred_package_library_init(&packages);
 
     // Go down a different branch for command-line functions.
-    if (dr_cmdline_key_exists(&cmdline, "f")) {
-        return dred_main_f(cmdline);    // <-- Implemented in cmdline_funcs/dred_main_f.c
+    if (dtk_argv_exists(argc, argv, "f")) {
+        return dred_main_f(argc, argv);    // <-- Implemented in cmdline_funcs/dred_main_f.c
     }
 
 
     dr_bool32 tryUsingExistingInstance = DR_TRUE;
-    if (dr_cmdline_key_exists(&cmdline, "newinstance")) {
+    if (dtk_argv_exists(argc, argv, "newinstance")) {
         tryUsingExistingInstance = DR_FALSE;
     }
 
     dr_bool32 disableIPC = DR_FALSE;
-    if (dr_cmdline_key_exists(&cmdline, "noipc")) {
+    if (dtk_argv_exists(argc, argv, "noipc")) {
         disableIPC = DR_TRUE;
     }
 
@@ -95,7 +95,7 @@ int dred_main(dr_cmdline cmdline)
     // to create a client-side pipe.
     if (tryUsingExistingInstance) {
 #ifdef _WIN32
-        if (dred__try_opening_existing_process(cmdline)) {
+        if (dred__try_opening_existing_process(argc, argv)) {
             return 0;
         }
 #else
@@ -118,7 +118,7 @@ int dred_main(dr_cmdline cmdline)
         }
 
         if (isOtherProcessRunning) {
-            if (dred__try_opening_existing_process(cmdline)) {
+            if (dred__try_opening_existing_process(argc, argv)) {
                 return 0;
             }
         } else {
@@ -133,7 +133,7 @@ int dred_main(dr_cmdline cmdline)
     }
 
     dred_context dred;
-    if (!dred_init(&dred, cmdline, &packages)) {
+    if (!dred_init(&dred, argc, argv, &packages)) {
         return -1;
     }
 
@@ -150,14 +150,6 @@ int dred_main(dr_cmdline cmdline)
     return result;
 }
 
-int main(int argc, char** argv)
-{
-    dr_cmdline cmdline;
-    dr_init_cmdline(&cmdline, argc, argv);
-
-    return dred_main(cmdline);
-}
-
 #ifdef _WIN32
 #ifdef NDEBUG
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -167,10 +159,13 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     (void)lpCmdLine;
     (void)nCmdShow;
 
-    dr_cmdline cmdline;
-    dr_init_cmdline_win32(&cmdline, GetCommandLineA());
+    char** argv;
+    int argc = dtk_winmain_to_argv(lpCmdLine, &argv);
 
-    return dred_main(cmdline);
+    int result = main(argc, argv);
+
+    dtk_free_argv(argv);
+    return result;
 }
 #endif
 #endif

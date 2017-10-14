@@ -41,13 +41,33 @@
 
 // External libraries.
 
-// TODO: Remove dr.h from the public header. This is only required because of dr_cmdline which is a member of dred_context.
-#ifndef DR_IMPLEMENTATION
-    #ifdef DRED_USE_EXTERNAL_REPOS
-        #include "../../../../dr_libs/dr.h"
-    #else
-        #include "../external/dr.h"
-    #endif
+// TODO: Remove references to these sized types and replace with DTK types.
+#ifndef DR_SIZED_TYPES_DEFINED
+#define DR_SIZED_TYPES_DEFINED
+#if defined(_MSC_VER) && _MSC_VER < 1600
+typedef   signed char    dr_int8;
+typedef unsigned char    dr_uint8;
+typedef   signed short   dr_int16;
+typedef unsigned short   dr_uint16;
+typedef   signed int     dr_int32;
+typedef unsigned int     dr_uint32;
+typedef   signed __int64 dr_int64;
+typedef unsigned __int64 dr_uint64;
+#else
+#include <stdint.h>
+typedef int8_t           dr_int8;
+typedef uint8_t          dr_uint8;
+typedef int16_t          dr_int16;
+typedef uint16_t         dr_uint16;
+typedef int32_t          dr_int32;
+typedef uint32_t         dr_uint32;
+typedef int64_t          dr_int64;
+typedef uint64_t         dr_uint64;
+#endif
+typedef dr_uint8         dr_bool8;
+typedef dr_uint32        dr_bool32;
+#define DR_TRUE          1
+#define DR_FALSE         0
 #endif
 
 #include "../external/dr_text_engine.h"

@@ -126,7 +126,7 @@ dtk_bool32 dtk_cmdline_next(dtk_cmdline_iterator* i)
 }
 
 
-dtk_bool32 dtk_init_cmdline(dtk_cmdline* pCmdLine, int argc, char** argv)
+dtk_bool32 dtk_cmdline_init(int argc, char** argv, dtk_cmdline* pCmdLine)
 {
     if (pCmdLine == NULL) {
         return DTK_FALSE;
@@ -139,7 +139,7 @@ dtk_bool32 dtk_init_cmdline(dtk_cmdline* pCmdLine, int argc, char** argv)
     return DTK_TRUE;
 }
 
-dtk_bool32 dtk_init_cmdline_win32(dtk_cmdline* pCmdLine, const char* args)
+dtk_bool32 dtk_cmdline_init_winmain(const char* args, dtk_cmdline* pCmdLine)
 {
     if (pCmdLine == NULL) {
         return DTK_FALSE;
@@ -297,7 +297,7 @@ int dtk_cmdline_to_argv(dtk_cmdline* pCmdLine, char*** argvOut)
 int dtk_winmain_to_argv(const char* cmdlineWinMain, char*** argvOut)
 {
     dtk_cmdline cmdline;
-    if (!dtk_init_cmdline_win32(&cmdline, cmdlineWinMain)) {
+    if (!dtk_cmdline_init_winmain(cmdlineWinMain, &cmdline)) {
         return 0;
     }
 
@@ -313,18 +313,82 @@ void dtk_free_argv(char** argv)
     dtk_free(argv);
 }
 
-char* dtk_argv_get_value(int argc, char** argv, const char* key)
+void dtk_argv_parse(int argc, char** argv, dtk_argv_parse_proc callback, void* pUserData)
 {
-    // Naive at the moment.
-    for (int i = 0; i < argc; ++i) {
-        if (strcmp(argv[i], key) == 0) {
-            if (i+1 < argc) {
-                return argv[i+1];
-            } else {
-                return NULL;
-            }
-        }
+    dtk_cmdline cmdline;
+    if (!dtk_cmdline_init(argc, argv, &cmdline)) {
+        return;
     }
 
-    return NULL;
+    dtk_parse_cmdline(&cmdline, callback, pUserData);
+}
+
+
+typedef struct
+{
+    const char* key;
+    dtk_bool32 exists;
+} dtk_argv_exists_data;
+
+dtk_bool32 dtk_argv_exists_callback(const char* key, const char* value, void* pUserData)
+{
+    (void)value;
+
+    dtk_argv_exists_data* pData = (dtk_argv_exists_data*)pUserData;
+    assert(pData != NULL);
+
+    if (key != NULL && strcmp(pData->key, key) == 0) {
+        pData->exists = DTK_TRUE;
+        return DTK_FALSE;
+    }
+
+    return DTK_TRUE;
+}
+
+dtk_bool32 dtk_argv_exists(int argc, char** argv, const char* key)
+{
+    dtk_cmdline cmdline;
+    dtk_cmdline_init(argc, argv, &cmdline);
+
+    dtk_argv_exists_data data;
+    data.key = key;
+    data.exists = DTK_FALSE;
+    dtk_parse_cmdline(&cmdline, dtk_argv_exists_callback, &data);
+
+    return data.exists;
+}
+
+
+typedef struct
+{
+    const char* key;
+    const char* value;
+} dtk_argv_get_value_data;
+
+dtk_bool32 dtk_argv_get_value_callback(const char* key, const char* value, void* pUserData)
+{
+    (void)value;
+
+    dtk_argv_get_value_data* pData = (dtk_argv_get_value_data*)pUserData;
+    assert(pData != NULL);
+
+    if (key != NULL && strcmp(pData->key, key) == 0) {
+        pData->value = value;
+        return DTK_FALSE;
+    }
+
+    return DTK_TRUE;
+}
+
+const char* dtk_argv_get_value(int argc, char** argv, const char* key)
+{
+    dtk_cmdline cmdline;
+    dtk_cmdline_init(argc, argv, &cmdline);
+
+    dtk_argv_get_value_data data;
+    data.key = key;
+    data.value = NULL;
+    dtk_parse_cmdline(&cmdline, dtk_argv_get_value_callback, &data);
+
+    return data.value;
 }

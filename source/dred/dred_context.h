@@ -3,7 +3,8 @@
 struct dred_context
 {
     // The command line that was passed to dred_init.
-    dr_cmdline cmdline;
+    int argc;
+    char** argv;
 
     // A pointer to the library of loaded packages. This is loaded before the context is created and passed in
     // as an argument to dred_init().
@@ -96,7 +97,7 @@ struct dred_context
 };
 
 // dred_init
-dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_library* pPackageLibrary);
+dr_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_library* pPackageLibrary);
 
 // dred_uninit
 void dred_uninit(dred_context* pDred);

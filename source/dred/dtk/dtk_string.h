@@ -22,7 +22,7 @@ DTK_INLINE char* dtk_strcpy(char* dst, const char* src)
     }
 
 #ifdef _MSC_VER
-    while (*dst++ = *src++);
+    while ((*dst++ = *src++));
     return dst;
 #else
     return strcpy(dst, src);

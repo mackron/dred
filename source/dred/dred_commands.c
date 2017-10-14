@@ -82,7 +82,7 @@ dr_bool32 dred_command__cmdline_func(dred_context* pDred, const char* value)
         argc = dtk_winmain_to_argv(value, &argv);
     }
 
-    int result = dred_main_f_argv(argc, argv);
+    int result = dred_main_f_exec(argc, argv);
 
     dtk_free_argv(argv);
     return (result == 0) ? DR_TRUE : DR_FALSE;

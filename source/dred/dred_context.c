@@ -482,7 +482,7 @@ void dred_dtk_log_callback(dtk_context* pTK, const char* message)
     dred_log(pDred, message);
 }
 
-dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_library* pPackageLibrary)
+dr_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_library* pPackageLibrary)
 {
     int windowPosX;
     int windowPosY;
@@ -506,7 +506,8 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
 
     pDred->pGUI = &pDred->gui;
 
-    pDred->cmdline = cmdline;
+    pDred->argc = argc;
+    pDred->argv = argv;
     pDred->pPackageLibrary = pPackageLibrary;
 
 #ifdef DRED_PORTABLE
@@ -522,10 +523,10 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     }
 
     // The command line can be used to override the presence of portable.dred
-    if (dr_cmdline_key_exists(&cmdline, "portable")) {
+    if (dtk_argv_exists(argc, argv, "portable")) {
         pDred->isPortable = DTK_TRUE;
     }
-    if (dr_cmdline_key_exists(&cmdline, "no-portable")) {
+    if (dtk_argv_exists(argc, argv, "no-portable")) {
         pDred->isPortable = DTK_FALSE;
     }
 
@@ -692,7 +693,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
 
 
     // Load initial files from the command line.
-    dr_parse_cmdline(&pDred->cmdline, dred_parse_cmdline__startup_files, pDred);
+    dtk_argv_parse(argc, argv, dred_parse_cmdline__startup_files, pDred);
 
     // If there were no files passed on the command line, start with an empty text file. We can know this by simply finding the
     // focused editor. If it's null, nothing is open.
@@ -706,13 +707,10 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
 
 
     // Create the IPC server pipe last to ensure the context is in a valid when messages are received.
-    if (!dr_cmdline_key_exists(&cmdline, "noipc")) {
+    if (!dtk_argv_exists(argc, argv, "noipc")) {
         if (dtk_thread_create(&pDred->threadIPC, dred_ipc_message_proc, pDred)) {
         }
     }
-
-
-
 
 
     pDred->isInitialized = DR_TRUE;
