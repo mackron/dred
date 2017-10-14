@@ -167,11 +167,11 @@ dr_bool32 dred_package_library_init(dred_package_library* pLibrary)
     // Packages will be relative to the executable in the "packages" directory. Each package will be in it's own
     // directory which will include a .dredpackage file with information about the package.
     char basePackageDir[DRED_MAX_PATH];
-    if (!dred_get_packages_folder_path(basePackageDir, sizeof(basePackageDir))) {
+    if (dred_get_packages_folder_path(basePackageDir, sizeof(basePackageDir)) == 0) {
         return DR_FALSE;
     }
 
-    dr_iterate_files(basePackageDir, DR_FALSE, dred_package_library_package_iterator_cb, pLibrary);
+    dtk_iterate_files(basePackageDir, DR_FALSE, dred_package_library_package_iterator_cb, pLibrary);
 
     return DR_TRUE;
 }

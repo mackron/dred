@@ -72,17 +72,19 @@ dr_bool32 dred_editor_set_file_path(dred_editor* pEditor, const char* newFilePat
         return DR_FALSE;
     }
 
-    if (pEditor == NULL) {
-        return DR_FALSE;
-    }
-
-    if (drpath_is_relative(newFilePath)) {
-        char basePath[DRED_MAX_PATH];
-        if (!dr_get_current_directory(basePath, sizeof(basePath))) {
+    if (dtk_path_is_relative(newFilePath)) {
+        char* pCurrentDir = dtk_get_current_directory();
+        if (pCurrentDir == NULL) {
             return DR_FALSE;
         }
 
-        return drpath_append_and_clean(pEditor->filePathAbsolute, sizeof(pEditor->filePathAbsolute), basePath, newFilePath) > 0;
+        if (dtk_path_append_and_clean(pEditor->filePathAbsolute, sizeof(pEditor->filePathAbsolute), pCurrentDir, newFilePath) == 0) {
+            dtk_free(pCurrentDir);
+            return DR_FALSE;
+        }
+
+        dtk_free(pCurrentDir);
+        return DR_TRUE;
     } else {
         return strcpy_s(pEditor->filePathAbsolute, sizeof(pEditor->filePathAbsolute), newFilePath) == 0;
     }

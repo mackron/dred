@@ -2090,6 +2090,34 @@ size_t dtk_get_executable_path__win32(char* pathOut, size_t pathOutSize)
         return len + 1;
     }
 }
+
+size_t dtk_get_config_directory_path__win32(char* pathOut, size_t pathOutSize)
+{
+    // The documentation for SHGetFolderPathA() says that the output path should be the size of MAX_PATH. We'll enforce
+    // that just to be safe.
+    if (pathOutSize >= MAX_PATH && pathOut != NULL) {
+        if (SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, pathOut) != S_OK) {
+            return 0;
+        }
+
+        dtk_path_to_forward_slashes(pathOut);
+        return strlen(pathOut) + 1;
+    } else {
+        char pathOutTemp[MAX_PATH];
+        if (SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, pathOutTemp) != S_OK) {
+            return 0;
+        }
+
+        size_t pathOutLen = strlen(pathOutTemp);
+
+        if (pathOut != NULL) {
+            strcpy_s(pathOut, pathOutSize, pathOutTemp);
+            dtk_path_to_forward_slashes(pathOut);
+        }
+        
+        return pathOutLen + 1;
+    }
+}
 #endif
 
 #ifdef DTK_POSIX
@@ -2111,6 +2139,29 @@ size_t dtk_get_executable_path__posix(char* pathOut, size_t pathOutSize)
     }
     
     return len + 1;
+}
+
+size_t dtk_get_config_directory_path__posix(char* pathOut, size_t pathOutSize)
+{
+    const char* configdir = getenv("XDG_CONFIG_HOME");
+    if (configdir != NULL) {
+        if (pathOut != NULL) {
+            strcpy_s(pathOut, pathOutSize, configdir);
+        }
+        
+        return strlen(configdir) + 1;
+    } else {
+        const char* homedir = getenv("HOME");
+        if (homedir == NULL) {
+            homedir = getpwuid(getuid())->pw_dir;
+        }
+
+        if (homedir != NULL) {
+            return dtk_path_append(pathOut, pathOutSize, homedir, ".config");
+        }
+    }
+
+    return 0;
 }
 #endif
 
@@ -2137,6 +2188,20 @@ size_t dtk_get_executable_directory_path(char* pathOut, size_t pathOutSize)
     }
 
     return dtk_path_remove_file_name(pathOut, pathOutSize, exePath);
+}
+
+size_t dtk_get_config_directory_path(char* pathOut, size_t pathOutSize)
+{
+    if (pathOut != NULL && pathOutSize > 0) {
+        pathOut[0] = '\0';
+    }
+
+#ifdef DTK_WIN32
+    return dtk_get_config_directory_path__win32(pathOut, pathOutSize);
+#endif
+#ifdef DTK_POSIX
+    return dtk_get_config_directory_path__posix(pathOut, pathOutSize);
+#endif
 }
 
 

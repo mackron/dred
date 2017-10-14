@@ -689,5 +689,10 @@ size_t dtk_get_executable_path(char* pathOut, size_t pathOutSize);
 // The returned string will not include the name of the executable.
 size_t dtk_get_executable_directory_path(char* pathOut, size_t pathOutSize);
 
+// Retrieves the path of the user's config directory.
+//
+// On Windows this will typically be %APPDATA% and on Linux it will usually be ~/.config
+size_t dtk_get_config_directory_path(char* pathOut, size_t pathOutSize);
+
 
 #endif  // DTK_H

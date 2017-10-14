@@ -1,64 +1,81 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
-dr_bool32 dred_get_config_folder_path(dred_context* pDred, char* pathOut, size_t pathOutSize)
+size_t dred_get_config_folder_path(dred_context* pDred, char* pathOut, size_t pathOutSize)
 {
     if (pDred != NULL && !pDred->isPortable) {
-        if (!dr_get_config_folder_path(pathOut, pathOutSize)) {
-            return DR_FALSE;
+        char basePath[32768];
+        if (dtk_get_config_directory_path(basePath, sizeof(basePath)) == 0) {
+            return 0;
         }
 
-        return drpath_append(pathOut, pathOutSize, "dred");
+        return dtk_path_append(pathOut, pathOutSize, basePath, "dred");
     } else {
-        if (!dr_get_executable_directory_path(pathOut, pathOutSize)) {
-            return DR_FALSE;
+        char basePath[32768];
+        if (dtk_get_executable_directory_path(basePath, sizeof(basePath)) == 0) {
+            return 0;
         }
 
-        return drpath_append(pathOut, pathOutSize, "config");
+        return dtk_path_append(pathOut, pathOutSize, basePath, "config");
     }
 }
 
-dr_bool32 dred_get_config_path(dred_context* pDred, char* pathOut, size_t pathOutSize)
+size_t dred_get_config_path(dred_context* pDred, char* pathOut, size_t pathOutSize)
 {
-    if (!dred_get_config_folder_path(pDred, pathOut, pathOutSize)) {
-        return DR_FALSE;
+    char basePath[32768];
+    if (dred_get_config_folder_path(pDred, basePath, sizeof(basePath)) == 0) {
+        return 0;
     }
 
-    return drpath_append(pathOut, pathOutSize, ".dred");
+    return dtk_path_append(pathOut, pathOutSize, basePath, ".dred");
 }
 
-dr_bool32 dred_get_log_folder_path(dred_context* pDred, char* pathOut, size_t pathOutSize)
+size_t dred_get_log_folder_path(dred_context* pDred, char* pathOut, size_t pathOutSize)
 {
     if (pDred != NULL && !pDred->isPortable) {
-        if (!dr_get_log_folder_path(pathOut, pathOutSize)) {
-            return DR_FALSE;
+        // On Windows we use the same directory that we use for configs. On *nix we'll use "~/.dred"
+    #ifdef DTK_WIN32
+        return dred_get_config_folder_path(pDred, pathOut, pathOutSize);
+    #endif
+    #ifdef DTK_POSIX
+        const char* homedir = getenv("HOME");
+        if (homedir == NULL) {
+            homedir = getpwuid(getuid())->pw_dir;
+            if (homedir == NULL) {
+                return 0;
+            }
         }
 
-        return drpath_append(pathOut, pathOutSize, "dred");
+        dtk_assert(homedir != NULL);
+        return dtk_path_append(pathOut, pathOutSize, homedir, ".dred");
+    #endif
     } else {
-        if (!dr_get_executable_directory_path(pathOut, pathOutSize)) {
-            return DR_FALSE;
+        char basePath[32768];
+        if (dtk_get_executable_directory_path(basePath, sizeof(basePath)) == 0) {
+            return 0;
         }
 
-        return drpath_append(pathOut, pathOutSize, "logs");
+        return dtk_path_append(pathOut, pathOutSize, basePath, "logs");
     }
 }
 
-dr_bool32 dred_get_log_path(dred_context* pDred, char* pathOut, size_t pathOutSize)
+size_t dred_get_log_path(dred_context* pDred, char* pathOut, size_t pathOutSize)
 {
-    if (!dred_get_log_folder_path(pDred, pathOut, pathOutSize)) {
-        return DR_FALSE;
+    char basePath[32768];
+    if (dred_get_log_folder_path(pDred, basePath, sizeof(basePath)) == 0) {
+        return 0;
     }
 
-    return drpath_append(pathOut, pathOutSize, "dred.log");
+    return dtk_path_append(pathOut, pathOutSize, basePath, "dred.log");
 }
 
-dr_bool32 dred_get_packages_folder_path(char* pathOut, size_t pathOutSize)
+size_t dred_get_packages_folder_path(char* pathOut, size_t pathOutSize)
 {
-    if (!dr_get_executable_directory_path(pathOut, pathOutSize)) {
-        return DR_FALSE;
+    char basePath[32768];
+    if (dtk_get_executable_directory_path(basePath, sizeof(basePath)) == 0) {
+        return 0;
     }
 
-    return drpath_append(pathOut, pathOutSize, "packages");
+    return dtk_path_append(pathOut, pathOutSize, basePath, "packages");
 }
 
 
@@ -195,14 +212,20 @@ dr_bool32 dred_file_write_line(dred_file file, const char* str)
 
 dr_bool32 dred_to_absolute_path(const char* relativePath, char* absolutePathOut, size_t absolutePathOutSize)
 {
-    if (drpath_is_absolute(relativePath)) {
+    if (dtk_path_is_absolute(relativePath)) {
         return strcpy_s(absolutePathOut, absolutePathOutSize, relativePath) == 0;
     }
 
-
-    if (dr_get_current_directory(absolutePathOut, absolutePathOutSize) == NULL) {
+    char* pCurrentDir = dtk_get_current_directory();
+    if (pCurrentDir == NULL) {
         return DR_FALSE;
     }
 
-    return drpath_append(absolutePathOut, absolutePathOutSize, relativePath);
+    if (dtk_path_append(absolutePathOut, absolutePathOutSize, pCurrentDir, relativePath) == 0) {
+        dtk_free(pCurrentDir);
+        return DR_FALSE;
+    }
+
+    dtk_free(pCurrentDir);
+    return DR_TRUE;
 }

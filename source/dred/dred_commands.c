@@ -15,14 +15,19 @@ static dr_bool32 dred__preprocess_system_command(dred_context* pDred, const char
         return DR_FALSE;
     }
 
-    char currentDir[DRED_MAX_PATH];
-    dr_get_current_directory(currentDir, sizeof(currentDir));
-
     char relativePath[DRED_MAX_PATH];
-    if (drpath_is_absolute(absolutePath)) {
-        if (!drpath_to_relative(absolutePath, dr_get_current_directory(currentDir, sizeof(currentDir)), relativePath, sizeof(relativePath))) {
+    if (dtk_path_is_absolute(absolutePath)) {
+        char* pCurrentDir = dtk_get_current_directory();
+        if (pCurrentDir == NULL) {
             return DR_FALSE;
         }
+
+        if (dtk_path_to_relative(relativePath, sizeof(relativePath), absolutePath, pCurrentDir) == 0) {
+            dtk_free(pCurrentDir);
+            return DR_FALSE;
+        }
+
+        dtk_free(pCurrentDir);
     } else {
         if (strcpy_s(relativePath, sizeof(relativePath), absolutePath) != 0) {
             return DR_FALSE;
@@ -138,11 +143,11 @@ dr_bool32 dred_command__load_config(dred_context* pDred, const char* value)
         return DR_FALSE;
     }
 
-    if (drpath_is_relative(path) && !dr_file_exists(path)) {
+    if (dtk_path_is_relative(path) && !dr_file_exists(path)) {
         // If the path is relative and the file does not exist relative to the current directory, try making it relative to
         // the user config directory.
         char configPath[DRED_MAX_PATH];
-        if (dred_get_config_folder_path(pDred, configPath, sizeof(configPath))) {
+        if (dred_get_config_folder_path(pDred, configPath, sizeof(configPath)) > 0) {
             char pathAbsolute[DRED_MAX_PATH];
             if (drpath_append_and_clean(pathAbsolute, sizeof(pathAbsolute), configPath, path)) {
                 return dred_load_config(pDred, pathAbsolute);
@@ -264,7 +269,7 @@ dr_bool32 dred_command__prev_tab(dred_context* pDred, const char* value)
 dr_bool32 dred_command__cd(dred_context* pDred, const char* value)
 {
     (void)pDred;
-    return dr_set_current_directory(value);
+    return dtk_set_current_directory(value) == DTK_SUCCESS;
 }
 
 
@@ -396,21 +401,23 @@ dr_bool32 dred_command__add_favourite(dred_context* pDred, const char* value)
         return DR_FALSE;
     }
 
-    if (drpath_is_absolute(absolutePath)) {
+    if (dtk_path_is_absolute(absolutePath)) {
         // The path is absolute.
         return dred_add_favourite(pDred, absolutePath);
     } else {
         // The path is relative. Make it absolute.
-        char currentDirectory[DRED_MAX_PATH];
-        if (dr_get_current_directory(currentDirectory, sizeof(currentDirectory)) == NULL) {
+        char* pCurrentDir = dtk_get_current_directory();
+        if (pCurrentDir == NULL) {
             return DR_FALSE;
         }
 
         char actualAbsolutePath[DRED_MAX_PATH];
-        if (!drpath_to_absolute(absolutePath, currentDirectory, actualAbsolutePath, sizeof(actualAbsolutePath))) {
+        if (dtk_path_to_absolute(actualAbsolutePath, sizeof(actualAbsolutePath), absolutePath, pCurrentDir) == 0) {
+            dtk_free(pCurrentDir);
             return DR_FALSE;
         }
 
+        dtk_free(pCurrentDir);
         return dred_add_favourite(pDred, actualAbsolutePath);
     }
 }
@@ -429,21 +436,23 @@ dr_bool32 dred_command__remove_favourite(dred_context* pDred, const char* value)
         return DR_FALSE;
     }
 
-    if (drpath_is_absolute(absolutePath)) {
+    if (dtk_path_is_absolute(absolutePath)) {
         // The path is absolute.
         return dred_remove_favourite(pDred, absolutePath);
     } else {
         // The path is relative. Make it absolute.
-        char currentDirectory[DRED_MAX_PATH];
-        if (dr_get_current_directory(currentDirectory, sizeof(currentDirectory)) == NULL) {
+        char* pCurrentDir = dtk_get_current_directory();
+        if (pCurrentDir == NULL) {
             return DR_FALSE;
         }
 
         char actualAbsolutePath[DRED_MAX_PATH];
-        if (!drpath_to_absolute(absolutePath, currentDirectory, actualAbsolutePath, sizeof(actualAbsolutePath))) {
+        if (dtk_path_to_absolute(actualAbsolutePath, sizeof(actualAbsolutePath), absolutePath, pCurrentDir) == 0) {
+            dtk_free(pCurrentDir);
             return DR_FALSE;
         }
 
+        dtk_free(pCurrentDir);
         return dred_remove_favourite(pDred, actualAbsolutePath);
     }
 }

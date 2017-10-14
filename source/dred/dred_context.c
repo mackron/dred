@@ -231,13 +231,13 @@ void dred__on_main_window_size(dtk_window* pWindow, dtk_int32 width, dtk_int32 h
 dred_file dred__open_log_file(dred_context* pDred)
 {
     char logFilePath[DRED_MAX_PATH];
-    if (!dred_get_log_path(pDred, logFilePath, sizeof(logFilePath))) {
+    if (dred_get_log_path(pDred, logFilePath, sizeof(logFilePath)) == 0) {
         return NULL;
     }
 
     // Make sure the folder exists.
     char logFolderPath[DRED_MAX_PATH];
-    if (dred_get_log_folder_path(pDred, logFolderPath, sizeof(logFolderPath))) {
+    if (dred_get_log_folder_path(pDred, logFolderPath, sizeof(logFolderPath)) > 0) {
         dr_mkdir_recursive(logFolderPath);
     }
 
@@ -258,7 +258,7 @@ void dred_config__on_error(dred_config* pConfig, const char* configPath, const c
 void dred_create_config_file_if_not_exists(dred_context* pDred, const char* fileName, const char* configString)
 {
     char configFolderPath[DRED_MAX_PATH];
-    if (!dred_get_config_folder_path(pDred, configFolderPath, sizeof(configFolderPath))) {
+    if (dred_get_config_folder_path(pDred, configFolderPath, sizeof(configFolderPath)) == 0) {
         return;
     }
 
@@ -536,7 +536,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     // Make sure the user's config directory exists.
     char configFolderPath[DRED_MAX_PATH];
     dred_get_config_folder_path(pDred, configFolderPath, sizeof(configFolderPath));
-    dr_mkdir_recursive(configFolderPath);
+    dtk_mkdir_recursive(configFolderPath);
 
 
     // Open the log file first to ensure we're able to log as soon as possible.
@@ -584,7 +584,7 @@ dr_bool32 dred_init(dred_context* pDred, dr_cmdline cmdline, dred_package_librar
     dred_config_init(&pDred->config, pDred);                // 1
 
     char configPath[DRED_MAX_PATH];
-    if (dred_get_config_path(pDred, configPath, sizeof(configPath))) {
+    if (dred_get_config_path(pDred, configPath, sizeof(configPath)) > 0) {
         char configPathPrivate[DRED_MAX_PATH];
         strcpy_s(configPathPrivate, sizeof(configPathPrivate), configPath);
         strcat_s(configPathPrivate, sizeof(configPathPrivate), "private");
