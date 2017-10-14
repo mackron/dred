@@ -40,19 +40,19 @@ DRED_GUI_PRIVATE void dred_tabbar_on_measure_tab_default(dred_tabbar* pTabBar, d
 DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dred_tab* pTab, dred_rect relativeClippingRect, float offsetX, float offsetY, float width, float height, dtk_surface* pSurface);
 
 /// Finds the tab sitting under the given point, if any.
-DRED_GUI_PRIVATE dred_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, dr_bool32* pIsOverCloseButtonOut);
+DRED_GUI_PRIVATE dred_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, dtk_bool32* pIsOverCloseButtonOut);
 
-dr_bool32 dred_tabbar_init(dred_tabbar* pTabBar, dred_context* pDred, dred_control* pParent, dred_tabbar_orientation orientation)
+dtk_bool32 dred_tabbar_init(dred_tabbar* pTabBar, dred_context* pDred, dred_control* pParent, dred_tabbar_orientation orientation)
 {
     if (pTabBar == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     memset(pTabBar, 0, sizeof(*pTabBar));
 
 
     if (!dred_control_init(DRED_CONTROL(pTabBar), pDred, pParent, NULL, DRED_CONTROL_TYPE_TABBAR, NULL)) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     pTabBar->orientation                 = orientation;
@@ -76,10 +76,10 @@ dr_bool32 dred_tabbar_init(dred_tabbar* pTabBar, dred_context* pDred, dred_contr
     pTabBar->closeButtonColorTabHovered  = dred_rgb(192, 192, 192);
     pTabBar->closeButtonColorHovered     = dred_rgb(255, 96, 96);
     pTabBar->closeButtonColorPressed     = dred_rgb(192, 32, 32);
-    pTabBar->isAutoSizeEnabled           = DR_FALSE;
-    pTabBar->isShowingCloseButton        = DR_FALSE;
-    pTabBar->isCloseOnMiddleClickEnabled = DR_FALSE;
-    pTabBar->isCloseButtonHovered        = DR_FALSE;
+    pTabBar->isAutoSizeEnabled           = DTK_FALSE;
+    pTabBar->isShowingCloseButton        = DTK_FALSE;
+    pTabBar->isCloseOnMiddleClickEnabled = DTK_FALSE;
+    pTabBar->isCloseButtonHovered        = DTK_FALSE;
 
     pTabBar->onMeasureTab                = dred_tabbar_on_measure_tab_default;
     pTabBar->onPaintTab                  = dred_tabbar_on_paint_tab_default;
@@ -95,7 +95,7 @@ dr_bool32 dred_tabbar_init(dred_tabbar* pTabBar, dred_context* pDred, dred_contr
     dred_control_set_on_mouse_button_up(DRED_CONTROL(pTabBar), dred_tabbar_on_mouse_button_up);
     dred_control_set_on_paint(DRED_CONTROL(pTabBar), dred_tabbar_on_paint);
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 void dred_tabbar_uninit(dred_tabbar* pTabBar)
@@ -465,7 +465,7 @@ void dred_tabbar_enable_auto_size(dred_tabbar* pTabBar)
         return;
     }
 
-    pTabBar->isAutoSizeEnabled = DR_TRUE;
+    pTabBar->isAutoSizeEnabled = DTK_TRUE;
 }
 
 void dred_tabbar_disable_auto_size(dred_tabbar* pTabBar)
@@ -474,13 +474,13 @@ void dred_tabbar_disable_auto_size(dred_tabbar* pTabBar)
         return;
     }
 
-    pTabBar->isAutoSizeEnabled = DR_FALSE;
+    pTabBar->isAutoSizeEnabled = DTK_FALSE;
 }
 
-dr_bool32 dred_tabbar_is_auto_size_enabled(dred_tabbar* pTabBar)
+dtk_bool32 dred_tabbar_is_auto_size_enabled(dred_tabbar* pTabBar)
 {
     if (pTabBar == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     return pTabBar->isAutoSizeEnabled;
@@ -596,10 +596,10 @@ dred_tab* dred_tabbar_get_active_tab(dred_tabbar* pTabBar)
 }
 
 
-dr_bool32 dred_tabbar_is_tab_in_view(dred_tabbar* pTabBar, dred_tab* pTabIn)
+dtk_bool32 dred_tabbar_is_tab_in_view(dred_tabbar* pTabBar, dred_tab* pTabIn)
 {
     if (pTabBar == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     float tabbarWidth  = 0;
@@ -628,7 +628,7 @@ dr_bool32 dred_tabbar_is_tab_in_view(dred_tabbar* pTabBar, dred_tab* pTabIn)
         }
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
 
@@ -638,7 +638,7 @@ void dred_tabbar_show_close_buttons(dred_tabbar* pTabBar)
         return;
     }
 
-    pTabBar->isShowingCloseButton = DR_TRUE;
+    pTabBar->isShowingCloseButton = DTK_TRUE;
 
     dred_control_dirty(DRED_CONTROL(pTabBar), dred_control_get_local_rect(DRED_CONTROL(pTabBar)));
 }
@@ -649,7 +649,7 @@ void dred_tabbar_hide_close_buttons(dred_tabbar* pTabBar)
         return;
     }
 
-    pTabBar->isShowingCloseButton = DR_FALSE;
+    pTabBar->isShowingCloseButton = DTK_FALSE;
 
     dred_control_dirty(DRED_CONTROL(pTabBar), dred_control_get_local_rect(DRED_CONTROL(pTabBar)));
 }
@@ -661,7 +661,7 @@ void dred_tabbar_enable_close_on_middle_click(dred_tabbar* pTabBar)
         return;
     }
 
-    pTabBar->isCloseOnMiddleClickEnabled = DR_TRUE;
+    pTabBar->isCloseOnMiddleClickEnabled = DTK_TRUE;
 }
 
 void dred_tabbar_disable_close_on_middle_click(dred_tabbar* pTabBar)
@@ -670,13 +670,13 @@ void dred_tabbar_disable_close_on_middle_click(dred_tabbar* pTabBar)
         return;
     }
 
-    pTabBar->isCloseOnMiddleClickEnabled = DR_FALSE;
+    pTabBar->isCloseOnMiddleClickEnabled = DTK_FALSE;
 }
 
-dr_bool32 dred_tabbar_is_close_on_middle_click_enabled(dred_tabbar* pTabBar)
+dtk_bool32 dred_tabbar_is_close_on_middle_click_enabled(dred_tabbar* pTabBar)
 {
     if (pTabBar == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     return pTabBar->isCloseOnMiddleClickEnabled;
@@ -693,7 +693,7 @@ void dred_tabbar_on_mouse_leave(dred_control* pControl)
     if (pTabBar->pHoveredTab != NULL)
     {
         pTabBar->pHoveredTab = NULL;
-        pTabBar->isCloseButtonHovered = DR_FALSE;
+        pTabBar->isCloseButtonHovered = DTK_FALSE;
 
         dred_control_dirty(pControl, dred_control_get_local_rect(pControl));
     }
@@ -708,7 +708,7 @@ void dred_tabbar_on_mouse_move(dred_control* pControl, int relativeMousePosX, in
         return;
     }
 
-    dr_bool32 isCloseButtonHovered = DR_FALSE;
+    dtk_bool32 isCloseButtonHovered = DTK_FALSE;
 
     dred_tab* pOldHoveredTab = pTabBar->pHoveredTab;
     dred_tab* pNewHoveredTab = dred_tabbar_find_tab_under_point(pTabBar, (float)relativeMousePosX, (float)relativeMousePosY, &isCloseButtonHovered);
@@ -733,7 +733,7 @@ void dred_tabbar_on_mouse_button_down(dred_control* pControl, int mouseButton, i
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT || mouseButton == DTK_MOUSE_BUTTON_RIGHT)
     {
-        dr_bool32 isOverCloseButton = DR_FALSE;
+        dtk_bool32 isOverCloseButton = DTK_FALSE;
 
         dred_tab* pOldActiveTab = pTabBar->pActiveTab;
         dred_tab* pNewActiveTab = dred_tabbar_find_tab_under_point(pTabBar, (float)relativeMousePosX, (float)relativeMousePosY, &isOverCloseButton);
@@ -772,7 +772,7 @@ void dred_tabbar_on_mouse_button_up(dred_control* pControl, int mouseButton, int
     }
 
 
-    dr_bool32 releasedOverCloseButton = DR_FALSE;
+    dtk_bool32 releasedOverCloseButton = DTK_FALSE;
     dred_tab* pTabUnderMouse = dred_tabbar_find_tab_under_point(pTabBar, (float)relativeMousePosX, (float)relativeMousePosY, &releasedOverCloseButton);
 
     if (pTabBar->pTabWithCloseButtonPressed != NULL && mouseButton == DTK_MOUSE_BUTTON_LEFT)
@@ -969,7 +969,7 @@ DRED_GUI_PRIVATE void dred_tabbar_on_paint_tab_default(dred_tabbar* pTabBar, dre
     }
 }
 
-DRED_GUI_PRIVATE dred_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, dr_bool32* pIsOverCloseButtonOut)
+DRED_GUI_PRIVATE dred_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar, float relativePosX, float relativePosY, dtk_bool32* pIsOverCloseButtonOut)
 {
     if (pTabBar == NULL) {
         return NULL;
@@ -999,9 +999,9 @@ DRED_GUI_PRIVATE dred_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar
                 closeButtonRect.bottom = closeButtonRect.top + closeButtonHeight;
 
                 if (pTabBar->isShowingCloseButton && dred_rect_contains_point(closeButtonRect, relativePosX, relativePosY)) {
-                    *pIsOverCloseButtonOut = DR_TRUE;
+                    *pIsOverCloseButtonOut = DTK_TRUE;
                 } else {
-                    *pIsOverCloseButtonOut = DR_FALSE;
+                    *pIsOverCloseButtonOut = DTK_FALSE;
                 }
             }
 
@@ -1017,7 +1017,7 @@ DRED_GUI_PRIVATE dred_tab* dred_tabbar_find_tab_under_point(dred_tabbar* pTabBar
 
 
     if (pIsOverCloseButtonOut) {
-        *pIsOverCloseButtonOut = DR_FALSE;
+        *pIsOverCloseButtonOut = DTK_FALSE;
     }
 
     return NULL;
@@ -1207,10 +1207,10 @@ void dred_tab_move_to_front(dred_tab* pTab)
     dred_tab_prepend(pTab, pTabBar);
 }
 
-dr_bool32 dred_tab_is_in_view(dred_tab* pTab)
+dtk_bool32 dred_tab_is_in_view(dred_tab* pTab)
 {
     if (pTab == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     return dred_tabbar_is_tab_in_view(pTab->pTabBar, pTab);
@@ -1350,7 +1350,7 @@ DRED_GUI_PRIVATE void dred_tab_detach(dred_tab* pTab)
 
     if (pTabBar->pHoveredTab == pTab) {
         pTabBar->pHoveredTab = NULL;
-        pTabBar->isCloseButtonHovered = DR_FALSE;
+        pTabBar->isCloseButtonHovered = DTK_FALSE;
     }
 
     if (pTabBar->pActiveTab == pTab) {

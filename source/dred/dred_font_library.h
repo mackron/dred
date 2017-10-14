@@ -9,7 +9,7 @@ struct dred_font_library
 };
 
 // Initializes the given font library.
-dr_bool32 dred_font_library_init(dred_font_library* pLibrary, dred_context* pDred);
+dtk_bool32 dred_font_library_init(dred_font_library* pLibrary, dred_context* pDred);
 
 // Uninitializes the given font library.
 void dred_font_library_uninit(dred_font_library* pLibrary);

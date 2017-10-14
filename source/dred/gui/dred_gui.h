@@ -254,7 +254,7 @@ typedef void (* dred_gui_on_key_up_proc)               (dred_control* pControl, 
 typedef void (* dred_gui_on_printable_key_down_proc)   (dred_control* pControl, unsigned int character, int stateFlags);
 typedef void (* dred_gui_on_paint_proc)                (dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
 typedef void (* dred_gui_on_dirty_proc)                (dred_control* pControl, dred_rect relativeRect);
-typedef dr_bool32 (* dred_gui_on_hittest_proc)              (dred_control* pControl, float relativePosX, float relativePosY);
+typedef dtk_bool32 (* dred_gui_on_hittest_proc)              (dred_control* pControl, float relativePosX, float relativePosY);
 typedef void (* dred_gui_on_capture_mouse_proc)        (dred_control* pControl);
 typedef void (* dred_gui_on_release_mouse_proc)        (dred_control* pControl);
 typedef void (* dred_gui_on_capture_keyboard_proc)     (dred_control* pControl, dtk_control* pPrevCapturedControl);
@@ -278,17 +278,17 @@ typedef void (* dred_gui_draw_image_proc)                   (dtk_surface* pImage
 typedef dtk_font* (* dred_gui_create_font_proc)                        (dtk_context* pTK, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, unsigned int flags);
 typedef void              (* dred_gui_delete_font_proc)                        (dtk_font* pFont);
 typedef unsigned int      (* dred_gui_get_font_size_proc)                      (dtk_font* pFont);
-typedef dr_bool32              (* dred_gui_get_font_metrics_proc)                   (dtk_font* pFont, float scale, dtk_font_metrics* pMetricsOut);
-typedef dr_bool32              (* dred_gui_get_glyph_metrics_proc)                  (dtk_font* pFont, float scale, unsigned int utf32, dtk_glyph_metrics* pMetricsOut);
-typedef dr_bool32              (* dred_gui_measure_string_proc)                     (dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32* pWidthOut, dtk_int32* pHeightOut);
-typedef dr_bool32              (* dred_gui_get_text_cursor_position_from_point_proc)(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-typedef dr_bool32              (* dred_gui_get_text_cursor_position_from_char_proc) (dtk_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+typedef dtk_bool32              (* dred_gui_get_font_metrics_proc)                   (dtk_font* pFont, float scale, dtk_font_metrics* pMetricsOut);
+typedef dtk_bool32              (* dred_gui_get_glyph_metrics_proc)                  (dtk_font* pFont, float scale, unsigned int utf32, dtk_glyph_metrics* pMetricsOut);
+typedef dtk_bool32              (* dred_gui_measure_string_proc)                     (dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32* pWidthOut, dtk_int32* pHeightOut);
+typedef dtk_bool32              (* dred_gui_get_text_cursor_position_from_point_proc)(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+typedef dtk_bool32              (* dred_gui_get_text_cursor_position_from_char_proc) (dtk_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 typedef dtk_surface*     (* dred_gui_create_image_proc)            (dtk_context* pTK, unsigned int width, unsigned int height, unsigned int stride, const void* pImageData);
 typedef void                  (* dred_gui_delete_image_proc)            (dtk_surface* pImage);
 typedef void                  (* dred_gui_get_image_size_proc)          (dtk_surface* pImage, unsigned int* pWidthOut, unsigned int* pHeightOut);
 
-typedef dr_bool32 (* dred_gui_visible_iteration_proc)(dred_control* pControl, dred_rect *pRelativeRect, void* pUserData);
+typedef dtk_bool32 (* dred_gui_visible_iteration_proc)(dred_control* pControl, dred_rect *pRelativeRect, void* pUserData);
 
 // Structure containing callbacks for painting routines.
 struct dred_gui_painting_callbacks
@@ -568,7 +568,7 @@ struct dred_gui
 /////////////////////////////////////////////////////////////////
 
 // Initializes a GUI context.
-dr_bool32 dred_gui_init(dred_gui* pGUI, dred_context* pDred);
+dtk_bool32 dred_gui_init(dred_gui* pGUI, dred_context* pDred);
 
 /// Deletes a context and everything that it created.
 void dred_gui_uninit(dred_gui* pGUI);
@@ -683,7 +683,7 @@ void dred_gui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog);
 dtk_bool32 dred_control_event_handler(dtk_event* pEvent);
 
 /// Creates an element.
-dr_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, dtk_control* pDTKParent, const char* type, dtk_event_proc onEvent);
+dtk_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, dtk_control* pDTKParent, const char* type, dtk_event_proc onEvent);
 
 /// Deletes and element.
 void dred_control_uninit(dred_control* pControl);
@@ -700,14 +700,14 @@ dred_gui* dred_control_get_gui(dred_control* pControl);
 /// Sets the type of the element.
 ///
 /// The type name cannot be more than 63 characters in length.
-dr_bool32 dred_control_set_type(dred_control* pControl, const char* type);
+dtk_bool32 dred_control_set_type(dred_control* pControl, const char* type);
 
 /// Retrieves the type fo the element.
 const char* dred_control_get_type(dred_control* pControl);
 
 /// Determines whether or not the given element is of the given type.
-dr_bool32 dred_control_is_of_type(dred_control* pControl, const char* type);
-dr_bool32 dred_is_control_type_of_type(const char* type, const char* base);
+dtk_bool32 dred_control_is_of_type(dred_control* pControl, const char* type);
+dtk_bool32 dred_is_control_type_of_type(const char* type, const char* base);
 
 
 /// Hides the given element.
@@ -720,12 +720,12 @@ void dred_control_show(dred_control* pControl);
 ///
 /// @remarks
 ///     This is a direct accessor for the internal visible flag of the element and is not recursive. Thus, if this element is
-///     marked as visible, but it's parent is invisible, it will still return DR_TRUE. Use dred_control_is_visible_recursive() to do
+///     marked as visible, but it's parent is invisible, it will still return DTK_TRUE. Use dred_control_is_visible_recursive() to do
 ///     a recursive visibility check.
-dr_bool32 dred_control_is_visible(const dred_control* pControl);
+dtk_bool32 dred_control_is_visible(const dred_control* pControl);
 
 /// Recursively determines whether or not the element is marked as visible.
-dr_bool32 dred_control_is_visible_recursive(const dred_control* pControl);
+dtk_bool32 dred_control_is_visible_recursive(const dred_control* pControl);
 
 
 /// Disables clipping against the parent for the given element.
@@ -735,7 +735,7 @@ void dred_control_disable_clipping(dred_control* pControl);
 void dred_control_enable_clipping(dred_control* pControl);
 
 /// Determines whether or not clipping is enabled for the given element.
-dr_bool32 dred_control_is_clipping_enabled(const dred_control* pControl);
+dtk_bool32 dred_control_is_clipping_enabled(const dred_control* pControl);
 
 
 /// Sets the element that should receive all future mouse related events.
@@ -758,7 +758,7 @@ void dred_gui_release_mouse(dred_gui* pGUI);
 //dred_control* dred_gui_get_element_with_mouse_capture(dred_gui* pGUI);
 
 /// Determines whether or not the given element has the mouse capture.
-//dr_bool32 dred_control_has_mouse_capture(dred_control* pControl);
+//dtk_bool32 dred_control_has_mouse_capture(dred_control* pControl);
 
 
 /// Sets the element that should receive all future keyboard related events.
@@ -781,7 +781,7 @@ void dred_gui_release_keyboard(dred_gui* pGUI);
 //dred_control* dred_gui_get_element_with_keyboard_capture(dred_gui* pGUI);
 
 /// Determines whether or not the given element has the keyboard capture.
-//dr_bool32 dred_control_has_keyboard_capture(dred_control* pControl);
+//dtk_bool32 dred_control_has_keyboard_capture(dred_control* pControl);
 
 
 /// Sets the cursor to use when the mouse enters the given GUI element.
@@ -862,19 +862,19 @@ void dred_control_set_on_release_keyboard(dred_control* pControl, dred_gui_on_re
 /// @remarks
 ///     This only checks if the point is inside the bounds of the element and does not take hit testing into account. This difference
 ///     with this one and dred_control_is_point_inside() is that the latter will use hit testing.
-dr_bool32 dred_control_is_point_inside_bounds(const dred_control* pControl, float absolutePosX, float absolutePosY);
+dtk_bool32 dred_control_is_point_inside_bounds(const dred_control* pControl, float absolutePosX, float absolutePosY);
 
 /// Determines whether or not the given point is inside the given element.
 ///
 /// @remarks
 ///     This will use hit testing to determine whether or not the point is inside the element.
-dr_bool32 dred_control_is_point_inside(dred_control* pControl, float absolutePosX, float absolutePosY);
+dtk_bool32 dred_control_is_point_inside(dred_control* pControl, float absolutePosX, float absolutePosY);
 
 /// Finds the element under the given point taking mouse pass-through and hit testing into account.
 //dtk_control* dred_gui_find_control_under_point(dred_control* pTopLevelControl, float absolutePosX, float absolutePosY);
 
 /// Determines whether or not the given element is currently sitting directly under the mouse.
-dr_bool32 dred_control_is_under_mouse(dred_control* pTopLevelControl);
+dtk_bool32 dred_control_is_under_mouse(dred_control* pTopLevelControl);
 
 
 
@@ -908,25 +908,25 @@ dtk_control* dred_control_find_top_level_control(dred_control* pControl);
 ///
 /// @remarks
 ///     This is not recursive. Use dred_control_is_ancestor() to do a recursive traversal.
-dr_bool32 dred_control_is_parent(dred_control* pParentControl, dred_control* pChildControl);
+dtk_bool32 dred_control_is_parent(dred_control* pParentControl, dred_control* pChildControl);
 
 /// Determines whether or not the given element is a child of the other.
 ///
 /// @remarks
 ///     This is not recursive. Use dred_control_is_descendant() to do a recursive traversal.
-dr_bool32 dred_control_is_child(dred_control* pChildControl, dred_control* pParentControl);
+dtk_bool32 dred_control_is_child(dred_control* pChildControl, dred_control* pParentControl);
 
 /// Determines whether or not the given element is an ancestor of the other.
-dr_bool32 dred_control_is_ancestor(dred_control* pAncestorControl, dred_control* pChildControl);
+dtk_bool32 dred_control_is_ancestor(dred_control* pAncestorControl, dred_control* pChildControl);
 
 /// Determines whether or not the given element is a descendant of the other.
-dr_bool32 dred_control_is_descendant(dred_control* pChildControl, dred_control* pAncestorControl);
+dtk_bool32 dred_control_is_descendant(dred_control* pChildControl, dred_control* pAncestorControl);
 
 /// Determines whether or not the given element is itself or a descendant.
-dr_bool32 dred_control_is_self_or_ancestor(dred_control* pAncestorControl, dred_control* pChildControl);
+dtk_bool32 dred_control_is_self_or_ancestor(dred_control* pAncestorControl, dred_control* pChildControl);
 
 /// Determines whether or not the given element is itself or a descendant.
-dr_bool32 dred_control_is_self_or_descendant(dred_control* pChildControl, dred_control* pAncestorControl);
+dtk_bool32 dred_control_is_self_or_descendant(dred_control* pChildControl, dred_control* pAncestorControl);
 
 
 
@@ -981,7 +981,7 @@ dred_rect dred_control_get_local_rect(const dred_control* pControl);
 /// @remarks
 ///     This can only be called once, so it should always be done after initialization. This will fail if called
 ///     more than once.
-dr_bool32 dred_gui_register_painting_callbacks(dred_gui* pGUI, dred_gui_painting_callbacks callbacks);
+dtk_bool32 dred_gui_register_painting_callbacks(dred_gui* pGUI, dred_gui_painting_callbacks callbacks);
 
 
 /// Performs a recursive traversal of all visible elements in the given rectangle.
@@ -995,7 +995,7 @@ dr_bool32 dred_gui_register_painting_callbacks(dred_gui* pGUI, dred_gui_painting
 ///     @par
 ///     The iteration callback function takes a pointer to a rectangle structure that represents the visible portion of the
 ///     element. This pointer can be modified by the callback to create an adjusted rectangle which can be used for clipping.
-//dr_bool32 dred_control_iterate_visible_elements(dred_control* pParentControl, dred_rect relativeRect, dred_gui_visible_iteration_proc callback, void* pUserData);
+//dtk_bool32 dred_control_iterate_visible_elements(dred_control* pParentControl, dred_rect relativeRect, dred_gui_visible_iteration_proc callback, void* pUserData);
 
 
 /// Disable's automatic dirtying of elements.
@@ -1005,7 +1005,7 @@ dr_bool32 dred_gui_register_painting_callbacks(dred_gui* pGUI, dred_gui_painting
 //void dred_gui_enable_auto_dirty(dred_gui* pGUI);
 
 /// Determines whether or not automatic dirtying is enabled.
-//dr_bool32 dred_gui_is_auto_dirty_enabled(dred_gui* pGUI);
+//dtk_bool32 dred_gui_is_auto_dirty_enabled(dred_gui* pGUI);
 
 
 /// Begins accumulating a dirty rectangle.
@@ -1078,22 +1078,22 @@ dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned
 void dred_gui_delete_font(dred_gui_font* pFont);
 
 /// Retrieves the metrics of the given font.
-dr_bool32 dred_gui_get_font_metrics(dred_gui_font* pFont, float scale, dtk_font_metrics* pMetricsOut);
+dtk_bool32 dred_gui_get_font_metrics(dred_gui_font* pFont, float scale, dtk_font_metrics* pMetricsOut);
 
 /// Retrieves the metrics of the glyph for the given character when rendered with the given font.
-dr_bool32 dred_gui_get_glyph_metrics(dred_gui_font* pFont, float scale, unsigned int utf32, dtk_glyph_metrics* pMetricsOut);
+dtk_bool32 dred_gui_get_glyph_metrics(dred_gui_font* pFont, float scale, unsigned int utf32, dtk_glyph_metrics* pMetricsOut);
 
 /// Retrieves the dimensions of the given string when drawn with the given font.
 ///
 /// @remarks
 ///     When the length of the text is 0, the width will be set to 0 and the height will be set to the line height.
-dr_bool32 dred_gui_measure_string(dred_gui_font* pFont, float scale, const char* text, size_t textLengthInBytes, dtk_int32* pWidthOut, dtk_int32* pHeightOut);
+dtk_bool32 dred_gui_measure_string(dred_gui_font* pFont, float scale, const char* text, size_t textLengthInBytes, dtk_int32* pWidthOut, dtk_int32* pHeightOut);
 
 /// Retrieves the position to place a text cursor based on the given point for the given string when drawn with the given font.
-dr_bool32 dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+dtk_bool32 dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
 
 /// Retrieves the position to palce a text cursor based on the character at the given index for the given string when drawn with the given font.
-dr_bool32 dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+dtk_bool32 dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
 
 
 
@@ -1127,7 +1127,7 @@ void dred_gui_get_image_size(dred_gui_image* pImage, unsigned int* pWidthOut, un
 void dred_control_on_size_fit_children_to_parent(dred_control* pControl, float newWidth, float newHeight);
 
 /// An on_hit_test event callback that can be used to always fail the mouse hit test.
-dr_bool32 dred_control_pass_through_hit_test(dred_control* pControl, float mousePosX, float mousePosY);
+dtk_bool32 dred_control_pass_through_hit_test(dred_control* pControl, float mousePosX, float mousePosY);
 
 
 //// Painting ////
@@ -1153,7 +1153,7 @@ dtk_color dred_rgb(uint8_t r, uint8_t g, uint8_t b);
 dred_rect dred_clamp_rect(dred_rect rect, dred_rect other);
 
 /// Clamps the given rectangle to the given element and returns whether or not any of it is contained within the element's rectangle.
-dr_bool32 dred_clamp_rect_to_element(const dred_control* pControl, dred_rect* pRelativeRect);
+dtk_bool32 dred_clamp_rect_to_element(const dred_control* pControl, dred_rect* pRelativeRect);
 
 /// Converts the given rectangle from absolute to relative to the given element.
 dred_rect dred_make_rect_relative(const dred_control* pControl, dred_rect* pRect);
@@ -1205,17 +1205,17 @@ dred_rect dred_rect_union(dred_rect rect0, dred_rect rect1);
 /// Determines whether or not the given rectangle contains the given point.
 ///
 /// @remarks
-///     An important not here is that if the position is sitting on the right or bottom border, DR_FALSE will be returned. If, however, the point
-///     is sitting on the left or top border, DR_TRUE will be returned. The reason for this is that elements may sit exactly side-by-side with
+///     An important not here is that if the position is sitting on the right or bottom border, DTK_FALSE will be returned. If, however, the point
+///     is sitting on the left or top border, DTK_TRUE will be returned. The reason for this is that elements may sit exactly side-by-side with
 ///     each other, and if we use this function to determine if a point is contained within an element (which we do), we would end up having
-///     this return DR_TRUE for both elements, which we don't want.
-dr_bool32 dred_rect_contains_point(dred_rect rect, float posX, float posY);
+///     this return DTK_TRUE for both elements, which we don't want.
+dtk_bool32 dred_rect_contains_point(dred_rect rect, float posX, float posY);
 
 /// Determines whether or not two rectangles are equal.
-dr_bool32 dred_rect_equal(dred_rect rect0, dred_rect rect1);
+dtk_bool32 dred_rect_equal(dred_rect rect0, dred_rect rect1);
 
 /// Determines whether or not the given rectangle has any volume (width and height > 0).
-dr_bool32 dred_rect_has_volume(dred_rect rect);
+dtk_bool32 dred_rect_has_volume(dred_rect rect);
 
 
 
@@ -1229,7 +1229,7 @@ dr_bool32 dred_rect_has_volume(dred_rect rect);
 //
 // @remarks
 //     This is equivalent to dred_gui_init() followed by dred_gui_register_dtk_callbacks().
-dr_bool32 dred_gui_init_dtk(dred_gui* pGUI, dred_context* pDred);
+dtk_bool32 dred_gui_init_dtk(dred_gui* pGUI, dred_context* pDred);
 
 // Registers the drawing callbacks for use with DTK.
 //

@@ -117,7 +117,7 @@ const char* config_var_type_to_string(unsigned int type)
         return "float";
     }
     if (type == CONFIG_VAR_TYPE_BOOL) {
-        return "dr_bool32";
+        return "dtk_bool32";
     }
     if (type == CONFIG_VAR_TYPE_STRING) {
         return "char*";
@@ -141,7 +141,7 @@ unsigned int parse_config_var_type(const char* type)
         return CONFIG_VAR_TYPE_INTEGER;
     } else if (strcmp(type, "float") == 0) {
         return CONFIG_VAR_TYPE_FLOAT;
-    } else if (strcmp(type, "bool") == 0 || strcmp(type, "dr_bool32") == 0) {
+    } else if (strcmp(type, "bool") == 0 || strcmp(type, "dtk_bool32") == 0) {
         return CONFIG_VAR_TYPE_BOOL;
     } else if (strcmp(type, "string") == 0) {
         return CONFIG_VAR_TYPE_STRING;
@@ -168,7 +168,7 @@ void get_config_var_default_value(unsigned int type, char* valueOut, size_t valu
         return;
     }
     if (type == CONFIG_VAR_TYPE_BOOL) {
-        strcpy_s(valueOut, valueOutSize, "DR_FALSE");
+        strcpy_s(valueOut, valueOutSize, "DTK_FALSE");
         return;
     }
     if (type == CONFIG_VAR_TYPE_STRING) {

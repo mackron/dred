@@ -79,17 +79,17 @@ void dred__update_main_window_layout(dtk_window* pWindow, dtk_int32 windowWidth,
 }
 
 
-dr_bool32 dred_parse_cmdline__startup_files(const char* key, const char* value, void* pUserData)
+dtk_bool32 dred_parse_cmdline__startup_files(const char* key, const char* value, void* pUserData)
 {
     dred_context* pDred = (dred_context*)pUserData;
     assert(pDred != NULL);
 
     if (key == NULL) {
         dred_open_file(pDred, value);
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
@@ -309,12 +309,12 @@ dtk_thread_result DTK_THREADCALL dred_ipc_message_proc(void* pData)
         void* pMsgData;
         dred_ipc_message_header header;
         while (dred_ipc_read_message(server, &header, &pMsgData)) {
-            dr_bool32 foundTerminator = DR_FALSE;
+            dtk_bool32 foundTerminator = DTK_FALSE;
             switch (header.message)
             {
                 case DRED_IPC_MESSAGE_TERMINATOR:
                 {
-                    foundTerminator = DR_TRUE;
+                    foundTerminator = DTK_TRUE;
                 } break;
 
                 default:
@@ -482,15 +482,15 @@ void dred_dtk_log_callback(dtk_context* pTK, const char* message)
     dred_log(pDred, message);
 }
 
-dr_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_library* pPackageLibrary)
+dtk_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_library* pPackageLibrary)
 {
     int windowPosX;
     int windowPosY;
     int windowWidth;
     int windowHeight;
-    dr_bool32 showWindowMaximized;
+    dtk_bool32 showWindowMaximized;
 
-    if (pDred == NULL) return DR_FALSE;
+    if (pDred == NULL) return DTK_FALSE;
     dtk_zero_object(pDred);
 
     // Initialize the toolkit first.
@@ -689,7 +689,7 @@ dr_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_lib
 
     
     // We only want to use the default window position on first run.
-    pDred->config.useDefaultWindowPos = DR_FALSE;
+    pDred->config.useDefaultWindowPos = DTK_FALSE;
 
 
     // Load initial files from the command line.
@@ -713,12 +713,12 @@ dr_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_lib
     }
 
 
-    pDred->isInitialized = DR_TRUE;
-    return DR_TRUE;
+    pDred->isInitialized = DTK_TRUE;
+    return DTK_TRUE;
 
 on_error:
     dred_uninit(pDred);
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
 void dred_uninit(dred_context* pDred)
@@ -727,7 +727,7 @@ void dred_uninit(dred_context* pDred)
         return;
     }
 
-    pDred->isClosing = DR_TRUE;
+    pDred->isClosing = DTK_TRUE;
 
 
     // Make sure any lingering tabs are forcefully closed. This should be done at a higher level so that the user
@@ -795,7 +795,7 @@ void dred_close(dred_context* pDred)
         return;
     }
 
-    // This will return DR_FALSE if the user hits the cancel button.
+    // This will return DTK_FALSE if the user hits the cancel button.
     if (!dred_close_all_tabs_with_confirmation(pDred)) {
         return;
     }
@@ -896,20 +896,20 @@ void dred_errorf(dred_context* pDred, const char* format, ...)
 }
 
 
-dr_bool32 dred_load_config(dred_context* pDred, const char* configFilePath)
+dtk_bool32 dred_load_config(dred_context* pDred, const char* configFilePath)
 {
     if (pDred == NULL || configFilePath == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     return dred_config_load_file(&pDred->config, configFilePath, dred_config__on_error, pDred);
 }
 
 
-dr_bool32 dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdOut)
+dtk_bool32 dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdOut)
 {
     if (pDred == NULL || cmd == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_command_separator cmdSeparator = dred_command_separator_none;
@@ -921,33 +921,33 @@ dr_bool32 dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmd
         if (dred_find_command(subcmd, &command, &value)) {
             if (pLastCmdOut) *pLastCmdOut = command;
 
-            dr_bool32 result = command.proc(pDred, value);
+            dtk_bool32 result = command.proc(pDred, value);
             if (result) {
                 if (cmdSeparator == dred_command_separator_or) {
-                    return DR_TRUE;
+                    return DTK_TRUE;
                 }
             } else {
                 if (cmdSeparator == dred_command_separator_and || cmdSeparator == dred_command_separator_none) {
-                    return DR_FALSE;
+                    return DTK_FALSE;
                 }
             }
         }
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_bind_shortcut(dred_context* pDred, dtk_uint32 id, const char* name, const char* cmdStr, dtk_uint32 acceleratorCount, dtk_accelerator* pAccelerators)
+dtk_bool32 dred_bind_shortcut(dred_context* pDred, dtk_uint32 id, const char* name, const char* cmdStr, dtk_uint32 acceleratorCount, dtk_accelerator* pAccelerators)
 {
     if (pDred == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (!dred_shortcut_table_bind(&pDred->shortcutTable, id, name, cmdStr, acceleratorCount, pAccelerators)) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
@@ -1115,14 +1115,14 @@ dtk_control* dred_get_control_with_keyboard_capture(dred_context* pDred)
 }
 
 
-dr_bool32 dred__save_editor(dred_editor* pEditor, const char* newFilePath, dred_tab* pTab)
+dtk_bool32 dred__save_editor(dred_editor* pEditor, const char* newFilePath, dred_tab* pTab)
 {
     if (!dred_editor_save(pEditor, newFilePath)) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred__refresh_editor_tab_text(pEditor, pTab);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
@@ -1175,18 +1175,18 @@ dred_tab* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char*
     return NULL;
 }
 
-dr_bool32 dred_open_file(dred_context* pDred, const char* filePath)
+dtk_bool32 dred_open_file(dred_context* pDred, const char* filePath)
 {
     return dred_open_file_by_type(pDred, filePath, dred_get_editor_type_by_path(pDred, filePath));
 }
 
-dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType)
+dtk_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType)
 {
     char filePathAbsolute[DRED_MAX_PATH];
     if (filePath != NULL && filePath[0] != '\0') {
         if (!dred_to_absolute_path(filePath, filePathAbsolute, sizeof(filePathAbsolute))) {
             dred_errorf(pDred, "File path is too long %s\n", filePath);
-            return DR_FALSE;
+            return DTK_FALSE;
         }
     } else {
         filePathAbsolute[0] = '\0';
@@ -1197,7 +1197,7 @@ dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, cons
         dred_tab* pExistingTab = dred_find_editor_tab_by_absolute_path(pDred, filePathAbsolute);
         if (pExistingTab != NULL) {
             dred_tabgroup_activate_tab(dred_tab_get_tabgroup(pExistingTab), pExistingTab);
-            return DR_TRUE;
+            return DTK_TRUE;
         }
     }
 
@@ -1205,7 +1205,7 @@ dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, cons
     // Before creating the editor we'll want to identify the tab group to attach it to.
     dred_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
     if (pTabGroup == NULL) {
-        return DR_FALSE;   // TODO: This means there is no tab group so one needs to be created.
+        return DTK_FALSE;   // TODO: This means there is no tab group so one needs to be created.
     }
 
     //dred_control_begin_dirty(DRED_CONTROL(pTabGroup));
@@ -1213,7 +1213,7 @@ dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, cons
         dred_editor* pEditor = dred_create_editor_by_type(pDred, pTabGroup, editorType, filePathAbsolute);
         if (pEditor == NULL) {
             //dred_control_end_dirty(DRED_CONTROL(pTabGroup));
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
         dred_editor_set_on_modified(pEditor, dred__on_editor_modified);
@@ -1224,7 +1224,7 @@ dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, cons
         if (pTab == NULL) {
             dred_delete_editor_by_type(pEditor);
             //dred_control_end_dirty(DRED_CONTROL(pTabGroup));
-            return DR_FALSE;
+            return DTK_FALSE;
         }
         dred__refresh_editor_tab_text(pEditor, pTab);
         dred_tabgroup_activate_tab(pTabGroup, pTab);
@@ -1256,7 +1256,7 @@ dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, cons
     dtk_control_hide(&pDred->backgroundControl);
     dtk_control_show(DTK_CONTROL(pTabGroup)->pParent);
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 void dred_close_focused_file(dred_context* pDred)
@@ -1351,10 +1351,10 @@ void dred_close_all_tabs(dred_context* pDred)
     }
 }
 
-dr_bool32 dred_close_all_tabs_with_confirmation(dred_context* pDred)
+dtk_bool32 dred_close_all_tabs_with_confirmation(dred_context* pDred)
 {
     if (pDred == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     // If there's any modified files we need to show a dialog box.
@@ -1362,15 +1362,15 @@ dr_bool32 dred_close_all_tabs_with_confirmation(dred_context* pDred)
         unsigned int result = dred_show_yesnocancel_dialog(pDred, "You have unsaved changes. Save changes?", "Save changes?");
         if (result == DTK_DIALOG_RESULT_YES) {
             if (!dred_save_all_open_files_with_saveas(pDred)) {
-                return DR_TRUE;
+                return DTK_TRUE;
             }
         } else if (result == DTK_DIALOG_RESULT_CANCEL) {
-            return DR_FALSE;
+            return DTK_FALSE;
         }
     }
 
     dred_close_all_tabs(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
@@ -1393,20 +1393,20 @@ dred_tab* dred_find_control_tab(dred_control* pControl)
 }
 
 
-dr_bool32 dred_save_focused_file(dred_context* pDred, const char* newFilePath)
+dtk_bool32 dred_save_focused_file(dred_context* pDred, const char* newFilePath)
 {
     if (pDred == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_tab* pFocusedTab = dred_get_focused_tab(pDred);
     if (pFocusedTab == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_control* pFocusedControl = dred_tab_get_control(pFocusedTab);
     if (pFocusedControl == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     // Editor.
@@ -1427,23 +1427,23 @@ dr_bool32 dred_save_focused_file(dred_context* pDred, const char* newFilePath)
         dred_refresh_recent_files_menu(pDred);
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
-dr_bool32 dred_save_focused_file_as(dred_context* pDred)
+dtk_bool32 dred_save_focused_file_as(dred_context* pDred)
 {
     if (pDred == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     char newFilePath[DRED_MAX_PATH];
     if (dred_show_save_file_dialog(pDred, dred_editor_get_file_path(pFocusedEditor), newFilePath, sizeof(newFilePath)) != DTK_DIALOG_RESULT_OK) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     return dred_save_focused_file(pDred, newFilePath);
@@ -1465,10 +1465,10 @@ void dred_save_all_open_files(dred_context* pDred)
     }
 }
 
-dr_bool32 dred_save_all_open_files_with_saveas(dred_context* pDred)
+dtk_bool32 dred_save_all_open_files_with_saveas(dred_context* pDred)
 {
     if (pDred == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
@@ -1478,25 +1478,25 @@ dr_bool32 dred_save_all_open_files_with_saveas(dred_context* pDred)
                 if (!dred__save_editor(DRED_EDITOR(pControl), NULL, pTab)) {
                     char newFileName[DRED_MAX_PATH];
                     if (dred_show_save_file_dialog(pDred, dred_editor_get_file_path(DRED_EDITOR(pControl)), newFileName, sizeof(newFileName)) != DTK_DIALOG_RESULT_OK) {
-                        return DR_FALSE;
+                        return DTK_FALSE;
                     }
 
                     if (!dred_editor_save(DRED_EDITOR(pControl), newFileName)) {
-                        return DR_FALSE;
+                        return DTK_FALSE;
                     }
                 }
             }
         }
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
-dr_bool32 dred_create_and_open_file(dred_context* pDred, const char* newFilePath)
+dtk_bool32 dred_create_and_open_file(dred_context* pDred, const char* newFilePath)
 {
     if (pDred == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (newFilePath == NULL || newFilePath[0] == '\0') {
@@ -1504,19 +1504,19 @@ dr_bool32 dred_create_and_open_file(dred_context* pDred, const char* newFilePath
     } else {
         if (dr_file_exists(newFilePath)) {
             dred_errorf(pDred, "File already exists: %s", newFilePath);
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
-        if (!dr_create_empty_file(newFilePath, DR_TRUE)) {
+        if (!dr_create_empty_file(newFilePath, DTK_TRUE)) {
             dred_errorf(pDred, "Failed to create file: %s", newFilePath);
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
         return dred_open_file(pDred, newFilePath);
     }
 }
 
-dr_bool32 dred_open_new_text_file(dred_context* pDred)
+dtk_bool32 dred_open_new_text_file(dred_context* pDred)
 {
     return dred_open_file_by_type(pDred, NULL, DRED_CONTROL_TYPE_TEXT_EDITOR);
 }
@@ -1586,10 +1586,10 @@ void dred_delete_editor_by_type(dred_editor* pEditor)
 }
 
 
-dr_bool32 dred_are_any_open_files_modified(dred_context* pDred)
+dtk_bool32 dred_are_any_open_files_modified(dred_context* pDred)
 {
     if (pDred == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
@@ -1597,31 +1597,31 @@ dr_bool32 dred_are_any_open_files_modified(dred_context* pDred)
             dred_control* pControl = dred_tab_get_control(pTab);
             if (pControl != NULL) {
                 if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR) && dred_editor_is_modified(DRED_EDITOR(pControl))) {
-                    return DR_TRUE;
+                    return DTK_TRUE;
                 }
             }
         }
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
 
-dr_bool32 dred_reload_focused_file(dred_context* pDred)
+dtk_bool32 dred_reload_focused_file(dred_context* pDred)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     return dred_editor_reload(pFocusedEditor);
 }
 
-dr_bool32 dred_check_if_focused_file_is_dirty_and_reload(dred_context* pDred)
+dtk_bool32 dred_check_if_focused_file_is_dirty_and_reload(dred_context* pDred)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     return dred_editor_check_if_dirty_and_reload(pFocusedEditor);
@@ -1662,7 +1662,7 @@ dtk_dialog_result dred_show_open_file_dialog(dred_context* pDred)
 dtk_dialog_result dred_show_save_file_dialog(dred_context* pDred, const char* currentFilePath, char* absolutePathOut, size_t absolutePathOutSize)
 {
     if (pDred == NULL || absolutePathOut == NULL || absolutePathOutSize == 0) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     const char* pFilters[] = {
@@ -1903,7 +1903,7 @@ dtk_dialog_result dred_show_print_dialog(dred_context* pDred, dtk_window* pOwner
     // When printing a text editor we need to use a different text engine for layout because the dimensions are different
     // and we need to force word wrap.
     if (!drte_engine_init(&printData.textEngine, &printData)) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     printData.pTextView = drte_view_create(&printData.textEngine);
@@ -2611,28 +2611,28 @@ const char* dred_get_language_by_file_path(dred_context* pDred, const char* file
 }
 
 
-dr_bool32 dred_add_favourite(dred_context* pDred, const char* absolutePath)
+dtk_bool32 dred_add_favourite(dred_context* pDred, const char* absolutePath)
 {
     if (pDred == NULL || absolutePath == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_config_push_favourite_file(&pDred->config, absolutePath);
     dred_refresh_favourite_files_menu(pDred);
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_remove_favourite(dred_context* pDred, const char* absolutePath)
+dtk_bool32 dred_remove_favourite(dred_context* pDred, const char* absolutePath)
 {
     if (pDred == NULL || absolutePath == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_config_remove_favourite_file(&pDred->config, absolutePath);
     dred_refresh_favourite_files_menu(pDred);
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
@@ -2772,7 +2772,7 @@ void dred_show_main_menu(dred_context* pDred)
     }
 
     dtk_window_set_menu(&pDred->mainWindow, pDred->pMainMenu);
-    pDred->isShowingMainMenu = DR_TRUE;
+    pDred->isShowingMainMenu = DTK_TRUE;
 }
 
 void dred_hide_main_menu(dred_context* pDred)
@@ -2783,7 +2783,7 @@ void dred_hide_main_menu(dred_context* pDred)
     }
 
     dtk_window_set_menu(&pDred->mainWindow, NULL);
-    pDred->isShowingMainMenu = DR_FALSE;
+    pDred->isShowingMainMenu = DTK_FALSE;
 }
 
 dtk_bool32 dred_is_showing_main_menu(dred_context* pDred)

@@ -7,9 +7,9 @@
 
 #define DRED_STRING_POOL_CHUNK_SIZE     256
 
-dr_bool32 dred_string_pool_init(dred_string_pool* pPool, const char* pInitialData, size_t initialDataSize)
+dtk_bool32 dred_string_pool_init(dred_string_pool* pPool, const char* pInitialData, size_t initialDataSize)
 {
-    if (pPool == NULL) return DR_FALSE;
+    if (pPool == NULL) return DTK_FALSE;
     memset(pPool, 0, sizeof(*pPool));
 
     if (pInitialData != NULL) {
@@ -20,7 +20,7 @@ dr_bool32 dred_string_pool_init(dred_string_pool* pPool, const char* pInitialDat
 
     pPool->pData = (char*)malloc(pPool->capacity);
     if (pPool->pData == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (pInitialData != NULL) {
@@ -31,15 +31,15 @@ dr_bool32 dred_string_pool_init(dred_string_pool* pPool, const char* pInitialDat
         pPool->pData[0] = '\0';
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_string_pool_uninit(dred_string_pool* pPool)
+dtk_bool32 dred_string_pool_uninit(dred_string_pool* pPool)
 {
-    if (pPool == NULL) return DR_FALSE;
+    if (pPool == NULL) return DTK_FALSE;
 
     free(pPool->pData);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
@@ -73,11 +73,11 @@ size_t dred_string_pool_add(dred_string_pool* pPool, const char* str, size_t str
     return offset;
 }
 
-dr_bool32 dred_string_pool_find(dred_string_pool* pPool, const char* str, size_t* pOffset)
+dtk_bool32 dred_string_pool_find(dred_string_pool* pPool, const char* str, size_t* pOffset)
 {
     if (pOffset) *pOffset = 0;
     if (pPool == NULL || str == NULL || str[0] == '\0') {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     // NOTE: This can be optimized. See optimization notes at the top of this file.
@@ -90,14 +90,14 @@ dr_bool32 dred_string_pool_find(dred_string_pool* pPool, const char* str, size_t
         if (strLen == nextStrLen) {
             if (strcmp(pNextStr, str) == 0) {
                 if (pOffset) *pOffset = i;
-                return DR_TRUE; // Found it.
+                return DTK_TRUE; // Found it.
             }
         }
 
         i += nextStrLen+1;
     }
 
-    return DR_FALSE;   // Didn't find it.
+    return DTK_FALSE;   // Didn't find it.
 }
 
 

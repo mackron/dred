@@ -454,20 +454,20 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
-dr_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dtk_control* pParent)
+dtk_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dtk_control* pParent)
 {
     if (pCmdBar == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     memset(pCmdBar, 0, sizeof(*pCmdBar));
     if (!dred_control_init(DRED_CONTROL(pCmdBar), pDred, NULL, pParent, DRED_CONTROL_TYPE_CMDBAR, NULL)) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (!dred_textbox_init(&pCmdBar->textBox, pDred, DRED_CONTROL(pCmdBar))) {
         dred_control_uninit(DRED_CONTROL(pCmdBar));
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_textbox_disable_horizontal_scrollbar(&pCmdBar->textBox);
@@ -494,7 +494,7 @@ dr_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dtk_contro
 
 
     dred_cmdbar_refresh_styling(pCmdBar);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 void dred_cmdbar_uninit(dred_cmdbar* pCmdBar)
@@ -529,21 +529,21 @@ void dred_cmdbar_set_text(dred_cmdbar* pCmdBar, const char* text)
     pCmdBar->manualTextEntry = NULL;
 }
 
-dr_bool32 dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigned int iPrevCommand)
+dtk_bool32 dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsigned int iPrevCommand)
 {
     if (pCmdBar == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBar));
     dtk_assert(pDred != NULL);
 
     if (iPrevCommand >= pDred->config.recentCommandsCount) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_cmdbar_set_text(pCmdBar, pDred->config.recentCommands[iPrevCommand]);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 size_t dred_cmdbar_get_text(dred_cmdbar* pCmdBar, char* pTextOut, size_t textOutSize)
@@ -709,9 +709,9 @@ unsigned int dred_cmdbar_get_argument_count(dred_cmdbar* pCmdBar)
     return count - 1;
 }
 
-dr_bool32 dred_cmdbar_get_argument_character_range_by_index(dred_cmdbar* pCmdBar, unsigned int argumentIndex, size_t* pCharBeg, size_t* pCharEnd)
+dtk_bool32 dred_cmdbar_get_argument_character_range_by_index(dred_cmdbar* pCmdBar, unsigned int argumentIndex, size_t* pCharBeg, size_t* pCharEnd)
 {
-    if (pCmdBar == NULL) return DR_FALSE;
+    if (pCmdBar == NULL) return DTK_FALSE;
 
     // Safety.
     if (pCharBeg != NULL) *pCharBeg = 0;
@@ -719,10 +719,10 @@ dr_bool32 dred_cmdbar_get_argument_character_range_by_index(dred_cmdbar* pCmdBar
 
     char* pCmdBarText = dred_cmdbar_get_text_malloc(pCmdBar);
     if (pCmdBarText == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
-    dr_bool32 foundArgument = DR_FALSE;
+    dtk_bool32 foundArgument = DTK_FALSE;
 
     unsigned int count = 0;
     const char* pNextStr = pCmdBarText;
@@ -742,7 +742,7 @@ dr_bool32 dred_cmdbar_get_argument_character_range_by_index(dred_cmdbar* pCmdBar
         if (count == argumentIndex + 1) {   // +1 because the first token will be the command name (not an argument).
             *pCharBeg = charBeg;
             *pCharEnd = charEnd;
-            foundArgument = DR_TRUE;
+            foundArgument = DTK_TRUE;
             break;
         }
 
@@ -754,10 +754,10 @@ dr_bool32 dred_cmdbar_get_argument_character_range_by_index(dred_cmdbar* pCmdBar
 }
 
 
-dr_bool32 dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
+dtk_bool32 dred_cmdbar_has_keyboard_focus(dred_cmdbar* pCmdBar)
 {
     if (pCmdBar == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     return dtk_control_has_keyboard_capture(DTK_CONTROL(&pCmdBar->textBox));

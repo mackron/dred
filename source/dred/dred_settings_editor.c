@@ -292,7 +292,7 @@ void dred_settings_editor_page__on_paint(dred_control* pPageControl, dred_rect r
     dred_control_draw_rect(pPageControl, dred_control_get_local_rect(pPageControl), dred_rgb(255, 255, 255), pSurface);
 }
 
-dr_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_control* pParent, dtk_event_proc onEvent, const char* title)
+dtk_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_control* pParent, dtk_event_proc onEvent, const char* title)
 {
     assert(pPage != NULL);
     assert(pDred != NULL);
@@ -302,14 +302,14 @@ dr_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred
     strcpy_s(pPage->title, sizeof(pPage->title), title);
     pPage->pGUIControl = &pPage->control;
     if (!dred_control_init(pPage->pGUIControl, pDred, pParent, NULL, "dred.settings.page", onEvent)) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_control_hide(pPage->pGUIControl);
     dred_control_set_on_mouse_enter(pPage->pGUIControl, dred_settings_editor_page__on_mouse_enter);
     dred_control_set_on_paint(pPage->pGUIControl, dred_settings_editor_page__on_paint);
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
@@ -349,7 +349,7 @@ dtk_bool32 dred_settings_editor_general_page_event_handler(dtk_event* pEvent)
     return dred_control_event_handler(pEvent);
 }
 
-dr_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSettingsEditor)
+dtk_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSettingsEditor)
 {
     assert(pSettingsEditor != NULL);
 
@@ -359,7 +359,7 @@ dr_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSettin
     dred_settings_editor_page* pPage = &pSettingsEditor->pages[DRED_SETTINGS_EDITOR_PAGE_GENERAL];
 
     if (!dred_settings_editor__init_page(pPage, pDred, DRED_CONTROL(pSettingsEditor), dred_settings_editor_general_page_event_handler, "General")) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
@@ -388,7 +388,7 @@ dr_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSettin
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar), penPosX, penPosY);
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar)) + (6*uiScale);
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
@@ -432,7 +432,7 @@ dtk_bool32 dred_settings_editor_theme_page_event_handler(dtk_event* pEvent)
     return dred_control_event_handler(pEvent);
 }
 
-dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettingsEditor)
+dtk_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettingsEditor)
 {
     assert(pSettingsEditor != NULL);
 
@@ -442,7 +442,7 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
     dred_settings_editor_page* pPage = &pSettingsEditor->pages[DRED_SETTINGS_EDITOR_PAGE_THEME];
 
     if (!dred_settings_editor__init_page(pPage, pDred, DRED_CONTROL(pSettingsEditor), dred_settings_editor_theme_page_event_handler, "Theme")) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
@@ -455,7 +455,7 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
 
     if (dtk_button_init(&pDred->tk, NULL, DTK_CONTROL(pPage->pGUIControl), "Choose Font...", &pSettingsEditor->fontButton) != DTK_SUCCESS) {
         dred_control_uninit(pPage->pGUIControl);
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dtk_button_set_on_pressed(&pSettingsEditor->fontButton, dred_settings__btn_choose_font__on_pressed);
@@ -466,7 +466,7 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
 
     if (dred_color_button_init(pDred, DTK_CONTROL(pPage->pGUIControl), "Text color", pDred->config.textEditorTextColor, &pSettingsEditor->textColorButton) != DTK_SUCCESS) {
         dred_control_uninit(pPage->pGUIControl);
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_color_button_set_bind_to_config_var(&pSettingsEditor->textColorButton, "texteditor-text-color");
@@ -477,7 +477,7 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
 
     if (dred_color_button_init(pDred, DTK_CONTROL(pPage->pGUIControl), "Background color", pDred->config.textEditorBGColor, &pSettingsEditor->bgColorButton) != DTK_SUCCESS) {
         dred_control_uninit(pPage->pGUIControl);
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_color_button_set_bind_to_config_var(&pSettingsEditor->bgColorButton, "texteditor-bg-color");
@@ -488,7 +488,7 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
 
     if (dred_color_button_init(pDred, DTK_CONTROL(pPage->pGUIControl), "Active line color", pDred->config.textEditorActiveLineColor, &pSettingsEditor->lineColorButton) != DTK_SUCCESS) {
         dred_control_uninit(pPage->pGUIControl);
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_color_button_set_bind_to_config_var(&pSettingsEditor->lineColorButton, "texteditor-active-line-color");
@@ -496,7 +496,7 @@ dr_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSettings
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->lineColorButton), penPosX, penPosY);
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale);
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
@@ -531,7 +531,7 @@ dtk_bool32 dred_settings_editor_text_editor_page_event_handler(dtk_event* pEvent
     return dred_control_event_handler(pEvent);
 }
 
-dr_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pSettingsEditor)
+dtk_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pSettingsEditor)
 {
     assert(pSettingsEditor != NULL);
 
@@ -541,7 +541,7 @@ dr_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pSe
     dred_settings_editor_page* pPage = &pSettingsEditor->pages[DRED_SETTINGS_EDITOR_PAGE_TEXT_EDITOR];
 
     if (!dred_settings_editor__init_page(pPage, pDred, DRED_CONTROL(pSettingsEditor), dred_settings_editor_text_editor_page_event_handler, "Text Editor")) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
@@ -564,7 +564,7 @@ dr_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pSe
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers), penPosX, penPosY);
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers)) + (6*uiScale);
     
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 

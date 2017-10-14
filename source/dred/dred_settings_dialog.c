@@ -92,10 +92,10 @@ void dred_settings_dialog_hide(dred_settings_dialog* pDialog)
     dtk_window_hide(DTK_WINDOW(pDialog));
 }
 
-dr_bool32 dred_settings_dialog_is_showing(dred_settings_dialog* pDialog)
+dtk_bool32 dred_settings_dialog_is_showing(dred_settings_dialog* pDialog)
 {
     if (pDialog == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     return dtk_control_is_visible(DTK_CONTROL(pDialog));

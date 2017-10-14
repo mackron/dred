@@ -2854,7 +2854,7 @@ dtk_bool32 dtk_window__find_control_under_point_iterator_cb(dtk_control* pContro
         }
     }
 
-    return DTK_TRUE; // Always return DR_TRUE to ensure the entire hierarchy is checked.
+    return DTK_TRUE; // Always return DTK_TRUE to ensure the entire hierarchy is checked.
 }
 
 dtk_control* dtk_window_find_control_under_point(dtk_window* pWindow, dtk_int32 posX, dtk_int32 posY)

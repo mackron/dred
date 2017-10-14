@@ -44,17 +44,17 @@ struct dred_shortcut_table
     //dred_accelerator_table acceleratorTable;
 };
 
-dr_bool32 dred_shortcut_table_init(dred_context* pDred, dred_shortcut_table* pTable, size_t initialCapacity);
+dtk_bool32 dred_shortcut_table_init(dred_context* pDred, dred_shortcut_table* pTable, size_t initialCapacity);
 void dred_shortcut_table_uninit(dred_shortcut_table* pTable);
 
-dr_bool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, dtk_uint32 id, const char* name, const char* cmdStr, dtk_uint32 acceleratorCount, dtk_accelerator* pAccelerators);
-dr_bool32 dred_shortcut_table_unbind(dred_shortcut_table* pTable, dtk_uint32 id);
+dtk_bool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, dtk_uint32 id, const char* name, const char* cmdStr, dtk_uint32 acceleratorCount, dtk_accelerator* pAccelerators);
+dtk_bool32 dred_shortcut_table_unbind(dred_shortcut_table* pTable, dtk_uint32 id);
 
-dr_bool32 dred_shortcut_table_find(dred_shortcut_table* pTable, dtk_uint32 id, size_t* pIndexOut);
-dr_bool32 dred_shortcut_table_find_by_name(dred_shortcut_table* pTable, const char* name, size_t* pIndexOut);
+dtk_bool32 dred_shortcut_table_find(dred_shortcut_table* pTable, dtk_uint32 id, size_t* pIndexOut);
+dtk_bool32 dred_shortcut_table_find_by_name(dred_shortcut_table* pTable, const char* name, size_t* pIndexOut);
 void dred_shortcut_table_replace_by_index(dred_shortcut_table* pTable, size_t shortcutIndex, const char* name, const char* cmdStr, dtk_uint32 acceleratorCount, dtk_accelerator* pAccelerators);
 
-dr_bool32 dred_shortcut_table_get_shortcut_by_index(dred_shortcut_table* pTable, size_t shortcutIndex, dred_shortcut* pShortcutOut);
+dtk_bool32 dred_shortcut_table_get_shortcut_by_index(dred_shortcut_table* pTable, size_t shortcutIndex, dred_shortcut* pShortcutOut);
 const char* dred_shortcut_table_get_command_string_by_index(dred_shortcut_table* pTable, size_t shortcutIndex);
 const char* dred_shortcut_table_get_command_string_by_name(dred_shortcut_table* pTable, const char* name);
 
@@ -65,5 +65,5 @@ dred_shortcut dred_shortcut_create(dtk_accelerator accel0, dtk_accelerator accel
 dred_shortcut dred_shortcut_create_single(dtk_accelerator accel1);
 dred_shortcut dred_shortcut_none();
 dred_shortcut dred_shortcut_parse(const char* shortcutStr);
-dr_bool32 dred_shortcut_equal(dred_shortcut a, dred_shortcut b);
+dtk_bool32 dred_shortcut_equal(dred_shortcut a, dred_shortcut b);
 size_t dred_shortcut_to_string(dred_shortcut shortcut, char* strOut, size_t strOutSize);

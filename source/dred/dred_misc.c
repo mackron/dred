@@ -1,12 +1,12 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
-dr_bool32 dred_parse_bool(const char* value)
+dtk_bool32 dred_parse_bool(const char* value)
 {
     if (_stricmp(value, "false") == 0 || _stricmp(value, "0") == 0) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 dtk_font_weight dred_parse_font_weight(const char* weight)
@@ -48,7 +48,7 @@ dtk_font_weight dred_parse_font_weight(const char* weight)
     return dtk_font_weight_normal;
 }
 
-dr_bool32 dred_font_weight_to_string(dtk_font_weight weight, char* strOut, size_t strOutSize)
+dtk_bool32 dred_font_weight_to_string(dtk_font_weight weight, char* strOut, size_t strOutSize)
 {
     if (weight == dtk_font_weight_normal/* || weight == dtk_font_weight_medium || weight == dtk_font_weight_default*/) {
         return strcpy_s(strOut, strOutSize, "default") == 0;
@@ -84,7 +84,7 @@ dr_bool32 dred_font_weight_to_string(dtk_font_weight weight, char* strOut, size_
         return strcpy_s(strOut, strOutSize, "extra-heavy") == 0;
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
 
@@ -103,7 +103,7 @@ dtk_font_slant dred_parse_font_slant(const char* slant)
     return dtk_font_slant_none;
 }
 
-dr_bool32 dred_font_slant_to_string(dtk_font_slant slant, char* strOut, size_t strOutSize)
+dtk_bool32 dred_font_slant_to_string(dtk_font_slant slant, char* strOut, size_t strOutSize)
 {
     if (slant == dtk_font_slant_none) {
         return strcpy_s(strOut, strOutSize, "none") == 0;
@@ -115,7 +115,7 @@ dr_bool32 dred_font_slant_to_string(dtk_font_slant slant, char* strOut, size_t s
         return strcpy_s(strOut, strOutSize, "oblique") == 0;
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
 

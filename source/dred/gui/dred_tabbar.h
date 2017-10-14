@@ -97,16 +97,16 @@ struct dred_tabbar
 
 
     /// Whether or not auto-sizing is enabled. Disabled by default.
-    dr_bool32 isAutoSizeEnabled;
+    dtk_bool32 isAutoSizeEnabled;
 
     /// Whether or not the close buttons are being shown.
-    dr_bool32 isShowingCloseButton;
+    dtk_bool32 isShowingCloseButton;
 
     /// Whether or not close-on-middle-click is enabled.
-    dr_bool32 isCloseOnMiddleClickEnabled;
+    dtk_bool32 isCloseOnMiddleClickEnabled;
 
     /// Whether or not the close button is hovered.
-    dr_bool32 isCloseButtonHovered;
+    dtk_bool32 isCloseButtonHovered;
 
 
     /// The function to call when a tab needs to be measured.
@@ -143,7 +143,7 @@ struct dred_tabbar
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Creates a new tab bar control.
-dr_bool32 dred_tabbar_init(dred_tabbar* pTabBar, dred_context* pDred, dred_control* pParent, dred_tabbar_orientation orientation);
+dtk_bool32 dred_tabbar_init(dred_tabbar* pTabBar, dred_context* pDred, dred_control* pParent, dred_tabbar_orientation orientation);
 
 /// Deletes the given tab bar control.
 void dred_tabbar_uninit(dred_tabbar* pTabBar);
@@ -259,7 +259,7 @@ void dred_tabbar_enable_auto_size(dred_tabbar* pTabBar);
 void dred_tabbar_disable_auto_size(dred_tabbar* pTabBar);
 
 /// Determines whether or not auto-sizing is enabled.
-dr_bool32 dred_tabbar_is_auto_size_enabled(dred_tabbar* pTabBar);
+dtk_bool32 dred_tabbar_is_auto_size_enabled(dred_tabbar* pTabBar);
 
 
 // Retrieves a pointer to the first tab in the given tab bar.
@@ -289,7 +289,7 @@ dred_tab* dred_tabbar_get_active_tab(dred_tabbar* pTabBar);
 
 
 /// Determines whether or not the given tab is in view.
-dr_bool32 dred_tabbar_is_tab_in_view(dred_tabbar* pTabBar, dred_tab* pTab);
+dtk_bool32 dred_tabbar_is_tab_in_view(dred_tabbar* pTabBar, dred_tab* pTab);
 
 
 /// Shows the close buttons on each tab.
@@ -305,7 +305,7 @@ void dred_tabbar_enable_close_on_middle_click(dred_tabbar* pTabBar);
 void dred_tabbar_disable_close_on_middle_click(dred_tabbar* pTabBar);
 
 /// Determines whether or not close-on-middle-click is enabled.
-dr_bool32 dred_tabbar_is_close_on_middle_click_enabled(dred_tabbar* pTabBar);
+dtk_bool32 dred_tabbar_is_close_on_middle_click_enabled(dred_tabbar* pTabBar);
 
 
 /// Called when the mouse leave event needs to be processed for the given tab bar control.
@@ -375,7 +375,7 @@ dred_tab* dred_tab_get_prev_tab(dred_tab* pTab);
 void dred_tab_move_to_front(dred_tab* pTab);
 
 /// Determines whether or not the given tab is in view.
-dr_bool32 dred_tab_is_in_view(dred_tab* pTab);
+dtk_bool32 dred_tab_is_in_view(dred_tab* pTab);
 
 /// Moves the given tab into view, if it's not already.
 ///

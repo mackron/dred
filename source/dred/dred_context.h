@@ -97,7 +97,7 @@ struct dred_context
 };
 
 // dred_init
-dr_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_library* pPackageLibrary);
+dtk_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_library* pPackageLibrary);
 
 // dred_uninit
 void dred_uninit(dred_context* pDred);
@@ -130,14 +130,14 @@ void dred_errorf(dred_context* pDred, const char* format, ...);
 
 
 // Loads a config file.
-dr_bool32 dred_load_config(dred_context* pDred, const char* configFilePath);
+dtk_bool32 dred_load_config(dred_context* pDred, const char* configFilePath);
 
 
 // Executes a command.
-dr_bool32 dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdOut);
+dtk_bool32 dred_exec(dred_context* pDred, const char* cmd, dred_command* pLastCmdOut);
 
 // Binds a shortcut.
-dr_bool32 dred_bind_shortcut(dred_context* pDred, dtk_uint32 id, const char* name, const char* cmdStr, dtk_uint32 acceleratorCount, dtk_accelerator* pAccelerators);
+dtk_bool32 dred_bind_shortcut(dred_context* pDred, dtk_uint32 id, const char* name, const char* cmdStr, dtk_uint32 acceleratorCount, dtk_accelerator* pAccelerators);
 
 
 // Saves the .dredprivate file.
@@ -185,10 +185,10 @@ dred_tab* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char*
 
 
 // Opens the file at the given path.
-dr_bool32 dred_open_file(dred_context* pDred, const char* filePath);
+dtk_bool32 dred_open_file(dred_context* pDred, const char* filePath);
 
 // Opens the file at the given path as the given type.
-dr_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType);
+dtk_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType);
 
 // Closes the focused file.
 void dred_close_focused_file(dred_context* pDred);
@@ -211,7 +211,7 @@ void dred_close_all_tabs(dred_context* pDred);
 // result in _none_ of the files being closed.
 //
 // True will be returned if every tab was closed. False will be returned if the tabs were not closed.
-dr_bool32 dred_close_all_tabs_with_confirmation(dred_context* pDred);
+dtk_bool32 dred_close_all_tabs_with_confirmation(dred_context* pDred);
 
 
 // Finds the tab associated with the given control, usually an editor.
@@ -221,26 +221,26 @@ dred_tab* dred_find_control_tab(dred_control* pControl);
 // Saves the currently focused file.
 //
 // The new file name can be null in which case the file is just saved over the top of the current file.
-dr_bool32 dred_save_focused_file(dred_context* pDred, const char* newFilePath);
+dtk_bool32 dred_save_focused_file(dred_context* pDred, const char* newFilePath);
 
 // Opens save dialog box and gives the user the opportunity to save the focused file as a different name.
-dr_bool32 dred_save_focused_file_as(dred_context* pDred);
+dtk_bool32 dred_save_focused_file_as(dred_context* pDred);
 
 // Saves every open file, skipping those that would otherwise require a save-as dialog.
 void dred_save_all_open_files(dred_context* pDred);
 
-// Saves every open file and opens are save-as dialog for any applicable files. This will return DR_FALSE if any
+// Saves every open file and opens are save-as dialog for any applicable files. This will return DTK_FALSE if any
 // files could not be saved.
-dr_bool32 dred_save_all_open_files_with_saveas(dred_context* pDred);
+dtk_bool32 dred_save_all_open_files_with_saveas(dred_context* pDred);
 
 
 // Creates and opens a new file.
 //
 // The newFilePath argument can be null, in which case it simply creates an empty text file.
-dr_bool32 dred_create_and_open_file(dred_context* pDred, const char* newFilePath);
+dtk_bool32 dred_create_and_open_file(dred_context* pDred, const char* newFilePath);
 
 // Opens an empty text file.
-dr_bool32 dred_open_new_text_file(dred_context* pDred);
+dtk_bool32 dred_open_new_text_file(dred_context* pDred);
 
 
 // Creates an editor by it's type.
@@ -251,14 +251,14 @@ void dred_delete_editor_by_type(dred_editor* pEditor);
 
 
 // Determines whether or not any open files are modified.
-dr_bool32 dred_are_any_open_files_modified(dred_context* pDred);
+dtk_bool32 dred_are_any_open_files_modified(dred_context* pDred);
 
 
 // Reloads the focused file.
-dr_bool32 dred_reload_focused_file(dred_context* pDred);
+dtk_bool32 dred_reload_focused_file(dred_context* pDred);
 
 // Checks if the focused file is dirty and attempts to reload it if so.
-dr_bool32 dred_check_if_focused_file_is_dirty_and_reload(dred_context* pDred);
+dtk_bool32 dred_check_if_focused_file_is_dirty_and_reload(dred_context* pDred);
 
 
 // Show the Open File dialog.
@@ -270,10 +270,10 @@ dtk_dialog_result dred_show_save_file_dialog(dred_context* pDred, const char* cu
 // Shows a yes/no/cancel dialog and returns the result as DTK_DIALOG_RESULT_YES, DTK_DIALOG_RESULT_NO or DTK_DIALOG_RESULT_CANCEL.
 dtk_dialog_result dred_show_yesnocancel_dialog(dred_context* pDred, const char* message, const char* title);
 
-// Shows the font picker dialog. Returns DR_TRUE if the user chose a font, DR_FALSE if they hit the cancel button or an error occurs.
+// Shows the font picker dialog. Returns DTK_TRUE if the user chose a font, DTK_FALSE if they hit the cancel button or an error occurs.
 dtk_dialog_result dred_show_font_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut);
 
-// Shows the color picker dialog. Returns DR_TRUE if the user chose a color, DR_FALSE if they hit the cancel button or an error occurs.
+// Shows the color picker dialog. Returns DTK_TRUE if the user chose a color, DTK_FALSE if they hit the cancel button or an error occurs.
 dtk_dialog_result dred_show_color_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut);
 
 // Shows the "Print" dialog box.
@@ -395,10 +395,10 @@ const char* dred_get_language_by_file_path(dred_context* pDred, const char* file
 
 
 // Adds a favourite file.
-dr_bool32 dred_add_favourite(dred_context* pDred, const char* absolutePath);
+dtk_bool32 dred_add_favourite(dred_context* pDred, const char* absolutePath);
 
 // Removes a favourite file.
-dr_bool32 dred_remove_favourite(dred_context* pDred, const char* absolutePath);
+dtk_bool32 dred_remove_favourite(dred_context* pDred, const char* absolutePath);
 
 
 // Called when a tab is activated. This is where contextual GUI elements are shown or hidden.

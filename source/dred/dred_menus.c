@@ -123,13 +123,13 @@ void dred_refresh_favourite_files_menu(dred_context* pDred)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-dr_bool32 dred_is_stock_menu_item_id(dtk_uint32 id)
+dtk_bool32 dred_is_stock_menu_item_id(dtk_uint32 id)
 {
     if (id < DRED_STOCK_MENU_ITEM_COUNT) {
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
 dred_result dred_menu_item_table_init(dred_context* pDred, dred_menu_item_table* pTable)
@@ -256,22 +256,22 @@ const char* dred_menu_item_table_get_shortcut(dred_menu_item_table* pTable, dtk_
     return dred_string_pool_cstr(&pTable->pDred->stringPool, pTable->pItems[index].shortcutStrOffset);
 }
 
-dr_bool32 dred_menu_item_table_find(dred_menu_item_table* pTable, dtk_uint32 id, size_t* pIndex)
+dtk_bool32 dred_menu_item_table_find(dred_menu_item_table* pTable, dtk_uint32 id, size_t* pIndex)
 {
     if (pIndex) *pIndex = (size_t)-1;
-    if (pTable == NULL) return DR_FALSE;
+    if (pTable == NULL) return DTK_FALSE;
 
     if (dred_is_stock_menu_item_id(id)) {
         if (pIndex) *pIndex = id;
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
     for (size_t i = DRED_STOCK_MENU_ITEM_COUNT; i < pTable->count; ++i) {
         if (pTable->pItems[i].id == id) {
             if (pIndex) *pIndex = i;
-            return DR_TRUE;
+            return DTK_TRUE;
         }
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }

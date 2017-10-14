@@ -22,6 +22,6 @@ struct dred_font
 dred_font* dred_font_create(dred_context* pDred, dred_font_desc* pDesc);
 void dred_font_delete(dred_font* pFont);
 
-dr_bool32 dred_font_desc_to_string(dred_font_desc* pDesc, char* strOut, size_t strOutSize);
-dr_bool32 dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize);
+dtk_bool32 dred_font_desc_to_string(dred_font_desc* pDesc, char* strOut, size_t strOutSize);
+dtk_bool32 dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize);
 

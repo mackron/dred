@@ -10,17 +10,17 @@ void dred_textbox__engine_on_text_changed(drte_engine* pTextEngine)
     }
 }
 
-dr_bool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_control* pParent)
+dtk_bool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_control* pParent)
 {
     if (pTextBox == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     memset(pTextBox, 0, sizeof(*pTextBox));
 
     pTextBox->pTextEngine = &pTextBox->textEngine;
     if (!drte_engine_init(pTextBox->pTextEngine, NULL)) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     pTextBox->pTextEngine->pUserData = pTextBox;
@@ -28,11 +28,11 @@ dr_bool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_co
 
 
     if (!dred_textview_init(DRED_TEXTVIEW(pTextBox), pDred, pParent, pTextBox->pTextEngine)) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_control_set_type(DRED_CONTROL(pTextBox), DRED_CONTROL_TYPE_TEXTBOX);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 void dred_textbox_uninit(dred_textbox* pTextBox)
@@ -217,7 +217,7 @@ void dred_textbox_disable_word_wrap(dred_textbox* pTextBox)
     dred_textview_disable_word_wrap(DRED_TEXTVIEW(pTextBox));
 }
 
-dr_bool32 dred_textbox_is_word_wrap_enabled(dred_textbox* pTextBox)
+dtk_bool32 dred_textbox_is_word_wrap_enabled(dred_textbox* pTextBox)
 {
     return dred_textview_is_word_wrap_enabled(DRED_TEXTVIEW(pTextBox));
 }
@@ -273,13 +273,13 @@ void dred_textbox_move_cursor_to_character(dred_textbox* pTextBox, size_t iCurso
 }
 
 
-dr_bool32 dred_textbox_get_word_under_cursor(dred_textbox* pTextBox, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut)
+dtk_bool32 dred_textbox_get_word_under_cursor(dred_textbox* pTextBox, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut)
 {
     return dred_textview_get_word_under_cursor(DRED_TEXTVIEW(pTextBox), cursorIndex, pWordBegOut, pWordEndOut);
 }
 
 
-dr_bool32 dred_textbox_is_anything_selected(dred_textbox* pTextBox)
+dtk_bool32 dred_textbox_is_anything_selected(dred_textbox* pTextBox)
 {
     return dred_textview_is_anything_selected(DRED_TEXTVIEW(pTextBox));
 }
@@ -304,42 +304,42 @@ size_t dred_textbox_get_selected_text(dred_textbox* pTextBox, char* textOut, siz
     return dred_textview_get_selected_text(DRED_TEXTVIEW(pTextBox), textOut, textOutLength);
 }
 
-dr_bool32 dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox)
+dtk_bool32 dred_textbox_delete_character_to_right_of_cursor(dred_textbox* pTextBox)
 {
     return dred_textview_delete_character_to_right_of_cursor(DRED_TEXTVIEW(pTextBox));
 }
 
-dr_bool32 dred_textbox_delete_selected_text_no_undo(dred_textbox* pTextBox)
+dtk_bool32 dred_textbox_delete_selected_text_no_undo(dred_textbox* pTextBox)
 {
     return dred_textview_delete_selected_text_no_undo(DRED_TEXTVIEW(pTextBox));
 }
 
-dr_bool32 dred_textbox_delete_selected_text(dred_textbox* pTextBox)
+dtk_bool32 dred_textbox_delete_selected_text(dred_textbox* pTextBox)
 {
     return dred_textview_delete_selected_text(DRED_TEXTVIEW(pTextBox));
 }
 
-dr_bool32 dred_textbox_insert_text_at_cursors_no_undo(dred_textbox* pTextBox, const char* text)
+dtk_bool32 dred_textbox_insert_text_at_cursors_no_undo(dred_textbox* pTextBox, const char* text)
 {
     return dred_textview_insert_text_at_cursors_no_undo(DRED_TEXTVIEW(pTextBox), text);
 }
 
-dr_bool32 dred_textbox_insert_text_at_cursors(dred_textbox* pTextBox, const char* text)
+dtk_bool32 dred_textbox_insert_text_at_cursors(dred_textbox* pTextBox, const char* text)
 {
     return dred_textview_insert_text_at_cursors(DRED_TEXTVIEW(pTextBox), text);
 }
 
-dr_bool32 dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox)
+dtk_bool32 dred_textbox_unindent_selected_blocks(dred_textbox* pTextBox)
 {
     return dred_textview_unindent_selected_blocks(DRED_TEXTVIEW(pTextBox));
 }
 
-dr_bool32 dred_textbox_undo(dred_textbox* pTextBox)
+dtk_bool32 dred_textbox_undo(dred_textbox* pTextBox)
 {
     return dred_textview_undo(DRED_TEXTVIEW(pTextBox));
 }
 
-dr_bool32 dred_textbox_redo(dred_textbox* pTextBox)
+dtk_bool32 dred_textbox_redo(dred_textbox* pTextBox)
 {
     return dred_textview_redo(DRED_TEXTVIEW(pTextBox));
 }
@@ -383,17 +383,17 @@ size_t dred_textbox_get_line_count(dred_textbox* pTextBox)
 
 
 
-dr_bool32 dred_textbox_find_and_select_next(dred_textbox* pTextBox, const char* text)
+dtk_bool32 dred_textbox_find_and_select_next(dred_textbox* pTextBox, const char* text)
 {
     return dred_textview_find_and_select_next(DRED_TEXTVIEW(pTextBox), text);
 }
 
-dr_bool32 dred_textbox_find_and_replace_next(dred_textbox* pTextBox, const char* text, const char* replacement)
+dtk_bool32 dred_textbox_find_and_replace_next(dred_textbox* pTextBox, const char* text, const char* replacement)
 {
     return dred_textview_find_and_replace_next(DRED_TEXTVIEW(pTextBox), text, replacement);
 }
 
-dr_bool32 dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text, const char* replacement)
+dtk_bool32 dred_textbox_find_and_replace_all(dred_textbox* pTextBox, const char* text, const char* replacement)
 {
     return dred_textview_find_and_replace_all(DRED_TEXTVIEW(pTextBox), text, replacement);
 }
@@ -477,18 +477,18 @@ void dred_textbox_disable_tabs_to_spaces(dred_textbox* pTextBox)
     dred_textview_disable_tabs_to_spaces(DRED_TEXTVIEW(pTextBox));
 }
 
-dr_bool32 dred_textbox_is_tabs_to_spaces_enabled(dred_textbox* pTextBox)
+dtk_bool32 dred_textbox_is_tabs_to_spaces_enabled(dred_textbox* pTextBox)
 {
     return dred_textview_is_tabs_to_spaces_enabled(DRED_TEXTVIEW(pTextBox));
 }
 
 
-dr_bool32 dred_textbox_prepare_undo_point(dred_textbox* pTextBox)
+dtk_bool32 dred_textbox_prepare_undo_point(dred_textbox* pTextBox)
 {
     return dred_textview_prepare_undo_point(DRED_TEXTVIEW(pTextBox));
 }
 
-dr_bool32 dred_textbox_commit_undo_point(dred_textbox* pTextBox)
+dtk_bool32 dred_textbox_commit_undo_point(dred_textbox* pTextBox)
 {
     return dred_textview_commit_undo_point(DRED_TEXTVIEW(pTextBox));
 }

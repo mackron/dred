@@ -11,4 +11,4 @@ typedef enum
 // Begins a drag and drop operation.
 //
 // This will make a copy of the data.
-dr_bool32 dred_begin_drag_and_drop(dred_data_type dataType, const void* pData, size_t dataSize);
+dtk_bool32 dred_begin_drag_and_drop(dred_data_type dataType, const void* pData, size_t dataSize);

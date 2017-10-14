@@ -39,4 +39,4 @@ const char* dred_menu_item_table_get_command(dred_menu_item_table* pTable, dtk_u
 const char* dred_menu_item_table_get_shortcut(dred_menu_item_table* pTable, dtk_uint32 id);
 
 // Finds the index of the item with the given ID.
-dr_bool32 dred_menu_item_table_find(dred_menu_item_table* pTable, dtk_uint32 id, size_t* pIndex);
+dtk_bool32 dred_menu_item_table_find(dred_menu_item_table* pTable, dtk_uint32 id, size_t* pIndex);

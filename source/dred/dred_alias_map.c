@@ -1,13 +1,13 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
-dr_bool32 dred_alias_map_init(dred_alias_map* pMap)
+dtk_bool32 dred_alias_map_init(dred_alias_map* pMap)
 {
     if (pMap == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     memset(pMap, 0, sizeof(*pMap));
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 void dred_alias_map_uninit(dred_alias_map* pMap)
@@ -110,19 +110,19 @@ const char* dred_alias_map_get_value_by_index(dred_alias_map* pMap, size_t index
 }
 
 
-dr_bool32 dred_alias_map_find(dred_alias_map* pMap, const char* key, size_t* pIndexOut)
+dtk_bool32 dred_alias_map_find(dred_alias_map* pMap, const char* key, size_t* pIndexOut)
 {
     if (pMap == NULL || key == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     // Linear for now.
     for (size_t i = 0; i < pMap->count; ++i) {
         if (strcmp(pMap->keys[i], key) == 0) {
             if (pIndexOut) *pIndexOut = i;
-            return DR_TRUE;
+            return DTK_TRUE;
         }
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }

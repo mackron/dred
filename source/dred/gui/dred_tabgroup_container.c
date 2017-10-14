@@ -12,16 +12,16 @@ void dred_tabgroup_container__on_size(dred_control* pControl, float newWidth, fl
     }
 }
 
-dr_bool32 dred_tabgroup_container_init(dred_tabgroup_container* pContainer, dred_context* pDred, dtk_control* pParent)
+dtk_bool32 dred_tabgroup_container_init(dred_tabgroup_container* pContainer, dred_context* pDred, dtk_control* pParent)
 {
     if (pContainer == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     memset(pContainer, 0, sizeof(*pContainer));
 
     if (!dred_control_init(DRED_CONTROL(pContainer), pDred, NULL, pParent, DRED_CONTROL_TYPE_TABGROUP_CONTAINER, NULL)) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     pContainer->splitAxis = dred_tabgroup_split_axis_none;
@@ -30,7 +30,7 @@ dr_bool32 dred_tabgroup_container_init(dred_tabgroup_container* pContainer, dred
     // Events.
     dred_control_set_on_size(DRED_CONTROL(pContainer), dred_tabgroup_container__on_size);
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 void dred_tabgroup_container_uninit(dred_tabgroup_container* pContainer)

@@ -2,12 +2,12 @@
 
 // This is where anything that doesn't belong to any particular category is placed.
 
-dr_bool32 dred_parse_bool(const char* value);
+dtk_bool32 dred_parse_bool(const char* value);
 dtk_font_weight dred_parse_font_weight(const char* weight);
-dr_bool32 dred_font_weight_to_string(dtk_font_weight weight, char* strOut, size_t strOutSize);
+dtk_bool32 dred_font_weight_to_string(dtk_font_weight weight, char* strOut, size_t strOutSize);
 
 dtk_font_slant dred_parse_font_slant(const char* slant);
-dr_bool32 dred_font_slant_to_string(dtk_font_slant slant, char* strOut, size_t strOutSize);
+dtk_bool32 dred_font_slant_to_string(dtk_font_slant slant, char* strOut, size_t strOutSize);
 
 #ifdef DRED_GTK
 dtk_font_weight dred_font_weight_from_pango(PangoWeight weight);
@@ -34,7 +34,7 @@ DRED_INLINE drte_rect dred_rect_to_drte(dred_rect rect)
 // Strings
 
 // Determines whether or not the given string is null or empty.
-DRED_INLINE dr_bool32 dred_string_is_null_or_empty(const char* str)
+DRED_INLINE dtk_bool32 dred_string_is_null_or_empty(const char* str)
 {
     return str == NULL || str[0] == '\0';
 }

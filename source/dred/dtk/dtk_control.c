@@ -1032,7 +1032,7 @@ dtk_bool32 dtk_control_is_point_inside(dtk_control* pControl, dtk_int32 absolute
     }
 
     // It is valid for onHitTest to be null, in which case we use the default hit test which assumes the element is just a rectangle
-    // equal to the size of it's bounds. It's equivalent to onHitTest always returning DR_TRUE.
+    // equal to the size of it's bounds. It's equivalent to onHitTest always returning DTK_TRUE.
     if (pControl->onHitTest) {
         return pControl->onHitTest(pControl, absolutePosX - pControl->absolutePosX, absolutePosY - pControl->absolutePosY);
     }

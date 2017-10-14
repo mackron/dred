@@ -5,20 +5,20 @@
 
 // BEGIN CONFIG VARS: <name> <C variable name> <type> <on_set callback> <default value>
 //
-// show-tab-bar showTabBar dr_bool32 dred_config_on_set__show_tab_bar true
+// show-tab-bar showTabBar dtk_bool32 dred_config_on_set__show_tab_bar true
 //   Whether or not to show the tab bar.
 //
-// show-menu-bar showMenuBar dr_bool32 dred_config_on_set__show_menu_bar true
+// show-menu-bar showMenuBar dtk_bool32 dred_config_on_set__show_menu_bar true
 //   Whether or not to show the menu bar.
 //
-// auto-hide-cmd-bar autoHideCmdBar dr_bool32 dred_config_on_set__auto_hide_cmd_bar false
+// auto-hide-cmd-bar autoHideCmdBar dtk_bool32 dred_config_on_set__auto_hide_cmd_bar false
 //   Whether or not to show the command bar at all times. If this is set to false it will be shown only when it has keyboard focus.
 //
-// enable-auto-reload enableAutoReload dr_bool32 dred_config_on_set__enable_auto_reload true
+// enable-auto-reload enableAutoReload dtk_bool32 dred_config_on_set__enable_auto_reload true
 //   Whether or not dirty files will automatically be reloaded. When disabled, reloading requires manual reloading via the "reload" command.
 //
 //
-// use-default-window-pos useDefaultWindowPos dr_bool32 none true
+// use-default-window-pos useDefaultWindowPos dtk_bool32 none true
 //   Internal use only. Used to determine whether or not the operation system should decide where to place the main window.
 //
 // window-pos-x windowPosX int none 0
@@ -33,7 +33,7 @@
 // window-height windowHeight int none 720
 //   The height of the window.
 //
-// window-maximized windowMaximized dr_bool32 none false
+// window-maximized windowMaximized dtk_bool32 none false
 //   Whether or not the window is maximized.
 //
 //
@@ -105,7 +105,7 @@
 // tab-padding tabPadding float dred_config_on_set__tabgroup_generic_refresh 4
 //   The amount of padding to apply to all sides of a tab.
 //
-// tab-show-close-button tabShowCloseButton dr_bool32 dred_config_on_set__tabgroup_generic_refresh true
+// tab-show-close-button tabShowCloseButton dtk_bool32 dred_config_on_set__tabgroup_generic_refresh true
 //   Whether or not to show the close button on tabs.
 //
 // tab-close-button-color tabCloseButtonColor color dred_config_on_set__tabgroup_generic_refresh 58 58 58
@@ -133,7 +133,7 @@
 // texteditor-active-line-color textEditorActiveLineColor color dred_config_on_set__texteditor_generic_refresh 40 40 40
 //   The background color of the line that the caret is currently sitting on in a text editor.
 //
-// texteditor-show-line-numbers textEditorShowLineNumbers dr_bool32 dred_config_on_set__texteditor_generic_refresh false
+// texteditor-show-line-numbers textEditorShowLineNumbers dtk_bool32 dred_config_on_set__texteditor_generic_refresh false
 //   Whether or not to show line numbers.
 //
 // texteditor-line-numbers-color textEditorLineNumbersColor color dred_config_on_set__texteditor_generic_refresh 80 160 192
@@ -160,16 +160,16 @@
 // texteditor-sb-size textEditorSBSize float dred_config_on_set__texteditor_generic_refresh 16
 //   The thickness of the scrollbars on text editors.
 //
-// texteditor-show-scrollbar-horz textEditorShowScrollbarHorz dr_bool32 dred_config_on_set__texteditor_generic_refresh true
+// texteditor-show-scrollbar-horz textEditorShowScrollbarHorz dtk_bool32 dred_config_on_set__texteditor_generic_refresh true
 //   Whether or not to show the horizontal scrollbar on text editors.
 //
-// texteditor-show-scrollbar-vert textEditorShowScrollbarVert dr_bool32 dred_config_on_set__texteditor_generic_refresh true
+// texteditor-show-scrollbar-vert textEditorShowScrollbarVert dtk_bool32 dred_config_on_set__texteditor_generic_refresh true
 //   Whether or not to show the vertical scrollbar on text editors.
 //
-// texteditor-enable-excess-scrolling textEditorEnableExcessScrolling dr_bool32 dred_config_on_set__texteditor_generic_refresh true
+// texteditor-enable-excess-scrolling textEditorEnableExcessScrolling dtk_bool32 dred_config_on_set__texteditor_generic_refresh true
 //   Whether or not the text editor can scroll past the last line.
 //
-// texteditor-enable-tabs-to-spaces textEditorTabsToSpacesEnabled dr_bool32 dred_config_on_set__texteditor_generic_refresh false
+// texteditor-enable-tabs-to-spaces textEditorTabsToSpacesEnabled dtk_bool32 dred_config_on_set__texteditor_generic_refresh false
 //   Whether or not tabs are converted to spaces.
 //
 // texteditor-tab-size-in-spaces textEditorTabSizeInSpaces int dred_config_on_set__texteditor_generic_refresh 4
@@ -178,13 +178,13 @@
 // texteditor-scale textEditorScale float dred_config_on_set__texteditor_generic_refresh 1
 //   The scale/zoom to use in text editors.
 //
-// texteditor-enable-auto-indent textEditorEnableAutoIndent dr_bool32 dred_config_on_set__texteditor_generic_refresh true
+// texteditor-enable-auto-indent textEditorEnableAutoIndent dtk_bool32 dred_config_on_set__texteditor_generic_refresh true
 //   Whether or not automatic indenting is enabled for when the user creates a new line.
 //
-// texteditor-enable-word-wrap textEditorEnableWordWrap dr_bool32 dred_config_on_set__texteditor_word_wrap true
+// texteditor-enable-word-wrap textEditorEnableWordWrap dtk_bool32 dred_config_on_set__texteditor_word_wrap true
 //   Whether or not word wrap should be enabled.
 //
-// texteditor-enable-drag-and-drop textEditorEnableDragAndDrop dr_bool32 dred_config_on_set__texteditor_drag_and_drop false
+// texteditor-enable-drag-and-drop textEditorEnableDragAndDrop dtk_bool32 dred_config_on_set__texteditor_drag_and_drop false
 //   Whether or not drag-and-drop should be enabled for text editors.
 //
 //
@@ -237,11 +237,11 @@ typedef struct
 
 typedef void (* dred_config_on_error_proc)(dred_config* pConfig, const char* configPath, const char* message, unsigned int line, void* pUserData);
 
-dr_bool32 dred_config_init(dred_config* pConfig, dred_context* pDred);
+dtk_bool32 dred_config_init(dred_config* pConfig, dred_context* pDred);
 void dred_config_uninit(dred_config* pConfig);
 
 // The pUserData argument of onError will be set to pConfig.
-dr_bool32 dred_config_load_file(dred_config* pConfig, const char* filePath, dred_config_on_error_proc onError, void* pUserData);
+dtk_bool32 dred_config_load_file(dred_config* pConfig, const char* filePath, dred_config_on_error_proc onError, void* pUserData);
 
 // Sets a variable from a name/value string pair.
 void dred_config_set(dred_config* pConfig, const char* name, const char* value);

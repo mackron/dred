@@ -1,17 +1,17 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
-dr_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_control* pParent, const char* type, dtk_event_proc onEvent, float sizeX, float sizeY, const char* filePathAbsolute)
+dtk_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_control* pParent, const char* type, dtk_event_proc onEvent, float sizeX, float sizeY, const char* filePathAbsolute)
 {
     if (!dred_is_control_type_of_type(type, DRED_CONTROL_TYPE_EDITOR)) {
         dred_errorf(pDred, "[DEVELOPER ERROR] Attempting to create an editor that is not of an editor type (%s).", type);
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     memset(pEditor, 0, sizeof(*pEditor));
 
     if (!dred_control_init(DRED_CONTROL(pEditor), pDred, NULL, pParent, type, onEvent)) {
         free(pEditor);
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_control_set_size(DRED_CONTROL(pEditor), sizeX, sizeY);
@@ -21,7 +21,7 @@ dr_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_contro
         if (drpath_clean(filePathAbsolute, pEditor->filePathAbsolute, sizeof(pEditor->filePathAbsolute)) == 0) {
             dred_control_uninit(DRED_CONTROL(pEditor));
             dred_errorf(pDred, "File path is too long: %s\n", filePathAbsolute);
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
         dred_editor_update_file_last_modified_time(pEditor);
@@ -29,7 +29,7 @@ dr_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_contro
 
     pEditor->isReadOnly = dr_is_file_read_only(filePathAbsolute);
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 void dred_editor_uninit(dred_editor* pEditor)
@@ -66,44 +66,44 @@ const char* dred_editor_get_file_path(dred_editor* pEditor)
     return pEditor->filePathAbsolute;
 }
 
-dr_bool32 dred_editor_set_file_path(dred_editor* pEditor, const char* newFilePath)
+dtk_bool32 dred_editor_set_file_path(dred_editor* pEditor, const char* newFilePath)
 {
     if (pEditor == NULL || newFilePath == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dtk_path_is_relative(newFilePath)) {
         char* pCurrentDir = dtk_get_current_directory();
         if (pCurrentDir == NULL) {
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
         if (dtk_path_append_and_clean(pEditor->filePathAbsolute, sizeof(pEditor->filePathAbsolute), pCurrentDir, newFilePath) == 0) {
             dtk_free(pCurrentDir);
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
         dtk_free(pCurrentDir);
-        return DR_TRUE;
+        return DTK_TRUE;
     } else {
         return strcpy_s(pEditor->filePathAbsolute, sizeof(pEditor->filePathAbsolute), newFilePath) == 0;
     }
 }
 
 
-dr_bool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath)
+dtk_bool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath)
 {
     if (pEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (pEditor->onSave == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (pEditor->isReadOnly && (newFilePath == NULL || newFilePath[0] == '\0')) {
         dred_errorf(dred_control_get_context(DRED_CONTROL(pEditor)), "File is read only.");
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     const char* actualFilePath = newFilePath;
@@ -112,7 +112,7 @@ dr_bool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath)
     }
 
     if (actualFilePath == NULL || actualFilePath[0] == '\0') {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     // Saving is done in 3 stages:
@@ -122,19 +122,19 @@ dr_bool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath)
     //
     // The rationale for this system is to try and prevent data loss in the event that an error occurs while in the
     // middle of saving.
-    dr_bool32 haveTempFile = DR_FALSE;
+    dtk_bool32 haveTempFile = DTK_FALSE;
     char tempFilePath[DRED_MAX_PATH];
 
     const char* originalFilePath = dred_editor_get_file_path(pEditor);
     if (!dred_string_is_null_or_empty(originalFilePath)) {
         if (drpath_copy_and_append_extension(tempFilePath, sizeof(tempFilePath), originalFilePath, "dredtmp")) {
-            if (dr_copy_file(originalFilePath, tempFilePath, DR_TRUE)) {
-                haveTempFile = DR_TRUE;
+            if (dr_copy_file(originalFilePath, tempFilePath, DTK_TRUE)) {
+                haveTempFile = DTK_TRUE;
             }
         }
     }
 
-    dr_bool32 wasSaved = DR_FALSE;
+    dtk_bool32 wasSaved = DTK_FALSE;
     dred_file file = dred_file_open(actualFilePath, DRED_FILE_OPEN_MODE_WRITE);
     if (file != NULL) {
         wasSaved = pEditor->onSave(pEditor, file, actualFilePath);
@@ -147,7 +147,7 @@ dr_bool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath)
     }
 
     if (!wasSaved) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
     
 
@@ -158,41 +158,41 @@ dr_bool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath)
     if (newFilePath != NULL && newFilePath[0] != '\0') {
         return dred_editor_set_file_path(pEditor, newFilePath);
     } else {
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 }
 
-dr_bool32 dred_editor_reload(dred_editor* pEditor)
+dtk_bool32 dred_editor_reload(dred_editor* pEditor)
 {
     if (pEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (pEditor->onReload == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     const char* fileName = dred_editor_get_file_path(pEditor);
     if (fileName == NULL || fileName[0] == '\0') {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (!pEditor->onReload(pEditor)) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_editor_update_file_last_modified_time(pEditor);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_editor_check_if_dirty_and_reload(dred_editor* pEditor)
+dtk_bool32 dred_editor_check_if_dirty_and_reload(dred_editor* pEditor)
 {
     if (pEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (pEditor->fileLastModifiedTime >= dr_get_file_modified_time(dred_editor_get_file_path(pEditor))) {
-        return DR_FALSE;   // Not modified.
+        return DTK_FALSE;   // Not modified.
     }
 
     // It's dirty. Try reloading.
@@ -210,7 +210,7 @@ void dred_editor_mark_as_modified(dred_editor* pEditor)
         return;
     }
 
-    pEditor->isModified = DR_TRUE;
+    pEditor->isModified = DTK_TRUE;
     if (pEditor->onModified) {
         pEditor->onModified(pEditor);
     }
@@ -226,16 +226,16 @@ void dred_editor_unmark_as_modified(dred_editor* pEditor)
         return;
     }
 
-    pEditor->isModified = DR_FALSE;
+    pEditor->isModified = DTK_FALSE;
     if (pEditor->onUnmodified) {
         pEditor->onUnmodified(pEditor);
     }
 }
 
-dr_bool32 dred_editor_is_modified(dred_editor* pEditor)
+dtk_bool32 dred_editor_is_modified(dred_editor* pEditor)
 {
     if (pEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     return pEditor->isModified;
@@ -251,10 +251,10 @@ void dred_editor_update_file_last_modified_time(dred_editor* pEditor)
     pEditor->fileLastModifiedTime = dr_get_file_modified_time(dred_editor_get_file_path(pEditor));
 }
 
-dr_bool32 dred_editor_is_read_only(dred_editor* pEditor)
+dtk_bool32 dred_editor_is_read_only(dred_editor* pEditor)
 {
     if (pEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     return pEditor->isReadOnly;

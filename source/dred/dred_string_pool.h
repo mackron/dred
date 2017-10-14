@@ -23,10 +23,10 @@ typedef struct
 // Initializes a string pool.
 //
 // Note that <initialDataSize> _must_ include null terminators.
-dr_bool32 dred_string_pool_init(dred_string_pool* pPool, const char* pInitialData, size_t initialDataSize);
+dtk_bool32 dred_string_pool_init(dred_string_pool* pPool, const char* pInitialData, size_t initialDataSize);
 
 // Uninitializes a string pool.
-dr_bool32 dred_string_pool_uninit(dred_string_pool* pPool);
+dtk_bool32 dred_string_pool_uninit(dred_string_pool* pPool);
 
 // Adds a string to the pool, regardless of whether or not the string already exists.
 //
@@ -36,7 +36,7 @@ size_t dred_string_pool_add(dred_string_pool* pPool, const char* str, size_t str
 // Finds a string in the given pool.
 //
 // Returns true if the string exists; false otherwise. If the string does not exist, 0 is returned in <pOffset>. This runs in linear time.
-dr_bool32 dred_string_pool_find(dred_string_pool* pPool, const char* str, size_t* pOffset);
+dtk_bool32 dred_string_pool_find(dred_string_pool* pPool, const char* str, size_t* pOffset);
 
 // A helper for finding a string, and if not found, adding it.
 //

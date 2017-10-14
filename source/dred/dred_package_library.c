@@ -38,7 +38,7 @@ void dred_load_package_info__on_pair(void* pUserData, const char* key, const cha
     // properties for it's own internal configuration.
 }
 
-dr_bool32 dred_load_package_info(const char* dredpackagePath, dred_package_info* pInfo)
+dtk_bool32 dred_load_package_info(const char* dredpackagePath, dred_package_info* pInfo)
 {
     assert(dredpackagePath != NULL);
     assert(pInfo != NULL);
@@ -46,17 +46,17 @@ dr_bool32 dred_load_package_info(const char* dredpackagePath, dred_package_info*
     memset(pInfo, 0, sizeof(*pInfo));
 
     if (!dr_parse_key_value_pairs_from_file(dredpackagePath, dred_load_package_info__on_pair, NULL, pInfo)) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (pInfo->name[0] == '\0' || pInfo->libraryName[0] == '\0') {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_construct_library_path(char* pathOut, size_t pathOutSize, const char* basePackageFolderPath, dred_package_info* pInfo)
+dtk_bool32 dred_construct_library_path(char* pathOut, size_t pathOutSize, const char* basePackageFolderPath, dred_package_info* pInfo)
 {
     assert(pathOut != NULL);
     assert(pathOutSize > 0);
@@ -94,7 +94,7 @@ dr_bool32 dred_construct_library_path(char* pathOut, size_t pathOutSize, const c
 
 dred_package* dred_package_library_load_package(dred_package_library* pLibrary, const char* packageFolderPath)
 {
-    if (pLibrary == NULL || packageFolderPath == NULL) return DR_FALSE;
+    if (pLibrary == NULL || packageFolderPath == NULL) return DTK_FALSE;
 
     // Look for a .dredpackage file. If it doesn't exist, just skip it. Inside the .dredpackage file is information
     // about the package that we'll need in order to load it; in particular the name of the DLL/SO.
@@ -142,12 +142,12 @@ void dred_package_library_unload_package(dred_package_library* pLibrary, dred_pa
 }
 
 
-dr_bool32 dred_package_library_package_iterator_cb(const char* filePath, void* pUserData)
+dtk_bool32 dred_package_library_package_iterator_cb(const char* filePath, void* pUserData)
 {
     dred_package_library* pLibrary = (dred_package_library*)pUserData;
     assert(pLibrary != NULL);
 
-    dr_bool32 isDirectory = dr_is_directory(filePath);
+    dtk_bool32 isDirectory = dr_is_directory(filePath);
     if (isDirectory) {
         dred_package* pPackage = dred_package_library_load_package(pLibrary, filePath);
         if (pPackage != NULL) {
@@ -155,12 +155,12 @@ dr_bool32 dred_package_library_package_iterator_cb(const char* filePath, void* p
         }
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_package_library_init(dred_package_library* pLibrary)
+dtk_bool32 dred_package_library_init(dred_package_library* pLibrary)
 {
-    if (pLibrary == NULL) return DR_FALSE;
+    if (pLibrary == NULL) return DTK_FALSE;
 
     memset(pLibrary, 0, sizeof(*pLibrary));
 
@@ -168,12 +168,12 @@ dr_bool32 dred_package_library_init(dred_package_library* pLibrary)
     // directory which will include a .dredpackage file with information about the package.
     char basePackageDir[DRED_MAX_PATH];
     if (dred_get_packages_folder_path(basePackageDir, sizeof(basePackageDir)) == 0) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
-    dtk_iterate_files(basePackageDir, DR_FALSE, dred_package_library_package_iterator_cb, pLibrary);
+    dtk_iterate_files(basePackageDir, DTK_FALSE, dred_package_library_package_iterator_cb, pLibrary);
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 void dred_package_library_uninit(dred_package_library* pLibrary)

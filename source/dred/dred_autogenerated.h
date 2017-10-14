@@ -8,16 +8,16 @@
 
 
 #define DRED_CONFIG_VARIABLE_DECLARATIONS \
-dr_bool32 showTabBar; \
-dr_bool32 showMenuBar; \
-dr_bool32 autoHideCmdBar; \
-dr_bool32 enableAutoReload; \
-dr_bool32 useDefaultWindowPos; \
+dtk_bool32 showTabBar; \
+dtk_bool32 showMenuBar; \
+dtk_bool32 autoHideCmdBar; \
+dtk_bool32 enableAutoReload; \
+dtk_bool32 useDefaultWindowPos; \
 int windowPosX; \
 int windowPosY; \
 int windowWidth; \
 int windowHeight; \
-dr_bool32 windowMaximized; \
+dtk_bool32 windowMaximized; \
 float uiScale; \
 dred_font* pUIFont; \
 dtk_color cmdbarBGColor; \
@@ -40,7 +40,7 @@ dtk_color tabTextColor; \
 dtk_color tabTextColorActive; \
 dtk_color tabTextColorHovered; \
 float tabPadding; \
-dr_bool32 tabShowCloseButton; \
+dtk_bool32 tabShowCloseButton; \
 dtk_color tabCloseButtonColor; \
 dred_font* pTextEditorFont; \
 dtk_color textEditorTextColor; \
@@ -49,7 +49,7 @@ dtk_color textEditorCursorColor; \
 float textEditorCursorWidth; \
 dtk_color textEditorSelectionBGColor; \
 dtk_color textEditorActiveLineColor; \
-dr_bool32 textEditorShowLineNumbers; \
+dtk_bool32 textEditorShowLineNumbers; \
 dtk_color textEditorLineNumbersColor; \
 dtk_color textEditorLineNumbersBGColor; \
 float textEditorLineNumbersPadding; \
@@ -58,15 +58,15 @@ dtk_color textEditorSBThumbColor; \
 dtk_color textEditorSBThumbColorHovered; \
 dtk_color textEditorSBThumbColorPressed; \
 float textEditorSBSize; \
-dr_bool32 textEditorShowScrollbarHorz; \
-dr_bool32 textEditorShowScrollbarVert; \
-dr_bool32 textEditorEnableExcessScrolling; \
-dr_bool32 textEditorTabsToSpacesEnabled; \
+dtk_bool32 textEditorShowScrollbarHorz; \
+dtk_bool32 textEditorShowScrollbarVert; \
+dtk_bool32 textEditorEnableExcessScrolling; \
+dtk_bool32 textEditorTabsToSpacesEnabled; \
 int textEditorTabSizeInSpaces; \
 float textEditorScale; \
-dr_bool32 textEditorEnableAutoIndent; \
-dr_bool32 textEditorEnableWordWrap; \
-dr_bool32 textEditorEnableDragAndDrop; \
+dtk_bool32 textEditorEnableAutoIndent; \
+dtk_bool32 textEditorEnableWordWrap; \
+dtk_bool32 textEditorEnableDragAndDrop; \
 dtk_color cppCommentTextColor; \
 dtk_color cppStringTextColor; \
 dtk_color cppKeywordTextColor;

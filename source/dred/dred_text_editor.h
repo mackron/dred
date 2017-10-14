@@ -43,7 +43,7 @@ size_t dred_text_editor_get_selected_text(dred_text_editor* pTextEditor, char* p
 
 
 // Retrieves the word under the given cursor.
-dr_bool32 dred_text_editor_get_word_under_cursor(dred_text_editor* pTextEditor, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
+dtk_bool32 dred_text_editor_get_word_under_cursor(dred_text_editor* pTextEditor, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
 
 
 // Retrieves the currently focused view.
@@ -57,7 +57,7 @@ void dred_text_editor_enable_word_wrap(dred_text_editor* pTextEditor);
 void dred_text_editor_disable_word_wrap(dred_text_editor* pTextEditor);
 
 // Determines whether or not word wrap is enabled.
-dr_bool32 dred_text_editor_is_word_wrap_enabled(dred_text_editor* pTextEditor);
+dtk_bool32 dred_text_editor_is_word_wrap_enabled(dred_text_editor* pTextEditor);
 
 
 // Enables drag-and-drop.
@@ -67,13 +67,13 @@ void dred_text_editor_enable_drag_and_drop(dred_text_editor* pTextEditor);
 void dred_text_editor_disable_drag_and_drop(dred_text_editor* pTextEditor);
 
 // Determines whether or not drag and drop is enabled.
-dr_bool32 dred_text_editor_is_drag_and_drop_enabled(dred_text_editor* pTextEditor);
+dtk_bool32 dred_text_editor_is_drag_and_drop_enabled(dred_text_editor* pTextEditor);
 
 
 // Inserts text at every cursor.
 //
 // Returns whether or not the text was changed.
-dr_bool32 dred_text_editor_insert_text_at_cursors(dred_text_editor* pTextEditor, const char* text);
+dtk_bool32 dred_text_editor_insert_text_at_cursors(dred_text_editor* pTextEditor, const char* text);
 
 
 // Refreshes the styling of the given text editor.
@@ -115,13 +115,13 @@ void dred_text_editor_deselect_all_in_focused_view(dred_text_editor* pTextEditor
 
 
 // Finds and selects the next occurance of the given string, starting from the cursor and looping back to the start.
-dr_bool32 dred_text_editor_find_and_select_next(dred_text_editor* pTextEditor, const char* text);
+dtk_bool32 dred_text_editor_find_and_select_next(dred_text_editor* pTextEditor, const char* text);
 
 // Finds the next occurance of the given string and replaces it with another.
-dr_bool32 dred_text_editor_find_and_replace_next(dred_text_editor* pTextEditor, const char* text, const char* replacement);
+dtk_bool32 dred_text_editor_find_and_replace_next(dred_text_editor* pTextEditor, const char* text, const char* replacement);
 
 // Finds every occurance of the given string and replaces it with another.
-dr_bool32 dred_text_editor_find_and_replace_all(dred_text_editor* pTextEditor, const char* text, const char* replacement);
+dtk_bool32 dred_text_editor_find_and_replace_all(dred_text_editor* pTextEditor, const char* text, const char* replacement);
 
 
 // Sets the scale of the internal text.

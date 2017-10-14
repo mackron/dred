@@ -34,7 +34,7 @@ void dred_font_delete(dred_font* pFont)
 }
 
 
-dr_bool32 dred_font_desc_to_string(dred_font_desc* pDesc, char* strOut, size_t strOutSize)
+dtk_bool32 dred_font_desc_to_string(dred_font_desc* pDesc, char* strOut, size_t strOutSize)
 {
     char weightStr[256];
     if (!dred_font_weight_to_string(pDesc->weight, weightStr, sizeof(weightStr))) {
@@ -49,7 +49,7 @@ dr_bool32 dred_font_desc_to_string(dred_font_desc* pDesc, char* strOut, size_t s
     return snprintf(strOut, strOutSize, "\"%s\" %f %s %s", pDesc->family, pDesc->size, weightStr, slantStr) > 0;
 }
 
-dr_bool32 dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize)
+dtk_bool32 dred_font_to_string(dred_font* pFont, char* strOut, size_t strOutSize)
 {
     if (pFont == NULL) {
         return strcpy_s(strOut, strOutSize, "system-font-ui") == 0;

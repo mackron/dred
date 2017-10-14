@@ -1,36 +1,36 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
 // TODO: Change this to a dynamically expanded string allocated on the heap.
-static dr_bool32 dred__preprocess_system_command(dred_context* pDred, const char* cmd, char* cmdOut, size_t cmdOutSize)
+static dtk_bool32 dred__preprocess_system_command(dred_context* pDred, const char* cmd, char* cmdOut, size_t cmdOutSize)
 {
     // Currently, the only symbols we're expanding is the enescaped "%" character, which is expanded to the relative
     // path of the currently focused file.
     dred_editor* pEditor = dred_get_focused_editor(pDred);
     if (pEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     const char* absolutePath = dred_editor_get_file_path(pEditor);
     if (absolutePath == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     char relativePath[DRED_MAX_PATH];
     if (dtk_path_is_absolute(absolutePath)) {
         char* pCurrentDir = dtk_get_current_directory();
         if (pCurrentDir == NULL) {
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
         if (dtk_path_to_relative(relativePath, sizeof(relativePath), absolutePath, pCurrentDir) == 0) {
             dtk_free(pCurrentDir);
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
         dtk_free(pCurrentDir);
     } else {
         if (strcpy_s(relativePath, sizeof(relativePath), absolutePath) != 0) {
-            return DR_FALSE;
+            return DTK_FALSE;
         }
     }
 
@@ -41,7 +41,7 @@ static dr_bool32 dred__preprocess_system_command(dred_context* pDred, const char
     while (cmdOutSize > 0 && *cmd != '\0') {
         if (*cmd == '%' && prevC != '\\') {
             if (strncpy_s(cmdOut, cmdOutSize, relativePath, relativePathLength) != 0) {
-                return DR_FALSE;
+                return DTK_FALSE;
             }
 
             cmdOut += relativePathLength;
@@ -57,10 +57,10 @@ static dr_bool32 dred__preprocess_system_command(dred_context* pDred, const char
     }
 
     *cmdOut = '\0';
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__system_command(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__system_command(dred_context* pDred, const char* value)
 {
     char valueExpanded[4096];
     if (dred__preprocess_system_command(pDred, value, valueExpanded, sizeof(valueExpanded))) {
@@ -70,7 +70,7 @@ dr_bool32 dred_command__system_command(dred_context* pDred, const char* value)
     }
 }
 
-dr_bool32 dred_command__cmdline_func(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__cmdline_func(dred_context* pDred, const char* value)
 {
     int argc;
     char** argv;
@@ -85,22 +85,22 @@ dr_bool32 dred_command__cmdline_func(dred_context* pDred, const char* value)
     int result = dred_main_f_exec(argc, argv);
 
     dtk_free_argv(argv);
-    return (result == 0) ? DR_TRUE : DR_FALSE;
+    return (result == 0) ? DTK_TRUE : DTK_FALSE;
 }
 
-dr_bool32 dred_command__cmdbar(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__cmdbar(dred_context* pDred, const char* value)
 {
     dred_focus_command_bar_and_set_text(pDred, value);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__bind(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__bind(dred_context* pDred, const char* value)
 {
     char shortcutName[256];
     dred_shortcut shortcut;
     char commandStr[4096];
     if (!dred_parse_bind_command(value, shortcutName, sizeof(shortcutName), &shortcut, commandStr, sizeof(commandStr))) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     size_t existingIndex;
@@ -133,14 +133,14 @@ dr_bool32 dred_command__bind(dred_context* pDred, const char* value)
         }
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__load_config(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__load_config(dred_context* pDred, const char* value)
 {
     char path[DRED_MAX_PATH];
     if (!dr_next_token(value, path, sizeof(path))) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dtk_path_is_relative(path) && !dr_file_exists(path)) {
@@ -157,116 +157,116 @@ dr_bool32 dred_command__load_config(dred_context* pDred, const char* value)
         return dred_load_config(pDred, path);
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
-dr_bool32 dred_command__set(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__set(dred_context* pDred, const char* value)
 {
     char name[256];
     value = dr_next_token(value, name, sizeof(name));
     if (value == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_config_set(&pDred->config, name, dr_ltrim(value));
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__set_default(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__set_default(dred_context* pDred, const char* value)
 {
     char name[256];
     value = dr_next_token(value, name, sizeof(name));
     if (value == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dred_config_set_default(&pDred->config, name);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
-dr_bool32 dred_command__show_menu_bar(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__show_menu_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_show_menu_bar(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__hide_menu_bar(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__hide_menu_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_hide_menu_bar(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__toggle_menu_bar(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__toggle_menu_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_toggle_menu_bar(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
-dr_bool32 dred_command__show_tab_bar(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__show_tab_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_show_tabbars(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__hide_tab_bar(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__hide_tab_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_hide_tabbars(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__toggle_tab_bar(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__toggle_tab_bar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_toggle_tabbars(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
-dr_bool32 dred_command__enable_auto_hide_cmdbar(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__enable_auto_hide_cmdbar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_enable_auto_hide_command_bar(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__disable_auto_hide_cmdbar(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__disable_auto_hide_cmdbar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_disable_auto_hide_command_bar(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__toggle_auto_hide_cmdbar(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__toggle_auto_hide_cmdbar(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_toggle_auto_hide_command_bar(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
-dr_bool32 dred_command__next_tab(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__next_tab(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_tabgroup_activate_next_tab(dred_get_focused_tabgroup(pDred));
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__prev_tab(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__prev_tab(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_tabgroup_activate_prev_tab(dred_get_focused_tabgroup(pDred));
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 
-dr_bool32 dred_command__cd(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__cd(dred_context* pDred, const char* value)
 {
     (void)pDred;
     return dtk_set_current_directory(value) == DTK_SUCCESS;
@@ -274,13 +274,13 @@ dr_bool32 dred_command__cd(dred_context* pDred, const char* value)
 
 
 
-dr_bool32 dred_command__new(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__new(dred_context* pDred, const char* value)
 {
     dred_create_and_open_file(pDred, value);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__open(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__open(dred_context* pDred, const char* value)
 {
     char fileName[DRED_MAX_PATH];
     if (dr_next_token(value, fileName, sizeof(fileName)) == NULL) {
@@ -288,81 +288,81 @@ dr_bool32 dred_command__open(dred_context* pDred, const char* value)
     } else {
         if (!dred_open_file(pDred, fileName)) {
             dred_cmdbar_set_message(&pDred->cmdBar, "Failed to open file.");
-            return DR_FALSE;
+            return DTK_FALSE;
         }
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__save(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__save(dred_context* pDred, const char* value)
 {
     if (!dred_save_focused_file(pDred, value)) {
         return dred_save_focused_file_as(pDred);
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__save_all(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__save_all(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_save_all_open_files(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__save_as(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__save_as(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_save_focused_file_as(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__close(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__close(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_close_focused_file_with_confirmation(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__close_all(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__close_all(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_close_all_tabs_with_confirmation(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__exit(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__exit(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_close(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__help(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__help(dred_context* pDred, const char* value)
 {
     (void)value;
     (void)pDred;
     // TODO: Implement me.
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__about(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__about(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_show_about_dialog(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__settings(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__settings(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_show_settings_dialog(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__print(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__print(dred_context* pDred, const char* value)
 {
     (void)value;
 
@@ -370,24 +370,24 @@ dr_bool32 dred_command__print(dred_context* pDred, const char* value)
     return dred_show_print_dialog(pDred, NULL, &printInfo) == DTK_DIALOG_RESULT_OK;
 }
 
-dr_bool32 dred_command__reload(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__reload(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_check_if_focused_file_is_dirty_and_reload(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__clear_recent_files(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__clear_recent_files(dred_context* pDred, const char* value)
 {
     (void)value;
 
     dred_config_clear_recent_files(&pDred->config);
     dred_refresh_recent_files_menu(pDred);
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__add_favourite(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__add_favourite(dred_context* pDred, const char* value)
 {
     const char* absolutePath = value;
     if (absolutePath == NULL || absolutePath[0] == '\0') {
@@ -398,7 +398,7 @@ dr_bool32 dred_command__add_favourite(dred_context* pDred, const char* value)
     }
 
     if (absolutePath == NULL || absolutePath[0] == '\0') {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dtk_path_is_absolute(absolutePath)) {
@@ -408,13 +408,13 @@ dr_bool32 dred_command__add_favourite(dred_context* pDred, const char* value)
         // The path is relative. Make it absolute.
         char* pCurrentDir = dtk_get_current_directory();
         if (pCurrentDir == NULL) {
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
         char actualAbsolutePath[DRED_MAX_PATH];
         if (dtk_path_to_absolute(actualAbsolutePath, sizeof(actualAbsolutePath), absolutePath, pCurrentDir) == 0) {
             dtk_free(pCurrentDir);
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
         dtk_free(pCurrentDir);
@@ -422,7 +422,7 @@ dr_bool32 dred_command__add_favourite(dred_context* pDred, const char* value)
     }
 }
 
-dr_bool32 dred_command__remove_favourite(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__remove_favourite(dred_context* pDred, const char* value)
 {
     const char* absolutePath = value;
     if (absolutePath == NULL || absolutePath[0] == '\0') {
@@ -433,7 +433,7 @@ dr_bool32 dred_command__remove_favourite(dred_context* pDred, const char* value)
     }
 
     if (absolutePath == NULL || absolutePath[0] == '\0') {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dtk_path_is_absolute(absolutePath)) {
@@ -443,13 +443,13 @@ dr_bool32 dred_command__remove_favourite(dred_context* pDred, const char* value)
         // The path is relative. Make it absolute.
         char* pCurrentDir = dtk_get_current_directory();
         if (pCurrentDir == NULL) {
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
         char actualAbsolutePath[DRED_MAX_PATH];
         if (dtk_path_to_absolute(actualAbsolutePath, sizeof(actualAbsolutePath), absolutePath, pCurrentDir) == 0) {
             dtk_free(pCurrentDir);
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
         dtk_free(pCurrentDir);
@@ -458,89 +458,89 @@ dr_bool32 dred_command__remove_favourite(dred_context* pDred, const char* value)
 }
 
 
-dr_bool32 dred_command__undo(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__undo(dred_context* pDred, const char* value)
 {
     (void)value;
 
     dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
     if (pFocusedControl == NULL) {
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
     if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
         dred_textview_undo(DRED_TEXTVIEW(pFocusedControl));
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
-dr_bool32 dred_command__redo(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__redo(dred_context* pDred, const char* value)
 {
     (void)value;
 
     dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
     if (pFocusedControl == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
         dred_textview_redo(DRED_TEXTVIEW(pFocusedControl));
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
-dr_bool32 dred_command__cut(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__cut(dred_context* pDred, const char* value)
 {
     dred_command__copy(pDred, value);
     dred_command__delete(pDred, value);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__copy(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__copy(dred_context* pDred, const char* value)
 {
     (void)value;
 
     dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
     if (pFocusedControl == NULL) {
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
     if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
         size_t selectedTextLength = dred_textview_get_selected_text(DRED_TEXTVIEW(pFocusedControl), NULL, 0);
         char* selectedText = (char*)malloc(selectedTextLength + 1);
         if (selectedText == NULL) {
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
         selectedTextLength = dred_textview_get_selected_text(DRED_TEXTVIEW(pFocusedControl), selectedText, selectedTextLength + 1);
         dtk_clipboard_set_text(&pDred->tk, selectedText, selectedTextLength);
         free(selectedText);
 
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
-dr_bool32 dred_command__paste(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__paste(dred_context* pDred, const char* value)
 {
     (void)value;
 
     dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
     if (pFocusedControl == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
         char* clipboardText = dtk_clipboard_get_text(&pDred->tk);
         if (clipboardText == NULL) {
-            return DR_FALSE;
+            return DTK_FALSE;
         }
 
-        dr_bool32 wasTextChanged = DR_FALSE;
+        dtk_bool32 wasTextChanged = DTK_FALSE;
         dred_textview_prepare_undo_point(DRED_TEXTVIEW(pFocusedControl));
         {
             wasTextChanged = dred_textview_delete_selected_text_no_undo(DRED_TEXTVIEW(pFocusedControl)) || wasTextChanged;
@@ -549,52 +549,52 @@ dr_bool32 dred_command__paste(dred_context* pDred, const char* value)
         if (wasTextChanged) { dred_textview_commit_undo_point(DRED_TEXTVIEW(pFocusedControl)); }
 
         dtk_clipboard_free_text(&pDred->tk, clipboardText);
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
-dr_bool32 dred_command__delete(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__delete(dred_context* pDred, const char* value)
 {
     (void)value;
 
     dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
     if (pFocusedControl == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
     
     if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
         dred_textview_do_delete(DRED_TEXTVIEW(pFocusedControl), 0);
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
-dr_bool32 dred_command__select_all(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__select_all(dred_context* pDred, const char* value)
 {
     (void)value;
 
     dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
     if (pFocusedControl == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
         dred_textview_select_all(DRED_TEXTVIEW(pFocusedControl));
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
 
-dr_bool32 dred_command__goto(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__goto(dred_context* pDred, const char* value)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
@@ -608,18 +608,18 @@ dr_bool32 dred_command__goto(dred_context* pDred, const char* value)
                 dred_text_editor_goto_line(DRED_TEXT_EDITOR(pFocusedEditor), (unsigned int)abs(atoi(param)));
             }
 
-            return DR_TRUE;
+            return DTK_TRUE;
         }
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
-dr_bool32 dred_command__find(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__find(dred_context* pDred, const char* value)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
@@ -628,21 +628,21 @@ dr_bool32 dred_command__find(dred_context* pDred, const char* value)
             dred_text_editor_deselect_all_in_focused_view(DRED_TEXT_EDITOR(pFocusedEditor));
             if (!dred_text_editor_find_and_select_next(DRED_TEXT_EDITOR(pFocusedEditor), query)) {
                 dred_cmdbar_set_message(&pDred->cmdBar, "No results found.");
-                return DR_FALSE;
+                return DTK_FALSE;
             }
 
-            return DR_TRUE;
+            return DTK_TRUE;
         }
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
-dr_bool32 dred_command__replace(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__replace(dred_context* pDred, const char* value)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
@@ -654,22 +654,22 @@ dr_bool32 dred_command__replace(dred_context* pDred, const char* value)
             if (value != NULL) {
                 if (!dred_text_editor_find_and_replace_next(DRED_TEXT_EDITOR(pFocusedEditor), query, replacement)) {
                     dred_cmdbar_set_message(&pDred->cmdBar, "No results found.");
-                    return DR_FALSE;
+                    return DTK_FALSE;
                 }
 
-                return DR_TRUE;
+                return DTK_TRUE;
             }
         }
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
-dr_bool32 dred_command__replace_all(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__replace_all(dred_context* pDred, const char* value)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
@@ -681,82 +681,82 @@ dr_bool32 dred_command__replace_all(dred_context* pDred, const char* value)
             if (value != NULL) {
                 if (!dred_text_editor_find_and_replace_all(DRED_TEXT_EDITOR(pFocusedEditor), query, replacement)) {
                     dred_cmdbar_set_message(&pDred->cmdBar, "No results found.");
-                    return DR_FALSE;
+                    return DTK_FALSE;
                 }
 
-                return DR_TRUE;
+                return DTK_TRUE;
             }
         }
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
-dr_bool32 dred_command__show_line_numbers(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__show_line_numbers(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_show_line_numbers(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__hide_line_numbers(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__hide_line_numbers(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_hide_line_numbers(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__toggle_line_numbers(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__toggle_line_numbers(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_toggle_line_numbers(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__toggle_word_wrap(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__toggle_word_wrap(dred_context* pDred, const char* value)
 {
     (void)value;
     dred_toggle_word_wrap(pDred);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__zoom(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__zoom(dred_context* pDred, const char* value)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         dred_set_text_editor_scale(pDred, (float)atof(value));
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__unindent(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__unindent(dred_context* pDred, const char* value)
 {
     (void)value;
 
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         dred_text_editor_unindent_selected_blocks(DRED_TEXT_EDITOR(pFocusedEditor));
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__insert_date(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__insert_date(dred_context* pDred, const char* value)
 {
     (void)value;
 
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
@@ -766,16 +766,16 @@ dr_bool32 dred_command__insert_date(dred_context* pDred, const char* value)
         dred_text_editor_insert_text_at_cursors(DRED_TEXT_EDITOR(pFocusedEditor), dateStr);
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__export2cstring(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__export2cstring(dred_context* pDred, const char* value)
 {
     (void)value;
 
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
@@ -822,12 +822,12 @@ dr_bool32 dred_command__export2cstring(dred_context* pDred, const char* value)
             }
 
             free(pOriginalText);
-            return DR_TRUE;
+            return DTK_TRUE;
         }
     }
 
     // If we get here it means the focused editor does not support this command. May want to route this to packages, though...
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
 
@@ -863,11 +863,11 @@ char* dred__get_selection_or_word_under_cursor_of_text_editor(dred_text_editor* 
 }
 
 // This is a temporary function until a more flexible solution is thought up. All it does is sets the command with a pre-filled variable that is selected.
-dr_bool32 dred__set_cmdbar_command_with_current_selection(dred_context* pDred, const char* command, dr_bool32 isReplaceMode)
+dtk_bool32 dred__set_cmdbar_command_with_current_selection(dred_context* pDred, const char* command, dtk_bool32 isReplaceMode)
 {
     dred_editor* pFocusedEditor = dred_get_focused_editor(pDred);
     if (pFocusedEditor == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     char* fullCommandText = NULL;
@@ -900,33 +900,33 @@ dr_bool32 dred__set_cmdbar_command_with_current_selection(dred_context* pDred, c
     dred_cmdbar_highlight_argument_by_index(&pDred->cmdBar, 0);
     dtk_free_string(fullCommandText);
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_command__cmdbar_find_prefilled(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__cmdbar_find_prefilled(dred_context* pDred, const char* value)
 {
     (void)value;
-    return dred__set_cmdbar_command_with_current_selection(pDred, "find", DR_FALSE);
+    return dred__set_cmdbar_command_with_current_selection(pDred, "find", DTK_FALSE);
 }
 
-dr_bool32 dred_command__cmdbar_replace_prefilled(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__cmdbar_replace_prefilled(dred_context* pDred, const char* value)
 {
     (void)value;
-    return dred__set_cmdbar_command_with_current_selection(pDred, "replace", DR_TRUE);
+    return dred__set_cmdbar_command_with_current_selection(pDred, "replace", DTK_TRUE);
 }
 
-dr_bool32 dred_command__cmdbar_replace_all_prefilled(dred_context* pDred, const char* value)
+dtk_bool32 dred_command__cmdbar_replace_all_prefilled(dred_context* pDred, const char* value)
 {
     (void)value;
-    return dred__set_cmdbar_command_with_current_selection(pDred, "replace-all", DR_TRUE);
+    return dred__set_cmdbar_command_with_current_selection(pDred, "replace-all", DTK_TRUE);
 }
 
 
 
-dr_bool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, const char** pValueOut)
+dtk_bool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, const char** pValueOut)
 {
     if (cmdStr == NULL || pCommandOut == NULL || pValueOut == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     // Trim whitespace.
@@ -936,7 +936,7 @@ dr_bool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, const
     if (cmdStr[0] == '!') {
         *pCommandOut = g_Commands[0];
         *pValueOut   = dr_first_non_whitespace(cmdStr + 1);
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
 
@@ -944,17 +944,17 @@ dr_bool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, const
     char func[256];
     cmdStr = dr_next_token(cmdStr, func, sizeof(func));
     if (cmdStr == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dtk_uint32 index = dred_find_command_index(func);
     if (index == (dtk_uint32)-1) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     *pCommandOut = g_Commands[index];
     *pValueOut = dr_first_non_whitespace(cmdStr);
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 dtk_uint32 dred_find_command_index(const char* cmdFunc)
@@ -1039,10 +1039,10 @@ const char* dred_next_command_string(const char* cmdStr, char* cmdOut, size_t cm
     return NULL;
 }
 
-dr_bool32 dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSize, dred_shortcut* pShortcutOut, char* pCmdOut, size_t cmdOutSize)
+dtk_bool32 dred_parse_bind_command(const char* value, char* nameOut, size_t nameOutSize, dred_shortcut* pShortcutOut, char* pCmdOut, size_t cmdOutSize)
 {
     if (value == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     value = dr_next_token(value, nameOut, (unsigned int)nameOutSize);
@@ -1054,7 +1054,7 @@ dr_bool32 dred_parse_bind_command(const char* value, char* nameOut, size_t nameO
 
             const char* cmd = dr_first_non_whitespace(value);
             if (cmd == NULL) {
-                return DR_FALSE;
+                return DTK_FALSE;
             }
 
             if (cmd[0] == '\"') {
@@ -1065,5 +1065,5 @@ dr_bool32 dred_parse_bind_command(const char* value, char* nameOut, size_t nameO
         }
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }

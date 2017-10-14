@@ -11,6 +11,6 @@ dtk_result dred_settings_dialog_uninit(dred_settings_dialog* pDialog);
 
 void dred_settings_dialog_show(dred_settings_dialog* pDialog);
 void dred_settings_dialog_hide(dred_settings_dialog* pDialog);
-dr_bool32 dred_settings_dialog_is_showing(dred_settings_dialog* pDialog);
+dtk_bool32 dred_settings_dialog_is_showing(dred_settings_dialog* pDialog);
 
 void dred_settings_dialog_refresh_styling(dred_settings_dialog* pDialog);

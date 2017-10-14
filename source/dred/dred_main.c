@@ -29,11 +29,11 @@ dtk_bool32 dred_parse_cmdline__post_startup_files_to_server(const char* key, con
     return DTK_TRUE;
 }
 
-dr_bool32 dred__try_opening_existing_process(int argc, char** argv)
+dtk_bool32 dred__try_opening_existing_process(int argc, char** argv)
 {
     char pipeName[256];
     if (!dred_ipc_get_pipe_name(pipeName, sizeof(pipeName))) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dtk_pipe client;
@@ -49,10 +49,10 @@ dr_bool32 dred__try_opening_existing_process(int argc, char** argv)
         dred_ipc_post_message(client, DRED_IPC_MESSAGE_TERMINATOR, NULL, 0);
         dtk_pipe_close(client);
 
-        return DR_TRUE;
+        return DTK_TRUE;
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
 
@@ -68,14 +68,14 @@ int main(int argc, char** argv)
     }
 
 
-    dr_bool32 tryUsingExistingInstance = DR_TRUE;
+    dtk_bool32 tryUsingExistingInstance = DTK_TRUE;
     if (dtk_argv_exists(argc, argv, "newinstance")) {
-        tryUsingExistingInstance = DR_FALSE;
+        tryUsingExistingInstance = DTK_FALSE;
     }
 
-    dr_bool32 disableIPC = DR_FALSE;
+    dtk_bool32 disableIPC = DTK_FALSE;
     if (dtk_argv_exists(argc, argv, "noipc")) {
-        disableIPC = DR_TRUE;
+        disableIPC = DTK_TRUE;
     }
 
 #ifndef _WIN32
@@ -99,13 +99,13 @@ int main(int argc, char** argv)
             return 0;
         }
 #else
-        dr_bool32 isOtherProcessRunning = DR_FALSE;
+        dtk_bool32 isOtherProcessRunning = DTK_FALSE;
         int fd = open(lockFileName, O_RDONLY, 0666);
         if (fd != -1) {
             if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
-                isOtherProcessRunning = DR_TRUE;
+                isOtherProcessRunning = DTK_TRUE;
             } else {
-                isOtherProcessRunning = DR_FALSE;
+                isOtherProcessRunning = DTK_FALSE;
             }
 
             close(fd);

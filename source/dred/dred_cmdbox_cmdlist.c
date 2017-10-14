@@ -236,9 +236,9 @@ dred_result dred_cmdbox_cmdlist_update_list(dred_cmdbox_cmdlist* pCmdList, const
     const char* params = dr_next_token(runningText, commandName, sizeof(commandName));
 
     // If the user has typed the whole command we only want to show the first one.
-    pCmdList->showOnlyFirstCommand = DR_FALSE;
+    pCmdList->showOnlyFirstCommand = DTK_FALSE;
     if (params != NULL && dr_is_whitespace(params[0])) {
-        pCmdList->showOnlyFirstCommand = DR_TRUE;
+        pCmdList->showOnlyFirstCommand = DTK_TRUE;
     }
 
     dtk_uint32 commandCount = (dtk_uint32)dred_find_commands_starting_with(NULL, 0, commandName);

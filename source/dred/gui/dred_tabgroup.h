@@ -18,7 +18,7 @@ struct dred_tabgroup
 };
 
 // dred_tabgroup_create()
-dr_bool32 dred_tabgroup_init(dred_tabgroup* pTabGroup, dred_context* pDred, dred_control* pParent);
+dtk_bool32 dred_tabgroup_init(dred_tabgroup* pTabGroup, dred_context* pDred, dred_control* pParent);
 
 // dred_tabgroup_delete()
 void dred_tabgroup_uninit(dred_tabgroup* pTabGroup);
@@ -92,4 +92,4 @@ void dred_tabgroup_hide_tabbar(dred_tabgroup* pTabGroup);
 void dred_tabgroup_show_tabbar(dred_tabgroup* pTabGroup);
 
 // Determines whether or not the tab bar is being show.
-dr_bool32 dred_tabgroup_is_showing_tabbar(dred_tabgroup* pTabGroup);
+dtk_bool32 dred_tabgroup_is_showing_tabbar(dred_tabgroup* pTabGroup);

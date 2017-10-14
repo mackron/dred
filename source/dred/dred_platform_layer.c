@@ -8,7 +8,7 @@
 
 #ifdef DRED_WIN32
 //// Drag and Drop ////
-dr_bool32 dred_begin_drag_and_drop__win32(dred_data_type dataType, const void* pData, size_t dataSize)
+dtk_bool32 dred_begin_drag_and_drop__win32(dred_data_type dataType, const void* pData, size_t dataSize)
 {
 #if 0
     IDataObjectVtbl dataObject;
@@ -30,7 +30,7 @@ dr_bool32 dred_begin_drag_and_drop__win32(dred_data_type dataType, const void* p
     (void)dataType;
     (void)pData;
     (void)dataSize;
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 #endif
 
@@ -45,12 +45,12 @@ dr_bool32 dred_begin_drag_and_drop__win32(dred_data_type dataType, const void* p
 
 #ifdef DRED_GTK
 //// Drag and Drop ////
-dr_bool32 dred_begin_drag_and_drop__gtk(dred_data_type dataType, const void* pData, size_t dataSize)
+dtk_bool32 dred_begin_drag_and_drop__gtk(dred_data_type dataType, const void* pData, size_t dataSize)
 {
     (void)dataType;
     (void)pData;
     (void)dataSize;
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 #endif
 
@@ -58,9 +58,9 @@ dr_bool32 dred_begin_drag_and_drop__gtk(dred_data_type dataType, const void* pDa
 
 //// Drag and Drop ////
 
-dr_bool32 dred_begin_drag_and_drop(dred_data_type dataType, const void* pData, size_t dataSize)
+dtk_bool32 dred_begin_drag_and_drop(dred_data_type dataType, const void* pData, size_t dataSize)
 {
-    if (pData == NULL) return DR_FALSE;
+    if (pData == NULL) return DTK_FALSE;
 
 #ifdef DRED_WIN32
     return dred_begin_drag_and_drop__win32(dataType, pData, dataSize);

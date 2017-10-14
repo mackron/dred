@@ -128,31 +128,31 @@ void dred_file_close(dred_file file)
     fclose((FILE*)file);
 }
 
-dr_bool32 dred_file_read(dred_file file, void* pDataOut, size_t bytesToRead, size_t* pBytesRead)
+dtk_bool32 dred_file_read(dred_file file, void* pDataOut, size_t bytesToRead, size_t* pBytesRead)
 {
     size_t bytesRead = fread(pDataOut, 1, bytesToRead, (FILE*)file);
     if (pBytesRead) *pBytesRead = bytesRead;
 
     if (bytesRead == 0 && bytesToRead != 0) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_file_write(dred_file file, const void* pData, size_t bytesToWrite, size_t* pBytesWritten)
+dtk_bool32 dred_file_write(dred_file file, const void* pData, size_t bytesToWrite, size_t* pBytesWritten)
 {
     size_t bytesWritten = fwrite(pData, 1, bytesToWrite, (FILE*)file);
     if (pBytesWritten) *pBytesWritten = bytesWritten;
 
     if (bytesWritten == 0 && bytesToWrite != 0) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
-dr_bool32 dred_file_seek(dred_file file, int64_t bytesToSeek, dred_seek_origin origin)
+dtk_bool32 dred_file_seek(dred_file file, int64_t bytesToSeek, dred_seek_origin origin)
 {
     int originSTD = SEEK_SET;
     if (origin == dred_seek_origin_current) {
@@ -163,15 +163,15 @@ dr_bool32 dred_file_seek(dred_file file, int64_t bytesToSeek, dred_seek_origin o
 
 #ifdef DRED_WIN32
     if (_fseeki64((FILE*)file, bytesToSeek, originSTD) == -1) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 #else
     if (fseeko((FILE*)file, bytesToSeek, originSTD) == -1) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 #endif
 
-    return DR_TRUE;
+    return DTK_TRUE;
 }
 
 uint64_t dred_file_tell(dred_file file)
@@ -199,18 +199,18 @@ void dred_file_flush(dred_file file)
 
 //// High Level Helpers ////
 
-dr_bool32 dred_file_write_string(dred_file file, const char* str)
+dtk_bool32 dred_file_write_string(dred_file file, const char* str)
 {
     return dred_file_write(file, str, (unsigned int)strlen(str), NULL);
 }
 
-dr_bool32 dred_file_write_line(dred_file file, const char* str)
+dtk_bool32 dred_file_write_line(dred_file file, const char* str)
 {
     return dred_file_write_string(file, str) && dred_file_write_string(file, "\n");
 }
 
 
-dr_bool32 dred_to_absolute_path(const char* relativePath, char* absolutePathOut, size_t absolutePathOutSize)
+dtk_bool32 dred_to_absolute_path(const char* relativePath, char* absolutePathOut, size_t absolutePathOutSize)
 {
     if (dtk_path_is_absolute(relativePath)) {
         return strcpy_s(absolutePathOut, absolutePathOutSize, relativePath) == 0;
@@ -218,14 +218,14 @@ dr_bool32 dred_to_absolute_path(const char* relativePath, char* absolutePathOut,
 
     char* pCurrentDir = dtk_get_current_directory();
     if (pCurrentDir == NULL) {
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     if (dtk_path_append(absolutePathOut, absolutePathOutSize, pCurrentDir, relativePath) == 0) {
         dtk_free(pCurrentDir);
-        return DR_FALSE;
+        return DTK_FALSE;
     }
 
     dtk_free(pCurrentDir);
-    return DR_TRUE;
+    return DTK_TRUE;
 }

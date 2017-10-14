@@ -18,12 +18,12 @@ dtk_bool32 dtk_is_directory(const char* path);
 
 // Determines whether or not the given file path is to a file.
 //
-// This will return DR_FALSE if the path points to a directory.
+// This will return DTK_FALSE if the path points to a directory.
 dtk_bool32 dtk_file_exists(const char* filePath);
 
 // Determines whether or not the given file path points to a directory.
 //
-// This will return DR_FALSE if the path points to a file.
+// This will return DTK_FALSE if the path points to a file.
 DTK_INLINE dtk_bool32 dtk_directory_exists(const char* directoryPath) { return dtk_is_directory(directoryPath); }
 
 // Deletes the file at the given path.
