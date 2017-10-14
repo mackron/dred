@@ -13,12 +13,12 @@ dtk_bool32 dred_string_pool_init(dred_string_pool* pPool, const char* pInitialDa
     memset(pPool, 0, sizeof(*pPool));
 
     if (pInitialData != NULL) {
-        pPool->capacity = dr_round_up(initialDataSize, DRED_STRING_POOL_CHUNK_SIZE);
+        pPool->capacity = dtk_round_up(initialDataSize, DRED_STRING_POOL_CHUNK_SIZE);
     } else {
         pPool->capacity = DRED_STRING_POOL_CHUNK_SIZE;
     }
 
-    pPool->pData = (char*)malloc(pPool->capacity);
+    pPool->pData = (char*)dtk_malloc(pPool->capacity);
     if (pPool->pData == NULL) {
         return DTK_FALSE;
     }
@@ -38,7 +38,7 @@ dtk_bool32 dred_string_pool_uninit(dred_string_pool* pPool)
 {
     if (pPool == NULL) return DTK_FALSE;
 
-    free(pPool->pData);
+    dtk_free(pPool->pData);
     return DTK_TRUE;
 }
 
@@ -53,7 +53,7 @@ size_t dred_string_pool_add(dred_string_pool* pPool, const char* str, size_t str
 
     size_t offset = pPool->byteCount;
     if (offset + strLen+1 > pPool->capacity) {
-        size_t newCapacity = dr_round_up(pPool->capacity + strLen+1, DRED_STRING_POOL_CHUNK_SIZE);
+        size_t newCapacity = dtk_round_up(pPool->capacity + strLen+1, DRED_STRING_POOL_CHUNK_SIZE);
         char* pNewData = (char*)realloc(pPool->pData, newCapacity);
         if (pNewData == NULL) {
             return 0;

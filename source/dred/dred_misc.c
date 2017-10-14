@@ -166,7 +166,7 @@ dtk_font_slant dred_font_slant_from_pango(PangoStyle slant)
 dtk_color dred_parse_color(const char* color)
 {
     if (color != NULL) {
-        color = dr_first_non_whitespace(color);
+        color = dtk_first_non_whitespace(color);
         if (color[0] == '0' && (color[1] == 'x' || color[1] == 'X')) {
             // HTML style. Support both #RRGGBB and #RGB format.
             color += 2;
@@ -175,7 +175,7 @@ dtk_color dred_parse_color(const char* color)
 
             int len = 0;
             for (int i = 0; i < 6; ++i) {
-                if (!dr_hex_char_to_uint(color[i], &hexvals[i])) {
+                if (!dtk_hex_char_to_uint(color[i], &hexvals[i])) {
                     break;
                 }
                 len += 1;
@@ -204,17 +204,17 @@ dtk_color dred_parse_color(const char* color)
             uint8_t b = 0;
 
             char c[4];
-            color = dr_next_token(color, c, sizeof(c));
+            color = dtk_next_token(color, c, sizeof(c));
             if (color != NULL) {
                 r = (uint8_t)atoi(c);
             }
 
-            color = dr_next_token(color, c, sizeof(c));
+            color = dtk_next_token(color, c, sizeof(c));
             if (color != NULL) {
                 g = (uint8_t)atoi(c);
             }
 
-            color = dr_next_token(color, c, sizeof(c));
+            color = dtk_next_token(color, c, sizeof(c));
             if (color != NULL) {
                 b = (uint8_t)atoi(c);
             }

@@ -107,7 +107,7 @@ void dred__update_window_title(dred_context* pDred)
             if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_EDITOR)) {
                 const char* filePath = dred_editor_get_file_path(DRED_EDITOR(pFocusedControl));
                 if (filePath != NULL && filePath[0] != '\0') {
-                    title = drpath_file_name(filePath);
+                    title = dtk_path_file_name(filePath);
                 } else {
                     title = "Untitled";
                 }
@@ -129,7 +129,7 @@ void dred__refresh_editor_tab_text(dred_editor* pEditor, dred_tab* pTab)
     assert(pTab != NULL);
 
     char tabText[256];
-    const char* filename = drpath_file_name(dred_editor_get_file_path(pEditor));
+    const char* filename = dtk_path_file_name(dred_editor_get_file_path(pEditor));
     const char* modified = "";
     const char* readonly = "";
 
@@ -238,7 +238,7 @@ dred_file dred__open_log_file(dred_context* pDred)
     // Make sure the folder exists.
     char logFolderPath[DRED_MAX_PATH];
     if (dred_get_log_folder_path(pDred, logFolderPath, sizeof(logFolderPath)) > 0) {
-        dr_mkdir_recursive(logFolderPath);
+        dtk_mkdir_recursive(logFolderPath);
     }
 
     return dred_file_open(logFilePath, DRED_FILE_OPEN_MODE_WRITE);
@@ -263,15 +263,15 @@ void dred_create_config_file_if_not_exists(dred_context* pDred, const char* file
     }
 
     char configPathAbsolute[DRED_MAX_PATH];
-    if (!drpath_copy_and_append(configPathAbsolute, sizeof(configPathAbsolute), configFolderPath, fileName)) {
+    if (dtk_path_append(configPathAbsolute, sizeof(configPathAbsolute), configFolderPath, fileName) == 0) {
         return;
     }
 
-    if (dr_file_exists(configPathAbsolute)) {
+    if (dtk_file_exists(configPathAbsolute)) {
         return;
     }
 
-    dr_open_and_write_text_file(configPathAbsolute, configString);
+    dtk_open_and_write_text_file(configPathAbsolute, configString);
 }
 
 
@@ -818,7 +818,7 @@ void dred_log(dred_context* pDred, const char* message)
     // Log file.
     if (pDred->logFile != NULL) {
         char dateTime[64];
-        dr_datetime_short(dr_now(), dateTime, sizeof(dateTime));
+        dtk_datetime_short(dtk_now(), dateTime, sizeof(dateTime));
 
         dred_file_write_string(pDred->logFile, "[");
         dred_file_write_string(pDred->logFile, dateTime);
@@ -957,11 +957,11 @@ void dred_save_dredprivate(dred_context* pDred)
         return;
     }
 
+    char configFolderPath[DRED_MAX_PATH];
+    dred_get_config_folder_path(pDred, configFolderPath, sizeof(configFolderPath));
 
     char dredprivatePath[DRED_MAX_PATH];
-    dred_get_config_folder_path(pDred, dredprivatePath, sizeof(dredprivatePath));
-
-    drpath_append(dredprivatePath, sizeof(dredprivatePath), ".dredprivate");
+    dtk_path_append(dredprivatePath, sizeof(dredprivatePath), configFolderPath, ".dredprivate");
 
     dred_file file = dred_file_open(dredprivatePath, DRED_FILE_OPEN_MODE_WRITE);
     if (file == NULL) {
@@ -1138,7 +1138,7 @@ const char* dred_get_editor_type_by_path(dred_context* pDred, const char* filePa
 
     // Check for known extensions first as a performance optimization. If that fails we'll want to open either open the file and inspect it,
     // or look through extensions.
-    if (drpath_extension_equal(filePath, "txt")) {
+    if (dtk_path_extension_equal(filePath, "txt")) {
         return DRED_CONTROL_TYPE_TEXT_EDITOR;
     }
 
@@ -1159,13 +1159,13 @@ const char* dred_get_editor_type_by_path(dred_context* pDred, const char* filePa
 dred_tab* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char* filePathAbsolute)
 {
     char filePathAbsoluteClean[DRED_MAX_PATH];
-    drpath_clean(filePathAbsolute, filePathAbsoluteClean, sizeof(filePathAbsoluteClean));
+    dtk_path_clean(filePathAbsoluteClean, sizeof(filePathAbsoluteClean), filePathAbsolute);
 
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
         for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
             dred_control* pControl = dred_tab_get_control(pTab);
             if (pControl != NULL && dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_EDITOR)) {
-                if (drpath_equal(dred_editor_get_file_path(DRED_EDITOR(pControl)), filePathAbsoluteClean)) {
+                if (dtk_path_equal(dred_editor_get_file_path(DRED_EDITOR(pControl)), filePathAbsoluteClean)) {
                     return pTab;
                 }
             }
@@ -1502,12 +1502,12 @@ dtk_bool32 dred_create_and_open_file(dred_context* pDred, const char* newFilePat
     if (newFilePath == NULL || newFilePath[0] == '\0') {
         return dred_open_new_text_file(pDred);
     } else {
-        if (dr_file_exists(newFilePath)) {
+        if (dtk_file_exists(newFilePath)) {
             dred_errorf(pDred, "File already exists: %s", newFilePath);
             return DTK_FALSE;
         }
 
-        if (!dr_create_empty_file(newFilePath, DTK_TRUE)) {
+        if (dtk_create_empty_file(newFilePath, DTK_TRUE) != DTK_SUCCESS) {
             dred_errorf(pDred, "Failed to create file: %s", newFilePath);
             return DTK_FALSE;
         }
@@ -2380,7 +2380,7 @@ void dred_set_text_editor_scale(dred_context* pDred, float scale)
         return;
     }
 
-    pDred->config.textEditorScale = dr_clamp(scale, 0.1f, 4.0f);
+    pDred->config.textEditorScale = dtk_clamp(scale, 0.1f, 4.0f);
 
     // Every open text editors needs to be updated.
     for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
@@ -2561,14 +2561,14 @@ dred_font* dred_parse_and_load_font(dred_context* pDred, const char* value)
     fontDesc.slant = dtk_font_slant_none;
 
     // Family.
-    value = dr_next_token(value, fontDesc.family, sizeof(fontDesc.family));
+    value = dtk_next_token(value, fontDesc.family, sizeof(fontDesc.family));
     if (value == NULL) {
         return pDred->config.pUIFont;
     }
 
     // Size.
     char token[256];
-    value = dr_next_token(value, token, sizeof(token));
+    value = dtk_next_token(value, token, sizeof(token));
     if (value == NULL) {
         return pDred->config.pUIFont;
     }
@@ -2581,12 +2581,12 @@ dred_font* dred_parse_and_load_font(dred_context* pDred, const char* value)
     fontDesc.size = size;
 
     // Weight.
-    value = dr_next_token(value, token, sizeof(token));
+    value = dtk_next_token(value, token, sizeof(token));
     if (value != NULL) {
         fontDesc.weight = dred_parse_font_weight(token);
 
         // Slant.
-        value = dr_next_token(value, token, sizeof(token));
+        value = dtk_next_token(value, token, sizeof(token));
         if (value != NULL) {
             fontDesc.slant = dred_parse_font_slant(token);
         }
@@ -2603,7 +2603,7 @@ const char* dred_get_language_by_file_path(dred_context* pDred, const char* file
 
     // TODO: Use a map for this to make this easier to maintain. Also consider auto-generating default mappings.
 
-    if (drpath_extension_equal(filePath, "c") || drpath_extension_equal(filePath, "h")) {
+    if (dtk_path_extension_equal(filePath, "c") || dtk_path_extension_equal(filePath, "h")) {
         return "c";
     }
 

@@ -936,8 +936,6 @@ int main(int argc, char** argv)
     dred_string_pool stringPool;
     dred_string_pool_init(&stringPool, NULL, 0);
 
-    // External libraries.
-    dr_copy_file("../../../../../dr_libs/dr.h", "../../../source/external/dr.h", DR_FALSE);
 
     // Commands.
     generate_commands_list(pFileOut);

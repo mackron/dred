@@ -84,7 +84,7 @@ dtk_bool32 dred_cmdbar__does_manual_text_entry_contain_whole_command_name(dred_c
         return DTK_FALSE;
     }
 
-    const char* pSearchResult = dr_first_whitespace(pCmdBar->manualTextEntry);
+    const char* pSearchResult = dtk_first_whitespace(pCmdBar->manualTextEntry);
     if (pSearchResult == NULL || pSearchResult[0] == '\0') {
         return DTK_FALSE;
     }
@@ -442,7 +442,7 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     float messageHeight = (float)fontMetricsMsg.lineHeight;
     float infobarHeight = (float)dred_control_get_height(DRED_CONTROL(&pCmdBar->infoBar));
 
-    float cmdbarHeight = dr_max(textboxHeight, dr_max(messageHeight, infobarHeight)) + (pDred->config.cmdbarPaddingY*uiScale*2);
+    float cmdbarHeight = dtk_max(textboxHeight, dtk_max(messageHeight, infobarHeight)) + (pDred->config.cmdbarPaddingY*uiScale*2);
     float cmdbarWidth = 0;
     if (dtk_control_get_parent(DTK_CONTROL(pCmdBar)) != NULL) {
         cmdbarWidth = (float)dtk_control_get_width(dtk_control_get_parent(DTK_CONTROL(pCmdBar)));
@@ -662,7 +662,7 @@ unsigned int dred_cmdbar_get_argument_index_by_character_index(dred_cmdbar* pCmd
         char token[4096];
 
         size_t thisTokenBeg = pNextStr - pCmdBarText;
-        pNextStr = dr_next_token(pNextStr, token, sizeof(token));
+        pNextStr = dtk_next_token(pNextStr, token, sizeof(token));
         if (pNextStr == NULL) {
             break;
         }
@@ -692,7 +692,7 @@ unsigned int dred_cmdbar_get_argument_count(dred_cmdbar* pCmdBar)
     const char* pNextStr = pCmdBarText;
     for (;;) {
         char token[4096];
-        pNextStr = dr_next_token(pNextStr, token, sizeof(token));
+        pNextStr = dtk_next_token(pNextStr, token, sizeof(token));
         if (pNextStr == NULL) {
             break;
         }
@@ -727,13 +727,13 @@ dtk_bool32 dred_cmdbar_get_argument_character_range_by_index(dred_cmdbar* pCmdBa
     unsigned int count = 0;
     const char* pNextStr = pCmdBarText;
     for (;;) {
-        size_t charBeg = dr_ltrim(pNextStr) - pCmdBarText;
+        size_t charBeg = dtk_ltrim(pNextStr) - pCmdBarText;
         if (pCmdBarText[charBeg] == '\"') {
             charBeg += 1;
         }
 
         char token[4096];
-        pNextStr = dr_next_token(pNextStr, token, sizeof(token));
+        pNextStr = dtk_next_token(pNextStr, token, sizeof(token));
         if (pNextStr == NULL) {
             break;
         }

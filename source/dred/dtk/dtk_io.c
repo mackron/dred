@@ -140,6 +140,42 @@ dtk_result dtk_fopen(const char* filePath, const char* openMode, FILE** ppFile)
     return DTK_SUCCESS;
 }
 
+dtk_result dtk_create_empty_file(const char* fileName, dtk_bool32 failIfExists)
+{
+    if (fileName == NULL) return DTK_INVALID_ARGS;
+
+#ifdef _WIN32
+    DWORD dwCreationDisposition;
+    if (failIfExists) {
+        dwCreationDisposition = CREATE_NEW;
+    } else {
+        dwCreationDisposition = CREATE_ALWAYS;
+    }
+
+    HANDLE hFile = CreateFileA(fileName, FILE_GENERIC_WRITE, 0, NULL, dwCreationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE) {
+        return dtk_win32_error_to_result(GetLastError());
+    }
+
+    CloseHandle(hFile);
+    return DTK_SUCCESS;
+#else
+    int flags = O_WRONLY | O_CREAT;
+    if (failIfExists) {
+        flags |= O_EXCL;
+    } else {
+        flags |= O_TRUNC;
+    }
+    int fd = open(fileName, flags, 0666);
+    if (fd == -1) {
+        return dtk_errno_to_result(errno);
+    }
+
+    close(fd);
+    return DTK_SUCCESS;
+#endif
+}
+
 static dtk_result dtk_open_and_read_file_with_extra_data(const char* filePath, size_t* pFileSizeOut, void** ppFileData, size_t extraBytes)
 {
     // Safety.
@@ -202,13 +238,18 @@ dtk_result dtk_open_and_read_file(const char* filePath, size_t* pFileSizeOut, vo
 
 dtk_result dtk_open_and_read_text_file(const char* filePath, size_t* pFileSizeOut, char** ppFileData)
 {
+    size_t fileSize;
     char* pFileData;
-    dtk_result result = dtk_open_and_read_file_with_extra_data(filePath, pFileSizeOut, (void**)&pFileData, 1);
+    dtk_result result = dtk_open_and_read_file_with_extra_data(filePath, &fileSize, (void**)&pFileData, 1);
     if (result != DTK_SUCCESS) {
         return result;
     }
 
-    pFileData[*pFileSizeOut] = '\0';
+    pFileData[fileSize] = '\0';
+
+    if (pFileSizeOut) {
+        *pFileSizeOut = fileSize;
+    }
 
     if (ppFileData) {
         *ppFileData = pFileData;
@@ -278,28 +319,137 @@ dtk_bool32 dtk_file_exists(const char* filePath)
 }
 
 
+dtk_result dtk_move_file(const char* oldPath, const char* newPath)
+{
+    if (oldPath == NULL || newPath == NULL) return DTK_INVALID_ARGS;
+
+#if _WIN32
+    if (MoveFileExA(oldPath, newPath, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED | MOVEFILE_WRITE_THROUGH) == 0) {
+        return dtk_win32_error_to_result(GetLastError());
+    }
+
+    return DTK_SUCCESS;
+#else
+    if (rename(oldPath, newPath) != 0) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+#endif
+}
+
+dtk_result dtk_copy_file(const char* srcPath, const char* dstPath, dtk_bool32 failIfExists)
+{
+    if (srcPath == NULL || dstPath == NULL) return DTK_INVALID_ARGS;
+
+#if _WIN32
+    if (CopyFileA(srcPath, dstPath, failIfExists) == 0) {
+        return dtk_win32_error_to_result(GetLastError());
+    }
+
+    return DTK_SUCCESS;
+#else
+    int fdSrc = open(srcPath, O_RDONLY, 0666);
+    if (fdSrc == -1) {
+        return dtk_errno_to_result(errno);
+    }
+
+    int fdDst = open(dstPath, O_WRONLY | O_TRUNC | O_CREAT | ((failIfExists) ? O_EXCL : 0), 0666);
+    if (fdDst == -1) {
+        close(fdSrc);
+        return dtk_errno_to_result(errno);
+    }
+
+    dtk_bool32 result = DTK_TRUE;
+    struct stat info;
+    if (fstat(fdSrc, &info) == 0) {
+        char buffer[BUFSIZ];
+        int bytesRead;
+        while ((bytesRead = read(fdSrc, buffer, sizeof(buffer))) > 0) {
+            if (write(fdDst, buffer, bytesRead) != bytesRead) {
+                result = DTK_FALSE;
+                break;
+            }
+        }
+    } else {
+        result = DTK_FALSE;
+    }
+
+    close(fdDst);
+    close(fdSrc);
+
+    // Permissions.
+    chmod(dstPath, info.st_mode & 07777);
+
+    if (result == DTK_FALSE) {
+        return dtk_errno_to_result(errno);
+    }
+
+    return DTK_SUCCESS;
+#endif
+}
+
+dtk_bool32 dtk_is_file_read_only(const char* filePath)
+{
+    if (filePath == NULL || filePath[0] == '\0') return DTK_FALSE;
+
+#if _WIN32
+    DWORD attributes = GetFileAttributesA(filePath);
+    return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_READONLY) != 0;
+#else
+    return access(filePath, W_OK) == -1;
+#endif
+}
+
+dtk_uint64 dtk_get_file_modified_time(const char* filePath)
+{
+    if (filePath == NULL || filePath[0] == '\0') {
+        return 0;
+    }
+
+#if _WIN32
+    HANDLE hFile = CreateFileA(filePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+    if (hFile == INVALID_HANDLE_VALUE) {
+        return 0;
+    }
+
+    FILETIME fileTime;
+    BOOL wasSuccessful = GetFileTime(hFile, NULL, NULL, &fileTime);
+    CloseHandle(hFile);
+
+    if (!wasSuccessful) {
+        return 0;
+    }
+
+    ULARGE_INTEGER result;
+    result.HighPart = fileTime.dwHighDateTime;
+    result.LowPart = fileTime.dwLowDateTime;
+    return result.QuadPart;
+#else
+    struct stat info;
+    if (stat(filePath, &info) != 0) {
+        return 0;
+    }
+
+    return info.st_mtime;
+#endif
+}
+
+
 dtk_result dtk_delete_file(const char* filePath)
 {
     if (filePath == NULL) return DTK_INVALID_ARGS;
 
-    // TODO: Return proper error codes, especially DTK_DOES_NOT_EXIST.
-
 #ifdef DTK_WIN32
     if (DeleteFileA(filePath) == 0) {
-        DWORD error = GetLastError();
-        switch (error) {
-            case ERROR_FILE_NOT_FOUND: return DTK_DOES_NOT_EXIST;
-            default: break;
-        }
-
-        return DTK_ERROR;
+        return dtk_win32_error_to_result(GetLastError());
     }
 
     return DTK_SUCCESS;
 #endif
 #ifdef DTK_POSIX
     if (remove(filePath) != 0) {
-        return DTK_ERROR;
+        return dtk_errno_to_result(errno);
     }
 
     return DTK_SUCCESS;
@@ -310,18 +460,16 @@ dtk_result dtk_mkdir(const char* directoryPath)
 {
     if (directoryPath == NULL) return DTK_INVALID_ARGS;
 
-    // TODO: Return proper error codes.
-
 #ifdef DTK_WIN32
     if (CreateDirectoryA(directoryPath, NULL) == 0) {
-        return DTK_ERROR;
+        return dtk_win32_error_to_result(GetLastError());
     }
 
     return DTK_SUCCESS;
 #endif
 #ifdef DTK_POSIX
     if (mkdir(directoryPath, 0777) != 0) {
-        return DTK_ERROR;
+        return dtk_errno_to_result(errno);
     }
 
     return DTK_SUCCESS;

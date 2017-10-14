@@ -75,17 +75,17 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
         if (!dred_to_absolute_path(pData->filePath, fileAbsolutePath, sizeof(fileAbsolutePath))) {
             return;
         }
-        if (!drpath_remove_file_name(fileAbsolutePath)) {
+        if (dtk_path_remove_file_name_in_place(fileAbsolutePath) == 0) {
             return;
         }
 
         char includeRelativePath[DRED_MAX_PATH];
-        if (dr_next_token(value, includeRelativePath, sizeof(includeRelativePath)) == NULL) {
+        if (dtk_next_token(value, includeRelativePath, sizeof(includeRelativePath)) == NULL) {
             return;
         }
 
         char includeAbsolutePath[DRED_MAX_PATH];
-        if (drpath_append_and_clean(includeAbsolutePath, sizeof(includeAbsolutePath), fileAbsolutePath, includeRelativePath) == 0) {
+        if (dtk_path_append_and_clean(includeAbsolutePath, sizeof(includeAbsolutePath), fileAbsolutePath, includeRelativePath) == 0) {
             return;
         }
 
@@ -94,7 +94,7 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
     }
 
     if (strcmp(key, "exec") == 0) {
-        dred_exec(pData->pConfig->pDred, dr_first_non_whitespace(value), NULL);
+        dred_exec(pData->pConfig->pDred, dtk_first_non_whitespace(value), NULL);
         return;
     }
 
@@ -105,8 +105,8 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
 
     if (strcmp(key, "recent-file") == 0) {
         char filePath[DRED_MAX_PATH];
-        if (dr_next_token(value, filePath, sizeof(filePath)) != NULL) {
-            if (dr_file_exists(filePath)) {
+        if (dtk_next_token(value, filePath, sizeof(filePath)) != NULL) {
+            if (dtk_file_exists(filePath)) {
                 dred_config_push_recent_file(pData->pConfig, filePath);
             }
         }
@@ -116,7 +116,7 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
 
     if (strcmp(key, "favourite-file") == 0) {
         char filePath[DRED_MAX_PATH];
-        if (dr_next_token(value, filePath, sizeof(filePath)) != NULL) {
+        if (dtk_next_token(value, filePath, sizeof(filePath)) != NULL) {
             dred_config_push_favourite_file(pData->pConfig, filePath);
         }
 
@@ -125,7 +125,7 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
 
     if (strcmp(key, "recent-cmd") == 0) {
         char cmd[DRED_MAX_PATH];
-        if (dr_next_token(value, cmd, sizeof(cmd)) != NULL) {
+        if (dtk_next_token(value, cmd, sizeof(cmd)) != NULL) {
             dred_config_push_recent_cmd(pData->pConfig, cmd);
         }
 
@@ -134,10 +134,10 @@ void dred_config_load_file__on_pair(void* pUserData, const char* key, const char
 
     if (strcmp(key, "alias") == 0) {
         char aliasName[256];
-        value = dr_next_token(value, aliasName, sizeof(aliasName));
+        value = dtk_next_token(value, aliasName, sizeof(aliasName));
         if (value != NULL) {
             char aliasValue[DRED_MAX_PATH];
-            if (dr_next_token(value, aliasValue, sizeof(aliasValue)) != NULL) {
+            if (dtk_next_token(value, aliasValue, sizeof(aliasValue)) != NULL) {
                 dred_alias_map_add(&pData->pConfig->aliasMap, aliasName, aliasValue);
             }
         }
@@ -182,7 +182,7 @@ dtk_bool32 dred_config_load_file(dred_config* pConfig, const char* filePath, dre
     data.onError = onError;
     data.pUserData = pUserData;
     data.file = file;
-    dr_parse_key_value_pairs(dred_config_load_file__on_read, dred_config_load_file__on_pair, dred_config_load_file__on_error, &data);
+    dtk_parse_key_value_pairs(dred_config_load_file__on_read, dred_config_load_file__on_pair, dred_config_load_file__on_error, &data);
 
     //if (pConfig->pDred->pMainWindow != NULL) {
     //    dred_control_end_dirty(pConfig->pDred->pMainWindow->pRootGUIControl);
@@ -218,7 +218,7 @@ void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolute
 
     // If the path already exists, just move it to the end.
     for (size_t i = 0; i < pConfig->recentFileCount; ++i) {
-        if (drpath_equal(fileAbsolutePath, pConfig->recentFiles[i])) {
+        if (dtk_path_equal(fileAbsolutePath, pConfig->recentFiles[i])) {
             char* existingPath = pConfig->recentFiles[i];
             for (size_t j = i; j > 0; --j) {
                 pConfig->recentFiles[j] = pConfig->recentFiles[j-1];
@@ -245,7 +245,7 @@ void dred_config_push_recent_file(dred_config* pConfig, const char* fileAbsolute
 
     // The path needs to be cleaned for aesthetic just to make it look nicer in the Recent Files menu.
     char filePathClean[DRED_MAX_PATH];
-    drpath_clean(fileAbsolutePath, filePathClean, sizeof(filePathClean));
+    dtk_path_clean(filePathClean, sizeof(filePathClean), fileAbsolutePath);
 
     pConfig->recentFiles[0] = dtk_make_string(filePathClean);
     pConfig->recentFileCount += 1;
@@ -264,7 +264,7 @@ void dred_config_push_favourite_file(dred_config* pConfig, const char* fileAbsol
 
     // If the path already exists, just move it to the end.
     for (size_t i = 0; i < pConfig->favouriteFileCount; ++i) {
-        if (drpath_equal(fileAbsolutePath, pConfig->favouriteFiles[i])) {
+        if (dtk_path_equal(fileAbsolutePath, pConfig->favouriteFiles[i])) {
             char* existingPath = pConfig->favouriteFiles[i];
             for (size_t j = i; j < pConfig->favouriteFileCount-1; ++j) {
                 pConfig->favouriteFiles[j] = pConfig->favouriteFiles[j+1];
@@ -289,7 +289,7 @@ void dred_config_push_favourite_file(dred_config* pConfig, const char* fileAbsol
 
     // The path needs to be cleaned for aesthetic just to make it look nicer in the Recent Files menu.
     char filePathClean[DRED_MAX_PATH];
-    drpath_clean(fileAbsolutePath, filePathClean, sizeof(filePathClean));
+    dtk_path_clean(filePathClean, sizeof(filePathClean), fileAbsolutePath);
 
     pConfig->favouriteFiles[pConfig->favouriteFileCount] = dtk_make_string(filePathClean);
     pConfig->favouriteFileCount += 1;

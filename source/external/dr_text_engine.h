@@ -4242,7 +4242,7 @@ drte_bool32 drte_view_get_character_under_point_relative_to_text(drte_view* pVie
 
                     drte_style_token fgStyleToken = drte_engine__get_style_token(pView->pEngine, segment.fgStyleSlot);
                     if (pView->pEngine->onGetCursorPositionFromPoint) {
-                        pView->pEngine->onGetCursorPositionFromPoint(pView->pEngine, fgStyleToken, pView->scale, pView->pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg, segment.width, inputPosXRelativeToText - segment.posX, OUT &unused, OUT &iCharTemp);
+                        pView->pEngine->onGetCursorPositionFromPoint(pView->pEngine, fgStyleToken, pView->scale, pView->pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg, segment.width, inputPosXRelativeToText - segment.posX, &unused, &iCharTemp);
                         iChar = segment.iCharBeg + iCharTemp;
                     }
                 }
@@ -4806,7 +4806,7 @@ drte_bool32 drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, si
 
                     drte_style_token fgStyleToken = drte_engine__get_style_token(pView->pEngine, segment.fgStyleSlot);
                     if (pView->pEngine->onGetCursorPositionFromPoint) {
-                        pView->pEngine->onGetCursorPositionFromPoint(pView->pEngine, fgStyleToken, pView->scale, pView->pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg, segment.width, posXRelativeToText - segment.posX, OUT &unused, OUT &iChar);
+                        pView->pEngine->onGetCursorPositionFromPoint(pView->pEngine, fgStyleToken, pView->scale, pView->pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg, segment.width, posXRelativeToText - segment.posX, &unused, &iChar);
                         pView->pCursors[cursorIndex].iCharAbs = segment.iCharBeg + iChar;
                     }
                 }

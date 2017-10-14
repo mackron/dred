@@ -1205,7 +1205,7 @@ dtk_bool32 dred_textview_unindent_selected_blocks(dred_textview* pTextView)
                 size_t iLineCharNonWS = iLineChar;
                 for (;;) {
                     uint32_t c = drte_engine_get_utf32(pTextView->pTextEngine, iLineCharNonWS);
-                    if (c == '\0' || c == '\r' || c == '\n' || !dr_is_whitespace(c)) {
+                    if (c == '\0' || c == '\r' || c == '\n' || !dtk_is_whitespace(c)) {
                         break;
                     }
 
@@ -2433,7 +2433,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
                                     break;
                                 }
 
-                                if (!dr_is_whitespace(c)) {
+                                if (!dtk_is_whitespace(c)) {
                                     break;
                                 }
 

@@ -189,6 +189,76 @@ DTK_INLINE int dtk_strncat_s(char* dst, size_t dstSizeInBytes, const char* src, 
 #endif
 }
 
+DTK_INLINE int dtk_itoa_s(int value, char* dst, size_t dstSizeInBytes, int radix)
+{
+#ifdef _MSC_VER
+    return _itoa_s(value, dst, dstSizeInBytes, radix);
+#else
+    if (dst == NULL || dstSizeInBytes == 0) {
+        return EINVAL;
+    }
+    if (radix < 2 || radix > 36) {
+        dst[0] = '\0';
+        return EINVAL;
+    }
+
+    int sign = (value < 0 && radix == 10) ? -1 : 1;     // The negative sign is only used when the base is 10.
+
+    unsigned int valueU;
+    if (value < 0) {
+        valueU = -value;
+    } else {
+        valueU = value;
+    }
+
+    char* dstEnd = dst;
+    do
+    {
+        int remainder = valueU % radix;
+        if (remainder > 9) {
+            *dstEnd = (char)((remainder - 10) + 'a');
+        } else {
+            *dstEnd = (char)(remainder + '0');
+        }
+
+        dstEnd += 1;
+        dstSizeInBytes -= 1;
+        valueU /= radix;
+    } while (dstSizeInBytes > 0 && valueU > 0);
+
+    if (dstSizeInBytes == 0) {
+        dst[0] = '\0';
+        return EINVAL;  // Ran out of room in the output buffer.
+    }
+
+    if (sign < 0) {
+        *dstEnd++ = '-';
+        dstSizeInBytes -= 1;
+    }
+
+    if (dstSizeInBytes == 0) {
+        dst[0] = '\0';
+        return EINVAL;  // Ran out of room in the output buffer.
+    }
+
+    *dstEnd = '\0';
+
+
+    // At this point the string will be reversed.
+    dstEnd -= 1;
+    while (dst < dstEnd) {
+        char temp = *dst;
+        *dst = *dstEnd;
+        *dstEnd = temp;
+
+        dst += 1;
+        dstEnd -= 1;
+    }
+
+    return 0;
+#endif
+}
+
 DTK_INLINE size_t dtk_strcpy_len(char* dst, size_t dstSize, const char* src)
 {
     if (dtk_strcpy_s(dst, dstSize, src) == 0) {
@@ -206,6 +276,41 @@ DTK_INLINE int dtk_stricmp(const char* string1, const char* string2)
     return strcasecmp(string1, string2);
 #endif
 }
+
+
+#ifndef _MSC_VER
+DTK_INLINE int strcpy_s(char* dst, size_t dstSizeInBytes, const char* src)
+{
+    return dtk_strcpy_s(dst, dstSizeInBytes, src);
+}
+
+DTK_INLINE int strncpy_s(char* dst, size_t dstSizeInBytes, const char* src, size_t count)
+{
+    return dtk_strncpy_s(dst, dstSizeInBytes, src, count);
+}
+
+DTK_INLINE int strcat_s(char* dst, size_t dstSizeInBytes, const char* src)
+{
+    return dtk_strcat_s(dst, dstSizeInBytes, src);
+}
+
+DTK_INLINE int strncat_s(char* dst, size_t dstSizeInBytes, const char* src, size_t count)
+{
+    return dtk_strncat_s(dst, dstSizeInBytes, src, count);
+}
+
+#ifndef __MINGW32__
+DTK_INLINE int _stricmp(const char* string1, const char* string2)
+{
+    return strcasecmp(string1, string2);
+}
+#endif
+
+DTK_INLINE int _itoa_s(int value, char* dst, size_t dstSizeInBytes, int radix)
+{
+    return dtk_itoa_s(value, dst, dstSizeInBytes, radix);
+}
+#endif
 
 
 // Converts a UTF-16 character to UTF-32.
@@ -304,6 +409,32 @@ DTK_INLINE dtk_bool32 dtk_is_whitespace(dtk_uint32 utf32)
     return utf32 == ' ' || utf32 == '\t' || utf32 == '\n' || utf32 == '\v' || utf32 == '\f' || utf32 == '\r';
 }
 
+DTK_INLINE const char* dtk_first_non_whitespace(const char* str)
+{
+    if (str == NULL) {
+        return NULL;
+    }
+
+    while (str[0] != '\0' && !(str[0] != ' ' && str[0] != '\t' && str[0] != '\n' && str[0] != '\v' && str[0] != '\f' && str[0] != '\r')) {
+        str += 1;
+    }
+
+    return str;
+}
+
+DTK_INLINE const char* dtk_first_whitespace(const char* str)
+{
+    if (str == NULL) {
+        return NULL;
+    }
+
+    while (str[0] != '\0' && (str[0] != ' ' && str[0] != '\t' && str[0] != '\n' && str[0] != '\v' && str[0] != '\f' && str[0] != '\r')) {
+        str += 1;
+    }
+
+    return str;
+}
+
 DTK_INLINE const char* dtk_ltrim(const char* str)
 {
     if (str == NULL) {
@@ -354,6 +485,52 @@ DTK_INLINE void dtk_trim(char* str)
 }
 
 
+// Converts an ASCII hex character to it's integral equivalent. Returns false if it's not a valid hex character.
+dtk_bool32 dtk_hex_char_to_uint(char ascii, unsigned int* out);
+
+
+// Retrieves the first token in the given string.
+//
+// This function is suitable for doing a simple whitespace tokenization of a null-terminated string.
+//
+// The return value is a pointer to one character past the last character of the next token. You can use the return value to execute
+// this function in a loop to parse an entire string.
+//
+// <tokenOut> can be null. If the buffer is too small to contain the entire token it will be set to an empty string. The original
+// input string combined with the return value can be used to reliably find the token.
+//
+// This will handle double-quoted strings, so a string such as "My \"Complex String\"" contains two tokens: "My" and "\"Complex String\"".
+//
+// This function has no dependencies.
+const char* dtk_next_token(const char* tokens, char* tokenOut, size_t tokenOutSize);
+
+// Callbacks for dtk_parse_key_value_pairs().
+typedef size_t (* dtk_key_value_read_proc) (void* pUserData, void* pDataOut, size_t bytesToRead);
+typedef void   (* dtk_key_value_pair_proc) (void* pUserData, const char* key, const char* value);
+typedef void   (* dtk_key_value_error_proc)(void* pUserData, const char* message, unsigned int line);
+
+// Parses a series of simple Key/Value pairs.
+//
+// This function is suitable for parsing simple key/value config files.
+//
+// This function will never allocate memory on the heap. Because of this there is a minor restriction in the length of an individual
+// key/value pair which is 4KB.
+//
+// Formatting rules are as follows:
+//  - The basic syntax for a key/value pair is [key][whitespace][value]. Example: MyProperty 1234
+//  - All key/value pairs must be declared on a single line, and a single line cannot contain more than a single key/value pair.
+//  - Comments begin with the '#' character and continue until the end of the line.
+//  - A key cannot contain spaces but are permitted in values.
+//  - The value will have any leading and trailing whitespace trimmed.
+//
+// If an error occurs, that line will be skipped and processing will continue.
+void dtk_parse_key_value_pairs(dtk_key_value_read_proc onRead, dtk_key_value_pair_proc onPair, dtk_key_value_error_proc onError, void* pUserData);
+
+// This will only return DR_FALSE if the file fails to open. It will still return DR_TRUE even if there are syntax error or whatnot.
+dtk_bool32 dtk_parse_key_value_pairs_from_file(const char* filePath, dtk_key_value_pair_proc onPair, dtk_key_value_error_proc onError, void* pUserData);
+
+
+//// dtk_string ////
 
 typedef char* dtk_string;
 

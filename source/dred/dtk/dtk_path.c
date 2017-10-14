@@ -396,7 +396,7 @@ size_t dtk_path_base_path(char* pathOut, size_t pathOutSize, const char* path)
 
     size_t pathOutLen = (baseend - pathorig);
     if (pathOut != NULL) {
-        strncpy_s(pathOut, pathOutSize, pathorig, pathOutLen);
+        dtk_strncpy_s(pathOut, pathOutSize, pathorig, pathOutLen);
     }
 
     return (baseend - pathorig) + 1;    // +1 for null terminator
@@ -427,7 +427,7 @@ static size_t dtk_path_append__internal(char* pathOut, size_t pathOutSize, const
 
     if (other[0] == '\0') {
         if (pathOut != NULL) {
-            strcpy_s(pathOut, pathOutSize, base);
+            dtk_strcpy_s(pathOut, pathOutSize, base);
         }
         return strlen(base) + 1;    // +1 for null terminator.
     }
@@ -445,9 +445,9 @@ static size_t dtk_path_append__internal(char* pathOut, size_t pathOutSize, const
 
     if (pathOut != NULL) {
         if (pathOutLength+1 <= pathOutSize) {
-            strcpy_s(pathOut + 0,               pathOutSize - 0,               base);
-            strcpy_s(pathOut + path1Length,     pathOutSize - path1Length,     "/");
-            strcpy_s(pathOut + path1Length + 1, pathOutSize - path1Length - 1, other);
+            dtk_strcpy_s(pathOut + 0,               pathOutSize - 0,               base);
+            dtk_strcpy_s(pathOut + path1Length,     pathOutSize - path1Length,     "/");
+            dtk_strcpy_s(pathOut + path1Length + 1, pathOutSize - path1Length - 1, other);
         }
     }
 
@@ -480,7 +480,7 @@ size_t dtk_path_append_extension(char* pathOut, size_t pathOutSize, const char* 
 
     if (extension[0] == '\0') {
         if (pathOut != NULL) {
-            strcpy_s(pathOut, pathOutSize, base);
+            dtk_strcpy_s(pathOut, pathOutSize, base);
         }
         return strlen(base) + 1;    // +1 for null terminator.
     }
@@ -493,9 +493,9 @@ size_t dtk_path_append_extension(char* pathOut, size_t pathOutSize, const char* 
 
     if (pathOut != NULL) {
         if (pathOutLength+1 <= pathOutSize) {
-            strcpy_s(pathOut + 0,              pathOutSize - 0,              base);
-            strcpy_s(pathOut + baseLength,     pathOutSize - baseLength,     ".");
-            strcpy_s(pathOut + baseLength + 1, pathOutSize - baseLength - 1, extension);
+            dtk_strcpy_s(pathOut + 0,              pathOutSize - 0,              base);
+            dtk_strcpy_s(pathOut + baseLength,     pathOutSize - baseLength,     ".");
+            dtk_strcpy_s(pathOut + baseLength + 1, pathOutSize - baseLength - 1, extension);
         }
     }
 
@@ -577,7 +577,7 @@ size_t dtk_path_clean__try_write(dtk_path_iterator* iterators, unsigned int iter
         }
 
         if (pathOut != NULL) {
-            strncpy_s(pathOut, pathOutSize, isegment.path + isegment.segment.offset, isegment.segment.length);
+            dtk_strncpy_s(pathOut, pathOutSize, isegment.path + isegment.segment.offset, isegment.segment.length);
         }
         bytesWritten += isegment.segment.length;
     }
@@ -672,7 +672,7 @@ size_t dtk_path_remove_extension(char* pathOut, size_t pathOutSize, const char* 
     size_t pathOutLength = (size_t)(extension - path);
 
     if (pathOut != NULL) {
-        strncpy_s(pathOut, pathOutSize, path, pathOutLength);
+        dtk_strncpy_s(pathOut, pathOutSize, path, pathOutLength);
     }
 
     return pathOutLength;
@@ -708,7 +708,7 @@ size_t dtk_path_remove_file_name(char* pathOut, size_t pathOutSize, const char* 
         }
 
         if (pathOut != NULL) {
-            strncpy_s(pathOut, pathOutSize, path, pathOutLength);
+            dtk_strncpy_s(pathOut, pathOutSize, path, pathOutLength);
         }
 
         return pathOutLength + 1;
@@ -832,7 +832,7 @@ size_t dtk_path_to_relative(char* pathOut, size_t pathOutSize, const char* absol
             }
 
             if (pathOut != NULL) {
-                strncpy_s(pathOut + pathOutLength, pathOutSize - pathOutLength, iPath.path + iPath.segment.offset, iPath.segment.length);
+                dtk_strncpy_s(pathOut + pathOutLength, pathOutSize - pathOutLength, iPath.path + iPath.segment.offset, iPath.segment.length);
             }
             pathOutLength += iPath.segment.length;
         } while (dtk_path_next(&iPath));

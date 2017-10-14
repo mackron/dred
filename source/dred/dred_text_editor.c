@@ -239,13 +239,13 @@ dtk_bool32 dred_text_editor__on_reload(dred_editor* pEditor)
         return DTK_FALSE;
     }
 
-    char* pFileData = dr_open_and_read_text_file(dred_editor_get_file_path(DRED_EDITOR(pTextEditor)), NULL);
-    if (pFileData == NULL) {
+    char* pFileData;
+    if (dtk_open_and_read_text_file(dred_editor_get_file_path(DRED_EDITOR(pTextEditor)), NULL, &pFileData) != DTK_SUCCESS) {
         return DTK_FALSE;
     }
 
     dred_textview_set_text(pTextEditor->pTextView, pFileData);
-    dr_free_file_data(pFileData);
+    dtk_free(pFileData);
 
     // After reloading we need to update the base undo point and unmark the file as modified.
     pTextEditor->iBaseUndoPoint = dred_textview_get_undo_points_remaining_count(pTextView);
@@ -308,8 +308,8 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pPar
     dred_text_editor_set_highlighter(pTextEditor, dred_get_language_by_file_path(pDred, filePathAbsolute));
 
     if (filePathAbsolute != NULL && filePathAbsolute[0] != '\0') {
-        char* pFileData = dr_open_and_read_text_file(filePathAbsolute, NULL);
-        if (pFileData == NULL) {
+        char* pFileData;
+        if (dtk_open_and_read_text_file(filePathAbsolute, NULL, &pFileData) != DTK_SUCCESS) {
             dred_textview_uninit(pTextEditor->pTextView);
             drte_engine_uninit(&pTextEditor->engine);
             dred_editor_uninit(DRED_EDITOR(pTextEditor));
@@ -319,7 +319,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pPar
 
         dred_textview_set_text(pTextEditor->pTextView, pFileData);
         dred_textview_clear_undo_stack(pTextEditor->pTextView);
-        dr_free_file_data(pFileData);
+        dtk_free(pFileData);
     }
 
 
@@ -732,7 +732,7 @@ void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, float textSc
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTextEditor));
 
-    pTextEditor->textScale = dr_clamp(textScale, 0.1f, 4.0f);
+    pTextEditor->textScale = dtk_clamp(textScale, 0.1f, 4.0f);
     dred_textview_set_line_numbers_width(pTextEditor->pTextView, (48 + pDred->config.textEditorLineNumbersPadding) * uiScale * pTextEditor->textScale);
     dred_textview_set_line_numbers_padding(pTextEditor->pTextView, pDred->config.textEditorLineNumbersPadding * uiScale * pTextEditor->textScale);
     dred_textview_set_font(pTextEditor->pTextView, &pDred->config.pTextEditorFont->fontDTK);

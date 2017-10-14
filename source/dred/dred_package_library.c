@@ -16,7 +16,7 @@ void dred_load_package_info__on_pair(void* pUserData, const char* key, const cha
 
     if (strcmp(key, "Name") == 0) {
         char valueWithoutQuotes[256];
-        if (dr_next_token(value, valueWithoutQuotes, sizeof(valueWithoutQuotes)) == NULL) {
+        if (dtk_next_token(value, valueWithoutQuotes, sizeof(valueWithoutQuotes)) == NULL) {
             return;
         }
 
@@ -26,7 +26,7 @@ void dred_load_package_info__on_pair(void* pUserData, const char* key, const cha
 
     if (strcmp(key, "SO") == 0) {
         char valueWithoutQuotes[256];
-        if (dr_next_token(value, valueWithoutQuotes, sizeof(valueWithoutQuotes)) == NULL) {
+        if (dtk_next_token(value, valueWithoutQuotes, sizeof(valueWithoutQuotes)) == NULL) {
             return;
         }
 
@@ -45,7 +45,7 @@ dtk_bool32 dred_load_package_info(const char* dredpackagePath, dred_package_info
 
     memset(pInfo, 0, sizeof(*pInfo));
 
-    if (!dr_parse_key_value_pairs_from_file(dredpackagePath, dred_load_package_info__on_pair, NULL, pInfo)) {
+    if (!dtk_parse_key_value_pairs_from_file(dredpackagePath, dred_load_package_info__on_pair, NULL, pInfo)) {
         return DTK_FALSE;
     }
 
@@ -87,8 +87,9 @@ dtk_bool32 dred_construct_library_path(char* pathOut, size_t pathOutSize, const 
 
     // Doubtful this will show up in profiling, but this can definitely be optimized.
     return
-        drpath_copy_and_append(pathOut, pathOutSize, basePackageFolderPath, platformSubPath) && 
-        drpath_append(pathOut, pathOutSize, pInfo->libraryName) &&
+        dtk_path_append(pathOut, pathOutSize, basePackageFolderPath, platformSubPath) > 0 &&
+        strcat_s(pathOut, pathOutSize, "/") == 0 &&
+        strcat_s(pathOut, pathOutSize, pInfo->libraryName) == 0 &&
         strcat_s(pathOut, pathOutSize, libraryExt) == 0;
 }
 
@@ -99,7 +100,7 @@ dred_package* dred_package_library_load_package(dred_package_library* pLibrary, 
     // Look for a .dredpackage file. If it doesn't exist, just skip it. Inside the .dredpackage file is information
     // about the package that we'll need in order to load it; in particular the name of the DLL/SO.
     char dredpackagePath[DRED_MAX_PATH];
-    if (drpath_copy_and_append(dredpackagePath, sizeof(dredpackagePath), packageFolderPath, ".dredpackage")) {
+    if (dtk_path_append(dredpackagePath, sizeof(dredpackagePath), packageFolderPath, ".dredpackage")) {
         dred_package_info info;
         if (dred_load_package_info(dredpackagePath, &info)) {
             char libraryPath[DRED_MAX_PATH];
@@ -147,7 +148,7 @@ dtk_bool32 dred_package_library_package_iterator_cb(const char* filePath, void* 
     dred_package_library* pLibrary = (dred_package_library*)pUserData;
     assert(pLibrary != NULL);
 
-    dtk_bool32 isDirectory = dr_is_directory(filePath);
+    dtk_bool32 isDirectory = dtk_is_directory(filePath);
     if (isDirectory) {
         dred_package* pPackage = dred_package_library_load_package(pLibrary, filePath);
         if (pPackage != NULL) {

@@ -1,5 +1,11 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
+// Wrapper API for fopen() for cleanly compiling against supported compilers.
+dtk_result dtk_fopen(const char* filePath, const char* openMode, FILE** ppFile);
+
+// Helper for creating an empty file.
+dtk_result dtk_create_empty_file(const char* fileName, dtk_bool32 failIfExists);
+
 // Retrieves the file data of the given file. Free the returned pointer with dtk_free().
 dtk_result dtk_open_and_read_file(const char* filePath, size_t* pFileSizeOut, void** ppFileData);
 
@@ -25,6 +31,20 @@ dtk_bool32 dtk_file_exists(const char* filePath);
 //
 // This will return DTK_FALSE if the path points to a file.
 DTK_INLINE dtk_bool32 dtk_directory_exists(const char* directoryPath) { return dtk_is_directory(directoryPath); }
+
+// Moves a file.
+//
+// This uses rename() on POSIX platforms and MoveFileEx(oldPath, newPath, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED | MOVEFILE_WRITE_THROUGH) on windows platforms.
+dtk_result dtk_move_file(const char* oldPath, const char* newPath);
+
+// Copies a file.
+dtk_result dtk_copy_file(const char* srcPath, const char* dstPath, dtk_bool32 failIfExists);
+
+// Determines if the given file is read only.
+dtk_bool32 dtk_is_file_read_only(const char* filePath);
+
+// Retrieves the last modified time of the file at the given path.
+dtk_uint64 dtk_get_file_modified_time(const char* filePath);
 
 // Deletes the file at the given path.
 //

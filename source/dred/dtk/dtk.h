@@ -87,7 +87,11 @@ typedef int dtk_result;
 #define DTK_DOES_NOT_EXIST          -15
 #define DTK_ALREADY_EXISTS          -16
 #define DTK_ACCESS_DENIED           -17
-#define DTK_TIMEOUT                 -18
+#define DTK_TOO_MANY_OPEN_FILES     -18
+#define DTK_END_OF_FILE             -19
+#define DTK_NO_SPACE                -20
+#define DTK_NEGATIVE_SEEK           -21
+#define DTK_TIMEOUT                 -22
 #define DTK_NO_DISPLAY              -256
 #define DTK_NO_SCREEN               -257
 #define DTK_QUIT                    -1024   // Returned by dtk_next_event() when a quit message is received.
@@ -118,10 +122,12 @@ typedef int dtk_result;
 #endif
 #define dtk_zero_object(p)      dtk_zero_memory((p), sizeof(*(p)))
 
-#define dtk_count_of(obj)       (sizeof(obj) / sizeof(obj[0]))
-#define dtk_min(x, y)           (((x) < (y)) ? (x) : (y))
-#define dtk_max(x, y)           (((x) > (y)) ? (x) : (y))
-#define dtk_clamp(x, lo, hi)    (((x) < (lo)) ? (lo) : (((x) > (hi)) ? (hi) : (x)))
+#define dtk_count_of(obj)                   (sizeof(obj) / sizeof(obj[0]))
+#define dtk_min(x, y)                       (((x) < (y)) ? (x) : (y))
+#define dtk_max(x, y)                       (((x) > (y)) ? (x) : (y))
+#define dtk_clamp(x, lo, hi)                (((x) < (lo)) ? (lo) : (((x) > (hi)) ? (hi) : (x)))
+#define dtk_round_up(x, multiple)           ((((x) + ((multiple) - 1)) / (multiple)) * (multiple))
+#define dtk_round_up_signed(x, multiple)    ((((x) + (((x) >= 0)*((multiple) - 1))) / (multiple)) * (multiple))
 
 #if defined(_MSC_VER)
 #define DTK_INLINE static __inline
@@ -698,5 +704,14 @@ size_t dtk_get_executable_directory_path(char* pathOut, size_t pathOutSize);
 // On Windows this will typically be %APPDATA% and on Linux it will usually be ~/.config
 size_t dtk_get_config_directory_path(char* pathOut, size_t pathOutSize);
 
+
+
+//// User Accounts and Process Management ////
+
+// Retrieves the user name of the user running the application.
+size_t dtk_get_username(char* usernameOut, size_t usernameOutSize);
+
+// Retrieves the ID of the current process.
+unsigned int dtk_get_process_id();
 
 #endif  // DTK_H

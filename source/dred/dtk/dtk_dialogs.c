@@ -91,7 +91,7 @@ dtk_dialog_result dtk_show_font_picker_dialog__win32(dtk_context* pTK, dtk_windo
     lf.lfItalic = FALSE;
 
     if (pDefaultFontDesc != NULL) {
-        strncpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), pDefaultFontDesc->family, _TRUNCATE);
+        dtk_strncpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), pDefaultFontDesc->family, _TRUNCATE);
         lf.lfHeight = -(LONG)pDefaultFontDesc->size;
 
         switch (pDefaultFontDesc->weight)
@@ -124,7 +124,7 @@ dtk_dialog_result dtk_show_font_picker_dialog__win32(dtk_context* pTK, dtk_windo
         return DTK_DIALOG_RESULT_CANCEL;
     }
 
-    strcpy_s(pDescOut->family, sizeof(pDescOut->family), lf.lfFaceName);
+    dtk_strcpy_s(pDescOut->family, sizeof(pDescOut->family), lf.lfFaceName);
 
     if (lf.lfHeight < 0) {
         pDescOut->size = (float)-lf.lfHeight;
@@ -457,7 +457,7 @@ dtk_dialog_result dtk_show_save_file_dialog__win32(dtk_window* pParentWindow, dt
         return DTK_OUT_OF_MEMORY;    // Out of memory.
     }
 
-    strcpy_s(pSelectedFilePath, selectedFilePathLen+1, filePath);
+    dtk_strcpy_s(pSelectedFilePath, selectedFilePathLen+1, filePath);
 
     if (ppSelectedFilePath) {
         *ppSelectedFilePath = pSelectedFilePath;
@@ -567,7 +567,7 @@ dtk_dialog_result dtk_show_font_picker_dialog__gtk(dtk_context* pTK, dtk_window*
 
     PangoFontDescription* pPangoDesc = pango_font_description_from_string(pangoFontStr);
     if (pPangoDesc != NULL) {
-        strcpy_s(pDescOut->family, sizeof(pDescOut->family), pango_font_description_get_family(pPangoDesc));
+        dtk_strcpy_s(pDescOut->family, sizeof(pDescOut->family), pango_font_description_get_family(pPangoDesc));
 
         gint size = pango_font_description_get_size(pPangoDesc);
         if (size > 0) {
@@ -816,7 +816,7 @@ dtk_dialog_result dtk_show_save_file_dialog__gtk(dtk_window* pParentWindow, dtk_
             goto done;
         }
 
-        strcpy_s(pSelectedFilePath, selectedFilePathLen+1, filenameGTK);
+        dtk_strcpy_s(pSelectedFilePath, selectedFilePathLen+1, filenameGTK);
 
         if (ppSelectedFilePath) {
             *ppSelectedFilePath = pSelectedFilePath;

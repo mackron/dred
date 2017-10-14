@@ -233,11 +233,11 @@ dred_result dred_cmdbox_cmdlist_update_list(dred_cmdbox_cmdlist* pCmdList, const
 
 
     char commandName[256];
-    const char* params = dr_next_token(runningText, commandName, sizeof(commandName));
+    const char* params = dtk_next_token(runningText, commandName, sizeof(commandName));
 
     // If the user has typed the whole command we only want to show the first one.
     pCmdList->showOnlyFirstCommand = DTK_FALSE;
-    if (params != NULL && dr_is_whitespace(params[0])) {
+    if (params != NULL && dtk_is_whitespace(params[0])) {
         pCmdList->showOnlyFirstCommand = DTK_TRUE;
     }
 

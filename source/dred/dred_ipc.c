@@ -73,7 +73,7 @@ dtk_bool32 dred_ipc_get_pipe_name(char* nameOut, size_t nameOutSize)
         return DTK_FALSE;
     }
 
-    if (dr_get_username(nameOut, nameOutSize) == 0) {
+    if (dtk_get_username(nameOut, nameOutSize) == 0) {
         return DTK_FALSE;
     }
 
@@ -102,7 +102,7 @@ dtk_bool32 dred_ipc_get_lock_name(char* nameOut, size_t nameOutSize)
     }
 
     char username[512];
-    if (dr_get_username(username, sizeof(username)) == 0) {
+    if (dtk_get_username(username, sizeof(username)) == 0) {
         return DTK_FALSE;
     }
 

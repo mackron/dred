@@ -139,17 +139,17 @@ dtk_bool32 dred_command__bind(dred_context* pDred, const char* value)
 dtk_bool32 dred_command__load_config(dred_context* pDred, const char* value)
 {
     char path[DRED_MAX_PATH];
-    if (!dr_next_token(value, path, sizeof(path))) {
+    if (dtk_next_token(value, path, sizeof(path)) == NULL) {
         return DTK_FALSE;
     }
 
-    if (dtk_path_is_relative(path) && !dr_file_exists(path)) {
+    if (dtk_path_is_relative(path) && !dtk_file_exists(path)) {
         // If the path is relative and the file does not exist relative to the current directory, try making it relative to
         // the user config directory.
         char configPath[DRED_MAX_PATH];
         if (dred_get_config_folder_path(pDred, configPath, sizeof(configPath)) > 0) {
             char pathAbsolute[DRED_MAX_PATH];
-            if (drpath_append_and_clean(pathAbsolute, sizeof(pathAbsolute), configPath, path)) {
+            if (dtk_path_append_and_clean(pathAbsolute, sizeof(pathAbsolute), configPath, path)) {
                 return dred_load_config(pDred, pathAbsolute);
             }
         }
@@ -163,19 +163,19 @@ dtk_bool32 dred_command__load_config(dred_context* pDred, const char* value)
 dtk_bool32 dred_command__set(dred_context* pDred, const char* value)
 {
     char name[256];
-    value = dr_next_token(value, name, sizeof(name));
+    value = dtk_next_token(value, name, sizeof(name));
     if (value == NULL) {
         return DTK_FALSE;
     }
 
-    dred_config_set(&pDred->config, name, dr_ltrim(value));
+    dred_config_set(&pDred->config, name, dtk_ltrim(value));
     return DTK_TRUE;
 }
 
 dtk_bool32 dred_command__set_default(dred_context* pDred, const char* value)
 {
     char name[256];
-    value = dr_next_token(value, name, sizeof(name));
+    value = dtk_next_token(value, name, sizeof(name));
     if (value == NULL) {
         return DTK_FALSE;
     }
@@ -283,7 +283,7 @@ dtk_bool32 dred_command__new(dred_context* pDred, const char* value)
 dtk_bool32 dred_command__open(dred_context* pDred, const char* value)
 {
     char fileName[DRED_MAX_PATH];
-    if (dr_next_token(value, fileName, sizeof(fileName)) == NULL) {
+    if (dtk_next_token(value, fileName, sizeof(fileName)) == NULL) {
         dred_show_open_file_dialog(pDred);
     } else {
         if (!dred_open_file(pDred, fileName)) {
@@ -599,7 +599,7 @@ dtk_bool32 dred_command__goto(dred_context* pDred, const char* value)
 
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char param[256];
-        if (dr_next_token(value, param, sizeof(param)) != NULL) {
+        if (dtk_next_token(value, param, sizeof(param)) != NULL) {
             // If the last character is a %, we use a ratio based goto.
             if (param[strlen(param) - 1] == '%') {
                 param[strlen(param) - 1] = '\0';
@@ -624,7 +624,7 @@ dtk_bool32 dred_command__find(dred_context* pDred, const char* value)
 
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char query[1024];
-        if (dr_next_token(value, query, sizeof(query)) != NULL) {
+        if (dtk_next_token(value, query, sizeof(query)) != NULL) {
             dred_text_editor_deselect_all_in_focused_view(DRED_TEXT_EDITOR(pFocusedEditor));
             if (!dred_text_editor_find_and_select_next(DRED_TEXT_EDITOR(pFocusedEditor), query)) {
                 dred_cmdbar_set_message(&pDred->cmdBar, "No results found.");
@@ -647,10 +647,10 @@ dtk_bool32 dred_command__replace(dred_context* pDred, const char* value)
 
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char query[1024];
-        value = dr_next_token(value, query, sizeof(query));
+        value = dtk_next_token(value, query, sizeof(query));
         if (value != NULL) {
             char replacement[1024];
-            value = dr_next_token(value, replacement, sizeof(replacement));
+            value = dtk_next_token(value, replacement, sizeof(replacement));
             if (value != NULL) {
                 if (!dred_text_editor_find_and_replace_next(DRED_TEXT_EDITOR(pFocusedEditor), query, replacement)) {
                     dred_cmdbar_set_message(&pDred->cmdBar, "No results found.");
@@ -674,10 +674,10 @@ dtk_bool32 dred_command__replace_all(dred_context* pDred, const char* value)
 
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char query[1024];
-        value = dr_next_token(value, query, sizeof(query));
+        value = dtk_next_token(value, query, sizeof(query));
         if (value != NULL) {
             char replacement[1024];
-            value = dr_next_token(value, replacement, sizeof(replacement));
+            value = dtk_next_token(value, replacement, sizeof(replacement));
             if (value != NULL) {
                 if (!dred_text_editor_find_and_replace_all(DRED_TEXT_EDITOR(pFocusedEditor), query, replacement)) {
                     dred_cmdbar_set_message(&pDred->cmdBar, "No results found.");
@@ -761,7 +761,7 @@ dtk_bool32 dred_command__insert_date(dred_context* pDred, const char* value)
 
     if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
         char dateStr[256];
-        dr_datetime_short(dr_now(), dateStr, sizeof(dateStr));
+        dtk_datetime_short(dtk_now(), dateStr, sizeof(dateStr));
 
         dred_text_editor_insert_text_at_cursors(DRED_TEXT_EDITOR(pFocusedEditor), dateStr);
     }
@@ -930,19 +930,19 @@ dtk_bool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, cons
     }
 
     // Trim whitespace.
-    cmdStr = dr_first_non_whitespace(cmdStr);
+    cmdStr = dtk_first_non_whitespace(cmdStr);
 
     // Special case for "!".
     if (cmdStr[0] == '!') {
         *pCommandOut = g_Commands[0];
-        *pValueOut   = dr_first_non_whitespace(cmdStr + 1);
+        *pValueOut   = dtk_first_non_whitespace(cmdStr + 1);
         return DTK_TRUE;
     }
 
 
     // For every other command the value will come after the first whitespace.
     char func[256];
-    cmdStr = dr_next_token(cmdStr, func, sizeof(func));
+    cmdStr = dtk_next_token(cmdStr, func, sizeof(func));
     if (cmdStr == NULL) {
         return DTK_FALSE;
     }
@@ -953,7 +953,7 @@ dtk_bool32 dred_find_command(const char* cmdStr, dred_command* pCommandOut, cons
     }
 
     *pCommandOut = g_Commands[index];
-    *pValueOut = dr_first_non_whitespace(cmdStr);
+    *pValueOut = dtk_first_non_whitespace(cmdStr);
     return DTK_TRUE;
 }
 
@@ -1045,20 +1045,20 @@ dtk_bool32 dred_parse_bind_command(const char* value, char* nameOut, size_t name
         return DTK_FALSE;
     }
 
-    value = dr_next_token(value, nameOut, (unsigned int)nameOutSize);
+    value = dtk_next_token(value, nameOut, (unsigned int)nameOutSize);
     if (value != NULL) {
         char shortcutStr[256];
-        value = dr_next_token(value, shortcutStr, sizeof(shortcutStr));
+        value = dtk_next_token(value, shortcutStr, sizeof(shortcutStr));
         if (value != NULL) {
             if (pShortcutOut) *pShortcutOut = dred_shortcut_parse(shortcutStr);
 
-            const char* cmd = dr_first_non_whitespace(value);
+            const char* cmd = dtk_first_non_whitespace(value);
             if (cmd == NULL) {
                 return DTK_FALSE;
             }
 
             if (cmd[0] == '\"') {
-                return dr_next_token(cmd, pCmdOut, (unsigned int)cmdOutSize) != NULL;    // <-- This will trim the double-quotes.
+                return dtk_next_token(cmd, pCmdOut, (unsigned int)cmdOutSize) != NULL;    // <-- This will trim the double-quotes.
             } else {
                 return strcpy_s(pCmdOut, cmdOutSize, cmd) == 0;
             }

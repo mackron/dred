@@ -6,6 +6,18 @@
 #ifdef DTK_WIN32
     #include <windows.h>
     #include <commctrl.h>
+    #if defined(_MSC_VER)
+        #pragma warning(push)
+        #pragma warning(disable:4091)   // 'typedef ': ignored on left of 'tagGPFIDL_FLAGS' when no variable is declared
+    #endif
+    #include <shlobj.h>
+    #if defined(_MSC_VER)
+        #pragma warning(pop)
+    #endif
+#endif
+#ifdef DTK_POSIX
+#include <sys/types.h>
+#include <pwd.h>
 #endif
 #ifdef DTK_GTK
     #include <gdk/gdk.h>
@@ -13,6 +25,7 @@
 #endif
 
 #include <assert.h>
+#include <errno.h>  // For errno_t
 #include <ctype.h>  // For toupper()
 #include <math.h>   // For ceil(), round(), etc.
 #include <time.h>   // For time(), etc.
@@ -253,16 +266,18 @@ dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
 }
 
 
-dtk_result dtk_errno_to_result(int err)
+dtk_result dtk_errno_to_result(int e)
 {
-#if 0
-    switch (err)
-    {
-        default: return DTK_ERROR;
+    switch (e) {
+        case EACCES: return DTK_ACCESS_DENIED;
+        case EEXIST: return DTK_ALREADY_EXISTS;
+        case EINVAL: return DTK_INVALID_ARGS;
+        case EMFILE: return DTK_TOO_MANY_OPEN_FILES;
+        case ENOENT: return DTK_DOES_NOT_EXIST;
+        case ENOMEM: return DTK_OUT_OF_MEMORY;
+        default: break;
     }
-#endif
 
-    (void)err;
     return DTK_ERROR;
 }
 
@@ -868,14 +883,22 @@ fallback:;
 
 dtk_result dtk_win32_error_to_result(DWORD error)
 {
-#if 0
     switch (error)
     {
-        default: return DTK_ERROR;  // Generic error.
+        case ERROR_SUCCESS:             return DTK_SUCCESS;
+        case ERROR_PATH_NOT_FOUND:      return DTK_DOES_NOT_EXIST;
+        case ERROR_TOO_MANY_OPEN_FILES: return DTK_TOO_MANY_OPEN_FILES;
+        case ERROR_NOT_ENOUGH_MEMORY:   return DTK_OUT_OF_MEMORY;
+        case ERROR_DISK_FULL:           return DTK_NO_SPACE;
+        case ERROR_HANDLE_EOF:          return DTK_END_OF_FILE;
+        case ERROR_NEGATIVE_SEEK:       return DTK_NEGATIVE_SEEK;
+        case ERROR_INVALID_PARAMETER:   return DTK_INVALID_ARGS;
+        case ERROR_ACCESS_DENIED:       return DTK_ACCESS_DENIED;
+        case ERROR_SEM_TIMEOUT:         return DTK_TIMEOUT;
+        case ERROR_FILE_NOT_FOUND:      return DTK_DOES_NOT_EXIST;
+        default: break;
     }
-#endif
 
-    (void)error;
     return DTK_ERROR;
 }
 
@@ -2202,6 +2225,46 @@ size_t dtk_get_config_directory_path(char* pathOut, size_t pathOutSize)
 #endif
 #ifdef DTK_POSIX
     return dtk_get_config_directory_path__posix(pathOut, pathOutSize);
+#endif
+}
+
+
+
+//// User Accounts and Process Management ////
+
+size_t dtk_get_username(char* usernameOut, size_t usernameOutSize)
+{
+    if (usernameOut != NULL && usernameOutSize > 0) {
+        usernameOut[0] = '\0';
+    }
+
+#ifdef DTK_WIN32
+    DWORD dwSize = (DWORD)usernameOutSize;
+    if (!GetUserNameA(usernameOut, &dwSize)) {
+        return 0;
+    }
+
+    return dwSize;
+#else
+    struct passwd *pw = getpwuid(geteuid());
+    if (pw == NULL) {
+        return 0;
+    }
+
+    if (usernameOut != NULL) {
+        strcpy_s(usernameOut, usernameOutSize, pw->pw_name);
+    }
+
+    return strlen(pw->pw_name);
+#endif
+}
+
+unsigned int dtk_get_process_id()
+{
+#ifdef DTK_WIN32
+    return GetProcessId(GetCurrentProcess());
+#else
+    return (unsigned int)getpid();
 #endif
 }
 

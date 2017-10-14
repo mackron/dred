@@ -98,17 +98,6 @@ void dtk_ipc_free_handle__unix(dtk_ipc_handle handle)
 #define DTK_WIN32_HANDLE_TO_PIPE(handle)    ((dtk_pipe)handle)
 #define DTK_IPC_PIPE_TO_WIN32_HANDLE(pipe)  ((HANDLE)pipe)
 
-static dtk_result dtk_result_from_win32_error(DWORD dwError)
-{
-    switch (dwError)
-    {
-    case ERROR_INVALID_PARAMETER: return DTK_INVALID_ARGS;
-    case ERROR_ACCESS_DENIED:     return DTK_ACCESS_DENIED;
-    case ERROR_SEM_TIMEOUT:       return DTK_TIMEOUT;
-    default:                      return DTK_ERROR;
-    }
-}
-
 dtk_result dtk_pipe_open_named_server__win32(const char* name, unsigned int options, dtk_pipe* pPipeOut)
 {
     char nameWin32[256] = DTK_WIN32_PIPE_NAME_HEAD;
@@ -133,14 +122,14 @@ dtk_result dtk_pipe_open_named_server__win32(const char* name, unsigned int opti
 
     HANDLE hPipeWin32 = CreateNamedPipeA(nameWin32, dwOpenMode, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, PIPE_UNLIMITED_INSTANCES, DTK_WIN32_PIPE_BUFFER_SIZE, DTK_WIN32_PIPE_BUFFER_SIZE, NMPWAIT_USE_DEFAULT_WAIT, NULL);
     if (hPipeWin32 == INVALID_HANDLE_VALUE) {
-        return dtk_result_from_win32_error(GetLastError());
+        return dtk_win32_error_to_result(GetLastError());
     }
 
 
     // Wait for a client to connect...
     if (!ConnectNamedPipe(hPipeWin32, NULL)) {
         CloseHandle(hPipeWin32);
-        return dtk_result_from_win32_error(GetLastError());
+        return dtk_win32_error_to_result(GetLastError());
     }
 
 
@@ -173,7 +162,7 @@ dtk_result dtk_pipe_open_named_client__win32(const char* name, unsigned int opti
         if (hPipeWin32 == INVALID_HANDLE_VALUE) {
             DWORD dwError = GetLastError();
             if (dwError != ERROR_PIPE_BUSY) {
-                return dtk_result_from_win32_error(dwError);
+                return dtk_win32_error_to_result(dwError);
             }
         } else {
             *pPipeOut = DTK_WIN32_HANDLE_TO_PIPE(hPipeWin32);
@@ -189,7 +178,7 @@ dtk_result dtk_pipe_open_anonymous__win32(dtk_pipe* pPipeRead, dtk_pipe* pPipeWr
     HANDLE hPipeReadWin32;
     HANDLE hPipeWriteWin32;
     if (!CreatePipe(&hPipeReadWin32, &hPipeWriteWin32, NULL, DTK_WIN32_PIPE_BUFFER_SIZE)) {
-        return dtk_result_from_win32_error(GetLastError());
+        return dtk_win32_error_to_result(GetLastError());
     }
 
     *pPipeRead = DTK_WIN32_HANDLE_TO_PIPE(hPipeReadWin32);
@@ -206,7 +195,7 @@ void dtk_pipe_close__win32(dtk_pipe pipe)
 dtk_result dtk_pipe_connect__win32(dtk_pipe pipe)
 {
     if (!ConnectNamedPipe(pipe, NULL)) {
-        return dtk_result_from_win32_error(GetLastError());
+        return dtk_win32_error_to_result(GetLastError());
     }
 
     return DTK_SUCCESS;
@@ -219,7 +208,7 @@ dtk_result dtk_pipe_read__win32(dtk_pipe pipe, void* pDataOut, size_t bytesToRea
 
     DWORD dwBytesRead;
     if (!ReadFile(hPipe, pDataOut, (DWORD)bytesToRead, &dwBytesRead, NULL)) {
-        return dtk_result_from_win32_error(GetLastError());
+        return dtk_win32_error_to_result(GetLastError());
     }
 
     if (pBytesRead) *pBytesRead = dwBytesRead;
@@ -232,7 +221,7 @@ dtk_result dtk_pipe_write__win32(dtk_pipe pipe, const void* pData, size_t bytesT
 
     DWORD dwBytesWritten;
     if (!WriteFile(hPipe, pData, (DWORD)bytesToWrite, &dwBytesWritten, NULL)) {
-        return dtk_result_from_win32_error(GetLastError());
+        return dtk_win32_error_to_result(GetLastError());
     }
 
     if (pBytesWritten) *pBytesWritten = dwBytesWritten;
