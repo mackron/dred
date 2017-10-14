@@ -326,6 +326,7 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 #include "dtk_time.c"
 #include "dtk_io.c"
 #include "dtk_threading.c"
+#include "dtk_ipc.c"
 #include "dtk_monitor.c"
 #include "dtk_graphics.c"
 #include "dtk_input.c"

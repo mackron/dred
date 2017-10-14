@@ -19,7 +19,7 @@
 
 dr_bool32 dred_parse_cmdline__post_startup_files_to_server(const char* key, const char* value, void* pUserData)
 {
-    drpipe client = (drpipe)pUserData;
+    dtk_pipe client = (dtk_pipe)pUserData;
 
     if (key == NULL) {
         dred_ipc_post_message(client, DRED_IPC_MESSAGE_OPEN, value, strlen(value)+1);   // +1 for null terminator.
@@ -36,8 +36,8 @@ dr_bool32 dred__try_opening_existing_process(dr_cmdline cmdline)
         return DR_FALSE;
     }
 
-    drpipe client;
-    if (drpipe_open_named_client(pipeName, DR_IPC_WRITE, &client) == dripc_result_success) {
+    dtk_pipe client;
+    if (dtk_pipe_open_named_client(pipeName, DTK_IPC_WRITE, &client) == DTK_SUCCESS) {
         // If we get here it means there is a server instance already open and we want to use that one instead
         // of creating a new one. The first thing to do is notify the server that it should be activated.
         dred_ipc_post_message(client, DRED_IPC_MESSAGE_ACTIVATE, NULL, 0);
@@ -47,7 +47,7 @@ dr_bool32 dred__try_opening_existing_process(dr_cmdline cmdline)
 
         // The server should be notified of the file, so we just need to return now.
         dred_ipc_post_message(client, DRED_IPC_MESSAGE_TERMINATOR, NULL, 0);
-        drpipe_close(client);
+        dtk_pipe_close(client);
 
         return DR_TRUE;
     }
@@ -86,7 +86,7 @@ int dred_main(dr_cmdline cmdline)
     dred_ipc_get_pipe_name(pipeName, sizeof(pipeName));
 
     char pipeFileName[256];
-    drpipe_get_translated_name(pipeName, pipeFileName, sizeof(pipeFileName));
+    dtk_pipe_get_translated_name(pipeName, pipeFileName, sizeof(pipeFileName));
 
     int lockfd = -1;
 #endif

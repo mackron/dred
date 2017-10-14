@@ -282,7 +282,7 @@ dtk_thread_result DTK_THREADCALL dred_ipc_message_proc(void* pData)
 
 #if 0
     while (pDred->pipeIPC != NULL) {
-        if (drpipe_connect(pDred->pipeIPC) != dripc_result_success) {
+        if (dtk_pipe_connect(pDred->pipeIPC) != dtk_result_success) {
             return 0;
         }
     }
@@ -294,14 +294,14 @@ dtk_thread_result DTK_THREADCALL dred_ipc_message_proc(void* pData)
             break;
         }
 
-        drpipe server;
-        if (drpipe_open_named_server(pipeName, DR_IPC_READ, &server) != dripc_result_success) {
+        dtk_pipe server;
+        if (dtk_pipe_open_named_server(pipeName, DTK_IPC_READ, &server) != DTK_SUCCESS) {
             return 0;
         }
 
         // We may have connected a temporary client during the shutdown procedure in order to return from the call above. Here is where we close.
         if (pDred->isClosing) {
-            drpipe_close(server);
+            dtk_pipe_close(server);
             return 0;
         }
 
@@ -330,7 +330,7 @@ dtk_thread_result DTK_THREADCALL dred_ipc_message_proc(void* pData)
             }
         }
 
-        drpipe_close(server);
+        dtk_pipe_close(server);
     }
 
     return 0;
@@ -741,10 +741,10 @@ void dred_uninit(dred_context* pDred)
     // client in order to break from it.
     char pipeName[256];
     if (dred_ipc_get_pipe_name(pipeName, sizeof(pipeName))) {
-        drpipe tempClientPipe;
-        drpipe_open_named_client(pipeName, DR_IPC_WRITE, &tempClientPipe);
+        dtk_pipe tempClientPipe;
+        dtk_pipe_open_named_client(pipeName, DTK_IPC_WRITE, &tempClientPipe);
         dtk_thread_wait(&pDred->threadIPC);
-        drpipe_close(tempClientPipe);
+        dtk_pipe_close(tempClientPipe);
     }
 
     dred_about_dialog_uninit(pDred->pAboutDialog);

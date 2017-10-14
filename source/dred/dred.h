@@ -50,13 +50,6 @@
     #endif
 #endif
 
-#define DR_IPC_NO_SHARED_MEMORY
-#ifdef DRED_USE_EXTERNAL_REPOS
-#include "../../../dr_ipc/dr_ipc.h"
-#else
-#include "../external/dr_ipc.h"
-#endif
-
 #include "../external/dr_text_engine.h"
 
 

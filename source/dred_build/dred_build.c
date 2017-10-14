@@ -5,9 +5,6 @@
 #define DR_IMPLEMENTATION
 #include "../../../../dr_libs/dr.h"
 
-//#define GB_STRING_IMPLEMENTATION
-//#include "../external/gb_string.h"
-
 #include "../external/stretchy_buffer.h"
 
 #define DR_WEBGEN_IMPLEMENTATION
@@ -941,7 +938,6 @@ int main(int argc, char** argv)
 
     // External libraries.
     dr_copy_file("../../../../../dr_libs/dr.h", "../../../source/external/dr.h", DR_FALSE);
-    dr_copy_file("../../../../dr_ipc/dr_ipc.h", "../../../source/external/dr_ipc.h", DR_FALSE);
 
     // Commands.
     generate_commands_list(pFileOut);

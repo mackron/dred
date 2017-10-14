@@ -13,13 +13,6 @@
     #endif
 #endif
 
-#define DR_IPC_IMPLEMENTATION
-#ifdef DRED_USE_EXTERNAL_REPOS
-#include "../../../dr_ipc/dr_ipc.h"
-#else
-#include "../external/dr_ipc.h"
-#endif
-
 #define DR_TEXT_ENGINE_IMPLEMENTATION
 #include "../external/dr_text_engine.h"
 
