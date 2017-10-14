@@ -99,6 +99,7 @@ typedef int dtk_result;
 // Standard library stuff.
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>  // For FILE
 #include <stdarg.h>
 #include <errno.h>
 
