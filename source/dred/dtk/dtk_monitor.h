@@ -13,11 +13,11 @@ typedef struct
     #ifdef DTK_GTK
         struct
         {
-#if GTK_CHECK_VERSION(3, 22, 0)
-            /*GdkMonitor**/ dtk_ptr pMonitor;
-#else
-            int iMonitor;
-#endif
+            union
+            {
+                /*GdkMonitor**/ dtk_ptr pMonitor;   // GTK 3.22+
+                int iMonitor;
+            };
         } gtk;
     #endif
     #ifdef DTK_X11

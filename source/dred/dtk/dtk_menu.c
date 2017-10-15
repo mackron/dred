@@ -695,11 +695,11 @@ dtk_result dtk_menu_set_item_shortcut__gtk(dtk_menu* pMenu, dtk_uint32 index, co
             GdkModifierType modifiersGTK = dtk_accelerator_modifiers_to_gtk(accelerators[0].modifiers);
             gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), keyGTK, modifiersGTK);
         } else {
-            gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), 0, 0);
+            gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), 0, (GdkModifierType)0);
             return DTK_ERROR;
         }
     } else {
-        gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), 0, 0);
+        gtk_accel_label_set_accel(GTK_ACCEL_LABEL(pGTKAccelLabel), 0, (GdkModifierType)0);
         return DTK_ERROR;
     }
 

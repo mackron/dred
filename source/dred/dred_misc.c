@@ -122,44 +122,12 @@ dtk_bool32 dred_font_slant_to_string(dtk_font_slant slant, char* strOut, size_t 
 #ifdef DRED_GTK
 dtk_font_weight dred_font_weight_from_pango(PangoWeight weight)
 {
-    if (weight == PANGO_WEIGHT_THIN) {
-        return dtk_font_weight_thin;
-    } else if (weight == PANGO_WEIGHT_ULTRALIGHT) {
-        return dtk_font_weight_extra_light;
-    } else if (weight == PANGO_WEIGHT_LIGHT) {
-        return dtk_font_weight_light;
-    } else if (weight == PANGO_WEIGHT_SEMILIGHT) {
-        return dtk_font_weight_semi_light;
-    } else if (weight == PANGO_WEIGHT_BOOK) {
-        return dtk_font_weight_book;
-    } else if (weight == PANGO_WEIGHT_NORMAL) {
-        return dtk_font_weight_normal;
-    } else if (weight == PANGO_WEIGHT_MEDIUM) {
-        return dtk_font_weight_medium;
-    } else if (weight == PANGO_WEIGHT_SEMIBOLD) {
-        return dtk_font_weight_semi_bold;
-    } else if (weight == PANGO_WEIGHT_BOLD) {
-        return dtk_font_weight_bold;
-    } else if (weight == PANGO_WEIGHT_ULTRABOLD) {
-        return dtk_font_weight_extra_bold;
-    } else if (weight == PANGO_WEIGHT_HEAVY) {
-        return dtk_font_weight_heavy;
-    } else if (weight == PANGO_WEIGHT_ULTRAHEAVY) {
-        return dtk_font_weight_extra_heavy;
-    } else {
-        return dtk_font_weight_normal;
-    }
+    return dtk_font_weight_from_pango(weight);
 }
 
 dtk_font_slant dred_font_slant_from_pango(PangoStyle slant)
 {
-    if (slant == PANGO_STYLE_OBLIQUE) {
-        return dtk_font_slant_oblique;
-    } else if (slant == PANGO_STYLE_ITALIC) {
-        return dtk_font_slant_italic;
-    } else {
-        return dtk_font_slant_none;
-    }
+    return dtk_font_slant_from_pango(slant);
 }
 #endif // DRED_GTK
 

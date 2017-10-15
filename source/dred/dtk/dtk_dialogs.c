@@ -578,8 +578,8 @@ dtk_dialog_result dtk_show_font_picker_dialog__gtk(dtk_context* pTK, dtk_window*
             }
         }
 
-        pDescOut->slant = dred_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
-        pDescOut->weight = dred_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
+        pDescOut->slant = dtk_font_slant_from_pango(pango_font_description_get_style(pPangoDesc));
+        pDescOut->weight = dtk_font_weight_from_pango(pango_font_description_get_weight(pPangoDesc));
 
         pango_font_description_free(pPangoDesc);
     }

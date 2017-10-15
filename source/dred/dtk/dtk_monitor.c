@@ -174,9 +174,9 @@ dtk_monitor dtk_get_monitor_by_window__gtk(dtk_context* pTK, dtk_window* pWindow
 
     dtk_monitor monitor = dtk_monitor_null();
 #if GTK_CHECK_VERSION(3, 22, 0)
-    monitor.gtk.pMonitor = gdk_display_get_monitor_at_window(gdk_display_get_default(), gtk_widget_get_window(pWindow->gtk.pWidget));
+    monitor.gtk.pMonitor = gdk_display_get_monitor_at_window(gdk_display_get_default(), gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pWidget)));
 #else
-    monitor.gtk.iMonitor = gdk_screen_get_monitor_at_window(gdk_display_get_default_screen(gdk_display_get_default()), gtk_widget_get_window(pWindow->gtk.pWidget));
+    monitor.gtk.iMonitor = gdk_screen_get_monitor_at_window(gdk_display_get_default_screen(gdk_display_get_default()), gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pWidget)));
 #endif
 
     return monitor;

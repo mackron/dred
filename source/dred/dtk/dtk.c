@@ -17,7 +17,10 @@
 #endif
 #ifdef DTK_POSIX
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <pwd.h>
+#include <unistd.h>
+#include <fcntl.h>
 #endif
 #ifdef DTK_GTK
     #include <gdk/gdk.h>
@@ -1434,7 +1437,7 @@ dtk_result dtk__capture_mouse_window__gtk(dtk_context* pTK, dtk_window* pWindow)
 #else
     GdkDevice* pPointerDevice = gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_display_get_default()));
 	gdk_device_grab(pPointerDevice, gtk_widget_get_window(GTK_WIDGET(pWindow->gtk.pClientArea)), GDK_OWNERSHIP_APPLICATION, FALSE,
-		GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK, NULL, GDK_CURRENT_TIME);
+		(GdkEventMask)(GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK), NULL, GDK_CURRENT_TIME);
 #endif
 
     // NOTE: Unlike dtk__release_mouse_window__gtk() below, we don't manually post the event here. Instead, it is done generically in dtk__capture_mouse_window().
@@ -1463,47 +1466,6 @@ dtk_result dtk__release_mouse_window__gtk(dtk_context* pTK)
 }
 
 
-dtk_font_weight dtk_font_weight_from_pango(PangoWeight weight)
-{
-    if (weight == PANGO_WEIGHT_THIN) {
-        return dtk_font_weight_thin;
-    } else if (weight == PANGO_WEIGHT_ULTRALIGHT) {
-        return dtk_font_weight_extra_light;
-    } else if (weight == PANGO_WEIGHT_LIGHT) {
-        return dtk_font_weight_light;
-    } else if (weight == PANGO_WEIGHT_SEMILIGHT) {
-        return dtk_font_weight_semi_light;
-    } else if (weight == PANGO_WEIGHT_BOOK) {
-        return dtk_font_weight_book;
-    } else if (weight == PANGO_WEIGHT_NORMAL) {
-        return dtk_font_weight_normal;
-    } else if (weight == PANGO_WEIGHT_MEDIUM) {
-        return dtk_font_weight_medium;
-    } else if (weight == PANGO_WEIGHT_SEMIBOLD) {
-        return dtk_font_weight_semi_bold;
-    } else if (weight == PANGO_WEIGHT_BOLD) {
-        return dtk_font_weight_bold;
-    } else if (weight == PANGO_WEIGHT_ULTRABOLD) {
-        return dtk_font_weight_extra_bold;
-    } else if (weight == PANGO_WEIGHT_HEAVY) {
-        return dtk_font_weight_heavy;
-    } else if (weight == PANGO_WEIGHT_ULTRAHEAVY) {
-        return dtk_font_weight_extra_heavy;
-    } else {
-        return dtk_font_weight_normal;
-    }
-}
-
-dtk_font_slant dtk_font_slant_from_pango(PangoStyle slant)
-{
-    if (slant == PANGO_STYLE_OBLIQUE) {
-        return dtk_font_slant_oblique;
-    } else if (slant == PANGO_STYLE_ITALIC) {
-        return dtk_font_slant_italic;
-    } else {
-        return dtk_font_slant_none;
-    }
-}
 
 dtk_result dtk_font_init_from_pango_description(dtk_context* pTK, PangoFontDescription* pPangoDesc, dtk_font* pFont)
 {
@@ -1550,12 +1512,15 @@ dtk_result dtk_init_default_font_by_type__gtk(dtk_context* pTK, dtk_application_
 
                 g_object_unref(settings);
             }
+
+            return result;
         };
 
         case dtk_application_font_type_ui:
         default:
         {
             dtk_result result = DTK_ERROR;
+
             GSettings* settings = g_settings_new("org.gnome.desktop.interface");
             if (settings != NULL) {
                 char* fontName = g_settings_get_string(settings, "font-name");
@@ -1569,6 +1534,8 @@ dtk_result dtk_init_default_font_by_type__gtk(dtk_context* pTK, dtk_application_
 
                 g_object_unref(settings);
             }
+
+            return result;
         };
     }
 
@@ -1998,7 +1965,7 @@ dtk_result dtk_get_screen_size(dtk_context* pTK, dtk_uint32* pSizeX, dtk_uint32*
     }
 #endif
 
-    return DTK_SUCCESS;
+    return result;
 }
 
 
@@ -2223,7 +2190,7 @@ size_t dtk_get_executable_path__posix(char* pathOut, size_t pathOutSize)
     }
 
     // Ensure the path is null terminated.
-    if (pathOut != NULL && pathOutSize > len) {
+    if (pathOut != NULL && pathOutSize > (size_t)len) {
         pathOut[len] = '\0';
     }
     

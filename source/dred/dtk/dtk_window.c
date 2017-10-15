@@ -1572,6 +1572,29 @@ static gboolean dtk_window_clientarea__on_mouse_move__gtk(GtkWidget* pClientArea
     return DTK_FALSE;
 }
 
+static gboolean dtk_window_clientarea__on_tooltip__gtk(GtkWidget* pClientArea, gint x, gint y, gboolean keyboardMode, GtkTooltip* pTooltip, gpointer pUserData)
+{
+    (void)pClientArea;
+
+    dtk_window* pWindow = (dtk_window*)pUserData;
+    if (pWindow == NULL) {
+        return DTK_TRUE;
+    }
+
+    dtk_tooltip tooltip;
+    tooltip.pTK = DTK_CONTROL(pWindow)->pTK;
+    tooltip.isVisible = DTK_FALSE;
+    tooltip.gtk.pTooltip = (void*)pTooltip;
+
+    dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_TOOLTIP, DTK_CONTROL(pWindow));
+    e.tooltip.x = x;
+    e.tooltip.y = y;
+    e.tooltip.tooltip = tooltip;
+    dtk_handle_global_event(&e);
+
+    return e.tooltip.tooltip.isVisible;
+}
+
 static gboolean dtk_window_clientarea__on_mouse_button_down__gtk(GtkWidget* pClientArea, GdkEventButton* pEvent, gpointer pUserData)
 {
     (void)pClientArea;
@@ -1689,11 +1712,18 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_wind
     g_signal_connect(pClientArea, "enter-notify-event",   G_CALLBACK(dtk_window_clientarea__on_mouse_enter__gtk),       pWindow);     // Mouse enter.
     g_signal_connect(pClientArea, "leave-notify-event",   G_CALLBACK(dtk_window_clientarea__on_mouse_leave__gtk),       pWindow);     // Mouse leave.
     g_signal_connect(pClientArea, "motion-notify-event",  G_CALLBACK(dtk_window_clientarea__on_mouse_move__gtk),        pWindow);     // Mouse move.
+    g_signal_connect(pClientArea, "query-tooltip",        G_CALLBACK(dtk_window_clientarea__on_tooltip__gtk),           pWindow);     // Tooltip.
     g_signal_connect(pClientArea, "button-press-event",   G_CALLBACK(dtk_window_clientarea__on_mouse_button_down__gtk), pWindow);     // Mouse button down.
     g_signal_connect(pClientArea, "button-release-event", G_CALLBACK(dtk_window_clientarea__on_mouse_button_up__gtk),   pWindow);     // Mouse button up.
     g_signal_connect(pClientArea, "scroll-event",         G_CALLBACK(dtk_window_clientarea__on_mouse_wheel__gtk),       pWindow);     // Mouse wheel.
     g_signal_connect(pClientArea, "grab-broken-event",    G_CALLBACK(dtk_window_clientarea__on_grab_broken__gtk),       pWindow);     // Grab broken event (for mouse grabs)
-    
+
+    GValue hasTooltip;
+    dtk_zero_object(&hasTooltip);
+    g_value_init(&hasTooltip, G_TYPE_BOOLEAN);
+    g_value_set_boolean(&hasTooltip, TRUE);
+    g_object_set_property(G_OBJECT(pClientArea), "has-tooltip", &hasTooltip);
+
     // Box container. This is used to laying out the menu bar and client area.
     GtkWidget* pBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     if (pBox == NULL) {
@@ -1822,7 +1852,7 @@ dtk_result dtk_window_set_absolute_position__gtk(dtk_window* pWindow, dtk_int32 
 {
     gtk_window_move(GTK_WINDOW(pWindow->gtk.pWidget), (gint)screenPosX, (gint)screenPosY);
 
-    if (!gtk_widget_get_visible(pWindow->gtk.pWidget)) {
+    if (!gtk_widget_get_visible(GTK_WIDGET(pWindow->gtk.pWidget))) {
         pWindow->gtk.repositionOnShow = DTK_TRUE;
         pWindow->gtk.desiredPositionX = screenPosX;
         pWindow->gtk.desiredPositionY = screenPosY;
@@ -2038,12 +2068,12 @@ dtk_result dtk_tooltip_show__gtk(dtk_tooltip* pTooltip, const char* pText, dtk_i
 {
     dtk_assert(pTooltip != NULL);
 
-    (void)pTooltip;
-    (void)pText;
     (void)absolutePosX;
     (void)absolutePosY;
 
-    // TODO: Implement me.
+    gtk_tooltip_set_text(GTK_TOOLTIP(pTooltip->gtk.pTooltip), pText);
+
+    pTooltip->isVisible = DTK_TRUE;
     return DTK_SUCCESS;
 }
 
@@ -2051,9 +2081,7 @@ dtk_result dtk_tooltip_hide__gtk(dtk_tooltip* pTooltip)
 {
     dtk_assert(pTooltip != NULL);
 
-    (void)pTooltip;
-
-    // TODO: Implement me.
+    pTooltip->isVisible = DTK_FALSE;
     return DTK_SUCCESS;
 }
 #endif
