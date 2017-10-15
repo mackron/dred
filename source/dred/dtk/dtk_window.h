@@ -29,6 +29,7 @@ typedef struct
         struct
         {
             /*GtkTooltip**/ dtk_ptr pTooltip;
+            /*GtkWidget**/ dtk_ptr pOwnerWidget;
         } gtk;
 #endif
 #ifdef DTK_X11

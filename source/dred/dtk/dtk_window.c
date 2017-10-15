@@ -1584,11 +1584,14 @@ static gboolean dtk_window_clientarea__on_tooltip__gtk(GtkWidget* pClientArea, g
     dtk_tooltip tooltip;
     tooltip.pTK = DTK_CONTROL(pWindow)->pTK;
     tooltip.isVisible = DTK_FALSE;
-    tooltip.gtk.pTooltip = (void*)pTooltip;
+    tooltip.gtk.pTooltip = (dtk_ptr)pTooltip;
+    tooltip.gtk.pOwnerWidget = (dtk_ptr)pClientArea;
 
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_TOOLTIP, DTK_CONTROL(pWindow));
     e.tooltip.x = x;
     e.tooltip.y = y;
+    e.tooltip.absoluteX = x;
+    e.tooltip.absoluteY = y;
     e.tooltip.tooltip = tooltip;
     dtk_handle_global_event(&e);
 
@@ -2354,6 +2357,8 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
                 e.tooltip.x = relativeMousePosX;
                 e.tooltip.y = relativeMousePosY;
                 dtk_handle_local_event(&e);
+
+                pEvent->tooltip.tooltip = e.tooltip.tooltip;    // <-- The tooltip.isVisible variable is used by the GTK backend upon returning, so make sure we set the original event object appropriately.
             }
         } break;
 
