@@ -512,8 +512,10 @@ dtk_result dtk_init__win32(dtk_context* pTK)
         if (pTK->win32.InitCommonControlsEx) {
             INITCOMMONCONTROLSEX ctls;
             ctls.dwSize = sizeof(ctls);
-            ctls.dwICC = ICC_STANDARD_CLASSES;
-            ((DTK_PFN_InitCommonControlsEx)pTK->win32.InitCommonControlsEx)(&ctls);
+            ctls.dwICC = /*ICC_STANDARD_CLASSES*/ ICC_WIN95_CLASSES;
+            if (!((DTK_PFN_InitCommonControlsEx)pTK->win32.InitCommonControlsEx)(&ctls)) {
+                return DTK_ERROR;   // Failed to initialize common controls.
+            }
         }
 
         // Window classes.
@@ -552,6 +554,14 @@ dtk_result dtk_init__win32(dtk_context* pTK)
         return DTK_ERROR;
     }
 
+    
+    // Tooltips.
+    pTK->win32.hTooltipWindow = (dtk_handle)CreateWindowExA(WS_EX_TOPMOST, TOOLTIPS_CLASSA, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, NULL, NULL);
+    if (pTK->win32.hTooltipWindow == NULL) {
+        return DTK_ERROR;
+    }
+
+
     // Cursors.
     pTK->win32.hCursorArrow  = (dtk_handle)LoadCursor(NULL, IDC_ARROW);
     pTK->win32.hCursorIBeam  = (dtk_handle)LoadCursor(NULL, IDC_IBEAM);
@@ -576,6 +586,9 @@ dtk_result dtk_uninit__win32(dtk_context* pTK)
     }
 
     DeleteDC((HDC)pTK->win32.hGraphicsDC);
+    DestroyWindow((HWND)pTK->win32.hTooltipWindow);
+    DestroyWindow((HWND)pTK->win32.hMessagingWindow);
+    dtk_free_string(pTK->win32.tooltipText);
     dtk_free(pTK->win32.pGlyphCache);
     dtk_free(pTK->win32.pCharConvBuffer);
 
@@ -679,6 +692,31 @@ dtk_result dtk_post_quit_event__win32(dtk_context* pTK, int exitCode)
 
     PostQuitMessage(exitCode);
     return DTK_SUCCESS;
+}
+
+dtk_result dtk_do_tooltip__win32(dtk_context* pTK)
+{
+    dtk_event e = dtk_event_init(pTK, DTK_EVENT_TOOLTIP, (dtk_control*)pTK->pWindowUnderMouse);
+    e.tooltip.x = pTK->lastMousePosX;
+    e.tooltip.y = pTK->lastMousePosY;
+    e.tooltip.absoluteX = pTK->lastMousePosX;
+    e.tooltip.absoluteY = pTK->lastMousePosY;
+    e.tooltip.tooltip.pTK = e.pTK;
+    e.tooltip.tooltip.win32.hOwnerWindow = (pTK->pWindowUnderMouse != NULL) ? pTK->pWindowUnderMouse->win32.hWnd : NULL;
+
+    // If there's no window under the mouse at the moment we'll want to just hide the tooltip.
+    if (pTK->pWindowUnderMouse == NULL) {
+        TOOLINFOA ti;
+        ZeroMemory(&ti, sizeof(ti));
+        ti.cbSize = sizeof(ti);
+        ti.hwnd = (HWND)pTK->win32.hLastTooltipOwner;
+        ti.uId = (UINT_PTR)pTK->win32.hLastTooltipOwner;
+        SendMessageA((HWND)pTK->win32.hTooltipWindow, TTM_GETTOOLINFOA, 0, (LPARAM)&ti);
+        SendMessageA((HWND)pTK->win32.hTooltipWindow, TTM_TRACKACTIVATE, (WPARAM)FALSE, (LPARAM)&ti);
+        return DTK_SUCCESS;
+    } else {
+        return dtk_handle_global_event(&e);
+    }
 }
 
 
@@ -1196,6 +1234,14 @@ dtk_result dtk_post_quit_event__gtk(dtk_context* pTK, int exitCode)
     dtk_atomic_exchange_32(&pTK->exitCode, exitCode);
     g_main_context_wakeup(NULL);
     
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_do_tooltip__gtk(dtk_context* pTK)
+{
+    (void)pTK;
+
+    gtk_tooltip_trigger_tooltip_query(gdk_display_get_default());
     return DTK_SUCCESS;
 }
 
@@ -1829,6 +1875,25 @@ dtk_result dtk_post_quit_event(dtk_context* pTK, int exitCode)
 #ifdef DTK_GTK
     if (pTK->platform == dtk_platform_gtk) {
         result = dtk_post_quit_event__gtk(pTK, exitCode);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_do_tooltip(dtk_context* pTK)
+{
+    if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        result = dtk_do_tooltip__win32(pTK);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        result = dtk_do_tooltip__gtk(pTK);
     }
 #endif
 

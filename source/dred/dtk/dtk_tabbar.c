@@ -23,7 +23,7 @@ dtk_int32 dtk_tabbar__find_longest_tab_text(dtk_tabbar* pTabBar)
 
         dtk_int32 textWidth;
         dtk_int32 textHeight;
-        dtk_font_measure_string(dtk_tabbar_get_font(pTabBar), 1, pTab->text, strlen(pTab->text), &textWidth, &textHeight);
+        dtk_font_measure_string(dtk_tabbar_get_font(pTabBar), 1, pTab->pText, strlen(pTab->pText), &textWidth, &textHeight);
 
         if (longestWidth < textWidth) {
             longestWidth = textWidth;
@@ -58,7 +58,7 @@ dtk_bool32 dtk_tabbar__next_tab(dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIter
     // The size and position of each tab depends on the flow and text direction of the tabbar.
     dtk_int32 textWidth;
     dtk_int32 textHeight;
-    dtk_font_measure_string(dtk_tabbar_get_font(pTabBar), 1, pIterator->pTab->text, strlen(pIterator->pTab->text), &textWidth, &textHeight);
+    dtk_font_measure_string(dtk_tabbar_get_font(pTabBar), 1, pIterator->pTab->pText, strlen(pIterator->pTab->pText), &textWidth, &textHeight);
     pIterator->textWidth  = textWidth;       // <-- Set these before the adjustment below. Want this to measure the actual text and not the excess from stretching.
     pIterator->textHeight = textHeight;
 
@@ -150,6 +150,11 @@ void dtk_tabbar__set_hovered_tab(dtk_tabbar* pTabBar, dtk_int32 tabIndex)
     if (pTabBar->hoveredTabIndex != tabIndex) {
         pTabBar->hoveredTabIndex = tabIndex;
         dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));   // <-- Redraw the entire control for now, but can optimize this later if necessary, which it probably isn't.
+
+        // If the tooltip is visible, update it.
+        if (pTabBar->isTooltipVisible) {
+            dtk_do_tooltip(pTabBar->control.pTK);
+        }
     }
 }
 
@@ -268,7 +273,7 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
 
                     if (pTabBar->textDirection == dtk_tabbar_text_direction_horizontal) {
                         // Horizontal text.
-                        dtk_surface_draw_text(pEvent->paint.pSurface, pFont, 1, iterator.pTab->text, strlen(iterator.pTab->text), iterator.posX + pTabBar->paddingLeft, iterator.posY + pTabBar->paddingTop, fgColor, bgColor);
+                        dtk_surface_draw_text(pEvent->paint.pSurface, pFont, 1, iterator.pTab->pText, strlen(iterator.pTab->pText), iterator.posX + pTabBar->paddingLeft, iterator.posY + pTabBar->paddingTop, fgColor, bgColor);
 
                         dtk_rect excessRect = dtk_rect_init(
                             iterator.posX + pTabBar->paddingLeft + (dtk_int32)iterator.textWidth,
@@ -282,7 +287,7 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                         {
                             dtk_surface_translate(pEvent->paint.pSurface, iterator.posX + fontMetrics.lineHeight + pTabBar->paddingLeft, iterator.posY + pTabBar->paddingTop);
                             dtk_surface_rotate(pEvent->paint.pSurface, 90);
-                            dtk_surface_draw_text(pEvent->paint.pSurface, pFont, 1, iterator.pTab->text, strlen(iterator.pTab->text), 0, 0, fgColor, bgColor);
+                            dtk_surface_draw_text(pEvent->paint.pSurface, pFont, 1, iterator.pTab->pText, strlen(iterator.pTab->pText), 0, 0, fgColor, bgColor);
                         }
                         dtk_surface_pop(pEvent->paint.pSurface);
 
@@ -313,6 +318,7 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
         case DTK_EVENT_MOUSE_LEAVE:
         {
             dtk_tabbar__unset_hovered_tab(pTabBar);
+            pTabBar->isTooltipVisible = DTK_FALSE;
         } break;
 
         case DTK_EVENT_MOUSE_MOVE:
@@ -333,6 +339,19 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
             if (dtk_tabbar_hit_test(pTabBar, pEvent->mouseMove.x, pEvent->mouseMove.y, &hit)) {
                 dtk_tabbar__set_active_tab(pTabBar, hit.tabIndex);
             }
+        } break;
+
+        case DTK_EVENT_TOOLTIP:
+        {
+            dtk_tabbar_hit_test_result hit;
+            if (dtk_tabbar_hit_test(pTabBar, pEvent->tooltip.x, pEvent->tooltip.y, &hit)) {
+                dtk_string tooltipText = pTabBar->pTabs[hit.tabIndex].pTooltipText;
+                if (!dtk_string_is_null_or_empty(tooltipText)) {
+                    dtk_tooltip_show(&pEvent->tooltip.tooltip, tooltipText, hit.tabRect.left + pTabBar->control.absolutePosX, hit.tabRect.bottom + 2 + pTabBar->control.absolutePosY);
+                }
+            }
+
+            pTabBar->isTooltipVisible = dtk_tooltip_is_visible(&pEvent->tooltip.tooltip);
         } break;
 
         case DTK_EVENT_TABBAR_CHANGE_TAB:
@@ -434,8 +453,9 @@ dtk_result dtk_tabbar_tab_init(dtk_tabbar* pTabBar, const char* text, dtk_contro
     (void)pTabBar;  // Not used for now, but will probably be used later when more efficient memory management is implemented.
 
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
+    dtk_zero_object(pTab);
 
-    pTab->text = dtk_make_string(text);
+    pTab->pText = dtk_make_string(text);
     pTab->pPage = pTabPage;
 
     return DTK_SUCCESS;
@@ -445,7 +465,8 @@ dtk_result dtk_tabbar_tab_uninit(dtk_tabbar_tab* pTab)
 {
     if (pTab == NULL) return DTK_INVALID_ARGS;
     
-    dtk_free_string(pTab->text);
+    dtk_free_string(pTab->pText);
+    dtk_free_string(pTab->pTooltipText);
     return DTK_SUCCESS;
 }
 
@@ -498,16 +519,25 @@ dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_con
 	return DTK_SUCCESS;
 }
 
-dtk_result dtk_tabbar_remove_tab_by_index(dtk_tabbar* pTabBar, size_t tabIndex)
+dtk_result dtk_tabbar_remove_tab_by_index(dtk_tabbar* pTabBar, dtk_uint32 tabIndex)
 {
     if (pTabBar == NULL || pTabBar->tabCount <= tabIndex) return DTK_INVALID_ARGS;
 
     dtk_tabbar_tab_uninit(&pTabBar->pTabs[tabIndex]);
-    for (size_t i = tabIndex; i < pTabBar->tabCount-1; ++i) {
+    for (dtk_uint32 i = tabIndex; i < pTabBar->tabCount-1; ++i) {
         pTabBar->pTabs[i] = pTabBar->pTabs[i+1];
     }
 
     pTabBar->tabCount -= 1;
+    return DTK_SUCCESS;
+}
+
+
+dtk_result dtk_tabbar_set_tab_tooltip(dtk_tabbar* pTabBar, dtk_uint32 tabIndex, const char* pTooltipText)
+{
+    if (pTabBar == NULL || pTabBar->tabCount <= tabIndex) return DTK_INVALID_ARGS;
+
+    pTabBar->pTabs[tabIndex].pTooltipText = dtk_set_string(pTabBar->pTabs[tabIndex].pTooltipText, pTooltipText);
     return DTK_SUCCESS;
 }
 
@@ -531,6 +561,7 @@ dtk_bool32 dtk_tabbar_hit_test(dtk_tabbar* pTabBar, dtk_int32 x, dtk_int32 y, dt
                 pResult->tabIndex = tabIndex;
                 pResult->relativePosX = x - iterator.posX;
                 pResult->relativePosY = y - iterator.posY;
+                pResult->tabRect = tabRect;
 
                 // TODO: Check if the point is over the close button.
                 pResult->isOverCloseButton = DTK_FALSE;

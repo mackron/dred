@@ -19,13 +19,16 @@ typedef struct
     dtk_int32 tabIndex;     // <-- Will be set to -1 if the point is not over any tab.
     dtk_int32 relativePosX; // <-- The position relative to the tab itself (not the whole bar)
     dtk_int32 relativePosY;
+    dtk_rect tabRect;
     dtk_bool32 isOverCloseButton;
+    dtk_bool32 isOverPinButton;
 } dtk_tabbar_hit_test_result;
 
 typedef struct
 {
-    char* text;
+    char* pText;
     dtk_control* pPage;
+    dtk_string pTooltipText;
 } dtk_tabbar_tab;
 
 #define DTK_TABBAR(p) ((dtk_tabbar*)(p))
@@ -38,6 +41,7 @@ struct dtk_tabbar
     dtk_uint32 tabCount;
     dtk_uint32 tabCapacity;
     dtk_bool32 isAutoResizeEnabled : 1;
+    dtk_bool32 isTooltipVisible : 1;
     dtk_int32 hoveredTabIndex;  // Set to -1 if no tab is hovered.
     dtk_int32 activeTabIndex;   // Set to -1 when no tab is active.
 
@@ -68,7 +72,9 @@ dtk_result dtk_tabbar_set_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, d
 
 dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage);
 dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage);
-dtk_result dtk_tabbar_remove_tab_by_index(dtk_tabbar* pTabBar, size_t tabIndex);
+dtk_result dtk_tabbar_remove_tab_by_index(dtk_tabbar* pTabBar, dtk_uint32 tabIndex);
+
+dtk_result dtk_tabbar_set_tab_tooltip(dtk_tabbar* pTabBar, dtk_uint32 tabIndex, const char* pTooltipText);
 
 // Performs a hit test against the tabs in the tab bar.
 //

@@ -236,6 +236,7 @@ typedef int dtk_event_type;
 #define DTK_EVENT_CAPTURE_MOUSE                 22
 #define DTK_EVENT_RELEASE_MOUSE                 23
 #define DTK_EVENT_DPI_CHANGED                   24
+#define DTK_EVENT_TOOLTIP                       25
 #define DTK_EVENT_BUTTON_PRESSED                128
 #define DTK_EVENT_CHECKBOX_CHECK_CHANGED        129
 #define DTK_EVENT_COLOR_BUTTON_COLOR_CHANGED    130
@@ -381,6 +382,15 @@ struct dtk_event
 
         struct
         {
+            dtk_int32 x;
+            dtk_int32 y;
+            dtk_int32 absoluteX;
+            dtk_int32 absoluteY;
+            dtk_tooltip tooltip;
+        } tooltip;
+
+        struct
+        {
             int unused;
         } refreshInnerLayout;
 
@@ -496,6 +506,10 @@ struct dtk_context
 
             /*HWND*/ dtk_handle hMessagingWindow;   // A special hidden window which is only used for pumping messages, usually custom ones.
             /*HDC*/ dtk_handle hGraphicsDC;         // A special device context for use by the graphics sub-system (usually for font management).
+
+            /*HWND*/ dtk_handle hTooltipWindow;     // The window used for tooltips. The same tooltip window is shared across the entire application.
+            /*HWND*/ dtk_handle hLastTooltipOwner;  // The window that last owned the tooltip.
+            dtk_string tooltipText;
 
             void* pCharConvBuffer;                  // For wchar_t <-> char conversions.
             size_t charConvBufferSize;
@@ -613,6 +627,9 @@ dtk_bool32 dtk_default_event_handler(dtk_event* pEvent);
 // Thread Safety: SAFE
 dtk_result dtk_post_quit_event(dtk_context* pTK, int exitCode);
 
+// Posts DTK_EVENT_TOOLTIP events.
+dtk_result dtk_do_tooltip(dtk_context* pTK);
+
 // Sets the logging callback.
 dtk_result dtk_set_log_callback(dtk_context* pTK, dtk_log_proc proc);
 
@@ -704,7 +721,6 @@ size_t dtk_get_executable_directory_path(char* pathOut, size_t pathOutSize);
 //
 // On Windows this will typically be %APPDATA% and on Linux it will usually be ~/.config
 size_t dtk_get_config_directory_path(char* pathOut, size_t pathOutSize);
-
 
 
 //// User Accounts and Process Management ////

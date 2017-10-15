@@ -12,6 +12,39 @@ typedef enum
     dtk_window_type_popup
 } dtk_window_type;
 
+typedef struct
+{
+    dtk_context* pTK;
+    dtk_bool32 isVisible;
+
+    union
+    {
+#ifdef DTK_WIN32
+        struct
+        {
+            /*HWND*/ dtk_handle hOwnerWindow;
+        } win32;
+#endif
+#ifdef DTK_GTK
+        struct
+        {
+            /*GtkTooltip**/ dtk_ptr pTooltip;
+        } gtk;
+#endif
+#ifdef DTK_X11
+        struct
+        {
+            int _unused;
+        } x11;
+#endif
+    };
+} dtk_tooltip;
+
+dtk_result dtk_tooltip_show(dtk_tooltip* pTooltip, const char* pText, dtk_int32 absolutePosX, dtk_int32 absolutePosY);
+dtk_result dtk_tooltip_hide(dtk_tooltip* pTooltip);
+dtk_bool32 dtk_tooltip_is_visible(dtk_tooltip* pTooltip);
+
+
 #define DTK_WINDOW(p) ((dtk_window*)(p))
 struct dtk_window
 {
@@ -26,7 +59,7 @@ struct dtk_window
     dtk_bool32 isNextKeyboardReleaseExplicit : 1;
     dtk_bool32 isNextMouseCaptureExplicit    : 1;
     dtk_bool32 isNextMouseReleaseExplicit    : 1;
-    dtk_monitor monitor;                            // The monitor the window is currently sitting on. Used for DPI scaling. Initially set in dtk_window_init(), and then update whenever the window moves.
+    dtk_monitor monitor;                            // The monitor the window is currently sitting on. Used for DPI scaling. Initially set in dtk_window_init(), and then updated whenever the window moves.
     float dpiScale;                                 // The cached DPI scale. This is used in painting routines so it's important it's available for fast access.
 
     union
@@ -35,7 +68,7 @@ struct dtk_window
         struct
         {
             /*HWND*/ dtk_handle hWnd;
-            /*HCURSOR*/ dtk_handle hCursor; // Used when the window receives WM_SETCURSOR
+            /*HCURSOR*/ dtk_handle hCursor;     // Used when the window receives WM_SETCURSOR
             dtk_bool32 isCursorOverClientArea;
 
             // The high-surrogate from a WM_CHAR message. This is used to build a surrogate pair from a couple of WM_CHAR messages. When
@@ -64,6 +97,7 @@ struct dtk_window
     #ifdef DTK_X11
         struct
         {
+            int _unused;
         } x11;
     #endif
     };

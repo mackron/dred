@@ -12,18 +12,14 @@
 #define DTK_WIN32_WINDOW_CLASS_POPUP        "dtk.window.popup"
 #define DTK_WIN32_WINDOW_CLASS_MESSAGING    "dtk.window.messaging"
 
+static const char* g_dtkWin32WindowClasses[] = {
+    DTK_WIN32_WINDOW_CLASS,
+    DTK_WIN32_WINDOW_CLASS_POPUP,
+    DTK_WIN32_WINDOW_CLASS_MESSAGING
+};
+
 #define DTK_GET_X_LPARAM(lp)    ((int)(short)LOWORD(lp))
 #define DTK_GET_Y_LPARAM(lp)    ((int)(short)HIWORD(lp))
-
-static void dtk_track_mouse_leave_event__win32(HWND hWnd)
-{
-    TRACKMOUSEEVENT tme;
-    ZeroMemory(&tme, sizeof(tme));
-    tme.cbSize    = sizeof(tme);
-    tme.dwFlags   = TME_LEAVE;
-    tme.hwndTrack = hWnd;
-    TrackMouseEvent(&tme);
-}
 
 dtk_bool32 dtk_is_win32_mouse_button_key_code(WPARAM wParam)
 {
@@ -181,7 +177,7 @@ static BOOL dtk_is_HWND_owned_by_this(dtk_context* pTK, HWND hWnd)
     return dtk_find_window_by_HWND(pTK, hWnd) != NULL;
 }
 
-LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     dtk_window* pWindow = (dtk_window*)GetWindowLongPtrA(hWnd, 0);
     if (pWindow == NULL) {
@@ -314,21 +310,50 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             dtk_handle_global_event(&e);
         } break;
 
+        case WM_MOUSEHOVER:
+        {
+            dtk_assert(pTK->pWindowUnderMouse == pWindow || pTK->pWindowUnderMouse == NULL);
+            dtk_do_tooltip(pTK);
+        } break;
+
         case WM_MOUSEMOVE:
         {
+            dtk_bool32 isNewTrackRequired = DTK_FALSE;
+
             if (!pWindow->win32.isCursorOverClientArea) {
                 pWindow->win32.isCursorOverClientArea = DTK_TRUE;
                 e.type = DTK_EVENT_MOUSE_ENTER;
                 dtk_handle_global_event(&e);
 
-                dtk_track_mouse_leave_event__win32(hWnd);
+                isNewTrackRequired = DTK_TRUE;
+            }
+
+            dtk_int32 newPosX = DTK_GET_X_LPARAM(lParam);
+            dtk_int32 newPosY = DTK_GET_Y_LPARAM(lParam);
+
+            dtk_bool32 hasActuallyMoved = (pTK->lastMousePosX != newPosX) || (pTK->lastMousePosY != newPosY);
+            if (hasActuallyMoved) {
+                isNewTrackRequired = DTK_TRUE;
+            }
+
+            if (isNewTrackRequired) {
+                // Track mouse events for the mouse leave and mouse hover events.
+                TRACKMOUSEEVENT tme;
+                ZeroMemory(&tme, sizeof(tme));
+                tme.cbSize      = sizeof(tme);
+                tme.dwFlags     = TME_LEAVE | TME_HOVER;
+                tme.hwndTrack   = hWnd;
+                tme.dwHoverTime = HOVER_DEFAULT;
+                TrackMouseEvent(&tme);
             }
             
-            e.type = DTK_EVENT_MOUSE_MOVE;
-            e.mouseMove.x = DTK_GET_X_LPARAM(lParam);
-            e.mouseMove.y = DTK_GET_Y_LPARAM(lParam);
-            e.mouseMove.state = dtk_get_mouse_event_state_flags__win32(wParam);
-            dtk_handle_global_event(&e);
+            if (hasActuallyMoved) {
+                e.type = DTK_EVENT_MOUSE_MOVE;
+                e.mouseMove.x = DTK_GET_X_LPARAM(lParam);
+                e.mouseMove.y = DTK_GET_Y_LPARAM(lParam);
+                e.mouseMove.state = dtk_get_mouse_event_state_flags__win32(wParam);
+                dtk_handle_global_event(&e);
+            }
         } break;
 
     // Uncomment this to enable mouse button events in the non-client area of the window. This is inconsistent with other backends, however.
@@ -566,13 +591,29 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
             } else {
                 // In this case it means the newly focused window _is_ part of this instance. If the newly focused window is not allowed to
                 // receive keyboard capture, do _not_ post a release event (because there will be no corresponding capture event).
-                dtk_control* pOldFocusedWindow = (dtk_control*)pWindow;
-                dtk_control* pNewFocusedWindow = (dtk_control*)GetWindowLongPtrA(hNewFocusedWnd, 0);
-                if (pTK->pWindowWithKeyboardCapture == pWindow && dtk_control_is_keyboard_capture_allowed(pNewFocusedWindow)) {
-                    e.type = DTK_EVENT_RELEASE_KEYBOARD;
-                    e.pControl = pOldFocusedWindow;
-                    e.releaseKeyboard.pNewCapturedControl = pNewFocusedWindow;
-                    dtk_handle_global_event(&e);
+                //
+                // Another situation is when the newly focused window is part of this instance, but is not a dtk_window object. We can know
+                // this by looking at the window class.
+                char newFocusedWindowClass[256];
+                GetClassNameA(hNewFocusedWnd, newFocusedWindowClass, sizeof(newFocusedWindowClass));
+
+                dtk_bool32 isNewFocusedWindowOwnedByDTK = DTK_FALSE;
+                for (size_t i = 0; i < dtk_count_of(g_dtkWin32WindowClasses); ++i) {
+                    if (strcmp(newFocusedWindowClass, DTK_WIN32_WINDOW_CLASS) == 0) {
+                        isNewFocusedWindowOwnedByDTK = DTK_TRUE;
+                        break;
+                    }
+                }
+
+                if (isNewFocusedWindowOwnedByDTK) {
+                    dtk_control* pOldFocusedWindow = (dtk_control*)pWindow;
+                    dtk_control* pNewFocusedWindow = (dtk_control*)GetWindowLongPtrA(hNewFocusedWnd, 0);
+                    if (pTK->pWindowWithKeyboardCapture == pWindow && dtk_control_is_keyboard_capture_allowed(pNewFocusedWindow)) {
+                        e.type = DTK_EVENT_RELEASE_KEYBOARD;
+                        e.pControl = pOldFocusedWindow;
+                        e.releaseKeyboard.pNewCapturedControl = pNewFocusedWindow;
+                        dtk_handle_global_event(&e);
+                    }
                 }
             }
         } break;
@@ -720,7 +761,7 @@ LRESULT CALLBACK CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wPar
 
         case 0x02E0: // WM_DPICHANGED
         {
-            // MSDN recommends settings the position and size of the window based on the RECT passed in vai lParam:
+            // MSDN recommends settings the position and size of the window based on the RECT passed in via lParam:
             //     https://msdn.microsoft.com/en-us/library/windows/desktop/dn312083(v=vs.85).aspx
             pWindow->dpiScale = LOWORD(wParam) / 96.0f;
 
@@ -773,16 +814,31 @@ dtk_result dtk_window_init__win32(dtk_context* pTK, dtk_control* pParent, dtk_wi
     // The dtk window needs to be linked to the Win32 window handle so it can be accessed from the event handler.
     SetWindowLongPtrA(hWnd, 0, (LONG_PTR)pWindow);
 
+    // The new window needs to be added as a tool to the tooltip window.
+    TOOLINFOA ti;
+    ZeroMemory(&ti, sizeof(ti));
+    ti.cbSize   = sizeof(ti);
+    ti.uFlags   = TTF_IDISHWND | TTF_TRACK | TTF_ABSOLUTE;
+    ti.hwnd     = hWnd;
+    ti.uId      = (UINT_PTR)hWnd;
+    ti.hinst    = NULL;
+    ti.lpszText = "";
+    ti.lParam   = 0;
+    GetClientRect((HWND)hWnd, &ti.rect);
+    SendMessageA((HWND)pTK->win32.hTooltipWindow, TTM_ADDTOOLA, 0, (LPARAM)&ti);
+
     return DTK_SUCCESS;
 }
 
 dtk_result dtk_window_uninit__win32(dtk_window* pWindow)
 {
+    dtk_result result = DTK_SUCCESS;
+
     if (!DestroyWindow((HWND)pWindow->win32.hWnd)) {
-        return DTK_ERROR;
+        result = DTK_ERROR;
     }
 
-    return DTK_SUCCESS;
+    return result;
 }
 
 dtk_result dtk_window_close__win32(dtk_window* pWindow)
@@ -1049,6 +1105,76 @@ dtk_result dtk_window_immediate_redraw__win32(dtk_window* pWindow, dtk_rect rect
     }
 #endif
 
+    return DTK_SUCCESS;
+}
+
+
+
+//// dtk_tooltip ////
+
+dtk_result dtk_tooltip_show__win32(dtk_tooltip* pTooltip, const char* pText, dtk_int32 absolutePosX, dtk_int32 absolutePosY)
+{
+    dtk_assert(pTooltip != NULL);
+
+    if (pTooltip->win32.hOwnerWindow == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    HWND hTooltipWnd = (HWND)pTooltip->pTK->win32.hTooltipWindow;
+    dtk_assert(hTooltipWnd != NULL);
+
+    pTooltip->pTK->win32.tooltipText = dtk_set_string(pTooltip->pTK->win32.tooltipText, pText);
+
+
+    TOOLINFOA ti;
+    ZeroMemory(&ti, sizeof(ti));
+    ti.cbSize = sizeof(ti);
+    ti.hwnd = (HWND)pTooltip->win32.hOwnerWindow;
+    ti.uId = (UINT_PTR)pTooltip->win32.hOwnerWindow;
+    SendMessageA(hTooltipWnd, TTM_GETTOOLINFOA, 0, (LPARAM)&ti);
+    
+    ti.lpszText = pTooltip->pTK->win32.tooltipText;
+    GetClientRect((HWND)pTooltip->win32.hOwnerWindow, &ti.rect);
+    SendMessageA(hTooltipWnd, TTM_SETTOOLINFOA, 0, (LPARAM)&ti);
+
+    SendMessageA(hTooltipWnd, TTM_TRACKACTIVATE, (WPARAM)TRUE, (LPARAM)&ti);
+    
+    POINT pt;
+    pt.x = absolutePosX;
+    pt.y = absolutePosY;
+    ClientToScreen((HWND)pTooltip->win32.hOwnerWindow, &pt);
+    SendMessageA(hTooltipWnd, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(pt.x, pt.y));
+
+    pTooltip->pTK->win32.hLastTooltipOwner = ti.hwnd;
+
+    pTooltip->isVisible = DTK_TRUE;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tooltip_hide__win32(dtk_tooltip* pTooltip)
+{
+    dtk_assert(pTooltip != NULL);
+
+    if (pTooltip->win32.hOwnerWindow == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    HWND hTooltipWnd = (HWND)pTooltip->pTK->win32.hTooltipWindow;
+    if (hTooltipWnd == NULL) {
+        return DTK_SUCCESS; // The tooltip window has not yet been created which means it's effectively hidden. Just pretend it was successful.
+    }
+
+    dtk_assert(hTooltipWnd != NULL);
+
+    TOOLINFOA ti;
+    ZeroMemory(&ti, sizeof(ti));
+    ti.cbSize = sizeof(ti);
+    ti.hwnd = (HWND)pTooltip->win32.hOwnerWindow;
+    ti.uId = (UINT_PTR)pTooltip->win32.hOwnerWindow;
+    SendMessageA(hTooltipWnd, TTM_GETTOOLINFOA, 0, (LPARAM)&ti);
+    SendMessageA(hTooltipWnd, TTM_TRACKACTIVATE, (WPARAM)FALSE, (LPARAM)&ti);
+
+    pTooltip->isVisible = DTK_FALSE;
     return DTK_SUCCESS;
 }
 #endif
@@ -1903,6 +2029,33 @@ dtk_result dtk_window_immediate_redraw__gtk(dtk_window* pWindow, dtk_rect rect)
 
     return DTK_SUCCESS;
 }
+
+
+
+//// dtk_tooltip ////
+
+dtk_result dtk_tooltip_show__gtk(dtk_tooltip* pTooltip, const char* pText, dtk_int32 absolutePosX, dtk_int32 absolutePosY)
+{
+    dtk_assert(pTooltip != NULL);
+
+    (void)pTooltip;
+    (void)pText;
+    (void)absolutePosX;
+    (void)absolutePosY;
+
+    // TODO: Implement me.
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tooltip_hide__gtk(dtk_tooltip* pTooltip)
+{
+    dtk_assert(pTooltip != NULL);
+
+    (void)pTooltip;
+
+    // TODO: Implement me.
+    return DTK_SUCCESS;
+}
 #endif
 
 
@@ -2152,14 +2305,45 @@ dtk_bool32 dtk_window_default_event_handler(dtk_event* pEvent)
             dtk_window__get_and_set_monitor(pWindow);
         } break;
 
+        case DTK_EVENT_TOOLTIP:
+        {
+            // The tooltip should always be hidden by default.
+            dtk_tooltip_hide(&pEvent->tooltip.tooltip);
+
+            // We forward this event onto the descendant control that's under the mouse and let them handle it.
+            dtk_control* pEventReceiver = pTK->pControlWithMouseCapture;
+            if (pEventReceiver == NULL) {
+                pEventReceiver = dtk_window_find_control_under_point(pWindow, pTK->lastMousePosX, pTK->lastMousePosY);;
+            }
+
+            if (pEventReceiver != NULL && pEventReceiver != DTK_CONTROL(pWindow)) {
+                dtk_int32 relativeMousePosX = pEvent->mouseMove.x;
+                dtk_int32 relativeMousePosY = pEvent->mouseMove.y;
+                dtk_control_absolute_to_relative(pEventReceiver, &relativeMousePosX, &relativeMousePosY);
+
+                dtk_event e = *pEvent;
+                e.pControl = pEventReceiver;
+                e.tooltip.x = relativeMousePosX;
+                e.tooltip.y = relativeMousePosY;
+                dtk_handle_local_event(&e);
+            }
+        } break;
+
         case DTK_EVENT_MOUSE_LEAVE:
         {
             dtk_window__check_and_handle_mouse_enter_and_leave(pWindow, NULL);
             pTK->pWindowUnderMouse = NULL;
+
+            // Make sure the tooltip is hidden.
+            dtk_do_tooltip(pTK);
         } break;
 
         case DTK_EVENT_MOUSE_MOVE:
         {
+            if (pTK->lastMousePosX == pEvent->mouseMove.x && pTK->lastMousePosY == pEvent->mouseMove.y) {
+                break;
+            }
+
             pTK->pWindowUnderMouse = pWindow;
             pTK->lastMousePosX = pEvent->mouseMove.x;
             pTK->lastMousePosY = pEvent->mouseMove.y;
@@ -2879,4 +3063,52 @@ dtk_control* dtk_window_refresh_mouse_enter_leave_state(dtk_window* pWindow, dtk
     dtk_window__check_and_handle_mouse_enter_and_leave(pWindow, pNewControlUnderMouse);
 
     return pNewControlUnderMouse;
+}
+
+
+
+//// dtk_tooltip ////
+
+dtk_result dtk_tooltip_show(dtk_tooltip* pTooltip, const char* pText, dtk_int32 absolutePosX, dtk_int32 absolutePosY)
+{
+    if (pTooltip == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTooltip->pTK->platform == dtk_platform_win32) {
+        result = dtk_tooltip_show__win32(pTooltip, pText, absolutePosX, absolutePosY);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTooltip->pTK->platform == dtk_platform_gtk) {
+        result = dtk_tooltip_show__gtk(pTooltip, pText, absolutePosX, absolutePosY);
+    }
+#endif
+
+    return result;
+}
+
+dtk_result dtk_tooltip_hide(dtk_tooltip* pTooltip)
+{
+    if (pTooltip == NULL) return DTK_INVALID_ARGS;
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pTooltip->pTK->platform == dtk_platform_win32) {
+        result = dtk_tooltip_hide__win32(pTooltip);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTooltip->pTK->platform == dtk_platform_gtk) {
+        result = dtk_tooltip_hide__gtk(pTooltip);
+    }
+#endif
+
+    return result;
+}
+
+dtk_bool32 dtk_tooltip_is_visible(dtk_tooltip* pTooltip)
+{
+    if (pTooltip == NULL) return DTK_FALSE;
+    return pTooltip->isVisible;
 }

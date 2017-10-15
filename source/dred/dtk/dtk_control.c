@@ -226,6 +226,12 @@ dtk_bool32 dtk_control_default_event_handler(dtk_event* pEvent)
         {
             dtk_window_set_cursor(dtk_control_get_window(pEvent->pControl), pEvent->pControl->cursor);
         } break;
+
+        case DTK_EVENT_MOUSE_LEAVE:
+        {
+            // Hide the tooltip.
+            dtk_do_tooltip(pEvent->pTK);
+        } break;
     }
 
     return DTK_TRUE;

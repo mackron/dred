@@ -505,6 +505,29 @@ dtk_string dtk_make_string_length(const char* str, size_t strLen)
     return newStr;
 }
 
+dtk_string dtk_set_string(dtk_string str, const char* newStr)
+{
+    if (newStr == NULL) newStr = "";
+
+    if (str == NULL) {
+        return dtk_make_string(newStr);
+    } else {
+        // If there's enough room for the new string don't bother reallocating.
+        size_t oldStrCap = dtk_string_capacity(str);
+        size_t newStrLen = strlen(newStr);
+
+        if (oldStrCap < newStrLen) {
+            str = (dtk_string)dtk_realloc(str, newStrLen + 1);  // +1 for null terminator.
+            if (str == NULL) {
+                return NULL;    // Out of memory.
+            }
+        }
+
+        memcpy(str, newStr, newStrLen+1);   // +1 to include the null terminator.
+        return str;
+    }
+}
+
 dtk_string dtk_append_string(dtk_string lstr, const char* rstr)
 {
     if (rstr == NULL) {
@@ -577,6 +600,13 @@ dtk_string dtk_append_string_length(dtk_string lstr, const char* rstr, size_t rs
 size_t dtk_string_length(dtk_string str)
 {
     return strlen(str);
+}
+
+size_t dtk_string_capacity(dtk_string str)
+{
+    // Currently we're not doing anything fancy with the memory management of strings, but this API is used right now
+    // so that future optimizations are easily enabled.
+    return dtk_string_length(str);
 }
 
 void dtk_free_string(dtk_string str)
