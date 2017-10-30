@@ -1598,6 +1598,32 @@ dtk_result dtk_surface_uninit(dtk_surface* pSurface)
 }
 
 
+dtk_result dtk_surface_get_size(dtk_surface* pSurface, dtk_uint32* pWidth, dtk_uint32* pHeight)
+{
+    if (pWidth) *pWidth = 0;
+    if (pHeight) *pHeight = 0;
+
+    if (pSurface == NULL) return DTK_INVALID_ARGS;
+
+    if (pWidth) *pWidth = pSurface->width;
+    if (pHeight) *pHeight = pSurface->height;
+
+    return DTK_SUCCESS;
+}
+
+dtk_uint32 dtk_surface_get_width(dtk_surface* pSurface)
+{
+    if (pSurface == NULL) return 0;
+    return pSurface->width;
+}
+
+dtk_uint32 dtk_surface_get_height(dtk_surface* pSurface)
+{
+    if (pSurface == NULL) return 0;
+    return pSurface->height;
+}
+
+
 dtk_result dtk_surface_push(dtk_surface* pSurface)
 {
     if (pSurface == NULL) return DTK_INVALID_ARGS;

@@ -287,7 +287,17 @@ dtk_result dtk_surface_init_image(dtk_context* pTK, dtk_uint32 width, dtk_uint32
 dtk_result dtk_surface_uninit(dtk_surface* pSurface);
 
 
-// Saves a copy of the current state for the given surface, which can be restored later with dtk_surface_ppop().
+// Retrieves the dimensions of the given surface.
+dtk_result dtk_surface_get_size(dtk_surface* pSurface, dtk_uint32* pWidth, dtk_uint32* pHeight);
+
+// Retrieves the width of the surface.
+dtk_uint32 dtk_surface_get_width(dtk_surface* pSurface);
+
+// Retrieves the height of the surface.
+dtk_uint32 dtk_surface_get_height(dtk_surface* pSurface);
+
+
+// Saves a copy of the current state for the given surface, which can be restored later with dtk_surface_pop().
 dtk_result dtk_surface_push(dtk_surface* pSurface);
 
 // Restores the last saved state.

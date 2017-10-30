@@ -8,6 +8,8 @@ typedef struct
     dtk_uint32 height;
     dtk_int32 textWidth;
     dtk_int32 textHeight;
+    dtk_rect closeButtonRect;
+    dtk_rect pinButtonRect;
     dtk_tabbar_tab* pTab;
     dtk_bool32 _isLast;             // Internal use only. Used to indicate whether or not this iterator represents the last tab.
     dtk_int32 _nextIndex;           // Internal use only.
@@ -83,6 +85,22 @@ dtk_bool32 dtk_tabbar__next_tab(dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIter
         } break;
         default: break; // Will never hit this.
     }
+
+    // The close button also affects the size of each tab.
+    dtk_uint32 closeButtonImageWidth = 0;
+    dtk_uint32 closeButtonImageHeight = 0;
+    if (pTabBar->isShowingCloseButton) {
+        dtk_surface* pCloseButtonImage = dtk_tabbar_get_close_button_image(pTabBar);
+        if (pCloseButtonImage != NULL) {
+            closeButtonImageWidth = pCloseButtonImage->width;
+            closeButtonImageHeight = pCloseButtonImage->height;
+        }
+
+        closeButtonImageWidth += pTabBar->closeButtonPaddingLeft + pTabBar->closeButtonPaddingRight;
+        closeButtonImageHeight += pTabBar->closeButtonPaddingTop + pTabBar->closeButtonPaddingBottom;
+    }
+    
+
 
     nextTabWidth += pTabBar->paddingLeft + pTabBar->paddingRight;
     nextTabHeight += pTabBar->paddingTop + pTabBar->paddingBottom;
@@ -392,6 +410,27 @@ dtk_font* dtk_tabbar_get_font(dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return NULL;
     return (pTabBar->pFont != NULL) ? pTabBar->pFont : dtk_get_ui_font(pTabBar->control.pTK);
+}
+
+dtk_result dtk_tabbar_set_close_button_image(dtk_tabbar* pTabBar, dtk_surface* pImage)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    pTabBar->pCloseButtonImage = pImage;
+
+    if (pTabBar->isAutoResizeEnabled) {
+        //dtk_tabbar_auto_resize(pTabBar);
+    }
+
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
+dtk_surface* dtk_tabbar_get_close_button_image(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) return NULL;
+    return pTabBar->pCloseButtonImage;
+    //return (pTabBar->pCloseButtonImage != NULL) ? pTabBar->pCloseButtonImage : dtk_get_stock_image(DTK_CONTROL(pTabBar)->pTK, DTK_STOCK_IMAGE_CROSS);
 }
 
 dtk_result dtk_tabbar_set_text_color(dtk_tabbar* pTabBar, dtk_color color)
