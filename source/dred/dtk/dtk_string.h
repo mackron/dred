@@ -526,7 +526,7 @@ typedef void   (* dtk_key_value_error_proc)(void* pUserData, const char* message
 // If an error occurs, that line will be skipped and processing will continue.
 void dtk_parse_key_value_pairs(dtk_key_value_read_proc onRead, dtk_key_value_pair_proc onPair, dtk_key_value_error_proc onError, void* pUserData);
 
-// This will only return DR_FALSE if the file fails to open. It will still return DR_TRUE even if there are syntax error or whatnot.
+// This will only return DR_FALSE if the file fails to open. It will still return true even if there are syntax error or whatnot.
 dtk_bool32 dtk_parse_key_value_pairs_from_file(const char* filePath, dtk_key_value_pair_proc onPair, dtk_key_value_error_proc onError, void* pUserData);
 
 
