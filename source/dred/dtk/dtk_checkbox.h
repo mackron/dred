@@ -17,9 +17,9 @@ struct dtk_checkbox
     dtk_color checkColor;
     dtk_int32 borderWidth;
     dtk_int32 padding;
-    dtk_bool32 isMouseOver;
-    dtk_bool32 isAutoSizeEnabled;
-    dtk_bool32 isChecked;
+    dtk_bool32 isMouseOver       : 1;
+    dtk_bool32 isAutoSizeEnabled : 1;
+    dtk_bool32 isChecked         : 1;
     dtk_checkbox_on_check_changed_proc onCheckChanged;
 };
 

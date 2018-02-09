@@ -18,10 +18,10 @@ void dtk_button__on_paint(dtk_button* pButton, dtk_rect rect, dtk_surface* pSurf
 
 
     // Draw the border first.
-    dtk_surface_draw_rect_outline(pSurface, dtk_control_get_local_rect(DTK_CONTROL(pButton)), pButton->borderColor, pButton->borderWidth);
+    dtk_surface_draw_rect_outline(pSurface, dtk_control_get_local_rect(DTK_CONTROL(pButton)), pButton->borderColor, (dtk_int32)(pButton->borderWidth * uiScale));
 
     // Text and background. The text is centered.
-    dtk_rect bgrect = dtk_rect_grow(dtk_control_get_local_rect(DTK_CONTROL(pButton)), -pButton->borderWidth);
+    dtk_rect bgrect = dtk_rect_grow(dtk_control_get_local_rect(DTK_CONTROL(pButton)), -(dtk_int32)(pButton->borderWidth * uiScale));
 
     dtk_int32 textWidth;
     dtk_int32 textHeight;
@@ -110,7 +110,7 @@ void dtk_button__refresh_layout(dtk_button* pButton)
         dtk_int32 textHeight;
         dtk_font_measure_string(pButton->pFont, uiScale, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
 
-        dtk_control_set_size(DTK_CONTROL(pButton), textWidth + (pButton->paddingHorz*2), textHeight + (pButton->paddingVert*2));
+        dtk_control_set_size(DTK_CONTROL(pButton), textWidth + (dtk_int32)(pButton->paddingHorz*2*uiScale), textHeight + (dtk_int32)(pButton->paddingVert*2*uiScale));
     }
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pButton), dtk_control_get_local_rect(DTK_CONTROL(pButton)));
