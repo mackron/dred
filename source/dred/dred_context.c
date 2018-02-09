@@ -1695,7 +1695,10 @@ dtk_dialog_result dred_show_yesnocancel_dialog(dred_context* pDred, const char* 
 
 dtk_dialog_result dred_show_font_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, const dred_font_desc* pDefaultFontDesc, dred_font_desc* pDescOut)
 {
-    if (pDred == NULL || pDescOut == NULL) {
+    if (pDescOut == NULL) return DTK_INVALID_ARGS;
+    dtk_zero_object(pDescOut);  // Safety.
+
+    if (pDred == NULL) {
         return DTK_INVALID_ARGS;
     }
 
@@ -1717,18 +1720,24 @@ dtk_dialog_result dred_show_font_picker_dialog(dred_context* pDred, dtk_window* 
         result = dtk_show_font_picker_dialog(&pDred->tk, pOwnerWindow, &defaultFontDesc, &descOut);
     }
 
-    strcpy_s(pDescOut->family, sizeof(pDescOut->family), descOut.family);
-    pDescOut->size = descOut.size;
-    pDescOut->weight = descOut.weight;
-    pDescOut->slant = descOut.slant;
-    pDescOut->flags = 0;
+    if (result == DTK_DIALOG_RESULT_OK) {
+        strcpy_s(pDescOut->family, sizeof(pDescOut->family), descOut.family);
+        pDescOut->size = descOut.size;
+        pDescOut->weight = descOut.weight;
+        pDescOut->slant = descOut.slant;
+        pDescOut->flags = 0;
+    }
+    
     return result;
 }
 
 dtk_dialog_result dred_show_color_picker_dialog(dred_context* pDred, dtk_window* pOwnerWindow, dtk_color initialColor, dtk_color* pColorOut)
 {
-    if (pDred == NULL || pColorOut == NULL) {
-        return 0;
+    if (pColorOut == NULL) return DTK_INVALID_ARGS;
+    dtk_zero_object(pColorOut); // Safety.
+
+    if (pDred == NULL) {
+        return DTK_INVALID_ARGS;
     }
 
     if (pOwnerWindow == NULL) {
