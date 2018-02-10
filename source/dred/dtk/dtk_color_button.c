@@ -47,8 +47,8 @@ void dtk_color_button__on_paint(dtk_color_button* pButton, dtk_rect rect, dtk_su
     dtk_rect bgrect = dtk_control_get_local_rect(DTK_CONTROL(pButton));
     dtk_rect boxRect = dtk_color_button__get_box_rect(pButton);
 
-    dtk_surface_draw_rect_outline(pSurface, boxRect, pButton->boxBorderColor, (dtk_int32)pButton->borderWidth);
-    dtk_surface_draw_rect(pSurface, dtk_rect_grow(boxRect, -(dtk_int32)pButton->borderWidth), pButton->color);
+    dtk_surface_draw_rect_outline(pSurface, boxRect, pButton->boxBorderColor, (dtk_int32)(pButton->borderWidth*uiScale));
+    dtk_surface_draw_rect(pSurface, dtk_rect_grow(boxRect, -(dtk_int32)(pButton->borderWidth*uiScale)), pButton->color);
 
 
     // The text is positioned to the right of the box, and centered vertically.
@@ -56,15 +56,15 @@ void dtk_color_button__on_paint(dtk_color_button* pButton, dtk_rect rect, dtk_su
     dtk_int32 textHeight;
     dtk_font_measure_string(pButton->pFont, uiScale, pButton->text, strlen(pButton->text), &textWidth, &textHeight);
 
-    dtk_int32 textPosX = boxRect.right + pButton->padding;
+    dtk_int32 textPosX = boxRect.right + (dtk_int32)(pButton->padding*uiScale);
     dtk_int32 textPosY = (dtk_control_get_height(DTK_CONTROL(pButton)) - textHeight) / 2;
     dtk_surface_draw_text(pSurface, pButton->pFont, uiScale, pButton->text, strlen(pButton->text), textPosX, textPosY, pButton->textColor, bgColor);
 
     // Background
-    dtk_surface_draw_rect(pSurface, dtk_rect_init(boxRect.right,        boxRect.top,    boxRect.right + pButton->padding, boxRect.bottom), bgColor);    // Padding bettween checkbox and text.
-    dtk_surface_draw_rect(pSurface, dtk_rect_init(bgrect.left,          bgrect.top,     bgrect.right,                     boxRect.top),    bgColor);
-    dtk_surface_draw_rect(pSurface, dtk_rect_init(bgrect.left,          boxRect.bottom, bgrect.right,                     bgrect.bottom),  bgColor);
-    dtk_surface_draw_rect(pSurface, dtk_rect_init(textPosX + textWidth, boxRect.top,    bgrect.right,                     boxRect.bottom), bgColor);
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(boxRect.right,        boxRect.top,    boxRect.right + (dtk_int32)(pButton->padding*uiScale), boxRect.bottom), bgColor);    // Padding bettween checkbox and text.
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(bgrect.left,          bgrect.top,     bgrect.right,                                            boxRect.top),    bgColor);
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(bgrect.left,          boxRect.bottom, bgrect.right,                                            bgrect.bottom),  bgColor);
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(textPosX + textWidth, boxRect.top,    bgrect.right,                                            boxRect.bottom), bgColor);
 }
 
 void dtk_color_button__on_mouse_enter(dtk_color_button* pButton)
@@ -118,7 +118,7 @@ void dtk_color_button__on_mouse_button_up(dtk_color_button* pButton, int mouseBu
             
             // Show a color picker.
             dtk_color newColor;
-            if (dtk_show_color_picker_dialog(DTK_CONTROL(pButton)->pTK, pOwnerWindow, pButton->color, &newColor)) {
+            if (dtk_show_color_picker_dialog(DTK_CONTROL(pButton)->pTK, pOwnerWindow, pButton->color, &newColor) == DTK_DIALOG_RESULT_OK) {
                 dtk_color_button_set_color(pButton, newColor, DTK_FALSE);
                 dtk_control_scheduled_redraw(DTK_CONTROL(pButton), dtk_control_get_local_rect(DTK_CONTROL(pButton)));
             }
@@ -143,7 +143,7 @@ void dtk_color_button__refresh_layout(dtk_color_button* pButton)
         dtk_rect boxRect = dtk_color_button__get_box_rect(pButton);
         dtk_int32 boxWidth = (boxRect.right - boxRect.left);
 
-        dtk_control_set_size(DTK_CONTROL(pButton), textWidth + boxWidth + pButton->padding, textHeight);
+        dtk_control_set_size(DTK_CONTROL(pButton), textWidth + boxWidth + (dtk_int32)(pButton->padding*uiScale), textHeight);
     }
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pButton), dtk_control_get_local_rect(DTK_CONTROL(pButton)));
@@ -168,7 +168,7 @@ dtk_result dtk_color_button_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_c
     pButton->boxBorderColor = dtk_rgb(0, 0, 0);
     pButton->borderWidth = 1;
     pButton->padding = 4;
-    pButton->isAutoSizeEnabled = DTK_FALSE;
+    pButton->isAutoSizeEnabled = DTK_TRUE;
     pButton->color = color;
 
     dtk_color_button__refresh_layout(pButton);

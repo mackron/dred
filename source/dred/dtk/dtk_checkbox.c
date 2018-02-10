@@ -75,10 +75,10 @@ void dtk_checkbox__on_paint(dtk_checkbox* pCheckbox, dtk_rect rect, dtk_surface*
     dtk_surface_draw_text(pSurface, pCheckbox->pFont, uiScale, pCheckbox->text, strlen(pCheckbox->text), textPosX, textPosY, pCheckbox->textColor, pCheckbox->bgColor);
 
     // Background
-    dtk_surface_draw_rect(pSurface, dtk_rect_init(boxRect.right,        boxRect.top,    boxRect.right + pCheckbox->padding, boxRect.bottom), pCheckbox->bgColor);    // Padding bettween checkbox and text.
-    dtk_surface_draw_rect(pSurface, dtk_rect_init(bgrect.left,          bgrect.top,     bgrect.right,                       boxRect.top),    pCheckbox->bgColor);
-    dtk_surface_draw_rect(pSurface, dtk_rect_init(bgrect.left,          boxRect.bottom, bgrect.right,                       bgrect.bottom),  pCheckbox->bgColor);
-    dtk_surface_draw_rect(pSurface, dtk_rect_init(textPosX + textWidth, boxRect.top,    bgrect.right,                       boxRect.bottom), pCheckbox->bgColor);
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(boxRect.right,        boxRect.top,    boxRect.right + (dtk_int32)(pCheckbox->padding*uiScale), boxRect.bottom), pCheckbox->bgColor);    // Padding bettween checkbox and text.
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(bgrect.left,          bgrect.top,     bgrect.right,                                            boxRect.top),    pCheckbox->bgColor);
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(bgrect.left,          boxRect.bottom, bgrect.right,                                            bgrect.bottom),  pCheckbox->bgColor);
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(textPosX + textWidth, boxRect.top,    bgrect.right,                                            boxRect.bottom), pCheckbox->bgColor);
 }
 
 void dtk_checkbox__on_mouse_enter(dtk_checkbox* pCheckbox)
