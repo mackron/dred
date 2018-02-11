@@ -2755,7 +2755,7 @@ void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dre
         }
     }
 
-    dtk_draw_surface_args argsDTK;
+    dtk_draw_image_args argsDTK;
     argsDTK.dstX = (dtk_int32)pArgs->dstX;
     argsDTK.dstY = (dtk_int32)pArgs->dstY;
     argsDTK.dstWidth = (dtk_int32)pArgs->dstWidth;
@@ -2764,7 +2764,7 @@ void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dre
     argsDTK.srcY = (dtk_int32)pArgs->srcY;
     argsDTK.srcWidth = (dtk_int32)pArgs->srcWidth;
     argsDTK.srcHeight = (dtk_int32)pArgs->srcHeight;
-    argsDTK.foregroundTint = dtk_color_init_dred(pArgs->foregroundTint);
+    argsDTK.foregroundColor = dtk_color_init_dred(pArgs->foregroundTint);
     argsDTK.backgroundColor = dtk_color_init_dred(pArgs->backgroundColor);
     argsDTK.options = pArgs->options;
     pControl->pGUI->paintingCallbacks.drawImage(pImage->pInternalImage, &argsDTK, pSurface);
@@ -3265,7 +3265,7 @@ void dred_control_draw_round_rect_dtk(dred_rect, dtk_color, float, dtk_surface* 
 void dred_control_draw_round_rect_outline_dtk(dred_rect, dtk_color, float, float, dtk_surface* pSurface);
 void dred_control_draw_round_rect_with_outline_dtk(dred_rect, dtk_color, float, float, dtk_color, dtk_surface* pSurface);
 void dred_control_draw_text_dtk(dtk_font*, float scale, const char*, int, float, float, dtk_color, dtk_color, dtk_surface* pSurface);
-void dred_control_draw_image_dtk(dtk_surface*, dtk_draw_surface_args* pArgs, dtk_surface* pSurface);
+void dred_control_draw_image_dtk(dtk_surface*, dtk_draw_image_args* pArgs, dtk_surface* pSurface);
 
 dtk_font* dred_gui_create_font_dtk(dtk_context*, const char*, unsigned int, dtk_font_weight, dtk_font_slant, unsigned int flags);
 void dred_gui_delete_font_dtk(dtk_font*);
@@ -3381,7 +3381,7 @@ void dred_control_draw_text_dtk(dtk_font* pFont, float scale, const char* text, 
     dtk_surface_draw_text(pSurface, pFont, scale, text, textSizeInBytes, (dtk_int32)posX, (dtk_int32)posY, dtk_color_init_dred(color), dtk_color_init_dred(backgroundColor));
 }
 
-void dred_control_draw_image_dtk(dtk_surface* pImage, dtk_draw_surface_args* pArgs, dtk_surface* pSurface)
+void dred_control_draw_image_dtk(dtk_surface* pImage, dtk_draw_image_args* pArgs, dtk_surface* pSurface)
 {
     dtk_surface_draw_surface(pSurface, pImage, pArgs);
 }

@@ -86,7 +86,7 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
 
             dtk_rect logoRect = dtk_rect_move_to_center(dtk_rect_init(0, 0, (dtk_int32)(logoWidth*10 * uiScale), (dtk_int32)(logoHeight*10 * uiScale)), bannerRect);
 
-            dtk_draw_surface_args args;
+            dtk_draw_image_args args;
             memset(&args, 0, sizeof(args));
             args.srcWidth = logoWidth;
             args.srcHeight = logoHeight;
@@ -94,7 +94,7 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
             args.dstHeight = (dtk_int32)(args.srcHeight*10 * uiScale);
             args.dstX = logoRect.left;
             args.dstY = logoRect.top;
-            args.foregroundTint = dred_rgb(255, 255, 255);
+            args.foregroundColor = dred_rgb(255, 255, 255);
             args.backgroundColor = dred_rgb(255, 255, 255);
             dtk_surface_draw_surface(pEvent->paint.pSurface, pDialog->pLogo->pInternalImage, &args);
             

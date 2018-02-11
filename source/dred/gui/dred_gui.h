@@ -273,7 +273,7 @@ typedef void (* dred_gui_draw_round_rect_proc)              (dred_rect relativeR
 typedef void (* dred_gui_draw_round_rect_outline_proc)      (dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_surface* pSurface);
 typedef void (* dred_gui_draw_round_rect_with_outline_proc) (dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface);
 typedef void (* dred_gui_draw_text_proc)                    (dtk_font* pFont, float scale, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_image_proc)                   (dtk_surface* pImage, dtk_draw_surface_args* pArgs, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_image_proc)                   (dtk_surface* pImage, dtk_draw_image_args* pArgs, dtk_surface* pSurface);
 
 typedef dtk_font* (* dred_gui_create_font_proc)                        (dtk_context* pTK, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, unsigned int flags);
 typedef void              (* dred_gui_delete_font_proc)                        (dtk_font* pFont);
