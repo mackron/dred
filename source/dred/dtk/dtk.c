@@ -338,6 +338,9 @@ dtk_result dtk_win32_error_to_result(DWORD error);
     #pragma warning(pop)
 #endif
 
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "stb_image_resize.h"
+
 #include "dtk_rect.c"
 #include "dtk_string.c"
 #include "dtk_path.c"
@@ -346,8 +349,8 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 #include "dtk_threading.c"
 #include "dtk_ipc.c"
 #include "dtk_monitor.c"
-#include "dtk_graphics.c"
 #include "dtk_svg.c"
+#include "dtk_graphics.c"
 #include "dtk_image.c"
 #include "dtk_input.c"
 #include "dtk_accelerators.c"

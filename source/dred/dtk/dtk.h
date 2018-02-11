@@ -179,6 +179,7 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 
 #include "nanosvg.h"
 #include "nanosvgrast.h"
+#include "stb_image_resize.h"
 
 #include "dtk_rect.h"
 #include "dtk_string.h"
@@ -189,8 +190,8 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_ipc.h"
 #include "dtk_math.h"
 #include "dtk_monitor.h"
-#include "dtk_graphics.h"
 #include "dtk_svg.h"
+#include "dtk_graphics.h"
 #include "dtk_image.h"
 #include "dtk_input.h"
 #include "dtk_accelerators.h"

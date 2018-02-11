@@ -25,6 +25,21 @@ dtk_result dtk_image_init_raster(dtk_context* pTK, dtk_uint32 width, dtk_uint32 
     return DTK_SUCCESS;
 }
 
+dtk_result dtk_image_init_svg(dtk_context* pTK, const char* pSVGData, dtk_image* pImage)
+{
+    dtk_result result = dtk_image_init(pTK, dtk_image_type_vector, pImage);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    result = dtk_svg_init(pTK, pSVGData, &pImage->vectorImage);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    return DTK_SUCCESS;
+}
+
 dtk_result dtk_image_uninit(dtk_image* pImage)
 {
     if (pImage == NULL) return DTK_INVALID_ARGS;

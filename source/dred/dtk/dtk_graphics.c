@@ -1,5 +1,12 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
+dtk_color dtk_color_transparent = {0,   0,   0,   0  };
+dtk_color dtk_color_black       = {0,   0,   0,   255};
+dtk_color dtk_color_white       = {255, 255, 255, 255};
+dtk_color dtk_color_red         = {255, 0,   0,   255};
+dtk_color dtk_color_green       = {0,   255, 0,   255};
+dtk_color dtk_color_blue        = {0,   0,   255, 255};
+
 // RGBA8 <-> BGRA8 swap with alpha pre-multiply and vertical flip.
 void dtk__rgba8_bgra8_swap__premul_flip(const void* pSrc, void* pDst, unsigned int width, unsigned int height, unsigned int srcStride, unsigned int dstStride)
 {
@@ -679,7 +686,7 @@ void dtk_surface_draw_text__gdi(dtk_surface* pSurface, dtk_font* pFont, float sc
     }
 }
 
-void dtk_surface_draw_surface__gdi(dtk_surface* pDstSurface, dtk_surface* pSrcSurface, dtk_draw_surface_args* pArgs)
+void dtk_surface_draw_surface__gdi(dtk_surface* pDstSurface, dtk_surface* pSrcSurface, dtk_draw_image_args* pArgs)
 {
     HDC hDstDC = (HDC)pDstSurface->gdi.hDC;
     HDC hSrcDC = (HDC)pSrcSurface->gdi.hDC;
@@ -689,78 +696,107 @@ void dtk_surface_draw_surface__gdi(dtk_surface* pDstSurface, dtk_surface* pSrcSu
         SelectObject(hSrcDC, pSrcSurface->gdi.hBitmap);
     }
 
-    if (pArgs->options & DTK_SURFACE_HINT_NO_ALPHA) {
-        StretchBlt(hDstDC, (int)pArgs->dstX, (int)pArgs->dstY, (int)pArgs->dstWidth, (int)pArgs->dstHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, SRCCOPY);
-    } else {
-        HDC hIntermediateDC = CreateCompatibleDC(hDstDC);
-        HBITMAP hIntermediateBitmap = CreateCompatibleBitmap(hDstDC, (int)pArgs->srcWidth, (int)pArgs->srcHeight);
-        SelectObject(hIntermediateDC, hIntermediateBitmap);
+    BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
 
-        // Background.
+    // There is a simplified path when the foreground color is white and the background color is transparent.
+    if (dtk_color_equal(pArgs->foregroundColor, dtk_color_white) && pArgs->backgroundColor.a == 0) {
+        // Faster path. We can just output directly without any modification.
+        if (pArgs->options & DTK_SURFACE_HINT_NO_ALPHA) {
+            StretchBlt(hDstDC, (int)pArgs->dstX, (int)pArgs->dstY, (int)pArgs->dstWidth, (int)pArgs->dstHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, SRCCOPY);
+        } else {
+            ((DTK_PFN_AlphaBlend)pSrcSurface->pTK->win32.AlphaBlend)(hDstDC, (int)pArgs->dstX, (int)pArgs->dstY, (int)pArgs->dstWidth, (int)pArgs->dstHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend);
+        }
+
+        return;
+    }
+
+
+    // Slower path. Need to draw to an intermediary DC for the background and foreground colors.
+
+
+    HDC hIntermediateDC = CreateCompatibleDC(hDstDC);
+    HBITMAP hIntermediateBitmap = CreateCompatibleBitmap(hDstDC, (int)pArgs->srcWidth, (int)pArgs->srcHeight);
+    SelectObject(hIntermediateDC, hIntermediateBitmap);
+
+    // Background.
+    if (pArgs->backgroundColor.a > 0) {
         SelectObject(hIntermediateDC, GetStockObject(NULL_PEN));
         SelectObject(hIntermediateDC, GetStockObject(DC_BRUSH));
         SetDCBrushColor(hIntermediateDC, RGB(pArgs->backgroundColor.r, pArgs->backgroundColor.g, pArgs->backgroundColor.b));
         Rectangle(hIntermediateDC, 0, 0, pArgs->srcWidth+1, pArgs->srcHeight+1);    // <-- +1 to the width and height because we are using a NULL pen and are not using advanced mode on hIntermediateDC.
-
-        BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
-        if (pSrcSurface->pTK->win32.AlphaBlend) {
-            // TODO: This needs a lot of improvements:
-            // - Make more efficient.
-            // - Have the background and foreground colors be applied to images properly.
-            if (pSrcSurface->gdi.pBitmapData != NULL && (pArgs->foregroundTint.r != 255 || pArgs->foregroundTint.g != 255 || pArgs->foregroundTint.b != 255 || pArgs->foregroundTint.a != 255)) {
-                BITMAPINFO bmi;
-                ZeroMemory(&bmi, sizeof(bmi));
-                bmi.bmiHeader.biSize        = sizeof(bmi.bmiHeader);
-                bmi.bmiHeader.biWidth       = (LONG)pSrcSurface->width;
-                bmi.bmiHeader.biHeight      = (LONG)pSrcSurface->height;
-                bmi.bmiHeader.biPlanes      = 1;
-                bmi.bmiHeader.biBitCount    = 32;   // Only supporting 32-bit formats.
-                bmi.bmiHeader.biCompression = BI_RGB;
-
-                void* pTempImageData;
-                HBITMAP hTempBitmap = CreateDIBSection(hSrcDC, &bmi, DIB_RGB_COLORS, (void**)&pTempImageData, NULL, 0);
-                if (hTempBitmap != NULL) {
-                    const unsigned int srcStride32 = pSrcSurface->width;
-                    const unsigned int dstStride32 = pSrcSurface->width;
-
-                    for (unsigned int iRow = 0; iRow < pSrcSurface->height; ++iRow) {
-                        const unsigned int* pSrcRow = (const unsigned int*)pSrcSurface->gdi.pBitmapData + (iRow * srcStride32);
-                              unsigned int* pDstRow =       (unsigned int*)pTempImageData               + (iRow * dstStride32);
-
-                        for (unsigned int iCol = 0; iCol < pSrcSurface->width; ++iCol) {
-                            unsigned int srcTexel = pSrcRow[iCol];
-                            unsigned int srcTexelA = (srcTexel & 0xFF000000) >> 24;
-                            unsigned int srcTexelR = (unsigned int)(((srcTexel & 0x00FF0000) >> 16) * (pArgs->foregroundTint.r / 255.0f));
-                            unsigned int srcTexelG = (unsigned int)(((srcTexel & 0x0000FF00) >> 8)  * (pArgs->foregroundTint.g / 255.0f));
-                            unsigned int srcTexelB = (unsigned int)(((srcTexel & 0x000000FF) >> 0)  * (pArgs->foregroundTint.b / 255.0f));
-
-                            if (srcTexelR > 255) srcTexelR = 255;
-                            if (srcTexelG > 255) srcTexelG = 255;
-                            if (srcTexelB > 255) srcTexelB = 255;
-
-                            pDstRow[iCol] = (srcTexelR << 16) | (srcTexelG << 8) | (srcTexelB << 0) | (srcTexelA << 24);
-                        }
-                    }
-
-                    SelectObject(hSrcDC, hTempBitmap);
-                    ((DTK_PFN_AlphaBlend)pSrcSurface->pTK->win32.AlphaBlend)(hIntermediateDC, 0, 0, (int)pArgs->srcWidth, (int)pArgs->srcHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend);
-
-                    DeleteObject(hTempBitmap);
-                }
-            } else {
-                ((DTK_PFN_AlphaBlend)pSrcSurface->pTK->win32.AlphaBlend)(hIntermediateDC, 0, 0, (int)pArgs->srcWidth, (int)pArgs->srcHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend);
-            }
-        }
-
-        // Transfer from the intermediary DC to the destination.
-        StretchBlt(hDstDC, (int)pArgs->dstX, (int)pArgs->dstY, (int)pArgs->dstWidth, (int)pArgs->dstHeight, hIntermediateDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, SRCCOPY);
-
-        DeleteObject(hIntermediateBitmap);
-        DeleteDC(hIntermediateDC);
     }
+
+        
+    if (pSrcSurface->pTK->win32.AlphaBlend) {
+        // TODO: This needs a lot of improvements:
+        // - Make more efficient.
+        // - Have the background and foreground colors be applied to images properly.
+        if (pSrcSurface->gdi.pBitmapData != NULL && (pArgs->foregroundColor.r != 255 || pArgs->foregroundColor.g != 255 || pArgs->foregroundColor.b != 255 || pArgs->foregroundColor.a != 255)) {
+            BITMAPINFO bmi;
+            ZeroMemory(&bmi, sizeof(bmi));
+            bmi.bmiHeader.biSize        = sizeof(bmi.bmiHeader);
+            bmi.bmiHeader.biWidth       = (LONG)pSrcSurface->width;
+            bmi.bmiHeader.biHeight      = (LONG)pSrcSurface->height;
+            bmi.bmiHeader.biPlanes      = 1;
+            bmi.bmiHeader.biBitCount    = 32;   // Only supporting 32-bit formats.
+            bmi.bmiHeader.biCompression = BI_RGB;
+
+            void* pTempImageData;
+            HBITMAP hTempBitmap = CreateDIBSection(hSrcDC, &bmi, DIB_RGB_COLORS, (void**)&pTempImageData, NULL, 0);
+            if (hTempBitmap != NULL) {
+                const unsigned int srcStride32 = pSrcSurface->width;
+                const unsigned int dstStride32 = pSrcSurface->width;
+
+                for (unsigned int iRow = 0; iRow < pSrcSurface->height; ++iRow) {
+                    const unsigned int* pSrcRow = (const unsigned int*)pSrcSurface->gdi.pBitmapData + (iRow * srcStride32);
+                          unsigned int* pDstRow =       (unsigned int*)pTempImageData               + (iRow * dstStride32);
+
+                    for (unsigned int iCol = 0; iCol < pSrcSurface->width; ++iCol) {
+                        unsigned int srcTexel = pSrcRow[iCol];
+                        unsigned int srcTexelA = (srcTexel & 0xFF000000) >> 24;
+                        unsigned int srcTexelR = (unsigned int)(((srcTexel & 0x00FF0000) >> 16) * (pArgs->foregroundColor.r / 255.0f));
+                        unsigned int srcTexelG = (unsigned int)(((srcTexel & 0x0000FF00) >> 8)  * (pArgs->foregroundColor.g / 255.0f));
+                        unsigned int srcTexelB = (unsigned int)(((srcTexel & 0x000000FF) >> 0)  * (pArgs->foregroundColor.b / 255.0f));
+
+                        if (srcTexelR > 255) srcTexelR = 255;
+                        if (srcTexelG > 255) srcTexelG = 255;
+                        if (srcTexelB > 255) srcTexelB = 255;
+
+                        pDstRow[iCol] = (srcTexelR << 16) | (srcTexelG << 8) | (srcTexelB << 0) | (srcTexelA << 24);
+                    }
+                }
+
+                SelectObject(hSrcDC, hTempBitmap);
+                ((DTK_PFN_AlphaBlend)pSrcSurface->pTK->win32.AlphaBlend)(hIntermediateDC, 0, 0, (int)pArgs->srcWidth, (int)pArgs->srcHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend);
+
+                DeleteObject(hTempBitmap);
+            }
+        } else {
+            ((DTK_PFN_AlphaBlend)pSrcSurface->pTK->win32.AlphaBlend)(hIntermediateDC, 0, 0, (int)pArgs->srcWidth, (int)pArgs->srcHeight, hSrcDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend);
+        }
+    }
+
+    // Transfer from the intermediary DC to the destination.
+    ((DTK_PFN_AlphaBlend)pSrcSurface->pTK->win32.AlphaBlend)(hDstDC, (int)pArgs->dstX, (int)pArgs->dstY, (int)pArgs->dstWidth, (int)pArgs->dstHeight, hIntermediateDC, (int)pArgs->srcX, (int)pArgs->srcY, (int)pArgs->srcWidth, (int)pArgs->srcHeight, blend/*SRCCOPY*/);
+
+    DeleteObject(hIntermediateBitmap);
+    DeleteDC(hIntermediateDC);
 
     // Flush GDI to let it know we are finished with the bitmap object's data.
     GdiFlush();
+}
+
+void dtk_surface_draw_raw_image_rgba__gdi(dtk_surface* pSurface, dtk_uint32 imageWidth, dtk_uint32 imageHeight, dtk_uint32 strideInBytes, const void* pImageData, dtk_draw_image_args* pArgs)
+{
+    // Fow now, just create an image surface and draw it. This can be optimized later if necessary.
+    dtk_surface tempSurface;
+    dtk_result result = dtk_surface_init_image(pSurface->pTK, imageWidth, imageHeight, strideInBytes, pImageData, &tempSurface);
+    if (result != DTK_SUCCESS) {
+        return;
+    }
+
+    dtk_surface_draw_surface(pSurface, &tempSurface, pArgs);
+    dtk_surface_uninit(&tempSurface);
 }
 #endif
 
@@ -1320,6 +1356,19 @@ void dtk_surface_draw_surface__cairo(dtk_surface* pSurface, dtk_surface* pSrcSur
 
     cairo_restore(cr);
 }
+
+void dtk_surface_draw_raw_image_rgba__cairo(dtk_surface* pSurface, dtk_uint32 imageWidth, dtk_uint32 imageHeight, dtk_uint32 strideInBytes, const void* pImageData, dtk_draw_image_args* pArgs)
+{
+    // Fow now, just create an image surface and draw it. This can be optimized later if necessary.
+    dtk_surface tempSurface;
+    dtk_result result = dtk_surface_init_image(pSurface->pTK, imageWidth, imageHeight, strideInBytes, pImageData, &tempSurface);
+    if (result != DTK_SUCCESS) {
+        return;
+    }
+
+    dtk_surface_draw_surface(pSurface, &tempSurface, pArgs);
+    dtk_surface_uninit(&tempSurface);
+}
 #endif
 
 
@@ -1853,7 +1902,7 @@ void dtk_surface_draw_text(dtk_surface* pSurface, dtk_font* pFont, float scale, 
 #endif
 }
 
-void dtk_surface_draw_surface(dtk_surface* pSurface, dtk_surface* pSrcSurface, dtk_draw_surface_args* pArgs)
+void dtk_surface_draw_surface(dtk_surface* pSurface, dtk_surface* pSrcSurface, dtk_draw_image_args* pArgs)
 {
     if (pSurface == NULL || pSrcSurface == NULL || pArgs == NULL) return;
 
@@ -1867,6 +1916,68 @@ void dtk_surface_draw_surface(dtk_surface* pSurface, dtk_surface* pSrcSurface, d
         dtk_surface_draw_surface__cairo(pSurface, pSrcSurface, pArgs);
     }
 #endif
+}
+
+void dtk_surface_draw_raw_image_rgba(dtk_surface* pSurface, dtk_uint32 imageWidth, dtk_uint32 imageHeight, dtk_uint32 strideInBytes, const void* pImageData, dtk_draw_image_args* pArgs)
+{
+    if (pSurface == NULL || pImageData == NULL || pArgs == NULL) return;
+
+#ifdef DTK_WIN32
+    if (pSurface->backend == dtk_graphics_backend_gdi) {
+        dtk_surface_draw_raw_image_rgba__gdi(pSurface, imageWidth, imageHeight, strideInBytes, pImageData, pArgs);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pSurface->backend == dtk_graphics_backend_cairo) {
+        dtk_surface_draw_raw_image_rgba__cairo(pSurface, imageWidth, imageHeight, strideInBytes, pImageData, pArgs);
+    }
+#endif
+}
+
+void dtk_surface_draw_svg(dtk_surface* pSurface, dtk_svg* pSVG, dtk_draw_image_args* pArgs)
+{
+    if (pSurface == NULL || pSVG == NULL || pArgs == NULL) return;
+
+    // For now all backends draw SVG's the same - by using nanosvg for the rasterization and then outputting the image via dtk_surface_draw_raw_image_rgba(). In the future
+    // this may change so that each backend can do their own optimized implementation.
+
+    // TODO: Remove this malloc/free and use something a bit more optimal.
+    //
+    // For now we can just create and delete a temporary buffer with malloc(), but later we'll optimize this.
+
+    dtk_uint32 width  = pArgs->dstWidth;
+    dtk_uint32 height = pArgs->dstHeight;
+
+    void* pImageData = dtk_malloc(width * height * 4);
+    if (pImageData == NULL) {
+        return; // Out of memory.
+    }
+
+    dtk_result result = dtk_svg_rasterize(pSVG, pArgs->srcX, pArgs->srcY, pArgs->srcWidth, pArgs->srcHeight, 0, 0, width, height, width*4, pImageData);
+    if (result != DTK_SUCCESS) {
+        dtk_free(pImageData);
+        return;
+    }
+
+    dtk_draw_image_args args2 = *pArgs;
+    args2.srcX = 0;
+    args2.srcY = 0;
+    args2.srcWidth = width;
+    args2.srcHeight = height;
+    dtk_surface_draw_raw_image_rgba(pSurface, width, height, width*4, pImageData, &args2);
+
+    dtk_free(pImageData);
+}
+
+
+void dtk_surface_draw_image(dtk_surface* pSurface, dtk_image* pImage, dtk_draw_image_args* pArgs)
+{
+    if (pSurface == NULL || pImage == NULL || pArgs == NULL) return;
+
+    switch (pImage->type) {
+        case dtk_image_type_raster: dtk_surface_draw_surface(pSurface, &pImage->rasterImage, pArgs);
+        case dtk_image_type_vector: dtk_surface_draw_svg(pSurface, &pImage->vectorImage, pArgs);
+    }
 }
 
 

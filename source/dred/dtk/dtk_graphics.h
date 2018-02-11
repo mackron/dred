@@ -23,6 +23,13 @@ typedef struct
     dtk_uint8 a;
 } dtk_color;
 
+extern dtk_color dtk_color_transparent;
+extern dtk_color dtk_color_black;
+extern dtk_color dtk_color_white;
+extern dtk_color dtk_color_red;
+extern dtk_color dtk_color_green;
+extern dtk_color dtk_color_blue;
+
 DTK_INLINE dtk_color dtk_rgba(dtk_uint8 r, dtk_uint8 g, dtk_uint8 b, dtk_uint8 a)
 {
     dtk_color color;
@@ -36,6 +43,15 @@ DTK_INLINE dtk_color dtk_rgba(dtk_uint8 r, dtk_uint8 g, dtk_uint8 b, dtk_uint8 a
 DTK_INLINE dtk_color dtk_rgb(dtk_uint8 r, dtk_uint8 g, dtk_uint8 b)
 {
     return dtk_rgba(r, g, b, 255);
+}
+
+DTK_INLINE dtk_bool32 dtk_color_equal(dtk_color c0, dtk_color c1)
+{
+    return
+        c0.r == c1.r &&
+        c0.g == c1.g &&
+        c0.b == c1.b &&
+        c0.a == c1.a;
 }
 
 
@@ -222,6 +238,21 @@ dtk_result dtk_font_get_text_cursor_position_from_char(dtk_font* pFont, float sc
 // ========
 #define DTK_SURFACE_HINT_NO_ALPHA   (1 << 0)
 
+typedef struct
+{
+    dtk_int32 dstX;
+    dtk_int32 dstY;
+    dtk_int32 dstWidth;
+    dtk_int32 dstHeight;
+    dtk_int32 srcX;
+    dtk_int32 srcY;
+    dtk_int32 srcWidth;
+    dtk_int32 srcHeight;
+    dtk_color foregroundColor;
+    dtk_color backgroundColor;
+    dtk_uint32 options;
+} dtk_draw_image_args;
+
 typedef enum
 {
     dtk_pixel_format_rgba8,
@@ -340,20 +371,36 @@ void dtk_surface_draw_rect_with_outline(dtk_surface* pSurface, dtk_rect rect, dt
 // Draws a run of text.
 void dtk_surface_draw_text(dtk_surface* pSurface, dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32 posX, dtk_int32 posY, dtk_color fgColor, dtk_color bgColor);
 
+// Draws a surface onto another surface.
+void dtk_surface_draw_surface(dtk_surface* pSurface, dtk_surface* pSrcSurface, dtk_draw_image_args* pArgs);
+
+// Draws raw image data onto a surface.
+void dtk_surface_draw_raw_image_rgba(dtk_surface* pSurface, dtk_uint32 imageWidth, dtk_uint32 imageHeight, dtk_uint32 strideInByets, const void* pImageData, dtk_draw_image_args* pArgs);
+
+// Draws an SVG image onto a surface.
+void dtk_surface_draw_svg(dtk_surface* pSurface, dtk_svg* pSVG, dtk_draw_image_args* pArgs);
+
+
+
+
+// Images
+// ======
+
+typedef enum
+{
+    dtk_image_type_raster,
+    dtk_image_type_vector
+} dtk_image_type;
+
 typedef struct
 {
-    dtk_int32 dstX;
-    dtk_int32 dstY;
-    dtk_int32 dstWidth;
-    dtk_int32 dstHeight;
-    dtk_int32 srcX;
-    dtk_int32 srcY;
-    dtk_int32 srcWidth;
-    dtk_int32 srcHeight;
-    dtk_color foregroundTint;
-    dtk_color backgroundColor;
-    dtk_uint32 options;
-} dtk_draw_surface_args;
+    dtk_image_type type;
+    union
+    {
+        dtk_surface rasterImage;
+        dtk_svg     vectorImage;
+    };
+} dtk_image;
 
-// Draws an image.
-void dtk_surface_draw_surface(dtk_surface* pSurface, dtk_surface* pSrcSurface, dtk_draw_surface_args* pArgs);
+// Draws an image onto a surface.
+void dtk_surface_draw_image(dtk_surface* pSurface, dtk_image* pImage, dtk_draw_image_args* pArgs);
