@@ -1321,7 +1321,7 @@ void dtk_surface_draw_text__cairo(dtk_surface* pSurface, dtk_font* pFont, float 
     }
 }
 
-void dtk_surface_draw_surface__cairo(dtk_surface* pSurface, dtk_surface* pSrcSurface, dtk_draw_surface_args* pArgs)
+void dtk_surface_draw_surface__cairo(dtk_surface* pSurface, dtk_surface* pSrcSurface, dtk_draw_image_args* pArgs)
 {
     cairo_t* cr = (cairo_t*)pSurface->cairo.pContext;
 
@@ -1330,13 +1330,17 @@ void dtk_surface_draw_surface__cairo(dtk_surface* pSurface, dtk_surface* pSrcSur
 
     // Background.
     if ((pArgs->options & DTK_SURFACE_HINT_NO_ALPHA) == 0) {
-        cairo_set_source_rgba(cr, pArgs->backgroundColor.r/255.0, pArgs->backgroundColor.g/255.0, pArgs->backgroundColor.b/255.0, pArgs->backgroundColor.a/255.0);
+        cairo_set_source_rgba(cr,
+            pArgs->backgroundColor.r/255.0,
+            pArgs->backgroundColor.g/255.0,
+            pArgs->backgroundColor.b/255.0,
+            pArgs->backgroundColor.a/255.0);
         cairo_rectangle(cr, 0, 0, pArgs->dstWidth, pArgs->dstHeight);
         cairo_fill(cr);
     }
 
 #if 1
-    if (pArgs->foregroundTint.r == 255 && pArgs->foregroundTint.g == 255 && pArgs->foregroundTint.b == 255 && pArgs->foregroundTint.a == 255) {
+    if (pArgs->foregroundColor.r == 255 && pArgs->foregroundColor.g == 255 && pArgs->foregroundColor.b == 255 && pArgs->foregroundColor.a == 255) {
         cairo_scale(cr, pArgs->dstWidth / pArgs->srcWidth, pArgs->dstHeight / pArgs->srcHeight);
         cairo_set_source_surface(cr, (cairo_surface_t*)pSrcSurface->cairo.pSurface, pArgs->srcX, pArgs->srcY);
         cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
@@ -1356,7 +1360,11 @@ void dtk_surface_draw_surface__cairo(dtk_surface* pSurface, dtk_surface* pSrcSur
 
             // Tint.
             cairo_set_operator(cr2, CAIRO_OPERATOR_ATOP);
-            cairo_set_source_rgba(cr2, pArgs->foregroundTint.r / 255.0, pArgs->foregroundTint.g / 255.0, pArgs->foregroundTint.b / 255.0, 1);
+            cairo_set_source_rgba(cr2,
+                pArgs->foregroundColor.r / 255.0,
+                pArgs->foregroundColor.g / 255.0,
+                pArgs->foregroundColor.b / 255.0,
+                pArgs->foregroundColor.a / 255.0);
             cairo_rectangle(cr2, 0, 0, pArgs->dstWidth, pArgs->dstHeight);
             cairo_fill(cr2);
 
