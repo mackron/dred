@@ -6,8 +6,7 @@ typedef struct
     dtk_int32 posY;
     dtk_uint32 width;
     dtk_uint32 height;
-    dtk_int32 textWidth;
-    dtk_int32 textHeight;
+    dtk_rect textRect;
     dtk_rect closeButtonRect;
     dtk_rect pinButtonRect;
     dtk_tabbar_tab* pTab;
@@ -51,23 +50,42 @@ dtk_bool32 dtk_tabbar__next_tab(dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIter
 
     pIterator->pTab = &pTabBar->pTabs[pIterator->_nextIndex];
 
-    
 
-    
+    // The close button also affects the size of each tab.
+    dtk_uint32 closeButtonImageWidth = 0;
+    dtk_uint32 closeButtonImageHeight = 0;
+    if (dtk_tabbar_is_showing_close_button(pTabBar)) {
+        dtk_image* pCloseButtonImage = dtk_tabbar_get_close_button_image(pTabBar);
+        if (pCloseButtonImage != NULL) {
+            dtk_image_get_size(pCloseButtonImage, &closeButtonImageWidth, &closeButtonImageHeight);
+        }
+
+        closeButtonImageWidth += pTabBar->closeButtonPaddingLeft + pTabBar->closeButtonPaddingRight;
+        closeButtonImageHeight += pTabBar->closeButtonPaddingTop + pTabBar->closeButtonPaddingBottom;
+    }
+
+
     dtk_uint32 prevTabWidth = pIterator->width;
     dtk_uint32 prevTabHeight = pIterator->height;
 
     // The size and position of each tab depends on the flow and text direction of the tabbar.
-    dtk_int32 textWidth;
-    dtk_int32 textHeight;
-    dtk_font_measure_string(dtk_tabbar_get_font(pTabBar), 1, pIterator->pTab->pText, strlen(pIterator->pTab->pText), &textWidth, &textHeight);
-    pIterator->textWidth  = textWidth;       // <-- Set these before the adjustment below. Want this to measure the actual text and not the excess from stretching.
-    pIterator->textHeight = textHeight;
+    dtk_int32 actualTextWidth;
+    dtk_int32 actualTextHeight;
+    dtk_font_measure_string(dtk_tabbar_get_font(pTabBar), 1, pIterator->pTab->pText, strlen(pIterator->pTab->pText), &actualTextWidth, &actualTextHeight);
 
+    dtk_int32 longestTextWidth = actualTextWidth;
+    dtk_int32 longestTextHeight = actualTextHeight;
     if ((pTabBar->textDirection == dtk_tabbar_text_direction_horizontal && (pTabBar->flow == dtk_tabbar_flow_top_to_bottom || pTabBar->flow == dtk_tabbar_flow_bottom_to_top)) ||
         (pTabBar->textDirection == dtk_tabbar_text_direction_vertical   && (pTabBar->flow == dtk_tabbar_flow_left_to_right || pTabBar->flow == dtk_tabbar_flow_right_to_left))) {
-        textWidth = pIterator->_longestTextWidth;
+        longestTextWidth = pIterator->_longestTextWidth;
     }
+
+    // These are set in the switch below.
+    dtk_int32 orientedTextWidth = 0;
+    dtk_int32 orientedTextHeight = 0;
+    dtk_uint32 orientedCloseButtonWidth = 0;
+    dtk_uint32 orientedCloseButtonHeight = 0;
+
 
     dtk_uint32 nextTabWidth = 0;
     dtk_uint32 nextTabHeight = 0;
@@ -75,31 +93,24 @@ dtk_bool32 dtk_tabbar__next_tab(dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIter
     {
         case dtk_tabbar_text_direction_horizontal:
         {
-            nextTabWidth  = (dtk_uint32)textWidth;
-            nextTabHeight = (dtk_uint32)textHeight;
+            orientedTextWidth = actualTextWidth;
+            orientedTextHeight = actualTextHeight;
+            orientedCloseButtonWidth = closeButtonImageWidth;
+            orientedCloseButtonHeight = closeButtonImageHeight;
+            nextTabWidth  = (dtk_uint32)longestTextWidth + orientedCloseButtonWidth;
+            nextTabHeight = dtk_max((dtk_uint32)longestTextHeight, orientedCloseButtonHeight);
         } break;
         case dtk_tabbar_text_direction_vertical:
         {
-            nextTabWidth  = (dtk_uint32)textHeight;
-            nextTabHeight = (dtk_uint32)textWidth;
+            orientedTextWidth = actualTextHeight;
+            orientedTextHeight = actualTextWidth;
+            orientedCloseButtonWidth = closeButtonImageHeight;
+            orientedCloseButtonHeight = closeButtonImageWidth;
+            nextTabWidth  = dtk_max((dtk_uint32)longestTextHeight, orientedCloseButtonWidth);
+            nextTabHeight = (dtk_uint32)longestTextWidth + orientedCloseButtonHeight;
         } break;
         default: break; // Will never hit this.
     }
-
-    // The close button also affects the size of each tab.
-    dtk_uint32 closeButtonImageWidth = 0;
-    dtk_uint32 closeButtonImageHeight = 0;
-    if (pTabBar->isShowingCloseButton) {
-        dtk_surface* pCloseButtonImage = dtk_tabbar_get_close_button_image(pTabBar);
-        if (pCloseButtonImage != NULL) {
-            closeButtonImageWidth = pCloseButtonImage->width;
-            closeButtonImageHeight = pCloseButtonImage->height;
-        }
-
-        closeButtonImageWidth += pTabBar->closeButtonPaddingLeft + pTabBar->closeButtonPaddingRight;
-        closeButtonImageHeight += pTabBar->closeButtonPaddingTop + pTabBar->closeButtonPaddingBottom;
-    }
-    
 
 
     nextTabWidth += pTabBar->paddingLeft + pTabBar->paddingRight;
@@ -125,6 +136,50 @@ dtk_bool32 dtk_tabbar__next_tab(dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIter
         } break;
         default: break; // Will never hit this.
     }
+
+
+    // At this point we have all the information we need to calculate the positions for each of the different elements.
+    switch (pTabBar->textDirection)
+    {
+        case dtk_tabbar_text_direction_horizontal:
+        {
+            pIterator->textRect.left   = pTabBar->paddingLeft;
+            pIterator->textRect.top    = pTabBar->paddingTop + (((dtk_int32)(nextTabHeight - pTabBar->paddingBottom - pTabBar->paddingTop) - (dtk_int32)orientedTextHeight)/2);
+            pIterator->textRect.right  = pIterator->textRect.left + orientedTextWidth;
+            pIterator->textRect.bottom = pIterator->textRect.top + orientedTextHeight;
+
+            if (dtk_tabbar_is_showing_close_button(pTabBar)) {
+                dtk_uint32 imageWidth;
+                dtk_uint32 imageHeight;
+                dtk_tabbar_get_close_button_size(pTabBar, &imageWidth, &imageHeight);
+
+                pIterator->closeButtonRect.left   = pTabBar->paddingLeft + longestTextWidth + pTabBar->closeButtonPaddingLeft;
+                pIterator->closeButtonRect.top    = pTabBar->paddingTop + pTabBar->closeButtonPaddingTop + (((dtk_int32)(nextTabHeight - pTabBar->paddingBottom - pTabBar->paddingTop) - (dtk_int32)imageHeight)/2);
+                pIterator->closeButtonRect.right  = pIterator->closeButtonRect.left + imageWidth;
+                pIterator->closeButtonRect.bottom = pIterator->closeButtonRect.top + imageHeight;
+            }
+        } break;
+        case dtk_tabbar_text_direction_vertical:
+        {
+            pIterator->textRect.left   = pTabBar->paddingLeft + (((dtk_int32)(nextTabWidth - pTabBar->paddingRight - pTabBar->paddingLeft) - (dtk_int32)orientedTextWidth)/2);
+            pIterator->textRect.top    = pTabBar->paddingTop;
+            pIterator->textRect.right  = pIterator->textRect.left + orientedTextWidth;
+            pIterator->textRect.bottom = pIterator->textRect.top + orientedTextHeight;
+
+            if (dtk_tabbar_is_showing_close_button(pTabBar)) {
+                dtk_uint32 imageWidth;
+                dtk_uint32 imageHeight;
+                dtk_tabbar_get_close_button_size(pTabBar, &imageWidth, &imageHeight);
+
+                pIterator->closeButtonRect.left   = pTabBar->paddingLeft + pTabBar->closeButtonPaddingTop + (((dtk_int32)(nextTabWidth - pTabBar->paddingRight - pTabBar->paddingLeft) - (dtk_int32)imageWidth)/2);
+                pIterator->closeButtonRect.top    = pTabBar->paddingTop + longestTextWidth + pTabBar->closeButtonPaddingLeft;
+                pIterator->closeButtonRect.right  = pIterator->closeButtonRect.left + imageHeight;
+                pIterator->closeButtonRect.bottom = pIterator->closeButtonRect.top + imageWidth;
+            }
+        } break;
+        default: break; // Will never hit this.
+    }
+
 
     pIterator->width  = nextTabWidth;
     pIterator->height = nextTabHeight;
@@ -222,15 +277,22 @@ dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control
     pTabBar->activeTabIndex = -1;
 
     // Default style.
-    pTabBar->bgColor           = dtk_rgb(192, 192, 192);
-    pTabBar->bgColorTab        = dtk_rgb(192, 192, 192);
-    pTabBar->bgColorActiveTab  = dtk_rgb(128, 128, 128);
-    pTabBar->bgColorHoveredTab = dtk_rgb(160, 160, 160);
-    pTabBar->textColor         = dtk_rgb(0, 0, 0);
-    pTabBar->paddingLeft       = 4;
-    pTabBar->paddingTop        = 4;
-    pTabBar->paddingRight      = 4;
-    pTabBar->paddingBottom     = 4;
+    pTabBar->bgColor                  = dtk_rgb(192, 192, 192);
+    pTabBar->bgColorTab               = dtk_rgb(192, 192, 192);
+    pTabBar->bgColorActiveTab         = dtk_rgb(128, 128, 128);
+    pTabBar->bgColorHoveredTab        = dtk_rgb(160, 160, 160);
+    pTabBar->textColor                = dtk_rgb(0, 0, 0);
+    pTabBar->paddingLeft              = 4;
+    pTabBar->paddingTop               = 4;
+    pTabBar->paddingRight             = 4;
+    pTabBar->paddingBottom            = 4;
+    pTabBar->closeButtonPaddingLeft   = 4;
+    pTabBar->closeButtonPaddingTop    = 0;
+    pTabBar->closeButtonPaddingRight  = 0;
+    pTabBar->closeButtonPaddingBottom = 0;
+    pTabBar->closeButtonColor         = dtk_rgb(224, 224, 224);
+    pTabBar->closeButtonColorHovered  = dtk_rgb(255, 192, 192);
+    pTabBar->closeButtonColorPressed  = dtk_rgb(192, 128, 128);
 
     return DTK_SUCCESS;
 }
@@ -275,6 +337,9 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                         bgColor = pTabBar->bgColorActiveTab;
                     }
 
+                    dtk_color closeButtonColor = pTabBar->closeButtonColor;
+                    // TODO: Change the close button color based on hit testing.
+
                     dtk_rect tabRect = dtk_rect_init(iterator.posX, iterator.posY, iterator.posX + iterator.width, iterator.posY + iterator.height);
                     tabGroupRect = dtk_rect_union(tabGroupRect, tabRect);
 
@@ -291,10 +356,76 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
 
                     if (pTabBar->textDirection == dtk_tabbar_text_direction_horizontal) {
                         // Horizontal text.
-                        dtk_surface_draw_text(pEvent->paint.pSurface, pFont, 1, iterator.pTab->pText, strlen(iterator.pTab->pText), iterator.posX + pTabBar->paddingLeft, iterator.posY + pTabBar->paddingTop, fgColor, bgColor);
+                        dtk_surface_draw_text(pEvent->paint.pSurface, pFont, 1, iterator.pTab->pText, strlen(iterator.pTab->pText), iterator.posX + iterator.textRect.left, iterator.posY + iterator.textRect.top, fgColor, bgColor);
+
+                        // Spacing above and below the text.
+                        {
+                            dtk_rect spacingRect;
+
+                            // Above the text.
+                            spacingRect.left   = iterator.posX + iterator.textRect.left;
+                            spacingRect.top    = iterator.posY + pTabBar->paddingTop;
+                            spacingRect.right  = iterator.posX + iterator.textRect.right;
+                            spacingRect.bottom = iterator.posY + iterator.textRect.top;
+                            dtk_surface_draw_rect(pEvent->paint.pSurface, spacingRect, bgColor);
+
+                            // Below the text.
+                            spacingRect.left   = iterator.posX + iterator.textRect.left;
+                            spacingRect.top    = iterator.posY + iterator.textRect.bottom;
+                            spacingRect.right  = iterator.posX + iterator.textRect.right;
+                            spacingRect.bottom = iterator.posY + iterator.height - pTabBar->paddingBottom;
+                            dtk_surface_draw_rect(pEvent->paint.pSurface, spacingRect, bgColor);
+                        }
+
+                        dtk_int32 cursorPosX = iterator.posX + iterator.textRect.right;
+
+                        if (dtk_tabbar_is_showing_close_button(pTabBar)) {
+                            // Spacing between text and the close button.
+                            dtk_rect spacingRect;
+                            spacingRect.left   = cursorPosX;
+                            spacingRect.top    = iterator.posY + pTabBar->paddingTop;
+                            spacingRect.right  = iterator.posX + iterator.closeButtonRect.left;
+                            spacingRect.bottom = iterator.posY + iterator.height - pTabBar->paddingBottom;
+                            dtk_surface_draw_rect(pEvent->paint.pSurface, spacingRect, bgColor);
+                            
+                            // The close button image.
+                            dtk_draw_image_args drawImageArgs;
+                            dtk_zero_object(&drawImageArgs);
+                            drawImageArgs.dstX = iterator.posX + iterator.closeButtonRect.left;
+                            drawImageArgs.dstY = iterator.posY + iterator.closeButtonRect.top;
+                            drawImageArgs.dstWidth = dtk_rect_width(iterator.closeButtonRect);
+                            drawImageArgs.dstHeight = dtk_rect_height(iterator.closeButtonRect);
+                            drawImageArgs.srcX = 0;
+                            drawImageArgs.srcY = 0;
+                            drawImageArgs.srcWidth = dtk_image_get_width(pTabBar->pCloseButtonImage);
+                            drawImageArgs.srcHeight = dtk_image_get_height(pTabBar->pCloseButtonImage);
+                            drawImageArgs.foregroundColor = closeButtonColor;
+                            drawImageArgs.backgroundColor = bgColor;
+                            dtk_surface_draw_image(pEvent->paint.pSurface, pTabBar->pCloseButtonImage, &drawImageArgs);
+
+                            // Spacing above and below the image.
+                            {
+                                // Above the text.
+                                spacingRect.left   = iterator.posX + iterator.closeButtonRect.left;
+                                spacingRect.top    = iterator.posY + pTabBar->paddingTop;
+                                spacingRect.right  = iterator.posX + iterator.closeButtonRect.right;
+                                spacingRect.bottom = iterator.posY + iterator.closeButtonRect.top;
+                                dtk_surface_draw_rect(pEvent->paint.pSurface, spacingRect, bgColor);
+
+                                // Below the text.
+                                spacingRect.left   = iterator.posX + iterator.closeButtonRect.left;
+                                spacingRect.top    = iterator.posY + iterator.closeButtonRect.bottom;
+                                spacingRect.right  = iterator.posX + iterator.closeButtonRect.right;
+                                spacingRect.bottom = iterator.posY + iterator.height - pTabBar->paddingBottom;
+                                dtk_surface_draw_rect(pEvent->paint.pSurface, spacingRect, bgColor);
+                            }
+
+                            // Update the cursor position for the next parts.
+                            cursorPosX = iterator.posX + iterator.closeButtonRect.right;
+                        }
 
                         dtk_rect excessRect = dtk_rect_init(
-                            iterator.posX + pTabBar->paddingLeft + (dtk_int32)iterator.textWidth,
+                            cursorPosX,
                             iterator.posY + pTabBar->paddingTop,
                             iterator.posX + iterator.width  - pTabBar->paddingRight,
                             iterator.posY + iterator.height - pTabBar->paddingBottom);
@@ -309,9 +440,82 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                         }
                         dtk_surface_pop(pEvent->paint.pSurface);
 
+                        // Spacing to the left and right the text.
+                        {
+                            dtk_rect spacingRect;
+
+                            // Left of the text.
+                            spacingRect.left   = iterator.posX + pTabBar->paddingLeft;
+                            spacingRect.top    = iterator.posY + iterator.textRect.top;
+                            spacingRect.right  = iterator.posX + iterator.textRect.left;
+                            spacingRect.bottom = iterator.posY + iterator.textRect.bottom;
+                            dtk_surface_draw_rect(pEvent->paint.pSurface, spacingRect, bgColor);
+                            
+                            // Right of the text.
+                            spacingRect.left   = iterator.posX + iterator.textRect.right;
+                            spacingRect.top    = iterator.posY + iterator.textRect.top;
+                            spacingRect.right  = iterator.posX + iterator.width - pTabBar->paddingRight;
+                            spacingRect.bottom = iterator.posY + iterator.height - pTabBar->paddingBottom;
+                            dtk_surface_draw_rect(pEvent->paint.pSurface, spacingRect, bgColor);
+                        }
+
+                        dtk_int32 cursorPosY = iterator.posY + iterator.textRect.bottom;
+
+                        if (dtk_tabbar_is_showing_close_button(pTabBar)) {
+                            // Spacing between text and the close button.
+                            dtk_rect spacingRect;
+                            spacingRect.left   = iterator.posX + pTabBar->paddingLeft;
+                            spacingRect.top    = cursorPosY;
+                            spacingRect.right  = iterator.posX + iterator.width - pTabBar->paddingRight;
+                            spacingRect.bottom = iterator.posY + iterator.closeButtonRect.top;
+                            dtk_surface_draw_rect(pEvent->paint.pSurface, spacingRect, bgColor);
+                            
+                            // The close button image.
+                            dtk_draw_image_args drawImageArgs;
+                            dtk_zero_object(&drawImageArgs);
+                            drawImageArgs.dstX = 0;
+                            drawImageArgs.dstY = 0;
+                            drawImageArgs.dstWidth = dtk_rect_width(iterator.closeButtonRect);
+                            drawImageArgs.dstHeight = dtk_rect_height(iterator.closeButtonRect);
+                            drawImageArgs.srcX = 0;
+                            drawImageArgs.srcY = 0;
+                            drawImageArgs.srcWidth = dtk_image_get_width(pTabBar->pCloseButtonImage);
+                            drawImageArgs.srcHeight = dtk_image_get_height(pTabBar->pCloseButtonImage);
+                            drawImageArgs.foregroundColor = closeButtonColor;
+                            drawImageArgs.backgroundColor = bgColor;
+
+                            dtk_surface_push(pEvent->paint.pSurface);
+                            {
+                                dtk_surface_translate(pEvent->paint.pSurface, iterator.posX + iterator.closeButtonRect.left + dtk_rect_height(iterator.closeButtonRect), iterator.posY + iterator.closeButtonRect.top);
+                                dtk_surface_rotate(pEvent->paint.pSurface, 90);
+                                dtk_surface_draw_image(pEvent->paint.pSurface, pTabBar->pCloseButtonImage, &drawImageArgs);
+                            }
+                            dtk_surface_pop(pEvent->paint.pSurface);
+
+                            // Spacing to the left and right the image.
+                            {
+                                // Left of the text.
+                                spacingRect.left   = iterator.posX + pTabBar->paddingLeft;
+                                spacingRect.top    = iterator.posY + iterator.closeButtonRect.top;
+                                spacingRect.right  = iterator.posX + iterator.closeButtonRect.left;
+                                spacingRect.bottom = iterator.posY + iterator.closeButtonRect.bottom;
+                                dtk_surface_draw_rect(pEvent->paint.pSurface, spacingRect, bgColor);
+                            
+                                // Right of the text.
+                                spacingRect.left   = iterator.posX + iterator.closeButtonRect.right;
+                                spacingRect.top    = iterator.posY + iterator.closeButtonRect.top;
+                                spacingRect.right  = iterator.posX + iterator.width - pTabBar->paddingRight;
+                                spacingRect.bottom = iterator.posY + iterator.height - pTabBar->paddingBottom;
+                                dtk_surface_draw_rect(pEvent->paint.pSurface, spacingRect, bgColor);
+                            }
+
+                            // Update the cursor position for the next parts.
+                            cursorPosY = iterator.posY + iterator.closeButtonRect.bottom;
+                        }
+
                         dtk_rect excessRect = dtk_rect_init(
                             iterator.posX + pTabBar->paddingLeft,
-                            iterator.posY + pTabBar->paddingTop + (dtk_int32)iterator.textWidth,
+                            iterator.posY + cursorPosY,
                             iterator.posX + iterator.width  - pTabBar->paddingRight,
                             iterator.posY + iterator.height - pTabBar->paddingBottom);
                         dtk_surface_draw_rect(pEvent->paint.pSurface, excessRect, bgColor);
@@ -412,7 +616,7 @@ dtk_font* dtk_tabbar_get_font(dtk_tabbar* pTabBar)
     return (pTabBar->pFont != NULL) ? pTabBar->pFont : dtk_get_ui_font(pTabBar->control.pTK);
 }
 
-dtk_result dtk_tabbar_set_close_button_image(dtk_tabbar* pTabBar, dtk_surface* pImage)
+dtk_result dtk_tabbar_set_close_button_image(dtk_tabbar* pTabBar, dtk_image* pImage)
 {
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
 
@@ -426,7 +630,7 @@ dtk_result dtk_tabbar_set_close_button_image(dtk_tabbar* pTabBar, dtk_surface* p
     return DTK_SUCCESS;
 }
 
-dtk_surface* dtk_tabbar_get_close_button_image(dtk_tabbar* pTabBar)
+dtk_image* dtk_tabbar_get_close_button_image(dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return NULL;
     return pTabBar->pCloseButtonImage;
@@ -485,6 +689,95 @@ dtk_result dtk_tabbar_set_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, d
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;
 }
+
+dtk_result dtk_tabbar_show_close_button(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    if (pTabBar->isShowingCloseButton) {
+        return DTK_SUCCESS;
+    }
+
+    pTabBar->isShowingCloseButton = DTK_TRUE;
+
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tabbar_hide_close_button(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    if (!pTabBar->isShowingCloseButton) {
+        return DTK_SUCCESS;
+    }
+
+    pTabBar->isShowingCloseButton = DTK_FALSE;
+
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
+dtk_bool32 dtk_tabbar_is_showing_close_button(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) return DTK_FALSE;
+
+    return pTabBar->isShowingCloseButton && pTabBar->pCloseButtonImage;
+}
+
+dtk_result dtk_tabbar_set_close_button_size(dtk_tabbar* pTabBar, dtk_uint32 width, dtk_uint32 height)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    pTabBar->closeButtonWidth = width;
+    pTabBar->closeButtonHeight = height;
+
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tabbar_get_close_button_size(dtk_tabbar* pTabBar, dtk_uint32* pWidth, dtk_uint32* pHeight)
+{
+    if (pWidth) {
+        *pWidth = dtk_tabbar_get_close_button_width(pTabBar);
+    }
+    if (pHeight) {
+        *pHeight = dtk_tabbar_get_close_button_height(pTabBar);
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_uint32 dtk_tabbar_get_close_button_width(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) return 0;
+
+    if (pTabBar->pCloseButtonImage == NULL) {
+        return 0;
+    }
+
+    if (pTabBar->closeButtonWidth == 0) {
+        return dtk_image_get_width(pTabBar->pCloseButtonImage);
+    }
+
+    return pTabBar->closeButtonWidth;
+}
+
+dtk_uint32 dtk_tabbar_get_close_button_height(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) return 0;
+
+    if (pTabBar->pCloseButtonImage == NULL) {
+        return 0;
+    }
+
+    if (pTabBar->closeButtonHeight == 0) {
+        return dtk_image_get_height(pTabBar->pCloseButtonImage);
+    }
+
+    return pTabBar->closeButtonHeight;
+}
+
 
 
 dtk_result dtk_tabbar_tab_init(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage, dtk_tabbar_tab* pTab)

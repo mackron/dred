@@ -3,7 +3,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #define DR_IMPLEMENTATION
-#include "../../../../dr_libs/dr.h"
+#include "../../../../dr_libs/old/dr.h"
 
 #include "../external/stretchy_buffer.h"
 

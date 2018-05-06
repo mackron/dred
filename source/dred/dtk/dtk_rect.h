@@ -88,3 +88,13 @@ DTK_INLINE dtk_bool32 dtk_rect_equal(dtk_rect rect0, dtk_rect rect1)
         rect0.right  == rect1.right &&
         rect0.bottom == rect1.bottom;
 }
+
+DTK_INLINE dtk_int32 dtk_rect_width(dtk_rect rect)
+{
+    return rect.right - rect.left;
+}
+
+DTK_INLINE dtk_int32 dtk_rect_height(dtk_rect rect)
+{
+    return rect.bottom - rect.top;
+}
