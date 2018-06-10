@@ -66,8 +66,10 @@ struct dtk_tabbar
     dtk_color closeButtonColor;
     dtk_color closeButtonColorHovered;
     dtk_color closeButtonColorPressed;
-    dtk_bool32 isShowingCloseButton : 1;
-    dtk_bool32 isShowingPinButton   : 1;
+    dtk_bool32 isShowingCloseButton   : 1;
+    dtk_bool32 isShowingPinButton     : 1;
+    dtk_bool32 isMouseOverCloseButton : 1;
+    dtk_bool32 isMouseOverPinButton   : 1;
 };
 
 dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_tabbar_flow flow, dtk_tabbar_text_direction textDirection, dtk_tabbar* pTabBar);
@@ -75,9 +77,9 @@ dtk_result dtk_tabbar_uninit(dtk_tabbar* pTabBar);
 dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent);
 
 dtk_result dtk_tabbar_set_font(dtk_tabbar* pTabBar, dtk_font* pFont);
-dtk_font* dtk_tabbar_get_font(dtk_tabbar* pTabBar);
+dtk_font* dtk_tabbar_get_font(const dtk_tabbar* pTabBar);
 dtk_result dtk_tabbar_set_close_button_image(dtk_tabbar* pTabBar, dtk_image* pImage);
-dtk_image* dtk_tabbar_get_close_button_image(dtk_tabbar* pTabBar);
+dtk_image* dtk_tabbar_get_close_button_image(const dtk_tabbar* pTabBar);
 dtk_result dtk_tabbar_set_text_color(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_bg_color(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_bg_color_active(dtk_tabbar* pTabBar, dtk_color color);
@@ -86,11 +88,11 @@ dtk_result dtk_tabbar_set_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, d
 
 dtk_result dtk_tabbar_show_close_button(dtk_tabbar* pTabBar);
 dtk_result dtk_tabbar_hide_close_button(dtk_tabbar* pTabBar);
-dtk_bool32 dtk_tabbar_is_showing_close_button(dtk_tabbar* pTabBar);
+dtk_bool32 dtk_tabbar_is_showing_close_button(const dtk_tabbar* pTabBar);
 dtk_result dtk_tabbar_set_close_button_size(dtk_tabbar* pTabBar, dtk_uint32 width, dtk_uint32 height);
-dtk_result dtk_tabbar_get_close_button_size(dtk_tabbar* pTabBar, dtk_uint32* pWidth, dtk_uint32* pHeight);
-dtk_uint32 dtk_tabbar_get_close_button_width(dtk_tabbar* pTabBar);
-dtk_uint32 dtk_tabbar_get_close_button_height(dtk_tabbar* pTabBar);
+dtk_result dtk_tabbar_get_close_button_size(const dtk_tabbar* pTabBar, dtk_uint32* pWidth, dtk_uint32* pHeight);
+dtk_uint32 dtk_tabbar_get_close_button_width(const dtk_tabbar* pTabBar);
+dtk_uint32 dtk_tabbar_get_close_button_height(const dtk_tabbar* pTabBar);
 
 dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage);
 dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage);

@@ -15,7 +15,7 @@ typedef struct
     dtk_int32 _longestTextWidth;    // Internal use only.
 } dtk_tabbar__iterator;
 
-dtk_int32 dtk_tabbar__find_longest_tab_text(dtk_tabbar* pTabBar)
+dtk_int32 dtk_tabbar__find_longest_tab_text(const dtk_tabbar* pTabBar)
 {
     dtk_int32 longestWidth = 0;
 
@@ -34,7 +34,7 @@ dtk_int32 dtk_tabbar__find_longest_tab_text(dtk_tabbar* pTabBar)
     return longestWidth;
 }
 
-dtk_bool32 dtk_tabbar__next_tab(dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIterator)
+dtk_bool32 dtk_tabbar__next_tab(const dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIterator)
 {
     dtk_assert(pTabBar != NULL);
     dtk_assert(pIterator != NULL);
@@ -187,7 +187,7 @@ dtk_bool32 dtk_tabbar__next_tab(dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIter
     return DTK_TRUE;
 }
 
-dtk_bool32 dtk_tabbar__first_tab(dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIterator)
+dtk_bool32 dtk_tabbar__first_tab(const dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIterator)
 {
     dtk_assert(pTabBar != NULL);
     dtk_assert(pIterator != NULL);
@@ -214,26 +214,111 @@ dtk_bool32 dtk_tabbar__first_tab(dtk_tabbar* pTabBar, dtk_tabbar__iterator* pIte
     return dtk_tabbar__next_tab(pTabBar, pIterator);
 }
 
+dtk_bool32 dtk_tabbar__first_tab_at(dtk_tabbar* pTabBar, dtk_int32 tabIndex, dtk_tabbar__iterator* pIterator)
+{
+    dtk_assert(pTabBar != NULL);
+    dtk_assert(tabIndex < (dtk_int32)pTabBar->tabCount);
+    dtk_assert(pIterator != NULL);
 
-void dtk_tabbar__set_hovered_tab(dtk_tabbar* pTabBar, dtk_int32 tabIndex)
+    dtk_int32 i = 0;
+    if (dtk_tabbar__first_tab(pTabBar, pIterator)) {
+        for (;;) {
+            if (i == tabIndex) {
+                return DTK_TRUE;
+            }
+
+            if (!dtk_tabbar__next_tab(pTabBar, pIterator)) {
+                return DTK_FALSE;
+            }
+
+            i += 1;
+        }
+    }
+
+    // Getting here means we never found the tab, or some kind of error occurred.
+    return DTK_FALSE;
+}
+
+
+dtk_rect dtk_tabbar__get_tab_rect(dtk_tabbar* pTabBar, dtk_int32 tabIndex)
 {
     dtk_assert(pTabBar != NULL);
     dtk_assert(tabIndex < (dtk_int32)pTabBar->tabCount);
 
-    if (pTabBar->hoveredTabIndex != tabIndex) {
-        pTabBar->hoveredTabIndex = tabIndex;
-        dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));   // <-- Redraw the entire control for now, but can optimize this later if necessary, which it probably isn't.
+    dtk_tabbar__iterator iterator;
+    if (dtk_tabbar__first_tab_at(pTabBar, tabIndex, &iterator)) {
+        return dtk_rect_init(iterator.posX, iterator.posY, iterator.posX + iterator.width, iterator.posY + iterator.height);
+    } else {
+        return dtk_rect_init(0, 0, 0, 0);   // Couldn't find the tab somehow.
+    }
+}
+
+dtk_rect dtk_tabbar__get_hovered_tab_rect(dtk_tabbar* pTabBar)
+{
+    dtk_assert(pTabBar != NULL);
+
+    if (pTabBar->hoveredTabIndex == -1) {
+        return dtk_rect_init(0, 0, 0, 0);
+    } else {
+        return dtk_tabbar__get_tab_rect(pTabBar, pTabBar->hoveredTabIndex);
+    }
+}
+
+
+void dtk_tabbar__set_hovered_tab(dtk_tabbar* pTabBar, dtk_tabbar_hit_test_result* pHitTest)
+{
+    dtk_assert(pTabBar  != NULL);
+    dtk_assert(pHitTest != NULL);
+    dtk_assert(pHitTest->tabIndex < (dtk_int32)pTabBar->tabCount);
+
+    // To determine what part of the tab bar needs redrawing we start out with an inside out rectangle then merge the relevant parts accordingly.
+    dtk_rect redrawRect = dtk_rect_inside_out();
+    
+    // If the hovered tab differs we need to redraw both the previously hovered tab and the new one.
+    if (pTabBar->hoveredTabIndex != pHitTest->tabIndex) {
+        // The hovered tab has changed.
+        pTabBar->hoveredTabIndex = pHitTest->tabIndex;
 
         // If the tooltip is visible, update it.
         if (pTabBar->isTooltipVisible) {
             dtk_do_tooltip(pTabBar->control.pTK);
         }
+
+        // We need only redraw the two tabs whose hovered state has changed.
+        redrawRect = dtk_rect_union(redrawRect, dtk_tabbar__get_hovered_tab_rect(pTabBar));
+        if (pHitTest->tabIndex != -1) {
+            redrawRect = dtk_rect_union(redrawRect, pHitTest->tabRect);
+        }
+    } else {
+        // The hovered tab has not changed. We may need to redraw the pin and/or close buttons, though.
+        if (pTabBar->isMouseOverCloseButton != pHitTest->isOverCloseButton || pTabBar->isMouseOverPinButton != pHitTest->isOverPinButton) {
+            redrawRect = dtk_rect_union(redrawRect, dtk_tabbar__get_hovered_tab_rect(pTabBar));
+        }
+    }
+
+    pTabBar->isMouseOverCloseButton = pHitTest->isOverCloseButton;
+    pTabBar->isMouseOverPinButton   = pHitTest->isOverPinButton;
+
+    if (dtk_rect_has_volume(redrawRect)) {
+        dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), redrawRect);
     }
 }
 
 void dtk_tabbar__unset_hovered_tab(dtk_tabbar* pTabBar)
 {
-    dtk_tabbar__set_hovered_tab(pTabBar, -1);
+    dtk_assert(pTabBar != NULL);
+
+    // Return early if nothing is hovered.
+    if (pTabBar->hoveredTabIndex == -1) {
+        return;
+    }
+
+    dtk_rect redrawRect = dtk_tabbar__get_hovered_tab_rect(pTabBar);
+
+    pTabBar->hoveredTabIndex = -1;
+    pTabBar->isMouseOverCloseButton = DTK_FALSE;
+    pTabBar->isMouseOverPinButton   = DTK_FALSE;
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), redrawRect);
 }
 
 void dtk_tabbar__set_active_tab(dtk_tabbar* pTabBar, dtk_int32 tabIndex)
@@ -338,6 +423,12 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                     }
 
                     dtk_color closeButtonColor = pTabBar->closeButtonColor;
+                    if (tabIndex == pTabBar->hoveredTabIndex) {
+                        if (pTabBar->isMouseOverCloseButton) {
+                            closeButtonColor = pTabBar->closeButtonColorHovered;
+                        }
+                    }
+
                     // TODO: Change the close button color based on hit testing.
 
                     dtk_rect tabRect = dtk_rect_init(iterator.posX, iterator.posY, iterator.posX + iterator.width, iterator.posY + iterator.height);
@@ -548,9 +639,10 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
             dtk_tabbar_hit_test_result hit;
             if (dtk_tabbar_hit_test(pTabBar, pEvent->mouseMove.x, pEvent->mouseMove.y, &hit)) {
                 // It's over a tab.
-                dtk_tabbar__set_hovered_tab(pTabBar, hit.tabIndex);
+                dtk_tabbar__set_hovered_tab(pTabBar, &hit);
             } else {
                 // It's not over a tab.
+                pTabBar->isMouseOverCloseButton = DTK_FALSE;
                 dtk_tabbar__unset_hovered_tab(pTabBar);
             }
         } break;
@@ -610,7 +702,7 @@ dtk_result dtk_tabbar_set_font(dtk_tabbar* pTabBar, dtk_font* pFont)
     return DTK_SUCCESS;
 }
 
-dtk_font* dtk_tabbar_get_font(dtk_tabbar* pTabBar)
+dtk_font* dtk_tabbar_get_font(const dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return NULL;
     return (pTabBar->pFont != NULL) ? pTabBar->pFont : dtk_get_ui_font(pTabBar->control.pTK);
@@ -630,7 +722,7 @@ dtk_result dtk_tabbar_set_close_button_image(dtk_tabbar* pTabBar, dtk_image* pIm
     return DTK_SUCCESS;
 }
 
-dtk_image* dtk_tabbar_get_close_button_image(dtk_tabbar* pTabBar)
+dtk_image* dtk_tabbar_get_close_button_image(const dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return NULL;
     return pTabBar->pCloseButtonImage;
@@ -718,7 +810,7 @@ dtk_result dtk_tabbar_hide_close_button(dtk_tabbar* pTabBar)
     return DTK_SUCCESS;
 }
 
-dtk_bool32 dtk_tabbar_is_showing_close_button(dtk_tabbar* pTabBar)
+dtk_bool32 dtk_tabbar_is_showing_close_button(const dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return DTK_FALSE;
 
@@ -736,7 +828,7 @@ dtk_result dtk_tabbar_set_close_button_size(dtk_tabbar* pTabBar, dtk_uint32 widt
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_tabbar_get_close_button_size(dtk_tabbar* pTabBar, dtk_uint32* pWidth, dtk_uint32* pHeight)
+dtk_result dtk_tabbar_get_close_button_size(const dtk_tabbar* pTabBar, dtk_uint32* pWidth, dtk_uint32* pHeight)
 {
     if (pWidth) {
         *pWidth = dtk_tabbar_get_close_button_width(pTabBar);
@@ -748,7 +840,7 @@ dtk_result dtk_tabbar_get_close_button_size(dtk_tabbar* pTabBar, dtk_uint32* pWi
     return DTK_SUCCESS;
 }
 
-dtk_uint32 dtk_tabbar_get_close_button_width(dtk_tabbar* pTabBar)
+dtk_uint32 dtk_tabbar_get_close_button_width(const dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return 0;
 
@@ -763,7 +855,7 @@ dtk_uint32 dtk_tabbar_get_close_button_width(dtk_tabbar* pTabBar)
     return pTabBar->closeButtonWidth;
 }
 
-dtk_uint32 dtk_tabbar_get_close_button_height(dtk_tabbar* pTabBar)
+dtk_uint32 dtk_tabbar_get_close_button_height(const dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return 0;
 
@@ -895,8 +987,19 @@ dtk_bool32 dtk_tabbar_hit_test(dtk_tabbar* pTabBar, dtk_int32 x, dtk_int32 y, dt
                 pResult->relativePosY = y - iterator.posY;
                 pResult->tabRect = tabRect;
 
-                // TODO: Check if the point is over the close button.
+                // Check if the point is over the close button.
                 pResult->isOverCloseButton = DTK_FALSE;
+                if (pResult->relativePosX >= iterator.closeButtonRect.left && pResult->relativePosX < iterator.closeButtonRect.right &&
+                    pResult->relativePosY >= iterator.closeButtonRect.top  && pResult->relativePosY < iterator.closeButtonRect.bottom) {
+                    pResult->isOverCloseButton = DTK_TRUE;
+                }
+
+                // Check if the point is over the pin button.
+                pResult->isOverPinButton = DTK_FALSE;
+                if (pResult->relativePosX >= iterator.pinButtonRect.left && pResult->relativePosX < iterator.pinButtonRect.right &&
+                    pResult->relativePosY >= iterator.pinButtonRect.top  && pResult->relativePosY < iterator.pinButtonRect.bottom) {
+                    pResult->isOverPinButton = DTK_TRUE;
+                }
 
                 return DTK_TRUE;
             }
