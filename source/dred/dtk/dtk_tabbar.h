@@ -122,6 +122,9 @@ dtk_result dtk_tabbar_remove_tab_by_index(dtk_tabbar* pTabBar, dtk_uint32 tabInd
 
 dtk_result dtk_tabbar_set_tab_tooltip(dtk_tabbar* pTabBar, dtk_uint32 tabIndex, const char* pTooltipText);
 
+dtk_result dtk_tabbar_pin_tab(dtk_tabbar* pTabBar, dtk_uint32 tabIndex);
+dtk_result dtk_tabbar_unpin_tab(dtk_tabbar* pTabBar, dtk_uint32 tabIndex);
+
 // Performs a hit test against the tabs in the tab bar.
 //
 // Returns true if the point is over a tab; false otherwise.

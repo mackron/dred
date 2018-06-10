@@ -382,12 +382,12 @@ dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control
         return result;
     }
 
-    pTabBar->flow = flow;
-    pTabBar->textDirection = textDirection;
-    pTabBar->hoveredTabIndex         = -1;
-    pTabBar->activeTabIndex          = -1;
-    pTabBar->closeButtonHeldTabIndex = -1;
-    pTabBar->pinButtonHeldTabIndex   = -1;
+    pTabBar->flow                     = flow;
+    pTabBar->textDirection            = textDirection;
+    pTabBar->hoveredTabIndex          = -1;
+    pTabBar->activeTabIndex           = -1;
+    pTabBar->closeButtonHeldTabIndex  = -1;
+    pTabBar->pinButtonHeldTabIndex    = -1;
 
     // Default style.
     pTabBar->bgColor                  = dtk_rgb(192, 192, 192);
@@ -454,10 +454,13 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                     if (tabIndex == pTabBar->hoveredTabIndex) {
                         if (pTabBar->isMouseOverCloseButton) {
                             closeButtonColor = pTabBar->closeButtonColorHovered;
+
+                            if (tabIndex == pTabBar->closeButtonHeldTabIndex) {
+                                closeButtonColor = pTabBar->closeButtonColorPressed;
+                            }
                         }
                     }
 
-                    // TODO: Change the close button color based on hit testing.
 
                     dtk_rect tabRect = dtk_rect_init(iterator.posX, iterator.posY, iterator.posX + iterator.width, iterator.posY + iterator.height);
                     tabGroupRect = dtk_rect_union(tabGroupRect, tabRect);
@@ -664,13 +667,16 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_MOUSE_MOVE:
         {
-            dtk_tabbar_hit_test_result hit;
-            if (dtk_tabbar_hit_test(pTabBar, pEvent->mouseMove.x, pEvent->mouseMove.y, &hit)) {
-                // It's over a tab.
-                dtk_tabbar__set_hovered_tab(pTabBar, &hit);
-            } else {
-                // It's not over a tab.
-                dtk_tabbar__unset_hovered_tab(pTabBar);
+            // If the tab bar has the mouse capture, don't change the hovered state of anything.
+            if (!dtk_control_has_mouse_capture(DTK_CONTROL(pTabBar))) {
+                dtk_tabbar_hit_test_result hit;
+                if (dtk_tabbar_hit_test(pTabBar, pEvent->mouseMove.x, pEvent->mouseMove.y, &hit)) {
+                    // It's over a tab.
+                    dtk_tabbar__set_hovered_tab(pTabBar, &hit);
+                } else {
+                    // It's not over a tab.
+                    dtk_tabbar__unset_hovered_tab(pTabBar);
+                }
             }
         } break;
 
@@ -685,8 +691,10 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                     // The user clicked a button. We just mark the appropriate one as held.
                     if (hit.isOverCloseButton) {
                         pTabBar->closeButtonHeldTabIndex = hit.tabIndex;
+                        dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), hit.tabRect);
                     } else if (hit.isOverPinButton) {
                         pTabBar->pinButtonHeldTabIndex = hit.tabIndex;
+                        dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), hit.tabRect);
                     }
                 } else {
                     // The user clicked on the main part of the control. Actiate it.
@@ -711,11 +719,17 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                     if (pTabBar->pinButtonHeldTabIndex == hit.tabIndex) {
                         
                     }
+                } else {
+                    dtk_tabbar__set_hovered_tab(pTabBar, &hit);
                 }
+            } else {
+                dtk_tabbar__unset_hovered_tab(pTabBar);
             }
 
             pTabBar->closeButtonHeldTabIndex = -1;
             pTabBar->pinButtonHeldTabIndex   = -1;
+
+            dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
         } break;
 
         case DTK_EVENT_TOOLTIP:
@@ -756,11 +770,15 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_TABBAR_PIN_TAB:
         {
+            pTabBar->pTabs[pEvent->tabbar.tabIndex].isPinned = DTK_TRUE;
+
             // TODO: Pin the tab.
         } break;
 
         case DTK_EVENT_TABBAR_UNPIN_TAB:
         {
+            pTabBar->pTabs[pEvent->tabbar.tabIndex].isPinned = DTK_FALSE;
+
             // TODO: Unpin the tab.
         } break;
 
@@ -1070,6 +1088,33 @@ dtk_result dtk_tabbar_set_tab_tooltip(dtk_tabbar* pTabBar, dtk_uint32 tabIndex, 
 
     pTabBar->pTabs[tabIndex].pTooltipText = dtk_set_string(pTabBar->pTabs[tabIndex].pTooltipText, pTooltipText);
     return DTK_SUCCESS;
+}
+
+
+dtk_result dtk_tabbar_pin_tab(dtk_tabbar* pTabBar, dtk_uint32 tabIndex)
+{
+    if (pTabBar == NULL || pTabBar->tabCount <= tabIndex) return DTK_INVALID_ARGS;
+
+    if (pTabBar->pTabs[tabIndex].isPinned) {
+        return DTK_SUCCESS; // Already pinned.
+    }
+
+    dtk_event e = dtk_event_init(DTK_CONTROL(pTabBar)->pTK, DTK_EVENT_TABBAR_PIN_TAB, DTK_CONTROL(pTabBar));
+    e.tabbar.tabIndex = tabIndex;
+    return dtk_control_post_event(DTK_CONTROL(pTabBar), &e);
+}
+
+dtk_result dtk_tabbar_unpin_tab(dtk_tabbar* pTabBar, dtk_uint32 tabIndex)
+{
+    if (pTabBar == NULL || pTabBar->tabCount <= tabIndex) return DTK_INVALID_ARGS;
+
+    if (!pTabBar->pTabs[tabIndex].isPinned) {
+        return DTK_SUCCESS; // Already unpinned.
+    }
+
+    dtk_event e = dtk_event_init(DTK_CONTROL(pTabBar)->pTK, DTK_EVENT_TABBAR_UNPIN_TAB, DTK_CONTROL(pTabBar));
+    e.tabbar.tabIndex = tabIndex;
+    return dtk_control_post_event(DTK_CONTROL(pTabBar), &e);
 }
 
 
