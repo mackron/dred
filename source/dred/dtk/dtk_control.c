@@ -97,7 +97,7 @@ void dtk_control__unlink_child(dtk_control* pParent, dtk_control* pChild)
         pParent->pLastChild = pChild->pPrevSibling;
     }
     if (pParent->pFirstChild == pChild) {
-        pParent->pFirstChild = NULL;
+        pParent->pFirstChild = pChild->pNextSibling;
     }
 
     pChild->pParent = NULL;
@@ -139,6 +139,9 @@ dtk_result dtk_control_init(dtk_context* pTK, dtk_control_type type, dtk_event_p
     if (pParent != NULL) {
         dtk_control__link_child_append(pParent, pControl);
     }
+
+    // Explicitly set the relative position to 0,0 to ensure the control has a logical default.
+    dtk_control_set_relative_position(pControl, 0, 0);
 
     return DTK_SUCCESS;
 }
@@ -328,13 +331,13 @@ dtk_result dtk_control_hide(dtk_control* pControl)
     return result;
 }
 
-dtk_bool32 dtk_control_is_visible(dtk_control* pControl)
+dtk_bool32 dtk_control_is_visible(const dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_FALSE;
     return pControl->isHidden == DTK_FALSE;
 }
 
-dtk_bool32 dtk_control_is_visible_recursive(dtk_control* pControl)
+dtk_bool32 dtk_control_is_visible_recursive(const dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_FALSE;
 

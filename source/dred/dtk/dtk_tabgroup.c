@@ -146,10 +146,10 @@ dtk_bool32 dtk_tabgroup_tabbar_event_handler(dtk_event* pEvent)
 
     switch (pEvent->type)
     {
+        // Tab bar events should be routed to the tab group. The application should never need to know any of the details about
+        // the tab bar.
         case DTK_EVENT_TABBAR_CHANGE_TAB:
         {
-            // Route the equivalent event to the tab group control. The application should never need to know any of the details about
-            // the tab bar.
             dtk_event e = *pEvent;
             e.pControl = pEvent->pControl->pParent;
             e.type = DTK_EVENT_TABGROUP_CHANGE_TAB;
@@ -159,6 +159,19 @@ dtk_bool32 dtk_tabgroup_tabbar_event_handler(dtk_event* pEvent)
                 return DTK_FALSE;
             }
         } break;
+
+        case DTK_EVENT_TABBAR_CLOSE_TAB:
+        {
+            dtk_event e = *pEvent;
+            e.pControl = pEvent->pControl->pParent;
+            e.type = DTK_EVENT_TABGROUP_CLOSE_TAB;
+            e.tabgroup.tabIndex = e.tabbar.tabIndex;
+            if (!dtk_handle_local_event(&e)) {
+                return DTK_FALSE;
+            }
+        } break;
+
+
 
         case DTK_EVENT_SIZE:
         {
@@ -189,7 +202,7 @@ dtk_bool32 dtk_tabgroup_container_event_handler(dtk_event* pEvent)
     {
         case DTK_EVENT_PAINT:
         {
-            dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_control_get_local_rect(pEvent->pControl), dtk_rgb(255, 220, 220));
+            //dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_control_get_local_rect(pEvent->pControl), dtk_rgb(255, 220, 220));
         } break;
     }
 
@@ -248,14 +261,175 @@ dtk_bool32 dtk_tabgroup_default_event_handler(dtk_event* pEvent)
     {
         case DTK_EVENT_SIZE:
         {
+            // We want to make sure the tab bar and the container are laid out properly before notifying the application.
+            dtk_tabgroup__refresh_layout(pTabGroup);
+
+            // Notify the application of the change in layout so it can resize controls and whatnot.
             dtk_control_refresh_layout(pEvent->pControl);
         } break;
 
         case DTK_EVENT_REFRESH_LAYOUT:
         {
-            dtk_tabgroup__refresh_layout(pTabGroup);
         } break;
     }
 
     return dtk_control_default_event_handler(pEvent);
+}
+
+
+dtk_control* dtk_tabgroup_get_tab_page_container(dtk_tabgroup* pTabGroup)
+{
+    if (pTabGroup == NULL) {
+        return NULL;
+    }
+
+    return &pTabGroup->container;
+}
+
+
+dtk_result dtk_tabgroup_append_tab(dtk_tabgroup* pTabGroup, const char* text, dtk_control* pTabPage, dtk_uint32* pTabIndexOut)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_append_tab(&pTabGroup->tabbar, text, pTabPage, pTabIndexOut);
+}
+
+dtk_result dtk_tabgroup_prepend_tab(dtk_tabgroup* pTabGroup, const char* text, dtk_control* pTabPage, dtk_uint32* pTabIndexOut)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_prepend_tab(&pTabGroup->tabbar, text, pTabPage, pTabIndexOut);
+}
+
+dtk_result dtk_tabgroup_remove_tab_by_index(dtk_tabgroup* pTabGroup, dtk_uint32 tabIndex)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_remove_tab_by_index(&pTabGroup->tabbar, tabIndex);
+}
+
+dtk_uint32 dtk_tabgroup_get_tab_count(dtk_tabgroup* pTabGroup)
+{
+    if (pTabGroup == NULL) {
+        return 0;
+    }
+
+    return dtk_tabbar_get_tab_count(&pTabGroup->tabbar);
+}
+
+
+
+dtk_control* dtk_tabgroup_get_tab_page(dtk_tabgroup* pTabGroup, dtk_uint32 tabIndex)
+{
+    if (pTabGroup == NULL) {
+        return 0;
+    }
+
+    return dtk_tabbar_get_tab_page(&pTabGroup->tabbar, tabIndex);
+}
+
+dtk_uint32 dtk_tabgroup_get_active_tab_index(dtk_tabgroup* pTabGroup)
+{
+    if (pTabGroup == NULL) {
+        return (dtk_uint32)-1;
+    }
+
+    return dtk_tabbar_get_active_tab_index(&pTabGroup->tabbar);
+}
+
+dtk_result dtk_tabgroup_activate_tab(dtk_tabgroup* pTabGroup, dtk_uint32 tabIndex)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_activate_tab(&pTabGroup->tabbar, tabIndex);
+}
+
+dtk_result dtk_tabgroup_activate_next_tab(dtk_tabgroup* pTabGroup)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_activate_next_tab(&pTabGroup->tabbar);
+}
+
+dtk_result dtk_tabgroup_activate_prev_tab(dtk_tabgroup* pTabGroup)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_activate_prev_tab(&pTabGroup->tabbar);
+}
+
+
+dtk_result dtk_tabgroup_set_tab_text(dtk_tabgroup* pTabGroup, dtk_uint32 tabIndex, const char* text)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_tab_text(&pTabGroup->tabbar, tabIndex, text);
+}
+
+
+dtk_result dtk_tabgroup_get_container_size(dtk_tabgroup* pTabGroup, dtk_int32* pWidth, dtk_int32* pHeight)
+{
+    return dtk_control_get_size(&pTabGroup->container, pWidth, pHeight);
+}
+
+
+dtk_result dtk_tabgroup_show_tabbar(dtk_tabgroup* pTabGroup)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    if (dtk_tabgroup_is_showing_tabbar(pTabGroup)) {
+        return DTK_SUCCESS; // Already showing.
+    }
+
+    dtk_result result = dtk_control_show(DTK_CONTROL(pTabGroup));
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    dtk_control_refresh_layout(DTK_CONTROL(pTabGroup));  // The size of the body has changed which requires a layout refresh.
+    return result;
+}
+
+dtk_result dtk_tabgroup_hide_tabbar(dtk_tabgroup* pTabGroup)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    if (!dtk_tabgroup_is_showing_tabbar(pTabGroup)) {
+        return DTK_SUCCESS; // Already hidden.
+    }
+
+    dtk_result result = dtk_control_hide(DTK_CONTROL(pTabGroup));
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    dtk_control_refresh_layout(DTK_CONTROL(pTabGroup));  // The size of the body has changed which requires a layout refresh.
+    return result;
+}
+
+dtk_bool32 dtk_tabgroup_is_showing_tabbar(const dtk_tabgroup* pTabGroup)
+{
+    if (pTabGroup == NULL) {
+        return DTK_FALSE;
+    }
+
+    return dtk_control_is_visible(DTK_CONTROL(&pTabGroup->tabbar));
 }

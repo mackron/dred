@@ -116,10 +116,18 @@ dtk_result dtk_tabbar_get_close_button_size(const dtk_tabbar* pTabBar, dtk_uint3
 dtk_uint32 dtk_tabbar_get_close_button_width(const dtk_tabbar* pTabBar);
 dtk_uint32 dtk_tabbar_get_close_button_height(const dtk_tabbar* pTabBar);
 
-dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage);
-dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage);
+dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage, dtk_uint32* pTabIndexOut);
+dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage, dtk_uint32* pTabIndexOut);
 dtk_result dtk_tabbar_remove_tab_by_index(dtk_tabbar* pTabBar, dtk_uint32 tabIndex);
+dtk_uint32 dtk_tabbar_get_tab_count(dtk_tabbar* pTabBar);
 
+dtk_control* dtk_tabbar_get_tab_page(dtk_tabbar* pTabBar, dtk_uint32 tabIndex);
+dtk_uint32 dtk_tabbar_get_active_tab_index(dtk_tabbar* pTabBar);
+dtk_result dtk_tabbar_activate_tab(dtk_tabbar* pTabBar, dtk_uint32 tabIndex);
+dtk_result dtk_tabbar_activate_next_tab(dtk_tabbar* pTabBar);   // Loops
+dtk_result dtk_tabbar_activate_prev_tab(dtk_tabbar* pTabBar);   // Loops
+
+dtk_result dtk_tabbar_set_tab_text(dtk_tabbar* pTabBar, dtk_uint32 tabIndex, const char* pTabText);
 dtk_result dtk_tabbar_set_tab_tooltip(dtk_tabbar* pTabBar, dtk_uint32 tabIndex, const char* pTooltipText);
 
 dtk_result dtk_tabbar_pin_tab(dtk_tabbar* pTabBar, dtk_uint32 tabIndex);

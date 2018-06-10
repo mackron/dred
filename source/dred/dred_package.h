@@ -5,8 +5,8 @@
 
 // Editor management.
 typedef const char*  (* dred_package_get_editor_type_by_path)(dred_package* pPackage, dred_context* pDred, const char* filePathAbsolute);
-typedef dred_editor* (* dred_package_create_editor_proc)     (dred_package* pPackage, dred_context* pDred, dred_control* pParent, float sizeX, float sizeY, const char* filePathAbsolute, const char* type);
-typedef dtk_bool32     (* dred_package_delete_editor_proc)     (dred_package* pPackage, dred_context* pDred, dred_editor* pEditor);   // <-- Return value is DTK_TRUE if the editor was deleted; DTK_FALSE if the editor was not created by this package.
+typedef dred_editor* (* dred_package_create_editor_proc)     (dred_package* pPackage, dred_context* pDred, dtk_control* pParent, float sizeX, float sizeY, const char* filePathAbsolute, const char* type);
+typedef dtk_bool32   (* dred_package_delete_editor_proc)     (dred_package* pPackage, dred_context* pDred, dred_editor* pEditor);   // <-- Return value is DTK_TRUE if the editor was deleted; DTK_FALSE if the editor was not created by this package.
 
 // Command line functions.
 typedef dtk_bool32 (* dred_package_try_exec_cmdline_func_proc)(dred_package* pPackage, int argc, char** argv, int* pResult);

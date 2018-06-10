@@ -76,10 +76,11 @@ struct dred_context
     dtk_control backgroundControl;
 
     // The main tab group container. This is the root container where all other sub-containers will be placed.
-    dred_tabgroup_container mainTabGroupContainer;
+    //dred_tabgroup_container mainTabGroupContainer;
 
     // The main tab group. This is actually temporary until support for multiple tab groups (splitting) is implemented.
-    dred_tabgroup mainTabGroup;
+    //dred_tabgroup mainTabGroup;
+    dtk_tabgroup mainTabGroup;
 
     // The command bar. This is is the control that runs along the bottom of the main window.
     dred_cmdbar cmdBar;
@@ -152,21 +153,21 @@ void dred_release_keyboard(dred_context* pDred);
 
 
 // Retrieves a pointer to the first tab group.
-dred_tabgroup* dred_first_tabgroup(dred_context* pDred);
+dtk_tabgroup* dred_first_tabgroup(dred_context* pDred);
 
 // Retrieves a pointer to the next tab group.
-dred_tabgroup* dred_next_tabgroup(dred_context* pDred, dred_tabgroup* pTabGroup);
+dtk_tabgroup* dred_next_tabgroup(dred_context* pDred, dtk_tabgroup* pTabGroup);
 
 
 // Retrieves the focused tab group.
 //
 // The focused tab group is where newly opened files will be placed by default.
-dred_tabgroup* dred_get_focused_tabgroup(dred_context* pDred);
+dtk_tabgroup* dred_get_focused_tabgroup(dred_context* pDred);
 
 // Retrieves the focused tab.
 //
 // The focused tab is just the active tab of the focused tab group.
-dred_tab* dred_get_focused_tab(dred_context* pDred);
+dtk_tabgroup* dred_get_focused_tab(dred_context* pDred, dtk_uint32* pTabIndexOut);
 
 // Retrieves the focused editor.
 //
@@ -181,7 +182,7 @@ dtk_control* dred_get_control_with_keyboard_capture(dred_context* pDred);
 const char* dred_get_editor_type_by_path(dred_context* pDred, const char* filePath);
 
 // Finds the tab of the editor tied to the given absolute path.
-dred_tab* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char* filePathAbsolute);
+dtk_tabgroup* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char* filePathAbsolute, dtk_uint32* pTabIndex);
 
 
 // Opens the file at the given path.
@@ -197,10 +198,10 @@ void dred_close_focused_file(dred_context* pDred);
 void dred_close_focused_file_with_confirmation(dred_context* pDred);
 
 // Closes the given tab.
-void dred_close_tab(dred_context* pDred, dred_tab* pTab);
+void dred_close_tab(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_uint32 tabIndex);
 
 // Closes the given tab, but shows a confirmation dialog if it's not currently saved.
-void dred_close_tab_with_confirmation(dred_context* pDred, dred_tab* pTab);
+void dred_close_tab_with_confirmation(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_uint32 tabIndex);
 
 // Closes every tab.
 void dred_close_all_tabs(dred_context* pDred);
@@ -215,7 +216,7 @@ dtk_bool32 dred_close_all_tabs_with_confirmation(dred_context* pDred);
 
 
 // Finds the tab associated with the given control, usually an editor.
-dred_tab* dred_find_control_tab(dred_control* pControl);
+dtk_tabgroup* dred_find_control_tab(dred_control* pControl, dtk_uint32* pTabIndex);
 
 
 // Saves the currently focused file.
@@ -244,7 +245,7 @@ dtk_bool32 dred_open_new_text_file(dred_context* pDred);
 
 
 // Creates an editor by it's type.
-dred_editor* dred_create_editor_by_type(dred_context* pDred, dred_tabgroup* pTabGroup, const char* editorType, const char* filePathAbsolute);
+dred_editor* dred_create_editor_by_type(dred_context* pDred, dtk_tabgroup* pTabGroup, const char* editorType, const char* filePathAbsolute);
 
 // Deletes the given editor based on it's type.
 void dred_delete_editor_by_type(dred_editor* pEditor);
@@ -402,10 +403,10 @@ dtk_bool32 dred_remove_favourite(dred_context* pDred, const char* absolutePath);
 
 
 // Called when a tab is activated. This is where contextual GUI elements are shown or hidden.
-void dred_on_tab_activated(dred_context* pDred, dred_tab* pTab, dred_tab* pOldActiveTab);
+void dred_on_tab_activated(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_uint32 newActivateTabIndex, dtk_uint32 oldActiveTabIndex);
 
 // Called when a tab is deactivated. This is where contextual GUI elements are shown or hidden.
-void dred_on_tab_deactivated(dred_context* pDred, dred_tab* pTab, dred_tab* pNewActiveTab);
+void dred_on_tab_deactivated(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_uint32 newActivateTabIndex, dtk_uint32 oldActiveTabIndex);
 
 // Called when an accelerator is triggered.
 void dred_on_accelerator(dred_context* pDred, dtk_accelerator accelerator);

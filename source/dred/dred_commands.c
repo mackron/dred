@@ -254,14 +254,14 @@ dtk_bool32 dred_command__toggle_auto_hide_cmdbar(dred_context* pDred, const char
 dtk_bool32 dred_command__next_tab(dred_context* pDred, const char* value)
 {
     (void)value;
-    dred_tabgroup_activate_next_tab(dred_get_focused_tabgroup(pDred));
+    dtk_tabgroup_activate_next_tab(dred_get_focused_tabgroup(pDred));
     return DTK_TRUE;
 }
 
 dtk_bool32 dred_command__prev_tab(dred_context* pDred, const char* value)
 {
     (void)value;
-    dred_tabgroup_activate_prev_tab(dred_get_focused_tabgroup(pDred));
+    dtk_tabgroup_activate_prev_tab(dred_get_focused_tabgroup(pDred));
     return DTK_TRUE;
 }
 

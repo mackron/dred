@@ -1020,13 +1020,13 @@ dtk_uint32 dtk_tabbar_get_close_button_height(const dtk_tabbar* pTabBar)
 
 
 
-dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage)
+dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage, dtk_uint32* pTabIndexOut)
 {
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
 
     if (pTabBar->tabCount == pTabBar->tabCapacity) {
         dtk_uint32 newTabCapacity = (pTabBar->tabCapacity == 0) ? 1 : pTabBar->tabCapacity * 2;
-        dtk_tabbar_tab* pNewTabs = (dtk_tabbar_tab*)realloc(pTabBar->pTabs, sizeof(*pNewTabs) * newTabCapacity);
+        dtk_tabbar_tab* pNewTabs = (dtk_tabbar_tab*)dtk_realloc(pTabBar->pTabs, sizeof(*pNewTabs) * newTabCapacity);
         if (pNewTabs == NULL) {
             return DTK_OUT_OF_MEMORY;
         }
@@ -1037,34 +1037,44 @@ dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_cont
 
     dtk_assert(pTabBar->tabCapacity > pTabBar->tabCount);
 
-    dtk_tabbar_tab_init(pTabBar, text, pTabPage, &pTabBar->pTabs[pTabBar->tabCount]);
+    dtk_uint32 tabIndex = pTabBar->tabCount;
+    if (pTabIndexOut) {
+        *pTabIndexOut = tabIndex;
+    }
+
+    dtk_tabbar_tab_init(pTabBar, text, pTabPage, &pTabBar->pTabs[tabIndex]);
     pTabBar->tabCount += 1;
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
 	return DTK_SUCCESS;
 }
 
-dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage)
+dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage, dtk_uint32* pTabIndexOut)
 {
 	if (pTabBar == NULL) return DTK_INVALID_ARGS;
 
     if (pTabBar->tabCount == pTabBar->tabCapacity) {
         dtk_uint32 newTabCapacity = (pTabBar->tabCapacity == 0) ? 1 : pTabBar->tabCapacity * 2;
-        dtk_tabbar_tab* pNewTabs = (dtk_tabbar_tab*)malloc(sizeof(*pNewTabs) * newTabCapacity);
+        dtk_tabbar_tab* pNewTabs = (dtk_tabbar_tab*)dtk_realloc(pTabBar->pTabs, sizeof(*pNewTabs) * newTabCapacity);
         if (pNewTabs == NULL) {
             return DTK_OUT_OF_MEMORY;
         }
-
-        // Make sure there's room at the front of the buffer.
-        memcpy(pNewTabs + 1, pTabBar->pTabs, sizeof(*pTabBar->pTabs) * pTabBar->tabCount);
 
         pTabBar->pTabs = pNewTabs;
         pTabBar->tabCapacity = newTabCapacity;
     }
 
     dtk_assert(pTabBar->tabCapacity > pTabBar->tabCount);
+
+    dtk_uint32 tabIndex = 0;    // Prepending always occurs at position 0 for now, but may change when pinning is implemented.
+    if (pTabIndexOut) {
+        *pTabIndexOut = tabIndex;
+    }
+
+    // Move everything down to make room for the new tab.
+    memmove(pTabBar->pTabs + tabIndex + 1, pTabBar->pTabs + tabIndex, sizeof(*pTabBar->pTabs) * (pTabBar->tabCount-tabIndex));
     
-    dtk_tabbar_tab_init(pTabBar, text, pTabPage, &pTabBar->pTabs[0]);
+    dtk_tabbar_tab_init(pTabBar, text, pTabPage, &pTabBar->pTabs[tabIndex]);
     pTabBar->tabCount += 1;
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
@@ -1081,6 +1091,87 @@ dtk_result dtk_tabbar_remove_tab_by_index(dtk_tabbar* pTabBar, dtk_uint32 tabInd
     return dtk_control_post_event(DTK_CONTROL(pTabBar), &e);
 }
 
+dtk_uint32 dtk_tabbar_get_tab_count(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) {
+        return 0;
+    }
+
+    return pTabBar->tabCount;
+}
+
+
+dtk_control* dtk_tabbar_get_tab_page(dtk_tabbar* pTabBar, dtk_uint32 tabIndex)
+{
+    if (pTabBar == NULL || pTabBar->tabCount <= tabIndex) return NULL;
+
+    return pTabBar->pTabs[tabIndex].pPage;
+}
+
+dtk_uint32 dtk_tabbar_get_active_tab_index(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL || pTabBar->tabCount == 0) {
+        return (dtk_uint32)-1;
+    }
+
+    return pTabBar->activeTabIndex;
+}
+
+dtk_result dtk_tabbar_activate_tab(dtk_tabbar* pTabBar, dtk_uint32 tabIndex)
+{
+    if (pTabBar == NULL || pTabBar->tabCount <= tabIndex) return DTK_INVALID_ARGS;
+
+    dtk_tabbar__set_active_tab(pTabBar, tabIndex, DTK_FALSE);
+    return DTK_SUCCESS;
+}
+
+
+dtk_result dtk_tabbar_activate_next_tab(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL || pTabBar->tabCount == 0) {
+        return DTK_INVALID_ARGS;
+    }
+
+    dtk_int32 newIndex = pTabBar->activeTabIndex;
+    if (newIndex == -1) {
+        newIndex = 0;
+    }
+
+    if (newIndex >= (dtk_int32)pTabBar->tabCount) {
+        newIndex = 0;
+    }
+
+    return dtk_tabbar_activate_tab(pTabBar, newIndex);
+}
+
+dtk_result dtk_tabbar_activate_prev_tab(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL || pTabBar->tabCount == 0) {
+        return DTK_INVALID_ARGS;
+    }
+
+    dtk_int32 newIndex = pTabBar->activeTabIndex;
+    if (newIndex == -1) {
+        newIndex = 0;
+    }
+
+    if (newIndex == 0) {
+        newIndex = pTabBar->tabCount-1;
+    }
+
+    return dtk_tabbar_activate_tab(pTabBar, newIndex);
+}
+
+
+dtk_result dtk_tabbar_set_tab_text(dtk_tabbar* pTabBar, dtk_uint32 tabIndex, const char* pTabText)
+{
+    if (pTabBar == NULL || pTabBar->tabCount <= tabIndex) return DTK_INVALID_ARGS;
+
+    pTabBar->pTabs[tabIndex].pText = dtk_set_string(pTabBar->pTabs[tabIndex].pText, pTabText);
+
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
 
 dtk_result dtk_tabbar_set_tab_tooltip(dtk_tabbar* pTabBar, dtk_uint32 tabIndex, const char* pTooltipText)
 {

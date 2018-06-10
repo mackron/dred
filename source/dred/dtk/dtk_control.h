@@ -88,10 +88,10 @@ dtk_result dtk_control_show(dtk_control* pControl);
 dtk_result dtk_control_hide(dtk_control* pControl);
 
 // Determines whether or not the control is visible.
-dtk_bool32 dtk_control_is_visible(dtk_control* pControl);
+dtk_bool32 dtk_control_is_visible(const dtk_control* pControl);
 
 // Recursively determines whether or not the control is visible.
-dtk_bool32 dtk_control_is_visible_recursive(dtk_control* pControl);
+dtk_bool32 dtk_control_is_visible_recursive(const dtk_control* pControl);
 
 
 // Disables clipping against the parent for the given element.

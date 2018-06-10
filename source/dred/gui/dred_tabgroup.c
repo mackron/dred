@@ -72,6 +72,7 @@ void dred_tabgroup__on_paint(dred_control* pControl, dred_rect rect, dtk_surface
 
 void dred_tabbar__on_tab_activated(dred_tabbar* pTabBar, dred_tab* pTab, dred_tab* pOldActiveTab)
 {
+#if 0
     // The tab group is the parent of the tab bar.
     dred_tabgroup* pTabGroup = DRED_TABGROUP(dtk_control_get_parent(DTK_CONTROL(pTabBar)));
     if (pTabGroup == NULL) {
@@ -87,10 +88,16 @@ void dred_tabbar__on_tab_activated(dred_tabbar* pTabBar, dred_tab* pTab, dred_ta
     dred_capture_keyboard(dred_control_get_context(pControl), pControl);
 
     dred_on_tab_activated(dred_control_get_context(DRED_CONTROL(pTabGroup)), pTab, pOldActiveTab);
+#endif
+
+    (void)pTabBar;
+    (void)pTab;
+    (void)pOldActiveTab;
 }
 
 void dred_tabbar__on_tab_deactivated(dred_tabbar* pTabBar, dred_tab* pTab, dred_tab* pNewActiveTab)
 {
+#if 0
     // The tab group is the parent of the tab bar.
     dred_tabgroup* pTabGroup = DRED_TABGROUP(dtk_control_get_parent(DTK_CONTROL(pTabBar)));
     if (pTabGroup == NULL) {
@@ -108,16 +115,24 @@ void dred_tabbar__on_tab_deactivated(dred_tabbar* pTabBar, dred_tab* pTab, dred_
     }
 
     dred_on_tab_deactivated(dred_control_get_context(DRED_CONTROL(pTabGroup)), pTab, pNewActiveTab);
+#endif
+
+    (void)pTabBar;
+    (void)pTab;
+    (void)pNewActiveTab;
 }
 
 void dred_tabbar__on_tab_close(dred_tabbar* pTabBar, dred_tab* pTab)
 {
-    dred_tabgroup* pTabGroup = DRED_TABGROUP(dtk_control_get_parent(DTK_CONTROL(pTabBar)));
-    if (pTabGroup == NULL) {
-        return;
-    }
+    (void)pTabBar;
+    (void)pTab;
 
-    dred_close_tab_with_confirmation(dred_control_get_context(DRED_CONTROL(pTabGroup)), pTab);
+    //dred_tabgroup* pTabGroup = DRED_TABGROUP(dtk_control_get_parent(DTK_CONTROL(pTabBar)));
+    //if (pTabGroup == NULL) {
+    //    return;
+    //}
+    //
+    //dred_close_tab_with_confirmation(dred_control_get_context(DRED_CONTROL(pTabGroup)), pTab);
 }
 
 void dred_tabbar__on_tab_mouse_button_up(dred_tabbar* pTabBar, dred_tab* pTab, int mouseButton, int mouseRelativePosX, int mouseRelativePosY, int stateFlags)

@@ -360,12 +360,12 @@ void dred_config_on_set__ui_font(dred_context* pDred)
 void dred_config_on_set__show_tab_bar(dred_context* pDred)
 {
     if (pDred->config.showTabBar) {
-        for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-            dred_tabgroup_show_tabbar(pTabGroup);
+        for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+            dtk_tabgroup_show_tabbar(pTabGroup);
         }
     } else {
-        for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-            dred_tabgroup_hide_tabbar(pTabGroup);
+        for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+            dtk_tabgroup_hide_tabbar(pTabGroup);
         }
     }
 
@@ -463,19 +463,22 @@ void dred_config_on_set__cmdbar_popup_padding(dred_context* pDred)
 
 void dred_config_on_set__tabgroup_generic_refresh(dred_context* pDred)
 {
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-        dred_tabgroup_refresh_styling(pTabGroup);
+    for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        //dred_tabgroup_refresh_styling(pTabGroup);
     }
 }
 
 
 void dred_config_on_set__texteditor_generic_refresh(dred_context* pDred)
 {
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
-        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
-            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                dred_text_editor_refresh_styling(DRED_TEXT_EDITOR(pControl));
+    for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
+            dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
+            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
+                dred_control* pDredControl = DRED_CONTROL(pPage);
+                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+                    dred_text_editor_refresh_styling(DRED_TEXT_EDITOR(pDredControl));
+                }
             }
         }
     }
@@ -485,14 +488,17 @@ void dred_config_on_set__texteditor_generic_refresh(dred_context* pDred)
 
 void dred_config_on_set__texteditor_word_wrap(dred_context* pDred)
 {
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
-        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
-            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                if (pDred->config.textEditorEnableWordWrap) {
-                    dred_text_editor_enable_word_wrap(DRED_TEXT_EDITOR(pControl));
-                } else {
-                    dred_text_editor_disable_word_wrap(DRED_TEXT_EDITOR(pControl));
+    for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
+            dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
+            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
+                dred_control* pDredControl = DRED_CONTROL(pPage);
+                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+                    if (pDred->config.textEditorEnableWordWrap) {
+                        dred_text_editor_enable_word_wrap(DRED_TEXT_EDITOR(pDredControl));
+                    } else {
+                        dred_text_editor_disable_word_wrap(DRED_TEXT_EDITOR(pDredControl));
+                    }
                 }
             }
         }
@@ -503,14 +509,17 @@ void dred_config_on_set__texteditor_word_wrap(dred_context* pDred)
 
 void dred_config_on_set__texteditor_drag_and_drop(dred_context* pDred)
 {
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
-        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
-            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                if (pDred->config.textEditorEnableDragAndDrop) {
-                    dred_text_editor_enable_drag_and_drop(DRED_TEXT_EDITOR(pControl));
-                } else {
-                    dred_text_editor_disable_drag_and_drop(DRED_TEXT_EDITOR(pControl));
+    for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
+            dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
+            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
+                dred_control* pDredControl = DRED_CONTROL(pPage);
+                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+                    if (pDred->config.textEditorEnableDragAndDrop) {
+                        dred_text_editor_enable_drag_and_drop(DRED_TEXT_EDITOR(pDredControl));
+                    } else {
+                        dred_text_editor_disable_drag_and_drop(DRED_TEXT_EDITOR(pDredControl));
+                    }
                 }
             }
         }
@@ -520,11 +529,14 @@ void dred_config_on_set__texteditor_drag_and_drop(dred_context* pDred)
 
 void dred_config_on_set__cpp_syntax_color(dred_context* pDred)
 {
-    for (dred_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_tabgroup_next_tabgroup(pTabGroup)) {
-        for (dred_tab* pTab = dred_tabgroup_first_tab(pTabGroup); pTab != NULL; pTab = dred_tabgroup_next_tab(pTabGroup, pTab)) {
-            dred_control* pControl = dred_tab_get_control(pTab);
-            if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                dred_text_editor_refresh_styling(DRED_TEXT_EDITOR(pControl));
+    for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
+            dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
+            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
+                dred_control* pDredControl = DRED_CONTROL(pPage);
+                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+                    dred_text_editor_refresh_styling(DRED_TEXT_EDITOR(pDredControl));
+                }
             }
         }
     }

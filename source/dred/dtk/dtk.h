@@ -447,6 +447,7 @@ struct dtk_event
         {
             dtk_int32 newTabIndex;
             dtk_int32 oldTabIndex;
+            dtk_int32 tabIndex;
         } tabgroup;
 
         struct
