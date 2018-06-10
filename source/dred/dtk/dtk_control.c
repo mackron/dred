@@ -254,6 +254,22 @@ dtk_result dtk_control_post_event(dtk_control* pControl, dtk_event* pEvent)
     return dtk_post_local_event(pEvent);
 }
 
+dtk_result dtk_control_handle_event(dtk_control* pControl, dtk_event* pEvent)
+{
+    if (pControl == NULL || pEvent == NULL) return DTK_INVALID_ARGS;
+
+    // pEvent->pControl can either be NULL or pControl.
+    if (pEvent->pControl != NULL) {
+        if (pEvent->pControl != pControl) {
+            return DTK_INVALID_ARGS;
+        }
+    } else {
+        pEvent->pControl = pControl;
+    }
+    
+    return dtk_handle_local_event(pEvent);
+}
+
 dtk_result dtk_control_set_event_handler(dtk_control* pControl, dtk_event_proc onEvent)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
@@ -1005,6 +1021,17 @@ dtk_result dtk_control_capture_mouse(dtk_control* pControl)
 {
     if (pControl == NULL) return DTK_INVALID_ARGS;
     return dtk_capture_mouse(pControl->pTK, pControl);
+}
+
+dtk_result dtk_control_release_mouse(dtk_control* pControl)
+{
+    if (pControl == NULL) return DTK_INVALID_ARGS;
+
+    if (!dtk_control_has_mouse_capture(pControl)) {
+        return DTK_INVALID_OPERATION;
+    }
+
+    return dtk_release_mouse(pControl->pTK);
 }
 
 dtk_bool32 dtk_control_has_mouse_capture(dtk_control* pControl)

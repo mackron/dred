@@ -1,5 +1,28 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
+dtk_result dtk_tabbar_tab_init(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage, dtk_tabbar_tab* pTab)
+{
+    (void)pTabBar;  // Not used for now, but will probably be used later when more efficient memory management is implemented.
+
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+    dtk_zero_object(pTab);
+
+    pTab->pText = dtk_make_string(text);
+    pTab->pPage = pTabPage;
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tabbar_tab_uninit(dtk_tabbar_tab* pTab)
+{
+    if (pTab == NULL) return DTK_INVALID_ARGS;
+    
+    dtk_free_string(pTab->pText);
+    dtk_free_string(pTab->pTooltipText);
+    return DTK_SUCCESS;
+}
+
+
 typedef struct
 {
     dtk_int32 posX;
@@ -276,18 +299,17 @@ void dtk_tabbar__set_hovered_tab(dtk_tabbar* pTabBar, dtk_tabbar_hit_test_result
     
     // If the hovered tab differs we need to redraw both the previously hovered tab and the new one.
     if (pTabBar->hoveredTabIndex != pHitTest->tabIndex) {
-        // The hovered tab has changed.
+        // The hovered tab has changed. We need only redraw the two tabs whose hovered state has changed.
+        redrawRect = dtk_rect_union(redrawRect, dtk_tabbar__get_hovered_tab_rect(pTabBar));
+        if (pHitTest->tabIndex != -1) {
+            redrawRect = dtk_rect_union(redrawRect, pHitTest->tabRect);
+        }
+
         pTabBar->hoveredTabIndex = pHitTest->tabIndex;
 
         // If the tooltip is visible, update it.
         if (pTabBar->isTooltipVisible) {
             dtk_do_tooltip(pTabBar->control.pTK);
-        }
-
-        // We need only redraw the two tabs whose hovered state has changed.
-        redrawRect = dtk_rect_union(redrawRect, dtk_tabbar__get_hovered_tab_rect(pTabBar));
-        if (pHitTest->tabIndex != -1) {
-            redrawRect = dtk_rect_union(redrawRect, pHitTest->tabRect);
         }
     } else {
         // The hovered tab has not changed. We may need to redraw the pin and/or close buttons, though.
@@ -308,12 +330,10 @@ void dtk_tabbar__unset_hovered_tab(dtk_tabbar* pTabBar)
 {
     dtk_assert(pTabBar != NULL);
 
-    // Return early if nothing is hovered.
-    if (pTabBar->hoveredTabIndex == -1) {
-        return;
+    dtk_rect redrawRect = dtk_rect_inside_out();
+    if (pTabBar->hoveredTabIndex != -1) {
+        redrawRect = dtk_rect_union(redrawRect, dtk_tabbar__get_hovered_tab_rect(pTabBar));
     }
-
-    dtk_rect redrawRect = dtk_tabbar__get_hovered_tab_rect(pTabBar);
 
     pTabBar->hoveredTabIndex = -1;
     pTabBar->isMouseOverCloseButton = DTK_FALSE;
@@ -321,7 +341,7 @@ void dtk_tabbar__unset_hovered_tab(dtk_tabbar* pTabBar)
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), redrawRect);
 }
 
-void dtk_tabbar__set_active_tab(dtk_tabbar* pTabBar, dtk_int32 tabIndex)
+void dtk_tabbar__set_active_tab(dtk_tabbar* pTabBar, dtk_int32 tabIndex, dtk_bool32 handleEventImmediately)
 {
     dtk_assert(pTabBar != NULL);
     dtk_assert(tabIndex < (dtk_int32)pTabBar->tabCount);
@@ -332,16 +352,22 @@ void dtk_tabbar__set_active_tab(dtk_tabbar* pTabBar, dtk_int32 tabIndex)
         dtk_event e = dtk_event_init(DTK_CONTROL(pTabBar)->pTK, DTK_EVENT_TABBAR_CHANGE_TAB, DTK_CONTROL(pTabBar));
         e.tabbar.newTabIndex = newTabIndex;
         e.tabbar.oldTabIndex = oldTabIndex;
-        dtk_control_post_event(DTK_CONTROL(pTabBar), &e);
+
+        if (handleEventImmediately) {
+            dtk_control_handle_event(DTK_CONTROL(pTabBar), &e);
+        } else {
+            dtk_control_post_event(DTK_CONTROL(pTabBar), &e);
+        }
+        
 
         // The actual hiding/showing of the tab pages and redrawing is done in the default event handler. The reason for this is that
         // it allows a custom event handler to cancel the tab change by simply not posting the event to the default event handler.
     }
 }
 
-void dtk_tabbar__unset_active_tab(dtk_tabbar* pTabBar)
+void dtk_tabbar__unset_active_tab(dtk_tabbar* pTabBar, dtk_bool32 handleEventImmediately)
 {
-    dtk_tabbar__set_active_tab(pTabBar, -1);
+    dtk_tabbar__set_active_tab(pTabBar, -1, handleEventImmediately);
 }
 
 
@@ -358,8 +384,10 @@ dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control
 
     pTabBar->flow = flow;
     pTabBar->textDirection = textDirection;
-    pTabBar->hoveredTabIndex = -1;
-    pTabBar->activeTabIndex = -1;
+    pTabBar->hoveredTabIndex         = -1;
+    pTabBar->activeTabIndex          = -1;
+    pTabBar->closeButtonHeldTabIndex = -1;
+    pTabBar->pinButtonHeldTabIndex   = -1;
 
     // Default style.
     pTabBar->bgColor                  = dtk_rgb(192, 192, 192);
@@ -642,17 +670,52 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                 dtk_tabbar__set_hovered_tab(pTabBar, &hit);
             } else {
                 // It's not over a tab.
-                pTabBar->isMouseOverCloseButton = DTK_FALSE;
                 dtk_tabbar__unset_hovered_tab(pTabBar);
             }
         } break;
 
         case DTK_EVENT_MOUSE_BUTTON_DOWN:
         {
+            dtk_control_capture_mouse(DTK_CONTROL(pTabBar));
+
             dtk_tabbar_hit_test_result hit;
             if (dtk_tabbar_hit_test(pTabBar, pEvent->mouseMove.x, pEvent->mouseMove.y, &hit)) {
-                dtk_tabbar__set_active_tab(pTabBar, hit.tabIndex);
+                // If the user clicked on the button, do _not_ activate the tab. Instead just mark the button as held.
+                if (hit.isOverCloseButton || hit.isOverPinButton) {
+                    // The user clicked a button. We just mark the appropriate one as held.
+                    if (hit.isOverCloseButton) {
+                        pTabBar->closeButtonHeldTabIndex = hit.tabIndex;
+                    } else if (hit.isOverPinButton) {
+                        pTabBar->pinButtonHeldTabIndex = hit.tabIndex;
+                    }
+                } else {
+                    // The user clicked on the main part of the control. Actiate it.
+                    dtk_tabbar__set_active_tab(pTabBar, hit.tabIndex, DTK_TRUE);
+                }
             }
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_UP:
+        {
+            dtk_control_release_mouse(DTK_CONTROL(pTabBar));
+
+            dtk_tabbar_hit_test_result hit;
+            if (dtk_tabbar_hit_test(pTabBar, pEvent->mouseMove.x, pEvent->mouseMove.y, &hit)) {
+                if (hit.isOverCloseButton) {
+                    if (pTabBar->closeButtonHeldTabIndex == hit.tabIndex) {
+                        dtk_event e = dtk_event_init(DTK_CONTROL(pTabBar)->pTK, DTK_EVENT_TABBAR_CLOSE_TAB, DTK_CONTROL(pTabBar));
+                        e.tabbar.tabIndex = hit.tabIndex;
+                        dtk_control_post_event(DTK_CONTROL(pTabBar), &e);
+                    }
+                } else if (hit.isOverPinButton) {
+                    if (pTabBar->pinButtonHeldTabIndex == hit.tabIndex) {
+                        
+                    }
+                }
+            }
+
+            pTabBar->closeButtonHeldTabIndex = -1;
+            pTabBar->pinButtonHeldTabIndex   = -1;
         } break;
 
         case DTK_EVENT_TOOLTIP:
@@ -670,15 +733,81 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_TABBAR_CHANGE_TAB:
         {
+            dtk_rect redrawRect = dtk_rect_inside_out();
+
             if (pEvent->tabbar.oldTabIndex != -1) {
                 dtk_control_hide(pTabBar->pTabs[pEvent->tabbar.oldTabIndex].pPage);
+                redrawRect = dtk_rect_union(redrawRect, dtk_tabbar__get_tab_rect(pTabBar, pEvent->tabbar.oldTabIndex));
             }
             if (pEvent->tabbar.newTabIndex != -1) {
                 dtk_control_show(pTabBar->pTabs[pEvent->tabbar.newTabIndex].pPage);
+                redrawRect = dtk_rect_union(redrawRect, dtk_tabbar__get_tab_rect(pTabBar, pEvent->tabbar.newTabIndex));
             }
 
             pTabBar->activeTabIndex = pEvent->tabbar.newTabIndex;
-            dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));   // <-- Redraw the entire control for now, but can optimize this later if necessary, which it probably isn't.
+            dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), redrawRect);
+        } break;
+
+        case DTK_EVENT_TABBAR_CLOSE_TAB:
+        {
+            // Don't do anything by default. This should be controlled by the application because they may want to do things like show a confirmation dialog or whatnot.
+            //dtk_tabbar_remove_tab_by_index(pTabBar, pEvent->tabbar.tabIndex);   // <-- TODO: Remove this. Only here for testing.
+        } break;
+
+        case DTK_EVENT_TABBAR_PIN_TAB:
+        {
+            // TODO: Pin the tab.
+        } break;
+
+        case DTK_EVENT_TABBAR_UNPIN_TAB:
+        {
+            // TODO: Unpin the tab.
+        } break;
+
+        case DTK_EVENT_TABBAR_REMOVE_TAB:
+        {
+            // If the tab being removed is the active tab we need to reactivate a new tab to ensure everything is in a good state. We just try
+            // activating the tab to the right first. If there is nothing to the right, we do the left. Otherwise we just set it to nothing
+            if ((dtk_int32)pEvent->tabbar.tabIndex == pTabBar->activeTabIndex) {
+                if (pEvent->tabbar.tabIndex < (dtk_int32)pTabBar->tabCount-1) {
+                    dtk_tabbar__set_active_tab(pTabBar, pEvent->tabbar.tabIndex+1, DTK_TRUE);
+                } else if (pEvent->tabbar.tabIndex > 0) {
+                    dtk_tabbar__set_active_tab(pTabBar, pEvent->tabbar.tabIndex-1, DTK_TRUE);
+                } else {
+                    dtk_tabbar__unset_active_tab(pTabBar, DTK_TRUE);
+                }
+            }
+
+            // As above we need to clear the hovered tab. Only this time we don't bother with the right/left rule - we just clear it.
+            if ((dtk_int32)pEvent->tabbar.tabIndex == pTabBar->hoveredTabIndex) {
+                dtk_tabbar__unset_hovered_tab(pTabBar);
+            }
+
+
+            // Since the tabs are about to be moved around, some indices need to be adjusted to compensate.
+            if (pTabBar->activeTabIndex > pEvent->tabbar.tabIndex) {
+                pTabBar->activeTabIndex -= 1;
+            }
+            if (pTabBar->hoveredTabIndex > pEvent->tabbar.tabIndex) {
+                pTabBar->hoveredTabIndex -= 1;
+            }
+            if (pTabBar->closeButtonHeldTabIndex > pEvent->tabbar.tabIndex) {
+                pTabBar->closeButtonHeldTabIndex -= 1;
+            }
+            if (pTabBar->pinButtonHeldTabIndex > pEvent->tabbar.tabIndex) {
+                pTabBar->pinButtonHeldTabIndex -= 1;
+            }
+
+            // Remove the tab.
+            dtk_tabbar_tab_uninit(&pTabBar->pTabs[pEvent->tabbar.tabIndex]);
+            for (dtk_uint32 i = pEvent->tabbar.tabIndex; i < pTabBar->tabCount-1; ++i) {
+                pTabBar->pTabs[i] = pTabBar->pTabs[i+1];
+            }
+            pTabBar->tabCount -= 1;
+
+
+            // Redraw.
+            dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
         } break;
 
         default: break;
@@ -872,27 +1001,6 @@ dtk_uint32 dtk_tabbar_get_close_button_height(const dtk_tabbar* pTabBar)
 
 
 
-dtk_result dtk_tabbar_tab_init(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage, dtk_tabbar_tab* pTab)
-{
-    (void)pTabBar;  // Not used for now, but will probably be used later when more efficient memory management is implemented.
-
-    if (pTabBar == NULL) return DTK_INVALID_ARGS;
-    dtk_zero_object(pTab);
-
-    pTab->pText = dtk_make_string(text);
-    pTab->pPage = pTabPage;
-
-    return DTK_SUCCESS;
-}
-
-dtk_result dtk_tabbar_tab_uninit(dtk_tabbar_tab* pTab)
-{
-    if (pTab == NULL) return DTK_INVALID_ARGS;
-    
-    dtk_free_string(pTab->pText);
-    dtk_free_string(pTab->pTooltipText);
-    return DTK_SUCCESS;
-}
 
 dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_control* pTabPage)
 {
@@ -914,6 +1022,7 @@ dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_cont
     dtk_tabbar_tab_init(pTabBar, text, pTabPage, &pTabBar->pTabs[pTabBar->tabCount]);
     pTabBar->tabCount += 1;
 
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
 	return DTK_SUCCESS;
 }
 
@@ -940,6 +1049,7 @@ dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_con
     dtk_tabbar_tab_init(pTabBar, text, pTabPage, &pTabBar->pTabs[0]);
     pTabBar->tabCount += 1;
 
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
 	return DTK_SUCCESS;
 }
 
@@ -947,13 +1057,10 @@ dtk_result dtk_tabbar_remove_tab_by_index(dtk_tabbar* pTabBar, dtk_uint32 tabInd
 {
     if (pTabBar == NULL || pTabBar->tabCount <= tabIndex) return DTK_INVALID_ARGS;
 
-    dtk_tabbar_tab_uninit(&pTabBar->pTabs[tabIndex]);
-    for (dtk_uint32 i = tabIndex; i < pTabBar->tabCount-1; ++i) {
-        pTabBar->pTabs[i] = pTabBar->pTabs[i+1];
-    }
-
-    pTabBar->tabCount -= 1;
-    return DTK_SUCCESS;
+    // Tab removal is event driven.
+    dtk_event e = dtk_event_init(DTK_CONTROL(pTabBar)->pTK, DTK_EVENT_TABBAR_REMOVE_TAB, DTK_CONTROL(pTabBar));
+    e.tabbar.tabIndex = tabIndex;
+    return dtk_control_post_event(DTK_CONTROL(pTabBar), &e);
 }
 
 

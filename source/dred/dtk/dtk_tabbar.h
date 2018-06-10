@@ -1,5 +1,22 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
+// Events
+//
+// DTK_EVENT_TABBAR_CHANGE_TAB
+//   Called when the active tab changes. The default handler will change the tab.
+//
+// DTK_EVENT_TABBAR_CLOSE_TAB
+//   Called when the close button on a tab is pressed. The default handle does nothing (left entirely up to the application).
+//
+// DTK_EVENT_TABBAR_PIN_TAB
+//   Called when a tab is pinned. The default handler will pin the tab. To prevent pinning, don't call the default handler.
+//
+// DTK_EVENT_TABBAR_UNPIN_TAB
+//   Called when a tab is unpinned. The default handler will unpin the tab. To prevent unpinning, don't call the default handler.
+//
+// DTK_EVENT_TABBAR_REMOVE_TAB
+//   Called when a tab is removed. The default handler will remove the tab. To prevent removal, don't call the default handler.
+
 typedef enum
 {
     dtk_tabbar_flow_left_to_right,
@@ -29,6 +46,7 @@ typedef struct
     char* pText;
     dtk_control* pPage;
     dtk_string pTooltipText;
+    dtk_bool32 isPinned : 1;
 } dtk_tabbar_tab;
 
 #define DTK_TABBAR(p) ((dtk_tabbar*)(p))
@@ -40,10 +58,18 @@ struct dtk_tabbar
     dtk_tabbar_tab* pTabs;
     dtk_uint32 tabCount;
     dtk_uint32 tabCapacity;
-    dtk_bool32 isAutoResizeEnabled : 1;
-    dtk_bool32 isTooltipVisible : 1;
-    dtk_int32 hoveredTabIndex;  // Set to -1 if no tab is hovered.
-    dtk_int32 activeTabIndex;   // Set to -1 when no tab is active.
+    dtk_bool32 isAutoResizeEnabled    : 1;
+    dtk_bool32 isTooltipVisible       : 1;
+    dtk_bool32 isShowingCloseButton   : 1;
+    dtk_bool32 isShowingPinButton     : 1;
+    dtk_bool32 isMouseOverCloseButton : 1;
+    dtk_bool32 isMouseOverPinButton   : 1;
+    dtk_bool32 isCloseButtonPressed   : 1;
+    dtk_bool32 isPinButtonPressed     : 1;
+    dtk_int32 hoveredTabIndex;          // Set to -1 if no tab is hovered.
+    dtk_int32 activeTabIndex;           // Set to -1 when no tab is active.
+    dtk_int32 closeButtonHeldTabIndex;  // Set to the index of the tab whose close button is being held. Set to -1 if none.
+    dtk_int32 pinButtonHeldTabIndex;    // Set to the index of the tab whose pin button is being held. Set to -1 if none.
 
     // Styling.
     dtk_font* pFont;
@@ -66,10 +92,6 @@ struct dtk_tabbar
     dtk_color closeButtonColor;
     dtk_color closeButtonColorHovered;
     dtk_color closeButtonColorPressed;
-    dtk_bool32 isShowingCloseButton   : 1;
-    dtk_bool32 isShowingPinButton     : 1;
-    dtk_bool32 isMouseOverCloseButton : 1;
-    dtk_bool32 isMouseOverPinButton   : 1;
 };
 
 dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_tabbar_flow flow, dtk_tabbar_text_direction textDirection, dtk_tabbar* pTabBar);

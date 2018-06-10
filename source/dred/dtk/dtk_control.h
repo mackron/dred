@@ -72,6 +72,9 @@ dtk_bool32 dtk_control_default_event_handler(dtk_event* pEvent);
 // Posts an event for this control.
 dtk_result dtk_control_post_event(dtk_control* pControl, dtk_event* pEvent);
 
+// Immediately handles an event for this control.
+dtk_result dtk_control_handle_event(dtk_control* pControl, dtk_event* pEvent);
+
 // Sets the event handler for a control.
 dtk_result dtk_control_set_event_handler(dtk_control* pControl, dtk_event_proc onEvent);
 
@@ -278,6 +281,10 @@ dtk_bool32 dtk_control_has_keyboard_capture(dtk_control* pControl);
 
 // Helper function for giving a control the mouse capture. This will fail if mouse capture is forbidden for the control.
 dtk_result dtk_control_capture_mouse(dtk_control* pControl);
+
+// Helper function for releasing the mouse capture. This will fail if the specified control does not have the mouse capture, in which
+// case the capture will remain unchanged. Use dtk_release_mouse() to release the mouse regardless of which control has the capture.
+dtk_result dtk_control_release_mouse(dtk_control* pControl);
 
 // Helper function for determining whether or not the given control has the mouse capture.
 dtk_bool32 dtk_control_has_mouse_capture(dtk_control* pControl);

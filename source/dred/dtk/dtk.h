@@ -72,26 +72,27 @@ typedef int dtk_result;
 #define DTK_NO_EVENT                 1      // Not an error. Returned by dtk_next_event() to indicate there are no events currently in the queue.
 #define DTK_ERROR                   -1
 #define DTK_INVALID_ARGS            -2
-#define DTK_OUT_OF_MEMORY           -3
-#define DTK_NO_BACKEND              -4
-#define DTK_FAILED_TO_INIT_BACKEND  -5
-#define DTK_OUT_OF_RANGE            -6
-#define DTK_CANCELLED               -7
-#define DTK_FAILED_TO_OPEN_DIALOG   -8
-#define DTK_FAILED_TO_OPEN_FILE     -9
-#define DTK_FAILED_TO_READ_FILE     -10
-#define DTK_FAILED_TO_WRITE_FILE    -11
-#define DTK_FILE_TOO_BIG            -12
-#define DTK_PATH_TOO_LONG           -13
-#define DTK_NAME_TOO_LONG           -14
-#define DTK_DOES_NOT_EXIST          -15
-#define DTK_ALREADY_EXISTS          -16
-#define DTK_ACCESS_DENIED           -17
-#define DTK_TOO_MANY_OPEN_FILES     -18
-#define DTK_END_OF_FILE             -19
-#define DTK_NO_SPACE                -20
-#define DTK_NEGATIVE_SEEK           -21
-#define DTK_TIMEOUT                 -22
+#define DTK_INVALID_OPERATION       -3
+#define DTK_OUT_OF_MEMORY           -4
+#define DTK_NO_BACKEND              -5
+#define DTK_FAILED_TO_INIT_BACKEND  -6
+#define DTK_OUT_OF_RANGE            -7
+#define DTK_CANCELLED               -8
+#define DTK_FAILED_TO_OPEN_DIALOG   -9
+#define DTK_FAILED_TO_OPEN_FILE     -10
+#define DTK_FAILED_TO_READ_FILE     -11
+#define DTK_FAILED_TO_WRITE_FILE    -12
+#define DTK_FILE_TOO_BIG            -13
+#define DTK_PATH_TOO_LONG           -14
+#define DTK_NAME_TOO_LONG           -15
+#define DTK_DOES_NOT_EXIST          -16
+#define DTK_ALREADY_EXISTS          -17
+#define DTK_ACCESS_DENIED           -18
+#define DTK_TOO_MANY_OPEN_FILES     -19
+#define DTK_END_OF_FILE             -20
+#define DTK_NO_SPACE                -21
+#define DTK_NEGATIVE_SEEK           -22
+#define DTK_TIMEOUT                 -23
 #define DTK_NO_DISPLAY              -256
 #define DTK_NO_SCREEN               -257
 #define DTK_QUIT                    -1024   // Returned by dtk_next_event() when a quit message is received.
@@ -245,7 +246,14 @@ typedef int dtk_event_type;
 #define DTK_EVENT_COLOR_BUTTON_COLOR_CHANGED    130
 #define DTK_EVENT_SCROLLBAR_SCROLL              132
 #define DTK_EVENT_TABBAR_CHANGE_TAB             133
-#define DTK_EVENT_TABGROUP_CHANGE_TAB           134
+#define DTK_EVENT_TABBAR_CLOSE_TAB              134
+#define DTK_EVENT_TABBAR_PIN_TAB                135
+#define DTK_EVENT_TABBAR_UNPIN_TAB              136
+#define DTK_EVENT_TABBAR_REMOVE_TAB             137
+#define DTK_EVENT_TABGROUP_CHANGE_TAB           138
+#define DTK_EVENT_TABGROUP_CLOSE_TAB            139
+#define DTK_EVENT_TABGROUP_PIN_TAB              140
+#define DTK_EVENT_TABGROUP_UNPIN_TAB            141
 #define DTK_EVENT_REFRESH_LAYOUT                251     // A special event that's used to indicate to a control that it needs to refresh the layout of it's children and inner elements.
 #define DTK_EVENT_APPLICATION_FONT              252     // A special event for retrieving an application-defined font for certain categories.
 #define DTK_EVENT_APPLICATION_SCALE             253     // A special event for retrieving an application-defined scaling factor for GUI elements.
@@ -432,6 +440,7 @@ struct dtk_event
         {
             dtk_int32 newTabIndex;
             dtk_int32 oldTabIndex;
+            dtk_int32 tabIndex;
         } tabbar;
 
         struct
@@ -594,7 +603,7 @@ dtk_result dtk_next_event(dtk_context* pTK, dtk_bool32 blocking, int* pExitCode)
 // This is non-blocking, but should be considered inefficient. 
 void dtk_flush_event_queue(dtk_context* pTK);
 
-// Posts an event to the queue which will later handled by _only_ the event handler of the respective control.
+// Posts an event to the queue which will later be handled by the event handler of the respective control.
 //
 // To handle the event immediately, use dtk_handle_control_event().
 dtk_result dtk_post_local_event(dtk_event* pEvent);
