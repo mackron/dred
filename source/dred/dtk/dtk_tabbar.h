@@ -155,3 +155,27 @@ dtk_result dtk_tabbar_unpin_tab(dtk_tabbar* pTabBar, dtk_uint32 tabIndex);
 //
 // Returns true if the point is over a tab; false otherwise.
 dtk_bool32 dtk_tabbar_hit_test(dtk_tabbar* pTabBar, dtk_int32 x, dtk_int32 y, dtk_tabbar_hit_test_result* pResult);
+
+
+// Enables auto sizing.
+dtk_result dtk_tabbar_enable_auto_resize(dtk_tabbar* pTabBar);
+
+// Disables auto sizing.
+dtk_result dtk_tabbar_disable_auto_resize(dtk_tabbar* pTabBar);
+
+// Determines whether or not auto sizing is enabled.
+dtk_bool32 dtk_tabbar_is_auto_resize_enabled(const dtk_tabbar* pTabBar);
+
+// Auto sizes the tab bar.
+//
+// The calculated size of the tab bar depends on it's flow. For dtk_tabbar_flow_left_to_right and dtk_tabbar_flow_right_to_left the
+// width of the tab bar will be set to that of it's parent and the height will be sized based on the maximum height of the tabs. For
+// other flows it will be the other way around.
+//
+// This API performs the actual resizing. Whenever a change is made that may change the size of the tabs this function will need to
+// be called again.
+dtk_result dtk_tabbar_auto_resize(dtk_tabbar* pTabBar);
+
+// Same as dtk_tabbar_auto_resize(), but only performs the resize is auto-sizing is enabled. If auto-sizing is disabled, returns
+// DTK_INVALID_OPERATION.
+dtk_result dtk_tabbar_try_auto_resize(dtk_tabbar* pTabBar);

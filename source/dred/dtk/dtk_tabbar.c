@@ -94,7 +94,20 @@ dtk_bool32 dtk_tabbar__next_tab(const dtk_tabbar* pTabBar, dtk_tabbar__iterator*
     // The size and position of each tab depends on the flow and text direction of the tabbar.
     dtk_int32 actualTextWidth;
     dtk_int32 actualTextHeight;
-    dtk_font_measure_string(dtk_tabbar_get_font(pTabBar), 1, pIterator->pTab->pText, strlen(pIterator->pTab->pText), &actualTextWidth, &actualTextHeight);
+    if (pIterator->pTab->pText != NULL) {
+        dtk_font_measure_string(dtk_tabbar_get_font(pTabBar), 1, pIterator->pTab->pText, strlen(pIterator->pTab->pText), &actualTextWidth, &actualTextHeight);
+    } else {
+        actualTextWidth = 0;
+        actualTextHeight = 0;
+
+        dtk_font_metrics metrics;
+        dtk_result result = dtk_font_get_metrics(dtk_tabbar_get_font(pTabBar), 1, &metrics);
+        if (result == DTK_SUCCESS) {
+            actualTextHeight = metrics.lineHeight;
+        }
+    }
+
+    
 
     dtk_int32 longestTextWidth = actualTextWidth;
     dtk_int32 longestTextHeight = actualTextHeight;
@@ -370,6 +383,18 @@ void dtk_tabbar__unset_active_tab(dtk_tabbar* pTabBar, dtk_bool32 handleEventImm
     dtk_tabbar__set_active_tab(pTabBar, -1, handleEventImmediately);
 }
 
+
+dtk_bool32 dtk_tabbar__is_flow_horizontal(dtk_tabbar* pTabBar)
+{
+    dtk_assert(pTabBar != NULL);
+    return pTabBar->flow == dtk_tabbar_flow_left_to_right || pTabBar->flow == dtk_tabbar_flow_right_to_left;
+}
+
+dtk_bool32 dtk_tabbar__is_flow_vertical(dtk_tabbar* pTabBar)
+{
+    dtk_assert(pTabBar != NULL);
+    return pTabBar->flow == dtk_tabbar_flow_top_to_bottom || pTabBar->flow == dtk_tabbar_flow_bottom_to_top;
+}
 
 
 dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_tabbar_flow flow, dtk_tabbar_text_direction textDirection, dtk_tabbar* pTabBar)
@@ -835,6 +860,9 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
             pTabBar->tabCount -= 1;
 
 
+            // Resize.
+            dtk_tabbar_try_auto_resize(pTabBar);
+
             // Redraw.
             dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
         } break;
@@ -852,10 +880,7 @@ dtk_result dtk_tabbar_set_font(dtk_tabbar* pTabBar, dtk_font* pFont)
 
     pTabBar->pFont = pFont;
 
-    if (pTabBar->isAutoResizeEnabled) {
-        //dtk_tabbar_auto_resize(pTabBar);
-    }
-    
+    dtk_tabbar_try_auto_resize(pTabBar);
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;
 }
@@ -872,10 +897,7 @@ dtk_result dtk_tabbar_set_close_button_image(dtk_tabbar* pTabBar, dtk_image* pIm
 
     pTabBar->pCloseButtonImage = pImage;
 
-    if (pTabBar->isAutoResizeEnabled) {
-        //dtk_tabbar_auto_resize(pTabBar);
-    }
-
+    dtk_tabbar_try_auto_resize(pTabBar);
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;
 }
@@ -986,6 +1008,7 @@ dtk_result dtk_tabbar_set_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, d
     pTabBar->paddingRight  = paddingRight;
     pTabBar->paddingBottom = paddingBottom;
     
+    dtk_tabbar_try_auto_resize(pTabBar);
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;
 }
@@ -999,6 +1022,7 @@ dtk_result dtk_tabbar_set_close_button_padding(dtk_tabbar* pTabBar, dtk_uint32 p
     pTabBar->closeButtonPaddingRight  = paddingRight;
     pTabBar->closeButtonPaddingBottom = paddingBottom;
     
+    dtk_tabbar_try_auto_resize(pTabBar);
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;
 }
@@ -1012,6 +1036,7 @@ dtk_result dtk_tabbar_set_pin_button_padding(dtk_tabbar* pTabBar, dtk_uint32 pad
     pTabBar->pinButtonPaddingRight  = paddingRight;
     pTabBar->pinButtonPaddingBottom = paddingBottom;
     
+    dtk_tabbar_try_auto_resize(pTabBar);
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;
 }
@@ -1026,6 +1051,11 @@ dtk_result dtk_tabbar_show_close_button(dtk_tabbar* pTabBar)
 
     pTabBar->isShowingCloseButton = DTK_TRUE;
 
+    if (pTabBar->textDirection == dtk_tabbar_text_direction_horizontal && !dtk_tabbar__is_flow_horizontal(pTabBar) ||
+        pTabBar->textDirection == dtk_tabbar_text_direction_vertical   && !dtk_tabbar__is_flow_vertical(pTabBar)) {
+        dtk_tabbar_try_auto_resize(pTabBar);
+    }
+
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;
 }
@@ -1039,6 +1069,11 @@ dtk_result dtk_tabbar_hide_close_button(dtk_tabbar* pTabBar)
     }
 
     pTabBar->isShowingCloseButton = DTK_FALSE;
+
+    if (pTabBar->textDirection == dtk_tabbar_text_direction_horizontal && !dtk_tabbar__is_flow_horizontal(pTabBar) ||
+        pTabBar->textDirection == dtk_tabbar_text_direction_vertical   && !dtk_tabbar__is_flow_vertical(pTabBar)) {
+        dtk_tabbar_try_auto_resize(pTabBar);
+    }
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;
@@ -1058,6 +1093,11 @@ dtk_result dtk_tabbar_set_close_button_size(dtk_tabbar* pTabBar, dtk_uint32 widt
     pTabBar->closeButtonWidth = width;
     pTabBar->closeButtonHeight = height;
 
+    if (pTabBar->textDirection == dtk_tabbar_text_direction_horizontal && !dtk_tabbar__is_flow_horizontal(pTabBar) ||
+        pTabBar->textDirection == dtk_tabbar_text_direction_vertical   && !dtk_tabbar__is_flow_vertical(pTabBar)) {
+        dtk_tabbar_try_auto_resize(pTabBar);
+    }
+    
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;
 }
@@ -1132,6 +1172,7 @@ dtk_result dtk_tabbar_append_tab(dtk_tabbar* pTabBar, const char* text, dtk_cont
     dtk_tabbar_tab_init(pTabBar, text, pTabPage, &pTabBar->pTabs[tabIndex]);
     pTabBar->tabCount += 1;
 
+    dtk_tabbar_try_auto_resize(pTabBar);
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
 	return DTK_SUCCESS;
 }
@@ -1164,6 +1205,7 @@ dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_con
     dtk_tabbar_tab_init(pTabBar, text, pTabPage, &pTabBar->pTabs[tabIndex]);
     pTabBar->tabCount += 1;
 
+    dtk_tabbar_try_auto_resize(pTabBar);
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
 	return DTK_SUCCESS;
 }
@@ -1256,6 +1298,7 @@ dtk_result dtk_tabbar_set_tab_text(dtk_tabbar* pTabBar, dtk_uint32 tabIndex, con
 
     pTabBar->pTabs[tabIndex].pText = dtk_set_string(pTabBar->pTabs[tabIndex].pText, pTabText);
 
+    dtk_tabbar_try_auto_resize(pTabBar);
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;
 }
@@ -1339,4 +1382,131 @@ dtk_bool32 dtk_tabbar_hit_test(dtk_tabbar* pTabBar, dtk_int32 x, dtk_int32 y, dt
     }
 
     return DTK_FALSE;
+}
+
+
+dtk_result dtk_tabbar_enable_auto_resize(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    pTabBar->isAutoResizeEnabled = DTK_TRUE;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tabbar_disable_auto_resize(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    pTabBar->isAutoResizeEnabled = DTK_FALSE;
+    return DTK_SUCCESS;
+}
+
+dtk_bool32 dtk_tabbar_is_auto_resize_enabled(const dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) {
+        return DTK_FALSE;
+    }
+
+    return pTabBar->isAutoResizeEnabled;
+}
+
+
+dtk_result dtk_tabbar_auto_resize__horz(dtk_tabbar* pTabBar)
+{
+    dtk_assert(pTabBar != NULL);
+    dtk_assert(pTabBar->flow == dtk_tabbar_flow_left_to_right || pTabBar->flow == dtk_tabbar_flow_right_to_left);
+
+    dtk_int32 newWidth;
+    dtk_int32 newHeight;
+    dtk_result result = dtk_control_get_size(DTK_CONTROL(pTabBar), &newWidth, &newHeight);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    // The width needs to be the size as the parent.
+    dtk_control* pParent = dtk_control_get_parent(DTK_CONTROL(pTabBar));
+    if (pParent != NULL) {
+        newWidth = dtk_control_get_width(pParent);
+    }
+
+    // The height needs to be set to the maximum height of the tabs.
+    newHeight = 0;
+    dtk_tabbar__iterator i;
+    if (dtk_tabbar__first_tab(pTabBar, &i)) {
+        do
+        {
+            dtk_int32 thisHeight = i.height;
+            if (newHeight < thisHeight) {
+                newHeight = thisHeight;
+            }
+        } while (dtk_tabbar__next_tab(pTabBar, &i));
+    }
+
+    // Now resize.
+    return dtk_control_set_size(DTK_CONTROL(pTabBar), newWidth, newHeight);
+}
+
+dtk_result dtk_tabbar_auto_resize__vert(dtk_tabbar* pTabBar)
+{
+    dtk_assert(pTabBar != NULL);
+    dtk_assert(pTabBar->flow == dtk_tabbar_flow_top_to_bottom || pTabBar->flow == dtk_tabbar_flow_bottom_to_top);
+
+    dtk_int32 newWidth;
+    dtk_int32 newHeight;
+    dtk_result result = dtk_control_get_size(DTK_CONTROL(pTabBar), &newWidth, &newHeight);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    // The height needs to be the size as the parent.
+    dtk_control* pParent = dtk_control_get_parent(DTK_CONTROL(pTabBar));
+    if (pParent != NULL) {
+        newHeight = dtk_control_get_height(pParent);
+    }
+
+    // The width needs to be set to the maximum width of the tabs.
+    newWidth = 0;
+    dtk_tabbar__iterator i;
+    if (dtk_tabbar__first_tab(pTabBar, &i)) {
+        do
+        {
+            dtk_int32 thisWidth = i.width;
+            if (newWidth < thisWidth) {
+                newWidth = thisWidth;
+            }
+        } while (dtk_tabbar__next_tab(pTabBar, &i));
+    }
+
+    // Now resize.
+    return dtk_control_set_size(DTK_CONTROL(pTabBar), newWidth, newHeight);
+}
+
+dtk_result dtk_tabbar_auto_resize(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    if (pTabBar->flow == dtk_tabbar_flow_left_to_right || pTabBar->flow == dtk_tabbar_flow_right_to_left) {
+        return dtk_tabbar_auto_resize__horz(pTabBar);
+    } else {
+        return dtk_tabbar_auto_resize__vert(pTabBar);
+    }
+}
+
+dtk_result dtk_tabbar_try_auto_resize(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    if (!pTabBar->isAutoResizeEnabled) {
+        return DTK_INVALID_OPERATION;
+    }
+
+    return dtk_tabbar_auto_resize(pTabBar);
 }

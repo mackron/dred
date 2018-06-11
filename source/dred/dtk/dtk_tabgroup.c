@@ -99,32 +99,17 @@ void dtk_tabgroup__refresh_tabbar_layout(dtk_tabgroup* pTabGroup)
     switch (pTabGroup->tabbarEdge)
     {
         case dtk_tabgroup_tabbar_edge_top:
-        {
-            tabbarWidth = tabgroupWidth;
-            tabbarHeight = 32;
-        } break;
-
-        case dtk_tabgroup_tabbar_edge_left:
-        {
-            tabbarWidth = 32;
-            tabbarHeight = tabgroupHeight;
-        } break;
-
-        case dtk_tabgroup_tabbar_edge_right:
-        {
-            tabbarWidth = 32;
-            tabbarHeight = tabgroupHeight;
-        } break;
-
         case dtk_tabgroup_tabbar_edge_bottom:
         {
             tabbarWidth = tabgroupWidth;
-            tabbarHeight = 32;
+        } break;
+
+        case dtk_tabgroup_tabbar_edge_left:
+        case dtk_tabgroup_tabbar_edge_right:
+        {
+            tabbarHeight = tabgroupHeight;
         } break;
     }
-
-    dtk_control_set_size(DTK_CONTROL(&pTabGroup->tabbar), tabbarWidth, tabbarHeight);
-
 
     // The position depends on the size, so set the position after setting the size.
     dtk_int32 tabbarPosX;
@@ -233,7 +218,7 @@ dtk_result dtk_tabgroup_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_contr
         return result;
     }
 
-
+    dtk_tabbar_enable_auto_resize(&pTabGroup->tabbar);
     dtk_tabgroup__refresh_tabbar_layout(pTabGroup);
     dtk_tabgroup__refresh_container_layout(pTabGroup);
 
