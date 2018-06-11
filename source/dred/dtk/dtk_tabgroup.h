@@ -45,6 +45,7 @@ dtk_bool32 dtk_tabgroup_is_showing_tabbar(const dtk_tabgroup* pTabGroup);
 
 
 // Styling
+dtk_result dtk_tabgroup_set_tabbar_background_color(dtk_tabgroup* pTabGroup, dtk_color color);
 dtk_result dtk_tabgroup_set_tab_padding(dtk_tabgroup* pTabGroup, dtk_uint32 padding);
 dtk_result dtk_tabgroup_set_tab_background_color(dtk_tabgroup* pTabGroup, dtk_color color);
 dtk_result dtk_tabgroup_set_tab_background_color_active(dtk_tabgroup* pTabGroup, dtk_color color);

@@ -874,6 +874,16 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
 }
 
 
+dtk_result dtk_tabbar_set_bg_color(dtk_tabbar* pTabBar, dtk_color color)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    pTabBar->bgColor = color;
+    
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
 dtk_result dtk_tabbar_set_font(dtk_tabbar* pTabBar, dtk_font* pFont)
 {
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
@@ -969,7 +979,7 @@ dtk_result dtk_tabbar_set_text_color_hovered(dtk_tabbar* pTabBar, dtk_color colo
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_tabbar_set_bg_color(dtk_tabbar* pTabBar, dtk_color color)
+dtk_result dtk_tabbar_set_tab_bg_color(dtk_tabbar* pTabBar, dtk_color color)
 {
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
 
@@ -979,7 +989,7 @@ dtk_result dtk_tabbar_set_bg_color(dtk_tabbar* pTabBar, dtk_color color)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_tabbar_set_bg_color_active(dtk_tabbar* pTabBar, dtk_color color)
+dtk_result dtk_tabbar_set_tab_bg_color_active(dtk_tabbar* pTabBar, dtk_color color)
 {
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
 
@@ -989,7 +999,7 @@ dtk_result dtk_tabbar_set_bg_color_active(dtk_tabbar* pTabBar, dtk_color color)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_tabbar_set_bg_color_hovered(dtk_tabbar* pTabBar, dtk_color color)
+dtk_result dtk_tabbar_set_tab_bg_color_hovered(dtk_tabbar* pTabBar, dtk_color color)
 {
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
 
@@ -999,7 +1009,7 @@ dtk_result dtk_tabbar_set_bg_color_hovered(dtk_tabbar* pTabBar, dtk_color color)
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_tabbar_set_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, dtk_uint32 paddingTop, dtk_uint32 paddingRight, dtk_uint32 paddingBottom)
+dtk_result dtk_tabbar_set_tab_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, dtk_uint32 paddingTop, dtk_uint32 paddingRight, dtk_uint32 paddingBottom)
 {
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
 

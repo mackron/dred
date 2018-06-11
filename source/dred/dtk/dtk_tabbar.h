@@ -109,6 +109,7 @@ dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control
 dtk_result dtk_tabbar_uninit(dtk_tabbar* pTabBar);
 dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent);
 
+dtk_result dtk_tabbar_set_bg_color(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_font(dtk_tabbar* pTabBar, dtk_font* pFont);
 dtk_font* dtk_tabbar_get_font(const dtk_tabbar* pTabBar);
 dtk_result dtk_tabbar_set_close_button_image(dtk_tabbar* pTabBar, dtk_image* pImage);
@@ -119,10 +120,10 @@ dtk_result dtk_tabbar_set_close_button_color_pressed(dtk_tabbar* pTabBar, dtk_co
 dtk_result dtk_tabbar_set_text_color(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_text_color_active(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_text_color_hovered(dtk_tabbar* pTabBar, dtk_color color);
-dtk_result dtk_tabbar_set_bg_color(dtk_tabbar* pTabBar, dtk_color color);
-dtk_result dtk_tabbar_set_bg_color_active(dtk_tabbar* pTabBar, dtk_color color);
-dtk_result dtk_tabbar_set_bg_color_hovered(dtk_tabbar* pTabBar, dtk_color color);
-dtk_result dtk_tabbar_set_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, dtk_uint32 paddingTop, dtk_uint32 paddingRight, dtk_uint32 paddingBottom);
+dtk_result dtk_tabbar_set_tab_bg_color(dtk_tabbar* pTabBar, dtk_color color);
+dtk_result dtk_tabbar_set_tab_bg_color_active(dtk_tabbar* pTabBar, dtk_color color);
+dtk_result dtk_tabbar_set_tab_bg_color_hovered(dtk_tabbar* pTabBar, dtk_color color);
+dtk_result dtk_tabbar_set_tab_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, dtk_uint32 paddingTop, dtk_uint32 paddingRight, dtk_uint32 paddingBottom);
 dtk_result dtk_tabbar_set_close_button_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, dtk_uint32 paddingTop, dtk_uint32 paddingRight, dtk_uint32 paddingBottom);
 dtk_result dtk_tabbar_set_pin_button_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, dtk_uint32 paddingTop, dtk_uint32 paddingRight, dtk_uint32 paddingBottom);
 

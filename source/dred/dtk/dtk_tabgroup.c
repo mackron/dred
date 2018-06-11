@@ -421,16 +421,7 @@ dtk_bool32 dtk_tabgroup_is_showing_tabbar(const dtk_tabgroup* pTabGroup)
 
 
 // Styling
-dtk_result dtk_tabgroup_set_tab_padding(dtk_tabgroup* pTabGroup, dtk_uint32 padding)
-{
-    if (pTabGroup == NULL) {
-        return DTK_INVALID_ARGS;
-    }
-
-    return dtk_tabbar_set_padding(&pTabGroup->tabbar, padding, padding, padding, padding);
-}
-
-dtk_result dtk_tabgroup_set_tab_background_color(dtk_tabgroup* pTabGroup, dtk_color color)
+dtk_result dtk_tabgroup_set_tabbar_background_color(dtk_tabgroup* pTabGroup, dtk_color color)
 {
     if (pTabGroup == NULL) {
         return DTK_INVALID_ARGS;
@@ -439,13 +430,31 @@ dtk_result dtk_tabgroup_set_tab_background_color(dtk_tabgroup* pTabGroup, dtk_co
     return dtk_tabbar_set_bg_color(&pTabGroup->tabbar, color);
 }
 
+dtk_result dtk_tabgroup_set_tab_padding(dtk_tabgroup* pTabGroup, dtk_uint32 padding)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_tab_padding(&pTabGroup->tabbar, padding, padding, padding, padding);
+}
+
+dtk_result dtk_tabgroup_set_tab_background_color(dtk_tabgroup* pTabGroup, dtk_color color)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_tab_bg_color(&pTabGroup->tabbar, color);
+}
+
 dtk_result dtk_tabgroup_set_tab_background_color_active(dtk_tabgroup* pTabGroup, dtk_color color)
 {
     if (pTabGroup == NULL) {
         return DTK_INVALID_ARGS;
     }
 
-    return dtk_tabbar_set_bg_color_active(&pTabGroup->tabbar, color);
+    return dtk_tabbar_set_tab_bg_color_active(&pTabGroup->tabbar, color);
 }
 
 dtk_result dtk_tabgroup_set_tab_background_color_hovered(dtk_tabgroup* pTabGroup, dtk_color color)
@@ -454,7 +463,7 @@ dtk_result dtk_tabgroup_set_tab_background_color_hovered(dtk_tabgroup* pTabGroup
         return DTK_INVALID_ARGS;
     }
 
-    return dtk_tabbar_set_bg_color_hovered(&pTabGroup->tabbar, color);
+    return dtk_tabbar_set_tab_bg_color_hovered(&pTabGroup->tabbar, color);
 }
 
 dtk_result dtk_tabgroup_set_tab_font(dtk_tabgroup* pTabGroup, dtk_font* pFont)

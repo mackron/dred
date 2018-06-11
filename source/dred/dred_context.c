@@ -705,6 +705,8 @@ dtk_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_li
         goto on_error;
     }
 
+    dtk_tabgroup_show_tab_close_buttons(&pDred->mainTabGroup);  // We want the tab bar for the open files to have close buttons on them by default.
+
 
     // The command bar. Ensure this is given a valid initial size.
     if (!dred_cmdbar_init(&pDred->cmdBar, pDred, DTK_CONTROL(&pDred->mainWindow))) {
@@ -2947,6 +2949,10 @@ void dred_refresh_styling_tabgroup(dred_context* pDred, dtk_tabgroup* pTabGroup)
     } else {
         dtk_tabgroup_hide_tab_close_buttons(pTabGroup);
     }
+
+    // For now dred uses the same background color for the part of the tabbar without any tabs on it as the tab background color. This gives
+    // dred a more seemless look. We may want to change this later.
+    dtk_tabgroup_set_tabbar_background_color(pTabGroup, pDred->config.tabBGColorInvactive);
 
     // TODO: Check if this is still needed.
 
