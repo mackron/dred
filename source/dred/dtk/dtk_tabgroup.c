@@ -433,3 +433,140 @@ dtk_bool32 dtk_tabgroup_is_showing_tabbar(const dtk_tabgroup* pTabGroup)
 
     return dtk_control_is_visible(DTK_CONTROL(&pTabGroup->tabbar));
 }
+
+
+// Styling
+dtk_result dtk_tabgroup_set_tab_padding(dtk_tabgroup* pTabGroup, dtk_uint32 padding)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_padding(&pTabGroup->tabbar, padding, padding, padding, padding);
+}
+
+dtk_result dtk_tabgroup_set_tab_background_color(dtk_tabgroup* pTabGroup, dtk_color color)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_bg_color(&pTabGroup->tabbar, color);
+}
+
+dtk_result dtk_tabgroup_set_tab_background_color_active(dtk_tabgroup* pTabGroup, dtk_color color)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_bg_color_active(&pTabGroup->tabbar, color);
+}
+
+dtk_result dtk_tabgroup_set_tab_background_color_hovered(dtk_tabgroup* pTabGroup, dtk_color color)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_bg_color_hovered(&pTabGroup->tabbar, color);
+}
+
+dtk_result dtk_tabgroup_set_tab_font(dtk_tabgroup* pTabGroup, dtk_font* pFont)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_font(&pTabGroup->tabbar, pFont);
+}
+
+dtk_result dtk_tabgroup_set_tab_text_color(dtk_tabgroup* pTabGroup, dtk_color color)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_text_color(&pTabGroup->tabbar, color);
+}
+
+dtk_result dtk_tabgroup_set_tab_text_color_active(dtk_tabgroup* pTabGroup, dtk_color color)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_text_color_active(&pTabGroup->tabbar, color);
+}
+
+dtk_result dtk_tabgroup_set_tab_text_color_hovered(dtk_tabgroup* pTabGroup, dtk_color color)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_text_color_hovered(&pTabGroup->tabbar, color);
+}
+
+dtk_result dtk_tabgroup_set_tab_close_button_left_padding(dtk_tabgroup* pTabGroup, dtk_uint32 padding)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_close_button_padding(&pTabGroup->tabbar, padding, padding, padding, padding);
+}
+
+dtk_result dtk_tabgroup_set_tab_close_button_image(dtk_tabgroup* pTabGroup, dtk_image* pImage)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_close_button_image(&pTabGroup->tabbar, pImage);
+}
+
+dtk_result dtk_tabgroup_set_tab_close_button_color(dtk_tabgroup* pTabGroup, dtk_color color)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_close_button_color(&pTabGroup->tabbar, color);
+}
+
+dtk_result dtk_tabgroup_set_tab_close_button_color_hovered(dtk_tabgroup* pTabGroup, dtk_color color)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_close_button_color_hovered(&pTabGroup->tabbar, color);
+}
+
+dtk_result dtk_tabgroup_set_tab_close_button_color_pressed(dtk_tabgroup* pTabGroup, dtk_color color)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_close_button_color_pressed(&pTabGroup->tabbar, color);
+}
+
+dtk_result dtk_tabgroup_show_tab_close_buttons(dtk_tabgroup* pTabGroup)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_show_close_button(&pTabGroup->tabbar);
+}
+
+dtk_result dtk_tabgroup_hide_tab_close_buttons(dtk_tabgroup* pTabGroup)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_hide_close_button(&pTabGroup->tabbar);
+}

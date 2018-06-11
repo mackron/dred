@@ -395,6 +395,8 @@ dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control
     pTabBar->bgColorActiveTab         = dtk_rgb(128, 128, 128);
     pTabBar->bgColorHoveredTab        = dtk_rgb(160, 160, 160);
     pTabBar->textColor                = dtk_rgb(0, 0, 0);
+    pTabBar->textColorActive          = dtk_rgb(0, 0, 0);
+    pTabBar->textColorHovered         = dtk_rgb(0, 0, 0);
     pTabBar->paddingLeft              = 4;
     pTabBar->paddingTop               = 4;
     pTabBar->paddingRight             = 4;
@@ -406,6 +408,13 @@ dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control
     pTabBar->closeButtonColor         = dtk_rgb(224, 224, 224);
     pTabBar->closeButtonColorHovered  = dtk_rgb(255, 192, 192);
     pTabBar->closeButtonColorPressed  = dtk_rgb(192, 128, 128);
+    pTabBar->pinButtonPaddingLeft     = 4;
+    pTabBar->pinButtonPaddingTop      = 0;
+    pTabBar->pinButtonPaddingRight    = 0;
+    pTabBar->pinButtonPaddingBottom   = 0;
+    pTabBar->pinButtonColor           = dtk_rgb(224, 224, 224);
+    pTabBar->pinButtonColorHovered    = dtk_rgb(255, 192, 192);
+    pTabBar->pinButtonColorPressed    = dtk_rgb(192, 128, 128);
 
     return DTK_SUCCESS;
 }
@@ -445,9 +454,11 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                     dtk_color fgColor = pTabBar->textColor;
                     if (tabIndex == pTabBar->hoveredTabIndex) {
                         bgColor = pTabBar->bgColorHoveredTab;
+                        fgColor = pTabBar->textColorHovered;
                     }
                     if (tabIndex == pTabBar->activeTabIndex) {
                         bgColor = pTabBar->bgColorActiveTab;
+                        fgColor = pTabBar->textColorActive;
                     }
 
                     dtk_color closeButtonColor = pTabBar->closeButtonColor;
@@ -876,11 +887,61 @@ dtk_image* dtk_tabbar_get_close_button_image(const dtk_tabbar* pTabBar)
     //return (pTabBar->pCloseButtonImage != NULL) ? pTabBar->pCloseButtonImage : dtk_get_stock_image(DTK_CONTROL(pTabBar)->pTK, DTK_STOCK_IMAGE_CROSS);
 }
 
+dtk_result dtk_tabbar_set_close_button_color(dtk_tabbar* pTabBar, dtk_color color)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    pTabBar->closeButtonColor = color;
+    
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tabbar_set_close_button_color_hovered(dtk_tabbar* pTabBar, dtk_color color)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    pTabBar->closeButtonColorHovered = color;
+    
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tabbar_set_close_button_color_pressed(dtk_tabbar* pTabBar, dtk_color color)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    pTabBar->closeButtonColorPressed = color;
+    
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
 dtk_result dtk_tabbar_set_text_color(dtk_tabbar* pTabBar, dtk_color color)
 {
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
 
     pTabBar->textColor = color;
+    
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tabbar_set_text_color_active(dtk_tabbar* pTabBar, dtk_color color)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    pTabBar->textColorActive = color;
+    
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tabbar_set_text_color_hovered(dtk_tabbar* pTabBar, dtk_color color)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    pTabBar->textColorHovered = color;
     
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;
@@ -924,6 +985,32 @@ dtk_result dtk_tabbar_set_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, d
     pTabBar->paddingTop    = paddingTop;
     pTabBar->paddingRight  = paddingRight;
     pTabBar->paddingBottom = paddingBottom;
+    
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tabbar_set_close_button_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, dtk_uint32 paddingTop, dtk_uint32 paddingRight, dtk_uint32 paddingBottom)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    pTabBar->closeButtonPaddingLeft   = paddingLeft;
+    pTabBar->closeButtonPaddingTop    = paddingTop;
+    pTabBar->closeButtonPaddingRight  = paddingRight;
+    pTabBar->closeButtonPaddingBottom = paddingBottom;
+    
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tabbar_set_pin_button_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, dtk_uint32 paddingTop, dtk_uint32 paddingRight, dtk_uint32 paddingBottom)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    pTabBar->pinButtonPaddingLeft   = paddingLeft;
+    pTabBar->pinButtonPaddingTop    = paddingTop;
+    pTabBar->pinButtonPaddingRight  = paddingRight;
+    pTabBar->pinButtonPaddingBottom = paddingBottom;
     
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;

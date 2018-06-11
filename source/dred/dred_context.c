@@ -123,6 +123,7 @@ void dred__update_main_window_layout(dtk_window* pWindow, dtk_int32 windowWidth,
     //dred__update_main_tab_group_container_layout(pDred, &pDred->mainTabGroupContainer, windowWidth, windowHeight);
 
     // The main tab group needs to be updated.
+    dred_refresh_styling_tabgroup(pDred, &pDred->mainTabGroup);
     dtk_control_set_size(DTK_CONTROL(&pDred->mainTabGroup), windowWidth, windowHeight - dred__get_cmd_bar_height(pDred));
 
     dred__update_cmdbar_layout(pDred, &pDred->cmdBar, windowWidth, windowHeight);
@@ -2918,4 +2919,40 @@ dtk_bool32 dred_is_showing_main_menu(dred_context* pDred)
 {
     if (pDred == NULL) return DTK_FALSE;
     return pDred->isShowingMainMenu;
+}
+
+
+void dred_refresh_styling_tabgroup(dred_context* pDred, dtk_tabgroup* pTabGroup)
+{
+    if (pDred == NULL || pTabGroup == NULL) {
+        return;
+    }
+
+    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTabGroup));
+
+    // Update tab bar.
+    dtk_tabgroup_set_tab_padding(pTabGroup, (dtk_uint32)(pDred->config.tabPadding * uiScale));
+    dtk_tabgroup_set_tab_background_color(pTabGroup, pDred->config.tabBGColorInvactive);
+    dtk_tabgroup_set_tab_background_color_active(pTabGroup, pDred->config.tabBGColorActive);
+    dtk_tabgroup_set_tab_background_color_hovered(pTabGroup, pDred->config.tabBGColorHovered);
+    dtk_tabgroup_set_tab_font(pTabGroup, &pDred->config.tabFont->fontDTK);
+    dtk_tabgroup_set_tab_text_color(pTabGroup, pDred->config.tabTextColor);
+    dtk_tabgroup_set_tab_text_color_active(pTabGroup, pDred->config.tabTextColorActive);
+    dtk_tabgroup_set_tab_text_color_hovered(pTabGroup, pDred->config.tabTextColorHovered);
+    dtk_tabgroup_set_tab_close_button_left_padding(pTabGroup, (dtk_uint32)(6 * uiScale));
+    //dtk_tabgroup_set_tab_close_button_image(pTabGroup, dred_image_acquire_subimage(pDred->config.pImageCross, uiScale));
+    dtk_tabgroup_set_tab_close_button_color(pTabGroup, pDred->config.tabCloseButtonColor);
+    if (pDred->config.tabShowCloseButton) {
+        dtk_tabgroup_show_tab_close_buttons(pTabGroup);
+    } else {
+        dtk_tabgroup_hide_tab_close_buttons(pTabGroup);
+    }
+
+    // TODO: Check if this is still needed.
+
+    // The size of some elements may have changed, so update the layout also.
+    //dred_tabgroup__refresh_layout(pTabGroup, dred_control_get_width(DRED_CONTROL(pTabGroup)), dred_control_get_height(DRED_CONTROL(pTabGroup)));
+
+    // Redraw.
+    //dtk_control_scheduled_redraw(DTK_CONTROL(pTabGroup), dtk_control_get_local_rect(DTK_CONTROL(pTabGroup)));
 }

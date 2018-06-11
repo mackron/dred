@@ -79,6 +79,8 @@ struct dtk_tabbar
     dtk_color bgColorActiveTab;
     dtk_color bgColorHoveredTab;
     dtk_color textColor;
+    dtk_color textColorActive;
+    dtk_color textColorHovered;
     dtk_uint32 paddingLeft;
     dtk_uint32 paddingTop;
     dtk_uint32 paddingRight;
@@ -92,6 +94,15 @@ struct dtk_tabbar
     dtk_color closeButtonColor;
     dtk_color closeButtonColorHovered;
     dtk_color closeButtonColorPressed;
+    dtk_uint32 pinButtonPaddingLeft;
+    dtk_uint32 pinButtonPaddingTop;
+    dtk_uint32 pinButtonPaddingRight;
+    dtk_uint32 pinButtonPaddingBottom;
+    dtk_uint32 pinButtonWidth;
+    dtk_uint32 pinButtonHeight;
+    dtk_color pinButtonColor;
+    dtk_color pinButtonColorHovered;
+    dtk_color pinButtonColorPressed;
 };
 
 dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_tabbar_flow flow, dtk_tabbar_text_direction textDirection, dtk_tabbar* pTabBar);
@@ -102,11 +113,18 @@ dtk_result dtk_tabbar_set_font(dtk_tabbar* pTabBar, dtk_font* pFont);
 dtk_font* dtk_tabbar_get_font(const dtk_tabbar* pTabBar);
 dtk_result dtk_tabbar_set_close_button_image(dtk_tabbar* pTabBar, dtk_image* pImage);
 dtk_image* dtk_tabbar_get_close_button_image(const dtk_tabbar* pTabBar);
+dtk_result dtk_tabbar_set_close_button_color(dtk_tabbar* pTabBar, dtk_color color);
+dtk_result dtk_tabbar_set_close_button_color_hovered(dtk_tabbar* pTabBar, dtk_color color);
+dtk_result dtk_tabbar_set_close_button_color_pressed(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_text_color(dtk_tabbar* pTabBar, dtk_color color);
+dtk_result dtk_tabbar_set_text_color_active(dtk_tabbar* pTabBar, dtk_color color);
+dtk_result dtk_tabbar_set_text_color_hovered(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_bg_color(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_bg_color_active(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_bg_color_hovered(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, dtk_uint32 paddingTop, dtk_uint32 paddingRight, dtk_uint32 paddingBottom);
+dtk_result dtk_tabbar_set_close_button_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, dtk_uint32 paddingTop, dtk_uint32 paddingRight, dtk_uint32 paddingBottom);
+dtk_result dtk_tabbar_set_pin_button_padding(dtk_tabbar* pTabBar, dtk_uint32 paddingLeft, dtk_uint32 paddingTop, dtk_uint32 paddingRight, dtk_uint32 paddingBottom);
 
 dtk_result dtk_tabbar_show_close_button(dtk_tabbar* pTabBar);
 dtk_result dtk_tabbar_hide_close_button(dtk_tabbar* pTabBar);

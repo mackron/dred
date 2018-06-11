@@ -432,3 +432,7 @@ void dred_hide_main_menu(dred_context* pDred);
 
 // Determines whether or not the main menu is being shown.
 dtk_bool32 dred_is_showing_main_menu(dred_context* pDred);
+
+
+// Refreshes the styling properties of the specified tab group.
+void dred_refresh_styling_tabgroup(dred_context* pDred, dtk_tabgroup* pTabGroup);

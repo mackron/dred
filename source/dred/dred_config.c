@@ -464,7 +464,7 @@ void dred_config_on_set__cmdbar_popup_padding(dred_context* pDred)
 void dred_config_on_set__tabgroup_generic_refresh(dred_context* pDred)
 {
     for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
-        //dred_tabgroup_refresh_styling(pTabGroup);
+        dred_refresh_styling_tabgroup(pDred, pTabGroup);
     }
 }
 
