@@ -1338,7 +1338,7 @@ dtk_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, con
 
     // Make sure the tab group is visible.
     dtk_control_hide(&pDred->backgroundControl);
-    dtk_control_show(DTK_CONTROL(pTabGroup)->pParent);
+    dtk_control_show(DTK_CONTROL(pTabGroup));
 
     return DTK_TRUE;
 }
