@@ -705,6 +705,7 @@ dtk_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_li
         goto on_error;
     }
 
+    dtk_tabgroup_enable_close_on_middle_click(&pDred->mainTabGroup);
     dtk_tabgroup_show_tab_close_buttons(&pDred->mainTabGroup);  // We want the tab bar for the open files to have close buttons on them by default.
 
 

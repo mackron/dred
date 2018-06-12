@@ -420,6 +420,34 @@ dtk_bool32 dtk_tabgroup_is_showing_tabbar(const dtk_tabgroup* pTabGroup)
 }
 
 
+dtk_result dtk_tabgroup_enable_close_on_middle_click(dtk_tabgroup* pTabGroup)
+{
+    if (pTabGroup == NULL) {
+        return DTK_FALSE;
+    }
+
+    return dtk_tabbar_enable_close_on_middle_click(&pTabGroup->tabbar);
+}
+
+dtk_result dtk_tabgroup_disable_close_on_middle_click(dtk_tabgroup* pTabGroup)
+{
+    if (pTabGroup == NULL) {
+        return DTK_FALSE;
+    }
+
+    return dtk_tabbar_disable_close_on_middle_click(&pTabGroup->tabbar);
+}
+
+dtk_bool32 dtk_tabgroup_is_close_on_middle_click_enabled(const dtk_tabgroup* pTabGroup)
+{
+    if (pTabGroup == NULL) {
+        return DTK_FALSE;
+    }
+
+    return dtk_tabbar_is_close_on_middle_click_enabled(&pTabGroup->tabbar);
+}
+
+
 // Styling
 dtk_result dtk_tabgroup_set_tabbar_background_color(dtk_tabgroup* pTabGroup, dtk_color color)
 {

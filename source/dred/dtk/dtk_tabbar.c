@@ -397,6 +397,14 @@ dtk_bool32 dtk_tabbar__is_flow_vertical(dtk_tabbar* pTabBar)
 }
 
 
+dtk_result dtk_tabbar__post_event__close_tab(dtk_tabbar* pTabBar, dtk_uint32 tabIndex)
+{
+    dtk_event e = dtk_event_init(DTK_CONTROL(pTabBar)->pTK, DTK_EVENT_TABBAR_CLOSE_TAB, DTK_CONTROL(pTabBar));
+    e.tabbar.tabIndex = tabIndex;
+    return dtk_control_post_event(DTK_CONTROL(pTabBar), &e);
+}
+
+
 dtk_result dtk_tabbar_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_tabbar_flow flow, dtk_tabbar_text_direction textDirection, dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
@@ -721,9 +729,9 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
             dtk_control_capture_mouse(DTK_CONTROL(pTabBar));
 
             dtk_tabbar_hit_test_result hit;
-            if (dtk_tabbar_hit_test(pTabBar, pEvent->mouseMove.x, pEvent->mouseMove.y, &hit)) {
+            if (dtk_tabbar_hit_test(pTabBar, pEvent->mouseButton.x, pEvent->mouseButton.y, &hit)) {
                 // If the user clicked on the button, do _not_ activate the tab. Instead just mark the button as held.
-                if (hit.isOverCloseButton || hit.isOverPinButton) {
+                if (pEvent->mouseButton.button == DTK_MOUSE_BUTTON_LEFT && (hit.isOverCloseButton || hit.isOverPinButton)) {
                     // The user clicked a button. We just mark the appropriate one as held.
                     if (hit.isOverCloseButton) {
                         pTabBar->closeButtonHeldTabIndex = hit.tabIndex;
@@ -735,6 +743,10 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                 } else {
                     // The user clicked on the main part of the control. Actiate it.
                     dtk_tabbar__set_active_tab(pTabBar, hit.tabIndex, DTK_TRUE);
+
+                    if (pEvent->mouseButton.button == DTK_MOUSE_BUTTON_MIDDLE && dtk_tabbar_is_close_on_middle_click_enabled(pTabBar)) {
+                        dtk_tabbar__post_event__close_tab(pTabBar, hit.tabIndex);
+                    }
                 }
             }
         } break;
@@ -744,7 +756,7 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
             dtk_control_release_mouse(DTK_CONTROL(pTabBar));
 
             dtk_tabbar_hit_test_result hit;
-            if (dtk_tabbar_hit_test(pTabBar, pEvent->mouseMove.x, pEvent->mouseMove.y, &hit)) {
+            if (dtk_tabbar_hit_test(pTabBar, pEvent->mouseButton.x, pEvent->mouseButton.y, &hit)) {
                 if (hit.isOverCloseButton) {
                     if (pTabBar->closeButtonHeldTabIndex == hit.tabIndex) {
                         dtk_event e = dtk_event_init(DTK_CONTROL(pTabBar)->pTK, DTK_EVENT_TABBAR_CLOSE_TAB, DTK_CONTROL(pTabBar));
@@ -1519,4 +1531,34 @@ dtk_result dtk_tabbar_try_auto_resize(dtk_tabbar* pTabBar)
     }
 
     return dtk_tabbar_auto_resize(pTabBar);
+}
+
+
+dtk_result dtk_tabbar_enable_close_on_middle_click(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    pTabBar->isCloseOnMiddleClientEnabled = DTK_TRUE;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tabbar_disable_close_on_middle_click(dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    pTabBar->isCloseOnMiddleClientEnabled = DTK_FALSE;
+    return DTK_SUCCESS;
+}
+
+dtk_bool32 dtk_tabbar_is_close_on_middle_click_enabled(const dtk_tabbar* pTabBar)
+{
+    if (pTabBar == NULL) {
+        return DTK_FALSE;
+    }
+
+    return pTabBar->isCloseOnMiddleClientEnabled;
 }

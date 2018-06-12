@@ -58,14 +58,15 @@ struct dtk_tabbar
     dtk_tabbar_tab* pTabs;
     dtk_uint32 tabCount;
     dtk_uint32 tabCapacity;
-    dtk_bool32 isAutoResizeEnabled    : 1;
-    dtk_bool32 isTooltipVisible       : 1;
-    dtk_bool32 isShowingCloseButton   : 1;
-    dtk_bool32 isShowingPinButton     : 1;
-    dtk_bool32 isMouseOverCloseButton : 1;
-    dtk_bool32 isMouseOverPinButton   : 1;
-    dtk_bool32 isCloseButtonPressed   : 1;
-    dtk_bool32 isPinButtonPressed     : 1;
+    dtk_bool32 isAutoResizeEnabled          : 1;
+    dtk_bool32 isTooltipVisible             : 1;
+    dtk_bool32 isShowingCloseButton         : 1;
+    dtk_bool32 isShowingPinButton           : 1;
+    dtk_bool32 isMouseOverCloseButton       : 1;
+    dtk_bool32 isMouseOverPinButton         : 1;
+    dtk_bool32 isCloseButtonPressed         : 1;
+    dtk_bool32 isPinButtonPressed           : 1;
+    dtk_bool32 isCloseOnMiddleClientEnabled : 1;
     dtk_int32 hoveredTabIndex;          // Set to -1 if no tab is hovered.
     dtk_int32 activeTabIndex;           // Set to -1 when no tab is active.
     dtk_int32 closeButtonHeldTabIndex;  // Set to the index of the tab whose close button is being held. Set to -1 if none.
@@ -180,3 +181,13 @@ dtk_result dtk_tabbar_auto_resize(dtk_tabbar* pTabBar);
 // Same as dtk_tabbar_auto_resize(), but only performs the resize is auto-sizing is enabled. If auto-sizing is disabled, returns
 // DTK_INVALID_OPERATION.
 dtk_result dtk_tabbar_try_auto_resize(dtk_tabbar* pTabBar);
+
+
+// Enables closing of tabs on middle click.
+dtk_result dtk_tabbar_enable_close_on_middle_click(dtk_tabbar* pTabBar);
+
+// Disables closing of tabs on middle click.
+dtk_result dtk_tabbar_disable_close_on_middle_click(dtk_tabbar* pTabBar);
+
+// Determines whether or not closing of tabs on middle click is enabled.
+dtk_bool32 dtk_tabbar_is_close_on_middle_click_enabled(const dtk_tabbar* pTabBar);

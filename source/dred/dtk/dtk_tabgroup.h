@@ -43,6 +43,15 @@ dtk_result dtk_tabgroup_show_tabbar(dtk_tabgroup* pTabGroup);
 dtk_result dtk_tabgroup_hide_tabbar(dtk_tabgroup* pTabGroup);
 dtk_bool32 dtk_tabgroup_is_showing_tabbar(const dtk_tabgroup* pTabGroup);
 
+// Enables closing of tabs on middle click.
+dtk_result dtk_tabgroup_enable_close_on_middle_click(dtk_tabgroup* pTabGroup);
+
+// Disables closing of tabs on middle click.
+dtk_result dtk_tabgroup_disable_close_on_middle_click(dtk_tabgroup* pTabGroup);
+
+// Determines whether or not closing of tabs on middle click is enabled.
+dtk_bool32 dtk_tabgroup_is_close_on_middle_click_enabled(const dtk_tabgroup* pTabGroup);
+
 
 // Styling
 dtk_result dtk_tabgroup_set_tabbar_background_color(dtk_tabgroup* pTabGroup, dtk_color color);
