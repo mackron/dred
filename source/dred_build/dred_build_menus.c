@@ -329,7 +329,7 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
         // a list of menu indices and sort them.
         int* pMenuOrder = (int*)malloc(sizeof(*pMenuOrder) * stb_sb_count(context.pAllMenus));
         if (pMenuOrder != NULL) {
-            for (int i = 0; i < stb_sb_count(pMenuOrder); ++i) {
+            for (int i = 0; i < stb_sb_count(context.pAllMenus); ++i) {
                 pMenuOrder[i] = i;
             }
         }
