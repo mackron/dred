@@ -741,11 +741,14 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                         dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), hit.tabRect);
                     }
                 } else {
-                    // The user clicked on the main part of the control. Actiate it.
-                    dtk_tabbar__set_active_tab(pTabBar, hit.tabIndex, DTK_TRUE);
-
-                    if (pEvent->mouseButton.button == DTK_MOUSE_BUTTON_MIDDLE && dtk_tabbar_is_close_on_middle_click_enabled(pTabBar)) {
-                        dtk_tabbar__post_event__close_tab(pTabBar, hit.tabIndex);
+                    // The user clicked on the main part of the control. Actiate it, but not if we're going to try closing it.
+                    dtk_bool32 wantToClose = (pEvent->mouseButton.button == DTK_MOUSE_BUTTON_MIDDLE && dtk_tabbar_is_close_on_middle_click_enabled(pTabBar));
+                    if (wantToClose) {
+                        if (pEvent->mouseButton.button == DTK_MOUSE_BUTTON_MIDDLE && dtk_tabbar_is_close_on_middle_click_enabled(pTabBar)) {
+                            dtk_tabbar__post_event__close_tab(pTabBar, hit.tabIndex);
+                        }
+                    } else {
+                        dtk_tabbar__set_active_tab(pTabBar, hit.tabIndex, DTK_TRUE);
                     }
                 }
             }
@@ -1226,6 +1229,17 @@ dtk_result dtk_tabbar_prepend_tab(dtk_tabbar* pTabBar, const char* text, dtk_con
     
     dtk_tabbar_tab_init(pTabBar, text, pTabPage, &pTabBar->pTabs[tabIndex]);
     pTabBar->tabCount += 1;
+
+    // Some indices need to change.
+    if (pTabBar->activeTabIndex >= (dtk_int32)tabIndex) {
+        pTabBar->activeTabIndex += 1;
+    }
+    if (pTabBar->closeButtonHeldTabIndex >= (dtk_int32)tabIndex) {
+        pTabBar->closeButtonHeldTabIndex += 1;
+    }
+    if (pTabBar->pinButtonHeldTabIndex >= (dtk_int32)tabIndex) {
+        pTabBar->pinButtonHeldTabIndex += 1;
+    }
 
     dtk_tabbar_try_auto_resize(pTabBar);
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));

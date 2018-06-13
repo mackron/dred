@@ -244,6 +244,19 @@ dtk_bool32 dtk_tabgroup_default_event_handler(dtk_event* pEvent)
     dtk_tabgroup* pTabGroup = DTK_TABGROUP(pEvent->pControl);
     switch (pEvent->type)
     {
+        case DTK_EVENT_TABGROUP_CHANGE_TAB:
+        {
+            // Hide the old tab page.
+            if (pEvent->tabgroup.oldTabIndex != -1) {
+                dtk_control_hide(dtk_tabgroup_get_tab_page(pTabGroup, pEvent->tabgroup.oldTabIndex));
+            }
+
+            // Show the new tab page.
+            if (pEvent->tabgroup.newTabIndex != -1) {
+                dtk_control_show(dtk_tabgroup_get_tab_page(pTabGroup, pEvent->tabgroup.newTabIndex));
+            }
+        } break;
+
         case DTK_EVENT_SIZE:
         {
             // We want to make sure the tab bar and the container are laid out properly before notifying the application.
