@@ -2,6 +2,19 @@
 
 typedef struct
 {
+    const char* pSVGData;
+} dred_image_desc_svg;
+
+typedef struct
+{
+    dtk_uint32 width;
+    dtk_uint32 height;
+    const void* pImageData;
+} dred_image_desc_raster;
+
+
+typedef struct
+{
     float scale;
     unsigned int width;
     unsigned int height;

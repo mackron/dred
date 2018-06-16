@@ -111,6 +111,12 @@
 // tab-close-button-color tabCloseButtonColor color dred_config_on_set__tabgroup_generic_refresh 58 58 58
 //   The color of the close button while inactive.
 //
+// tab-close-button-color-hovered tabCloseButtonColorHovered color dred_config_on_set__tabgroup_generic_refresh 255 96 96
+//   The color of the close button while hovered.
+//
+// tab-close-button-color-pressed tabCloseButtonColorPressed color dred_config_on_set__tabgroup_generic_refresh 192 32 32
+//   The color of the close button while pressed.
+//
 //
 // texteditor-font pTextEditorFont font dred_config_on_set__texteditor_generic_refresh system-font-mono
 //   The font to use in text editors.
@@ -226,7 +232,7 @@ typedef struct
 
 
     // The cross image.
-    dred_image* pImageCross;
+    dtk_image* pImageCross; // <-- Do we still need this?
 
 
 

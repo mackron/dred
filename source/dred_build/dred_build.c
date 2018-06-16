@@ -47,6 +47,17 @@ typedef struct
     unsigned int baseHeight;
 } stock_image;
 
+dtk_bool32 stock_image_is_svg(const stock_image* pStockImage)
+{
+    return dtk_path_extension_equal(pStockImage->filename, "svg");
+}
+
+dtk_bool32 stock_image_is_raster(const stock_image* pStockImage)
+{
+    return !stock_image_is_svg(pStockImage);
+}
+
+
 static void fwrite_string(FILE* pFile, const char* str)
 {
     fwrite(str, 1, strlen(str), pFile);
@@ -244,7 +255,6 @@ void parse_config_var_value(unsigned int type, const char* valueIn, char* valueO
 char* write_image_data_rgba8(char* output, unsigned int* pCurrentByteColumn, const uint8_t* pImageData, unsigned int width, unsigned int height, unsigned int stride)
 {
     unsigned int currentByteColumn = *pCurrentByteColumn;
-
     char byteStr[5] = {'0', 'x', '0', '0', '\0'};
 
     for (unsigned int y = 0; y < height; ++y) {
@@ -271,6 +281,34 @@ char* write_image_data_rgba8(char* output, unsigned int* pCurrentByteColumn, con
     *pCurrentByteColumn = currentByteColumn;
     return output;
 }
+
+char* write_image_data_string(char* output, unsigned int* pCurrentByteColumn, const char* str)
+{
+    unsigned int currentByteColumn = *pCurrentByteColumn;
+    char byteStr[5] = {'0', 'x', '0', '0', '\0'};
+
+    size_t len = strlen(str);
+    for (size_t i = 0; i < len+1; ++i) {    // +1 to include null terminator.
+        if (currentByteColumn == 0) {
+            output = dtk_append_string(output, "\n    ");
+        }
+
+        uint8_t b = (uint8_t)str[i];
+        byteStr[2] = ((b >>  4) + '0'); if (byteStr[2] > '9') byteStr[2] += 7;
+        byteStr[3] = ((b & 0xF) + '0'); if (byteStr[3] > '9') byteStr[3] += 7;
+        output = dtk_append_string(output, byteStr);
+
+        currentByteColumn = (currentByteColumn + 1) % BYTES_PER_ROW;
+
+        if (i < len) {
+            output = dtk_append_string(output, ",");
+        }
+    }
+
+    *pCurrentByteColumn = currentByteColumn;
+    return output;
+}
+
 
 char* stringify_string_pool_data(dred_string_pool* pStringPool)
 {
@@ -425,6 +463,8 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
     }
 
     unsigned int imageCount = 0;
+    unsigned int imageCountSVG = 0;
+    unsigned int imageCountRaster = 0;
     stock_image* pStockImages = NULL;
 
     while (nextLine != NULL) {
@@ -440,7 +480,7 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
         }
 
         stock_image stockImage;
-        
+
         const char* next = dr_next_token(line + 2, stockImage.filename, sizeof(stockImage.filename));     // Skip past "//"
         if (next == NULL) {
             nextLine = dr_next_line(nextLine);
@@ -474,30 +514,134 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
         pStockImages[imageCount] = stockImage;
         imageCount += 1;
 
+        if (stock_image_is_svg(&stockImage)) {
+            imageCountSVG += 1;
+        } else {
+            imageCountRaster += 1;
+        }
+
         nextLine = dr_next_line(nextLine + lineLength);
     }
 
 
     // At this point we have the images so now we need to generate the code.
     fwrite_string(pFileOut, "\n// Stock Images\n");
-    snprintf(line, sizeof(line), "#define DRED_STOCK_IMAGE_COUNT %d\n", imageCount);
-    fwrite_string(pFileOut, line);
+    fprintf(pFileOutH, "#define DRED_STOCK_IMAGE_COUNT %d\n", imageCount);
+    fprintf(pFileOut,  "#define DRED_STOCK_IMAGE_COUNT_SVG    %d\n", imageCountSVG);
+    fprintf(pFileOut,  "#define DRED_STOCK_IMAGE_COUNT_RASTER %d\n", imageCountRaster);
 
-    snprintf(line, sizeof(line), "#define DRED_STOCK_IMAGE_SCALE_COUNT %d\n\n", (int)STOCK_IMAGE_SCALE_COUNT);
-    fwrite_string(pFileOut, line);
+    fprintf(pFileOut, "#define DRED_STOCK_IMAGE_SCALE_COUNT %d\n\n", (int)STOCK_IMAGE_SCALE_COUNT);   // TODO: <-- Remove this.
 
     char* StockImageData = dtk_make_string("const uint8_t g_StockImageData[] = {");
     char* StockImages    = dtk_make_string("const dred_image_desc g_StockImages[DRED_STOCK_IMAGE_COUNT][DRED_STOCK_IMAGE_SCALE_COUNT] = {");
 
-    unsigned int currentByteColumn = 0;
-    unsigned int runningDataOffset = 0;
+    char* StockImageDataSVG;
+    char* StockImagesSVG;
+    if (imageCountSVG > 0) {
+        StockImageDataSVG = dtk_make_string("const dtk_uint8 g_StockImageDataSVG[] = {");
+        StockImagesSVG    = dtk_make_string("const dred_image_desc_svg g_StockImagesSVG[DRED_STOCK_IMAGE_COUNT_SVG] = {\n");
+    } else {
+        StockImageDataSVG = dtk_make_string("const dtk_uint8 g_StockImageDataSVG[1] = {0}; // No SVG images.\n");
+        StockImagesSVG    = dtk_make_string("const dred_image_desc_svg g_StockImagesSVG[1] = {0};\n\n");
+    }
 
+    char* StockImageDataRaster;
+    char* StockImagesRaster;
+    if (imageCountRaster > 0) {
+        StockImageDataRaster = dtk_make_string("const dtk_uint8 g_StockImageDataRaster[] = {");
+        StockImagesRaster    = dtk_make_string("const dred_image_desc_svg g_StockImagesRaster[DRED_STOCK_IMAGE_COUNT_RASTER] = {");
+    } else {
+        StockImageDataRaster = dtk_make_string("const dtk_uint8 g_StockImageDataRaster[1] = {0}; // No raster images.\n");
+        StockImagesRaster    = dtk_make_string("const dred_image_desc_raster g_StockImagesRaster[1] = {0};\n\n");
+    }
+
+
+    unsigned int currentByteColumn;
+    unsigned int runningDataOffset;
+    unsigned int runningID = 0;
+
+    // SVG images
+    currentByteColumn = 0;
+    runningDataOffset = 0;
+    unsigned int iImageSVG = 0;
+    for (unsigned int iStockImage = 0; iStockImage < imageCount; ++iStockImage) {
+        const stock_image* pStockImage = &pStockImages[iStockImage];
+        if (stock_image_is_svg(pStockImage)) {
+            fprintf(pFileOutH, "#define %s %d\n", pStockImage->id, runningID);
+
+            // For SVG's, the image data is just the content of the file.
+            char filename[256];
+            dtk_path_append(filename, sizeof(filename), "../../../resources/images", pStockImage->filename);
+
+            size_t svgSizeInBytes;
+            char* svg;
+            if (dtk_open_and_read_text_file(filename, &svgSizeInBytes, &svg) != DTK_SUCCESS) {
+                printf("ERROR: Failed to open SVG image file: %s\n", filename);
+                break;
+            }
+
+            if (iImageSVG > 0) {
+                StockImagesSVG = dtk_append_string(StockImagesSVG, ",\n");
+            }
+
+            snprintf(line, sizeof(line), "    {(char*)(g_StockImageDataSVG + %d)}", runningDataOffset);
+            StockImagesSVG = dtk_append_string(StockImagesSVG, line);
+
+            StockImageDataSVG = write_image_data_string(StockImageDataSVG, &currentByteColumn, svg);
+            runningDataOffset += svgSizeInBytes;
+
+            if (iImageSVG < imageCountSVG-1) {
+                StockImageDataSVG = dtk_append_string(StockImageDataSVG, ",");
+            }
+
+            iImageSVG += 1;
+            runningID += 1;
+        }
+    }
+
+    if (imageCountSVG > 0) {
+        StockImageDataSVG = dtk_append_string(StockImageDataSVG, "\n};\n\n");
+        StockImagesSVG    = dtk_append_string(StockImagesSVG, "\n};\n\n");
+    }
+
+    fwrite_string(pFileOut, StockImageDataSVG);
+    fwrite_string(pFileOut, StockImagesSVG);
+
+
+    // Raster images.
+    currentByteColumn = 0;
+    runningDataOffset = 0;
+    unsigned int iImageRaster = 0;
+    for (unsigned int iStockImage = 0; iStockImage < imageCount; ++iStockImage) {
+        const stock_image* pStockImage = &pStockImages[iStockImage];
+        if (stock_image_is_raster(pStockImage)) {
+            fprintf(pFileOutH, "#define %s %d\n", pStockImage->id, runningID);
+
+
+
+            iImageRaster += 1;
+            runningID += 1;
+        }
+    }
+
+    if (imageCountRaster > 0) {
+        StockImageDataRaster = dtk_append_string(StockImageDataRaster, "\n};\n\n");
+        StockImagesRaster = dtk_append_string(StockImagesRaster, "\n};\n\n");
+    }
+
+    fwrite_string(pFileOut, StockImageDataRaster);
+    fwrite_string(pFileOut, StockImagesRaster);
+
+
+    // OLD WAY
+    currentByteColumn = 0;
+    runningDataOffset = 0;
     for (unsigned int iStockImage = 0; iStockImage < imageCount; ++iStockImage)
     {
         stock_image* pStockImage = &pStockImages[iStockImage];
 
-        snprintf(line, sizeof(line), "#define %s %d\n", pStockImage->id, iStockImage);
-        fwrite_string(pFileOutH, line);
+        //snprintf(line, sizeof(line), "#define %s %d\n", pStockImage->id, iStockImage);
+        //fwrite_string(pFileOutH, line);
 
         char* imageStr = dtk_make_string("");
         if (iStockImage > 0) {

@@ -190,7 +190,7 @@ dtk_bool32 dtk_tabbar__next_tab(const dtk_tabbar* pTabBar, dtk_tabbar__iterator*
                 dtk_tabbar_get_close_button_size(pTabBar, &imageWidth, &imageHeight);
 
                 pIterator->closeButtonRect.left   = pTabBar->paddingLeft + longestTextWidth + pTabBar->closeButtonPaddingLeft;
-                pIterator->closeButtonRect.top    = pTabBar->paddingTop + pTabBar->closeButtonPaddingTop + (((dtk_int32)(nextTabHeight - pTabBar->paddingBottom - pTabBar->paddingTop) - (dtk_int32)imageHeight)/2);
+                pIterator->closeButtonRect.top    = pTabBar->paddingTop + (((dtk_int32)(nextTabHeight - pTabBar->paddingBottom - pTabBar->paddingTop) - (dtk_int32)imageHeight)/2);
                 pIterator->closeButtonRect.right  = pIterator->closeButtonRect.left + imageWidth;
                 pIterator->closeButtonRect.bottom = pIterator->closeButtonRect.top + imageHeight;
             }
@@ -207,7 +207,7 @@ dtk_bool32 dtk_tabbar__next_tab(const dtk_tabbar* pTabBar, dtk_tabbar__iterator*
                 dtk_uint32 imageHeight;
                 dtk_tabbar_get_close_button_size(pTabBar, &imageWidth, &imageHeight);
 
-                pIterator->closeButtonRect.left   = pTabBar->paddingLeft + pTabBar->closeButtonPaddingTop + (((dtk_int32)(nextTabWidth - pTabBar->paddingRight - pTabBar->paddingLeft) - (dtk_int32)imageWidth)/2);
+                pIterator->closeButtonRect.left   = pTabBar->paddingLeft + (((dtk_int32)(nextTabWidth - pTabBar->paddingRight - pTabBar->paddingLeft) - (dtk_int32)imageWidth)/2);
                 pIterator->closeButtonRect.top    = pTabBar->paddingTop + longestTextWidth + pTabBar->closeButtonPaddingLeft;
                 pIterator->closeButtonRect.right  = pIterator->closeButtonRect.left + imageHeight;
                 pIterator->closeButtonRect.bottom = pIterator->closeButtonRect.top + imageWidth;

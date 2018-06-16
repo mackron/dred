@@ -240,7 +240,7 @@ void dred_tabgroup_refresh_styling(dred_tabgroup* pTabGroup)
     dred_tabbar_set_text_color_active(pTabGroup->pTabBar, pDred->config.tabTextColorActive);
     dred_tabbar_set_text_color_hovered(pTabGroup->pTabBar, pDred->config.tabTextColorHovered);
     dred_tabbar_set_close_button_left_padding(pTabGroup->pTabBar, 6 * uiScale);
-    dred_tabbar_set_close_button_image(pTabGroup->pTabBar, dred_image_acquire_subimage(pDred->config.pImageCross, uiScale));
+    //dred_tabbar_set_close_button_image(pTabGroup->pTabBar, dred_image_acquire_subimage(pDred->config.pImageCross, uiScale));
     dred_tabbar_set_close_button_color(pTabGroup->pTabBar, pDred->config.tabCloseButtonColor);
     if (pDred->config.tabShowCloseButton) {
         dred_tabbar_show_close_buttons(pTabGroup->pTabBar);

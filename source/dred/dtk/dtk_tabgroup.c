@@ -543,13 +543,22 @@ dtk_result dtk_tabgroup_set_tab_text_color_hovered(dtk_tabgroup* pTabGroup, dtk_
     return dtk_tabbar_set_text_color_hovered(&pTabGroup->tabbar, color);
 }
 
-dtk_result dtk_tabgroup_set_tab_close_button_left_padding(dtk_tabgroup* pTabGroup, dtk_uint32 padding)
+dtk_result dtk_tabgroup_set_tab_close_button_padding(dtk_tabgroup* pTabGroup, dtk_uint32 padding)
 {
     if (pTabGroup == NULL) {
         return DTK_INVALID_ARGS;
     }
 
     return dtk_tabbar_set_close_button_padding(&pTabGroup->tabbar, padding, padding, padding, padding);
+}
+
+dtk_result dtk_tabgroup_set_tab_close_button_left_padding(dtk_tabgroup* pTabGroup, dtk_uint32 padding)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_close_button_padding(&pTabGroup->tabbar, padding, pTabGroup->tabbar.closeButtonPaddingTop, pTabGroup->tabbar.closeButtonPaddingRight, pTabGroup->tabbar.closeButtonPaddingBottom);
 }
 
 dtk_result dtk_tabgroup_set_tab_close_button_image(dtk_tabgroup* pTabGroup, dtk_image* pImage)
@@ -586,6 +595,15 @@ dtk_result dtk_tabgroup_set_tab_close_button_color_pressed(dtk_tabgroup* pTabGro
     }
 
     return dtk_tabbar_set_close_button_color_pressed(&pTabGroup->tabbar, color);
+}
+
+dtk_result dtk_tabgroup_set_tab_close_button_size(dtk_tabgroup* pTabGroup, dtk_uint32 width, dtk_uint32 height)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_close_button_size(&pTabGroup->tabbar, width, height);
 }
 
 dtk_result dtk_tabgroup_show_tab_close_buttons(dtk_tabgroup* pTabGroup)

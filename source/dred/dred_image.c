@@ -5,7 +5,7 @@ void dred_image__delete_subimage_by_index(dred_image* pImage, size_t index)
     assert(pImage != NULL);
     assert(pImage->subimageCount > index);
 
-    dred_gui_delete_image(pImage->pSubImages[index].pGUIImage);
+    //dred_gui_delete_image(pImage->pSubImages[index].pGUIImage);
 
     if (index+1 < pImage->subimageCount) {
         memmove(pImage->pSubImages + index, pImage->pSubImages + (index+1), (pImage->subimageCount - (index+1)) * sizeof(*pImage->pSubImages));

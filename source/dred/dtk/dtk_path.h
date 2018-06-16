@@ -185,7 +185,7 @@ size_t dtk_path_base_path(char* pathOut, size_t pathOutSize, const char* path);
 size_t dtk_path_file_name_without_extension(char* pathOut, size_t pathOutSize, const char* path);
 
 
-// Appends two paths together, and copyies them to a separate buffer.
+// Appends two paths together, and copies them to a separate buffer.
 //
 // pathOut     [out] The destination buffer.
 // pathOutSize [in]  The size of the buffer pointed to by "pathOut", in bytes.
