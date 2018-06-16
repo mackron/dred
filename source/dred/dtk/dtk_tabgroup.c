@@ -423,6 +423,15 @@ dtk_result dtk_tabgroup_set_tab_text(dtk_tabgroup* pTabGroup, dtk_uint32 tabInde
     return dtk_tabbar_set_tab_text(&pTabGroup->tabbar, tabIndex, text);
 }
 
+dtk_result dtk_tabgroup_set_tab_tooltip(dtk_tabgroup* pTabGroup, dtk_uint32 tabIndex, const char* pTooltipText)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_tab_tooltip(&pTabGroup->tabbar, tabIndex, pTooltipText);
+}
+
 
 dtk_result dtk_tabgroup_get_container_size(dtk_tabgroup* pTabGroup, dtk_int32* pWidth, dtk_int32* pHeight)
 {

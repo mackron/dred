@@ -35,6 +35,7 @@ dtk_result dtk_tabgroup_activate_next_tab(dtk_tabgroup* pTabGroup);
 dtk_result dtk_tabgroup_activate_prev_tab(dtk_tabgroup* pTabGroup);
 
 dtk_result dtk_tabgroup_set_tab_text(dtk_tabgroup* pTabGroup, dtk_uint32 tabIndex, const char* text);
+dtk_result dtk_tabgroup_set_tab_tooltip(dtk_tabgroup* pTabGroup, dtk_uint32 tabIndex, const char* pTooltipText);
 
 // Calculates the size of the content area of the given tab group. Will be different depending on whether or not the tab bar is visible.
 dtk_result dtk_tabgroup_get_container_size(dtk_tabgroup* pTabGroup, dtk_int32* pWidth, dtk_int32* pHeight);

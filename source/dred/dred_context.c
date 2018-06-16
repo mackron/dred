@@ -198,8 +198,10 @@ void dred__refresh_editor_tab_text(dred_editor* pEditor, dtk_tabgroup* pTabGroup
     assert(pEditor != NULL);
     assert(pTabGroup != NULL);
 
+    const char* filepath = dred_editor_get_file_path(pEditor);
+
     char tabText[256];
-    const char* filename = dtk_path_file_name(dred_editor_get_file_path(pEditor));
+    const char* filename = dtk_path_file_name(filepath);
     const char* modified = "";
     const char* readonly = "";
 
@@ -215,6 +217,7 @@ void dred__refresh_editor_tab_text(dred_editor* pEditor, dtk_tabgroup* pTabGroup
 
     snprintf(tabText, sizeof(tabText), "%s%s%s", filename, modified, readonly);
     dtk_tabgroup_set_tab_text(pTabGroup, tabIndex, tabText);
+    dtk_tabgroup_set_tab_tooltip(pTabGroup, tabIndex, filepath);
 
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pEditor));
     assert(pDred != NULL);
