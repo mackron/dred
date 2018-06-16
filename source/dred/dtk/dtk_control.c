@@ -1111,5 +1111,5 @@ dtk_result dtk_control_show_popup_menu(dtk_control* pControl, dtk_menu* pMenu, d
     }
 
     dtk_control_relative_to_absolute(pControl, &relativePosX, &relativePosY);
-    return dtk_window_show_popup_menu(pWindow, pMenu, relativePosX, relativePosX);
+    return dtk_window_show_popup_menu(pWindow, pMenu, relativePosX, relativePosY);
 }

@@ -133,6 +133,51 @@ dtk_bool32 dtk_tabgroup_tabbar_event_handler(dtk_event* pEvent)
     {
         // Tab bar events should be routed to the tab group. The application should never need to know any of the details about
         // the tab bar.
+        case DTK_EVENT_TABBAR_MOUSE_BUTTON_DOWN_TAB:
+        {
+            dtk_event e = *pEvent;
+            e.pControl = pEvent->pControl->pParent;
+            e.type = DTK_EVENT_TABGROUP_MOUSE_BUTTON_DOWN_TAB;
+            e.tabgroup.tabIndex = e.tabbar.tabIndex;
+            e.tabgroup.mouseButton.x = e.tabbar.mouseButton.x;
+            e.tabgroup.mouseButton.y = e.tabbar.mouseButton.y;
+            e.tabgroup.mouseButton.button = e.tabbar.mouseButton.button;
+            e.tabgroup.mouseButton.state = e.tabbar.mouseButton.state;
+            if (!dtk_handle_local_event(&e)) {
+                return DTK_FALSE;
+            }
+        } break;
+
+        case DTK_EVENT_TABBAR_MOUSE_BUTTON_UP_TAB:
+        {
+            dtk_event e = *pEvent;
+            e.pControl = pEvent->pControl->pParent;
+            e.type = DTK_EVENT_TABGROUP_MOUSE_BUTTON_UP_TAB;
+            e.tabgroup.tabIndex = e.tabbar.tabIndex;
+            e.tabgroup.mouseButton.x = e.tabbar.mouseButton.x;
+            e.tabgroup.mouseButton.y = e.tabbar.mouseButton.y;
+            e.tabgroup.mouseButton.button = e.tabbar.mouseButton.button;
+            e.tabgroup.mouseButton.state = e.tabbar.mouseButton.state;
+            if (!dtk_handle_local_event(&e)) {
+                return DTK_FALSE;
+            }
+        } break;
+
+        case DTK_EVENT_TABBAR_MOUSE_BUTTON_DBLCLICK_TAB:
+        {
+            dtk_event e = *pEvent;
+            e.pControl = pEvent->pControl->pParent;
+            e.type = DTK_EVENT_TABGROUP_MOUSE_BUTTON_DBLCLICK_TAB;
+            e.tabgroup.tabIndex = e.tabbar.tabIndex;
+            e.tabgroup.mouseButton.x = e.tabbar.mouseButton.x;
+            e.tabgroup.mouseButton.y = e.tabbar.mouseButton.y;
+            e.tabgroup.mouseButton.button = e.tabbar.mouseButton.button;
+            e.tabgroup.mouseButton.state = e.tabbar.mouseButton.state;
+            if (!dtk_handle_local_event(&e)) {
+                return DTK_FALSE;
+            }
+        } break;
+
         case DTK_EVENT_TABBAR_CHANGE_TAB:
         {
             dtk_event e = *pEvent;
@@ -458,6 +503,34 @@ dtk_bool32 dtk_tabgroup_is_close_on_middle_click_enabled(const dtk_tabgroup* pTa
     }
 
     return dtk_tabbar_is_close_on_middle_click_enabled(&pTabGroup->tabbar);
+}
+
+
+dtk_result dtk_tabgroup_transform_point_from_tab(const dtk_tabgroup* pTabGroup, dtk_uint32 tabIndex, dtk_int32* pX, dtk_int32* pY)
+{
+    if (pTabGroup == NULL) {
+        return DTK_FALSE;
+    }
+
+    // The first thing to do is to get the position relative to the tab bar. Then we transform that position to make it relative
+    // to the tab group.
+    dtk_result result = dtk_tabbar_transform_point_from_tab(&pTabGroup->tabbar, tabIndex, pX, pY);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    // At this point the position is relative to the tab bar. So now we just make it relative to the tab group.
+    dtk_int32 tabbarRelativePosX;
+    dtk_int32 tabbarRelativePosY;
+    result = dtk_control_get_relative_position(DTK_CONTROL(&pTabGroup->tabbar), &tabbarRelativePosX, &tabbarRelativePosY);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    if (pX) *pX += tabbarRelativePosX;
+    if (pY) *pY += tabbarRelativePosY;
+
+    return result;
 }
 
 

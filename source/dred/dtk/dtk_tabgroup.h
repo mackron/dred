@@ -53,6 +53,10 @@ dtk_result dtk_tabgroup_disable_close_on_middle_click(dtk_tabgroup* pTabGroup);
 dtk_bool32 dtk_tabgroup_is_close_on_middle_click_enabled(const dtk_tabgroup* pTabGroup);
 
 
+// Transforms a point relative to a tab to relative to the whole tab group.
+dtk_result dtk_tabgroup_transform_point_from_tab(const dtk_tabgroup* pTabGroup, dtk_uint32 tabIndex, dtk_int32* pX, dtk_int32* pY);
+
+
 // Styling
 dtk_result dtk_tabgroup_set_tabbar_background_color(dtk_tabgroup* pTabGroup, dtk_color color);
 dtk_result dtk_tabgroup_set_tab_padding(dtk_tabgroup* pTabGroup, dtk_uint32 padding);

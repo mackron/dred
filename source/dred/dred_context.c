@@ -35,6 +35,23 @@ dtk_bool32 dred_main_tabgroup_event_handler(dtk_event* pEvent)
 
     switch (pEvent->type)
     {
+        case DTK_EVENT_TABGROUP_MOUSE_BUTTON_UP_TAB:
+        {
+            // The right mouse button was pressed while over a tab we need to show the context menu.
+            if (pEvent->tabgroup.mouseButton.button == DTK_MOUSE_BUTTON_RIGHT) {
+                dtk_control* pTabPage = dtk_tabgroup_get_tab_page(pTabGroup, pEvent->tabgroup.tabIndex);
+                if (pTabPage != NULL && pTabPage->type == DTK_CONTROL_TYPE_DRED) {
+                    if (dred_control_is_of_type(DRED_CONTROL(pTabPage), DRED_CONTROL_TYPE_EDITOR)) {
+                        dtk_int32 x = pEvent->tabgroup.mouseButton.x;
+                        dtk_int32 y = pEvent->tabgroup.mouseButton.y;
+                        dtk_tabgroup_transform_point_from_tab(pTabGroup, pEvent->tabgroup.tabIndex, &x, &y);
+
+                        dred_control_show_popup_menu(DRED_CONTROL(pTabGroup), &pDred->menus.tabpopup, x, y);
+                    }
+                }
+            }
+        } break;
+
         case DTK_EVENT_TABGROUP_CHANGE_TAB:
         {
             if (pEvent->tabgroup.oldTabIndex != -1) {
@@ -2931,10 +2948,10 @@ void dred_refresh_styling_tabgroup(dred_context* pDred, dtk_tabgroup* pTabGroup)
         return;
     }
 
-    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTabGroup));
+    //float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTabGroup));
 
     // Update tab bar.
-    dtk_tabgroup_set_tab_padding(pTabGroup, (dtk_uint32)(pDred->config.tabPadding * uiScale));
+    dtk_tabgroup_set_tab_padding(pTabGroup, (dtk_uint32)pDred->config.tabPadding);
     dtk_tabgroup_set_tab_background_color(pTabGroup, pDred->config.tabBGColorInvactive);
     dtk_tabgroup_set_tab_background_color_active(pTabGroup, pDred->config.tabBGColorActive);
     dtk_tabgroup_set_tab_background_color_hovered(pTabGroup, pDred->config.tabBGColorHovered);
@@ -2942,12 +2959,12 @@ void dred_refresh_styling_tabgroup(dred_context* pDred, dtk_tabgroup* pTabGroup)
     dtk_tabgroup_set_tab_text_color(pTabGroup, pDred->config.tabTextColor);
     dtk_tabgroup_set_tab_text_color_active(pTabGroup, pDred->config.tabTextColorActive);
     dtk_tabgroup_set_tab_text_color_hovered(pTabGroup, pDred->config.tabTextColorHovered);
-    dtk_tabgroup_set_tab_close_button_left_padding(pTabGroup, (dtk_uint32)(6 * uiScale));
+    dtk_tabgroup_set_tab_close_button_left_padding(pTabGroup, 6);
     dtk_tabgroup_set_tab_close_button_image(pTabGroup, dred_image_library_get_image_by_id(&pDred->imageLibrary, DRED_STOCK_IMAGE_ID_CROSS));
     dtk_tabgroup_set_tab_close_button_color(pTabGroup, pDred->config.tabCloseButtonColor);
     dtk_tabgroup_set_tab_close_button_color_hovered(pTabGroup, pDred->config.tabCloseButtonColorHovered);
     dtk_tabgroup_set_tab_close_button_color_pressed(pTabGroup, pDred->config.tabCloseButtonColorPressed);
-    dtk_tabgroup_set_tab_close_button_size(pTabGroup, (dtk_uint32)(12 * uiScale), (dtk_uint32)(12 * uiScale));
+    dtk_tabgroup_set_tab_close_button_size(pTabGroup, 12, 12);
     if (pDred->config.tabShowCloseButton) {
         dtk_tabgroup_show_tab_close_buttons(pTabGroup);
     } else {

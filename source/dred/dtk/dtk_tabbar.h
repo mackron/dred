@@ -2,6 +2,15 @@
 
 // Events
 //
+// DTK_EVENT_TABBAR_MOUSE_BUTTON_DOWN_TAB
+//   Called when a mouse button is pressed while over a tab.
+//
+// DTK_EVENT_TABBAR_MOUSE_BUTTON_UP_TAB
+//   Called when a mouse button is released while over a tab.
+//
+// DTK_EVENT_TABBAR_MOUSE_BUTTON_DBLCLICK_TAB
+//   Called when a mouse button is double clicked while over a tab.
+//
 // DTK_EVENT_TABBAR_CHANGE_TAB
 //   Called when the active tab changes. The default handler will change the tab.
 //
@@ -191,3 +200,7 @@ dtk_result dtk_tabbar_disable_close_on_middle_click(dtk_tabbar* pTabBar);
 
 // Determines whether or not closing of tabs on middle click is enabled.
 dtk_bool32 dtk_tabbar_is_close_on_middle_click_enabled(const dtk_tabbar* pTabBar);
+
+
+// Transforms a point relative to a tab to relative to the main control.
+dtk_result dtk_tabbar_transform_point_from_tab(const dtk_tabbar* pTabBar, dtk_uint32 tabIndex, dtk_int32* pX, dtk_int32* pY);

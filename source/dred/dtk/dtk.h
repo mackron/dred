@@ -215,51 +215,59 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 
 // Event types.
 typedef int dtk_event_type;
-#define DTK_EVENT_NONE                          0
-#define DTK_EVENT_QUIT                          1
-#define DTK_EVENT_MENU                          2
-#define DTK_EVENT_ACCELERATOR                   3
-#define DTK_EVENT_CLOSE                         4
-#define DTK_EVENT_PAINT                         5
-#define DTK_EVENT_SIZE                          6
-#define DTK_EVENT_MOVE                          7
-#define DTK_EVENT_SHOW                          8
-#define DTK_EVENT_HIDE                          9
-#define DTK_EVENT_MOUSE_LEAVE                   10
-#define DTK_EVENT_MOUSE_ENTER                   11
-#define DTK_EVENT_MOUSE_MOVE                    12
-#define DTK_EVENT_MOUSE_BUTTON_DOWN             13
-#define DTK_EVENT_MOUSE_BUTTON_UP               14
-#define DTK_EVENT_MOUSE_BUTTON_DBLCLICK         15
-#define DTK_EVENT_MOUSE_WHEEL                   16
-#define DTK_EVENT_KEY_DOWN                      17
-#define DTK_EVENT_KEY_UP                        18
-#define DTK_EVENT_PRINTABLE_KEY_DOWN            19
-#define DTK_EVENT_CAPTURE_KEYBOARD              20
-#define DTK_EVENT_RELEASE_KEYBOARD              21
-#define DTK_EVENT_CAPTURE_MOUSE                 22
-#define DTK_EVENT_RELEASE_MOUSE                 23
-#define DTK_EVENT_DPI_CHANGED                   24
-#define DTK_EVENT_TOOLTIP                       25
-#define DTK_EVENT_BUTTON_PRESSED                128
-#define DTK_EVENT_CHECKBOX_CHECK_CHANGED        129
-#define DTK_EVENT_COLOR_BUTTON_COLOR_CHANGED    130
-#define DTK_EVENT_SCROLLBAR_SCROLL              132
-#define DTK_EVENT_TABBAR_CHANGE_TAB             133
-#define DTK_EVENT_TABBAR_CLOSE_TAB              134
-#define DTK_EVENT_TABBAR_PIN_TAB                135
-#define DTK_EVENT_TABBAR_UNPIN_TAB              136
-#define DTK_EVENT_TABBAR_REMOVE_TAB             137
-#define DTK_EVENT_TABGROUP_CHANGE_TAB           138
-#define DTK_EVENT_TABGROUP_CLOSE_TAB            139
-#define DTK_EVENT_TABGROUP_PIN_TAB              140
-#define DTK_EVENT_TABGROUP_UNPIN_TAB            141
-#define DTK_EVENT_REFRESH_LAYOUT                251     // A special event that's used to indicate to a control that it needs to refresh the layout of it's children and inner elements.
-#define DTK_EVENT_APPLICATION_FONT              252     // A special event for retrieving an application-defined font for certain categories.
-#define DTK_EVENT_APPLICATION_SCALE             253     // A special event for retrieving an application-defined scaling factor for GUI elements.
-#define DTK_EVENT_CHANGE_KEYBOARD_CAPTURE       254     // A special event used internally for handling keyboard capture changes.
-#define DTK_EVENT_CHANGE_MOUSE_CAPTURE          255     // ^^^
-#define DTK_EVENT_CUSTOM                        256
+#define DTK_EVENT_NONE                                  0
+#define DTK_EVENT_QUIT                                  1
+#define DTK_EVENT_MENU                                  2
+#define DTK_EVENT_ACCELERATOR                           3
+#define DTK_EVENT_CLOSE                                 4
+#define DTK_EVENT_PAINT                                 5
+#define DTK_EVENT_SIZE                                  6
+#define DTK_EVENT_MOVE                                  7
+#define DTK_EVENT_SHOW                                  8
+#define DTK_EVENT_HIDE                                  9
+#define DTK_EVENT_MOUSE_LEAVE                           10
+#define DTK_EVENT_MOUSE_ENTER                           11
+#define DTK_EVENT_MOUSE_MOVE                            12
+#define DTK_EVENT_MOUSE_BUTTON_DOWN                     13
+#define DTK_EVENT_MOUSE_BUTTON_UP                       14
+#define DTK_EVENT_MOUSE_BUTTON_DBLCLICK                 15
+#define DTK_EVENT_MOUSE_WHEEL                           16
+#define DTK_EVENT_KEY_DOWN                              17
+#define DTK_EVENT_KEY_UP                                18
+#define DTK_EVENT_PRINTABLE_KEY_DOWN                    19
+#define DTK_EVENT_CAPTURE_KEYBOARD                      20
+#define DTK_EVENT_RELEASE_KEYBOARD                      21
+#define DTK_EVENT_CAPTURE_MOUSE                         22
+#define DTK_EVENT_RELEASE_MOUSE                         23
+#define DTK_EVENT_DPI_CHANGED                           24
+#define DTK_EVENT_TOOLTIP                               25
+#define DTK_EVENT_BUTTON_PRESSED                        128
+#define DTK_EVENT_CHECKBOX_CHECK_CHANGED                129
+#define DTK_EVENT_COLOR_BUTTON_COLOR_CHANGED            130
+#define DTK_EVENT_SCROLLBAR_SCROLL                      132
+
+#define DTK_EVENT_TABBAR_MOUSE_BUTTON_DOWN_TAB          133
+#define DTK_EVENT_TABBAR_MOUSE_BUTTON_UP_TAB            134
+#define DTK_EVENT_TABBAR_MOUSE_BUTTON_DBLCLICK_TAB      135
+#define DTK_EVENT_TABBAR_CHANGE_TAB                     136
+#define DTK_EVENT_TABBAR_CLOSE_TAB                      137
+#define DTK_EVENT_TABBAR_PIN_TAB                        138
+#define DTK_EVENT_TABBAR_UNPIN_TAB                      139
+#define DTK_EVENT_TABBAR_REMOVE_TAB                     140
+#define DTK_EVENT_TABGROUP_MOUSE_BUTTON_DOWN_TAB        141
+#define DTK_EVENT_TABGROUP_MOUSE_BUTTON_UP_TAB          142
+#define DTK_EVENT_TABGROUP_MOUSE_BUTTON_DBLCLICK_TAB    143
+#define DTK_EVENT_TABGROUP_CHANGE_TAB                   144
+#define DTK_EVENT_TABGROUP_CLOSE_TAB                    145
+#define DTK_EVENT_TABGROUP_PIN_TAB                      146
+#define DTK_EVENT_TABGROUP_UNPIN_TAB                    147
+
+#define DTK_EVENT_REFRESH_LAYOUT                        251     // A special event that's used to indicate to a control that it needs to refresh the layout of it's children and inner elements.
+#define DTK_EVENT_APPLICATION_FONT                      252     // A special event for retrieving an application-defined font for certain categories.
+#define DTK_EVENT_APPLICATION_SCALE                     253     // A special event for retrieving an application-defined scaling factor for GUI elements.
+#define DTK_EVENT_CHANGE_KEYBOARD_CAPTURE               254     // A special event used internally for handling keyboard capture changes.
+#define DTK_EVENT_CHANGE_MOUSE_CAPTURE                  255     // ^^^
+#define DTK_EVENT_CUSTOM                                256
 
 struct dtk_event
 {
@@ -441,6 +449,13 @@ struct dtk_event
             dtk_int32 newTabIndex;
             dtk_int32 oldTabIndex;
             dtk_int32 tabIndex;
+            struct
+            {
+                dtk_int32 x;
+                dtk_int32 y;
+                dtk_mouse_button button;
+                dtk_uint32 state;
+            } mouseButton;
         } tabbar;
 
         struct
@@ -448,6 +463,13 @@ struct dtk_event
             dtk_int32 newTabIndex;
             dtk_int32 oldTabIndex;
             dtk_int32 tabIndex;
+            struct
+            {
+                dtk_int32 x;
+                dtk_int32 y;
+                dtk_mouse_button button;
+                dtk_uint32 state;
+            } mouseButton;
         } tabgroup;
 
         struct
