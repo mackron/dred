@@ -586,7 +586,7 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
             StockImagesSVG = dtk_append_string(StockImagesSVG, line);
 
             StockImageDataSVG = write_image_data_string(StockImageDataSVG, &currentByteColumn, svg);
-            runningDataOffset += svgSizeInBytes;
+            runningDataOffset += (unsigned int)svgSizeInBytes;
 
             if (iImageSVG < imageCountSVG-1) {
                 StockImageDataSVG = dtk_append_string(StockImageDataSVG, ",");
