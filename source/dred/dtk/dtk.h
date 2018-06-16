@@ -194,6 +194,7 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_svg.h"
 #include "dtk_graphics.h"
 #include "dtk_image.h"
+#include "dtk_stock_images.h"
 #include "dtk_input.h"
 #include "dtk_accelerators.h"
 #include "dtk_control.h"
@@ -510,6 +511,7 @@ struct dtk_context
     dtk_paint_queue paintQueue;
     dtk_font uiFont;
     dtk_font monospaceFont;
+    dtk_image stockImages[DTK_STOCK_IMAGE_COUNT];
     dtk_bool32 isUIFontInitialized        : 1;
     dtk_bool32 isMonospaceFontInitialized : 1;
 
@@ -736,6 +738,9 @@ dtk_font* dtk_get_ui_font(dtk_context* pTK);
 // This will first try retrieving the font from the application. If the application does not define a monospace font, it
 // will be based on the operating system.
 dtk_font* dtk_get_monospace_font(dtk_context* pTK);
+
+// Retrieves a stock image by it's ID.
+dtk_image* dtk_get_stock_image(dtk_context* pTK, dtk_uint32 stockImageID);
 
 
 //// Known Folders ////

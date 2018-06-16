@@ -352,6 +352,7 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 #include "dtk_svg.c"
 #include "dtk_graphics.c"
 #include "dtk_image.c"
+#include "dtk_stock_images.c"
 #include "dtk_input.c"
 #include "dtk_accelerators.c"
 #include "dtk_control.c"
@@ -1549,6 +1550,38 @@ dtk_result dtk_init_default_font_by_type__gtk(dtk_context* pTK, dtk_application_
 }
 #endif
 
+dtk_result dtk_load_stock_images(dtk_context* pTK)
+{
+    dtk_assert(pTK != NULL);
+
+    for (dtk_uint32 i = 0; i < DTK_STOCK_IMAGE_COUNT; ++i) {
+        dtk_stock_image_info* pInfo = dtk_get_stock_image_info(i);
+        if (pInfo != NULL) {
+            dtk_result result;
+            if (pInfo->type == dtk_image_type_vector) {
+                result = dtk_image_init_svg(pTK, pInfo->pData, &pTK->stockImages[i]);
+            } else {
+                result = dtk_image_init_raster(pTK, pInfo->width, pInfo->height, pInfo->width*4, pInfo->pData, &pTK->stockImages[i]);
+            }
+
+            if (result != DTK_SUCCESS) {
+                return result;
+            }
+        }
+    }
+
+    return DTK_SUCCESS;
+}
+
+void dtk_unload_stock_images(dtk_context* pTK)
+{
+    dtk_assert(pTK != NULL);
+
+    for (dtk_uint32 i = 0; i < DTK_STOCK_IMAGE_COUNT; ++i) {
+        dtk_image_uninit(&pTK->stockImages[i]);
+    }
+}
+
 dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
@@ -1577,12 +1610,20 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
         return result;
     }
 
+    result = dtk_load_stock_images(pTK);
+    if (result != DTK_SUCCESS) {
+        dtk_uninit(pTK);
+        return result;
+    }
+
     return result;
 }
 
 dtk_result dtk_uninit(dtk_context* pTK)
 {
     if (pTK == NULL) return DTK_INVALID_ARGS;
+
+    dtk_unload_stock_images(pTK);
 
     if (pTK->isMonospaceFontInitialized) {
         dtk_font_uninit(&pTK->monospaceFont);
@@ -2110,6 +2151,17 @@ dtk_font* dtk_get_monospace_font(dtk_context* pTK)
 {
     if (pTK == NULL) return NULL;
     return dtk__get_application_font_by_type(pTK, dtk_application_font_type_monospace);
+}
+
+dtk_image* dtk_get_stock_image(dtk_context* pTK, dtk_uint32 stockImageID)
+{
+    if (pTK == NULL) return NULL;
+    
+    if (stockImageID >= DTK_STOCK_IMAGE_COUNT) {
+        return NULL;
+    }
+
+    return &pTK->stockImages[stockImageID];
 }
 
 
