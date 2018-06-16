@@ -530,8 +530,6 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
     fprintf(pFileOut,  "#define DRED_STOCK_IMAGE_COUNT_SVG    %d\n", imageCountSVG);
     fprintf(pFileOut,  "#define DRED_STOCK_IMAGE_COUNT_RASTER %d\n", imageCountRaster);
 
-    fprintf(pFileOut, "#define DRED_STOCK_IMAGE_SCALE_COUNT %d\n\n", (int)STOCK_IMAGE_SCALE_COUNT);   // TODO: <-- Remove this.
-
     char* StockImageData = dtk_make_string("const uint8_t g_StockImageData[] = {");
     char* StockImages    = dtk_make_string("const dred_image_desc g_StockImages[DRED_STOCK_IMAGE_COUNT][DRED_STOCK_IMAGE_SCALE_COUNT] = {");
 
@@ -631,91 +629,6 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
 
     fwrite_string(pFileOut, StockImageDataRaster);
     fwrite_string(pFileOut, StockImagesRaster);
-
-
-    // OLD WAY
-    currentByteColumn = 0;
-    runningDataOffset = 0;
-    for (unsigned int iStockImage = 0; iStockImage < imageCount; ++iStockImage)
-    {
-        stock_image* pStockImage = &pStockImages[iStockImage];
-
-        //snprintf(line, sizeof(line), "#define %s %d\n", pStockImage->id, iStockImage);
-        //fwrite_string(pFileOutH, line);
-
-        char* imageStr = dtk_make_string("");
-        if (iStockImage > 0) {
-            imageStr = dtk_append_string(imageStr, ",");
-        }
-
-        imageStr = dtk_append_string(imageStr, "\n    {");
-
-
-        // Load the image and rasterize it.
-        char filename[256];
-        drpath_copy_and_append(filename, sizeof(filename), "../../../resources/images", pStockImage->filename);
-
-        char* svg = dr_open_and_read_text_file(filename, NULL);
-        NSVGimage* pSVGImage = nsvgParse(svg, "px", 96);
-        if (pSVGImage == NULL) {
-            printf("Warning: Failed to parse SVG file: %s\n", filename);
-        }
-            
-
-        int svgWidth  = (int)pSVGImage->width;
-        int svgHeight = (int)pSVGImage->height;
-
-        // At this point we have loaded the image and now we need to rasterize it.
-        void* pImageData = malloc(svgWidth * svgHeight * 4);
-            
-        NSVGrasterizer* pSVGRast = nsvgCreateRasterizer();
-        if (pSVGRast == NULL) {
-            printf("Warning: Failed to create rasterizer for SVG file: %s\n", filename);
-        }
-
-
-        for (unsigned int iScale = 0; iScale < STOCK_IMAGE_SCALE_COUNT; ++iScale)
-        {
-            double scale = g_StockImageScales[iScale];
-            unsigned int scaledWidth = (unsigned int)(pStockImage->baseWidth * scale);
-            unsigned int scaledHeight = (unsigned int)(pStockImage->baseHeight * scale);
-
-            if (iScale > 0) {
-                imageStr = dtk_append_string(imageStr, ",\n     ");
-            }
-
-            snprintf(line, sizeof(line), "{%.1ff, %d, %d, g_StockImageData + %d}", scale, scaledWidth, scaledHeight, runningDataOffset);
-            imageStr = dtk_append_string(imageStr, line);
-
-            
-            nsvgRasterize(pSVGRast, pSVGImage, 0, 0, scaledWidth / pSVGImage->width, pImageData, (int)svgWidth, (int)svgHeight, (int)svgWidth*4);
-            
-            
-            StockImageData = write_image_data_rgba8(StockImageData, &currentByteColumn, pImageData, scaledWidth, scaledHeight, svgWidth*4);
-            if (iStockImage+1 != imageCount || iScale+1 != STOCK_IMAGE_SCALE_COUNT) {
-                StockImageData = dtk_append_string(StockImageData, ",");
-            }
-
-            runningDataOffset += (scaledWidth * scaledHeight * 4);
-        }
-
-        nsvgDeleteRasterizer(pSVGRast);
-        nsvgDelete(pSVGImage);
-        dr_free_file_data(svg);
-        free(pImageData);
-
-
-        imageStr = dtk_append_string(imageStr, "}");
-
-        StockImages = dtk_append_string(StockImages, imageStr);
-        dtk_free_string(imageStr);
-    }
-
-    StockImageData = dtk_append_string(StockImageData, "\n};\n\n");
-    fwrite_string(pFileOut, StockImageData);
-
-    StockImages = dtk_append_string(StockImages, "\n};\n\n");
-    fwrite_string(pFileOut, StockImages);
 }
 
 void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
