@@ -19,6 +19,7 @@ void dtk__rgba8_bgra8_swap__premul_flip(const void* pSrc, void* pDst, unsigned i
     for (unsigned int iRow = 0; iRow < height; ++iRow) {
         const unsigned int* pSrcRow = (const unsigned int*)pSrc + (iRow * srcStride32);
               unsigned int* pDstRow =       (unsigned int*)pDst + ((height - iRow - 1) * dstStride32);
+              //unsigned int* pDstRow =       (unsigned int*)pDst + (iRow * dstStride32);
 
         for (unsigned int iCol = 0; iCol < width; ++iCol) {
             unsigned int srcTexel = pSrcRow[iCol];
@@ -690,8 +691,8 @@ void dtk_surface_draw_surface__gdi__mix(void* pSrc, void* pDst, unsigned int wid
 {
     if (pSrc == NULL || pDst == NULL) return;
 
-    const unsigned int srcStride32 = (srcStride == 0) ? width  : (srcStride/4);
-    const unsigned int dstStride32 = (dstStride == 0) ? height : (dstStride/4);
+    const unsigned int srcStride32 = (srcStride == 0) ? width : (srcStride/4);
+    const unsigned int dstStride32 = (dstStride == 0) ? width : (dstStride/4);
 
     for (unsigned int iRow = 0; iRow < height; ++iRow) {
         const unsigned int* pSrcRow = (const unsigned int*)pSrc + (iRow * srcStride32);
@@ -2007,8 +2008,15 @@ void dtk_surface_draw_image(dtk_surface* pSurface, dtk_image* pImage, dtk_draw_i
     if (pSurface == NULL || pImage == NULL || pArgs == NULL) return;
 
     switch (pImage->type) {
-        case dtk_image_type_raster: dtk_surface_draw_surface(pSurface, &pImage->rasterImage, pArgs);
-        case dtk_image_type_vector: dtk_surface_draw_svg(pSurface, &pImage->vectorImage, pArgs);
+        case dtk_image_type_raster:
+        {
+            dtk_surface_draw_surface(pSurface, &pImage->rasterImage, pArgs);
+        } break;
+
+        case dtk_image_type_vector: 
+        {
+            dtk_surface_draw_svg(pSurface, &pImage->vectorImage, pArgs);
+        } break;
     }
 }
 

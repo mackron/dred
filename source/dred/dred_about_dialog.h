@@ -3,7 +3,6 @@
 typedef struct
 {
     dtk_window window;
-    dred_gui_image* pLogo;
     dtk_button closeButton;
 } dred_about_dialog;
 

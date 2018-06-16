@@ -77,9 +77,11 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
 
             dtk_surface_draw_rect(pEvent->paint.pSurface, dialogRect, dred_rgb(255, 255, 255));
 
+            dtk_image* pLogo = dred_image_library_get_image_by_id(&pDred->imageLibrary, DRED_STOCK_IMAGE_ID_LOGO);
+
             unsigned int logoWidth;
             unsigned int logoHeight;
-            dred_gui_get_image_size(pDialog->pLogo, &logoWidth, &logoHeight);
+            dtk_image_get_size(pLogo, &logoWidth, &logoHeight);
 
             dtk_rect bannerRect = dialogRect;
             bannerRect.bottom = (dtk_int32)((logoHeight*10 + 80.0f) * uiScale);
@@ -94,10 +96,11 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
             args.dstHeight = (dtk_int32)(args.srcHeight*10 * uiScale);
             args.dstX = logoRect.left;
             args.dstY = logoRect.top;
-            args.foregroundColor = dred_rgb(255, 255, 255);
+            args.foregroundColor = dred_rgb(0, 0, 0);
             args.backgroundColor = dred_rgb(255, 255, 255);
-            dtk_surface_draw_surface(pEvent->paint.pSurface, pDialog->pLogo->pInternalImage, &args);
+            dtk_surface_draw_image(pEvent->paint.pSurface, pLogo, &args);
             
+
             dtk_surface_draw_outer_rect(pEvent->paint.pSurface, bannerRect, logoRect, dtk_rgb(255, 255, 255));
 
             dtk_font* pFont = &pDred->config.pUIFont->fontDTK;
@@ -115,7 +118,7 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
 
 
             const char* versionStr = "dred version " DRED_VERSION_STRING;
-            const char* copyrightStr = "Copyright \xC2\xA9 2017 David Reid";
+            const char* copyrightStr = "Copyright \xC2\xA9 2018 David Reid";
 
             penPosX = (8*uiScale);
             penPosY = (float)bannerRect.bottom;
@@ -132,23 +135,6 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
             penPosY += (9*uiScale);
             dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_rect_init(0, (dtk_int32)penPosY, dialogRect.right, (dtk_int32)(penPosY + (1 * uiScale))), dred_rgb(200, 200, 200));
             penPosY += 9*uiScale;
-
-            const char* creditsTitle = "The following libraries are used internally by dred:";
-            dtk_surface_draw_text(pEvent->paint.pSurface, pFont, uiScale, creditsTitle, (int)strlen(creditsTitle), (dtk_int32)penPosX, (dtk_int32)penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255));
-            penPosY += 4*uiScale + fontMetrics.lineHeight;
-
-            static const char* credits[] = {
-                "    dr_libs (https://github.com/mackron/dr_libs)",
-                "    nanosvg (https://github.com/memononen/nanosvg)"
-            };
-
-            size_t creditsCount = sizeof(credits) / sizeof(credits[0]);
-
-            for (size_t iCredit = 0; iCredit < creditsCount; ++iCredit) {
-                dtk_surface_draw_text(pEvent->paint.pSurface, pFont, uiScale, credits[iCredit], (int)strlen(credits[iCredit]), (dtk_int32)penPosX, (dtk_int32)penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255));
-                penPosY += fontMetrics.lineHeight;
-            }
-
         } break;
 
         case DTK_EVENT_REFRESH_LAYOUT:
@@ -178,8 +164,6 @@ dtk_result dred_about_dialog_init(dred_context* pDred, dred_about_dialog* pDialo
         return result;
     }
 
-    pDialog->pLogo = dred_gui_create_image(pDred->pGUI, g_LogoBannerImage.width, g_LogoBannerImage.height, g_LogoBannerImage.width*4, g_LogoBannerImage.pixel_data);
-
     dtk_window_get_client_size(DTK_WINDOW(pDialog), &windowWidth, &windowHeight);
     dtk_button_init(&pDred->tk, NULL, DTK_CONTROL(pDialog), "Close", &pDialog->closeButton);
     dtk_button_set_on_pressed(&pDialog->closeButton, dred_about_dialog__btn_close__on_pressed);
@@ -193,9 +177,6 @@ dtk_result dred_about_dialog_uninit(dred_about_dialog* pDialog)
     if (pDialog == NULL) return DTK_INVALID_ARGS;
 
     dtk_button_uninit(&pDialog->closeButton);
-
-    dred_gui_delete_image(pDialog->pLogo);
-    pDialog->pLogo = NULL;
 
     dtk_window_uninit(DTK_WINDOW(pDialog));
     return DTK_SUCCESS;

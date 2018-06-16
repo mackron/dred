@@ -12,6 +12,9 @@
 
 #include "../external/json.c"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../external/stb_image.h"
+
 #include "../dred/dred_build_config.h"
 
 #include "../dred/dtk/dtk.c"
@@ -43,8 +46,6 @@ typedef struct
 {
     char filename[256];
     char id[256];
-    unsigned int baseWidth;
-    unsigned int baseHeight;
 } stock_image;
 
 dtk_bool32 stock_image_is_svg(const stock_image* pStockImage)
@@ -468,7 +469,7 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
     stock_image* pStockImages = NULL;
 
     while (nextLine != NULL) {
-        // The next line should be in the format of <name> <proc> <flags>
+        // The next line should be in the format of <path> <id>
         size_t lineLength = dr_copy_line(nextLine, line, sizeof(line));
         if (lineLength <= 2) {
             nextLine = dr_next_line(nextLine);
@@ -492,23 +493,6 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
             nextLine = dr_next_line(nextLine);
             continue;
         }
-
-        char widthStr[256];
-        next = dr_next_token(next, widthStr, sizeof(widthStr));
-        if (next == NULL) {
-            nextLine = dr_next_line(nextLine);
-            continue;
-        }
-
-        char heightStr[256];
-        next = dr_next_token(next, heightStr, sizeof(heightStr));
-        if (next == NULL) {
-            nextLine = dr_next_line(nextLine);
-            continue;
-        }
-
-        stockImage.baseWidth = (unsigned int)atoi(widthStr);
-        stockImage.baseHeight = (unsigned int)atoi(heightStr);
 
         pStockImages = realloc(pStockImages, (imageCount+1) * sizeof(stock_image));
         pStockImages[imageCount] = stockImage;
@@ -547,7 +531,7 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
     char* StockImagesRaster;
     if (imageCountRaster > 0) {
         StockImageDataRaster = dtk_make_string("const dtk_uint8 g_StockImageDataRaster[] = {");
-        StockImagesRaster    = dtk_make_string("const dred_image_desc_svg g_StockImagesRaster[DRED_STOCK_IMAGE_COUNT_RASTER] = {");
+        StockImagesRaster    = dtk_make_string("const dred_image_desc_raster g_StockImagesRaster[DRED_STOCK_IMAGE_COUNT_RASTER] = {\n");
     } else {
         StockImageDataRaster = dtk_make_string("const dtk_uint8 g_StockImageDataRaster[1] = {0}; // No raster images.\n");
         StockImagesRaster    = dtk_make_string("const dred_image_desc_raster g_StockImagesRaster[1] = {0};\n\n");
@@ -615,7 +599,31 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
         if (stock_image_is_raster(pStockImage)) {
             fprintf(pFileOutH, "#define %s %d\n", pStockImage->id, runningID);
 
+            char filename[256];
+            dtk_path_append(filename, sizeof(filename), "../../../resources/images", pStockImage->filename);
 
+            int sizeX;
+            int sizeY;
+            unsigned char* pImageData = stbi_load(filename, &sizeX, &sizeY, NULL, 4);
+            if (pImageData == NULL) {
+                printf("ERROR: Failed to open raster image file: %s\n", filename);
+                break;
+            }
+
+
+            if (iImageRaster > 0) {
+                StockImagesRaster = dtk_append_string(StockImagesRaster, ",\n");
+            }
+
+            snprintf(line, sizeof(line), "    {%d, %d, g_StockImageDataRaster + %d}", sizeX, sizeY, runningDataOffset);
+            StockImagesRaster = dtk_append_string(StockImagesRaster, line);
+
+            StockImageDataRaster = write_image_data_rgba8(StockImageDataRaster, &currentByteColumn, pImageData, sizeX, sizeY, sizeX*4);
+            runningDataOffset += (unsigned int)(sizeX*sizeY*4);
+
+            if (iImageRaster < imageCountRaster-1) {
+                StockImageDataRaster = dtk_append_string(StockImageDataSVG, ",");
+            }
 
             iImageRaster += 1;
             runningID += 1;

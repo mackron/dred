@@ -2,9 +2,10 @@
 
 // BEGIN STOCK IMAGE LIST : <source file> <id name> <base width> <base height>
 //
-// cross.svg            DRED_STOCK_IMAGE_ID_CROSS             16  16
-// arrow_right.svg      DRED_STOCK_IMAGE_ID_ARROW_RIGHT       7   16
-// arrow_right_down.svg DRED_STOCK_IMAGE_ID_ARROW_RIGHT_DOWN  7   16
+// cross.svg            DRED_STOCK_IMAGE_ID_CROSS
+// arrow_right.svg      DRED_STOCK_IMAGE_ID_ARROW_RIGHT
+// arrow_right_down.svg DRED_STOCK_IMAGE_ID_ARROW_RIGHT_DOWN
+// logo.png             DRED_STOCK_IMAGE_ID_LOGO
 //
 // END STOCK IMAGE LIST
 
