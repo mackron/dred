@@ -2816,6 +2816,8 @@ void dred_on_tab_activated(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_uin
                     dtk_menu_enable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_ADDFAVOURITE);
                     dtk_menu_enable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_REMOVEFAVOURITE);
                 }
+
+                dtk_control_capture_keyboard(pControl);
             }
 
             dred_update_info_bar(pDred, DRED_CONTROL(pControl));
