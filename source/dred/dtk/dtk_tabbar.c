@@ -485,6 +485,7 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
             dtk_uint32 paddingBottomScaled = (dtk_uint32)(pTabBar->paddingBottom * uiScale);
 
             dtk_font* pFont = dtk_tabbar_get_font(pTabBar);
+            dtk_image* pCloseButtonImage = dtk_tabbar_get_close_button_image(pTabBar);
 
             dtk_font_metrics fontMetrics;
             dtk_font_get_metrics(pFont, uiScale, &fontMetrics);
@@ -576,11 +577,11 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                             drawImageArgs.dstHeight = dtk_rect_height(iterator.closeButtonRect);
                             drawImageArgs.srcX = 0;
                             drawImageArgs.srcY = 0;
-                            drawImageArgs.srcWidth = dtk_image_get_width(pTabBar->pCloseButtonImage);
-                            drawImageArgs.srcHeight = dtk_image_get_height(pTabBar->pCloseButtonImage);
+                            drawImageArgs.srcWidth = dtk_image_get_width(pCloseButtonImage);
+                            drawImageArgs.srcHeight = dtk_image_get_height(pCloseButtonImage);
                             drawImageArgs.foregroundColor = closeButtonColor;
                             drawImageArgs.backgroundColor = bgColor;
-                            dtk_surface_draw_image(pEvent->paint.pSurface, pTabBar->pCloseButtonImage, &drawImageArgs);
+                            dtk_surface_draw_image(pEvent->paint.pSurface, pCloseButtonImage, &drawImageArgs);
 
                             // Spacing above and below the image.
                             {
@@ -658,8 +659,8 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                             drawImageArgs.dstHeight = dtk_rect_height(iterator.closeButtonRect);
                             drawImageArgs.srcX = 0;
                             drawImageArgs.srcY = 0;
-                            drawImageArgs.srcWidth = dtk_image_get_width(pTabBar->pCloseButtonImage);
-                            drawImageArgs.srcHeight = dtk_image_get_height(pTabBar->pCloseButtonImage);
+                            drawImageArgs.srcWidth = dtk_image_get_width(pCloseButtonImage);
+                            drawImageArgs.srcHeight = dtk_image_get_height(pCloseButtonImage);
                             drawImageArgs.foregroundColor = closeButtonColor;
                             drawImageArgs.backgroundColor = bgColor;
 
@@ -667,7 +668,7 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                             {
                                 dtk_surface_translate(pEvent->paint.pSurface, iterator.posX + iterator.closeButtonRect.left + dtk_rect_height(iterator.closeButtonRect), iterator.posY + iterator.closeButtonRect.top);
                                 dtk_surface_rotate(pEvent->paint.pSurface, 90);
-                                dtk_surface_draw_image(pEvent->paint.pSurface, pTabBar->pCloseButtonImage, &drawImageArgs);
+                                dtk_surface_draw_image(pEvent->paint.pSurface, pCloseButtonImage, &drawImageArgs);
                             }
                             dtk_surface_pop(pEvent->paint.pSurface);
 
@@ -988,8 +989,7 @@ dtk_result dtk_tabbar_set_close_button_image(dtk_tabbar* pTabBar, dtk_image* pIm
 dtk_image* dtk_tabbar_get_close_button_image(const dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return NULL;
-    return pTabBar->pCloseButtonImage;
-    //return (pTabBar->pCloseButtonImage != NULL) ? pTabBar->pCloseButtonImage : dtk_get_stock_image(DTK_CONTROL(pTabBar)->pTK, DTK_STOCK_IMAGE_CROSS);
+    return (pTabBar->pCloseButtonImage != NULL) ? pTabBar->pCloseButtonImage : dtk_get_stock_image(DTK_CONTROL(pTabBar)->pTK, DTK_STOCK_IMAGE_CROSS);
 }
 
 dtk_result dtk_tabbar_set_close_button_color(dtk_tabbar* pTabBar, dtk_color color)
@@ -1166,7 +1166,7 @@ dtk_bool32 dtk_tabbar_is_showing_close_button(const dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return DTK_FALSE;
 
-    return pTabBar->isShowingCloseButton && pTabBar->pCloseButtonImage;
+    return pTabBar->isShowingCloseButton && dtk_tabbar_get_close_button_image(pTabBar) != NULL;
 }
 
 dtk_result dtk_tabbar_set_close_button_size(dtk_tabbar* pTabBar, dtk_uint32 width, dtk_uint32 height)
@@ -1201,12 +1201,12 @@ dtk_uint32 dtk_tabbar_get_close_button_width(const dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return 0;
 
-    if (pTabBar->pCloseButtonImage == NULL) {
+    if (dtk_tabbar_get_close_button_image(pTabBar) == NULL) {
         return 0;
     }
 
     if (pTabBar->closeButtonWidth == 0) {
-        return dtk_image_get_width(pTabBar->pCloseButtonImage);
+        return dtk_image_get_width(dtk_tabbar_get_close_button_image(pTabBar));
     }
 
     return pTabBar->closeButtonWidth;
@@ -1216,12 +1216,12 @@ dtk_uint32 dtk_tabbar_get_close_button_height(const dtk_tabbar* pTabBar)
 {
     if (pTabBar == NULL) return 0;
 
-    if (pTabBar->pCloseButtonImage == NULL) {
+    if (dtk_tabbar_get_close_button_image(pTabBar) == NULL) {
         return 0;
     }
 
     if (pTabBar->closeButtonHeight == 0) {
-        return dtk_image_get_height(pTabBar->pCloseButtonImage);
+        return dtk_image_get_height(dtk_tabbar_get_close_button_image(pTabBar));
     }
 
     return pTabBar->closeButtonHeight;

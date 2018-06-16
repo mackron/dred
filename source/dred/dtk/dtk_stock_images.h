@@ -1,7 +1,7 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
-#define DTK_STOCK_IMAGE_COUNT       1
-#define DTK_STOCK_IMAGE_ID_CROSS    0
+#define DTK_STOCK_IMAGE_COUNT   1
+#define DTK_STOCK_IMAGE_CROSS   0
 
 typedef struct
 {

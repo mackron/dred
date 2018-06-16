@@ -232,7 +232,7 @@ typedef struct
 
 
     // The cross image.
-    dtk_image* pImageCross; // <-- Do we still need this?
+    //dtk_image* pImageCross; // <-- Do we still need this?
 
 
 

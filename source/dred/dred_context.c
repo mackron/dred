@@ -2963,7 +2963,7 @@ void dred_refresh_styling_tabgroup(dred_context* pDred, dtk_tabgroup* pTabGroup)
     dtk_tabgroup_set_tab_text_color_active(pTabGroup, pDred->config.tabTextColorActive);
     dtk_tabgroup_set_tab_text_color_hovered(pTabGroup, pDred->config.tabTextColorHovered);
     dtk_tabgroup_set_tab_close_button_left_padding(pTabGroup, 6);
-    dtk_tabgroup_set_tab_close_button_image(pTabGroup, dred_image_library_get_image_by_id(&pDred->imageLibrary, DRED_STOCK_IMAGE_ID_CROSS));
+    //dtk_tabgroup_set_tab_close_button_image(pTabGroup, dred_image_library_get_image_by_id(&pDred->imageLibrary, DRED_STOCK_IMAGE_ID_CROSS));
     dtk_tabgroup_set_tab_close_button_color(pTabGroup, pDred->config.tabCloseButtonColor);
     dtk_tabgroup_set_tab_close_button_color_hovered(pTabGroup, pDred->config.tabCloseButtonColorHovered);
     dtk_tabgroup_set_tab_close_button_color_pressed(pTabGroup, pDred->config.tabCloseButtonColorPressed);
