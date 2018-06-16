@@ -1,6 +1,6 @@
 // Copyright (C) 2017 David Reid. See included LICENSE file.
 
-// BEGIN STOCK IMAGE LIST : <source file> <id name> <base width> <base height>
+// BEGIN STOCK IMAGE LIST : <source file> <id name>
 //
 // cross.svg            DRED_STOCK_IMAGE_ID_CROSS
 // arrow_right.svg      DRED_STOCK_IMAGE_ID_ARROW_RIGHT

@@ -540,7 +540,7 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
 
     unsigned int currentByteColumn;
     unsigned int runningDataOffset;
-    unsigned int runningID = 0;
+    unsigned int runningIndex = 0;
 
     // SVG images
     currentByteColumn = 0;
@@ -549,7 +549,7 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
     for (unsigned int iStockImage = 0; iStockImage < imageCount; ++iStockImage) {
         const stock_image* pStockImage = &pStockImages[iStockImage];
         if (stock_image_is_svg(pStockImage)) {
-            fprintf(pFileOutH, "#define %s %d\n", pStockImage->id, runningID);
+            fprintf(pFileOutH, "#define %s %d\n", pStockImage->id, runningIndex + DTK_STOCK_IMAGE_COUNT);
 
             // For SVG's, the image data is just the content of the file.
             char filename[256];
@@ -577,7 +577,7 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
             }
 
             iImageSVG += 1;
-            runningID += 1;
+            runningIndex += 1;
         }
     }
 
@@ -597,7 +597,7 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
     for (unsigned int iStockImage = 0; iStockImage < imageCount; ++iStockImage) {
         const stock_image* pStockImage = &pStockImages[iStockImage];
         if (stock_image_is_raster(pStockImage)) {
-            fprintf(pFileOutH, "#define %s %d\n", pStockImage->id, runningID);
+            fprintf(pFileOutH, "#define %s %d\n", pStockImage->id, runningIndex + DTK_STOCK_IMAGE_COUNT);
 
             char filename[256];
             dtk_path_append(filename, sizeof(filename), "../../../resources/images", pStockImage->filename);
@@ -626,7 +626,7 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
             }
 
             iImageRaster += 1;
-            runningID += 1;
+            runningIndex += 1;
         }
     }
 
