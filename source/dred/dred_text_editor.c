@@ -342,7 +342,12 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pPar
     if (pDred->config.textEditorEnableWordWrap) {
         dred_text_editor_enable_word_wrap(pTextEditor);
     }
-    
+
+
+    // HACK: Make sure the text editor is scrolled to the top by default. TODO: Fix the underlying bug which has something to do with the editor defaulting to a size of 0.
+    if (dred_control_is_of_type(DRED_CONTROL(pTextEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+        dred_text_editor_goto_line(pTextEditor, 0);
+    }
     
     return pTextEditor;
 }
