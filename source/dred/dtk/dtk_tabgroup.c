@@ -120,8 +120,12 @@ void dtk_tabgroup__refresh_tabbar_layout(dtk_tabgroup* pTabGroup)
 
 void dtk_tabgroup__refresh_layout(dtk_tabgroup* pTabGroup)
 {
+    // We want to make sure the tab bar and the container are laid out properly before notifying the application.
     dtk_tabgroup__refresh_tabbar_layout(pTabGroup);
     dtk_tabgroup__refresh_container_layout(pTabGroup);
+    
+    // Now notify the application.
+    dtk_control_refresh_layout(DTK_CONTROL(pTabGroup));
 }
 
 
@@ -205,19 +209,20 @@ dtk_bool32 dtk_tabgroup_tabbar_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_SIZE:
         {
-            // The position and/or size of the container will have changed in response to the tabbar changing size.
-            dtk_control_refresh_layout(DTK_CONTROL(pTabGroup));
+            dtk_tabgroup__refresh_layout(pTabGroup);
         } break;
 
         case DTK_EVENT_MOVE:
         {
-            // The postiion and/or size of the container will have changed.
-            dtk_control_refresh_layout(DTK_CONTROL(pTabGroup));
+            dtk_tabgroup__refresh_layout(pTabGroup);
         } break;
 
         case DTK_EVENT_REFRESH_LAYOUT:
         {
             dtk_tabgroup__refresh_container_layout(pTabGroup);
+
+            // Now notify the application.
+            dtk_control_refresh_layout(DTK_CONTROL(pTabGroup));
         } break;
 
         default: break;
