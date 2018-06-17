@@ -76,6 +76,9 @@ void dred_settings_editor__refresh_layout(dred_settings_editor* pSettingsEditor)
 {
     assert(pSettingsEditor != NULL);
 
+    // The close button needs to be auto-sized.
+    dtk_control_refresh_layout(DTK_CONTROL(&pSettingsEditor->closeButton));
+
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
     float posX = pSettingsEditor->sidePanelWidth;
@@ -90,6 +93,10 @@ void dred_settings_editor__refresh_layout(dred_settings_editor* pSettingsEditor)
         dred_control_set_size(pSettingsEditor->pages[i].pGUIControl, sizeX, sizeY);
         dtk_control_refresh_layout(DTK_CONTROL(pSettingsEditor->pages[i].pGUIControl));
     }
+
+    dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->closeButton),
+        dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - dred_control_get_width(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale,
+        dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale);
 }
 
 
@@ -102,14 +109,14 @@ void dred_settings_editor__on_size(dred_control* pControl, float newWidth, float
     dred_settings_editor* pSettingsEditor = DRED_SETTINGS_EDITOR(pControl);
     assert(pSettingsEditor != NULL);
 
-    float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
+    //float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
     dred_settings_editor__refresh_layout(pSettingsEditor);
 
-    dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->closeButton),
-        dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - dred_control_get_width(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale,
-        dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale);
-
+    //dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->closeButton),
+    //    dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - dred_control_get_width(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale,
+    //    dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale);
+    //
     
 }
 
@@ -602,10 +609,10 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dtk_contr
     }
 
     dtk_button_set_on_pressed(&pSettingsEditor->closeButton, dred_settings__btn_close__on_pressed);
-    dtk_button_set_padding(&pSettingsEditor->closeButton, (dtk_int32)(32*uiScale), (dtk_int32)(6*uiScale));
-    dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->closeButton),
-        dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - dred_control_get_width(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale,
-        dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale);
+    dtk_button_set_padding(&pSettingsEditor->closeButton, 32, 6);
+    //dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->closeButton),
+    //    dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - dred_control_get_width(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale,
+    //    dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale);
 
 
     // Events.

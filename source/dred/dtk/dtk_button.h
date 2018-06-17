@@ -27,6 +27,8 @@ void dtk_button_uninit(dtk_button* pButton);
 dtk_bool32 dtk_button_default_event_handler(dtk_event* pEvent);
 
 void dtk_button_set_text(dtk_button* pButton, const char* text);
+
+// When auto-sizing is enabled, you can trigger a resize manually with dtk_control_refresh_layout().
 void dtk_button_enable_auto_size(dtk_button* pButton);
 void dtk_button_disable_auto_size(dtk_button* pButton);
 
