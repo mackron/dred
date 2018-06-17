@@ -190,7 +190,7 @@ void dred_about_dialog_refresh_inner_layout(dred_about_dialog* pDialog)
     dtk_int32 windowHeight;
     dtk_window_get_client_size(DTK_WINDOW(pDialog), &windowWidth, &windowHeight);
 
-    dtk_button_set_padding(&pDialog->closeButton, (dtk_int32)(32*uiScale), (dtk_int32)(6*uiScale));
+    dtk_button_set_padding(&pDialog->closeButton, 32, 6);
     dtk_control_set_relative_position(DTK_CONTROL(&pDialog->closeButton),
         (dtk_int32)((dtk_int32)windowWidth  - (dtk_int32)dtk_control_get_width (DTK_CONTROL(&pDialog->closeButton)) - 8*uiScale),
         (dtk_int32)((dtk_int32)windowHeight - (dtk_int32)dtk_control_get_height(DTK_CONTROL(&pDialog->closeButton)) - 8*uiScale));
