@@ -822,7 +822,7 @@ dtk_result dtk_window_init__win32(dtk_context* pTK, dtk_control* pParent, dtk_wi
     ti.hwnd     = hWnd;
     ti.uId      = (UINT_PTR)hWnd;
     ti.hinst    = NULL;
-    ti.lpszText = "";
+    ti.lpszText = NULL;
     ti.lParam   = 0;
     GetClientRect((HWND)hWnd, &ti.rect);
     SendMessageA((HWND)pTK->win32.hTooltipWindow, TTM_ADDTOOLA, 0, (LPARAM)&ti);
