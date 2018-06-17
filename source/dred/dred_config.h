@@ -111,6 +111,12 @@
 // tab-close-button-color tabCloseButtonColor color dred_config_on_set__tabgroup_generic_refresh 58 58 58
 //   The color of the close button while inactive.
 //
+// tab-close-button-color-tab-hovered tabCloseButtonColorTabHovered color dred_config_on_set__tabgroup_generic_refresh 200 200 200
+//   The color of the close button when the tab is hovered, but the cursor is not over the close button.
+//
+// tab-close-button-color-tab-active tabCloseButtonColorTabActive color dred_config_on_set__tabgroup_generic_refresh 200 200 200
+//   The color of the close button when the tab is active, but the cursor is not over the close button.
+//
 // tab-close-button-color-hovered tabCloseButtonColorHovered color dred_config_on_set__tabgroup_generic_refresh 255 96 96
 //   The color of the close button while hovered.
 //

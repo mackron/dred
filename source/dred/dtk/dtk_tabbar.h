@@ -102,6 +102,8 @@ struct dtk_tabbar
     dtk_uint32 closeButtonWidth;
     dtk_uint32 closeButtonHeight;
     dtk_color closeButtonColor;
+    dtk_color closeButtonColorTabHovered;
+    dtk_color closeButtonColorTabActive;
     dtk_color closeButtonColorHovered;
     dtk_color closeButtonColorPressed;
     dtk_uint32 pinButtonPaddingLeft;
@@ -125,6 +127,8 @@ dtk_font* dtk_tabbar_get_font(const dtk_tabbar* pTabBar);
 dtk_result dtk_tabbar_set_close_button_image(dtk_tabbar* pTabBar, dtk_image* pImage);
 dtk_image* dtk_tabbar_get_close_button_image(const dtk_tabbar* pTabBar);
 dtk_result dtk_tabbar_set_close_button_color(dtk_tabbar* pTabBar, dtk_color color);
+dtk_result dtk_tabbar_set_close_button_color_tab_hovered(dtk_tabbar* pTabBar, dtk_color color);
+dtk_result dtk_tabbar_set_close_button_color_tab_active(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_close_button_color_hovered(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_close_button_color_pressed(dtk_tabbar* pTabBar, dtk_color color);
 dtk_result dtk_tabbar_set_text_color(dtk_tabbar* pTabBar, dtk_color color);

@@ -499,16 +499,18 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
                 {
                     dtk_color bgColor = pTabBar->bgColorTab;
                     dtk_color fgColor = pTabBar->textColor;
+                    dtk_color closeButtonColor = pTabBar->closeButtonColor;
                     if (tabIndex == pTabBar->hoveredTabIndex) {
                         bgColor = pTabBar->bgColorHoveredTab;
                         fgColor = pTabBar->textColorHovered;
+                        closeButtonColor = pTabBar->closeButtonColorTabHovered;
                     }
                     if (tabIndex == pTabBar->activeTabIndex) {
                         bgColor = pTabBar->bgColorActiveTab;
                         fgColor = pTabBar->textColorActive;
+                        closeButtonColor = pTabBar->closeButtonColorTabActive;
                     }
 
-                    dtk_color closeButtonColor = pTabBar->closeButtonColor;
                     if (tabIndex == pTabBar->hoveredTabIndex) {
                         if (pTabBar->isMouseOverCloseButton) {
                             closeButtonColor = pTabBar->closeButtonColorHovered;
@@ -997,6 +999,26 @@ dtk_result dtk_tabbar_set_close_button_color(dtk_tabbar* pTabBar, dtk_color colo
     if (pTabBar == NULL) return DTK_INVALID_ARGS;
 
     pTabBar->closeButtonColor = color;
+    
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tabbar_set_close_button_color_tab_hovered(dtk_tabbar* pTabBar, dtk_color color)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    pTabBar->closeButtonColorTabHovered = color;
+    
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_tabbar_set_close_button_color_tab_active(dtk_tabbar* pTabBar, dtk_color color)
+{
+    if (pTabBar == NULL) return DTK_INVALID_ARGS;
+
+    pTabBar->closeButtonColorTabActive = color;
     
     dtk_control_scheduled_redraw(DTK_CONTROL(pTabBar), dtk_control_get_local_rect(DTK_CONTROL(pTabBar)));
     return DTK_SUCCESS;

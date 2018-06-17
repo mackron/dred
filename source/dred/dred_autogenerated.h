@@ -43,6 +43,8 @@ dtk_color tabTextColorHovered; \
 float tabPadding; \
 dtk_bool32 tabShowCloseButton; \
 dtk_color tabCloseButtonColor; \
+dtk_color tabCloseButtonColorTabHovered; \
+dtk_color tabCloseButtonColorTabActive; \
 dtk_color tabCloseButtonColorHovered; \
 dtk_color tabCloseButtonColorPressed; \
 dred_font* pTextEditorFont; \

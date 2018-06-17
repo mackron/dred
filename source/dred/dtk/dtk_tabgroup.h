@@ -72,6 +72,8 @@ dtk_result dtk_tabgroup_set_tab_close_button_padding(dtk_tabgroup* pTabGroup, dt
 dtk_result dtk_tabgroup_set_tab_close_button_left_padding(dtk_tabgroup* pTabGroup, dtk_uint32 padding);
 dtk_result dtk_tabgroup_set_tab_close_button_image(dtk_tabgroup* pTabGroup, dtk_image* pImage);
 dtk_result dtk_tabgroup_set_tab_close_button_color(dtk_tabgroup* pTabGroup, dtk_color color);
+dtk_result dtk_tabgroup_set_tab_close_button_color_tab_hovered(dtk_tabgroup* pTabGroup, dtk_color color);
+dtk_result dtk_tabgroup_set_tab_close_button_color_tab_active(dtk_tabgroup* pTabGroup, dtk_color color);
 dtk_result dtk_tabgroup_set_tab_close_button_color_hovered(dtk_tabgroup* pTabGroup, dtk_color color);
 dtk_result dtk_tabgroup_set_tab_close_button_color_pressed(dtk_tabgroup* pTabGroup, dtk_color color);
 dtk_result dtk_tabgroup_set_tab_close_button_size(dtk_tabgroup* pTabGroup, dtk_uint32 width, dtk_uint32 height);

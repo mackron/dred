@@ -666,6 +666,24 @@ dtk_result dtk_tabgroup_set_tab_close_button_color(dtk_tabgroup* pTabGroup, dtk_
     return dtk_tabbar_set_close_button_color(&pTabGroup->tabbar, color);
 }
 
+dtk_result dtk_tabgroup_set_tab_close_button_color_tab_hovered(dtk_tabgroup* pTabGroup, dtk_color color)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_close_button_color_tab_hovered(&pTabGroup->tabbar, color);
+}
+
+dtk_result dtk_tabgroup_set_tab_close_button_color_tab_active(dtk_tabgroup* pTabGroup, dtk_color color)
+{
+    if (pTabGroup == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_tabbar_set_close_button_color_tab_active(&pTabGroup->tabbar, color);
+}
+
 dtk_result dtk_tabgroup_set_tab_close_button_color_hovered(dtk_tabgroup* pTabGroup, dtk_color color)
 {
     if (pTabGroup == NULL) {
