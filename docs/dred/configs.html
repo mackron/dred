@@ -182,7 +182,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show the tab bar.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -192,7 +192,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show the menu bar.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -202,7 +202,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show the command bar at all times. If this is set to false it will be shown only when it has keyboard focus.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
         </table>
     </div>
@@ -212,7 +212,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not dirty files will automatically be reloaded. When disabled, reloading requires manual reloading via the "reload" command.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -222,7 +222,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Internal use only. Used to determine whether or not the operation system should decide where to place the main window.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -272,7 +272,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not the window is maximized.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
         </table>
     </div>
@@ -502,7 +502,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show the close button on tabs.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -514,6 +514,46 @@ a:hover {
         <table style="border-collapse:collapse; margin:0; padding:0;">
             <tr><td>Type:</td><td>color</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> 58 58 58</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-close-button-color-tab-hovered" class="cfg-title">
+    tab-close-button-color-tab-hovered
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the close button when the tab is hovered, but the cursor is not over the close button.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 200 200 200</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-close-button-color-tab-active" class="cfg-title">
+    tab-close-button-color-tab-active
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the close button when the tab is active, but the cursor is not over the close button.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 200 200 200</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-close-button-color-hovered" class="cfg-title">
+    tab-close-button-color-hovered
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the close button while hovered.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 255 96 96</td></tr>
+        </table>
+    </div>
+</div>
+<div id="tab-close-button-color-pressed" class="cfg-title">
+    tab-close-button-color-pressed
+    <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
+        <div style="margin-bottom:0.5em;">The color of the close button while pressed.</div>
+        <table style="border-collapse:collapse; margin:0; padding:0;">
+            <tr><td>Type:</td><td>color</td></tr>
+            <tr><td style="padding-right:1em;">Default Value:</td><td> 192 32 32</td></tr>
         </table>
     </div>
 </div>
@@ -592,7 +632,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show line numbers.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
         </table>
     </div>
@@ -682,7 +722,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show the horizontal scrollbar on text editors.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -692,7 +732,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not to show the vertical scrollbar on text editors.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -702,7 +742,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not the text editor can scroll past the last line.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -712,7 +752,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not tabs are converted to spaces.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
         </table>
     </div>
@@ -742,7 +782,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not automatic indenting is enabled for when the user creates a new line.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -752,7 +792,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not word wrap should be enabled.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> true</td></tr>
         </table>
     </div>
@@ -762,7 +802,7 @@ a:hover {
     <div style="padding-left:1em; padding-bottom:1em; margin-bottom:1em; border-bottom:solid 1px #ccc;">
         <div style="margin-bottom:0.5em;">Whether or not drag-and-drop should be enabled for text editors.</div>
         <table style="border-collapse:collapse; margin:0; padding:0;">
-            <tr><td>Type:</td><td>dr_bool32</td></tr>
+            <tr><td>Type:</td><td>dtk_bool32</td></tr>
             <tr><td style="padding-right:1em;">Default Value:</td><td> false</td></tr>
         </table>
     </div>
