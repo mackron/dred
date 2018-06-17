@@ -1134,8 +1134,8 @@ dtk_result dtk_tabbar_show_close_button(dtk_tabbar* pTabBar)
 
     pTabBar->isShowingCloseButton = DTK_TRUE;
 
-    if (pTabBar->textDirection == dtk_tabbar_text_direction_horizontal && !dtk_tabbar__is_flow_horizontal(pTabBar) ||
-        pTabBar->textDirection == dtk_tabbar_text_direction_vertical   && !dtk_tabbar__is_flow_vertical(pTabBar)) {
+    if ((pTabBar->textDirection == dtk_tabbar_text_direction_horizontal && !dtk_tabbar__is_flow_horizontal(pTabBar)) ||
+        (pTabBar->textDirection == dtk_tabbar_text_direction_vertical   && !dtk_tabbar__is_flow_vertical(pTabBar))) {
         dtk_tabbar_try_auto_resize(pTabBar);
     }
 
@@ -1153,8 +1153,8 @@ dtk_result dtk_tabbar_hide_close_button(dtk_tabbar* pTabBar)
 
     pTabBar->isShowingCloseButton = DTK_FALSE;
 
-    if (pTabBar->textDirection == dtk_tabbar_text_direction_horizontal && !dtk_tabbar__is_flow_horizontal(pTabBar) ||
-        pTabBar->textDirection == dtk_tabbar_text_direction_vertical   && !dtk_tabbar__is_flow_vertical(pTabBar)) {
+    if ((pTabBar->textDirection == dtk_tabbar_text_direction_horizontal && !dtk_tabbar__is_flow_horizontal(pTabBar)) ||
+        (pTabBar->textDirection == dtk_tabbar_text_direction_vertical   && !dtk_tabbar__is_flow_vertical(pTabBar))) {
         dtk_tabbar_try_auto_resize(pTabBar);
     }
 
@@ -1176,8 +1176,8 @@ dtk_result dtk_tabbar_set_close_button_size(dtk_tabbar* pTabBar, dtk_uint32 widt
     pTabBar->closeButtonWidth = width;
     pTabBar->closeButtonHeight = height;
 
-    if (pTabBar->textDirection == dtk_tabbar_text_direction_horizontal && !dtk_tabbar__is_flow_horizontal(pTabBar) ||
-        pTabBar->textDirection == dtk_tabbar_text_direction_vertical   && !dtk_tabbar__is_flow_vertical(pTabBar)) {
+    if ((pTabBar->textDirection == dtk_tabbar_text_direction_horizontal && !dtk_tabbar__is_flow_horizontal(pTabBar)) ||
+        (pTabBar->textDirection == dtk_tabbar_text_direction_vertical   && !dtk_tabbar__is_flow_vertical(pTabBar))) {
         dtk_tabbar_try_auto_resize(pTabBar);
     }
     
