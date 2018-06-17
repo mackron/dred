@@ -1,0 +1,133 @@
+{{ include "dred-header.html" }}
+    <div style="background-color:#fff; text-align:center; padding-top:1em;">
+        <h1>Version 0.3 Release Notes</h1>
+        <div style="background-color:#fff; margin:0 auto; width:66%; padding:2em; text-align:left;">
+            <div>
+                <b>Command Bar Improvements</b>
+                <div>
+                    <ul>
+                        <li>Simple auto-complete<br/>
+                            <img src="{{ relative-path "img/releases/v0_3/cmdbar_autocomplete.gif" }}" style="border:solid 2px #000">
+                        </li>
+                        <li>You can now cycle through the arguments of a command with the tab key. Use Shift+Tab to cycle in reverse.
+                        </li>
+                        <li>
+                            The "find", "replace" and "replace-all" shortcuts have been improved so that they are pre-filled
+                            with the currently selected text.<br/>
+                            <img src="{{ relative-path "img/releases/v0_3/cmdbar_paramcycle.gif" }}" style="border:solid 2px #000">
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div style="margin-top:2em;">
+                <b>Favourite Files</b>
+                <div>
+                    You can now add and remove files from a simple list of favourites which be accessed from the File menu.<br/>
+                    <img src="{{ relative-path "img/releases/v0_3/favourites1.png" }}" style="border:solid 2px #000">
+                </div>
+            </div>
+            
+            <div style="margin-top:2em;">
+                <b>Miscellaneous Improvements and Bug Fixes</b>
+                <div>
+                    <ul>
+                        <li>Improved painting performance.</li>
+                        <li>Improved the "goto" command so that it scrolls to the line if it's out of view.</li>
+                        <li>Improved the saving process to prevent breaking hard links on Linux.</li>
+                        <li>Removed some flickering when opening a file.</li>
+                        <li>The "bind" command will now update the shortcut string on relevant menu items.</li>
+                        <li>Changed the default shortcut for "replace-all" to "CTRL+H".</li>
+                        <li>Add support for portable mode. Enable this with the "portable" command line switch. When enabled, config and log files
+                            will be loaded and saved relative to the executable rather than the user directory.
+                        </li>
+                        <li>Fixed a bug where the "find" command would not deselect previous selections.</li>
+                        <li>Fixed a crash when double clicking on an empty text document.</li>
+                        <li>Fixed a bug where the tab key would not work on a blank file.</li>
+                        <li>Fixed a crash when performing an undo/redo operation on the command bar.</li>
+                        <li>Fixed a bug where menu item events were not getting handled correctly.</li>
+                        <li>Fixed the "goto" command when used with word wrap enabled. <a href="https://github.com/dr-soft/dred/issues/2">Issue #2</a>.</li>
+                        <li>Fixed a bug with block indenting.</li>
+                        <li>Fixed some bugs with word deletion (CTRL+Backspace/Delete).</li>
+                        <li>Fixed some erros with word selection.</li>
+                        <li>Fixed a bug when selecting historic commands on the command bar with the up and down arrow keys.</li>
+                        <li>Fixed a bug where it was possible for the main window to load out of view.</li>
+                        <li>Fixed a graphics bug where an empty tab bar was being drawn when no files are open.</li>
+                        <li>C++ compilation fixes.</li>
+                        <li>Very early support for OSX. This has not been thoroughly tested.</li>
+                        <li>... and much more!</li>
+                    </ul>
+                    
+                    <i>Windows Only</i>
+                    <ul>
+                        <li>The Windows build no longer requires linking to ole32.lib, comctl32.lib or msimg32.lib.</li>
+                    </ul>
+                    
+                    <i>Linux and GTK Only</i>
+                    <ul>
+                        <li>Popup menus are now positioned correctly.</li>
+                        <li>Improved memory usage.<br/>
+                            <img src="{{ relative-path "img/releases/v0_3/memory_compare.png" }}" style="border:solid 2px #000">
+                        </li>
+                        <li>Improved text quality.<br/>
+                            <img id="img-text-compare" src="{{ relative-path "img/releases/v0_3/text_compare_00.png" }}" style="border:solid 2px #000">
+                        </li>
+                        <li>Improved compatibility with older versions of GTK.</li>
+                        <li>Removed dependency on librt.</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="margin-top:2em;">
+                <b>Source Code Improvements</b>
+                <div>
+                    Version 0.3 introduces a new toolkit called DTK (dred toolkit) which is designed for light weight, traditional desktop
+                    applications. Benefits of this toolkit include:
+                    <ul>
+                        <li>Small a light weight.</li>
+                        <li>Easy to compile. The entire source code for DTK is compiled as a single translation unit (dtk.c) and requires linking
+                            to only necessary platform-specific libraries such as GTK.
+                        </li>
+                        <li>Written entirely in C.</li>
+                        <li>Improved control/widget and event handling infrastructure.
+                            <ul>
+                                <li>Windows are treated just like any other control and are no longer special entities.</li>
+                                <li>Events are now handled through a central event queue rather than callbacks.</li>
+                            </ul>
+                        </li>
+                        <li>Improved painting performance.
+                            <ul>
+                                <li>
+                                    Controls can be redrawn immediately or scheduled for later. Scheduling redraws improves performance because
+                                    it gives the toolkit an opportunity batch drawing.
+                                </li>
+                                <li>
+                                    Painting on GTK has been improved. Previously, painting was done to an intermediary surface and then copied
+                                    onto the window. The toolkit will now draw directly to the window. This also saves on a bit of memory.
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    Many more features and improvements are in the pipline for DTK, including common controls, better high DPI
+                    support, drag-and-drop, and much more.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var textCompareImages = new Array;
+        textCompareImages[0] = "{{ relative-path "img/releases/v0_3/text_compare_00.png" }}";
+        textCompareImages[1] = "{{ relative-path "img/releases/v0_3/text_compare_01.png" }}";
+        setInterval(function() {ChangeTextCompareImage()}, 1000);
+        
+        nextTextCompareImageIndex = 1;
+        function ChangeTextCompareImage() {
+            document.getElementById('img-text-compare').src = textCompareImages[nextTextCompareImageIndex];
+            if (nextTextCompareImageIndex<1) {
+                nextTextCompareImageIndex+=1;
+            } else if (nextTextCompareImageIndex=1) {
+                nextTextCompareImageIndex=0;
+            }
+        }
+    </script>
+{{ include "dred-footer.html" }}
