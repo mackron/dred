@@ -4,6 +4,20 @@
 
 // Platform headers.
 #ifdef DTK_WIN32
+    // We are going to explicitly set the winapi version, mainly for the sake of older compilers.
+    #undef WINVER
+    #undef _WIN32_WINNT
+    #undef _WIN32_IE
+
+    #ifndef WINVER
+    #define WINVER          0x0501 // 0x0502 = XP SP1
+    #endif
+    #ifndef _WIN32_WINNT
+    #define _WIN32_WINNT    0x0501 // 0x0502 = XP SP1
+    #endif
+    #ifndef _WIN32_IE
+    #define _WIN32_IE       0x0400
+    #endif
     #include <windows.h>
     #include <commctrl.h>
     #if defined(_MSC_VER)
@@ -33,6 +47,7 @@
 #include <math.h>   // For ceil(), round(), etc.
 #include <time.h>   // For time(), etc.
 #include <stdio.h>  // For sprintf() and family.
+#include <limits.h>
 
 #if !defined(DTK_64BIT) && !defined(DTK_32BIT)
 #ifdef _WIN32
@@ -307,7 +322,7 @@ typedef BOOL    (__stdcall * DTK_PFN_SetProcessDPIAware)     (void);
 typedef HRESULT (__stdcall * DTK_PFN_SetProcessDpiAwareness) (DTK_PROCESS_DPI_AWARENESS);
 typedef HRESULT (__stdcall * DTK_PFN_GetDpiForMonitor)       (HMONITOR hmonitor, DTK_MONITOR_DPI_TYPE dpiType, UINT *dpiX, UINT *dpiY);
 
-typedef BOOL    (WINAPI * DTK_PFN_InitCommonControlsEx)(const LPINITCOMMONCONTROLSEX lpInitCtrls);
+typedef BOOL    (WINAPI * DTK_PFN_InitCommonControlsEx)(const INITCOMMONCONTROLSEX* lpInitCtrls);
 typedef HRESULT (WINAPI * DTK_PFN_OleInitialize)       (LPVOID pvReserved);
 typedef void    (WINAPI * DTK_PFN_OleUninitialize)     ();
 typedef BOOL    (WINAPI * DTK_PFN_AlphaBlend)          (HDC hdcDest, int xoriginDest, int yoriginDest, int wDest, int hDest, HDC hdcSrc, int xoriginSrc, int yoriginSrc, int wSrc, int hSrc, BLENDFUNCTION ftn);
@@ -329,11 +344,18 @@ dtk_result dtk_win32_error_to_result(DWORD error);
     #pragma warning(disable:4204)   // nonstandard extension used: non-constant aggregate initializer
     #pragma warning(disable:4702)   // unreachable code
 #endif
+#if defined(__clang__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 #define NANOSVG_ALL_COLOR_KEYWORDS
 #define NANOSVG_IMPLEMENTATION
 #include "nanosvg.h"
 #define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvgrast.h"
+#if defined(__clang__)
+    #pragma GCC diagnostic pop
+#endif
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif

@@ -103,6 +103,7 @@ typedef int dtk_result;
 #include <stdio.h>  // For FILE
 #include <stdarg.h>
 #include <errno.h>
+#include <time.h>
 
 #ifndef dtk_assert
 #define dtk_assert(condition)   assert(condition)
