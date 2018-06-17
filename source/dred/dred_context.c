@@ -780,7 +780,7 @@ dtk_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_li
 
     // If there were no files passed on the command line, start with an empty text file. We can know this by simply finding the
     // focused editor. If it's null, nothing is open.
-    if (dred_get_focused_editor(pDred) == NULL) {
+    if (dred_are_any_files_open(pDred) == DTK_FALSE) {
         dred_open_new_text_file(pDred);
     }
 
@@ -1620,6 +1620,27 @@ dtk_bool32 dred_save_all_open_files_with_saveas(dred_context* pDred)
     }
 
     return DTK_TRUE;
+}
+
+dtk_bool32 dred_are_any_files_open(dred_context* pDred)
+{
+    if (pDred == NULL) {
+        return DTK_FALSE;
+    }
+
+    for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
+        for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
+            dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
+            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
+                dred_control* pDredControl = DRED_CONTROL(pPage);
+                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_EDITOR)) {
+                    return DTK_TRUE;
+                }
+            }
+        }
+    }
+
+    return DTK_FALSE;
 }
 
 

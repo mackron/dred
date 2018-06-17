@@ -234,6 +234,9 @@ void dred_save_all_open_files(dred_context* pDred);
 // files could not be saved.
 dtk_bool32 dred_save_all_open_files_with_saveas(dred_context* pDred);
 
+// Determines whether or not there are any files open.
+dtk_bool32 dred_are_any_files_open(dred_context* pDred);
+
 
 // Creates and opens a new file.
 //
