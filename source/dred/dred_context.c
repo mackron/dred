@@ -162,25 +162,21 @@ dtk_bool32 dred_parse_cmdline__startup_files(const char* key, const char* value,
 }
 
 
-void dred__update_window_title(dred_context* pDred)
+void dred__update_window_title_by_tab(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_uint32 tabIndex)
 {
     assert(pDred != NULL);
 
     const char* title = NULL;
 
-    // The window title depends on the currently focused tab.
-    dtk_tabgroup* pTabGroup = dred_get_focused_tabgroup(pDred);
-    if (pTabGroup != NULL) {
-        dtk_control* pTabPage = dtk_tabgroup_get_tab_page(pTabGroup, dtk_tabgroup_get_active_tab_index(pTabGroup));
-        if (pTabPage != NULL && pTabPage->type == DTK_CONTROL_TYPE_DRED) {
-            dred_control* pFocusedControl = DRED_CONTROL(pTabPage);
-            if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_EDITOR)) {
-                const char* filePath = dred_editor_get_file_path(DRED_EDITOR(pFocusedControl));
-                if (filePath != NULL && filePath[0] != '\0') {
-                    title = dtk_path_file_name(filePath);
-                } else {
-                    title = "Untitled";
-                }
+    dtk_control* pTabPage = dtk_tabgroup_get_tab_page(pTabGroup, tabIndex);
+    if (pTabPage != NULL && pTabPage->type == DTK_CONTROL_TYPE_DRED) {
+        dred_control* pFocusedControl = DRED_CONTROL(pTabPage);
+        if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_EDITOR)) {
+            const char* filePath = dred_editor_get_file_path(DRED_EDITOR(pFocusedControl));
+            if (filePath != NULL && filePath[0] != '\0') {
+                title = dtk_path_file_name(filePath);
+            } else {
+                title = "Untitled";
             }
         }
     }
@@ -224,7 +220,7 @@ void dred__refresh_editor_tab_text(dred_editor* pEditor, dtk_tabgroup* pTabGroup
 
     dtk_tabgroup* pFocusedTabGroup = dred_get_focused_tabgroup(pDred);
     if (pFocusedTabGroup == pTabGroup && dtk_tabgroup_get_active_tab_index(pTabGroup) == tabIndex) {
-        dred__update_window_title(pDred);
+        dred__update_window_title_by_tab(pDred, pTabGroup, tabIndex);
     }
 }
 
@@ -2795,7 +2791,7 @@ void dred_on_tab_activated(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_uin
             return;
         }
 
-        dred__update_window_title(pDred);
+        dred__update_window_title_by_tab(pDred, pTabGroup, newActivateTabIndex);
 
         if (pControl->type == DTK_CONTROL_TYPE_DRED) {
             if (dred_control_is_of_type(DRED_CONTROL(pControl), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
