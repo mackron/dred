@@ -591,7 +591,9 @@ dtk_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_li
     char portableConfigPath[32768];
     if (dred__get_portable_config_path(portableConfigPath, sizeof(portableConfigPath)) != 0) {
         hasPortableConfig = dtk_file_exists(portableConfigPath);
-        pDred->isPortable = DTK_TRUE;
+        if (hasPortableConfig) {
+            pDred->isPortable = DTK_TRUE;
+        }
     }
 
     // The command line can be used to override the presence of portable.dred
