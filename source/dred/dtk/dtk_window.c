@@ -2171,12 +2171,12 @@ dtk_result dtk_window_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control
     if (title  == NULL) title = "";
     if (width  == 0) width  = 1;
     if (height == 0) height = 1;
-    
+
     dtk_result result = dtk_control_init(pTK, DTK_CONTROL_TYPE_WINDOW, (onEvent != NULL) ? onEvent : dtk_window_default_event_handler, pParent, DTK_CONTROL(pWindow));
     if (result != DTK_SUCCESS) {
         return result;
     }
-    
+
     // Do an upwards traversal until we find the overarching window control.
     dtk_window* pParentWindow = dtk_control_get_window(pParent);
     

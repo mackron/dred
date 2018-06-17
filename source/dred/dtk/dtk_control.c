@@ -140,8 +140,11 @@ dtk_result dtk_control_init(dtk_context* pTK, dtk_control_type type, dtk_event_p
         dtk_control__link_child_append(pParent, pControl);
     }
 
-    // Explicitly set the relative position to 0,0 to ensure the control has a logical default.
-    dtk_control_set_relative_position(pControl, 0, 0);
+    // Explicitly set the relative position to 0,0 to ensure the control has a logical default. Only do this for non-window controls and child controls.
+    if (type != DTK_CONTROL_TYPE_WINDOW && pParent != NULL) {
+        dtk_control_set_relative_position(pControl, 0, 0);
+    }
+    
 
     return DTK_SUCCESS;
 }
