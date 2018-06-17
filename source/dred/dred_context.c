@@ -2281,6 +2281,7 @@ void dred_refresh_layout(dred_context* pDred)
 
     dred_settings_dialog_refresh_styling(pDred->pSettingsDialog);
     dred_about_dialog_refresh_layout(pDred->pAboutDialog);
+    dred_cmdbar_popup_refresh_position(&pDred->cmdbarPopup);
 }
 
 
