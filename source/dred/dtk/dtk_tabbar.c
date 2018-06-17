@@ -837,9 +837,9 @@ dtk_bool32 dtk_tabbar_default_event_handler(dtk_event* pEvent)
         case DTK_EVENT_TABBAR_MOUSE_BUTTON_DOWN_TAB:
         {
             // Actiate the tab, but not if we're going to try closing it.
-            dtk_bool32 wantToClose = (pEvent->mouseButton.button == DTK_MOUSE_BUTTON_MIDDLE && dtk_tabbar_is_close_on_middle_click_enabled(pTabBar));
+            dtk_bool32 wantToClose = (pEvent->tabbar.mouseButton.button == DTK_MOUSE_BUTTON_MIDDLE && dtk_tabbar_is_close_on_middle_click_enabled(pTabBar));
             if (wantToClose) {
-                if (pEvent->mouseButton.button == DTK_MOUSE_BUTTON_MIDDLE && dtk_tabbar_is_close_on_middle_click_enabled(pTabBar)) {
+                if (pEvent->tabbar.mouseButton.button == DTK_MOUSE_BUTTON_MIDDLE && dtk_tabbar_is_close_on_middle_click_enabled(pTabBar)) {
                     dtk_tabbar__post_event__close_tab(pTabBar, pEvent->tabbar.tabIndex);
                 }
             } else {
