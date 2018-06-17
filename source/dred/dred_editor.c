@@ -128,7 +128,7 @@ dtk_bool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath)
     const char* originalFilePath = dred_editor_get_file_path(pEditor);
     if (!dred_string_is_null_or_empty(originalFilePath)) {
         if (dtk_path_append_extension(tempFilePath, sizeof(tempFilePath), originalFilePath, "dredtmp")) {
-            if (dtk_copy_file(originalFilePath, tempFilePath, DTK_TRUE)) {
+            if (dtk_copy_file(originalFilePath, tempFilePath, DTK_TRUE) == DTK_SUCCESS) {
                 haveTempFile = DTK_TRUE;
             }
         }
