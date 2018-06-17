@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 // Refreshes the Recent Files menu.
 void dred_refresh_recent_files_menu(dred_context* pDred);

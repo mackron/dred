@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 dtk_result dtk_image_init(dtk_context* pTK, dtk_image_type type, dtk_image* pImage)
 {

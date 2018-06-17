@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 // Callback for passing to dtk_argv_parse().
 typedef dtk_bool32 dtk_argv_parse_proc(const char* key, const char* value, void* pUserData);

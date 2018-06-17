@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 const char* dtk_accelerator__next_token(const char* tokens, char* tokenOut, unsigned int tokenOutSize)
 {

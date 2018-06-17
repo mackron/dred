@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 void dtk_button__on_paint(dtk_button* pButton, dtk_rect rect, dtk_surface* pSurface)
 {

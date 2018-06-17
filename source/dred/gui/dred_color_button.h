@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 typedef struct dred_color_button dred_color_button;
 #define DRED_COLOR_BUTTON(a) ((dred_color_button*)(a))

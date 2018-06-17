@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 size_t dred_get_config_folder_path(dred_context* pDred, char* pathOut, size_t pathOutSize)
 {

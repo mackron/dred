@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 // These #defines enable us to load large files on Linux platforms. They need to be placed before including any headers.
 #ifndef _WIN32

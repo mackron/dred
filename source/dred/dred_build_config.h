@@ -1,9 +1,9 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 #define DRED_VERSION_MAJOR          0
 #define DRED_VERSION_MINOR          4
 #define DRED_VERSION_REVISION       0
-#define DRED_VERSION_STRING         "0.4-dev"
+#define DRED_VERSION_STRING         "0.4"
 #define DRED_PRODUCT_NAME           "dred"
 #define DRED_PRODUCT_DESCRIPTION    "dred"
 #define DRED_COMPANY_NAME           "David Reid"

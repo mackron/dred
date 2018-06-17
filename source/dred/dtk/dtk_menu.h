@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 #define DTK_MENU_ITEM_STATE_CHECKED     (1 << 0)
 #define DTK_MENU_ITEM_STATE_DISABLED    (1 << 1)

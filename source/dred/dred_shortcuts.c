@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 dtk_bool32 dred_shortcut_table_init(dred_context* pDred, dred_shortcut_table* pTable, size_t initialCapacity)
 {

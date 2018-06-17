@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 dtk_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_control* pParent, const char* type, dtk_event_proc onEvent, float sizeX, float sizeY, const char* filePathAbsolute)
 {

@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 void dred_cmdbar_popup__refresh_cmdbox_layout(dred_cmdbar_popup* pCmdBarPopup, dtk_int32 popupSizeX, dtk_int32 popupSizeY)
 {

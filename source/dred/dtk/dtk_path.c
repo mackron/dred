@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 dtk_bool32 dtk_path_segments_equal(const char* s0Path, const dtk_path_segment s0, const char* s1Path, const dtk_path_segment s1)
 {

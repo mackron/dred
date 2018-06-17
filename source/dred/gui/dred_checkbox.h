@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 // The checkbox control is a box with a check mark and a label. The size of the box is based on the size of the font.
 typedef struct dred_checkbox dred_checkbox;

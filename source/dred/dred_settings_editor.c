@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 #define DRED_SETTINGS_EDITOR_PAGE_GENERAL       0
 #define DRED_SETTINGS_EDITOR_PAGE_THEME         1

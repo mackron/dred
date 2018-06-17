@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 dtk_bool32 dred_ipc_post_message(dtk_pipe clientPipe, uint32_t message, const void* pData, size_t dataSize)
 {

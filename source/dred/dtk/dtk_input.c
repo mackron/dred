@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 size_t dtk_key_to_string(dtk_key key, char* strOut, size_t strOutSize)
 {

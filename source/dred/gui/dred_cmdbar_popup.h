@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 #define DRED_CMDBAR_POPUP(p) ((dred_cmdbar_popup*)(p))
 typedef struct

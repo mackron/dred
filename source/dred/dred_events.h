@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 // Here I'm making each custom event an offset of DTK_EVENT_CUSTOM. This isn't actually needed, but it just makes
 // me feel better inside knowing that dred's custom event IDs don't overlap with those of DTK.

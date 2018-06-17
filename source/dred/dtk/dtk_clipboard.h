@@ -1,4 +1,4 @@
-// Copyright (C) 2017 David Reid. See included LICENSE file.
+// Copyright (C) 2018 David Reid. See included LICENSE file.
 
 // Sets the text on the clipboard.
 dtk_bool32 dtk_clipboard_set_text(dtk_context* pTK, const char* text, size_t textLength);
