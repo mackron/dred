@@ -2332,10 +2332,6 @@ void dred_update_info_bar(dred_context* pDred, dred_control* pControl)
         return;
     }
 
-    if (dred_get_focused_editor(pDred) != DRED_EDITOR(pControl)) {
-        return;
-    }
-
     dred_cmdbar_update_info_bar(&pDred->cmdBar, pControl);
 }
 
