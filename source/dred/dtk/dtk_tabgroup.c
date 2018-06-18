@@ -30,7 +30,7 @@ void dtk_tabgroup__calculate_tabbar_position(dtk_tabgroup* pTabGroup, dtk_int32*
     }
 }
 
-dtk_rect dtk_tabgroup__calculate_container_rect(dtk_tabgroup* pTabGroup)
+dtk_rect dtk_tabgroup__calculate_container_rect(dtk_tabgroup* pTabGroup, dtk_uint32 tabgroupWidth, dtk_uint32 tabgroupHeight)
 {
     dtk_assert(pTabGroup != NULL);
 
@@ -41,10 +41,6 @@ dtk_rect dtk_tabgroup__calculate_container_rect(dtk_tabgroup* pTabGroup)
     }
     
     dtk_rect containerRect = dtk_rect_init(0, 0, 0, 0);
-
-    dtk_int32 tabgroupWidth;
-    dtk_int32 tabgroupHeight;
-    dtk_control_get_size(DTK_CONTROL(pTabGroup), &tabgroupWidth, &tabgroupHeight);
 
     switch (pTabGroup->tabbarEdge)
     {
@@ -84,21 +80,18 @@ dtk_rect dtk_tabgroup__calculate_container_rect(dtk_tabgroup* pTabGroup)
     return containerRect;
 }
 
-void dtk_tabgroup__refresh_container_layout(dtk_tabgroup* pTabGroup)
+void dtk_tabgroup__refresh_container_layout(dtk_tabgroup* pTabGroup, dtk_int32 tabGroupWidth, dtk_int32 tabGroupHeight)
 {
-    dtk_rect containerRect = dtk_tabgroup__calculate_container_rect(pTabGroup);
-    dtk_control_set_size(&pTabGroup->container, containerRect.right-containerRect.left, containerRect.bottom-containerRect.top);
+    dtk_rect containerRect = dtk_tabgroup__calculate_container_rect(pTabGroup, tabGroupWidth, tabGroupHeight);
+    dtk_control_set_size(&pTabGroup->container, tabGroupWidth, tabGroupHeight);
     dtk_control_set_relative_position(&pTabGroup->container, containerRect.left, containerRect.top);
 }
 
-void dtk_tabgroup__refresh_tabbar_layout(dtk_tabgroup* pTabGroup)
+void dtk_tabgroup__refresh_tabbar_layout(dtk_tabgroup* pTabGroup, dtk_int32 tabgroupWidth, dtk_int32 tabgroupHeight)
 {
-    dtk_uint32 tabbarWidth = 0;
-    dtk_uint32 tabbarHeight = 0;
-
-    dtk_int32 tabgroupWidth;
-    dtk_int32 tabgroupHeight;
-    dtk_control_get_size(DTK_CONTROL(pTabGroup), &tabgroupWidth, &tabgroupHeight);
+    dtk_int32 tabbarWidth;
+    dtk_int32 tabbarHeight;
+    dtk_control_get_size(DTK_CONTROL(&pTabGroup->tabbar), &tabbarWidth, &tabbarHeight);
 
     switch (pTabGroup->tabbarEdge)
     {
@@ -115,6 +108,8 @@ void dtk_tabgroup__refresh_tabbar_layout(dtk_tabgroup* pTabGroup)
         } break;
     }
 
+    dtk_control_set_size(DTK_CONTROL(&pTabGroup->tabbar), tabbarWidth, tabbarHeight);
+
     // The position depends on the size, so set the position after setting the size.
     dtk_int32 tabbarPosX;
     dtk_int32 tabbarPosY;
@@ -122,14 +117,23 @@ void dtk_tabgroup__refresh_tabbar_layout(dtk_tabgroup* pTabGroup)
     dtk_control_set_relative_position(DTK_CONTROL(&pTabGroup->tabbar), tabbarPosX, tabbarPosY);
 }
 
-void dtk_tabgroup__refresh_layout(dtk_tabgroup* pTabGroup)
+void dtk_tabgroup__refresh_layout_explicit_size(dtk_tabgroup* pTabGroup, dtk_int32 tabgroupWidth, dtk_int32 tabgroupHeight)
 {
     // We want to make sure the tab bar and the container are laid out properly before notifying the application.
-    dtk_tabgroup__refresh_tabbar_layout(pTabGroup);
-    dtk_tabgroup__refresh_container_layout(pTabGroup);
+    dtk_tabgroup__refresh_tabbar_layout(pTabGroup, tabgroupWidth, tabgroupHeight);
+    dtk_tabgroup__refresh_container_layout(pTabGroup, tabgroupWidth, tabgroupHeight);
     
     // Now notify the application.
     dtk_control_refresh_layout(DTK_CONTROL(pTabGroup));
+}
+
+void dtk_tabgroup__refresh_layout(dtk_tabgroup* pTabGroup)
+{
+    dtk_int32 tabgroupWidth;
+    dtk_int32 tabgroupHeight;
+    dtk_control_get_size(DTK_CONTROL(pTabGroup), &tabgroupWidth, &tabgroupHeight);
+
+    dtk_tabgroup__refresh_layout_explicit_size(pTabGroup, tabgroupWidth, tabgroupHeight);
 }
 
 
@@ -223,7 +227,10 @@ dtk_bool32 dtk_tabgroup_tabbar_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_REFRESH_LAYOUT:
         {
-            dtk_tabgroup__refresh_container_layout(pTabGroup);
+            dtk_int32 tabgroupWidth;
+            dtk_int32 tabgroupHeight;
+            dtk_control_get_size(DTK_CONTROL(pTabGroup), &tabgroupWidth, &tabgroupHeight);
+            dtk_tabgroup__refresh_container_layout(pTabGroup, tabgroupWidth, tabgroupHeight);
 
             // Now notify the application.
             dtk_control_refresh_layout(DTK_CONTROL(pTabGroup));
@@ -273,8 +280,6 @@ dtk_result dtk_tabgroup_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_contr
     }
 
     dtk_tabbar_enable_auto_resize(&pTabGroup->tabbar);
-    dtk_tabgroup__refresh_tabbar_layout(pTabGroup);
-    dtk_tabgroup__refresh_container_layout(pTabGroup);
 
     return DTK_SUCCESS;
 }
@@ -314,7 +319,7 @@ dtk_bool32 dtk_tabgroup_default_event_handler(dtk_event* pEvent)
         case DTK_EVENT_SIZE:
         {
             // We want to make sure the tab bar and the container are laid out properly before notifying the application.
-            dtk_tabgroup__refresh_layout(pTabGroup);
+            dtk_tabgroup__refresh_layout_explicit_size(pTabGroup, pEvent->size.width, pEvent->size.height);
         } break;
 
         case DTK_EVENT_REFRESH_LAYOUT:
