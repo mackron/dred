@@ -35,7 +35,11 @@ dtk_rect dtk_tabgroup__calculate_container_rect(dtk_tabgroup* pTabGroup)
     dtk_assert(pTabGroup != NULL);
 
     // Depends on the edge.
-    dtk_rect tabbarRect = dtk_control_get_relative_rect(DTK_CONTROL(&pTabGroup->tabbar));
+    dtk_rect tabbarRect = dtk_rect_init(0, 0, 0, 0);
+    if (dtk_tabgroup_is_showing_tabbar(pTabGroup)) {
+        tabbarRect = dtk_control_get_relative_rect(DTK_CONTROL(&pTabGroup->tabbar));
+    }
+    
     dtk_rect containerRect = dtk_rect_init(0, 0, 0, 0);
 
     dtk_int32 tabgroupWidth;
@@ -311,9 +315,6 @@ dtk_bool32 dtk_tabgroup_default_event_handler(dtk_event* pEvent)
         {
             // We want to make sure the tab bar and the container are laid out properly before notifying the application.
             dtk_tabgroup__refresh_layout(pTabGroup);
-
-            // Notify the application of the change in layout so it can resize controls and whatnot.
-            dtk_control_refresh_layout(pEvent->pControl);
         } break;
 
         case DTK_EVENT_REFRESH_LAYOUT:
@@ -454,12 +455,12 @@ dtk_result dtk_tabgroup_show_tabbar(dtk_tabgroup* pTabGroup)
         return DTK_SUCCESS; // Already showing.
     }
 
-    dtk_result result = dtk_control_show(DTK_CONTROL(pTabGroup));
+    dtk_result result = dtk_control_show(DTK_CONTROL(&pTabGroup->tabbar));
     if (result != DTK_SUCCESS) {
         return result;
     }
 
-    dtk_control_refresh_layout(DTK_CONTROL(pTabGroup));  // The size of the body has changed which requires a layout refresh.
+    dtk_tabgroup__refresh_layout(pTabGroup);  // The size of the body has changed which requires a layout refresh.
     return result;
 }
 
@@ -473,12 +474,12 @@ dtk_result dtk_tabgroup_hide_tabbar(dtk_tabgroup* pTabGroup)
         return DTK_SUCCESS; // Already hidden.
     }
 
-    dtk_result result = dtk_control_hide(DTK_CONTROL(pTabGroup));
+    dtk_result result = dtk_control_hide(DTK_CONTROL(&pTabGroup->tabbar));
     if (result != DTK_SUCCESS) {
         return result;
     }
 
-    dtk_control_refresh_layout(DTK_CONTROL(pTabGroup));  // The size of the body has changed which requires a layout refresh.
+    dtk_tabgroup__refresh_layout(pTabGroup);  // The size of the body has changed which requires a layout refresh.
     return result;
 }
 

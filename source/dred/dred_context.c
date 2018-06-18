@@ -26,6 +26,56 @@ dtk_bool32 dred__is_portable_config_present()
 #endif
 
 
+dtk_int32 dred__get_cmd_bar_height(dred_context* pDred)
+{
+    if (pDred == NULL || !dtk_control_is_visible(DTK_CONTROL(&pDred->cmdBar))) {
+        return 0;
+    }
+
+    return dtk_control_get_height(DTK_CONTROL(&pDred->cmdBar));
+}
+
+void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, dtk_int32 parentWidth, dtk_int32 parentHeight)
+{
+    (void)pDred;
+
+    if (pCmdBar == NULL) {
+        return;
+    }
+
+    dtk_control_set_size(DTK_CONTROL(pCmdBar), parentWidth, dtk_control_get_height(DTK_CONTROL(pCmdBar)));
+    dtk_control_set_relative_position(DTK_CONTROL(pCmdBar), 0, parentHeight - dred__get_cmd_bar_height(pDred));
+
+    //printf("TESTING: %d\n", pDred->mainTabGroup.tabbar.control.height);
+    dtk_window_set_size(DTK_WINDOW(&pDred->cmdbarPopup), parentWidth, 300);
+    dred_cmdbar_popup_refresh_styling(&pDred->cmdbarPopup);
+}
+
+void dred__update_background_layout(dred_context* pDred, dtk_control* pBackgroundControl, dtk_int32 parentWidth, dtk_int32 parentHeight)
+{
+    if (pBackgroundControl == NULL) {
+        return;
+    }
+
+    dtk_control_set_size(pBackgroundControl, parentWidth, (parentHeight - dred__get_cmd_bar_height(pDred)));
+}
+
+void dred__update_main_window_layout(dtk_window* pWindow, dtk_int32 windowWidth, dtk_int32 windowHeight)
+{
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pWindow));
+    assert(pDred != NULL);
+
+    //dred__update_main_tab_group_container_layout(pDred, &pDred->mainTabGroupContainer, windowWidth, windowHeight);
+
+    // The main tab group needs to be updated.
+    dred_refresh_styling_tabgroup(pDred, &pDred->mainTabGroup);
+    dtk_control_set_size(DTK_CONTROL(&pDred->mainTabGroup), windowWidth, windowHeight - dred__get_cmd_bar_height(pDred));
+
+    dred__update_cmdbar_layout(pDred, &pDred->cmdBar, windowWidth, windowHeight);
+    dred__update_background_layout(pDred, &pDred->backgroundControl, windowWidth, windowHeight);
+}
+
+
 dtk_bool32 dred_main_tabgroup_event_handler(dtk_event* pEvent)
 {
     dtk_tabgroup* pTabGroup = DTK_TABGROUP(pEvent->pControl);
@@ -80,71 +130,19 @@ dtk_bool32 dred_main_tabgroup_event_handler(dtk_event* pEvent)
                     dtk_control_set_size(pTabPage, containerWidth, containerHeight);
                 }
             }
+
+
+            dtk_int32 windowWidth;
+            dtk_int32 windowHeight;
+            dtk_window_get_client_size(dtk_control_get_window(pEvent->pControl), &windowWidth, &windowHeight);
+
+            dred__update_cmdbar_layout(pDred, &pDred->cmdBar, windowWidth, windowHeight);
         } break;
 
         default: break;
     }
 
     return dtk_tabgroup_default_event_handler(pEvent);
-}
-
-
-dtk_int32 dred__get_cmd_bar_height(dred_context* pDred)
-{
-    if (pDred == NULL || !dtk_control_is_visible(DTK_CONTROL(&pDred->cmdBar))) {
-        return 0;
-    }
-
-    return dtk_control_get_height(DTK_CONTROL(&pDred->cmdBar));
-}
-
-//void dred__update_main_tab_group_container_layout(dred_context* pDred, dred_tabgroup_container* pContainer, dtk_int32 parentWidth, dtk_int32 parentHeight)
-//{
-//    if (pContainer == NULL) {
-//        return;
-//    }
-//
-//    dtk_control_set_size(DTK_CONTROL(pContainer), parentWidth, parentHeight - dred__get_cmd_bar_height(pDred));
-//    dred_tabgroup_refresh_styling(&pDred->mainTabGroup);
-//}
-
-void dred__update_cmdbar_layout(dred_context* pDred, dred_cmdbar* pCmdBar, dtk_int32 parentWidth, dtk_int32 parentHeight)
-{
-    (void)pDred;
-
-    if (pCmdBar == NULL) {
-        return;
-    }
-
-    dtk_control_set_size(DTK_CONTROL(pCmdBar), parentWidth, dtk_control_get_height(DTK_CONTROL(pCmdBar)));
-    dtk_control_set_relative_position(DTK_CONTROL(pCmdBar), 0, parentHeight - dred__get_cmd_bar_height(pDred));
-
-    dtk_window_set_size(DTK_WINDOW(&pDred->cmdbarPopup), parentWidth, 300);
-    dred_cmdbar_popup_refresh_styling(&pDred->cmdbarPopup);
-}
-
-void dred__update_background_layout(dred_context* pDred, dtk_control* pBackgroundControl, dtk_int32 parentWidth, dtk_int32 parentHeight)
-{
-    if (pBackgroundControl == NULL) {
-        return;
-    }
-
-    dtk_control_set_size(pBackgroundControl, parentWidth, (parentHeight - dred__get_cmd_bar_height(pDred)));
-}
-
-void dred__update_main_window_layout(dtk_window* pWindow, dtk_int32 windowWidth, dtk_int32 windowHeight)
-{
-    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pWindow));
-    assert(pDred != NULL);
-
-    //dred__update_main_tab_group_container_layout(pDred, &pDred->mainTabGroupContainer, windowWidth, windowHeight);
-
-    // The main tab group needs to be updated.
-    dred_refresh_styling_tabgroup(pDred, &pDred->mainTabGroup);
-    dtk_control_set_size(DTK_CONTROL(&pDred->mainTabGroup), windowWidth, windowHeight - dred__get_cmd_bar_height(pDred));
-
-    dred__update_cmdbar_layout(pDred, &pDred->cmdBar, windowWidth, windowHeight);
-    dred__update_background_layout(pDred, &pDred->backgroundControl, windowWidth, windowHeight);
 }
 
 
