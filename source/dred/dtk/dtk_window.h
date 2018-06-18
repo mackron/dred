@@ -91,8 +91,9 @@ struct dtk_window
             dtk_int32 windowHeight;                 // ^
             dtk_int32 desiredPositionX;             // Used when a window want's to move while invisible. When the window is made visible, it will be positioned based on this if repositionOnShow is set.
             dtk_int32 desiredPositionY; 
+            dtk_bool32 isInitialized          : 1;
             dtk_bool32 isCursorOverClientArea : 1;
-            dtk_bool32 repositionOnShow : 1;
+            dtk_bool32 repositionOnShow       : 1;
         } gtk;
     #endif
     #ifdef DTK_X11

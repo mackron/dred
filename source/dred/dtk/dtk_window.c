@@ -1313,8 +1313,20 @@ static void dtk_window__on_size_allocate__gtk(GtkWidget *pWidget, GtkAllocation 
         return;
     }
 
+    // Don't want to be posting events before returning from initialization.
+    if (!pWindow->gtk.isInitialized) {
+        return;
+    }
+
+    // From my testing, it looks like the main window is notified of a size change after the client area. Thus, in order
+    // for the event handler to have the size of both the window _and_ the client area, we post the size event here.
     pWindow->gtk.windowWidth = (dtk_int32)width;
     pWindow->gtk.windowHeight = (dtk_int32)height;
+
+    dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_SIZE, DTK_CONTROL(pWindow));
+    e.size.width = pWindow->gtk.configureClientWidth;
+    e.size.height = pWindow->gtk.configureClientHeight;
+    dtk_handle_global_event(&e);
 }
 
 static void dtk_window__on_hide__gtk(GtkWidget* pWidget, gpointer pUserData)
@@ -1503,12 +1515,6 @@ static gboolean dtk_window_clientarea__on_configure__gtk(GtkWidget* pClientArea,
     if (pEvent->width != pWindow->gtk.configureClientWidth || pEvent->height != pWindow->gtk.configureClientHeight) {
         pWindow->gtk.configureClientWidth  = pEvent->width;
         pWindow->gtk.configureClientHeight = pEvent->height;
-
-        // Size has changed.
-        dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_SIZE, DTK_CONTROL(pWindow));
-        e.size.width = pEvent->width;
-        e.size.height = pEvent->height;
-        dtk_handle_global_event(&e);
 
         // Invalidate the window to force a redraw.
         gtk_widget_queue_draw(pClientArea);
@@ -1793,6 +1799,7 @@ dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_wind
     // Bind the accelerator group to every window for now.
     gtk_window_add_accel_group(GTK_WINDOW(pWidget), GTK_ACCEL_GROUP(pTK->gtk.pAccelGroup));
 
+    pWindow->gtk.isInitialized = DTK_TRUE;
     return DTK_SUCCESS;
 }
 
@@ -1827,9 +1834,9 @@ dtk_result dtk_window_set_size__gtk(dtk_window* pWindow, dtk_int32 width, dtk_in
         height += alloc.height;
     }
 
-    gtk_window_resize(GTK_WINDOW(pWindow->gtk.pWidget), (gint)width, (gint)height);
     pWindow->gtk.windowWidth  = width;
     pWindow->gtk.windowHeight = height;
+    gtk_window_resize(GTK_WINDOW(pWindow->gtk.pWidget), (gint)width, (gint)height);
 
     return DTK_SUCCESS;
 }
