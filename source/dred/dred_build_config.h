@@ -2,8 +2,8 @@
 
 #define DRED_VERSION_MAJOR          0
 #define DRED_VERSION_MINOR          4
-#define DRED_VERSION_REVISION       1
-#define DRED_VERSION_STRING         "0.4.1"
+#define DRED_VERSION_REVISION       2
+#define DRED_VERSION_STRING         "0.4.2"
 #define DRED_PRODUCT_NAME           "dred"
 #define DRED_PRODUCT_DESCRIPTION    "dred"
 #define DRED_COMPANY_NAME           "David Reid"
