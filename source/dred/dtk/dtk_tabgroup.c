@@ -83,7 +83,7 @@ dtk_rect dtk_tabgroup__calculate_container_rect(dtk_tabgroup* pTabGroup, dtk_uin
 void dtk_tabgroup__refresh_container_layout(dtk_tabgroup* pTabGroup, dtk_int32 tabGroupWidth, dtk_int32 tabGroupHeight)
 {
     dtk_rect containerRect = dtk_tabgroup__calculate_container_rect(pTabGroup, tabGroupWidth, tabGroupHeight);
-    dtk_control_set_size(&pTabGroup->container, tabGroupWidth, tabGroupHeight);
+    dtk_control_set_size(&pTabGroup->container, dtk_rect_width(containerRect), dtk_rect_height(containerRect));
     dtk_control_set_relative_position(&pTabGroup->container, containerRect.left, containerRect.top);
 }
 
