@@ -866,11 +866,11 @@ dtk_string dtk_path_file_name_without_extension_str(const char* path)
         return NULL;
     }
 
-    dtk_string str = dtk_malloc_string(len);
+    dtk_string str = dtk_malloc_string(len+1);
     if (str == NULL) {
         return NULL;
     }
 
-    dtk_path_file_name_without_extension(str, len, path);
+    dtk_path_file_name_without_extension(str, len+1, path);
     return str;
 }
