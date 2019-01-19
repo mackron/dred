@@ -94,7 +94,7 @@ char* dred_codegen_buffer_to_c_string(const unsigned char* buffer, size_t size, 
                 default:
                 {
                     // TODO: Check for non-ASCII characters and add support for UTF-8 hex characters.
-                    output = dtk_append_string_length(output, &input[ichar], 1);  
+                    output = dtk_append_substring(output, &input[ichar], 1);  
                 } break;
             }
         }

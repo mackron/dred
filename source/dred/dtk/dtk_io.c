@@ -547,7 +547,7 @@ dtk_result dtk_mkdir_for_file(const char* filePath)
     }
 
     directoryLenPlusNullTerminator = dtk_path_base_path(directoryPath, directoryLenPlusNullTerminator, filePath);
-    if (directoryLenPlusNullTerminator == NULL) {
+    if (directoryLenPlusNullTerminator == 0) {
         dtk_free(directoryPath);
         return DTK_ERROR;   // Failed to get the base path. Should never happen since the input path is the same.
     }
