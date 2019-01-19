@@ -68,13 +68,16 @@ dtk_bool32 dtk_path_iterators_equal(const dtk_path_iterator i0, const dtk_path_i
 
 
 // Determines whether or not the given iterator refers to the root segment of a path.
-dtk_bool32 dtk_path_is_root_segment(const dtk_path_iterator i);
+dtk_bool32 dtk_path_is_root(const char* path);
+dtk_bool32 dtk_path_is_root_segment(const char* path, const dtk_path_segment segment);
 
 // Determines whether or not the given iterator refers to a Unix style root directory ("/")
-dtk_bool32 dtk_path_is_unix_style_root_segment(const dtk_path_iterator i);
+dtk_bool32 dtk_path_is_unix_style_root(const char* path);
+dtk_bool32 dtk_path_is_unix_style_root_segment(const char* path, const dtk_path_segment segment);
 
 // Determines whether or not the given iterator refers to a Windows style root directory.
-dtk_bool32 dtk_path_is_win32_style_root_segment(const dtk_path_iterator i);
+dtk_bool32 dtk_path_is_win32_style_root(const char* path);
+dtk_bool32 dtk_path_is_win32_style_root_segment(const char* path, const dtk_path_segment segment);
 
 
 // Converts the slashes in the given path to forward slashes.

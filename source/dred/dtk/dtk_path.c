@@ -128,38 +128,71 @@ dtk_bool32 dtk_path_iterators_equal(const dtk_path_iterator i0, const dtk_path_i
 }
 
 
-dtk_bool32 dtk_path_is_root_segment(const dtk_path_iterator i)
+dtk_bool32 dtk_path_is_root(const char* path)
 {
-    return dtk_path_is_unix_style_root_segment(i) || dtk_path_is_win32_style_root_segment(i);
+    return dtk_path_is_unix_style_root(path) || dtk_path_is_win32_style_root(path);
 }
 
-dtk_bool32 dtk_path_is_unix_style_root_segment(const dtk_path_iterator i)
+dtk_bool32 dtk_path_is_root_segment(const char* path, const dtk_path_segment segment)
 {
-    if (i.path == NULL) {
+    return dtk_path_is_unix_style_root_segment(path, segment) || dtk_path_is_win32_style_root_segment(path, segment);
+}
+
+dtk_bool32 dtk_path_is_unix_style_root(const char* path)
+{
+    if (path == NULL) {
         return DTK_FALSE;
     }
 
-    if (i.segment.offset == 0 && i.segment.length == 0) {
+    if (path[0] == '/') {
+        return DTK_TRUE;
+    }
+
+    return DTK_FALSE;
+}
+
+dtk_bool32 dtk_path_is_unix_style_root_segment(const char* path, const dtk_path_segment segment)
+{
+    if (path == NULL) {
+        return DTK_FALSE;
+    }
+
+    if (segment.offset == 0 && segment.length == 0) {
         return DTK_TRUE;    // "/" style root.
     }
 
     return DTK_FALSE;
 }
 
-dtk_bool32 dtk_path_is_win32_style_root_segment(const dtk_path_iterator i)
+dtk_bool32 dtk_path_is_win32_style_root(const char* path)
 {
-    if (i.path == NULL) {
+    if (path == NULL) {
         return DTK_FALSE;
     }
 
-    if (i.segment.offset == 0 && i.segment.length == 2) {
-        if (((i.path[0] >= 'a' && i.path[0] <= 'z') || (i.path[0] >= 'A' && i.path[0] <= 'Z')) && i.path[1] == ':') {
+    if (((path[0] >= 'a' && path[0] <= 'z') || (path[0] >= 'A' && path[0] <= 'Z')) && path[1] == ':' && path[2] == '\0') {
+        return DTK_TRUE;
+    }
+
+    return DTK_FALSE;
+}
+
+dtk_bool32 dtk_path_is_win32_style_root_segment(const char* path, const dtk_path_segment segment)
+{
+    if (path == NULL) {
+        return DTK_FALSE;
+    }
+
+    if (segment.offset == 0 && segment.length == 2) {
+        if (((path[0] >= 'a' && path[0] <= 'z') || (path[0] >= 'A' && path[0] <= 'Z')) && path[1] == ':') {
             return DTK_TRUE;
         }
     }
 
     return DTK_FALSE;
 }
+
+
 
 
 void dtk_path_to_forward_slashes(char* path)
@@ -350,7 +383,7 @@ dtk_bool32 dtk_path_is_relative(const char* path)
 
     dtk_path_iterator seg;
     if (dtk_path_first(path, &seg)) {
-        return !dtk_path_is_root_segment(seg);
+        return !dtk_path_is_root_segment(seg.path, seg.segment);
     }
 
     // We'll get here if the path is empty. We consider this to be a relative path.
@@ -692,7 +725,7 @@ size_t dtk_path_remove_file_name(char* pathOut, size_t pathOutSize, const char* 
     }
 
     // Don't remove root segments.
-    if (dtk_path_is_root_segment(iLast)) {
+    if (dtk_path_is_root_segment(iLast.path, iLast.segment)) {
         return 0;
     }
 
@@ -701,7 +734,7 @@ size_t dtk_path_remove_file_name(char* pathOut, size_t pathOutSize, const char* 
     dtk_path_iterator iSecondLast = iLast;
     if (dtk_path_prev(&iSecondLast)) {
         size_t pathOutLength;
-        if (dtk_path_is_unix_style_root_segment(iSecondLast)) {
+        if (dtk_path_is_unix_style_root_segment(iSecondLast.path, iSecondLast.segment)) {
             pathOutLength = iLast.segment.offset;
         } else {
             pathOutLength = iSecondLast.segment.offset + iSecondLast.segment.length;
@@ -735,7 +768,7 @@ size_t dtk_path_remove_file_name_in_place(char* path)
     }
 
     // Don't remove root segments.
-    if (dtk_path_is_root_segment(iLast)) {
+    if (dtk_path_is_root_segment(iLast.path, iLast.segment)) {
         return 0;
     }
 
@@ -744,7 +777,7 @@ size_t dtk_path_remove_file_name_in_place(char* path)
     dtk_path_iterator iSecondLast = iLast;
     if (dtk_path_prev(&iSecondLast)) {
         size_t pathOutLength;
-        if (dtk_path_is_unix_style_root_segment(iSecondLast)) {
+        if (dtk_path_is_unix_style_root_segment(iSecondLast.path, iSecondLast.segment)) {
             pathOutLength = iLast.segment.offset;
         } else {
             pathOutLength = iSecondLast.segment.offset + iSecondLast.segment.length;
