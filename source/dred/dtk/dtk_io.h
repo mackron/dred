@@ -57,6 +57,12 @@ dtk_result dtk_mkdir(const char* directoryPath);
 // Recursively creates a directory.
 dtk_result dtk_mkdir_recursive(const char* directoryPath);
 
+// Recursively creates the directory containing the specified file.
+//
+// This is a helper API that strips off the file name from the specified path and calls dtk_mkdir_recursive() from that base path. The
+// specified path must include the name of the file.
+dtk_result dtk_mkdir_for_file(const char* filePath);
+
 
 // Callback function for file iteration.
 typedef dtk_bool32 (* dtk_iterate_files_proc)(const char* filePath, void* pUserData);

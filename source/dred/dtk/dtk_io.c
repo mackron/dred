@@ -122,7 +122,9 @@ dtk_result dtk_set_current_directory__posix(const char* path)
 
 dtk_result dtk_fopen(const char* filePath, const char* openMode, FILE** ppFile)
 {
-    if (filePath == NULL || openMode == NULL || ppFile == NULL) return DTK_INVALID_ARGS;
+    if (filePath == NULL || openMode == NULL || ppFile == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
 #if _MSC_VER
     if (fopen_s(ppFile, filePath, openMode) != 0) {
@@ -142,7 +144,9 @@ dtk_result dtk_fopen(const char* filePath, const char* openMode, FILE** ppFile)
 
 dtk_result dtk_create_empty_file(const char* fileName, dtk_bool32 failIfExists)
 {
-    if (fileName == NULL) return DTK_INVALID_ARGS;
+    if (fileName == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
 #ifdef _WIN32
     DWORD dwCreationDisposition;
@@ -179,8 +183,12 @@ dtk_result dtk_create_empty_file(const char* fileName, dtk_bool32 failIfExists)
 static dtk_result dtk_open_and_read_file_with_extra_data(const char* filePath, size_t* pFileSizeOut, void** ppFileData, size_t extraBytes)
 {
     // Safety.
-    if (pFileSizeOut) *pFileSizeOut = 0;
-    if (ppFileData) *ppFileData = NULL;
+    if (pFileSizeOut) {
+        *pFileSizeOut = 0;
+    }
+    if (ppFileData) {
+        *ppFileData = NULL;
+    }
 
     if (filePath == NULL) {
         return DTK_INVALID_ARGS;
@@ -296,7 +304,9 @@ dtk_result dtk_open_and_write_text_file(const char* filePath, const char* text)
 
 dtk_bool32 dtk_is_directory(const char* path)
 {
-    if (dtk_string_is_null_or_empty(path)) return DTK_FALSE;
+    if (dtk_string_is_null_or_empty(path)) {
+        return DTK_FALSE;
+    }
 
 #ifdef DTK_WIN32
     return dtk_is_directory__win32(path);
@@ -308,7 +318,9 @@ dtk_bool32 dtk_is_directory(const char* path)
 
 dtk_bool32 dtk_file_exists(const char* filePath)
 {
-    if (filePath == NULL) return DTK_FALSE;
+    if (filePath == NULL) {
+        return DTK_FALSE;
+    }
 
 #ifdef DTK_WIN32
     return dtk_file_exists__win32(filePath);
@@ -321,7 +333,9 @@ dtk_bool32 dtk_file_exists(const char* filePath)
 
 dtk_result dtk_move_file(const char* oldPath, const char* newPath)
 {
-    if (oldPath == NULL || newPath == NULL) return DTK_INVALID_ARGS;
+    if (oldPath == NULL || newPath == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
 #if _WIN32
     if (MoveFileExA(oldPath, newPath, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED | MOVEFILE_WRITE_THROUGH) == 0) {
@@ -340,7 +354,9 @@ dtk_result dtk_move_file(const char* oldPath, const char* newPath)
 
 dtk_result dtk_copy_file(const char* srcPath, const char* dstPath, dtk_bool32 failIfExists)
 {
-    if (srcPath == NULL || dstPath == NULL) return DTK_INVALID_ARGS;
+    if (srcPath == NULL || dstPath == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
 #if _WIN32
     if (CopyFileA(srcPath, dstPath, failIfExists) == 0) {
@@ -391,7 +407,9 @@ dtk_result dtk_copy_file(const char* srcPath, const char* dstPath, dtk_bool32 fa
 
 dtk_bool32 dtk_is_file_read_only(const char* filePath)
 {
-    if (filePath == NULL || filePath[0] == '\0') return DTK_FALSE;
+    if (filePath == NULL || filePath[0] == '\0') {
+        return DTK_FALSE;
+    }
 
 #if _WIN32
     DWORD attributes = GetFileAttributesA(filePath);
@@ -438,7 +456,9 @@ dtk_uint64 dtk_get_file_modified_time(const char* filePath)
 
 dtk_result dtk_delete_file(const char* filePath)
 {
-    if (filePath == NULL) return DTK_INVALID_ARGS;
+    if (filePath == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
 #ifdef DTK_WIN32
     if (DeleteFileA(filePath) == 0) {
@@ -458,7 +478,9 @@ dtk_result dtk_delete_file(const char* filePath)
 
 dtk_result dtk_mkdir(const char* directoryPath)
 {
-    if (directoryPath == NULL) return DTK_INVALID_ARGS;
+    if (directoryPath == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
 #ifdef DTK_WIN32
     if (CreateDirectoryA(directoryPath, NULL) == 0) {
@@ -482,42 +504,58 @@ dtk_result dtk_mkdir_recursive(const char* directoryPath)
         return DTK_INVALID_ARGS;
     }
 
-    // TODO: Don't restrict this to 4096 characters.
+    // All we do is iterate over each segment in the path and check for the directory.
+    dtk_string runningPathStr = NULL;
 
-    // All we need to do is iterate over every segment in the path and try creating the directory.
-    char runningPath[4096];
-    dtk_zero_memory(runningPath, sizeof(runningPath));
+    dtk_path_iterator pathIterator;
+    if (dtk_path_first(directoryPath, &pathIterator)) {
+        for (;;) {
+            if (runningPathStr != NULL) {
+                runningPathStr = dtk_append_string(runningPathStr, "/");
+            }
+            runningPathStr = dtk_append_substring(runningPathStr, pathIterator.path + pathIterator.segment.offset, pathIterator.segment.length);
 
-    size_t i = 0;
-    for (;;) {
-        if (i >= sizeof(runningPath)-1) {
-            return DTK_PATH_TOO_LONG;   // Path is too long.
-        }
-
-        if (directoryPath[0] == '\0' || directoryPath[0] == '/' || directoryPath[0] == '\\') {
-            if (runningPath[0] != '\0' && !(runningPath[1] == ':' && runningPath[2] == '\0')) {   // <-- If the running path is empty, it means we're trying to create the root directory.
-                if (!dtk_directory_exists(runningPath)) {
-                    dtk_result result = dtk_mkdir(runningPath);
-                    if (result != DTK_SUCCESS) {
-                        return result;
-                    }
+            if (runningPathStr != NULL && !dtk_path_is_root(runningPathStr) && !dtk_directory_exists(runningPathStr)) {
+                dtk_result result = dtk_mkdir(runningPathStr);
+                if (result != DTK_SUCCESS) {
+                    dtk_free_string(runningPathStr);
+                    return result;
                 }
             }
 
-            runningPath[i++] = '/';
-            runningPath[i]   = '\0';
-
-            if (directoryPath[0] == '\0') {
+            if (!dtk_path_next(&pathIterator)) {
                 break;
             }
-        } else {
-            runningPath[i++] = directoryPath[0];
         }
+    }
+    
+    dtk_free_string(runningPathStr);
+    return DTK_SUCCESS;
+}
 
-        directoryPath += 1;
+dtk_result dtk_mkdir_for_file(const char* filePath)
+{
+    // This is done in two passes. We first get the length, dynamically allocate some memory, then do it again.
+    size_t directoryLenPlusNullTerminator = dtk_path_base_path(NULL, 0, filePath);
+    if (directoryLenPlusNullTerminator == 0) {
+        return DTK_ERROR;   // Failed to get the length of the base path.
     }
 
-    return DTK_SUCCESS;
+    char* directoryPath = (char*)dtk_malloc(sizeof(*directoryPath)*directoryLenPlusNullTerminator);
+    if (directoryPath == NULL) {
+        return DTK_OUT_OF_MEMORY;
+    }
+
+    directoryLenPlusNullTerminator = dtk_path_base_path(directoryPath, directoryLenPlusNullTerminator, filePath);
+    if (directoryLenPlusNullTerminator == NULL) {
+        dtk_free(directoryPath);
+        return DTK_ERROR;   // Failed to get the base path. Should never happen since the input path is the same.
+    }
+
+    dtk_result result = dtk_mkdir_recursive(directoryPath);
+    dtk_free(directoryPath);
+
+    return result;
 }
 
 dtk_bool32 dtk_iterate_files(const char* directory, dtk_bool32 recursive, dtk_iterate_files_proc proc, void* pUserData)
