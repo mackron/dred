@@ -492,7 +492,7 @@ dtk_string dtk_make_stringf(const char* format, ...)
     return str;
 }
 
-dtk_string dtk_make_string_length(const char* str, size_t strLen)
+dtk_string dtk_make_string_from_substring(const char* str, size_t strLen)
 {
     if (str == NULL) return NULL;
     
@@ -575,14 +575,14 @@ dtk_string dtk_append_stringf(dtk_string lstr, const char* format, ...)
     return str;
 }
 
-dtk_string dtk_append_string_length(dtk_string lstr, const char* rstr, size_t rstrLen)
+dtk_string dtk_append_substring(dtk_string lstr, const char* rstr, size_t rstrLen)
 {
     if (rstr == NULL) {
         rstr = "";
     }
 
     if (lstr == NULL) {
-        return dtk_make_string(rstr);
+        return dtk_make_string_from_substring(rstr, rstrLen);
     }
 
     size_t lstrLen = dtk_string_length(lstr);
