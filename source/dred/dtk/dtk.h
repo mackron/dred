@@ -106,26 +106,30 @@ typedef int dtk_result;
 #include <time.h>
 
 #ifndef dtk_assert
-#define dtk_assert(condition)   assert(condition)
+#define dtk_assert(condition)               assert(condition)
 #endif
 #ifndef dtk_malloc
-#define dtk_malloc(sz)          malloc(sz);
+#define dtk_malloc(sz)                      malloc(sz);
 #endif
 #ifndef dtk_calloc
-#define dtk_calloc(c, sz)       calloc((c), (sz))
+#define dtk_calloc(c, sz)                   calloc((c), (sz))
 #endif
 #ifndef dtk_realloc
-#define dtk_realloc(p, sz)      realloc((p), (sz))
+#define dtk_realloc(p, sz)                  realloc((p), (sz))
 #endif
 #ifndef dtk_free
-#define dtk_free(p)             free(p)
+#define dtk_free(p)                         free(p)
+#endif
+#ifndef dtk_copy_memory
+#define dtk_copy_memory(dst, src, sz)       memcpy((dst), (src), (sz))
 #endif
 #ifndef dtk_zero_memory
-#define dtk_zero_memory(p, sz)  memset((p), 0, (sz))
+#define dtk_zero_memory(p, sz)              memset((p), 0, (sz))
 #endif
-#define dtk_zero_object(p)      dtk_zero_memory((p), sizeof(*(p)))
+#define dtk_zero_object(p)                  dtk_zero_memory((p), sizeof(*(p)))
 
 #define dtk_count_of(obj)                   (sizeof(obj) / sizeof(obj[0]))
+#define dtk_offset_ptr(p, offset)           (((dtk_uint8*)(p)) + (offset))
 #define dtk_min(x, y)                       (((x) < (y)) ? (x) : (y))
 #define dtk_max(x, y)                       (((x) > (y)) ? (x) : (y))
 #define dtk_clamp(x, lo, hi)                (((x) < (lo)) ? (lo) : (((x) > (hi)) ? (hi) : (x)))
