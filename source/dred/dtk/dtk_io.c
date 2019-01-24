@@ -670,3 +670,60 @@ dtk_result dtk_set_current_directory(const char* path)
 #endif
 }
 
+char* dtk_make_absolute_path_from_current_directory(const char* pRelativePath)
+{
+    if (pRelativePath == NULL) {
+        pRelativePath = "";
+    }
+
+    char* pCurrentDir = dtk_get_current_directory();
+    if (pCurrentDir == NULL) {
+        return NULL;
+    }
+
+    size_t len = dtk_path_to_absolute(NULL, 0, pRelativePath, pCurrentDir);
+    if (len == 0) {
+        dtk_free(pCurrentDir);
+        return NULL;
+    }
+
+    char* pAbsolutePath = (char*)dtk_malloc(len);
+    if (pAbsolutePath == NULL) {
+        dtk_free(pCurrentDir);
+        return NULL;
+    }
+
+    dtk_path_to_absolute(pAbsolutePath, len, pRelativePath, pCurrentDir);
+    dtk_free(pCurrentDir);
+
+    return pAbsolutePath;
+}
+
+char* dtk_make_relative_path_from_current_directory(const char* pAbsolutePath)
+{
+    if (pAbsolutePath == NULL) {
+        pAbsolutePath = "";
+    }
+
+    char* pCurrentDir = dtk_get_current_directory();
+    if (pCurrentDir == NULL) {
+        return NULL;
+    }
+
+    size_t len = dtk_path_to_relative(NULL, 0, pAbsolutePath, pCurrentDir);
+    if (len == 0) {
+        dtk_free(pCurrentDir);
+        return NULL;
+    }
+
+    char* pRelativePath = (char*)dtk_malloc(len);
+    if (pRelativePath == NULL) {
+        dtk_free(pCurrentDir);
+        return NULL;
+    }
+
+    dtk_path_to_relative(pRelativePath, len, pAbsolutePath, pCurrentDir);
+    dtk_free(pCurrentDir);
+
+    return pRelativePath;
+}

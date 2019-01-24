@@ -256,14 +256,14 @@ size_t dtk_path_remove_file_name_in_place(char* path);
 
 // Converts an absolute path to a relative path.
 //
-// Returns true if the conversion was successful; false if there was an error.
+// Returns the length of the resulting string plus the null terminator. Returns on error.
 //
 // This will normalize every slash to forward slashes.
 size_t dtk_path_to_relative(char* pathOut, size_t pathOutSize, const char* absolutePathToMakeRelative, const char* absolutePathToMakeRelativeTo);
 
 // Converts a relative path to an absolute path based on a base path.
 //
-// Returns true if the conversion was successful; false if there was an error.
+// Returns the length of the resulting string plus the null terminator. Returns on error.
 //
 // This is equivalent to an append followed by a clean. Slashes will be normalized to forward slashes.
 size_t dtk_path_to_absolute(char* pathOut, size_t pathOutSize, const char* relativePathToMakeAbsolute, const char* basePath);
