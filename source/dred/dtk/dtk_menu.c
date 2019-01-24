@@ -954,6 +954,41 @@ dtk_result dtk_menu_prepend_item(dtk_menu* pMenu, dtk_menu_item_info* pInfo)
     return dtk_menu_insert_item(pMenu, 0, pInfo);
 }
 
+
+dtk_result dtk_menu_insert_separator(dtk_menu* pMenu, dtk_uint32 index)
+{
+    dtk_menu_item_info mii;
+    dtk_result result = dtk_menu_item_info_init_separator(&mii);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    return dtk_menu_insert_item(pMenu, index, &mii);
+}
+
+dtk_result dtk_menu_append_separator(dtk_menu* pMenu)
+{
+    dtk_menu_item_info mii;
+    dtk_result result = dtk_menu_item_info_init_separator(&mii);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    return dtk_menu_append_item(pMenu, &mii);
+}
+
+dtk_result dtk_menu_prepend_separator(dtk_menu* pMenu)
+{
+    dtk_menu_item_info mii;
+    dtk_result result = dtk_menu_item_info_init_separator(&mii);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    return dtk_menu_prepend_item(pMenu, &mii);
+}
+
+
 dtk_result dtk_menu_remove_item(dtk_menu* pMenu, dtk_uint32 index)
 {
     if (pMenu == NULL || !dtk_menu__is_item_index_valid(pMenu, index)) return DTK_INVALID_ARGS;
