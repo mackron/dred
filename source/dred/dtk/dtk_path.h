@@ -136,6 +136,9 @@ const char* dtk_path_file_name(const char* path);
 // On a path such as "filename.ext1.ext2" the returned string will be "ext2".
 const char* dtk_path_extension(const char* path);
 
+// Determines whether or not the specified path has an extension.
+dtk_bool32 dtk_path_has_extension(const char* path);
+
 
 // Checks whether or not the two paths are equal.
 //

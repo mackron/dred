@@ -324,6 +324,16 @@ const char* dtk_path_extension(const char* path)
     return (lastOccurance != NULL) ? lastOccurance : extension;
 }
 
+dtk_bool32 dtk_path_has_extension(const char* path)
+{
+    const char* ext = dtk_path_extension(path);
+    if (ext == NULL || ext[0] == '\0') {
+        return DTK_FALSE;
+    }
+
+    return DTK_TRUE;
+}
+
 
 dtk_bool32 dtk_path_equal(const char* path1, const char* path2)
 {
