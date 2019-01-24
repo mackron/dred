@@ -23,6 +23,7 @@ typedef struct
 typedef struct
 {
     const char* pDefaultPath;
+    const char* pDefaultExtension;
     const char** ppExtensionFilters;    // See note in the dtk_open_file_dialog_options struct.
 } dtk_save_file_dialog_options;
 
