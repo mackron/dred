@@ -612,59 +612,61 @@ dtk_dialog_result dtk_show_open_file_dialog__gtk(dtk_window* pParentWindow, dtk_
 
 
     // Filters.
-    const char** ppNextFilter = pOptions->ppExtensionFilters;
-    for (;;) {
-        const char* pName = ppNextFilter[0];
-        if (pName == NULL) {
-            break;
-        }
-
-        const char* pExtensions = ppNextFilter[1];
-        if (pExtensions == NULL) {
-            break;
-        }
-
-        GtkFileFilter* pFilterGTK = gtk_file_filter_new();
-        if (pFilterGTK == NULL) {
-            break;
-        }
-
-        // Name.
-        char* pPatternsStr = NULL;
-        if (pExtensions[0] != '\0') {
-            char* pTemp = dtk_make_string(pExtensions);
-            char* pToken = strtok(pTemp, " ,");
-            while (pToken != NULL) {
-                pPatternsStr = dtk_append_stringf(pPatternsStr, "*.%s", pToken);
-                pToken = strtok(NULL, " ,");
+    if (pOptions->ppExtensionFilters != NULL) {
+        const char** ppNextFilter = pOptions->ppExtensionFilters;
+        for (;;) {
+            const char* pName = ppNextFilter[0];
+            if (pName == NULL) {
+                break;
             }
-            dtk_free_string(pTemp);
-        } else {
-            pPatternsStr = dtk_make_string("*.*");
-        }
 
-        char* pNameWithPatterns = dtk_make_stringf("%s (%s)", pName, pPatternsStr);
-        gtk_file_filter_set_name(pFilterGTK, pNameWithPatterns);
-        dtk_free_string(pNameWithPatterns);
-        dtk_free_string(pPatternsStr);
+            const char* pExtensions = ppNextFilter[1];
+            if (pExtensions == NULL) {
+                break;
+            }
+
+            GtkFileFilter* pFilterGTK = gtk_file_filter_new();
+            if (pFilterGTK == NULL) {
+                break;
+            }
+
+            // Name.
+            char* pPatternsStr = NULL;
+            if (pExtensions[0] != '\0') {
+                char* pTemp = dtk_make_string(pExtensions);
+                char* pToken = strtok(pTemp, " ,");
+                while (pToken != NULL) {
+                    pPatternsStr = dtk_append_stringf(pPatternsStr, "*.%s", pToken);
+                    pToken = strtok(NULL, " ,");
+                }
+                dtk_free_string(pTemp);
+            } else {
+                pPatternsStr = dtk_make_string("*.*");
+            }
+
+            char* pNameWithPatterns = dtk_make_stringf("%s (%s)", pName, pPatternsStr);
+            gtk_file_filter_set_name(pFilterGTK, pNameWithPatterns);
+            dtk_free_string(pNameWithPatterns);
+            dtk_free_string(pPatternsStr);
         
-        // Patterns.
-        if (pExtensions[0] != '\0') {
-            char* pTemp = dtk_make_string(pExtensions);
-            char* pToken = strtok(pTemp, " ,");
-            while (pToken != NULL) {
-                char* pPattern = dtk_make_stringf("*.%s", pToken);
-                gtk_file_filter_add_pattern(pFilterGTK, pPattern);
-                dtk_free_string(pPattern);
-                pToken = strtok(NULL, " ,");
+            // Patterns.
+            if (pExtensions[0] != '\0') {
+                char* pTemp = dtk_make_string(pExtensions);
+                char* pToken = strtok(pTemp, " ,");
+                while (pToken != NULL) {
+                    char* pPattern = dtk_make_stringf("*.%s", pToken);
+                    gtk_file_filter_add_pattern(pFilterGTK, pPattern);
+                    dtk_free_string(pPattern);
+                    pToken = strtok(NULL, " ,");
+                }
+                dtk_free_string(pTemp);
+            } else {
+                gtk_file_filter_add_pattern(pFilterGTK, "*.*");
             }
-            dtk_free_string(pTemp);
-        } else {
-            gtk_file_filter_add_pattern(pFilterGTK, "*.*");
-        }
 
-        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), pFilterGTK);
-        ppNextFilter += 2;
+            gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), pFilterGTK);
+            ppNextFilter += 2;
+        }
     }
 
 
@@ -745,59 +747,61 @@ dtk_dialog_result dtk_show_save_file_dialog__gtk(dtk_window* pParentWindow, dtk_
     }
 
     // Filters.
-    const char** ppNextFilter = pOptions->ppExtensionFilters;
-    for (;;) {
-        const char* pName = ppNextFilter[0];
-        if (pName == NULL) {
-            break;
-        }
-
-        const char* pExtensions = ppNextFilter[1];
-        if (pExtensions == NULL) {
-            break;
-        }
-
-        GtkFileFilter* pFilterGTK = gtk_file_filter_new();
-        if (pFilterGTK == NULL) {
-            break;
-        }
-
-        // Name.
-        char* pPatternsStr = NULL;
-        if (pExtensions[0] != '\0') {
-            char* pTemp = dtk_make_string(pExtensions);
-            char* pToken = strtok(pTemp, " ,");
-            while (pToken != NULL) {
-                pPatternsStr = dtk_append_stringf(pPatternsStr, "*.%s", pToken);
-                pToken = strtok(NULL, " ,");
+    if (pOptions->ppExtensionFilters != NULL) {
+        const char** ppNextFilter = pOptions->ppExtensionFilters;
+        for (;;) {
+            const char* pName = ppNextFilter[0];
+            if (pName == NULL) {
+                break;
             }
-            dtk_free_string(pTemp);
-        } else {
-            pPatternsStr = dtk_make_string("*.*");
-        }
 
-        char* pNameWithPatterns = dtk_make_stringf("%s (%s)", pName, pPatternsStr);
-        gtk_file_filter_set_name(pFilterGTK, pNameWithPatterns);
-        dtk_free_string(pNameWithPatterns);
-        dtk_free_string(pPatternsStr);
+            const char* pExtensions = ppNextFilter[1];
+            if (pExtensions == NULL) {
+                break;
+            }
+
+            GtkFileFilter* pFilterGTK = gtk_file_filter_new();
+            if (pFilterGTK == NULL) {
+                break;
+            }
+
+            // Name.
+            char* pPatternsStr = NULL;
+            if (pExtensions[0] != '\0') {
+                char* pTemp = dtk_make_string(pExtensions);
+                char* pToken = strtok(pTemp, " ,");
+                while (pToken != NULL) {
+                    pPatternsStr = dtk_append_stringf(pPatternsStr, "*.%s", pToken);
+                    pToken = strtok(NULL, " ,");
+                }
+                dtk_free_string(pTemp);
+            } else {
+                pPatternsStr = dtk_make_string("*.*");
+            }
+
+            char* pNameWithPatterns = dtk_make_stringf("%s (%s)", pName, pPatternsStr);
+            gtk_file_filter_set_name(pFilterGTK, pNameWithPatterns);
+            dtk_free_string(pNameWithPatterns);
+            dtk_free_string(pPatternsStr);
         
-        // Patterns.
-        if (pExtensions[0] != '\0') {
-            char* pTemp = dtk_make_string(pExtensions);
-            char* pToken = strtok(pTemp, " ,");
-            while (pToken != NULL) {
-                char* pPattern = dtk_make_stringf("*.%s", pToken);
-                gtk_file_filter_add_pattern(pFilterGTK, pPattern);
-                dtk_free_string(pPattern);
-                pToken = strtok(NULL, " ,");
+            // Patterns.
+            if (pExtensions[0] != '\0') {
+                char* pTemp = dtk_make_string(pExtensions);
+                char* pToken = strtok(pTemp, " ,");
+                while (pToken != NULL) {
+                    char* pPattern = dtk_make_stringf("*.%s", pToken);
+                    gtk_file_filter_add_pattern(pFilterGTK, pPattern);
+                    dtk_free_string(pPattern);
+                    pToken = strtok(NULL, " ,");
+                }
+                dtk_free_string(pTemp);
+            } else {
+                gtk_file_filter_add_pattern(pFilterGTK, "*.*");
             }
-            dtk_free_string(pTemp);
-        } else {
-            gtk_file_filter_add_pattern(pFilterGTK, "*.*");
-        }
 
-        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), pFilterGTK);
-        ppNextFilter += 2;
+            gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), pFilterGTK);
+            ppNextFilter += 2;
+        }
     }
 
     dtk_dialog_result result = DTK_DIALOG_RESULT_CANCEL;
@@ -810,16 +814,29 @@ dtk_dialog_result dtk_show_save_file_dialog__gtk(dtk_window* pParentWindow, dtk_
             goto done;
         }
 
+        size_t extensionLen = 0;
+        const char* extension = dtk_path_extension(filenameGTK);
+        if (extension == NULL || extension[0] == '\0') {
+            // No extension. Need to append pDefaultExtension.
+            if (pDefaultExtension != NULL) {
+                extensionLen = strlen(pOptions->pDefaultExtension)+1; // +1 for the dot between the name and the extension.
+            }
+        }
+
         // The output string needs to be freed with dtk_free() which means we need to make another copy using dtk_malloc().
         size_t selectedFilePathLen = strlen(filenameGTK);
-        char* pSelectedFilePath = (char*)dtk_malloc(selectedFilePathLen + 1);
+        char* pSelectedFilePath = (char*)dtk_malloc(selectedFilePathLen+extensionLen+1);
         if (pSelectedFilePath == NULL) {
             g_free(filenameGTK);
             result = DTK_OUT_OF_MEMORY;    // Out of memory.
             goto done;
         }
 
-        dtk_strcpy_s(pSelectedFilePath, selectedFilePathLen+1, filenameGTK);
+        dtk_strcpy_s(pSelectedFilePath, selectedFilePathLen+extensionLen+1, filenameGTK);
+        if (extensionLen > 0) {
+            dtk_strcat_s(pSelectedFilePath, selectedFilePathLen+extensionLen+1, ".");
+            dtk_strcat_s(pSelectedFilePath, selectedFilePathLen+extensionLen+1, pOptions->pDefaultExtension);
+        }
 
         if (ppSelectedFilePath) {
             *ppSelectedFilePath = pSelectedFilePath;
