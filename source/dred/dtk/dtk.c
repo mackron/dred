@@ -916,6 +916,16 @@ wchar_t* dtk__mb_to_wchar__win32(dtk_context* pTK, const char* text, size_t text
 {
     int wcharCount = 0;
 
+    // Note from MSDN regarding textSizeInBytes/cbMultiByte:
+    //
+    //   If this parameter is -1, the function processes the entire input string, including the terminating null character. Therefore,
+    //   the resulting Unicode string has a terminating null character, and the length returned by the function includes this character.
+    //
+    // We prefer this to _not_ include the null terminator. Therefore we need to calculate the length first.
+    if (textSizeInBytes == (size_t)-1) {
+        textSizeInBytes = strlen(text);
+    }
+
     // We first try to copy the string into the already-allocated buffer. If it fails we fall back to the slow path which requires
     // two conversions.
     if (pTK->win32.pCharConvBuffer == NULL) {
