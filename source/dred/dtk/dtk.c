@@ -595,6 +595,7 @@ dtk_result dtk_init__win32(dtk_context* pTK)
 
     // Cursors.
     pTK->win32.hCursorArrow  = (dtk_handle)LoadCursor(NULL, IDC_ARROW);
+    pTK->win32.hCursorHand   = (dtk_handle)LoadCursor(NULL, IDC_HAND);
     pTK->win32.hCursorIBeam  = (dtk_handle)LoadCursor(NULL, IDC_IBEAM);
     pTK->win32.hCursorCross  = (dtk_handle)LoadCursor(NULL, IDC_CROSS);
     pTK->win32.hCursorSizeWE = (dtk_handle)LoadCursor(NULL, IDC_SIZEWE);
@@ -1143,6 +1144,7 @@ dtk_result dtk_init__gtk(dtk_context* pTK)
 #endif
 
         pTK->gtk.pCursorDefault      = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_LEFT_PTR);
+        pTK->gtk.pCursorHand         = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_HAND1);
         pTK->gtk.pCursorIBeam        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_XTERM);
         pTK->gtk.pCursorCross        = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_CROSSHAIR);
         pTK->gtk.pCursorDoubleArrowH = (dtk_ptr)gdk_cursor_new_for_display(gdk_display_get_default(), GDK_SB_H_DOUBLE_ARROW);

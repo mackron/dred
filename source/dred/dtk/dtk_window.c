@@ -1012,6 +1012,11 @@ dtk_result dtk_window_set_cursor__win32(dtk_window* pWindow, dtk_system_cursor_t
     HCURSOR hCursor = NULL;
     switch (cursor)
     {
+        case dtk_system_cursor_type_hand:
+        {
+            hCursor = (HCURSOR)pTK->win32.hCursorHand;
+        } break;
+
         case dtk_system_cursor_type_text:
         {
             hCursor = (HCURSOR)pTK->win32.hCursorIBeam;
@@ -1948,6 +1953,11 @@ dtk_result dtk_window_set_cursor__gtk(dtk_window* pWindow, dtk_system_cursor_typ
     GdkCursor* pGTKCursor = NULL;
     switch (cursor)
     {
+        case dtk_system_cursor_type_hand:
+        {
+            pGTKCursor = GDK_CURSOR(pTK->gtk.pCursorHand);
+        } break;
+
         case dtk_system_cursor_type_text:
         {
             pGTKCursor = GDK_CURSOR(pTK->gtk.pCursorIBeam);

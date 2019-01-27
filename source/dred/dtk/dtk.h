@@ -162,6 +162,7 @@ typedef enum
     dtk_system_cursor_type_none,
     dtk_system_cursor_type_default,
     dtk_system_cursor_type_arrow = dtk_system_cursor_type_default,
+    dtk_system_cursor_type_hand,
     dtk_system_cursor_type_text,
     dtk_system_cursor_type_cross,
     dtk_system_cursor_type_double_arrow_h,
@@ -536,6 +537,7 @@ struct dtk_context
             dtk_proc AlphaBlend;
 
             /*HCURSOR*/ dtk_handle hCursorArrow;
+            /*HCURSOR*/ dtk_handle hCursorHand;
             /*HCURSOR*/ dtk_handle hCursorIBeam;
             /*HCURSOR*/ dtk_handle hCursorCross;
             /*HCURSOR*/ dtk_handle hCursorSizeWE;
