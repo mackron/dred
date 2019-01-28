@@ -652,6 +652,8 @@ dtk_bool32 dtk_handle_local_event(dtk_event* pEvent);
 dtk_result dtk_post_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize);
 
 // Same as dtk_post_custom_event(), except handles it immediately rather than posting it to the queue.
+//
+// This will not make a copy of the data.
 dtk_result dtk_handle_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize);
 
 // Posts a paint notification to the event queue to let it know there is a pending paint request for a window.
