@@ -50,7 +50,7 @@ struct dtk_textbox
     } style;
 };
 
-dtk_result dtk_textbox_init(dtk_context* pTK, dtk_control* pParent, dtk_event_proc onEvent, dtk_textbox* pTextBox);
+dtk_result dtk_textbox_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_textbox* pTextBox);
 dtk_result dtk_textbox_uninit(dtk_textbox* pTextBox);
 dtk_bool32 dtk_textbox_default_event_handler(dtk_event* pEvent);
 dtk_result dtk_textbox_set_mode(dtk_textbox* pTextBox, dtk_textbox_mode mode);

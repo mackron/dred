@@ -6,7 +6,7 @@
 // - Not thread-safe. Editing the text on a second thread while in the middle of drawing will cause an error.
 //   - Perhaps only do text editing in the event handler (force all operations that edit text to go through the event handler)?
 
-dtk_result dtk_textbox_init(dtk_context* pTK, dtk_control* pParent, dtk_event_proc onEvent, dtk_textbox* pTextBox)
+dtk_result dtk_textbox_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, dtk_textbox* pTextBox)
 {
     if (pTextBox == NULL) {
         return DTK_INVALID_ARGS;
