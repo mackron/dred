@@ -460,7 +460,9 @@ static size_t dtk_path_append__internal(char* pathOut, size_t pathOutSize, const
 
     if (other[0] == '\0') {
         if (pathOut != NULL) {
-            dtk_strcpy_s(pathOut, pathOutSize, base);
+            if (pathOut != base) {
+                dtk_strcpy_s(pathOut, pathOutSize, base);
+            }
         }
         return strlen(base) + 1;    // +1 for null terminator.
     }
@@ -478,7 +480,9 @@ static size_t dtk_path_append__internal(char* pathOut, size_t pathOutSize, const
 
     if (pathOut != NULL) {
         if (pathOutLength+1 <= pathOutSize) {
-            dtk_strcpy_s(pathOut + 0,               pathOutSize - 0,               base);
+            if (pathOut != base) {
+                dtk_strcpy_s(pathOut + 0, pathOutSize - 0, base);
+            }
             dtk_strcpy_s(pathOut + path1Length,     pathOutSize - path1Length,     "/");
             dtk_strcpy_s(pathOut + path1Length + 1, pathOutSize - path1Length - 1, other);
         }
@@ -513,7 +517,9 @@ size_t dtk_path_append_extension(char* pathOut, size_t pathOutSize, const char* 
 
     if (extension[0] == '\0') {
         if (pathOut != NULL) {
-            dtk_strcpy_s(pathOut, pathOutSize, base);
+            if (pathOut != base) {
+                dtk_strcpy_s(pathOut, pathOutSize, base);
+            }
         }
         return strlen(base) + 1;    // +1 for null terminator.
     }
@@ -526,7 +532,9 @@ size_t dtk_path_append_extension(char* pathOut, size_t pathOutSize, const char* 
 
     if (pathOut != NULL) {
         if (pathOutLength+1 <= pathOutSize) {
-            dtk_strcpy_s(pathOut + 0,              pathOutSize - 0,              base);
+            if (pathOut != base) {
+                dtk_strcpy_s(pathOut + 0, pathOutSize - 0, base);
+            }
             dtk_strcpy_s(pathOut + baseLength,     pathOutSize - baseLength,     ".");
             dtk_strcpy_s(pathOut + baseLength + 1, pathOutSize - baseLength - 1, extension);
         }

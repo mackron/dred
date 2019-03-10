@@ -198,6 +198,8 @@ size_t dtk_path_file_name_without_extension(char* pathOut, size_t pathOutSize, c
 // Returns true if the paths were appended successfully; false otherwise.
 //
 // This assumes both paths are well formed and "other" is a relative path.
+//
+// "pathOut" and "base" are allowed to be the same pointer, in which case the other path is appended in-place.
 size_t dtk_path_append(char* pathOut, size_t pathOutSize, const char* base, const char* other);
 
 // Appends a base path and an iterator together, and copyies them to a separate buffer.
@@ -210,6 +212,8 @@ size_t dtk_path_append(char* pathOut, size_t pathOutSize, const char* base, cons
 // Returns true if the paths were appended successfully; false otherwise.
 //
 // This assumes both paths are well formed and "i" is a valid iterator.
+//
+// "pathOut" and "base" are allowed to be the same pointer, in which case the other path is appended in-place.
 size_t dtk_path_append_iterator(char* pathOut, size_t pathOutSize, const char* base, dtk_path_iterator i);
 
 // Appends an extension to the given base path and copies them to a separate buffer.
@@ -220,6 +224,8 @@ size_t dtk_path_append_iterator(char* pathOut, size_t pathOutSize, const char* b
 // extension   [in]  The relative path to append to "base".
 //
 // Returns true if the paths were appended successfully; false otherwise.
+//
+// "pathOut" and "base" are allowed to be the same pointer, in which case the other path is appended in-place.
 size_t dtk_path_append_extension(char* pathOut, size_t pathOutSize, const char* base, const char* extension);
 
 
