@@ -465,7 +465,7 @@ static size_t dtk_path_append__internal(char* pathOut, size_t pathOutSize, const
     // It only ever makes sense to "append" an absolute path to a blank path. If the other path is absolute, but the base
     // path is not blank we need to return an error because it just doesn't make sense to do this.
     if (dtk_path_is_absolute(other) && base[0] != '\0') {
-        return DTK_FALSE;
+        return 0;
     }
 
     if (other[0] == '\0') {
