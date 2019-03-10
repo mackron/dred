@@ -45,6 +45,25 @@ DTK_INLINE dtk_color dtk_rgb(dtk_uint8 r, dtk_uint8 g, dtk_uint8 b)
     return dtk_rgba(r, g, b, 255);
 }
 
+DTK_INLINE dtk_color dtk_rgba_from_uint32(dtk_uint32 c)
+{
+    return dtk_rgba(
+        (dtk_uint8)((c & 0xFF000000) >> 24),
+        (dtk_uint8)((c & 0x00FF0000) >> 16),
+        (dtk_uint8)((c & 0x0000FF00) >>  8),
+        (dtk_uint8)((c & 0x000000FF) >>  0)
+    );
+}
+
+DTK_INLINE dtk_uint32 dtk_color_to_uint32(dtk_color c)
+{
+    return
+        (((dtk_uint32)c.r << 24) & 0xFF000000) | 
+        (((dtk_uint32)c.g << 16) & 0x00FF0000) | 
+        (((dtk_uint32)c.b <<  8) & 0x0000FF00) | 
+        (((dtk_uint32)c.a <<  0) & 0x000000FF);
+}
+
 DTK_INLINE dtk_bool32 dtk_color_equal(dtk_color c0, dtk_color c1)
 {
     return

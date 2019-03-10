@@ -259,6 +259,11 @@ LRESULT CALLBACK dtk_GenericWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
         case WM_SIZE:
         {
+            // The internal width and height members of dtk_control need to be set so that the DTK_EVENT_SIZE event handler can
+            // call dtk_control_get_size/width/height() with reliable results.
+            DTK_CONTROL(pWindow)->width  = LOWORD(lParam);
+            DTK_CONTROL(pWindow)->height = HIWORD(lParam);
+
             e.type = DTK_EVENT_SIZE;
             e.size.width  = LOWORD(lParam);
             e.size.height = HIWORD(lParam);
@@ -1007,6 +1012,11 @@ dtk_result dtk_window_set_cursor__win32(dtk_window* pWindow, dtk_system_cursor_t
     HCURSOR hCursor = NULL;
     switch (cursor)
     {
+        case dtk_system_cursor_type_hand:
+        {
+            hCursor = (HCURSOR)pTK->win32.hCursorHand;
+        } break;
+
         case dtk_system_cursor_type_text:
         {
             hCursor = (HCURSOR)pTK->win32.hCursorIBeam;
@@ -1322,6 +1332,11 @@ static void dtk_window__on_size_allocate__gtk(GtkWidget *pWidget, GtkAllocation 
     // for the event handler to have the size of both the window _and_ the client area, we post the size event here.
     pWindow->gtk.windowWidth = (dtk_int32)width;
     pWindow->gtk.windowHeight = (dtk_int32)height;
+
+    // The internal dimensions need to be set before posting the event so that the DTK_EVENT_SIZE event handler can call
+    // dtk_control_get_size/width/height() with the correct results.
+    DTK_CONTROL(pWindow)->width  = pWindow->gtk.configureClientWidth;
+    DTK_CONTROL(pWindow)->height = pWindow->gtk.configureClientHeight;
 
     dtk_event e = dtk_event_init(DTK_CONTROL(pWindow)->pTK, DTK_EVENT_SIZE, DTK_CONTROL(pWindow));
     e.size.width = pWindow->gtk.configureClientWidth;
@@ -1938,6 +1953,11 @@ dtk_result dtk_window_set_cursor__gtk(dtk_window* pWindow, dtk_system_cursor_typ
     GdkCursor* pGTKCursor = NULL;
     switch (cursor)
     {
+        case dtk_system_cursor_type_hand:
+        {
+            pGTKCursor = GDK_CURSOR(pTK->gtk.pCursorHand);
+        } break;
+
         case dtk_system_cursor_type_text:
         {
             pGTKCursor = GDK_CURSOR(pTK->gtk.pCursorIBeam);

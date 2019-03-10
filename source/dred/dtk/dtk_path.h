@@ -136,6 +136,9 @@ const char* dtk_path_file_name(const char* path);
 // On a path such as "filename.ext1.ext2" the returned string will be "ext2".
 const char* dtk_path_extension(const char* path);
 
+// Determines whether or not the specified path has an extension.
+dtk_bool32 dtk_path_has_extension(const char* path);
+
 
 // Checks whether or not the two paths are equal.
 //
@@ -262,14 +265,14 @@ size_t dtk_path_remove_file_name_in_place(char* path);
 
 // Converts an absolute path to a relative path.
 //
-// Returns true if the conversion was successful; false if there was an error.
+// Returns the length of the resulting string plus the null terminator. Returns on error.
 //
 // This will normalize every slash to forward slashes.
 size_t dtk_path_to_relative(char* pathOut, size_t pathOutSize, const char* absolutePathToMakeRelative, const char* absolutePathToMakeRelativeTo);
 
 // Converts a relative path to an absolute path based on a base path.
 //
-// Returns true if the conversion was successful; false if there was an error.
+// Returns the length of the resulting string plus the null terminator. Returns on error.
 //
 // This is equivalent to an append followed by a clean. Slashes will be normalized to forward slashes.
 size_t dtk_path_to_absolute(char* pathOut, size_t pathOutSize, const char* relativePathToMakeAbsolute, const char* basePath);

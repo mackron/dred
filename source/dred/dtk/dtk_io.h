@@ -76,3 +76,13 @@ char* dtk_get_current_directory();
 
 // Sets the current directory.
 dtk_result dtk_set_current_directory(const char* path);
+
+// Converts a relative path to absolute based on the current directory.
+//
+// Free the returned string with dtk_free(). Returns NULL on error.
+char* dtk_make_absolute_path_from_current_directory(const char* pRelativePath);
+
+// Converts an absolute path to relative based on the current directory.
+//
+// Free the returned string with dtk_free(). Returns NULL on error.
+char* dtk_make_relative_path_from_current_directory(const char* pAbsolutePath);

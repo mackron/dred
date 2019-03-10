@@ -82,6 +82,11 @@ dtk_result dtk_menu_insert_item(dtk_menu* pMenu, dtk_uint32 index, dtk_menu_item
 dtk_result dtk_menu_append_item(dtk_menu* pMenu, dtk_menu_item_info* pInfo);
 dtk_result dtk_menu_prepend_item(dtk_menu* pMenu, dtk_menu_item_info* pInfo);
 
+// Creates a separator menu item.
+dtk_result dtk_menu_insert_separator(dtk_menu* pMenu, dtk_uint32 index);
+dtk_result dtk_menu_append_separator(dtk_menu* pMenu);
+dtk_result dtk_menu_prepend_separator(dtk_menu* pMenu);
+
 // Removes a menu item.
 dtk_result dtk_menu_remove_item(dtk_menu* pMenu, dtk_uint32 index);
 DTK_INLINE dtk_result dtk_menu_remove_item_by_id(dtk_menu* pMenu, dtk_uint32 id) { return dtk_menu_remove_item(pMenu, dtk_menu_find_item_by_id(pMenu, id)); }
