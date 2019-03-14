@@ -8,20 +8,20 @@
 //   - Single selection area (no multi-select)
 //   - Simple realloc() based memory management of text string
 
-enum dtk_textbox_mode
+typedef enum
 {
     dtk_textbox_mode_single_line/*,
     dtk_textbox_mode_multi_line*/
-};
+} dtk_textbox_mode;
 
-enum dtk_text_alignment
+typedef enum
 {
     dtk_text_alignment_left,
     dtk_text_alignment_top,
     dtk_text_alignment_right,
     dtk_text_alignment_bottom,
     dtk_text_alignment_center
-};
+} dtk_text_alignment;
 
 #define DTK_TEXTBOX(a) ((dtk_textbox*)(a))
 struct dtk_textbox
@@ -71,4 +71,4 @@ dtk_uint32 dtk_textbox_get_border_width(dtk_textbox* pTextBox);
 dtk_result dtk_textbox_set_padding(dtk_textbox* pTextBox, dtk_uint32 left, dtk_uint32 top, dtk_uint32 right, dtk_uint32 bottom);
 dtk_result dtk_textbox_get_padding(dtk_textbox* pTextBox, dtk_uint32* pLeft, dtk_uint32* pTop, dtk_uint32* pRight, dtk_uint32* pBottom);
 dtk_result dtk_textbox_set_text_alignment(dtk_textbox* pTextBox, dtk_text_alignment alignmentHorz, dtk_text_alignment alignmentVert);
-dtk_result dtk_textbox_set_text_alignment(dtk_textbox* pTextBox, dtk_text_alignment* pAlignmentHorz, dtk_text_alignment* pAlignmentVert);
+dtk_result dtk_textbox_get_text_alignment(dtk_textbox* pTextBox, dtk_text_alignment* pAlignmentHorz, dtk_text_alignment* pAlignmentVert);

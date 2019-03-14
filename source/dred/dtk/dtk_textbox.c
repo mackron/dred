@@ -309,7 +309,7 @@ dtk_result dtk_textbox_set_text_alignment(dtk_textbox* pTextBox, dtk_text_alignm
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_textbox_set_text_alignment(dtk_textbox* pTextBox, dtk_text_alignment* pAlignmentHorz, dtk_text_alignment* pAlignmentVert)
+dtk_result dtk_textbox_get_text_alignment(dtk_textbox* pTextBox, dtk_text_alignment* pAlignmentHorz, dtk_text_alignment* pAlignmentVert)
 {
     if (pAlignmentHorz != NULL) {
         *pAlignmentHorz = dtk_text_alignment_left;
