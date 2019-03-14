@@ -491,10 +491,10 @@ static size_t dtk_path_append__internal(char* pathOut, size_t pathOutSize, const
     if (pathOut != NULL) {
         if (pathOutLength+1 <= pathOutSize) {
             if (pathOut != base) {
-                dtk_strcpy_s(pathOut + 0, pathOutSize - 0, base);
+                dtk_strncpy_s(pathOut, pathOutSize, base, path1Length);
             }
-            dtk_strcpy_s(pathOut + path1Length,     pathOutSize - path1Length,     "/");
-            dtk_strcpy_s(pathOut + path1Length + 1, pathOutSize - path1Length - 1, other);
+            dtk_strncpy_s(pathOut + path1Length,               pathOutSize - path1Length,               "/",   slashLength);
+            dtk_strncpy_s(pathOut + path1Length + slashLength, pathOutSize - path1Length - slashLength, other, path2Length);
         }
     }
 
