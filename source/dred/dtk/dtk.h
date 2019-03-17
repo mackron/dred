@@ -93,6 +93,7 @@ typedef int dtk_result;
 #define DTK_NO_SPACE                -21
 #define DTK_NEGATIVE_SEEK           -22
 #define DTK_TIMEOUT                 -23
+#define DTK_MEMORY_ALREADY_MAPPED   -24
 #define DTK_NO_DISPLAY              -256
 #define DTK_NO_SCREEN               -257
 #define DTK_QUIT                    -1024   // Returned by dtk_next_event() when a quit message is received.

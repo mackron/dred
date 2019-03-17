@@ -3,7 +3,7 @@
 typedef enum
 {
 	dtk_ipc_handle_type_pipe,
-	dtk_ipc_handle_type_shared_memory	
+	dtk_ipc_handle_type_shared_memory
 } dtk_ipc_handle_type;
   
 struct dtk_ipc_handle_impl
@@ -600,3 +600,334 @@ size_t dtk_pipe_get_translated_name(const char* name, char* nameOut, size_t name
 #endif
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// Shared Memory
+//
+///////////////////////////////////////////////////////////////////////////////
+#ifndef DTK_IPC_NO_SHARED_MEMORY
+#ifdef DTK_WIN32
+char* dtk_alloc_shared_memory_name__win32(const char* name)
+{
+    const char prefix[] = "Global\\";
+    size_t nameLen = strlen(prefix) + strlen(name);
+
+    char* nameOut = (char*)malloc(nameLen+1);   // +1 for null terminator.
+    if (nameOut == NULL) {
+        return NULL;
+    }
+
+    dtk_strcpy_s(nameOut, nameLen+1, prefix);
+    dtk_strcat_s(nameOut, nameLen+1, name);
+
+    return nameOut;
+}
+
+dtk_result dtk_create_shared_memory__win32(const char* name, size_t sizeInBytes, dtk_ipc_handle* pMemory)
+{
+    dtk_ipc_handle memory;
+    dtk_result result = dtk_ipc_alloc_handle__win32(dtk_ipc_handle_type_shared_memory, &memory);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+#if SIZE_MAX == ~0ULL
+    DWORD sizeHi = (sizeInBytes >> 32) & 0xFFFFFFFF;
+    DWORD sizeLo = sizeInBytes & 0xFFFFFFFF;
+#else
+    DWORD sizeHi = 0;
+    DWORD sizeLo = sizeInBytes & 0xFFFFFFFF;
+#endif
+
+    char* nameWin32 = dtk_alloc_shared_memory_name__win32(name);
+    if (nameWin32 == NULL) {
+        dtk_ipc_free_handle__win32(memory);
+        return DTK_OUT_OF_MEMORY;
+    }
+
+    memory->data.shared_memory.win32Handle = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, sizeHi, sizeLo, nameWin32);
+    if (memory->data.shared_memory.win32Handle == NULL) {
+        free(nameWin32);
+        dtk_ipc_free_handle__win32(memory);
+        return dtk_win32_error_to_result(GetLastError());
+    }
+
+    free(nameWin32);
+
+    *pMemory = memory;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_open_shared_memory__win32(const char* name, dtk_ipc_handle* pMemory)
+{
+    dtk_ipc_handle memory;
+    dtk_result result = dtk_ipc_alloc_handle__win32(dtk_ipc_handle_type_shared_memory, &memory);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    char* nameWin32 = dtk_alloc_shared_memory_name__win32(name);
+    if (nameWin32 == NULL) {
+        dtk_ipc_free_handle__win32(memory);
+        return DTK_OUT_OF_MEMORY;
+    }
+
+    memory->data.shared_memory.win32Handle = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, nameWin32);
+    if (memory->data.shared_memory.win32Handle == NULL) {
+        free(nameWin32);
+        dtk_ipc_free_handle__win32(memory);
+        return dtk_win32_error_to_result(GetLastError());
+    }
+
+    free(nameWin32);
+
+    *pMemory = memory;
+    return DTK_SUCCESS;
+}
+
+void dtk_delete_shared_memory__win32(dtk_ipc_handle memory)
+{
+    CloseHandle(memory->data.shared_memory.win32Handle);
+    dtk_ipc_free_handle__win32(memory);
+}
+
+void dtk_close_shared_memory__win32(dtk_ipc_handle memory)
+{
+    CloseHandle(memory->data.shared_memory.win32Handle);
+    dtk_ipc_free_handle__win32(memory);
+}
+
+dtk_result dtk_map_shared_memory__win32(dtk_ipc_handle memory, void** ppDataOut)
+{
+    memory->data.shared_memory.pMappedData = MapViewOfFile(memory->data.shared_memory.win32Handle, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+    if (memory->data.shared_memory.pMappedData == NULL) {
+        return dtk_win32_error_to_result(GetLastError());
+    }
+
+    *ppDataOut = memory->data.shared_memory.pMappedData;
+    return DTK_SUCCESS;
+}
+
+void dtk_unmap_shared_memory__win32(dtk_ipc_handle memory)
+{
+    UnmapViewOfFile(memory->data.shared_memory.pMappedData);
+    memory->data.shared_memory.pMappedData = NULL;
+}
+
+dtk_bool32 dtk_is_shared_memory_mapped__win32(dtk_ipc_handle memory)
+{
+    return memory->data.shared_memory.pMappedData != NULL;
+}
+#endif
+
+#ifdef DTK_UNIX
+dtk_result dtk_alloc_handle__unix__shared_memory(const char* name, int oflag, dtk_ipc_handle* pMemory)
+{
+    size_t nameLen = strlen(name) + 1;  // +1 because we need to prepend a forward slash.
+
+    dtk_ipc_handle memory;
+    dtk_result result = dtk_alloc_handle__unix(dtk_ipc_handle_type_shared_memory, nameLen+1, &memory);    // +1 for null terminator.
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    dtk__strcpy_s(memory->name, nameLen+1, "/");
+    dtk__strcat_s(memory->name, nameLen+1, name);
+
+    memory->data.shared_memory.fd = shm_open(memory->name, oflag, 0666);
+    if (memory->data.shared_memory.fd == -1) {
+        dtk_free_handle__unix(memory);
+        return dtk_result_from_unix_error(errno);
+    }
+
+    *pMemory = memory;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_create_shared_memory__unix(const char* name, size_t sizeInBytes, dtk_ipc_handle* pMemory)
+{
+    dtk_ipc_handle memory;
+    dtk_result result = dtk_alloc_handle__unix__shared_memory(name, O_RDWR | O_CREAT, &memory);    // +1 for null terminator.
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    if (ftruncate(memory->data.shared_memory.fd, sizeInBytes) == -1) {
+        shm_unlink(memory->name);
+        dtk_free_handle__unix(memory);
+        return dtk_result_from_unix_error(errno);
+    }
+
+    *pMemory = memory;
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_open_shared_memory__unix(const char* name, dtk_ipc_handle* pMemory)
+{
+    dtk_ipc_handle memory;
+    dtk_result result = dtk_alloc_handle__unix__shared_memory(name, O_RDWR, &memory);    // +1 for null terminator.
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    *pMemory = memory;
+    return DTK_SUCCESS;
+}
+
+void dtk_delete_shared_memory__unix(dtk_ipc_handle memory)
+{
+    close(memory->data.shared_memory.fd);
+    shm_unlink(memory->name);
+    dtk_free_handle__unix(memory);
+}
+
+void dtk_close_shared_memory__unix(dtk_ipc_handle memory)
+{
+    close(memory->data.shared_memory.fd);
+    dtk_free_handle__unix(memory);
+}
+
+dtk_result dtk_map_shared_memory__unix(dtk_ipc_handle memory, void** ppDataOut)
+{
+    // We always map the whole buffer, so we'll need to grab it's size first.
+    struct stat sb;
+    if (fstat(memory->data.shared_memory.fd, &sb) == -1) {
+        return dtk_result_from_unix_error(errno);
+    }
+
+    memory->data.shared_memory.mappedDataSize = sb.st_size;
+    memory->data.shared_memory.pMappedData = mmap(NULL, sb.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, memory->data.shared_memory.fd, 0);
+    if (memory->data.shared_memory.pMappedData == MAP_FAILED) {
+        return dtk_result_from_unix_error(errno);
+    }
+
+    *ppDataOut = memory->data.shared_memory.pMappedData;
+    return DTK_SUCCESS;
+}
+
+void dtk_unmap_shared_memory__unix(dtk_ipc_handle memory)
+{
+    munmap(memory->data.shared_memory.pMappedData, memory->data.shared_memory.mappedDataSize);
+    memory->data.shared_memory.pMappedData = NULL;
+    memory->data.shared_memory.mappedDataSize = 0;
+}
+
+dtk_bool32 dtk_is_shared_memory_mapped__unix(dtk_ipc_handle memory)
+{
+    return memory->data.shared_memory.pMappedData != NULL;
+}
+#endif
+
+dtk_result dtk_create_shared_memory(const char* name, size_t sizeInBytes, dtk_ipc_handle* pMemory)
+{
+    if (pMemory == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+#ifdef DTK_WIN32
+    return dtk_create_shared_memory__win32(name, sizeInBytes, pMemory);
+#endif
+
+#ifdef DTK_UNIX
+    return dtk_create_shared_memory__unix(name, sizeInBytes, pMemory);
+#endif
+}
+
+dtk_result dtk_open_shared_memory(const char* name, dtk_ipc_handle* pMemory)
+{
+    if (pMemory == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+#ifdef DTK_WIN32
+    return dtk_open_shared_memory__win32(name, pMemory);
+#endif
+
+#ifdef DTK_UNIX
+    return dtk_open_shared_memory__unix(name, pMemory);
+#endif
+}
+
+void dtk_delete_shared_memory(dtk_ipc_handle memory)
+{
+    if (memory == NULL || memory->type != dtk_ipc_handle_type_shared_memory) {
+        return;
+    }
+
+#ifdef DTK_WIN32
+    dtk_delete_shared_memory__win32(memory);
+#endif
+
+#ifdef DTK_UNIX
+    dtk_delete_shared_memory__unix(memory);
+#endif
+}
+
+void dtk_close_shared_memory(dtk_ipc_handle memory)
+{
+    if (memory == NULL || memory->type != dtk_ipc_handle_type_shared_memory) {
+        return;
+    }
+
+#ifdef DTK_WIN32
+    dtk_close_shared_memory__win32(memory);
+#endif
+
+#ifdef DTK_UNIX
+    dtk_close_shared_memory__unix(memory);
+#endif
+}
+
+dtk_result dtk_map_shared_memory(dtk_ipc_handle memory, void** ppDataOut)
+{
+    if (memory == NULL || memory->type != dtk_ipc_handle_type_shared_memory || ppDataOut == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    if (dtk_is_shared_memory_mapped(memory)) {
+        return DTK_MEMORY_ALREADY_MAPPED;
+    }
+
+#ifdef DTK_WIN32
+    return dtk_map_shared_memory__win32(memory, ppDataOut);
+#endif
+
+#ifdef DTK_UNIX
+    return dtk_map_shared_memory__unix(memory, ppDataOut);
+#endif
+}
+
+void dtk_unmap_shared_memory(dtk_ipc_handle memory)
+{
+    if (memory == NULL || memory->type != dtk_ipc_handle_type_shared_memory) {
+        return;
+    }
+
+    if (!dtk_is_shared_memory_mapped(memory)) {
+        return; // It's not mapped.
+    }
+
+#ifdef DTK_WIN32
+    dtk_unmap_shared_memory__win32(memory);
+#endif
+
+#ifdef DTK_UNIX
+    dtk_unmap_shared_memory__unix(memory);
+#endif
+}
+
+dtk_bool32 dtk_is_shared_memory_mapped(dtk_ipc_handle memory)
+{
+    if (memory == NULL || memory->type != dtk_ipc_handle_type_shared_memory) {
+        return DTK_FALSE;
+    }
+
+#ifdef DTK_WIN32
+    return dtk_is_shared_memory_mapped__win32(memory);
+#endif
+
+#ifdef DTK_UNIX
+    return dtk_is_shared_memory_mapped__unix(memory);
+#endif
+}
+#endif  /* DTK_IPC_NO_SHARED_MEMORY */
