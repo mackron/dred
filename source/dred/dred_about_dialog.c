@@ -88,7 +88,7 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
 
 
             const char* versionStr = "dred version " DRED_VERSION_STRING;
-            const char* copyrightStr = "Copyright \xC2\xA9 2018 David Reid";
+            const char* copyrightStr = "Copyright \xC2\xA9 2019 David Reid";
 
             penPosX = (8*uiScale);
             penPosY = (float)bannerRect.bottom;
