@@ -28,3 +28,21 @@ size_t dtk_date_YYYYMMDD(time_t t, char* strOut, size_t strOutSize)
 	return strftime(strOut, strOutSize, "%Y%m%d", local);
 #endif
 }
+
+int dtk_day(time_t t)
+{
+    struct tm *lt = localtime(&t);
+    return lt->tm_mday;
+}
+
+int dtk_month(time_t t)
+{
+    struct tm *lt = localtime(&t);
+    return lt->tm_mon + 1;
+}
+
+int dtk_year(time_t t)
+{
+    struct tm *lt = localtime(&t);
+    return lt->tm_year + 1900;
+}

@@ -34,7 +34,7 @@ struct dtk_webgen_config
 
     // The list of properties within the config. This is manipulated with stb_stretchy_buffer.
     dtk_webgen_property* pProperties;
-
+    size_t propertyCount;
 
     // Internal use only.
     char* _errorOut;

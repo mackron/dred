@@ -18,55 +18,6 @@
 #endif
 
 
-//// stb_stretchy_buffer ////
-#ifndef STB_STRETCHY_BUFFER_H_INCLUDED
-#define STB_STRETCHY_BUFFER_H_INCLUDED
-
-#ifndef NO_STRETCHY_BUFFER_SHORT_NAMES
-#define sb_free   stb_sb_free
-#define sb_push   stb_sb_push
-#define sb_count  stb_sb_count
-#define sb_add    stb_sb_add
-#define sb_last   stb_sb_last
-#endif
-
-#define stb_sb_free(a)         ((a) ? free(stb__sbraw(a)),0 : 0)
-#define stb_sb_push(a,v)       (stb__sbmaybegrow(a,1), (a)[stb__sbn(a)++] = (v))
-#define stb_sb_count(a)        ((a) ? stb__sbn(a) : 0)
-#define stb_sb_add(a,n)        (stb__sbmaybegrow(a,n), stb__sbn(a)+=(n), &(a)[stb__sbn(a)-(n)])
-#define stb_sb_last(a)         ((a)[stb__sbn(a)-1])
-
-#define stb__sbraw(a) ((int *) (a) - 2)
-#define stb__sbm(a)   stb__sbraw(a)[0]
-#define stb__sbn(a)   stb__sbraw(a)[1]
-
-#define stb__sbneedgrow(a,n)  ((a)==0 || stb__sbn(a)+(n) >= stb__sbm(a))
-#define stb__sbmaybegrow(a,n) (stb__sbneedgrow(a,(n)) ? stb__sbgrow(a,n) : 0)
-#define stb__sbgrow(a,n)      ((a) = stb__sbgrowf((a), (n), sizeof(*(a))))
-
-#include <stdlib.h>
-
-static void * stb__sbgrowf(void *arr, int increment, int itemsize)
-{
-   int dbl_cur = arr ? 2*stb__sbm(arr) : 0;
-   int min_needed = stb_sb_count(arr) + increment;
-   int m = dbl_cur > min_needed ? dbl_cur : min_needed;
-   int *p = (int *) realloc(arr ? stb__sbraw(arr) : 0, itemsize * m + sizeof(int)*2);
-   if (p) {
-      if (!arr)
-         p[1] = 0;
-      p[0] = m;
-      return p+2;
-   } else {
-      #ifdef STRETCHY_BUFFER_OUT_OF_MEMORY
-      STRETCHY_BUFFER_OUT_OF_MEMORY ;
-      #endif
-      return (void *) (2*sizeof(int)); // try to force a NULL pointer exception later
-   }
-}
-#endif // STB_STRETCHY_BUFFER_H_INCLUDED
-
-
 //// Properties ////
 
 dtk_bool32 dtk_webgen_property_init(dtk_webgen_property* pProperty, const char* name, const char* value)
@@ -125,6 +76,7 @@ dtk_bool32 dtk_webgen_config_init(dtk_webgen_config* pConfig, dtk_webgen_config*
 
     pConfig->pParent = pParent;
     pConfig->pProperties = NULL;
+    pConfig->propertyCount = 0;
     
     return DTK_TRUE;
 }
@@ -136,7 +88,9 @@ dtk_bool32 dtk_webgen_config_init_default(dtk_webgen_config* pConfig)
     }
 
     // Defaults.
-    dtk_webgen_config_set(pConfig, "year", "2016");
+    char yearStr[32];   // <-- Never know how long this code will be used for! :)
+    dtk_itoa_s(dtk_year(dtk_now()), yearStr, sizeof(yearStr), 10);
+    dtk_webgen_config_set(pConfig, "year", yearStr);
 
     return DTK_TRUE;
 }
@@ -193,12 +147,11 @@ void dtk_webgen_config_uninit(dtk_webgen_config* pConfig)
         return;
     }
 
-    int count = stb_sb_count(pConfig->pProperties);
-    for (int i = 0; i < count; ++i) {
+    for (size_t i = 0; i < pConfig->propertyCount; ++i) {
         dtk_webgen_property_uninit(&pConfig->pProperties[i]);
     }
 
-    stb_sb_free(pConfig->pProperties);
+    dtk_free(pConfig->pProperties);
 }
 
 
@@ -207,8 +160,7 @@ dtk_webgen_property* dtk_webgen_config__find_property_no_recursion(dtk_webgen_co
     assert(pConfig != NULL);
     assert(name != NULL);
 
-    int count = stb_sb_count(pConfig->pProperties);
-    for (int i = 0; i < count; ++i) {
+    for (size_t i = 0; i < pConfig->propertyCount; ++i) {
         if (strcmp(pConfig->pProperties[i].name, name) == 0) {
             return pConfig->pProperties + i;
         }
@@ -274,7 +226,13 @@ void dtk_webgen_config_set(dtk_webgen_config* pConfig, const char* name, const c
         return; // Error initializing.
     }
 
-    stb_sb_push(pConfig->pProperties, newProperty);
+    dtk_webgen_property* pNewProperties = (dtk_webgen_property*)dtk_realloc(pConfig->pProperties, sizeof(*pNewProperties) * (pConfig->propertyCount+1));
+    if (pNewProperties == NULL) {
+        return; // Out of memory.
+    }
+
+    pConfig->pProperties = pNewProperties;
+    pConfig->pProperties[pConfig->propertyCount++] = newProperty;
 }
 
 
@@ -547,13 +505,13 @@ dtk_string dtk_webgen_context_process_string(dtk_webgen_context* pContext, dtk_w
     for (;;) {
         const char* pSectionBegStr = pRunningStr;
 
-        char* pOpening = strstr(pRunningStr, "{{");
+        const char* pOpening = strstr(pRunningStr, "{{");
         if (pOpening == NULL) {
             break;
         }
 
         pRunningStr = pOpening + 2;
-        char* pClosing = strstr(pRunningStr, "}}");
+        const char* pClosing = strstr(pRunningStr, "}}");
         if (pClosing == NULL) {
             break;
         }
