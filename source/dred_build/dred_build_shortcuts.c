@@ -214,14 +214,15 @@ void dred_build__generate_shortcuts(FILE* pFileOut, FILE* pFileOutH, dred_string
     context.pShortcuts = NULL;
 
     size_t shortcutsFileSize;
-    char* shortcutsFileData = dr_open_and_read_text_file("../../../resources/gui/dred_shortcuts.json", &shortcutsFileSize);
-    if (shortcutsFileData == NULL) {
+    char* pShortcutsFileData;
+    dtk_result result = dtk_open_and_read_text_file("../../../resources/gui/dred_shortcuts.json", &shortcutsFileSize, &pShortcutsFileData);
+    if (result != DTK_SUCCESS) {
         printf("ERROR: Could not find dred_shortcuts.json\n");
         return;
     }
 
     struct json_parse_result_s resultJSON;
-    struct json_value_s* pJSON = json_parse_ex(shortcutsFileData, shortcutsFileSize, json_parse_flags_allow_c_style_comments, NULL, NULL, &resultJSON);
+    struct json_value_s* pJSON = json_parse_ex(pShortcutsFileData, shortcutsFileSize, json_parse_flags_allow_c_style_comments, NULL, NULL, &resultJSON);
     if (pJSON == NULL) {
         printf("dred_shortcuts.json (%u): %s\n", (unsigned int)resultJSON.error_line_no, dred_build__json_error_to_string(resultJSON.error));
         return;

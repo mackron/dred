@@ -96,6 +96,7 @@ dr_bool32 dred_build__generate_website(command_var* pCommandVars, config_var* pC
 
     // Properties.
     drwg_context_set(&webgen, "dred-version", DRED_VERSION_STRING);
+    drwg_context_set(&webgen, "download-link-win64", "https://github.com/dr-soft/dred/releases/download/" DRED_VERSION_STRING "/dred.exe");
 
     dr_bool32 result = drwg_context_generate(&webgen);
 
