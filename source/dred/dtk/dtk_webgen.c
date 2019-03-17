@@ -377,7 +377,7 @@ dtk_bool32 dtk_webgen_context_generate__on_file_iteration(const char* filePath, 
             return DTK_TRUE;
         }
 
-        if (!dtk_open_and_write_text_file(pOutputFilePathAbsolute, pResolvedStr)) {
+        if (dtk_open_and_write_text_file(pOutputFilePathAbsolute, pResolvedStr) != DTK_SUCCESS) {
             if (pContext->onError) {
                 char error[4096];
                 snprintf(error, sizeof(error), "Error creating output file for %s. Skipping.", filePath);
@@ -387,7 +387,7 @@ dtk_bool32 dtk_webgen_context_generate__on_file_iteration(const char* filePath, 
 
         dtk_free_string(pResolvedStr);
     } else {
-        if (!dtk_copy_file(filePath, pOutputFilePathAbsolute, DTK_FALSE)) {
+        if (dtk_copy_file(filePath, pOutputFilePathAbsolute, DTK_FALSE) != DTK_SUCCESS) {
             if (pContext->onError) {
                 char error[4096];
                 snprintf(error, sizeof(error), "Failed to copy file: %s", filePath);
