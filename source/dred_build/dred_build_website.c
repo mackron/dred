@@ -7,31 +7,32 @@ typedef struct
     config_var* pConfigVars;
 } dred_build_context;
 
-char* dred_build__generate_website__on_resolve_value(drwg_context* pWebgen, const char* name, const char* args, void* pUserData)
+dtk_string dred_build__generate_website__on_resolve_value(dtk_webgen_context* pWebgen, const char* name, const char* args, void* pUserData)
 {
+    (void)args;
     assert(pWebgen != NULL);
 
     dred_build_context* pBuildContext = (dred_build_context*)pUserData;
     assert(pBuildContext != NULL);
 
-    char* pResultStr = NULL;
+    dtk_string pResultStr = NULL;
     if (strcmp(name, "dred-command-list") == 0) {
         int count = stb_sb_count(pBuildContext->pCommandVars);
         for (int i = 0; i < count; ++i) {
-            drwg_config subconfig;
-            if (!drwg_config_init(&subconfig, &pWebgen->config)) {
+            dtk_webgen_config subconfig;
+            if (!dtk_webgen_config_init(&subconfig, &pWebgen->config)) {
                 return NULL;
             }
 
-            drwg_config_set(&subconfig, "dred-command-name", pBuildContext->pCommandVars[i].name);
+            dtk_webgen_config_set(&subconfig, "dred-command-name", pBuildContext->pCommandVars[i].name);
 
-            char* pCommandStr = drwg_context_process_file_with_config(pWebgen, &subconfig, "_drwebgen/template-command.html");
+            dtk_string pCommandStr = dtk_webgen_context_process_file_with_config(pWebgen, &subconfig, "_drwebgen/template-command.html");
             if (pCommandStr != NULL) {
-                pResultStr = drwg_append_string(pResultStr, pCommandStr);
-                drwg_free_string(pCommandStr);
+                pResultStr = dtk_append_string(pResultStr, pCommandStr);
+                dtk_free_string(pCommandStr);
             }
 
-            drwg_config_uninit(&subconfig);
+            dtk_webgen_config_uninit(&subconfig);
         }
 
         return pResultStr;
@@ -40,23 +41,23 @@ char* dred_build__generate_website__on_resolve_value(drwg_context* pWebgen, cons
     if (strcmp(name, "dred-config-var-list") == 0) {
         int count = stb_sb_count(pBuildContext->pConfigVars);
         for (int i = 0; i < count; ++i) {
-            drwg_config subconfig;
-            if (!drwg_config_init(&subconfig, &pWebgen->config)) {
+            dtk_webgen_config subconfig;
+            if (!dtk_webgen_config_init(&subconfig, &pWebgen->config)) {
                 return NULL;
             }
 
-            drwg_config_set(&subconfig, "dred-config-var-name", pBuildContext->pConfigVars[i].name);
-            drwg_config_set(&subconfig, "dred-config-var-documentation", pBuildContext->pConfigVars[i].documentation);
-            drwg_config_set(&subconfig, "dred-config-var-type", pBuildContext->pConfigVars[i].typeSrc);
-            drwg_config_set(&subconfig, "dred-config-var-default-value", pBuildContext->pConfigVars[i].defaultValueSrc);
+            dtk_webgen_config_set(&subconfig, "dred-config-var-name", pBuildContext->pConfigVars[i].name);
+            dtk_webgen_config_set(&subconfig, "dred-config-var-documentation", pBuildContext->pConfigVars[i].documentation);
+            dtk_webgen_config_set(&subconfig, "dred-config-var-type", pBuildContext->pConfigVars[i].typeSrc);
+            dtk_webgen_config_set(&subconfig, "dred-config-var-default-value", pBuildContext->pConfigVars[i].defaultValueSrc);
 
-            char* pConfigVarStr = drwg_context_process_file_with_config(pWebgen, &subconfig, "_drwebgen/template-config-var.html");
+            dtk_string pConfigVarStr = dtk_webgen_context_process_file_with_config(pWebgen, &subconfig, "_drwebgen/template-config-var.html");
             if (pConfigVarStr != NULL) {
-                pResultStr = drwg_append_string(pResultStr, pConfigVarStr);
-                drwg_free_string(pConfigVarStr);
+                pResultStr = dtk_append_string(pResultStr, pConfigVarStr);
+                dtk_free_string(pConfigVarStr);
             }
 
-            drwg_config_uninit(&subconfig);
+            dtk_webgen_config_uninit(&subconfig);
         }
 
         return pResultStr;
@@ -65,29 +66,29 @@ char* dred_build__generate_website__on_resolve_value(drwg_context* pWebgen, cons
     return NULL;
 }
 
-void dred_build__generate_website__on_free_value(drwg_context* pWebgen, char* valueReturnedByOnResolveValue, void* pUserData)
+void dred_build__generate_website__on_free_value(dtk_webgen_context* pWebgen, dtk_string valueReturnedByOnResolveValue, void* pUserData)
 {
     (void)pWebgen;
     (void)pUserData;
-    drwg_free_string(valueReturnedByOnResolveValue);
+    dtk_free_string(valueReturnedByOnResolveValue);
 }
 
-void dred_build__generate_website__on_error(drwg_context* pWebgen, const char* message, void* pUserData)
+void dred_build__generate_website__on_error(dtk_webgen_context* pWebgen, const char* message, void* pUserData)
 {
     (void)pWebgen;
     (void)pUserData;
     printf("%s\n", message);
 }
 
-dr_bool32 dred_build__generate_website(command_var* pCommandVars, config_var* pConfigVars)
+dtk_bool32 dred_build__generate_website(command_var* pCommandVars, config_var* pConfigVars)
 {
     dred_build_context context;
     context.pCommandVars = pCommandVars;
     context.pConfigVars = pConfigVars;
 
-    drwg_context webgen;
-    if (!drwg_context_init(&webgen, "../../../source/website", "../../../build/website", dred_build__generate_website__on_error, &context)) {
-        return DR_FALSE;
+    dtk_webgen_context webgen;
+    if (!dtk_webgen_context_init(&webgen, "../../../source/website", "../../../build/website", dred_build__generate_website__on_error, &context)) {
+        return DTK_FALSE;
     }
 
     webgen.onResolveValue = dred_build__generate_website__on_resolve_value;
@@ -95,11 +96,11 @@ dr_bool32 dred_build__generate_website(command_var* pCommandVars, config_var* pC
 
 
     // Properties.
-    drwg_context_set(&webgen, "dred-version", DRED_VERSION_STRING);
-    drwg_context_set(&webgen, "download-link-win64", "https://github.com/dr-soft/dred/releases/download/" DRED_VERSION_STRING "/dred.exe");
+    dtk_webgen_context_set(&webgen, "dred-version", DRED_VERSION_STRING);
+    dtk_webgen_context_set(&webgen, "download-link-win64", "https://github.com/dr-soft/dred/releases/download/" DRED_VERSION_STRING "/dred.exe");
 
-    dr_bool32 result = drwg_context_generate(&webgen);
+    dtk_bool32 result = dtk_webgen_context_generate(&webgen);
 
-    drwg_context_uninit(&webgen);
+    dtk_webgen_context_uninit(&webgen);
     return result;
 }

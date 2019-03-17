@@ -2,14 +2,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#define DR_IMPLEMENTATION
-#include "../../../../dr_libs/old/dr.h"
-
 #include "../external/stretchy_buffer.h"
-
-#define DR_WEBGEN_IMPLEMENTATION
-#include "../../../dr_webgen/dr_webgen.h"
-
 #include "../external/json.c"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -86,18 +79,18 @@ const char* dred_build__json_error_to_string(enum json_parse_error_e error)
     return "Unknown error";
 }
 
-dr_bool32 dred_build_find_config_var(const char* name, size_t* pIndex)
+dtk_bool32 dred_build_find_config_var(const char* name, size_t* pIndex)
 {
     if (pIndex) *pIndex = 0;
 
     for (int i = 0; i < stb_sb_count(g_ConfigVars); ++i) {
         if (strcmp(g_ConfigVars[i].name, name) == 0) {
             if (pIndex) *pIndex = i;
-            return DR_TRUE;
+            return DTK_TRUE;
         }
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
 #include "dred_build_shortcuts.c"
@@ -515,9 +508,6 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
     fprintf(pFileOutH, "#define DRED_STOCK_IMAGE_COUNT %d\n", imageCount);
     fprintf(pFileOut,  "#define DRED_STOCK_IMAGE_COUNT_SVG    %d\n", imageCountSVG);
     fprintf(pFileOut,  "#define DRED_STOCK_IMAGE_COUNT_RASTER %d\n", imageCountRaster);
-
-    char* StockImageData = dtk_make_string("const uint8_t g_StockImageData[] = {");
-    char* StockImages    = dtk_make_string("const dred_image_desc g_StockImages[DRED_STOCK_IMAGE_COUNT][DRED_STOCK_IMAGE_SCALE_COUNT] = {");
 
     char* StockImageDataSVG;
     char* StockImagesSVG;

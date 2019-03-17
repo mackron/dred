@@ -393,6 +393,7 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 #include "dtk_clipboard.c"
 #include "dtk_paint_queue.c"
 #include "dtk_command_line.c"
+#include "dtk_webgen.c"
 
 typedef struct
 {

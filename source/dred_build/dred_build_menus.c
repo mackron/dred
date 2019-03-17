@@ -161,8 +161,8 @@ void dred_build__process_json_menus(dred_build__menu_parse_context* pContext, st
 
 void dred_build__format_menu_name(const char* id, char* nameOut)
 {
-    dr_bool32 isFirstWord = DR_TRUE;
-    dr_bool32 atStartOfWord = DR_TRUE;
+    dtk_bool32 isFirstWord = DTK_TRUE;
+    dtk_bool32 atStartOfWord = DTK_TRUE;
 
     for (;;) {
         if (*id == '\0') {
@@ -170,8 +170,8 @@ void dred_build__format_menu_name(const char* id, char* nameOut)
         }
 
         if (*id == '.' || *id == '-') {
-            isFirstWord = DR_FALSE;
-            atStartOfWord = DR_TRUE;
+            isFirstWord = DTK_FALSE;
+            atStartOfWord = DTK_TRUE;
             id += 1;
             continue;
         }
@@ -184,7 +184,7 @@ void dred_build__format_menu_name(const char* id, char* nameOut)
 
         nameOut += 1;
         id += 1;
-        atStartOfWord = DR_FALSE;
+        atStartOfWord = DTK_FALSE;
     }
 
     *nameOut = '\0';
@@ -220,16 +220,16 @@ void dred_build__format_menu_item_id_macro(const char* id, char* strOut)
     strcat(strOut, tail);
 }
 
-dr_bool32 dred_build__find_submenu_index_by_id(dred_build__menu_parse_context* pContext, const char* id, int* pIndexOut)
+dtk_bool32 dred_build__find_submenu_index_by_id(dred_build__menu_parse_context* pContext, const char* id, int* pIndexOut)
 {
     for (int i = 0; i < stb_sb_count(pContext->pAllMenus); ++i) {
         if (strcmp(pContext->pAllMenus[i].id, id) == 0) {
             *pIndexOut = i;
-            return DR_TRUE;
+            return DTK_TRUE;
         }
     }
 
-    return DR_FALSE;
+    return DTK_FALSE;
 }
 
 void dred_build__sort_menus_by_init_order(dred_build__menu_parse_context* pContext, int* pMenuOrder)
