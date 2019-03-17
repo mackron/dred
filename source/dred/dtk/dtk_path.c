@@ -716,7 +716,7 @@ size_t dtk_path_remove_extension(char* pathOut, size_t pathOutSize, const char* 
     }
 
     const char* extension = dtk_path_extension(path);
-    if (extension != NULL && extension != '\0') {
+    if (extension != NULL && extension[0] != '\0') {
         extension -= 1; // -1 to ensure the dot is removed as well.
     }
 

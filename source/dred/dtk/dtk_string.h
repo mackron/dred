@@ -278,7 +278,7 @@ DTK_INLINE int dtk_stricmp(const char* string1, const char* string2)
 }
 
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__MINGW32__)
 DTK_INLINE int strcpy_s(char* dst, size_t dstSizeInBytes, const char* src)
 {
     return dtk_strcpy_s(dst, dstSizeInBytes, src);
