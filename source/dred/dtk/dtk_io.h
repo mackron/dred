@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 // Wrapper API for fopen() for cleanly compiling against supported compilers.
 dtk_result dtk_fopen(const char* filePath, const char* openMode, FILE** ppFile);

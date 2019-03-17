@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 void dred_about_dialog__btn_close__on_pressed(dtk_button* pButton)
 {

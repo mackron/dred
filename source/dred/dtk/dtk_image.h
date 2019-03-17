@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 dtk_result dtk_image_init_raster(dtk_context* pTK, dtk_uint32 width, dtk_uint32 height, dtk_uint32 strideInBytes, const void* pImageData, dtk_image* pImage);
 dtk_result dtk_image_init_svg(dtk_context* pTK, const char* pSVGData, dtk_image* pImage);

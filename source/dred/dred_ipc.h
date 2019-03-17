@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 #define DRED_IPC_MESSAGE_TERMINATOR     DRED_EVENT_IPC_TERMINATOR
 #define DRED_IPC_MESSAGE_ACTIVATE       DRED_EVENT_IPC_ACTIVATE

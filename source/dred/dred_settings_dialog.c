@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 #define DRED_SETTINGS_DIALOG_BASE_SIZE_X    720
 #define DRED_SETTINGS_DIALOG_BASE_SIZE_Y    480

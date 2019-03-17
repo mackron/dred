@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 dred_font* dred_font_create(dred_context* pDred, dred_font_desc* pDesc)
 {

@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 // Command: dred -f file2cstring [Input File Name] [Options]
 //    -n OutputVariableName : Specifies the name of the output variable. Defaults to "FileData"

@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 // This control is focused on simplicity and lightweightness. Length is limited to 32-bit. You probably don't want to use this for large text editing.
 //

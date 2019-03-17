@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 dtk_bool32 dtk_hex_char_to_uint(char ascii, unsigned int* out)
 {

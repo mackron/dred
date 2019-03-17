@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 // This controls the size of the subfont cache, and should rarely need to be larger than 2. Must be at least 2.
 #ifndef DTK_MAX_CACHED_SUBFONT_COUNT

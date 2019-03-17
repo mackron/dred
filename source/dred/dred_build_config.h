@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 #define DRED_VERSION_MAJOR          0
 #define DRED_VERSION_MINOR          4

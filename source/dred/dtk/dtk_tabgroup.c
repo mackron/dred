@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 void dtk_tabgroup__calculate_tabbar_position(dtk_tabgroup* pTabGroup, dtk_int32* pRelativePosX, dtk_int32* pRelativePosY)
 {

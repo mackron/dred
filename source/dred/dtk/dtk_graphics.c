@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 dtk_color dtk_color_transparent = {0,   0,   0,   0  };
 dtk_color dtk_color_black       = {0,   0,   0,   255};

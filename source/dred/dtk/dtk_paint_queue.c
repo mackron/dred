@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 dtk_result dtk_paint_queue_init(dtk_paint_queue* pQueue)
 {

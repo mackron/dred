@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 typedef struct dred_context dred_context;
 typedef struct dred_shortcut dred_shortcut;

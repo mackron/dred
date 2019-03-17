@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 typedef struct dtk_color_button dtk_color_button;
 typedef void (* dtk_color_button_on_color_changed_proc)(dtk_color_button* pButton, dtk_color color);

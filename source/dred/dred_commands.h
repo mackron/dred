@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 // Commands are not usable until they are added to the list below. The pre-build stage will look at this file and auto-generate an
 // optimized data structure for finding and executing commands based on the list below.

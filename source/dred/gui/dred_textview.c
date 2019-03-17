@@ -1,4 +1,4 @@
-// Copyright (C) 2018 David Reid. See included LICENSE file.
+// Copyright (C) 2019 David Reid. See included LICENSE file.
 
 /// Retrieves the offset to draw the text in the text box.
 void dred_textview__get_text_offset(dred_textview* pTextView, float* pOffsetXOut, float* pOffsetYOut);
