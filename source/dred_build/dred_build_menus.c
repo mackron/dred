@@ -285,7 +285,7 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
         }
     }
 
-    dtk_uint32 recentFile0ID = dr_next_power_of_2(nextID);
+    dtk_uint32 recentFile0ID = dtk_next_power_of_2(nextID);
     fprintf(pFileOutH, "#define DRED_MENU_ITEM_ID_RECENT_FILE_0 %u\n", recentFile0ID);
 
     dtk_uint32 favouriteFile0ID = recentFile0ID + DRED_MAX_RECENT_FILES;
