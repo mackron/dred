@@ -246,8 +246,9 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
     context.pAllMenus = NULL;
 
     size_t menusFileSize;
-    char* menusFileData = dr_open_and_read_text_file("../../../resources/gui/dred_menus.json", &menusFileSize);
-    if (menusFileData == NULL) {
+    char* menusFileData;
+    dtk_result result = dtk_open_and_read_text_file("../../../resources/gui/dred_menus.json", &menusFileSize, &menusFileData);
+    if (result != DTK_SUCCESS) {
         printf("ERROR: Could not find dred_menus.json\n");
         return;
     }

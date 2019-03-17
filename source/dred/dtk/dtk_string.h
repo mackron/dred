@@ -484,6 +484,68 @@ DTK_INLINE void dtk_trim(char* str)
     str[rstr-lstr] = '\0';
 }
 
+DTK_INLINE const char* dtk_next_line(const char* str)
+{
+    if (str == NULL) {
+        return NULL;
+    }
+
+    while (str[0] != '\0' && (str[0] != '\n' && !(str[0] == '\r' && str[1] == '\n'))) {
+        str += 1;
+    }
+
+    if (str[0] == '\0') {
+        return NULL;
+    }
+
+    if (str[0] == '\r') {
+        return str + 2;
+    }
+
+    return str + 1;
+}
+
+DTK_INLINE size_t dtk_copy_line(const char* str, char* lineOut, size_t lineOutSize)
+{
+    if (str == NULL) {
+        return 0;
+    }
+
+    if (str == NULL) {
+        return 0;
+    }
+
+    size_t length = 0;
+    while (lineOutSize > 0 && str[0] != '\0' && (str[0] != '\n' && !(str[0] == '\r' && str[1] == '\n'))) {
+        *lineOut++ = *str++;
+        lineOutSize -= 1;
+        length += 1;
+    }
+
+    if (lineOutSize == 0) {
+        return 0;
+    }
+
+    *lineOut = '\0';
+    return length;
+}
+
+DTK_INLINE void dtk_string_replace_ascii(char* src, char c, char replacement)
+{
+    for (;;) {
+        if (*src == '\0') {
+            break;
+        }
+
+        if (*src == c) {
+            *src = replacement;
+        }
+
+        src += 1;
+    }
+}
+
+
 
 // Converts an ASCII hex character to it's integral equivalent. Returns false if it's not a valid hex character.
 dtk_bool32 dtk_hex_char_to_uint(char ascii, unsigned int* out);
@@ -566,6 +628,9 @@ dtk_string dtk_append_stringf(dtk_string lstr, const char* format, ...);
 // Same as dtk_append_string(), except restricts it to a maximum number of characters and does not require the input
 // string to be null terminated.
 dtk_string dtk_append_substring(dtk_string lstr, const char* rstr, size_t rstrLen);
+
+// A slow string replace function. Free the returned string with dtk_string_free().
+dtk_string dtk_string_replace(const char* str, const char* query, const char* replacement);
 
 // Retrieves the length of the given string.
 size_t dtk_string_length(dtk_string str);

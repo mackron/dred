@@ -597,6 +597,61 @@ dtk_string dtk_append_substring(dtk_string lstr, const char* rstr, size_t rstrLe
     return str;
 }
 
+dtk_string dtk_string_replace(const char* str, const char* query, const char* replacement)
+{
+    // This function could be improved, but it's good enough for now.
+    if (str == NULL) {
+        return NULL;
+    }
+    if (query == NULL) {
+        return dtk_make_string(str);    // Nothing to replace.
+    }
+    if (replacement == NULL) {
+        replacement = "";
+    }
+
+    int queryLen       = (int)strlen(query);
+    int replacementLen = (int)strlen(replacement);
+
+    size_t replacementCount = 0;
+
+    const char* temp = str;
+    for (;;) {
+        temp = strstr(temp, query);
+        if (temp == NULL) {
+            break;
+        }
+
+        temp += queryLen;
+        replacementCount += 1;
+    }
+
+    dtk_string result = dtk_malloc_string(strlen(str) + (replacementLen - queryLen)*replacementCount + 1);   // +1 for null terminator.
+    if (result == NULL) {
+        return NULL;    // Probably out of memory.
+    }
+
+    char* runningResult = result;
+    for (size_t i = 0; i < replacementCount; ++i) {
+        size_t len = strstr(str, query) - str;
+        for (size_t j = 0; j < len; ++j) {
+            runningResult[j] = str[j];
+        }
+
+        runningResult += len;
+        for (int j = 0; j < replacementLen; ++j) {
+            runningResult[j] = replacement[j];
+        }
+
+        runningResult += replacementLen;
+        str += len + queryLen;
+    }
+
+    // The trailing part.
+    strcpy_s(runningResult, strlen(str)+1, str);
+    return result;
+}
+
 size_t dtk_string_length(dtk_string str)
 {
     return strlen(str);

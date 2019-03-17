@@ -203,9 +203,9 @@ void get_config_var_default_value(unsigned int type, char* valueOut, size_t valu
 
 void parse_config_var_value(unsigned int type, const char* valueIn, char* valueOut, size_t valueOutSize)
 {
-    valueIn = dr_first_non_whitespace(valueIn);
+    valueIn = dtk_first_non_whitespace(valueIn);
 
-    char* str = dr_string_replace(valueIn, "\"", "\\\"");
+    dtk_string str = dtk_string_replace(valueIn, "\"", "\\\"");
 
     if (type == CONFIG_VAR_TYPE_INTEGER) {
         strcpy_s(valueOut, valueOutSize, valueIn);
@@ -238,10 +238,10 @@ void parse_config_var_value(unsigned int type, const char* valueIn, char* valueO
         char b[4];
         char a[4];
 
-        valueIn = dr_next_token(valueIn, r, sizeof(r));
-        valueIn = dr_next_token(valueIn, g, sizeof(g));
-        valueIn = dr_next_token(valueIn, b, sizeof(b));
-        if (dr_next_token(valueIn, a, sizeof(a)) == NULL) {
+        valueIn = dtk_next_token(valueIn, r, sizeof(r));
+        valueIn = dtk_next_token(valueIn, g, sizeof(g));
+        valueIn = dtk_next_token(valueIn, b, sizeof(b));
+        if (dtk_next_token(valueIn, a, sizeof(a)) == NULL) {
             a[0] = '2'; a[1] = '5'; a[2] = '5'; a[3] = '\0';
         }
 
@@ -249,7 +249,7 @@ void parse_config_var_value(unsigned int type, const char* valueIn, char* valueO
         return;
     }
 
-    free(str);
+    dtk_free_string(str);
 }
 
 
@@ -345,8 +345,9 @@ void generate_commands_list(FILE* pFileOut)
     assert(pFileOut != NULL);
 
     size_t fileDataSize;
-    char* fileData = dr_open_and_read_text_file("../../../source/dred/dred_commands.h", &fileDataSize);
-    if (fileData == NULL) {
+    char* fileData;
+    dtk_result result = dtk_open_and_read_text_file("../../../source/dred/dred_commands.h", &fileDataSize, &fileData);
+    if (result != DTK_SUCCESS) {
         return;
     }
 
@@ -354,14 +355,14 @@ void generate_commands_list(FILE* pFileOut)
     char line[1024];
     const char* nextLine = fileData;
     while (nextLine != NULL) {
-        if (dr_copy_line(nextLine, line, sizeof(line)) == (size_t)-1) {
+        if (dtk_copy_line(nextLine, line, sizeof(line)) == (size_t)-1) {
             return;
         }
         if (strstr(line, "// BEGIN COMMAND LIST") != NULL) {
-            nextLine = dr_next_line(nextLine);
+            nextLine = dtk_next_line(nextLine);
             break;
         }
-        nextLine = dr_next_line(nextLine);
+        nextLine = dtk_next_line(nextLine);
     }
 
 
@@ -375,9 +376,9 @@ void generate_commands_list(FILE* pFileOut)
 
     while (nextLine != NULL) {
         // The next line should be in the format of <name> <proc> <flags>
-        size_t lineLength = dr_copy_line(nextLine, line, sizeof(line));
+        size_t lineLength = dtk_copy_line(nextLine, line, sizeof(line));
         if (lineLength <= 2) {
-            nextLine = dr_next_line(nextLine);
+            nextLine = dtk_next_line(nextLine);
             continue;
         }
 
@@ -387,21 +388,21 @@ void generate_commands_list(FILE* pFileOut)
 
 
         command_var command;
-        const char* next = dr_next_token(line + 2, command.name, sizeof(command.name));     // Skip past "//"
+        const char* next = dtk_next_token(line + 2, command.name, sizeof(command.name));     // Skip past "//"
         if (next == NULL) {
-            nextLine = dr_next_line(nextLine);
+            nextLine = dtk_next_line(nextLine);
             continue;
         }
 
-        next = dr_next_token(next, command.proc, sizeof(command.proc));
+        next = dtk_next_token(next, command.proc, sizeof(command.proc));
         if (next == NULL) {
-            nextLine = dr_next_line(nextLine);
+            nextLine = dtk_next_line(nextLine);
             continue;
         }
 
-        next = dr_next_token(next, command.flags, sizeof(command.flags));
+        next = dtk_next_token(next, command.flags, sizeof(command.flags));
         if (next == NULL) {
-            nextLine = dr_next_line(nextLine);
+            nextLine = dtk_next_line(nextLine);
             continue;
         }
 
@@ -422,7 +423,7 @@ void generate_commands_list(FILE* pFileOut)
 
         stb_sb_push(g_CommandVars, command);
 
-        nextLine = dr_next_line(nextLine + lineLength);
+        nextLine = dtk_next_line(nextLine + lineLength);
     }
 
     fwrite_string(pFileOut, "\n// Commands\n");
@@ -444,8 +445,9 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
     assert(pFileOutH != NULL);
 
     size_t sourceFileDataSize;
-    char* sourceFileData = dr_open_and_read_text_file("../../../source/dred/dred_image_library.h", &sourceFileDataSize);
-    if (sourceFileData == NULL) {
+    char* sourceFileData;
+    dtk_result result = dtk_open_and_read_text_file("../../../source/dred/dred_image_library.h", &sourceFileDataSize, &sourceFileData);
+    if (result != DTK_SUCCESS) {
         return;
     }
 
@@ -453,14 +455,14 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
     char line[1024];
     const char* nextLine = sourceFileData;
     while (nextLine != NULL) {
-        if (dr_copy_line(nextLine, line, sizeof(line)) == (size_t)-1) {
+        if (dtk_copy_line(nextLine, line, sizeof(line)) == (size_t)-1) {
             return;
         }
         if (strstr(line, "// BEGIN STOCK IMAGE LIST") != NULL) {
-            nextLine = dr_next_line(nextLine);
+            nextLine = dtk_next_line(nextLine);
             break;
         }
-        nextLine = dr_next_line(nextLine);
+        nextLine = dtk_next_line(nextLine);
     }
 
     unsigned int imageCount = 0;
@@ -470,9 +472,9 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
 
     while (nextLine != NULL) {
         // The next line should be in the format of <path> <id>
-        size_t lineLength = dr_copy_line(nextLine, line, sizeof(line));
+        size_t lineLength = dtk_copy_line(nextLine, line, sizeof(line));
         if (lineLength <= 2) {
-            nextLine = dr_next_line(nextLine);
+            nextLine = dtk_next_line(nextLine);
             continue;
         }
 
@@ -482,15 +484,15 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
 
         stock_image stockImage;
 
-        const char* next = dr_next_token(line + 2, stockImage.filename, sizeof(stockImage.filename));     // Skip past "//"
+        const char* next = dtk_next_token(line + 2, stockImage.filename, sizeof(stockImage.filename));     // Skip past "//"
         if (next == NULL) {
-            nextLine = dr_next_line(nextLine);
+            nextLine = dtk_next_line(nextLine);
             continue;
         }
 
-        next = dr_next_token(next, stockImage.id, sizeof(stockImage.id));
+        next = dtk_next_token(next, stockImage.id, sizeof(stockImage.id));
         if (next == NULL) {
-            nextLine = dr_next_line(nextLine);
+            nextLine = dtk_next_line(nextLine);
             continue;
         }
 
@@ -504,7 +506,7 @@ void generate_stock_images(FILE* pFileOut, FILE* pFileOutH)
             imageCountRaster += 1;
         }
 
-        nextLine = dr_next_line(nextLine + lineLength);
+        nextLine = dtk_next_line(nextLine + lineLength);
     }
 
 
@@ -645,8 +647,9 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
     assert(pFileOutH != NULL);
 
     size_t sourceFileDataSize;
-    char* sourceFileData = dr_open_and_read_text_file("../../../source/dred/dred_config.h", &sourceFileDataSize);
-    if (sourceFileData == NULL) {
+    char* sourceFileData;
+    dtk_result result = dtk_open_and_read_text_file("../../../source/dred/dred_config.h", &sourceFileDataSize, &sourceFileData);
+    if (result != DTK_SUCCESS) {
         return;
     }
 
@@ -654,14 +657,14 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
     char line[4096];
     const char* nextLine = sourceFileData;
     while (nextLine != NULL) {
-        if (dr_copy_line(nextLine, line, sizeof(line)) == (size_t)-1) {
+        if (dtk_copy_line(nextLine, line, sizeof(line)) == (size_t)-1) {
             return;
         }
         if (strstr(line, "// BEGIN CONFIG VARS") != NULL) {
-            nextLine = dr_next_line(nextLine);
+            nextLine = dtk_next_line(nextLine);
             break;
         }
-        nextLine = dr_next_line(nextLine);
+        nextLine = dtk_next_line(nextLine);
     }
 
 
@@ -669,9 +672,9 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
     memset(&var, 0, sizeof(var));
 
     while (nextLine != NULL) {
-        size_t lineLength = dr_copy_line(nextLine, line, sizeof(line));
+        size_t lineLength = dtk_copy_line(nextLine, line, sizeof(line));
         if (lineLength <= 2) {
-            nextLine = dr_next_line(nextLine);
+            nextLine = dtk_next_line(nextLine);
             continue;
         }
 
@@ -705,28 +708,28 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
             memset(&var, 0, sizeof(var));   // <-- Just make sure the variable is reset to make things easier.
 
             // The format of this line should be <config name> <C variable name> <type>
-            const char* next = dr_next_token(line + 2, var.name, sizeof(var.name));     // Skip past "//"
+            const char* next = dtk_next_token(line + 2, var.name, sizeof(var.name));     // Skip past "//"
             if (next == NULL) {
-                nextLine = dr_next_line(nextLine);
+                nextLine = dtk_next_line(nextLine);
                 continue;
             }
 
-            next = dr_next_token(next, var.varname, sizeof(var.varname));
+            next = dtk_next_token(next, var.varname, sizeof(var.varname));
             if (next == NULL) {
-                nextLine = dr_next_line(nextLine);
+                nextLine = dtk_next_line(nextLine);
                 continue;
             }
 
-            next = dr_next_token(next, var.typeSrc, sizeof(var.typeSrc));
+            next = dtk_next_token(next, var.typeSrc, sizeof(var.typeSrc));
             if (next == NULL) {
-                nextLine = dr_next_line(nextLine);
+                nextLine = dtk_next_line(nextLine);
                 continue;
             }
             var.type = parse_config_var_type(var.typeSrc);
 
-            next = dr_next_token(next, var.setCallback, sizeof(var.setCallback));
+            next = dtk_next_token(next, var.setCallback, sizeof(var.setCallback));
             if (next == NULL) {
-                nextLine = dr_next_line(nextLine);
+                nextLine = dtk_next_line(nextLine);
                 continue;
             }
 
@@ -738,12 +741,12 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
             strcpy_s(var.defaultValueSrc, sizeof(var.defaultValueSrc), defaultValue);
 
             char unused[1024];
-            if (dr_next_token(next, unused, sizeof(unused))) {
+            if (dtk_next_token(next, unused, sizeof(unused))) {
                 parse_config_var_value(var.type, defaultValue, var.defaultValue, sizeof(var.defaultValue));
             }
         }
 
-        nextLine = dr_next_line(nextLine + lineLength);
+        nextLine = dtk_next_line(nextLine + lineLength);
     }
 
     // There may be a leftover config variable to add to the main list.
@@ -978,19 +981,21 @@ int main(int argc, char** argv)
     (void)argv;
 
     char exedir[256];
-    dr_get_executable_directory_path(exedir, sizeof(exedir));
-    dr_set_current_directory(exedir);
+    dtk_get_executable_directory_path(exedir, sizeof(exedir));
+    dtk_set_current_directory(exedir);
 
-    FILE* pFileOut = dr_fopen("../../../source/dred/dred_autogenerated.c", "w+b");
-    if (pFileOut == NULL) {
+    FILE* pFileOut;
+    dtk_result result = dtk_fopen("../../../source/dred/dred_autogenerated.c", "w+b", &pFileOut);
+    if (result != DTK_SUCCESS) {
         printf("Failed to create output file.");
         return -1;
     }
     fwrite_string(pFileOut, "// Copyright (C) 2019 David Reid. See included LICENSE file.\n\n");
     fwrite_string(pFileOut, "// This file was automatically generated by the pre-build tool. Do not modify.\n\n");
 
-    FILE* pFileOutH = dr_fopen("../../../source/dred/dred_autogenerated.h", "w+b");
-    if (pFileOutH == NULL) {
+    FILE* pFileOutH;
+    result = dtk_fopen("../../../source/dred/dred_autogenerated.h", "w+b", &pFileOutH);
+    if (result != DTK_SUCCESS) {
         printf("Failed to create output file.");
         return -1;
     }
