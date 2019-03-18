@@ -37,10 +37,34 @@ dtk_bool32 dred__try_opening_existing_process(int argc, char** argv)
     }
 
     dtk_pipe client;
-    if (dtk_pipe_open_named_client(pipeName, DTK_IPC_WRITE, &client) == DTK_SUCCESS) {
+    if (dtk_pipe_open_named_client(pipeName, DTK_IPC_READ | DTK_IPC_WRITE, &client) == DTK_SUCCESS) {
         // If we get here it means there is a server instance already open and we want to use that one instead
-        // of creating a new one. The first thing to do is notify the server that it should be activated.
+        // of creating a new one. The first thing to do is notify the server that we want a handle to it's window
+        // so we can activate it from here.
+#if defined(DTK_WIN32)
+        dred_ipc_post_message(client, DRED_IPC_MESSAGE_GET_WINDOW, NULL, 0);    // TODO: When GTK is implemented properly, move this out of this #ifdef.
+
+        // Now we need to wait for the HWND to be sent back from the server. When we get this we can activate the
+        // window and load the startup files.
+        dtk_uint32 bytesRead;
+        HWND hWndServer;
+        dtk_result result = dtk_pipe_read_exact(client, &hWndServer, sizeof(hWndServer), &bytesRead);
+        if (result == DTK_SUCCESS) {
+            if (IsZoomed(hWndServer)) {
+                ShowWindow(hWndServer, SW_SHOWMAXIMIZED);
+            } else if (IsIconic(hWndServer)) {
+                ShowWindow(hWndServer, SW_RESTORE);
+            }
+            SetForegroundWindow(hWndServer);
+        }
+#endif
+#if defined(DTK_GTK)
+        /*
+        At the moment, the GTK build uses the old system where the activation is done on the server side. This needs
+        to be updated to use the Win32 method so that the server's window is activated properly
+        */
         dred_ipc_post_message(client, DRED_IPC_MESSAGE_ACTIVATE, NULL, 0);
+#endif
 
         // After activating the server we need to let it know which files to open.
         dtk_argv_parse(argc, argv, dred_parse_cmdline__post_startup_files_to_server, client);

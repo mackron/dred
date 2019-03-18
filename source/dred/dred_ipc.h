@@ -1,7 +1,8 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
 #define DRED_IPC_MESSAGE_TERMINATOR     DRED_EVENT_IPC_TERMINATOR
-#define DRED_IPC_MESSAGE_ACTIVATE       DRED_EVENT_IPC_ACTIVATE
+#define DRED_IPC_MESSAGE_ACTIVATE       DRED_EVENT_IPC_ACTIVATE /* TODO: Remove this. */
+#define DRED_IPC_MESSAGE_GET_WINDOW     DRED_EVENT_IPC_GET_WINDOW
 #define DRED_IPC_MESSAGE_OPEN           DRED_EVENT_IPC_OPEN
 
 #define DRED_IPC_MAGIC_NUMBER       0x2F8A572D
@@ -15,13 +16,13 @@ typedef struct
 } dred_ipc_message_header;
 #pragma pack()
 
-dtk_bool32 dred_ipc_post_message(dtk_pipe clientPipe, uint32_t message, const void* pData, size_t dataSize);
+dtk_bool32 dred_ipc_post_message(dtk_pipe pipe, uint32_t message, const void* pData, size_t dataSize);
 
 // Free the returned data with free().
 //
 // If the size of the data is 0, the returned pointer will be null. Do not use the returned pointer for
 // error checking. Use the return value for error checking.
-dtk_bool32 dred_ipc_read_message(dtk_pipe serverPipe, dred_ipc_message_header* pHeaderOut, void** ppDataOut);
+dtk_bool32 dred_ipc_read_message(dtk_pipe pipe, dred_ipc_message_header* pHeaderOut, void** ppDataOut);
 
 
 // Retrieves the name to use for the IPC pipe. This will be namespaced based on the username of the current user.

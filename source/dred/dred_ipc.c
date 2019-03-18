@@ -1,6 +1,6 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
-dtk_bool32 dred_ipc_post_message(dtk_pipe clientPipe, uint32_t message, const void* pData, size_t dataSize)
+dtk_bool32 dred_ipc_post_message(dtk_pipe pipe, uint32_t message, const void* pData, size_t dataSize)
 {
     size_t messageSize = sizeof(dred_ipc_message_header) + dataSize;
     uint8_t* pMessageData = (uint8_t*)malloc(messageSize);
@@ -20,13 +20,13 @@ dtk_bool32 dred_ipc_post_message(dtk_pipe clientPipe, uint32_t message, const vo
     }
 
     size_t bytesWritten;
-    dtk_result result = dtk_pipe_write(clientPipe, pMessageData, messageSize, &bytesWritten);
+    dtk_result result = dtk_pipe_write(pipe, pMessageData, messageSize, &bytesWritten);
 
     free(pMessageData);
     return result == DTK_SUCCESS && bytesWritten == messageSize;
 }
 
-dtk_bool32 dred_ipc_read_message(dtk_pipe serverPipe, dred_ipc_message_header* pHeaderOut, void** ppDataOut)
+dtk_bool32 dred_ipc_read_message(dtk_pipe pipe, dred_ipc_message_header* pHeaderOut, void** ppDataOut)
 {
     if (ppDataOut == NULL) return DTK_FALSE;
     *ppDataOut = NULL;
@@ -37,7 +37,7 @@ dtk_bool32 dred_ipc_read_message(dtk_pipe serverPipe, dred_ipc_message_header* p
 
 
     size_t bytesRead;
-    dtk_result result = dtk_pipe_read_exact(serverPipe, pHeaderOut, sizeof(*pHeaderOut), &bytesRead);
+    dtk_result result = dtk_pipe_read_exact(pipe, pHeaderOut, sizeof(*pHeaderOut), &bytesRead);
     if (result != DTK_SUCCESS) {
         return DTK_FALSE;
     }
@@ -57,7 +57,7 @@ dtk_bool32 dred_ipc_read_message(dtk_pipe serverPipe, dred_ipc_message_header* p
 
     *ppDataOut = pData;
 
-    result = dtk_pipe_read_exact(serverPipe, pData, pHeaderOut->size, &bytesRead);
+    result = dtk_pipe_read_exact(pipe, pData, pHeaderOut->size, &bytesRead);
     if (result != DTK_SUCCESS) {
         free(pData);
         return DTK_FALSE;

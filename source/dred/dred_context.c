@@ -350,14 +350,6 @@ dtk_thread_result DTK_THREADCALL dred_ipc_message_proc(void* pData)
     dred_context* pDred = (dred_context*)pData;
     assert(pDred != NULL);
 
-#if 0
-    while (pDred->pipeIPC != NULL) {
-        if (dtk_pipe_connect(pDred->pipeIPC) != dtk_result_success) {
-            return 0;
-        }
-    }
-#endif
-
     while (!pDred->isClosing) {
         char pipeName[256];
         if (!dred_ipc_get_pipe_name(pipeName, sizeof(pipeName))) {
@@ -365,7 +357,7 @@ dtk_thread_result DTK_THREADCALL dred_ipc_message_proc(void* pData)
         }
 
         dtk_pipe server;
-        if (dtk_pipe_open_named_server(pipeName, DTK_IPC_READ, &server) != DTK_SUCCESS) {
+        if (dtk_pipe_open_named_server(pipeName, DTK_IPC_READ | DTK_IPC_WRITE, &server) != DTK_SUCCESS) {
             return 0;
         }
 
@@ -385,6 +377,20 @@ dtk_thread_result DTK_THREADCALL dred_ipc_message_proc(void* pData)
                 case DRED_IPC_MESSAGE_TERMINATOR:
                 {
                     foundTerminator = DTK_TRUE;
+                } break;
+
+                case DRED_IPC_MESSAGE_GET_WINDOW:
+                {
+                #if defined(DTK_WIN32)
+                    // All we do is write the HWND of the window to the pipe.
+                    dtk_result result = dtk_pipe_write(server, &pDred->mainWindow.win32.hWnd, sizeof(HWND), NULL);
+                    if (result != DTK_SUCCESS) {
+                        dred_errorf(pDred, "Failed to write HWND to IPC pipe.\n");
+                    }
+                #endif
+                #if defined(DTK_GTK)
+                    /* TOOD: Implement support for this to GTK. */
+                #endif
                 } break;
 
                 default:
