@@ -1,10 +1,8 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
 typedef struct dred_color_button dred_color_button;
+
 #define DRED_COLOR_BUTTON(a) ((dred_color_button*)(a))
-
-typedef void (* dred_color_button_on_color_changed_proc)(dred_color_button* pButton, dtk_color color);
-
 struct dred_color_button
 {
     dtk_color_button buttonDTK;
