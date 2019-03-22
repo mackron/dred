@@ -428,14 +428,8 @@ struct dred_gui
     // The dred context that owns the GUI system.
     dred_context* pDred;
 
-    /// The painting callbacks.
+    // The painting callbacks.
     dred_gui_painting_callbacks paintingCallbacks;
-
-    /// The function to call when an element is deleted.
-    dred_gui_on_delete_element_proc onDeleteControl;
-
-    /// The function to call when a log message is posted.
-    dred_gui_on_log onLog;
 };
 
 
@@ -451,13 +445,6 @@ dtk_bool32 dred_gui_init(dred_gui* pGUI, dred_context* pDred);
 
 /// Deletes a context and everything that it created.
 void dred_gui_uninit(dred_gui* pGUI);
-
-/// Sets the function to call when an element is deleted.
-void dred_gui_set_on_delete_element(dred_gui* pGUI, dred_gui_on_delete_element_proc onDeleteControl);
-
-/// Registers the callback to call when a log message is posted.
-void dred_gui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog);
-
 
 
 
@@ -476,10 +463,6 @@ void dred_control_uninit(dred_control* pControl);
 
 // Retrieves the dred context that owns the given control.
 dred_context* dred_control_get_context(dred_control* pControl);
-
-// Retrieves the GUI context that owns the given control.
-dred_gui* dred_control_get_gui(dred_control* pControl);
-
 
 
 /// Sets the type of the element.

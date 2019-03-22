@@ -19,22 +19,10 @@
 
 #define DTK_CONTROL_TYPE_DRED   DTK_CONTROL_TYPE_CUSTOM + 1     // <-- Temporary until dred_control is removed entirely.
 
-// Context Flags
-#define IS_AUTO_DIRTY_DISABLED              (1U << 1)
-#define IS_RELEASING_KEYBOARD               (1U << 2)
-
-// Control Flags
-#define IS_CONTROL_HIDDEN                   (1U << 0)
-#define IS_CONTROL_CLIPPING_DISABLED        (1U << 1)
-
-
 DTK_INLINE dtk_rect dtk_rect_init_dred(dred_rect rect)
 {
     return dtk_rect_init((dtk_int32)rect.left, (dtk_int32)rect.top, (dtk_int32)rect.right, (dtk_int32)rect.bottom);
 }
-
-/// Posts a log message.
-void dred_gui__log(dred_gui* pGUI, const char* message);
 
 
 void dred_control__post_outbound_event_move(dred_control* pControl, float newRelativePosX, float newRelativePosY)
@@ -158,14 +146,6 @@ void dred_control__post_outbound_event_release_keyboard(dred_control* pControl, 
 }
 
 
-void dred_gui__log(dred_gui* pGUI, const char* message)
-{
-    if (pGUI->onLog) {
-        pGUI->onLog(pGUI, message);
-    }
-}
-
-
 /////////////////////////////////////////////////////////////////
 //
 // CORE API
@@ -188,25 +168,6 @@ void dred_gui_uninit(dred_gui* pGUI)
 {
     if (pGUI == NULL) {
         return;
-    }
-}
-
-
-
-/////////////////////////////////////////////////////////////////
-// Events
-
-void dred_gui_set_on_delete_element(dred_gui* pGUI, dred_gui_on_delete_element_proc onDeleteControl)
-{
-    if (pGUI != NULL) {
-        pGUI->onDeleteControl = onDeleteControl;
-    }
-}
-
-void dred_gui_set_on_log(dred_gui* pGUI, dred_gui_on_log onLog)
-{
-    if (pGUI != NULL) {
-        pGUI->onLog = onLog;
     }
 }
 
@@ -349,12 +310,6 @@ void dred_control_uninit(dred_control* pControl)
         return;
     }
 
-    // Notify the application that the element is being deleted. Do this at the top so the event handler can access things like the hierarchy and
-    // whatnot in case it needs it.
-    if (pGUI->onDeleteControl) {
-        pGUI->onDeleteControl(pControl);
-    }
-
     dtk_control_uninit(&pControl->baseControl);
 }
 
@@ -366,16 +321,6 @@ dred_context* dred_control_get_context(dred_control* pControl)
     }
 
     return pControl->pGUI->pDred;
-}
-
-dred_gui* dred_control_get_gui(dred_control* pControl)
-{
-    dred_context* pDred = dred_control_get_context(pControl);
-    if (pDred == NULL) {
-        return NULL;
-    }
-
-    return &pDred->gui;
 }
 
 
