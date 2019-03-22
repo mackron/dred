@@ -192,9 +192,9 @@ dtk_bool32 dred_cmbox_cmdlist_event_handler(dtk_event* pEvent)
     return dtk_control_default_event_handler(pEvent);
 }
 
-dred_result dred_cmdbox_cmdlist_init(dred_context* pDred, dtk_control* pParent, dred_cmdbox_cmdlist* pCmdList)
+dtk_result dred_cmdbox_cmdlist_init(dred_context* pDred, dtk_control* pParent, dred_cmdbox_cmdlist* pCmdList)
 {
-    if (pCmdList == NULL) return DRED_INVALID_ARGS;
+    if (pCmdList == NULL) return DTK_INVALID_ARGS;
     pCmdList->pDred = pDred;
 
     dtk_result result = dtk_control_init(&pDred->tk, DTK_CONTROL_TYPE_EMPTY, dred_cmbox_cmdlist_event_handler, pParent, DTK_CONTROL(pCmdList));
@@ -212,15 +212,15 @@ dred_result dred_cmdbox_cmdlist_init(dred_context* pDred, dtk_control* pParent, 
     return DTK_SUCCESS;
 }
 
-dred_result dred_cmdbox_cmdlist_uninit(dred_cmdbox_cmdlist* pCmdList)
+dtk_result dred_cmdbox_cmdlist_uninit(dred_cmdbox_cmdlist* pCmdList)
 {
     dtk_free(pCmdList->pCommandIndices);
     return dtk_control_uninit(DTK_CONTROL(pCmdList));
 }
 
-dred_result dred_cmdbox_cmdlist_update_list(dred_cmdbox_cmdlist* pCmdList, const char* runningText)
+dtk_result dred_cmdbox_cmdlist_update_list(dred_cmdbox_cmdlist* pCmdList, const char* runningText)
 {
-    if (pCmdList == NULL) return DRED_INVALID_ARGS;
+    if (pCmdList == NULL) return DTK_INVALID_ARGS;
 
     if (runningText == NULL) {
         runningText = "";
@@ -274,9 +274,9 @@ dred_result dred_cmdbox_cmdlist_update_list(dred_cmdbox_cmdlist* pCmdList, const
     return DTK_SUCCESS;
 }
 
-dred_result dred_cmdbox_cmdlist_highlight_next_item(dred_cmdbox_cmdlist* pCmdList)
+dtk_result dred_cmdbox_cmdlist_highlight_next_item(dred_cmdbox_cmdlist* pCmdList)
 {
-    if (pCmdList == NULL) return DRED_INVALID_ARGS;
+    if (pCmdList == NULL) return DTK_INVALID_ARGS;
 
     pCmdList->selectedItemIndex = (pCmdList->selectedItemIndex + 1) % pCmdList->commandIndexCount;
     dred_cmdbox_cmdlist__scroll_to_highlighted_item(pCmdList);
@@ -285,9 +285,9 @@ dred_result dred_cmdbox_cmdlist_highlight_next_item(dred_cmdbox_cmdlist* pCmdLis
     return DTK_SUCCESS;
 }
 
-dred_result dred_cmdbox_cmdlist_highlight_prev_item(dred_cmdbox_cmdlist* pCmdList)
+dtk_result dred_cmdbox_cmdlist_highlight_prev_item(dred_cmdbox_cmdlist* pCmdList)
 {
-    if (pCmdList == NULL) return DRED_INVALID_ARGS;
+    if (pCmdList == NULL) return DTK_INVALID_ARGS;
 
     // Loop back to the start if necessary.
     if (pCmdList->selectedItemIndex > 0) {

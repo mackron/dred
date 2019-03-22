@@ -38,46 +38,8 @@
 #include <dlfcn.h>
 #endif
 
-
 // External libraries.
 #include "../external/dr_text_engine.h"
-
-
-#ifndef dred_assert
-#define dred_assert(condition)  dtk_assert(condition)
-#endif
-#ifndef dred_malloc
-#define dred_malloc(sz)         dtk_malloc(sz);
-#endif
-#ifndef dred_calloc
-#define dred_calloc(c, sz)      dtk_calloc(c, sz)
-#endif
-#ifndef dred_realloc
-#define dred_realloc(p, sz)     dtk_realloc(p, sz)
-#endif
-#ifndef dred_free
-#define dred_free(p)            dtk_free(p)
-#endif
-#ifndef dred_zero_memory
-#define dred_zero_memory(p, sz) dtk_zero_memory(p, sz)
-#endif
-#define dred_zero_object(p)     dred_zero_memory((p), sizeof(*(p)))
-
-#define dred_count_of(obj)      dtk_countof(obj)
-
-
-#ifdef _MSC_VER
-#define DRED_INLINE static __forceinline
-#else
-#define DRED_INLINE static inline
-#endif
-
-typedef int dred_result;
-#define DRED_SUCCESS         0
-#define DRED_ERROR          -1
-#define DRED_INVALID_ARGS   -2
-#define DRED_OUT_OF_MEMORY  -3
-
 
 // dred header files.
 #ifdef __cplusplus

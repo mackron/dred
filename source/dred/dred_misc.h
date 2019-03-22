@@ -20,12 +20,12 @@ dtk_color dred_parse_color(const char* color);
 
 // Type conversion
 
-DRED_INLINE dred_rect drte_rect_to_dred(drte_rect rect)
+DTK_INLINE dred_rect drte_rect_to_dred(drte_rect rect)
 {
     return dred_make_rect(rect.left, rect.top, rect.right, rect.bottom);
 }
 
-DRED_INLINE drte_rect dred_rect_to_drte(dred_rect rect)
+DTK_INLINE drte_rect dred_rect_to_drte(dred_rect rect)
 {
     return drte_make_rect(rect.left, rect.top, rect.right, rect.bottom);
 }
@@ -34,7 +34,7 @@ DRED_INLINE drte_rect dred_rect_to_drte(dred_rect rect)
 // Strings
 
 // Determines whether or not the given string is null or empty.
-DRED_INLINE dtk_bool32 dred_string_is_null_or_empty(const char* str)
+DTK_INLINE dtk_bool32 dred_string_is_null_or_empty(const char* str)
 {
     return str == NULL || str[0] == '\0';
 }

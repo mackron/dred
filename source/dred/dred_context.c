@@ -686,7 +686,7 @@ dtk_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_li
 
     // The menu item table is what's used to bind menu items to commands and shortcuts. This table will be used for looking up the command
     // to execute when a menu item is pressed.
-    if (dred_menu_item_table_init(pDred, &pDred->menuItemTable) != DRED_SUCCESS) {
+    if (dred_menu_item_table_init(pDred, &pDred->menuItemTable) != DTK_SUCCESS) {
         goto on_error;
     }
 

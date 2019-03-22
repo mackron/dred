@@ -132,12 +132,12 @@ dtk_bool32 dred_is_stock_menu_item_id(dtk_uint32 id)
     return DTK_FALSE;
 }
 
-dred_result dred_menu_item_table_init(dred_context* pDred, dred_menu_item_table* pTable)
+dtk_result dred_menu_item_table_init(dred_context* pDred, dred_menu_item_table* pTable)
 {
-    if (pTable == NULL) return DRED_INVALID_ARGS;
+    if (pTable == NULL) return DTK_INVALID_ARGS;
     dtk_zero_object(pTable);
 
-    if (pDred == NULL) return DRED_INVALID_ARGS;
+    if (pDred == NULL) return DTK_INVALID_ARGS;
     pTable->pDred = pDred;
 
     // The capacity should always be set to _at least_ the stock menu item count. The reason for this is that we use an optimized
@@ -146,7 +146,7 @@ dred_result dred_menu_item_table_init(dred_context* pDred, dred_menu_item_table*
     if (pTable->capacity != 0) {
         pTable->pItems = (dred_menu_item_data*)malloc(pTable->capacity * sizeof(*pTable->pItems));
         if (pTable->pItems == NULL) {
-            return DRED_OUT_OF_MEMORY;
+            return DTK_OUT_OF_MEMORY;
         }
     }
 
@@ -158,17 +158,17 @@ dred_result dred_menu_item_table_init(dred_context* pDred, dred_menu_item_table*
     return DTK_SUCCESS;
 }
 
-dred_result dred_menu_item_table_uninit(dred_menu_item_table* pTable)
+dtk_result dred_menu_item_table_uninit(dred_menu_item_table* pTable)
 {
-    if (pTable == NULL) return DRED_INVALID_ARGS;
+    if (pTable == NULL) return DTK_INVALID_ARGS;
 
     free(pTable->pItems);
-    return DRED_SUCCESS;
+    return DTK_SUCCESS;
 }
 
-dred_result dred_menu_item_table_bind(dred_menu_item_table* pTable, dtk_uint32 id, const char* commandStr, const char* shortcutName)
+dtk_result dred_menu_item_table_bind(dred_menu_item_table* pTable, dtk_uint32 id, const char* commandStr, const char* shortcutName)
 {
-    if (pTable == NULL) return DRED_INVALID_ARGS;
+    if (pTable == NULL) return DTK_INVALID_ARGS;
 
     size_t index;
     if (!dred_menu_item_table_find(pTable, id, &index)) {
@@ -177,7 +177,7 @@ dred_result dred_menu_item_table_bind(dred_menu_item_table* pTable, dtk_uint32 i
             size_t newCapacity = (pTable->capacity == 0) ? 64 : (pTable->capacity * 2);
             dred_menu_item_data* pNewItems = (dred_menu_item_data*)realloc(pTable->pItems, newCapacity * sizeof(*pNewItems));
             if (pNewItems == NULL) {
-                return DRED_OUT_OF_MEMORY;
+                return DTK_OUT_OF_MEMORY;
             }
 
             pTable->pItems = pNewItems;
@@ -194,17 +194,17 @@ dred_result dred_menu_item_table_bind(dred_menu_item_table* pTable, dtk_uint32 i
     pTable->pItems[index].commandStrOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, commandStr);
     pTable->pItems[index].shortcutStrOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, shortcutName);
 
-    return DRED_SUCCESS;
+    return DTK_SUCCESS;
 }
 
-dred_result dred_menu_item_table_unbind(dred_menu_item_table* pTable, dtk_uint32 id)
+dtk_result dred_menu_item_table_unbind(dred_menu_item_table* pTable, dtk_uint32 id)
 {
     // We don't _actually_ unbind stock menu items because we want to use an optimized constant-time lookup for those ones
     // since we know that their range and that they're contiguous. We just return successful and pretend it was unbound.
     if (dred_is_stock_menu_item_id(id)) {
         pTable->pItems[id].commandStrOffset = 0;
         pTable->pItems[id].shortcutStrOffset = 0;
-        return DRED_SUCCESS;
+        return DTK_SUCCESS;
     }
 
     size_t index;
@@ -216,15 +216,15 @@ dred_result dred_menu_item_table_unbind(dred_menu_item_table* pTable, dtk_uint32
         }
         pTable->count -= 1;
 
-        return DRED_SUCCESS;
+        return DTK_SUCCESS;
     }
 
-    return DRED_ERROR;  // Not found.
+    return DTK_ERROR;  // Not found.
 }
 
-dred_result dred_menu_item_table_update_bindings_by_shortcut_name(dred_menu_item_table* pTable, const char* shortcutName, const char* commandStr)
+dtk_result dred_menu_item_table_update_bindings_by_shortcut_name(dred_menu_item_table* pTable, const char* shortcutName, const char* commandStr)
 {
-    if (pTable == NULL) return DRED_INVALID_ARGS;
+    if (pTable == NULL) return DTK_INVALID_ARGS;
 
     for (size_t iItem = 0; iItem < pTable->count; ++iItem) {
         dred_menu_item_data* pItem = &pTable->pItems[iItem];
