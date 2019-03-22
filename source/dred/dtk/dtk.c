@@ -363,6 +363,7 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "stb_image_resize.h"
 
+#include "dtk_dl.c"
 #include "dtk_rect.c"
 #include "dtk_string.c"
 #include "dtk_path.c"

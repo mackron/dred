@@ -105,19 +105,19 @@ dred_package* dred_package_library_load_package(dred_package_library* pLibrary, 
         if (dred_load_package_info(dredpackagePath, &info)) {
             char libraryPath[DRED_MAX_PATH];
             if (dred_construct_library_path(libraryPath, sizeof(libraryPath), packageFolderPath, &info)) {
-                dred_dl dl = dred_dlopen(libraryPath);
+                dtk_handle dl = dtk_dlopen(libraryPath);
                 if (dl != NULL) {
-                    dred_package_create_proc package_create = (dred_package_create_proc)dred_dlsym(dl, "dred_package_create");
+                    dred_package_create_proc package_create = (dred_package_create_proc)dtk_dlsym(dl, "dred_package_create");
                     if (package_create != NULL) {
                         dred_package* pPackage = package_create();
                         if (pPackage != NULL) {
                             pPackage->_dl = dl;
                             return pPackage;
                         } else {
-                            dred_dlclose(libraryPath);  // Failed to create the package instance.
+                            dtk_dlclose(libraryPath);  // Failed to create the package instance.
                         }
                     } else {
-                        dred_dlclose(libraryPath);  // Could not find the "dred_package_create()" function.
+                        dtk_dlclose(libraryPath);  // Could not find the "dred_package_create()" function.
                     }
                 }
             }
@@ -131,14 +131,14 @@ void dred_package_library_unload_package(dred_package_library* pLibrary, dred_pa
 {
     if (pLibrary == NULL || pPackage == NULL) return;
 
-    dred_dl dl = pPackage->_dl;
+    dtk_handle dl = pPackage->_dl;
     if (dl != NULL) {
-        dred_package_delete_proc package_delete = (dred_package_delete_proc)dred_dlsym(dl, "dred_package_delete");
+        dred_package_delete_proc package_delete = (dred_package_delete_proc)dtk_dlsym(dl, "dred_package_delete");
         if (package_delete) {
             package_delete(pPackage);
         }
 
-        dred_dlclose(dl);
+        dtk_dlclose(dl);
     }
 }
 

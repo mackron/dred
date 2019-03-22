@@ -34,7 +34,7 @@ struct dred_package
     //
     // [Internal Use Only]
     //
-    dred_dl _dl;    // A handle to the .dll or .so library.
+    dtk_handle _dl;    // A handle to the .dll or .so library.
 };
 
 
