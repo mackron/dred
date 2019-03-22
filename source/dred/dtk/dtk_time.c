@@ -32,7 +32,7 @@ size_t dtk_date_YYYYMMDD(time_t t, char* strOut, size_t strOutSize)
 dtk_result dtk_localtime(struct tm* lt, const time_t* t)
 {
 #ifdef _MSC_VER
-    return dtk_errno_to_result(localtime_s(lt, t));
+    return dtk_result_from_errno(localtime_s(lt, t));
 #else
     if (lt == NULL) {
         return DTK_INVALID_ARGS;

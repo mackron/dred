@@ -10,13 +10,6 @@
 #endif
 #endif
 
-// File I/O is 64-bit by default on macOS
-#ifdef __APPLE__
-#define off64_t off_t
-#define fopen64 fopen
-#endif
-
-
 // Standard headers.
 #include <stdlib.h>
 #include <stdio.h>

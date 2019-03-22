@@ -406,8 +406,10 @@ void dtk_parse_key_value_pairs_from_file__on_error(void* pUserData, const char* 
 dtk_bool32 dtk_parse_key_value_pairs_from_file(const char* filePath, dtk_key_value_pair_proc onPair, dtk_key_value_error_proc onError, void* pUserData)
 {
     dtk_parse_key_value_pairs_from_file_data data;
-    if (dtk_fopen(filePath, "rb", &data.pFile) != DTK_SUCCESS) {
-        if (onError) onError(pUserData, "Could not open file.", 0);
+    if (dtk_fopen(&data.pFile, filePath, "rb") != DTK_SUCCESS) {
+        if (onError) {
+            onError(pUserData, "Could not open file.", 0);
+        }
         return DTK_FALSE;
     }
 
@@ -416,7 +418,7 @@ dtk_bool32 dtk_parse_key_value_pairs_from_file(const char* filePath, dtk_key_val
     data.pOriginalUserData = pUserData;
     dtk_parse_key_value_pairs(dtk_parse_key_value_pairs_from_file__on_read, dtk_parse_key_value_pairs_from_file__on_pair, dtk_parse_key_value_pairs_from_file__on_error, &data);
 
-    fclose(data.pFile);
+    dtk_fclose(data.pFile);
     return DTK_TRUE;
 }
 

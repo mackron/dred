@@ -198,7 +198,7 @@ void dred_text_editor_engine__on_undo_stack_trimmed(drte_engine* pTextEngine)
     }
 }
 
-dtk_bool32 dred_text_editor__on_save(dred_editor* pEditor, dred_file file, const char* filePath)
+dtk_bool32 dred_text_editor__on_save(dred_editor* pEditor, FILE* file, const char* filePath)
 {
     dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(pEditor);
     assert(pTextEditor != NULL);
@@ -215,18 +215,18 @@ dtk_bool32 dred_text_editor__on_save(dred_editor* pEditor, dred_file file, const
     }
     dred_textview_get_text(pTextView, text, textLength+1);
 
-    dtk_bool32 result = dred_file_write_string(file, text);
+    dtk_result result = dtk_fwrite_string(file, text);
     free(text);
 
     // After saving we need to update the base undo point and unmark the file as modified.
-    if (result) {
+    if (result == DTK_SUCCESS) {
         pTextEditor->iBaseUndoPoint = dred_textview_get_undo_points_remaining_count(pTextView);
 
         // Syntax highlighting needs to be updated based on the file extension.
         dred_text_editor_set_highlighter(pTextEditor, dred_get_language_by_file_path(dred_control_get_context(DRED_CONTROL(pTextEditor)), filePath));
     }
 
-    return result;
+    return result == DTK_SUCCESS;
 }
 
 dtk_bool32 dred_text_editor__on_reload(dred_editor* pEditor)

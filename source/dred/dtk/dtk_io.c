@@ -119,28 +119,217 @@ dtk_result dtk_set_current_directory__posix(const char* path)
 }
 #endif
 
-
-dtk_result dtk_fopen(const char* filePath, const char* openMode, FILE** ppFile)
+const char* dtk_fopenmode(unsigned int openModeFlags)
 {
+    if (openModeFlags & DTK_OPEN_MODE_READ) {
+        if (openModeFlags & DTK_OPEN_MODE_WRITE) {
+            return "w+b";
+        } else {
+            return "rb";
+        }
+    } else {
+        if (openModeFlags & DTK_OPEN_MODE_WRITE) {
+            return "wb";
+        }
+    }
+
+    return NULL;
+}
+
+dtk_result dtk_fopen(FILE** ppFile, const char* filePath, const char* openMode)
+{
+#if _MSC_VER
+    errno_t err;
+#endif
+
+    if (ppFile != NULL) {
+        *ppFile = NULL;  /* Safety. */
+    }
+
     if (filePath == NULL || openMode == NULL || ppFile == NULL) {
         return DTK_INVALID_ARGS;
     }
 
 #if _MSC_VER
-    if (fopen_s(ppFile, filePath, openMode) != 0) {
-        return DTK_FAILED_TO_OPEN_FILE;
+    err = fopen_s(ppFile, filePath, openMode);
+    if (err != 0) {
+        return dtk_result_from_errno(err);
     }
 #else
-    FILE* pFile = fopen(filePath, openMode);
-    if (pFile == NULL) {
-        return DTK_FAILED_TO_OPEN_FILE;
+#if defined(_WIN32) || defined(__APPLE__)
+    *ppFile = fopen(filePath, openMode);
+#else
+    *ppFile = fopen64(filePath, openMode);
+#endif
+    if (*ppFile == NULL) {
+        dtk_result result = dtk_result_from_errno(errno);
+        if (result == DTK_SUCCESS) {
+            return DTK_ERROR;   /* Just a safety check to make sure we never ever return success when pFile == NULL. */
+        }
     }
-
-    *ppFile = pFile;
 #endif
 
     return DTK_SUCCESS;
 }
+
+dtk_result dtk_fclose(FILE* pFile)
+{
+    if (fclose(pFile) != 0) {
+        return DTK_ERROR;
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_fread(FILE* pFile, void* pDataOut, size_t bytesToRead, size_t* pBytesRead)
+{
+    size_t bytesRead;
+
+    if (pFile == NULL || pDataOut == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    bytesRead = fread(pDataOut, 1, bytesToRead, pFile);
+    if (pBytesRead != NULL) {
+        *pBytesRead = bytesRead;
+    }
+
+    if (bytesRead < bytesToRead) {
+        if (feof(pFile)) {
+            return DTK_SUCCESS; /* Successful. Just reached the end of the file. */
+        }
+        if (ferror(pFile)) {
+            return dtk_result_from_errno(errno);
+        }
+
+        /* Getting here means the file is not at the end and no error has been set. Just fall through and assume successful. */
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_fwrite(FILE* pFile, const void* pData, size_t bytesToWrite, size_t* pBytesWritten)
+{
+    size_t bytesWritten;
+
+    if (pFile == NULL || pData == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    bytesWritten = fwrite(pData, 1, bytesToWrite, pFile);
+    if (pBytesWritten != NULL) {
+        *pBytesWritten = bytesWritten;
+    }
+
+    if (bytesWritten < bytesToWrite) {
+        if (ferror(pFile)) {
+            return dtk_result_from_errno(errno);
+        }
+
+        /* Getting here means no error has been set. Just fall through and assume successful. */
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_fseek(FILE* pFile, dtk_int64 offsetInBytes, int origin)
+{
+    int result;
+
+    if (pFile == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+#ifdef DRED_WIN32
+    result = _fseeki64(pFile, offsetInBytes, origin);
+#else
+    result = fseeko(pFile, offsetInBytes, origin);
+#endif
+    if (result != 0) {
+        return dtk_result_from_errno(errno);
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_ftell(FILE* pFile, dtk_int64* pOffsetInBytes)
+{
+    int64_t offsetInBytes;
+
+    if (pOffsetInBytes != NULL) {
+        *pOffsetInBytes = 0;    /* Safety. */
+    }
+
+    if (pFile == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+#ifdef DRED_WIN32
+    offsetInBytes = _ftelli64(pFile);
+#else
+    offsetInBytes = ftello(pFile);
+#endif
+    if (offsetInBytes < 0) {
+        return dtk_result_from_errno(errno);
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_result dtk_fflush(FILE* pFile)
+{
+    if (pFile == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    if (fflush(pFile) != 0) {
+        return dtk_result_from_errno(errno);
+    }
+
+    return DTK_SUCCESS;
+}
+
+dtk_bool32 dtk_feof(FILE* pFile)
+{
+    if (pFile == NULL) {
+        return DTK_FALSE;
+    }
+
+    return feof(pFile) != 0;
+}
+
+
+dtk_result dtk_fwrite_string(FILE* pFile, const char* str)
+{
+    if (pFile == NULL || str == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_fwrite(pFile, str, (unsigned int)strlen(str), NULL);
+}
+
+dtk_result dtk_fwrite_line(FILE* pFile, const char* str)
+{
+    dtk_result result;
+
+    if (pFile == NULL || str == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    result = dtk_fwrite_string(pFile, str);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    result = dtk_fwrite(pFile, "\n", 1, NULL);
+    if (result != DTK_SUCCESS) {
+        return result;
+    }
+
+    return DTK_SUCCESS;
+}
+
+
 
 dtk_result dtk_create_empty_file(const char* fileName, dtk_bool32 failIfExists)
 {
@@ -172,7 +361,7 @@ dtk_result dtk_create_empty_file(const char* fileName, dtk_bool32 failIfExists)
     }
     int fd = open(fileName, flags, 0666);
     if (fd == -1) {
-        return dtk_errno_to_result(errno);
+        return dtk_result_from_errno(errno);
     }
 
     close(fd);
@@ -194,10 +383,8 @@ static dtk_result dtk_open_and_read_file_with_extra_data(const char* filePath, s
         return DTK_INVALID_ARGS;
     }
 
-    // TODO: Use 64-bit versions of the FILE APIs.
-
     FILE* pFile;
-    dtk_result result = dtk_fopen(filePath, "rb", &pFile);
+    dtk_result result = dtk_fopen(&pFile, filePath, "rb");
     if (result != DTK_SUCCESS) {
         return DTK_FAILED_TO_OPEN_FILE;
     }
@@ -207,24 +394,24 @@ static dtk_result dtk_open_and_read_file_with_extra_data(const char* filePath, s
     fseek(pFile, 0, SEEK_SET);
 
     if (fileSize + extraBytes > SIZE_MAX) {
-        fclose(pFile);
+        dtk_fclose(pFile);
         return DTK_FILE_TOO_BIG;
     }
 
     void* pFileData = dtk_malloc((size_t)fileSize + extraBytes);    // <-- Safe cast due to the check above.
     if (pFileData == NULL) {
-        fclose(pFile);
+        dtk_fclose(pFile);
         return DTK_OUT_OF_MEMORY;
     }
 
     size_t bytesRead = fread(pFileData, 1, (size_t)fileSize, pFile);
     if (bytesRead != fileSize) {
         dtk_free(pFileData);
-        fclose(pFile);
+        dtk_fclose(pFile);
         return DTK_FAILED_TO_READ_FILE;
     }
 
-    fclose(pFile);
+    dtk_fclose(pFile);
 
     if (pFileSizeOut) {
         *pFileSizeOut = (size_t)fileSize;
@@ -274,22 +461,20 @@ dtk_result dtk_open_and_write_file(const char* filePath, const void* pData, size
         return DTK_INVALID_ARGS;
     }
 
-    // TODO: Use 64-bit versions of the FILE APIs.
-
     FILE* pFile;
-    dtk_result result = dtk_fopen(filePath, "wb", &pFile);
+    dtk_result result = dtk_fopen(&pFile, filePath, "wb");
     if (result != DTK_SUCCESS) {
         return DTK_FAILED_TO_OPEN_FILE;
     }
 
     if (pData != NULL && dataSize > 0) {
         if (fwrite(pData, 1, dataSize, pFile) != dataSize) {
-            fclose(pFile);
+            dtk_fclose(pFile);
             return DTK_FAILED_TO_WRITE_FILE;
         }
     }
 
-    fclose(pFile);
+    dtk_fclose(pFile);
     return DTK_SUCCESS;
 }
 
@@ -367,13 +552,13 @@ dtk_result dtk_copy_file(const char* srcPath, const char* dstPath, dtk_bool32 fa
 #else
     int fdSrc = open(srcPath, O_RDONLY, 0666);
     if (fdSrc == -1) {
-        return dtk_errno_to_result(errno);
+        return dtk_result_from_errno(errno);
     }
 
     int fdDst = open(dstPath, O_WRONLY | O_TRUNC | O_CREAT | ((failIfExists) ? O_EXCL : 0), 0666);
     if (fdDst == -1) {
         close(fdSrc);
-        return dtk_errno_to_result(errno);
+        return dtk_result_from_errno(errno);
     }
 
     dtk_bool32 result = DTK_TRUE;
@@ -398,7 +583,7 @@ dtk_result dtk_copy_file(const char* srcPath, const char* dstPath, dtk_bool32 fa
     chmod(dstPath, info.st_mode & 07777);
 
     if (result == DTK_FALSE) {
-        return dtk_errno_to_result(errno);
+        return dtk_result_from_errno(errno);
     }
 
     return DTK_SUCCESS;
@@ -469,7 +654,7 @@ dtk_result dtk_delete_file(const char* filePath)
 #endif
 #ifdef DTK_POSIX
     if (remove(filePath) != 0) {
-        return dtk_errno_to_result(errno);
+        return dtk_result_from_errno(errno);
     }
 
     return DTK_SUCCESS;
@@ -491,7 +676,7 @@ dtk_result dtk_mkdir(const char* directoryPath)
 #endif
 #ifdef DTK_POSIX
     if (mkdir(directoryPath, 0777) != 0) {
-        return dtk_errno_to_result(errno);
+        return dtk_result_from_errno(errno);
     }
 
     return DTK_SUCCESS;

@@ -11,7 +11,7 @@ struct dred_context
     dred_package_library* pPackageLibrary;
 
     // The log file.
-    dred_file logFile;
+    FILE* logFile;
 
     // The IPC thread.
     dtk_thread threadIPC;

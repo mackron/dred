@@ -284,7 +284,7 @@ dtk_result dtk__untrack_window(dtk_context* pTK, dtk_window* pWindow)
 }
 
 
-dtk_result dtk_errno_to_result(int e)
+dtk_result dtk_result_from_errno(errno_t e)
 {
     switch (e) {
         case EACCES: return DTK_ACCESS_DENIED;
@@ -293,6 +293,7 @@ dtk_result dtk_errno_to_result(int e)
         case EMFILE: return DTK_TOO_MANY_OPEN_FILES;
         case ENOENT: return DTK_DOES_NOT_EXIST;
         case ENOMEM: return DTK_OUT_OF_MEMORY;
+        case EBADF:  return DTK_INVALID_ARGS;   /* Can be returned by ftell() and family. */
         default: break;
     }
 

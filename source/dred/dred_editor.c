@@ -135,10 +135,11 @@ dtk_bool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath)
     }
 
     dtk_bool32 wasSaved = DTK_FALSE;
-    dred_file file = dred_file_open(actualFilePath, DRED_FILE_OPEN_MODE_WRITE);
-    if (file != NULL) {
-        wasSaved = pEditor->onSave(pEditor, file, actualFilePath);
-        dred_file_close(file);
+    FILE* pFile;
+    dtk_result result = dtk_fopen(&pFile, actualFilePath, dtk_fopenmode(DTK_OPEN_MODE_WRITE));
+    if (result == DTK_SUCCESS) {
+        wasSaved = pEditor->onSave(pEditor, pFile, actualFilePath);
+        dtk_fclose(pFile);
     }
 
     // Everything should be saved so just delete the temporary one.

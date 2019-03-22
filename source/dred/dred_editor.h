@@ -5,7 +5,7 @@
 typedef struct dred_editor dred_editor;
 #define DRED_EDITOR(a) ((dred_editor*)(a))
 
-typedef dtk_bool32 (* dred_editor_on_save_proc)(dred_editor* pEditor, dred_file file, const char* filePath);
+typedef dtk_bool32 (* dred_editor_on_save_proc)(dred_editor* pEditor, FILE* file, const char* filePath);
 typedef dtk_bool32 (* dred_editor_on_reload_proc)(dred_editor* pEditor);
 typedef void (* dred_editor_on_modified_proc)(dred_editor* pEditor);
 typedef void (* dred_editor_on_unmodified_proc)(dred_editor* pEditor);

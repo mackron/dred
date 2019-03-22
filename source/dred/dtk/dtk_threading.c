@@ -143,7 +143,7 @@ void dtk_mutex_unlock__posix(dtk_mutex* pMutex)
 dtk_result dtk_semaphore_init__posix(dtk_semaphore* pSemaphore, int initialValue)
 {
     if (sem_init(pSemaphore, 0, (unsigned int)initialValue) == -1) {
-        return dtk_errno_to_result(errno);
+        return dtk_result_from_errno(errno);
     }
 
     return DTK_SUCCESS;
@@ -157,7 +157,7 @@ void dtk_semaphore_uninit__posix(dtk_semaphore* pSemaphore)
 dtk_result dtk_semaphore_wait__posix(dtk_semaphore* pSemaphore)
 {
     if (sem_wait(pSemaphore) == -1) {
-        return dtk_errno_to_result(errno);
+        return dtk_result_from_errno(errno);
     }
 
     return DTK_SUCCESS;
@@ -166,7 +166,7 @@ dtk_result dtk_semaphore_wait__posix(dtk_semaphore* pSemaphore)
 dtk_result dtk_semaphore_release__posix(dtk_semaphore* pSemaphore)
 {
     if (sem_post(pSemaphore) == -1) {
-        return dtk_errno_to_result(errno);
+        return dtk_result_from_errno(errno);
     }
 
     return DTK_SUCCESS;

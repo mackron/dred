@@ -17,22 +17,16 @@ int dred_file2chex(int argc, char** argv)
         variableName = argv[3];
     }
 
-#ifdef _MSC_VER
     FILE* pFile;
-    if (fopen_s(&pFile, argv[1], "rb") != 0) {
-        return -2;  // Could not find file.
+    dtk_result result = dtk_fopen(&pFile, argv[1], dtk_fopenmode(DTK_OPEN_MODE_READ));
+    if (result != DTK_SUCCESS) {
+        return -2;  // Could not open file.
     }
-#else
-    FILE* pFile = fopen(argv[1], "rb");
-    if (pFile == NULL) {
-        return -2;  // Could not find file.
-    }
-#endif
 
     fseek(pFile, 0, SEEK_END);
     long fileSize = ftell(pFile);
     if (fileSize == -1) {
-        fclose(pFile);
+        dtk_fclose(pFile);
         return -3;  // Failed to retrieve the size of the file.
     }
     fseek(pFile, 0, SEEK_SET);
@@ -41,10 +35,10 @@ int dred_file2chex(int argc, char** argv)
     size_t bytesRead = fread(pFileData, 1, fileSize, pFile);
 	if (bytesRead != (size_t)fileSize) {
 		free(pFileData);
-		fclose(pFile);
+		dtk_fclose(pFile);
 		return -4;
 	}
-    fclose(pFile);
+    dtk_fclose(pFile);
 
     char* pHexData = dred_codegen_buffer_to_c_array(pFileData, fileSize, variableName);
     free(pFileData);

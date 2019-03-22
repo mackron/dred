@@ -47,7 +47,7 @@ typedef struct
     const char* filePath;
     dred_config_on_error_proc onError;
     void* pUserData;
-    dred_file file;
+    FILE* file;
 } dred_config_load_file__data;
 
 size_t dred_config_load_file__on_read(void* pUserData, void* pDataOut, size_t bytesToRead)
@@ -57,7 +57,7 @@ size_t dred_config_load_file__on_read(void* pUserData, void* pDataOut, size_t by
     assert(pData->file != NULL);
 
     size_t bytesRead;
-    if (!dred_file_read(pData->file, pDataOut, bytesToRead, &bytesRead)) {
+    if (dtk_fread(pData->file, pDataOut, bytesToRead, &bytesRead) != DTK_SUCCESS) {
         return 0;
     }
 
@@ -164,8 +164,9 @@ dtk_bool32 dred_config_load_file(dred_config* pConfig, const char* filePath, dre
         return DTK_FALSE;
     }
 
-    dred_file file = dred_file_open(filePath, DRED_FILE_OPEN_MODE_READ);
-    if (file == NULL) {
+    FILE* pFile;
+    dtk_result result = dtk_fopen(&pFile, filePath, dtk_fopenmode(DTK_OPEN_MODE_READ));
+    if (result != DTK_SUCCESS) {
         return DTK_FALSE;
     }
 
@@ -180,14 +181,14 @@ dtk_bool32 dred_config_load_file(dred_config* pConfig, const char* filePath, dre
     data.filePath = filePath;
     data.onError = onError;
     data.pUserData = pUserData;
-    data.file = file;
+    data.file = pFile;
     dtk_parse_key_value_pairs(dred_config_load_file__on_read, dred_config_load_file__on_pair, dred_config_load_file__on_error, &data);
 
     //if (pConfig->pDred->pMainWindow != NULL) {
     //    dred_control_end_dirty(pConfig->pDred->pMainWindow->pRootGUIControl);
     //}
 
-    dred_file_close(file);
+    dtk_fclose(pFile);
     return DTK_TRUE;
 }
 

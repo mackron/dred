@@ -8,6 +8,21 @@
     #pragma warning(disable:4201)   // nonstandard extension used: nameless struct/union
 #endif
 
+// These #defines enable us to load large files on Linux platforms. They need to be placed before including any headers.
+#ifndef _WIN32
+#ifndef _LARGEFILE64_SOURCE
+#define _LARGEFILE64_SOURCE
+#endif
+#ifndef _FILE_OFFSET_BITS
+#define _FILE_OFFSET_BITS 64
+#endif
+#endif
+
+// File I/O is 64-bit by default on macOS
+#ifdef __APPLE__
+#define off64_t off_t
+#endif
+
 // Platform/backend detection.
 #ifdef _WIN32
     #define DTK_WIN32
@@ -18,6 +33,9 @@
     #define DTK_POSIX
     #ifdef __linux__
         #define DTK_LINUX
+    #endif
+    #ifdef __APPLE__
+        #define DTK_APPLE
     #endif
 
     #include <pthread.h>

@@ -1,7 +1,34 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
+#define DTK_OPEN_MODE_READ  1
+#define DTK_OPEN_MODE_WRITE 2
+
+// Helper for retrieving the open mode string to use with fopen()/dtk_fopen().
+//
+// openModeFlags should be a combination of DTK_OPEN_* flags.
+//
+// Returns NULL if nothing is specified.
+//
+// Example: dtk_fopen(&pFile, "my_file.txt", dtk_fopenmode(DTK_OPEN_MODE_READ | DTK_OPEN_MODE_WRITE));
+const char* dtk_fopenmode(unsigned int openModeFlags);
+
 // Wrapper API for fopen() for cleanly compiling against supported compilers.
-dtk_result dtk_fopen(const char* filePath, const char* openMode, FILE** ppFile);
+dtk_result dtk_fopen(FILE** ppFile, const char* filePath, const char* openMode);
+dtk_result dtk_fclose(FILE* pFile);
+dtk_result dtk_fread(FILE* pFile, void* pDataOut, size_t bytesToRead, size_t* pBytesRead);
+dtk_result dtk_fwrite(FILE* pFile, const void* pData, size_t bytesToWrite, size_t* pBytesWritten);
+dtk_result dtk_fseek(FILE* pFile, dtk_int64 offsetInBytes, int origin);
+dtk_result dtk_ftell(FILE* pFile, dtk_int64* pOffsetInBytes);
+dtk_result dtk_fflush(FILE* pFile);
+dtk_bool32 dtk_feof(FILE* pFile);   /* Returns DTK_FALSE if pFile is invalid. */
+
+/* High level helper API for writing a null-terminated string. If you know the length of the string, use standard dtk_fwrite(). */
+dtk_result dtk_fwrite_string(FILE* pFile, const char* str);
+
+/* High level helper API for writing a null-terminated string and appending a new line character. */
+dtk_result dtk_fwrite_line(FILE* pFile, const char* str);
+
+
 
 // Helper for creating an empty file.
 dtk_result dtk_create_empty_file(const char* fileName, dtk_bool32 failIfExists);
