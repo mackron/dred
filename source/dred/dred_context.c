@@ -585,9 +585,6 @@ dtk_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_li
     // The string pool is initialized with data from the pre-build tool. It contains strings for stock shortcuts, menus, etc.
     dred_string_pool_init(&pDred->stringPool, (const char*)g_InitialStringPoolData, sizeof(g_InitialStringPoolData));
 
-
-    pDred->pGUI = &pDred->gui;
-
     pDred->argc = argc;
     pDred->argv = argv;
     pDred->pPackageLibrary = pPackageLibrary;
@@ -629,7 +626,7 @@ dtk_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_li
 
 
     // The GUI.
-    if (!dred_gui_init_dtk(pDred->pGUI, pDred)) {
+    if (!dred_gui_init_dtk(&pDred->gui, pDred)) {
         goto on_error;
     }
 
@@ -852,9 +849,7 @@ void dred_uninit(dred_context* pDred)
     dred_image_library_uninit(&pDred->imageLibrary);
     dred_font_library_uninit(&pDred->fontLibrary);
 
-    if (pDred->pGUI) {
-        dred_gui_uninit(pDred->pGUI);
-    }
+    dred_gui_uninit(&pDred->gui);
 
     if (pDred->logFile) {
         dtk_fclose(pDred->logFile);
@@ -1137,7 +1132,7 @@ void dred_release_keyboard(dred_context* pDred)
         return;
     }
 
-    dred_gui_release_keyboard(pDred->pGUI);
+    dred_gui_release_keyboard(&pDred->gui);
 }
 
 

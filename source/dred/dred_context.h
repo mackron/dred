@@ -28,7 +28,6 @@ struct dred_context
 
     // The main GUI context.
     dred_gui gui;
-    dred_gui* pGUI; // <-- This is always set to &gui and exists for convenience.   // TODO: Remove this.
 
 
     // The font library. This just manages fonts to make it easier to avoid loading duplicate fonts.
