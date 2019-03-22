@@ -33,11 +33,6 @@ DTK_INLINE dtk_rect dtk_rect_init_dred(dred_rect rect)
     return dtk_rect_init((dtk_int32)rect.left, (dtk_int32)rect.top, (dtk_int32)rect.right, (dtk_int32)rect.bottom);
 }
 
-DTK_INLINE dtk_color dtk_color_init_dred(dtk_color color)
-{
-    return dtk_rgba(color.r, color.g, color.b, color.a);
-}
-
 /// Posts a log message.
 void dred_gui__log(dred_gui* pGUI, const char* message);
 
@@ -1035,8 +1030,8 @@ void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dre
     argsDTK.srcY = (dtk_int32)pArgs->srcY;
     argsDTK.srcWidth = (dtk_int32)pArgs->srcWidth;
     argsDTK.srcHeight = (dtk_int32)pArgs->srcHeight;
-    argsDTK.foregroundColor = dtk_color_init_dred(pArgs->foregroundTint);
-    argsDTK.backgroundColor = dtk_color_init_dred(pArgs->backgroundColor);
+    argsDTK.foregroundColor = pArgs->foregroundTint;
+    argsDTK.backgroundColor = pArgs->backgroundColor;
     argsDTK.options = pArgs->options;
     pControl->pGUI->paintingCallbacks.drawImage(pImage->pInternalImage, &argsDTK, pSurface);
 
@@ -1592,43 +1587,43 @@ void dred_control_get_clip_dtk(dred_rect* pRectOut, dtk_surface* pSurface)
 
 void dred_control_draw_rect_dtk(dred_rect rect, dtk_color color, dtk_surface* pSurface)
 {
-    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(rect), dtk_color_init_dred(color));
+    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(rect), color);
 }
 
 void dred_control_draw_rect_outline_dtk(dred_rect rect, dtk_color color, float outlineWidth, dtk_surface* pSurface)
 {
-    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(rect), dtk_color_init_dred(color), (dtk_int32)outlineWidth);
+    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(rect), color, (dtk_int32)outlineWidth);
 }
 
 void dred_control_draw_rect_with_outline_dtk(dred_rect rect, dtk_color color, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface)
 {
-    dtk_surface_draw_rect_with_outline(pSurface, dtk_rect_init_dred(rect), dtk_color_init_dred(color), (dtk_int32)outlineWidth, dtk_color_init_dred(outlineColor));
+    dtk_surface_draw_rect_with_outline(pSurface, dtk_rect_init_dred(rect), color, (dtk_int32)outlineWidth, outlineColor);
 }
 
 void dred_control_draw_round_rect_dtk(dred_rect rect, dtk_color color, float radius, dtk_surface* pSurface)
 {
     // NOTE: Rounded rectangles not currently supported.
     (void)radius;
-    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(rect), dtk_color_init_dred(color));
+    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(rect), color);
 }
 
 void dred_control_draw_round_rect_outline_dtk(dred_rect rect, dtk_color color, float radius, float outlineWidth, dtk_surface* pSurface)
 {
     // NOTE: Rounded rectangles not currently supported.
     (void)radius;
-    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(rect), dtk_color_init_dred(color), (dtk_int32)outlineWidth);
+    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(rect), color, (dtk_int32)outlineWidth);
 }
 
 void dred_control_draw_round_rect_with_outline_dtk(dred_rect rect, dtk_color color, float radius, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface)
 {
     // NOTE: Rounded rectangles not currently supported.
     (void)radius;
-    dtk_surface_draw_rect_with_outline(pSurface, dtk_rect_init_dred(rect), dtk_color_init_dred(color), (dtk_int32)outlineWidth, dtk_color_init_dred(outlineColor));
+    dtk_surface_draw_rect_with_outline(pSurface, dtk_rect_init_dred(rect), color, (dtk_int32)outlineWidth, outlineColor);
 }
 
 void dred_control_draw_text_dtk(dtk_font* pFont, float scale, const char* text, int textSizeInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface)
 {
-    dtk_surface_draw_text(pSurface, pFont, scale, text, textSizeInBytes, (dtk_int32)posX, (dtk_int32)posY, dtk_color_init_dred(color), dtk_color_init_dred(backgroundColor));
+    dtk_surface_draw_text(pSurface, pFont, scale, text, textSizeInBytes, (dtk_int32)posX, (dtk_int32)posY, color, backgroundColor);
 }
 
 void dred_control_draw_image_dtk(dtk_surface* pImage, dtk_draw_image_args* pArgs, dtk_surface* pSurface)
