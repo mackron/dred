@@ -1,21 +1,38 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
+#ifndef DRED_VERSION_MAJOR
 #define DRED_VERSION_MAJOR          0
+#endif
+#ifndef DRED_VERSION_MINOR
 #define DRED_VERSION_MINOR          4
+#endif
+#ifndef DRED_VERSION_REVISION
 #define DRED_VERSION_REVISION       3
+#endif
+#ifndef DRED_VERSION_STRING
 #define DRED_VERSION_STRING         "0.4.3"
+#endif
+#ifndef DRED_PRODUCT_NAME
 #define DRED_PRODUCT_NAME           "dred"
+#endif
+#ifndef DRED_PRODUCT_DESCRIPTION
 #define DRED_PRODUCT_DESCRIPTION    "dred"
+#endif
+#ifndef DRED_COMPANY_NAME
 #define DRED_COMPANY_NAME           "David Reid"
+#endif
 
 #ifdef _WIN32
 #define DRED_WIN32
+#ifndef DRED_EXE_NAME
 #define DRED_EXE_NAME               "dred.exe"
 #endif
-#if defined(__unix__) || defined(__linux__) || defined(__APPLE__)
+#else
 #define DRED_UNIX
 #define DRED_GTK
+#ifndef DRED_EXE_NAME
 #define DRED_EXE_NAME               "dred"
+#endif
 #endif
 
 
