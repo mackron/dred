@@ -11,9 +11,13 @@ dtk_color dtk_parse_color(const char* color)
 {
     if (color != NULL) {
         color = dtk_first_non_whitespace(color);
-        if (color[0] == '0' && (color[1] == 'x' || color[1] == 'X')) {
-            // HTML style. Support both #RRGGBB and #RGB format.
-            color += 2;
+        if (color[0] == '#' || (color[0] == '0' && (color[1] == 'x' || color[1] == 'X'))) {
+            // HTML and hexidecimal style. Support both 0xRRGGBB and 0xRGB format (and #RRGGBB, #RGB).
+            if (color[0] == '#') {
+                color += 1;
+            } else {
+                color += 2;
+            }
 
             unsigned int hexvals[6];
 
@@ -30,7 +34,7 @@ dtk_color dtk_parse_color(const char* color)
             uint8_t b = 0;
 
             if (len == 3) {
-                // #RGB -> #RRGGBB
+                // 0xRGB -> 0xRRGGBB
                 hexvals[5] = hexvals[2]; hexvals[4] = hexvals[2];
                 hexvals[3] = hexvals[1]; hexvals[2] = hexvals[1];
                 hexvals[1] = hexvals[0]; /*hexvals[0] = hexvals[0];*/
