@@ -1246,28 +1246,6 @@ void dred_control_draw_border(dred_control* pControl, float borderWidth, dtk_col
 //
 /////////////////////////////////////////////////////////////////
 
-dtk_color dred_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-{
-    dtk_color color;
-    color.r = r;
-    color.g = g;
-    color.b = b;
-    color.a = a;
-
-    return color;
-}
-
-dtk_color dred_rgb(uint8_t r, uint8_t g, uint8_t b)
-{
-    dtk_color color;
-    color.r = r;
-    color.g = g;
-    color.b = b;
-    color.a = 255;
-
-    return color;
-}
-
 dred_rect dred_clamp_rect(dred_rect rect, dred_rect other)
 {
     dred_rect result;

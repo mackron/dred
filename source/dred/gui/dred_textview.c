@@ -416,24 +416,24 @@ dtk_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dre
 
 
     pTextView->defaultStyle.pFont = &pDred->config.pTextEditorFont->fontDTK;
-    pTextView->defaultStyle.bgColor = dred_rgb(64, 64, 64);
-    pTextView->defaultStyle.fgColor = dred_rgb(0, 0, 0);
+    pTextView->defaultStyle.bgColor = dtk_rgb(64, 64, 64);
+    pTextView->defaultStyle.fgColor = dtk_rgb(0, 0, 0);
 
     pTextView->selectionStyle.pFont = &pDred->config.pTextEditorFont->fontDTK;
-    pTextView->selectionStyle.bgColor = dred_rgb(64, 128, 192);
-    pTextView->selectionStyle.fgColor = dred_rgb(0, 0, 0);
+    pTextView->selectionStyle.bgColor = dtk_rgb(64, 128, 192);
+    pTextView->selectionStyle.fgColor = dtk_rgb(0, 0, 0);
 
     pTextView->activeLineStyle.pFont = &pDred->config.pTextEditorFont->fontDTK;
-    pTextView->activeLineStyle.bgColor = dred_rgb(64, 64, 64);
-    pTextView->activeLineStyle.fgColor = dred_rgb(0, 0, 0);
+    pTextView->activeLineStyle.bgColor = dtk_rgb(64, 64, 64);
+    pTextView->activeLineStyle.fgColor = dtk_rgb(0, 0, 0);
 
     pTextView->cursorStyle.pFont = &pDred->config.pTextEditorFont->fontDTK;
-    pTextView->cursorStyle.bgColor = dred_rgb(0, 0, 0);
-    pTextView->cursorStyle.fgColor = dred_rgb(0, 0, 0);
+    pTextView->cursorStyle.bgColor = dtk_rgb(0, 0, 0);
+    pTextView->cursorStyle.fgColor = dtk_rgb(0, 0, 0);
 
     pTextView->lineNumbersStyle.pFont = &pDred->config.pTextEditorFont->fontDTK;
-    pTextView->lineNumbersStyle.bgColor = dred_rgb(64, 64, 64);
-    pTextView->lineNumbersStyle.fgColor = dred_rgb(80, 160, 192);
+    pTextView->lineNumbersStyle.bgColor = dtk_rgb(64, 64, 64);
+    pTextView->lineNumbersStyle.fgColor = dtk_rgb(80, 160, 192);
 
 
     // Register the styles with the text engine.
@@ -460,17 +460,17 @@ dtk_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dre
     //pTextView->pTextEngine->onGetUndoState = dred_textview_engine__on_get_undo_state;
     //pTextView->pTextEngine->onApplyUndoState = dred_textview_engine__on_apply_undo_state;
 
-    //drte_engine_set_default_text_color(pTextView->pTextEngine, dred_rgb(0, 0, 0));
-    //drte_engine_set_cursor_color(pTextView->pTextEngine, dred_rgb(0, 0, 0));
-    //drte_engine_set_default_bg_color(pTextView->pTextEngine, dred_rgb(64, 64, 64));
-    //drte_engine_set_active_line_bg_color(pTextView->pTextEngine, dred_rgb(64, 64, 64));
+    //drte_engine_set_default_text_color(pTextView->pTextEngine, dtk_rgb(0, 0, 0));
+    //drte_engine_set_cursor_color(pTextView->pTextEngine, dtk_rgb(0, 0, 0));
+    //drte_engine_set_default_bg_color(pTextView->pTextEngine, dtk_rgb(64, 64, 64));
+    //drte_engine_set_active_line_bg_color(pTextView->pTextEngine, dtk_rgb(64, 64, 64));
 
-    pTextView->borderColor = dred_rgb(0, 0, 0);
+    pTextView->borderColor = dtk_rgb(0, 0, 0);
     pTextView->borderWidth = 0;
     pTextView->padding     = 2;
     pTextView->lineNumbersWidth = 64;
     pTextView->lineNumbersPaddingRight = 16;
-    //pTextView->lineNumbersColor = dred_rgb(80, 160, 192);
+    //pTextView->lineNumbersColor = dtk_rgb(80, 160, 192);
     //pTextView->lineNumbersBackgroundColor = pTextView->defaultStyle.bgColor;
     pTextView->vertScrollbarSize = 16;
     pTextView->horzScrollbarSize = 16;
@@ -624,7 +624,7 @@ void dred_textview_set_selection_background_color(dred_textview* pTextView, dtk_
 dtk_color dred_textview_get_selection_background_color(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
-        return dred_rgb(0, 0, 0);
+        return dtk_rgb(0, 0, 0);
     }
 
     return pTextView->selectionStyle.bgColor;
@@ -766,7 +766,7 @@ void dred_textview_set_line_numbers_color(dred_textview* pTextView, dtk_color co
 dtk_color dred_textview_get_line_numbers_color(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
-        return dred_rgb(0, 0, 0);
+        return dtk_rgb(0, 0, 0);
     }
 
     return pTextView->lineNumbersStyle.fgColor;
@@ -786,7 +786,7 @@ void dred_textview_set_line_numbers_background_color(dred_textview* pTextView, d
 dtk_color dred_textview_get_line_numbers_background_color(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
-        return dred_rgb(0, 0, 0);
+        return dtk_rgb(0, 0, 0);
     }
 
     return pTextView->lineNumbersStyle.bgColor;

@@ -7,6 +7,113 @@ dtk_color dtk_color_red         = {255, 0,   0,   255};
 dtk_color dtk_color_green       = {0,   255, 0,   255};
 dtk_color dtk_color_blue        = {0,   0,   255, 255};
 
+dtk_color dtk_parse_color(const char* color)
+{
+    if (color != NULL) {
+        color = dtk_first_non_whitespace(color);
+        if (color[0] == '0' && (color[1] == 'x' || color[1] == 'X')) {
+            // HTML style. Support both #RRGGBB and #RGB format.
+            color += 2;
+
+            unsigned int hexvals[6];
+
+            int len = 0;
+            for (int i = 0; i < 6; ++i) {
+                if (!dtk_hex_char_to_uint(color[i], &hexvals[i])) {
+                    break;
+                }
+                len += 1;
+            }
+
+            uint8_t r = 0;
+            uint8_t g = 0;
+            uint8_t b = 0;
+
+            if (len == 3) {
+                // #RGB -> #RRGGBB
+                hexvals[5] = hexvals[2]; hexvals[4] = hexvals[2];
+                hexvals[3] = hexvals[1]; hexvals[2] = hexvals[1];
+                hexvals[1] = hexvals[0]; /*hexvals[0] = hexvals[0];*/
+            }
+
+            r = (uint8_t)((hexvals[0] << 4) | hexvals[1]);
+            g = (uint8_t)((hexvals[2] << 4) | hexvals[3]);
+            b = (uint8_t)((hexvals[4] << 4) | hexvals[5]);
+
+            return dtk_rgb(r, g, b);
+        } else {
+            // R G B style (0 .. 255 per component)
+            uint8_t r = 0;
+            uint8_t g = 0;
+            uint8_t b = 0;
+
+            char c[4];
+            color = dtk_next_token(color, c, sizeof(c));
+            if (color != NULL) {
+                r = (uint8_t)atoi(c);
+            }
+
+            color = dtk_next_token(color, c, sizeof(c));
+            if (color != NULL) {
+                g = (uint8_t)atoi(c);
+            }
+
+            color = dtk_next_token(color, c, sizeof(c));
+            if (color != NULL) {
+                b = (uint8_t)atoi(c);
+            }
+
+            return dtk_rgb(r, g, b);
+        }
+    }
+
+    return dtk_rgb(0, 0, 0);
+}
+
+dtk_result dtk_color_to_string(dtk_color color, char* str, size_t strCap)
+{
+    /* Using hexidecimal format. The alpha component is left out if it's equal to 255 (fully opaque). */
+    if (str == NULL || strCap == 0) {
+        return DTK_INVALID_ARGS;
+    }
+
+    if (color.a == 255) {
+        if (strCap < 9) {
+            return DTK_INVALID_ARGS;    /* Output buffer too small. */
+        }
+    } else {
+        if (strCap < 11) {
+            return DTK_INVALID_ARGS;    /* Output buffer too small. */
+        }
+    }
+
+    str[0] = '0';
+    str[1] = 'x';
+
+    // R
+    dtk_uint_to_hex_char((color.r >> 4), &str[2]);
+    dtk_uint_to_hex_char((color.r & 15), &str[3]);
+
+    // G
+    dtk_uint_to_hex_char((color.g >> 4), &str[4]);
+    dtk_uint_to_hex_char((color.g & 15), &str[5]);
+
+    // B
+    dtk_uint_to_hex_char((color.b >> 4), &str[6]);
+    dtk_uint_to_hex_char((color.b & 15), &str[7]);
+
+    // A. Leave this out if it's 255.
+    if (color.a != 255) {
+        dtk_uint_to_hex_char((color.a >> 4), &str[8]);
+        dtk_uint_to_hex_char((color.a & 15), &str[9]);
+        str[10] = '\0';
+    } else {
+        str[8] = '\0';
+    }
+
+    return DTK_SUCCESS;
+}
+
 // RGBA8 <-> BGRA8 swap with alpha pre-multiply and vertical flip.
 void dtk__rgba8_bgra8_swap__premul_flip(const void* pSrc, void* pDst, unsigned int width, unsigned int height, unsigned int srcStride, unsigned int dstStride)
 {

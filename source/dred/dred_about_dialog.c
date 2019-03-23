@@ -45,7 +45,7 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
 
             dtk_rect dialogRect = dtk_control_get_local_rect(pEvent->pControl);
 
-            dtk_surface_draw_rect(pEvent->paint.pSurface, dialogRect, dred_rgb(255, 255, 255));
+            dtk_surface_draw_rect(pEvent->paint.pSurface, dialogRect, dtk_rgb(255, 255, 255));
 
             dtk_image* pLogo = dred_image_library_get_image_by_id(&pDred->imageLibrary, DRED_STOCK_IMAGE_ID_LOGO);
 
@@ -66,8 +66,8 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
             args.dstHeight = (dtk_int32)(args.srcHeight*10 * uiScale);
             args.dstX = logoRect.left;
             args.dstY = logoRect.top;
-            args.foregroundColor = dred_rgb(0, 0, 0);
-            args.backgroundColor = dred_rgb(255, 255, 255);
+            args.foregroundColor = dtk_rgb(0, 0, 0);
+            args.backgroundColor = dtk_rgb(255, 255, 255);
             dtk_surface_draw_image(pEvent->paint.pSurface, pLogo, &args);
             
 
@@ -84,7 +84,7 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
             
             dtk_int32 linkWidth;
             dtk_font_measure_string(pFont, uiScale, linkStr, strlen(linkStr), &linkWidth, NULL);
-            dtk_surface_draw_text(pEvent->paint.pSurface, pFont, uiScale, linkStr, (int)strlen(linkStr), (dtk_int32)((dialogRect.right - dialogRect.left) - linkWidth) / 2, (dtk_int32)penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255));
+            dtk_surface_draw_text(pEvent->paint.pSurface, pFont, uiScale, linkStr, (int)strlen(linkStr), (dtk_int32)((dialogRect.right - dialogRect.left) - linkWidth) / 2, (dtk_int32)penPosY, dtk_rgb(0, 0, 0), dtk_rgb(255, 255, 255));
 
 
             const char* versionStr = "dred version " DRED_VERSION_STRING;
@@ -93,17 +93,17 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
             penPosX = (8*uiScale);
             penPosY = (float)bannerRect.bottom;
 
-            dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_rect_init(0, bannerRect.bottom, dialogRect.right, (dtk_int32)(penPosY + (1 * uiScale))), dred_rgb(200, 200, 200));
+            dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_rect_init(0, bannerRect.bottom, dialogRect.right, (dtk_int32)(penPosY + (1 * uiScale))), dtk_rgb(200, 200, 200));
             penPosY += (9*uiScale);
 
-            dtk_surface_draw_text(pEvent->paint.pSurface, pFont, uiScale, versionStr, (int)strlen(versionStr), (dtk_int32)penPosX, (dtk_int32)penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255));
+            dtk_surface_draw_text(pEvent->paint.pSurface, pFont, uiScale, versionStr, (int)strlen(versionStr), (dtk_int32)penPosX, (dtk_int32)penPosY, dtk_rgb(0, 0, 0), dtk_rgb(255, 255, 255));
             penPosY += fontMetrics.lineHeight;
 
-            dtk_surface_draw_text(pEvent->paint.pSurface, pFont, uiScale, copyrightStr, (int)strlen(copyrightStr), (dtk_int32)penPosX, (dtk_int32)penPosY, dred_rgb(0, 0, 0), dred_rgb(255, 255, 255));
+            dtk_surface_draw_text(pEvent->paint.pSurface, pFont, uiScale, copyrightStr, (int)strlen(copyrightStr), (dtk_int32)penPosX, (dtk_int32)penPosY, dtk_rgb(0, 0, 0), dtk_rgb(255, 255, 255));
             penPosY += fontMetrics.lineHeight;
     
             penPosY += (9*uiScale);
-            dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_rect_init(0, (dtk_int32)penPosY, dialogRect.right, (dtk_int32)(penPosY + (1 * uiScale))), dred_rgb(200, 200, 200));
+            dtk_surface_draw_rect(pEvent->paint.pSurface, dtk_rect_init(0, (dtk_int32)penPosY, dialogRect.right, (dtk_int32)(penPosY + (1 * uiScale))), dtk_rgb(200, 200, 200));
             penPosY += 9*uiScale;
         } break;
 

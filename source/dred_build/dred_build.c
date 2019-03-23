@@ -187,7 +187,7 @@ void get_config_var_default_value(unsigned int type, char* valueOut, size_t valu
         return;
     }
     if (type == CONFIG_VAR_TYPE_COLOR) {
-        strcpy_s(valueOut, valueOutSize, "dred_rgb(0, 0, 0)");
+        strcpy_s(valueOut, valueOutSize, "dtk_rgb(0, 0, 0)");
         return;
     }
 }
@@ -236,7 +236,7 @@ void parse_config_var_value(unsigned int type, const char* valueIn, char* valueO
             a[0] = '2'; a[1] = '5'; a[2] = '5'; a[3] = '\0';
         }
 
-        snprintf(valueOut, valueOutSize, "dred_rgba(%s, %s, %s, %s)", r, g, b, a);
+        snprintf(valueOut, valueOutSize, "dtk_rgba(%s, %s, %s, %s)", r, g, b, a);
         return;
     }
 
@@ -934,7 +934,7 @@ void generate_config_vars(FILE* pFileOut, FILE* pFileOutH)
             case CONFIG_VAR_TYPE_COLOR:
             {
                 funcOutput = dtk_append_string(funcOutput, "        pConfig->"); funcOutput = dtk_append_string(funcOutput, pVar->varname);
-                funcOutput = dtk_append_string(funcOutput, " = dred_parse_color(value);\n");
+                funcOutput = dtk_append_string(funcOutput, " = dtk_parse_color(value);\n");
 
                 funcOutput = dtk_append_string(funcOutput, "        if ((flags & DRED_CONFIG_NO_UPDATE_BINDINGS) == 0) dtk_update_bindings_color(&pConfig->pDred->tk, NULL, \"config.");
                 funcOutput = dtk_append_string(funcOutput, pVar->name);

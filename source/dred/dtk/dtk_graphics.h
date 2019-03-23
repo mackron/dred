@@ -73,6 +73,10 @@ DTK_INLINE dtk_bool32 dtk_color_equal(dtk_color c0, dtk_color c1)
         c0.a == c1.a;
 }
 
+dtk_color dtk_parse_color(const char* color);
+dtk_result dtk_color_to_string(dtk_color color, char* str, size_t strCap);
+
+
 
 // Fonts
 // =====

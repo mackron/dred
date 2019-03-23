@@ -831,12 +831,6 @@ void dred_control_draw_border(dred_control* pControl, float borderWidth, dtk_col
 //
 /////////////////////////////////////////////////////////////////
 
-/// Creates a color object from a set of RGBA color components.
-dtk_color dred_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-
-/// Creates a color object from a set of RGB color components.
-dtk_color dred_rgb(uint8_t r, uint8_t g, uint8_t b);
-
 /// Clamps the given rectangle to another.
 dred_rect dred_clamp_rect(dred_rect rect, dred_rect other);
 

@@ -235,7 +235,7 @@ void dred_config_set_bool(dred_config* pConfig, const char* name, dtk_bool32 val
 void dred_config_set_color(dred_config* pConfig, const char* name, dtk_color value, dtk_uint32 flags)
 {
     char valueStr[16];  // HTML 0xRRGGBB[AA] format.
-    dred_color_to_string(value, valueStr, sizeof(valueStr));
+    dtk_color_to_string(value, valueStr, sizeof(valueStr));
     dred_config_set(pConfig, name, valueStr, flags);
 }
 

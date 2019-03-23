@@ -14,10 +14,6 @@ dtk_font_weight dred_font_weight_from_pango(PangoWeight weight);
 dtk_font_slant dred_font_slant_from_pango(PangoStyle slant);
 #endif
 
-dtk_color dred_parse_color(const char* color);  // TODO: Move this to DTK.
-dtk_result dred_color_to_string(dtk_color color, char* str, size_t strCap);
-
-
 // Type conversion
 
 DTK_INLINE dred_rect drte_rect_to_dred(drte_rect rect)
