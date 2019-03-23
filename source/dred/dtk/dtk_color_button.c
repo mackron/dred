@@ -229,11 +229,16 @@ dtk_bool32 dtk_color_button_default_event_handler(dtk_event* pEvent)
             dtk_color_button__refresh_layout(pButton);
         } break;
 
+        case DTK_EVENT_BINDING:
+        {
+            if (dtk_bind_targets_equal(pEvent->binding.target, DTK_BIND_TARGET_VALUE)) {
+                dtk_color_button_set_color(pButton, pEvent->binding.var.value.c, DTK_FALSE);
+            }
+        } break;
+
         case DTK_EVENT_COLOR_BUTTON_COLOR_CHANGED:
         {
-            if (pButton->onColorChanged) {
-                pButton->onColorChanged(pButton, pEvent->colorButton.color);
-            }
+            dtk_update_bindings_color(pEvent->pTK, DTK_CONTROL(pButton), dtk_control_get_binding_var(DTK_CONTROL(pButton), DTK_BIND_TARGET_VALUE), pButton->color);
         } break;
 
         default: break;
@@ -322,7 +327,13 @@ void dtk_color_button_set_padding(dtk_color_button* pButton, dtk_int32 padding)
 
 void dtk_color_button_set_color(dtk_color_button* pButton, dtk_color color, dtk_bool32 blockEvent)
 {
-    if (pButton == NULL) return;
+    if (pButton == NULL) {
+        return;
+    }
+
+    if (dtk_color_equal(pButton->color, color)) {
+        return;
+    }
 
     pButton->color = color;
 
@@ -339,12 +350,4 @@ dtk_color dtk_color_button_get_color(dtk_color_button* pButton)
 {
     if (pButton == NULL) return dtk_rgb(0, 0, 0);
     return pButton->color;
-}
-
-
-void dtk_color_button_set_on_color_changed(dtk_color_button* pButton, dtk_color_button_on_color_changed_proc proc)
-{
-    if (pButton == NULL) return;
-
-    pButton->onColorChanged = proc;
 }

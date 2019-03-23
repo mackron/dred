@@ -1,7 +1,6 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
 typedef struct dtk_color_button dtk_color_button;
-typedef void (* dtk_color_button_on_color_changed_proc)(dtk_color_button* pButton, dtk_color color);
 
 #define DTK_COLOR_BUTTON(a) ((dtk_color_button*)(a))
 struct dtk_color_button
@@ -19,7 +18,6 @@ struct dtk_color_button
     dtk_int32 padding;
     dtk_bool32 isMouseOver;
     dtk_bool32 isAutoSizeEnabled;
-    dtk_color_button_on_color_changed_proc onColorChanged;
 };
 
 dtk_result dtk_color_button_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, const char* text, dtk_color color, dtk_color_button* pButton);
@@ -39,5 +37,3 @@ void dtk_color_button_set_padding(dtk_color_button* pButton, dtk_int32 padding);
 
 void dtk_color_button_set_color(dtk_color_button* pButton, dtk_color color, dtk_bool32 blockEvent);
 dtk_color dtk_color_button_get_color(dtk_color_button* pbutton);
-
-void dtk_color_button_set_on_color_changed(dtk_color_button* pButton, dtk_color_button_on_color_changed_proc proc);

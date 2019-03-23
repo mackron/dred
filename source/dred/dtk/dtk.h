@@ -249,6 +249,7 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 
 // Binding targets.
 #define DTK_BIND_TARGET_TEXT                            "text"
+#define DTK_BIND_TARGET_VALUE                           "value"
 #define DTK_BIND_TARGET_CHECKED                         "checked"
 
 // Event types.
