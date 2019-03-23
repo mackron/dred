@@ -202,6 +202,15 @@ dtk_bool32 dtk_button_default_event_handler(dtk_event* pEvent)
             }
         } break;
 
+#if 0
+        case DTK_EVENT_UPDATE_BINDING:
+        {
+            if (strcmp(pEvent->binding.target, "text") == 0) {
+                dtk_button_set_text(pButton, pEvent->binding.value.str);
+            }
+        } break;
+#endif
+
         default: break;
     }
 

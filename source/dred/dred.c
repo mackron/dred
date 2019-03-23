@@ -17,7 +17,6 @@
 #include "dred_ipc.c"
 #include "gui/dred_gui.c"
 #include "gui/dred_color_button.c"
-#include "gui/dred_checkbox.c"
 #include "gui/dred_textview.c"
 #include "gui/dred_textbox.c"
 #include "gui/dred_info_bar.c"

@@ -21,9 +21,9 @@ struct dred_settings_editor
     dtk_button closeButton;
 
     // General
-    dred_checkbox cbShowTabBar;
-    dred_checkbox cbShowMenuBar;
-    dred_checkbox cbAutoHideCmdBar;
+    dtk_checkbox cbShowTabBar;
+    dtk_checkbox cbShowMenuBar;
+    dtk_checkbox cbAutoHideCmdBar;
 
     // Theme
     dtk_button fontButton;
@@ -32,8 +32,8 @@ struct dred_settings_editor
     dred_color_button lineColorButton;
 
     // Text Editor
-    dred_checkbox cbTabsToSpaces;
-    dred_checkbox cbShowLineNumbers;
+    dtk_checkbox cbTabsToSpaces;
+    dtk_checkbox cbShowLineNumbers;
     
 
     // The font to use for everything.

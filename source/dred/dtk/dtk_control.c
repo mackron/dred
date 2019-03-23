@@ -151,9 +151,14 @@ dtk_result dtk_control_init(dtk_context* pTK, dtk_control_type type, dtk_event_p
 
 dtk_result dtk_control_uninit(dtk_control* pControl)
 {
-    if (pControl == NULL) return DTK_INVALID_ARGS;
+    if (pControl == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
     dtk_context* pTK = pControl->pTK;
+
+    /* All bindings must be removed first. */
+    dtk_control_unbind_all(pControl);
 
     if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
         if (pTK->pWindowUnderMouse == DTK_WINDOW(pControl)) {

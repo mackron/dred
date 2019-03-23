@@ -46,7 +46,6 @@ extern "C" {
 #include "dred_ipc.h"
 #include "gui/dred_gui.h"
 #include "gui/dred_color_button.h"
-#include "gui/dred_checkbox.h"
 #include "gui/dred_textview.h"
 #include "gui/dred_textbox.h"
 #include "gui/dred_info_bar.h"

@@ -70,6 +70,9 @@ DTK_PRIVATE void dtk_binding_engine__remove_control(dtk_binding_engine* pBinding
     dtk_assert(controlIndex < pBindingEngine->controlBindingsCount);
 
     dtk_free(pBindingEngine->pControlBindings[controlIndex].pBindings);
+    pBindingEngine->pControlBindings[controlIndex].pBindings    = NULL;
+    pBindingEngine->pControlBindings[controlIndex].bindingCap   = 0;
+    pBindingEngine->pControlBindings[controlIndex].bindingCount = 0;
     
     for (dtk_uint32 iControl = controlIndex; iControl+1 < pBindingEngine->controlBindingsCount; ++iControl) {
         pBindingEngine->pControlBindings[iControl] = pBindingEngine->pControlBindings[iControl+1];
@@ -163,7 +166,7 @@ void dtk_binding_engine_uninit(dtk_binding_engine* pBindingEngine)
     }
 
     // At uninitialization time, everything should have been cleaned up by now. But for safety I'm going to go ahead and clean everything up anyway.
-    for (dtk_uint32 iControlBindings = 0; iControlBindings < pBindingEngine->controlBindingsCap; ++iControlBindings) {
+    for (dtk_uint32 iControlBindings = 0; iControlBindings < pBindingEngine->controlBindingsCount; ++iControlBindings) {
         dtk_free(pBindingEngine->pControlBindings[iControlBindings].pBindings);
     }
     dtk_free(pBindingEngine->pControlBindings);
