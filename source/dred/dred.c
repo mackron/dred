@@ -6,8 +6,6 @@
 #define DR_TEXT_ENGINE_IMPLEMENTATION
 #include "../external/dr_text_engine.h"
 
-#include "../external/json.c"
-
 // We don't need shared memory in DTK. This simplifies the Linux build because we would otherwise require linking to -lrt.
 #define DTK_IPC_NO_SHARED_MEMORY
 
