@@ -11,7 +11,7 @@ dtk_bool32 dred_color_button_event_handler(dtk_event* pEvent)
             if (pButton->varBinding[0] != '\0') {
                 char colorStr[256];
                 snprintf(colorStr, sizeof(colorStr), "%d %d %d %d", pEvent->colorButton.color.r, pEvent->colorButton.color.g, pEvent->colorButton.color.b, pEvent->colorButton.color.a);
-                dred_config_set(&dred_get_context_from_control(DTK_CONTROL(pButton))->config, pButton->varBinding, colorStr);
+                dred_config_set(&dred_get_context_from_control(DTK_CONTROL(pButton))->config, pButton->varBinding, colorStr, 0);
             }
         } break;
 

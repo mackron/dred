@@ -83,8 +83,8 @@ dtk_bool32 dred_shortcut_table_bind(dred_shortcut_table* pTable, dtk_uint32 id, 
 
     memset(&pTable->pShortcuts[pTable->count], 0, sizeof(pTable->pShortcuts[pTable->count]));
     pTable->pShortcuts[pTable->count].id = id;
-    pTable->pShortcuts[pTable->count].nameOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, name);
-    pTable->pShortcuts[pTable->count].cmdOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, cmdStr);
+    pTable->pShortcuts[pTable->count].nameOffset = dtk_string_pool_find_or_add(&pTable->pDred->stringPool, name);
+    pTable->pShortcuts[pTable->count].cmdOffset = dtk_string_pool_find_or_add(&pTable->pDred->stringPool, cmdStr);
     pTable->pShortcuts[pTable->count].acceleratorCount = acceleratorCount;
     memcpy(pTable->pShortcuts[pTable->count].accelerators, pAccelerators, acceleratorCount * sizeof(*pAccelerators));
     pTable->count += 1;
@@ -156,7 +156,7 @@ dtk_bool32 dred_shortcut_table_find_by_name(dred_shortcut_table* pTable, const c
     }
 
     for (size_t i = 0; i < pTable->count; ++i) {
-        if (strcmp(name, dred_string_pool_cstr(&pTable->pDred->stringPool, pTable->pShortcuts[i].nameOffset)) == 0) {
+        if (strcmp(name, dtk_string_pool_cstr(&pTable->pDred->stringPool, pTable->pShortcuts[i].nameOffset)) == 0) {
             if (pIndexOut) *pIndexOut = i;
             return DTK_TRUE;
         }
@@ -171,8 +171,8 @@ void dred_shortcut_table_replace_by_index(dred_shortcut_table* pTable, size_t sh
         return;
     }
 
-    pTable->pShortcuts[shortcutIndex].nameOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, name);
-    pTable->pShortcuts[shortcutIndex].cmdOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, cmdStr);
+    pTable->pShortcuts[shortcutIndex].nameOffset = dtk_string_pool_find_or_add(&pTable->pDred->stringPool, name);
+    pTable->pShortcuts[shortcutIndex].cmdOffset = dtk_string_pool_find_or_add(&pTable->pDred->stringPool, cmdStr);
     pTable->pShortcuts[shortcutIndex].acceleratorCount = acceleratorCount;
     memcpy(pTable->pShortcuts[shortcutIndex].accelerators, pAccelerators, acceleratorCount * sizeof(*pAccelerators));
 }

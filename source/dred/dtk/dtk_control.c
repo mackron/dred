@@ -1082,7 +1082,9 @@ dtk_bool32 dtk_control_is_point_inside(dtk_control* pControl, dtk_int32 absolute
 
 float dtk_control_get_scaling_factor(dtk_control* pControl)
 {
-    if (pControl == NULL) return 1;
+    if (pControl == NULL) {
+        return 1;
+    }
 
     if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
         return dtk_get_application_scaling_factor(pControl->pTK) * DTK_WINDOW(pControl)->dpiScale;
@@ -1093,7 +1095,9 @@ float dtk_control_get_scaling_factor(dtk_control* pControl)
 
 dtk_result dtk_control_refresh_layout(dtk_control* pControl)
 {
-    if (pControl == NULL) return DTK_INVALID_ARGS;
+    if (pControl == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
     dtk_event e = dtk_event_init(pControl->pTK, DTK_EVENT_REFRESH_LAYOUT, pControl);
     return dtk_handle_local_event(&e);
@@ -1102,7 +1106,9 @@ dtk_result dtk_control_refresh_layout(dtk_control* pControl)
 
 dtk_result dtk_control_show_popup_menu(dtk_control* pControl, dtk_menu* pMenu, dtk_int32 relativePosX, dtk_int32 relativePosY)
 {
-    if (pControl == NULL || pMenu == NULL) return DTK_INVALID_ARGS;
+    if (pControl == NULL || pMenu == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
     if (pControl->type == DTK_CONTROL_TYPE_WINDOW) {
         return dtk_window_show_popup_menu(DTK_WINDOW(pControl), pMenu, relativePosX, relativePosY);
@@ -1115,4 +1121,41 @@ dtk_result dtk_control_show_popup_menu(dtk_control* pControl, dtk_menu* pMenu, d
 
     dtk_control_relative_to_absolute(pControl, &relativePosX, &relativePosY);
     return dtk_window_show_popup_menu(pWindow, pMenu, relativePosX, relativePosY);
+}
+
+
+dtk_result dtk_control_bind(dtk_control* pControl, const char* bindingTarget, const char* bindingVar)
+{
+    if (pControl == NULL || dtk_string_is_null_or_empty(bindingTarget) || dtk_string_is_null_or_empty(bindingVar)) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_binding_engine_bind(&pControl->pTK->bindingEngine, pControl, bindingTarget, bindingVar);
+}
+
+dtk_result dtk_control_unbind(dtk_control* pControl, const char* bindingTarget)
+{
+    if (pControl == NULL || dtk_string_is_null_or_empty(bindingTarget)) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_binding_engine_unbind(&pControl->pTK->bindingEngine, pControl, bindingTarget);
+}
+
+dtk_result dtk_control_unbind_all(dtk_control* pControl)
+{
+    if (pControl == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_binding_engine_unbind_all(&pControl->pTK->bindingEngine, pControl);
+}
+
+const char* dtk_control_get_binding_var(dtk_control* pControl, const char* bindingTarget)
+{
+    if (pControl == NULL) {
+        return NULL;
+    }
+
+    return dtk_binding_engine_get_binding_var(&pControl->pTK->bindingEngine, pControl, bindingTarget);
 }

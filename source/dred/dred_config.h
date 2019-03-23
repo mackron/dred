@@ -211,6 +211,8 @@
 //
 // END CONFIG VARS
 
+#define DRED_CONFIG_NO_UPDATE_BINDINGS  0x00000001
+
 typedef struct
 {
     // The main context that owns this config. This is set to the context that initialized the config object.
@@ -251,7 +253,12 @@ void dred_config_uninit(dred_config* pConfig);
 dtk_bool32 dred_config_load_file(dred_config* pConfig, const char* filePath, dred_config_on_error_proc onError, void* pUserData);
 
 // Sets a variable from a name/value string pair.
-void dred_config_set(dred_config* pConfig, const char* name, const char* value);
+void dred_config_set(dred_config* pConfig, const char* name, const char* value, dtk_uint32 flags);
+void dred_config_set_int(dred_config* pConfig, const char* name, dtk_int64 value, dtk_uint32 flags);
+void dred_config_set_uint(dred_config* pConfig, const char* name, dtk_uint64 value, dtk_uint32 flags);
+void dred_config_set_double(dred_config* pConfig, const char* name, double value, dtk_uint32 flags);
+void dred_config_set_bool(dred_config* pConfig, const char* name, dtk_bool32 value, dtk_uint32 flags);
+void dred_config_set_color(dred_config* pConfig, const char* name, dtk_color value, dtk_uint32 flags);
 
 // Sets a variable to it's default value.
 void dred_config_set_default(dred_config* pConfig, const char* name);

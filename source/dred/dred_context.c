@@ -488,6 +488,28 @@ static dtk_bool32 dred_dtk_global_event_proc(dtk_event* pEvent)
             }
         } break;
 
+        case DTK_EVENT_BINDING:
+        {
+            // Config variables need to be updated. Only do this if originated from a control. In this case it probably means the control was on
+            // some kind of settings form.
+            const char* varName = dtk_string_pool_cstr(&pEvent->pTK->stringPool, pEvent->binding.var.name);
+            if (dtk_string_starts_with(varName, "config.")) {
+                varName += strlen("config.");
+                switch (pEvent->binding.var.type) {
+                    case dtk_binding_var_type_int:    dred_config_set_int(   &pDred->config, varName, pEvent->binding.var.value.i,   DRED_CONFIG_NO_UPDATE_BINDINGS); break;
+                    case dtk_binding_var_type_uint:   dred_config_set_uint(  &pDred->config, varName, pEvent->binding.var.value.u,   DRED_CONFIG_NO_UPDATE_BINDINGS); break;
+                    case dtk_binding_var_type_double: dred_config_set_double(&pDred->config, varName, pEvent->binding.var.value.d,   DRED_CONFIG_NO_UPDATE_BINDINGS); break;
+                    case dtk_binding_var_type_bool:   dred_config_set_bool(  &pDred->config, varName, pEvent->binding.var.value.b,   DRED_CONFIG_NO_UPDATE_BINDINGS); break;
+                    case dtk_binding_var_type_color:  dred_config_set_color( &pDred->config, varName, pEvent->binding.var.value.c,   DRED_CONFIG_NO_UPDATE_BINDINGS); break;
+                    case dtk_binding_var_type_string: dred_config_set(       &pDred->config, varName, pEvent->binding.var.value.str, DRED_CONFIG_NO_UPDATE_BINDINGS); break;
+
+                    /* Types not used by the config. */
+                    case dtk_binding_var_type_data:
+                    default: break; /* Unknown or unsupported type. Don't do anything. */
+                }
+            }
+        } break;    /* <-- This fallthrough is important! Not doing this will result in a memory leak. */
+
         case DTK_EVENT_CUSTOM:
         {
             switch (pEvent->custom.id)
@@ -583,7 +605,7 @@ dtk_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_li
     dtk_set_log_callback(&pDred->tk, dred_dtk_log_callback);
 
     // The string pool is initialized with data from the pre-build tool. It contains strings for stock shortcuts, menus, etc.
-    dred_string_pool_init(&pDred->stringPool, (const char*)g_InitialStringPoolData, sizeof(g_InitialStringPoolData));
+    dtk_string_pool_init(&pDred->stringPool, (const char*)g_InitialStringPoolData, sizeof(g_InitialStringPoolData));
 
     pDred->argc = argc;
     pDred->argv = argv;
@@ -1066,8 +1088,8 @@ void dred_save_dredprivate(dred_context* pDred)
         char shortcutStr[256];
         dred_shortcut_to_string(pDred->shortcutTable.pShortcuts[i], shortcutStr, sizeof(shortcutStr));
 
-        const char* shortcutName = dred_string_pool_cstr(&pDred->stringPool, pDred->shortcutTable.pShortcuts[i].nameOffset);
-        const char* shortcutCmd = dred_string_pool_cstr(&pDred->stringPool, pDred->shortcutTable.pShortcuts[i].cmdOffset);
+        const char* shortcutName = dtk_string_pool_cstr(&pDred->stringPool, pDred->shortcutTable.pShortcuts[i].nameOffset);
+        const char* shortcutCmd = dtk_string_pool_cstr(&pDred->stringPool, pDred->shortcutTable.pShortcuts[i].cmdOffset);
 
         char bindingStr[4096];
         if (snprintf(bindingStr, sizeof(bindingStr), "bind \"%s\" \"%s\" \"%s\"\n", shortcutName, shortcutStr, shortcutCmd) < 0) {
@@ -2578,7 +2600,7 @@ void dred_set_config_variable(dred_context* pDred, const char* name, const char*
     if (pDred == NULL || name == NULL) return;
     if (value == NULL) value = "";
 
-    dred_config_set(&pDred->config, name, value);
+    dred_config_set(&pDred->config, name, value, 0);
 }
 
 

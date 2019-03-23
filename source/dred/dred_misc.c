@@ -193,3 +193,47 @@ dtk_color dred_parse_color(const char* color)
 
     return dred_rgb(0, 0, 0);
 }
+
+dtk_result dred_color_to_string(dtk_color color, char* str, size_t strCap)
+{
+    /* Using hexidecimal format. The alpha component is left out if it's equal to 255 (fully opaque). */
+    if (str == NULL || strCap == 0) {
+        return DTK_INVALID_ARGS;
+    }
+
+    if (color.a == 255) {
+        if (strCap < 9) {
+            return DTK_INVALID_ARGS;    /* Output buffer too small. */
+        }
+    } else {
+        if (strCap < 11) {
+            return DTK_INVALID_ARGS;    /* Output buffer too small. */
+        }
+    }
+
+    str[0] = '0';
+    str[1] = 'x';
+
+    // R
+    dtk_uint_to_hex_char((color.r >> 4), &str[2]);
+    dtk_uint_to_hex_char((color.r & 15), &str[3]);
+
+    // G
+    dtk_uint_to_hex_char((color.g >> 4), &str[4]);
+    dtk_uint_to_hex_char((color.g & 15), &str[5]);
+
+    // B
+    dtk_uint_to_hex_char((color.b >> 4), &str[6]);
+    dtk_uint_to_hex_char((color.b & 15), &str[7]);
+
+    // A. Leave this out if it's 255.
+    if (color.a != 255) {
+        dtk_uint_to_hex_char((color.a >> 4), &str[8]);
+        dtk_uint_to_hex_char((color.a & 15), &str[9]);
+        str[10] = '\0';
+    } else {
+        str[8] = '\0';
+    }
+
+    return DTK_SUCCESS;
+}

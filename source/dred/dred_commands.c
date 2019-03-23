@@ -118,8 +118,8 @@ dtk_bool32 dred_command__bind(dred_context* pDred, const char* value)
         // Any menu items that use the shortcut name need to have their shortcut updated.
         for (size_t iItem = 0; iItem < pDred->menuItemTable.count; ++iItem) {
             dred_menu_item_data* pItem = &pDred->menuItemTable.pItems[iItem];
-            if (strcmp(dred_string_pool_cstr(&pDred->stringPool, pItem->shortcutStrOffset), shortcutName) == 0) {
-                pItem->commandStrOffset = dred_string_pool_find_or_add(&pDred->stringPool, commandStr);
+            if (strcmp(dtk_string_pool_cstr(&pDred->stringPool, pItem->shortcutStrOffset), shortcutName) == 0) {
+                pItem->commandStrOffset = dtk_string_pool_find_or_add(&pDred->stringPool, commandStr);
 
                 // The menu item needs to have it's shortcut string updated.
                 for (size_t iMenu = 0; iMenu < dtk_count_of(pDred->menus.pMenus); ++iMenu) {
@@ -168,7 +168,7 @@ dtk_bool32 dred_command__set(dred_context* pDred, const char* value)
         return DTK_FALSE;
     }
 
-    dred_config_set(&pDred->config, name, dtk_ltrim(value));
+    dred_config_set(&pDred->config, name, dtk_ltrim(value), 0);
     return DTK_TRUE;
 }
 

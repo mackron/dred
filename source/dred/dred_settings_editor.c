@@ -276,7 +276,7 @@ void dred_settings__btn_choose_font__on_pressed(dtk_button* pButton)
     char fontDescStr[256];
     dred_font_desc_to_string(&fontDesc, fontDescStr, sizeof(fontDescStr));
     
-    dred_config_set(&pDred->config, "texteditor-font", fontDescStr);
+    dred_config_set(&pDred->config, "texteditor-font", fontDescStr, 0);
 }
 
 
@@ -378,7 +378,8 @@ dtk_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSetti
     float penPosY = 8*uiScale;
 
     dred_checkbox_init(pDred, DTK_CONTROL(pPage->pGUIControl), "Show Tab Bar", pDred->config.showTabBar, &pSettingsEditor->cbShowTabBar);
-    dred_checkbox_set_bind_to_config_var(&pSettingsEditor->cbShowTabBar, "show-tab-bar");
+    //dred_checkbox_set_bind_to_config_var(&pSettingsEditor->cbShowTabBar, "show-tab-bar");
+    dtk_control_bind(DTK_CONTROL(&pSettingsEditor->cbShowTabBar), "checked", "config.show-tab-bar");
     dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowTabBar), (dtk_int32)(4*uiScale));
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowTabBar), penPosX, penPosY);
     penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowTabBar)) + (6*uiScale);

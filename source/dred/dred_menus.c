@@ -191,8 +191,8 @@ dtk_result dred_menu_item_table_bind(dred_menu_item_table* pTable, dtk_uint32 id
         pTable->count += 1;
     }
 
-    pTable->pItems[index].commandStrOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, commandStr);
-    pTable->pItems[index].shortcutStrOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, shortcutName);
+    pTable->pItems[index].commandStrOffset = dtk_string_pool_find_or_add(&pTable->pDred->stringPool, commandStr);
+    pTable->pItems[index].shortcutStrOffset = dtk_string_pool_find_or_add(&pTable->pDred->stringPool, shortcutName);
 
     return DTK_SUCCESS;
 }
@@ -228,8 +228,8 @@ dtk_result dred_menu_item_table_update_bindings_by_shortcut_name(dred_menu_item_
 
     for (size_t iItem = 0; iItem < pTable->count; ++iItem) {
         dred_menu_item_data* pItem = &pTable->pItems[iItem];
-        if (strcmp(dred_string_pool_cstr(&pTable->pDred->stringPool, pItem->shortcutStrOffset), shortcutName) == 0) {
-            pItem->commandStrOffset = dred_string_pool_find_or_add(&pTable->pDred->stringPool, commandStr);
+        if (strcmp(dtk_string_pool_cstr(&pTable->pDred->stringPool, pItem->shortcutStrOffset), shortcutName) == 0) {
+            pItem->commandStrOffset = dtk_string_pool_find_or_add(&pTable->pDred->stringPool, commandStr);
         }
     }
 
@@ -243,7 +243,7 @@ const char* dred_menu_item_table_get_command(dred_menu_item_table* pTable, dtk_u
         return NULL;
     }
 
-    return dred_string_pool_cstr(&pTable->pDred->stringPool, pTable->pItems[index].commandStrOffset);
+    return dtk_string_pool_cstr(&pTable->pDred->stringPool, pTable->pItems[index].commandStrOffset);
 }
 
 const char* dred_menu_item_table_get_shortcut(dred_menu_item_table* pTable, dtk_uint32 id)
@@ -253,7 +253,7 @@ const char* dred_menu_item_table_get_shortcut(dred_menu_item_table* pTable, dtk_
         return NULL;
     }
 
-    return dred_string_pool_cstr(&pTable->pDred->stringPool, pTable->pItems[index].shortcutStrOffset);
+    return dtk_string_pool_cstr(&pTable->pDred->stringPool, pTable->pItems[index].shortcutStrOffset);
 }
 
 dtk_bool32 dred_menu_item_table_find(dred_menu_item_table* pTable, dtk_uint32 id, size_t* pIndex)

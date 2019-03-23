@@ -204,7 +204,7 @@ void dred_build__format_shortcut_init_string(char* shortcutInitStr, size_t short
     snprintf(shortcutInitStr, shortcutInitStrSize, "dred_shortcut_create(%s, %s)", accelerator0Str, accelerator1Str);
 }
 
-void dred_build__generate_shortcuts(FILE* pFileOut, FILE* pFileOutH, dred_string_pool* pStringPool)
+void dred_build__generate_shortcuts(FILE* pFileOut, FILE* pFileOutH, dtk_string_pool* pStringPool)
 {
     (void)pFileOut;
     (void)pFileOutH;
@@ -305,13 +305,13 @@ void dred_build__generate_shortcuts(FILE* pFileOut, FILE* pFileOutH, dred_string
     // String pool.
     for (int iItem = 0; iItem < stb_sb_count(context.pShortcuts); ++iItem) {
         const char* id = context.pShortcuts[iItem].id;
-        if (id[0] != '\0' && !dred_string_pool_find(pStringPool, id, NULL)) {
-            dred_string_pool_add(pStringPool, id, (size_t)-1);
+        if (id[0] != '\0' && !dtk_string_pool_find(pStringPool, id, NULL)) {
+            dtk_string_pool_add(pStringPool, id, (size_t)-1);
         }
 
         const char* cmd = context.pShortcuts[iItem].cmd;
-        if (cmd[0] != '\0' && !dred_string_pool_find(pStringPool, cmd, NULL)) {
-            dred_string_pool_add(pStringPool, cmd, (size_t)-1);
+        if (cmd[0] != '\0' && !dtk_string_pool_find(pStringPool, cmd, NULL)) {
+            dtk_string_pool_add(pStringPool, cmd, (size_t)-1);
         }
     }
 }

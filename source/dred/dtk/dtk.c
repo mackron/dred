@@ -232,29 +232,6 @@ dtk_result dtk__preprocess_event(dtk_event* pEvent)  // Returns DTK_CANCELLED if
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_handle_global_event(dtk_event* pEvent)
-{
-    dtk_assert(pEvent != NULL);
-    
-    dtk_context* pTK = pEvent->pTK;
-    dtk_assert(pTK != NULL);
-
-    // If there's any garbage the event will need to be normalized before executing. If the event references a garbaged control it
-    // needs to be cancelled.
-    dtk_result result = dtk__preprocess_event(pEvent);
-    if (result != DTK_SUCCESS) {
-        return result;
-    }
-
-    dtk_event_proc onEventGlobal = pTK->onEvent;
-    if (onEventGlobal == NULL) {
-        onEventGlobal = dtk_default_event_handler;
-    }
-
-    onEventGlobal(pEvent);
-    return DTK_SUCCESS;
-}
-
 
 dtk_result dtk__track_window(dtk_context* pTK, dtk_window* pWindow)
 {
@@ -303,8 +280,9 @@ dtk_result dtk_result_from_errno(errno_t e)
 
 #ifdef DTK_WIN32
 #define DTK_WM_LOCAL                        (WM_USER + 0)
-#define DTK_WM_CUSTOM                       (WM_USER + 1)
-#define DTK_WM_PAINT_NOTIFICATION           (WM_USER + 2)
+#define DTK_WM_GLOBAL                       (WM_USER + 1)
+#define DTK_WM_CUSTOM                       (WM_USER + 2)
+#define DTK_WM_PAINT_NOTIFICATION           (WM_USER + 3)
 
 typedef enum DTK_PROCESS_DPI_AWARENESS {
     DTK_PROCESS_DPI_UNAWARE = 0,
@@ -367,6 +345,7 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 #include "dtk_dl.c"
 #include "dtk_rect.c"
 #include "dtk_string.c"
+#include "dtk_string_pool.c"
 #include "dtk_path.c"
 #include "dtk_time.c"
 #include "dtk_io.c"
@@ -391,6 +370,7 @@ dtk_result dtk_win32_error_to_result(DWORD error);
 #include "dtk_window.c"
 #include "dtk_menu.c"
 #include "dtk_dialogs.c"
+#include "dtk_binding_engine.c"
 #include "dtk_timer.c"
 #include "dtk_clipboard.c"
 #include "dtk_paint_queue.c"
@@ -509,6 +489,15 @@ LRESULT CALLBACK dtk_MessagingWindowProcWin32(HWND hWnd, UINT msg, WPARAM wParam
             dtk_assert(pEvent != NULL);
 
             dtk_handle_local_event(pEvent);
+            dtk_free(pEvent);
+        } break;
+
+        case DTK_WM_GLOBAL:
+        {
+            dtk_event* pEvent = (dtk_event*)lParam;
+            dtk_assert(pEvent != NULL);
+
+            dtk_handle_global_event(pEvent);
             dtk_free(pEvent);
         } break;
 
@@ -694,6 +683,22 @@ dtk_result dtk_post_local_event__win32(dtk_event* pEvent)
     return DTK_SUCCESS;
 }
 
+dtk_result dtk_post_global_event__win32(dtk_event* pEvent)
+{
+    dtk_assert(pEvent != NULL);
+    dtk_assert(pEvent->pTK != NULL);
+
+    dtk_event* pEventCopy = (dtk_event*)dtk_malloc(sizeof(*pEventCopy));
+    if (pEventCopy == NULL) {
+        return DTK_OUT_OF_MEMORY;
+    }
+
+    *pEventCopy = *pEvent;
+    PostMessageA((HWND)pEvent->pTK->win32.hMessagingWindow, DTK_WM_GLOBAL, (WPARAM)0, (LPARAM)pEventCopy);
+
+    return DTK_SUCCESS;
+}
+
 dtk_result dtk_post_custom_event__win32(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
 {
     // We need a copy of the data. This will be freed in dtk_GenericWindowProc().
@@ -750,7 +755,8 @@ dtk_result dtk_do_tooltip__win32(dtk_context* pTK)
         SendMessageA((HWND)pTK->win32.hTooltipWindow, TTM_TRACKACTIVATE, (WPARAM)FALSE, (LPARAM)&ti);
         return DTK_SUCCESS;
     } else {
-        return dtk_handle_global_event(&e);
+        dtk_handle_global_event(&e);
+        return DTK_SUCCESS;
     }
 }
 
@@ -1232,6 +1238,29 @@ dtk_result dtk_post_local_event__gtk(dtk_event* pEvent)
 }
 
 
+static gboolean dtk_post_global_event_cb__gtk(dtk_event* pEvent)
+{
+    dtk_handle_global_event(pEvent);
+
+    dtk_free(pEvent);
+    return FALSE;
+}
+
+dtk_result dtk_post_global_event__gtk(dtk_event* pEvent)
+{
+    // We need a copy of the data.
+    dtk_event* pEventCopy = (dtk_event*)dtk_malloc(sizeof(*pEventCopy));
+    if (pEventCopy == NULL) {
+        return DTK_OUT_OF_MEMORY;
+    }
+
+    *pEventCopy = *pEvent;
+    
+    g_idle_add((GSourceFunc)dtk_post_global_event_cb__gtk, pEventCopy);
+    return DTK_SUCCESS;
+}
+
+
 static gboolean dtk_post_custom_event_cb__gtk(dtk_custom_event_data* pEventData)
 {
     dtk_handle_custom_event(pEventData->pTK, pEventData->pControl, pEventData->eventID, pEventData->pData, pEventData->dataSize);
@@ -1621,13 +1650,17 @@ void dtk_unload_stock_images(dtk_context* pTK)
 
 dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
 {
-    if (pTK == NULL) return DTK_INVALID_ARGS;
+    dtk_result result = DTK_NO_BACKEND;
+
+    if (pTK == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
     dtk_zero_object(pTK);
     pTK->onEvent = onEvent;
     pTK->pUserData = pUserData;
 
     // Detect the platform first.
-    dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
     if (result != DTK_SUCCESS) {
         result = dtk_init__win32(pTK);
@@ -1644,24 +1677,66 @@ dtk_result dtk_init(dtk_context* pTK, dtk_event_proc onEvent, void* pUserData)
 
     result = dtk_paint_queue_init(&pTK->paintQueue);
     if (result != DTK_SUCCESS) {
-        return result;
+        goto error1;
     }
 
     result = dtk_load_stock_images(pTK);
     if (result != DTK_SUCCESS) {
-        dtk_uninit(pTK);
-        return result;
+        goto error2;
     }
+
+    result = dtk_string_pool_init(&pTK->stringPool, NULL, 0);
+    if (result != DTK_SUCCESS) {
+        goto error3;
+    }
+
+    result = dtk_binding_engine_init(pTK, &pTK->bindingEngine);
+    if (result != DTK_SUCCESS) {
+        goto error4;
+    }
+
+    return DTK_SUCCESS;
+
+
+//error5:
+//    dtk_binding_engine_uninit(&pTK->bindingEngine);
+error4:
+    dtk_string_pool_uninit(&pTK->stringPool);
+error3:
+    dtk_unload_stock_images(pTK);
+error2:
+    dtk_paint_queue_uninit(&pTK->paintQueue);
+error1:
+    if (pTK->isMonospaceFontInitialized) {
+        dtk_font_uninit(&pTK->monospaceFont);
+    }
+    if (pTK->isUIFontInitialized) {
+        dtk_font_uninit(&pTK->uiFont);
+    }
+#ifdef DTK_WIN32
+    if (pTK->platform == dtk_platform_win32) {
+        dtk_uninit__win32(pTK);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pTK->platform == dtk_platform_gtk) {
+        dtk_uninit__gtk(pTK);
+    }
+#endif
 
     return result;
 }
 
 dtk_result dtk_uninit(dtk_context* pTK)
 {
-    if (pTK == NULL) return DTK_INVALID_ARGS;
+    if (pTK == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
+    dtk_binding_engine_uninit(&pTK->bindingEngine);
     dtk_unload_stock_images(pTK);
-
+    dtk_paint_queue_uninit(&pTK->paintQueue);
+    
     if (pTK->isMonospaceFontInitialized) {
         dtk_font_uninit(&pTK->monospaceFont);
     }
@@ -1669,8 +1744,6 @@ dtk_result dtk_uninit(dtk_context* pTK)
         dtk_font_uninit(&pTK->uiFont);
     }
 
-    dtk_paint_queue_uninit(&pTK->paintQueue);
-    
 #ifdef DTK_WIN32
     if (pTK->platform == dtk_platform_win32) {
         dtk_uninit__win32(pTK);
@@ -1780,9 +1853,58 @@ dtk_bool32 dtk_handle_local_event(dtk_event* pEvent)
     return DTK_FALSE;
 }
 
+dtk_result dtk_post_global_event(dtk_event* pEvent)
+{
+    if (pEvent == NULL || pEvent->pTK == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    if (pEvent->pControl != NULL && pEvent->pControl->isUninitialized) {
+        return DTK_INVALID_ARGS;
+    }
+
+    dtk_result result = DTK_NO_BACKEND;
+#ifdef DTK_WIN32
+    if (pEvent->pTK->platform == dtk_platform_win32) {
+        result = dtk_post_global_event__win32(pEvent);
+    }
+#endif
+#ifdef DTK_GTK
+    if (pEvent->pTK->platform == dtk_platform_gtk) {
+        result = dtk_post_global_event__gtk(pEvent);
+    }
+#endif
+
+    return result;
+}
+
+dtk_bool32 dtk_handle_global_event(dtk_event* pEvent)
+{
+    dtk_assert(pEvent != NULL);
+    
+    dtk_context* pTK = pEvent->pTK;
+    dtk_assert(pTK != NULL);
+
+    // If there's any garbage the event will need to be normalized before executing. If the event references a garbaged control it
+    // needs to be cancelled.
+    dtk_result result = dtk__preprocess_event(pEvent);
+    if (result != DTK_SUCCESS) {
+        return DTK_FALSE;
+    }
+
+    dtk_event_proc onEventGlobal = pTK->onEvent;
+    if (onEventGlobal == NULL) {
+        onEventGlobal = dtk_default_event_handler;
+    }
+
+    return onEventGlobal(pEvent);
+}
+
 dtk_result dtk_post_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
 {
-    if (pTK == NULL) return DTK_INVALID_ARGS;
+    if (pTK == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
     if (pControl != NULL && pControl->isUninitialized) {
         return DTK_INVALID_ARGS;    // Cannot post an event for controls that are being uninitialised.
@@ -1805,7 +1927,9 @@ dtk_result dtk_post_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_ui
 
 dtk_result dtk_handle_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_uint32 eventID, const void* pData, size_t dataSize)
 {
-    if (pTK == NULL) return DTK_INVALID_ARGS;
+    if (pTK == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
     if (pControl != NULL && pControl->isUninitialized) {
         return DTK_INVALID_ARGS;    // Cannot post an event for controls that are being uninitialised.
@@ -1818,7 +1942,8 @@ dtk_result dtk_handle_custom_event(dtk_context* pTK, dtk_control* pControl, dtk_
     e.custom.id = eventID;
     e.custom.dataSize = dataSize;
     e.custom.pData = pData;
-    return dtk_handle_global_event(&e);
+    dtk_handle_global_event(&e);
+    return DTK_SUCCESS;
 }
 
 dtk_result dtk_post_paint_notification_event(dtk_context* pTK, dtk_window* pWindow)
@@ -1906,6 +2031,21 @@ dtk_bool32 dtk_default_event_handler(dtk_event* pEvent)
             }
         } return DTK_FALSE;
 
+        case DTK_EVENT_BINDING:
+        {
+            // Any control that's bound to this variable needs to be told about it.
+            dtk_control* pOriginator = pEvent->pControl;    // <-- The control associated with the event is the originator. Can be null.
+            dtk_binding_engine_handle_update(&pTK->bindingEngine, pOriginator, &pEvent->binding.var);
+
+            // After propagating the event we need to free the memory of variable length data.
+            if (pEvent->binding.var.type == dtk_binding_var_type_string) {
+                dtk_free_string((dtk_string)pEvent->binding.var.value.str);
+            }
+            if (pEvent->binding.var.type == dtk_binding_var_type_data) {
+                dtk_free((void*)pEvent->binding.var.value.data.ptr);
+            }
+        } return DTK_FALSE; // <-- Don't bother propagating to children because we just did that above.
+
         default: break;
     }
 
@@ -1914,7 +2054,9 @@ dtk_bool32 dtk_default_event_handler(dtk_event* pEvent)
 
 dtk_result dtk_post_quit_event(dtk_context* pTK, int exitCode)
 {
-    if (pTK == NULL) return DTK_INVALID_ARGS;
+    if (pTK == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
     dtk_result result = DTK_NO_BACKEND;
 #ifdef DTK_WIN32
@@ -2029,6 +2171,76 @@ dtk_result dtk_unbind_accelerator(dtk_context* pTK, dtk_accelerator accelerator)
 
     return result;
 }
+
+
+dtk_result dtk_update_bindings_int(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, dtk_int64 bindingValue)
+{
+    if (pTK == NULL || bindingVar == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_binding_engine_update_int(&pTK->bindingEngine, pOriginator, bindingVar, bindingValue);
+}
+
+dtk_result dtk_update_bindings_uint(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, dtk_uint64 bindingValue)
+{
+    if (pTK == NULL || bindingVar == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_binding_engine_update_uint(&pTK->bindingEngine, pOriginator, bindingVar, bindingValue);
+}
+
+dtk_result dtk_update_bindings_double(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, double bindingValue)
+{
+    if (pTK == NULL || bindingVar == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_binding_engine_update_double(&pTK->bindingEngine, pOriginator, bindingVar, bindingValue);
+}
+
+dtk_result dtk_update_bindings_bool(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, dtk_bool32 bindingValue)
+{
+    if (pTK == NULL || bindingVar == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_binding_engine_update_bool(&pTK->bindingEngine, pOriginator, bindingVar, bindingValue);
+}
+
+dtk_result dtk_update_bindings_color(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, dtk_color bindingValue)
+{
+    if (pTK == NULL || bindingVar == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_binding_engine_update_color(&pTK->bindingEngine, pOriginator, bindingVar, bindingValue);
+}
+
+dtk_result dtk_update_bindings_string(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, const char* bindingValue)
+{
+    if (pTK == NULL || bindingVar == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_binding_engine_update_string(&pTK->bindingEngine, pOriginator, bindingVar, bindingValue);
+}
+
+dtk_result dtk_update_bindings_data(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, const void* bindingValue, size_t bindingValueSize)
+{
+    if (pTK == NULL || bindingVar == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
+    return dtk_binding_engine_update_data(&pTK->bindingEngine, pOriginator, bindingVar, bindingValue, bindingValueSize);
+}
+
+dtk_bool32 dtk_bind_targets_equal(const char* a, const char* b)
+{
+    return strcmp(a, b) == 0;
+}
+
 
 dtk_result dtk_get_screen_size(dtk_context* pTK, dtk_uint32* pSizeX, dtk_uint32* pSizeY)
 {

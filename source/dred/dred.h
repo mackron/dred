@@ -43,7 +43,6 @@ extern "C" {
 #include "dred_build_config.h"
 #include "dred_types.h"
 #include "dred_events.h"
-#include "dred_string_pool.h"
 #include "dred_ipc.h"
 #include "gui/dred_gui.h"
 #include "gui/dred_color_button.h"

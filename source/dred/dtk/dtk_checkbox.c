@@ -158,7 +158,10 @@ void dtk_checkbox__refresh_layout(dtk_checkbox* pCheckbox)
 
 dtk_result dtk_checkbox_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, const char* text, dtk_bool32 checked, dtk_checkbox* pCheckbox)
 {
-    if (pCheckbox == NULL) return DTK_INVALID_ARGS;
+    if (pCheckbox == NULL) {
+        return DTK_INVALID_ARGS;
+    }
+
     dtk_zero_object(pCheckbox);
 
     dtk_result result = dtk_control_init(pTK, DTK_CONTROL_TYPE_CHECKBOX, (onEvent != NULL) ? onEvent : dtk_checkbox_default_event_handler, pParent, &pCheckbox->control);
@@ -186,7 +189,9 @@ dtk_result dtk_checkbox_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_contr
 
 dtk_result dtk_checkbox_uninit(dtk_checkbox* pCheckbox)
 {
-    if (pCheckbox == NULL) return DTK_INVALID_ARGS;
+    if (pCheckbox == NULL) {
+        return DTK_INVALID_ARGS;
+    }
 
     dtk_control_uninit(&pCheckbox->control);
     return DTK_SUCCESS;
@@ -233,11 +238,16 @@ dtk_bool32 dtk_checkbox_default_event_handler(dtk_event* pEvent)
             dtk_checkbox__on_release_mouse(pCheckbox);
         } break;
 
+        case DTK_EVENT_BINDING:
+        {
+            if (dtk_bind_targets_equal(pEvent->binding.target, DTK_BIND_TARGET_CHECKED)) {
+                dtk_checkbox_set_checked(pCheckbox, pEvent->binding.var.value.b, DTK_FALSE);
+            }
+        } break;
+
         case DTK_EVENT_CHECKBOX_CHECK_CHANGED:
         {
-            if (pCheckbox->onCheckChanged) {
-                pCheckbox->onCheckChanged(pCheckbox);
-            }
+            dtk_update_bindings_bool(pEvent->pTK, DTK_CONTROL(pCheckbox), dtk_control_get_binding_var(DTK_CONTROL(pCheckbox), DTK_BIND_TARGET_CHECKED), pCheckbox->isChecked);
         } break;
     }
 
@@ -247,7 +257,9 @@ dtk_bool32 dtk_checkbox_default_event_handler(dtk_event* pEvent)
 
 void dtk_checkbox_set_text(dtk_checkbox* pCheckbox, const char* text)
 {
-    if (pCheckbox == NULL) return;
+    if (pCheckbox == NULL) {
+        return;
+    }
 
     strncpy_s(pCheckbox->text, sizeof(pCheckbox->text), text, _TRUNCATE);
     dtk_control_scheduled_redraw(DTK_CONTROL(pCheckbox), dtk_control_get_local_rect(DTK_CONTROL(pCheckbox)));
@@ -255,7 +267,9 @@ void dtk_checkbox_set_text(dtk_checkbox* pCheckbox, const char* text)
 
 void dtk_checkbox_enable_auto_size(dtk_checkbox* pCheckbox)
 {
-    if (pCheckbox == NULL) return;
+    if (pCheckbox == NULL) {
+        return;
+    }
 
     pCheckbox->isAutoSizeEnabled = DTK_FALSE;
     dtk_checkbox__refresh_layout(pCheckbox);
@@ -263,7 +277,9 @@ void dtk_checkbox_enable_auto_size(dtk_checkbox* pCheckbox)
 
 void dtk_checkbox_disable_auto_size(dtk_checkbox* pCheckbox)
 {
-    if (pCheckbox == NULL) return;
+    if (pCheckbox == NULL) {
+        return;
+    }
 
     pCheckbox->isAutoSizeEnabled = DTK_FALSE;
     dtk_checkbox__refresh_layout(pCheckbox);
@@ -271,7 +287,9 @@ void dtk_checkbox_disable_auto_size(dtk_checkbox* pCheckbox)
 
 void dtk_checkbox_auto_size(dtk_checkbox* pCheckbox)
 {
-    if (pCheckbox == NULL) return;
+    if (pCheckbox == NULL) {
+        return;
+    }
 
     dtk_checkbox__refresh_layout(pCheckbox);
 }
@@ -279,7 +297,9 @@ void dtk_checkbox_auto_size(dtk_checkbox* pCheckbox)
 
 void dtk_checkbox_set_font(dtk_checkbox* pCheckbox, dtk_font* pFont)
 {
-    if (pCheckbox == NULL) return;
+    if (pCheckbox == NULL) {
+        return;
+    }
 
     if (pCheckbox->pFont == pFont) {
         return;
@@ -291,7 +311,9 @@ void dtk_checkbox_set_font(dtk_checkbox* pCheckbox, dtk_font* pFont)
 
 void dtk_checkbox_set_background_color(dtk_checkbox* pCheckbox, dtk_color color)
 {
-    if (pCheckbox == NULL) return;
+    if (pCheckbox == NULL) {
+        return;
+    }
 
     pCheckbox->bgColor = color;
     dtk_control_scheduled_redraw(DTK_CONTROL(pCheckbox), dtk_control_get_local_rect(DTK_CONTROL(pCheckbox)));
@@ -299,7 +321,9 @@ void dtk_checkbox_set_background_color(dtk_checkbox* pCheckbox, dtk_color color)
 
 void dtk_checkbox_set_border_color(dtk_checkbox* pCheckbox, dtk_color color)
 {
-    if (pCheckbox == NULL) return;
+    if (pCheckbox == NULL) {
+        return;
+    }
 
     pCheckbox->boxBorderColor = color;
     dtk_control_scheduled_redraw(DTK_CONTROL(pCheckbox), dtk_control_get_local_rect(DTK_CONTROL(pCheckbox)));
@@ -307,7 +331,9 @@ void dtk_checkbox_set_border_color(dtk_checkbox* pCheckbox, dtk_color color)
 
 void dtk_checkbox_set_border_width(dtk_checkbox* pCheckbox, dtk_int32 width)
 {
-    if (pCheckbox == NULL) return;
+    if (pCheckbox == NULL) {
+        return;
+    }
 
     pCheckbox->borderWidth = width;
     dtk_control_scheduled_redraw(DTK_CONTROL(pCheckbox), dtk_control_get_local_rect(DTK_CONTROL(pCheckbox)));
@@ -315,7 +341,9 @@ void dtk_checkbox_set_border_width(dtk_checkbox* pCheckbox, dtk_int32 width)
 
 void dtk_checkbox_set_padding(dtk_checkbox* pCheckbox, dtk_int32 padding)
 {
-    if (pCheckbox == NULL) return;
+    if (pCheckbox == NULL) {
+        return;
+    }
 
     pCheckbox->padding = padding;
     dtk_checkbox__refresh_layout(pCheckbox);
@@ -334,7 +362,9 @@ void dtk_checkbox_uncheck(dtk_checkbox* pCheckbox)
 
 void dtk_checkbox_toggle(dtk_checkbox* pCheckbox)
 {
-    if (pCheckbox == NULL) return;
+    if (pCheckbox == NULL) {
+        return;
+    }
     
     if (pCheckbox->isChecked) {
         dtk_checkbox_uncheck(pCheckbox);
@@ -345,7 +375,9 @@ void dtk_checkbox_toggle(dtk_checkbox* pCheckbox)
 
 void dtk_checkbox_set_checked(dtk_checkbox* pCheckbox, dtk_bool32 checked, dtk_bool32 blockEvent)
 {
-    if (pCheckbox == NULL) return;
+    if (pCheckbox == NULL) {
+        return;
+    }
 
     if (pCheckbox->isChecked == checked) {
         return;
@@ -364,13 +396,9 @@ void dtk_checkbox_set_checked(dtk_checkbox* pCheckbox, dtk_bool32 checked, dtk_b
 
 dtk_bool32 dtk_checkbox_is_checked(dtk_checkbox* pCheckbox)
 {
-    if (pCheckbox == NULL) return DTK_FALSE;
+    if (pCheckbox == NULL) {
+        return DTK_FALSE;
+    }
+
     return pCheckbox->isChecked;
-}
-
-
-void dtk_checkbox_set_on_check_changed(dtk_checkbox* pCheckbox, dtk_checkbox_on_check_changed_proc proc)
-{
-    if (pCheckbox == NULL) return;
-    pCheckbox->onCheckChanged = proc;
 }

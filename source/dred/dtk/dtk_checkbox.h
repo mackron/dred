@@ -1,7 +1,5 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
-typedef void (* dtk_checkbox_on_check_changed_proc)(dtk_checkbox* pCheckbox);
-
 #define DTK_CHECKBOX(a) ((dtk_checkbox*)(a))
 struct dtk_checkbox
 {
@@ -20,7 +18,6 @@ struct dtk_checkbox
     dtk_bool32 isMouseOver       : 1;
     dtk_bool32 isAutoSizeEnabled : 1;
     dtk_bool32 isChecked         : 1;
-    dtk_checkbox_on_check_changed_proc onCheckChanged;
 };
 
 dtk_result dtk_checkbox_init(dtk_context* pTK, dtk_event_proc onEvent, dtk_control* pParent, const char* text, dtk_bool32 checked, dtk_checkbox* pCheckbox);
@@ -43,5 +40,3 @@ void dtk_checkbox_uncheck(dtk_checkbox* pCheckbox);
 void dtk_checkbox_toggle(dtk_checkbox* pCheckbox);
 void dtk_checkbox_set_checked(dtk_checkbox* pCheckbox, dtk_bool32 checked, dtk_bool32 blockEvent);
 dtk_bool32 dtk_checkbox_is_checked(dtk_checkbox* pCheckbox);
-
-void dtk_checkbox_set_on_check_changed(dtk_checkbox* pCheckbox, dtk_checkbox_on_check_changed_proc proc);

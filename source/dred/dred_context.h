@@ -23,7 +23,7 @@ struct dred_context
     // pool include:
     // - Shortcut ID strings
     // - Menu item command strings
-    dred_string_pool stringPool;
+    dtk_string_pool stringPool;
 
 
     // The main GUI context.

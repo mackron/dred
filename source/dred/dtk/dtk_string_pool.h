@@ -18,30 +18,30 @@ typedef struct
     size_t capacity;
     size_t byteCount;
     char* pData;
-} dred_string_pool;
+} dtk_string_pool;
 
 // Initializes a string pool.
 //
-// Note that <initialDataSize> _must_ include null terminators.
-dtk_bool32 dred_string_pool_init(dred_string_pool* pPool, const char* pInitialData, size_t initialDataSize);
+// Note that <pInitialData> can be NULL, but if it's not NULL it _must_ include null terminators.
+dtk_result dtk_string_pool_init(dtk_string_pool* pPool, const char* pInitialData, size_t initialDataSize);
 
 // Uninitializes a string pool.
-dtk_bool32 dred_string_pool_uninit(dred_string_pool* pPool);
+void dtk_string_pool_uninit(dtk_string_pool* pPool);
 
 // Adds a string to the pool, regardless of whether or not the string already exists.
 //
-// Use dred_string_pool_find() to look for an existing occurance of the string.
-size_t dred_string_pool_add(dred_string_pool* pPool, const char* str, size_t strLen);
+// Use dtk_string_pool_find() to look for an existing occurance of the string.
+size_t dtk_string_pool_add(dtk_string_pool* pPool, const char* str, size_t strLen);
 
 // Finds a string in the given pool.
 //
 // Returns true if the string exists; false otherwise. If the string does not exist, 0 is returned in <pOffset>. This runs in linear time.
-dtk_bool32 dred_string_pool_find(dred_string_pool* pPool, const char* str, size_t* pOffset);
+dtk_bool32 dtk_string_pool_find(dtk_string_pool* pPool, const char* str, size_t* pOffset);
 
 // A helper for finding a string, and if not found, adding it.
 //
 // Returns the offset of the string. Returns 0 if an error occurs.
-size_t dred_string_pool_find_or_add(dred_string_pool* pPool, const char* str);
+size_t dtk_string_pool_find_or_add(dtk_string_pool* pPool, const char* str);
 
 // Retrieves a C-style string from the given string offset.
-const char* dred_string_pool_cstr(dred_string_pool* pPool, size_t offset);
+const char* dtk_string_pool_cstr(dtk_string_pool* pPool, size_t offset);

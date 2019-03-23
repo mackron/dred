@@ -161,6 +161,10 @@ typedef int dtk_result;
 #define DTK_INLINE static inline
 #endif
 
+#ifndef DTK_PRIVATE
+#define DTK_PRIVATE
+#endif
+
 typedef struct dtk_context dtk_context;
 typedef struct dtk_event dtk_event;
 typedef struct dtk_control dtk_control;
@@ -210,6 +214,7 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_dl.h"
 #include "dtk_rect.h"
 #include "dtk_string.h"
+#include "dtk_string_pool.h"
 #include "dtk_path.h"
 #include "dtk_time.h"
 #include "dtk_io.h"
@@ -235,11 +240,16 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_window.h"
 #include "dtk_menu.h"
 #include "dtk_dialogs.h"
+#include "dtk_binding_engine.h"
 #include "dtk_timer.h"
 #include "dtk_clipboard.h"
 #include "dtk_paint_queue.h"
 #include "dtk_command_line.h"
 #include "dtk_webgen.h"
+
+// Binding targets.
+#define DTK_BIND_TARGET_TEXT                            "text"
+#define DTK_BIND_TARGET_CHECKED                         "checked"
 
 // Event types.
 typedef int dtk_event_type;
@@ -269,6 +279,7 @@ typedef int dtk_event_type;
 #define DTK_EVENT_RELEASE_MOUSE                         23
 #define DTK_EVENT_DPI_CHANGED                           24
 #define DTK_EVENT_TOOLTIP                               25
+#define DTK_EVENT_BINDING                               26      /* If handling this, you must propagate it to dtk_default_event_handler(). */
 #define DTK_EVENT_BUTTON_PRESSED                        128
 #define DTK_EVENT_CHECKBOX_CHECK_CHANGED                129
 #define DTK_EVENT_COLOR_BUTTON_COLOR_CHANGED            130
@@ -454,6 +465,12 @@ struct dtk_event
 
         struct
         {
+            const char* target;
+            dtk_binding_var var;
+        } binding;
+
+        struct
+        {
             int unused;
         } button;
 
@@ -539,6 +556,8 @@ struct dtk_context
     dtk_font uiFont;
     dtk_font monospaceFont;
     dtk_image stockImages[DTK_STOCK_IMAGE_COUNT];
+    dtk_string_pool stringPool;
+    dtk_binding_engine bindingEngine;
     dtk_bool32 isUIFontInitialized        : 1;
     dtk_bool32 isMonospaceFontInitialized : 1;
 
@@ -658,12 +677,22 @@ void dtk_flush_event_queue(dtk_context* pTK);
 
 // Posts an event to the queue which will later be handled by the event handler of the respective control.
 //
-// To handle the event immediately, use dtk_handle_control_event().
+// To handle the event immediately, use dtk_handle_local_event().
 dtk_result dtk_post_local_event(dtk_event* pEvent);
 
 // Same as dtk_post_local_event(), except handles it immediately instead of posting it to the queue. The return
 // value is the value returned by the event handler.
 dtk_bool32 dtk_handle_local_event(dtk_event* pEvent);
+
+// Posts an event to the queue which will later be handled by DTK's global event handler.
+//
+// The event is allowed to be associated with a control, in which case the meaning of that control depends on the
+// specific event.
+dtk_result dtk_post_global_event(dtk_event* pEvent);
+
+// Same as dtk_post_global_event(), except handles it immediately instead of posting it to the queue. The return
+// value is the value returned by the event handler.
+dtk_bool32 dtk_handle_global_event(dtk_event* pEvent);
 
 // Posts a custom event.
 //
@@ -714,6 +743,24 @@ dtk_result dtk_bind_accelerators(dtk_context* pTK, dtk_accelerator* pAccelerator
 
 // Unbinds an accelerator.
 dtk_result dtk_unbind_accelerator(dtk_context* pTK, dtk_accelerator accelerator);
+
+
+//// Binding ////
+
+// Posts an event indicating that a binding has changed.
+//
+// pOriginator is a pointer to the relevant control that triggered the change. This control will not receive the event
+// since it should already be aware of the change. This can be NULL.
+dtk_result dtk_update_bindings_int(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, dtk_int64 bindingValue);
+dtk_result dtk_update_bindings_uint(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, dtk_uint64 bindingValue);
+dtk_result dtk_update_bindings_double(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, double bindingValue);
+dtk_result dtk_update_bindings_bool(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, dtk_bool32 bindingValue);
+dtk_result dtk_update_bindings_color(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, dtk_color bindingValue);
+dtk_result dtk_update_bindings_string(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, const char* bindingValue);
+dtk_result dtk_update_bindings_data(dtk_context* pTK, dtk_control* pOriginator, const char* bindingVar, const void* bindingValue, size_t bindingValueSize);
+
+// Checks if two binding targets are equal.
+dtk_bool32 dtk_bind_targets_equal(const char* a, const char* b);
 
 
 //// Screens and Monitors ////

@@ -312,3 +312,16 @@ dtk_result dtk_control_refresh_layout(dtk_control* pControl);
 
 // Shows a popup menu on the window that owns the given control, positioning it relative to the control.
 dtk_result dtk_control_show_popup_menu(dtk_control* pControl, dtk_menu* pMenu, dtk_int32 relativePosX, dtk_int32 relativePosY);
+
+
+// Binds a variable.
+dtk_result dtk_control_bind(dtk_control* pControl, const char* bindingTarget, const char* bindingVar);
+
+// Unbinds a variable.
+dtk_result dtk_control_unbind(dtk_control* pControl, const char* bindingTarget);
+
+// Unbinds all variables.
+dtk_result dtk_control_unbind_all(dtk_control* pControl);
+
+// Retrieves the binding variable string from the specified binding target for this control. Returns null if it does not exist.
+const char* dtk_control_get_binding_var(dtk_control* pControl, const char* bindingTarget);

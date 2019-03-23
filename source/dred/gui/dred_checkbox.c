@@ -9,7 +9,7 @@ dtk_bool32 dred_checkbox_event_handler(dtk_event* pEvent)
         case DTK_EVENT_CHECKBOX_CHECK_CHANGED:
         {
             if (pCheckbox->varBinding[0] != '\0') {
-                dred_config_set(&dred_get_context_from_control(DTK_CONTROL(pCheckbox))->config, pCheckbox->varBinding, dtk_checkbox_is_checked(DTK_CHECKBOX(pCheckbox)) ? "true" : "false");
+                dred_config_set(&dred_get_context_from_control(DTK_CONTROL(pCheckbox))->config, pCheckbox->varBinding, dtk_checkbox_is_checked(DTK_CHECKBOX(pCheckbox)) ? "true" : "false", 0);
             }
         } break;
 

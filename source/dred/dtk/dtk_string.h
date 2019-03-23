@@ -259,6 +259,124 @@ DTK_INLINE int dtk_itoa_s(int value, char* dst, size_t dstSizeInBytes, int radix
 #endif
 }
 
+DTK_INLINE int dtk_int64_to_string(dtk_int64 value, char* dst, size_t dstSizeInBytes, int radix)
+{
+    if (dst == NULL || dstSizeInBytes == 0) {
+        return EINVAL;
+    }
+    if (radix < 2 || radix > 36) {
+        dst[0] = '\0';
+        return EINVAL;
+    }
+
+    dtk_int64 sign = (value < 0 && radix == 10) ? -1 : 1;     // The negative sign is only used when the base is 10.
+
+    dtk_uint64 valueU;
+    if (value < 0) {
+        valueU = -value;
+    } else {
+        valueU = value;
+    }
+
+    char* dstEnd = dst;
+    do
+    {
+        dtk_int64 remainder = valueU % radix;
+        if (remainder > 9) {
+            *dstEnd = (char)((remainder - 10) + 'a');
+        } else {
+            *dstEnd = (char)(remainder + '0');
+        }
+
+        dstEnd += 1;
+        dstSizeInBytes -= 1;
+        valueU /= radix;
+    } while (dstSizeInBytes > 0 && valueU > 0);
+
+    if (dstSizeInBytes == 0) {
+        dst[0] = '\0';
+        return EINVAL;  // Ran out of room in the output buffer.
+    }
+
+    if (sign < 0) {
+        *dstEnd++ = '-';
+        dstSizeInBytes -= 1;
+    }
+
+    if (dstSizeInBytes == 0) {
+        dst[0] = '\0';
+        return EINVAL;  // Ran out of room in the output buffer.
+    }
+
+    *dstEnd = '\0';
+
+
+    // At this point the string will be reversed.
+    dstEnd -= 1;
+    while (dst < dstEnd) {
+        char temp = *dst;
+        *dst = *dstEnd;
+        *dstEnd = temp;
+
+        dst += 1;
+        dstEnd -= 1;
+    }
+
+    return 0;
+}
+
+DTK_INLINE int dtk_uint64_to_string(dtk_uint64 value, char* dst, size_t dstSizeInBytes, int radix)
+{
+    if (dst == NULL || dstSizeInBytes == 0) {
+        return EINVAL;
+    }
+    if (radix < 2 || radix > 36) {
+        dst[0] = '\0';
+        return EINVAL;
+    }
+
+    char* dstEnd = dst;
+    do
+    {
+        dtk_int64 remainder = value % radix;
+        if (remainder > 9) {
+            *dstEnd = (char)((remainder - 10) + 'a');
+        } else {
+            *dstEnd = (char)(remainder + '0');
+        }
+
+        dstEnd += 1;
+        dstSizeInBytes -= 1;
+        value /= radix;
+    } while (dstSizeInBytes > 0 && value > 0);
+
+    if (dstSizeInBytes == 0) {
+        dst[0] = '\0';
+        return EINVAL;  // Ran out of room in the output buffer.
+    }
+
+    if (dstSizeInBytes == 0) {
+        dst[0] = '\0';
+        return EINVAL;  // Ran out of room in the output buffer.
+    }
+
+    *dstEnd = '\0';
+
+
+    // At this point the string will be reversed.
+    dstEnd -= 1;
+    while (dst < dstEnd) {
+        char temp = *dst;
+        *dst = *dstEnd;
+        *dstEnd = temp;
+
+        dst += 1;
+        dstEnd -= 1;
+    }
+
+    return 0;
+}
+
 DTK_INLINE size_t dtk_strcpy_len(char* dst, size_t dstSize, const char* src)
 {
     if (dtk_strcpy_s(dst, dstSize, src) == 0) {
@@ -546,9 +664,15 @@ DTK_INLINE void dtk_string_replace_ascii(char* src, char c, char replacement)
 }
 
 
+DTK_INLINE dtk_bool32 dtk_string_starts_with(const char* str, const char* query)
+{
+    return (const char*)strstr(str, query) == str;
+}
+
 
 // Converts an ASCII hex character to it's integral equivalent. Returns false if it's not a valid hex character.
 dtk_bool32 dtk_hex_char_to_uint(char ascii, unsigned int* out);
+dtk_bool32 dtk_uint_to_hex_char(unsigned int u, char* ascii);
 
 
 // Retrieves the first token in the given string.

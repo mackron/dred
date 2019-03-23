@@ -21,6 +21,24 @@ dtk_bool32 dtk_hex_char_to_uint(char ascii, unsigned int* out)
     return DTK_FALSE;
 }
 
+dtk_bool32 dtk_uint_to_hex_char(unsigned int u, char* ascii)
+{
+    if (u > 15) {
+        if (ascii) *ascii = '\0';
+        return DTK_FALSE;   /* Too big. */
+    }
+
+    if (u >= 0 && u <= 9) {
+        if (ascii) *ascii = (char)('0' + u);
+        return DTK_TRUE;
+    }
+
+    dtk_assert(u >= 10 && u <= 15);
+    if (ascii) *ascii = (char)('A' + (u - 10));
+
+    return DTK_TRUE;
+}
+
 const char* dtk_next_token(const char* tokens, char* tokenOut, size_t tokenOutSize)
 {
     if (tokenOut) tokenOut[0] = '\0';

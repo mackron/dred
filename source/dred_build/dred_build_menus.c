@@ -239,7 +239,7 @@ void dred_build__sort_menus_by_init_order(dred_build__menu_parse_context* pConte
     (void)pMenuOrder;
 }
 
-void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_pool* pStringPool)
+void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dtk_string_pool* pStringPool)
 {
     dred_build__menu_parse_context context;
     context.pAllItems = NULL;
@@ -424,8 +424,8 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
                 dred_build__format_menu_item_id_macro(context.pAllItems[iItem].id, idMacroStr);
 
                 fprintf(pFileOut, "    pTable->pItems[%s].id = %s;\n", idMacroStr, idMacroStr);
-                fprintf(pFileOut, "    pTable->pItems[%s].commandStrOffset = %u;\n", idMacroStr, (unsigned int)dred_string_pool_find_or_add(pStringPool, pItem->cmd));
-                fprintf(pFileOut, "    pTable->pItems[%s].shortcutStrOffset = %u;\n", idMacroStr, (unsigned int)dred_string_pool_find_or_add(pStringPool, pItem->shortcut));
+                fprintf(pFileOut, "    pTable->pItems[%s].commandStrOffset = %u;\n", idMacroStr, (unsigned int)dtk_string_pool_find_or_add(pStringPool, pItem->cmd));
+                fprintf(pFileOut, "    pTable->pItems[%s].shortcutStrOffset = %u;\n", idMacroStr, (unsigned int)dtk_string_pool_find_or_add(pStringPool, pItem->shortcut));
                 //fprintf(pFileOut, "    pTable->pItems[%s].commandStrOffset = dred_string_pool_find_or_add(&pDred->stringPool, \"%s\");\n", idMacroStr, pItem->cmd);
                 //fprintf(pFileOut, "    pTable->pItems[%s].shortcutStrOffset = dred_string_pool_find_or_add(&pDred->stringPool, \"%s\");\n", idMacroStr, pItem->shortcut);
 
@@ -442,8 +442,8 @@ void dred_build__generate_menus(FILE* pFileOut, FILE* pFileOutH, dred_string_poo
     // for the command strings for menu items.
     for (int iItem = 0; iItem < stb_sb_count(context.pAllItems); ++iItem) {
         const char* cmd = context.pAllItems[iItem].cmd;
-        if (cmd[0] != '\0' && !dred_string_pool_find(pStringPool, cmd, NULL)) {
-            dred_string_pool_add(pStringPool, cmd, (size_t)-1);
+        if (cmd[0] != '\0' && !dtk_string_pool_find(pStringPool, cmd, NULL)) {
+            dtk_string_pool_add(pStringPool, cmd, (size_t)-1);
         }
     }
 }
