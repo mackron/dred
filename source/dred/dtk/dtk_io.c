@@ -240,7 +240,7 @@ dtk_result dtk_fseek(FILE* pFile, dtk_int64 offsetInBytes, int origin)
         return DTK_INVALID_ARGS;
     }
 
-#ifdef DRED_WIN32
+#ifdef DTK_WIN32
     result = _fseeki64(pFile, offsetInBytes, origin);
 #else
     result = fseeko(pFile, offsetInBytes, origin);
@@ -264,7 +264,7 @@ dtk_result dtk_ftell(FILE* pFile, dtk_int64* pOffsetInBytes)
         return DTK_INVALID_ARGS;
     }
 
-#ifdef DRED_WIN32
+#ifdef DTK_WIN32
     offsetInBytes = _ftelli64(pFile);
 #else
     offsetInBytes = ftello(pFile);
