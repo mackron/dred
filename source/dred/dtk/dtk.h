@@ -176,6 +176,9 @@ typedef struct dtk_tabbar dtk_tabbar;
 typedef struct dtk_tabgroup dtk_tabgroup;
 typedef struct dtk_scrollbar dtk_scrollbar;
 typedef struct dtk_textbox dtk_textbox;
+typedef struct dtk_textbuffer dtk_textbuffer;
+typedef struct dtk_textview dtk_textview;
+typedef struct dtk_texteditor dtk_texteditor;
 typedef struct dtk_window dtk_window;
 typedef struct dtk_menu dtk_menu;
 typedef struct dtk_timer dtk_timer;
@@ -198,6 +201,7 @@ typedef enum
     dtk_application_font_type_monospace,
     dtk_application_font_type_default = dtk_application_font_type_ui
 } dtk_application_font_type;
+
 
 // The callback function for handing log messages.
 typedef void (* dtk_log_proc)(dtk_context* pTK, const char* message);
@@ -237,6 +241,9 @@ typedef dtk_bool32 (* dtk_event_proc)(dtk_event* pEvent);
 #include "dtk_tabgroup.h"
 #include "dtk_scrollbar.h"
 #include "dtk_textbox.h"
+#include "dtk_textbuffer.h"
+#include "dtk_textview.h"
+#include "dtk_texteditor.h"
 #include "dtk_window.h"
 #include "dtk_menu.h"
 #include "dtk_dialogs.h"
