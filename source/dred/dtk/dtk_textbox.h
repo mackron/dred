@@ -29,10 +29,11 @@ struct dtk_textbox
     dtk_control control;
     dtk_textbox_mode mode;
     char* pTextUTF8;
-    dtk_uint32 textLen; // In bytes
-    dtk_uint32 textCap; // In bytes
-    dtk_uint32 selectionBeg;
-    dtk_uint32 selectionEnd;
+    size_t textLen; /* In bytes */
+    size_t textCap; /* In bytes */
+    size_t selectionBeg;
+    size_t selectionEnd;
+    size_t caretPosInBytes; /* In UTF-8 code units (bytes). Always on the boundary of a glyph. */
     struct
     {
         dtk_font* pFont;
@@ -47,6 +48,7 @@ struct dtk_textbox
         dtk_uint32 paddingBottom;
         dtk_text_alignment alignmentHorz;
         dtk_text_alignment alignmentVert;
+        dtk_uint32 caretWidth;
     } style;
 };
 
@@ -55,9 +57,9 @@ dtk_result dtk_textbox_uninit(dtk_textbox* pTextBox);
 dtk_bool32 dtk_textbox_default_event_handler(dtk_event* pEvent);
 dtk_result dtk_textbox_set_mode(dtk_textbox* pTextBox, dtk_textbox_mode mode);
 dtk_textbox_mode dtk_textbox_get_mode(dtk_textbox* pTextBox);
-dtk_result dtk_textbox_set_text_utf8(dtk_textbox* pTextBox, const char* pTextUTF8, dtk_uint32 textLen);  // Set textLen to -1 for null-terminated. Clears the selection.
+dtk_result dtk_textbox_set_text_utf8(dtk_textbox* pTextBox, const char* pTextUTF8, size_t textLen);  // Set textLen to -1 for null-terminated. Clears the selection.
 const char* dtk_textbox_get_text_utf8(dtk_textbox* pTextBox);
-dtk_uint32 dtk_textbox_get_text_length_utf8(dtk_textbox* pTextBox); // In bytes. Does not include null terminator.
+size_t dtk_textbox_get_text_length_utf8(dtk_textbox* pTextBox); // In bytes. Does not include null terminator.
 dtk_result dtk_textbox_set_font(dtk_textbox* pTextBox, dtk_font* pFont);
 dtk_font* dtk_textbox_get_font(dtk_textbox* pTextBox);
 dtk_result dtk_textbox_set_background_color(dtk_textbox* pTextBox, dtk_color color);
@@ -72,3 +74,8 @@ dtk_result dtk_textbox_set_padding(dtk_textbox* pTextBox, dtk_uint32 left, dtk_u
 dtk_result dtk_textbox_get_padding(dtk_textbox* pTextBox, dtk_uint32* pLeft, dtk_uint32* pTop, dtk_uint32* pRight, dtk_uint32* pBottom);
 dtk_result dtk_textbox_set_text_alignment(dtk_textbox* pTextBox, dtk_text_alignment alignmentHorz, dtk_text_alignment alignmentVert);
 dtk_result dtk_textbox_get_text_alignment(dtk_textbox* pTextBox, dtk_text_alignment* pAlignmentHorz, dtk_text_alignment* pAlignmentVert);
+dtk_result dtk_textbox_xy_to_cp(dtk_textbox* pTextBox, dtk_int32 x, dtk_int32 y, size_t* cp);
+dtk_result dtk_textbox_cp_to_xy(dtk_textbox* pTextBox, size_t cp, dtk_int32* x, dtk_int32* y);
+dtk_result dtk_textbox_move_caret_to_xy(dtk_textbox* pTextBox, dtk_int32 x, dtk_int32 y);
+dtk_result dtk_textbox_move_caret_to_cp(dtk_textbox* pTextBox, size_t cp);
+dtk_rect dtk_textbox_get_caret_rect(dtk_textbox* pTextBox);
