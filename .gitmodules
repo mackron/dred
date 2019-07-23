@@ -1,0 +1,3 @@
+[submodule "source/external/minidraw"]
+	path = source/external/minidraw
+	url = https://github.com/dr-soft/minidraw.git
