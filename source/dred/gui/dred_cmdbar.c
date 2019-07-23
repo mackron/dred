@@ -157,10 +157,10 @@ void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
 
     float scaledPaddingX = pDred->config.cmdbarPaddingX*uiScale;
     float scaledPaddingY = pDred->config.cmdbarPaddingY*uiScale;
-    dred_control_draw_rect(DRED_CONTROL(pCmdBar), dred_make_rect(0,                                0,                                 scaledPaddingX,                   localRect.bottom), bgcolor, pSurface); // Left
-    dred_control_draw_rect(DRED_CONTROL(pCmdBar), dred_make_rect(localRect.right - scaledPaddingX, 0,                                 localRect.right,                  localRect.bottom), bgcolor, pSurface); // Right
-    dred_control_draw_rect(DRED_CONTROL(pCmdBar), dred_make_rect(scaledPaddingX,                   0,                                 localRect.right - scaledPaddingX, scaledPaddingY),   bgcolor, pSurface); // Top
-    dred_control_draw_rect(DRED_CONTROL(pCmdBar), dred_make_rect(scaledPaddingX,                   localRect.bottom - scaledPaddingY, localRect.right - scaledPaddingX, localRect.bottom), bgcolor, pSurface); // Bottom
+    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(0,                                0,                                 scaledPaddingX,                   localRect.bottom)), bgcolor); // Left
+    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(localRect.right - scaledPaddingX, 0,                                 localRect.right,                  localRect.bottom)), bgcolor); // Right
+    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(scaledPaddingX,                   0,                                 localRect.right - scaledPaddingX, scaledPaddingY)),   bgcolor); // Top
+    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(scaledPaddingX,                   localRect.bottom - scaledPaddingY, localRect.right - scaledPaddingX, localRect.bottom)), bgcolor); // Bottom
 
 
     // Message.
@@ -205,7 +205,7 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dtk_control* pP
     // Hide any message that's showing.
     dred_cmdbar_set_message(pCmdBar, "");
 
-    dred_control_dirty(DRED_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pCmdBar))));
 
 
     // Show the popup window.
@@ -246,7 +246,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dtk_control* pN
         dred_hide_command_bar(pDred);
     }
 
-    dred_control_dirty(DRED_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pCmdBar))));
 
 
     // Fall through to the default handler.
@@ -775,7 +775,7 @@ void dred_cmdbar_set_message(dred_cmdbar* pCmdBar, const char* text)
     }
 
     strncpy_s(pCmdBar->message, sizeof(pCmdBar->message), text, _TRUNCATE);
-    dred_control_dirty(DRED_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));    // <-- Can optimize this to only draw the message region.
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pCmdBar))));    // <-- Can optimize this to only draw the message region.
 }
 
 void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar)
@@ -833,5 +833,5 @@ void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
     dred_cmdbar__update_size(pCmdBar);
 
     // Redraw.
-    dred_control_dirty(DRED_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pCmdBar))));
 }

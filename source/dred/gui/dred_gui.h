@@ -390,9 +390,6 @@ struct dred_gui
 {
     // The dred context that owns the GUI system.
     dred_context* pDred;
-
-    // The painting callbacks.
-    dred_gui_painting_callbacks paintingCallbacks;
 };
 
 
@@ -676,20 +673,6 @@ dred_rect dred_control_get_local_rect(const dred_control* pControl);
 
 
 
-//// Painting ////
-
-/// Registers the custom painting callbacks.
-///
-/// @remarks
-///     This can only be called once, so it should always be done after initialization. This will fail if called
-///     more than once.
-dtk_bool32 dred_gui_register_painting_callbacks(dred_gui* pGUI, dred_gui_painting_callbacks callbacks);
-
-/// Draws a rectangle on the given element.
-void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dtk_color color, dtk_surface* pSurface);
-
-
-
 /////////////////////////////////////////////////////////////////
 //
 // HIGH-LEVEL API
@@ -799,10 +782,4 @@ dtk_bool32 dred_rect_has_volume(dred_rect rect);
 // @remarks
 //     This is equivalent to dred_gui_init() followed by dred_gui_register_dtk_callbacks().
 dtk_bool32 dred_gui_init_dtk(dred_gui* pGUI, dred_context* pDred);
-
-// Registers the drawing callbacks for use with DTK.
-//
-// @remarks
-//     The user data of each callback is assumed to be a pointer to a dtk_surface object.
-void dred_gui_register_dtk_callbacks(dred_gui* pGUI);
 

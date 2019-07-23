@@ -777,41 +777,6 @@ dred_rect dred_control_get_local_rect(const dred_control* pControl)
 
 
 
-//// Painting ////
-
-dtk_bool32 dred_gui_register_painting_callbacks(dred_gui* pGUI, dred_gui_painting_callbacks callbacks)
-{
-    if (pGUI == NULL) {
-        return DTK_FALSE;
-    }
-
-    pGUI->paintingCallbacks = callbacks;
-
-    return DTK_TRUE;
-}
-
-void dred_control_dirty(dred_control* pControl, dred_rect relativeRect)
-{
-    if (pControl == NULL) {
-        return;
-    }
-
-    dtk_control_scheduled_redraw(DTK_CONTROL(pControl), dtk_rect_init_dred(relativeRect));
-}
-
-void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dtk_color color, dtk_surface* pSurface)
-{
-    if (pControl == NULL) {
-        return;
-    }
-
-    assert(pControl->pGUI != NULL);
-
-    pControl->pGUI->paintingCallbacks.drawRect(relativeRect, color, pSurface);
-}
-
-
-
 /////////////////////////////////////////////////////////////////
 //
 // HIGH-LEVEL API
@@ -1032,27 +997,11 @@ dtk_bool32 dred_rect_has_volume(dred_rect rect)
 // DTK-SPECIFIC API
 //
 /////////////////////////////////////////////////////////////////
-void dred_control_draw_rect_dtk(dred_rect rect, dtk_color color, dtk_surface* pSurface);
-
 dtk_bool32 dred_gui_init_dtk(dred_gui* pGUI, dred_context* pDred)
 {
     if (!dred_gui_init(pGUI, pDred)) {
         return DTK_FALSE;
     }
 
-    dred_gui_register_dtk_callbacks(pGUI);
     return DTK_TRUE;
-}
-
-void dred_gui_register_dtk_callbacks(dred_gui* pGUI)
-{
-    dred_gui_painting_callbacks callbacks;
-    callbacks.drawRect = dred_control_draw_rect_dtk;
-
-    dred_gui_register_painting_callbacks(pGUI, callbacks);
-}
-
-void dred_control_draw_rect_dtk(dred_rect rect, dtk_color color, dtk_surface* pSurface)
-{
-    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(rect), color);
 }

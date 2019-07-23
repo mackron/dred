@@ -33,7 +33,7 @@ dtk_color dred_info_bar__get_text_color(dred_info_bar* pInfoBar)
 
 void dred_info_bar__on_paint__none(dred_info_bar* pInfoBar, dtk_surface* pSurface)
 {
-    dred_control_draw_rect(DRED_CONTROL(pInfoBar), dred_control_get_local_rect(DRED_CONTROL(pInfoBar)), dred_info_bar__get_bg_color(pInfoBar), pSurface);
+    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pInfoBar))), dred_info_bar__get_bg_color(pInfoBar));
 }
 
 void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dtk_surface* pSurface)
@@ -43,7 +43,7 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dtk_surface* 
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pInfoBar));
 
-    dred_control_draw_rect(DRED_CONTROL(pInfoBar), dred_control_get_local_rect(DRED_CONTROL(pInfoBar)), dred_info_bar__get_bg_color(pInfoBar), pSurface);
+    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pInfoBar))), dred_info_bar__get_bg_color(pInfoBar));
 
 
     float padding = 32*uiScale;
@@ -149,7 +149,7 @@ void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
 
 
     // The bar needs to be redrawn.
-    dred_control_dirty(DRED_CONTROL(pInfoBar), dred_control_get_local_rect(DRED_CONTROL(pInfoBar)));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pInfoBar), dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pInfoBar))));
 }
 
 void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar)
@@ -173,5 +173,5 @@ void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar)
         dred_control_set_size(DRED_CONTROL(pInfoBar), dred_control_get_width(DRED_CONTROL(pInfoBar)), (float)fontMetrics.lineHeight);
     }
 
-    dred_control_dirty(DRED_CONTROL(pInfoBar), dred_control_get_local_rect(DRED_CONTROL(pInfoBar)));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pInfoBar), dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pInfoBar))));
 }
