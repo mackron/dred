@@ -685,23 +685,8 @@ dred_rect dred_control_get_local_rect(const dred_control* pControl);
 ///     more than once.
 dtk_bool32 dred_gui_register_painting_callbacks(dred_gui* pGUI, dred_gui_painting_callbacks callbacks);
 
-/// Sets the clipping rectangle to apply to all future draw operations on this element.
-void dred_control_set_clip(dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
-
 /// Draws a rectangle on the given element.
 void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dtk_color color, dtk_surface* pSurface);
-
-/// Draws the outline of a rectangle on the given element.
-void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_surface* pSurface);
-
-/// Draws a run of text on the given element.
-///
-/// @remarks
-///     This does not do any complex formatting like multiple lines and whatnot. Complex formatting can be achieved with multiple
-///     calls to this function.
-///     @par
-///     \c textSizeInBytes can be -1 in which case the text string is treated as null terminated.
-void dred_control_draw_text(dred_control* pControl, dtk_font* pFont, float scale, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface);
 
 
 

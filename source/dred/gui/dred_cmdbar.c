@@ -177,7 +177,7 @@ void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
 
     float messageLeft = mrect.left + (4*uiScale);
     float messageTop  = (((mrect.bottom - mrect.top) - messageFontMetrics.lineHeight) / 2) + scaledPaddingY;
-    dred_control_draw_text(DRED_CONTROL(pCmdBar), pMessageFont, uiScale, pCmdBar->message, (int)strlen(pCmdBar->message), messageLeft, messageTop, pDred->config.cmdbarTextColor, bgcolor, pSurface);
+    dtk_surface_draw_text(pSurface, pMessageFont, uiScale, pCmdBar->message, (int)strlen(pCmdBar->message), (dtk_int32)messageLeft, (dtk_int32)messageTop, pDred->config.cmdbarTextColor, bgcolor);
 }
 
 void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)

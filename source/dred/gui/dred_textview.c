@@ -2500,7 +2500,7 @@ void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_view* pV
     float offsetY;
     dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
-    dred_control_draw_text(DRED_CONTROL(pTextView), pStyleFG->pFont, pView->scale, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, (dtk_surface*)pPaintData);
+    dtk_surface_draw_text((dtk_surface*)pPaintData, pStyleFG->pFont, pView->scale, text, (int)textLength, (dtk_int32)(posX + offsetX), (dtk_int32)(posY + offsetY), pStyleFG->fgColor, pStyleBG->bgColor);
 }
 
 void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_view* pView, drte_rect rect)
@@ -2633,14 +2633,14 @@ void dred_textview_on_paint(dred_control* pControl, dred_rect relativeRect, dtk_
 
     // Border.
     dred_rect borderRect = dred_control_get_local_rect(pControl);
-    dred_control_draw_rect_outline(pControl, borderRect, pTextView->borderColor, pTextView->borderWidth, pSurface);
+    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(borderRect), pTextView->borderColor, (dtk_int32)pTextView->borderWidth);
 
     // Padding.
     dred_rect paddingRect = dred_grow_rect(textRect, pTextView->padding);
-    dred_control_draw_rect_outline(pControl, paddingRect, pTextView->defaultStyle.bgColor, pTextView->padding, pSurface);
+    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(paddingRect), pTextView->defaultStyle.bgColor, (dtk_int32)pTextView->padding);
 
     // Text.
-    dred_control_set_clip(pControl, dred_clamp_rect(textRect, relativeRect), pSurface);
+    dtk_surface_set_clip(pSurface, dtk_rect_init_dred(dred_clamp_rect(textRect, relativeRect)));
     drte_view_paint(pTextView->pView, dred_rect_to_drte(dred_offset_rect(dred_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top)), pSurface);
 }
 
@@ -3026,7 +3026,7 @@ void dred_textview__on_paint_text_line_numbers(drte_engine* pEngine, drte_view* 
     float offsetX = pTextView->padding;
     float offsetY = pTextView->padding;
 
-    dred_control_draw_text(pTextView->pLineNumbers, pStyleFG->pFont, pView->scale, text, (int)textLength, posX + offsetX, posY + offsetY, pStyleFG->fgColor, pStyleBG->bgColor, (dtk_surface*)pPaintData);
+    dtk_surface_draw_text((dtk_surface*)pPaintData, pStyleFG->pFont, pView->scale, text, (int)textLength, (dtk_int32)(posX + offsetX), (dtk_int32)(posY + offsetY), pStyleFG->fgColor, pStyleBG->bgColor);
 }
 
 void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect relativeRect, dtk_surface* pSurface)
@@ -3041,7 +3041,7 @@ void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect 
 
     drte_view_paint_line_numbers(pTextView->pView, lineNumbersWidth, lineNumbersHeight, dred_textview__on_paint_text_line_numbers, dred_textview__on_paint_rect_line_numbers, pSurface);
 
-    dred_control_draw_rect_outline(pLineNumbers, dred_control_get_local_rect(pLineNumbers), pTextView->lineNumbersStyle.bgColor, pTextView->padding, pSurface);
+    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(dred_control_get_local_rect(pLineNumbers)), pTextView->lineNumbersStyle.bgColor, (dtk_int32)pTextView->padding);
 
     // Right padding.
     dred_rect rightPaddingRect = dred_control_get_local_rect(pLineNumbers);

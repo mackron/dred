@@ -799,24 +799,6 @@ void dred_control_dirty(dred_control* pControl, dred_rect relativeRect)
     dtk_control_scheduled_redraw(DTK_CONTROL(pControl), dtk_rect_init_dred(relativeRect));
 }
 
-void dred_control_set_clip(dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface)
-{
-    if (pControl == NULL || pControl->pGUI == NULL) {
-        return;
-    }
-
-    // Make sure the rectangle is not negative.
-    if (relativeRect.right < relativeRect.left) {
-        relativeRect.right = relativeRect.left;
-    }
-
-    if (relativeRect.bottom < relativeRect.top) {
-        relativeRect.bottom = relativeRect.top;
-    }
-
-    pControl->pGUI->paintingCallbacks.setClip(relativeRect, pSurface);
-}
-
 void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dtk_color color, dtk_surface* pSurface)
 {
     if (pControl == NULL) {
@@ -828,27 +810,6 @@ void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dtk_
     pControl->pGUI->paintingCallbacks.drawRect(relativeRect, color, pSurface);
 }
 
-void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_surface* pSurface)
-{
-    if (pControl == NULL) {
-        return;
-    }
-
-    assert(pControl->pGUI != NULL);
-
-    pControl->pGUI->paintingCallbacks.drawRectOutline(relativeRect, color, outlineWidth, pSurface);
-}
-
-void dred_control_draw_text(dred_control* pControl, dtk_font* pFont, float scale, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface)
-{
-    if (pControl == NULL || pFont == NULL) {
-        return;
-    }
-
-    assert(pControl->pGUI != NULL);
-
-    pControl->pGUI->paintingCallbacks.drawText(pFont, scale, text, textLengthInBytes, posX, posY, color, backgroundColor, pSurface);
-}
 
 
 /////////////////////////////////////////////////////////////////
@@ -881,7 +842,7 @@ dtk_bool32 dred_control_pass_through_hit_test(dred_control* pControl, float mous
 
 void dred_control_draw_border(dred_control* pControl, float borderWidth, dtk_color color, dtk_surface* pSurface)
 {
-    dred_control_draw_rect_outline(pControl, dred_control_get_local_rect(pControl), color, borderWidth, pSurface);
+    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(dred_control_get_local_rect(pControl)), color, (dtk_int32)borderWidth);
 }
 
 
@@ -1071,11 +1032,7 @@ dtk_bool32 dred_rect_has_volume(dred_rect rect)
 // DTK-SPECIFIC API
 //
 /////////////////////////////////////////////////////////////////
-void dred_control_set_clip_dtk(dred_rect rect, dtk_surface* pSurface);
-void dred_control_get_clip_dtk(dred_rect* pRectOut, dtk_surface* pSurface);
 void dred_control_draw_rect_dtk(dred_rect rect, dtk_color color, dtk_surface* pSurface);
-void dred_control_draw_rect_outline_dtk(dred_rect, dtk_color, float, dtk_surface* pSurface);
-void dred_control_draw_text_dtk(dtk_font*, float scale, const char*, int, float, float, dtk_color, dtk_color, dtk_surface* pSurface);
 
 dtk_bool32 dred_gui_init_dtk(dred_gui* pGUI, dred_context* pDred)
 {
@@ -1090,44 +1047,12 @@ dtk_bool32 dred_gui_init_dtk(dred_gui* pGUI, dred_context* pDred)
 void dred_gui_register_dtk_callbacks(dred_gui* pGUI)
 {
     dred_gui_painting_callbacks callbacks;
-    callbacks.setClip         = dred_control_set_clip_dtk;
-    callbacks.getClip         = dred_control_get_clip_dtk;
-    callbacks.drawRect        = dred_control_draw_rect_dtk;
-    callbacks.drawRectOutline = dred_control_draw_rect_outline_dtk;
-    callbacks.drawText        = dred_control_draw_text_dtk;
+    callbacks.drawRect = dred_control_draw_rect_dtk;
 
     dred_gui_register_painting_callbacks(pGUI, callbacks);
-}
-
-void dred_control_set_clip_dtk(dred_rect rect, dtk_surface* pSurface)
-{
-    dtk_surface_set_clip(pSurface, dtk_rect_init((dtk_int32)rect.left, (dtk_int32)rect.top, (dtk_int32)rect.right, (dtk_int32)rect.bottom));
-}
-
-void dred_control_get_clip_dtk(dred_rect* pRectOut, dtk_surface* pSurface)
-{
-    assert(pRectOut != NULL);
-
-    dtk_rect rect;
-    dtk_surface_get_clip(pSurface, &rect);
-
-    pRectOut->left = (float)rect.left;
-    pRectOut->top = (float)rect.top;
-    pRectOut->right = (float)rect.right;
-    pRectOut->bottom = (float)rect.bottom;
 }
 
 void dred_control_draw_rect_dtk(dred_rect rect, dtk_color color, dtk_surface* pSurface)
 {
     dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(rect), color);
-}
-
-void dred_control_draw_rect_outline_dtk(dred_rect rect, dtk_color color, float outlineWidth, dtk_surface* pSurface)
-{
-    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(rect), color, (dtk_int32)outlineWidth);
-}
-
-void dred_control_draw_text_dtk(dtk_font* pFont, float scale, const char* text, int textSizeInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface)
-{
-    dtk_surface_draw_text(pSurface, pFont, scale, text, textSizeInBytes, (dtk_int32)posX, (dtk_int32)posY, color, backgroundColor);
 }

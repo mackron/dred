@@ -66,10 +66,10 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dtk_surface* 
         
         float textPosX = dred_control_get_width(DRED_CONTROL(pInfoBar)) - totalWidth;
         float textPosY = (dred_control_get_height(DRED_CONTROL(pInfoBar)) - fontMetrics.lineHeight) / 2;
-        dred_control_draw_text(DRED_CONTROL(pInfoBar), pFont, uiScale, pInfoBar->lineStr, (int)strlen(pInfoBar->lineStr), textPosX, textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pSurface);
+        dtk_surface_draw_text(pSurface, pFont, uiScale, pInfoBar->lineStr, (int)strlen(pInfoBar->lineStr), (dtk_int32)textPosX, (dtk_int32)textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar));
 
         textPosX += lineStrWidth + padding;
-        dred_control_draw_text(DRED_CONTROL(pInfoBar), pFont, uiScale, pInfoBar->colStr, (int)strlen(pInfoBar->colStr), textPosX, textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar), pSurface);
+        dtk_surface_draw_text(pSurface, pFont, uiScale, pInfoBar->colStr, (int)strlen(pInfoBar->colStr), (dtk_int32)textPosX, (dtk_int32)textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar));
     }
 }
 

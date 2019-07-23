@@ -209,7 +209,7 @@ void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, dtk_
 
         float textPosX = penPosX + 8*uiScale;
         float textPosY = penPosY + paddingY;
-        dred_control_draw_text(DRED_CONTROL(pSettingsEditor), pSettingsEditor->pFont, uiScale, pSettingsEditor->pages[i].title, (int)strlen(pSettingsEditor->pages[i].title), textPosX, textPosY, pSettingsEditor->sidePanelBtnTextColor, bgColor, pSurface);
+        dtk_surface_draw_text(pSurface, pSettingsEditor->pFont, uiScale, pSettingsEditor->pages[i].title, (int)strlen(pSettingsEditor->pages[i].title), (dtk_int32)textPosX, (dtk_int32)(textPosY), pSettingsEditor->sidePanelBtnTextColor, bgColor);
 
         // Border.
         dred_control_draw_rect(DRED_CONTROL(pSettingsEditor), dred_make_rect(penPosX, penPosY, pSettingsEditor->sidePanelWidth - borderWidth, penPosY + borderWidth), borderColor, pSurface);
