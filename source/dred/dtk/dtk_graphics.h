@@ -234,11 +234,6 @@ dtk_result dtk_font_uninit(dtk_font* pFont);
 // Retrieves the metrics of a font at the given scale.
 dtk_result dtk_font_get_metrics(dtk_font* pFont, float scale, dtk_font_metrics* pMetrics);
 
-// Retrieves the metrics of a glyph when drawn with the given font at the given scale.
-//
-// NOTE: This API is tempoarary until an improved Unicode implementation is done.
-dtk_result dtk_font_get_glyph_metrics(dtk_font* pFont, float scale, dtk_uint32 utf32, dtk_glyph_metrics* pMetrics);
-
 // Retrieves the dimensions of a given string when drawn with the given font at the given scale.
 //
 // NOTE: This API is tempoarary until an improved Unicode implementation is done.

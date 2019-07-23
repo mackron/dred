@@ -263,59 +263,22 @@ typedef void (* dred_gui_on_change_cursor_proc)        (dred_control* pControl, 
 typedef void (* dred_gui_on_delete_element_proc)       (dred_control* pControl);
 typedef void (* dred_gui_on_log)                       (dred_gui* pGUI, const char* message);
 
-typedef void (* dred_gui_set_clip_proc)                     (dred_rect relativeRect, dtk_surface* pSurface);
-typedef void (* dred_gui_get_clip_proc)                     (dred_rect* pRectOut, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_line_proc)                    (float startX, float startY, float endX, float endY, float width, dtk_color color, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_rect_proc)                    (dred_rect relativeRect, dtk_color color, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_rect_outline_proc)            (dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_rect_with_outline_proc)       (dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_round_rect_proc)              (dred_rect relativeRect, dtk_color color, float radius, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_round_rect_outline_proc)      (dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_round_rect_with_outline_proc) (dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_text_proc)                    (dtk_font* pFont, float scale, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_image_proc)                   (dtk_surface* pImage, dtk_draw_image_args* pArgs, dtk_surface* pSurface);
-
-typedef dtk_font* (* dred_gui_create_font_proc)                        (dtk_context* pTK, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, unsigned int flags);
-typedef void              (* dred_gui_delete_font_proc)                        (dtk_font* pFont);
-typedef unsigned int      (* dred_gui_get_font_size_proc)                      (dtk_font* pFont);
-typedef dtk_bool32              (* dred_gui_get_font_metrics_proc)                   (dtk_font* pFont, float scale, dtk_font_metrics* pMetricsOut);
-typedef dtk_bool32              (* dred_gui_get_glyph_metrics_proc)                  (dtk_font* pFont, float scale, unsigned int utf32, dtk_glyph_metrics* pMetricsOut);
-typedef dtk_bool32              (* dred_gui_measure_string_proc)                     (dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32* pWidthOut, dtk_int32* pHeightOut);
-typedef dtk_bool32              (* dred_gui_get_text_cursor_position_from_point_proc)(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-typedef dtk_bool32              (* dred_gui_get_text_cursor_position_from_char_proc) (dtk_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
-
-typedef dtk_surface*     (* dred_gui_create_image_proc)            (dtk_context* pTK, unsigned int width, unsigned int height, unsigned int stride, const void* pImageData);
-typedef void                  (* dred_gui_delete_image_proc)            (dtk_surface* pImage);
-typedef void                  (* dred_gui_get_image_size_proc)          (dtk_surface* pImage, unsigned int* pWidthOut, unsigned int* pHeightOut);
+typedef void (* dred_gui_set_clip_proc)          (dred_rect relativeRect, dtk_surface* pSurface);
+typedef void (* dred_gui_get_clip_proc)          (dred_rect* pRectOut, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_rect_proc)         (dred_rect relativeRect, dtk_color color, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_rect_outline_proc) (dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_surface* pSurface);
+typedef void (* dred_gui_draw_text_proc)         (dtk_font* pFont, float scale, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface);
 
 typedef dtk_bool32 (* dred_gui_visible_iteration_proc)(dred_control* pControl, dred_rect *pRelativeRect, void* pUserData);
 
 // Structure containing callbacks for painting routines.
 struct dred_gui_painting_callbacks
 {
-    dred_gui_set_clip_proc                            setClip;
-    dred_gui_get_clip_proc                            getClip;
-
-    dred_gui_draw_rect_proc                           drawRect;
-    dred_gui_draw_rect_outline_proc                   drawRectOutline;
-    dred_gui_draw_rect_with_outline_proc              drawRectWithOutline;
-    dred_gui_draw_round_rect_proc                     drawRoundRect;
-    dred_gui_draw_round_rect_outline_proc             drawRoundRectOutline;
-    dred_gui_draw_round_rect_with_outline_proc        drawRoundRectWithOutline;
-    dred_gui_draw_text_proc                           drawText;
-    dred_gui_draw_image_proc                          drawImage;
-
-    dred_gui_create_font_proc                         createFont;
-    dred_gui_delete_font_proc                         deleteFont;
-    dred_gui_get_font_metrics_proc                    getFontMetrics;
-    dred_gui_get_glyph_metrics_proc                   getGlyphMetrics;
-    dred_gui_measure_string_proc                      measureString;
-    dred_gui_get_text_cursor_position_from_point_proc getTextCursorPositionFromPoint;
-    dred_gui_get_text_cursor_position_from_char_proc  getTextCursorPositionFromChar;
-
-    dred_gui_create_image_proc                        createImage;
-    dred_gui_delete_image_proc                        deleteImage;
-    dred_gui_get_image_size_proc                      getImageSize;
+    dred_gui_set_clip_proc          setClip;
+    dred_gui_get_clip_proc          getClip;
+    dred_gui_draw_rect_proc         drawRect;
+    dred_gui_draw_rect_outline_proc drawRectOutline;
+    dred_gui_draw_text_proc         drawText;
 };
 
 struct dred_gui_image
@@ -722,9 +685,6 @@ dred_rect dred_control_get_local_rect(const dred_control* pControl);
 ///     more than once.
 dtk_bool32 dred_gui_register_painting_callbacks(dred_gui* pGUI, dred_gui_painting_callbacks callbacks);
 
-/// Retrieves the current clipping rectangle.
-void dred_control_get_clip(dred_control* pControl, dred_rect* pRelativeRect, dtk_surface* pSurface);
-
 /// Sets the clipping rectangle to apply to all future draw operations on this element.
 void dred_control_set_clip(dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
 
@@ -734,18 +694,6 @@ void dred_control_draw_rect(dred_control* pControl, dred_rect relativeRect, dtk_
 /// Draws the outline of a rectangle on the given element.
 void dred_control_draw_rect_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_surface* pSurface);
 
-/// Draws a filled rectangle with an outline on the given element.
-void dred_control_draw_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface);
-
-/// Draws a rectangle with rounded corners on the given element.
-void dred_control_draw_round_rect(dred_control* pControl, dred_rect relativeRect, dtk_color color, float radius, dtk_surface* pSurface);
-
-/// Draws the outline of a rectangle with rounded corners on the given element.
-void dred_control_draw_round_rect_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_surface* pSurface);
-
-/// Draws a filled rectangle and it's outline with rounded corners on the given element.
-void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect relativeRect, dtk_color color, float radius, float outlineWidth, dtk_color outlineColor, dtk_surface* pSurface);
-
 /// Draws a run of text on the given element.
 ///
 /// @remarks
@@ -754,52 +702,6 @@ void dred_control_draw_round_rect_with_outline(dred_control* pControl, dred_rect
 ///     @par
 ///     \c textSizeInBytes can be -1 in which case the text string is treated as null terminated.
 void dred_control_draw_text(dred_control* pControl, dtk_font* pFont, float scale, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface);
-
-/// Draws an image.
-void dred_control_draw_image(dred_control* pControl, dred_gui_image* pImage, dred_gui_draw_image_args* pArgs, dtk_surface* pSurface);
-
-
-/// Creates a font resource.
-dred_gui_font* dred_gui_create_font(dred_gui* pGUI, const char* family, unsigned int size, dtk_font_weight weight, dtk_font_slant slant, unsigned int flags);
-
-/// Deletes a font resource.
-void dred_gui_delete_font(dred_gui_font* pFont);
-
-/// Retrieves the metrics of the given font.
-dtk_bool32 dred_gui_get_font_metrics(dred_gui_font* pFont, float scale, dtk_font_metrics* pMetricsOut);
-
-/// Retrieves the metrics of the glyph for the given character when rendered with the given font.
-dtk_bool32 dred_gui_get_glyph_metrics(dred_gui_font* pFont, float scale, unsigned int utf32, dtk_glyph_metrics* pMetricsOut);
-
-/// Retrieves the dimensions of the given string when drawn with the given font.
-///
-/// @remarks
-///     When the length of the text is 0, the width will be set to 0 and the height will be set to the line height.
-dtk_bool32 dred_gui_measure_string(dred_gui_font* pFont, float scale, const char* text, size_t textLengthInBytes, dtk_int32* pWidthOut, dtk_int32* pHeightOut);
-
-/// Retrieves the position to place a text cursor based on the given point for the given string when drawn with the given font.
-dtk_bool32 dred_gui_get_text_cursor_position_from_point(dred_gui_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-
-/// Retrieves the position to palce a text cursor based on the character at the given index for the given string when drawn with the given font.
-dtk_bool32 dred_gui_get_text_cursor_position_from_char(dred_gui_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
-
-
-
-/// Creates an image that can be passed to dred_control_draw_image().
-///
-/// @remarks
-///     The dimensions and format of an image are immutable. If these need to change, then the image needs to be deleted and re-created.
-///     @par
-///     If pData is NULL, the default image data is undefined.
-///     @par
-///     If stride is set to 0, it is assumed to be tightly packed.
-dred_gui_image* dred_gui_create_image(dred_gui* pGUI, unsigned int width, unsigned int height, unsigned int stride, const void* pData);
-
-/// Deletes the given image.
-void dred_gui_delete_image(dred_gui_image* pImage);
-
-/// Retrieves the size of the given image.
-void dred_gui_get_image_size(dred_gui_image* pImage, unsigned int* pWidthOut, unsigned int* pHeightOut);
 
 
 

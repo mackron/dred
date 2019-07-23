@@ -1653,28 +1653,6 @@ dtk_result dtk_font_get_metrics(dtk_font* pFont, float scale, dtk_font_metrics* 
     return result;
 }
 
-dtk_result dtk_font_get_glyph_metrics(dtk_font* pFont, float scale, dtk_uint32 utf32, dtk_glyph_metrics* pMetrics)
-{
-    if (pMetrics == NULL) return DTK_INVALID_ARGS;
-    dtk_zero_object(pMetrics);
-
-    if (pFont == NULL) return DTK_INVALID_ARGS;
-
-    dtk_result result = DTK_NO_BACKEND;
-#ifdef DTK_WIN32
-    if (pFont->backend == dtk_graphics_backend_gdi) {
-        result = dtk_font_get_glyph_metrics__gdi(pFont, scale, utf32, pMetrics);
-    }
-#endif
-#ifdef DTK_GTK
-    if (pFont->backend == dtk_graphics_backend_cairo) {
-        result = dtk_font_get_glyph_metrics__cairo(pFont, scale, utf32, pMetrics);
-    }
-#endif
-
-    return result;
-}
-
 dtk_result dtk_font_measure_string(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, dtk_int32* pWidth, dtk_int32* pHeight)
 {
     if (pWidth) *pWidth = 0;
