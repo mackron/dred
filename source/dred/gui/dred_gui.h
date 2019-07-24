@@ -168,17 +168,6 @@ typedef struct
     dtk_font* pFont;
 } dred_text_style;
 
-
-#define DRED_GUI_IMAGE_DRAW_BOUNDS         (1 << 2)
-#define DRED_GUI_IMAGE_CLIP_BOUNDS         (1 << 3)        //< Clips the image to the bounds
-#define DRED_GUI_IMAGE_ALIGN_CENTER        (1 << 4)
-
-#define DRED_GUI_READ                      (1 << 0)
-#define DRED_GUI_WRITE                     (1 << 1)
-
-#define DRED_GUI_FONT_NO_CLEARTYPE         (1 << 0)
-
-
 typedef void (* dred_gui_on_move_proc)                 (dred_control* pControl, float newRelativePosX, float newRelativePosY);
 typedef void (* dred_gui_on_size_proc)                 (dred_control* pControl, float newWidth, float newHeight);
 typedef void (* dred_gui_on_mouse_enter_proc)          (dred_control* pControl);
@@ -193,13 +182,10 @@ typedef void (* dred_gui_on_key_up_proc)               (dred_control* pControl, 
 typedef void (* dred_gui_on_printable_key_down_proc)   (dred_control* pControl, unsigned int character, int stateFlags);
 typedef void (* dred_gui_on_paint_proc)                (dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
 typedef void (* dred_gui_on_dirty_proc)                (dred_control* pControl, dred_rect relativeRect);
-typedef dtk_bool32 (* dred_gui_on_hittest_proc)              (dred_control* pControl, float relativePosX, float relativePosY);
 typedef void (* dred_gui_on_capture_mouse_proc)        (dred_control* pControl);
 typedef void (* dred_gui_on_release_mouse_proc)        (dred_control* pControl);
 typedef void (* dred_gui_on_capture_keyboard_proc)     (dred_control* pControl, dtk_control* pPrevCapturedControl);
 typedef void (* dred_gui_on_release_keyboard_proc)     (dred_control* pControl, dtk_control* pNewCapturedControl);
-typedef void (* dred_gui_on_change_cursor_proc)        (dred_control* pControl, dtk_system_cursor_type cursor);
-typedef void (* dred_gui_on_delete_element_proc)       (dred_control* pControl);
 
 struct dred_control
 {
@@ -254,9 +240,6 @@ struct dred_control
 
     /// The function to call when the element is marked as dirty.
     dred_gui_on_dirty_proc onDirty;
-
-    /// The function to call when a hit test needs to be performed.
-    dred_gui_on_hittest_proc onHitTest;
 
     /// The event handler to call when an element receives the mouse focus.
     dred_gui_on_capture_mouse_proc onCaptureMouse;
@@ -385,9 +368,6 @@ void dred_control_set_on_paint(dred_control* pControl, dred_gui_on_paint_proc ca
 
 /// Registers the on_dirty event callback.
 void dred_control_set_on_dirty(dred_control* pControl, dred_gui_on_dirty_proc callback);
-
-/// Registers the on_hittest event callback.
-void dred_control_set_on_hittest(dred_control* pControl, dred_gui_on_hittest_proc callback);
 
 /// Registers the on_capture_mouse event callback.
 void dred_control_set_on_capture_mouse(dred_control* pControl, dred_gui_on_capture_mouse_proc callback);

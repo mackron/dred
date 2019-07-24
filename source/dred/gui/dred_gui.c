@@ -484,13 +484,6 @@ void dred_control_set_on_dirty(dred_control * pControl, dred_gui_on_dirty_proc c
     }
 }
 
-void dred_control_set_on_hittest(dred_control* pControl, dred_gui_on_hittest_proc callback)
-{
-    if (pControl != NULL) {
-        pControl->onHitTest = callback;
-    }
-}
-
 void dred_control_set_on_capture_mouse(dred_control* pControl, dred_gui_on_capture_mouse_proc callback)
 {
     if (pControl != NULL) {
