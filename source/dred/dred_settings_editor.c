@@ -4,14 +4,14 @@
 #define DRED_SETTINGS_EDITOR_PAGE_THEME         1
 #define DRED_SETTINGS_EDITOR_PAGE_TEXT_EDITOR   2
 
-dred_rect dred_settings_editor__get_side_panel_rect(dred_settings_editor* pSettingsEditor)
+dtk_rect dred_settings_editor__get_side_panel_rect(dred_settings_editor* pSettingsEditor)
 {
     assert(pSettingsEditor != NULL);
 
-    return dred_make_rect(0, 0, pSettingsEditor->sidePanelWidth, dred_control_get_height(DRED_CONTROL(pSettingsEditor)));
+    return dtk_rect_init(0, 0, pSettingsEditor->sidePanelWidth, dred_control_get_height(DRED_CONTROL(pSettingsEditor)));
 }
 
-dred_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSettingsEditor)
+dtk_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSettingsEditor)
 {
     assert(pSettingsEditor != NULL);
 
@@ -20,7 +20,7 @@ dred_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSett
     dtk_int32 posX = pSettingsEditor->sidePanelWidth;
     dtk_int32 posY = (dtk_int32)(dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - (dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton))) - (8*uiScale * 2));
 
-    return dred_make_rect(posX, posY, dred_control_get_width(DRED_CONTROL(pSettingsEditor)), dred_control_get_height(DRED_CONTROL(pSettingsEditor)));
+    return dtk_rect_init(posX, posY, dred_control_get_width(DRED_CONTROL(pSettingsEditor)), dred_control_get_height(DRED_CONTROL(pSettingsEditor)));
 }
 
 int dred_settings_editor__get_side_panel_btn_index_under_point(dred_settings_editor* pSettingsEditor, float posX, float posY)
@@ -67,7 +67,7 @@ void dred_settings_editor__select_page_by_index(dred_settings_editor* pSettingsE
         }
 
         pSettingsEditor->selectedPageIndex = newPageIndex;
-        dtk_control_scheduled_redraw(DTK_CONTROL(pSettingsEditor), dtk_rect_init_dred(dred_settings_editor__get_side_panel_rect(pSettingsEditor)));
+        dtk_control_scheduled_redraw(DTK_CONTROL(pSettingsEditor), dred_settings_editor__get_side_panel_rect(pSettingsEditor));
     }
 }
 
@@ -152,7 +152,7 @@ void dred_settings_editor__on_mouse_move(dred_control* pControl, int mousePosX, 
     int hoveredPageIndex = dred_settings_editor__get_side_panel_btn_index_under_point(pSettingsEditor, (float)mousePosX, (float)mousePosY);
     if (hoveredPageIndex != pSettingsEditor->hoveredPageIndex) {
         pSettingsEditor->hoveredPageIndex = hoveredPageIndex;
-        dtk_control_scheduled_redraw(DTK_CONTROL(pSettingsEditor), dtk_rect_init_dred(dred_settings_editor__get_side_panel_rect(pSettingsEditor)));
+        dtk_control_scheduled_redraw(DTK_CONTROL(pSettingsEditor), dred_settings_editor__get_side_panel_rect(pSettingsEditor));
     }
 }
 
@@ -164,11 +164,11 @@ void dred_settings_editor__on_mouse_leave(dred_control* pControl)
     // None of the buttons will be hovered if the mouse leaves the window.
     if (pSettingsEditor->hoveredPageIndex != -1) {
         pSettingsEditor->hoveredPageIndex = -1;
-        dtk_control_scheduled_redraw(DTK_CONTROL(pSettingsEditor), dtk_rect_init_dred(dred_settings_editor__get_side_panel_rect(pSettingsEditor)));
+        dtk_control_scheduled_redraw(DTK_CONTROL(pSettingsEditor), dred_settings_editor__get_side_panel_rect(pSettingsEditor));
     }
 }
 
-void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
+void dred_settings_editor__on_paint(dred_control* pControl, dtk_rect rect, dtk_surface* pSurface)
 {
     (void)rect;
 
@@ -177,7 +177,7 @@ void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, dtk_
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
-    dred_rect sideRect = dred_settings_editor__get_side_panel_rect(pSettingsEditor);
+    dtk_rect sideRect = dred_settings_editor__get_side_panel_rect(pSettingsEditor);
 
     // Side buttons.
     dtk_int32 penPosX = 0;
@@ -212,14 +212,14 @@ void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, dtk_
         dtk_surface_draw_text(pSurface, pSettingsEditor->pFont, uiScale, pSettingsEditor->pages[i].title, (int)strlen(pSettingsEditor->pages[i].title), (dtk_int32)textPosX, (dtk_int32)(textPosY), pSettingsEditor->sidePanelBtnTextColor, bgColor);
 
         // Border.
-        dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(penPosX, penPosY, pSettingsEditor->sidePanelWidth - borderWidth, penPosY + borderWidth)), borderColor);
-        dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(penPosX, penPosY + btnHeight - borderWidth, pSettingsEditor->sidePanelWidth - borderWidth, penPosY + btnHeight)), borderColor);
+        dtk_surface_draw_rect(pSurface, dtk_rect_init(penPosX, penPosY, pSettingsEditor->sidePanelWidth - borderWidth, penPosY + borderWidth), borderColor);
+        dtk_surface_draw_rect(pSurface, dtk_rect_init(penPosX, penPosY + btnHeight - borderWidth, pSettingsEditor->sidePanelWidth - borderWidth, penPosY + btnHeight), borderColor);
 
         // Background.
-        dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(0, penPosY + borderWidth, textPosX, penPosY + btnHeight - borderWidth)), bgColor);
-        dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(textPosX + textSizeX, penPosY + borderWidth, pSettingsEditor->sidePanelWidth - borderWidth, penPosY + btnHeight - borderWidth)), bgColor);
-        dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(textPosX, penPosY + borderWidth, textPosX + textSizeX, textPosY)), bgColor);
-        dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(textPosX, textPosY + textSizeY, textPosX + textSizeX, penPosY + btnHeight - borderWidth)), bgColor);
+        dtk_surface_draw_rect(pSurface, dtk_rect_init(0, penPosY + borderWidth, textPosX, penPosY + btnHeight - borderWidth), bgColor);
+        dtk_surface_draw_rect(pSurface, dtk_rect_init(textPosX + textSizeX, penPosY + borderWidth, pSettingsEditor->sidePanelWidth - borderWidth, penPosY + btnHeight - borderWidth), bgColor);
+        dtk_surface_draw_rect(pSurface, dtk_rect_init(textPosX, penPosY + borderWidth, textPosX + textSizeX, textPosY), bgColor);
+        dtk_surface_draw_rect(pSurface, dtk_rect_init(textPosX, textPosY + textSizeY, textPosX + textSizeX, penPosY + btnHeight - borderWidth), bgColor);
 
         penPosY += btnHeight;
     }
@@ -229,28 +229,28 @@ void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, dtk_
         dtk_int32 gapPosY0 = (dtk_int32)(selectedBtnPosY + (1*uiScale));
         dtk_int32 gapPosY1 = (dtk_int32)(selectedBtnPosY - (1*uiScale) + btnHeight);
 
-        dred_rect sideBorderRect0 = dred_make_rect(sideRect.right - borderWidth, sideRect.top, sideRect.right, gapPosY0);
-        dred_rect sideBorderRect1 = dred_make_rect(sideRect.right - borderWidth, gapPosY0, sideRect.right, gapPosY1);
-        dred_rect sideBorderRect2 = dred_make_rect(sideRect.right - borderWidth, gapPosY1, sideRect.right, sideRect.bottom);
+        dtk_rect sideBorderRect0 = dtk_rect_init(sideRect.right - borderWidth, sideRect.top, sideRect.right, gapPosY0);
+        dtk_rect sideBorderRect1 = dtk_rect_init(sideRect.right - borderWidth, gapPosY0, sideRect.right, gapPosY1);
+        dtk_rect sideBorderRect2 = dtk_rect_init(sideRect.right - borderWidth, gapPosY1, sideRect.right, sideRect.bottom);
 
-        dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(sideBorderRect0), pSettingsEditor->sidePanelBtnBorderColor);
-        dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(sideBorderRect1), dtk_rgb(255, 255, 255));
-        dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(sideBorderRect2), pSettingsEditor->sidePanelBtnBorderColor);
+        dtk_surface_draw_rect(pSurface, sideBorderRect0, pSettingsEditor->sidePanelBtnBorderColor);
+        dtk_surface_draw_rect(pSurface, sideBorderRect1, dtk_rgb(255, 255, 255));
+        dtk_surface_draw_rect(pSurface, sideBorderRect2, pSettingsEditor->sidePanelBtnBorderColor);
     } else {
-        dred_rect sideBorderRect0 = dred_make_rect(sideRect.right - borderWidth, sideRect.top, sideRect.right, sideRect.bottom);
-        dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(sideBorderRect0), pSettingsEditor->sidePanelBtnBorderColor);
+        dtk_rect sideBorderRect0 = dtk_rect_init(sideRect.right - borderWidth, sideRect.top, sideRect.right, sideRect.bottom);
+        dtk_surface_draw_rect(pSurface, sideBorderRect0, pSettingsEditor->sidePanelBtnBorderColor);
     }
 
     // Top of side panel.
-    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(0, 0, sideRect.right - borderWidth, pSettingsEditor->sidePanelBtnOffsetY)), dtk_rgb(255, 255, 255));
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(0, 0, sideRect.right - borderWidth, pSettingsEditor->sidePanelBtnOffsetY), dtk_rgb(255, 255, 255));
 
     // Bottom of side panel.
-    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(0, penPosY, sideRect.right - borderWidth, sideRect.bottom)), dtk_rgb(255, 255, 255));
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(0, penPosY, sideRect.right - borderWidth, sideRect.bottom), dtk_rgb(255, 255, 255));
 
 
     // Action area.
-    dred_rect actionRect = dred_settings_editor__get_action_area_rect(pSettingsEditor);
-    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(actionRect), dtk_rgb(255, 255, 255));
+    dtk_rect actionRect = dred_settings_editor__get_action_area_rect(pSettingsEditor);
+    dtk_surface_draw_rect(pSurface, actionRect, dtk_rgb(255, 255, 255));
 }
 
 
@@ -289,14 +289,14 @@ void dred_settings_editor_page__on_mouse_enter(dred_control* pPageControl)
     // Clear the hovered state of any buttons on the side panel.
     if (pSettingsEditor->hoveredPageIndex != -1) {
         pSettingsEditor->hoveredPageIndex = -1;
-        dtk_control_scheduled_redraw(DTK_CONTROL(pSettingsEditor), dtk_rect_init_dred(dred_settings_editor__get_side_panel_rect(pSettingsEditor)));
+        dtk_control_scheduled_redraw(DTK_CONTROL(pSettingsEditor), dred_settings_editor__get_side_panel_rect(pSettingsEditor));
     }
 }
 
-void dred_settings_editor_page__on_paint(dred_control* pPageControl, dred_rect rect, dtk_surface* pSurface)
+void dred_settings_editor_page__on_paint(dred_control* pPageControl, dtk_rect rect, dtk_surface* pSurface)
 {
     (void)rect;
-    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_control_get_local_rect(pPageControl)), dtk_rgb(255, 255, 255));
+    dtk_surface_draw_rect(pSurface, dred_control_get_local_rect(pPageControl), dtk_rgb(255, 255, 255));
 }
 
 dtk_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_control* pParent, dtk_event_proc onEvent, const char* title)
@@ -657,5 +657,5 @@ void dred_settings_editor_refresh_styling(dred_settings_editor* pSettingsEditor)
     pSettingsEditor->sidePanelWidth = (dtk_int32)(200*uiScale);
     pSettingsEditor->sidePanelBtnOffsetY = (dtk_int32)(8.0f*uiScale);
 
-    dtk_control_scheduled_redraw(DTK_CONTROL(pSettingsEditor), dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pSettingsEditor))));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pSettingsEditor), dred_control_get_local_rect(DRED_CONTROL(pSettingsEditor)));
 }

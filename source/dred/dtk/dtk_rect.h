@@ -42,6 +42,37 @@ DTK_INLINE dtk_rect dtk_rect_grow(dtk_rect rect, dtk_int32 amount)
         rect.bottom + amount);
 }
 
+DTK_INLINE dtk_rect dtk_rect_scalef(dtk_rect rect, float scale)
+{
+    return dtk_rect_init(
+        (dtk_int32)(rect.left   * scale),
+        (dtk_int32)(rect.top    * scale),
+        (dtk_int32)(rect.right  * scale),
+        (dtk_int32)(rect.bottom * scale)
+    );
+}
+
+DTK_INLINE dtk_rect dtk_rect_translate(dtk_rect rect, dtk_int32 offsetX, dtk_int32 offsetY)
+{
+    return dtk_rect_init(
+        rect.left   + offsetX,
+        rect.top    + offsetY,
+        rect.right  + offsetX,
+        rect.bottom + offsetY
+    );
+}
+
+DTK_INLINE dtk_rect dtk_rect_clamp(dtk_rect rect, dtk_rect other)
+{
+    dtk_rect result;
+    result.left   = (rect.left   >= other.left)   ? rect.left   : other.left;
+    result.top    = (rect.top    >= other.top)    ? rect.top    : other.top;
+    result.right  = (rect.right  <= other.right)  ? rect.right  : other.right;
+    result.bottom = (rect.bottom <= other.bottom) ? rect.bottom : other.bottom;
+
+    return result;
+}
+
 DTK_INLINE dtk_rect dtk_rect_union(dtk_rect rect0, dtk_rect rect1)
 {
     return dtk_rect_init(

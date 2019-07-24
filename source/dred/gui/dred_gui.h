@@ -104,8 +104,8 @@
 //
 // Event-Driven Drawing (Win32):
 //
-// void my_global_on_dirty_win32(dred_control* pControl, dred_rect relativeRect) {
-//     dred_rect absoluteRect = relativeRect;
+// void my_global_on_dirty_win32(dred_control* pControl, dtk_rect relativeRect) {
+//     dtk_rect absoluteRect = relativeRect;
 //     dred_make_rect_absolute(pControl, &absoluteRect);
 //
 //     RECT rect;
@@ -145,21 +145,11 @@
 #endif
 
 typedef struct dred_control dred_control;
-typedef struct dred_rect dred_rect;
 
 
 // Casts a pointer to any structure to a dred_control*. Note that this will only work if the dred_control object
 // is at the first byte of the structure.
 #define DRED_CONTROL(a) ((dred_control*)(a))
-
-/// Structure representing a rectangle.
-struct dred_rect
-{
-    dtk_int32 left;
-    dtk_int32 top;
-    dtk_int32 right;
-    dtk_int32 bottom;
-};
 
 typedef struct
 {
@@ -180,8 +170,8 @@ typedef void (* dred_gui_on_mouse_wheel_proc)          (dred_control* pControl, 
 typedef void (* dred_gui_on_key_down_proc)             (dred_control* pControl, dtk_key key, int stateFlags);
 typedef void (* dred_gui_on_key_up_proc)               (dred_control* pControl, dtk_key key, int stateFlags);
 typedef void (* dred_gui_on_printable_key_down_proc)   (dred_control* pControl, unsigned int character, int stateFlags);
-typedef void (* dred_gui_on_paint_proc)                (dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface);
-typedef void (* dred_gui_on_dirty_proc)                (dred_control* pControl, dred_rect relativeRect);
+typedef void (* dred_gui_on_paint_proc)                (dred_control* pControl, dtk_rect relativeRect, dtk_surface* pSurface);
+typedef void (* dred_gui_on_dirty_proc)                (dred_control* pControl, dtk_rect relativeRect);
 typedef void (* dred_gui_on_capture_mouse_proc)        (dred_control* pControl);
 typedef void (* dred_gui_on_release_mouse_proc)        (dred_control* pControl);
 typedef void (* dred_gui_on_capture_keyboard_proc)     (dred_control* pControl, dtk_control* pPrevCapturedControl);
@@ -378,90 +368,13 @@ dtk_int32 dred_control_get_height(const dred_control* pControl);
 
 
 /// Retrieves the absolute rectangle for the given element.
-dred_rect dred_control_get_absolute_rect(const dred_control* pControl);
+dtk_rect dred_control_get_absolute_rect(const dred_control* pControl);
 
 /// Retrieves the relative rectangle for the given element.
-dred_rect dred_control_get_relative_rect(const dred_control* pControl);
+dtk_rect dred_control_get_relative_rect(const dred_control* pControl);
 
 /// Retrieves the local rectangle for the given element.
 ///
 /// @remarks
 ///     The local rectangle is equivalent to dred_make_rect(0, 0, dred_control_get_width(pControl), dred_control_get_height(pControl));
-dred_rect dred_control_get_local_rect(const dred_control* pControl);
-
-
-
-/////////////////////////////////////////////////////////////////
-//
-// UTILITY API
-//
-/////////////////////////////////////////////////////////////////
-
-/// Clamps the given rectangle to another.
-dred_rect dred_clamp_rect(dred_rect rect, dred_rect other);
-
-/// Clamps the given rectangle to the given element and returns whether or not any of it is contained within the element's rectangle.
-dtk_bool32 dred_clamp_rect_to_element(const dred_control* pControl, dred_rect* pRelativeRect);
-
-/// Converts the given rectangle from absolute to relative to the given element.
-dred_rect dred_make_rect_relative(const dred_control* pControl, dred_rect* pRect);
-
-/// Converts the given rectangle from relative to absolute based on the given element.
-dred_rect dred_make_rect_absolute(const dred_control* pControl, dred_rect* pRect);
-
-/// Converts the given point from absolute to relative to the given element.
-void dred_make_point_relative(const dred_control* pControl, dtk_int32* positionX, dtk_int32* positionY);
-
-/// Converts the given point from relative to absolute based on the given element.
-void dred_make_point_absolute(const dred_control* pControl, dtk_int32* positionX, dtk_int32* positionY);
-
-/// Creates a dred_rect object.
-dred_rect dred_make_rect(dtk_int32 left, dtk_int32 top, dtk_int32 right, dtk_int32 bottom);
-
-/// Creates an inside-out rectangle.
-///
-/// @remarks
-///     An inside our rectangle is a negative-dimension rectangle with each edge at the extreme edges. The left edge will be at the
-///     right-most side and the right edge will be at the left-most side. The same applies for the top and bottom edges.
-dred_rect dred_make_inside_out_rect();
-
-/// Expands the given rectangle on all sides by the given amount.
-///
-/// @remarks
-///     This will increase the width and height of the rectangle by <amount> x 2.
-///     @par
-///     The growth amount can be negative, in which case it will be shrunk. Note that this does not do any checking to ensure the rectangle
-///     contains positive dimensions after a shrink.
-dred_rect dred_grow_rect(dred_rect rect, dtk_int32 amount);
-
-/// Scales the given rectangle.
-///
-/// @param scaleX [in] The scale to apply to <left> and <right>
-/// @param scaleY [in] The scale to apply to <top> and <bottom>
-///
-/// @remarks
-///     This will modify the <left> and <top> properties which means the rectangle will change position. To adjust only the size, scale the
-///     rectangle manually.
-dred_rect dred_scale_rect(dred_rect rect, dtk_int32 scaleX, dtk_int32 scaleY);
-
-/// Offsets the given rectangle.
-dred_rect dred_offset_rect(dred_rect rect, dtk_int32 offsetX, dtk_int32 offsetY);
-
-/// Creates a rectangle that contains both of the given rectangles.
-dred_rect dred_rect_union(dred_rect rect0, dred_rect rect1);
-
-/// Determines whether or not the given rectangle contains the given point.
-///
-/// @remarks
-///     An important not here is that if the position is sitting on the right or bottom border, DTK_FALSE will be returned. If, however, the point
-///     is sitting on the left or top border, DTK_TRUE will be returned. The reason for this is that elements may sit exactly side-by-side with
-///     each other, and if we use this function to determine if a point is contained within an element (which we do), we would end up having
-///     this return DTK_TRUE for both elements, which we don't want.
-dtk_bool32 dred_rect_contains_point(dred_rect rect, dtk_int32 posX, dtk_int32 posY);
-
-/// Determines whether or not two rectangles are equal.
-dtk_bool32 dred_rect_equal(dred_rect rect0, dred_rect rect1);
-
-/// Determines whether or not the given rectangle has any volume (width and height > 0).
-dtk_bool32 dred_rect_has_volume(dred_rect rect);
-
+dtk_rect dred_control_get_local_rect(const dred_control* pControl);

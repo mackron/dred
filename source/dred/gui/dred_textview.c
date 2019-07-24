@@ -7,7 +7,7 @@ void dred_textview__get_text_offset(dred_textview* pTextView, int* pOffsetXOut, 
 void dred_textview__calculate_text_engine_container_size(dred_textview* pTextView, int* pWidthOut, int* pHeightOut);
 
 /// Retrieves the rectangle of the text engine's container.
-dred_rect dred_textview__get_text_rect(dred_textview* pTextView);
+dtk_rect dred_textview__get_text_rect(dred_textview* pTextView);
 
 /// Refreshes the range, page sizes and layouts of the scrollbars.
 void dred_textview__refresh_scrollbars(dred_textview* pTextView);
@@ -19,7 +19,7 @@ void dred_textview__refresh_scrollbar_ranges(dred_textview* pTextView);
 void dred_textview__refresh_scrollbar_layouts(dred_textview* pTextView);
 
 /// Retrieves a rectangle representing the space between the edges of the two scrollbars.
-dred_rect dred_textview__get_scrollbar_dead_space_rect(dred_textview* pTextView);
+dtk_rect dred_textview__get_scrollbar_dead_space_rect(dred_textview* pTextView);
 
 
 /// Called when a mouse button is pressed on the line numbers element.
@@ -32,7 +32,7 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
 void dred_textview__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the line numbers element needs to be drawn.
-void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect relativeRect, dtk_surface* pSurface);
+void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dtk_rect relativeRect, dtk_surface* pSurface);
 
 /// Refreshes the line number of the given text editor.
 void dred_textview__refresh_line_numbers(dred_textview* pTextView);
@@ -75,7 +75,7 @@ void dred_textview__on_vscroll(dtk_scrollbar* pSBControl, int scrollPos)
     dred_textview__refresh_scrollbars(pTextView);
 
     // The line numbers need to be redrawn.
-    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView->pLineNumbers), dtk_rect_init_dred(dred_control_get_local_rect(pTextView->pLineNumbers)));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView->pLineNumbers), dred_control_get_local_rect(pTextView->pLineNumbers));
 }
 
 void dred_textview__on_hscroll(dtk_scrollbar* pSBControl, int scrollPos)
@@ -2484,7 +2484,7 @@ void dred_textview_engine__on_paint_rect(drte_engine* pTextEngine, drte_view* pV
     int offsetY;
     dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
-    dtk_surface_draw_rect((dtk_surface*)pPaintData, dtk_rect_init_dred(dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY)), pStyle->bgColor);
+    dtk_surface_draw_rect((dtk_surface*)pPaintData, dtk_rect_translate(dtk_rect_init(rect.left, rect.top, rect.right, rect.bottom), offsetX, offsetY), pStyle->bgColor);
 }
 
 void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, int posX, int posY, void* pPaintData)
@@ -2516,7 +2516,7 @@ void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_view* pView, 
     int offsetY;
     dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
-    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView), dtk_rect_init_dred(dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY)));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView), dtk_rect_translate(dtk_rect_init(rect.left, rect.top, rect.right, rect.bottom), offsetX, offsetY));
 }
 
 void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* pView, size_t iCursor)
@@ -2575,7 +2575,7 @@ void dred_textview__on_text_changed(dred_textview* pTextView)
 
     // The line numbers need to be redrawn.
     // TODO: This can probably be optimized a bit so that it is only redrawn if a line was inserted or deleted.
-    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView->pLineNumbers), dtk_rect_init_dred(dred_control_get_local_rect(pTextView->pLineNumbers)));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView->pLineNumbers), dred_control_get_local_rect(pTextView->pLineNumbers));
 }
 
 size_t dred_textview__on_get_undo_state(dred_textview* pTextView, void* pDataOut)
@@ -2619,29 +2619,29 @@ void dred_textview__on_apply_undo_state(dred_textview* pTextView, size_t dataSiz
 
 
 
-void dred_textview_on_paint(dred_control* pControl, dred_rect relativeRect, dtk_surface* pSurface)
+void dred_textview_on_paint(dred_control* pControl, dtk_rect relativeRect, dtk_surface* pSurface)
 {
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     if (pTextView == NULL) {
         return;
     }
 
-    dred_rect textRect = dred_textview__get_text_rect(pTextView);
+    dtk_rect textRect = dred_textview__get_text_rect(pTextView);
 
     // The dead space between the scrollbars should always be drawn with the default background color.
     //dtk_surface_draw_rect(pTextView, dred_textview__get_scrollbar_dead_space_rect(pTextView), pTextView->defaultStyle.bgColor, pPaintData);
 
     // Border.
-    dred_rect borderRect = dred_control_get_local_rect(pControl);
-    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(borderRect), pTextView->borderColor, (dtk_int32)pTextView->borderWidth);
+    dtk_rect borderRect = dred_control_get_local_rect(pControl);
+    dtk_surface_draw_rect_outline(pSurface, borderRect, pTextView->borderColor, (dtk_int32)pTextView->borderWidth);
 
     // Padding.
-    dred_rect paddingRect = dred_grow_rect(textRect, pTextView->padding);
-    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(paddingRect), pTextView->defaultStyle.bgColor, (dtk_int32)pTextView->padding);
+    dtk_rect paddingRect = dtk_rect_grow(textRect, pTextView->padding);
+    dtk_surface_draw_rect_outline(pSurface, paddingRect, pTextView->defaultStyle.bgColor, (dtk_int32)pTextView->padding);
 
     // Text.
-    dtk_surface_set_clip(pSurface, dtk_rect_init_dred(dred_clamp_rect(textRect, relativeRect)));
-    drte_view_paint(pTextView->pView, dred_rect_to_drte(dred_offset_rect(dred_clamp_rect(textRect, relativeRect), -textRect.left, -textRect.top)), pSurface);
+    dtk_surface_set_clip(pSurface, dtk_rect_clamp(textRect, relativeRect));
+    drte_view_paint(pTextView->pView, dtk_rect_to_drte(dtk_rect_translate(dtk_rect_clamp(textRect, relativeRect), -textRect.left, -textRect.top)), pSurface);
 }
 
 
@@ -2750,10 +2750,10 @@ void dred_textview__calculate_text_engine_container_size(dred_textview* pTextVie
     }
 }
 
-dred_rect dred_textview__get_text_rect(dred_textview* pTextView)
+dtk_rect dred_textview__get_text_rect(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
-        return dred_make_rect(0, 0, 0, 0);
+        return dtk_rect_init(0, 0, 0, 0);
     }
 
     dtk_int32 offsetX;
@@ -2764,7 +2764,7 @@ dred_rect dred_textview__get_text_rect(dred_textview* pTextView)
     dtk_int32 height;
     dred_textview__calculate_text_engine_container_size(pTextView, &width, &height);
 
-    return dred_make_rect(offsetX, offsetY, offsetX + width, offsetY + height);
+    return dtk_rect_init(offsetX, offsetY, offsetX + width, offsetY + height);
 }
 
 
@@ -2854,7 +2854,7 @@ void dred_textview__refresh_scrollbar_layouts(dred_textview* pTextView)
     dred_textview__refresh_line_numbers(pTextView);
 }
 
-dred_rect dred_textview__get_scrollbar_dead_space_rect(dred_textview* pTextView)
+dtk_rect dred_textview__get_scrollbar_dead_space_rect(dred_textview* pTextView)
 {
     assert(pTextView != NULL);
 
@@ -2867,10 +2867,10 @@ dred_rect dred_textview__get_scrollbar_dead_space_rect(dred_textview* pTextView)
     dtk_int32 scrollbarSizeV = ((dtk_control_is_visible(DTK_CONTROL(pTextView->pVertScrollbar)) && pTextView->isHorzScrollbarEnabled) ? dtk_control_get_height(DTK_CONTROL(pTextView->pVertScrollbar)) : 0);
 
     if (scrollbarSizeH == 0 && scrollbarSizeV == 0) {
-        return dred_make_rect(0, 0, 0, 0);
+        return dtk_rect_init(0, 0, 0, 0);
     }
 
-    return dred_make_rect(
+    return dtk_rect_init(
         (scrollbarSizeH + offsetLeft),
         (scrollbarSizeV + offsetTop),
         dred_control_get_width(DRED_CONTROL(pTextView)) - offsetRight,
@@ -3009,7 +3009,7 @@ void dred_textview__on_paint_rect_line_numbers(drte_engine* pEngine, drte_view* 
     dtk_int32 offsetX = pTextView->padding;
     dtk_int32 offsetY = pTextView->padding;
 
-    dtk_surface_draw_rect((dtk_surface*)pPaintData, dtk_rect_init_dred(dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY)), pStyle->bgColor);
+    dtk_surface_draw_rect((dtk_surface*)pPaintData, dtk_rect_translate(dtk_rect_init(rect.left, rect.top, rect.right, rect.bottom), offsetX, offsetY), pStyle->bgColor);
 }
 
 void dred_textview__on_paint_text_line_numbers(drte_engine* pEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, dtk_int32 posX, dtk_int32 posY, void* pPaintData)
@@ -3029,7 +3029,7 @@ void dred_textview__on_paint_text_line_numbers(drte_engine* pEngine, drte_view* 
     dtk_surface_draw_text((dtk_surface*)pPaintData, pStyleFG->pFont, pView->scale, text, (int)textLength, (posX + offsetX), (posY + offsetY), pStyleFG->fgColor, pStyleBG->bgColor);
 }
 
-void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect relativeRect, dtk_surface* pSurface)
+void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dtk_rect relativeRect, dtk_surface* pSurface)
 {
     (void)relativeRect;
 
@@ -3041,20 +3041,20 @@ void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect 
 
     drte_view_paint_line_numbers(pTextView->pView, lineNumbersWidth, lineNumbersHeight, dred_textview__on_paint_text_line_numbers, dred_textview__on_paint_rect_line_numbers, pSurface);
 
-    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(dred_control_get_local_rect(pLineNumbers)), pTextView->lineNumbersStyle.bgColor, pTextView->padding);
+    dtk_surface_draw_rect_outline(pSurface, dred_control_get_local_rect(pLineNumbers), pTextView->lineNumbersStyle.bgColor, pTextView->padding);
 
     // Right padding.
-    dred_rect rightPaddingRect = dred_control_get_local_rect(pLineNumbers);
+    dtk_rect rightPaddingRect = dred_control_get_local_rect(pLineNumbers);
     rightPaddingRect.right -= pTextView->padding;
     rightPaddingRect.left   = rightPaddingRect.right - pTextView->lineNumbersPaddingRight;
-    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(rightPaddingRect), pTextView->lineNumbersStyle.bgColor);
+    dtk_surface_draw_rect(pSurface, rightPaddingRect, pTextView->lineNumbersStyle.bgColor);
 }
 
 void dred_textview__refresh_line_numbers(dred_textview* pTextView)
 {
     assert(pTextView != NULL);
 
-    dred_rect lineNumbersRectOld = dred_control_get_local_rect(pTextView->pLineNumbers);
+    dtk_rect lineNumbersRectOld = dred_control_get_local_rect(pTextView->pLineNumbers);
 
     dtk_int32 lineNumbersWidth = 0;
     if (dtk_control_is_visible(DTK_CONTROL(pTextView->pLineNumbers))) {
@@ -3073,5 +3073,5 @@ void dred_textview__refresh_line_numbers(dred_textview* pTextView)
 
 
     // Force a redraw just to be sure everything is in a valid state.
-    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView), dtk_rect_init_dred(dred_rect_union(lineNumbersRectOld, dred_control_get_local_rect(pTextView->pLineNumbers))));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView), dtk_rect_union(lineNumbersRectOld, dred_control_get_local_rect(pTextView->pLineNumbers)));
 }

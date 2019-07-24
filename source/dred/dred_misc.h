@@ -16,12 +16,7 @@ dtk_font_slant dred_font_slant_from_pango(PangoStyle slant);
 
 // Type conversion
 
-DTK_INLINE dred_rect drte_rect_to_dred(drte_rect rect)
-{
-    return dred_make_rect(rect.left, rect.top, rect.right, rect.bottom);
-}
-
-DTK_INLINE drte_rect dred_rect_to_drte(dred_rect rect)
+DTK_INLINE drte_rect dtk_rect_to_drte(dtk_rect rect)
 {
     return drte_make_rect(rect.left, rect.top, rect.right, rect.bottom);
 }

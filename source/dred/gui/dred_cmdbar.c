@@ -1,6 +1,6 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
-dred_rect dred_cmdbar__get_inner_rect(dred_cmdbar* pCmdBar)
+dtk_rect dred_cmdbar__get_inner_rect(dred_cmdbar* pCmdBar)
 {
     dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
     assert(pDred != NULL);
@@ -13,12 +13,12 @@ dred_rect dred_cmdbar__get_inner_rect(dred_cmdbar* pCmdBar)
 
     dtk_int32 scaledPaddingX = (dtk_int32)(pDred->config.cmdbarPaddingX*uiScale);
     dtk_int32 scaledPaddingY = (dtk_int32)(pDred->config.cmdbarPaddingY*uiScale);
-    return dred_make_rect(scaledPaddingX, scaledPaddingY, cmdbarWidth - scaledPaddingX, cmdbarHeight - scaledPaddingY);
+    return dtk_rect_init(scaledPaddingX, scaledPaddingY, cmdbarWidth - scaledPaddingX, cmdbarHeight - scaledPaddingY);
 }
 
 void dred_cmdbar__get_inner_size(dred_cmdbar* pCmdBar, dtk_int32* pWidthOut, dtk_int32* pHeightOut)
 {
-    dred_rect innerRect = dred_cmdbar__get_inner_rect(pCmdBar);
+    dtk_rect innerRect = dred_cmdbar__get_inner_rect(pCmdBar);
 
     if (pWidthOut) *pWidthOut = innerRect.right - innerRect.left;
     if (pHeightOut) *pHeightOut = innerRect.bottom - innerRect.top;
@@ -26,7 +26,7 @@ void dred_cmdbar__get_inner_size(dred_cmdbar* pCmdBar, dtk_int32* pWidthOut, dtk
 
 void dred_cmdbar__get_segment_rects(dred_cmdbar* pCmdBar, dtk_rect* pLRect, dtk_rect* pMRect, dtk_rect* pRRect)
 {
-    dtk_rect innerRect = dtk_rect_init_dred(dred_cmdbar__get_inner_rect(pCmdBar));
+    dtk_rect innerRect = dred_cmdbar__get_inner_rect(pCmdBar);
 
     dtk_int32 innerWidth = innerRect.right - innerRect.left;
     dtk_int32 lwidth = (dtk_int32)(innerWidth * 0.5f);
@@ -137,7 +137,7 @@ void dred_cmdbar__on_capture_keyboard(dred_control* pControl, dtk_control* pPrev
     dtk_capture_keyboard(&pCmdBar->control.pDred->tk, DTK_CONTROL(&pCmdBar->textBox));
 }
 
-void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
+void dred_cmdbar__on_paint(dred_control* pControl, dtk_rect rect, dtk_surface* pSurface)
 {
     (void)rect;
 
@@ -148,7 +148,7 @@ void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
     assert(pDred != NULL);
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBar));
-    dred_rect localRect = dred_control_get_local_rect(DRED_CONTROL(pCmdBar));
+    dtk_rect localRect = dred_control_get_local_rect(DRED_CONTROL(pCmdBar));
 
     dtk_color bgcolor = pDred->config.cmdbarBGColor;
     if (dred_cmdbar_has_keyboard_focus(pCmdBar)) {
@@ -157,10 +157,10 @@ void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
 
     dtk_int32 scaledPaddingX = (dtk_int32)(pDred->config.cmdbarPaddingX*uiScale);
     dtk_int32 scaledPaddingY = (dtk_int32)(pDred->config.cmdbarPaddingY*uiScale);
-    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(0,                                0,                                 scaledPaddingX,                   localRect.bottom)), bgcolor); // Left
-    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(localRect.right - scaledPaddingX, 0,                                 localRect.right,                  localRect.bottom)), bgcolor); // Right
-    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(scaledPaddingX,                   0,                                 localRect.right - scaledPaddingX, scaledPaddingY)),   bgcolor); // Top
-    dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(scaledPaddingX,                   localRect.bottom - scaledPaddingY, localRect.right - scaledPaddingX, localRect.bottom)), bgcolor); // Bottom
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(0,                                0,                                 scaledPaddingX,                   localRect.bottom), bgcolor); // Left
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(localRect.right - scaledPaddingX, 0,                                 localRect.right,                  localRect.bottom), bgcolor); // Right
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(scaledPaddingX,                   0,                                 localRect.right - scaledPaddingX, scaledPaddingY),   bgcolor); // Top
+    dtk_surface_draw_rect(pSurface, dtk_rect_init(scaledPaddingX,                   localRect.bottom - scaledPaddingY, localRect.right - scaledPaddingX, localRect.bottom), bgcolor); // Bottom
 
 
     // Message.
@@ -205,7 +205,7 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dtk_control* pP
     // Hide any message that's showing.
     dred_cmdbar_set_message(pCmdBar, "");
 
-    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pCmdBar))));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));
 
 
     // Show the popup window.
@@ -246,7 +246,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dtk_control* pN
         dred_hide_command_bar(pDred);
     }
 
-    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pCmdBar))));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));
 
 
     // Fall through to the default handler.
@@ -775,7 +775,7 @@ void dred_cmdbar_set_message(dred_cmdbar* pCmdBar, const char* text)
     }
 
     strncpy_s(pCmdBar->message, sizeof(pCmdBar->message), text, _TRUNCATE);
-    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pCmdBar))));    // <-- Can optimize this to only draw the message region.
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));    // <-- Can optimize this to only draw the message region.
 }
 
 void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar)
@@ -833,5 +833,5 @@ void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
     dred_cmdbar__update_size(pCmdBar);
 
     // Redraw.
-    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pCmdBar))));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));
 }
