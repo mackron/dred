@@ -96,7 +96,7 @@ dtk_bool32 dred_main_tabgroup_event_handler(dtk_event* pEvent)
                         dtk_int32 y = pEvent->tabgroup.mouseButton.y;
                         dtk_tabgroup_transform_point_from_tab(pTabGroup, pEvent->tabgroup.tabIndex, &x, &y);
 
-                        dred_control_show_popup_menu(DRED_CONTROL(pTabGroup), &pDred->menus.tabpopup, x, y);
+                        dtk_control_show_popup_menu(DTK_CONTROL(pTabGroup), &pDred->menus.tabpopup, x, y);
                     }
                 }
             }
@@ -757,7 +757,7 @@ dtk_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_li
     }
 
     if (pDred->config.autoHideCmdBar) {
-        dred_control_hide(DRED_CONTROL(&pDred->cmdBar));
+        dtk_control_hide(DTK_CONTROL(&pDred->cmdBar));
     }
 
     result = dred_cmdbar_popup_init(pDred, &pDred->cmdbarPopup);
@@ -2509,7 +2509,7 @@ void dred_show_command_bar(dred_context* pDred)
         return;
     }
 
-    dred_control_show(DRED_CONTROL(&pDred->cmdBar));
+    dtk_control_show(DTK_CONTROL(&pDred->cmdBar));
     dred_update_main_window_layout(pDred);
 }
 
@@ -2519,7 +2519,7 @@ void dred_hide_command_bar(dred_context* pDred)
         return;
     }
 
-    dred_control_hide(DRED_CONTROL(&pDred->cmdBar));
+    dtk_control_hide(DTK_CONTROL(&pDred->cmdBar));
     dred_update_main_window_layout(pDred);
 }
 

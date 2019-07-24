@@ -287,43 +287,6 @@ dtk_bool32 dred_control_is_of_type(dred_control* pControl, const char* type);
 dtk_bool32 dred_is_control_type_of_type(const char* type, const char* base);
 
 
-/// Hides the given element.
-void dred_control_hide(dred_control *pControl);
-
-/// Shows the given element.
-void dred_control_show(dred_control* pControl);
-
-/// Determines whether or not the element is marked as visible.
-///
-/// @remarks
-///     This is a direct accessor for the internal visible flag of the element and is not recursive. Thus, if this element is
-///     marked as visible, but it's parent is invisible, it will still return DTK_TRUE. Use dred_control_is_visible_recursive() to do
-///     a recursive visibility check.
-dtk_bool32 dred_control_is_visible(const dred_control* pControl);
-
-/// Recursively determines whether or not the element is marked as visible.
-dtk_bool32 dred_control_is_visible_recursive(const dred_control* pControl);
-
-
-/// Disables clipping against the parent for the given element.
-void dred_control_disable_clipping(dred_control* pControl);
-
-/// Enables clipping against the parent for the given element.
-void dred_control_enable_clipping(dred_control* pControl);
-
-/// Determines whether or not clipping is enabled for the given element.
-dtk_bool32 dred_control_is_clipping_enabled(const dred_control* pControl);
-
-
-/// Sets the cursor to use when the mouse enters the given GUI element.
-void dred_control_set_cursor(dred_control* pControl, dtk_system_cursor_type cursor);
-
-/// Retrieves the cursor to use when the mouse enters the given GUI element.
-dtk_system_cursor_type dred_control_get_cursor(dred_control* pControl);
-
-// Helper function for showing a popup menu relative to the given control.
-void dred_control_show_popup_menu(dred_control* pControl, dtk_menu* pMenu, int relativePosX, int relativePosY);
-
 
 //// Events ////
 
@@ -381,77 +344,6 @@ void dred_control_set_on_capture_keyboard(dred_control* pControl, dred_gui_on_ca
 /// Registers the on_release_keyboard event callback.
 void dred_control_set_on_release_keyboard(dred_control* pControl, dred_gui_on_release_keyboard_proc callback);
 
-
-
-//// Containment and Hit Detection ////
-
-/// Determines whether or not the given point is inside the bounds of the given element.
-///
-/// @remarks
-///     This only checks if the point is inside the bounds of the element and does not take hit testing into account. This difference
-///     with this one and dred_control_is_point_inside() is that the latter will use hit testing.
-dtk_bool32 dred_control_is_point_inside_bounds(const dred_control* pControl, float absolutePosX, float absolutePosY);
-
-/// Determines whether or not the given point is inside the given element.
-///
-/// @remarks
-///     This will use hit testing to determine whether or not the point is inside the element.
-dtk_bool32 dred_control_is_point_inside(dred_control* pControl, float absolutePosX, float absolutePosY);
-
-/// Finds the element under the given point taking mouse pass-through and hit testing into account.
-//dtk_control* dred_gui_find_control_under_point(dred_control* pTopLevelControl, float absolutePosX, float absolutePosY);
-
-/// Determines whether or not the given element is currently sitting directly under the mouse.
-dtk_bool32 dred_control_is_under_mouse(dred_control* pTopLevelControl);
-
-
-
-//// Hierarchy ////
-
-/// Detaches the given element from it's parent.
-void dred_control_detach(dred_control* pChildControl);
-
-/// Attaches the given element as a child of the given parent element, and appends it to the end of the children list.
-void dred_control_append(dred_control* pChildControl, dred_control* pParentControl);
-
-/// Attaches the given element as a child of the given parent element, and prepends it to the end of the children list.
-void dred_control_prepend(dred_control* pChildControl, dred_control* pParentControl);
-
-/// Appends the given element to the given sibling.
-void dred_control_append_sibling(dred_control* pControlToAppend, dred_control* pControlToAppendTo);
-
-/// Prepends the given element to the given sibling.
-void dred_control_prepend_sibling(dred_control* pControlToPrepend, dred_control* pControlToPrependTo);
-
-/// Retrieves a pointer to the given element's top-level ancestor.
-///
-/// @remarks
-///     If pControl is the top level element, the return value will be pControl.
-dtk_control* dred_control_find_top_level_control(dred_control* pControl);
-
-/// Determines whether or not the given element is the parent of the other.
-///
-/// @remarks
-///     This is not recursive. Use dred_control_is_ancestor() to do a recursive traversal.
-dtk_bool32 dred_control_is_parent(dred_control* pParentControl, dred_control* pChildControl);
-
-/// Determines whether or not the given element is a child of the other.
-///
-/// @remarks
-///     This is not recursive. Use dred_control_is_descendant() to do a recursive traversal.
-dtk_bool32 dred_control_is_child(dred_control* pChildControl, dred_control* pParentControl);
-
-/// Determines whether or not the given element is an ancestor of the other.
-dtk_bool32 dred_control_is_ancestor(dred_control* pAncestorControl, dred_control* pChildControl);
-
-/// Determines whether or not the given element is a descendant of the other.
-dtk_bool32 dred_control_is_descendant(dred_control* pChildControl, dred_control* pAncestorControl);
-
-/// Determines whether or not the given element is itself or a descendant.
-dtk_bool32 dred_control_is_self_or_ancestor(dred_control* pAncestorControl, dred_control* pChildControl);
-
-/// Determines whether or not the given element is itself or a descendant.
-dtk_bool32 dred_control_is_self_or_descendant(dred_control* pChildControl, dred_control* pAncestorControl);
 
 
 

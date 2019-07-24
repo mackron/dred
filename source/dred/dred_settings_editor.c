@@ -60,10 +60,10 @@ void dred_settings_editor__select_page_by_index(dred_settings_editor* pSettingsE
     int oldPageIndex = pSettingsEditor->selectedPageIndex;
     if (newPageIndex != oldPageIndex) {
         if (oldPageIndex != -1) {
-            dred_control_hide(pSettingsEditor->pages[oldPageIndex].pGUIControl);
+            dtk_control_hide(DTK_CONTROL(pSettingsEditor->pages[oldPageIndex].pGUIControl));
         }
         if (newPageIndex != -1) {
-            dred_control_show(pSettingsEditor->pages[newPageIndex].pGUIControl);
+            dtk_control_show(DTK_CONTROL(pSettingsEditor->pages[newPageIndex].pGUIControl));
         }
 
         pSettingsEditor->selectedPageIndex = newPageIndex;
@@ -312,7 +312,7 @@ dtk_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dre
         return DTK_FALSE;
     }
 
-    dred_control_hide(pPage->pGUIControl);
+    dtk_control_hide(DTK_CONTROL(pPage->pGUIControl));
     dred_control_set_on_mouse_enter(pPage->pGUIControl, dred_settings_editor_page__on_mouse_enter);
     dred_control_set_on_paint(pPage->pGUIControl, dred_settings_editor_page__on_paint);
 

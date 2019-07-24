@@ -375,7 +375,7 @@ dtk_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dre
 
 
 
-    dred_control_set_cursor(DRED_CONTROL(pTextView), dtk_system_cursor_type_text);
+    dtk_control_set_cursor(DTK_CONTROL(pTextView), dtk_system_cursor_type_text);
     dred_control_set_on_size(DRED_CONTROL(pTextView), dred_textview_on_size);
     dred_control_set_on_mouse_move(DRED_CONTROL(pTextView), dred_textview_on_mouse_move);
     dred_control_set_on_mouse_button_down(DRED_CONTROL(pTextView), dred_textview_on_mouse_button_down);
@@ -403,7 +403,7 @@ dtk_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dre
 
     pTextView->pLineNumbers = &pTextView->lineNumbers;
     dred_control_init(pTextView->pLineNumbers, pDred, DRED_CONTROL(pTextView), NULL, "dred.common.linenumbers", NULL);
-    dred_control_hide(pTextView->pLineNumbers);
+    dtk_control_hide(DTK_CONTROL(pTextView->pLineNumbers));
     dred_control_set_on_mouse_move(pTextView->pLineNumbers, dred_textview__on_mouse_move_line_numbers);
     dred_control_set_on_mouse_button_down(pTextView->pLineNumbers, dred_textview__on_mouse_button_down_line_numbers);
     dred_control_set_on_mouse_button_up(pTextView->pLineNumbers, dred_textview__on_mouse_button_up_line_numbers);
@@ -1464,7 +1464,7 @@ void dred_textview_show_line_numbers(dred_textview* pTextView)
         return;
     }
 
-    dred_control_show(pTextView->pLineNumbers);
+    dtk_control_show(DTK_CONTROL(pTextView->pLineNumbers));
     dred_textview__refresh_line_numbers(pTextView);
 }
 
@@ -1474,7 +1474,7 @@ void dred_textview_hide_line_numbers(dred_textview* pTextView)
         return;
     }
 
-    dred_control_hide(pTextView->pLineNumbers);
+    dtk_control_hide(DTK_CONTROL(pTextView->pLineNumbers));
     dred_textview__refresh_line_numbers(pTextView);
 }
 
@@ -1853,9 +1853,9 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
                     }
                 }
 
-                dred_control_set_cursor(DRED_CONTROL(pTextView), dtk_system_cursor_type_arrow);
+                dtk_control_set_cursor(DTK_CONTROL(pTextView), dtk_system_cursor_type_arrow);
             } else {
-                dred_control_set_cursor(DRED_CONTROL(pTextView), dtk_system_cursor_type_text);
+                dtk_control_set_cursor(DTK_CONTROL(pTextView), dtk_system_cursor_type_text);
             }
         }
     }
@@ -2699,7 +2699,7 @@ void dred_textview__get_text_offset(dred_textview* pTextView, float* pOffsetXOut
     if (pTextView != NULL)
     {
         float lineNumbersWidth = 0;
-        if (dred_control_is_visible(pTextView->pLineNumbers)) {
+        if (dtk_control_is_visible(DTK_CONTROL(pTextView->pLineNumbers))) {
             lineNumbersWidth = dred_control_get_width(pTextView->pLineNumbers);
         }
 
@@ -2734,7 +2734,7 @@ void dred_textview__calculate_text_engine_container_size(dred_textview* pTextVie
         }
 
         float lineNumbersWidth = 0;
-        if (dred_control_is_visible(pTextView->pLineNumbers)) {
+        if (dtk_control_is_visible(DTK_CONTROL(pTextView->pLineNumbers))) {
             lineNumbersWidth = dred_control_get_width(pTextView->pLineNumbers);
         }
 
@@ -3057,7 +3057,7 @@ void dred_textview__refresh_line_numbers(dred_textview* pTextView)
     dred_rect lineNumbersRectOld = dred_control_get_local_rect(pTextView->pLineNumbers);
 
     float lineNumbersWidth = 0;
-    if (dred_control_is_visible(pTextView->pLineNumbers)) {
+    if (dtk_control_is_visible(DTK_CONTROL(pTextView->pLineNumbers))) {
         lineNumbersWidth = pTextView->lineNumbersWidth;
     }
 
