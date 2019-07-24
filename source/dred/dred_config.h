@@ -154,7 +154,7 @@
 // texteditor-line-numbers-bg-color textEditorLineNumbersBGColor color dred_config_on_set__texteditor_generic_refresh 48 48 48
 //   The color of the background of the line numbers.
 //
-// texteditor-line-numbers-padding textEditorLineNumbersPadding float dred_config_on_set__texteditor_generic_refresh 16
+// texteditor-line-numbers-padding textEditorLineNumbersPadding int dred_config_on_set__texteditor_generic_refresh 16
 //   The padding between the line numbers and the text in the text editor.
 //
 // texteditor-sb-track-color textEditorSBTrackColor color dred_config_on_set__texteditor_generic_refresh 64 64 64
@@ -169,7 +169,7 @@
 // texteditor-sb-thumb-color-pressed textEditorSBThumbColorPressed color dred_config_on_set__texteditor_generic_refresh 180 180 180
 //   The color of the thumb of the scroll bars on text editors while pressed.
 //
-// texteditor-sb-size textEditorSBSize float dred_config_on_set__texteditor_generic_refresh 16
+// texteditor-sb-size textEditorSBSize int dred_config_on_set__texteditor_generic_refresh 16
 //   The thickness of the scrollbars on text editors.
 //
 // texteditor-show-scrollbar-horz textEditorShowScrollbarHorz dtk_bool32 dred_config_on_set__texteditor_generic_refresh true

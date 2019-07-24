@@ -57,12 +57,12 @@ dtk_color textEditorActiveLineColor; \
 dtk_bool32 textEditorShowLineNumbers; \
 dtk_color textEditorLineNumbersColor; \
 dtk_color textEditorLineNumbersBGColor; \
-float textEditorLineNumbersPadding; \
+int textEditorLineNumbersPadding; \
 dtk_color textEditorSBTrackColor; \
 dtk_color textEditorSBThumbColor; \
 dtk_color textEditorSBThumbColorHovered; \
 dtk_color textEditorSBThumbColorPressed; \
-float textEditorSBSize; \
+int textEditorSBSize; \
 dtk_bool32 textEditorShowScrollbarHorz; \
 dtk_bool32 textEditorShowScrollbarVert; \
 dtk_bool32 textEditorEnableExcessScrolling; \

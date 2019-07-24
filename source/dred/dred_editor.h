@@ -30,7 +30,7 @@ struct dred_editor
 
 
 // dred_editor_create()
-dtk_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_control* pParent, const char* type, dtk_event_proc onEvent, float sizeX, float sizeY, const char* filePathAbsolute);
+dtk_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_control* pParent, const char* type, dtk_event_proc onEvent, dtk_int32 sizeX, dtk_int32 sizeY, const char* filePathAbsolute);
 
 // dred_editor_delete()
 void dred_editor_uninit(dred_editor* pEditor);

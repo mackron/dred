@@ -40,10 +40,10 @@ struct dred_settings_editor
     dtk_font* pFont;
 
     // The width of the side panel.
-    float sidePanelWidth;
+    dtk_int32 sidePanelWidth;
 
     // The offset to apply to the buttons on the side panel on the Y axis.
-    float sidePanelBtnOffsetY;
+    dtk_int32 sidePanelBtnOffsetY;
 
     // The vertical padding to apply to the buttons on the side panel, as a ratio of the height of the current font.
     float sidePanelBtnPaddingYRatio;

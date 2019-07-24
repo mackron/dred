@@ -62,23 +62,23 @@ struct dred_textview
     dtk_color borderColor;
 
     /// The width of the border.
-    float borderWidth;
+    int borderWidth;
 
     /// The amount of padding to apply the left and right of the text.
-    float padding;
+    int padding;
 
     // The width of the line numbers.
-    float lineNumbersWidth;
+    int lineNumbersWidth;
 
     /// The padding to the right of the line numbers.
-    float lineNumbersPaddingRight;
+    int lineNumbersPaddingRight;
 
 
     /// The desired width of the vertical scrollbar.
-    float vertScrollbarSize;
+    int vertScrollbarSize;
 
     /// The desired height of the horizontal scrollbar.
-    float horzScrollbarSize;
+    int horzScrollbarSize;
 
     /// Whether or not the vertical scrollbar is enabled.
     dtk_bool32 isVertScrollbarEnabled;
@@ -178,10 +178,10 @@ dtk_color dred_textview_get_selection_background_color(dred_textview* pTextView)
 void dred_textview_set_active_line_background_color(dred_textview* pTextView, dtk_color color);
 
 // Sets the width of the text cursor.
-void dred_textview_set_cursor_width(dred_textview* pTextView, float cursorWidth);
+void dred_textview_set_cursor_width(dred_textview* pTextView, int cursorWidth);
 
 // Retrieves the width of the text cursor.
-float dred_textview_get_cursor_width(dred_textview* pTextView);
+int dred_textview_get_cursor_width(dred_textview* pTextView);
 
 // Sets the color of the cursor of the given text box.
 void dred_textview_set_cursor_color(dred_textview* pTextView, dtk_color color);
@@ -190,28 +190,28 @@ void dred_textview_set_cursor_color(dred_textview* pTextView, dtk_color color);
 void dred_textview_set_border_color(dred_textview* pTextView, dtk_color color);
 
 // Sets the border width of the given text box.
-void dred_textview_set_border_width(dred_textview* pTextView, float borderWidth);
+void dred_textview_set_border_width(dred_textview* pTextView, int borderWidth);
 
 // Sets the amount of padding to apply to given text box.
-void dred_textview_set_padding(dred_textview* pTextView, float padding);
+void dred_textview_set_padding(dred_textview* pTextView, int padding);
 
 // Retrieves the amound of vertical padding to apply to the given text box.
-float dred_textview_get_padding_vert(dred_textview* pTextView);
+int dred_textview_get_padding_vert(dred_textview* pTextView);
 
 // Retrieves the amound of horizontal padding to apply to the given text box.
-float dred_textview_get_padding_horz(dred_textview* pTextView);
+int dred_textview_get_padding_horz(dred_textview* pTextView);
 
 // Sets the width of the line numbers.
-void dred_textview_set_line_numbers_width(dred_textview* pTextView, float lineNumbersWidth);
+void dred_textview_set_line_numbers_width(dred_textview* pTextView, int lineNumbersWidth);
 
 // Retrieves the width of the line numbers.
-float dred_textview_get_line_numbers_width(dred_textview* pTextView);
+int dred_textview_get_line_numbers_width(dred_textview* pTextView);
 
 // Sets the padding to apply between the line numbers and the text.
-void dred_textview_set_line_numbers_padding(dred_textview* pTextView, float lineNumbersPadding);
+void dred_textview_set_line_numbers_padding(dred_textview* pTextView, int lineNumbersPadding);
 
 // Retrieves the padding to apply between the line numbers and the text.
-float dred_textview_get_line_numbers_padding(dred_textview* pTextView);
+int dred_textview_get_line_numbers_padding(dred_textview* pTextView);
 
 // Sets the color of the text of the line numbers.
 void dred_textview_set_line_numbers_color(dred_textview* pTextView, dtk_color color);
@@ -397,7 +397,7 @@ dtk_scrollbar* dred_textview_get_vertical_scrollbar(dred_textview* pTextView);
 dtk_scrollbar* dred_textview_get_horizontal_scrollbar(dred_textview* pTextView);
 
 // Sets the size of both the vertical and horizontal scrollbars.
-void dred_textview_set_scrollbar_size(dred_textview* pTextView, float size);
+void dred_textview_set_scrollbar_size(dred_textview* pTextView, int size);
 
 // Enables excess scrolling on the vertical scrollbar.
 void dred_textview_enable_excess_scrolling(dred_textview* pTextView);
@@ -451,7 +451,7 @@ void dred_textview_set_on_undo_point_changed(dred_textview* pTextView, dred_text
 
 
 // on_size.
-void dred_textview_on_size(dred_control* pControl, float newWidth, float newHeight);
+void dred_textview_on_size(dred_control* pControl, int newWidth, int newHeight);
 
 // on_mouse_move.
 void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags);

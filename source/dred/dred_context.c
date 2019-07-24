@@ -1713,7 +1713,7 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dtk_tabgroup* pTabG
     // Check for special built-in editors first.
     dred_editor* pEditor = NULL;
     if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-        pEditor = DRED_EDITOR(dred_text_editor_create(pDred, pParentControl, (float)sizeX, (float)sizeY, filePathAbsolute));
+        pEditor = DRED_EDITOR(dred_text_editor_create(pDred, pParentControl, sizeX, sizeY, filePathAbsolute));
     }
     if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_SETTINGS_EDITOR)) {
         pEditor = DRED_EDITOR(dred_settings_editor_create(pDred, pParentControl, filePathAbsolute));
@@ -1723,7 +1723,7 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dtk_tabgroup* pTabG
     if (pEditor == NULL) {
         DRED_FOREACH_PACKAGE(pDred, pPackage) {
             if (pPackage->cbs.editor.createEditor) {
-                pEditor = pPackage->cbs.editor.createEditor(pPackage, pDred, pParentControl, (float)sizeX, (float)sizeY, filePathAbsolute, editorType);
+                pEditor = pPackage->cbs.editor.createEditor(pPackage, pDred, pParentControl, sizeX, sizeY, filePathAbsolute, editorType);
                 if (pEditor != NULL) {
                     break;
                 }
@@ -1733,7 +1733,7 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dtk_tabgroup* pTabG
 
     // Fall back to a text editor if it's an unknown extension.
     if (pEditor == NULL) {
-        pEditor = DRED_EDITOR(dred_text_editor_create(pDred, pParentControl, (float)sizeX, (float)sizeY, filePathAbsolute));
+        pEditor = DRED_EDITOR(dred_text_editor_create(pDred, pParentControl, sizeX, sizeY, filePathAbsolute));
     }
 
     return pEditor;
@@ -1930,10 +1930,10 @@ typedef struct
     drte_view* pTextView;
     dtk_surface paintSurface;
     dtk_font font;
-    float offsetX;
-    float offsetY;
-    float pageSizeX;
-    float pageSizeY;
+    dtk_int32 offsetX;
+    dtk_int32 offsetY;
+    dtk_int32 pageSizeX;
+    dtk_int32 pageSizeY;
     float scaleX;
     float scaleY;
 } dred_print_data;
@@ -1971,7 +1971,7 @@ void dred__on_paint_rect_for_printing(drte_engine* pTextEngine, drte_view* pView
     (void)pPaintData;
 }
 
-void dred__on_paint_text_for_printing(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
+void dred__on_paint_text_for_printing(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, dtk_int32 posX, dtk_int32 posY, void* pPaintData)
 {
     (void)pTextEngine;
     (void)pView;
@@ -1995,13 +1995,13 @@ void dred__on_measure_string_for_printing(drte_engine* pTextEngine, drte_style_t
     dtk_font_measure_string((dtk_font*)styleToken, scale, text, textLength, pWidthOut, pHeightOut);
 }
 
-void dred__on_get_cursor_position_from_point_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+void dred__on_get_cursor_position_from_point_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, float scale, const char* text, size_t textSizeInBytes, dtk_int32 maxWidth, dtk_int32 inputPosX, dtk_int32* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     (void)pTextEngine;
     dtk_font_get_text_cursor_position_from_point((dtk_font*)styleToken, scale, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
 }
 
-void dred__on_get_cursor_position_from_char_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+void dred__on_get_cursor_position_from_char_for_printing(drte_engine* pTextEngine, drte_style_token styleToken, float scale, const char* text, size_t characterIndex, dtk_int32* pTextCursorPosXOut)
 {
     (void)pTextEngine;
     dtk_font_get_text_cursor_position_from_char((dtk_font*)styleToken, scale, text, characterIndex, pTextCursorPosXOut);
@@ -2010,7 +2010,7 @@ void dred__on_get_cursor_position_from_char_for_printing(drte_engine* pTextEngin
 void dred__print_page(dred_print_data* pPrintData, size_t iPage)
 {
     // Scroll to the page.
-    drte_view_set_inner_offset_y(pPrintData->pTextView, -(iPage * drte_engine_get_line_height(&pPrintData->textEngine) * drte_view_get_line_count_per_page(pPrintData->pTextView)));
+    drte_view_set_inner_offset_y(pPrintData->pTextView, -(int)(iPage * drte_engine_get_line_height(&pPrintData->textEngine) * drte_view_get_line_count_per_page(pPrintData->pTextView)));
 
     // Paint.
     drte_view_paint(pPrintData->pTextView, drte_make_rect(0, 0, drte_view_get_size_x(pPrintData->pTextView), drte_view_get_size_y(pPrintData->pTextView)), pPrintData);
@@ -2136,10 +2136,10 @@ dtk_dialog_result dred_show_print_dialog(dred_context* pDred, dtk_window* pOwner
     int printableHeight = physicalHeight - physicalOffsetY*2;
 
 
-    printData.offsetX   = (float)physicalOffsetX;
-    printData.offsetY   = (float)physicalOffsetY;
-    printData.pageSizeX = (float)printableWidth;
-    printData.pageSizeY = (float)printableHeight;
+    printData.offsetX   = physicalOffsetX;
+    printData.offsetY   = physicalOffsetY;
+    printData.pageSizeX = printableWidth;
+    printData.pageSizeY = printableHeight;
     printData.scaleX    = GetDeviceCaps(hPrintDC, LOGPIXELSX) / 72.0f;
     printData.scaleY    = GetDeviceCaps(hPrintDC, LOGPIXELSY) / 72.0f;
 

@@ -17,8 +17,8 @@ dred_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSett
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
-    float posX = pSettingsEditor->sidePanelWidth;
-    float posY = dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - (dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton))) - (8*uiScale * 2);
+    dtk_int32 posX = pSettingsEditor->sidePanelWidth;
+    dtk_int32 posY = (dtk_int32)(dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - (dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton))) - (8*uiScale * 2));
 
     return dred_make_rect(posX, posY, dred_control_get_width(DRED_CONTROL(pSettingsEditor)), dred_control_get_height(DRED_CONTROL(pSettingsEditor)));
 }
@@ -36,9 +36,9 @@ int dred_settings_editor__get_side_panel_btn_index_under_point(dred_settings_edi
     dtk_font_metrics metrics;
     dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &metrics);
 
-    float paddingY = metrics.lineHeight*pSettingsEditor->sidePanelBtnPaddingYRatio;
-    float btnHeight = paddingY*2 + metrics.lineHeight;
-    float penPosY = pSettingsEditor->sidePanelBtnOffsetY;
+    dtk_int32 paddingY  = (dtk_int32)(metrics.lineHeight*pSettingsEditor->sidePanelBtnPaddingYRatio);
+    dtk_int32 btnHeight = (dtk_int32)(paddingY*2 + metrics.lineHeight);
+    dtk_int32 penPosY   = (dtk_int32)(pSettingsEditor->sidePanelBtnOffsetY);
 
     int sideButtonsCount = (int)(sizeof(pSettingsEditor->pages) / sizeof(pSettingsEditor->pages[0]));
     for (int i = 0; i < sideButtonsCount; ++i) {
@@ -81,10 +81,10 @@ void dred_settings_editor__refresh_layout(dred_settings_editor* pSettingsEditor)
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
-    float posX = pSettingsEditor->sidePanelWidth;
-    float posY = 0;
-    float sizeX = dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - posX;
-    float sizeY = dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - (dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton))) - (8*uiScale * 2);
+    dtk_int32 posX = pSettingsEditor->sidePanelWidth;
+    dtk_int32 posY = 0;
+    dtk_int32 sizeX = (dtk_int32)(dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - posX);
+    dtk_int32 sizeY = (dtk_int32)(dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - (dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton))) - (8*uiScale * 2));
 
     // Every page needs to be resized. Every page will be the same size.
     int sideButtonsCount = (int)(sizeof(pSettingsEditor->pages) / sizeof(pSettingsEditor->pages[0]));
@@ -95,12 +95,12 @@ void dred_settings_editor__refresh_layout(dred_settings_editor* pSettingsEditor)
     }
 
     dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->closeButton),
-        dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - dred_control_get_width(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale,
-        dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale);
+        (dtk_int32)(dred_control_get_width (DRED_CONTROL(pSettingsEditor)) - dred_control_get_width (DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale),
+        (dtk_int32)(dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale));
 }
 
 
-void dred_settings_editor__on_size(dred_control* pControl, float newWidth, float newHeight)
+void dred_settings_editor__on_size(dred_control* pControl, dtk_int32 newWidth, dtk_int32 newHeight)
 {
     (void)pControl;
     (void)newWidth;
@@ -180,16 +180,16 @@ void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, dtk_
     dred_rect sideRect = dred_settings_editor__get_side_panel_rect(pSettingsEditor);
 
     // Side buttons.
-    float penPosX = 0;
-    float penPosY = pSettingsEditor->sidePanelBtnOffsetY;
+    dtk_int32 penPosX = 0;
+    dtk_int32 penPosY = pSettingsEditor->sidePanelBtnOffsetY;
 
     dtk_font_metrics metrics;
     dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &metrics);
 
-    float paddingY = metrics.lineHeight*pSettingsEditor->sidePanelBtnPaddingYRatio;
-    float btnHeight = paddingY*2 + metrics.lineHeight;
-    float selectedBtnPosY = 0;
-    float borderWidth = 1*uiScale;
+    dtk_int32 paddingY = (dtk_int32)(metrics.lineHeight*pSettingsEditor->sidePanelBtnPaddingYRatio);
+    dtk_int32 btnHeight = paddingY*2 + metrics.lineHeight;
+    dtk_int32 selectedBtnPosY = 0;
+    dtk_int32 borderWidth = (dtk_int32)(1*uiScale);
 
     int sideButtonsCount = (int)(sizeof(pSettingsEditor->pages) / sizeof(pSettingsEditor->pages[0]));
     for (int i = 0; i < sideButtonsCount; ++i) {
@@ -207,8 +207,8 @@ void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, dtk_
         dtk_int32 textSizeY;
         dtk_font_measure_string(pSettingsEditor->pFont, uiScale, pSettingsEditor->pages[i].title, strlen(pSettingsEditor->pages[i].title), &textSizeX, &textSizeY);
 
-        float textPosX = penPosX + 8*uiScale;
-        float textPosY = penPosY + paddingY;
+        dtk_int32 textPosX = (dtk_int32)(penPosX + 8*uiScale);
+        dtk_int32 textPosY = (dtk_int32)(penPosY + paddingY);
         dtk_surface_draw_text(pSurface, pSettingsEditor->pFont, uiScale, pSettingsEditor->pages[i].title, (int)strlen(pSettingsEditor->pages[i].title), (dtk_int32)textPosX, (dtk_int32)(textPosY), pSettingsEditor->sidePanelBtnTextColor, bgColor);
 
         // Border.
@@ -226,8 +226,8 @@ void dred_settings_editor__on_paint(dred_control* pControl, dred_rect rect, dtk_
 
     // Side border. This is done in two parts so that we can leave a little gap for the selected item.
     if (pSettingsEditor->selectedPageIndex != -1) {
-        float gapPosY0 = selectedBtnPosY + (1*uiScale);
-        float gapPosY1 = selectedBtnPosY - (1*uiScale) + btnHeight;
+        dtk_int32 gapPosY0 = (dtk_int32)(selectedBtnPosY + (1*uiScale));
+        dtk_int32 gapPosY1 = (dtk_int32)(selectedBtnPosY - (1*uiScale) + btnHeight);
 
         dred_rect sideBorderRect0 = dred_make_rect(sideRect.right - borderWidth, sideRect.top, sideRect.right, gapPosY0);
         dred_rect sideBorderRect1 = dred_make_rect(sideRect.right - borderWidth, gapPosY0, sideRect.right, gapPosY1);
@@ -333,22 +333,22 @@ dtk_bool32 dred_settings_editor_general_page_event_handler(dtk_event* pEvent)
             dtk_font_metrics fontMetrics;
             dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &fontMetrics);
 
-            float penPosX = 8*uiScale;
-            float penPosY = 8*uiScale;
+            dtk_int32 penPosX = (dtk_int32)(8*uiScale);
+            dtk_int32 penPosY = (dtk_int32)(8*uiScale);
 
             dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowTabBar), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowTabBar), penPosX, penPosY);
-            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowTabBar)) + (6*uiScale);
+            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowTabBar)) + (6*uiScale));
             dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbShowTabBar));
 
             dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowMenuBar), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowMenuBar), penPosX, penPosY);
-            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowMenuBar)) + (6*uiScale);
+            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowMenuBar)) + (6*uiScale));
             dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbShowMenuBar));
 
             dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbAutoHideCmdBar), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar), penPosX, penPosY);
-            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar)) + (6*uiScale);
+            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar)) + (6*uiScale));
             dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbAutoHideCmdBar));
         } break;
     }
@@ -412,26 +412,26 @@ dtk_bool32 dred_settings_editor_theme_page_event_handler(dtk_event* pEvent)
             dtk_font_metrics fontMetrics;
             dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &fontMetrics);
 
-            float penPosX = 8*uiScale;
-            float penPosY = 8*uiScale;
+            dtk_int32 penPosX = (dtk_int32)(8*uiScale);
+            dtk_int32 penPosY = (dtk_int32)(8*uiScale);
 
             dtk_button_set_padding(&pSettingsEditor->fontButton, (dtk_int32)(16*uiScale), (dtk_int32)(6*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->fontButton), penPosX, penPosY);
-            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->fontButton)) + (6*uiScale);
+            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->fontButton)) + (6*uiScale));
 
             dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->textColorButton), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->textColorButton), penPosX, penPosY);
-            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale);
+            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale));
             dtk_color_button_auto_size(DTK_COLOR_BUTTON(&pSettingsEditor->textColorButton));
 
             dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->bgColorButton), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->bgColorButton), penPosX, penPosY);
-            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->bgColorButton)) + (6*uiScale);
+            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->bgColorButton)) + (6*uiScale));
             dtk_color_button_auto_size(DTK_COLOR_BUTTON(&pSettingsEditor->bgColorButton));
 
             dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->lineColorButton), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->lineColorButton), penPosX, penPosY);
-            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->lineColorButton)) + (6*uiScale);
+            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->lineColorButton)) + (6*uiScale));
             dtk_color_button_auto_size(DTK_COLOR_BUTTON(&pSettingsEditor->lineColorButton));
         } break;
     }
@@ -457,8 +457,8 @@ dtk_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSetting
     dtk_font_metrics fontMetrics;
     dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &fontMetrics);
 
-    float penPosX = 8*uiScale;
-    float penPosY = 8*uiScale;
+    dtk_int32 penPosX = (dtk_int32)(8*uiScale);
+    dtk_int32 penPosY = (dtk_int32)(8*uiScale);
 
     if (dtk_button_init(&pDred->tk, NULL, DTK_CONTROL(pPage->pGUIControl), "Choose Font...", &pSettingsEditor->fontButton) != DTK_SUCCESS) {
         dred_control_uninit(pPage->pGUIControl);
@@ -467,7 +467,7 @@ dtk_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSetting
     dtk_button_set_on_pressed(&pSettingsEditor->fontButton, dred_settings__btn_choose_font__on_pressed);
     dtk_button_set_padding(&pSettingsEditor->fontButton, (dtk_int32)(16*uiScale), (dtk_int32)(6*uiScale));
     dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->fontButton), (dtk_int32)penPosX, (dtk_int32)penPosY);
-    penPosY += dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->fontButton)) + (6*uiScale);
+    penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->fontButton)) + (6*uiScale));
 
 
     if (dtk_color_button_init(&pDred->tk, NULL, DTK_CONTROL(pPage->pGUIControl), "Text color", pDred->config.textEditorTextColor, &pSettingsEditor->textColorButton) != DTK_SUCCESS) {
@@ -477,7 +477,7 @@ dtk_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSetting
     dtk_control_bind(DTK_CONTROL(&pSettingsEditor->textColorButton), DTK_BIND_TARGET_VALUE, "config.texteditor-text-color");
     dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->textColorButton), (dtk_int32)(4*uiScale));
     dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->textColorButton), (dtk_int32)penPosX, (dtk_int32)penPosY);
-    penPosY += dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale);
+    penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale));
 
 
     if (dtk_color_button_init(&pDred->tk, NULL, DTK_CONTROL(pPage->pGUIControl), "Background color", pDred->config.textEditorBGColor, &pSettingsEditor->bgColorButton) != DTK_SUCCESS) {
@@ -487,7 +487,7 @@ dtk_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSetting
     dtk_control_bind(DTK_CONTROL(&pSettingsEditor->bgColorButton), DTK_BIND_TARGET_VALUE, "config.texteditor-bg-color");
     dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->bgColorButton), (dtk_int32)(4*uiScale));
     dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->bgColorButton), (dtk_int32)penPosX, (dtk_int32)penPosY);
-    penPosY += dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale);
+    penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale));
 
 
     if (dtk_color_button_init(&pDred->tk, NULL, DTK_CONTROL(pPage->pGUIControl), "Active line color", pDred->config.textEditorActiveLineColor, &pSettingsEditor->lineColorButton) != DTK_SUCCESS) {
@@ -497,7 +497,7 @@ dtk_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSetting
     dtk_control_bind(DTK_CONTROL(&pSettingsEditor->lineColorButton), DTK_BIND_TARGET_VALUE, "config.texteditor-active-line-color");
     dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->lineColorButton), (dtk_int32)(4*uiScale));
     dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->lineColorButton), (dtk_int32)penPosX, (dtk_int32)penPosY);
-    penPosY += dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale);
+    penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale));
 
     return DTK_TRUE;
 }
@@ -516,17 +516,17 @@ dtk_bool32 dred_settings_editor_text_editor_page_event_handler(dtk_event* pEvent
             dtk_font_metrics fontMetrics;
             dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &fontMetrics);
 
-            float penPosX = 8*uiScale;
-            float penPosY = 8*uiScale;
+            dtk_int32 penPosX = (dtk_int32)(8*uiScale);
+            dtk_int32 penPosY = (dtk_int32)(8*uiScale);
 
             dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbTabsToSpaces), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbTabsToSpaces), penPosX, penPosY);
-            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbTabsToSpaces)) + (6*uiScale);
+            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbTabsToSpaces)) + (6*uiScale));
             dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbTabsToSpaces));
 
             dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowLineNumbers), (dtk_int32)(4*uiScale));
             dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers), penPosX, penPosY);
-            penPosY += dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers)) + (6*uiScale);
+            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers)) + (6*uiScale));
             dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbShowLineNumbers));
         } break;
     }
@@ -552,20 +552,20 @@ dtk_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pS
     dtk_font_metrics fontMetrics;
     dtk_font_get_metrics(pSettingsEditor->pFont, uiScale, &fontMetrics);
 
-    float penPosX = 8*uiScale;
-    float penPosY = 8*uiScale;
+    dtk_int32 penPosX = (dtk_int32)(8*uiScale);
+    dtk_int32 penPosY = (dtk_int32)(8*uiScale);
 
     dtk_checkbox_init(&pDred->tk, NULL, DTK_CONTROL(pPage->pGUIControl), "Convert tabs to spaces", pDred->config.textEditorTabsToSpacesEnabled, &pSettingsEditor->cbTabsToSpaces);
     dtk_control_bind(DTK_CONTROL(&pSettingsEditor->cbTabsToSpaces), DTK_BIND_TARGET_CHECKED, "config.texteditor-enable-tabs-to-spaces");
     dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbTabsToSpaces), (dtk_int32)(4*uiScale));
     dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->cbTabsToSpaces), (dtk_int32)penPosX, (dtk_int32)penPosY);
-    penPosY += dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->cbTabsToSpaces)) + (6*uiScale);
+    penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->cbTabsToSpaces)) + (6*uiScale));
 
     dtk_checkbox_init(&pDred->tk, NULL, DTK_CONTROL(pPage->pGUIControl), "Show line numbers", pDred->config.textEditorShowLineNumbers, &pSettingsEditor->cbShowLineNumbers);
     dtk_control_bind(DTK_CONTROL(&pSettingsEditor->cbShowLineNumbers), DTK_BIND_TARGET_CHECKED, "config.texteditor-show-line-numbers");
     dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowLineNumbers), (dtk_int32)(4*uiScale));
     dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->cbShowLineNumbers), (dtk_int32)penPosX, (dtk_int32)penPosY);
-    penPosY += dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->cbShowLineNumbers)) + (6*uiScale);
+    penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->cbShowLineNumbers)) + (6*uiScale));
     
     return DTK_TRUE;
 }
@@ -586,8 +586,8 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dtk_contr
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
     pSettingsEditor->pFont = &pDred->config.pUIFont->fontDTK;
-    pSettingsEditor->sidePanelWidth = 200*uiScale;
-    pSettingsEditor->sidePanelBtnOffsetY = 8.0f*uiScale;
+    pSettingsEditor->sidePanelWidth = (dtk_int32)(200*uiScale);
+    pSettingsEditor->sidePanelBtnOffsetY = (dtk_int32)(8.0f*uiScale);
     pSettingsEditor->sidePanelBtnPaddingYRatio = 0.75f;
     pSettingsEditor->sidePanelBtnTextColor = dtk_rgb(0, 0, 0);
     pSettingsEditor->sidePanelBtnBorderColor = dtk_rgb(160, 160, 160);
@@ -654,8 +654,8 @@ void dred_settings_editor_refresh_styling(dred_settings_editor* pSettingsEditor)
 
     pSettingsEditor->pFont = &pDred->config.pUIFont->fontDTK;
 
-    pSettingsEditor->sidePanelWidth = 200*uiScale;
-    pSettingsEditor->sidePanelBtnOffsetY = 8.0f*uiScale;
+    pSettingsEditor->sidePanelWidth = (dtk_int32)(200*uiScale);
+    pSettingsEditor->sidePanelBtnOffsetY = (dtk_int32)(8.0f*uiScale);
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pSettingsEditor), dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pSettingsEditor))));
 }

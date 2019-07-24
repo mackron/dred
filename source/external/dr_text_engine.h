@@ -99,19 +99,19 @@ typedef struct
 
 typedef struct 
 {
-    float left;
-    float top;
-    float right;
-    float bottom;
+    int left;
+    int top;
+    int right;
+    int bottom;
 } drte_rect;
 
 
 typedef void   (* drte_engine_on_measure_string_proc)(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textLength, int* pWidthOut, int* pHeightOut);
-typedef void   (* drte_engine_on_get_cursor_position_from_point_proc)(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut);
-typedef void   (* drte_engine_on_get_cursor_position_from_char_proc)(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut);
+typedef void   (* drte_engine_on_get_cursor_position_from_point_proc)(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textSizeInBytes, int maxWidth, int inputPosX, int* pTextCursorPosXOut, size_t* pCharacterIndexOut);
+typedef void   (* drte_engine_on_get_cursor_position_from_char_proc)(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t characterIndex, int* pTextCursorPosXOut);
 typedef drte_bool32   (* drte_engine_on_get_next_highlight_proc)(drte_engine* pEngine, size_t iChar, size_t* pCharBegOut, size_t* pCharEndOut, drte_style_token* pStyleTokenOut, void* pUserData);
 
-typedef void   (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData);
+typedef void   (* drte_engine_on_paint_text_proc)        (drte_engine* pEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, int posX, int posY, void* pPaintData);
 typedef void   (* drte_engine_on_paint_rect_proc)        (drte_engine* pEngine, drte_view* pView, drte_style_token styleToken, drte_rect rect, void* pPaintData);
 typedef void   (* drte_engine_on_cursor_move_proc)       (drte_engine* pEngine, drte_view* pView, size_t iCursor);
 typedef void   (* drte_engine_on_dirty_proc)             (drte_engine* pEngine, drte_view* pView, drte_rect rect);
@@ -131,7 +131,7 @@ typedef struct
 
     // The absolute position on the x axis to place the marker when moving up and down lines. This is relative to
     // the left position of the line. This will be updated when the marker is moved left and right.
-    float absoluteSickyPosX;
+    int absoluteSickyPosX;
 
 } drte_cursor;
 
@@ -192,12 +192,12 @@ struct drte_view
     drte_engine* pEngine;
 
     // The size of the container of the view.
-    float sizeX;
-    float sizeY;
+    int sizeX;
+    int sizeY;
 
     // The inner offset of the view. This is used for doing scrolling.
-    float innerOffsetX;
-    float innerOffsetY;
+    int innerOffsetX;
+    int innerOffsetY;
 
     // Boolean flags.
     unsigned int flags;
@@ -207,7 +207,7 @@ struct drte_view
 
 
     // The width of the text cursor.
-    float cursorWidth;
+    int cursorWidth;
 
     // The list of active cursors.
     drte_cursor* pCursors;
@@ -268,7 +268,7 @@ struct drte_engine
 
     // The height of each line. This is set to the maximum line height of every registered style, or set explicitly if the
     // DRTE_USE_EXPLICIT_LINE_HEIGHT flag is set.
-    float lineHeight;
+    int lineHeight;
 
 
     // Flags.
@@ -455,10 +455,10 @@ void drte_engine_set_highlighter(drte_engine* pEngine, drte_engine_on_get_next_h
 
 
 // Explicitly sets the line height. Set this to 0 to use the line height based off the registered styles.
-void drte_engine_set_line_height(drte_engine* pEngine, float lineHeight);
+void drte_engine_set_line_height(drte_engine* pEngine, int lineHeight);
 
 // Retrieves the line height.
-float drte_engine_get_line_height(drte_engine* pEngine);
+int drte_engine_get_line_height(drte_engine* pEngine);
 
 
 // Gets the character at the given index as a UTF-32 code point.
@@ -593,23 +593,23 @@ DRTE_INLINE drte_view* drte_view_prev_view(drte_view* pView) { if (pView == NULL
 
 
 // Sets the size of the container of the view.
-void drte_view_set_size(drte_view* pView, float sizeX, float sizeY);
+void drte_view_set_size(drte_view* pView, int sizeX, int sizeY);
 
 // Retrieves the size of the view.
-void drte_view_get_size(drte_view* pView, float* pSizeXOut, float* pSizeYOut);
-DRTE_INLINE float drte_view_get_size_x(drte_view* pView) { if (pView == NULL) return 0; return pView->sizeX; }
-DRTE_INLINE float drte_view_get_size_y(drte_view* pView) { if (pView == NULL) return 0; return pView->sizeY; }
+void drte_view_get_size(drte_view* pView, int* pSizeXOut, int* pSizeYOut);
+DRTE_INLINE int drte_view_get_size_x(drte_view* pView) { if (pView == NULL) return 0; return pView->sizeX; }
+DRTE_INLINE int drte_view_get_size_y(drte_view* pView) { if (pView == NULL) return 0; return pView->sizeY; }
 
 
 // Sets the inner offset of the view.
-void drte_view_set_inner_offset(drte_view* pView, float innerOffsetX, float innerOffsetY);
-DRTE_INLINE void drte_view_set_inner_offset_x(drte_view* pView, float innerOffsetX) { if (pView == NULL) return; drte_view_set_inner_offset(pView, innerOffsetX, pView->innerOffsetY); }
-DRTE_INLINE void drte_view_set_inner_offset_y(drte_view* pView, float innerOffsetY) { if (pView == NULL) return; drte_view_set_inner_offset(pView, pView->innerOffsetX, innerOffsetY); }
+void drte_view_set_inner_offset(drte_view* pView, int innerOffsetX, int innerOffsetY);
+DRTE_INLINE void drte_view_set_inner_offset_x(drte_view* pView, int innerOffsetX) { if (pView == NULL) return; drte_view_set_inner_offset(pView, innerOffsetX, pView->innerOffsetY); }
+DRTE_INLINE void drte_view_set_inner_offset_y(drte_view* pView, int innerOffsetY) { if (pView == NULL) return; drte_view_set_inner_offset(pView, pView->innerOffsetX, innerOffsetY); }
 
 // Retrieves the inner offset of the view.
-void drte_view_get_inner_offset(drte_view* pView, float* pInnerOffsetXOut, float* pInnerOffsetYOut);
-DRTE_INLINE float drte_view_get_inner_offset_x(drte_view* pView) { if (pView == NULL) return 0; return pView->innerOffsetX; }
-DRTE_INLINE float drte_view_get_inner_offset_y(drte_view* pView) { if (pView == NULL) return 0; return pView->innerOffsetY; }
+void drte_view_get_inner_offset(drte_view* pView, int* pInnerOffsetXOut, int* pInnerOffsetYOut);
+DRTE_INLINE int drte_view_get_inner_offset_x(drte_view* pView) { if (pView == NULL) return 0; return pView->innerOffsetX; }
+DRTE_INLINE int drte_view_get_inner_offset_y(drte_view* pView) { if (pView == NULL) return 0; return pView->innerOffsetY; }
 
 
 // Sets the size of a tab in spaces.
@@ -632,7 +632,7 @@ void drte_view_dirty(drte_view* pView, drte_rect rect);
 void drte_view_paint(drte_view* pView, drte_rect rect, void* pUserData);
 
 // Paints the line numbers for the given view.
-void drte_view_paint_line_numbers(drte_view* pView, float lineNumbersWidth, float lineNumbersHeight, drte_engine_on_paint_text_proc onPaintText, drte_engine_on_paint_rect_proc onPaintRect, void* pPaintData);
+void drte_view_paint_line_numbers(drte_view* pView, int lineNumbersWidth, int lineNumbersHeight, drte_engine_on_paint_text_proc onPaintText, drte_engine_on_paint_rect_proc onPaintRect, void* pPaintData);
 
 
 // Retrieves the local rectangle of the given view.
@@ -655,19 +655,19 @@ size_t drte_view_get_character_line(drte_view* pView, drte_line_cache* pLineCach
 // Retrieves the position of the character at the given index, relative to the text rectangle.
 //
 // To make the position relative to the container simply add the inner offset to them.
-void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCache, size_t characterIndex, float* pPosXOut, float* pPosYOut);
+void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCache, size_t characterIndex, int* pPosXOut, int* pPosYOut);
 
 // Retrieves the closest character to the given point relative to the text.
 //
 // The return value is whether or not the point is actually over a character. If DRTE_FALSE is returned, piCharOut and piLineOut will
 // be set based on the input position being clamped to the text region.
-drte_bool32 drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piCharOut, size_t* piLineOut);
+drte_bool32 drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, int inputPosXRelativeToText, int inputPosYRelativeToText, size_t* piCharOut, size_t* piLineOut);
 
 // Retrieves the closest character to the given point relative to the container.
 //
 // The return value is whether or not the point is actually over a character. If DRTE_FALSE is returned, piCharOut and piLineOut will
 // be set based on the input position being clamped to the text region.
-drte_bool32 drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piCharOut, size_t* piLineOut);
+drte_bool32 drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, int inputPosXRelativeToContainer, int inputPosYRelativeToContainer, size_t* piCharOut, size_t* piLineOut);
 
 // Retrieves the indices of the visible lines.
 void drte_view_get_visible_lines(drte_view* pView, size_t* pFirstLineOut, size_t* pLastLineOut);
@@ -694,18 +694,18 @@ size_t drte_view_get_visible_line_count(drte_view* pView);
 // Retrieves the width of the visible lines.
 //
 // Use this for implementing horizontal scrollbars.
-float drte_view_get_visible_line_width(drte_view* pView);
+int drte_view_get_visible_line_width(drte_view* pView);
 
 // Measures a line.
-void drte_view_measure_line(drte_view* pView, size_t iLine, float* pWidthOut, float* pHeightOut);
+void drte_view_measure_line(drte_view* pView, size_t iLine, int* pWidthOut, int* pHeightOut);
 
 // Retrieves the position of the line at the given index on the y axis.
 //
 //  Use this for calculating the inner offset for scrolling on the y axis.
-float drte_view_get_line_pos_y(drte_view* pView, size_t iLine);
+int drte_view_get_line_pos_y(drte_view* pView, size_t iLine);
 
 // Finds the line under the given point on the y axis relative to the container.
-size_t drte_view_get_line_at_pos_y(drte_view* pView, drte_line_cache* pLineCache, float posY);
+size_t drte_view_get_line_at_pos_y(drte_view* pView, drte_line_cache* pLineCache, int posY);
 
 // Retrieves the index of the first character of the line at the given index.
 size_t drte_view_get_line_first_character(drte_view* pView, drte_line_cache* pLineCache, size_t iLine);
@@ -722,10 +722,10 @@ void drte_view_get_line_character_range(drte_view* pView, drte_line_cache* pLine
 
 
 // Sets the width of the text cursor.
-void drte_view_set_cursor_width(drte_view* pView, float cursorWidth);
+void drte_view_set_cursor_width(drte_view* pView, int cursorWidth);
 
 // Retrieves the width of the text cursor.
-DRTE_INLINE float drte_view_get_cursor_width(drte_view* pView) { if (pView == NULL) return 0; return pView->cursorWidth; }
+DRTE_INLINE int drte_view_get_cursor_width(drte_view* pView) { if (pView == NULL) return 0; return pView->cursorWidth; }
 
 // Shows the cursor.
 void drte_view_show_cursors(drte_view* pView);
@@ -737,7 +737,7 @@ void drte_view_hide_cursors(drte_view* pView);
 drte_bool32 drte_view_is_showing_cursors(drte_view* pView);
 
 // Retrieves the position of the cursor, relative to the container.
-void drte_view_get_cursor_position(drte_view* pView, size_t cursorIndex, float* pPosXOut, float* pPosYOut);
+void drte_view_get_cursor_position(drte_view* pView, size_t cursorIndex, int* pPosXOut, int* pPosYOut);
 
 // Retrieves the rectangle of the cursor at the given index.
 drte_rect drte_view_get_cursor_rect(drte_view* pView, size_t cursorIndex);
@@ -765,10 +765,10 @@ size_t drte_view_get_cursor_column(drte_view* pView, size_t cursorIndex);
 size_t drte_view_get_cursor_character(drte_view* pView, size_t cursorIndex);
 
 /// Moves the cursor to the closest character based on the given input position.
-drte_bool32 drte_view_move_cursor_to_point(drte_view* pView, size_t cursorIndex, float posX, float posY);
+drte_bool32 drte_view_move_cursor_to_point(drte_view* pView, size_t cursorIndex, int posX, int posY);
 
 /// Moves the cursor to the closest character based on the given input position, relative to the text (not the container).
-drte_bool32 drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, size_t cursorIndex, float posXRelativeToText, float posYRelativeToText);
+drte_bool32 drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, size_t cursorIndex, int posXRelativeToText, int posYRelativeToText);
 
 /// Moves the cursor of the given text engine to the left by one character.
 drte_bool32 drte_view_move_cursor_left(drte_view* pView, size_t cursorIndex);
@@ -853,7 +853,7 @@ drte_bool32 drte_view_is_cursor_at_end_of_selection(drte_view* pView, size_t cur
 drte_bool32 drte_view_get_word_under_cursor(drte_view* pView, size_t cursorIndex, size_t* pWordBegOut, size_t* pWordEndOut);
 
 // Retrieves the word under the point relative to the container.
-drte_bool32 drte_view_get_word_under_point(drte_view* pView, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut);
+drte_bool32 drte_view_get_word_under_point(drte_view* pView, int posX, int posY, size_t* pWordBegOut, size_t* pWordEndOut);
 
 
 
@@ -916,7 +916,7 @@ void drte_view_set_selection_end_point(drte_view* pView, size_t iCharEnd);
 drte_bool32 drte_view_get_last_selection(drte_view* pView, size_t* iCharBegOut, size_t* iCharEndOut);
 
 // Retrieves the selection region under the given point, if any.
-drte_bool32 drte_view_get_selection_under_point(drte_view* pView, float posX, float posY, size_t* piSelectionOut);
+drte_bool32 drte_view_get_selection_under_point(drte_view* pView, int posX, int posY, size_t* piSelectionOut);
 
 
 /// Inserts a character at the position of the cursor.
@@ -960,7 +960,7 @@ drte_bool32 drte_view_find_next_no_loop(drte_view* pView, const char* text, size
 
 
 //// Rectangles ////
-DRTE_INLINE drte_rect drte_make_rect(float left, float top, float right, float bottom)
+DRTE_INLINE drte_rect drte_make_rect(int left, int top, int right, int bottom)
 {
     drte_rect rect;
     rect.left   = left;
@@ -974,10 +974,10 @@ DRTE_INLINE drte_rect drte_make_rect(float left, float top, float right, float b
 DRTE_INLINE drte_rect drte_make_inside_out_rect()
 {
     drte_rect rect;
-    rect.left   =  FLT_MAX;
-    rect.top    =  FLT_MAX;
-    rect.right  = -FLT_MAX;
-    rect.bottom = -FLT_MAX;
+    rect.left   = INT_MAX;
+    rect.top    = INT_MAX;
+    rect.right  = INT_MIN;
+    rect.bottom = INT_MIN;
 
     return rect;
 }
@@ -1305,7 +1305,7 @@ void drte_engine__on_cursor_move(drte_engine* pEngine, drte_view* pView, size_t 
 
 
 static void drte_view__refresh_word_wrapping(drte_view* pView);
-static float drte_view__get_tab_width_in_pixels(drte_view* pView);
+static int drte_view__get_tab_width_in_pixels(drte_view* pView);
 
 void drte_view__update_cursor_sticky_position(drte_view* pView, drte_cursor* pCursor)
 {
@@ -1316,8 +1316,8 @@ void drte_view__update_cursor_sticky_position(drte_view* pView, drte_cursor* pCu
     // If the character is on a different line to the cursor, it means the cursor is pinned to the end of the previous line and the character
     // is the first character on the _next_ line. This will happen when word wrap is enabled. In this case things need to be treated a bit
     // differently to calculate the x position.
-    float charPosX;
-    float charPosY;
+    int charPosX;
+    int charPosY;
     if (pCursor->iLine != drte_view_get_character_line(pView, pView->pWrappedLines, pCursor->iCharAbs)) {
         drte_view_measure_line(pView, pCursor->iLine, &charPosX, NULL);
         charPosY = drte_view_get_line_pos_y(pView, pCursor->iLine);
@@ -1611,13 +1611,13 @@ typedef struct
     size_t iCharEnd;
     uint8_t fgStyleSlot;
     uint8_t bgStyleSlot;
-    float posX;
-    float width;
+    int posX;
+    int width;
     drte_bool32 isAtEnd;
     drte_bool32 isAtEndOfLine;
 } drte_segment;
 
-float drte_engine__measure_segment(drte_view* pView, drte_segment* pSegment)
+int drte_engine__measure_segment(drte_view* pView, drte_segment* pSegment)
 {
     assert(pView != NULL);
     assert(pSegment != NULL);
@@ -1631,10 +1631,10 @@ float drte_engine__measure_segment(drte_view* pView, drte_segment* pSegment)
         uint32_t c = drte_engine_get_utf32(pEngine, pSegment->iCharBeg);
         if (c == '\t') {
             // It was a tab segment.
-            float tabWidth = drte_view__get_tab_width_in_pixels(pView);
+            int tabWidth = drte_view__get_tab_width_in_pixels(pView);
             size_t tabCount = pSegment->iCharEnd - pSegment->iCharBeg;
-            float nextTabPos = (float)((int)(pSegment->posX / tabWidth) + 1) * tabWidth;
-            float distanceToNextTab = nextTabPos - pSegment->posX;
+            int nextTabPos = ((int)(pSegment->posX / tabWidth) + 1) * tabWidth;
+            int distanceToNextTab = nextTabPos - pSegment->posX;
             segmentWidth = (dtk_int32)(distanceToNextTab + ((tabCount-1) * tabWidth));
         } else if (pSegment->iCharBeg == pSegment->iLineCharEnd) {
             segmentWidth = 0;
@@ -1648,7 +1648,7 @@ float drte_engine__measure_segment(drte_view* pView, drte_segment* pSegment)
         }
     }
 
-    return (float)segmentWidth;
+    return segmentWidth;
 }
 
 drte_bool32 drte_engine__next_segment(drte_view* pView, drte_segment* pSegment)
@@ -2228,7 +2228,7 @@ void drte_engine_set_highlighter(drte_engine* pEngine, drte_engine_on_get_next_h
 }
 
 
-void drte_engine_set_line_height(drte_engine* pEngine, float lineHeight)
+void drte_engine_set_line_height(drte_engine* pEngine, int lineHeight)
 {
     if (pEngine == NULL) {
         return;
@@ -2247,7 +2247,7 @@ void drte_engine_set_line_height(drte_engine* pEngine, float lineHeight)
     }
 }
 
-float drte_engine_get_line_height(drte_engine* pEngine)
+int drte_engine_get_line_height(drte_engine* pEngine)
 {
     if (pEngine == NULL) {
         return 0;
@@ -3598,11 +3598,11 @@ DRTE_INLINE void drte_view__repaint(drte_view* pView)
     drte_view_dirty(pView, drte_view_get_local_rect(pView));
 }
 
-static float drte_view__get_tab_width_in_pixels(drte_view* pView)
+static int drte_view__get_tab_width_in_pixels(drte_view* pView)
 {
-    float tabWidth = (float)(pView->pEngine->styles[pView->pEngine->defaultStyleSlot].fontMetrics.spaceWidth * pView->tabSizeInSpaces);
+    int tabWidth = (int)(pView->pEngine->styles[pView->pEngine->defaultStyleSlot].fontMetrics.spaceWidth * pView->tabSizeInSpaces);
     if (tabWidth <= 0) {
-        tabWidth = (float)pView->pEngine->styles[pView->pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
+        tabWidth = (int)pView->pEngine->styles[pView->pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
         if (tabWidth <= 0) {
             tabWidth = 4;
         }
@@ -3627,7 +3627,7 @@ static void drte_view__refresh_word_wrapping(drte_view* pView)
             drte_view_get_line_character_range(pView, pView->pEngine->pUnwrappedLines, iLine, &iLineCharBeg, &iLineCharEnd);
 
             if (iLineCharBeg < iLineCharEnd) {
-                float runningWidth = 0;
+                int runningWidth = 0;
                 while (iLineCharBeg < iLineCharEnd) {
                     drte_line_cache_append_line(pView->pWrappedLines, iLineCharBeg);
 
@@ -3639,7 +3639,7 @@ static void drte_view__refresh_word_wrapping(drte_view* pView)
                     do
                     {
                         if ((runningWidth + segment.width) > pView->sizeX) {
-                            float unused = 0;
+                            int unused = 0;
                             size_t iChar = iLineCharBeg;
                             if (pView->pEngine->onGetCursorPositionFromPoint) {
                                 pView->pEngine->onGetCursorPositionFromPoint(pView->pEngine, drte_engine__get_style_token(pView->pEngine, segment.fgStyleSlot), pView->scale, pView->pEngine->text + segment.iCharBeg, segment.iCharEnd - segment.iCharBeg,
@@ -3752,7 +3752,7 @@ void drte_view_delete(drte_view* pView)
 }
 
 
-void drte_view_set_size(drte_view* pView, float sizeX, float sizeY)
+void drte_view_set_size(drte_view* pView, int sizeX, int sizeY)
 {
     if (pView == NULL) {
         return;
@@ -3774,7 +3774,7 @@ void drte_view_set_size(drte_view* pView, float sizeX, float sizeY)
     }
 }
 
-void drte_view_get_size(drte_view* pView, float* pSizeXOut, float* pSizeYOut)
+void drte_view_get_size(drte_view* pView, int* pSizeXOut, int* pSizeYOut)
 {
     if (pSizeXOut != NULL) *pSizeXOut = 0;
     if (pSizeYOut != NULL) *pSizeYOut = 0;
@@ -3785,7 +3785,7 @@ void drte_view_get_size(drte_view* pView, float* pSizeXOut, float* pSizeYOut)
 }
 
 
-void drte_view_set_inner_offset(drte_view* pView, float innerOffsetX, float innerOffsetY)
+void drte_view_set_inner_offset(drte_view* pView, int innerOffsetX, int innerOffsetY)
 {
     if (pView == NULL) {
         return;
@@ -3797,7 +3797,7 @@ void drte_view_set_inner_offset(drte_view* pView, float innerOffsetX, float inne
     drte_view__repaint(pView);
 }
 
-void drte_view_get_inner_offset(drte_view* pView, float* pInnerOffsetXOut, float* pInnerOffsetYOut)
+void drte_view_get_inner_offset(drte_view* pView, int* pInnerOffsetXOut, int* pInnerOffsetYOut)
 {
     if (pInnerOffsetXOut != NULL) *pInnerOffsetXOut = 0;
     if (pInnerOffsetYOut != NULL) *pInnerOffsetYOut = 0;
@@ -3870,32 +3870,32 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
     if (rect.top < 0) {
         rect.top = 0;
     }
-    if (rect.right > pView->sizeX) {
-        rect.right = pView->sizeX;
+    if (rect.right > (dtk_int32)pView->sizeX) {
+        rect.right = (dtk_int32)pView->sizeX;
     }
-    if (rect.bottom > pView->sizeY) {
-        rect.bottom = pView->sizeY;
+    if (rect.bottom > (dtk_int32)pView->sizeY) {
+        rect.bottom = (dtk_int32)pView->sizeY;
     }
 
     if (rect.right <= rect.left || rect.bottom <= rect.top) {
         return;
     }
 
-    float lineHeight = drte_engine_get_line_height(pView->pEngine);
+    int lineHeight = drte_engine_get_line_height(pView->pEngine);
 
 
     size_t iLineTop;
     size_t iLineBottom;
     drte_view_get_visible_lines(pView, &iLineTop, &iLineBottom);
 
-    float linePosX = pView->innerOffsetX;
-    float linePosY = 0;
+    int linePosX = pView->innerOffsetX;
+    int linePosY = 0;
 
     drte_segment segment;
     if (drte_engine__first_segment_on_line(pView, pView->pWrappedLines, iLineTop, (size_t)-1, &segment)) {
         size_t iLine = iLineTop;
         while (iLine <= iLineBottom) {
-            float lineWidth = 0;
+            int lineWidth = 0;
 
             do
             {
@@ -3955,7 +3955,7 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
 
 
             // The part after the end of the line needs to be drawn.
-            float lineRight = linePosX + lineWidth;
+            int lineRight = linePosX + lineWidth;
             if (lineRight < pView->sizeX) {
                 drte_style_token bgStyleToken = pView->pEngine->styles[pView->pEngine->defaultStyleSlot].styleToken;
                 if (pView->cursorCount > 0 && segment.iLine == drte_view_get_cursor_line(pView, pView->cursorCount-1)) {
@@ -4006,13 +4006,13 @@ void drte_view_paint(drte_view* pView, drte_rect rect, void* pPaintData)
     }
 }
 
-void drte_view_paint_line_numbers(drte_view* pView, float lineNumbersWidth, float lineNumbersHeight, drte_engine_on_paint_text_proc onPaintText, drte_engine_on_paint_rect_proc onPaintRect, void* pPaintData)
+void drte_view_paint_line_numbers(drte_view* pView, int lineNumbersWidth, int lineNumbersHeight, drte_engine_on_paint_text_proc onPaintText, drte_engine_on_paint_rect_proc onPaintRect, void* pPaintData)
 {
     if (pView == NULL || onPaintText == NULL || onPaintRect == NULL) {
         return;
     }
 
-    float lineHeight = drte_engine_get_line_height(pView->pEngine);
+    int lineHeight = drte_engine_get_line_height(pView->pEngine);
 
     size_t iLineTop;
     size_t iLineBottom;
@@ -4023,9 +4023,9 @@ void drte_view_paint_line_numbers(drte_view* pView, float lineNumbersWidth, floa
 
     size_t lineNumber = iLineTop;
 
-    float lineTop = pView->innerOffsetY + (iLineTop * lineHeight);
+    int lineTop = pView->innerOffsetY + (iLineTop * lineHeight);
     for (size_t iLine = iLineTop; iLine <= iLineBottom; ++iLine) {
-        float lineBottom = lineTop + lineHeight;
+        int lineBottom = lineTop + lineHeight;
         drte_bool32 drawLineNumber = DRTE_FALSE;
 
         size_t iLineCharBeg;
@@ -4046,8 +4046,8 @@ void drte_view_paint_line_numbers(drte_view* pView, float lineNumbersWidth, floa
                 pView->pEngine->onMeasureString(pView->pEngine, fgStyleToken, pView->scale, iLineStr, strlen(iLineStr), &textWidth, &textHeight);
             }
 
-            float textLeft = lineNumbersWidth - textWidth;
-            float textTop  = lineTop + (lineHeight - textHeight) / 2;
+            int textLeft = lineNumbersWidth - textWidth;
+            int textTop  = lineTop + (lineHeight - textHeight) / 2;
 
             if (fgStyleToken != 0 && bgStyleToken != 0) {
                 onPaintText(pView->pEngine, pView, fgStyleToken, bgStyleToken, iLineStr, strlen(iLineStr), textLeft, textTop, pPaintData);
@@ -4133,7 +4133,7 @@ size_t drte_view_get_character_line(drte_view* pView, drte_line_cache* pLineCach
     return drte_line_cache_find_line_by_character(pLineCache, characterIndex);
 }
 
-void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCache, size_t characterIndex, float* pPosXOut, float* pPosYOut)
+void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCache, size_t characterIndex, int* pPosXOut, int* pPosYOut)
 {
     if (pPosXOut) *pPosXOut = 0;
     if (pPosYOut) *pPosYOut = 0;
@@ -4144,8 +4144,8 @@ void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCa
 
     size_t lineIndex = drte_view_get_character_line(pView, pLineCache, characterIndex);
 
-    float posX = 0;
-    float posY = lineIndex * drte_engine_get_line_height(pView->pEngine);
+    int posX = 0;
+    int posY = lineIndex * drte_engine_get_line_height(pView->pEngine);
 
     drte_segment segment;
     if (drte_engine__first_segment_on_line(pView, pLineCache, lineIndex, (size_t)-1, &segment)) {
@@ -4160,8 +4160,8 @@ void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCa
 
                     size_t tabCount = characterIndex - segment.iCharBeg;
                     if (tabCount > 0) {
-                        float tabWidth = drte_view__get_tab_width_in_pixels(pView);
-                        float nextTabPos = (float)((int)(segment.posX / tabWidth) + 1) * tabWidth;
+                        int tabWidth = drte_view__get_tab_width_in_pixels(pView);
+                        int nextTabPos = ((int)(segment.posX / tabWidth) + 1) * tabWidth;
                         posX = nextTabPos + ((tabCount-1) * tabWidth);
                     }
                 } else {
@@ -4183,7 +4183,7 @@ void drte_view_get_character_position(drte_view* pView, drte_line_cache* pLineCa
     if (pPosYOut) *pPosYOut = posY;
 }
 
-drte_bool32 drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToText, float inputPosYRelativeToText, size_t* piCharOut, size_t* piLineOut)
+drte_bool32 drte_view_get_character_under_point_relative_to_text(drte_view* pView, drte_line_cache* pLineCache, int inputPosXRelativeToText, int inputPosYRelativeToText, size_t* piCharOut, size_t* piLineOut)
 {
     if (piCharOut) *piCharOut = 0;
     if (piLineOut) *piLineOut = 0;
@@ -4214,19 +4214,19 @@ drte_bool32 drte_view_get_character_under_point_relative_to_text(drte_view* pVie
                 // It's somewhere on this run. If it's a tab segment it needs to be handled slightly differently because of the way tabs
                 // are aligned to tab columns.
                 if (drte_engine_get_utf32(pView->pEngine, segment.iCharBeg) == '\t') {
-                    const float tabWidth = drte_view__get_tab_width_in_pixels(pView);
+                    const int tabWidth = drte_view__get_tab_width_in_pixels(pView);
 
                     iChar = segment.iCharBeg;
 
-                    float tabLeft = segment.posX;
+                    int tabLeft = segment.posX;
                     for (/* Do Nothing*/; iChar < segment.iCharEnd; ++iChar)
                     {
-                        float tabRight = tabWidth * ((segment.posX + (tabWidth*((iChar-segment.iCharBeg) + 1))) / tabWidth);
+                        int tabRight = tabWidth * ((segment.posX + (tabWidth*((iChar-segment.iCharBeg) + 1))) / tabWidth);
                         if (inputPosXRelativeToText >= tabLeft && inputPosXRelativeToText <= tabRight)
                         {
                             // The input position is somewhere on top of this character. If it's positioned on the left side of the character, set the output
                             // value to the character at iChar. Otherwise it should be set to the character at iChar + 1.
-                            float charBoundsRightHalf = tabLeft + ceilf(((tabRight - tabLeft) / 2.0f));
+                            int charBoundsRightHalf = tabLeft + (int)ceilf(((tabRight - tabLeft) / 2.0f));
                             if (inputPosXRelativeToText > charBoundsRightHalf) {
                                 iChar += 1;
                             }
@@ -4237,7 +4237,7 @@ drte_bool32 drte_view_get_character_under_point_relative_to_text(drte_view* pVie
                         tabLeft = tabRight;
                     }
                 } else {
-                    float unused;
+                    int unused;
                     size_t iCharTemp;
 
                     drte_style_token fgStyleToken = drte_engine__get_style_token(pView->pEngine, segment.fgStyleSlot);
@@ -4253,7 +4253,7 @@ drte_bool32 drte_view_get_character_under_point_relative_to_text(drte_view* pVie
                 if (inputPosYRelativeToText < 0) {
                     return DRTE_FALSE;
                 } else {
-                    if (inputPosYRelativeToText >= (drte_view_get_line_count(pView) * drte_engine_get_line_height(pView->pEngine))) {
+                    if (inputPosYRelativeToText >= (int)(drte_view_get_line_count(pView) * drte_engine_get_line_height(pView->pEngine))) {
                         return DRTE_FALSE;
                     }
                 }
@@ -4272,14 +4272,14 @@ drte_bool32 drte_view_get_character_under_point_relative_to_text(drte_view* pVie
     return DRTE_FALSE;
 }
 
-drte_bool32 drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, float inputPosXRelativeToContainer, float inputPosYRelativeToContainer, size_t* piCharOut, size_t* piLineOut)
+drte_bool32 drte_view_get_character_under_point(drte_view* pView, drte_line_cache* pLineCache, int inputPosXRelativeToContainer, int inputPosYRelativeToContainer, size_t* piCharOut, size_t* piLineOut)
 {
     if (pView == NULL) {
         return 0;
     }
 
-    float inputPosXRelativeToText = inputPosXRelativeToContainer - pView->innerOffsetX;
-    float inputPosYRelativeToText = inputPosYRelativeToContainer - pView->innerOffsetY;
+    int inputPosXRelativeToText = inputPosXRelativeToContainer - pView->innerOffsetX;
+    int inputPosYRelativeToText = inputPosYRelativeToContainer - pView->innerOffsetY;
     return drte_view_get_character_under_point_relative_to_text(pView, pLineCache, inputPosXRelativeToText, inputPosYRelativeToText, piCharOut, piLineOut);
 }
 
@@ -4352,7 +4352,7 @@ size_t drte_view_get_visible_line_count(drte_view* pView)
     return (size_t)(pView->sizeY / drte_engine_get_line_height(pView->pEngine)) + 1;
 }
 
-float drte_view_get_visible_line_width(drte_view* pView)
+int drte_view_get_visible_line_width(drte_view* pView)
 {
     if (pView == NULL) return 0;
 
@@ -4360,13 +4360,13 @@ float drte_view_get_visible_line_width(drte_view* pView)
     size_t iLineBottom;
     drte_view_get_visible_lines(pView, &iLineTop, &iLineBottom);
 
-    float maxLineWidth = 0;
+    int maxLineWidth = 0;
 
     drte_segment segment;
     if (drte_engine__first_segment_on_line(pView, pView->pWrappedLines, iLineTop, (size_t)-1, &segment)) {
         size_t iLine = iLineTop;
         while (iLine <= iLineBottom) {
-            float lineWidth = 0;
+            int lineWidth = 0;
 
             do
             {
@@ -4394,7 +4394,7 @@ float drte_view_get_visible_line_width(drte_view* pView)
     return maxLineWidth;
 }
 
-void drte_view_measure_line(drte_view* pView, size_t iLine, float* pSizeXOut, float* pSizeYOut)
+void drte_view_measure_line(drte_view* pView, size_t iLine, int* pSizeXOut, int* pSizeYOut)
 {
     if (pSizeXOut) *pSizeXOut = 0;
     if (pSizeYOut) *pSizeYOut = 0;
@@ -4405,7 +4405,7 @@ void drte_view_measure_line(drte_view* pView, size_t iLine, float* pSizeXOut, fl
 
     if (pSizeYOut) *pSizeYOut = drte_engine_get_line_height(pView->pEngine);
     if (pSizeXOut) {
-        float lineWidth = 0;
+        int lineWidth = 0;
 
         drte_segment segment;
         if (drte_engine__first_segment_on_line(pView, pView->pWrappedLines, iLine, (size_t)-1, &segment)) {
@@ -4419,12 +4419,12 @@ void drte_view_measure_line(drte_view* pView, size_t iLine, float* pSizeXOut, fl
     }
 }
 
-float drte_view_get_line_pos_y(drte_view* pView, size_t iLine)
+int drte_view_get_line_pos_y(drte_view* pView, size_t iLine)
 {
     return iLine * drte_engine_get_line_height(pView->pEngine);
 }
 
-size_t drte_view_get_line_at_pos_y(drte_view* pView, drte_line_cache* pLineCache, float posY)
+size_t drte_view_get_line_at_pos_y(drte_view* pView, drte_line_cache* pLineCache, int posY)
 {
     if (pView == NULL) return 0;
     if (pLineCache == NULL) pLineCache = pView->pWrappedLines;
@@ -4515,7 +4515,7 @@ void drte_view_get_line_character_range(drte_view* pView, drte_line_cache* pLine
 
 
 
-void drte_view_set_cursor_width(drte_view* pView, float cursorWidth)
+void drte_view_set_cursor_width(drte_view* pView, int cursorWidth)
 {
     if (pView == NULL || pView->cursorWidth == cursorWidth) {
         return;
@@ -4578,7 +4578,7 @@ drte_bool32 drte_view_is_showing_cursors(drte_view* pView)
 }
 
 
-void drte_view_get_cursor_position(drte_view* pView, size_t cursorIndex, float* pPosXOut, float* pPosYOut)
+void drte_view_get_cursor_position(drte_view* pView, size_t cursorIndex, int* pPosXOut, int* pPosYOut)
 {
     if (pPosXOut) *pPosXOut = 0;
     if (pPosYOut) *pPosYOut = 0;
@@ -4590,8 +4590,8 @@ void drte_view_get_cursor_position(drte_view* pView, size_t cursorIndex, float* 
     // If the character is on a different line to the cursor, it means the cursor is pinned to the end of the previous line and the character
     // is the first character on the _next_ line. This will happen when word wrap is enabled. In this case things need to be treated a bit
     // differently to calculate the x position.
-    float posX = 0;
-    float posY = 0;
+    int posX = 0;
+    int posY = 0;
     if (pView->pCursors[cursorIndex].iLine != drte_view_get_character_line(pView, pView->pWrappedLines, pView->pCursors[cursorIndex].iCharAbs)) {
         drte_view_measure_line(pView, pView->pCursors[cursorIndex].iLine, &posX, NULL);
         posY = drte_view_get_line_pos_y(pView, pView->pCursors[cursorIndex].iLine);
@@ -4609,8 +4609,8 @@ drte_rect drte_view_get_cursor_rect(drte_view* pView, size_t cursorIndex)
         return drte_make_rect(0, 0, 0, 0);
     }
 
-    float cursorPosX;
-    float cursorPosY;
+    int cursorPosX;
+    int cursorPosY;
     drte_view_get_cursor_position(pView, cursorIndex, &cursorPosX, &cursorPosY);
 
     return drte_make_rect(cursorPosX, cursorPosY, cursorPosX + pView->cursorWidth, cursorPosY + drte_engine_get_line_height(pView->pEngine));
@@ -4708,8 +4708,8 @@ size_t drte_view_get_cursor_column(drte_view* pView, size_t cursorIndex)
         return 0;
     }
 
-    float posX;
-    float posY;
+    int posX;
+    int posY;
     drte_view_get_cursor_position(pView, cursorIndex, &posX, &posY);
 
     return (unsigned int)((int)posX / pView->pEngine->styles[pView->pEngine->defaultStyleSlot].fontMetrics.spaceWidth);
@@ -4724,7 +4724,7 @@ size_t drte_view_get_cursor_character(drte_view* pView, size_t cursorIndex)
     return pView->pCursors[cursorIndex].iCharAbs;
 }
 
-drte_bool32 drte_view_move_cursor_to_point(drte_view* pView, size_t cursorIndex, float posX, float posY)
+drte_bool32 drte_view_move_cursor_to_point(drte_view* pView, size_t cursorIndex, int posX, int posY)
 {
     if (pView == NULL || pView->cursorCount <= cursorIndex) {
         return DRTE_FALSE;
@@ -4736,8 +4736,8 @@ drte_bool32 drte_view_move_cursor_to_point(drte_view* pView, size_t cursorIndex,
     pView->pCursors[cursorIndex].iLine = 0;
     pView->pCursors[cursorIndex].absoluteSickyPosX = 0;
 
-    float inputPosXRelativeToText = posX - pView->innerOffsetX;
-    float inputPosYRelativeToText = posY - pView->innerOffsetY;
+    int inputPosXRelativeToText = posX - pView->innerOffsetX;
+    int inputPosYRelativeToText = posY - pView->innerOffsetY;
     if (!drte_view_move_cursor_to_point_relative_to_text(pView, cursorIndex, inputPosXRelativeToText, inputPosYRelativeToText)) {
         return DRTE_FALSE;
     }
@@ -4754,7 +4754,7 @@ drte_bool32 drte_view_move_cursor_to_point(drte_view* pView, size_t cursorIndex,
     return DRTE_TRUE;
 }
 
-drte_bool32 drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, size_t cursorIndex, float posXRelativeToText, float posYRelativeToText)
+drte_bool32 drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, size_t cursorIndex, int posXRelativeToText, int posYRelativeToText)
 {
     if (pView == NULL || pView->cursorCount <= cursorIndex) {
         return DRTE_FALSE;
@@ -4778,19 +4778,19 @@ drte_bool32 drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, si
                 // It's somewhere on this run. If it's a tab segment it needs to be handled slightly differently because of the way tabs
                 // are aligned to tab columns.
                 if (drte_engine_get_utf32(pView->pEngine, segment.iCharBeg) == '\t') {
-                    const float tabWidth = drte_view__get_tab_width_in_pixels(pView);
+                    const int tabWidth = drte_view__get_tab_width_in_pixels(pView);
 
                     pView->pCursors[cursorIndex].iCharAbs = segment.iCharBeg;
 
-                    float tabLeft = segment.posX;
+                    int tabLeft = segment.posX;
                     for (/* Do Nothing*/; pView->pCursors[cursorIndex].iCharAbs < segment.iCharEnd; ++pView->pCursors[cursorIndex].iCharAbs)
                     {
-                        float tabRight = tabWidth * ((segment.posX + (tabWidth*((pView->pCursors[cursorIndex].iCharAbs-segment.iCharBeg) + 1))) / tabWidth);
+                        int tabRight = tabWidth * ((segment.posX + (tabWidth*((pView->pCursors[cursorIndex].iCharAbs-segment.iCharBeg) + 1))) / tabWidth);
                         if (posXRelativeToText >= tabLeft && posXRelativeToText <= tabRight)
                         {
                             // The input position is somewhere on top of this character. If it's positioned on the left side of the character, set the output
                             // value to the character at iChar. Otherwise it should be set to the character at iChar + 1.
-                            float charBoundsRightHalf = tabLeft + ceilf(((tabRight - tabLeft) / 2.0f));
+                            int charBoundsRightHalf = tabLeft + (int)ceilf(((tabRight - tabLeft) / 2.0f));
                             if (posXRelativeToText > charBoundsRightHalf) {
                                 pView->pCursors[cursorIndex].iCharAbs += 1;
                             }
@@ -4801,7 +4801,7 @@ drte_bool32 drte_view_move_cursor_to_point_relative_to_text(drte_view* pView, si
                         tabLeft = tabRight;
                     }
                 } else {
-                    float unused;
+                    int unused;
                     size_t iChar;
 
                     drte_style_token fgStyleToken = drte_engine__get_style_token(pView->pEngine, segment.fgStyleSlot);
@@ -4943,8 +4943,8 @@ drte_bool32 drte_view_move_cursor_y(drte_view* pView, size_t cursorIndex, int am
         iNewLine = lineCount - 1;
     }
 
-    float newMarkerPosX = pView->pCursors[cursorIndex].absoluteSickyPosX;
-    float newMarkerPosY = drte_view_get_line_pos_y(pView, (size_t)iNewLine);
+    int newMarkerPosX = pView->pCursors[cursorIndex].absoluteSickyPosX;
+    int newMarkerPosY = drte_view_get_line_pos_y(pView, (size_t)iNewLine);
     drte_view_move_cursor_to_point_relative_to_text(pView, cursorIndex, newMarkerPosX, newMarkerPosY);
 
     if (iPrevChar != pView->pCursors[cursorIndex].iCharAbs) {
@@ -5234,13 +5234,13 @@ size_t drte_view_get_spaces_to_next_column_from_character(drte_view* pView, size
     }
 
 
-    const float tabWidth = drte_view__get_tab_width_in_pixels(pView);
+    const int tabWidth = drte_view__get_tab_width_in_pixels(pView);
 
-    float posX;
-    float posY;
+    int posX;
+    int posY;
     drte_view_get_character_position(pView, pView->pWrappedLines, iChar, &posX, &posY);
 
-    float tabColPosX = (posX + tabWidth) - ((size_t)posX % (size_t)tabWidth);
+    int tabColPosX = (posX + tabWidth) - ((size_t)posX % (size_t)tabWidth);
 
     return (size_t)(tabColPosX - posX) / pView->pEngine->styles[pView->pEngine->defaultStyleSlot].fontMetrics.spaceWidth;
 }
@@ -5283,7 +5283,7 @@ drte_bool32 drte_view_get_word_under_cursor(drte_view* pView, size_t cursorIndex
     return drte_engine_get_word_containing_character(pView->pEngine, pView->pCursors[cursorIndex].iCharAbs, pWordBegOut, pWordEndOut);
 }
 
-drte_bool32 drte_view_get_word_under_point(drte_view* pView, float posX, float posY, size_t* pWordBegOut, size_t* pWordEndOut)
+drte_bool32 drte_view_get_word_under_point(drte_view* pView, int posX, int posY, size_t* pWordBegOut, size_t* pWordEndOut)
 {
     if (pView == NULL) {
         return DRTE_FALSE;
@@ -5522,7 +5522,7 @@ drte_bool32 drte_view_get_last_selection(drte_view* pView, size_t* iCharBegOut, 
     return DRTE_TRUE;
 }
 
-drte_bool32 drte_view_get_selection_under_point(drte_view* pView, float posX, float posY, size_t* piSelectionOut)
+drte_bool32 drte_view_get_selection_under_point(drte_view* pView, int posX, int posY, size_t* piSelectionOut)
 {
     if (pView == NULL) return DRTE_FALSE;
 

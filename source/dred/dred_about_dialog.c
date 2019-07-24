@@ -35,8 +35,8 @@ static dtk_bool32 dred_about_dialog_event_handler(dtk_event* pEvent)
 
             // The close button needs to be repositioned.
             dred_control_set_relative_position(DRED_CONTROL(&pDialog->closeButton),
-                pEvent->size.width  - dred_control_get_width (DRED_CONTROL(&pDialog->closeButton)) - 8*uiScale,
-                pEvent->size.height - dred_control_get_height(DRED_CONTROL(&pDialog->closeButton)) - 8*uiScale);
+                pEvent->size.width  - dred_control_get_width (DRED_CONTROL(&pDialog->closeButton)) - (dtk_int32)(8*uiScale),
+                pEvent->size.height - dred_control_get_height(DRED_CONTROL(&pDialog->closeButton)) - (dtk_int32)(8*uiScale));
         } break;
 
         case DTK_EVENT_PAINT:

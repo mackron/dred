@@ -1,6 +1,6 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
-dtk_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_control* pParent, const char* type, dtk_event_proc onEvent, float sizeX, float sizeY, const char* filePathAbsolute)
+dtk_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_control* pParent, const char* type, dtk_event_proc onEvent, dtk_int32 sizeX, dtk_int32 sizeY, const char* filePathAbsolute)
 {
     if (!dred_is_control_type_of_type(type, DRED_CONTROL_TYPE_EDITOR)) {
         dred_errorf(pDred, "[DEVELOPER ERROR] Attempting to create an editor that is not of an editor type (%s).", type);

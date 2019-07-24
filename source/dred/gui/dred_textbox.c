@@ -106,12 +106,12 @@ void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, dtk_c
     dred_textview_set_active_line_background_color(DRED_TEXTVIEW(pTextBox), color);
 }
 
-void dred_textbox_set_cursor_width(dred_textbox* pTextBox, float cursorWidth)
+void dred_textbox_set_cursor_width(dred_textbox* pTextBox, dtk_int32 cursorWidth)
 {
     dred_textview_set_cursor_width(DRED_TEXTVIEW(pTextBox), cursorWidth);
 }
 
-float dred_textbox_get_cursor_width(dred_textbox* pTextBox)
+dtk_int32 dred_textbox_get_cursor_width(dred_textbox* pTextBox)
 {
     return dred_textview_get_cursor_width(DRED_TEXTVIEW(pTextBox));
 }
@@ -126,42 +126,42 @@ void dred_textbox_set_border_color(dred_textbox* pTextBox, dtk_color color)
     dred_textview_set_border_color(DRED_TEXTVIEW(pTextBox), color);
 }
 
-void dred_textbox_set_border_width(dred_textbox* pTextBox, float borderWidth)
+void dred_textbox_set_border_width(dred_textbox* pTextBox, dtk_int32 borderWidth)
 {
     dred_textview_set_border_width(DRED_TEXTVIEW(pTextBox), borderWidth);
 }
 
-void dred_textbox_set_padding(dred_textbox* pTextBox, float padding)
+void dred_textbox_set_padding(dred_textbox* pTextBox, dtk_int32 padding)
 {
     dred_textview_set_padding(DRED_TEXTVIEW(pTextBox), padding);
 }
 
-float dred_textbox_get_padding_vert(dred_textbox* pTextBox)
+dtk_int32 dred_textbox_get_padding_vert(dred_textbox* pTextBox)
 {
     return dred_textview_get_padding_vert(DRED_TEXTVIEW(pTextBox));
 }
 
-float dred_textbox_get_padding_horz(dred_textbox* pTextBox)
+dtk_int32 dred_textbox_get_padding_horz(dred_textbox* pTextBox)
 {
     return dred_textview_get_padding_horz(DRED_TEXTVIEW(pTextBox));
 }
 
-void dred_textbox_set_line_numbers_width(dred_textbox* pTextBox, float lineNumbersWidth)
+void dred_textbox_set_line_numbers_width(dred_textbox* pTextBox, dtk_int32 lineNumbersWidth)
 {
     dred_textview_set_line_numbers_width(DRED_TEXTVIEW(pTextBox), lineNumbersWidth);
 }
 
-float dred_textbox_get_line_numbers_width(dred_textbox* pTextBox)
+dtk_int32 dred_textbox_get_line_numbers_width(dred_textbox* pTextBox)
 {
     return dred_textview_get_line_numbers_width(DRED_TEXTVIEW(pTextBox));
 }
 
-void dred_textbox_set_line_numbers_padding(dred_textbox* pTextBox, float lineNumbersPadding)
+void dred_textbox_set_line_numbers_padding(dred_textbox* pTextBox, dtk_int32 lineNumbersPadding)
 {
     dred_textview_set_line_numbers_padding(DRED_TEXTVIEW(pTextBox), lineNumbersPadding);
 }
 
-float dred_textbox_get_line_numbers_padding(dred_textbox* pTextBox)
+dtk_int32 dred_textbox_get_line_numbers_padding(dred_textbox* pTextBox)
 {
     return dred_textview_get_line_numbers_padding(DRED_TEXTVIEW(pTextBox));
 }
@@ -440,7 +440,7 @@ dtk_scrollbar* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox)
     return dred_textview_get_horizontal_scrollbar(DRED_TEXTVIEW(pTextBox));
 }
 
-void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, float size)
+void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, dtk_int32 size)
 {
     dred_textview_set_scrollbar_size(DRED_TEXTVIEW(pTextBox), size);
 }

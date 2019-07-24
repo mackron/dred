@@ -455,8 +455,8 @@ dtk_result dtk_textbox_xy_to_cp(dtk_textbox* pTextBox, dtk_int32 x, dtk_int32 y,
         /* Right alignment. */
     } else {
         /* Left alignment. */
-        float maxWidth  = (float)lineSizeX;
-        float inputPosX = (float)(x - ((pTextBox->style.borderWidth + pTextBox->style.paddingLeft) * scale));
+        int maxWidth  = lineSizeX;
+        int inputPosX = (int)(x - ((pTextBox->style.borderWidth + pTextBox->style.paddingLeft) * scale));
         if (inputPosX < 0) {
             inputPosX = 0;
         }

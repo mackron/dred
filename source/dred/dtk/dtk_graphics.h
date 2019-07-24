@@ -242,12 +242,12 @@ dtk_result dtk_font_measure_string(dtk_font* pFont, float scale, const char* tex
 // Retrieves the position to place a text cursor based on the given point for the given string when drawn with the given font.
 //
 // NOTE: This API is tempoarary until an improved Unicode implementation is done.
-dtk_result dtk_font_get_text_cursor_position_from_point(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosX, size_t* pCharacterIndex);
+dtk_result dtk_font_get_text_cursor_position_from_point(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, int maxWidth, int inputPosX, int* pTextCursorPosX, size_t* pCharacterIndex);
 
 // Retrieves the position to palce a text cursor based on the character at the given index for the given string when drawn with the given font.
 //
 // NOTE: This API is tempoarary until an improved Unicode implementation is done.
-dtk_result dtk_font_get_text_cursor_position_from_char(dtk_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosX);
+dtk_result dtk_font_get_text_cursor_position_from_char(dtk_font* pFont, float scale, const char* text, size_t characterIndex, int* pTextCursorPosX);
 
 
 

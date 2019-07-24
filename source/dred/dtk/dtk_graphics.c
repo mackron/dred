@@ -463,7 +463,7 @@ dtk_result dtk_font_measure_string__gdi(dtk_font* pFont, float scale, const char
     return result;
 }
 
-dtk_result dtk_font_get_text_cursor_position_from_point__gdi(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosX, size_t* pCharacterIndex)
+dtk_result dtk_font_get_text_cursor_position_from_point__gdi(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, int maxWidth, int inputPosX, int* pTextCursorPosX, size_t* pCharacterIndex)
 {
     dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
     if (pSubfont == NULL) {
@@ -493,13 +493,13 @@ dtk_result dtk_font_get_text_cursor_position_from_point__gdi(dtk_font* pFont, fl
             results.lpCaretPos = pFont->pTK->win32.pGlyphCache;
             if (results.lpCaretPos != NULL) {
                 if (GetCharacterPlacementW((HDC)pFont->pTK->win32.hGraphicsDC, textW, results.nGlyphs, (int)maxWidth, &results, GCP_MAXEXTENT | GCP_USEKERNING) != 0) {
-                    float textCursorPosX = 0;
+                    int textCursorPosX = 0;
                     unsigned int iChar;
                     for (iChar = 0; iChar < results.nGlyphs; ++iChar) {
-                        float charBoundsLeft  = (float)results.lpCaretPos[iChar];
-                        float charBoundsRight = 0;
+                        int charBoundsLeft  = results.lpCaretPos[iChar];
+                        int charBoundsRight = 0;
                         if (iChar < results.nGlyphs - 1) {
-                            charBoundsRight = (float)results.lpCaretPos[iChar + 1];
+                            charBoundsRight = results.lpCaretPos[iChar + 1];
                         } else {
                             charBoundsRight = maxWidth;
                         }
@@ -535,7 +535,7 @@ dtk_result dtk_font_get_text_cursor_position_from_point__gdi(dtk_font* pFont, fl
     return result;
 }
 
-dtk_result dtk_font_get_text_cursor_position_from_char__gdi(dtk_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosX)
+dtk_result dtk_font_get_text_cursor_position_from_char__gdi(dtk_font* pFont, float scale, const char* text, size_t characterIndex, int* pTextCursorPosX)
 {
     dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
     if (pSubfont == NULL) {
@@ -565,7 +565,7 @@ dtk_result dtk_font_get_text_cursor_position_from_char__gdi(dtk_font* pFont, flo
             results.lpCaretPos = pFont->pTK->win32.pGlyphCache;
             if (results.lpCaretPos != NULL) {
                 if (GetCharacterPlacementW((HDC)pFont->pTK->win32.hGraphicsDC, textW, results.nGlyphs, 0, &results, GCP_USEKERNING) != 0) {
-                    if (pTextCursorPosX) *pTextCursorPosX = (float)results.lpCaretPos[characterIndex];
+                    if (pTextCursorPosX) *pTextCursorPosX = results.lpCaretPos[characterIndex];
                     result = DTK_SUCCESS;
                 }
             }
@@ -1149,7 +1149,7 @@ dtk_result dtk_font_measure_string__cairo(dtk_font* pFont, float scale, const ch
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_font_get_text_cursor_position_from_point__cairo(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosX, size_t* pCharacterIndex)
+dtk_result dtk_font_get_text_cursor_position_from_point__cairo(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, int maxWidth, int inputPosX, int* pTextCursorPosX, size_t* pCharacterIndex)
 {
     dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
     if (pSubfont == NULL) {
@@ -1163,21 +1163,21 @@ dtk_result dtk_font_get_text_cursor_position_from_point__cairo(dtk_font* pFont, 
         return DTK_ERROR;
     }
 
-    float cursorPosX = 0;
+    int cursorPosX = 0;
     int charIndex = 0;
 
     // We just iterate over each glyph until we find the one sitting under <inputPosX>.
-    float runningPosX = 0;
+    int runningPosX = 0;
     for (int iGlyph = 0; iGlyph < glyphCount; ++iGlyph) {
         cairo_text_extents_t glyphMetrics;
         cairo_scaled_font_glyph_extents((cairo_scaled_font_t*)pSubfont->cairo.pFont, pGlyphs + iGlyph, 1, &glyphMetrics);
 
-        float glyphLeft  = runningPosX;
-        float glyphRight = glyphLeft + glyphMetrics.x_advance;
+        int glyphLeft  = runningPosX;
+        int glyphRight = (int)(glyphLeft + glyphMetrics.x_advance);
 
         // Are we sitting on top of inputPosX?
         if (inputPosX >= glyphLeft && inputPosX <= glyphRight) {
-            float glyphHalf = glyphLeft + ceilf(((glyphRight - glyphLeft) / 2.0f));
+            int glyphHalf = glyphLeft + (int)ceilf(((glyphRight - glyphLeft) / 2.0f));
             if (inputPosX <= glyphHalf) {
                 cursorPosX = glyphLeft;
                 charIndex  = iGlyph;
@@ -1209,7 +1209,7 @@ dtk_result dtk_font_get_text_cursor_position_from_point__cairo(dtk_font* pFont, 
     return DTK_SUCCESS;
 }
 
-dtk_result dtk_font_get_text_cursor_position_from_char__cairo(dtk_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosX)
+dtk_result dtk_font_get_text_cursor_position_from_char__cairo(dtk_font* pFont, float scale, const char* text, size_t characterIndex, int* pTextCursorPosX)
 {
     dtk_subfont* pSubfont = dtk_font__acquire_subfont(pFont, scale);
     if (pSubfont == NULL) {
@@ -1223,7 +1223,7 @@ dtk_result dtk_font_get_text_cursor_position_from_char__cairo(dtk_font* pFont, f
         return DTK_ERROR;
     }
 
-    float cursorPosX = 0;
+    int cursorPosX = 0;
 
     // We just iterate over each glyph until we find the one sitting under <inputPosX>.
     for (int iGlyph = 0; iGlyph < glyphCount; ++iGlyph) {
@@ -1234,7 +1234,7 @@ dtk_result dtk_font_get_text_cursor_position_from_char__cairo(dtk_font* pFont, f
         cairo_text_extents_t glyphMetrics;
         cairo_scaled_font_glyph_extents((cairo_scaled_font_t*)pSubfont->cairo.pFont, pGlyphs + iGlyph, 1, &glyphMetrics);
 
-        cursorPosX += glyphMetrics.x_advance;
+        cursorPosX += (int)glyphMetrics.x_advance;
     }
 
     cairo_glyph_free(pGlyphs);
@@ -1674,7 +1674,7 @@ dtk_result dtk_font_measure_string(dtk_font* pFont, float scale, const char* tex
     return result;
 }
 
-dtk_result dtk_font_get_text_cursor_position_from_point(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosX, size_t* pCharacterIndex)
+dtk_result dtk_font_get_text_cursor_position_from_point(dtk_font* pFont, float scale, const char* text, size_t textSizeInBytes, int maxWidth, int inputPosX, int* pTextCursorPosX, size_t* pCharacterIndex)
 {
     if (pTextCursorPosX) *pTextCursorPosX = 0;
     if (pCharacterIndex) *pCharacterIndex = 0;
@@ -1695,7 +1695,7 @@ dtk_result dtk_font_get_text_cursor_position_from_point(dtk_font* pFont, float s
     return result;
 }
 
-dtk_result dtk_font_get_text_cursor_position_from_char(dtk_font* pFont, float scale, const char* text, size_t characterIndex, float* pTextCursorPosX)
+dtk_result dtk_font_get_text_cursor_position_from_char(dtk_font* pFont, float scale, const char* text, size_t characterIndex, int* pTextCursorPosX)
 {
     if (pTextCursorPosX) *pTextCursorPosX = 0;
     if (pFont == NULL || text == NULL) return DTK_INVALID_ARGS;

@@ -7,16 +7,16 @@ dred_rect dred_cmdbar__get_inner_rect(dred_cmdbar* pCmdBar)
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBar));
 
-    float cmdbarWidth;
-    float cmdbarHeight;
+    dtk_int32 cmdbarWidth;
+    dtk_int32 cmdbarHeight;
     dred_control_get_size(DRED_CONTROL(pCmdBar), &cmdbarWidth, &cmdbarHeight);
 
-    float scaledPaddingX = pDred->config.cmdbarPaddingX*uiScale;
-    float scaledPaddingY = pDred->config.cmdbarPaddingY*uiScale;
+    dtk_int32 scaledPaddingX = (dtk_int32)(pDred->config.cmdbarPaddingX*uiScale);
+    dtk_int32 scaledPaddingY = (dtk_int32)(pDred->config.cmdbarPaddingY*uiScale);
     return dred_make_rect(scaledPaddingX, scaledPaddingY, cmdbarWidth - scaledPaddingX, cmdbarHeight - scaledPaddingY);
 }
 
-void dred_cmdbar__get_inner_size(dred_cmdbar* pCmdBar, float* pWidthOut, float* pHeightOut)
+void dred_cmdbar__get_inner_size(dred_cmdbar* pCmdBar, dtk_int32* pWidthOut, dtk_int32* pHeightOut)
 {
     dred_rect innerRect = dred_cmdbar__get_inner_rect(pCmdBar);
 
@@ -116,7 +116,7 @@ void dred_cmdbar__update_text_based_on_autocomplete(dred_cmdbar* pCmdBar)
 }
 
 
-void dred_cmdbar__on_size(dred_control* pControl, float newWidth, float newHeight)
+void dred_cmdbar__on_size(dred_control* pControl, dtk_int32 newWidth, dtk_int32 newHeight)
 {
     (void)newWidth;
     (void)newHeight;
@@ -155,8 +155,8 @@ void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
         bgcolor = pDred->config.cmdbarBGColorActive;
     }
 
-    float scaledPaddingX = pDred->config.cmdbarPaddingX*uiScale;
-    float scaledPaddingY = pDred->config.cmdbarPaddingY*uiScale;
+    dtk_int32 scaledPaddingX = (dtk_int32)(pDred->config.cmdbarPaddingX*uiScale);
+    dtk_int32 scaledPaddingY = (dtk_int32)(pDred->config.cmdbarPaddingY*uiScale);
     dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(0,                                0,                                 scaledPaddingX,                   localRect.bottom)), bgcolor); // Left
     dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(localRect.right - scaledPaddingX, 0,                                 localRect.right,                  localRect.bottom)), bgcolor); // Right
     dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_make_rect(scaledPaddingX,                   0,                                 localRect.right - scaledPaddingX, scaledPaddingY)),   bgcolor); // Top
@@ -175,8 +175,8 @@ void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* 
     dtk_font_metrics messageFontMetrics;
     dtk_font_get_metrics(pMessageFont, uiScale, &messageFontMetrics);
 
-    float messageLeft = mrect.left + (4*uiScale);
-    float messageTop  = (((mrect.bottom - mrect.top) - messageFontMetrics.lineHeight) / 2) + scaledPaddingY;
+    dtk_int32 messageLeft =(dtk_int32)(mrect.left + (4*uiScale));
+    dtk_int32 messageTop  = (((mrect.bottom - mrect.top) - messageFontMetrics.lineHeight) / 2) + scaledPaddingY;
     dtk_surface_draw_text(pSurface, pMessageFont, uiScale, pCmdBar->message, (int)strlen(pCmdBar->message), (dtk_int32)messageLeft, (dtk_int32)messageTop, pDred->config.cmdbarTextColor, bgcolor);
 }
 
@@ -438,14 +438,14 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     dtk_font_metrics fontMetricsMsg;
     dtk_font_get_metrics(pMessageFont, uiScale, &fontMetricsMsg);
 
-    float textboxHeight = (float)fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(&pCmdBar->textBox)*2;
-    float messageHeight = (float)fontMetricsMsg.lineHeight;
-    float infobarHeight = (float)dred_control_get_height(DRED_CONTROL(&pCmdBar->infoBar));
+    dtk_int32 textboxHeight = fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(&pCmdBar->textBox)*2;
+    dtk_int32 messageHeight = fontMetricsMsg.lineHeight;
+    dtk_int32 infobarHeight = dred_control_get_height(DRED_CONTROL(&pCmdBar->infoBar));
 
-    float cmdbarHeight = dtk_max(textboxHeight, dtk_max(messageHeight, infobarHeight)) + (pDred->config.cmdbarPaddingY*uiScale*2);
-    float cmdbarWidth = 0;
+    dtk_int32 cmdbarHeight = (dtk_int32)(dtk_max(textboxHeight, dtk_max(messageHeight, infobarHeight)) + (pDred->config.cmdbarPaddingY*uiScale*2));
+    dtk_int32 cmdbarWidth = 0;
     if (dtk_control_get_parent(DTK_CONTROL(pCmdBar)) != NULL) {
-        cmdbarWidth = (float)dtk_control_get_width(dtk_control_get_parent(DTK_CONTROL(pCmdBar)));
+        cmdbarWidth = dtk_control_get_width(dtk_control_get_parent(DTK_CONTROL(pCmdBar)));
     }
     dred_control_set_size(DRED_CONTROL(pCmdBar), cmdbarWidth, cmdbarHeight);
 

@@ -1,10 +1,10 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
 /// Retrieves the offset to draw the text in the text box.
-void dred_textview__get_text_offset(dred_textview* pTextView, float* pOffsetXOut, float* pOffsetYOut);
+void dred_textview__get_text_offset(dred_textview* pTextView, int* pOffsetXOut, int* pOffsetYOut);
 
 /// Calculates the required size of the text engine.
-void dred_textview__calculate_text_engine_container_size(dred_textview* pTextView, float* pWidthOut, float* pHeightOut);
+void dred_textview__calculate_text_engine_container_size(dred_textview* pTextView, int* pWidthOut, int* pHeightOut);
 
 /// Retrieves the rectangle of the text engine's container.
 dred_rect dred_textview__get_text_rect(dred_textview* pTextView);
@@ -42,7 +42,7 @@ void dred_textview__refresh_line_numbers(dred_textview* pTextView);
 void dred_textview_engine__on_paint_rect(drte_engine* pLayout, drte_view* pView, drte_style_token styleToken, drte_rect rect, void* pPaintData);
 
 /// on_paint_text()
-void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData);
+void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, int posX, int posY, void* pPaintData);
 
 /// on_dirty()
 void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_view* pView, drte_rect rect);
@@ -83,7 +83,7 @@ void dred_textview__on_hscroll(dtk_scrollbar* pSBControl, int scrollPos)
     dred_textview* pTextView = (dred_textview*)DTK_CONTROL(pSBControl)->pUserData;
     assert(pTextView != NULL);
 
-    drte_view_set_inner_offset_x(pTextView->pView, (float)-scrollPos);
+    drte_view_set_inner_offset_x(pTextView->pView, -scrollPos);
 }
 
 void dred_textview__refresh_style(dred_textview* pTextView)
@@ -116,13 +116,13 @@ void dred_textview_engine__on_measure_string_proc(drte_engine* pEngine, drte_sty
     dtk_font_measure_string(((dred_text_style*)styleToken)->pFont, scale, text, textLength, pWidthOut, pHeightOut);
 }
 
-void dred_textview_engine__on_get_cursor_position_from_point(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textSizeInBytes, float maxWidth, float inputPosX, float* pTextCursorPosXOut, size_t* pCharacterIndexOut)
+void dred_textview_engine__on_get_cursor_position_from_point(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t textSizeInBytes, int maxWidth, int inputPosX, int* pTextCursorPosXOut, size_t* pCharacterIndexOut)
 {
     (void)pEngine;
     dtk_font_get_text_cursor_position_from_point(((dred_text_style*)styleToken)->pFont, scale, text, textSizeInBytes, maxWidth, inputPosX, pTextCursorPosXOut, pCharacterIndexOut);
 }
 
-void dred_textview_engine__on_get_cursor_position_from_char(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t characterIndex, float* pTextCursorPosXOut)
+void dred_textview_engine__on_get_cursor_position_from_char(drte_engine* pEngine, drte_style_token styleToken, float scale, const char* text, size_t characterIndex, int* pTextCursorPosXOut)
 {
     (void)pEngine;
     dtk_font_get_text_cursor_position_from_char(((dred_text_style*)styleToken)->pFont, scale, text, characterIndex, pTextCursorPosXOut);
@@ -641,7 +641,7 @@ void dred_textview_set_active_line_background_color(dred_textview* pTextView, dt
     //drte_engine_set_active_line_bg_color(pTextView->pTextEngine, color);
 }
 
-void dred_textview_set_cursor_width(dred_textview* pTextView, float cursorWidth)
+void dred_textview_set_cursor_width(dred_textview* pTextView, int cursorWidth)
 {
     if (pTextView == NULL) {
         return;
@@ -650,7 +650,7 @@ void dred_textview_set_cursor_width(dred_textview* pTextView, float cursorWidth)
     drte_view_set_cursor_width(pTextView->pView, cursorWidth);
 }
 
-float dred_textview_get_cursor_width(dred_textview* pTextView)
+int dred_textview_get_cursor_width(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return 0;
@@ -679,7 +679,7 @@ void dred_textview_set_border_color(dred_textview* pTextView, dtk_color color)
     pTextView->borderColor = color;
 }
 
-void dred_textview_set_border_width(dred_textview* pTextView, float borderWidth)
+void dred_textview_set_border_width(dred_textview* pTextView, int borderWidth)
 {
     if (pTextView == NULL) {
         return;
@@ -688,7 +688,7 @@ void dred_textview_set_border_width(dred_textview* pTextView, float borderWidth)
     pTextView->borderWidth = borderWidth;
 }
 
-void dred_textview_set_padding(dred_textview* pTextView, float padding)
+void dred_textview_set_padding(dred_textview* pTextView, int padding)
 {
     if (pTextView == NULL) {
         return;
@@ -697,7 +697,7 @@ void dred_textview_set_padding(dred_textview* pTextView, float padding)
     pTextView->padding = padding;
 }
 
-float dred_textview_get_padding_vert(dred_textview* pTextView)
+int dred_textview_get_padding_vert(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return 0;
@@ -706,7 +706,7 @@ float dred_textview_get_padding_vert(dred_textview* pTextView)
     return pTextView->padding;
 }
 
-float dred_textview_get_padding_horz(dred_textview* pTextView)
+int dred_textview_get_padding_horz(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return 0;
@@ -715,7 +715,7 @@ float dred_textview_get_padding_horz(dred_textview* pTextView)
     return pTextView->padding;
 }
 
-void dred_textview_set_line_numbers_width(dred_textview* pTextView, float lineNumbersWidth)
+void dred_textview_set_line_numbers_width(dred_textview* pTextView, int lineNumbersWidth)
 {
     if (pTextView == NULL) {
         return;
@@ -724,7 +724,7 @@ void dred_textview_set_line_numbers_width(dred_textview* pTextView, float lineNu
     pTextView->lineNumbersWidth = lineNumbersWidth;
 }
 
-float dred_textview_get_line_numbers_width(dred_textview* pTextView)
+int dred_textview_get_line_numbers_width(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return 0;
@@ -733,7 +733,7 @@ float dred_textview_get_line_numbers_width(dred_textview* pTextView)
     return pTextView->lineNumbersWidth;
 }
 
-void dred_textview_set_line_numbers_padding(dred_textview* pTextView, float lineNumbersPadding)
+void dred_textview_set_line_numbers_padding(dred_textview* pTextView, int lineNumbersPadding)
 {
     if (pTextView == NULL) {
         return;
@@ -742,7 +742,7 @@ void dred_textview_set_line_numbers_padding(dred_textview* pTextView, float line
     pTextView->lineNumbersPaddingRight = lineNumbersPadding;
 }
 
-float dred_textview_get_line_numbers_padding(dred_textview* pTextView)
+int dred_textview_get_line_numbers_padding(dred_textview* pTextView)
 {
     if (pTextView == NULL) {
         return 0;
@@ -1545,7 +1545,7 @@ dtk_scrollbar* dred_textview_get_horizontal_scrollbar(dred_textview* pTextView)
     return pTextView->pHorzScrollbar;
 }
 
-void dred_textview_set_scrollbar_size(dred_textview* pTextView, float size)
+void dred_textview_set_scrollbar_size(dred_textview* pTextView, int size)
 {
     if (pTextView == NULL) {
         return;
@@ -1711,7 +1711,7 @@ void dred_textview_set_on_undo_point_changed(dred_textview* pTextView, dred_text
 }
 
 
-void dred_textview_on_size(dred_control* pControl, float newWidth, float newHeight)
+void dred_textview_on_size(dred_control* pControl, int newWidth, int newHeight)
 {
     (void)newWidth;
     (void)newHeight;
@@ -1722,8 +1722,8 @@ void dred_textview_on_size(dred_control* pControl, float newWidth, float newHeig
     }
 
     // The text engine needs to be resized.
-    float containerWidth;
-    float containerHeight;
+    int containerWidth;
+    int containerHeight;
     dred_textview__calculate_text_engine_container_size(pTextView, &containerWidth, &containerHeight);
 
     drte_view_set_size(pTextView->pView, containerWidth, containerHeight);
@@ -1753,7 +1753,7 @@ void dred_textview__select_rectangle(dred_textview* pTextView, drte_rect rect)
             pTextView->pTextEngine->onCursorMove = prevOnCursorMoveProc;
         }
 
-        float linePosY = iLine * drte_engine_get_line_height(pTextView->pTextEngine);
+        int linePosY = iLine * drte_engine_get_line_height(pTextView->pTextEngine);
         
         size_t iCharBeg;
         drte_view_get_character_under_point_relative_to_text(pTextView->pView, pTextView->pView->pWrappedLines, rect.left,  linePosY, &iCharBeg, NULL);
@@ -1780,12 +1780,12 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
         return;
     }
 
-    float offsetX;
-    float offsetY;
+    int offsetX;
+    int offsetY;
     dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
-    float mousePosXRelativeToTextArea = (float)relativeMousePosX - offsetX;
-    float mousePosYRelativeToTextArea = (float)relativeMousePosY - offsetY;
+    int mousePosXRelativeToTextArea = relativeMousePosX - offsetX;
+    int mousePosYRelativeToTextArea = relativeMousePosY - offsetY;
 
     if (dtk_control_has_mouse_capture(DTK_CONTROL(pControl)))
     {
@@ -1873,12 +1873,12 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT)
     {
-        float offsetX;
-        float offsetY;
+        int offsetX;
+        int offsetY;
         dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
-        float mousePosXRelativeToTextArea = (float)relativeMousePosX - offsetX;
-        float mousePosYRelativeToTextArea = (float)relativeMousePosY - offsetY;
+        int mousePosXRelativeToTextArea = relativeMousePosX - offsetX;
+        int mousePosYRelativeToTextArea = relativeMousePosY - offsetY;
 
         size_t iSelection;
         if (dred_textview_is_drag_and_drop_enabled(pTextView) && drte_view_get_selection_under_point(pTextView->pView, mousePosXRelativeToTextArea, mousePosYRelativeToTextArea, &iSelection)) {
@@ -1965,12 +1965,12 @@ void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, i
         if (pTextView->isWantingToDragAndDrop) {
             drte_view_deselect_all(pTextView->pView);
 
-            float offsetX;
-            float offsetY;
+            int offsetX;
+            int offsetY;
             dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
-            float mousePosXRelativeToTextArea = (float)relativeMousePosX - offsetX;
-            float mousePosYRelativeToTextArea = (float)relativeMousePosY - offsetY;
+            int mousePosXRelativeToTextArea = relativeMousePosX - offsetX;
+            int mousePosYRelativeToTextArea = relativeMousePosY - offsetY;
 
             size_t iLine;
             size_t iChar;
@@ -2480,14 +2480,14 @@ void dred_textview_engine__on_paint_rect(drte_engine* pTextEngine, drte_view* pV
     dred_textview* pTextView = (dred_textview*)pView->pUserData;
     dred_text_style* pStyle = (dred_text_style*)styleToken;
 
-    float offsetX;
-    float offsetY;
+    int offsetX;
+    int offsetY;
     dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
     dtk_surface_draw_rect((dtk_surface*)pPaintData, dtk_rect_init_dred(dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY)), pStyle->bgColor);
 }
 
-void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
+void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, int posX, int posY, void* pPaintData)
 {
     (void)pTextEngine;
 
@@ -2496,8 +2496,8 @@ void dred_textview_engine__on_paint_text(drte_engine* pTextEngine, drte_view* pV
     dred_text_style* pStyleFG = (dred_text_style*)styleTokenFG;
     dred_text_style* pStyleBG = (dred_text_style*)styleTokenBG;
 
-    float offsetX;
-    float offsetY;
+    int offsetX;
+    int offsetY;
     dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
     dtk_surface_draw_text((dtk_surface*)pPaintData, pStyleFG->pFont, pView->scale, text, (int)textLength, (dtk_int32)(posX + offsetX), (dtk_int32)(posY + offsetY), pStyleFG->fgColor, pStyleBG->bgColor);
@@ -2512,8 +2512,8 @@ void dred_textview_engine__on_dirty(drte_engine* pTextEngine, drte_view* pView, 
         return;
     }
 
-    float offsetX;
-    float offsetY;
+    int offsetX;
+    int offsetY;
     dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pTextView), dtk_rect_init_dred(dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY)));
@@ -2547,18 +2547,18 @@ void dred_textview_engine__on_cursor_move(drte_engine* pTextEngine, drte_view* p
 
 
     // If the cursor is to the left or right of the container we need to scroll horizontally.
-    float cursorPosX;
-    float cursorPosY;
+    int cursorPosX;
+    int cursorPosY;
     drte_view_get_cursor_position(pTextView->pView, drte_view_get_last_cursor(pTextView->pView), &cursorPosX, &cursorPosY);
 
-    float cursorWidth = drte_view_get_cursor_width(pTextView->pView);
-    float viewSizeX = drte_view_get_size_x(pTextView->pView);
+    int cursorWidth = drte_view_get_cursor_width(pTextView->pView);
+    int viewSizeX = drte_view_get_size_x(pTextView->pView);
 
     if (cursorPosX < 0) {
-        dtk_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_view_get_inner_offset_x(pTextView->pView)));
+        dtk_scrollbar_scroll_to(pTextView->pHorzScrollbar, (cursorPosX - drte_view_get_inner_offset_x(pTextView->pView)));
     }
     if (cursorPosX >= viewSizeX && viewSizeX > 0) {
-        dtk_scrollbar_scroll_to(pTextView->pHorzScrollbar, (int)(cursorPosX - drte_view_get_inner_offset_x(pTextView->pView) - viewSizeX) + (int)cursorWidth);
+        dtk_scrollbar_scroll_to(pTextView->pHorzScrollbar, (cursorPosX - drte_view_get_inner_offset_x(pTextView->pView) - viewSizeX) + cursorWidth);
     }
 
 
@@ -2691,14 +2691,14 @@ void dred_textview_on_release_mouse(dred_control* pControl)
 
 
 
-void dred_textview__get_text_offset(dred_textview* pTextView, float* pOffsetXOut, float* pOffsetYOut)
+void dred_textview__get_text_offset(dred_textview* pTextView, int* pOffsetXOut, int* pOffsetYOut)
 {
-    float offsetX = 0;
-    float offsetY = 0;
+    int offsetX = 0;
+    int offsetY = 0;
 
     if (pTextView != NULL)
     {
-        float lineNumbersWidth = 0;
+        int lineNumbersWidth = 0;
         if (dtk_control_is_visible(DTK_CONTROL(pTextView->pLineNumbers))) {
             lineNumbersWidth = dred_control_get_width(pTextView->pLineNumbers);
         }
@@ -2716,10 +2716,10 @@ void dred_textview__get_text_offset(dred_textview* pTextView, float* pOffsetXOut
     }
 }
 
-void dred_textview__calculate_text_engine_container_size(dred_textview* pTextView, float* pWidthOut, float* pHeightOut)
+void dred_textview__calculate_text_engine_container_size(dred_textview* pTextView, int* pWidthOut, int* pHeightOut)
 {
-    float width  = 0;
-    float height = 0;
+    int width  = 0;
+    int height = 0;
 
     if (pTextView != NULL)
     {
@@ -2733,7 +2733,7 @@ void dred_textview__calculate_text_engine_container_size(dred_textview* pTextVie
             vertScrollbarSize = dtk_control_get_width(DTK_CONTROL(pTextView->pVertScrollbar));
         }
 
-        float lineNumbersWidth = 0;
+        int lineNumbersWidth = 0;
         if (dtk_control_is_visible(DTK_CONTROL(pTextView->pLineNumbers))) {
             lineNumbersWidth = dred_control_get_width(pTextView->pLineNumbers);
         }
@@ -2756,12 +2756,12 @@ dred_rect dred_textview__get_text_rect(dred_textview* pTextView)
         return dred_make_rect(0, 0, 0, 0);
     }
 
-    float offsetX;
-    float offsetY;
+    dtk_int32 offsetX;
+    dtk_int32 offsetY;
     dred_textview__get_text_offset(pTextView, &offsetX, &offsetY);
 
-    float width;
-    float height;
+    dtk_int32 width;
+    dtk_int32 height;
     dred_textview__calculate_text_engine_container_size(pTextView, &width, &height);
 
     return dred_make_rect(offsetX, offsetY, offsetX + width, offsetY + height);
@@ -2783,8 +2783,8 @@ void dred_textview__refresh_horizontal_scrollbar(dred_textview* pTextView)
 {
     assert(pTextView != NULL);
 
-    float textWidth = drte_view_get_visible_line_width(pTextView->pView);
-    float containerWidth;
+    dtk_int32 textWidth = drte_view_get_visible_line_width(pTextView->pView);
+    dtk_int32 containerWidth;
     drte_view_get_size(pTextView->pView, &containerWidth, NULL);
     dtk_scrollbar_set_range_and_page_size(pTextView->pHorzScrollbar, 0, (int)textWidth, (int)containerWidth);
 
@@ -2871,8 +2871,8 @@ dred_rect dred_textview__get_scrollbar_dead_space_rect(dred_textview* pTextView)
     }
 
     return dred_make_rect(
-        (float)(scrollbarSizeH + offsetLeft),
-        (float)(scrollbarSizeV + offsetTop),
+        (scrollbarSizeH + offsetLeft),
+        (scrollbarSizeV + offsetTop),
         dred_control_get_width(DRED_CONTROL(pTextView)) - offsetRight,
         dred_control_get_height(DRED_CONTROL(pTextView)) - offsetBottom);
 }
@@ -2892,7 +2892,7 @@ void dred_textview__on_mouse_move_line_numbers(dred_control* pLineNumbers, int r
             // We just move the cursor around based on the line number we've moved over.
 
             //float offsetX = pTextEditorData->padding;
-            float offsetY = pTextView->padding + pTextView->pView->innerOffsetY;
+            dtk_int32 offsetY = pTextView->padding + pTextView->pView->innerOffsetY;
             size_t iLine = drte_view_get_line_at_pos_y(pTextView->pView, NULL, relativeMousePosY - offsetY);
             size_t iAnchorLine = pTextView->iLineSelectAnchor;
             size_t lineCount = drte_view_get_line_count(pTextView->pView);
@@ -2957,7 +2957,7 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
 
 
         //float offsetX = pTextEditorData->padding;
-        float offsetY = pTextView->padding + pTextView->pView->innerOffsetY;
+        dtk_int32 offsetY = pTextView->padding + pTextView->pView->innerOffsetY;
         size_t iClickedLine = drte_view_get_line_at_pos_y(pTextView->pView, NULL, relativeMousePosY - offsetY);
 
         if ((stateFlags & DTK_MODIFIER_SHIFT) != 0) {
@@ -3006,13 +3006,13 @@ void dred_textview__on_paint_rect_line_numbers(drte_engine* pEngine, drte_view* 
 
     assert(pTextView != NULL);
 
-    float offsetX = pTextView->padding;
-    float offsetY = pTextView->padding;
+    dtk_int32 offsetX = pTextView->padding;
+    dtk_int32 offsetY = pTextView->padding;
 
     dtk_surface_draw_rect((dtk_surface*)pPaintData, dtk_rect_init_dred(dred_offset_rect(drte_rect_to_dred(rect), offsetX, offsetY)), pStyle->bgColor);
 }
 
-void dred_textview__on_paint_text_line_numbers(drte_engine* pEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, float posX, float posY, void* pPaintData)
+void dred_textview__on_paint_text_line_numbers(drte_engine* pEngine, drte_view* pView, drte_style_token styleTokenFG, drte_style_token styleTokenBG, const char* text, size_t textLength, dtk_int32 posX, dtk_int32 posY, void* pPaintData)
 {
     (void)pEngine;
 
@@ -3023,10 +3023,10 @@ void dred_textview__on_paint_text_line_numbers(drte_engine* pEngine, drte_view* 
 
     assert(pTextView != NULL);
 
-    float offsetX = pTextView->padding;
-    float offsetY = pTextView->padding;
+    dtk_int32 offsetX = pTextView->padding;
+    dtk_int32 offsetY = pTextView->padding;
 
-    dtk_surface_draw_text((dtk_surface*)pPaintData, pStyleFG->pFont, pView->scale, text, (int)textLength, (dtk_int32)(posX + offsetX), (dtk_int32)(posY + offsetY), pStyleFG->fgColor, pStyleBG->bgColor);
+    dtk_surface_draw_text((dtk_surface*)pPaintData, pStyleFG->pFont, pView->scale, text, (int)textLength, (posX + offsetX), (posY + offsetY), pStyleFG->fgColor, pStyleBG->bgColor);
 }
 
 void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect relativeRect, dtk_surface* pSurface)
@@ -3036,12 +3036,12 @@ void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dred_rect 
     dred_textview* pTextView = DRED_TEXTVIEW(dtk_control_get_parent(DTK_CONTROL(pLineNumbers)));
     assert(pTextView != NULL);
 
-    float lineNumbersWidth  = dred_control_get_width(pLineNumbers) - (pTextView->padding*2) - pTextView->lineNumbersPaddingRight;
-    float lineNumbersHeight = dred_control_get_height(pLineNumbers) - (pTextView->padding*2);
+    dtk_int32 lineNumbersWidth  = dred_control_get_width(pLineNumbers) - (pTextView->padding*2) - pTextView->lineNumbersPaddingRight;
+    dtk_int32 lineNumbersHeight = dred_control_get_height(pLineNumbers) - (pTextView->padding*2);
 
     drte_view_paint_line_numbers(pTextView->pView, lineNumbersWidth, lineNumbersHeight, dred_textview__on_paint_text_line_numbers, dred_textview__on_paint_rect_line_numbers, pSurface);
 
-    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(dred_control_get_local_rect(pLineNumbers)), pTextView->lineNumbersStyle.bgColor, (dtk_int32)pTextView->padding);
+    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(dred_control_get_local_rect(pLineNumbers)), pTextView->lineNumbersStyle.bgColor, pTextView->padding);
 
     // Right padding.
     dred_rect rightPaddingRect = dred_control_get_local_rect(pLineNumbers);
@@ -3056,18 +3056,18 @@ void dred_textview__refresh_line_numbers(dred_textview* pTextView)
 
     dred_rect lineNumbersRectOld = dred_control_get_local_rect(pTextView->pLineNumbers);
 
-    float lineNumbersWidth = 0;
+    dtk_int32 lineNumbersWidth = 0;
     if (dtk_control_is_visible(DTK_CONTROL(pTextView->pLineNumbers))) {
         lineNumbersWidth = pTextView->lineNumbersWidth;
     }
 
-    float scrollbarHeight = (float)(dtk_control_is_visible(DTK_CONTROL(pTextView->pHorzScrollbar)) ? dtk_control_get_height(DTK_CONTROL(pTextView->pHorzScrollbar)) : 0);
+    dtk_int32 scrollbarHeight = (dtk_control_is_visible(DTK_CONTROL(pTextView->pHorzScrollbar)) ? dtk_control_get_height(DTK_CONTROL(pTextView->pHorzScrollbar)) : 0);
     dred_control_set_size(pTextView->pLineNumbers, lineNumbersWidth, dred_control_get_height(DRED_CONTROL(pTextView)) - scrollbarHeight);
 
 
     // The size of the text container may have changed.
-    float textEditorWidth;
-    float textEditorHeight;
+    dtk_int32 textEditorWidth;
+    dtk_int32 textEditorHeight;
     dred_textview__calculate_text_engine_container_size(pTextView, &textEditorWidth, &textEditorHeight);
     drte_view_set_size(pTextView->pView, textEditorWidth, textEditorHeight);
 

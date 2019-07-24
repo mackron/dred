@@ -46,8 +46,8 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dtk_surface* 
     dtk_surface_draw_rect(pSurface, dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pInfoBar))), dred_info_bar__get_bg_color(pInfoBar));
 
 
-    float padding = 32*uiScale;
-    float paddingRight = pDred->config.cmdbarPaddingX*uiScale;
+    dtk_int32 padding = (dtk_int32)(32*uiScale);
+    dtk_int32 paddingRight = (dtk_int32)(pDred->config.cmdbarPaddingX*uiScale);
 
     dtk_font* pFont = &pDred->config.pUIFont->fontDTK;
     if (pFont != NULL) {
@@ -61,11 +61,11 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dtk_surface* 
         dtk_int32 colStrWidth;
         dtk_font_measure_string(pFont, uiScale, pInfoBar->colStr, strlen(pInfoBar->colStr), &colStrWidth, NULL);
 
-        float totalWidth = lineStrWidth + padding + colStrWidth + paddingRight;
+        dtk_int32 totalWidth = lineStrWidth + padding + colStrWidth + paddingRight;
 
         
-        float textPosX = dred_control_get_width(DRED_CONTROL(pInfoBar)) - totalWidth;
-        float textPosY = (dred_control_get_height(DRED_CONTROL(pInfoBar)) - fontMetrics.lineHeight) / 2;
+        dtk_int32 textPosX = dred_control_get_width(DRED_CONTROL(pInfoBar)) - totalWidth;
+        dtk_int32 textPosY = (dred_control_get_height(DRED_CONTROL(pInfoBar)) - fontMetrics.lineHeight) / 2;
         dtk_surface_draw_text(pSurface, pFont, uiScale, pInfoBar->lineStr, (int)strlen(pInfoBar->lineStr), (dtk_int32)textPosX, (dtk_int32)textPosY, dred_info_bar__get_text_color(pInfoBar), dred_info_bar__get_bg_color(pInfoBar));
 
         textPosX += lineStrWidth + padding;
@@ -116,7 +116,7 @@ dtk_bool32 dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred
     // The height of the command bar is based on the size of the font.
     dtk_font_metrics fontMetrics;
     dtk_font_get_metrics(pInfoBar->pFont, uiScale, &fontMetrics);
-    dred_control_set_size(DRED_CONTROL(pInfoBar), 0, (float)fontMetrics.lineHeight);
+    dred_control_set_size(DRED_CONTROL(pInfoBar), 0, fontMetrics.lineHeight);
 
 
     // Events.
@@ -170,7 +170,7 @@ void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar)
         // The height of the command bar is based on the size of the font.
         dtk_font_metrics fontMetrics;
         dtk_font_get_metrics(pInfoBar->pFont, uiScale, &fontMetrics);
-        dred_control_set_size(DRED_CONTROL(pInfoBar), dred_control_get_width(DRED_CONTROL(pInfoBar)), (float)fontMetrics.lineHeight);
+        dred_control_set_size(DRED_CONTROL(pInfoBar), dred_control_get_width(DRED_CONTROL(pInfoBar)), fontMetrics.lineHeight);
     }
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pInfoBar), dtk_rect_init_dred(dred_control_get_local_rect(DRED_CONTROL(pInfoBar))));

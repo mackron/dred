@@ -23,7 +23,7 @@ struct dred_text_editor
 
 
 // dred_text_editor_create()
-dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pParent, float sizeX, float sizeY, const char* filePathAbsolute);
+dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pParent, dtk_int32 sizeX, dtk_int32 sizeY, const char* filePathAbsolute);
 
 // dred_text_editor_delete()
 void dred_text_editor_delete(dred_text_editor* pTextEditor);

@@ -59,10 +59,10 @@ dtk_color dred_textbox_get_selection_background_color(dred_textbox* pTextBox);
 void dred_textbox_set_active_line_background_color(dred_textbox* pTextBox, dtk_color color);
 
 // Sets the width of the text cursor.
-void dred_textbox_set_cursor_width(dred_textbox* pTextBox, float cursorWidth);
+void dred_textbox_set_cursor_width(dred_textbox* pTextBox, dtk_int32 cursorWidth);
 
 // Retrieves the width of the text cursor.
-float dred_textbox_get_cursor_width(dred_textbox* pTextBox);
+dtk_int32 dred_textbox_get_cursor_width(dred_textbox* pTextBox);
 
 // Sets the color of the cursor of the given text box.
 void dred_textbox_set_cursor_color(dred_textbox* pTextBox, dtk_color color);
@@ -71,28 +71,28 @@ void dred_textbox_set_cursor_color(dred_textbox* pTextBox, dtk_color color);
 void dred_textbox_set_border_color(dred_textbox* pTextBox, dtk_color color);
 
 // Sets the border width of the given text box.
-void dred_textbox_set_border_width(dred_textbox* pTextBox, float borderWidth);
+void dred_textbox_set_border_width(dred_textbox* pTextBox, dtk_int32 borderWidth);
 
 // Sets the amount of padding to apply to given text box.
-void dred_textbox_set_padding(dred_textbox* pTextBox, float padding);
+void dred_textbox_set_padding(dred_textbox* pTextBox, dtk_int32 padding);
 
 // Retrieves the amound of vertical padding to apply to the given text box.
-float dred_textbox_get_padding_vert(dred_textbox* pTextBox);
+dtk_int32 dred_textbox_get_padding_vert(dred_textbox* pTextBox);
 
 // Retrieves the amound of horizontal padding to apply to the given text box.
-float dred_textbox_get_padding_horz(dred_textbox* pTextBox);
+dtk_int32 dred_textbox_get_padding_horz(dred_textbox* pTextBox);
 
 // Sets the width of the line numbers.
-void dred_textbox_set_line_numbers_width(dred_textbox* pTextBox, float lineNumbersWidth);
+void dred_textbox_set_line_numbers_width(dred_textbox* pTextBox, dtk_int32 lineNumbersWidth);
 
 // Retrieves the width of the line numbers.
-float dred_textbox_get_line_numbers_width(dred_textbox* pTextBox);
+dtk_int32 dred_textbox_get_line_numbers_width(dred_textbox* pTextBox);
 
 // Sets the padding to apply between the line numbers and the text.
-void dred_textbox_set_line_numbers_padding(dred_textbox* pTextBox, float lineNumbersPadding);
+void dred_textbox_set_line_numbers_padding(dred_textbox* pTextBox, dtk_int32 lineNumbersPadding);
 
 // Retrieves the padding to apply between the line numbers and the text.
-float dred_textbox_get_line_numbers_padding(dred_textbox* pTextBox);
+dtk_int32 dred_textbox_get_line_numbers_padding(dred_textbox* pTextBox);
 
 // Sets the color of the text of the line numbers.
 void dred_textbox_set_line_numbers_color(dred_textbox* pTextBox, dtk_color color);
@@ -261,7 +261,7 @@ dtk_scrollbar* dred_textbox_get_vertical_scrollbar(dred_textbox* pTextBox);
 dtk_scrollbar* dred_textbox_get_horizontal_scrollbar(dred_textbox* pTextBox);
 
 // Sets the size of both the vertical and horizontal scrollbars.
-void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, float size);
+void dred_textbox_set_scrollbar_size(dred_textbox* pTextBox, dtk_int32 size);
 
 // Enables excess scrolling on the vertical scrollbar.
 void dred_textbox_enable_excess_scrolling(dred_textbox* pTextBox);

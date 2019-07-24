@@ -155,10 +155,10 @@ typedef struct dred_rect dred_rect;
 /// Structure representing a rectangle.
 struct dred_rect
 {
-    float left;
-    float top;
-    float right;
-    float bottom;
+    dtk_int32 left;
+    dtk_int32 top;
+    dtk_int32 right;
+    dtk_int32 bottom;
 };
 
 typedef struct
@@ -168,8 +168,8 @@ typedef struct
     dtk_font* pFont;
 } dred_text_style;
 
-typedef void (* dred_gui_on_move_proc)                 (dred_control* pControl, float newRelativePosX, float newRelativePosY);
-typedef void (* dred_gui_on_size_proc)                 (dred_control* pControl, float newWidth, float newHeight);
+typedef void (* dred_gui_on_move_proc)                 (dred_control* pControl, int newRelativePosX, int newRelativePosY);
+typedef void (* dred_gui_on_size_proc)                 (dred_control* pControl, int newWidth, int newHeight);
 typedef void (* dred_gui_on_mouse_enter_proc)          (dred_control* pControl);
 typedef void (* dred_gui_on_mouse_leave_proc)          (dred_control* pControl);
 typedef void (* dred_gui_on_mouse_move_proc)           (dred_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags);
@@ -350,30 +350,30 @@ void dred_control_set_on_release_keyboard(dred_control* pControl, dred_gui_on_re
 //// Layout ////
 
 /// Sets the absolute position of the given element.
-void dred_control_set_absolute_position(dred_control* pControl, float positionX, float positionY);
+void dred_control_set_absolute_position(dred_control* pControl, dtk_int32 positionX, dtk_int32 positionY);
 
 /// Retrieves the absolute position of the given element.
-void dred_control_get_absolute_position(const dred_control* pControl, float* positionXOut, float* positionYOut);
-float dred_control_get_absolute_position_x(const dred_control* pControl);
-float dred_control_get_absolute_position_y(const dred_control* pControl);
+void dred_control_get_absolute_position(const dred_control* pControl, dtk_int32* positionXOut, dtk_int32* positionYOut);
+dtk_int32 dred_control_get_absolute_position_x(const dred_control* pControl);
+dtk_int32 dred_control_get_absolute_position_y(const dred_control* pControl);
 
 
 /// Sets the relative position of the given element.
-void dred_control_set_relative_position(dred_control* pControl, float relativePosX, float relativePosY);
+void dred_control_set_relative_position(dred_control* pControl, dtk_int32 relativePosX, dtk_int32 relativePosY);
 
 /// Retrieves the relative position of the given element.
-void dred_control_get_relative_position(const dred_control* pControl, float* relativePosXOut, float* relativePosYOut);
-float dred_control_get_relative_position_x(const dred_control* pControl);
-float dred_control_get_relative_position_y(const dred_control* pControl);
+void dred_control_get_relative_position(const dred_control* pControl, dtk_int32* relativePosXOut, dtk_int32* relativePosYOut);
+dtk_int32 dred_control_get_relative_position_x(const dred_control* pControl);
+dtk_int32 dred_control_get_relative_position_y(const dred_control* pControl);
 
 
 /// Sets the size of the given element.
-void dred_control_set_size(dred_control* pControl, float width, float height);
+void dred_control_set_size(dred_control* pControl, dtk_int32 width, dtk_int32 height);
 
 /// Retrieves the size of the given element.
-void dred_control_get_size(const dred_control* pControl, float* widthOut, float* heightOut);
-float dred_control_get_width(const dred_control* pControl);
-float dred_control_get_height(const dred_control* pControl);
+void dred_control_get_size(const dred_control* pControl, dtk_int32* widthOut, dtk_int32* heightOut);
+dtk_int32 dred_control_get_width(const dred_control* pControl);
+dtk_int32 dred_control_get_height(const dred_control* pControl);
 
 
 
@@ -410,13 +410,13 @@ dred_rect dred_make_rect_relative(const dred_control* pControl, dred_rect* pRect
 dred_rect dred_make_rect_absolute(const dred_control* pControl, dred_rect* pRect);
 
 /// Converts the given point from absolute to relative to the given element.
-void dred_make_point_relative(const dred_control* pControl, float* positionX, float* positionY);
+void dred_make_point_relative(const dred_control* pControl, dtk_int32* positionX, dtk_int32* positionY);
 
 /// Converts the given point from relative to absolute based on the given element.
-void dred_make_point_absolute(const dred_control* pControl, float* positionX, float* positionY);
+void dred_make_point_absolute(const dred_control* pControl, dtk_int32* positionX, dtk_int32* positionY);
 
 /// Creates a dred_rect object.
-dred_rect dred_make_rect(float left, float top, float right, float bottom);
+dred_rect dred_make_rect(dtk_int32 left, dtk_int32 top, dtk_int32 right, dtk_int32 bottom);
 
 /// Creates an inside-out rectangle.
 ///
@@ -432,7 +432,7 @@ dred_rect dred_make_inside_out_rect();
 ///     @par
 ///     The growth amount can be negative, in which case it will be shrunk. Note that this does not do any checking to ensure the rectangle
 ///     contains positive dimensions after a shrink.
-dred_rect dred_grow_rect(dred_rect rect, float amount);
+dred_rect dred_grow_rect(dred_rect rect, dtk_int32 amount);
 
 /// Scales the given rectangle.
 ///
@@ -442,10 +442,10 @@ dred_rect dred_grow_rect(dred_rect rect, float amount);
 /// @remarks
 ///     This will modify the <left> and <top> properties which means the rectangle will change position. To adjust only the size, scale the
 ///     rectangle manually.
-dred_rect dred_scale_rect(dred_rect rect, float scaleX, float scaleY);
+dred_rect dred_scale_rect(dred_rect rect, dtk_int32 scaleX, dtk_int32 scaleY);
 
 /// Offsets the given rectangle.
-dred_rect dred_offset_rect(dred_rect rect, float offsetX, float offsetY);
+dred_rect dred_offset_rect(dred_rect rect, dtk_int32 offsetX, dtk_int32 offsetY);
 
 /// Creates a rectangle that contains both of the given rectangles.
 dred_rect dred_rect_union(dred_rect rect0, dred_rect rect1);
@@ -457,7 +457,7 @@ dred_rect dred_rect_union(dred_rect rect0, dred_rect rect1);
 ///     is sitting on the left or top border, DTK_TRUE will be returned. The reason for this is that elements may sit exactly side-by-side with
 ///     each other, and if we use this function to determine if a point is contained within an element (which we do), we would end up having
 ///     this return DTK_TRUE for both elements, which we don't want.
-dtk_bool32 dred_rect_contains_point(dred_rect rect, float posX, float posY);
+dtk_bool32 dred_rect_contains_point(dred_rect rect, dtk_int32 posX, dtk_int32 posY);
 
 /// Determines whether or not two rectangles are equal.
 dtk_bool32 dred_rect_equal(dred_rect rect0, dred_rect rect1);

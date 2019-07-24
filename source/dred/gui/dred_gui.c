@@ -25,14 +25,14 @@ DTK_INLINE dtk_rect dtk_rect_init_dred(dred_rect rect)
 }
 
 
-void dred_control__post_outbound_event_move(dred_control* pControl, float newRelativePosX, float newRelativePosY)
+void dred_control__post_outbound_event_move(dred_control* pControl, int newRelativePosX, int newRelativePosY)
 {
     if (pControl->onMove) {
         pControl->onMove(pControl, newRelativePosX, newRelativePosY);
     }
 }
 
-void dred_control__post_outbound_event_size(dred_control* pControl, float newWidth, float newHeight)
+void dred_control__post_outbound_event_size(dred_control* pControl, int newWidth, int newHeight)
 {
     if (pControl->onSize) {
         pControl->onSize(pControl, newWidth, newHeight);
@@ -160,10 +160,10 @@ dtk_bool32 dred_control_event_handler(dtk_event* pEvent)
         case DTK_EVENT_PAINT:
         {
             dred_rect rect = dred_make_rect(
-                (float)pEvent->paint.rect.left,
-                (float)pEvent->paint.rect.top,
-                (float)pEvent->paint.rect.right,
-                (float)pEvent->paint.rect.bottom
+                pEvent->paint.rect.left,
+                pEvent->paint.rect.top,
+                pEvent->paint.rect.right,
+                pEvent->paint.rect.bottom
             );
             
             if (pDredControl->onPaint) {
@@ -173,12 +173,12 @@ dtk_bool32 dred_control_event_handler(dtk_event* pEvent)
 
         case DTK_EVENT_SIZE:
         {
-            dred_control__post_outbound_event_size(pDredControl, (float)pEvent->size.width, (float)pEvent->size.height);
+            dred_control__post_outbound_event_size(pDredControl, pEvent->size.width, pEvent->size.height);
         } break;
 
         case DTK_EVENT_MOVE:
         {
-            dred_control__post_outbound_event_move(pDredControl, (float)pEvent->move.x, (float)pEvent->move.y);
+            dred_control__post_outbound_event_move(pDredControl, pEvent->move.x, pEvent->move.y);
         } break;
 
         case DTK_EVENT_MOUSE_LEAVE:
@@ -466,90 +466,75 @@ void dred_control_set_on_release_keyboard(dred_control* pControl, dred_gui_on_re
 
 //// Layout ////
 
-void dred_control_set_absolute_position(dred_control* pControl, float positionX, float positionY)
+void dred_control_set_absolute_position(dred_control* pControl, dtk_int32 positionX, dtk_int32 positionY)
 {
     if (pControl == NULL) return;
     dtk_control_set_absolute_position(DTK_CONTROL(pControl), (dtk_int32)positionX, (dtk_int32)positionY);
 }
 
-void dred_control_get_absolute_position(const dred_control* pControl, float * positionXOut, float * positionYOut)
+void dred_control_get_absolute_position(const dred_control* pControl, dtk_int32 * positionXOut, dtk_int32 * positionYOut)
 {
-    dtk_int32 x;
-    dtk_int32 y;
-    dtk_control_get_absolute_position(DTK_CONTROL(pControl), &x, &y);
-
-    if (positionXOut) *positionXOut = (float)x;
-    if (positionYOut) *positionYOut = (float)y;
+    dtk_control_get_absolute_position(DTK_CONTROL(pControl), positionXOut, positionYOut);
 }
 
-float dred_control_get_absolute_position_x(const dred_control* pControl)
+dtk_int32 dred_control_get_absolute_position_x(const dred_control* pControl)
 {
-    if (pControl == NULL) return 0.0f;
-    return (float)pControl->baseControl.absolutePosX;
+    if (pControl == NULL) return 0;
+    return pControl->baseControl.absolutePosX;
 }
 
-float dred_control_get_absolute_position_y(const dred_control* pControl)
+dtk_int32 dred_control_get_absolute_position_y(const dred_control* pControl)
 {
-    if (pControl == NULL) return 0.0f;
-    return (float)pControl->baseControl.absolutePosY;
+    if (pControl == NULL) return 0;
+    return pControl->baseControl.absolutePosY;
 }
 
 
-void dred_control_set_relative_position(dred_control* pControl, float relativePosX, float relativePosY)
+void dred_control_set_relative_position(dred_control* pControl, dtk_int32 relativePosX, dtk_int32 relativePosY)
 {
     if (pControl == NULL) return;
-    dtk_control_set_relative_position(DTK_CONTROL(pControl), (dtk_int32)relativePosX, (dtk_int32)relativePosY);
+    dtk_control_set_relative_position(DTK_CONTROL(pControl), relativePosX, relativePosY);
 }
 
-void dred_control_get_relative_position(const dred_control* pControl, float* positionXOut, float* positionYOut)
+void dred_control_get_relative_position(const dred_control* pControl, dtk_int32* positionXOut, dtk_int32* positionYOut)
+{
+    dtk_control_get_relative_position(DTK_CONTROL(pControl), positionXOut, positionYOut);
+}
+
+dtk_int32 dred_control_get_relative_position_x(const dred_control* pControl)
 {
     dtk_int32 x;
-    dtk_int32 y;
-    dtk_control_get_relative_position(DTK_CONTROL(pControl), &x, &y);
-
-    if (positionXOut) *positionXOut = (float)x;
-    if (positionYOut) *positionYOut = (float)y;
-}
-
-float dred_control_get_relative_position_x(const dred_control* pControl)
-{
-    float x;
     dred_control_get_relative_position(pControl, &x, NULL);
     return x;
 }
 
-float dred_control_get_relative_position_y(const dred_control* pControl)
+dtk_int32 dred_control_get_relative_position_y(const dred_control* pControl)
 {
-    float y;
+    dtk_int32 y;
     dred_control_get_relative_position(pControl, NULL, &y);
     return y;
 }
 
 
-void dred_control_set_size(dred_control* pControl, float width, float height)
+void dred_control_set_size(dred_control* pControl, dtk_int32 width, dtk_int32 height)
 {
     if (pControl == NULL) return;
-    dtk_control_set_size(DTK_CONTROL(pControl), (dtk_uint32)width, (dtk_uint32)height);
+    dtk_control_set_size(DTK_CONTROL(pControl), width, height);
 }
 
-void dred_control_get_size(const dred_control* pControl, float* widthOut, float* heightOut)
+void dred_control_get_size(const dred_control* pControl, dtk_int32* widthOut, dtk_int32* heightOut)
 {
-    dtk_int32 sizeX;
-    dtk_int32 sizeY;
-    dtk_control_get_size(DTK_CONTROL(pControl), &sizeX, &sizeY);
-
-    if (widthOut)  *widthOut  = (float)sizeX;
-    if (heightOut) *heightOut = (float)sizeY;
+    dtk_control_get_size(DTK_CONTROL(pControl), widthOut, heightOut);
 }
 
-float dred_control_get_width(const dred_control * pControl)
+dtk_int32 dred_control_get_width(const dred_control * pControl)
 {
-    return (float)pControl->baseControl.width;
+    return pControl->baseControl.width;
 }
 
-float dred_control_get_height(const dred_control * pControl)
+dtk_int32 dred_control_get_height(const dred_control * pControl)
 {
-    return (float)pControl->baseControl.height;
+    return pControl->baseControl.height;
 }
 
 
@@ -557,10 +542,10 @@ dred_rect dred_control_get_absolute_rect(const dred_control* pControl)
 {
     dtk_rect rect = dtk_control_get_absolute_rect(DTK_CONTROL(pControl));
     return dred_make_rect(
-        (float)rect.left,
-        (float)rect.top,
-        (float)rect.right,
-        (float)rect.bottom
+        rect.left,
+        rect.top,
+        rect.right,
+        rect.bottom
     );
 }
 
@@ -568,10 +553,10 @@ dred_rect dred_control_get_relative_rect(const dred_control* pControl)
 {
     dtk_rect rect = dtk_control_get_relative_rect(DTK_CONTROL(pControl));
     return dred_make_rect(
-        (float)rect.left,
-        (float)rect.top,
-        (float)rect.right,
-        (float)rect.bottom
+        rect.left,
+        rect.top,
+        rect.right,
+        rect.bottom
     );
 }
 
@@ -579,10 +564,10 @@ dred_rect dred_control_get_local_rect(const dred_control* pControl)
 {
     dtk_rect rect = dtk_control_get_local_rect(DTK_CONTROL(pControl));
     return dred_make_rect(
-        (float)rect.left,
-        (float)rect.top,
-        (float)rect.right,
-        (float)rect.bottom
+        rect.left,
+        rect.top,
+        rect.right,
+        rect.bottom
     );
 }
 
@@ -615,10 +600,10 @@ dtk_bool32 dred_clamp_rect_to_element(const dred_control* pControl, dred_rect* p
     dtk_rect rect = dtk_rect_init_dred(*pRelativeRect);
     dtk_bool32 result = dtk_control_clamp_rect(DTK_CONTROL(pControl), &rect);
     
-    pRelativeRect->left   = (float)rect.left;
-    pRelativeRect->top    = (float)rect.top;
-    pRelativeRect->right  = (float)rect.right;
-    pRelativeRect->bottom = (float)rect.bottom;
+    pRelativeRect->left   = rect.left;
+    pRelativeRect->top    = rect.top;
+    pRelativeRect->right  = rect.right;
+    pRelativeRect->bottom = rect.bottom;
 
     return result;
 }
@@ -651,7 +636,7 @@ dred_rect dred_make_rect_absolute(const dred_control * pControl, dred_rect * pRe
     return *pRect;
 }
 
-void dred_make_point_relative(const dred_control* pControl, float* positionX, float* positionY)
+void dred_make_point_relative(const dred_control* pControl, dtk_int32* positionX, dtk_int32* positionY)
 {
     if (pControl != NULL)
     {
@@ -665,7 +650,7 @@ void dred_make_point_relative(const dred_control* pControl, float* positionX, fl
     }
 }
 
-void dred_make_point_absolute(const dred_control* pControl, float* positionX, float* positionY)
+void dred_make_point_absolute(const dred_control* pControl, dtk_int32* positionX, dtk_int32* positionY)
 {
     if (pControl != NULL)
     {
@@ -679,7 +664,7 @@ void dred_make_point_absolute(const dred_control* pControl, float* positionX, fl
     }
 }
 
-dred_rect dred_make_rect(float left, float top, float right, float bottom)
+dred_rect dred_make_rect(dtk_int32 left, dtk_int32 top, dtk_int32 right, dtk_int32 bottom)
 {
     dred_rect rect;
     rect.left   = left;
@@ -693,15 +678,15 @@ dred_rect dred_make_rect(float left, float top, float right, float bottom)
 dred_rect dred_make_inside_out_rect()
 {
     dred_rect rect;
-    rect.left   =  FLT_MAX;
-    rect.top    =  FLT_MAX;
-    rect.right  = -FLT_MAX;
-    rect.bottom = -FLT_MAX;
+    rect.left   = INT_MAX;
+    rect.top    = INT_MAX;
+    rect.right  = INT_MIN;
+    rect.bottom = INT_MIN;
 
     return rect;
 }
 
-dred_rect dred_grow_rect(dred_rect rect, float amount)
+dred_rect dred_grow_rect(dred_rect rect, dtk_int32 amount)
 {
     dred_rect result = rect;
     result.left   -= amount;
@@ -712,7 +697,7 @@ dred_rect dred_grow_rect(dred_rect rect, float amount)
     return result;
 }
 
-dred_rect dred_scale_rect(dred_rect rect, float scaleX, float scaleY)
+dred_rect dred_scale_rect(dred_rect rect, dtk_int32 scaleX, dtk_int32 scaleY)
 {
     dred_rect result = rect;
     result.left   *= scaleX;
@@ -723,7 +708,7 @@ dred_rect dred_scale_rect(dred_rect rect, float scaleX, float scaleY)
     return result;
 }
 
-dred_rect dred_offset_rect(dred_rect rect, float offsetX, float offsetY)
+dred_rect dred_offset_rect(dred_rect rect, dtk_int32 offsetX, dtk_int32 offsetY)
 {
     return dred_make_rect(rect.left + offsetX, rect.top + offsetY, rect.right + offsetX, rect.bottom + offsetY);
 }
@@ -739,7 +724,7 @@ dred_rect dred_rect_union(dred_rect rect0, dred_rect rect1)
     return result;
 }
 
-dtk_bool32 dred_rect_contains_point(dred_rect rect, float posX, float posY)
+dtk_bool32 dred_rect_contains_point(dred_rect rect, dtk_int32 posX, dtk_int32 posY)
 {
     if (posX < rect.left || posY < rect.top) {
         return DTK_FALSE;
