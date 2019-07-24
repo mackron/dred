@@ -26,10 +26,6 @@ struct dred_context
     dtk_string_pool stringPool;
 
 
-    // The main GUI context.
-    dred_gui gui;
-
-
     // The font library. This just manages fonts to make it easier to avoid loading duplicate fonts.
     dred_font_library fontLibrary;
 

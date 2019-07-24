@@ -1869,7 +1869,7 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
     }
 
     // Focus the text editor.
-    dred_gui_capture_keyboard(pControl);
+    dtk_capture_keyboard(&pControl->pDred->tk, DTK_CONTROL(pControl));
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT)
     {
@@ -1926,7 +1926,7 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
 
 
             // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
-            dred_gui_capture_mouse(pControl);
+            dtk_capture_mouse(&pControl->pDred->tk, DTK_CONTROL(pControl));
         }
     }
 
@@ -1959,7 +1959,7 @@ void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, i
             }
 
             // Releasing the mouse will leave selectionmode.
-            dred_gui_release_mouse(pControl->pGUI);
+            dtk_release_mouse(&pControl->pDred->tk);
         }
 
         if (pTextView->isWantingToDragAndDrop) {
@@ -2945,7 +2945,7 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT)
     {
-        dred_gui_capture_mouse(pLineNumbers);
+        dtk_capture_mouse(&pLineNumbers->pDred->tk, DTK_CONTROL(pLineNumbers));
 
         // If the shift key is down and we already have a selection, this is equivalent to a mouse drag.
         if ((stateFlags & DTK_MODIFIER_SHIFT) != 0) {
@@ -2992,7 +2992,7 @@ void dred_textview__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, 
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
         if (dtk_control_has_mouse_capture(DTK_CONTROL(pLineNumbers))) {
-            dred_gui_release_mouse(pLineNumbers->pGUI);
+            dtk_release_mouse(&pLineNumbers->pDred->tk);
         }
     }
 }

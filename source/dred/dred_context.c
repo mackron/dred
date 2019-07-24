@@ -647,12 +647,6 @@ dtk_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_li
     pDred->logFile = dred__open_log_file(pDred);
 
 
-    // The GUI.
-    if (!dred_gui_init_dtk(&pDred->gui, pDred)) {
-        goto on_error;
-    }
-
-
     // The font library. This needs to be initialized before loading any fonts and configs.
     if (!dred_font_library_init(&pDred->fontLibrary, pDred)) {
         goto on_error;
@@ -870,8 +864,6 @@ void dred_uninit(dred_context* pDred)
 
     dred_image_library_uninit(&pDred->imageLibrary);
     dred_font_library_uninit(&pDred->fontLibrary);
-
-    dred_gui_uninit(&pDred->gui);
 
     if (pDred->logFile) {
         dtk_fclose(pDred->logFile);
@@ -1145,7 +1137,7 @@ void dred_capture_keyboard(dred_context* pDred, dred_control* pControl)
         return;
     }
 
-    dred_gui_capture_keyboard(pControl);
+    dtk_capture_keyboard(&pDred->tk, DTK_CONTROL(pControl));
 }
 
 void dred_release_keyboard(dred_context* pDred)
@@ -1154,7 +1146,7 @@ void dred_release_keyboard(dred_context* pDred)
         return;
     }
 
-    dred_gui_release_keyboard(&pDred->gui);
+    dtk_release_keyboard(&pDred->tk);
 }
 
 

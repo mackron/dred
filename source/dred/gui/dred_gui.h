@@ -144,12 +144,8 @@
 #define DRED_MAX_FONT_FAMILY_LENGTH  128
 #endif
 
-typedef struct dred_gui dred_gui;
 typedef struct dred_control dred_control;
 typedef struct dred_rect dred_rect;
-typedef struct dred_gui_painting_callbacks dred_gui_painting_callbacks;
-typedef struct dred_gui_font dred_gui_font;
-typedef struct dred_gui_image dred_gui_image;
 
 
 // Casts a pointer to any structure to a dred_control*. Note that this will only work if the dred_control object
@@ -171,63 +167,6 @@ typedef struct
     dtk_color fgColor;
     dtk_font* pFont;
 } dred_text_style;
-
-typedef struct
-{
-    /// The destination position on the x axis. This is ignored if the DR2D_IMAGE_ALIGN_CENTER option is set.
-    float dstX;
-
-    /// The destination position on the y axis. This is ignored if the DR2D_IMAGE_ALIGN_CENTER option is set.
-    float dstY;
-
-    /// The destination width.
-    float dstWidth;
-
-    /// The destination height.
-    float dstHeight;
-
-
-    /// The source offset on the x axis.
-    float srcX;
-
-    /// The source offset on the y axis.
-    float srcY;
-
-    /// The source width.
-    float srcWidth;
-
-    /// The source height.
-    float srcHeight;
-
-
-    /// The position of the destination's bounds on the x axis.
-    float dstBoundsX;
-
-    /// The position of the destination's bounds on the y axis.
-    float dstBoundsY;
-
-    /// The width of the destination's bounds.
-    float dstBoundsWidth;
-
-    /// The height of the destination's bounds.
-    float dstBoundsHeight;
-
-
-    /// The foreground tint color. This is not applied to the background color, and the alpha component is ignored.
-    dtk_color foregroundTint;
-
-    /// The background color. Only used if the DR2D_IMAGE_DRAW_BACKGROUND option is set.
-    dtk_color backgroundColor;
-
-    /// The bounds color. This color is used for the region of the bounds that sit on the outside of the destination rectangle. This will
-    /// usually be set to the same value as backgroundColor, but it could also be used to draw a border around the image.
-    dtk_color boundsColor;
-
-
-    /// Flags for controlling how the image should be drawn.
-    unsigned int options;
-
-} dred_gui_draw_image_args;
 
 
 #define DRED_GUI_IMAGE_DRAW_BOUNDS         (1 << 2)
@@ -261,68 +200,14 @@ typedef void (* dred_gui_on_capture_keyboard_proc)     (dred_control* pControl, 
 typedef void (* dred_gui_on_release_keyboard_proc)     (dred_control* pControl, dtk_control* pNewCapturedControl);
 typedef void (* dred_gui_on_change_cursor_proc)        (dred_control* pControl, dtk_system_cursor_type cursor);
 typedef void (* dred_gui_on_delete_element_proc)       (dred_control* pControl);
-typedef void (* dred_gui_on_log)                       (dred_gui* pGUI, const char* message);
-
-typedef void (* dred_gui_set_clip_proc)          (dred_rect relativeRect, dtk_surface* pSurface);
-typedef void (* dred_gui_get_clip_proc)          (dred_rect* pRectOut, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_rect_proc)         (dred_rect relativeRect, dtk_color color, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_rect_outline_proc) (dred_rect relativeRect, dtk_color color, float outlineWidth, dtk_surface* pSurface);
-typedef void (* dred_gui_draw_text_proc)         (dtk_font* pFont, float scale, const char* text, int textLengthInBytes, float posX, float posY, dtk_color color, dtk_color backgroundColor, dtk_surface* pSurface);
-
-typedef dtk_bool32 (* dred_gui_visible_iteration_proc)(dred_control* pControl, dred_rect *pRelativeRect, void* pUserData);
-
-// Structure containing callbacks for painting routines.
-struct dred_gui_painting_callbacks
-{
-    dred_gui_set_clip_proc          setClip;
-    dred_gui_get_clip_proc          getClip;
-    dred_gui_draw_rect_proc         drawRect;
-    dred_gui_draw_rect_outline_proc drawRectOutline;
-    dred_gui_draw_text_proc         drawText;
-};
-
-struct dred_gui_image
-{
-    /// A pointer to the context that owns this image.
-    dred_gui* pGUI;
-
-    /// The resource handle that is passed around to the callback functions.
-    dtk_surface* pInternalImage;
-};
-
-struct dred_gui_font
-{
-    /// A pointer to the context that owns this font.
-    dred_gui* pGUI;
-
-    /// The font family.
-    char family[DRED_MAX_FONT_FAMILY_LENGTH];
-
-    /// The base size of the font. This is set to the value that was used to create the font in the first place.
-    unsigned int size;
-
-    /// The font's weight.
-    dtk_font_weight weight;
-
-    /// The fon't slant.
-    dtk_font_slant slant;
-
-    /// The font's flags. Can be a combination of the following:
-    ///   DRED_GUI_FONT_NO_CLEARTYPE
-    unsigned int flags;
-
-    /// The internal font. This is created by the rendering backend.
-    dtk_font* pInternalFont;
-};
-
 
 struct dred_control
 {
     // The base DTK control.
     dtk_control baseControl;
 
-    /// A pointer to the context that owns this element. This should never be null for valid elements.
-    dred_gui* pGUI;
+    /// A pointer to the dred context that owns this control.
+    dred_context* pDred;
 
     /// The type of the element, as a string. This is only every used by the host application, and is intended to be used as way
     /// to selectively perform certain operations on specific types of GUI elements.
@@ -386,25 +271,6 @@ struct dred_control
     dred_gui_on_release_keyboard_proc onReleaseKeyboard;
 };
 
-struct dred_gui
-{
-    // The dred context that owns the GUI system.
-    dred_context* pDred;
-};
-
-
-
-/////////////////////////////////////////////////////////////////
-//
-// CORE API
-//
-/////////////////////////////////////////////////////////////////
-
-// Initializes a GUI context.
-dtk_bool32 dred_gui_init(dred_gui* pGUI, dred_context* pDred);
-
-/// Deletes a context and everything that it created.
-void dred_gui_uninit(dred_gui* pGUI);
 
 
 
@@ -465,26 +331,6 @@ void dred_control_enable_clipping(dred_control* pControl);
 /// Determines whether or not clipping is enabled for the given element.
 dtk_bool32 dred_control_is_clipping_enabled(const dred_control* pControl);
 
-
-/// Sets the element that should receive all future mouse related events.
-///
-/// @remarks
-///     Release the mouse capture with dred_gui_release_mouse().
-void dred_gui_capture_mouse(dred_control* pControl);
-void dred_control_capture_mouse(dred_control* pControl) { dred_gui_capture_mouse(pControl); }
-
-/// Releases the mouse capture.
-void dred_gui_release_mouse(dred_gui* pGUI);
-
-/// Sets the element that should receive all future keyboard related events.
-///
-/// @remarks
-///     Releases the keyboard capture with dred_gui_release_keyboard().
-void dred_gui_capture_keyboard(dred_control* pControl);
-void dred_control_capture_keyboard(dred_control* pControl) { dred_gui_capture_keyboard(pControl); }
-
-/// Releases the keyboard capture.
-void dred_gui_release_keyboard(dred_gui* pGUI);
 
 /// Sets the cursor to use when the mouse enters the given GUI element.
 void dred_control_set_cursor(dred_control* pControl, dtk_system_cursor_type cursor);
@@ -675,28 +521,6 @@ dred_rect dred_control_get_local_rect(const dred_control* pControl);
 
 /////////////////////////////////////////////////////////////////
 //
-// HIGH-LEVEL API
-//
-/////////////////////////////////////////////////////////////////
-
-//// Hit Testing and Layout ////
-
-/// An on_size event callback that resizes every child element to that of the parent.
-void dred_control_on_size_fit_children_to_parent(dred_control* pControl, float newWidth, float newHeight);
-
-/// An on_hit_test event callback that can be used to always fail the mouse hit test.
-dtk_bool32 dred_control_pass_through_hit_test(dred_control* pControl, float mousePosX, float mousePosY);
-
-
-//// Painting ////
-
-/// Draws a border around the given element.
-void dred_control_draw_border(dred_control* pControl, float borderWidth, dtk_color color, dtk_surface* pSurface);
-
-
-
-/////////////////////////////////////////////////////////////////
-//
 // UTILITY API
 //
 /////////////////////////////////////////////////////////////////
@@ -768,18 +592,4 @@ dtk_bool32 dred_rect_equal(dred_rect rect0, dred_rect rect1);
 
 /// Determines whether or not the given rectangle has any volume (width and height > 0).
 dtk_bool32 dred_rect_has_volume(dred_rect rect);
-
-
-
-/////////////////////////////////////////////////////////////////
-//
-// DTK Interop.
-//
-/////////////////////////////////////////////////////////////////
-
-// A covenience function for creating a new context and registering the DTK painting callbacks.
-//
-// @remarks
-//     This is equivalent to dred_gui_init() followed by dred_gui_register_dtk_callbacks().
-dtk_bool32 dred_gui_init_dtk(dred_gui* pGUI, dred_context* pDred);
 

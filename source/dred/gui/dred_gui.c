@@ -146,32 +146,6 @@ void dred_control__post_outbound_event_release_keyboard(dred_control* pControl, 
 }
 
 
-/////////////////////////////////////////////////////////////////
-//
-// CORE API
-//
-/////////////////////////////////////////////////////////////////
-
-dtk_bool32 dred_gui_init(dred_gui* pGUI, dred_context* pDred)
-{
-    if (pGUI == NULL || pDred == NULL) {
-        return DTK_FALSE;
-    }
-
-    memset(pGUI, 0, sizeof(*pGUI));
-    pGUI->pDred = pDred;
-
-    return DTK_TRUE;
-}
-
-void dred_gui_uninit(dred_gui* pGUI)
-{
-    if (pGUI == NULL) {
-        return;
-    }
-}
-
-
 
 /////////////////////////////////////////////////////////////////
 // Controls
@@ -293,7 +267,7 @@ dtk_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_c
         return DTK_FALSE;
     }
     
-    pControl->pGUI = &pDred->gui;
+    pControl->pDred = pDred;
 
     dred_control_set_type(pControl, type);
     return DTK_TRUE;
@@ -305,22 +279,17 @@ void dred_control_uninit(dred_control* pControl)
         return;
     }
 
-    dred_gui* pGUI = pControl->pGUI;
-    if (pGUI == NULL) {
-        return;
-    }
-
     dtk_control_uninit(&pControl->baseControl);
 }
 
 
 dred_context* dred_control_get_context(dred_control* pControl)
 {
-    if (pControl == NULL || pControl->pGUI == NULL) {
+    if (pControl == NULL) {
         return NULL;
     }
 
-    return pControl->pGUI->pDred;
+    return pControl->pDred;
 }
 
 
@@ -397,29 +366,6 @@ dtk_bool32 dred_control_is_clipping_enabled(const dred_control* pControl)
     return dtk_control_is_clipping_enabled(DTK_CONTROL(pControl));
 }
 
-
-
-void dred_gui_capture_mouse(dred_control* pControl)
-{
-    if (pControl == NULL) return;
-    dtk_capture_mouse(&pControl->pGUI->pDred->tk, DTK_CONTROL(pControl));
-}
-
-void dred_gui_release_mouse(dred_gui* pGUI)
-{
-    if (pGUI == NULL) return;
-    dtk_release_mouse(&pGUI->pDred->tk);
-}
-
-void dred_gui_capture_keyboard(dred_control* pControl)
-{
-    dtk_capture_keyboard(DTK_CONTROL(pControl)->pTK, DTK_CONTROL(pControl));
-}
-
-void dred_gui_release_keyboard(dred_gui* pGUI)
-{
-    dtk_release_keyboard(&pGUI->pDred->tk);
-}
 
 void dred_control_set_cursor(dred_control* pControl, dtk_system_cursor_type cursor)
 {
@@ -777,40 +723,6 @@ dred_rect dred_control_get_local_rect(const dred_control* pControl)
 
 
 
-/////////////////////////////////////////////////////////////////
-//
-// HIGH-LEVEL API
-//
-/////////////////////////////////////////////////////////////////
-
-//// Hit Testing and Layout ////
-
-void dred_control_on_size_fit_children_to_parent(dred_control* pControl, float newWidth, float newHeight)
-{
-    for (dtk_control* pChild = pControl->baseControl.pFirstChild; pChild != NULL; pChild = pChild->pNextSibling) {
-        dtk_control_set_size(pChild, (dtk_int32)newWidth, (dtk_int32)newHeight);
-    }
-}
-
-dtk_bool32 dred_control_pass_through_hit_test(dred_control* pControl, float mousePosX, float mousePosY)
-{
-    (void)pControl;
-    (void)mousePosX;
-    (void)mousePosY;
-
-    return DTK_FALSE;
-}
-
-
-
-//// Painting ////
-
-void dred_control_draw_border(dred_control* pControl, float borderWidth, dtk_color color, dtk_surface* pSurface)
-{
-    dtk_surface_draw_rect_outline(pSurface, dtk_rect_init_dred(dred_control_get_local_rect(pControl)), color, (dtk_int32)borderWidth);
-}
-
-
 
 /////////////////////////////////////////////////////////////////
 //
@@ -987,21 +899,4 @@ dtk_bool32 dred_rect_equal(dred_rect rect0, dred_rect rect1)
 dtk_bool32 dred_rect_has_volume(dred_rect rect)
 {
     return rect.right > rect.left && rect.bottom > rect.top;
-}
-
-
-
-
-/////////////////////////////////////////////////////////////////
-//
-// DTK-SPECIFIC API
-//
-/////////////////////////////////////////////////////////////////
-dtk_bool32 dred_gui_init_dtk(dred_gui* pGUI, dred_context* pDred)
-{
-    if (!dred_gui_init(pGUI, pDred)) {
-        return DTK_FALSE;
-    }
-
-    return DTK_TRUE;
 }

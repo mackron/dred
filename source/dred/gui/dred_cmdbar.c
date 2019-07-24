@@ -134,7 +134,7 @@ void dred_cmdbar__on_capture_keyboard(dred_control* pControl, dtk_control* pPrev
     dred_cmdbar* pCmdBar = DRED_CMDBAR(pControl);
     assert(pCmdBar != NULL);
 
-    dred_gui_capture_keyboard(DRED_CONTROL(&pCmdBar->textBox));
+    dtk_capture_keyboard(&pCmdBar->control.pDred->tk, DTK_CONTROL(&pCmdBar->textBox));
 }
 
 void dred_cmdbar__on_paint(dred_control* pControl, dred_rect rect, dtk_surface* pSurface)
