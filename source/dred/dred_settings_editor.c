@@ -8,7 +8,7 @@ dtk_rect dred_settings_editor__get_side_panel_rect(dred_settings_editor* pSettin
 {
     assert(pSettingsEditor != NULL);
 
-    return dtk_rect_init(0, 0, pSettingsEditor->sidePanelWidth, dred_control_get_height(DRED_CONTROL(pSettingsEditor)));
+    return dtk_rect_init(0, 0, pSettingsEditor->sidePanelWidth, dtk_control_get_height(DTK_CONTROL(pSettingsEditor)));
 }
 
 dtk_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSettingsEditor)
@@ -18,9 +18,9 @@ dtk_rect dred_settings_editor__get_action_area_rect(dred_settings_editor* pSetti
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
     dtk_int32 posX = pSettingsEditor->sidePanelWidth;
-    dtk_int32 posY = (dtk_int32)(dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - (dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton))) - (8*uiScale * 2));
+    dtk_int32 posY = (dtk_int32)(dtk_control_get_height(DTK_CONTROL(pSettingsEditor)) - (dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->closeButton))) - (8*uiScale * 2));
 
-    return dtk_rect_init(posX, posY, dred_control_get_width(DRED_CONTROL(pSettingsEditor)), dred_control_get_height(DRED_CONTROL(pSettingsEditor)));
+    return dtk_rect_init(posX, posY, dtk_control_get_width(DTK_CONTROL(pSettingsEditor)), dtk_control_get_height(DTK_CONTROL(pSettingsEditor)));
 }
 
 int dred_settings_editor__get_side_panel_btn_index_under_point(dred_settings_editor* pSettingsEditor, float posX, float posY)
@@ -83,20 +83,20 @@ void dred_settings_editor__refresh_layout(dred_settings_editor* pSettingsEditor)
 
     dtk_int32 posX = pSettingsEditor->sidePanelWidth;
     dtk_int32 posY = 0;
-    dtk_int32 sizeX = (dtk_int32)(dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - posX);
-    dtk_int32 sizeY = (dtk_int32)(dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - (dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton))) - (8*uiScale * 2));
+    dtk_int32 sizeX = (dtk_int32)(dtk_control_get_width( DTK_CONTROL(pSettingsEditor)) - posX);
+    dtk_int32 sizeY = (dtk_int32)(dtk_control_get_height(DTK_CONTROL(pSettingsEditor)) - (dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->closeButton))) - (8*uiScale * 2));
 
     // Every page needs to be resized. Every page will be the same size.
     int sideButtonsCount = (int)(sizeof(pSettingsEditor->pages) / sizeof(pSettingsEditor->pages[0]));
     for (int i = 0; i < sideButtonsCount; ++i) {
-        dred_control_set_relative_position(pSettingsEditor->pages[i].pGUIControl, posX, posY);
-        dred_control_set_size(pSettingsEditor->pages[i].pGUIControl, sizeX, sizeY);
+        dtk_control_set_relative_position(DTK_CONTROL(pSettingsEditor->pages[i].pGUIControl), posX, posY);
+        dtk_control_set_size(DTK_CONTROL(pSettingsEditor->pages[i].pGUIControl), sizeX, sizeY);
         dtk_control_refresh_layout(DTK_CONTROL(pSettingsEditor->pages[i].pGUIControl));
     }
 
-    dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->closeButton),
-        (dtk_int32)(dred_control_get_width (DRED_CONTROL(pSettingsEditor)) - dred_control_get_width (DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale),
-        (dtk_int32)(dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale));
+    dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->closeButton),
+        (dtk_int32)(dtk_control_get_width (DTK_CONTROL(pSettingsEditor)) - dtk_control_get_width (DTK_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale),
+        (dtk_int32)(dtk_control_get_height(DTK_CONTROL(pSettingsEditor)) - dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale));
 }
 
 
@@ -296,7 +296,7 @@ void dred_settings_editor_page__on_mouse_enter(dred_control* pPageControl)
 void dred_settings_editor_page__on_paint(dred_control* pPageControl, dtk_rect rect, dtk_surface* pSurface)
 {
     (void)rect;
-    dtk_surface_draw_rect(pSurface, dred_control_get_local_rect(pPageControl), dtk_rgb(255, 255, 255));
+    dtk_surface_draw_rect(pSurface, dtk_control_get_local_rect(DTK_CONTROL(pPageControl)), dtk_rgb(255, 255, 255));
 }
 
 dtk_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_control* pParent, dtk_event_proc onEvent, const char* title)
@@ -337,18 +337,18 @@ dtk_bool32 dred_settings_editor_general_page_event_handler(dtk_event* pEvent)
             dtk_int32 penPosY = (dtk_int32)(8*uiScale);
 
             dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowTabBar), (dtk_int32)(4*uiScale));
-            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowTabBar), penPosX, penPosY);
-            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowTabBar)) + (6*uiScale));
+            dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->cbShowTabBar), penPosX, penPosY);
+            penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->cbShowTabBar)) + (6*uiScale));
             dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbShowTabBar));
 
             dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowMenuBar), (dtk_int32)(4*uiScale));
-            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowMenuBar), penPosX, penPosY);
-            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowMenuBar)) + (6*uiScale));
+            dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->cbShowMenuBar), penPosX, penPosY);
+            penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->cbShowMenuBar)) + (6*uiScale));
             dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbShowMenuBar));
 
             dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbAutoHideCmdBar), (dtk_int32)(4*uiScale));
-            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar), penPosX, penPosY);
-            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbAutoHideCmdBar)) + (6*uiScale));
+            dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->cbAutoHideCmdBar), penPosX, penPosY);
+            penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->cbAutoHideCmdBar)) + (6*uiScale));
             dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbAutoHideCmdBar));
         } break;
     }
@@ -416,22 +416,22 @@ dtk_bool32 dred_settings_editor_theme_page_event_handler(dtk_event* pEvent)
             dtk_int32 penPosY = (dtk_int32)(8*uiScale);
 
             dtk_button_set_padding(&pSettingsEditor->fontButton, (dtk_int32)(16*uiScale), (dtk_int32)(6*uiScale));
-            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->fontButton), penPosX, penPosY);
-            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->fontButton)) + (6*uiScale));
+            dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->fontButton), penPosX, penPosY);
+            penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->fontButton)) + (6*uiScale));
 
             dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->textColorButton), (dtk_int32)(4*uiScale));
-            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->textColorButton), penPosX, penPosY);
-            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale));
+            dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->textColorButton), penPosX, penPosY);
+            penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->textColorButton)) + (6*uiScale));
             dtk_color_button_auto_size(DTK_COLOR_BUTTON(&pSettingsEditor->textColorButton));
 
             dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->bgColorButton), (dtk_int32)(4*uiScale));
-            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->bgColorButton), penPosX, penPosY);
-            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->bgColorButton)) + (6*uiScale));
+            dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->bgColorButton), penPosX, penPosY);
+            penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->bgColorButton)) + (6*uiScale));
             dtk_color_button_auto_size(DTK_COLOR_BUTTON(&pSettingsEditor->bgColorButton));
 
             dtk_color_button_set_padding(DTK_COLOR_BUTTON(&pSettingsEditor->lineColorButton), (dtk_int32)(4*uiScale));
-            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->lineColorButton), penPosX, penPosY);
-            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->lineColorButton)) + (6*uiScale));
+            dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->lineColorButton), penPosX, penPosY);
+            penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->lineColorButton)) + (6*uiScale));
             dtk_color_button_auto_size(DTK_COLOR_BUTTON(&pSettingsEditor->lineColorButton));
         } break;
     }
@@ -520,13 +520,13 @@ dtk_bool32 dred_settings_editor_text_editor_page_event_handler(dtk_event* pEvent
             dtk_int32 penPosY = (dtk_int32)(8*uiScale);
 
             dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbTabsToSpaces), (dtk_int32)(4*uiScale));
-            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbTabsToSpaces), penPosX, penPosY);
-            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbTabsToSpaces)) + (6*uiScale));
+            dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->cbTabsToSpaces), penPosX, penPosY);
+            penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->cbTabsToSpaces)) + (6*uiScale));
             dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbTabsToSpaces));
 
             dtk_checkbox_set_padding(DTK_CHECKBOX(&pSettingsEditor->cbShowLineNumbers), (dtk_int32)(4*uiScale));
-            dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers), penPosX, penPosY);
-            penPosY += (dtk_int32)(dred_control_get_height(DRED_CONTROL(&pSettingsEditor->cbShowLineNumbers)) + (6*uiScale));
+            dtk_control_set_relative_position(DTK_CONTROL(&pSettingsEditor->cbShowLineNumbers), penPosX, penPosY);
+            penPosY += (dtk_int32)(dtk_control_get_height(DTK_CONTROL(&pSettingsEditor->cbShowLineNumbers)) + (6*uiScale));
             dtk_checkbox_auto_size(DTK_CHECKBOX(&pSettingsEditor->cbShowLineNumbers));
         } break;
     }
@@ -657,5 +657,5 @@ void dred_settings_editor_refresh_styling(dred_settings_editor* pSettingsEditor)
     pSettingsEditor->sidePanelWidth = (dtk_int32)(200*uiScale);
     pSettingsEditor->sidePanelBtnOffsetY = (dtk_int32)(8.0f*uiScale);
 
-    dtk_control_scheduled_redraw(DTK_CONTROL(pSettingsEditor), dred_control_get_local_rect(DRED_CONTROL(pSettingsEditor)));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pSettingsEditor), dtk_control_get_local_rect(DTK_CONTROL(pSettingsEditor)));
 }

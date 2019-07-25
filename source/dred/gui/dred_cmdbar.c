@@ -9,7 +9,7 @@ dtk_rect dred_cmdbar__get_inner_rect(dred_cmdbar* pCmdBar)
 
     dtk_int32 cmdbarWidth;
     dtk_int32 cmdbarHeight;
-    dred_control_get_size(DRED_CONTROL(pCmdBar), &cmdbarWidth, &cmdbarHeight);
+    dtk_control_get_size(DTK_CONTROL(pCmdBar), &cmdbarWidth, &cmdbarHeight);
 
     dtk_int32 scaledPaddingX = (dtk_int32)(pDred->config.cmdbarPaddingX*uiScale);
     dtk_int32 scaledPaddingY = (dtk_int32)(pDred->config.cmdbarPaddingY*uiScale);
@@ -148,7 +148,7 @@ void dred_cmdbar__on_paint(dred_control* pControl, dtk_rect rect, dtk_surface* p
     assert(pDred != NULL);
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBar));
-    dtk_rect localRect = dred_control_get_local_rect(DRED_CONTROL(pCmdBar));
+    dtk_rect localRect = dtk_control_get_local_rect(DTK_CONTROL(pCmdBar));
 
     dtk_color bgcolor = pDred->config.cmdbarBGColor;
     if (dred_cmdbar_has_keyboard_focus(pCmdBar)) {
@@ -205,7 +205,7 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dtk_control* pP
     // Hide any message that's showing.
     dred_cmdbar_set_message(pCmdBar, "");
 
-    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dtk_control_get_local_rect(DTK_CONTROL(pCmdBar)));
 
 
     // Show the popup window.
@@ -246,7 +246,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dtk_control* pN
         dred_hide_command_bar(pDred);
     }
 
-    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dtk_control_get_local_rect(DTK_CONTROL(pCmdBar)));
 
 
     // Fall through to the default handler.
@@ -440,14 +440,14 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
 
     dtk_int32 textboxHeight = fontMetricsTB.lineHeight + dred_textbox_get_padding_vert(&pCmdBar->textBox)*2;
     dtk_int32 messageHeight = fontMetricsMsg.lineHeight;
-    dtk_int32 infobarHeight = dred_control_get_height(DRED_CONTROL(&pCmdBar->infoBar));
+    dtk_int32 infobarHeight = dtk_control_get_height(DTK_CONTROL(&pCmdBar->infoBar));
 
     dtk_int32 cmdbarHeight = (dtk_int32)(dtk_max(textboxHeight, dtk_max(messageHeight, infobarHeight)) + (pDred->config.cmdbarPaddingY*uiScale*2));
     dtk_int32 cmdbarWidth = 0;
     if (dtk_control_get_parent(DTK_CONTROL(pCmdBar)) != NULL) {
         cmdbarWidth = dtk_control_get_width(dtk_control_get_parent(DTK_CONTROL(pCmdBar)));
     }
-    dred_control_set_size(DRED_CONTROL(pCmdBar), cmdbarWidth, cmdbarHeight);
+    dtk_control_set_size(DTK_CONTROL(pCmdBar), cmdbarWidth, cmdbarHeight);
 
 
     // A change in size will require the inner controls to have their layouts updated for centering and whatnot.
@@ -775,7 +775,7 @@ void dred_cmdbar_set_message(dred_cmdbar* pCmdBar, const char* text)
     }
 
     strncpy_s(pCmdBar->message, sizeof(pCmdBar->message), text, _TRUNCATE);
-    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));    // <-- Can optimize this to only draw the message region.
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dtk_control_get_local_rect(DTK_CONTROL(pCmdBar)));    // <-- Can optimize this to only draw the message region.
 }
 
 void dred_cmdbar_clear_message(dred_cmdbar* pCmdBar)
@@ -833,5 +833,5 @@ void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
     dred_cmdbar__update_size(pCmdBar);
 
     // Redraw.
-    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dred_control_get_local_rect(DRED_CONTROL(pCmdBar)));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dtk_control_get_local_rect(DTK_CONTROL(pCmdBar)));
 }

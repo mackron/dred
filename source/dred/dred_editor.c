@@ -14,7 +14,7 @@ dtk_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_contr
         return DTK_FALSE;
     }
 
-    dred_control_set_size(DRED_CONTROL(pEditor), sizeX, sizeY);
+    dtk_control_set_size(DTK_CONTROL(pEditor), sizeX, sizeY);
     
 
     if (filePathAbsolute != NULL && filePathAbsolute[0] != '\0') {

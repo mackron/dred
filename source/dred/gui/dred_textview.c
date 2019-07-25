@@ -75,7 +75,7 @@ void dred_textview__on_vscroll(dtk_scrollbar* pSBControl, int scrollPos)
     dred_textview__refresh_scrollbars(pTextView);
 
     // The line numbers need to be redrawn.
-    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView->pLineNumbers), dred_control_get_local_rect(pTextView->pLineNumbers));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView->pLineNumbers), dtk_control_get_local_rect(DTK_CONTROL(pTextView->pLineNumbers)));
 }
 
 void dred_textview__on_hscroll(dtk_scrollbar* pSBControl, int scrollPos)
@@ -2575,7 +2575,7 @@ void dred_textview__on_text_changed(dred_textview* pTextView)
 
     // The line numbers need to be redrawn.
     // TODO: This can probably be optimized a bit so that it is only redrawn if a line was inserted or deleted.
-    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView->pLineNumbers), dred_control_get_local_rect(pTextView->pLineNumbers));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView->pLineNumbers), dtk_control_get_local_rect(DTK_CONTROL(pTextView->pLineNumbers)));
 }
 
 size_t dred_textview__on_get_undo_state(dred_textview* pTextView, void* pDataOut)
@@ -2632,7 +2632,7 @@ void dred_textview_on_paint(dred_control* pControl, dtk_rect relativeRect, dtk_s
     //dtk_surface_draw_rect(pTextView, dred_textview__get_scrollbar_dead_space_rect(pTextView), pTextView->defaultStyle.bgColor, pPaintData);
 
     // Border.
-    dtk_rect borderRect = dred_control_get_local_rect(pControl);
+    dtk_rect borderRect = dtk_control_get_local_rect(DTK_CONTROL(pControl));
     dtk_surface_draw_rect_outline(pSurface, borderRect, pTextView->borderColor, (dtk_int32)pTextView->borderWidth);
 
     // Padding.
@@ -2700,7 +2700,7 @@ void dred_textview__get_text_offset(dred_textview* pTextView, int* pOffsetXOut, 
     {
         int lineNumbersWidth = 0;
         if (dtk_control_is_visible(DTK_CONTROL(pTextView->pLineNumbers))) {
-            lineNumbersWidth = dred_control_get_width(pTextView->pLineNumbers);
+            lineNumbersWidth = dtk_control_get_width(DTK_CONTROL(pTextView->pLineNumbers));
         }
 
         offsetX = pTextView->borderWidth + pTextView->padding + lineNumbersWidth;
@@ -2735,11 +2735,11 @@ void dred_textview__calculate_text_engine_container_size(dred_textview* pTextVie
 
         int lineNumbersWidth = 0;
         if (dtk_control_is_visible(DTK_CONTROL(pTextView->pLineNumbers))) {
-            lineNumbersWidth = dred_control_get_width(pTextView->pLineNumbers);
+            lineNumbersWidth = dtk_control_get_width(DTK_CONTROL(pTextView->pLineNumbers));
         }
 
-        width  = dred_control_get_width(DRED_CONTROL(pTextView))  - (pTextView->borderWidth + pTextView->padding)*2 - vertScrollbarSize - lineNumbersWidth;
-        height = dred_control_get_height(DRED_CONTROL(pTextView)) - (pTextView->borderWidth + pTextView->padding)*2 - horzScrollbarSize;
+        width  = dtk_control_get_width( DTK_CONTROL(pTextView)) - (pTextView->borderWidth + pTextView->padding)*2 - vertScrollbarSize - lineNumbersWidth;
+        height = dtk_control_get_height(DTK_CONTROL(pTextView)) - (pTextView->borderWidth + pTextView->padding)*2 - horzScrollbarSize;
     }
 
     if (pWidthOut != NULL) {
@@ -2873,8 +2873,8 @@ dtk_rect dred_textview__get_scrollbar_dead_space_rect(dred_textview* pTextView)
     return dtk_rect_init(
         (scrollbarSizeH + offsetLeft),
         (scrollbarSizeV + offsetTop),
-        dred_control_get_width(DRED_CONTROL(pTextView)) - offsetRight,
-        dred_control_get_height(DRED_CONTROL(pTextView)) - offsetBottom);
+        dtk_control_get_width( DTK_CONTROL(pTextView)) - offsetRight,
+        dtk_control_get_height(DTK_CONTROL(pTextView)) - offsetBottom);
 }
 
 
@@ -3036,15 +3036,15 @@ void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dtk_rect r
     dred_textview* pTextView = DRED_TEXTVIEW(dtk_control_get_parent(DTK_CONTROL(pLineNumbers)));
     assert(pTextView != NULL);
 
-    dtk_int32 lineNumbersWidth  = dred_control_get_width(pLineNumbers) - (pTextView->padding*2) - pTextView->lineNumbersPaddingRight;
-    dtk_int32 lineNumbersHeight = dred_control_get_height(pLineNumbers) - (pTextView->padding*2);
+    dtk_int32 lineNumbersWidth  = dtk_control_get_width( DTK_CONTROL(pLineNumbers)) - (pTextView->padding*2) - pTextView->lineNumbersPaddingRight;
+    dtk_int32 lineNumbersHeight = dtk_control_get_height(DTK_CONTROL(pLineNumbers)) - (pTextView->padding*2);
 
     drte_view_paint_line_numbers(pTextView->pView, lineNumbersWidth, lineNumbersHeight, dred_textview__on_paint_text_line_numbers, dred_textview__on_paint_rect_line_numbers, pSurface);
 
-    dtk_surface_draw_rect_outline(pSurface, dred_control_get_local_rect(pLineNumbers), pTextView->lineNumbersStyle.bgColor, pTextView->padding);
+    dtk_surface_draw_rect_outline(pSurface, dtk_control_get_local_rect(DTK_CONTROL(pLineNumbers)), pTextView->lineNumbersStyle.bgColor, pTextView->padding);
 
     // Right padding.
-    dtk_rect rightPaddingRect = dred_control_get_local_rect(pLineNumbers);
+    dtk_rect rightPaddingRect = dtk_control_get_local_rect(DTK_CONTROL(pLineNumbers));
     rightPaddingRect.right -= pTextView->padding;
     rightPaddingRect.left   = rightPaddingRect.right - pTextView->lineNumbersPaddingRight;
     dtk_surface_draw_rect(pSurface, rightPaddingRect, pTextView->lineNumbersStyle.bgColor);
@@ -3054,7 +3054,7 @@ void dred_textview__refresh_line_numbers(dred_textview* pTextView)
 {
     assert(pTextView != NULL);
 
-    dtk_rect lineNumbersRectOld = dred_control_get_local_rect(pTextView->pLineNumbers);
+    dtk_rect lineNumbersRectOld = dtk_control_get_local_rect(DTK_CONTROL(pTextView->pLineNumbers));
 
     dtk_int32 lineNumbersWidth = 0;
     if (dtk_control_is_visible(DTK_CONTROL(pTextView->pLineNumbers))) {
@@ -3062,7 +3062,7 @@ void dred_textview__refresh_line_numbers(dred_textview* pTextView)
     }
 
     dtk_int32 scrollbarHeight = (dtk_control_is_visible(DTK_CONTROL(pTextView->pHorzScrollbar)) ? dtk_control_get_height(DTK_CONTROL(pTextView->pHorzScrollbar)) : 0);
-    dred_control_set_size(pTextView->pLineNumbers, lineNumbersWidth, dred_control_get_height(DRED_CONTROL(pTextView)) - scrollbarHeight);
+    dtk_control_set_size(DTK_CONTROL(pTextView->pLineNumbers), lineNumbersWidth, dtk_control_get_height(DTK_CONTROL(pTextView)) - scrollbarHeight);
 
 
     // The size of the text container may have changed.
@@ -3073,5 +3073,5 @@ void dred_textview__refresh_line_numbers(dred_textview* pTextView)
 
 
     // Force a redraw just to be sure everything is in a valid state.
-    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView), dtk_rect_union(lineNumbersRectOld, dred_control_get_local_rect(pTextView->pLineNumbers)));
+    dtk_control_scheduled_redraw(DTK_CONTROL(pTextView), dtk_rect_union(lineNumbersRectOld, dtk_control_get_local_rect(DTK_CONTROL(pTextView->pLineNumbers))));
 }
