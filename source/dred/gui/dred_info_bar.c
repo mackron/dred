@@ -9,7 +9,7 @@
 
 dtk_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
 {
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pInfoBar));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pInfoBar));
     assert(pDred != NULL);
 
     if (dred_cmdbar_has_keyboard_focus(&pDred->cmdBar)) {
@@ -21,7 +21,7 @@ dtk_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
 
 dtk_color dred_info_bar__get_text_color(dred_info_bar* pInfoBar)
 {
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pInfoBar));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pInfoBar));
     assert(pDred != NULL);
 
     if (dred_cmdbar_has_keyboard_focus(&pDred->cmdBar)) {
@@ -38,7 +38,7 @@ void dred_info_bar__on_paint__none(dred_info_bar* pInfoBar, dtk_surface* pSurfac
 
 void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dtk_surface* pSurface)
 {
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pInfoBar));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pInfoBar));
     assert(pDred != NULL);
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pInfoBar));
@@ -73,19 +73,26 @@ void dred_info_bar__on_paint__text_editor(dred_info_bar* pInfoBar, dtk_surface* 
     }
 }
 
-
-void dred_info_bar__on_paint(dred_control* pControl, dtk_rect rect, dtk_surface* pSurface)
+dtk_bool32 dred_info_bar_event_handler(dtk_event* pEvent)
 {
-    (void)rect;
-
-    dred_info_bar* pInfoBar = DRED_INFO_BAR(pControl);
+    dred_info_bar* pInfoBar = DRED_INFO_BAR(pEvent->pControl);
     assert(pInfoBar != NULL);
 
-    if (pInfoBar->type == DRED_INFO_BAR_TYPE_NONE) {
-        dred_info_bar__on_paint__none(pInfoBar, pSurface);
-    } else if (pInfoBar->type == DRED_INFO_BAR_TYPE_TEXT_EDITOR) {
-        dred_info_bar__on_paint__text_editor(pInfoBar, pSurface);
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_PAINT:
+        {
+            if (pInfoBar->type == DRED_INFO_BAR_TYPE_NONE) {
+                dred_info_bar__on_paint__none(pInfoBar, pEvent->paint.pSurface);
+            } else if (pInfoBar->type == DRED_INFO_BAR_TYPE_TEXT_EDITOR) {
+                dred_info_bar__on_paint__text_editor(pInfoBar, pEvent->paint.pSurface);
+            }
+        } break;
+
+        default: break;
     }
+
+    return dtk_control_default_event_handler(pEvent);
 }
 
 dtk_bool32 dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_control* pParent)
@@ -95,7 +102,7 @@ dtk_bool32 dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred
     }
 
     memset(pInfoBar, 0, sizeof(*pInfoBar));
-    if (!dred_control_init(DRED_CONTROL(pInfoBar), pDred, pParent, NULL, DRED_CONTROL_TYPE_INFO_BAR, NULL)) {
+    if (!dred_control_init(DRED_CONTROL(pInfoBar), pDred, pParent, NULL, DRED_CONTROL_TYPE_INFO_BAR, dred_info_bar_event_handler)) {
         return DTK_FALSE;
     }
 
@@ -118,10 +125,6 @@ dtk_bool32 dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred
     dtk_font_get_metrics(pInfoBar->pFont, uiScale, &fontMetrics);
     dtk_control_set_size(DTK_CONTROL(pInfoBar), 0, fontMetrics.lineHeight);
 
-
-    // Events.
-    dred_control_set_on_paint(DRED_CONTROL(pInfoBar), dred_info_bar__on_paint);
-
     return DTK_TRUE;
 }
 
@@ -139,8 +142,7 @@ void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
     pInfoBar->type = DRED_INFO_BAR_TYPE_NONE;
 
     if (pControl != NULL) {
-        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR) || dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXTBOX))
-        {
+        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR) || dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXTBOX)) {
             pInfoBar->type = DRED_INFO_BAR_TYPE_TEXT_EDITOR;
             snprintf(pInfoBar->lineStr, sizeof(pInfoBar->lineStr), "Ln %d", (int)dred_text_editor_get_cursor_line(DRED_TEXT_EDITOR(pControl)) + 1);
             snprintf(pInfoBar->colStr,  sizeof(pInfoBar->colStr),  "Col %d", (int)dred_text_editor_get_cursor_column(DRED_TEXT_EDITOR(pControl)) + 1);
@@ -158,7 +160,7 @@ void dred_info_bar_refresh_styling(dred_info_bar* pInfoBar)
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pInfoBar));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pInfoBar));
     assert(pDred != NULL);
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pInfoBar));

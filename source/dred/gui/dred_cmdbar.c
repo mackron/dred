@@ -2,7 +2,7 @@
 
 dtk_rect dred_cmdbar__get_inner_rect(dred_cmdbar* pCmdBar)
 {
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBar));
@@ -134,7 +134,7 @@ void dred_cmdbar__on_capture_keyboard(dred_control* pControl, dtk_control* pPrev
     dred_cmdbar* pCmdBar = DRED_CMDBAR(pControl);
     assert(pCmdBar != NULL);
 
-    dtk_capture_keyboard(&pCmdBar->control.pDred->tk, DTK_CONTROL(&pCmdBar->textBox));
+    dtk_capture_keyboard(DTK_CONTROL(pCmdBar)->pTK, DTK_CONTROL(&pCmdBar->textBox));
 }
 
 void dred_cmdbar__on_paint(dred_control* pControl, dtk_rect rect, dtk_surface* pSurface)
@@ -144,7 +144,7 @@ void dred_cmdbar__on_paint(dred_control* pControl, dtk_rect rect, dtk_surface* p
     dred_cmdbar* pCmdBar = DRED_CMDBAR(pControl);
     assert(pCmdBar != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBar));
@@ -188,7 +188,7 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dtk_control* pP
     dred_cmdbar* pCmdBar = DRED_CMDBAR(dtk_control_get_parent(DTK_CONTROL(pTextBox)));
     assert(pCmdBar != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
     // Activate the focused styles.
@@ -223,7 +223,7 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dtk_control* pN
     dred_cmdbar* pCmdBar = DRED_CMDBAR(dtk_control_get_parent(DTK_CONTROL(pTextBox)));
     assert(pCmdBar != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
 
@@ -264,7 +264,7 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dtk_key key, int stateF
     dred_cmdbar* pCmdBar = DRED_CMDBAR(dtk_control_get_parent(DTK_CONTROL(pTextBox)));
     assert(pCmdBar != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
     dred_cmdbar_clear_message(pCmdBar);
@@ -357,7 +357,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
     dred_cmdbar* pCmdBar = DRED_CMDBAR(dtk_control_get_parent(DTK_CONTROL(pTextBox)));
     assert(pCmdBar != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
     // Tabs are handle in a special way for the command bar.
@@ -377,7 +377,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
                 dred_textbox_set_text(pTextBox, "");
             }
             if ((command.flags & DRED_CMDBAR_RELEASE_KEYBOARD) != 0) {
-                dred_unfocus_command_bar(dred_control_get_context(DRED_CONTROL(pCmdBar)));
+                dred_unfocus_command_bar(dred_get_context_from_control(DTK_CONTROL(pCmdBar)));
             }
 
             dred_config_push_recent_cmd(&pDred->config, cmd);
@@ -407,7 +407,7 @@ void dred_cmdbar_tb__on_text_changed(dred_textbox* pTextBox)
     dred_cmdbar* pCmdBar = DRED_CMDBAR(dtk_control_get_parent(DTK_CONTROL(pTextBox)));
     assert(pCmdBar != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
     if (pCmdBar->manualTextEntry == NULL) {
@@ -425,7 +425,7 @@ void dred_cmdbar_tb__on_text_changed(dred_textbox* pTextBox)
 
 void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
 {
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBar));
     assert(pDred != NULL);
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pCmdBar));
@@ -804,7 +804,7 @@ void dred_cmdbar_refresh_styling(dred_cmdbar* pCmdBar)
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pCmdBar));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBar));
     if (pDred == NULL) {
         return;
     }

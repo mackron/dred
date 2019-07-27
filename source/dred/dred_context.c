@@ -213,7 +213,7 @@ void dred__refresh_editor_tab_text(dred_editor* pEditor, dtk_tabgroup* pTabGroup
     dtk_tabgroup_set_tab_text(pTabGroup, tabIndex, tabText);
     dtk_tabgroup_set_tab_tooltip(pTabGroup, tabIndex, filepath);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pEditor));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pEditor));
     assert(pDred != NULL);
 
     dtk_tabgroup* pFocusedTabGroup = dred_get_focused_tabgroup(pDred);
@@ -1514,7 +1514,7 @@ dtk_bool32 dred_close_all_tabs_with_confirmation(dred_context* pDred)
 
 dtk_tabgroup* dred_find_control_tab(dred_control* pControl, dtk_uint32* pTabIndex)
 {
-    dred_context* pDred = dred_control_get_context(pControl);
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pControl));
     if (pDred == NULL) {
         return NULL;
     }
@@ -1751,7 +1751,7 @@ void dred_delete_editor_by_type(dred_editor* pEditor)
     }
 
     // If we get here it means it's not a known core editor, so check packages.
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pEditor));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pEditor));
     DRED_FOREACH_PACKAGE(pDred, pPackage) {
         if (pPackage->cbs.editor.deleteEditor && pPackage->cbs.editor.deleteEditor(pPackage, pDred, pEditor)) {
             return;

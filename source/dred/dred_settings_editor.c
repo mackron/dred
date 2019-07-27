@@ -360,7 +360,7 @@ dtk_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSetti
 {
     assert(pSettingsEditor != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pSettingsEditor));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pSettingsEditor));
     assert(pSettingsEditor != NULL);
 
     dred_settings_editor_page* pPage = &pSettingsEditor->pages[DRED_SETTINGS_EDITOR_PAGE_GENERAL];
@@ -443,7 +443,7 @@ dtk_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSetting
 {
     assert(pSettingsEditor != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pSettingsEditor));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pSettingsEditor));
     assert(pSettingsEditor != NULL);
 
     dred_settings_editor_page* pPage = &pSettingsEditor->pages[DRED_SETTINGS_EDITOR_PAGE_THEME];
@@ -538,7 +538,7 @@ dtk_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pS
 {
     assert(pSettingsEditor != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pSettingsEditor));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pSettingsEditor));
     assert(pSettingsEditor != NULL);
 
     dred_settings_editor_page* pPage = &pSettingsEditor->pages[DRED_SETTINGS_EDITOR_PAGE_TEXT_EDITOR];
@@ -629,7 +629,7 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dtk_contr
 
 void dred_settings_editor_delete(dred_settings_editor* pSettingsEditor)
 {
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pSettingsEditor));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pSettingsEditor));
     if (pDred == NULL) {
         return;
     }
@@ -644,7 +644,7 @@ void dred_settings_editor_refresh_styling(dred_settings_editor* pSettingsEditor)
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pSettingsEditor));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pSettingsEditor));
     if (pDred == NULL) {
         return;
     }

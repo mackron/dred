@@ -253,8 +253,6 @@ dtk_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_c
     if (dtk_control_init(&pDred->tk, DTK_CONTROL_TYPE_DRED, (onEvent != NULL) ? onEvent : dred_control_event_handler, (pParent != NULL) ? &pParent->baseControl : pDTKParent, &pControl->baseControl) != DTK_SUCCESS) {
         return DTK_FALSE;
     }
-    
-    pControl->pDred = pDred;
 
     dred_control_set_type(pControl, type);
     return DTK_TRUE;
@@ -267,16 +265,6 @@ void dred_control_uninit(dred_control* pControl)
     }
 
     dtk_control_uninit(&pControl->baseControl);
-}
-
-
-dred_context* dred_control_get_context(dred_control* pControl)
-{
-    if (pControl == NULL) {
-        return NULL;
-    }
-
-    return pControl->pDred;
 }
 
 

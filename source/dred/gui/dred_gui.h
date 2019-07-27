@@ -182,9 +182,6 @@ struct dred_control
     // The base DTK control.
     dtk_control baseControl;
 
-    /// A pointer to the dred context that owns this control.
-    dred_context* pDred;
-
     /// The type of the element, as a string. This is only every used by the host application, and is intended to be used as way
     /// to selectively perform certain operations on specific types of GUI elements.
     char type[64];
@@ -258,10 +255,6 @@ dtk_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_c
 
 /// Deletes and element.
 void dred_control_uninit(dred_control* pControl);
-
-
-// Retrieves the dred context that owns the given control.
-dred_context* dred_control_get_context(dred_control* pControl);
 
 
 /// Sets the type of the element.

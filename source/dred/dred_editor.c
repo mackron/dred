@@ -102,7 +102,7 @@ dtk_bool32 dred_editor_save(dred_editor* pEditor, const char* newFilePath)
     }
 
     if (pEditor->isReadOnly && (newFilePath == NULL || newFilePath[0] == '\0')) {
-        dred_errorf(dred_control_get_context(DRED_CONTROL(pEditor)), "File is read only.");
+        dred_errorf(dred_get_context_from_control(DTK_CONTROL(pEditor)), "File is read only.");
         return DTK_FALSE;
     }
 

@@ -290,7 +290,7 @@ dtk_bool32 dred_textview__insert_tab(dred_textview* pTextView, size_t iChar)
 {
     assert(pTextView != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextView));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pTextView));
     assert(pDred != NULL);
 
     drte_view_begin_dirty(pTextView->pView);
@@ -1869,7 +1869,7 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
     }
 
     // Focus the text editor.
-    dtk_capture_keyboard(&pControl->pDred->tk, DTK_CONTROL(pControl));
+    dtk_capture_keyboard(DTK_CONTROL(pControl)->pTK, DTK_CONTROL(pControl));
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT)
     {
@@ -1926,7 +1926,7 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
 
 
             // In order to support selection with the mouse we need to capture the mouse and enter selection mode.
-            dtk_capture_mouse(&pControl->pDred->tk, DTK_CONTROL(pControl));
+            dtk_capture_mouse(DTK_CONTROL(pControl)->pTK, DTK_CONTROL(pControl));
         }
     }
 
@@ -1942,12 +1942,10 @@ void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, i
         return;
     }
 
-    if (mouseButton == DTK_MOUSE_BUTTON_LEFT)
-    {
+    if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
         pTextView->isDoingRectangleSelect = DTK_FALSE;
 
-        if (dtk_control_has_mouse_capture(DTK_CONTROL(pControl)))
-        {
+        if (dtk_control_has_mouse_capture(DTK_CONTROL(pControl))) {
             // When we first pressed the mouse we may have started a new selection. If we never ended up selecting anything we'll want to
             // cancel that selection.
             size_t iCharBeg;
@@ -1959,7 +1957,7 @@ void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, i
             }
 
             // Releasing the mouse will leave selectionmode.
-            dtk_release_mouse(&pControl->pDred->tk);
+            dtk_release_mouse(DTK_CONTROL(pControl)->pTK);
         }
 
         if (pTextView->isWantingToDragAndDrop) {
@@ -2411,7 +2409,7 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
             drte_view_insert_character_at_cursors(pTextView->pView, utf32);
 
             if (utf32 == '\n') {
-                dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextView));
+                dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pTextView));
                 if (pDred->config.textEditorEnableAutoIndent) {
                     drte_view_begin_dirty(pTextView->pView);
                     for (size_t iCursor = 0; iCursor < pTextView->pView->cursorCount; ++iCursor) {
@@ -2945,7 +2943,7 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT)
     {
-        dtk_capture_mouse(&pLineNumbers->pDred->tk, DTK_CONTROL(pLineNumbers));
+        dtk_capture_mouse(DTK_CONTROL(pLineNumbers)->pTK, DTK_CONTROL(pLineNumbers));
 
         // If the shift key is down and we already have a selection, this is equivalent to a mouse drag.
         if ((stateFlags & DTK_MODIFIER_SHIFT) != 0) {
@@ -2992,7 +2990,7 @@ void dred_textview__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, 
 
     if (mouseButton == DTK_MOUSE_BUTTON_LEFT) {
         if (dtk_control_has_mouse_capture(DTK_CONTROL(pLineNumbers))) {
-            dtk_release_mouse(&pLineNumbers->pDred->tk);
+            dtk_release_mouse(DTK_CONTROL(pLineNumbers)->pTK);
         }
     }
 }

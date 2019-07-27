@@ -46,7 +46,7 @@ void dred_text_editor__on_capture_keyboard(dred_control* pControl, dtk_control* 
         return;
     }
 
-    dred_capture_keyboard(dred_control_get_context(pControl), DRED_CONTROL(pTextView));
+    dred_capture_keyboard(dred_get_context_from_control(DTK_CONTROL(pControl)), DRED_CONTROL(pTextView));
 }
 
 void dred_text_editor_textview__on_key_down(dred_control* pControl, dtk_key key, int stateFlags)
@@ -55,7 +55,7 @@ void dred_text_editor_textview__on_key_down(dred_control* pControl, dtk_key key,
     assert(pTextView != NULL);
 
     if (key == DTK_KEY_ESCAPE) {
-        dred_focus_command_bar(dred_control_get_context(pControl));
+        dred_focus_command_bar(dred_get_context_from_control(DTK_CONTROL(pControl)));
     } else {
         dred_textview_on_key_down(DRED_CONTROL(pTextView), key, stateFlags);
     }
@@ -71,7 +71,7 @@ void dred_text_editor_textview__on_mouse_wheel(dred_control* pControl, int delta
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(pControl);
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pControl));
     assert(pDred != NULL);
 
     if (stateFlags & DTK_MODIFIER_CTRL) {
@@ -106,7 +106,7 @@ void dred_text_editor_textview__on_mouse_button_up(dred_control* pControl, int m
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(pControl);
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pControl));
     assert(pDred != NULL);
 
     if (mouseButton == DTK_MOUSE_BUTTON_RIGHT) {
@@ -121,7 +121,7 @@ void dred_text_editor_textview__on_cursor_move(dred_textview* pTextView)
     dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DTK_CONTROL(pTextView)));
     assert(pTextEditor != NULL);
 
-    dred_update_info_bar(dred_control_get_context(DRED_CONTROL(pTextEditor)), DRED_CONTROL(pTextEditor));
+    dred_update_info_bar(dred_get_context_from_control(DTK_CONTROL(pTextEditor)), DRED_CONTROL(pTextEditor));
 }
 
 void dred_text_editor_textview__on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
@@ -134,7 +134,7 @@ void dred_text_editor_textview__on_capture_keyboard(dred_control* pControl, dtk_
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(pControl);
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pControl));
     assert(pDred != NULL);
 
     if (pDred->config.enableAutoReload) {
@@ -223,7 +223,7 @@ dtk_bool32 dred_text_editor__on_save(dred_editor* pEditor, FILE* file, const cha
         pTextEditor->iBaseUndoPoint = dred_textview_get_undo_points_remaining_count(pTextView);
 
         // Syntax highlighting needs to be updated based on the file extension.
-        dred_text_editor_set_highlighter(pTextEditor, dred_get_language_by_file_path(dred_control_get_context(DRED_CONTROL(pTextEditor)), filePath));
+        dred_text_editor_set_highlighter(pTextEditor, dred_get_language_by_file_path(dred_get_context_from_control(DTK_CONTROL(pTextEditor)), filePath));
     }
 
     return result == DTK_SUCCESS;
@@ -497,7 +497,7 @@ void dred_text_editor_refresh_styling(dred_text_editor* pTextEditor)
 {
     assert(pTextEditor != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextEditor));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pTextEditor));
     assert(pDred != NULL);
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTextEditor));
@@ -565,7 +565,7 @@ void dred_text_editor_set_highlighter(dred_text_editor* pTextEditor, const char*
     drte_engine* pEngine = dred_textview_get_engine(dred_text_editor__get_textview(pTextEditor));
     assert(pEngine != NULL);
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextEditor));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pTextEditor));
     assert(pDred != NULL);
 
     if (lang == NULL) {
@@ -732,7 +732,7 @@ void dred_text_editor_set_text_scale(dred_text_editor* pTextEditor, float textSc
         return;
     }
 
-    dred_context* pDred = dred_control_get_context(DRED_CONTROL(pTextEditor));
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pTextEditor));
     assert(pDred != NULL);
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pTextEditor));
