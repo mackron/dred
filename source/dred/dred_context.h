@@ -141,7 +141,7 @@ void dred_save_dredprivate(dred_context* pDred);
 
 
 // Gives the given control the keyboard capture.
-void dred_capture_keyboard(dred_context* pDred, dred_control* pControl);
+void dred_capture_keyboard(dred_context* pDred, dtk_control* pControl);
 
 // Releases the keyboard capture.
 void dred_release_keyboard(dred_context* pDred);

@@ -2,10 +2,6 @@
 
 #define DRED_INFO_BAR_TYPE_NONE             0
 #define DRED_INFO_BAR_TYPE_TEXT_EDITOR      1
-#define DRED_INFO_BAR_TYPE_HEX_EDITOR       2
-#define DRED_INFO_BAR_TYPE_IMAGE_EDITOR     3
-#define DRED_INFO_BAR_TYPE_ICON_EDITOR      4
-#define DRED_INFO_BAR_TYPE_PARTICLE_EDITOR  5
 
 dtk_color dred_info_bar__get_bg_color(dred_info_bar* pInfoBar)
 {
@@ -95,14 +91,14 @@ dtk_bool32 dred_info_bar_event_handler(dtk_event* pEvent)
     return dtk_control_default_event_handler(pEvent);
 }
 
-dtk_bool32 dred_info_bar_init(dred_info_bar* pInfoBar, dred_context* pDred, dred_control* pParent)
+dtk_bool32 dred_info_bar_init(dred_context* pDred, dtk_control* pParent, dred_info_bar* pInfoBar)
 {
     if (pInfoBar == NULL) {
         return DTK_FALSE;
     }
 
     memset(pInfoBar, 0, sizeof(*pInfoBar));
-    if (!dred_control_init(DRED_CONTROL(pInfoBar), pDred, pParent, NULL, DRED_CONTROL_TYPE_INFO_BAR, dred_info_bar_event_handler)) {
+    if (!dtk_control_init(&pDred->tk, DRED_CONTROL_TYPE_INFO_BAR, dred_info_bar_event_handler, DTK_CONTROL(pParent), DTK_CONTROL(pInfoBar))) {
         return DTK_FALSE;
     }
 

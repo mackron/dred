@@ -46,7 +46,7 @@ void dred_text_editor__on_capture_keyboard(dred_control* pControl, dtk_control* 
         return;
     }
 
-    dred_capture_keyboard(dred_get_context_from_control(DTK_CONTROL(pControl)), DRED_CONTROL(pTextView));
+    dred_capture_keyboard(dred_get_context_from_control(DTK_CONTROL(pControl)), DTK_CONTROL(pTextView));
 }
 
 void dred_text_editor_textview__on_key_down(dred_control* pControl, dtk_key key, int stateFlags)

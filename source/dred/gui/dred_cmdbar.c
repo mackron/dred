@@ -489,7 +489,7 @@ dtk_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dtk_contr
 
 
     // The info bar.
-    dred_info_bar_init(&pCmdBar->infoBar, pDred, DRED_CONTROL(pCmdBar));
+    dred_info_bar_init(pDred, DTK_CONTROL(pCmdBar), &pCmdBar->infoBar);
 
 
 

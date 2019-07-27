@@ -1126,7 +1126,7 @@ void dred_save_dredprivate(dred_context* pDred)
 }
 
 
-void dred_capture_keyboard(dred_context* pDred, dred_control* pControl)
+void dred_capture_keyboard(dred_context* pDred, dtk_control* pControl)
 {
     if (pDred == NULL) {
         return;
@@ -1137,7 +1137,7 @@ void dred_capture_keyboard(dred_context* pDred, dred_control* pControl)
         return;
     }
 
-    dtk_capture_keyboard(&pDred->tk, DTK_CONTROL(pControl));
+    dtk_capture_keyboard(&pDred->tk, pControl);
 }
 
 void dred_release_keyboard(dred_context* pDred)
@@ -2339,7 +2339,7 @@ void dred_focus_command_bar(dred_context* pDred)
         return;
     }
 
-    dred_capture_keyboard(pDred, DRED_CONTROL(&pDred->cmdBar));
+    dred_capture_keyboard(pDred, DTK_CONTROL(&pDred->cmdBar));
 }
 
 void dred_focus_command_bar_and_set_text(dred_context* pDred, const char* text)
@@ -2360,7 +2360,7 @@ void dred_unfocus_command_bar(dred_context* pDred)
             return;
         }
 
-        dred_capture_keyboard(pDred, DRED_CONTROL(pFocusedEditor));
+        dred_capture_keyboard(pDred, DTK_CONTROL(pFocusedEditor));
     }
 }
 

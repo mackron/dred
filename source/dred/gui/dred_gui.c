@@ -17,8 +17,6 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#define DTK_CONTROL_TYPE_DRED   DTK_CONTROL_TYPE_CUSTOM + 1     // <-- Temporary until dred_control is removed entirely.
-
 void dred_control__post_outbound_event_move(dred_control* pControl, int newRelativePosX, int newRelativePosY)
 {
     if (pControl->onMove) {
