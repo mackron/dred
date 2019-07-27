@@ -299,7 +299,7 @@ void dred_settings_editor_page__on_paint(dred_control* pPageControl, dtk_rect re
     dtk_surface_draw_rect(pSurface, dtk_control_get_local_rect(DTK_CONTROL(pPageControl)), dtk_rgb(255, 255, 255));
 }
 
-dtk_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dred_control* pParent, dtk_event_proc onEvent, const char* title)
+dtk_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dred_context* pDred, dtk_control* pParent, dtk_event_proc onEvent, const char* title)
 {
     assert(pPage != NULL);
     assert(pDred != NULL);
@@ -308,7 +308,7 @@ dtk_bool32 dred_settings_editor__init_page(dred_settings_editor_page* pPage, dre
 
     strcpy_s(pPage->title, sizeof(pPage->title), title);
     pPage->pGUIControl = &pPage->control;
-    if (!dred_control_init(pPage->pGUIControl, pDred, pParent, NULL, "dred.settings.page", onEvent)) {
+    if (!dred_control_init(pPage->pGUIControl, pDred, pParent, "dred.settings.page", onEvent)) {
         return DTK_FALSE;
     }
 
@@ -365,7 +365,7 @@ dtk_bool32 dred_settings_editor__init_page__general(dred_settings_editor* pSetti
 
     dred_settings_editor_page* pPage = &pSettingsEditor->pages[DRED_SETTINGS_EDITOR_PAGE_GENERAL];
 
-    if (!dred_settings_editor__init_page(pPage, pDred, DRED_CONTROL(pSettingsEditor), dred_settings_editor_general_page_event_handler, "General")) {
+    if (!dred_settings_editor__init_page(pPage, pDred, DTK_CONTROL(pSettingsEditor), dred_settings_editor_general_page_event_handler, "General")) {
         return DTK_FALSE;
     }
 
@@ -448,7 +448,7 @@ dtk_bool32 dred_settings_editor__init_page__theme(dred_settings_editor* pSetting
 
     dred_settings_editor_page* pPage = &pSettingsEditor->pages[DRED_SETTINGS_EDITOR_PAGE_THEME];
 
-    if (!dred_settings_editor__init_page(pPage, pDred, DRED_CONTROL(pSettingsEditor), dred_settings_editor_theme_page_event_handler, "Theme")) {
+    if (!dred_settings_editor__init_page(pPage, pDred, DTK_CONTROL(pSettingsEditor), dred_settings_editor_theme_page_event_handler, "Theme")) {
         return DTK_FALSE;
     }
 
@@ -543,7 +543,7 @@ dtk_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pS
 
     dred_settings_editor_page* pPage = &pSettingsEditor->pages[DRED_SETTINGS_EDITOR_PAGE_TEXT_EDITOR];
 
-    if (!dred_settings_editor__init_page(pPage, pDred, DRED_CONTROL(pSettingsEditor), dred_settings_editor_text_editor_page_event_handler, "Text Editor")) {
+    if (!dred_settings_editor__init_page(pPage, pDred, DTK_CONTROL(pSettingsEditor), dred_settings_editor_text_editor_page_event_handler, "Text Editor")) {
         return DTK_FALSE;
     }
 

@@ -296,7 +296,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pPar
 
 
     pTextEditor->pTextView = &pTextEditor->textView;
-    if (!dred_textview_init(pTextEditor->pTextView, pDred, DRED_CONTROL(pTextEditor), &pTextEditor->engine)) {
+    if (!dred_textview_init(pTextEditor->pTextView, pDred, DTK_CONTROL(pTextEditor), &pTextEditor->engine)) {
         dred_editor_uninit(DRED_EDITOR(pTextEditor));
         free(pTextEditor);
         return NULL;

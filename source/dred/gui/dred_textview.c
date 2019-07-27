@@ -350,14 +350,14 @@ void dred_textview__delete_timer(dred_textview* pTextView)
 }
 
 
-dtk_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dred_control* pParent, drte_engine* pTextEngine)
+dtk_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dtk_control* pParent, drte_engine* pTextEngine)
 {
     if (pTextView == NULL || pTextEngine == NULL) {
         return DTK_FALSE;
     }
 
     memset(pTextView, 0, sizeof(*pTextView));
-    if (!dred_control_init(DRED_CONTROL(pTextView), pDred, pParent, NULL, DRED_CONTROL_TYPE_TEXTVIEW, NULL)) {
+    if (!dred_control_init(DRED_CONTROL(pTextView), pDred, pParent, DRED_CONTROL_TYPE_TEXTVIEW, NULL)) {
         return DTK_FALSE;
     }
 
@@ -402,7 +402,7 @@ dtk_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dre
     dtk_scrollbar_set_on_scroll(pTextView->pHorzScrollbar, dred_textview__on_hscroll);
 
     pTextView->pLineNumbers = &pTextView->lineNumbers;
-    dred_control_init(pTextView->pLineNumbers, pDred, DRED_CONTROL(pTextView), NULL, "dred.common.linenumbers", NULL);
+    dred_control_init(pTextView->pLineNumbers, pDred, DTK_CONTROL(pTextView), "dred.common.linenumbers", NULL);
     dtk_control_hide(DTK_CONTROL(pTextView->pLineNumbers));
     dred_control_set_on_mouse_move(pTextView->pLineNumbers, dred_textview__on_mouse_move_line_numbers);
     dred_control_set_on_mouse_button_down(pTextView->pLineNumbers, dred_textview__on_mouse_button_down_line_numbers);

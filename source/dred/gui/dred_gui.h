@@ -2,6 +2,7 @@
 
 #define DTK_CONTROL_TYPE_DRED       DTK_CONTROL_TYPE_CUSTOM + 1     // <-- Temporary until dred_control is removed entirely.
 #define DRED_CONTROL_TYPE_INFO_BAR  DTK_CONTROL_TYPE_CUSTOM + 2
+#define DRED_CONTROL_TYPE_CMDBAR    DTK_CONTROL_TYPE_CUSTOM + 3
 
 
 typedef struct dred_control dred_control;
@@ -110,7 +111,7 @@ struct dred_control
 dtk_bool32 dred_control_event_handler(dtk_event* pEvent);
 
 /// Creates an element.
-dtk_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, dtk_control* pDTKParent, const char* type, dtk_event_proc onEvent);
+dtk_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dtk_control* pParent, const char* type, dtk_event_proc onEvent);
 
 /// Deletes and element.
 void dred_control_uninit(dred_control* pControl);

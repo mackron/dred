@@ -21,7 +21,7 @@ struct dred_textbox
 
 
 // Creates a new text box control.
-dtk_bool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_control* pParent);
+dtk_bool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dtk_control* pParent);
 
 // Deletes the given text box control.
 void dred_textbox_uninit(dred_textbox* pTextBox);

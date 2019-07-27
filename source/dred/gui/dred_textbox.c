@@ -10,7 +10,7 @@ void dred_textbox__engine_on_text_changed(drte_engine* pTextEngine)
     }
 }
 
-dtk_bool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dred_control* pParent)
+dtk_bool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dtk_control* pParent)
 {
     if (pTextBox == NULL) {
         return DTK_FALSE;

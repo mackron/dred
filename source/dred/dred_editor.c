@@ -9,7 +9,7 @@ dtk_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_contr
 
     memset(pEditor, 0, sizeof(*pEditor));
 
-    if (!dred_control_init(DRED_CONTROL(pEditor), pDred, NULL, pParent, type, onEvent)) {
+    if (!dred_control_init(DRED_CONTROL(pEditor), pDred, pParent, type, onEvent)) {
         free(pEditor);
         return DTK_FALSE;
     }

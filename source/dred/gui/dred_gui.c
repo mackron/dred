@@ -242,13 +242,13 @@ dtk_bool32 dred_control_event_handler(dtk_event* pEvent)
     return dtk_control_default_event_handler(pEvent);
 }
 
-dtk_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dred_control* pParent, dtk_control* pDTKParent, const char* type, dtk_event_proc onEvent)
+dtk_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dtk_control* pParent, const char* type, dtk_event_proc onEvent)
 {
     if (pControl == NULL || pDred == NULL) return DTK_FALSE;
     memset(pControl, 0, sizeof(*pControl));
 
 
-    if (dtk_control_init(&pDred->tk, DTK_CONTROL_TYPE_DRED, (onEvent != NULL) ? onEvent : dred_control_event_handler, (pParent != NULL) ? &pParent->baseControl : pDTKParent, &pControl->baseControl) != DTK_SUCCESS) {
+    if (dtk_control_init(&pDred->tk, DTK_CONTROL_TYPE_DRED, (onEvent != NULL) ? onEvent : dred_control_event_handler, pParent, &pControl->baseControl) != DTK_SUCCESS) {
         return DTK_FALSE;
     }
 

@@ -2,14 +2,12 @@
 
 // The command bar is the control that sits along the bottom of the main window.
 
-#define DRED_CONTROL_TYPE_CMDBAR   "dred.cmdbar"
-
 typedef struct dred_cmdbar dred_cmdbar;
 
 #define DRED_CMDBAR(a) ((dred_cmdbar*)(a))
 struct dred_cmdbar
 {
-    dred_control control;
+    dtk_control control;
     dred_textbox textBox;
 
     char message[256];
@@ -21,7 +19,7 @@ struct dred_cmdbar
 
 
 // dred_cmdbar_create()
-dtk_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dtk_control* pParent);
+dtk_bool32 dred_cmdbar_init(dred_context* pDred, dtk_control* pParent, dred_cmdbar* pCmdBar);
 
 // dred_cmdbar_delete()
 void dred_cmdbar_uninit(dred_cmdbar* pCmdBar);
@@ -35,9 +33,6 @@ dtk_bool32 dred_cmdbar_set_text_to_previous_command(dred_cmdbar* pCmdBar, unsign
 // Retrieves the text of the command bar.
 size_t dred_cmdbar_get_text(dred_cmdbar* pCmdBar, char* pTextOut, size_t textOutSize);
 char* dred_cmdbar_get_text_malloc(dred_cmdbar* pCmdBar);
-
-// Retrieves the word under the cursor of the command bar.
-size_t dred_cmdbar_get_word_under_cursor(dred_cmdbar* pCmdBar, char* pTextOut, size_t textOutSize);
 
 
 // Selects a region of text in the command bar.

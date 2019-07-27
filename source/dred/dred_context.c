@@ -751,7 +751,7 @@ dtk_bool32 dred_init(dred_context* pDred, int argc, char** argv, dred_package_li
 
 
     // The command bar. Ensure this is given a valid initial size.
-    if (!dred_cmdbar_init(&pDred->cmdBar, pDred, DTK_CONTROL(&pDred->mainWindow))) {
+    if (!dred_cmdbar_init(pDred, DTK_CONTROL(&pDred->mainWindow), &pDred->cmdBar)) {
         dred_error(pDred, "Failed to create command bar.\n");
         goto on_error;
     }

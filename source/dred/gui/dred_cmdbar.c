@@ -116,7 +116,7 @@ void dred_cmdbar__update_text_based_on_autocomplete(dred_cmdbar* pCmdBar)
 }
 
 
-void dred_cmdbar__on_size(dred_control* pControl, dtk_int32 newWidth, dtk_int32 newHeight)
+void dred_cmdbar__on_size(dtk_control* pControl, dtk_int32 newWidth, dtk_int32 newHeight)
 {
     (void)newWidth;
     (void)newHeight;
@@ -127,7 +127,7 @@ void dred_cmdbar__on_size(dred_control* pControl, dtk_int32 newWidth, dtk_int32 
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
-void dred_cmdbar__on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
+void dred_cmdbar__on_capture_keyboard(dtk_control* pControl, dtk_control* pPrevCapturedControl)
 {
     (void)pPrevCapturedControl;
 
@@ -137,7 +137,7 @@ void dred_cmdbar__on_capture_keyboard(dred_control* pControl, dtk_control* pPrev
     dtk_capture_keyboard(DTK_CONTROL(pCmdBar)->pTK, DTK_CONTROL(&pCmdBar->textBox));
 }
 
-void dred_cmdbar__on_paint(dred_control* pControl, dtk_rect rect, dtk_surface* pSurface)
+void dred_cmdbar__on_paint(dtk_control* pControl, dtk_rect rect, dtk_surface* pSurface)
 {
     (void)rect;
 
@@ -454,30 +454,49 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
-dtk_bool32 dred_cmdbar_init(dred_cmdbar* pCmdBar, dred_context* pDred, dtk_control* pParent)
+dtk_bool32 dred_cmdbar_event_handler(dtk_event* pEvent)
+{
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_SIZE:
+        {
+            dred_cmdbar__on_size(pEvent->pControl, pEvent->size.width, pEvent->size.height);
+        } break;
+
+        case DTK_EVENT_CAPTURE_KEYBOARD:
+        {
+            dred_cmdbar__on_capture_keyboard(pEvent->pControl, pEvent->captureKeyboard.pOldCapturedControl);
+        } break;
+
+        case DTK_EVENT_PAINT:
+        {
+            dred_cmdbar__on_paint(pEvent->pControl, pEvent->paint.rect, pEvent->paint.pSurface);
+        } break;
+    }
+
+    return dtk_control_default_event_handler(pEvent);
+}
+
+dtk_bool32 dred_cmdbar_init(dred_context* pDred, dtk_control* pParent, dred_cmdbar* pCmdBar)
 {
     if (pCmdBar == NULL) {
         return DTK_FALSE;
     }
 
     memset(pCmdBar, 0, sizeof(*pCmdBar));
-    if (!dred_control_init(DRED_CONTROL(pCmdBar), pDred, NULL, pParent, DRED_CONTROL_TYPE_CMDBAR, NULL)) {
+
+    if (dtk_control_init(&pDred->tk, DRED_CONTROL_TYPE_CMDBAR, dred_cmdbar_event_handler, pParent, DTK_CONTROL(pCmdBar)) != DTK_SUCCESS) {
         return DTK_FALSE;
     }
 
-    if (!dred_textbox_init(&pCmdBar->textBox, pDred, DRED_CONTROL(pCmdBar))) {
-        dred_control_uninit(DRED_CONTROL(pCmdBar));
+    if (!dred_textbox_init(&pCmdBar->textBox, pDred, DTK_CONTROL(pCmdBar))) {
+        dtk_control_uninit(DTK_CONTROL(pCmdBar));
         return DTK_FALSE;
     }
 
     dred_textbox_disable_horizontal_scrollbar(&pCmdBar->textBox);
     dred_textbox_disable_vertical_scrollbar(&pCmdBar->textBox);
     dred_textbox_set_on_text_changed(&pCmdBar->textBox, dred_cmdbar_tb__on_text_changed);
-
-    // Events.
-    dred_control_set_on_size(DRED_CONTROL(pCmdBar), dred_cmdbar__on_size);
-    dred_control_set_on_capture_keyboard(DRED_CONTROL(pCmdBar), dred_cmdbar__on_capture_keyboard);
-    dred_control_set_on_paint(DRED_CONTROL(pCmdBar), dred_cmdbar__on_paint);
 
     // Text box event overrides.
     dred_control_set_on_capture_keyboard(DRED_CONTROL(&pCmdBar->textBox), dred_cmdbar_tb__on_capture_keyboard);
@@ -507,7 +526,7 @@ void dred_cmdbar_uninit(dred_cmdbar* pCmdBar)
     free(pCmdBar->workingCommand);
     free(pCmdBar->manualTextEntry);
 
-    dred_control_uninit(DRED_CONTROL(pCmdBar));
+    dtk_control_uninit(DTK_CONTROL(pCmdBar));
 }
 
 
