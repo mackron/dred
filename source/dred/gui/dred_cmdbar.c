@@ -180,8 +180,10 @@ void dred_cmdbar__on_paint(dtk_control* pControl, dtk_rect rect, dtk_surface* pS
     dtk_surface_draw_text(pSurface, pMessageFont, uiScale, pCmdBar->message, (int)strlen(pCmdBar->message), (dtk_int32)messageLeft, (dtk_int32)messageTop, pDred->config.cmdbarTextColor, bgcolor);
 }
 
-void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
+void dred_cmdbar_tb__on_capture_keyboard(dtk_control* pControl, dtk_control* pPrevCapturedControl)
 {
+    (void)pPrevCapturedControl;
+
     dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
     assert(pTextBox != NULL);
 
@@ -210,12 +212,9 @@ void dred_cmdbar_tb__on_capture_keyboard(dred_control* pControl, dtk_control* pP
 
     // Show the popup window.
     dred_cmdbar_popup_show(&pDred->cmdbarPopup);
-
-    // Fall through to the default handler.
-    dred_textview_on_capture_keyboard(DRED_CONTROL(pTextBox), pPrevCapturedControl);
 }
 
-void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dtk_control* pNextCapturedControl)
+void dred_cmdbar_tb__on_release_keyboard(dtk_control* pControl, dtk_control* pNextCapturedControl)
 {
     dred_textbox* pTextBox = DRED_TEXTBOX(pControl);
     assert(pTextBox != NULL);
@@ -247,13 +246,9 @@ void dred_cmdbar_tb__on_release_keyboard(dred_control* pControl, dtk_control* pN
     }
 
     dtk_control_scheduled_redraw(DTK_CONTROL(pCmdBar), dtk_control_get_local_rect(DTK_CONTROL(pCmdBar)));
-
-
-    // Fall through to the default handler.
-    dred_textview_on_release_keyboard(DRED_CONTROL(pTextBox), pNextCapturedControl);
 }
 
-void dred_cmdbar_tb__on_key_down(dred_control* pControl, dtk_key key, int stateFlags)
+dtk_bool32 dred_cmdbar_tb__on_key_down(dtk_control* pControl, dtk_key key, int stateFlags)
 {
     (void)stateFlags;
 
@@ -336,17 +331,14 @@ void dred_cmdbar_tb__on_key_down(dred_control* pControl, dtk_key key, int stateF
 
         default: 
         {
-            dred_textview_on_key_down(DRED_CONTROL(pTextBox), key, stateFlags);
-
-            if (key == DTK_KEY_DELETE || key == DTK_KEY_BACKSPACE) {
-                dred_cmdbar__update_manual_text_entry(pCmdBar);
-                dred_cmdbar_popup_refresh_autocomplete(&pDred->cmdbarPopup, pCmdBar->manualTextEntry);
-            }
+            return DTK_TRUE;
         } break;
     }
+
+    return DTK_FALSE;
 }
 
-void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf32, int stateFlags)
+dtk_bool32 dred_cmdbar_tb__on_printable_key_down(dtk_control* pControl, uint32_t utf32, int stateFlags)
 {
     (void)stateFlags;
 
@@ -362,7 +354,7 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
 
     // Tabs are handle in a special way for the command bar.
     if (utf32 == '\t') {
-        return;
+        return DTK_FALSE;
     }
 
     if (utf32 == '\r' || utf32 == '\n') {
@@ -394,10 +386,10 @@ void dred_cmdbar_tb__on_printable_key_down(dred_control* pControl, uint32_t utf3
         }
 
         free(cmd);
+
+        return DTK_FALSE;
     } else {
-        dred_textview_on_printable_key_down(DRED_CONTROL(pTextBox), utf32, stateFlags);
-        dred_cmdbar__update_manual_text_entry(pCmdBar);
-        dred_cmdbar_popup_refresh_autocomplete(&pDred->cmdbarPopup, pCmdBar->manualTextEntry);
+        return DTK_TRUE;    /* Propagate to the default event handler. */
     }
 }
 
@@ -454,6 +446,64 @@ void dred_cmdbar__update_size(dred_cmdbar* pCmdBar)
     dred_cmdbar__update_layouts_of_inner_controls(pCmdBar);
 }
 
+dtk_bool32 dred_cmdbar_tb_event_handler(dtk_event* pEvent)
+{
+    dred_textbox* pTextBox = DRED_TEXTBOX(pEvent->pControl);
+    assert(pTextBox != NULL);
+
+    // The parent is the command bar.
+    dred_cmdbar* pCmdBar = DRED_CMDBAR(dtk_control_get_parent(DTK_CONTROL(pTextBox)));
+    assert(pCmdBar != NULL);
+
+    dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pCmdBar));
+    assert(pDred != NULL);
+
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_CAPTURE_KEYBOARD:
+        {
+            dred_cmdbar_tb__on_capture_keyboard(pEvent->pControl, pEvent->captureKeyboard.pOldCapturedControl);
+        } break;
+
+        case DTK_EVENT_RELEASE_KEYBOARD:
+        {
+            dred_cmdbar_tb__on_release_keyboard(pEvent->pControl, pEvent->releaseKeyboard.pNewCapturedControl);
+        } break;
+
+        case DTK_EVENT_KEY_DOWN:
+        {
+            dtk_bool32 result = dred_cmdbar_tb__on_key_down(pEvent->pControl, pEvent->keyDown.key, pEvent->keyDown.state);
+            if (result == DTK_TRUE) {
+                dred_textbox_default_event_handler(pEvent);
+
+                if (pEvent->keyDown.key == DTK_KEY_DELETE || pEvent->keyDown.key == DTK_KEY_BACKSPACE) {
+                    dred_cmdbar__update_manual_text_entry(pCmdBar);
+                    dred_cmdbar_popup_refresh_autocomplete(&pDred->cmdbarPopup, pCmdBar->manualTextEntry);
+                }
+            }
+
+            return result;  /* Don't fall through. */
+        } break;
+
+        case DTK_EVENT_PRINTABLE_KEY_DOWN:
+        {
+            dtk_result result = dred_cmdbar_tb__on_printable_key_down(pEvent->pControl, pEvent->printableKeyDown.utf32, pEvent->printableKeyDown.state);
+            if (result == DTK_TRUE) {
+                dred_textbox_default_event_handler(pEvent);
+
+                dred_cmdbar__update_manual_text_entry(pCmdBar);
+                dred_cmdbar_popup_refresh_autocomplete(&pDred->cmdbarPopup, pCmdBar->manualTextEntry);
+            }
+
+            return result;  /* Don't fall through. */
+        } break;
+
+        default: break;
+    }
+
+    return dred_textbox_default_event_handler(pEvent);
+}
+
 dtk_bool32 dred_cmdbar_event_handler(dtk_event* pEvent)
 {
     switch (pEvent->type)
@@ -489,7 +539,7 @@ dtk_bool32 dred_cmdbar_init(dred_context* pDred, dtk_control* pParent, dred_cmdb
         return DTK_FALSE;
     }
 
-    if (!dred_textbox_init(&pCmdBar->textBox, pDred, DTK_CONTROL(pCmdBar))) {
+    if (!dred_textbox_init(pDred, dred_cmdbar_tb_event_handler, DTK_CONTROL(pCmdBar), &pCmdBar->textBox)) {
         dtk_control_uninit(DTK_CONTROL(pCmdBar));
         return DTK_FALSE;
     }
@@ -499,10 +549,10 @@ dtk_bool32 dred_cmdbar_init(dred_context* pDred, dtk_control* pParent, dred_cmdb
     dred_textbox_set_on_text_changed(&pCmdBar->textBox, dred_cmdbar_tb__on_text_changed);
 
     // Text box event overrides.
-    dred_control_set_on_capture_keyboard(DRED_CONTROL(&pCmdBar->textBox), dred_cmdbar_tb__on_capture_keyboard);
-    dred_control_set_on_release_keyboard(DRED_CONTROL(&pCmdBar->textBox), dred_cmdbar_tb__on_release_keyboard);
-    dred_control_set_on_key_down(DRED_CONTROL(&pCmdBar->textBox), dred_cmdbar_tb__on_key_down);
-    dred_control_set_on_printable_key_down(DRED_CONTROL(&pCmdBar->textBox), dred_cmdbar_tb__on_printable_key_down);
+    //dred_control_set_on_capture_keyboard(DRED_CONTROL(&pCmdBar->textBox), dred_cmdbar_tb__on_capture_keyboard);
+    //dred_control_set_on_release_keyboard(DRED_CONTROL(&pCmdBar->textBox), dred_cmdbar_tb__on_release_keyboard);
+    //dred_control_set_on_key_down(DRED_CONTROL(&pCmdBar->textBox), dred_cmdbar_tb__on_key_down);
+    //dred_control_set_on_printable_key_down(DRED_CONTROL(&pCmdBar->textBox), dred_cmdbar_tb__on_printable_key_down);
 
     strcpy_s(pCmdBar->message, sizeof(pCmdBar->message), "");
 

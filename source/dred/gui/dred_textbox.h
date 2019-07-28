@@ -1,7 +1,5 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
-#define DRED_CONTROL_TYPE_TEXTBOX  "dred.textview.textbox"
-
 typedef struct dred_textbox dred_textbox;
 #define DRED_TEXTBOX(a) ((dred_textbox*)(a))
 
@@ -21,10 +19,13 @@ struct dred_textbox
 
 
 // Creates a new text box control.
-dtk_bool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dtk_control* pParent);
+dtk_bool32 dred_textbox_init(dred_context* pDred, dtk_event_proc onEvent, dtk_control* pParent, dred_textbox* pTextBox);
 
 // Deletes the given text box control.
 void dred_textbox_uninit(dred_textbox* pTextBox);
+
+// The default event handler for text boxes.
+dtk_bool32 dred_textbox_default_event_handler(dtk_event* pEvent);
 
 
 // Retrieves a pointer to the internal text engine.

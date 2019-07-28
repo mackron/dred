@@ -138,7 +138,7 @@ void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
     pInfoBar->type = DRED_INFO_BAR_TYPE_NONE;
 
     if (pControl != NULL) {
-        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR) || dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXTBOX)) {
+        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
             pInfoBar->type = DRED_INFO_BAR_TYPE_TEXT_EDITOR;
             snprintf(pInfoBar->lineStr, sizeof(pInfoBar->lineStr), "Ln %d", (int)dred_text_editor_get_cursor_line(DRED_TEXT_EDITOR(pControl)) + 1);
             snprintf(pInfoBar->colStr,  sizeof(pInfoBar->colStr),  "Col %d", (int)dred_text_editor_get_cursor_column(DRED_TEXT_EDITOR(pControl)) + 1);

@@ -350,14 +350,144 @@ void dred_textview__delete_timer(dred_textview* pTextView)
 }
 
 
-dtk_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dtk_control* pParent, drte_engine* pTextEngine)
+dtk_bool32 dred_textview_default_event_handler(dtk_event* pEvent)
+{
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_SIZE:
+        {
+            dred_textview_on_size(pEvent->pControl, pEvent->size.width, pEvent->size.height);
+        } break;
+
+        case DTK_EVENT_MOUSE_MOVE:
+        {
+            dred_textview_on_mouse_move(pEvent->pControl, pEvent->mouseMove.x, pEvent->mouseMove.y, pEvent->mouseMove.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_DOWN:
+        {
+            dred_textview_on_mouse_button_down(pEvent->pControl, pEvent->mouseButton.button, pEvent->mouseButton.x, pEvent->mouseButton.y, pEvent->mouseButton.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_UP:
+        {
+            dred_textview_on_mouse_button_up(pEvent->pControl, pEvent->mouseButton.button, pEvent->mouseButton.x, pEvent->mouseButton.y, pEvent->mouseButton.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_DBLCLICK:
+        {
+            dred_textview_on_mouse_button_dblclick(pEvent->pControl, pEvent->mouseButton.button, pEvent->mouseButton.x, pEvent->mouseButton.y, pEvent->mouseButton.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_WHEEL:
+        {
+            dred_textview_on_mouse_wheel(pEvent->pControl, pEvent->mouseWheel.delta, pEvent->mouseWheel.x, pEvent->mouseWheel.y, pEvent->mouseWheel.state);
+        } break;
+
+        case DTK_EVENT_KEY_DOWN:
+        {
+            dred_textview_on_key_down(pEvent->pControl, pEvent->keyDown.key, pEvent->keyDown.state);
+        } break;
+
+        case DTK_EVENT_PRINTABLE_KEY_DOWN:
+        {
+            dred_textview_on_printable_key_down(pEvent->pControl, pEvent->printableKeyDown.utf32, pEvent->printableKeyDown.state);
+        } break;
+
+        case DTK_EVENT_PAINT:
+        {
+            dred_textview_on_paint(pEvent->pControl, pEvent->paint.rect, pEvent->paint.pSurface);
+        } break;
+
+        case DTK_EVENT_CAPTURE_KEYBOARD:
+        {
+            dred_textview_on_capture_keyboard(pEvent->pControl, pEvent->captureKeyboard.pOldCapturedControl);
+        } break;
+
+        case DTK_EVENT_RELEASE_KEYBOARD:
+        {
+            dred_textview_on_release_keyboard(pEvent->pControl, pEvent->releaseKeyboard.pNewCapturedControl);
+        } break;
+
+        case DTK_EVENT_CAPTURE_MOUSE:
+        {
+            dred_textview_on_capture_mouse(pEvent->pControl);
+        } break;
+
+        case DTK_EVENT_RELEASE_MOUSE:
+        {
+            dred_textview_on_release_mouse(pEvent->pControl);
+        } break;
+
+
+        /* Common Operations. */
+        case DTK_EVENT_UNDO:
+        {
+            dred_textview_undo(DRED_TEXTVIEW(pEvent->pControl));
+        } break;
+
+        case DTK_EVENT_REDO:
+        {
+            dred_textview_redo(DRED_TEXTVIEW(pEvent->pControl));
+        } break;
+
+        case DTK_EVENT_COPY:
+        {
+            size_t selectedTextLength = dred_textview_get_selected_text(DRED_TEXTVIEW(pEvent->pControl), NULL, 0);
+            char* selectedText = (char*)malloc(selectedTextLength + 1);
+            if (selectedText == NULL) {
+                return DTK_FALSE;
+            }
+
+            selectedTextLength = dred_textview_get_selected_text(DRED_TEXTVIEW(pEvent->pControl), selectedText, selectedTextLength + 1);
+            dtk_clipboard_set_text(pEvent->pTK, selectedText, selectedTextLength);
+            free(selectedText);
+        } break;
+
+        case DTK_EVENT_PASTE:
+        {
+            char* clipboardText = dtk_clipboard_get_text(pEvent->pTK);
+            if (clipboardText == NULL) {
+                return DTK_FALSE;
+            }
+
+            dtk_bool32 wasTextChanged = DTK_FALSE;
+            dred_textview_prepare_undo_point(DRED_TEXTVIEW(pEvent->pControl));
+            {
+                wasTextChanged = dred_textview_delete_selected_text_no_undo(DRED_TEXTVIEW(pEvent->pControl)) || wasTextChanged;
+                wasTextChanged = dred_textview_insert_text_at_cursors_no_undo(DRED_TEXTVIEW(pEvent->pControl), clipboardText) || wasTextChanged;
+            }
+            if (wasTextChanged) { dred_textview_commit_undo_point(DRED_TEXTVIEW(pEvent->pControl)); }
+
+            dtk_clipboard_free_text(pEvent->pTK, clipboardText);
+        } break;
+
+        case DTK_EVENT_DELETE:
+        {
+            dred_textview_do_delete(DRED_TEXTVIEW(pEvent->pControl), 0);
+        } break;
+
+        case DTK_EVENT_SELECTALL:
+        {
+            dred_textview_select_all(DRED_TEXTVIEW(pEvent->pControl));
+        } break;
+
+        default: break;
+    }
+
+    return dtk_control_default_event_handler(pEvent);
+}
+
+
+dtk_bool32 dred_textview_init(dred_context* pDred, dtk_event_proc onEvent, dtk_control* pParent, drte_engine* pTextEngine, dred_textview* pTextView)
 {
     if (pTextView == NULL || pTextEngine == NULL) {
         return DTK_FALSE;
     }
 
     memset(pTextView, 0, sizeof(*pTextView));
-    if (!dred_control_init(DRED_CONTROL(pTextView), pDred, pParent, DRED_CONTROL_TYPE_TEXTVIEW, NULL)) {
+
+    if (dtk_control_init(&pDred->tk, DRED_CONTROL_TYPE_TEXTVIEW, (onEvent != NULL) ? onEvent : dred_textview_default_event_handler, pParent, DTK_CONTROL(pTextView)) != DTK_SUCCESS) {
         return DTK_FALSE;
     }
 
@@ -365,7 +495,7 @@ dtk_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dtk
 
     pTextView->pView = drte_view_create(pTextView->pTextEngine);
     if (pTextView->pView == NULL) {
-        dred_control_uninit(DRED_CONTROL(pTextView));
+        dtk_control_uninit(DTK_CONTROL(pTextView));
         return DTK_FALSE;
     }
 
@@ -376,7 +506,7 @@ dtk_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dtk
 
 
     dtk_control_set_cursor(DTK_CONTROL(pTextView), dtk_system_cursor_type_text);
-    dred_control_set_on_size(DRED_CONTROL(pTextView), dred_textview_on_size);
+    /*dred_control_set_on_size(DRED_CONTROL(pTextView), dred_textview_on_size);
     dred_control_set_on_mouse_move(DRED_CONTROL(pTextView), dred_textview_on_mouse_move);
     dred_control_set_on_mouse_button_down(DRED_CONTROL(pTextView), dred_textview_on_mouse_button_down);
     dred_control_set_on_mouse_button_up(DRED_CONTROL(pTextView), dred_textview_on_mouse_button_up);
@@ -388,7 +518,7 @@ dtk_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dtk
     dred_control_set_on_capture_keyboard(DRED_CONTROL(pTextView), dred_textview_on_capture_keyboard);
     dred_control_set_on_release_keyboard(DRED_CONTROL(pTextView), dred_textview_on_release_keyboard);
     dred_control_set_on_capture_mouse(DRED_CONTROL(pTextView), dred_textview_on_capture_mouse);
-    dred_control_set_on_release_mouse(DRED_CONTROL(pTextView), dred_textview_on_release_mouse);
+    dred_control_set_on_release_mouse(DRED_CONTROL(pTextView), dred_textview_on_release_mouse);*/
 
     pTextView->pVertScrollbar = &pTextView->vertScrollbar;
     dtk_scrollbar_init(&pDred->tk, NULL, DTK_CONTROL(pTextView), dtk_scrollbar_orientation_vertical, pTextView->pVertScrollbar);
@@ -404,10 +534,10 @@ dtk_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dtk
     pTextView->pLineNumbers = &pTextView->lineNumbers;
     dred_control_init(pTextView->pLineNumbers, pDred, DTK_CONTROL(pTextView), "dred.common.linenumbers", NULL);
     dtk_control_hide(DTK_CONTROL(pTextView->pLineNumbers));
-    dred_control_set_on_mouse_move(pTextView->pLineNumbers, dred_textview__on_mouse_move_line_numbers);
-    dred_control_set_on_mouse_button_down(pTextView->pLineNumbers, dred_textview__on_mouse_button_down_line_numbers);
-    dred_control_set_on_mouse_button_up(pTextView->pLineNumbers, dred_textview__on_mouse_button_up_line_numbers);
-    dred_control_set_on_paint(pTextView->pLineNumbers, dred_textview__on_paint_line_numbers);
+    dred_control_set_on_mouse_move(DRED_CONTROL(pTextView->pLineNumbers), dred_textview__on_mouse_move_line_numbers);
+    dred_control_set_on_mouse_button_down(DRED_CONTROL(pTextView->pLineNumbers), dred_textview__on_mouse_button_down_line_numbers);
+    dred_control_set_on_mouse_button_up(DRED_CONTROL(pTextView->pLineNumbers), dred_textview__on_mouse_button_up_line_numbers);
+    dred_control_set_on_paint(DRED_CONTROL(pTextView->pLineNumbers), dred_textview__on_paint_line_numbers);
 
 
     pTextView->pTextEngine->onMeasureString = dred_textview_engine__on_measure_string_proc;
@@ -519,7 +649,7 @@ void dred_textview_uninit(dred_textview* pTextView)
         pTextView->pView = NULL;
     }
 
-    dred_control_uninit(DRED_CONTROL(pTextView));
+    dtk_control_uninit(DTK_CONTROL(pTextView));
 }
 
 
@@ -1711,7 +1841,7 @@ void dred_textview_set_on_undo_point_changed(dred_textview* pTextView, dred_text
 }
 
 
-void dred_textview_on_size(dred_control* pControl, int newWidth, int newHeight)
+void dred_textview_on_size(dtk_control* pControl, int newWidth, int newHeight)
 {
     (void)newWidth;
     (void)newHeight;
@@ -1771,7 +1901,7 @@ void dred_textview__select_rectangle(dred_textview* pTextView, drte_rect rect)
     pTextView->pTextEngine->onCursorMove = prevOnCursorMoveProc;
 }
 
-void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textview_on_mouse_move(dtk_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)stateFlags;
 
@@ -1861,7 +1991,7 @@ void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, 
     }
 }
 
-void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textview_on_mouse_button_down(dtk_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     if (pTextView == NULL) {
@@ -1935,7 +2065,7 @@ void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton,
     }
 }
 
-void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textview_on_mouse_button_up(dtk_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     if (pTextView == NULL) {
@@ -1986,7 +2116,7 @@ void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, i
     }
 }
 
-void dred_textview_on_mouse_button_dblclick(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textview_on_mouse_button_dblclick(dtk_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)mouseButton;
     (void)relativeMousePosX;
@@ -2024,7 +2154,7 @@ void dred_textview_on_mouse_button_dblclick(dred_control* pControl, int mouseBut
     }
 }
 
-void dred_textview_on_mouse_wheel(dred_control* pControl, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textview_on_mouse_wheel(dtk_control* pControl, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
     (void)relativeMousePosY;
@@ -2060,7 +2190,7 @@ void dred_textview__move_cursor_right(dred_textview* pTextView, size_t iCursor, 
     }
 }
 
-void dred_textview_on_key_down(dred_control* pControl, dtk_key key, int stateFlags)
+void dred_textview_on_key_down(dtk_control* pControl, dtk_key key, int stateFlags)
 {
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     if (pTextView == NULL) {
@@ -2332,14 +2462,14 @@ void dred_textview_on_key_down(dred_control* pControl, dtk_key key, int stateFla
     drte_view_end_dirty(pTextView->pView);
 }
 
-void dred_textview_on_key_up(dred_control* pControl, dtk_key key, int stateFlags)
+void dred_textview_on_key_up(dtk_control* pControl, dtk_key key, int stateFlags)
 {
     (void)pControl;
     (void)key;
     (void)stateFlags;
 }
 
-void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int utf32, int stateFlags)
+void dred_textview_on_printable_key_down(dtk_control* pControl, unsigned int utf32, int stateFlags)
 {
     (void)stateFlags;
 
@@ -2348,7 +2478,6 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
         return;
     }
 
-    //dred_control_begin_dirty(pControl);
     drte_engine_prepare_undo_point(pTextView->pTextEngine);
     {
         drte_view_begin_dirty(pTextView->pView);
@@ -2467,7 +2596,6 @@ void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int ut
         drte_view_end_dirty(pTextView->pView);
     }
     drte_engine_commit_undo_point(pTextView->pTextEngine);
-    //dred_control_end_dirty(pControl);
 }
 
 
@@ -2617,7 +2745,7 @@ void dred_textview__on_apply_undo_state(dred_textview* pTextView, size_t dataSiz
 
 
 
-void dred_textview_on_paint(dred_control* pControl, dtk_rect relativeRect, dtk_surface* pSurface)
+void dred_textview_on_paint(dtk_control* pControl, dtk_rect relativeRect, dtk_surface* pSurface)
 {
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     if (pTextView == NULL) {
@@ -2644,7 +2772,7 @@ void dred_textview_on_paint(dred_control* pControl, dtk_rect relativeRect, dtk_s
 
 
 
-void dred_textview_on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
+void dred_textview_on_capture_keyboard(dtk_control* pControl, dtk_control* pPrevCapturedControl)
 {
     (void)pPrevCapturedControl;
 
@@ -2657,7 +2785,7 @@ void dred_textview_on_capture_keyboard(dred_control* pControl, dtk_control* pPre
     dred_textview__create_timer(pTextView);
 }
 
-void dred_textview_on_release_keyboard(dred_control* pControl, dtk_control* pNewCapturedControl)
+void dred_textview_on_release_keyboard(dtk_control* pControl, dtk_control* pNewCapturedControl)
 {
     (void)pNewCapturedControl;
 
@@ -2670,7 +2798,7 @@ void dred_textview_on_release_keyboard(dred_control* pControl, dtk_control* pNew
     dred_textview__delete_timer(pTextView);
 }
 
-void dred_textview_on_capture_mouse(dred_control* pControl)
+void dred_textview_on_capture_mouse(dtk_control* pControl)
 {
     if (pControl == NULL) {
         return;
@@ -2678,7 +2806,7 @@ void dred_textview_on_capture_mouse(dred_control* pControl)
 
 }
 
-void dred_textview_on_release_mouse(dred_control* pControl)
+void dred_textview_on_release_mouse(dtk_control* pControl)
 {
     if (pControl == NULL) {
         return;

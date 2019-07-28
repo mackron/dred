@@ -288,6 +288,14 @@ typedef int dtk_event_type;
 #define DTK_EVENT_DPI_CHANGED                           24
 #define DTK_EVENT_TOOLTIP                               25
 #define DTK_EVENT_BINDING                               26      /* If handling this, you must propagate it to dtk_default_event_handler(). */
+
+#define DTK_EVENT_UNDO                                  64      /* Common operations. */
+#define DTK_EVENT_REDO                                  65
+#define DTK_EVENT_COPY                                  66
+#define DTK_EVENT_PASTE                                 67
+#define DTK_EVENT_DELETE                                68
+#define DTK_EVENT_SELECTALL                             69
+
 #define DTK_EVENT_BUTTON_PRESSED                        128
 #define DTK_EVENT_CHECKBOX_CHECK_CHANGED                129
 #define DTK_EVENT_COLOR_BUTTON_COLOR_CHANGED            130
@@ -313,7 +321,7 @@ typedef int dtk_event_type;
 #define DTK_EVENT_APPLICATION_FONT                      252     // A special event for retrieving an application-defined font for certain categories.
 #define DTK_EVENT_APPLICATION_SCALE                     253     // A special event for retrieving an application-defined scaling factor for GUI elements.
 #define DTK_EVENT_CHANGE_KEYBOARD_CAPTURE               254     // A special event used internally for handling keyboard capture changes.
-#define DTK_EVENT_CHANGE_MOUSE_CAPTURE                  255     // ^^^
+#define DTK_EVENT_CHANGE_MOUSE_CAPTURE                  255     // A special event used internally for handling mouse capture changes.
 #define DTK_EVENT_CUSTOM                                256
 
 struct dtk_event

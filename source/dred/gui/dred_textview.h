@@ -1,7 +1,5 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
-#define DRED_CONTROL_TYPE_TEXTVIEW  "dred.textview"
-
 typedef struct dred_textview dred_textview;
 #define DRED_TEXTVIEW(a) ((dred_textview*)(a))
 
@@ -19,7 +17,7 @@ typedef struct
 struct dred_textview
 {
     // The base control.
-    dred_control control;
+    dtk_control control;
 
 
     // The text engine.
@@ -140,10 +138,13 @@ struct dred_textview
 
 
 // Creates a new text box control.
-dtk_bool32 dred_textview_init(dred_textview* pTextView, dred_context* pDred, dtk_control* pParent, drte_engine* pTextEngine);
+dtk_bool32 dred_textview_init(dred_context* pDred, dtk_event_proc onEvent, dtk_control* pParent, drte_engine* pTextEngine, dred_textview* pTextView);
 
 // Deletes the given text box control.
 void dred_textview_uninit(dred_textview* pTextView);
+
+// Default event handler for text views.
+dtk_bool32 dred_textview_default_event_handler(dtk_event* pEvent);
 
 
 // Retrieves a pointer to the internal text engine.
@@ -451,43 +452,43 @@ void dred_textview_set_on_undo_point_changed(dred_textview* pTextView, dred_text
 
 
 // on_size.
-void dred_textview_on_size(dred_control* pControl, int newWidth, int newHeight);
+void dred_textview_on_size(dtk_control* pControl, int newWidth, int newHeight);
 
 // on_mouse_move.
-void dred_textview_on_mouse_move(dred_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textview_on_mouse_move(dtk_control* pControl, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 // on_mouse_button_down.
-void dred_textview_on_mouse_button_down(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textview_on_mouse_button_down(dtk_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 // on_mouse_button_up.
-void dred_textview_on_mouse_button_up(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textview_on_mouse_button_up(dtk_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 // on_mouse_button_dblclick.
-void dred_textview_on_mouse_button_dblclick(dred_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textview_on_mouse_button_dblclick(dtk_control* pControl, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 // on_mouse_wheel
-void dred_textview_on_mouse_wheel(dred_control* pControl, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textview_on_mouse_wheel(dtk_control* pControl, int delta, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 // on_key_down.
-void dred_textview_on_key_down(dred_control* pControl, dtk_key key, int stateFlags);
+void dred_textview_on_key_down(dtk_control* pControl, dtk_key key, int stateFlags);
 
 // on_key_up.
-void dred_textview_on_key_up(dred_control* pControl, dtk_key key, int stateFlags);
+void dred_textview_on_key_up(dtk_control* pControl, dtk_key key, int stateFlags);
 
 // on_printable_key_down.
-void dred_textview_on_printable_key_down(dred_control* pControl, unsigned int utf32, int stateFlags);
+void dred_textview_on_printable_key_down(dtk_control* pControl, unsigned int utf32, int stateFlags);
 
 // on_paint.
-void dred_textview_on_paint(dred_control* pControl, dtk_rect relativeRect, dtk_surface* pSurface);
+void dred_textview_on_paint(dtk_control* pControl, dtk_rect relativeRect, dtk_surface* pSurface);
 
 // on_capture_keyboard
-void dred_textview_on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl);
+void dred_textview_on_capture_keyboard(dtk_control* pControl, dtk_control* pPrevCapturedControl);
 
 // on_release_keyboard
-void dred_textview_on_release_keyboard(dred_control* pControl, dtk_control* pNewCapturedControl);
+void dred_textview_on_release_keyboard(dtk_control* pControl, dtk_control* pNewCapturedControl);
 
 // on_capture_mouse
-void dred_textview_on_capture_mouse(dred_control* pControl);
+void dred_textview_on_capture_mouse(dtk_control* pControl);
 
 // on_release_mouse
-void dred_textview_on_release_mouse(dred_control* pControl);
+void dred_textview_on_release_mouse(dtk_control* pControl);

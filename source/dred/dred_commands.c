@@ -462,34 +462,30 @@ dtk_bool32 dred_command__undo(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
-    if (pFocusedControl == NULL) {
+    dtk_control* pFocusedEditor = DTK_CONTROL(dred_get_focused_editor(pDred));
+    if (pFocusedEditor == NULL) {
         return DTK_TRUE;
     }
 
-    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
-        dred_textview_undo(DRED_TEXTVIEW(pFocusedControl));
-        return DTK_TRUE;
-    }
+    dtk_event e = dtk_event_init(&pDred->tk, DTK_EVENT_UNDO, pFocusedEditor);
+    dtk_control_handle_event(pFocusedEditor, &e);
 
-    return DTK_FALSE;
+    return DTK_TRUE;
 }
 
 dtk_bool32 dred_command__redo(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
-    if (pFocusedControl == NULL) {
-        return DTK_FALSE;
-    }
-
-    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
-        dred_textview_redo(DRED_TEXTVIEW(pFocusedControl));
+    dtk_control* pFocusedEditor = DTK_CONTROL(dred_get_focused_editor(pDred));
+    if (pFocusedEditor == NULL) {
         return DTK_TRUE;
     }
 
-    return DTK_FALSE;
+    dtk_event e = dtk_event_init(&pDred->tk, DTK_EVENT_REDO, pFocusedEditor);
+    dtk_control_handle_event(pFocusedEditor, &e);
+
+    return DTK_TRUE;
 }
 
 dtk_bool32 dred_command__cut(dred_context* pDred, const char* value)
@@ -503,90 +499,60 @@ dtk_bool32 dred_command__copy(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
-    if (pFocusedControl == NULL) {
+    dtk_control* pFocusedEditor = DTK_CONTROL(dred_get_focused_editor(pDred));
+    if (pFocusedEditor == NULL) {
         return DTK_TRUE;
     }
 
-    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
-        size_t selectedTextLength = dred_textview_get_selected_text(DRED_TEXTVIEW(pFocusedControl), NULL, 0);
-        char* selectedText = (char*)malloc(selectedTextLength + 1);
-        if (selectedText == NULL) {
-            return DTK_FALSE;
-        }
+    dtk_event e = dtk_event_init(&pDred->tk, DTK_EVENT_COPY, pFocusedEditor);
+    dtk_control_handle_event(pFocusedEditor, &e);
 
-        selectedTextLength = dred_textview_get_selected_text(DRED_TEXTVIEW(pFocusedControl), selectedText, selectedTextLength + 1);
-        dtk_clipboard_set_text(&pDred->tk, selectedText, selectedTextLength);
-        free(selectedText);
-
-        return DTK_TRUE;
-    }
-
-    return DTK_FALSE;
+    return DTK_TRUE;
 }
 
 dtk_bool32 dred_command__paste(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
-    if (pFocusedControl == NULL) {
-        return DTK_FALSE;
-    }
-
-    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
-        char* clipboardText = dtk_clipboard_get_text(&pDred->tk);
-        if (clipboardText == NULL) {
-            return DTK_FALSE;
-        }
-
-        dtk_bool32 wasTextChanged = DTK_FALSE;
-        dred_textview_prepare_undo_point(DRED_TEXTVIEW(pFocusedControl));
-        {
-            wasTextChanged = dred_textview_delete_selected_text_no_undo(DRED_TEXTVIEW(pFocusedControl)) || wasTextChanged;
-            wasTextChanged = dred_textview_insert_text_at_cursors_no_undo(DRED_TEXTVIEW(pFocusedControl), clipboardText) || wasTextChanged;
-        }
-        if (wasTextChanged) { dred_textview_commit_undo_point(DRED_TEXTVIEW(pFocusedControl)); }
-
-        dtk_clipboard_free_text(&pDred->tk, clipboardText);
+    dtk_control* pFocusedEditor = DTK_CONTROL(dred_get_focused_editor(pDred));
+    if (pFocusedEditor == NULL) {
         return DTK_TRUE;
     }
 
-    return DTK_FALSE;
+    dtk_event e = dtk_event_init(&pDred->tk, DTK_EVENT_PASTE, pFocusedEditor);
+    dtk_control_handle_event(pFocusedEditor, &e);
+
+    return DTK_TRUE;
 }
 
 dtk_bool32 dred_command__delete(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
-    if (pFocusedControl == NULL) {
-        return DTK_FALSE;
-    }
-    
-    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
-        dred_textview_do_delete(DRED_TEXTVIEW(pFocusedControl), 0);
+    dtk_control* pFocusedEditor = DTK_CONTROL(dred_get_focused_editor(pDred));
+    if (pFocusedEditor == NULL) {
         return DTK_TRUE;
     }
 
-    return DTK_FALSE;
+    dtk_event e = dtk_event_init(&pDred->tk, DTK_EVENT_DELETE, pFocusedEditor);
+    dtk_control_handle_event(pFocusedEditor, &e);
+
+    return DTK_TRUE;
 }
 
 dtk_bool32 dred_command__select_all(dred_context* pDred, const char* value)
 {
     (void)value;
 
-    dred_control* pFocusedControl = (dred_control*)dred_get_control_with_keyboard_capture(pDred);
-    if (pFocusedControl == NULL) {
-        return DTK_FALSE;
-    }
-
-    if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_TEXTVIEW)) {
-        dred_textview_select_all(DRED_TEXTVIEW(pFocusedControl));
+    dtk_control* pFocusedEditor = DTK_CONTROL(dred_get_focused_editor(pDred));
+    if (pFocusedEditor == NULL) {
         return DTK_TRUE;
     }
 
-    return DTK_FALSE;
+    dtk_event e = dtk_event_init(&pDred->tk, DTK_EVENT_SELECTALL, pFocusedEditor);
+    dtk_control_handle_event(pFocusedEditor, &e);
+
+    return DTK_TRUE;
 }
 
 

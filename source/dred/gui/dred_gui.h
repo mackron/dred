@@ -3,7 +3,8 @@
 #define DTK_CONTROL_TYPE_DRED       DTK_CONTROL_TYPE_CUSTOM + 1     // <-- Temporary until dred_control is removed entirely.
 #define DRED_CONTROL_TYPE_INFO_BAR  DTK_CONTROL_TYPE_CUSTOM + 2
 #define DRED_CONTROL_TYPE_CMDBAR    DTK_CONTROL_TYPE_CUSTOM + 3
-
+#define DRED_CONTROL_TYPE_TEXTVIEW  DTK_CONTROL_TYPE_CUSTOM + 4
+#define DRED_CONTROL_TYPE_TEXTBOX   DTK_CONTROL_TYPE_CUSTOM + 5
 
 typedef struct dred_control dred_control;
 

@@ -10,7 +10,7 @@ void dred_textbox__engine_on_text_changed(drte_engine* pTextEngine)
     }
 }
 
-dtk_bool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dtk_control* pParent)
+dtk_bool32 dred_textbox_init(dred_context* pDred, dtk_event_proc onEvent, dtk_control* pParent, dred_textbox* pTextBox)
 {
     if (pTextBox == NULL) {
         return DTK_FALSE;
@@ -27,11 +27,10 @@ dtk_bool32 dred_textbox_init(dred_textbox* pTextBox, dred_context* pDred, dtk_co
     drte_engine_set_on_text_changed(pTextBox->pTextEngine, dred_textbox__engine_on_text_changed);
 
 
-    if (!dred_textview_init(DRED_TEXTVIEW(pTextBox), pDred, pParent, pTextBox->pTextEngine)) {
+    if (!dred_textview_init(pDred, onEvent, pParent, pTextBox->pTextEngine, DRED_TEXTVIEW(pTextBox))) {
         return DTK_FALSE;
     }
 
-    dred_control_set_type(DRED_CONTROL(pTextBox), DRED_CONTROL_TYPE_TEXTBOX);
     return DTK_TRUE;
 }
 
@@ -47,6 +46,11 @@ void dred_textbox_uninit(dred_textbox* pTextBox)
         drte_engine_uninit(pTextBox->pTextEngine);
         pTextBox->pTextEngine = NULL;
     }
+}
+
+dtk_bool32 dred_textbox_default_event_handler(dtk_event* pEvent)
+{
+    return dred_textview_default_event_handler(pEvent);
 }
 
 

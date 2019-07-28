@@ -49,26 +49,32 @@ void dred_text_editor__on_capture_keyboard(dred_control* pControl, dtk_control* 
     dred_capture_keyboard(dred_get_context_from_control(DTK_CONTROL(pControl)), DTK_CONTROL(pTextView));
 }
 
-void dred_text_editor_textview__on_key_down(dred_control* pControl, dtk_key key, int stateFlags)
+dtk_bool32 dred_text_editor_textview__on_key_down(dtk_control* pControl, dtk_key key, int stateFlags)
 {
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);
+
+    (void)stateFlags;
 
     if (key == DTK_KEY_ESCAPE) {
         dred_focus_command_bar(dred_get_context_from_control(DTK_CONTROL(pControl)));
+        return DTK_FALSE;   /* Don't propagate the message. */
     } else {
-        dred_textview_on_key_down(DRED_CONTROL(pTextView), key, stateFlags);
+        return DTK_TRUE;    /* Propagate the message to the default event handler. */
     }
 }
 
-void dred_text_editor_textview__on_mouse_wheel(dred_control* pControl, int delta, int mousePosX, int mousePosY, int stateFlags)
+dtk_bool32 dred_text_editor_textview__on_mouse_wheel(dtk_control* pControl, int delta, int mousePosX, int mousePosY, int stateFlags)
 {
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);
 
+    (void)mousePosX;
+    (void)mousePosY;
+
     dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DTK_CONTROL(pControl)));
     if (pTextEditor == NULL) {
-        return;
+        return DTK_FALSE;
     }
 
     dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pControl));
@@ -89,21 +95,24 @@ void dred_text_editor_textview__on_mouse_wheel(dred_control* pControl, int delta
             newTextScale = 1;
         }
 
-
         dred_set_text_editor_scale(pDred, newTextScale);
+
+        return DTK_FALSE;   /* Don't propagate the message. */
     } else {
-        dred_textview_on_mouse_wheel(DRED_CONTROL(pTextView), delta, mousePosX, mousePosY, stateFlags);
+        return DTK_TRUE;    /* Propagate the message to the default event handler. */
     }
 }
 
-void dred_text_editor_textview__on_mouse_button_up(dred_control* pControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+dtk_bool32 dred_text_editor_textview__on_mouse_button_up(dtk_control* pControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);
 
+    (void)stateFlags;
+
     dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DTK_CONTROL(pControl)));
     if (pTextEditor == NULL) {
-        return;
+        return DTK_FALSE;
     }
 
     dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pControl));
@@ -111,23 +120,18 @@ void dred_text_editor_textview__on_mouse_button_up(dred_control* pControl, int m
 
     if (mouseButton == DTK_MOUSE_BUTTON_RIGHT) {
         dtk_control_show_popup_menu(DTK_CONTROL(pControl), &pDred->menus.textPopup, mousePosX, mousePosY);
+        return DTK_FALSE;
     } else {
-        dred_textview_on_mouse_button_up(DRED_CONTROL(pTextView), mouseButton, mousePosX, mousePosY, stateFlags);
+        return DTK_TRUE;
     }
 }
 
-void dred_text_editor_textview__on_cursor_move(dred_textview* pTextView)
-{
-    dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DTK_CONTROL(pTextView)));
-    assert(pTextEditor != NULL);
-
-    dred_update_info_bar(dred_get_context_from_control(DTK_CONTROL(pTextEditor)), DRED_CONTROL(pTextEditor));
-}
-
-void dred_text_editor_textview__on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
+void dred_text_editor_textview__on_capture_keyboard(dtk_control* pControl, dtk_control* pPrevCapturedControl)
 {
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);
+
+    (void)pPrevCapturedControl;
 
     dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DTK_CONTROL(pControl)));
     if (pTextEditor == NULL) {
@@ -140,10 +144,16 @@ void dred_text_editor_textview__on_capture_keyboard(dred_control* pControl, dtk_
     if (pDred->config.enableAutoReload) {
         dred_editor_check_if_dirty_and_reload(DRED_EDITOR(pTextEditor));
     }
-
-    // Fall through to the text boxes normal capture_keyboard event handler...
-    dred_textview_on_capture_keyboard(DRED_CONTROL(pTextView), pPrevCapturedControl);
 }
+
+void dred_text_editor_textview__on_cursor_move(dred_textview* pTextView)
+{
+    dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DTK_CONTROL(pTextView)));
+    assert(pTextEditor != NULL);
+
+    dred_update_info_bar(dred_get_context_from_control(DTK_CONTROL(pTextEditor)), DRED_CONTROL(pTextEditor));
+}
+
 
 
 void dred_text_editor_engine__on_text_changed(drte_engine* pTextEngine)
@@ -254,12 +264,64 @@ dtk_bool32 dred_text_editor__on_reload(dred_editor* pEditor)
     return DTK_TRUE;
 }
 
+dtk_bool32 dred_text_editor_textview_event_handler(dtk_event* pEvent)
+{
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_MOUSE_BUTTON_UP:
+        {
+            dtk_bool32 result = dred_text_editor_textview__on_mouse_button_up(pEvent->pControl, pEvent->mouseButton.button, pEvent->mouseButton.x, pEvent->mouseButton.y, pEvent->mouseButton.state);
+            if (result == DTK_FALSE) {
+                return result;
+            }
+        } break;    /* Fall through to default event handler. */
+
+        case DTK_EVENT_MOUSE_WHEEL:
+        {
+            dtk_bool32 result = dred_text_editor_textview__on_mouse_wheel(pEvent->pControl, pEvent->mouseWheel.delta, pEvent->mouseWheel.x, pEvent->mouseWheel.y, pEvent->mouseWheel.state);
+            if (result == DTK_FALSE) {
+                return result;
+            }
+        } break;    /* Fall through to default event handler. */
+
+        case DTK_EVENT_KEY_DOWN:
+        {
+            dtk_bool32 result = dred_text_editor_textview__on_key_down(pEvent->pControl, pEvent->keyDown.key, pEvent->keyDown.state);
+            if (result == DTK_FALSE) {
+                return result;
+            }
+        } break;    /* Fall through to default event handler. */
+
+        case DTK_EVENT_CAPTURE_KEYBOARD:
+        {
+            dred_text_editor_textview__on_capture_keyboard(pEvent->pControl, pEvent->captureKeyboard.pOldCapturedControl);
+        } break;    /* Fall through to default event handler. */
+
+        default: break;
+    }
+
+    return dred_textview_default_event_handler(pEvent);
+}
+
 dtk_bool32 dred_text_editor_event_handler(dtk_event* pEvent)
 {
     dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(pEvent->pControl);
 
     switch (pEvent->type)
     {
+        /* Common operation events should be handled by the relevant underlying control. */
+        case DTK_EVENT_UNDO:
+        case DTK_EVENT_REDO:
+        case DTK_EVENT_COPY:
+        case DTK_EVENT_PASTE:
+        case DTK_EVENT_DELETE:
+        case DTK_EVENT_SELECTALL:
+        {
+            dtk_event e = *pEvent;
+            e.pControl = DTK_CONTROL(&pTextEditor->textView);
+            dtk_control_handle_event(DTK_CONTROL(&pTextEditor->textView), &e);
+        } return DTK_FALSE; /* Don't propagate. */
+
         case DTK_EVENT_REFRESH_LAYOUT:
         {
             dred_text_editor_refresh_styling(pTextEditor);
@@ -296,7 +358,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pPar
 
 
     pTextEditor->pTextView = &pTextEditor->textView;
-    if (!dred_textview_init(pTextEditor->pTextView, pDred, DTK_CONTROL(pTextEditor), &pTextEditor->engine)) {
+    if (!dred_textview_init(pDred, dred_text_editor_textview_event_handler, DTK_CONTROL(pTextEditor), &pTextEditor->engine, pTextEditor->pTextView)) {
         dred_editor_uninit(DRED_EDITOR(pTextEditor));
         free(pTextEditor);
         return NULL;
@@ -328,12 +390,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pPar
     dred_control_set_on_capture_keyboard(DRED_CONTROL(pTextEditor), dred_text_editor__on_capture_keyboard);
     dred_editor_set_on_save(DRED_EDITOR(pTextEditor), dred_text_editor__on_save);
     dred_editor_set_on_reload(DRED_EDITOR(pTextEditor), dred_text_editor__on_reload);
-    dred_control_set_on_mouse_button_up(DRED_CONTROL(pTextEditor->pTextView), dred_text_editor_textview__on_mouse_button_up);
-    dred_control_set_on_mouse_wheel(DRED_CONTROL(pTextEditor->pTextView), dred_text_editor_textview__on_mouse_wheel);
-    dred_control_set_on_key_down(DRED_CONTROL(pTextEditor->pTextView), dred_text_editor_textview__on_key_down);
-    dred_control_set_on_capture_keyboard(DRED_CONTROL(pTextEditor->pTextView), dred_text_editor_textview__on_capture_keyboard);
     dred_textview_set_on_cursor_move(pTextEditor->pTextView, dred_text_editor_textview__on_cursor_move);
-    //dred_textview_set_on_undo_point_changed(pTextEditor->pTextView, dred_text_editor_textview__on_undo_point_changed);
 
     // Initialize the styling.
     dred_text_editor_refresh_styling(pTextEditor);
@@ -345,9 +402,7 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pPar
 
 
     // HACK: Make sure the text editor is scrolled to the top by default. TODO: Fix the underlying bug which has something to do with the editor defaulting to a size of 0.
-    if (dred_control_is_of_type(DRED_CONTROL(pTextEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-        dred_text_editor_goto_line(pTextEditor, 0);
-    }
+    dred_text_editor_goto_line(pTextEditor, 0);
     
     return pTextEditor;
 }
