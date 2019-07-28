@@ -52,8 +52,8 @@ struct dred_textview
     dtk_scrollbar* pHorzScrollbar;
 
     /// The line numbers element.
-    dred_control lineNumbers;
-    dred_control* pLineNumbers; // <-- Always equal to &lineNumbers and only used for convenience.
+    dtk_control lineNumbers;
+    dtk_control* pLineNumbers; // <-- Always equal to &lineNumbers and only used for convenience.
 
 
     /// The color of the border.

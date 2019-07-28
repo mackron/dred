@@ -23,16 +23,16 @@ dtk_rect dred_textview__get_scrollbar_dead_space_rect(dred_textview* pTextView);
 
 
 /// Called when a mouse button is pressed on the line numbers element.
-void dred_textview__on_mouse_move_line_numbers(dred_control* pLineNumbers, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textview__on_mouse_move_line_numbers(dtk_control* pLineNumbers, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when a mouse button is pressed on the line numbers element.
-void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textview__on_mouse_button_down_line_numbers(dtk_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when a mouse button is pressed on the line numbers element.
-void dred_textview__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
+void dred_textview__on_mouse_button_up_line_numbers(dtk_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags);
 
 /// Called when the line numbers element needs to be drawn.
-void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dtk_rect relativeRect, dtk_surface* pSurface);
+void dred_textview__on_paint_line_numbers(dtk_control* pLineNumbers, dtk_rect relativeRect, dtk_surface* pSurface);
 
 /// Refreshes the line number of the given text editor.
 void dred_textview__refresh_line_numbers(dred_textview* pTextView);
@@ -350,6 +350,37 @@ void dred_textview__delete_timer(dred_textview* pTextView)
 }
 
 
+dtk_bool32 dred_textview_line_numbers_event_handler(dtk_event* pEvent)
+{
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_MOUSE_MOVE:
+        {
+            dred_textview__on_mouse_move_line_numbers(pEvent->pControl, pEvent->mouseMove.x, pEvent->mouseMove.y, pEvent->mouseMove.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_DOWN:
+        {
+            dred_textview__on_mouse_button_down_line_numbers(pEvent->pControl, pEvent->mouseButton.button, pEvent->mouseButton.x, pEvent->mouseButton.y, pEvent->mouseButton.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_UP:
+        {
+            dred_textview__on_mouse_button_up_line_numbers(pEvent->pControl, pEvent->mouseButton.button, pEvent->mouseButton.x, pEvent->mouseButton.y, pEvent->mouseButton.state);
+        } break;
+
+        case DTK_EVENT_PAINT:
+        {
+            dred_textview__on_paint_line_numbers(pEvent->pControl, pEvent->paint.rect, pEvent->paint.pSurface);
+        } break;
+
+        default: break;
+    }
+
+    return dtk_control_default_event_handler(pEvent);
+}
+
+
 dtk_bool32 dred_textview_default_event_handler(dtk_event* pEvent)
 {
     switch (pEvent->type)
@@ -532,12 +563,12 @@ dtk_bool32 dred_textview_init(dred_context* pDred, dtk_event_proc onEvent, dtk_c
     dtk_scrollbar_set_on_scroll(pTextView->pHorzScrollbar, dred_textview__on_hscroll);
 
     pTextView->pLineNumbers = &pTextView->lineNumbers;
-    dred_control_init(pTextView->pLineNumbers, pDred, DTK_CONTROL(pTextView), "dred.common.linenumbers", NULL);
+    dtk_control_init(&pDred->tk, DTK_CONTROL_TYPE_EMPTY, dred_textview_line_numbers_event_handler, DTK_CONTROL(pTextView), &pTextView->lineNumbers);
     dtk_control_hide(DTK_CONTROL(pTextView->pLineNumbers));
-    dred_control_set_on_mouse_move(DRED_CONTROL(pTextView->pLineNumbers), dred_textview__on_mouse_move_line_numbers);
+    /*dred_control_set_on_mouse_move(DRED_CONTROL(pTextView->pLineNumbers), dred_textview__on_mouse_move_line_numbers);
     dred_control_set_on_mouse_button_down(DRED_CONTROL(pTextView->pLineNumbers), dred_textview__on_mouse_button_down_line_numbers);
     dred_control_set_on_mouse_button_up(DRED_CONTROL(pTextView->pLineNumbers), dred_textview__on_mouse_button_up_line_numbers);
-    dred_control_set_on_paint(DRED_CONTROL(pTextView->pLineNumbers), dred_textview__on_paint_line_numbers);
+    dred_control_set_on_paint(DRED_CONTROL(pTextView->pLineNumbers), dred_textview__on_paint_line_numbers);*/
 
 
     pTextView->pTextEngine->onMeasureString = dred_textview_engine__on_measure_string_proc;
@@ -625,7 +656,7 @@ void dred_textview_uninit(dred_textview* pTextView)
     dred_textview__delete_timer(pTextView);
 
     if (pTextView->pLineNumbers) {
-        dred_control_uninit(pTextView->pLineNumbers);
+        dtk_control_uninit(pTextView->pLineNumbers);
         pTextView->pLineNumbers = NULL;
     }
 
@@ -3004,7 +3035,7 @@ dtk_rect dred_textview__get_scrollbar_dead_space_rect(dred_textview* pTextView)
 }
 
 
-void dred_textview__on_mouse_move_line_numbers(dred_control* pLineNumbers, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textview__on_mouse_move_line_numbers(dtk_control* pLineNumbers, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
 
@@ -3061,7 +3092,7 @@ void dred_textview__on_mouse_move_line_numbers(dred_control* pLineNumbers, int r
     }
 }
 
-void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textview__on_mouse_button_down_line_numbers(dtk_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
     (void)stateFlags;
@@ -3110,7 +3141,7 @@ void dred_textview__on_mouse_button_down_line_numbers(dred_control* pLineNumbers
     }
 }
 
-void dred_textview__on_mouse_button_up_line_numbers(dred_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
+void dred_textview__on_mouse_button_up_line_numbers(dtk_control* pLineNumbers, int mouseButton, int relativeMousePosX, int relativeMousePosY, int stateFlags)
 {
     (void)relativeMousePosX;
     (void)relativeMousePosY;
@@ -3155,7 +3186,7 @@ void dred_textview__on_paint_text_line_numbers(drte_engine* pEngine, drte_view* 
     dtk_surface_draw_text((dtk_surface*)pPaintData, pStyleFG->pFont, pView->scale, text, (int)textLength, (posX + offsetX), (posY + offsetY), pStyleFG->fgColor, pStyleBG->bgColor);
 }
 
-void dred_textview__on_paint_line_numbers(dred_control* pLineNumbers, dtk_rect relativeRect, dtk_surface* pSurface)
+void dred_textview__on_paint_line_numbers(dtk_control* pLineNumbers, dtk_rect relativeRect, dtk_surface* pSurface)
 {
     (void)relativeRect;
 
