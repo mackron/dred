@@ -8,8 +8,7 @@ typedef struct dred_settings_editor dred_settings_editor;
 typedef struct
 {
     char title[64];
-    dred_control control;
-    dred_control* pGUIControl;
+    dtk_control control;
 } dred_settings_editor_page;
 
 struct dred_settings_editor
