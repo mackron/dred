@@ -54,6 +54,7 @@ dtk_bool32 dred_text_editor_textview__on_key_down(dtk_control* pControl, dtk_key
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);
 
+    (void)pTextView;
     (void)stateFlags;
 
     if (key == DTK_KEY_ESCAPE) {
@@ -69,6 +70,7 @@ dtk_bool32 dred_text_editor_textview__on_mouse_wheel(dtk_control* pControl, int 
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);
 
+    (void)pTextView;
     (void)mousePosX;
     (void)mousePosY;
 
@@ -108,6 +110,7 @@ dtk_bool32 dred_text_editor_textview__on_mouse_button_up(dtk_control* pControl, 
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);
 
+    (void)pTextView;
     (void)stateFlags;
 
     dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DTK_CONTROL(pControl)));
@@ -131,6 +134,7 @@ void dred_text_editor_textview__on_capture_keyboard(dtk_control* pControl, dtk_c
     dred_textview* pTextView = DRED_TEXTVIEW(pControl);
     assert(pTextView != NULL);
 
+    (void)pTextView;
     (void)pPrevCapturedControl;
 
     dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DTK_CONTROL(pControl)));
