@@ -166,7 +166,7 @@ dtk_tabgroup* dred_get_focused_tab(dred_context* pDred, dtk_uint32* pTabIndexOut
 
 // Retrieves the focused editor.
 //
-// The focused editor is the control of the focused tab. If the control is not of type DRED_CONTROL_TYPE_EDITOR, NULL will be returned.
+// The focused editor is the control of the focused tab. If the control is not an editor, NULL will be returned.
 dred_editor* dred_get_focused_editor(dred_context* pDred);
 
 // Retrieves the element with the keyboard capture, if any.
@@ -174,7 +174,7 @@ dtk_control* dred_get_control_with_keyboard_capture(dred_context* pDred);
 
 
 // Retrieves the control type of the editor to use for a file with the extension of the given file path.
-const char* dred_get_editor_type_by_path(dred_context* pDred, const char* filePath);
+dtk_control_type dred_get_editor_type_by_path(dred_context* pDred, const char* filePath);
 
 // Finds the tab of the editor tied to the given absolute path.
 dtk_tabgroup* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char* filePathAbsolute, dtk_uint32* pTabIndex);
@@ -184,7 +184,7 @@ dtk_tabgroup* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const c
 dtk_bool32 dred_open_file(dred_context* pDred, const char* filePath);
 
 // Opens the file at the given path as the given type.
-dtk_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType);
+dtk_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, dtk_control_type editorType);
 
 // Closes the focused file.
 void dred_close_focused_file(dred_context* pDred);
@@ -243,7 +243,7 @@ dtk_bool32 dred_open_new_text_file(dred_context* pDred);
 
 
 // Creates an editor by it's type.
-dred_editor* dred_create_editor_by_type(dred_context* pDred, dtk_tabgroup* pTabGroup, const char* editorType, const char* filePathAbsolute);
+dred_editor* dred_create_editor_by_type(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_control_type editorType, const char* filePathAbsolute);
 
 // Deletes the given editor based on it's type.
 void dred_delete_editor_by_type(dred_editor* pEditor);

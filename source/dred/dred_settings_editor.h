@@ -1,7 +1,5 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
-#define DRED_CONTROL_TYPE_SETTINGS_EDITOR  "dred.editor.settings"
-
 typedef struct dred_settings_editor dred_settings_editor;
 #define DRED_SETTINGS_EDITOR(a) ((dred_settings_editor*)(a))
 
@@ -70,6 +68,7 @@ struct dred_settings_editor
 
 dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dtk_control* pParent, const char* filePathAbsolute);
 void dred_settings_editor_delete(dred_settings_editor* pSettingsEditor);
+dtk_bool32 dred_settings_editor_default_event_handler(dtk_event* pEvent);
 
 // Refreshes the styling of the given settings editor.
 void dred_settings_editor_refresh_styling(dred_settings_editor* pSettingsEditor);

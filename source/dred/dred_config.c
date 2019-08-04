@@ -503,11 +503,8 @@ void dred_config_on_set__texteditor_generic_refresh(dred_context* pDred)
     for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
         for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
             dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
-            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
-                dred_control* pDredControl = DRED_CONTROL(pPage);
-                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                    dred_text_editor_refresh_styling(DRED_TEXT_EDITOR(pDredControl));
-                }
+            if (pPage != NULL && pPage->type == DRED_CONTROL_TYPE_TEXT_EDITOR2) {
+                dred_text_editor_refresh_styling(DRED_TEXT_EDITOR(pPage));
             }
         }
     }
@@ -520,14 +517,11 @@ void dred_config_on_set__texteditor_word_wrap(dred_context* pDred)
     for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
         for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
             dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
-            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
-                dred_control* pDredControl = DRED_CONTROL(pPage);
-                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                    if (pDred->config.textEditorEnableWordWrap) {
-                        dred_text_editor_enable_word_wrap(DRED_TEXT_EDITOR(pDredControl));
-                    } else {
-                        dred_text_editor_disable_word_wrap(DRED_TEXT_EDITOR(pDredControl));
-                    }
+            if (pPage != NULL && pPage->type == DRED_CONTROL_TYPE_TEXT_EDITOR2) {
+                if (pDred->config.textEditorEnableWordWrap) {
+                    dred_text_editor_enable_word_wrap(DRED_TEXT_EDITOR(pPage));
+                } else {
+                    dred_text_editor_disable_word_wrap(DRED_TEXT_EDITOR(pPage));
                 }
             }
         }
@@ -541,14 +535,11 @@ void dred_config_on_set__texteditor_drag_and_drop(dred_context* pDred)
     for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
         for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
             dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
-            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
-                dred_control* pDredControl = DRED_CONTROL(pPage);
-                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                    if (pDred->config.textEditorEnableDragAndDrop) {
-                        dred_text_editor_enable_drag_and_drop(DRED_TEXT_EDITOR(pDredControl));
-                    } else {
-                        dred_text_editor_disable_drag_and_drop(DRED_TEXT_EDITOR(pDredControl));
-                    }
+            if (pPage != NULL && pPage->type == DRED_CONTROL_TYPE_TEXT_EDITOR2) {
+                if (pDred->config.textEditorEnableDragAndDrop) {
+                    dred_text_editor_enable_drag_and_drop(DRED_TEXT_EDITOR(pPage));
+                } else {
+                    dred_text_editor_disable_drag_and_drop(DRED_TEXT_EDITOR(pPage));
                 }
             }
         }
@@ -561,11 +552,8 @@ void dred_config_on_set__cpp_syntax_color(dred_context* pDred)
     for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
         for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
             dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
-            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
-                dred_control* pDredControl = DRED_CONTROL(pPage);
-                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                    dred_text_editor_refresh_styling(DRED_TEXT_EDITOR(pDredControl));
-                }
+            if (pPage != NULL && pPage->type == DRED_CONTROL_TYPE_TEXT_EDITOR2) {
+                dred_text_editor_refresh_styling(DRED_TEXT_EDITOR(pPage));
             }
         }
     }

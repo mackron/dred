@@ -90,14 +90,12 @@ dtk_bool32 dred_main_tabgroup_event_handler(dtk_event* pEvent)
             // The right mouse button was pressed while over a tab we need to show the context menu.
             if (pEvent->tabgroup.mouseButton.button == DTK_MOUSE_BUTTON_RIGHT) {
                 dtk_control* pTabPage = dtk_tabgroup_get_tab_page(pTabGroup, pEvent->tabgroup.tabIndex);
-                if (pTabPage != NULL && pTabPage->type == DTK_CONTROL_TYPE_DRED) {
-                    if (dred_control_is_of_type(DRED_CONTROL(pTabPage), DRED_CONTROL_TYPE_EDITOR)) {
-                        dtk_int32 x = pEvent->tabgroup.mouseButton.x;
-                        dtk_int32 y = pEvent->tabgroup.mouseButton.y;
-                        dtk_tabgroup_transform_point_from_tab(pTabGroup, pEvent->tabgroup.tabIndex, &x, &y);
+                if (pTabPage != NULL && dred_is_control_editor(pTabPage)) {
+                    dtk_int32 x = pEvent->tabgroup.mouseButton.x;
+                    dtk_int32 y = pEvent->tabgroup.mouseButton.y;
+                    dtk_tabgroup_transform_point_from_tab(pTabGroup, pEvent->tabgroup.tabIndex, &x, &y);
 
-                        dtk_control_show_popup_menu(DTK_CONTROL(pTabGroup), &pDred->menus.tabpopup, x, y);
-                    }
+                    dtk_control_show_popup_menu(DTK_CONTROL(pTabGroup), &pDred->menus.tabpopup, x, y);
                 }
             }
         } break;
@@ -167,15 +165,12 @@ void dred__update_window_title_by_tab(dred_context* pDred, dtk_tabgroup* pTabGro
     const char* title = NULL;
 
     dtk_control* pTabPage = dtk_tabgroup_get_tab_page(pTabGroup, tabIndex);
-    if (pTabPage != NULL && pTabPage->type == DTK_CONTROL_TYPE_DRED) {
-        dred_control* pFocusedControl = DRED_CONTROL(pTabPage);
-        if (dred_control_is_of_type(pFocusedControl, DRED_CONTROL_TYPE_EDITOR)) {
-            const char* filePath = dred_editor_get_file_path(DRED_EDITOR(pFocusedControl));
-            if (filePath != NULL && filePath[0] != '\0') {
-                title = dtk_path_file_name(filePath);
-            } else {
-                title = "Untitled";
-            }
+    if (pTabPage != NULL && dred_is_control_editor(pTabPage)) {
+        const char* filePath = dred_editor_get_file_path(DRED_EDITOR(pTabPage));
+        if (filePath != NULL && filePath[0] != '\0') {
+            title = dtk_path_file_name(filePath);
+        } else {
+            title = "Untitled";
         }
     }
 
@@ -1209,11 +1204,11 @@ dred_editor* dred_get_focused_editor(dred_context* pDred)
     }
 
     dtk_control* pControl = dtk_tabgroup_get_tab_page(pTabGroup, dtk_tabgroup_get_active_tab_index(pTabGroup));
-    if (pControl == NULL || pControl->type != DTK_CONTROL_TYPE_DRED) {
+    if (pControl == NULL) {
         return NULL;
     }
 
-    if (!dred_control_is_of_type(DRED_CONTROL(pControl), DRED_CONTROL_TYPE_EDITOR)) {
+    if (!dred_is_control_editor(pControl)) {
         return NULL;
     }
 
@@ -1247,28 +1242,27 @@ dtk_bool32 dred__save_editor(dred_editor* pEditor, const char* newFilePath, dtk_
     while ((pPackage = dred_package_library_get_package(pDred->pPackageLibrary, iPackage++)) != NULL)
 
 
-const char* dred_get_editor_type_by_path(dred_context* pDred, const char* filePath)
+dtk_control_type dred_get_editor_type_by_path(dred_context* pDred, const char* filePath)
 {
-    if (filePath == NULL) return NULL;
+    if (filePath == NULL) {
+        return DTK_CONTROL_TYPE_EMPTY;
+    }
 
     // Check for known extensions first as a performance optimization. If that fails we'll want to open either open the file and inspect it,
     // or look through extensions.
     if (dtk_path_extension_equal(filePath, "txt")) {
-        return DRED_CONTROL_TYPE_TEXT_EDITOR;
+        return DRED_CONTROL_TYPE_TEXT_EDITOR2;
     }
 
     // We need to look at packages and determine which one, if any, is able to open the file. If we can't find any, we fall back
     // to the text or hex editor.
     DRED_FOREACH_PACKAGE(pDred, pPackage) {
         if (pPackage->cbs.editor.getEditorTypeByPath) {
-            const char* type = pPackage->cbs.editor.getEditorTypeByPath(pPackage, pDred, filePath);
-            if (type != NULL) {
-                return type;
-            }
+            return pPackage->cbs.editor.getEditorTypeByPath(pPackage, pDred, filePath);
         }
     }
 
-    return NULL;
+    return DTK_CONTROL_TYPE_EMPTY;
 }
 
 dtk_tabgroup* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const char* filePathAbsolute, dtk_uint32* pTabIndex)
@@ -1279,15 +1273,12 @@ dtk_tabgroup* dred_find_editor_tab_by_absolute_path(dred_context* pDred, const c
     for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
         for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
             dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
-            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
-                dred_control* pDredControl = DRED_CONTROL(pPage);
-                if (pDredControl != NULL && dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_EDITOR)) {
-                    if (dtk_path_equal(dred_editor_get_file_path(DRED_EDITOR(pDredControl)), filePathAbsoluteClean)) {
-                        if (pTabIndex) {
-                            *pTabIndex = iTab;
-                        }
-                        return pTabGroup;
+            if (pPage != NULL && dred_is_control_editor(pPage)) {
+                if (dtk_path_equal(dred_editor_get_file_path(DRED_EDITOR(pPage)), filePathAbsoluteClean)) {
+                    if (pTabIndex) {
+                        *pTabIndex = iTab;
                     }
+                    return pTabGroup;
                 }
             }
         }
@@ -1301,7 +1292,7 @@ dtk_bool32 dred_open_file(dred_context* pDred, const char* filePath)
     return dred_open_file_by_type(pDred, filePath, dred_get_editor_type_by_path(pDred, filePath));
 }
 
-dtk_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, const char* editorType)
+dtk_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, dtk_control_type editorType)
 {
     char filePathAbsolute[DRED_MAX_PATH];
     if (filePath != NULL && filePath[0] != '\0') {
@@ -1353,10 +1344,9 @@ dtk_bool32 dred_open_file_by_type(dred_context* pDred, const char* filePath, con
         // If there is only one other tab, and it's an new, unmodified file, close it.
         if (dtk_tabgroup_get_tab_count(pTabGroup) == 2) {   // 2 = our original tab + the possible [New File] tab.
             dtk_control* pOtherTabPage = dtk_tabgroup_get_tab_page(pTabGroup, 1);   // 1 = the index of the other tab.
-            if (pOtherTabPage != NULL && pOtherTabPage->type == DTK_CONTROL_TYPE_DRED) {
-                dred_control* pOtherDredControl = DRED_CONTROL(pOtherTabPage);
-                if (dred_control_is_of_type(DRED_CONTROL(pOtherDredControl), DRED_CONTROL_TYPE_EDITOR) && !dred_editor_is_modified(DRED_EDITOR(pOtherDredControl))) {
-                    const char* pOtherEditorFile = dred_editor_get_file_path(DRED_EDITOR(pOtherDredControl));
+            if (pOtherTabPage != NULL && dred_is_control_editor(pOtherTabPage)) {
+                if (!dred_editor_is_modified(DRED_EDITOR(pOtherTabPage))) {
+                    const char* pOtherEditorFile = dred_editor_get_file_path(DRED_EDITOR(pOtherTabPage));
                     if (pOtherEditorFile == NULL || pOtherEditorFile[0] == '\0') {
                         // It's a new unmodified file. Close it.
                         dred_close_tab(pDred, pTabGroup, 1);
@@ -1414,7 +1404,7 @@ void dred_close_tab(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_uint32 tab
     dtk_tabgroup_remove_tab_by_index(pTabGroup, tabIndex);
 
     // Delete the control.
-    if (pTabPage != NULL && pTabPage->type == DTK_CONTROL_TYPE_DRED && dred_control_is_of_type(DRED_CONTROL(pTabPage), DRED_CONTROL_TYPE_EDITOR)) {
+    if (pTabPage != NULL && dred_is_control_editor(pTabPage)) {
         dred_delete_editor_by_type(DRED_EDITOR(pTabPage));
     }
 
@@ -1430,12 +1420,12 @@ void dred_close_tab(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_uint32 tab
 void dred_close_tab_with_confirmation(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_uint32 tabIndex)
 {
     dtk_control* pTabPage = dtk_tabgroup_get_tab_page(pTabGroup, tabIndex);
-    if (pTabPage == NULL || pTabPage->type != DTK_CONTROL_TYPE_DRED) {
+    if (pTabPage == NULL) {
         dred_close_tab(pDred, pTabGroup, tabIndex);
         return;
     }
 
-    if (!dred_control_is_of_type(DRED_CONTROL(pTabPage), DRED_CONTROL_TYPE_EDITOR)) {
+    if (!dred_is_control_editor(pTabPage)) {
         dred_close_tab(pDred, pTabGroup, tabIndex);
         return;
     }
@@ -1554,7 +1544,7 @@ dtk_bool32 dred_save_focused_file(dred_context* pDred, const char* newFilePath)
 
 
     // Editor.
-    if (pTabPage->type == DTK_CONTROL_TYPE_DRED && dred_control_is_of_type(DRED_CONTROL(pTabPage), DRED_CONTROL_TYPE_EDITOR)) {
+    if (dred_is_control_editor(pTabPage)) {
         return dred__save_editor(DRED_EDITOR(pTabPage), newFilePath, pFocusedTabGroup, focusedTabIndex);
     }
 
@@ -1602,11 +1592,8 @@ void dred_save_all_open_files(dred_context* pDred)
     for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
         for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
             dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
-            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
-                dred_control* pDredControl = DRED_CONTROL(pPage);
-                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_EDITOR)) {
-                    dred__save_editor(DRED_EDITOR(pDredControl), NULL, pTabGroup, iTab);
-                }
+            if (pPage != NULL && dred_is_control_editor(pPage)) {
+                dred__save_editor(DRED_EDITOR(pPage), NULL, pTabGroup, iTab);
             }
         }
     }
@@ -1621,18 +1608,15 @@ dtk_bool32 dred_save_all_open_files_with_saveas(dred_context* pDred)
     for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
         for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
             dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
-            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
-                dred_control* pDredControl = DRED_CONTROL(pPage);
-                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_EDITOR)) {
-                    if (!dred__save_editor(DRED_EDITOR(pDredControl), NULL, pTabGroup, iTab)) {
-                        char newFileName[DRED_MAX_PATH];
-                        if (dred_show_save_file_dialog(pDred, dred_editor_get_file_path(DRED_EDITOR(pDredControl)), newFileName, sizeof(newFileName)) != DTK_DIALOG_RESULT_OK) {
-                            return DTK_FALSE;
-                        }
+            if (pPage != NULL && dred_is_control_editor(pPage)) {
+                if (!dred__save_editor(DRED_EDITOR(pPage), NULL, pTabGroup, iTab)) {
+                    char newFileName[DRED_MAX_PATH];
+                    if (dred_show_save_file_dialog(pDred, dred_editor_get_file_path(DRED_EDITOR(pPage)), newFileName, sizeof(newFileName)) != DTK_DIALOG_RESULT_OK) {
+                        return DTK_FALSE;
+                    }
 
-                        if (!dred_editor_save(DRED_EDITOR(pDredControl), newFileName)) {
-                            return DTK_FALSE;
-                        }
+                    if (!dred_editor_save(DRED_EDITOR(pPage), newFileName)) {
+                        return DTK_FALSE;
                     }
                 }
             }
@@ -1651,11 +1635,8 @@ dtk_bool32 dred_are_any_files_open(dred_context* pDred)
     for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
         for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
             dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
-            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
-                dred_control* pDredControl = DRED_CONTROL(pPage);
-                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_EDITOR)) {
-                    return DTK_TRUE;
-                }
+            if (pPage != NULL && dred_is_control_editor(pPage)) {
+                return DTK_TRUE;
             }
         }
     }
@@ -1689,11 +1670,11 @@ dtk_bool32 dred_create_and_open_file(dred_context* pDred, const char* newFilePat
 
 dtk_bool32 dred_open_new_text_file(dred_context* pDred)
 {
-    return dred_open_file_by_type(pDred, NULL, DRED_CONTROL_TYPE_TEXT_EDITOR);
+    return dred_open_file_by_type(pDred, NULL, DRED_CONTROL_TYPE_TEXT_EDITOR2);
 }
 
 
-dred_editor* dred_create_editor_by_type(dred_context* pDred, dtk_tabgroup* pTabGroup, const char* editorType, const char* filePathAbsolute)
+dred_editor* dred_create_editor_by_type(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_control_type editorType, const char* filePathAbsolute)
 {
     if (pDred == NULL) {
         return NULL;
@@ -1712,10 +1693,10 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dtk_tabgroup* pTabG
 
     // Check for special built-in editors first.
     dred_editor* pEditor = NULL;
-    if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (pEditor == NULL && editorType == DRED_CONTROL_TYPE_TEXT_EDITOR2) {
         pEditor = DRED_EDITOR(dred_text_editor_create(pDred, pParentControl, sizeX, sizeY, filePathAbsolute));
     }
-    if (pEditor == NULL && dred_is_control_type_of_type(editorType, DRED_CONTROL_TYPE_SETTINGS_EDITOR)) {
+    if (pEditor == NULL && editorType == DRED_CONTROL_TYPE_SETTINGS_EDITOR) {
         pEditor = DRED_EDITOR(dred_settings_editor_create(pDred, pParentControl, filePathAbsolute));
     }
 
@@ -1741,11 +1722,11 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dtk_tabgroup* pTabG
 
 void dred_delete_editor_by_type(dred_editor* pEditor)
 {
-    if (dred_control_is_of_type(DRED_CONTROL(pEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (DTK_CONTROL(pEditor)->type == DRED_CONTROL_TYPE_TEXT_EDITOR2) {
         dred_text_editor_delete(DRED_TEXT_EDITOR(pEditor));
         return;
     }
-    if (dred_control_is_of_type(DRED_CONTROL(pEditor), DRED_CONTROL_TYPE_SETTINGS_EDITOR)) {
+    if (DTK_CONTROL(pEditor)->type == DRED_CONTROL_TYPE_SETTINGS_EDITOR) {
         dred_settings_editor_delete(DRED_SETTINGS_EDITOR(pEditor));
         return;
     }
@@ -1769,11 +1750,8 @@ dtk_bool32 dred_are_any_open_files_modified(dred_context* pDred)
     for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
         for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
             dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
-            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
-                dred_control* pDredControl = DRED_CONTROL(pPage);
-                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_EDITOR) && dred_editor_is_modified(DRED_EDITOR(pDredControl))) {
-                    return DTK_TRUE;
-                }
+            if (pPage != NULL && dred_is_control_editor(pPage)) {
+                return dred_editor_is_modified(DRED_EDITOR(pPage));
             }
         }
     }
@@ -2567,11 +2545,8 @@ void dred_set_text_editor_scale(dred_context* pDred, float scale)
     for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
         for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
             dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
-            if (pPage != NULL && pPage->type == DTK_CONTROL_TYPE_DRED) {
-                dred_control* pDredControl = DRED_CONTROL(pPage);
-                if (dred_control_is_of_type(pDredControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-                    dred_text_editor_set_text_scale(DRED_TEXT_EDITOR(pDredControl), pDred->config.textEditorScale);
-                }
+            if (pPage != NULL && pPage->type == DRED_CONTROL_TYPE_TEXT_EDITOR2) {
+                dred_text_editor_set_text_scale(DRED_TEXT_EDITOR(pPage), pDred->config.textEditorScale);
             }
         }
     }
@@ -2836,25 +2811,23 @@ void dred_on_tab_activated(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_uin
 
         dred__update_window_title_by_tab(pDred, pTabGroup, newActivateTabIndex);
 
-        if (pControl->type == DTK_CONTROL_TYPE_DRED) {
+        if (dred_is_control_editor(pControl)) {
             if (dred_control_is_of_type(DRED_CONTROL(pControl), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
                 dred_set_main_menu(pDred, &pDred->menus.text);
             } else {
                 dred_set_main_menu(pDred, &pDred->menus.nothingopen);
             }
 
-            if (dred_control_is_of_type(DRED_CONTROL(pControl), DRED_CONTROL_TYPE_EDITOR)) {
-                dred_editor* pEditor = DRED_EDITOR(pControl);
-                if (pEditor->filePathAbsolute[0] == '\0') {
-                    dtk_menu_disable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_ADDFAVOURITE);
-                    dtk_menu_disable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_REMOVEFAVOURITE);
-                } else {
-                    dtk_menu_enable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_ADDFAVOURITE);
-                    dtk_menu_enable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_REMOVEFAVOURITE);
-                }
-
-                dtk_control_capture_keyboard(pControl);
+            dred_editor* pEditor = DRED_EDITOR(pControl);
+            if (pEditor->filePathAbsolute[0] == '\0') {
+                dtk_menu_disable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_ADDFAVOURITE);
+                dtk_menu_disable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_REMOVEFAVOURITE);
+            } else {
+                dtk_menu_enable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_ADDFAVOURITE);
+                dtk_menu_enable_item(&pDred->menus.textFile, DRED_MENU_ITEM_ID_TEXT_FILE_REMOVEFAVOURITE);
             }
+
+            dtk_control_capture_keyboard(pControl);
 
             dred_update_info_bar(pDred, DRED_CONTROL(pControl));
         }

@@ -100,7 +100,7 @@ void dred_settings_editor__refresh_layout(dred_settings_editor* pSettingsEditor)
 }
 
 
-void dred_settings_editor__on_size(dred_control* pControl, dtk_int32 newWidth, dtk_int32 newHeight)
+void dred_settings_editor__on_size(dtk_control* pControl, dtk_int32 newWidth, dtk_int32 newHeight)
 {
     (void)pControl;
     (void)newWidth;
@@ -120,13 +120,13 @@ void dred_settings_editor__on_size(dred_control* pControl, dtk_int32 newWidth, d
     
 }
 
-void dred_settings_editor__on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
+void dred_settings_editor__on_capture_keyboard(dtk_control* pControl, dtk_control* pPrevCapturedControl)
 {
     (void)pControl;
     (void)pPrevCapturedControl;
 }
 
-void dred_settings_editor__on_mouse_button_down(dred_control* pControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
+void dred_settings_editor__on_mouse_button_down(dtk_control* pControl, int mouseButton, int mousePosX, int mousePosY, int stateFlags)
 {
     (void)mouseButton;
     (void)stateFlags;
@@ -142,7 +142,7 @@ void dred_settings_editor__on_mouse_button_down(dred_control* pControl, int mous
     dred_settings_editor__select_page_by_index(pSettingsEditor, newPageIndex);
 }
 
-void dred_settings_editor__on_mouse_move(dred_control* pControl, int mousePosX, int mousePosY, int stateFlags)
+void dred_settings_editor__on_mouse_move(dtk_control* pControl, int mousePosX, int mousePosY, int stateFlags)
 {
     (void)stateFlags;
 
@@ -156,7 +156,7 @@ void dred_settings_editor__on_mouse_move(dred_control* pControl, int mousePosX, 
     }
 }
 
-void dred_settings_editor__on_mouse_leave(dred_control* pControl)
+void dred_settings_editor__on_mouse_leave(dtk_control* pControl)
 {
     dred_settings_editor* pSettingsEditor = DRED_SETTINGS_EDITOR(pControl);
     assert(pSettingsEditor != NULL);
@@ -168,7 +168,7 @@ void dred_settings_editor__on_mouse_leave(dred_control* pControl)
     }
 }
 
-void dred_settings_editor__on_paint(dred_control* pControl, dtk_rect rect, dtk_surface* pSurface)
+void dred_settings_editor__on_paint(dtk_control* pControl, dtk_rect rect, dtk_surface* pSurface)
 {
     (void)rect;
 
@@ -587,6 +587,45 @@ dtk_bool32 dred_settings_editor__init_page__text_editor(dred_settings_editor* pS
     return DTK_TRUE;
 }
 
+dtk_bool32 dred_settings_editor_default_event_handler(dtk_event* pEvent)
+{
+    switch (pEvent->type)
+    {
+        case DTK_EVENT_SIZE:
+        {
+            dred_settings_editor__on_size(pEvent->pControl, pEvent->size.width, pEvent->size.height);
+        } break;
+
+        case DTK_EVENT_CAPTURE_KEYBOARD:
+        {
+            dred_settings_editor__on_capture_keyboard(pEvent->pControl, pEvent->captureKeyboard.pOldCapturedControl);
+        } break;
+
+        case DTK_EVENT_MOUSE_BUTTON_DOWN:
+        {
+            dred_settings_editor__on_mouse_button_down(pEvent->pControl, pEvent->mouseButton.button, pEvent->mouseButton.x, pEvent->mouseButton.y, pEvent->mouseButton.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_MOVE:
+        {
+            dred_settings_editor__on_mouse_move(pEvent->pControl, pEvent->mouseMove.x, pEvent->mouseMove.y, pEvent->mouseMove.state);
+        } break;
+
+        case DTK_EVENT_MOUSE_LEAVE:
+        {
+            dred_settings_editor__on_mouse_leave(pEvent->pControl);
+        } break;
+
+        case DTK_EVENT_PAINT:
+        {
+            dred_settings_editor__on_paint(pEvent->pControl, pEvent->paint.rect, pEvent->paint.pSurface);
+        } break;
+
+        default: break;
+    }
+
+    return dtk_control_default_event_handler(pEvent);
+}
 
 dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dtk_control* pParent, const char* filePathAbsolute)
 {
@@ -595,10 +634,12 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dtk_contr
         return NULL;
     }
 
-    if (!dred_editor_init(DRED_EDITOR(pSettingsEditor), pDred, pParent, DRED_CONTROL_TYPE_SETTINGS_EDITOR, NULL, 0, 0, filePathAbsolute)) {
+    if (!dred_editor_init(DRED_EDITOR(pSettingsEditor), pDred, pParent, "", dred_settings_editor_default_event_handler, 0, 0, filePathAbsolute)) {
         free(pSettingsEditor);
         return NULL;
     }
+
+    pSettingsEditor->editor.control.baseControl.type = DRED_CONTROL_TYPE_SETTINGS_EDITOR;  // Remove this when dred_control is removed entirely.
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 
@@ -623,19 +664,6 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dtk_contr
 
     dtk_button_set_on_pressed(&pSettingsEditor->closeButton, dred_settings__btn_close__on_pressed);
     dtk_button_set_padding(&pSettingsEditor->closeButton, 32, 6);
-    //dred_control_set_relative_position(DRED_CONTROL(&pSettingsEditor->closeButton),
-    //    dred_control_get_width(DRED_CONTROL(pSettingsEditor)) - dred_control_get_width(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale,
-    //    dred_control_get_height(DRED_CONTROL(pSettingsEditor)) - dred_control_get_height(DRED_CONTROL(&pSettingsEditor->closeButton)) - 8*uiScale);
-
-
-    // Events.
-    dred_control_set_on_size(DRED_CONTROL(pSettingsEditor), dred_settings_editor__on_size);
-    dred_control_set_on_capture_keyboard(DRED_CONTROL(pSettingsEditor), dred_settings_editor__on_capture_keyboard);
-    dred_control_set_on_mouse_button_down(DRED_CONTROL(pSettingsEditor), dred_settings_editor__on_mouse_button_down);
-    dred_control_set_on_mouse_move(DRED_CONTROL(pSettingsEditor), dred_settings_editor__on_mouse_move);
-    dred_control_set_on_mouse_leave(DRED_CONTROL(pSettingsEditor), dred_settings_editor__on_mouse_leave);
-    dred_control_set_on_paint(DRED_CONTROL(pSettingsEditor), dred_settings_editor__on_paint);
-
 
     // Select the General tab by default.
     dred_settings_editor__select_page_by_index(pSettingsEditor, DRED_SETTINGS_EDITOR_PAGE_GENERAL);

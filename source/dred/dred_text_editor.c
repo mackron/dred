@@ -19,7 +19,7 @@ void dred_text_editor__register_style(dred_text_editor* pTextEditor, dred_text_s
 }
 
 
-void dred_text_editor__on_size(dred_control* pControl, dtk_int32 newWidth, dtk_int32 newHeight)
+void dred_text_editor__on_size(dtk_control* pControl, dtk_int32 newWidth, dtk_int32 newHeight)
 {
     dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(pControl);
     assert(pTextEditor != NULL);
@@ -33,7 +33,7 @@ void dred_text_editor__on_size(dred_control* pControl, dtk_int32 newWidth, dtk_i
     dtk_control_set_size(DTK_CONTROL(pTextView), newWidth, newHeight);
 }
 
-void dred_text_editor__on_capture_keyboard(dred_control* pControl, dtk_control* pPrevCapturedControl)
+void dred_text_editor__on_capture_keyboard(dtk_control* pControl, dtk_control* pPrevCapturedControl)
 {
     (void)pPrevCapturedControl;
 
@@ -309,6 +309,21 @@ dtk_bool32 dred_text_editor_event_handler(dtk_event* pEvent)
 
     switch (pEvent->type)
     {
+        case DTK_EVENT_SIZE:
+        {
+            dred_text_editor__on_size(pEvent->pControl, pEvent->size.width, pEvent->size.height);
+        } break;
+
+        case DTK_EVENT_CAPTURE_KEYBOARD:
+        {
+            dred_text_editor__on_capture_keyboard(pEvent->pControl, pEvent->captureKeyboard.pOldCapturedControl);
+        } break;
+
+        case DTK_EVENT_REFRESH_LAYOUT:
+        {
+            dred_text_editor_refresh_styling(pTextEditor);
+        } break;
+
         /* Common operation events should be handled by the relevant underlying control. */
         case DTK_EVENT_UNDO:
         case DTK_EVENT_REDO:
@@ -322,15 +337,10 @@ dtk_bool32 dred_text_editor_event_handler(dtk_event* pEvent)
             dtk_control_handle_event(DTK_CONTROL(&pTextEditor->textView), &e);
         } return DTK_FALSE; /* Don't propagate. */
 
-        case DTK_EVENT_REFRESH_LAYOUT:
-        {
-            dred_text_editor_refresh_styling(pTextEditor);
-        } break;
-
         default: break;
     }
 
-    return dred_control_event_handler(pEvent);
+    return dtk_control_default_event_handler(pEvent);
 }
 
 dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pParent, dtk_int32 sizeX, dtk_int32 sizeY, const char* filePathAbsolute)
@@ -344,6 +354,9 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pPar
         free(pTextEditor);
         return NULL;
     }
+
+    pTextEditor->editor.control.baseControl.type = DRED_CONTROL_TYPE_TEXT_EDITOR2;  // Remove this when dred_control is removed entirely.
+
 
     if (!drte_engine_init(&pTextEditor->engine, pTextEditor)) {
         free(pTextEditor);
@@ -386,8 +399,6 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pPar
 
 
     // Events.
-    dred_control_set_on_size(DRED_CONTROL(pTextEditor), dred_text_editor__on_size);
-    dred_control_set_on_capture_keyboard(DRED_CONTROL(pTextEditor), dred_text_editor__on_capture_keyboard);
     dred_editor_set_on_save(DRED_EDITOR(pTextEditor), dred_text_editor__on_save);
     dred_editor_set_on_reload(DRED_EDITOR(pTextEditor), dred_text_editor__on_reload);
     dred_textview_set_on_cursor_move(pTextEditor->pTextView, dred_text_editor_textview__on_cursor_move);
