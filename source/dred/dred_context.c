@@ -1251,7 +1251,7 @@ dtk_control_type dred_get_editor_type_by_path(dred_context* pDred, const char* f
     // Check for known extensions first as a performance optimization. If that fails we'll want to open either open the file and inspect it,
     // or look through extensions.
     if (dtk_path_extension_equal(filePath, "txt")) {
-        return DRED_CONTROL_TYPE_TEXT_EDITOR2;
+        return DRED_CONTROL_TYPE_TEXT_EDITOR;
     }
 
     // We need to look at packages and determine which one, if any, is able to open the file. If we can't find any, we fall back
@@ -1670,7 +1670,7 @@ dtk_bool32 dred_create_and_open_file(dred_context* pDred, const char* newFilePat
 
 dtk_bool32 dred_open_new_text_file(dred_context* pDred)
 {
-    return dred_open_file_by_type(pDred, NULL, DRED_CONTROL_TYPE_TEXT_EDITOR2);
+    return dred_open_file_by_type(pDred, NULL, DRED_CONTROL_TYPE_TEXT_EDITOR);
 }
 
 
@@ -1693,7 +1693,7 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dtk_tabgroup* pTabG
 
     // Check for special built-in editors first.
     dred_editor* pEditor = NULL;
-    if (pEditor == NULL && editorType == DRED_CONTROL_TYPE_TEXT_EDITOR2) {
+    if (pEditor == NULL && editorType == DRED_CONTROL_TYPE_TEXT_EDITOR) {
         pEditor = DRED_EDITOR(dred_text_editor_create(pDred, pParentControl, sizeX, sizeY, filePathAbsolute));
     }
     if (pEditor == NULL && editorType == DRED_CONTROL_TYPE_SETTINGS_EDITOR) {
@@ -1722,7 +1722,7 @@ dred_editor* dred_create_editor_by_type(dred_context* pDred, dtk_tabgroup* pTabG
 
 void dred_delete_editor_by_type(dred_editor* pEditor)
 {
-    if (DTK_CONTROL(pEditor)->type == DRED_CONTROL_TYPE_TEXT_EDITOR2) {
+    if (DTK_CONTROL(pEditor)->type == DRED_CONTROL_TYPE_TEXT_EDITOR) {
         dred_text_editor_delete(DRED_TEXT_EDITOR(pEditor));
         return;
     }
@@ -2053,7 +2053,7 @@ dtk_dialog_result dred_show_print_dialog(dred_context* pDred, dtk_window* pOwner
     }
 
     // Just return an error if the focused editor does not support printing.
-    if (!dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (DTK_CONTROL(pFocusedEditor)->type != DRED_CONTROL_TYPE_TEXT_EDITOR) {
         return DTK_ERROR;   // Focused editor does not support printing.
     }
 
@@ -2343,7 +2343,7 @@ void dred_unfocus_command_bar(dred_context* pDred)
 }
 
 
-void dred_update_info_bar(dred_context* pDred, dred_control* pControl)
+void dred_update_info_bar(dred_context* pDred, dtk_control* pControl)
 {
     if (pDred == NULL) {
         return;
@@ -2541,11 +2541,11 @@ void dred_set_text_editor_scale(dred_context* pDred, float scale)
 
     pDred->config.textEditorScale = dtk_clamp(scale, 0.1f, 4.0f);
 
-    // Every open text editors needs to be updated.
+    // Every open text editor needs to be updated.
     for (dtk_tabgroup* pTabGroup = dred_first_tabgroup(pDred); pTabGroup != NULL; pTabGroup = dred_next_tabgroup(pDred, pTabGroup)) {
         for (dtk_uint32 iTab = 0; iTab < dtk_tabgroup_get_tab_count(pTabGroup); ++iTab) {
             dtk_control* pPage = dtk_tabgroup_get_tab_page(pTabGroup, iTab);
-            if (pPage != NULL && pPage->type == DRED_CONTROL_TYPE_TEXT_EDITOR2) {
+            if (pPage != NULL && pPage->type == DRED_CONTROL_TYPE_TEXT_EDITOR) {
                 dred_text_editor_set_text_scale(DRED_TEXT_EDITOR(pPage), pDred->config.textEditorScale);
             }
         }
@@ -2812,7 +2812,7 @@ void dred_on_tab_activated(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_uin
         dred__update_window_title_by_tab(pDred, pTabGroup, newActivateTabIndex);
 
         if (dred_is_control_editor(pControl)) {
-            if (dred_control_is_of_type(DRED_CONTROL(pControl), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+            if (pControl->type == DRED_CONTROL_TYPE_TEXT_EDITOR) {
                 dred_set_main_menu(pDred, &pDred->menus.text);
             } else {
                 dred_set_main_menu(pDred, &pDred->menus.nothingopen);
@@ -2829,7 +2829,7 @@ void dred_on_tab_activated(dred_context* pDred, dtk_tabgroup* pTabGroup, dtk_uin
 
             dtk_control_capture_keyboard(pControl);
 
-            dred_update_info_bar(pDred, DRED_CONTROL(pControl));
+            dred_update_info_bar(pDred, pControl);
         }
     }
 }

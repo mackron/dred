@@ -6,12 +6,12 @@
 #define DRED_CONTROL_TYPE_TEXTVIEW          DTK_CONTROL_TYPE_CUSTOM + 4
 #define DRED_CONTROL_TYPE_TEXTBOX           DTK_CONTROL_TYPE_CUSTOM + 5
 #define DRED_CONTROL_TYPE_SETTINGS_EDITOR   DTK_CONTROL_TYPE_CUSTOM + 6
-#define DRED_CONTROL_TYPE_TEXT_EDITOR2      DTK_CONTROL_TYPE_CUSTOM + 7 // Rename to DRED_CONTROL_TYPE_TEXT_EDITOR when dred_control is removed entirely.
+#define DRED_CONTROL_TYPE_TEXT_EDITOR      DTK_CONTROL_TYPE_CUSTOM + 7 // Rename to DRED_CONTROL_TYPE_TEXT_EDITOR when dred_control is removed entirely.
 
 /* This is temporary until the new editor system is in place. This system will use the event system to handle editor functionality. */
 static dtk_bool32 dred_is_control_editor(dtk_control* pControl)
 {
-    return pControl->type == DRED_CONTROL_TYPE_SETTINGS_EDITOR || pControl->type == DRED_CONTROL_TYPE_TEXT_EDITOR2;
+    return pControl->type == DRED_CONTROL_TYPE_SETTINGS_EDITOR || pControl->type == DRED_CONTROL_TYPE_TEXT_EDITOR;
 }
 
 typedef struct dred_control dred_control;

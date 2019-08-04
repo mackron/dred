@@ -563,7 +563,7 @@ dtk_bool32 dred_command__goto(dred_context* pDred, const char* value)
         return DTK_FALSE;
     }
 
-    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (DTK_CONTROL(pFocusedEditor)->type == DRED_CONTROL_TYPE_TEXT_EDITOR) {
         char param[256];
         if (dtk_next_token(value, param, sizeof(param)) != NULL) {
             // If the last character is a %, we use a ratio based goto.
@@ -588,7 +588,7 @@ dtk_bool32 dred_command__find(dred_context* pDred, const char* value)
         return DTK_FALSE;
     }
 
-    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (DTK_CONTROL(pFocusedEditor)->type == DRED_CONTROL_TYPE_TEXT_EDITOR) {
         char query[1024];
         if (dtk_next_token(value, query, sizeof(query)) != NULL) {
             dred_text_editor_deselect_all_in_focused_view(DRED_TEXT_EDITOR(pFocusedEditor));
@@ -611,7 +611,7 @@ dtk_bool32 dred_command__replace(dred_context* pDred, const char* value)
         return DTK_FALSE;
     }
 
-    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (DTK_CONTROL(pFocusedEditor)->type == DRED_CONTROL_TYPE_TEXT_EDITOR) {
         char query[1024];
         value = dtk_next_token(value, query, sizeof(query));
         if (value != NULL) {
@@ -638,7 +638,7 @@ dtk_bool32 dred_command__replace_all(dred_context* pDred, const char* value)
         return DTK_FALSE;
     }
 
-    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (DTK_CONTROL(pFocusedEditor)->type == DRED_CONTROL_TYPE_TEXT_EDITOR) {
         char query[1024];
         value = dtk_next_token(value, query, sizeof(query));
         if (value != NULL) {
@@ -693,7 +693,7 @@ dtk_bool32 dred_command__zoom(dred_context* pDred, const char* value)
         return DTK_FALSE;
     }
 
-    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (DTK_CONTROL(pFocusedEditor)->type == DRED_CONTROL_TYPE_TEXT_EDITOR) {
         dred_set_text_editor_scale(pDred, (float)atof(value));
     }
 
@@ -709,7 +709,7 @@ dtk_bool32 dred_command__unindent(dred_context* pDred, const char* value)
         return DTK_FALSE;
     }
 
-    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (DTK_CONTROL(pFocusedEditor)->type == DRED_CONTROL_TYPE_TEXT_EDITOR) {
         dred_text_editor_unindent_selected_blocks(DRED_TEXT_EDITOR(pFocusedEditor));
     }
 
@@ -725,7 +725,7 @@ dtk_bool32 dred_command__insert_date(dred_context* pDred, const char* value)
         return DTK_FALSE;
     }
 
-    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (DTK_CONTROL(pFocusedEditor)->type == DRED_CONTROL_TYPE_TEXT_EDITOR) {
         char dateStr[256];
         dtk_datetime_short(dtk_now(), dateStr, sizeof(dateStr));
 
@@ -744,7 +744,7 @@ dtk_bool32 dred_command__export2cstring(dred_context* pDred, const char* value)
         return DTK_FALSE;
     }
 
-    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (DTK_CONTROL(pFocusedEditor)->type == DRED_CONTROL_TYPE_TEXT_EDITOR) {
         char* pOriginalText = NULL;
 
         size_t selectedTextSize = dred_text_editor_get_selected_text(DRED_TEXT_EDITOR(pFocusedEditor), NULL, 0);
@@ -837,7 +837,7 @@ dtk_bool32 dred__set_cmdbar_command_with_current_selection(dred_context* pDred, 
     }
 
     char* fullCommandText = NULL;
-    if (dred_control_is_of_type(DRED_CONTROL(pFocusedEditor), DRED_CONTROL_TYPE_TEXT_EDITOR)) {
+    if (DTK_CONTROL(pFocusedEditor)->type == DRED_CONTROL_TYPE_TEXT_EDITOR) {
         char* prefilledText = dred__get_selection_or_word_under_cursor_of_text_editor(DRED_TEXT_EDITOR(pFocusedEditor));
         if (prefilledText != NULL) {
             if (isReplaceMode) {

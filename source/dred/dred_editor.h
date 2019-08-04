@@ -11,7 +11,7 @@ typedef void (* dred_editor_on_unmodified_proc)(dred_editor* pEditor);
 struct dred_editor
 {
     // The base control.
-    dred_control control;
+    dtk_control control;
 
     char filePathAbsolute[DRED_MAX_PATH];
     uint64_t fileLastModifiedTime;
@@ -28,7 +28,7 @@ struct dred_editor
 
 
 // dred_editor_create()
-dtk_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_control* pParent, const char* type, dtk_event_proc onEvent, dtk_int32 sizeX, dtk_int32 sizeY, const char* filePathAbsolute);
+dtk_bool32 dred_editor_init(dred_context* pDred, dtk_control_type type, dtk_event_proc onEvent, dtk_control* pParent, dtk_int32 sizeX, dtk_int32 sizeY, const char* filePathAbsolute, dred_editor* pEditor);
 
 // dred_editor_delete()
 void dred_editor_uninit(dred_editor* pEditor);

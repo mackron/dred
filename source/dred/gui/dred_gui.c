@@ -20,7 +20,8 @@ dtk_bool32 dred_control_init(dred_control* pControl, dred_context* pDred, dtk_co
         return DTK_FALSE;
     }
 
-    dred_control_set_type(pControl, type);
+    (void)type;
+    //dred_control_set_type(pControl, type);
     return DTK_TRUE;
 }
 
@@ -34,38 +35,38 @@ void dred_control_uninit(dred_control* pControl)
 }
 
 
-dtk_bool32 dred_control_set_type(dred_control* pControl, const char* type)
-{
-    if (pControl == NULL) {
-        return DTK_FALSE;
-    }
-
-    return strcpy_s(pControl->type, sizeof(pControl->type), (type == NULL) ? "" : type) == 0;
-}
-
-const char* dred_control_get_type(dred_control* pControl)
-{
-    if (pControl == NULL) {
-        return NULL;
-    }
-
-    return pControl->type;
-}
-
-dtk_bool32 dred_control_is_of_type(dred_control* pControl, const char* type)
-{
-    if (pControl == NULL || type == NULL) {
-        return DTK_FALSE;
-    }
-
-    return dred_is_control_type_of_type(pControl->type, type);
-}
-
-dtk_bool32 dred_is_control_type_of_type(const char* type, const char* base)
-{
-    if (type == NULL || base == NULL) {
-        return DTK_FALSE;
-    }
-
-    return strncmp(type, base, strlen(base)) == 0;
-}
+//dtk_bool32 dred_control_set_type(dred_control* pControl, const char* type)
+//{
+//    if (pControl == NULL) {
+//        return DTK_FALSE;
+//    }
+//
+//    return strcpy_s(pControl->type, sizeof(pControl->type), (type == NULL) ? "" : type) == 0;
+//}
+//
+//const char* dred_control_get_type(dred_control* pControl)
+//{
+//    if (pControl == NULL) {
+//        return NULL;
+//    }
+//
+//    return pControl->type;
+//}
+//
+//dtk_bool32 dred_control_is_of_type(dred_control* pControl, const char* type)
+//{
+//    if (pControl == NULL || type == NULL) {
+//        return DTK_FALSE;
+//    }
+//
+//    return dred_is_control_type_of_type(pControl->type, type);
+//}
+//
+//dtk_bool32 dred_is_control_type_of_type(const char* type, const char* base)
+//{
+//    if (type == NULL || base == NULL) {
+//        return DTK_FALSE;
+//    }
+//
+//    return strncmp(type, base, strlen(base)) == 0;
+//}

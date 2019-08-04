@@ -1,15 +1,10 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
-dtk_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_control* pParent, const char* type, dtk_event_proc onEvent, dtk_int32 sizeX, dtk_int32 sizeY, const char* filePathAbsolute)
+dtk_bool32 dred_editor_init(dred_context* pDred, dtk_control_type type, dtk_event_proc onEvent, dtk_control* pParent, dtk_int32 sizeX, dtk_int32 sizeY, const char* filePathAbsolute, dred_editor* pEditor)
 {
-    if (!dred_is_control_type_of_type(type, "dred.editor")) {
-        dred_errorf(pDred, "[DEVELOPER ERROR] Attempting to create an editor that is not of an editor type (%s).", type);
-        return DTK_FALSE;
-    }
-
     memset(pEditor, 0, sizeof(*pEditor));
 
-    if (!dred_control_init(DRED_CONTROL(pEditor), pDred, pParent, type, onEvent)) {
+    if (dtk_control_init(&pDred->tk, type, onEvent, pParent, DTK_CONTROL(pEditor)) != DTK_SUCCESS) {
         free(pEditor);
         return DTK_FALSE;
     }
@@ -19,7 +14,7 @@ dtk_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_contr
 
     if (filePathAbsolute != NULL && filePathAbsolute[0] != '\0') {
         if (dtk_path_clean(pEditor->filePathAbsolute, sizeof(pEditor->filePathAbsolute), filePathAbsolute) == 0) {
-            dred_control_uninit(DRED_CONTROL(pEditor));
+            dtk_control_uninit(DTK_CONTROL(pEditor));
             dred_errorf(pDred, "File path is too long: %s\n", filePathAbsolute);
             return DTK_FALSE;
         }
@@ -34,7 +29,7 @@ dtk_bool32 dred_editor_init(dred_editor* pEditor, dred_context* pDred, dtk_contr
 
 void dred_editor_uninit(dred_editor* pEditor)
 {
-    dred_control_uninit(DRED_CONTROL(pEditor));
+    dtk_control_uninit(DTK_CONTROL(pEditor));
 }
 
 

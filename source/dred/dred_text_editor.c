@@ -151,7 +151,7 @@ void dred_text_editor_textview__on_cursor_move(dred_textview* pTextView)
     dred_text_editor* pTextEditor = DRED_TEXT_EDITOR(dtk_control_get_parent(DTK_CONTROL(pTextView)));
     assert(pTextEditor != NULL);
 
-    dred_update_info_bar(dred_get_context_from_control(DTK_CONTROL(pTextEditor)), DRED_CONTROL(pTextEditor));
+    dred_update_info_bar(dred_get_context_from_control(DTK_CONTROL(pTextEditor)), DTK_CONTROL(pTextEditor));
 }
 
 
@@ -350,12 +350,10 @@ dred_text_editor* dred_text_editor_create(dred_context* pDred, dtk_control* pPar
         return NULL;
     }
 
-    if (!dred_editor_init(DRED_EDITOR(pTextEditor), pDred, pParent, DRED_CONTROL_TYPE_TEXT_EDITOR, dred_text_editor_event_handler, sizeX, sizeY, filePathAbsolute)) {
+    if (!dred_editor_init(pDred, DRED_CONTROL_TYPE_TEXT_EDITOR, dred_text_editor_event_handler, pParent, sizeX, sizeY, filePathAbsolute, DRED_EDITOR(pTextEditor))) {
         free(pTextEditor);
         return NULL;
     }
-
-    pTextEditor->editor.control.baseControl.type = DRED_CONTROL_TYPE_TEXT_EDITOR2;  // Remove this when dred_control is removed entirely.
 
 
     if (!drte_engine_init(&pTextEditor->engine, pTextEditor)) {

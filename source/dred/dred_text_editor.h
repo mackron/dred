@@ -1,7 +1,5 @@
 // Copyright (C) 2019 David Reid. See included LICENSE file.
 
-#define DRED_CONTROL_TYPE_TEXT_EDITOR  "dred.editor.text"
-
 typedef struct dred_text_editor dred_text_editor;
 #define DRED_TEXT_EDITOR(a) ((dred_text_editor*)(a))
 

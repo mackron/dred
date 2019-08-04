@@ -634,12 +634,10 @@ dred_settings_editor* dred_settings_editor_create(dred_context* pDred, dtk_contr
         return NULL;
     }
 
-    if (!dred_editor_init(DRED_EDITOR(pSettingsEditor), pDred, pParent, "", dred_settings_editor_default_event_handler, 0, 0, filePathAbsolute)) {
+    if (!dred_editor_init(pDred, DRED_CONTROL_TYPE_SETTINGS_EDITOR, dred_settings_editor_default_event_handler, pParent, 0, 0, filePathAbsolute, DRED_EDITOR(pSettingsEditor))) {
         free(pSettingsEditor);
         return NULL;
     }
-
-    pSettingsEditor->editor.control.baseControl.type = DRED_CONTROL_TYPE_SETTINGS_EDITOR;  // Remove this when dred_control is removed entirely.
 
     float uiScale = dtk_control_get_scaling_factor(DTK_CONTROL(pSettingsEditor));
 

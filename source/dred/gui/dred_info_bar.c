@@ -129,7 +129,7 @@ void dred_info_bar_uninit(dred_info_bar* pInfoBar)
     dred_control_uninit(DRED_CONTROL(pInfoBar));
 }
 
-void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
+void dred_info_bar_update(dred_info_bar* pInfoBar, dtk_control* pControl)
 {
     if (pInfoBar == NULL) {
         return;
@@ -137,14 +137,11 @@ void dred_info_bar_update(dred_info_bar* pInfoBar, dred_control* pControl)
 
     pInfoBar->type = DRED_INFO_BAR_TYPE_NONE;
 
-    if (pControl != NULL) {
-        if (dred_control_is_of_type(pControl, DRED_CONTROL_TYPE_TEXT_EDITOR)) {
-            pInfoBar->type = DRED_INFO_BAR_TYPE_TEXT_EDITOR;
-            snprintf(pInfoBar->lineStr, sizeof(pInfoBar->lineStr), "Ln %d", (int)dred_text_editor_get_cursor_line(DRED_TEXT_EDITOR(pControl)) + 1);
-            snprintf(pInfoBar->colStr,  sizeof(pInfoBar->colStr),  "Col %d", (int)dred_text_editor_get_cursor_column(DRED_TEXT_EDITOR(pControl)) + 1);
-        }
+    if (pControl != NULL && pControl->type == DRED_CONTROL_TYPE_TEXT_EDITOR) {
+        pInfoBar->type = DRED_INFO_BAR_TYPE_TEXT_EDITOR;
+        snprintf(pInfoBar->lineStr, sizeof(pInfoBar->lineStr), "Ln %d", (int)dred_text_editor_get_cursor_line(DRED_TEXT_EDITOR(pControl)) + 1);
+        snprintf(pInfoBar->colStr,  sizeof(pInfoBar->colStr),  "Col %d", (int)dred_text_editor_get_cursor_column(DRED_TEXT_EDITOR(pControl)) + 1);
     }
-
 
     // The bar needs to be redrawn.
     dtk_control_scheduled_redraw(DTK_CONTROL(pInfoBar), dtk_control_get_local_rect(DTK_CONTROL(pInfoBar)));

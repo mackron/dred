@@ -316,7 +316,7 @@ void dred_unfocus_command_bar(dred_context* pDred);
 
 
 // Updates the info bar based on the given control.
-void dred_update_info_bar(dred_context* pDred, dred_control* pControl);
+void dred_update_info_bar(dred_context* pDred, dtk_control* pControl);
 
 
 // Shows the menu bar.
