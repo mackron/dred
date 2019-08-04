@@ -211,7 +211,7 @@ dtk_bool32 dred_close_all_tabs_with_confirmation(dred_context* pDred);
 
 
 // Finds the tab associated with the given control, usually an editor.
-dtk_tabgroup* dred_find_control_tab(dred_control* pControl, dtk_uint32* pTabIndex);
+dtk_tabgroup* dred_find_control_tab(dtk_control* pControl, dtk_uint32* pTabIndex);
 
 
 // Saves the currently focused file.

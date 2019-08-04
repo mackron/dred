@@ -220,7 +220,7 @@ void dred__refresh_editor_tab_text(dred_editor* pEditor, dtk_tabgroup* pTabGroup
 void dred__on_editor_modified(dred_editor* pEditor)
 {
     dtk_uint32 tabIndex;
-    dtk_tabgroup* pTabGroup = dred_find_control_tab(DRED_CONTROL(pEditor), &tabIndex);
+    dtk_tabgroup* pTabGroup = dred_find_control_tab(DTK_CONTROL(pEditor), &tabIndex);
     if (pTabGroup == NULL) {
         return;
     }
@@ -232,7 +232,7 @@ void dred__on_editor_modified(dred_editor* pEditor)
 void dred__on_editor_unmodified(dred_editor* pEditor)
 {
     dtk_uint32 tabIndex;
-    dtk_tabgroup* pTabGroup = dred_find_control_tab(DRED_CONTROL(pEditor), &tabIndex);
+    dtk_tabgroup* pTabGroup = dred_find_control_tab(DTK_CONTROL(pEditor), &tabIndex);
     if (pTabGroup == NULL) {
         return;
     }
@@ -1502,7 +1502,7 @@ dtk_bool32 dred_close_all_tabs_with_confirmation(dred_context* pDred)
 }
 
 
-dtk_tabgroup* dred_find_control_tab(dred_control* pControl, dtk_uint32* pTabIndex)
+dtk_tabgroup* dred_find_control_tab(dtk_control* pControl, dtk_uint32* pTabIndex)
 {
     dred_context* pDred = dred_get_context_from_control(DTK_CONTROL(pControl));
     if (pDred == NULL) {

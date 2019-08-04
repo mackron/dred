@@ -105,7 +105,7 @@ dtk_bool32 dred_info_bar_init(dred_context* pDred, dtk_control* pParent, dred_in
 
     pInfoBar->pFont = &pDred->config.pUIFont->fontDTK;
     if (pInfoBar->pFont == NULL) {
-        dred_control_uninit(DRED_CONTROL(pInfoBar));
+        dtk_control_uninit(DTK_CONTROL(pInfoBar));
         return DTK_FALSE;
     }
 
@@ -126,7 +126,7 @@ dtk_bool32 dred_info_bar_init(dred_context* pDred, dtk_control* pParent, dred_in
 
 void dred_info_bar_uninit(dred_info_bar* pInfoBar)
 {
-    dred_control_uninit(DRED_CONTROL(pInfoBar));
+    dtk_control_uninit(DTK_CONTROL(pInfoBar));
 }
 
 void dred_info_bar_update(dred_info_bar* pInfoBar, dtk_control* pControl)
