@@ -818,7 +818,7 @@ dtk_dialog_result dtk_show_save_file_dialog__gtk(dtk_window* pParentWindow, dtk_
         const char* extension = dtk_path_extension(filenameGTK);
         if (extension == NULL || extension[0] == '\0') {
             // No extension. Need to append pDefaultExtension.
-            if (pDefaultExtension != NULL) {
+            if (pOptions->pDefaultExtension != NULL) {
                 extensionLen = strlen(pOptions->pDefaultExtension)+1; // +1 for the dot between the name and the extension.
             }
         }

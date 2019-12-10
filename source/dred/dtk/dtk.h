@@ -566,6 +566,7 @@ struct dtk_context
         struct
         {
             /*GdkCursor**/ dtk_ptr pCursorDefault;
+            /*GdkCursor**/ dtk_ptr pCursorHand;
             /*GdkCursor**/ dtk_ptr pCursorIBeam;
             /*GdkCursor**/ dtk_ptr pCursorCross;
             /*GdkCursor**/ dtk_ptr pCursorDoubleArrowH;
