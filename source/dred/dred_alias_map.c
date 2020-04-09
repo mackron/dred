@@ -90,7 +90,7 @@ void dred_alias_map_remove_by_index(dred_alias_map* pMap, size_t index)
 }
 
 
-const char* dred_alias_map_get_value(dred_alias_map* pMap, const char* key)
+const char* dred_alias_map_get_value(const dred_alias_map* pMap, const char* key)
 {
     size_t i;
     if (!dred_alias_map_find(pMap, key, &i)) {
