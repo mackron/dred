@@ -58,12 +58,12 @@ struct json_parse_state_s {
   size_t flags_bitset;
 };
 
-static int json_is_hexadecimal_digit(const char c) {
+static bool json_is_hexadecimal_digit(const char c) {
   return (('0' <= c && c <= '9') || ('a' <= c && c <= 'f') ||
           ('A' <= c && c <= 'F'));
 }
 
-static int json_skip_whitespace(struct json_parse_state_s *state) {
+static bool json_skip_whitespace(struct json_parse_state_s *state) {
   // the only valid whitespace according to ECMA-404 is ' ', '\n', '\r' and '\t'
   for (; state->offset < state->size; state->offset++) {
     const char c = state->src[state->offset];
@@ -249,7 +249,7 @@ static int json_get_string_size(struct json_parse_state_s *state) {
   return 0;
 }
 
-static int is_valid_unquoted_key_char(const char c) {
+static bool is_valid_unquoted_key_char(const char c) {
   return (('0' <= c && c <= '9') || ('a' <= c && c <= 'z') ||
           ('A' <= c && c <= 'Z') || ('_' == c));
 }
@@ -1136,7 +1136,6 @@ json_parse_ex(const void *src, size_t src_size, size_t flags_bitset,
   state.offset = 0;
 
   // reset the line information so we can reuse it
-  state.offset = 0;
   state.line_no = 1;
   state.line_offset = 0;
 
@@ -1149,7 +1148,7 @@ json_parse_ex(const void *src, size_t src_size, size_t flags_bitset,
 
     value_ex->offset = state.offset;
     value_ex->line_no = state.line_no;
-    value_ex->row_no = state.offset - state.line_offset;
+    value_ex->row_no = state.line_offset;
 
     value = &(value_ex->value);
   } else {
