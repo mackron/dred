@@ -8,7 +8,7 @@ time_t dtk_now()
 size_t dtk_datetime_short(time_t t, char* strOut, size_t strOutSize)
 {
 #if defined(_MSC_VER)
-	struct tm local;
+	time_t local;
 	localtime_s(&local, &t);
     return strftime(strOut, strOutSize, "%x %H:%M:%S", &local);
 #else
@@ -20,7 +20,7 @@ size_t dtk_datetime_short(time_t t, char* strOut, size_t strOutSize)
 size_t dtk_date_YYYYMMDD(time_t t, char* strOut, size_t strOutSize)
 {
 #if defined(_MSC_VER)
-	struct tm local;
+	time_t local;
 	localtime_s(&local, &t);
     return strftime(strOut, strOutSize, "%Y%m%d", &local);
 #else
