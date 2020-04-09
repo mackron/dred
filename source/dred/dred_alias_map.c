@@ -100,7 +100,7 @@ const char* dred_alias_map_get_value(dred_alias_map* pMap, const char* key)
     return dred_alias_map_get_value_by_index(pMap, i);
 }
 
-const char* dred_alias_map_get_value_by_index(dred_alias_map* pMap, size_t index)
+const char* dred_alias_map_get_value_by_index(const dred_alias_map* pMap, size_t index)
 {
     if (pMap == NULL || index >= pMap->count) {
         return NULL;
