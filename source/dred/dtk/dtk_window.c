@@ -1717,6 +1717,9 @@ static gboolean dtk_window_clientarea__on_grab_broken__gtk(GtkWidget* pWidget, G
 
 dtk_result dtk_window_init__gtk(dtk_context* pTK, dtk_control* pParent, dtk_window_type type, const char* title, dtk_int32 width, dtk_int32 height, dtk_window* pWindow)
 {
+	g_object_set(gtk_settings_get_default(),"gtk-application-prefer-dark-theme", TRUE, NULL);
+
+
     // Client area. This is where everything is drawn.
     GtkWidget* pClientArea = gtk_drawing_area_new();
     if (pClientArea == NULL) {
